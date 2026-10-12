@@ -1,0 +1,35 @@
+{
+  "name": "sfe-web",
+  "version": "0.0.0",
+  "description": "SFE's web client: built into ../Sfe.Api/wwwroot by the Sfe.Api project build.",
+  "scripts": {
+    "ng": "ng",
+    "prestart": "npm run boot",
+    "start": "ng serve",
+    "prebuild": "npm run boot",
+    "build": "ng build",
+    "prewatch": "npm run boot",
+    "watch": "ng build --watch --configuration development",
+    "boot": "tsc -p tsconfig.boot.json",
+    "test": "ng test --watch=false"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^22.2.0",
+    "@angular/compiler": "^22.2.0",
+    "@angular/core": "^22.2.0",
+    "@angular/forms": "^22.2.0",
+    "@angular/platform-browser": "^22.2.0",
+    "@angular/router": "^22.2.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.2.2",
+    "@angular/cli": "^22.2.2",
+    "@angular/compiler-cli": "^22.2.0",
+    "jsdom": "^30.0.0",
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.0"
+  }
+}

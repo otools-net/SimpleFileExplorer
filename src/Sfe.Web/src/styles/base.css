@@ -1,0 +1,136 @@
+:root {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --surface-2: #1e222b;
+    --surface-3: #272c37;
+    --border: #2c313c;
+    --text: #e6e8ec;
+    --text-muted: #9aa1ad;
+    --accent: #f5b544;
+    --accent-contrast: #1b1406;
+    --folder: #f5b544;
+    --image: #6cc4a1;
+    --video: #7aa7ff;
+    --audio: #d48cf0;
+    --file: #9aa1ad;
+    --danger: #ff6b6b;
+    --copied: #5ec8e5;
+    --mark-bg: rgb(245 181 68 / .28);
+    --mark-text: inherit;
+    --shadow: 0 10px 30px rgb(0 0 0 / .35);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --topbar-h: 60px;
+    /* The compact location bar shown under the top bar once the location header has scrolled away. */
+    --location-strip-h: 38px;
+    --tile-min: 210px;
+    --font: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    color-scheme: dark;
+}
+
+/* Set by public/theme-boot.js and ThemeService from the browser's choice, the server default or the device's mode. */
+:root[data-theme="light"] {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --surface-3: #e5e8ed;
+    --border: #dde1e7;
+    --text: #1d2129;
+    --text-muted: #5f6774;
+    --accent: #c9860f;
+    --accent-contrast: #ffffff;
+    --folder: #d99a1e;
+    --image: #22936b;
+    --video: #2f6fe0;
+    --audio: #9c4fc2;
+    --file: #6b7380;
+    --copied: #0e8fb3;
+    --mark-bg: rgb(245 181 68 / .45);
+    --shadow: 0 10px 30px rgb(15 20 30 / .14);
+    color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-padding-top: calc(var(--topbar-h) + var(--location-strip-h) + 8px); }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 var(--font);
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+code { font-family: var(--mono); font-size: .92em; }
+[hidden] { display: none !important; }
+
+.icon {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ---------- Buttons ---------- */
+
+.button, .icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+
+.button { padding: 0 14px; font-weight: 600; }
+.icon-button { width: 38px; padding: 0; }
+.button:hover, .icon-button:hover { background: var(--surface-3); }
+.button.small, .icon-button.small { height: 30px; }
+.icon-button.small { width: 30px; }
+.icon-button.ghost { border-color: transparent; background: transparent; }
+.icon-button.ghost:hover { background: var(--surface-3); }
+.button:disabled { opacity: .55; cursor: progress; }
+.button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.button.danger { color: var(--danger); }
+
+/* Request in flight (see BusyDirective): the spinner stays fully visible on the dimmed button. */
+.button.busy:disabled { opacity: .8; cursor: progress; }
+.button-spinner {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
+
+
+/* Angular elements without a layout of their own. */
+sfe-root, sfe-library-page, sfe-listing { display: block; }

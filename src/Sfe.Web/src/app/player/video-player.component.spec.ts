@@ -1,0 +1,231 @@
+import { Component, signal } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { settle } from '../../testing/fakes';
+import { VideoPlayerComponent } from './video-player.component';
+
+describe('VideoPlayerComponent', () => {
+    @Component({
+        imports: [VideoPlayerComponent],
+        template: `<sfe-video-player src="api/files/raw?path=clip.webm" [loop]="loop()" />`,
+    })
+    class Host {
+        readonly loop = signal(false);
+    }
+
+    let fixture: ComponentFixture<Host>;
+
+    const video = () => fixture.nativeElement.querySelector('video') as HTMLVideoElement;
+    const loopButton = () => fixture.nativeElement.querySelector('.player-toggle') as HTMLButtonElement;
+    const player = () => fixture.debugElement.children[0].componentInstance as VideoPlayerComponent;
+
+    async function create(loop: boolean): Promise<void> {
+        fixture = TestBed.createComponent(Host);
+        fixture.componentInstance.loop.set(loop);
+        await settle();
+    }
+
+    beforeEach(() => {
+        // jsdom doesn't play media.
+        vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
+        vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => { });
+        vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => { });
+    });
+
+    afterEach(() => {
+        TestBed.resetTestingModule();      // destroys the players while the media methods are still stubbed
+        vi.restoreAllMocks();
+    });
+
+    it('starts with the loop given by the settings', async () => {
+        await create(false);
+        expect(video().loop).toBe(false);
+        expect(loopButton().getAttribute('aria-pressed')).toBe('false');
+        expect(loopButton().title).toBe('Loop (R)');
+
+        await create(true);
+        expect(video().loop).toBe(true);
+        expect(loopButton().classList).toContain('on');
+        expect(loopButton().getAttribute('aria-pressed')).toBe('true');
+        expect(loopButton().title).toBe('Stop looping (R)');
+    });
+
+    it('toggles the loop with its button', async () => {
+        await create(false);
+        loopButton().click();
+        await settle();
+        expect(video().loop).toBe(true);
+        expect(loopButton().classList).toContain('on');
+
+        loopButton().click();
+        await settle();
+        expect(video().loop).toBe(false);
+        expect(loopButton().classList).not.toContain('on');
+    });
+
+    describe('playback speed', () => {
+        const speedButton = () => fixture.nativeElement.querySelector('.player-speed') as HTMLButtonElement;
+        const menu = () => fixture.nativeElement.querySelector('.player-speed-menu') as HTMLElement | null;
+        const rates = () => Array.from(menu()!.querySelectorAll('button'));
+
+        it('lists every rate when its button is clicked, the current one marked', async () => {
+            await create(false);
+            expect(menu()).toBeNull();
+
+            speedButton().click();
+            await settle();
+            expect(rates().map(rate => rate.textContent)).toEqual(['0.5×', '0.75×', '1×', '1.25×', '1.5×', '2×']);
+            expect(rates().filter(rate => rate.classList.contains('on')).map(rate => rate.textContent)).toEqual(['1×']);
+            expect(speedButton().getAttribute('aria-expanded')).toBe('true');
+        });
+
+        it('puts the rates in rows when the player is too short for a column', async () => {
+            await create(false);
+            const host = fixture.nativeElement.querySelector('sfe-video-player') as HTMLElement;
+            Object.defineProperty(host, 'clientHeight', { configurable: true, value: 400 });
+            speedButton().click();
+            await settle();
+            expect(menu()!.classList).not.toContain('wide');
+            expect(menu()!.style.maxHeight).toBe('336px');
+
+            speedButton().click();
+            Object.defineProperty(host, 'clientHeight', { configurable: true, value: 150 });
+            speedButton().click();
+            await settle();
+            expect(menu()!.classList).toContain('wide');
+        });
+
+        it('plays at the rate picked and closes the list', async () => {
+            await create(false);
+            speedButton().click();
+            await settle();
+            rates()[4].click();
+            await settle();
+
+            expect(video().playbackRate).toBe(1.5);
+            expect(speedButton().textContent).toBe('1.5×');
+            expect(menu()).toBeNull();
+
+            speedButton().click();
+            await settle();
+            expect(menu()!.querySelector('.on')!.textContent).toBe('1.5×');
+        });
+
+        it('closes on a press elsewhere, on Escape and on its button', async () => {
+            await create(false);
+            speedButton().click();
+            await settle();
+            menu()!.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+            await settle();
+            expect(menu()).not.toBeNull();
+            document.body.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+            await settle();
+            expect(menu()).toBeNull();
+
+            speedButton().click();
+            await settle();
+            expect(player().handleKey(new KeyboardEvent('keydown', { key: 'Escape' }))).toBe(true);
+            await settle();
+            expect(menu()).toBeNull();
+            expect(player().handleKey(new KeyboardEvent('keydown', { key: 'Escape' }))).toBe(false);
+
+            speedButton().click();
+            await settle();
+            speedButton().click();
+            await settle();
+            expect(menu()).toBeNull();
+            expect(video().playbackRate).toBe(1);
+        });
+    });
+
+    describe('holding a finger on the right', () => {
+        const surface = () => fixture.nativeElement.querySelector('.player-surface') as HTMLElement;
+        const host = () => fixture.nativeElement.querySelector('sfe-video-player') as HTMLElement;
+
+        function press(type: string, x: number, y = 100, pointerType = 'touch'): void {
+            const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y });
+            Object.defineProperty(event, 'pointerType', { value: pointerType });
+            surface().dispatchEvent(event);
+        }
+
+        async function createPlaying(): Promise<void> {
+            await create(false);
+            surface().getBoundingClientRect = () => ({ left: 0, top: 0, width: 1000, height: 500, right: 1000, bottom: 500, x: 0, y: 0, toJSON: () => ({}) });
+            Object.defineProperty(video(), 'paused', { configurable: true, value: false });
+            vi.useFakeTimers();
+        }
+
+        afterEach(() => vi.useRealTimers());
+
+        it('plays at 2× after 1.5 s until the finger lifts, then at the chosen rate again', async () => {
+            await createPlaying();
+            press('pointerdown', 900);
+            await vi.advanceTimersByTimeAsync(1400);
+            expect(video().playbackRate).toBe(1);
+
+            await vi.advanceTimersByTimeAsync(100);
+            fixture.detectChanges();
+            expect(video().playbackRate).toBe(2);
+            expect(host().classList).toContain('fast');
+
+            press('pointerup', 900);
+            await vi.advanceTimersByTimeAsync(500);
+            fixture.detectChanges();
+            expect(video().playbackRate).toBe(1);
+            expect(host().classList).not.toContain('fast');
+            expect(host().classList).toContain('controls-visible');      // the lift was not taken for a tap
+        });
+
+        it('goes back to the rate of the speed button', async () => {
+            await createPlaying();
+            vi.useRealTimers();
+            (fixture.nativeElement.querySelector('.player-speed') as HTMLButtonElement).click();
+            await settle();
+            (fixture.nativeElement.querySelectorAll('.player-speed-menu button')[1] as HTMLButtonElement).click();
+            await settle();
+            vi.useFakeTimers();
+
+            press('pointerdown', 900);
+            await vi.advanceTimersByTimeAsync(1500);
+            expect(video().playbackRate).toBe(2);
+            press('pointercancel', 900);
+            expect(video().playbackRate).toBe(0.75);
+        });
+
+        it('does nothing on the left or middle, with a moving finger, a mouse or a paused video', async () => {
+            await createPlaying();
+            for (const x of [100, 500]) {
+                press('pointerdown', x);
+                await vi.advanceTimersByTimeAsync(2000);
+                expect(video().playbackRate).toBe(1);
+                press('pointerup', x);
+            }
+
+            press('pointerdown', 900);
+            press('pointermove', 900, 150);
+            await vi.advanceTimersByTimeAsync(2000);
+            expect(video().playbackRate).toBe(1);
+            press('pointerup', 900, 150);
+
+            press('pointerdown', 900, 100, 'mouse');
+            await vi.advanceTimersByTimeAsync(2000);
+            expect(video().playbackRate).toBe(1);
+            press('pointerup', 900, 100, 'mouse');
+
+            Object.defineProperty(video(), 'paused', { configurable: true, value: true });
+            press('pointerdown', 900);
+            await vi.advanceTimersByTimeAsync(2000);
+            expect(video().playbackRate).toBe(1);
+        });
+    });
+
+    it('toggles the loop with the R key', async () => {
+        await create(true);
+        expect(player().handleKey(new KeyboardEvent('keydown', { key: 'R' }))).toBe(true);
+        await settle();
+        expect(video().loop).toBe(false);
+
+        expect(player().handleKey(new KeyboardEvent('keydown', { key: 'r', ctrlKey: true }))).toBe(false);
+        await settle();
+        expect(video().loop).toBe(false);
+    });
+});

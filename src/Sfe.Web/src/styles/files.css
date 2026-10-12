@@ -1,0 +1,230 @@
+/* ---------- Files: grid (justified rows) ---------- */
+
+/*
+ * Each tile is as wide as its preview at the row height (`--ratio` × `--row-h`), and the tiles of a row grow in
+ * proportion to their ratio to fill it: the previews of a row keep one height and show the whole picture,
+ * whatever its shape (16:9, 9:16, 3:4...), in reading order. `--ratio` is set when the preview loads; until then
+ * a tile takes `--ratio-guess`, the typical shape of the listed files (PreviewsService).
+ * The row height keeps the preview area about the same whatever that typical shape (`--tile-side`² for a square),
+ * so a folder of portrait videos gets taller rows instead of slivers.
+ */
+.files.grid {
+    --ratio-guess: 1.6;
+    --tile-side: 200px;
+    --row-h: min(var(--tile-side) / sqrt(var(--ratio-guess)), 60vh);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.files.grid > .tile {
+    flex: var(--ratio, var(--ratio-guess)) 1 calc(var(--ratio, var(--ratio-guess)) * var(--row-h));
+}
+
+/* The last row keeps its natural size instead of stretching a few tiles across the page. */
+.files.grid::after { content: ""; flex: 10000 1 0; }
+
+/*
+ * Nothing to look at (documents, audio, failed previews): the placeholder takes the place of a preview of the
+ * typical shape (no `--ratio`), so these tiles are as large as their neighbours, not a smaller card among them.
+ */
+
+.tile {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+
+.tile:hover {
+    border-color: color-mix(in srgb, var(--kind) 55%, var(--border));
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+}
+
+.tile .preview {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: var(--ratio, var(--ratio-guess, 1.6));
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--kind) 16%, transparent), transparent 70%),
+        var(--surface-2);
+}
+
+.tile .preview img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity .25s;
+}
+
+.tile .preview img.loaded { opacity: 1; }
+
+/*
+ * Long listings keep every loaded tile: the browser skips painting the ones off screen. The preview's size comes
+ * from its aspect ratio, so skipping it changes nothing; the caption's height is remembered once shown.
+ */
+.tile .preview { content-visibility: auto; }
+.tile .info { content-visibility: auto; contain-intrinsic-size: auto 72px; }
+
+.placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--kind);
+}
+
+.placeholder .icon { width: 40px; height: 40px; stroke-width: 1.3; }
+.placeholder .ext { font: 700 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; opacity: .9; }
+
+.badge {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / .62);
+    color: #fff;
+    font: 700 11px var(--mono);
+    text-transform: uppercase;
+}
+
+.badge .icon { width: 12px; height: 12px; fill: #fff; stroke: none; }
+
+/* The bottom-right corner of a tile's preview: the HR/LR mark, then the media badge. */
+.preview-marks {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.preview-marks .badge { position: static; }
+
+/* The bottom-left corner of a video's or audio file's preview: its duration, then (videos) its trickplay mark. */
+.preview-marks.start { right: auto; left: 8px; }
+.preview-marks.start .trickplay-mark { position: static; }
+.badge.duration { font-variant-numeric: tabular-nums; }
+/* Audio seldom has a picture: its duration shows over the placeholder too. */
+.tile.kind-audio .preview .badge.duration { display: inline-flex; }
+
+/* High (HR) or low (LR) resolution, by Browse:HighResolutionPixels; LR stays discreet, HR stands out. */
+.resolution-mark {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgb(0 0 0 / .62);
+    color: rgb(255 255 255 / .8);
+    font: 700 10.5px var(--mono);
+    letter-spacing: .04em;
+    line-height: 1.3;
+}
+
+.resolution-mark.high { background: color-mix(in srgb, var(--accent) 85%, #000); color: #fff; }
+.row .thumb .resolution-mark { position: absolute; top: 1px; right: 1px; padding: 0 3px; border-radius: 3px; font-size: 8.5px; }
+
+/* The placeholder already names the type: only label media once a thumbnail covers it. */
+.preview:not(:has(img.loaded)) .badge { display: none; }
+/* The placeholder would show through the transparent parts of an image (PNG, GIF, WebP). */
+.preview:has(img.loaded) .placeholder { visibility: hidden; }
+
+.tile .info { display: flex; flex-direction: column; gap: 2px; padding: 9px 11px 11px; min-width: 0; }
+
+.tile .item-name {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.meta { color: var(--text-muted); font-size: 12px; }
+
+/* ---------- Files: one per row ---------- */
+
+/*
+ * The card takes the shape of the picture (`--ratio`, see the grid) at the largest size that fits the column and,
+ * caption included, the screen height: a portrait video is shown tall and narrow rather than letterboxed.
+ */
+.files.single {
+    --ratio-guess: 1.6;
+    --row-max: calc(100vh - var(--topbar-h) - 150px);
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+}
+
+.files.single > .tile { width: min(100%, var(--row-max) * var(--ratio, var(--ratio-guess))); }
+.files.single .tile:hover { transform: none; }
+.files.single .placeholder .icon { width: 64px; height: 64px; }
+.files.single .tile .info { padding: 10px 14px 12px; }
+.files.single .tile .item-name { -webkit-line-clamp: 3; font-size: 15px; }
+
+/* ---------- Files: list ---------- */
+
+.files.list {
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 20px 52px minmax(0, 1fr) 70px 110px 170px auto;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 14px 6px 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Off-screen rows are not rendered (see the tiles); a row with tag chips is taller, remembered once shown. */
+.row { content-visibility: auto; contain-intrinsic-size: auto 49px; }
+.row:last-child { border-bottom: 0; }
+.row:hover { background: var(--surface-2); }
+
+.row .thumb {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 36px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--kind);
+}
+
+.row .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.row .thumb .icon { width: 20px; height: 20px; }
+.row .size, .row .date { color: var(--text-muted); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.row .size .resolution, .row .size .duration { display: block; font-size: 11.5px; }
+.row .type {
+    overflow: hidden;
+    color: var(--kind);
+    font: 700 12px var(--mono);
+    letter-spacing: .04em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.row .item-name { font-weight: 500; }
+
+.folders.list { grid-template-columns: 1fr; gap: 0; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); }
+.folders.list .folder { border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
+.folders.list .folder:last-child { border-bottom: 0; }
+

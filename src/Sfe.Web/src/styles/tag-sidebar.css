@@ -1,0 +1,66 @@
+/* ---------- Tag sidebar ---------- */
+
+.layout { display: flex; align-items: flex-start; }
+.layout > .page { flex: 1; min-width: 0; }
+
+.sidebar {
+    position: sticky;
+    top: var(--topbar-h);
+    z-index: 10;
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 20px;
+    width: 250px;
+    height: calc(100dvh - var(--topbar-h));
+    padding: 18px 12px 24px max(14px, env(safe-area-inset-left));
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.sidebar-collapsed .sidebar { display: none; }
+.sidebar-toggle[aria-expanded="true"] { color: var(--accent); }
+
+.sidebar-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; margin-bottom: 6px; }
+.sidebar-heading h2 {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.sidebar-tags { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+
+.sidebar-tags li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+    padding: 3px 4px;
+    border-radius: 6px;
+}
+
+.sidebar-tags li:hover { background: var(--surface-2); }
+.sidebar-tags .tag-count { flex: none; color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sidebar-tags .sidebar-empty { display: block; color: var(--text-muted); font-size: 12px; }
+.sidebar-tags .sidebar-empty:hover { background: none; }
+.sidebar-manage { align-self: flex-start; margin-top: auto; }
+.sidebar-manage .icon { width: 16px; height: 16px; }
+
+@media (max-width: 760px) {
+    /* A drawer over the page. */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        z-index: 25;
+        width: min(300px, 86vw);
+        height: auto;
+        box-shadow: var(--shadow);
+    }
+}
+

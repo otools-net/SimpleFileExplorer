@@ -1,0 +1,316 @@
+/* ---------- Video player ---------- */
+
+.player {
+    position: relative;
+    display: grid;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #000;
+    box-shadow: 0 20px 60px rgb(0 0 0 / .6);
+    color: #fff;
+    touch-action: manipulation;     /* no double-tap zoom: double taps seek */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.player:focus { outline: none; }
+
+.player video {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100dvh - 90px);
+    min-width: min(320px, 100%);
+    min-height: 180px;
+}
+
+.player.fullscreen { width: 100vw; height: 100vh; border-radius: 0; }
+.player.fullscreen video { width: 100%; height: 100%; max-height: none; object-fit: contain; }
+.player.fullscreen:not(.controls-visible) { cursor: none; }
+
+.player-surface { position: absolute; inset: 0; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+
+/* Badge while a held finger plays the video faster. */
+.player-fast {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / .6);
+    color: #fff;
+    font: 700 15px var(--font);
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity .15s;
+    pointer-events: none;
+}
+
+.player-fast .icon { width: 16px; height: 16px; fill: #fff; stroke: none; }
+.player.fast .player-fast { opacity: 1; }
+
+.player-big-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(0 0 0 / .55);
+    color: #fff;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    transition: opacity .2s;
+}
+
+.player-big-play .icon { width: 34px; height: 34px; margin-left: 4px; fill: #fff; stroke: none; }
+.player:not(.paused) .player-big-play, .player.waiting .player-big-play { opacity: 0; pointer-events: none; }
+
+.player-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 48px;
+    height: 48px;
+    margin: -24px 0 0 -24px;
+    border: 4px solid rgb(255 255 255 / .25);
+    border-top-color: #fff;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    animation: spin .8s linear infinite;
+    transition: opacity .2s;
+}
+
+.player.waiting .player-spinner { opacity: 1; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* "−20 s" / "+10 s" feedback on the side that was double-tapped. */
+.player-hint {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: grid;
+    place-items: center;
+    width: 35%;
+    font: 700 18px var(--font);
+    text-shadow: 0 1px 4px rgb(0 0 0 / .8);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.player-hint.back { left: 0; border-radius: 0 50% 50% 0 / 0 100% 100% 0; background: radial-gradient(circle at 0 50%, rgb(255 255 255 / .18), transparent 70%); }
+.player-hint.forward { right: 0; border-radius: 50% 0 0 50% / 100% 0 0 100%; background: radial-gradient(circle at 100% 50%, rgb(255 255 255 / .18), transparent 70%); }
+.player-hint.show { animation: hint .65s ease-out forwards; }
+
+/* White flash when a frame is saved. */
+.player-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.player-flash.show { animation: flash .35s ease-out; }
+
+@keyframes flash { 0% { opacity: .5; } 100% { opacity: 0; } }
+
+@keyframes hint {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.player-controls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 28px 10px 6px;
+    background: linear-gradient(transparent, rgb(0 0 0 / .75));
+    transition: opacity .25s;
+}
+
+.player:not(.controls-visible) .player-controls { opacity: 0; pointer-events: none; }
+
+.player-row { display: flex; align-items: center; gap: 2px; }
+.player-spacer { flex: 1; }
+.player-time { margin-left: 8px; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.player-button {
+    display: grid;
+    place-items: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+}
+
+.player-button:hover { background: rgb(255 255 255 / .15); }
+.player-button .icon { width: 24px; height: 24px; }
+.player-speed { font: 700 13px var(--font); }
+
+/* The rates, opened above the speed button; the player is always dark. */
+.player-speed-wrap { position: relative; }
+.player-speed-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 6px);
+    z-index: 2;
+    display: grid;
+    min-width: 76px;
+    overflow: hidden auto;
+    padding: 4px;
+    border-radius: 8px;
+    background: rgb(20 20 20 / .92);
+    box-shadow: 0 4px 16px rgb(0 0 0 / .5);
+}
+.player-speed-menu > button {
+    padding: 7px 12px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    font: 600 13px var(--font);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+}
+.player-speed-menu > button:hover { background: rgb(255 255 255 / .15); }
+.player-speed-menu > button.on { color: var(--accent); font-weight: 700; }
+.player-speed-menu.wide { grid-template-columns: repeat(3, auto); }
+
+/* A button that stays on (loop): in the accent colour, with a dot under the icon. */
+.player-toggle { position: relative; }
+.player-toggle.on { color: var(--accent); }
+.player-toggle.on::after { content: ""; position: absolute; bottom: 3px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
+
+/* The jump in seconds (Sfe:Player:SeekSeconds), inside the circle of the back/forward icons. */
+.player-seek-button > * { grid-area: 1 / 1; }
+.player-step { margin-top: 1px; font: 700 8px/1 var(--font); pointer-events: none; }
+.player-step.long { font-size: 6.5px; letter-spacing: -.02em; }
+
+/* The player page (player?path=...): the player alone, filling its window. */
+.player-page { display: block; height: 100dvh; overflow: hidden; background: #000; }
+.player-page-stage { display: grid; place-items: center; height: 100%; }
+.player-page .player { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+.player-page .player video { width: 100%; height: 100%; max-height: none; object-fit: contain; }
+.player-page .viewer-message { color: #a9afba; text-align: center; }
+.player-page-links { display: flex; justify-content: center; gap: 8px; }
+
+/* Seek bar: played part in the accent colour, buffered part lighter, on a translucent track. */
+.player-seek {
+    --played: 0%;
+    --buffered: 0%;
+    display: block;
+    width: 100%;
+    height: 18px;
+    margin: 0 0 2px;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.player-seek::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--accent) var(--played), rgb(255 255 255 / .45) var(--played), rgb(255 255 255 / .45) var(--buffered), rgb(255 255 255 / .2) var(--buffered));
+}
+
+.player-seek::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--accent) var(--played), rgb(255 255 255 / .45) var(--played), rgb(255 255 255 / .45) var(--buffered), rgb(255 255 255 / .2) var(--buffered));
+}
+
+.player-seek::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.player-seek::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--accent); }
+
+/* Time (and trickplay frame) of the position under the pointer, above the seek bar. */
+.player-seek-wrap { position: relative; }
+
+.player-preview {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .12s, visibility .12s;
+}
+
+.player-preview.visible { opacity: 1; visibility: visible; }
+
+.player-preview-frame {
+    display: none;
+    border-radius: 6px;
+    background-color: #000;
+    background-repeat: no-repeat;
+    /* A shadow rather than a border: with border-box sizing a border would shift the frame inside the sheet. */
+    box-shadow: 0 0 0 2px rgb(255 255 255 / .9), 0 6px 18px rgb(0 0 0 / .55);
+}
+
+.player-preview.has-frame .player-preview-frame { display: block; }
+
+.player-preview-time {
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgb(0 0 0 / .75);
+    color: #fff;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+.viewer-stage .viewer-message { color: #a9afba; text-align: center; }
+
+/* In the stage's cell with its bottom inset, so the arrows are level with the centre of the picture or video (and
+   its big play button), not with the centre of the window, which also holds the title bar. */
+.viewer-nav {
+    position: relative;
+    z-index: 1;
+    grid-area: 2 / 1;
+    align-self: center;
+    margin-bottom: var(--viewer-stage-bottom);
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 72px;
+    border: 0;
+    border-radius: 10px;
+    background: rgb(255 255 255 / .08);
+    color: #fff;
+    cursor: pointer;
+}
+
+.viewer-nav:hover { background: rgb(255 255 255 / .2); }
+.viewer-nav:disabled { opacity: 0; pointer-events: none; }
+.viewer-nav.prev { justify-self: start; margin-left: 8px; }
+.viewer-nav.next { justify-self: end; margin-right: 8px; }
+.viewer-nav .icon { width: 28px; height: 28px; }
+
+/* On touch screens the arrows would sit where videos are double-tapped to seek: swipe to change item instead. */
+@media (pointer: coarse) {
+    .viewer.has-video .viewer-nav { display: none; }
+}
+

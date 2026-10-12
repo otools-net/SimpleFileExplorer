@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Sfe.Api/Sfe.Api.csproj" />
+    <Project Path="src/Sfe.Core/Sfe.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Sfe.Tests/Sfe.Tests.csproj" />
+  </Folder>
+</Solution>

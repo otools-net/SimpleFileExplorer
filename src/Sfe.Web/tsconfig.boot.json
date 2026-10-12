@@ -1,0 +1,16 @@
+/* src/theme-boot.ts, compiled on its own into a classic script (see the file). */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "out-tsc/boot",
+    "rootDir": "src",
+    "types": [],
+    "isolatedModules": false,
+    "importHelpers": false,
+    "sourceMap": false,
+    "removeComments": true
+  },
+  "files": [
+    "src/theme-boot.ts"
+  ]
+}

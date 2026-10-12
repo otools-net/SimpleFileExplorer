@@ -1,0 +1,33 @@
+/* ---------- Responsive ---------- */
+
+@media (max-width: 760px) {
+    :root { --tile-min: 150px; --topbar-h: 56px; }
+    .page { padding: 12px max(8px, env(safe-area-inset-right)) 40px max(8px, env(safe-area-inset-left)); }
+    .button .label { display: none; }
+    /* The sidebar toggle takes its place; the first breadcrumb still leads to the library root. */
+    .brand { display: none; }
+    .button { padding: 0 10px; }
+    .search-scope { display: none; }
+    .crumbs { font-size: 17px; }
+    .row { grid-template-columns: 20px 44px minmax(0, 1fr) 44px 76px auto; gap: 8px; }
+    .selection-bar { bottom: max(10px, env(safe-area-inset-bottom)); }
+    .row .thumb { width: 44px; }
+    .row .date { display: none; }
+    .viewer[open] { --viewer-stage-bottom: 12px; }
+    .viewer-stage { padding: 0 0 var(--viewer-stage-bottom); }
+    .viewer-nav { width: 40px; height: 56px; background: rgb(0 0 0 / .35); }
+    .tile .info { padding: 7px 9px 9px; }
+    /* Two landscape or three portrait tiles across a phone. */
+    .files.grid { --tile-side: 120px; gap: 10px; }
+    .files.single { gap: 12px; }
+    .player { border-radius: 0; }
+    .player-time { font-size: 12px; margin-left: 4px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .player-button { min-width: 38px; padding: 0 4px; }
+    /* No room for three buttons: show the active layout only; pressing it cycles (see TopbarComponent). */
+    .segmented .icon-button[aria-pressed="false"] { display: none; }
+    .segmented .icon-button[aria-pressed="true"] { border-radius: var(--radius-sm); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

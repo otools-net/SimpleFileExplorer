@@ -1,0 +1,36 @@
+/* ---------- Scroll progress ---------- */
+
+/*
+ * Where the listing is scrolled (ScrollProgressComponent): page, items scrolled to of the total, and a thin bar. Kept
+ * small and half see-through in a corner; it never takes clicks, so nothing under it is out of reach.
+ */
+.scroll-progress {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 21;
+    display: grid;
+    gap: 4px;
+    min-width: 132px;
+    padding: 6px 10px 7px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(6px);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    pointer-events: none;
+    animation: toast-in .2s ease-out;
+}
+
+.scroll-progress-text { display: flex; justify-content: space-between; gap: 12px; white-space: nowrap; }
+.scroll-progress-count { color: var(--text); font-weight: 600; }
+
+.scroll-progress-bar { display: block; height: 3px; overflow: hidden; border-radius: 2px; background: var(--surface-3); }
+.scroll-progress-bar > span { display: block; height: 100%; background: var(--accent); transition: width .15s; }
+
+/* Above the selection bar, which spans a phone's width. */
+.selecting .scroll-progress { bottom: max(76px, calc(env(safe-area-inset-bottom) + 60px)); }

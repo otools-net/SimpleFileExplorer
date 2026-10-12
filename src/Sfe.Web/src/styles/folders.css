@@ -1,0 +1,125 @@
+/* ---------- Folders ---------- */
+
+.folders {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+}
+
+.folder {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: background .15s, border-color .15s, transform .15s;
+}
+
+.folder:hover { background: var(--surface-2); border-color: color-mix(in srgb, var(--folder) 45%, var(--border)); }
+.folder .icon { fill: color-mix(in srgb, var(--folder) 85%, transparent); stroke: none; width: 22px; height: 22px; }
+.folder .item-name { font-weight: 600; line-height: 1.25; }
+
+/*
+ * Grid and one-per-row views: folders are cards showing their first pictures (`Browse:FolderPictures`), like a
+ * Windows media folder, in as square a grid as the count allows (2×2 for 4; FolderCoverComponent sets `--cover-columns` and
+ * `--cover-rows`). A folder without pictures keeps the same size, with its icon in the picture area.
+ */
+.folders.covers { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+
+/* Two cards side by side on a phone. */
+@media (max-width: 760px) {
+    .folders.covers { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+}
+
+.folders.covers .folder {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    overflow: hidden;
+    padding: 0;
+    border-radius: var(--radius);
+}
+
+.folders.covers .folder:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+
+.folder-cover {
+    position: relative;
+    display: grid;
+    grid-template: repeat(var(--cover-rows, 2), 1fr) / repeat(var(--cover-columns, 2), 1fr);
+    gap: 2px;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--folder) 16%, transparent), transparent 70%),
+        var(--surface-2);
+}
+
+.folder .folder-cover > .icon {
+    position: absolute;
+    inset: 0;
+    width: 56px;
+    height: 56px;
+    margin: auto;
+}
+
+.folder-cover.has-media > .icon { display: none; }
+.folder-cover .cell { position: relative; overflow: hidden; background: var(--surface-3); }
+
+.folder-cover .cell img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity .25s;
+}
+
+.folder-cover .cell img.loaded { opacity: 1; }
+
+.folder-caption { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 9px 11px 11px; }
+.folder-caption .icon { flex: none; width: 18px; height: 18px; }
+.folder-caption .item-name {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+
+/* ---------- A folder's buttons (tags, copy path) ---------- */
+
+/* A folder and its buttons share a box: a button can't be inside the link. */
+.folder-item { position: relative; display: grid; }
+.folder-actions {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity .15s, translate .15s;
+}
+
+.folder-item:hover .folder-actions, .folder-item:focus-within .folder-actions { opacity: 1; }
+.folder-actions .icon-button { border-color: transparent; background: transparent; color: var(--text-muted); transition: background .15s; }
+.folder-actions .icon-button:hover { background: var(--surface-3); color: var(--text); }
+.folder-actions .icon { width: 16px; height: 16px; }
+
+/* At the end of a line. */
+.folder-item:not(:has(.card)) .folder-actions { top: 50%; right: 7px; translate: 0 -50%; }
+.folder-item:not(:has(.card)) .folder { padding-right: 44px; }
+.folder-item:not(:has(.card)):has(.copy-path-button) .folder { padding-right: 80px; }
+
+/* Over a card's pictures: dark like a file tile's buttons. */
+.folders.covers .folder-actions { top: 8px; right: 8px; }
+.folders.covers .folder-actions .icon-button { background: rgb(0 0 0 / .55); color: #fff; }
+.folders.covers .folder-actions .icon-button:hover { background: rgb(0 0 0 / .75); color: #fff; }
+.folders.covers .folder-item:hover .folder { box-shadow: var(--shadow); transform: translateY(-2px); }
+.folders.covers .folder-item:hover .folder-actions { translate: 0 -2px; }
+.folders.list .folder-item:not(:last-child) .folder { border-bottom: 1px solid var(--border); }
+
+@media (hover: none) {
+    .folder-actions { opacity: 1; }
+}

@@ -1,0 +1,39 @@
+/* ---------- States ---------- */
+
+.empty {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 70px 20px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.empty .icon { width: 46px; height: 46px; stroke-width: 1.2; opacity: .7; }
+.empty h2 { margin: 0; color: var(--text); font-size: 18px; }
+.empty p { margin: 0; max-width: 460px; }
+
+.skeleton .tile .preview, .skeleton .tile .info span {
+    background: linear-gradient(90deg, var(--surface-2), var(--surface-3), var(--surface-2));
+    background-size: 200% 100%;
+    animation: shimmer 1.2s linear infinite;
+}
+
+.skeleton .tile .info span { display: block; height: 12px; border-radius: 4px; }
+.skeleton .tile .info span + span { width: 50%; margin-top: 6px; }
+
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.sentinel { display: grid; place-items: center; padding: 28px; }
+
+.spinner {
+    width: 26px;
+    height: 26px;
+    border: 3px solid var(--surface-3);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+

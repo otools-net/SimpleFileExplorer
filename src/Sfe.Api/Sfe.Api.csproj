@@ -1,0 +1,80 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sfe.Core\Sfe.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.12" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.3.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!--
+    Portable build (build/build.ps1, build/build.sh): dotnet publish -r <rid> -p:SfePortable=true.
+    One self-contained executable (no .NET install needed) next to wwwroot and a neutral appsettings.json
+    (build/portable/appsettings.json) instead of this machine's settings. See PortableBuild.cs.
+  -->
+  <PropertyGroup Condition="'$(SfePortable)' == 'true'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+    <!-- Nor Sfe.Core.pdb next to the executable. -->
+    <AllowedReferenceRelatedFileExtensions>.xml</AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Development's local index and saved settings (git-ignored): never part of a build or a publish. -->
+    <Content Update="data/**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+  <!--
+    The web client: the Angular app in ../Sfe.Web, built with npm into wwwroot (git-ignored) before the static web
+    assets are collected. Needs Node.js (npm) on the PATH. Skipped when its sources are older than wwwroot/index.html;
+    -p:SfeSkipWebClient=true skips it altogether (wwwroot is then served as it is).
+  -->
+  <PropertyGroup>
+    <SfeWebRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\Sfe.Web'))\</SfeWebRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SfeWebSource Include="$(SfeWebRoot)src\**\*;$(SfeWebRoot)public\**\*;$(SfeWebRoot)*.json" />
+  </ItemGroup>
+
+  <Target Name="SfeWebInstall" Condition="'$(SfeSkipWebClient)' != 'true' And !Exists('$(SfeWebRoot)node_modules\.package-lock.json')">
+    <Exec Command="npm ci --no-audit --no-fund" WorkingDirectory="$(SfeWebRoot)" />
+  </Target>
+
+  <Target Name="SfeWebBuild" BeforeTargets="BeforeBuild" DependsOnTargets="SfeWebInstall" Condition="'$(SfeSkipWebClient)' != 'true'"
+          Inputs="@(SfeWebSource)" Outputs="wwwroot\index.html">
+    <Exec Command="npm run build" WorkingDirectory="$(SfeWebRoot)" />
+  </Target>
+
+  <!-- The files of the client as they are now: the build replaces them (their names carry a hash of their content). -->
+  <Target Name="SfeWebContent" AfterTargets="SfeWebBuild" BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <Content Remove="wwwroot\**" />
+      <Content Include="wwwroot\**" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup Condition="'$(SfePortable)' == 'true'">
+    <AssemblyMetadata Include="SfePortable" Value="true" />
+    <Content Update="appsettings.json;appsettings.Development.json" CopyToPublishDirectory="Never" />
+    <Content Include="..\..\build\portable\appsettings.json" Link="appsettings.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

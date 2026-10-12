@@ -1,0 +1,114 @@
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { ConfigService } from '../../core/config.service';
+import { CopyPathService } from '../../core/copy-path.service';
+import { LibraryItem } from '../../core/models';
+import { HighlightComponent } from '../../shared/highlight.component';
+import { IconComponent } from '../../shared/icon.component';
+import { TagChipComponent } from '../../tags/tag-chip.component';
+import { ListingStore } from '../listing.store';
+import { ItemActions } from './item-actions.service';
+
+/* The small parts shared by the tiles and rows of the listing. */
+
+/** Chips of the tags set on a file; clicking one searches for it. */
+@Component({
+    selector: 'sfe-item-tags',
+    imports: [TagChipComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { class: 'item-tags', '[hidden]': '!item().tags?.length' },
+    template: `
+        @for (tag of item().tags ?? []; track tag.id) {
+            <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="actions.searchTag($event)" />
+        }
+    `,
+})
+export class ItemTagsComponent {
+    readonly item = input.required<LibraryItem>();
+    protected readonly actions = inject(ItemActions);
+}
+
+/** The check box selecting a file. The input covers the box (see styles): a click forwarded by a label might not carry the shift key. */
+@Component({
+    selector: 'label[sfeSelectBox]',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { class: 'select-box', title: 'Select (shift-click selects a range)' },
+    template: `
+        <input #box type="checkbox" [attr.aria-label]="'Select ' + item().name" [checked]="selected()"
+               (click)="store.select(item(), box.checked, $event.shiftKey)">
+    `,
+})
+export class SelectBoxComponent {
+    readonly item = input.required<LibraryItem>();
+    protected readonly store = inject(ListingStore);
+    protected readonly selected = computed(() => this.store.selection().has(this.item().path));
+}
+
+/** The button copying the full path of a file or folder (`Browse:CopyPaths`). */
+@Component({
+    selector: 'button[sfeCopyPath]',
+    imports: [IconComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        type: 'button',
+        class: 'icon-button small copy-path-button',
+        title: 'Copy the full path',
+        '[attr.aria-label]': '"Copy the full path of " + name()',
+        '(click)': 'copy($event)',
+    },
+    template: `<svg sfeIcon="copy"></svg>`,
+})
+export class CopyPathButtonComponent {
+    readonly sfeCopyPath = input.required<string>();
+    readonly name = input.required<string>();
+    private readonly copyPaths = inject(CopyPathService);
+
+    protected copy(event: MouseEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        void this.copyPaths.copy(this.sfeCopyPath());
+    }
+}
+
+/** The button opening the tags of a file (hidden without the right to see tags). */
+@Component({
+    selector: 'button[sfeTagButton]',
+    imports: [IconComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        type: 'button',
+        class: 'icon-button small tag-button',
+        title: 'Tags',
+        '[attr.aria-label]': '"Tags of " + sfeTagButton().name',
+        '(click)': 'actions.openTags(sfeTagButton())',
+        '[hidden]': '!config.can("tags.view")',
+    },
+    template: `<svg sfeIcon="tag"></svg>`,
+})
+export class TagButtonComponent {
+    readonly sfeTagButton = input.required<LibraryItem>();
+    protected readonly actions = inject(ItemActions);
+    protected readonly config = inject(ConfigService);
+}
+
+/** The folder of a search result, linking to it. */
+@Component({
+    selector: 'sfe-item-folder',
+    imports: [HighlightComponent, RouterLink],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { style: 'display: contents' },
+    template: `
+        @if (item().directory !== undefined && item().directory !== null) {
+            <a class="item-folder" routerLink="/" [queryParams]="store.browseParams(item().directory!)" [title]="'Open ' + name()">
+                <sfe-highlight [text]="name()" [pattern]="pattern()" />
+            </a>
+        }
+    `,
+})
+export class ItemFolderComponent {
+    readonly item = input.required<LibraryItem>();
+    readonly pattern = input<RegExp | null>(null);
+    protected readonly store = inject(ListingStore);
+    private readonly config = inject(ConfigService);
+    protected readonly name = computed(() => this.item().directory || this.config.config()?.rootName || '');
+}

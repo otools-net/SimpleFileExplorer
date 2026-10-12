@@ -1,0 +1,188 @@
+/* ---------- Top bar ---------- */
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: var(--topbar-h);
+    padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(14px);
+    border-bottom: 1px solid var(--border);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    letter-spacing: .06em;
+}
+
+.brand .icon { width: 26px; height: 26px; fill: var(--folder); stroke: none; }
+
+.search {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    max-width: 680px;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    margin: 0 auto;
+    padding: 0 4px 0 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.search:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.search-icon { color: var(--text-muted); }
+
+.search input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    padding: 0 10px;
+    border: 0;
+    background: transparent;
+    outline: none;
+}
+
+.search input::-webkit-search-cancel-button { cursor: pointer; }
+
+/* How many files the search found: quiet, it's only a hint. */
+.search-count {
+    flex: none;
+    padding: 0 8px 0 4px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    opacity: .8;
+    cursor: default;
+}
+
+.search-scope {
+    max-width: 30%;
+    overflow: hidden;
+    padding: 2px 10px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--surface-3);
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.actions { display: flex; align-items: center; gap: 8px; }
+
+.segmented { display: inline-flex; }
+.segmented .icon-button { border-radius: 0; color: var(--text-muted); }
+.segmented .icon-button + .icon-button { margin-left: -1px; }
+.segmented .icon-button:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.segmented .icon-button:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.segmented .icon-button[aria-pressed="true"] {
+    position: relative;
+    background: var(--surface-3);
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+    color: var(--accent);
+}
+.menu { position: relative; }
+
+.popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 30;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.menu-list { min-width: 220px; padding: 6px; }
+
+.menu-list > button, .menu-list > a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.menu-list > :is(button, a):hover { background: var(--surface-2); }
+.menu-list > button:disabled { opacity: .55; cursor: progress; background: none; }
+.menu-list .danger { color: var(--danger); }
+.menu-list hr { margin: 6px 4px; border: 0; border-top: 1px solid var(--border); }
+.menu-version { margin: 4px 0 0; padding: 6px 10px 2px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.menu-account { display: flex; align-items: center; gap: 10px; margin: 0; padding: 6px 10px; font-weight: 600; }
+.menu-account .icon { flex: none; width: 20px; height: 20px; color: var(--text-muted); }
+.menu-account span { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.menu-account small { color: var(--text-muted); font-size: 12px; font-weight: 400; }
+
+.search-help { width: min(440px, calc(100vw - 32px)); padding: 16px 18px; }
+.search-help h3 { margin: 0 0 10px; font-size: 14px; }
+.search-help dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; }
+.search-help dt { white-space: nowrap; }
+.search-help dd { margin: 0; color: var(--text-muted); }
+.search-help p { margin: 12px 0 0; color: var(--text-muted); }
+.search-help code { padding: 1px 5px; border-radius: 4px; background: var(--surface-3); }
+
+.search-explain-button[aria-pressed="true"] { color: var(--accent); }
+
+/* The search in words: values coloured by kind (words, tags, extensions, sizes), logic words in small caps. */
+.search-explain {
+    display: block;
+    position: relative;
+    margin: 10px 0 0 6px;
+    padding: 10px 40px 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    line-height: 1.9;
+}
+.search-explain[hidden] { display: none; }
+.search-explain-close { position: absolute; top: 6px; right: 6px; color: var(--text-muted); }
+.search-explain-sentence { margin: 0; }
+.search-explain-alternatives { margin: 2px 0 0; padding-left: 14px; list-style: none; }
+.search-explain-notes { margin: 6px 0 0; padding-left: 18px; color: var(--text-muted); font-size: 13px; line-height: 1.8; }
+
+.q-term {
+    padding: 1px 6px;
+    border: 1px solid color-mix(in srgb, var(--q) 45%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--q) 14%, transparent);
+    color: color-mix(in srgb, var(--q) 80%, var(--text));
+    font-family: var(--mono);
+    font-size: .92em;
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+.q-term.q-excluded { border-style: dashed; }
+.q-text { --q: var(--accent); }
+.q-tag { --q: var(--audio); }
+.q-extension { --q: var(--video); }
+.q-size { --q: var(--image); }
+.q-folder { --q: var(--folder); font-family: var(--font); }
+.q-op { color: var(--text-muted); font-size: .78em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.q-op.q-not { color: var(--danger); }
+

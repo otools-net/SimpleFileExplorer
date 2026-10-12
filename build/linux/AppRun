@@ -1,0 +1,24 @@
+#!/bin/sh
+# Entry point of the SFE AppImage. The image is read-only, so settings, the SQLite index and the thumbnail cache
+# live in a data folder: $SFE_HOME, else $XDG_CONFIG_HOME/sfe (~/.config/sfe). AppImage's portable mode works too:
+# a "<name>.AppImage.config" folder next to the AppImage becomes $XDG_CONFIG_HOME.
+set -e
+
+HERE="$(dirname "$(readlink -f "$0")")"
+APP="$HERE/usr/lib/sfe"
+DATA="${SFE_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/sfe}"
+
+mkdir -p "$DATA"
+if [ ! -f "$DATA/appsettings.json" ]; then
+    cp "$APP/appsettings.json" "$DATA/appsettings.json"
+    chmod u+w "$DATA/appsettings.json"
+    echo "SFE: created $DATA/appsettings.json (edit it to change the library root, port...)" >&2
+fi
+
+# .NET needs ICU for culture data. Rather than refuse to start on a system without it, run culture-invariant.
+if [ -z "${DOTNET_SYSTEM_GLOBALIZATION_INVARIANT:-}" ] \
+    && ! { ldconfig -p 2>/dev/null || /sbin/ldconfig -p 2>/dev/null; } | grep -q 'libicuuc\.so'; then
+    export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+fi
+
+exec "$APP/Sfe.Api" --contentRoot "$DATA" "$@"

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=SFE
+GenericName=Simple File Explorer
+Comment=Web file explorer for a media library (http://localhost:5080)
+Exec=sfe
+Icon=sfe
+Terminal=true
+Categories=Utility;

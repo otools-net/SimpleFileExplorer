@@ -1,0 +1,36 @@
+/* ---------- Toasts ---------- */
+
+.toasts {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: min(420px, calc(100vw - 32px));
+    /* A manual popover (see ToastsComponent), so toasts also show above open dialogs: undo its default box. */
+    inset: auto 16px 16px auto;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    color: inherit;
+}
+
+.toast {
+    padding: 11px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    white-space: pre-line;
+    animation: toast-in .2s ease-out;
+}
+
+.toast.error { border-left-color: var(--danger); }
+
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
+

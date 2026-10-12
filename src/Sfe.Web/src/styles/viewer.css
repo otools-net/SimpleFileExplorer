@@ -1,0 +1,67 @@
+/* ---------- Viewer ---------- */
+
+.viewer {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgb(5 6 8 / .96);
+    color: #f2f3f5;
+}
+
+.viewer::backdrop { background: rgb(0 0 0 / .7); }
+/* minmax(0, 1fr): an auto column would grow to the whole (unwrapped) file name and push the buttons off screen. */
+.viewer[open] { display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); --viewer-stage-bottom: 24px; }
+
+.viewer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 14px;
+    background: linear-gradient(rgb(0 0 0 / .6), transparent);
+}
+
+.viewer-title { display: flex; flex-direction: column; min-width: 0; }
+.viewer-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-title span { color: #a9afba; font-size: 12px; }
+.viewer-actions { display: flex; flex-shrink: 0; gap: 6px; }
+
+.viewer .icon-button {
+    border-color: transparent;
+    background: rgb(255 255 255 / .08);
+    color: #f2f3f5;
+}
+
+.viewer .icon-button:hover { background: rgb(255 255 255 / .18); }
+
+.viewer-stage {
+    grid-area: 2 / 1;     /* shared with the arrows (.viewer-nav), which would otherwise push it to a third row */
+    display: grid;
+    place-items: center;
+    min-height: 0;
+    padding: 0 64px var(--viewer-stage-bottom);
+}
+
+.viewer-stage > img, .viewer-stage > video {
+    max-width: 100%;
+    max-height: calc(100dvh - 90px);
+    border-radius: 6px;
+    background: #000;
+    box-shadow: 0 20px 60px rgb(0 0 0 / .6);
+}
+
+/* Thumbnail of a large image while its original loads: as big as the original will be (blurry, but not tiny). */
+.viewer-stage > img.preview {
+    width: 100%;
+    height: calc(100dvh - 90px);
+    object-fit: contain;
+    background: none;
+    box-shadow: none;
+}
+
+.viewer-stage > audio { width: min(560px, 100%); }
+

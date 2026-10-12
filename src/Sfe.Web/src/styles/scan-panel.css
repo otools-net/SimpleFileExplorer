@@ -1,0 +1,46 @@
+/* ---------- Scan panel ---------- */
+
+.scan-panel {
+    position: sticky;
+    top: var(--topbar-h);
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+/* Indeterminate: the number of folders is only known once the scan has found them all. */
+.scan-bar {
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 4px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.scan-bar span {
+    position: absolute;
+    width: 30%;
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+    animation: indeterminate 1.4s ease-in-out infinite;
+}
+
+.scan-panel.running { padding-bottom: 13px; }
+.scan-panel.running strong { color: var(--accent); }
+.scan-elapsed { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.scan-panel:not(.running) .scan-bar { display: none; }
+.scan-text { flex: 1; min-width: 0; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.scan-text span { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.scan-panel.failed strong { color: var(--danger); }
+
+@keyframes indeterminate {
+    from { left: -30%; }
+    to { left: 100%; }
+}
+

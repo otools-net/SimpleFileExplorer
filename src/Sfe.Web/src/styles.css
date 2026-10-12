@@ -1,0 +1,28 @@
+/*
+ * The app's styles, global (components use the class names below rather than styles of their own), in the order of
+ * the page: the partials keep to one area each.
+ */
+@import "./styles/base.css";
+@import "./styles/top-bar.css";
+@import "./styles/scan-panel.css";
+@import "./styles/location.css";
+@import "./styles/items.css";
+@import "./styles/folders.css";
+@import "./styles/files.css";
+@import "./styles/states.css";
+@import "./styles/viewer.css";
+@import "./styles/video-player.css";
+@import "./styles/tags.css";
+@import "./styles/copy-full-paths.css";
+@import "./styles/selection.css";
+@import "./styles/scroll-progress.css";
+@import "./styles/tag-sidebar.css";
+@import "./styles/dialogs.css";
+@import "./styles/settings.css";
+@import "./styles/trickplay.css";
+@import "./styles/tasks.css";
+@import "./styles/admin.css";
+@import "./styles/account.css";
+@import "./styles/access.css";
+@import "./styles/toasts.css";
+@import "./styles/responsive.css";
