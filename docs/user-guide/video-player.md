@@ -17,6 +17,8 @@ Videos and audio files play in SFE's own player, in the [viewer](viewer.md) or i
 | Mute | M | |
 | Fullscreen | F | |
 
+![Trickplay frames above the seek bar](../images/player-trickplay.png)
+
 On a touch screen, double-tap the left or right of the picture to jump (keep tapping to jump further), and hold a
 finger on the right of a playing video for 1.5 s to play it at 2× until you lift it.
 

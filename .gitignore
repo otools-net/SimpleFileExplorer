@@ -490,3 +490,6 @@ src/Sfe.Api/data/
 # The web client, built from src/Sfe.Web by the Sfe.Api build (see Sfe.Api.csproj)
 src/Sfe.Api/wwwroot/
 src/Sfe.Web/.angular/
+
+# This machine's development settings (local paths, setup code)
+src/Sfe.Api/appsettings.Development.json

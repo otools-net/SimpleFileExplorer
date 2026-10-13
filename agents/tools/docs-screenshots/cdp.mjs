@@ -1,10 +1,22 @@
 // Minimal Chrome DevTools Protocol driver for headless Edge.
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
+/** The browser: env EDGE (any Chromium: Edge, Chrome, Chromium), else the usual install folders, else the PATH. */
+const EDGE = process.env.EDGE ?? [
+    'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+    'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
+    'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+].find(p => fs.existsSync(p)) ?? ['microsoft-edge', 'msedge', 'google-chrome', 'chromium', 'chromium-browser'].find(onPath);
+if (!EDGE) throw new Error('no Edge/Chrome/Chromium found: set EDGE to its path');
+
+function onPath(program) {
+    return spawnSync(process.platform === 'win32' ? 'where' : 'which', [program]).status === 0;
+}
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 export async function launch({ width = 1280, height = 800, mobile = false, scale = 1, colorScheme = 'dark' } = {}) {

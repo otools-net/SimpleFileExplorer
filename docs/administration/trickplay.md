@@ -8,6 +8,10 @@ them:
   hover** is on;
 - and uses them to find [similar videos](duplicates-and-moves.md#similar-videos).
 
+![Trickplay above the player's seek bar](../images/player-trickplay.png)
+
+![A video playing its frames on hover, with a bar showing where](../images/trickplay-hover.png)
+
 It needs ffmpeg and is **off by default**. Rights: `trickplay.manage` (Activity), `settings.trickplay` (Settings).
 
 ## Activity

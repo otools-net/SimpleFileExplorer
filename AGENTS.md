@@ -77,7 +77,8 @@ src/Sfe.Web/            the web client (Angular workspace: angular.json, package
   src/app/tasks/        TasksSection (sub-pages Tasks/Schedules/History of the admin page), ScheduleForm, TaskHistory, tasks.ts wording
 tests/Sfe.Tests/        unit, SQLite integration, HTTP tests; Infrastructure/ = TestLibrary + CoreServices + ApiClients
 build/                  build.ps1 / build.sh (portable packages), portable/appsettings.json, windows/ linux/ smoke tests
-  docs/                 screenshot tooling for docs/images (cdp.mjs, make-media, seed, shots) + check-links.mjs
+agents/tools/           reusable helpers for agents, one folder per job, each with a README.md
+  docs-screenshots/     regenerates docs/images (run.mjs = everything; cdp.mjs = headless Edge driver) + check-links.mjs
 docs/                   end-user documentation: installation, first-start, configuration, upgrading, user-guide/,
                         administration/ (one page per admin section), reference/, images/ (screenshots)
 Directory.Build.props   the app version (all projects)
@@ -110,7 +111,7 @@ Directory.Build.props   the app version (all projects)
   (`docs/user-guide/` for the listing page and its dialogs, `docs/administration/` one page per admin section,
   `docs/reference/` for rights, settings levels, search syntax), plus `docs/configuration.md` for a configuration key
   and `docs/upgrading.md` for what an upgrade changes. Every web-UI function is documented, with a screenshot in
-  `docs/images/` where it shows something (regenerate with `build/docs/`, §3). `README.md` stays short: overview,
+  `docs/images/` where it shows something (regenerate with `agents/tools/docs-screenshots/`, §3). `README.md` stays short: overview,
   quick start, links into `docs/`; add to it only what every user needs. Implementation facts go here. Routes are
   documented by OpenAPI, not in the docs: give every route `.WithName`, `.WithSummary`, `.WithTags` (and
   `.WithDescription` for details).
@@ -192,7 +193,7 @@ Directory.Build.props   the app version (all projects)
 dotnet build ; dotnet test                                            # the Sfe.Api build runs npm ci + ng build
 cd src/Sfe.Web ; npm test ; npm run build ; npm start                 # client: Vitest, build into wwwroot, ng serve :4200
 dotnet build -p:SfeSkipWebClient=true                                 # without rebuilding the client
-SFE_TEST_FFMPEG=C:/Portables/ffmpeg/bin/ffmpeg.exe dotnet test        # also run the ffmpeg tests
+SFE_TEST_FFMPEG=<path to ffmpeg> dotnet test                       # also run the ffmpeg tests (path: Dev machine)
 dotnet run --project src/Sfe.Api                                      # :5080, Development
 dotnet tool restore                                                   # once, for dotnet-ef 10.0.12
 dotnet ef migrations add <Name> --context SfeDbContext --project src/Sfe.Core --output-dir Data/Migrations
@@ -237,25 +238,22 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   each run; no H.264, use WebM). To click: Edge `--remote-debugging-port=0` (fixed ports like 9333 are reserved
   here: "bind() … forbidden"; read the port from `<user-data-dir>/DevToolsActivePort`), then a Node script with the
   built-in `WebSocket`: `Runtime.evaluate` (setup with `fetch('api/setup', …)`) then `Page.captureScreenshot`. Covers and previews load lazily: give a screenshot a budget of
-  ~20 s before calling an image missing. `build/docs/cdp.mjs` does all this (`launch`, `eval`, `realClick`, `shot`).
-- **Docs screenshots** (`docs/images/`, 1280×800 or ×900, dark theme, phone 390×844): `build/docs/`, run from that
-  folder in order: `node make-media.mjs <empty scratch dir>` (sample photos drawn on a canvas, WebM clips from
-  `MediaRecorder`, WAV tones, duplicates in `Inbox/`: no ffmpeg or image library needed); start the app on it (env as
-  in "App on a scratch library", `Urls=http://localhost:5093`, `Sfe__Setup__Code=doc-screenshots-setup`,
-  `Sfe__System__EnableShutdown=true`; else `SFE_URL`/`SFE_SETUP_CODE`); `node seed.mjs <that dir>` once on an empty
-  database (setup page shot, admin `admin`/`admin-password-1`, tags, accounts, schedules, a missing file, task runs);
-  then `node shots.mjs [scene…]` (all scenes by default; each opens a fresh browser, so per-browser state such as
-  search history is seeded in the scene). `mask()` replaces the scratch library path with `D:\Media` in what is shown.
-  Without ffmpeg, video tiles show an icon and trickplay/similar videos stay empty. `node check-links.mjs` checks
-  every link, image and `#anchor` of `README.md`, `AGENTS.md` and `docs/` (GitHub heading slugs) and lists unused
-  images.
+  ~20 s before calling an image missing. `agents/tools/docs-screenshots/cdp.mjs` does all this (`launch`, `eval`, `realClick`, `shot`).
+- **Docs screenshots** (`docs/images/`): `node agents/tools/docs-screenshots/run.mjs --ffmpeg
+  <path to ffmpeg>` (else env `FFMPEG`, else the `PATH`; this machine's path is under Dev machine) builds into `<tmp>/sfe-docs`, makes the sample library, starts the app on :5093,
+  seeds it, takes every shot and checks the links (~6 min); `--shots-only <scene…>` retakes some on the last run's
+  data. How to add a scene: that folder's `README.md`. Without ffmpeg, video tiles show an icon and trickplay/similar
+  videos stay empty: always pass it. Edge has no H.264, so sample videos are WebM (VP8).
+- **Agent tools:** put any reusable helper (scripts, drivers, generators) in `agents/tools/<job>/` with a `README.md`,
+  never only in the scratchpad; work output goes to a temp folder, not the repo.
 
 ### Dev machine
 
 - Windows; shells PowerShell 5.1 and Git Bash. The `node` on PATH is **26.11** (checked 2026-10-13): `npm test`,
   `npm run build` and the full `dotnet build`/`test` work. `dotnet test -p:SfeSkipWebClient=true` skips the client build
-  (then `ServesTheWebClientAndOpenApi` needs an existing `wwwroot`). Python 3.12 is installed (no `websockets`). ffmpeg is not installed (the
-  `C:/Portables/ffmpeg` of earlier notes is gone): the ffmpeg tests are skipped. With it on PATH, the default
+  (then `ServesTheWebClientAndOpenApi` needs an existing `wwwroot`). Python 3.12 is installed (no `websockets`). ffmpeg is at
+  `C:/Portables/ffmpeg/bin/ffmpeg.exe` (2026-10-12 full build, not on PATH; checked 2026-10-13): set `SFE_TEST_FFMPEG`
+  for the ffmpeg tests, else they are skipped. With it on PATH, the default
   `FfmpegPath` (`ffmpeg`) finds it, so scans in tests run it on the fixture's fake media too (assert either way). `docker` points at
   an unreachable remote context. WSL Ubuntu exists but has no .NET SDK.
 - Line endings: the index is all LF; working copies are mostly LF, a few may be CRLF. `dotnet ef migrations add`

@@ -60,6 +60,13 @@ layouts, under it in the list, and in the viewer, followed by the **duration** o
 `1:23:45`); in the grid and one-per-row layouts, the duration of a video or audio file is shown in the bottom-left
 corner of its preview instead.
 
+![Videos with their thumbnail and duration](../images/library-videos.png)
+
+![Audio files in the list layout, with their durations](../images/library-audio.png)
+
+Resting the mouse on a video that has [trickplay](../administration/trickplay.md) plays its frames over the thumbnail
+(on a phone: press and hold it).
+
 ![High and low resolution marks, and copy-path buttons](../images/library-marks-copy-paths.png)
 
 With **Mark high and low resolution** on, each photo and video whose resolution is known is labelled **HR** (high

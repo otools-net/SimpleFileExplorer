@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { launch, sleep } from './cdp.mjs';
 
 const BASE = process.env.SFE_URL ?? 'http://localhost:5093/';
-const OUT = fileURLToPath(new URL('../../docs/images/', import.meta.url));
+const OUT = fileURLToPath(new URL('../../../docs/images/', import.meta.url));
 const enc = encodeURIComponent;
 
 async function session({ user = 'admin', password = 'admin-password-1', ...opts } = {}) {
@@ -91,15 +91,36 @@ const scenes = {
         await b.open('?path=Videos%2FHolidays');
         await b.click('a.item-link[href*="Mountain"]');
         await sleep(2500);
-        await b.eval(`(async () => { const v = document.querySelector('video'); v.pause(); v.currentTime = 3.2; await new Promise(r => setTimeout(r, 800)); return v.currentTime; })()`);
+        await b.eval(`(async () => { const v = document.querySelector('video'); v.pause(); v.currentTime = 12.4; await new Promise(r => setTimeout(r, 800)); return v.currentTime; })()`);
         await b.mouse('mouseMoved', 640, 400);
         await sleep(400);
         await b.shot(OUT + 'video-viewer.png');
-        await b.goto(BASE + 'player?path=' + enc('Videos/Timelapses/Sunset timelapse.webm') + '&t=3', 3000);
+        // Trickplay above the seek bar (with ffmpeg: frames made by seed.mjs).
+        const seek = await b.rect('input.player-seek');
+        await b.mouse('mouseMoved', seek.x + seek.width * 0.62, seek.y + seek.height / 2);
+        await sleep(1500);
+        await b.shot(OUT + 'player-trickplay.png');
+        await b.goto(BASE + 'player?path=' + enc('Videos/Timelapses/Sunset timelapse.webm') + '&t=14', 3000);
         await b.eval(`(async () => { const v = document.querySelector('video'); v.pause(); await new Promise(r => setTimeout(r, 500)); return 1; })()`);
         await b.mouse('mouseMoved', 640, 400);
         await sleep(400);
         await b.shot(OUT + 'player-page.png');
+        await b.close();
+    },
+    async videos() {
+        const b = await session();
+        await b.open('?path=Videos%2FHolidays', 5000);
+        await b.shot(OUT + 'library-videos.png');
+        // Hover preview: trickplay frames played over the thumbnail.
+        await b.hover('.files > *:nth-child(2) img, .files > *:nth-child(2)');
+        await sleep(2600);
+        const tile = await b.rect('.files > *:nth-child(2)');
+        await b.shot(OUT + 'trickplay-hover.png', { x: Math.max(0, tile.x - 16), y: Math.max(0, tile.y - 16), width: tile.width + 32, height: tile.height + 32 });
+        await b.open('?path=Music', 3000);
+        await b.clickTitle('List');
+        await sleep(1200);
+        await b.shot(OUT + 'library-audio.png', { x: 0, y: 0, width: 1280, height: 360 });
+        await b.clickTitle('Grid');
         await b.close();
     },
     async tags() {
@@ -275,7 +296,7 @@ const scenes = {
             ['tracking', 'duplicates'], ['tracking', 'similar'], ['tracking', 'missing'], ['tracking', 'settings'],
             ['thumbnails'], ['trickplay', 'activity'], ['trickplay', 'settings'], ['editor'],
             ['access', 'spaces'], ['access', 'accounts'],
-            ['tasks', 'tasks'], ['tasks', 'schedules'], ['tasks', 'history'], ['tasks', 'settings'],
+            ['tasks', 'tasks'], ['tasks', 'settings'],
             ['system'], ['account', 'preferences'], ['account', 'password'],
         ];
         for (const [section, page] of pages) {

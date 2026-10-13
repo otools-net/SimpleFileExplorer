@@ -1,10 +1,17 @@
 // Generates a sample media library for the documentation screenshots.
+// node make-media.mjs <folder> [ffmpeg path]  (the folder is emptied first; ffmpeg also from env FFMPEG)
+// With ffmpeg: 40 s WebM clips panning over a drawn landscape, two re-encoded copies (similar videos) and MP3 audio.
+// Without it: short clips recorded in the browser (MediaRecorder) and WAV audio.
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { launch } from './cdp.mjs';
 
 const root = process.argv[2];
-if (!root) throw new Error('usage: node make-media.mjs <empty folder for the sample library>');
+if (!root) throw new Error('usage: node make-media.mjs <empty folder for the sample library> [ffmpeg]');
+const ffmpeg = process.argv[3] ?? process.env.FFMPEG;
+const run = args => execFileSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', ...args], { stdio: 'inherit' });
 fs.rmSync(root, { recursive: true, force: true });
 
 // Palettes: [sky top, sky bottom, sun, far hills, near hills]
@@ -91,24 +98,49 @@ for (const [rel, sceneName, w, h, seed] of photos) {
 }
 
 let seed = 40;
-for (const [rel, sceneName, seconds] of videos) {
-    const data = await browser.eval(`new Promise(resolve => {
-        const c = document.createElement('canvas'); c.width = 640; c.height = 360;
-        const ctx = c.getContext('2d'); const stream = c.captureStream(25);
-        const rec = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 1500000 });
-        const parts = []; rec.ondataavailable = e => parts.push(e.data);
-        rec.onstop = () => { const fr = new FileReader(); fr.onload = () => resolve(fr.result); fr.readAsDataURL(new Blob(parts, { type: 'video/webm' })); };
-        const start = performance.now(); rec.start();
-        (function frame() {
-            const t = (performance.now() - start) / 1000;
-            scene(ctx, 640, 360, ${JSON.stringify(scenes[sceneName])}, ${seed}, t);
-            if (t < ${seconds}) requestAnimationFrame(frame); else rec.stop();
-        })();
-    })`);
-    seed++;
-    const file = path.join(root, rel);
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, Buffer.from(data.split(',')[1], 'base64'));
+if (ffmpeg) {
+    // A wide landscape per clip; the clip pans across it (1280×720 window scaled to 640×360).
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'sfe-media-'));
+    const seconds = 40;
+    for (const [rel] of videos) {
+        const sceneName = videos.find(v => v[0] === rel)[1];
+        const data = await browser.eval(`(() => { const c = document.createElement('canvas'); c.width = 2600; c.height = 900;
+            scene(c.getContext('2d'), 2600, 900, ${JSON.stringify(scenes[sceneName])}, ${seed++}); return c.toDataURL('image/jpeg', 0.92); })()`);
+        const still = path.join(tmp, `${seed}.jpg`);
+        fs.writeFileSync(still, Buffer.from(data.split(',')[1], 'base64'));
+        const file = path.join(root, rel);
+        fs.mkdirSync(path.dirname(file), { recursive: true });
+        run(['-loop', '1', '-framerate', '25', '-t', String(seconds), '-i', still,
+            '-vf', `crop=1280:720:x='(iw-1280)*t/${seconds}':y='(ih-720)/2',scale=640:360,format=yuv420p`,
+            '-c:v', 'libvpx', '-b:v', '1M', '-deadline', 'realtime', '-cpu-used', '8', file]);
+    }
+    fs.rmSync(tmp, { recursive: true, force: true });
+    // Similar videos: a smaller copy, and a copy cut by a tenth.
+    fs.mkdirSync(path.join(root, 'Inbox'), { recursive: true });
+    run(['-i', path.join(root, 'Videos/Holidays/Beach walk.webm'), '-vf', 'scale=320:180', '-c:v', 'libvpx', '-b:v', '300k',
+        '-deadline', 'realtime', '-cpu-used', '8', path.join(root, 'Inbox/Beach walk (small).webm')]);
+    run(['-i', path.join(root, 'Videos/Holidays/Mountain drive.webm'), '-t', '36', '-c:v', 'libvpx', '-b:v', '700k',
+        '-deadline', 'realtime', '-cpu-used', '8', path.join(root, 'Inbox/VID_0412.webm')]);
+} else {
+    for (const [rel, sceneName, seconds] of videos) {
+        const data = await browser.eval(`new Promise(resolve => {
+            const c = document.createElement('canvas'); c.width = 640; c.height = 360;
+            const ctx = c.getContext('2d'); const stream = c.captureStream(25);
+            const rec = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 1500000 });
+            const parts = []; rec.ondataavailable = e => parts.push(e.data);
+            rec.onstop = () => { const fr = new FileReader(); fr.onload = () => resolve(fr.result); fr.readAsDataURL(new Blob(parts, { type: 'video/webm' })); };
+            const start = performance.now(); rec.start();
+            (function frame() {
+                const t = (performance.now() - start) / 1000;
+                scene(ctx, 640, 360, ${JSON.stringify(scenes[sceneName])}, ${seed}, t);
+                if (t < ${seconds}) requestAnimationFrame(frame); else rec.stop();
+            })();
+        })`);
+        seed++;
+        const file = path.join(root, rel);
+        fs.mkdirSync(path.dirname(file), { recursive: true });
+        fs.writeFileSync(file, Buffer.from(data.split(',')[1], 'base64'));
+    }
 }
 await browser.close();
 
@@ -133,6 +165,11 @@ function wav(file, freqs, seconds) {
 }
 wav(path.join(root, 'Music/Lullaby.wav'), [262, 330, 392, 330], 12);
 wav(path.join(root, 'Music/Morning tune.wav'), [392, 440, 494, 523], 9);
+if (ffmpeg) {
+    wav(path.join(root, 'Music/Evening walk.wav'), [330, 294, 262, 196], 95);
+    run(['-i', path.join(root, 'Music/Evening walk.wav'), '-c:a', 'libmp3lame', '-b:a', '96k', path.join(root, 'Music/Evening walk.mp3')]);
+    fs.rmSync(path.join(root, 'Music/Evening walk.wav'));
+}
 fs.mkdirSync(path.join(root, 'Documents'), { recursive: true });
 fs.writeFileSync(path.join(root, 'Documents/Packing list.txt'), 'Towels\nSun cream\nCamera\n');
 fs.writeFileSync(path.join(root, 'Documents/Notes.md'), '# Trip notes\n');

@@ -2,7 +2,7 @@
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
-const root = process.argv[2] ?? fileURLToPath(new URL('../..', import.meta.url));
+const root = process.argv[2] ?? fileURLToPath(new URL('../../..', import.meta.url));
 const files = [path.join(root, 'README.md'), path.join(root, 'AGENTS.md')];
 (function walk(d) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (p.endsWith('.md')) files.push(p); } })(path.join(root, 'docs'));
 const slug = h => h.trim().toLowerCase().replace(/[`*_]/g, '').replace(/[^\p{L}\p{N} -]/gu, '').replace(/ /g, '-');

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { launch, sleep } from './cdp.mjs';
 
 const BASE = process.env.SFE_URL ?? 'http://localhost:5093/';
-const OUT = fileURLToPath(new URL('../../docs/images/', import.meta.url));
+const OUT = fileURLToPath(new URL('../../../docs/images/', import.meta.url));
 
 const b = await launch({ width: 1280, height: 800 });
 await b.goto(BASE, 3000);
@@ -24,7 +24,11 @@ const js = body => `(async () => {
 })()`;
 
 console.log(await b.eval(js(`
-    await call('POST', 'api/setup', { code: process.env.SFE_SETUP_CODE ?? 'doc-screenshots-setup', userName: 'admin', password: 'admin-password-1', displayName: 'Alex (admin)', libraryName: 'Home media' });
+    await call('POST', 'api/setup', { code: ${JSON.stringify(process.env.SFE_SETUP_CODE ?? 'doc-screenshots-setup')}, userName: 'admin', password: 'admin-password-1', displayName: 'Alex (admin)', libraryName: 'Home media' });
+    // Trickplay every 2 s (more frames for the seek bar, hover previews and similar videos); off without ffmpeg.
+    const view = await call('GET', 'api/settings?level=tenant');
+    Object.assign(view.values.trickplay, { enabled: true, intervalSeconds: 2 });
+    await call('PUT', 'api/settings?level=tenant', view.values);
     await call('POST', 'api/scan', { path: '' });
     for (let i = 0; i < 100; i++) { const s = await call('GET', 'api/scan'); if (!s.isRunning && !s.running) break; await new Promise(r => setTimeout(r, 300)); }
     return 'ok';
@@ -67,10 +71,15 @@ const library = process.argv[2];
 if (library)
     fs.rmSync(path.join(library, 'Photos/2025 Mountains/Autumn lake.jpg'), { force: true });
 console.log(await b.eval(js(`
+    const wait = async (done, seconds) => { for (let i = 0; i < seconds * 2 && !(await done()); i++) await new Promise(r => setTimeout(r, 500)); };
+    const task = async kind => (await call('GET', 'api/tasks')).tasks.find(t => t.task === kind);
     await call('POST', 'api/tasks/scan/start?path=');
-    await new Promise(r => setTimeout(r, 4000));
+    await wait(async () => (await task('scan')).state !== 'running', 120);
+    // Trickplay's first pass (with ffmpeg), so that similar videos have fingerprints to compare.
+    await wait(async () => { const s = await call('GET', 'api/trickplay'); return s.state === 'unavailable' || s.state === 'disabled' || (s.state !== 'running' && s.lastPassFinished); }, 600);
     await call('POST', 'api/tasks/similarVideos/start');
-    await new Promise(r => setTimeout(r, 3000));
-    return 'ok';
+    await wait(async () => (await task('similarVideos')).state !== 'running', 300);
+    const t = await call('GET', 'api/trickplay');
+    return 'trickplay ' + t.state + ': ' + t.generated + ' made, ' + t.failed + ' failed';
 `)));
 await b.close();
