@@ -226,9 +226,11 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
 
 ### Dev machine
 
-- Windows; shells PowerShell 5.1 and Git Bash. Node.js 24 is installed in `C:\Program Files\nodejs` (on the
-  machine PATH, but missing from shells started before its install: `export PATH="/c/Program Files/nodejs:$PATH"`).
-  No Python (`python` opens the Store). ffmpeg at `C:/Portables/ffmpeg/bin/ffmpeg.exe`, now on PATH: the default
+- Windows; shells PowerShell 5.1 and Git Bash. `C:\Program Files\nodejs` holds Node.js **18.16** (checked 2026-10-13),
+  too old for the Angular CLI (needs ≥ 22.22): `dotnet build`/`test` fail in `SfeWebBuild` and `npm test` can't run until
+  Node 24 is installed. Meanwhile `dotnet test -p:SfeSkipWebClient=true` runs everything but
+  `ServesTheWebClientAndOpenApi` (no `wwwroot`). Python 3.12 is installed. ffmpeg is not installed (the
+  `C:/Portables/ffmpeg` of earlier notes is gone): the ffmpeg tests are skipped. With it on PATH, the default
   `FfmpegPath` (`ffmpeg`) finds it, so scans in tests run it on the fixture's fake media too (assert either way). `docker` points at
   an unreachable remote context. WSL Ubuntu exists but has no .NET SDK.
 - Line endings: the index is all LF; working copies are mostly LF, ~20 are CRLF (e.g. `Program.cs`,
@@ -306,6 +308,10 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   rights for guests (anonymous or `UserKind.Guest`), minus `Sfe:Rights:Disabled` (applied at each read). A library
   membership is a group in it. `CurrentAccess` picks the library: the cookie's if the account still reaches it, else
   its first; for visitors the `sfe.guest` cookie's if open to guests, else the first library.
+- **Space administrators** (`tenant.members` without `server.users`) only touch accounts already in a group of their
+  space: `AccessEndpoints` 404s the others, keeps a shared account's other fields, and passes `membersOfTenantOnly` to
+  the group methods. An account in their space alone (`OwnedBy`) is fully theirs (password too), so any route putting
+  outside accounts into a space's group must stay server-wide.
 - **Setup:** `SetupService`: required while no enabled server administrator exists; needs `Sfe:Setup:Code` (≥ 12,
   constant-time compare); creates the local admin in the first library's Administrators group, renames the library.
   `Sfe:Setup:Recover` re-opens it (the app keeps working) to reset a local admin. Program.cs creates the first library

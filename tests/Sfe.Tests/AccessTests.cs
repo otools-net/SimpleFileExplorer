@@ -463,6 +463,40 @@ public sealed class AccessTests
     }
 
     [TestMethod]
+    public async Task LibraryAdministratorsOnlyPutTheirLibrarysAccountsInGroups()
+    {
+        var factory = Factory();
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var administrators = await GroupAsync(admin, BuiltInGroup.Administrators);
+        var users = await GroupAsync(admin, BuiltInGroup.Users);
+        await CreateUserAsync(admin, new UserInput("manager", Password: "manager-password", GroupIds: [administrators.Id]));
+        var member = await CreateUserAsync(admin, new UserInput("member", Password: "member-password", GroupIds: [users.Id]));
+        var outsider = await CreateUserAsync(admin, new UserInput("outsider", Password: "outsider-password"));
+        users = await GroupAsync(admin, BuiltInGroup.Users);
+        var manager =await ApiClients.SignInAsync(factory, "manager", "manager-password", TestContext.CancellationToken);
+
+        // Taken into a group, the account would belong to this library alone: its administrators could set its password.
+        using var pulledIn = await manager.PutAsJsonAsync($"/api/access/groups/{users.Id}",
+            new GroupInput(users.Name, MemberIds: [.. users.MemberIds, outsider.Id]), Json, TestContext.CancellationToken);
+        using var newGroup = await manager.PostAsJsonAsync("/api/access/groups",
+            new GroupInput("Friends", MemberIds: [outsider.Id]), Json, TestContext.CancellationToken);
+        using var takenOver = await manager.PutAsJsonAsync($"/api/access/users/{outsider.Id}",
+            new UserInput("outsider", Password: "taken-over", GroupIds: [users.Id]), Json, TestContext.CancellationToken);
+        using var promoted = await manager.PutAsJsonAsync($"/api/access/groups/{administrators.Id}",
+            new GroupInput(administrators.Name, MemberIds: [.. (await GroupAsync(admin, BuiltInGroup.Administrators)).MemberIds, member.Id]), Json, TestContext.CancellationToken);
+        var outsiderAfter = (await GetAsync<List<UserInfo>>(admin, "/api/access/users?all=true")).Single(u => u.Id == outsider.Id);
+        using var byServerAdmin = await admin.PutAsJsonAsync($"/api/access/groups/{users.Id}",
+            new GroupInput(users.Name, MemberIds: [.. users.MemberIds, outsider.Id]), Json, TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, pulledIn.StatusCode);
+        Assert.AreEqual(HttpStatusCode.BadRequest, newGroup.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, takenOver.StatusCode);
+        Assert.IsEmpty(outsiderAfter.Groups, "The account stayed out of the library");
+        Assert.AreEqual(HttpStatusCode.OK, promoted.StatusCode, "Accounts of the library still move between its groups");
+        Assert.AreEqual(HttpStatusCode.OK, byServerAdmin.StatusCode, "Server administrators add any account");
+    }
+
+    [TestMethod]
     public void PasswordHashesVerifyAndTellOldOnes()
     {
         var hash = PasswordHashing.Hash("correct horse");

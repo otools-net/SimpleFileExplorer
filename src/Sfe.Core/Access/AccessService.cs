@@ -370,14 +370,19 @@ public sealed partial class AccessService(
             .ToList();
     }
 
-    public async Task<AccessResult<GroupInfo>> CreateGroupAsync(int tenantId, GroupInput input, CancellationToken cancellationToken = default)
+    /// <param name="membersOfTenantOnly">
+    /// A library's own administrator: only accounts already in one of the library's groups may join (see
+    /// <see cref="UpdateGroupAsync"/>).
+    /// </param>
+    public async Task<AccessResult<GroupInfo>> CreateGroupAsync(
+        int tenantId, GroupInput input, bool membersOfTenantOnly = false, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         if (!await db.Tenants.AnyAsync(t => t.Id == tenantId, cancellationToken))
             return AccessResult<GroupInfo>.Missing();
 
         var group = new UserGroup { TenantId = tenantId };
-        if (await ApplyGroupAsync(db, group, input, cancellationToken) is { } error)
+        if (await ApplyGroupAsync(db, group, input, membersOfTenantOnly, cancellationToken) is { } error)
             return error.As<GroupInfo>();
 
         db.Groups.Add(group);
@@ -386,13 +391,19 @@ public sealed partial class AccessService(
         return AccessResult<GroupInfo>.Ok(ToInfo(group));
     }
 
-    public async Task<AccessResult<GroupInfo>> UpdateGroupAsync(int tenantId, int id, GroupInput input, CancellationToken cancellationToken = default)
+    /// <param name="membersOfTenantOnly">
+    /// A library's own administrator: only accounts already in one of the library's groups may join. Otherwise they
+    /// could take in an account of another library (or of none), become the only library it belongs to, and then
+    /// change its password.
+    /// </param>
+    public async Task<AccessResult<GroupInfo>> UpdateGroupAsync(
+        int tenantId, int id, GroupInput input, bool membersOfTenantOnly = false, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var group = await db.Groups.Include(g => g.Rights).Include(g => g.Members).FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId, cancellationToken);
         if (group is null)
             return AccessResult<GroupInfo>.Missing();
-        if (await ApplyGroupAsync(db, group, input, cancellationToken) is { } error)
+        if (await ApplyGroupAsync(db, group, input, membersOfTenantOnly, cancellationToken) is { } error)
             return error.As<GroupInfo>();
 
         await db.SaveChangesAsync(cancellationToken);
@@ -482,7 +493,8 @@ public sealed partial class AccessService(
         return null;
     }
 
-    private static async Task<AccessResult<UserGroup>?> ApplyGroupAsync(AccessDbContext db, UserGroup group, GroupInput input, CancellationToken cancellationToken)
+    private static async Task<AccessResult<UserGroup>?> ApplyGroupAsync(
+        AccessDbContext db, UserGroup group, GroupInput input, bool membersOfTenantOnly, CancellationToken cancellationToken)
     {
         var name = input.Name?.Trim();
         if (string.IsNullOrEmpty(name) || name.Length > 100)
@@ -508,6 +520,10 @@ public sealed partial class AccessService(
             var wanted = memberIds.Distinct().ToList();
             if (await db.Users.CountAsync(u => wanted.Contains(u.Id), cancellationToken) != wanted.Count)
                 return AccessResult<UserGroup>.Invalid("memberIds", "An account no longer exists: reload the page.");
+            var joining = wanted.Where(u => group.Members.All(m => m.UserId != u)).ToList();
+            if (membersOfTenantOnly && joining.Count > 0
+                && await db.Users.AnyAsync(u => joining.Contains(u.Id) && !u.Groups.Any(m => m.Group!.TenantId == group.TenantId), cancellationToken))
+                return AccessResult<UserGroup>.Invalid("memberIds", "Only accounts of this space can join its groups: a server administrator adds the others.");
             group.Members.RemoveAll(m => !wanted.Contains(m.UserId));
             foreach (var userId in wanted.Where(u => group.Members.All(m => m.UserId != u)))
                 group.Members.Add(new GroupMember { UserId = userId });

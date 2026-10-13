@@ -77,7 +77,10 @@ public static class AccessEndpoints
             .RequireRight(Rights.ManageMembers)
             .WithName("UpdateGroup")
             .WithSummary("Changes a group's name, directory group, rights and members.")
-            .WithDescription($"The Guests group cannot get a right guests may never have. {TenantParameter}");
+            .WithDescription($"""
+                The Guests group cannot get a right guests may never have. Only server administrators add accounts that are
+                in none of the space's groups yet. {TenantParameter}
+                """);
 
         access.MapDelete("/groups/{id:int}", DeleteGroup)
             .RequireRight(Rights.ManageMembers)
@@ -216,28 +219,34 @@ public static class AccessEndpoints
     }
 
     private static async Task<Results<Created<GroupInfo>, ValidationProblem, NotFound, ProblemHttpResult>> CreateGroup(
-        AccessService accounts, CurrentAccess current, GroupInput input, CancellationToken cancellationToken, int? tenant = null) =>
-        SpaceOf(await current.GetAsync(), tenant) is not { } space
+        AccessService accounts, CurrentAccess current, GroupInput input, CancellationToken cancellationToken, int? tenant = null)
+    {
+        var state = await current.GetAsync();
+        return SpaceOf(state, tenant) is not { } space
             ? TypedResults.NotFound()
-            : await accounts.CreateGroupAsync(space, input, cancellationToken) switch
+            : await accounts.CreateGroupAsync(space, input, MembersOfSpaceOnly(state), cancellationToken) switch
             {
                 { Status: AccessStatus.Ok } ok => TypedResults.Created($"/api/access/groups/{ok.Value!.Id}", ok.Value),
                 { Status: AccessStatus.Invalid } invalid => TypedResults.ValidationProblem(invalid.Errors!),
                 { Status: AccessStatus.NotFound } => TypedResults.NotFound(),
                 var other => TypedResults.Problem(other.Problem, statusCode: StatusCodes.Status409Conflict),
             };
+    }
 
     private static async Task<Results<Ok<GroupInfo>, ValidationProblem, NotFound, ProblemHttpResult>> UpdateGroup(
-        AccessService accounts, CurrentAccess current, int id, GroupInput input, CancellationToken cancellationToken, int? tenant = null) =>
-        SpaceOf(await current.GetAsync(), tenant) is not { } space
+        AccessService accounts, CurrentAccess current, int id, GroupInput input, CancellationToken cancellationToken, int? tenant = null)
+    {
+        var state = await current.GetAsync();
+        return SpaceOf(state, tenant) is not { } space
             ? TypedResults.NotFound()
-            : await accounts.UpdateGroupAsync(space, id, input, cancellationToken) switch
+            : await accounts.UpdateGroupAsync(space, id, input, MembersOfSpaceOnly(state), cancellationToken) switch
             {
                 { Status: AccessStatus.Ok } ok => TypedResults.Ok(ok.Value!),
                 { Status: AccessStatus.Invalid } invalid => TypedResults.ValidationProblem(invalid.Errors!),
                 { Status: AccessStatus.NotFound } => TypedResults.NotFound(),
                 var other => TypedResults.Problem(other.Problem, statusCode: StatusCodes.Status409Conflict),
             };
+    }
 
     private static async Task<Results<NoContent, NotFound, ProblemHttpResult>> DeleteGroup(
         AccessService accounts, CurrentAccess current, int id, CancellationToken cancellationToken, int? tenant = null) =>
@@ -273,6 +282,12 @@ public static class AccessEndpoints
     /// </summary>
     private static int? SpaceOf(AccessState state, int? tenant) =>
         tenant is not { } id || id == state.TenantId ? state.TenantId : state.Has(Rights.ManageTenants) ? id : null;
+
+    /// <summary>
+    /// Only those who manage every account (<see cref="Rights.ManageUsers"/>) put accounts of other spaces, or of none,
+    /// in a space's groups, as with <see cref="UpdateUser"/>.
+    /// </summary>
+    private static bool MembersOfSpaceOnly(AccessState state) => !state.Has(Rights.ManageUsers);
 
     private static bool IsInTenant(UserInfo user, int tenantId) => user.Groups.Any(g => g.TenantId == tenantId);
 
