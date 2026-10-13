@@ -30,6 +30,14 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.39
+
+- Videos the browser can't play are now converted by the server while they play, when ffmpeg is found
+  ([Playback](administration/playback.md#videos-converted-by-the-server)); turn it off with **Convert videos: Never**
+  (`Sfe:Streaming:Mode` = `Off`). The groups Administrators and Users of existing spaces get the new right
+  `files.stream` once, at the first start; guests don't.
+- Nothing changes in the databases or the settings file.
+
 ## To 1.37
 
 - The first start of 1.37 shows the update page above (installs before it recorded no version). The accounts'

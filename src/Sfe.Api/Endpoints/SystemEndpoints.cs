@@ -2,17 +2,34 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Paths;
 using Sfe.Core.SystemCommands;
+using Sfe.Core.Thumbnails;
 
 namespace Sfe.Api.Endpoints;
 
 public sealed record CommandResult(string Output);
+
+/// <param name="Configured">The executable as set in <c>Thumbnails:FfmpegPath</c> (a path, or a name looked up on PATH).</param>
+/// <param name="Path">Where it was found; null when it wasn't (thumbnails of videos, trickplay and streaming are off).</param>
+/// <param name="Version">The version it reports, when found.</param>
+public sealed record FfmpegInfo(string Configured, string? Path, string? Version);
+
+/// <param name="Root">Full path of the library root on the server.</param>
+/// <param name="Ffmpeg">The ffmpeg executable thumbnails, trickplay and streaming run.</param>
+public sealed record SystemInfo(string Root, FfmpegInfo Ffmpeg);
 
 public static class SystemEndpoints
 {
     public static RouteGroupBuilder MapSystemEndpoints(this RouteGroupBuilder api)
     {
         var system = api.MapGroup("/system").WithTags("System");
+
+        system.MapGet("/info", async (LibraryPaths paths, Ffmpeg ffmpeg) =>
+                TypedResults.Ok(new SystemInfo(paths.Root, new FfmpegInfo(ffmpeg.Configured, ffmpeg.ExecutablePath, await ffmpeg.GetVersionAsync()))))
+            .RequireRight(Rights.ServerSettings)
+            .WithName("GetSystemInfo")
+            .WithSummary("Where the library browsed is on the server's disk, and the ffmpeg executable found.");
 
         system.MapPost("/shutdown", async Task<Results<Ok<CommandResult>, NotFound>> (SystemCommandService commands, CancellationToken cancellationToken) =>
                 commands.CanShutdown ? TypedResults.Ok(new CommandResult(await commands.ShutdownAsync(cancellationToken))) : TypedResults.NotFound())

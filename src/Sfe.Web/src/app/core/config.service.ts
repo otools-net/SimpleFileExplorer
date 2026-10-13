@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Api } from './api.service';
 import { formatDuration, formatResolution } from './format';
-import { ClientConfig, LibraryItem } from './models';
+import { ClientConfig, LibraryItem, StreamProbe } from './models';
 import { encodePath } from './paths';
 
 /** The links of the files, built from the configuration (data server, external player). */
@@ -36,6 +36,21 @@ export interface Urls {
     external(fileUrl: string): string | null;
     /** Name of the external player, for its buttons. */
     externalName: string | null;
+    /** The video converted by the server from `start` seconds (`config.streaming`); `id` names the player asking. */
+    stream(path: string, start: number, id: string): string;
+}
+
+/**
+ * A video played converted by the server (`config.streaming`), for a player: it asks for the conversion from a
+ * position, and again from another one to seek beyond what arrived. Made by `ConfigService.videoStream`.
+ */
+export interface VideoStream {
+    /** Every video plays converted, not only those the browser can't play. */
+    always: boolean;
+    /** The conversion from `start` seconds on; each player's own (a new one replaces its previous on the server). */
+    url(start: number): string;
+    /** Whether the server can convert it, and its length; null when it can't. */
+    probe(): Promise<StreamProbe | null>;
 }
 
 const PLACEHOLDERS = /\{(url|encodedUrl)\}/g;
@@ -74,6 +89,10 @@ export function createUrls(config: ClientConfig): Urls {
                 : template + url;
         },
         externalName: config.externalPlayer?.name ?? null,
+        stream: (path, start, id) => {
+            const query = new URLSearchParams({ path, t: String(Math.max(0, Math.round(start * 1000) / 1000)), id });
+            return `api/streaming/play?${query}`;
+        },
     };
 }
 
@@ -146,6 +165,23 @@ export class ConfigService {
             ? new URL(dataServerUrl(config.dataServer, path), document.baseURI).href
             : new URL((await this.api.fileLink(path)).url, document.baseURI).href;
         return this.links.external(fileUrl);
+    }
+
+    /**
+     * `path` played converted by the server, for one player (`VideoPlayerComponent.stream`); null when the server doesn't
+     * convert videos for this session.
+     */
+    videoStream(path: string): VideoStream | null {
+        const streaming = this.current()?.streaming;
+        if (!streaming)
+            return null;
+        // Not crypto.randomUUID: plain-http LAN pages aren't secure contexts. It only tells this player's streams apart.
+        const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
+        return {
+            always: streaming.always,
+            url: start => this.links.stream(path, start, id),
+            probe: () => this.api.streamProbe(path).catch(() => null),
+        };
     }
 
     /** The loaded configuration, for code that only runs once it is there. */

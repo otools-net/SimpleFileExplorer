@@ -26,13 +26,24 @@ import { Popovers } from './popovers.service';
             <svg sfeIcon="more"></svg>
         </button>
         <div class="popover menu-list" id="menu" role="menu" [hidden]="!isOpen()">
-            <p class="menu-account" role="none">
-                <svg sfeIcon="user"></svg>
-                <span>
-                    {{ user() ? (user()!.displayName || user()!.userName) : 'Guest' }}
-                    <small>{{ config()?.tenant?.name }}</small>
-                </span>
-            </p>
+            @if (accountVisible()) {
+                <a class="menu-account" role="menuitem" routerLink="/admin" [queryParams]="{ section: 'account' }" [state]="{ sfeFromLibrary: true }"
+                   title="My account: your preferences and your password" (click)="popovers.close()">
+                    <svg sfeIcon="user"></svg>
+                    <span>
+                        {{ user()!.displayName || user()!.userName }}
+                        <small>{{ config()?.tenant?.name }}</small>
+                    </span>
+                </a>
+            } @else {
+                <p class="menu-account" role="none">
+                    <svg sfeIcon="user"></svg>
+                    <span>
+                        {{ user() ? (user()!.displayName || user()!.userName) : 'Guest' }}
+                        <small>{{ config()?.tenant?.name }}</small>
+                    </span>
+                </p>
+            }
             @if (canScan() || canRemove()) {
                 <hr>
             }
@@ -88,6 +99,11 @@ export class MainMenuComponent {
     protected readonly adminVisible = computed(() => {
         const rights = this.configService.rights();
         return visibleSections(any => any.some(right => rights.has(right))).length > 0;
+    });
+    /** The account line links to Administration › My account when signed in with one of its rights. */
+    protected readonly accountVisible = computed(() => {
+        const rights = this.configService.rights();
+        return !!this.user() && visibleSections(any => any.some(right => rights.has(right))).some(section => section.id === 'account');
     });
     protected readonly otherTenants = computed(() => {
         const config = this.config();

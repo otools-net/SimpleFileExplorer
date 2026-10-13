@@ -37,6 +37,15 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     /// <summary>Leaves room under SQL Server's 260 characters for the originals' folders and names.</summary>
     public const int MaxEditorFolderLength = 100;
 
+    /// <summary>Videos converted at once (<c>Streaming:MaxStreams</c>).</summary>
+    public const int MaxStreams = 32;
+
+    /// <summary>Range of x264's constant rate factor (<c>Streaming:Quality</c>): beyond it, files grow for nothing or look bad.</summary>
+    public const int MinStreamQuality = 15, MaxStreamQuality = 40;
+
+    /// <summary>Range of <c>Streaming:MaxHeight</c> (besides 0, the video's own).</summary>
+    public const int MinStreamHeight = 144, MaxStreamHeight = 4320;
+
     /// <summary>The server level: the configuration with the server settings page's values over it.</summary>
     public SettingsView Get()
     {
@@ -411,6 +420,11 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
             "player.externalUrl", $"Enter a link starting with the player's scheme, like vlc://{{url}} (at most {MaxExternalUrlLength} characters), or leave it empty.");
         Range(s.Player.LinkLifetimeMinutes, 1, MaxLinkLifetimeMinutes, "player.linkLifetimeMinutes", "The link lifetime");
         Check(s.Player.ExternalName is null || s.Player.ExternalName.Length <= 50, "player.externalName", "The name can be at most 50 characters.");
+        Check(Enum.IsDefined(s.Streaming.Mode), "streaming.mode", "Choose when videos are converted from the list.");
+        Range(s.Streaming.MaxStreams, 1, MaxStreams, "streaming.maxStreams", "Videos converted at once");
+        Range(s.Streaming.Quality, MinStreamQuality, MaxStreamQuality, "streaming.quality", "The quality");
+        Check(s.Streaming.MaxHeight == 0 || s.Streaming.MaxHeight is >= MinStreamHeight and <= MaxStreamHeight, "streaming.maxHeight",
+            $"The largest height must be between {MinStreamHeight} and {MaxStreamHeight} pixels, or 0 to keep the video's.");
         Range(s.FileTracking.Duplicates.MinimumKilobytes, 0, MaxLargeImageKilobytes, "fileTracking.duplicates.minimumKilobytes", "The smallest size");
         Range(s.FileTracking.Duplicates.GroupsPerPage, 1, FileTracking.DuplicateFinder.MaxGroupsPerPage, "fileTracking.duplicates.groupsPerPage", "Groups per page");
         Range(s.FileTracking.Relink.RetentionDays, 0, MaxRetentionDays, "fileTracking.relink.retentionDays", "The days missing files are kept");

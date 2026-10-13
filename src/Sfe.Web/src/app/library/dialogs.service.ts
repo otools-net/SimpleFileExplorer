@@ -7,6 +7,7 @@ import type { TagEditorDialog } from '../tags/tag-editor.dialog';
 import type { TagManagerDialog } from '../tags/tag-manager.dialog';
 import type { ViewerComponent } from './viewer/viewer.component';
 import type { RemoveFromIndexDialog } from './scan/remove-from-index.dialog';
+import type { SearchHelpDialog } from './topbar/search-help.dialog';
 
 /**
  * The dialogs of the listing page, which register themselves here when they are created, so that any part of the
@@ -22,6 +23,7 @@ export class Dialogs {
     readonly tagManager = signal<TagManagerDialog | null>(null);
     readonly removeFromIndex = signal<RemoveFromIndexDialog | null>(null);
     readonly imageEditor = signal<ImageEditorDialog | null>(null);
+    readonly searchHelp = signal<SearchHelpDialog | null>(null);
 
     /** Closes the open dialogs, e.g. before searching for a tag picked in one. */
     closeAll(): void {

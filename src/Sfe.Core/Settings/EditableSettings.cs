@@ -24,6 +24,7 @@ public sealed class EditableSettings
     public TrickplaySettings Trickplay { get; set; } = new();
     public TagSettings Tags { get; set; } = new();
     public PlayerSettings Player { get; set; } = new();
+    public StreamingSettings Streaming { get; set; } = new();
     public FileTrackingSettings FileTracking { get; set; } = new();
     public AppearanceSettings Appearance { get; set; } = new();
     public TaskSettings Tasks { get; set; } = new();
@@ -100,6 +101,14 @@ public sealed class EditableSettings
             ExternalUrl = options.Player.ExternalUrl,
             LinkLifetimeMinutes = options.Player.LinkLifetimeMinutes,
         },
+        Streaming = new()
+        {
+            Mode = options.Streaming.Mode,
+            MaxStreams = options.Streaming.MaxStreams,
+            Quality = options.Streaming.Quality,
+            MaxHeight = options.Streaming.MaxHeight,
+            CopyVideo = options.Streaming.CopyVideo,
+        },
         FileTracking = new()
         {
             Duplicates = new()
@@ -172,6 +181,11 @@ public sealed class EditableSettings
         options.Player.ExternalName = Player.ExternalName;
         options.Player.ExternalUrl = Player.ExternalUrl;
         options.Player.LinkLifetimeMinutes = Player.LinkLifetimeMinutes;
+        options.Streaming.Mode = Streaming.Mode;
+        options.Streaming.MaxStreams = Streaming.MaxStreams;
+        options.Streaming.Quality = Streaming.Quality;
+        options.Streaming.MaxHeight = Streaming.MaxHeight;
+        options.Streaming.CopyVideo = Streaming.CopyVideo;
         options.FileTracking.Duplicates.MinimumKilobytes = FileTracking.Duplicates.MinimumKilobytes;
         options.FileTracking.Duplicates.GroupsPerPage = FileTracking.Duplicates.GroupsPerPage;
         options.FileTracking.Duplicates.AllowRemove = FileTracking.Duplicates.AllowRemove;
@@ -269,6 +283,15 @@ public sealed class PlayerSettings
     public string? ExternalName { get; set; }
     public string? ExternalUrl { get; set; }
     public int LinkLifetimeMinutes { get; set; }
+}
+
+public sealed class StreamingSettings
+{
+    public StreamingMode Mode { get; set; }
+    public int MaxStreams { get; set; }
+    public int Quality { get; set; }
+    public int MaxHeight { get; set; }
+    public bool CopyVideo { get; set; }
 }
 
 public sealed class AppearanceSettings

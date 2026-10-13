@@ -243,6 +243,8 @@ public sealed class EditorTests
         CollectionAssert.DoesNotContain(users.Rights.ToList(), Rights.EditorSettings);
         CollectionAssert.IsSubsetOf(added, administrators.Rights.ToList());
         CollectionAssert.DoesNotContain(guests.Rights.ToList(), Rights.EditImages);
+        CollectionAssert.Contains(users.Rights.ToList(), Rights.Stream, "Added in revision 2");
+        CollectionAssert.DoesNotContain(guests.Rights.ToList(), Rights.Stream);
         CollectionAssert.DoesNotContain((await GroupAsync(restarted, BuiltInGroup.Users)).Rights.ToList(), Rights.EditImages,
             "A right taken away after the upgrade stays away");
     }

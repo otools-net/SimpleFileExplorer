@@ -8,7 +8,7 @@ import {
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
     TaskActionResult, TaskInfo, TaskKind, TaskOverview, TaskRunDetails, TaskRunPage, TaskSchedule, TaskScheduleInput, TenantAccess, TenantDetails,
-    TenantInput, TrickplayActivity, TrickplayManifest, TrickplayStates, TrickplayStatus, UserInfo, UserInput,
+    TenantInput, StreamingStatus, StreamProbe, SystemInfo, TrickplayActivity, TrickplayManifest, TrickplayStates, TrickplayStatus, UserInfo, UserInput,
 } from './models';
 import { encodePath } from './paths';
 
@@ -143,6 +143,13 @@ export class Api {
     /** Forgets one missing file, or all of them when `id` is omitted. */
     forgetMissingFiles = (id?: number) => this.delete<void>(id === undefined ? 'api/missing-files' : `api/missing-files/${id}`);
 
+    /** Whether `path` can be played converted by the server, and its length; 404 when it can't. */
+    streamProbe = (path: string) => this.get<StreamProbe>('api/streaming/probe', { path });
+    /** The videos the server converts now, in every library. */
+    streamingStatus = () => this.get<StreamingStatus>('api/streaming/sessions');
+
+    /** Where the library is on the server's disk, and the ffmpeg found. */
+    systemInfo = () => this.get<SystemInfo>('api/system/info');
     shutdown = () => this.post<CommandResult>('api/system/shutdown');
     dismount = () => this.post<CommandResult>('api/system/dismount');
 

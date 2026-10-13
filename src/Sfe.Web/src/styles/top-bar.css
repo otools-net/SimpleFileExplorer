@@ -136,13 +136,44 @@
 .menu-account span { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
 .menu-account small { color: var(--text-muted); font-size: 12px; font-weight: 400; }
 
-.search-help { width: min(440px, calc(100vw - 32px)); padding: 16px 18px; }
-.search-help h3 { margin: 0 0 10px; font-size: 14px; }
-.search-help dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; }
-.search-help dt { white-space: nowrap; }
-.search-help dd { margin: 0; color: var(--text-muted); }
-.search-help p { margin: 12px 0 0; color: var(--text-muted); }
-.search-help code { padding: 1px 5px; border-radius: 4px; background: var(--surface-3); }
+/* The search syntax dialog: examples (buttons adding them to the box) beside their meaning, stacked on phones. */
+.search-help-section h3 {
+    margin: 0 0 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.search-help-section dl { margin: 0; }
+.search-help-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 4px 16px;
+    align-items: baseline;
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+}
+.search-help-row dt { display: flex; flex-wrap: wrap; gap: 4px; }
+.search-help-row dd { margin: 0; color: var(--text-muted); }
+.search-help-example {
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+.search-help-example code { display: inline-block; padding: 1px 6px; border-radius: 4px; background: var(--surface-3); white-space: nowrap; }
+.search-help-example:hover code, .search-help-example:focus-visible code { background: var(--accent); color: var(--accent-contrast); }
+.search-help-tips ul { margin: 0; padding-left: 18px; color: var(--text-muted); }
+.search-help-tips li + li { margin-top: 4px; }
+.search-help-tips kbd { padding: 0 5px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface-2); font: inherit; font-size: 12px; }
+
+@media (max-width: 560px) {
+    .search-help-row { grid-template-columns: minmax(0, 1fr); }
+}
 
 .search-explain-button[aria-pressed="true"] { color: var(--accent); }
 

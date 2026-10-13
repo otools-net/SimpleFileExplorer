@@ -8,6 +8,9 @@ the tag list, duplicates, accounts, background tasks and your own account.
 The sidebar groups the sections; the section open lists its pages under it. The arrow at the top left goes back to the
 folder you came from, scrolled where you left it.
 
+Breadcrumbs above the page's title say where you are (**Administration › Library › Tags › All tags**) and follow you
+from page to page: click the section to open its first page, or **Administration** to go back to the first section.
+
 | Group | Section | Pages |
 |---|---|---|
 | Preferences | [Interface](interface.md) | Appearance, Browsing, Search |
@@ -49,6 +52,8 @@ sign-in. Set them in the [configuration](../configuration.md).
 ## On a phone
 
 <img src="../images/phone-admin.png" alt="The administration page on a phone" width="300">
+<img src="../images/phone-admin-section.png" alt="A section on a phone, with its breadcrumbs and pages as chips" width="300">
 
 On phones the page opens on the list of sections, each one then a page of its own with a back arrow to the list and its
-pages as chips at the top.
+pages as chips at the top. The breadcrumbs leave the group out there, and **Administration** in them returns to the list
+of sections.

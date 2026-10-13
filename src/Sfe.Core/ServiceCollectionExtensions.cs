@@ -17,6 +17,7 @@ using Sfe.Core.Settings;
 using Sfe.Core.SystemCommands;
 using Sfe.Core.Tagging;
 using Sfe.Core.Tasks;
+using Sfe.Core.Streaming;
 using Sfe.Core.Thumbnails;
 using Sfe.Core.Trickplay;
 using Sfe.Core.Upgrades;
@@ -85,6 +86,9 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<FfmpegLimits>();
         services.AddSingleton<ThumbnailService>();
         services.AddSingleton<TrickplayService>();
+        // Shared by every library (the application's instance, handed to each one), like FfmpegLimits.
+        services.TryAddSingleton<VideoStreams>();
+        services.AddSingleton<VideoStreamer>();
         services.AddSingleton<SystemCommandService>();
         services.AddSingleton<TagService>();
         services.AddSingleton<ScopeTagger>();

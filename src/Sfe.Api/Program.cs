@@ -71,6 +71,7 @@ api.MapLibraryEndpoints();
 api.MapScanEndpoints();
 api.MapTagEndpoints();
 api.MapTrickplayEndpoints();
+api.MapStreamingEndpoints();
 api.MapTaskEndpoints();
 api.MapFileTrackingEndpoints();
 api.MapEditorEndpoints();

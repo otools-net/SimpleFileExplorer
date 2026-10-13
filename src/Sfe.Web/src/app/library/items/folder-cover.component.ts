@@ -7,7 +7,8 @@ import { PreviewsService } from './previews.service';
 
 /**
  * The picture area of a folder card: the folder icon until its pictures are known, and when it has none; otherwise
- * `config.folderPictures` cells in as square a grid as the count allows (4 → 2×2, 6 → 3×2, 9 → 3×3).
+ * `config.folderPictures` cells in as square a grid as the count allows (4 → 2×2, 6 → 3×2, 9 → 3×3). What the card
+ * puts inside (its count of indexed items) lies over the pictures.
  */
 @Component({
     selector: 'sfe-folder-cover',
@@ -28,6 +29,7 @@ import { PreviewsService } from './previews.service';
                 }
             </span>
         }
+        <ng-content />
     `,
 })
 export class FolderCoverComponent implements OnInit {

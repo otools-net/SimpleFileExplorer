@@ -1,7 +1,7 @@
 # My account
 
 **Administration › My account**: your own preferences and your password. It is the only section an account without
-any right to change something sees.
+any right to change something sees. Clicking your name at the top of the ⋮ menu opens it directly.
 
 ## Preferences
 

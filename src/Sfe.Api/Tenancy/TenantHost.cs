@@ -5,6 +5,7 @@ using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Sfe.Core.Options;
 using Sfe.Core.Settings;
+using Sfe.Core.Streaming;
 using Sfe.Core.Thumbnails;
 
 namespace Sfe.Api.Tenancy;
@@ -45,6 +46,7 @@ public sealed class TenantHost : IAsyncDisposable
         services.AddSingleton(application.GetRequiredService<SettingsStore>());
         services.AddSingleton(application.GetRequiredService<SettingLayers>());
         services.AddSingleton(application.GetRequiredService<FfmpegLimits>());
+        services.AddSingleton(application.GetRequiredService<VideoStreams>());
         services.AddSfeCore(tenantConfiguration, contentRootPath, tenant.Id);
         services.AddSingleton<IHostedService, TrickplayWorker>();
         services.AddSingleton<IHostedService, TaskScheduleWorker>();

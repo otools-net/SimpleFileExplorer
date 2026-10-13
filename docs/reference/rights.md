@@ -12,6 +12,7 @@ are given by the groups of a space ([Spaces & accounts](../administration/spaces
 | `files.external` | open files in an external player (a link of its own) | yes | Administrators, Users |
 | `files.copyPaths` | copy full paths (shows the server's folders) | no | Administrators |
 | `files.edit` | edit pictures (crop) and save the result as a new file | no | Administrators, Users |
+| `files.stream` | play videos converted by the server (ffmpeg) when the browser can't play them | yes | Administrators, Users |
 | `tags.view` | see tags, the tag sidebar | yes | all |
 | `tags.assign` | tag files, folders and searches | no | Administrators, Users |
 | `tags.manage` | create, edit, delete tags; clear the tag history | no | Administrators |
@@ -23,7 +24,7 @@ are given by the groups of a space ([Spaces & accounts](../administration/spaces
 | `tenant.members` | the space's accounts, groups and visitors | no | Administrators |
 | `account.preferences`, `account.password` | own preferences and password | no | Administrators, Users |
 | `system.apiDocs` | the API documentation (`/api/docs`) | no | Administrators |
-| `server.settings`, `server.tenants`, `server.users`, `server.shutdown`, `server.dismount`, `server.backup` | the server's settings, spaces, every account, system commands, backups | no | server administrators only |
+| `server.settings`, `server.tenants`, `server.users`, `server.shutdown`, `server.dismount`, `server.backup`, `server.streams` | the server's settings, spaces, every account, system commands, backups, the list of video streams | no | server administrators only |
 
 **Server administrators** have every right in every space, plus the server's own.
 

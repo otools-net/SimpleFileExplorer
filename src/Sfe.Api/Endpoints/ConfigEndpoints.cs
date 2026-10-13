@@ -7,6 +7,7 @@ using Sfe.Core.Library;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Settings;
+using Sfe.Core.Streaming;
 using Sfe.Core.SystemCommands;
 using Sfe.Core.Tagging;
 using Sfe.Core.Thumbnails;
@@ -30,6 +31,9 @@ public sealed record ResolutionThresholds(int Image, int Video);
 /// <param name="OutputFolder">Library folder edited pictures are saved in, under their originals' folders; empty = next to the originals.</param>
 /// <param name="Quality">Quality (1-100) of the JPEG and WebP pictures the editor encodes.</param>
 public sealed record EditorConfig(string OutputFolder, int Quality);
+
+/// <param name="Always">Every video plays converted (<c>Streaming:Mode</c> = <c>Always</c>), not only those the browser can't play.</param>
+public sealed record StreamingConfig(bool Always);
 
 /// <param name="DataServer">When set, the client links files to this server instead of <c>/api/files/raw</c>: a base the path is appended to, or a template with <c>{url}</c> / <c>{encodedUrl}</c> (<see cref="DataServerUrl"/>).</param>
 /// <param name="PageSize">Items the client loads at a time while browsing a folder.</param>
@@ -62,8 +66,12 @@ public sealed record EditorConfig(string OutputFolder, int Quality);
 /// <param name="Tenant">The library being browsed.</param>
 /// <param name="Tenants">The libraries the account can switch to (empty for a visitor without one).</param>
 /// <param name="Editor">The picture editor's settings; null without the right to edit pictures.</param>
+/// <param name="Streaming">
+/// Videos the browser can't play are converted by the server (<c>/api/streaming/play</c>); null when streaming is off,
+/// ffmpeg is missing, or without the right <c>files.stream</c>.
+/// </param>
 public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
-    IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor);
+    IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor, StreamingConfig? Streaming);
 
 public static class ConfigEndpoints
 {
@@ -79,7 +87,7 @@ public static class ConfigEndpoints
     }
 
     private static async Task<Ok<ClientConfig>> GetConfig(
-        LibraryPaths paths, ThumbnailService thumbnails, TrickplayService trickplay, SystemCommandService system, IOptionsMonitor<SfeOptions> options,
+        LibraryPaths paths, ThumbnailService thumbnails, TrickplayService trickplay, VideoStreamer streamer, SystemCommandService system, IOptionsMonitor<SfeOptions> options,
         CurrentAccess current, SettingsService preferences, AccessService accounts, RightsEvaluator rights, CancellationToken cancellationToken)
     {
         var state = await current.GetAsync();
@@ -126,6 +134,9 @@ public static class ConfigEndpoints
                 ? new EditorConfig(
                     LibraryPaths.NormalizeRelative(server.Editor.OutputFolder?.Trim()) ?? string.Empty,
                     Math.Clamp(server.Editor.Quality, EditedImages.MinQuality, 100))
+                : null,
+            streamer.IsAvailable && state.Has(Rights.Stream) && state.Has(Rights.ViewFiles)
+                ? new StreamingConfig(streamer.Mode == StreamingMode.Always)
                 : null));
     }
 }

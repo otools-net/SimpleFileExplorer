@@ -24,6 +24,7 @@ import { SelectionBarComponent } from './selection-bar.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { SidebarService } from './sidebar/sidebar.service';
 import { Popovers } from './topbar/popovers.service';
+import { Dialogs } from './dialogs.service';
 import { TopbarComponent } from './topbar/topbar.component';
 import { ViewerComponent } from './viewer/viewer.component';
 
@@ -82,6 +83,7 @@ export class LibraryPageComponent implements OnInit {
     private readonly config = inject(ConfigService);
     private readonly theme = inject(ThemeService);
     private readonly popovers = inject(Popovers);
+    private readonly dialogs = inject(Dialogs);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly destroyRef = inject(DestroyRef);
@@ -183,6 +185,9 @@ export class LibraryPageComponent implements OnInit {
         if (event.key === '/') {
             event.preventDefault();
             this.topbar()?.searchBox().focus();
+        } else if (event.key === '?') {
+            event.preventDefault();
+            this.dialogs.searchHelp()?.open();
         } else if ((event.key === 'Backspace' || (event.altKey && event.key === 'ArrowUp')) && !q && path) {
             event.preventDefault();
             this.store.navigate({ path: parentPath(path) });

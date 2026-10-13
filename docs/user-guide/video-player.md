@@ -16,11 +16,22 @@ Videos and audio files play in SFE's own player, in the [viewer](viewer.md) or i
 | Camera | S | Saves the frame on screen as a PNG at the video's resolution, named after the video and the position (e.g. `Holiday 1-23.png`) |
 | Mute | M | |
 | Fullscreen | F | |
+| Convert (⟳) | | Shown when the server can convert videos: plays the video converted by the server, from where it is (see below) |
 
 ![Trickplay frames above the seek bar](../images/player-trickplay.png)
 
 On a touch screen, double-tap the left or right of the picture to jump (keep tapping to jump further), and hold a
 finger on the right of a playing video for 1.5 s to play it at 2× until you lift it.
+
+## Formats the browser can't play
+
+When the browser can't play a video (AVI, WMV, many MKV files, HEVC pictures), the player asks the server to convert it
+while it plays, if the server has ffmpeg and you have the right to (see
+[Playback](../administration/playback.md#videos-converted-by-the-server)). It goes on from the same position and the
+seek bar keeps the video's whole length; a jump further than what has arrived takes a second or two, while the server
+starts again from there. A video that plays without sound or picture can be converted by hand with the ⟳ button.
+If the server can't convert it either (it may be busy with as many videos as it allows), the viewer says so and offers
+the external player and the download.
 
 ## Its own window
 

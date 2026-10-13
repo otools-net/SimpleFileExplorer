@@ -1,6 +1,7 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, input, linkedSignal, output, signal, viewChild } from '@angular/core';
 import { formatDuration as formatTime } from '../core/format';
-import { TrickplayManifest } from '../core/models';
+import { VideoStream } from '../core/config.service';
+import { StreamProbe, TrickplayManifest } from '../core/models';
 import { IconComponent } from '../shared/icon.component';
 
 const DOUBLE_TAP_MS = 300;      // max delay between the two taps of a double tap
@@ -12,6 +13,14 @@ const FAST_RATE = 2;
 const HOLD_SLOP_PX = 20;        // a finger moving further than this is not holding
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
+interface Playback {
+    url: string;
+    /** Seconds into the video where the conversion starts (0 for the file). */
+    offset: number;
+    /** The server's conversion, not the file. */
+    streamed: boolean;
+}
+
 /**
  * Video player with custom controls: seek bar, back/forward buttons (`seekStep` seconds, Sfe:Player:SeekSeconds),
  * speed (its button opens the list of rates), loop (`loop` = its first state, Sfe:Player:Loop), mute, fullscreen and
@@ -22,6 +31,10 @@ const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
  * Mouse: click plays/pauses, double-click toggles fullscreen.
  * Hovering or dragging the seek bar shows the time there, and the frame once `setTrickplay` provided the trickplay.
  * `startAt`: position (seconds) to start from, e.g. where another player left off.
+ * `stream`: the server's conversion of the video (`ConfigService.videoStream`), played when the browser can't play the
+ * file (an error, or no picture), from the start when `stream.always`, or from its button. The conversion has no length
+ * and only seeks within what arrived: it starts at `offset` seconds into the video, its times are shifted by it, the
+ * length comes from the server, and a seek further away asks for a new conversion from there.
  */
 @Component({
     selector: 'sfe-video-player',
@@ -40,11 +53,11 @@ const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
         '(document:pointerdown)': 'closeSpeedMenu($event)',
     },
     template: `
-        <video #video [src]="src()" [poster]="poster() ?? ''" [loop]="looping()" preload="metadata" playsinline
-               (play)="updatePlayState()" (pause)="updatePlayState(); waiting.set(false)" (ended)="updatePlayState()"
+        <video #video [src]="playback().url" [poster]="poster() ?? ''" [loop]="looping() && !playback().streamed" preload="metadata" playsinline
+               (play)="updatePlayState()" (pause)="updatePlayState(); waiting.set(false)" (ended)="onEnded()"
                (timeupdate)="updateTime()" (durationchange)="updateTime()" (progress)="updateTime()" (volumechange)="updateVolume()"
                (waiting)="waiting.set(true)" (playing)="waiting.set(false)" (canplay)="waiting.set(false)" (seeked)="waiting.set(false)"
-               (error)="failed()" (loadedmetadata)="startFrom()"></video>
+               (error)="failed()" (loadedmetadata)="onMetadata()"></video>
         <div class="player-surface" (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)" (pointerup)="onTap($event)"
              (pointercancel)="endHold()" (contextmenu)="onContextMenu($event)" (click)="onClick()" (dblclick)="onDoubleClick()"></div>
         <div #flash class="player-flash" aria-hidden="true"></div>
@@ -85,6 +98,12 @@ const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
                         </div>
                     }
                 </div>
+                @if (stream() && !playback().streamed) {
+                    <button type="button" class="player-button player-convert" title="Play it converted by the server (for a video without picture or sound here)"
+                            aria-label="Play it converted by the server" (click)="useStream(); showControls()">
+                        <svg sfeIcon="refresh"></svg>
+                    </button>
+                }
                 <button type="button" class="player-button player-toggle" [class.on]="looping()" [title]="loopLabel()" [attr.aria-label]="loopLabel()" [attr.aria-pressed]="looping()" (click)="toggleLoop(); showControls()">
                     <svg sfeIcon="loop"></svg>
                 </button>
@@ -109,8 +128,10 @@ export class VideoPlayerComponent {
     readonly startAt = input(0);
     /** Whether the video starts over at its end, until the loop button is pressed. */
     readonly loop = input(false);
-    /** The browser can't play the video. */
-    readonly unsupported = output<void>();
+    /** The server's conversion, when it offers one. */
+    readonly stream = input<VideoStream | null>(null);
+    /** The browser can't play the video; true when the server's conversion failed too. */
+    readonly unsupported = output<boolean>();
 
     protected readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     private readonly videoRef = viewChild.required<ElementRef<HTMLVideoElement>>('video');
@@ -139,6 +160,13 @@ export class VideoPlayerComponent {
      */
     protected speedMenuHeight = 0;
     protected readonly looping = linkedSignal(() => this.loop());
+    /** What the video element plays: the file, or the conversion from `offset` seconds into the video. */
+    protected readonly playback = linkedSignal((): Playback => {
+        const stream = this.stream();
+        return stream?.always
+            ? { url: stream.url(this.startAt()), offset: this.startAt(), streamed: true }
+            : { url: this.src(), offset: 0, streamed: false };
+    });
     protected readonly timeText = signal('0:00 / 0:00');
     protected readonly playLabel = computed(() => this.paused() ? 'Play (K)' : 'Pause (K)');
     protected readonly muteLabel = computed(() => this.muted() ? 'Unmute (M)' : 'Mute (M)');
@@ -157,6 +185,14 @@ export class VideoPlayerComponent {
     private trickplay: { info: TrickplayManifest; sheetUrl: (index: number) => string; sheets: HTMLImageElement[] | null } | null = null;
     private errored = false;
     private started = false;
+    /** Length of a converted video, from the server (the conversion has none while it is made). */
+    private streamLength: number | null = null;
+    /** Waiting for the server to say whether it converts the video. */
+    private switching = false;
+    /** Play once the new source is loaded (it was playing, or was about to). */
+    private resume = false;
+    /** Where the seek bar was released, applied when a drag ends (a converted video asks the server again). */
+    private pendingSeek: number | null = null;
 
     private get video(): HTMLVideoElement {
         return this.videoRef().nativeElement;
@@ -165,6 +201,8 @@ export class VideoPlayerComponent {
     constructor() {
         afterNextRender(() => {
             this.updateVolume();
+            if (this.playback().streamed)
+                void this.stream()!.probe().then(probe => this.setStreamLength(probe));
             // Start playing right away; browsers that refuse autoplay leave it paused with the big play button.
             this.video.play().catch(() => this.updatePlayState());
         });
@@ -199,8 +237,16 @@ export class VideoPlayerComponent {
         this.trickplay = info && info.count > 0 ? { info, sheetUrl, sheets: null } : null;
     }
 
+    /** The position in the video, in seconds (a conversion's times start at its offset). */
     currentTime(): number {
-        return this.video.currentTime;
+        return this.playback().offset + this.video.currentTime;
+    }
+
+    /** The video's length in seconds; 0 while unknown. */
+    private length(): number {
+        const own = Number.isFinite(this.video.duration) ? this.video.duration : 0;
+        const playback = this.playback();
+        return playback.streamed ? this.streamLength ?? playback.offset + own : own;
     }
 
     focus(): void {
@@ -244,8 +290,66 @@ export class VideoPlayerComponent {
     }
 
     private seekBy(seconds: number): void {
-        const duration = Number.isFinite(this.video.duration) ? this.video.duration : Infinity;
-        this.video.currentTime = Math.min(Math.max(0, this.video.currentTime + seconds), duration);
+        this.seekTo(this.currentTime() + seconds);
+    }
+
+    /** Goes to `seconds` into the video: within a conversion when it got there, else by asking for one from there. */
+    private seekTo(seconds: number): void {
+        const target = Math.min(Math.max(0, seconds), this.length() || Infinity);
+        if (this.canSeekTo(target))
+            this.video.currentTime = target - this.playback().offset;
+        else
+            this.restartStream(target);
+        this.updateTime();
+    }
+
+    /** The file seeks anywhere; a conversion within what the browser can seek in (what arrived). */
+    private canSeekTo(target: number): boolean {
+        const playback = this.playback();
+        if (!playback.streamed)
+            return true;
+        const local = target - playback.offset;
+        const seekable = this.video.seekable;
+        for (let i = 0; i < seekable.length; i++) {
+            if (local >= seekable.start(i) && local <= seekable.end(i))
+                return true;
+        }
+        return false;
+    }
+
+    /** Asks the server for the conversion from `start` seconds on, playing on if it was playing. */
+    private restartStream(start: number): void {
+        const stream = this.stream();
+        if (!stream)
+            return;
+        this.resume ||= !this.video.paused;
+        this.playback.set({ url: stream.url(start), offset: start, streamed: true });
+        this.waiting.set(true);
+    }
+
+    /** Plays the server's conversion instead of the file, from where it is (or was to start). */
+    protected async useStream(): Promise<void> {
+        const stream = this.stream();
+        if (!stream || this.switching || this.playback().streamed)
+            return;
+        this.switching = true;
+        const start = this.started || this.video.currentTime > 0 ? this.video.currentTime : this.startAt();
+        const playing = !this.video.paused || !this.started;
+        const probe = await stream.probe();
+        this.switching = false;
+        if (!probe) {
+            this.errored = true;
+            this.unsupported.emit(true);
+            return;
+        }
+        this.setStreamLength(probe);
+        this.started = true;
+        this.resume = playing;
+        this.playback.set({ url: stream.url(start), offset: start, streamed: true });
+    }
+
+    private setStreamLength(probe: StreamProbe | null): void {
+        this.streamLength = probe?.duration ?? null;
         this.updateTime();
     }
 
@@ -278,7 +382,7 @@ export class VideoPlayerComponent {
             return;     // no frame decoded yet
         const canvas = Object.assign(document.createElement('canvas'), { width: video.videoWidth, height: video.videoHeight });
         canvas.getContext('2d')!.drawImage(video, 0, 0);
-        const fileName = `${this.name().replace(/\.[^./]+$/, '')} ${formatTime(video.currentTime).replaceAll(':', '-')}.png`;
+        const fileName = `${this.name().replace(/\.[^./]+$/, '')} ${formatTime(this.currentTime()).replaceAll(':', '-')}.png`;
         canvas.toBlob(blob => {
             if (!blob)
                 return;
@@ -313,20 +417,46 @@ export class VideoPlayerComponent {
         this.fullscreen.set(document.fullscreenElement === this.host);
     }
 
+    /** The file can't be played: the server's conversion takes over when it offers one. */
     protected failed(): void {
-        if (this.errored)
+        if (this.errored || this.switching)
             return;
+        if (this.stream() && !this.playback().streamed) {
+            void this.useStream();
+            return;
+        }
         this.errored = true;
-        this.unsupported.emit();
+        this.unsupported.emit(this.playback().streamed);
     }
 
-    protected startFrom(): void {
+    protected onMetadata(): void {
+        const playback = this.playback();
+        // Pictures the browser can't decode (HEVC...) play as a black screen with sound, without an error.
+        if (!playback.streamed && !this.video.videoWidth && this.stream()) {
+            void this.useStream();
+            return;
+        }
         const startAt = this.startAt();
-        if (startAt > 0 && !this.started) {
+        if (!playback.streamed && startAt > 0 && !this.started) {
             this.started = true;
             this.video.currentTime = Math.min(startAt, this.video.duration || startAt);
-            this.updateTime();
         }
+        if (this.resume) {
+            this.resume = false;
+            this.video.play().catch(() => this.updatePlayState());
+        }
+        this.updateTime();
+    }
+
+    /** A conversion loops by seeking back to its start (the element's own loop would restart at the conversion's offset). */
+    protected onEnded(): void {
+        if (this.playback().streamed && this.looping()) {
+            this.resume = true;
+            this.seekTo(0);
+            if (this.canSeekTo(0))
+                this.video.play().catch(() => { });
+        }
+        this.updatePlayState();
     }
 
     /* ---------- Controls visibility ---------- */
@@ -361,14 +491,15 @@ export class VideoPlayerComponent {
     protected updateTime(): void {
         const video = this.video;
         const seek = this.seekRef().nativeElement;
-        const duration = Number.isFinite(video.duration) ? video.duration : 0;
-        this.timeText.set(`${formatTime(video.currentTime)} / ${formatTime(duration)}`);
-        if (!seek.matches(':active')) {
+        const duration = this.length();
+        const position = this.currentTime();
+        this.timeText.set(`${formatTime(position)} / ${formatTime(duration)}`);
+        if (!seek.matches(':active') && this.pendingSeek === null) {
             seek.max = String(duration);
-            seek.value = String(video.currentTime);
+            seek.value = String(position);
         }
-        const buffered = video.buffered.length ? video.buffered.end(video.buffered.length - 1) : 0;
-        seek.style.setProperty('--played', duration ? `${(video.currentTime / duration) * 100}%` : '0%');
+        const buffered = this.playback().offset + (video.buffered.length ? video.buffered.end(video.buffered.length - 1) : 0);
+        seek.style.setProperty('--played', duration ? `${(position / duration) * 100}%` : '0%');
         seek.style.setProperty('--buffered', duration ? `${(buffered / duration) * 100}%` : '0%');
     }
 
@@ -481,13 +612,19 @@ export class VideoPlayerComponent {
 
     /* ---------- Seek bar and its preview ---------- */
 
+    /** Follows the bar while it is dragged; a conversion that didn't get there yet is asked again once it is released. */
     protected onSeekInput(): void {
-        const video = this.video;
         const value = Number(this.seekRef().nativeElement.value);
-        video.currentTime = value;
-        this.showPreview(video.duration ? value / video.duration : 0);
-        this.seekRef().nativeElement.style.setProperty('--played', video.duration ? `${(value / video.duration) * 100}%` : '0%');
-        this.timeText.set(`${formatTime(value)} / ${formatTime(video.duration)}`);
+        const duration = this.length();
+        if (this.canSeekTo(value)) {
+            this.pendingSeek = null;
+            this.video.currentTime = value - this.playback().offset;
+        } else {
+            this.pendingSeek = value;
+        }
+        this.showPreview(duration ? value / duration : 0);
+        this.seekRef().nativeElement.style.setProperty('--played', duration ? `${(value / duration) * 100}%` : '0%');
+        this.timeText.set(`${formatTime(value)} / ${formatTime(duration)}`);
         this.showControls();
     }
 
@@ -503,13 +640,18 @@ export class VideoPlayerComponent {
     }
 
     protected endSeekPreview(event: Event): void {
+        if (this.pendingSeek !== null) {
+            const target = this.pendingSeek;
+            this.pendingSeek = null;
+            this.seekTo(target);
+        }
         if ((event as PointerEvent).pointerType !== 'mouse')
             this.hidePreview();
     }
 
     /** Shows the time at `fraction` of the seek bar above it, with the trickplay frame of that moment if any. */
     private showPreview(fraction: number): void {
-        const duration = this.video.duration;
+        const duration = this.length();
         if (!Number.isFinite(duration) || duration <= 0)
             return;
         fraction = Math.min(Math.max(fraction, 0), 1);

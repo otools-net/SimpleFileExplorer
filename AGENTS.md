@@ -42,6 +42,7 @@ src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceColl
   Tagging/              TagService, TagGraph (parent inheritance), built-in tags, colors
   Thumbnails/           ThumbnailService (disk cache, concurrency gate), Ffmpeg (locate + run)
   Trickplay/            TrickplayService (background passes + player queue), VideoFingerprint
+  Streaming/            VideoStreamer (probe + ffmpeg → fragmented MP4 while it plays), VideoStreams (server-wide list + limit)
   FileTracking/         DuplicateFinder/Remover, RelinkService, MissingFileRecorder, SimilarVideoFinder, VideoMatcher
   Editing/              EditedImages (saves the web editor's pictures as new files: format check, name, index)
   Upgrades/             InstalledVersion (the install's version, ServerProperties table), Changelog (CHANGELOG.md parser),
@@ -261,7 +262,9 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   <path to ffmpeg>` (else env `FFMPEG`, else the `PATH`; this machine's path is under Dev machine) builds into `<tmp>/sfe-docs`, makes the sample library, starts the app on :5093,
   seeds it, takes every shot and checks the links (~6 min); `--shots-only <scene…>` retakes some on the last run's
   data. How to add a scene: that folder's `README.md`. Without ffmpeg, video tiles show an icon and trickplay/similar
-  videos stay empty: always pass it. Edge has no H.264, so sample videos are WebM (VP8).
+  videos stay empty: always pass it. Edge has no H.264, so sample videos are WebM (VP8). `--shots-only` after a
+  version bump meets the update gate (every scene fails on a missing element) and `run.mjs` then hangs with the app
+  still up: run the update (`POST api/migration` with `{"code":"doc-screenshots-setup"}`), then `node shots.mjs <scene>`.
 - **Agent tools:** put any reusable helper (scripts, drivers, generators) in `agents/tools/<job>/` with a `README.md`,
   never only in the scratchpad; work output goes to a temp folder, not the repo.
 
@@ -418,7 +421,9 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   right; everything else lives in `AdminPageComponent` (sections × sub-pages from `admin-sections.ts`, filtered by
   `visibleSections(canAny)` on each sub-page's `rights`; none = "Nothing to administer"; the open section lists its
   sub-pages under it in the sidebar, phones show them as chips (`role=tab`) instead; only the active sub-page is
-  rendered, so sections poll from their constructor and stop on destroy). A settings sub-page shows one tab of
+  rendered, so sections poll from their constructor and stop on destroy). Breadcrumbs (`.admin-crumbs` in `.admin-head`:
+  Administration › group › section › sub-page) link with `stayState()` (keeps `sfeFromList`); on phones the group is
+  hidden by CSS and Administration is a button running `back()`. A settings sub-page shows one tab of
   `settings-schema.ts` (ids differ: `locateSettings(tab)` finds its section and sub-page). The per-browser theme is
   the `browserTheme` group action of Interface › Appearance, outside the form. It is opened with history state
   `sfeFromLibrary`; section/sub-page changes `replaceUrl` and carry that state, so its back arrow is `history.back()` (the listing restores scroll and
@@ -560,6 +565,19 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
 - **Not indexed marks:** browse only: `AttachIndexDataAsync` sets `LibraryItem.Indexed` (files and folders, null when the
   index can't be read and in search results); the client fades `indexed === false` (`.unindexed`, `styles/items.css`)
   and `ListingStore.applyFileTags`/`applyScopeTags` clear it, since tagging indexes the files.
+- **Video streams (ffmpeg conversion):** `Sfe:Streaming` (`Mode` Off/Fallback/Always is per library, the rest server
+  keys). `GET api/streaming/play?path=&t=&id=` (`files.stream` + `files.view`) runs ffmpeg from `-ss t` into the response
+  (H.264/AAC fragmented MP4, `Accept-Ranges: none`, no length); H.264 8-bit 4:2:0 is copied when `CopyVideo`.
+  `VideoStreams` is a root singleton handed to each library (like `FfmpegLimits`): it counts `MaxStreams` over every
+  library and a new request with the same `{user}:{id}` stops that player's previous stream (seeks race the browser's
+  abort). `Ffmpeg.RunAsync` kills ffmpeg on any failure (a write to a gone viewer throws `IOException`, not OCE).
+  Client: `ConfigService.videoStream(path)` (null unless `/api/config` `streaming`) feeds `VideoPlayerComponent.stream`;
+  the player switches on `error` or `videoWidth === 0` at `loadedmetadata` (HEVC plays black with sound), keeps
+  `playback = { url, offset, streamed }`, shows `offset + currentTime` and the probe's duration, seeks inside
+  `video.seekable` and otherwise sets a new url from the target (a drag waits for release: `pendingSeek`). Make the
+  `VideoStream` once per item (`computed`): a new object resets the player. Safari may refuse it (no ranges).
+- **System info:** `GET api/system/info` (`server.settings`): the library's `LibraryPaths.Root` and `Ffmpeg` (configured,
+  found path, `GetVersionAsync` read once), shown in System › About; System › Video streams polls `api/streaming/sessions`.
 - **Caching:** images/thumbnails are sent `no-store`; trickplay sheets are cacheable (URL carries its `version`).
 - **Trickplay:** Core's `TrickplayService` run by the Api's `TrickplayWorker`. Per video
   `{CacheDirectory}/trickplay/{SHA1(folder)}/{SHA1(file)}/`: `info.json`, `{n}.jpg`, `fingerprint.bin`. Fresh =

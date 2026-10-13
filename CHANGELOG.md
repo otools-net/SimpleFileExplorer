@@ -3,6 +3,28 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.39.0
+
+### Added
+
+- Indexed folders show how many files and sub-folders the index has directly inside them, over their card or at the
+  end of their line.
+- Videos the browser can't play (AVI, WMV, HEVC...) are converted by the server with ffmpeg while they play, from where
+  they were; seeking works across the whole video. **Administration › Playback** can convert every video, or none, and
+  limits how many at once (right `files.stream`).
+- **Administration › System › Video streams** lists the videos being converted, with who watches them (right
+  `server.streams`).
+- **Administration › System › About** shows the library's folder on the server and whether ffmpeg was found, where,
+  and its version.
+
+### Changed
+
+- The search syntax help is now a dialog, grouped by theme and laid out for phones too; click an example to add it
+  to the search, or press `?` to open it.
+- Clicking your name in the ⋮ menu opens **Administration › My account**.
+- The administration page shows breadcrumbs above each page's title, following the section and page open; on phones
+  they lead back to the list of sections.
+
 ## 1.38.0
 
 ### Added

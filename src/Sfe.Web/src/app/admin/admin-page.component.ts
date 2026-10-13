@@ -35,7 +35,7 @@ export { leaveAdminPage } from './leave-admin-page';
 /**
  * The administration page (`admin?section=&page=`): the sections of admin-sections.ts in a sidebar, the sub-pages of
  * the open section listed under it (on phones, where the sections are a list of their own, as chips above the
- * sub-page). The settings sub-pages share one form (SettingsForm), saved from the bar at the bottom. Moving between
+ * sub-page); breadcrumbs above the heading say where the page is. The settings sub-pages share one form (SettingsForm), saved from the bar at the bottom. Moving between
  * sections and sub-pages replaces the history entry, so that "back" returns to the listing page.
  */
 @Component({
@@ -111,12 +111,29 @@ export { leaveAdminPage } from './leave-admin-page';
                 <main class="admin-main">
                     @if (!sectionList()) {
                         <header class="admin-head">
-                            @if (section().subpages.length > 1) {
-                                <p class="admin-eyebrow">{{ section().title }}</p>
-                                <h2>{{ subpage().title }}</h2>
-                            } @else {
-                                <h2>{{ section().title }}</h2>
-                            }
+                            <!-- Where this page is: Administration › group › section › sub-page (phones leave the group out). -->
+                            <nav class="admin-crumbs" aria-label="Breadcrumb">
+                                <ol>
+                                    <li>
+                                        @if (phone()) {
+                                            <button type="button" class="admin-crumb-link" title="Show the list of sections" (click)="back()">Administration</button>
+                                        } @else {
+                                            <a routerLink="/admin" [state]="historyState" replaceUrl title="Open the first section">Administration</a>
+                                        }
+                                    </li>
+                                    <li class="admin-crumb-group">{{ section().group }}</li>
+                                    @if (section().subpages.length > 1) {
+                                        <li>
+                                            <a routerLink="/admin" [queryParams]="{ section: section().id }" [state]="stayState()" replaceUrl
+                                               [title]="'Open the first page of ' + section().title">{{ section().title }}</a>
+                                        </li>
+                                        <li aria-current="page">{{ subpage().title }}</li>
+                                    } @else {
+                                        <li aria-current="page">{{ section().title }}</li>
+                                    }
+                                </ol>
+                            </nav>
+                            <h2>{{ section().subpages.length > 1 ? subpage().title : section().title }}</h2>
                             <p>{{ section().description }}</p>
                         </header>
                         <!-- Phones have no sidebar: the sub-pages are chips. -->
@@ -170,7 +187,7 @@ export { leaveAdminPage } from './leave-admin-page';
                                         <sfe-tasks-section [tab]="subpage().id" (selectTab)="select($event)" (openTrickplay)="go('trickplay', 'activity')" />
                                     }
                                     @case ('system') {
-                                        <sfe-system-section />
+                                        <sfe-system-section [tab]="subpage().id" />
                                     }
                                     @case ('access') {
                                         <sfe-access-section [tab]="subpage().id" />
@@ -362,8 +379,13 @@ export class AdminPageComponent implements OnInit {
         return this.router.navigate(['/admin'], {
             queryParams: { section: target.id, page: page && page !== target.subpages[0].id ? page : null },
             replaceUrl: true,
-            state: this.openedFromList() ? { ...this.historyState, [FROM_LIST]: true } : this.historyState,
+            state: this.stayState(),
         });
+    }
+
+    /** The history state of an entry replacing this one: it still returns where this one did. */
+    protected stayState(): Record<string, boolean> {
+        return this.openedFromList() ? { ...this.historyState, [FROM_LIST]: true } : this.historyState;
     }
 
     /** The entry shown is a section opened from the list of sections (phones). */

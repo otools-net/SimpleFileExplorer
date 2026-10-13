@@ -370,6 +370,25 @@ public sealed class TaggingTests
     }
 
     [TestMethod]
+    public async Task ListingsCountTheIndexedItemsDirectlyInsideEachFolder()
+    {
+        await ScanAsync("RepeatedDir");
+        _library.AddFile("RepeatedDir/after the scan.txt", 10);
+        _library.AddFile("RepeatedDir/New folder/file.txt", 10);
+        var browser = _services.Get<Sfe.Core.Library.LibraryBrowser>();
+
+        var root = await Tags.AttachIndexDataAsync(browser.List("", 0, 100)!.Items, TestContext.CancellationToken);
+        var repeated = await Tags.AttachIndexDataAsync(browser.List("RepeatedDir", 0, 100)!.Items, TestContext.CancellationToken);
+
+        // Two files and two folders: neither what was added since the scan nor the files of the sub-folders.
+        Assert.AreEqual(4, root.Single(i => i.Name == "RepeatedDir").IndexedItems);
+        Assert.IsNull(root.Single(i => i.Name == "ChildDir").IndexedItems);
+        Assert.IsNull(root.Single(i => i.Name == "RFile1.txt").IndexedItems);
+        Assert.AreEqual(2, repeated.Single(i => i.Name == "ChildDir").IndexedItems);
+        Assert.IsNull(repeated.Single(i => i.Name == "New folder").IndexedItems);
+    }
+
+    [TestMethod]
     public async Task AddsTheTaggingTablesToAnExistingSqliteIndex()
     {
         // The index as the version before tagging created it.

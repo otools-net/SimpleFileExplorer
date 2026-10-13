@@ -108,6 +108,7 @@ export function fakeConfig(overrides: Partial<ClientConfig> = {}): ClientConfig 
         tenant: LIBRARY,
         tenants: [LIBRARY],
         editor: { outputFolder: 'Edited', quality: 92 },
+        streaming: null,
         ...overrides,
     };
 }

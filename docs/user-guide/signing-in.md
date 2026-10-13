@@ -23,7 +23,7 @@ A lost administrator password is reset as described in [First start](../first-st
 
 The ⋮ button at the top right holds:
 
-- who is signed in, and the space you are in;
+- who is signed in, and the space you are in: click your name to open **My account** (your preferences and password);
 - **Scan this folder** and **Remove from index…** ([Scanning](scanning.md));
 - your other spaces, if you have several: picking one switches to it (and reloads the page);
 - **Administration** ([the administration page](../administration/README.md)): settings, tags, duplicates, accounts,

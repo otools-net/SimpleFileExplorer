@@ -5,7 +5,9 @@ import { ApiMock, deferred, fakeConfig, loadConfig, mockApi, settle, tag, testPr
 import { ListingStore } from '../listing.store';
 import { SearchBoxState } from '../search-explain/search-explain.component';
 import { matchedParts, SearchHistory } from '../search-history.service';
+import { Dialogs } from '../dialogs.service';
 import { SearchBoxComponent } from './search-box.component';
+import { SEARCH_SYNTAX } from './search-help.dialog';
 
 describe('SearchBoxComponent', () => {
     let api: ApiMock;
@@ -350,6 +352,41 @@ describe('SearchBoxComponent', () => {
 
             expect(options()).toHaveLength(12);
             expect(options().at(-1)!.textContent).toContain('Child 2');
+        });
+    });
+
+    describe('syntax help', () => {
+        const dialog = () => element.querySelector<HTMLDialogElement>('dialog.search-help')!;
+        const examples = () => [...dialog().querySelectorAll<HTMLButtonElement>('.search-help-example')];
+
+        it('opens as a dialog from its button and from the Dialogs registry', async () => {
+            expect(dialog().open).toBe(false);
+            element.querySelector<HTMLButtonElement>('button[aria-label="Search syntax"]')!.click();
+            await settle();
+            expect(dialog().open).toBe(true);
+
+            dialog().close();
+            TestBed.inject(Dialogs).searchHelp()!.open();
+            await settle();
+            expect(dialog().open).toBe(true);
+        });
+
+        it('shows every example of the syntax as a button', () => {
+            const all = SEARCH_SYNTAX.flatMap(section => section.rows.flatMap(row => row.examples));
+            expect(examples().map(button => button.textContent!.trim())).toEqual(all);
+            expect(all).toContain('r:hr');
+        });
+
+        it('adds a picked example to the box, closes and searches it', async () => {
+            await typeText('cat ', 0);
+            TestBed.inject(Dialogs).searchHelp()!.open();
+            examples().find(button => button.textContent!.trim() === 's:>1gb')!.click();
+            await settle(400);
+
+            expect(dialog().open).toBe(false);
+            expect(input().value).toBe('cat s:>1gb');
+            expect(document.activeElement).toBe(input());
+            expect(navigate).toHaveBeenLastCalledWith({ q: 'cat s:>1gb' }, { replace: false });
         });
     });
 

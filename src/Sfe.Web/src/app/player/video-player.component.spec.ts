@@ -1,6 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { settle } from '../../testing/fakes';
+import { VideoStream } from '../core/config.service';
+import { StreamProbe } from '../core/models';
 import { VideoPlayerComponent } from './video-player.component';
 
 describe('VideoPlayerComponent', () => {
@@ -215,6 +217,126 @@ describe('VideoPlayerComponent', () => {
             press('pointerdown', 900);
             await vi.advanceTimersByTimeAsync(2000);
             expect(video().playbackRate).toBe(1);
+        });
+    });
+
+    describe('conversion by the server', () => {
+        @Component({
+            imports: [VideoPlayerComponent],
+            template: `<sfe-video-player src="api/files/raw/clip.avi" [stream]="stream()" [startAt]="startAt()" (unsupported)="failures.push($event)" />`,
+        })
+        class StreamHost {
+            readonly stream = signal<VideoStream | null>(null);
+            readonly startAt = signal(0);
+            readonly failures: boolean[] = [];
+        }
+
+        let host: ComponentFixture<StreamHost>;
+        const element = () => host.nativeElement.querySelector('video') as HTMLVideoElement;
+        const component = () => host.debugElement.children[0].componentInstance as VideoPlayerComponent;
+        const convertButton = () => host.nativeElement.querySelector('.player-convert') as HTMLButtonElement | null;
+        const timeText = () => (host.nativeElement.querySelector('.player-time') as HTMLElement).textContent;
+
+        function fakeStream(always = false, probe: StreamProbe | null = { duration: 600, transcoded: true }) {
+            return {
+                always,
+                url: vi.fn((start: number) => `api/streaming/play?t=${start}`),
+                probe: vi.fn(() => Promise.resolve(probe)),
+            };
+        }
+
+        /** jsdom's media elements neither seek nor know what they can seek in. */
+        function fakeMedia(seekable: [number, number][] = []): void {
+            let time = 0;
+            Object.defineProperty(element(), 'currentTime', { configurable: true, get: () => time, set: (value: number) => time = value });
+            Object.defineProperty(element(), 'seekable', {
+                configurable: true,
+                value: { length: seekable.length, start: (i: number) => seekable[i][0], end: (i: number) => seekable[i][1] },
+            });
+        }
+
+        async function createWith(stream: ReturnType<typeof fakeStream> | null, startAt = 0): Promise<void> {
+            host = TestBed.createComponent(StreamHost);
+            host.componentInstance.stream.set(stream);
+            host.componentInstance.startAt.set(startAt);
+            await settle();
+        }
+
+        it('says the browser can\'t play the video when the server converts none', async () => {
+            await createWith(null);
+            expect(convertButton()).toBeNull();
+            element().dispatchEvent(new Event('error'));
+            await settle();
+            expect(host.componentInstance.failures).toEqual([false]);
+        });
+
+        it('plays the conversion from where it was to start when the file fails', async () => {
+            const stream = fakeStream();
+            await createWith(stream, 30);
+            expect(element().getAttribute('src')).toBe('api/files/raw/clip.avi');
+            expect(convertButton()).not.toBeNull();
+
+            element().dispatchEvent(new Event('error'));
+            await settle();
+            expect(stream.probe).toHaveBeenCalledOnce();
+            expect(stream.url).toHaveBeenCalledWith(30);
+            expect(element().getAttribute('src')).toBe('api/streaming/play?t=30');
+            expect(host.componentInstance.failures).toEqual([]);
+            expect(convertButton()).toBeNull();
+
+            fakeMedia();
+            element().dispatchEvent(new Event('loadedmetadata'));
+            await settle();
+            expect(component().currentTime()).toBe(30);
+            expect(timeText()).toBe('0:30 / 10:00');      // the length comes from the server
+
+            element().dispatchEvent(new Event('error'));
+            await settle();
+            expect(host.componentInstance.failures).toEqual([true]);
+        });
+
+        it('converts a video whose pictures the browser can\'t decode', async () => {
+            const stream = fakeStream();
+            await createWith(stream);
+            Object.defineProperty(element(), 'videoWidth', { configurable: true, value: 0 });
+            element().dispatchEvent(new Event('loadedmetadata'));
+            await settle();
+            expect(element().getAttribute('src')).toBe('api/streaming/play?t=0');
+        });
+
+        it('gives up when the server can\'t convert it either', async () => {
+            await createWith(fakeStream(false, null));
+            element().dispatchEvent(new Event('error'));
+            await settle();
+            expect(host.componentInstance.failures).toEqual([true]);
+            expect(element().getAttribute('src')).toBe('api/files/raw/clip.avi');
+        });
+
+        it('converts the video on screen with its button', async () => {
+            const stream = fakeStream();
+            await createWith(stream);
+            convertButton()!.click();
+            await settle();
+            expect(element().getAttribute('src')).toBe('api/streaming/play?t=0');
+        });
+
+        it('always converts, seeking within what arrived and asking again further away', async () => {
+            const stream = fakeStream(true);
+            await createWith(stream, 5);
+            expect(element().getAttribute('src')).toBe('api/streaming/play?t=5');
+            expect(convertButton()).toBeNull();
+
+            fakeMedia();
+            expect(component().handleKey(new KeyboardEvent('keydown', { key: 'l' }))).toBe(true);
+            await settle();
+            expect(element().getAttribute('src')).toBe('api/streaming/play?t=15');
+
+            fakeMedia([[0, 60]]);
+            component().handleKey(new KeyboardEvent('keydown', { key: 'l' }));
+            await settle();
+            expect(element().getAttribute('src')).toBe('api/streaming/play?t=15');
+            expect(element().currentTime).toBe(10);
+            expect(component().currentTime()).toBe(25);
         });
     });
 

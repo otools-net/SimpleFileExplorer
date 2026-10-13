@@ -31,6 +31,10 @@ are shown faded, back to full strength under the mouse; their hint says so. Brow
 but search, duplicates and tag searches only find them after a scan. Tagging a file, or the files of a folder, indexes
 them.
 
+An indexed folder shows how many items the index has **directly inside it** (its files and sub-folders, not what the
+sub-folders hold, as of the last scan): in the bottom-right corner of its card, or at the end of its line in the list
+layout. Hover the number for its meaning.
+
 ## Moving around
 
 ![A folder with its folder pictures](../images/library-folders.png)

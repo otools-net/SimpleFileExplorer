@@ -31,6 +31,8 @@ async function mask(b) {
         const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
         for (let n; (n = walker.nextNode());) n.nodeValue = n.nodeValue.replace(re, 'D:\\\\Media');
         for (const i of document.querySelectorAll('input, textarea')) i.value = i.value.replace(re, 'D:\\\\Media');
+        // System › About: this machine's ffmpeg.
+        for (const c of document.querySelectorAll('.system-ffmpeg code')) c.textContent = 'C:\\\\Program Files\\\\ffmpeg\\\\bin\\\\ffmpeg.exe';
         return 1;
     })()`);
 }
@@ -278,6 +280,8 @@ const scenes = {
         await b.shot(OUT + 'phone-scrolled.png');
         await b.open('admin');
         await b.shot(OUT + 'phone-admin.png');
+        await b.open(admin('tracking', 'missing'));
+        await b.shot(OUT + 'phone-admin-section.png');
         await b.close();
     },
     async light() {
@@ -304,6 +308,19 @@ const scenes = {
             await mask(b);
             await b.shot(OUT + `admin-${section}${page ? '-' + page : ''}.png`);
         }
+        await b.close();
+    },
+    async streams() {
+        const b = await session({ height: 900 });
+        await b.open(admin('system', 'streams'), 2000);
+        // Two conversions started from this page (leaving it would end them). The sample clips convert in a moment:
+        // a slow download makes ffmpeg wait, so that they stay listed until the next refresh shows them.
+        await b.send('Network.enable');
+        await b.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: 4000, uploadThroughput: -1 });
+        await b.eval(`window.held = [['Videos/Holidays/Beach walk.webm', 0], ['Videos/Timelapses/Clouds.webm', 2]].map(([path, t], i) =>
+            fetch('api/streaming/play?' + new URLSearchParams({ path, t: String(t), id: 'doc' + i })).then(r => r.status)); 1`);
+        await b.eval(`new Promise(resolve => setTimeout(() => resolve(1), 4500))`);
+        await b.shot(OUT + 'admin-system-streams.png');
         await b.close();
     },
 };

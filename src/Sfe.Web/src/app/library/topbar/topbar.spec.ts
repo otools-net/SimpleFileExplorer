@@ -175,8 +175,8 @@ describe('MainMenuComponent', () => {
     it('offers the scans, the administration page, full screen and signing out', async () => {
         await create();
 
-        expect([...element.querySelectorAll('[role=menuitem]')].map(e => e.textContent!.trim()))
-            .toEqual(['Scan this folder', 'Remove from index…', 'Administration', 'Toggle fullscreen', 'Sign out']);
+        expect([...element.querySelectorAll('[role=menuitem]')].map(e => e.textContent!.trim().split(/\s+/)[0]))
+            .toEqual(['admin', 'Scan', 'Remove', 'Administration', 'Toggle', 'Sign']);
         expect(element.querySelector('.menu-account')!.textContent).toContain('admin');
         expect(element.querySelector('.menu-account small')!.textContent).toBe('Library');
     });
@@ -250,6 +250,29 @@ describe('MainMenuComponent', () => {
         expect(TestBed.inject(Popovers).open()).toBeNull();
         expect(String(navigate.mock.lastCall![0])).toBe('/admin');
         expect(navigate.mock.lastCall![1]).toEqual(expect.objectContaining({ state: { sfeFromLibrary: true } }));
+    });
+
+    it('links the account line to Administration › My account, closing first', async () => {
+        await create();
+        TestBed.inject(Popovers).toggle('menu');
+        await settle();
+        const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+        const link = element.querySelector<HTMLAnchorElement>('a.menu-account')!;
+
+        expect(link.getAttribute('href')).toBe('/admin?section=account');
+        link.click();
+        await settle();
+
+        expect(TestBed.inject(Popovers).open()).toBeNull();
+        expect(String(navigate.mock.lastCall![0])).toBe('/admin?section=account');
+        expect(navigate.mock.lastCall![1]).toEqual(expect.objectContaining({ state: { sfeFromLibrary: true } }));
+    });
+
+    it('keeps the account line plain without the rights of My account', async () => {
+        await create({ rights: [Rights.browse, Rights.scan] });
+
+        expect(element.querySelector('a.menu-account')).toBeNull();
+        expect(element.querySelector('p.menu-account')!.textContent).toContain('admin');
     });
 
     it('closes before opening the removal from the index', async () => {

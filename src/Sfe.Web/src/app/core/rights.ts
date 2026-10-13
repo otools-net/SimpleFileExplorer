@@ -10,6 +10,7 @@ export const Rights = {
     externalPlayer: 'files.external',
     copyPaths: 'files.copyPaths',
     editImages: 'files.edit',
+    stream: 'files.stream',
     viewTags: 'tags.view',
     assignTags: 'tags.assign',
     manageTags: 'tags.manage',
@@ -42,6 +43,7 @@ export const Rights = {
     shutdown: 'server.shutdown',
     dismount: 'server.dismount',
     backup: 'server.backup',
+    viewStreams: 'server.streams',
 } as const;
 
 export type Right = typeof Rights[keyof typeof Rights];

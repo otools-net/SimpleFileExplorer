@@ -17,10 +17,14 @@ public sealed class Ffmpeg
         _options = options;
         _logger = logger;
         _path = new Lazy<string?>(Locate);
+        _version = new Lazy<Task<string?>>(ReadVersionAsync);
     }
 
     /// <summary>Full path of the executable, or null when it can't be found.</summary>
     public string? ExecutablePath => _path.Value;
+
+    /// <summary>The executable as configured (<c>Thumbnails:FfmpegPath</c>): a path, or a name looked up on PATH.</summary>
+    public string Configured => _options.CurrentValue.Thumbnails.FfmpegPath;
 
     public bool IsAvailable => ExecutablePath is not null;
 
@@ -48,8 +52,9 @@ public sealed class Ffmpeg
         {
             await Task.WhenAll(stdout, stderr, process.WaitForExitAsync(limit.Token));
         }
-        catch (OperationCanceledException)
+        catch (Exception ex)
         {
+            // Also when writing the output failed (a viewer gone from a stream): ffmpeg would keep running unseen.
             try
             {
                 process.Kill(entireProcessTree: true);
@@ -59,12 +64,46 @@ public sealed class Ffmpeg
                 // Exited in the meantime.
             }
 
+            if (ex is not OperationCanceledException)
+                throw;
             cancellationToken.ThrowIfCancellationRequested();
             // Not a failure of the file: a busy host or a slow network drive can make ffmpeg time out.
             throw new TimeoutException($"ffmpeg timed out after {timeout.TotalSeconds:0} s.");
         }
 
         return (process.ExitCode, stderr.Result);
+    }
+
+    /// <summary>The version ffmpeg reports (<c>7.1-full_build...</c>), read once; null when it is missing or says none.</summary>
+    public Task<string?> GetVersionAsync() => _version.Value;
+
+    private readonly Lazy<Task<string?>> _version;
+
+    private async Task<string?> ReadVersionAsync()
+    {
+        if (!IsAvailable)
+            return null;
+        try
+        {
+            var output = new MemoryStream();
+            await RunAsync(["-hide_banner", "-version"], TimeSpan.FromSeconds(10), output);
+            return ParseVersion(System.Text.Encoding.UTF8.GetString(output.ToArray()));
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or System.ComponentModel.Win32Exception)
+        {
+            _logger.LogWarning(ex, "Cannot read the version of ffmpeg");
+            return null;
+        }
+    }
+
+    /// <summary>The word after "ffmpeg version" on the first line of <c>ffmpeg -version</c>.</summary>
+    internal static string? ParseVersion(string output)
+    {
+        const string prefix = "ffmpeg version ";
+        var line = output.Split('\n', 2)[0].Trim();
+        return line.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && line[prefix.Length..].Split(' ', 2)[0] is { Length: > 0 } version
+            ? version
+            : null;
     }
 
     private string? Locate()

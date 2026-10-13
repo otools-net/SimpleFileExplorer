@@ -88,6 +88,19 @@
     -webkit-box-orient: vertical;
 }
 
+/*
+ * How many files and sub-folders the index has directly in the folder: over the card's pictures (bottom right, like a
+ * tile's media badge), at the end of a line otherwise. Neither changes the size of the folder.
+ */
+.folder-cover .folder-count { z-index: 1; font-variant-numeric: tabular-nums; text-transform: none; }
+.folder > .folder-count {
+    flex: none;
+    margin-left: auto;
+    color: var(--text-muted);
+    font: 12px/1 var(--mono);
+    font-variant-numeric: tabular-nums;
+}
+
 
 /* ---------- A folder's buttons (tags, copy path) ---------- */
 

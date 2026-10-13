@@ -72,7 +72,13 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section { d
 }
 
 .admin-head h2 { margin: 0; font-size: 22px; }
-.admin-head .admin-eyebrow { margin: 0 0 2px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+/* Breadcrumbs: Administration, group, section, sub-page; the last one is the page shown. */
+.admin-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; margin: 0 0 4px; padding: 0; list-style: none; font-size: 12.5px; color: var(--text-muted); }
+.admin-crumbs li { display: flex; align-items: center; min-width: 0; }
+.admin-crumbs li + li::before { content: "\203A"; margin: 0 7px; opacity: .7; }
+.admin-crumbs a, .admin-crumb-link { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-decoration: none; cursor: pointer; }
+.admin-crumbs a:hover, .admin-crumb-link:hover { color: var(--accent); text-decoration: underline; }
+.admin-crumbs [aria-current="page"] { overflow: hidden; color: var(--accent); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .admin-head p { margin: 4px 0 0; color: var(--text-muted); }
 
 .admin-panel { display: flex; flex: 1; flex-direction: column; gap: 14px; padding-bottom: 28px; }
@@ -100,6 +106,12 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section { d
 .system-facts > div { display: contents; }
 .system-facts dt { color: var(--text-muted); }
 .system-facts dd { margin: 0; overflow-wrap: anywhere; }
+.system-ffmpeg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.system-ffmpeg .field-hint { flex-basis: 100%; }
+.system-badge { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+.system-badge .icon { width: 14px; height: 14px; stroke-width: 2.4; }
+.system-badge.found { color: #4caf7d; }
+.system-badge.missing { color: var(--danger); }
 
 /* Shown on phones only. */
 .admin-nav-description, .admin-nav-chevron { display: none; }
@@ -152,6 +164,8 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section { d
     .admin-layout.section-list .admin-main { min-height: 0; padding-top: 0; }
     .admin-main { min-height: calc(100dvh - var(--topbar-h)); padding: 16px 12px 0; }
     .admin-head h2 { font-size: 19px; }
+    /* No room for the group, which the list of sections shows anyway. */
+    .admin-crumbs .admin-crumb-group { display: none; }
     /* No sidebar: the sub-pages are chips above the page, wrapping so that all of them stay in view. */
     .admin-chips { flex-wrap: wrap; gap: 6px; margin-top: 0; padding: 0 0 12px; overflow: visible; }
     .admin-chips .settings-tab {

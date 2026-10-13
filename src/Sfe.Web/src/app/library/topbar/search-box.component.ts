@@ -8,7 +8,7 @@ import { describeTag, TAG_TERM, termAt, termValue } from '../../tags/tags';
 import { ListingStore } from '../listing.store';
 import { SearchBoxState } from '../search-explain/search-explain.component';
 import { matchedParts, SearchHistory } from '../search-history.service';
-import { Popovers } from './popovers.service';
+import { SearchHelpDialog } from './search-help.dialog';
 
 const LIVE_SEARCH_MIN_LENGTH = 4;   // search as you type once the query is longer than 3 characters
 const LIVE_SEARCH_DELAY = 300;      // ms of typing pause before the search runs
@@ -30,7 +30,7 @@ interface TagTerm {
  */
 @Component({
     selector: 'form[sfeSearchBox]',
-    imports: [IconComponent, TagChipComponent],
+    imports: [IconComponent, SearchHelpDialog, TagChipComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'search', role: 'search', autocomplete: 'off', '(submit)': 'submit($event)' },
     template: `
@@ -50,30 +50,11 @@ interface TagTerm {
                 (click)="search.setExplainOpen(!search.explainOpen())">
             <svg sfeIcon="explain"></svg>
         </button>
-        <button type="button" class="icon-button ghost" aria-label="Search syntax" title="Search syntax and tips" aria-controls="search-help"
-                [attr.aria-expanded]="popovers.open() === 'search-help'" (click)="popovers.toggle('search-help')">
+        <button type="button" class="icon-button ghost" aria-label="Search syntax" title="Search syntax and tips (?)"
+                aria-haspopup="dialog" (click)="help.open()">
             <svg sfeIcon="help"></svg>
         </button>
-        <div class="popover search-help" id="search-help" [hidden]="popovers.open() !== 'search-help'">
-            <h3>Search syntax</h3>
-            <dl>
-                <dt><code>cat dog</code></dt><dd>names containing both words</dd>
-                <dt><code>cat, dog</code></dt><dd>either one</dd>
-                <dt><code>cat -kitten</code></dt><dd>exclude a word</dd>
-                <dt><code>s:&gt;1gb</code> <code>s:&lt;=10mb</code> <code>s:700mb</code></dt><dd>size: larger, smaller, about</dd>
-                <dt><code>e:mp4</code></dt><dd>extension</dd>
-                <dt><code>type:image</code> <code>type:video</code> <code>type:audio</code> <code>type:other</code></dt><dd>kind of file, by its extension</dd>
-                <dt><code>w:&gt;=1920</code> <code>h:&lt;720</code> <code>r:&gt;1280x720</code></dt><dd>resolution of photos and videos: width, height, both sides</dd>
-                <dt><code>d:&gt;10m</code> <code>d:1:30</code></dt><dd>duration of videos and audio: longer than, about</dd>
-                <dt><code>*holiday</code></dt><dd>match the whole path, not just the name</dd>
-                <dt><code>t:beach</code> <code>t:"two words"</code></dt><dd>tagged with it, or with a tag inheriting from it; type <code>t:</code> for suggestions</dd>
-                <dt><code>special:untagged</code></dt><dd>files without tags</dd>
-                <dt><code>-t:work</code> <code>-e:jpg</code> <code>-s:&gt;1gb</code> <code>-w:1920</code></dt><dd>a <code>-</code> before any term finds the files it doesn't</dd>
-            </dl>
-            <p>Results update as you type once the query has more than 3 characters; press Enter to search shorter ones.</p>
-            <p>Searches the current folder and below. Only indexed files are found: use <strong>Scan this folder</strong> in the ⋮ menu to refresh the index.</p>
-            <p>Files with a hidden tag, like <strong>Archived</strong>, only show up when the search names that tag.</p>
-        </div>
+        <sfe-search-help #help (use)="addTerm($event)" />
         <ul class="popover tag-options search-tag-options" role="listbox" [attr.aria-label]="recent().length ? 'Recent searches' : 'Tags'"
             [id]="listId" [hidden]="!suggesting()">
             @for (query of recent(); track query; let index = $index) {
@@ -106,7 +87,6 @@ interface TagTerm {
 export class SearchBoxComponent {
     protected readonly store = inject(ListingStore);
     protected readonly search = inject(SearchBoxState);
-    protected readonly popovers = inject(Popovers);
     private readonly api = inject(Api);
     private readonly history = inject(SearchHistory);
     private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
@@ -165,6 +145,16 @@ export class SearchBoxComponent {
         const input = this.input().nativeElement;
         input.focus();
         input.select();
+    }
+
+    /** Adds `term` (an example of the syntax help) at the end of the box and searches as if it had been typed. */
+    protected addTerm(term: string): void {
+        const input = this.input().nativeElement;
+        const text = input.value.trimEnd();
+        input.value = text ? `${text} ${term}` : term;
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+        this.onInput();
     }
 
     protected submit(event: Event): void {

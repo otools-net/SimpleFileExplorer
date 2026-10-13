@@ -479,7 +479,8 @@ public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, Librar
     /// <summary>
     /// Fills what the index knows of the files among <paramref name="items"/>: their <see cref="LibraryItem.Tags"/>,
     /// the resolution of images and videos and the duration of videos and audio files; and for files and folders
-    /// alike, whether the index has them (<see cref="LibraryItem.Indexed"/>).
+    /// alike, whether the index has them (<see cref="LibraryItem.Indexed"/>), and what an indexed folder holds
+    /// (<see cref="LibraryItem.IndexedItems"/>).
     /// </summary>
     public async Task<IReadOnlyList<LibraryItem>> AttachIndexDataAsync(IReadOnlyList<LibraryItem> items, CancellationToken cancellationToken = default)
     {
@@ -502,12 +503,32 @@ public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, Librar
             var folderNames = folderByFullName.Keys.ToList();
             var indexedFolders = await db.Directories
                 .Where(d => folderNames.Contains(d.FullName))
-                .Select(d => d.FullName)
+                .Select(d => new { d.Id, d.FullName })
                 .ToListAsync(cancellationToken);
+
+            // What each indexed folder holds directly: two GROUP BYs on the parent keys' indexes, never the whole tree.
+            var ids = indexedFolders.Select(f => f.Id).ToList();
+            var counts = new Dictionary<int, int>();
+            if (ids.Count > 0)
+            {
+                var files = await db.Files
+                    .Where(f => ids.Contains(f.DirectoryId))
+                    .GroupBy(f => f.DirectoryId)
+                    .Select(g => new { Id = g.Key, Count = g.Count() })
+                    .ToListAsync(cancellationToken);
+                var folders = await db.Directories
+                    .Where(d => d.ParentId != null && ids.Contains(d.ParentId.Value))
+                    .GroupBy(d => d.ParentId!.Value)
+                    .Select(g => new { Id = g.Key, Count = g.Count() })
+                    .ToListAsync(cancellationToken);
+                foreach (var row in files.Concat(folders))
+                    counts[row.Id] = counts.GetValueOrDefault(row.Id) + row.Count;
+            }
+
             foreach (var folder in indexedFolders)
             {
-                if (folderByFullName.TryGetValue(folder, out var index))
-                    result[index] = result[index] with { Indexed = true };
+                if (folderByFullName.TryGetValue(folder.FullName, out var index))
+                    result[index] = result[index] with { Indexed = true, IndexedItems = counts.GetValueOrDefault(folder.Id) };
             }
         }
 

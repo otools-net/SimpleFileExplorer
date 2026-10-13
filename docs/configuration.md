@@ -60,6 +60,7 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Browse:DefaultPageSize`, `MaxPageSize`, `FolderPictures`, `CopyPaths`, `ShowResolution`, `ShowDuration`, `ResolutionMark`, `ImageHighResolutionPixels`, `VideoHighResolutionPixels` | [Interface › Browsing](administration/interface.md#browsing) |
 | `Sfe:Search:DefaultPageSize`, `MaxPageSize`, `Explain`, `HistorySize` | [Interface › Search](administration/interface.md#search) |
 | `Sfe:Player:SeekSeconds`, `Loop`, `ExternalUrl`, `ExternalName`, `LinkLifetimeMinutes` | [Playback](administration/playback.md) |
+| `Sfe:Streaming:Mode` (`Fallback`, `Always`, `Off`), `MaxStreams`, `Quality`, `MaxHeight`, `CopyVideo` | [Playback › Videos converted by the server](administration/playback.md#videos-converted-by-the-server) |
 | `Sfe:Scan:IgnoredDirectories`, `IgnoredFiles`, `ExcludedFolders`, `Sfe:ShowHiddenItems` | [Scanning › What to scan](administration/scanning.md#what-to-scan) |
 | `Sfe:FileTypes:Images`, `Videos`, `Audio` | [Scanning › File types](administration/scanning.md#file-types) |
 | `Sfe:Scan:ComputeHashes`, `ReadResolution`, `Parallelism` | [Scanning › Indexing](administration/scanning.md#indexing) |

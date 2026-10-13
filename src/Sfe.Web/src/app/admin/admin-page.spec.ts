@@ -33,7 +33,10 @@ async function open(url: string, state?: Record<string, unknown>): Promise<void>
 
 const url = () => TestBed.inject(Router).url;
 const heading = () => element.querySelector('.admin-head h2')!.textContent;
-const eyebrow = () => element.querySelector('.admin-head .admin-eyebrow')?.textContent ?? null;
+/** The breadcrumbs shown (CSS hides the group's on phones, jsdom doesn't). */
+const crumbs = () => [...element.querySelectorAll('.admin-crumbs li')].map(li => li.textContent!.trim());
+/** The section in the breadcrumbs when the page shown is one of its sub-pages. */
+const eyebrow = () => element.querySelector('.admin-crumbs li:nth-child(3) a')?.textContent ?? null;
 /** The links of the sections in the sidebar. */
 const navItem = (title: string) => [...element.querySelectorAll<HTMLAnchorElement>('.admin-nav > ul > li > a')].find(a => a.querySelector('span')!.textContent === title)!;
 /** The sub-pages listed under the open section. */
@@ -70,6 +73,7 @@ describe('AdminPageComponent', () => {
 
         expect(heading()).toBe('Thumbnails');
         expect(eyebrow()).toBeNull();
+        expect(crumbs()).toEqual(['Administration', 'Media', 'Thumbnails']);
         expect(subItems()).toHaveLength(0);
         expect(navItem('Thumbnails').getAttribute('aria-current')).toBe('page');
         expect(document.title).toBe('Thumbnails – Administration – SFE');
@@ -116,6 +120,30 @@ describe('AdminPageComponent', () => {
         const back = vi.spyOn(history, 'back').mockImplementation(() => { });
         element.querySelector<HTMLButtonElement>('[aria-label="Back to the library"]')!.click();
         expect(back).toHaveBeenCalled();
+    });
+
+    it('follows the sections and sub-pages in its breadcrumbs, which lead back up', async () => {
+        await open('/admin', { sfeFromLibrary: true });
+        expect(crumbs()).toEqual(['Administration', 'Preferences', 'Interface', 'Appearance']);
+        expect(element.querySelector('.admin-crumbs [aria-current=page]')!.textContent).toBe('Appearance');
+
+        navItem('Background tasks').click();
+        await settle();
+        subItem('History').click();
+        await settle();
+        expect(crumbs()).toEqual(['Administration', 'Server', 'Background tasks', 'History']);
+
+        element.querySelector<HTMLAnchorElement>('.admin-crumbs li:nth-child(3) a')!.click();
+        await settle();
+        expect(url()).toBe('/admin?section=tasks');
+        expect(crumbs()).toEqual(['Administration', 'Server', 'Background tasks', 'Tasks']);
+        expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true }));
+
+        element.querySelector<HTMLAnchorElement>('.admin-crumbs li:first-child a')!.click();
+        await settle();
+        expect(url()).toBe('/admin');
+        expect(heading()).toBe('Appearance');
+        expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true }));
     });
 
     it('goes to the folder browsed last when not opened from the listing page', async () => {
@@ -170,6 +198,22 @@ describe('AdminPageComponent', () => {
         element.querySelector<HTMLButtonElement>('[aria-label="Back to the library"]')!.click();
         await settle();
         expect(url()).toBe('/');
+    });
+
+    it('goes from its breadcrumbs back to the list of sections on phones', async () => {
+        setMediaQuery('(max-width: 760px)', true);
+        await open('/admin', { sfeFromLibrary: true });
+        expect(element.querySelector('.admin-crumbs')).toBeNull();
+
+        navItem('Duplicates & moves').click();
+        await settle();
+        chips().find(c => c.textContent!.trim() === 'Moved files')!.click();
+        await settle();
+        expect(crumbs()).toEqual(['Administration', 'Library', 'Duplicates & moves', 'Moved files']);
+
+        const back = vi.spyOn(history, 'back').mockImplementation(() => { });
+        element.querySelector<HTMLButtonElement>('.admin-crumbs button')!.click();
+        expect(back).toHaveBeenCalled();
     });
 
     it('moves between the chips with the arrow keys on phones, wrapping around', async () => {

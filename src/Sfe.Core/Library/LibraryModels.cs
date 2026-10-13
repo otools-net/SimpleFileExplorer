@@ -38,6 +38,9 @@ public enum SortField
 /// Browsing only: whether the index has this file or folder (false until a scan reaches it); null when the index could
 /// not be read, and for search results, which all come from the index.
 /// </param>
+/// <param name="IndexedItems">
+/// Browsing only, for an indexed folder: how many files and sub-folders directly inside it the index has.
+/// </param>
 public sealed record LibraryItem(
     string Name,
     string Path,
@@ -50,7 +53,8 @@ public sealed record LibraryItem(
     int? Width = null,
     int? Height = null,
     double? Duration = null,
-    bool? Indexed = null);
+    bool? Indexed = null,
+    int? IndexedItems = null);
 
 public sealed record Breadcrumb(string Name, string Path);
 

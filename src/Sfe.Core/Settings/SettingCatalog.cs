@@ -35,7 +35,8 @@ public static class SettingCatalog
     private static readonly HashSet<string> ServerKeys =
     [
         "dataServer", "browse.maxPageSize", "search.maxPageSize", "scan.parallelism", "thumbnails.maxConcurrency",
-        "thumbnails.timeoutSeconds", "trickplay.parallelism", "trickplay.timeoutMinutes", "tasks.logRetentionDays",
+        "thumbnails.timeoutSeconds", "trickplay.parallelism", "trickplay.timeoutMinutes", "tasks.logRetentionDays", "streaming.maxStreams", "streaming.quality",
+        "streaming.maxHeight", "streaming.copyVideo",
     ];
 
     private static readonly HashSet<string> UserKeys =
@@ -51,7 +52,7 @@ public static class SettingCatalog
     private static readonly (string Prefix, string Right)[] RightsByPrefix =
     [
         ("appearance.", Rights.InterfaceSettings), ("browse.", Rights.InterfaceSettings), ("search.", Rights.InterfaceSettings),
-        ("player.", Rights.PlaybackSettings), ("dataServer", Rights.PlaybackSettings),
+        ("player.", Rights.PlaybackSettings), ("dataServer", Rights.PlaybackSettings), ("streaming.", Rights.PlaybackSettings),
         ("showHiddenItems", Rights.ScanningSettings), ("scan.", Rights.ScanningSettings), ("fileTypes.", Rights.ScanningSettings),
         ("thumbnails.", Rights.ThumbnailSettings), ("trickplay.", Rights.TrickplaySettings), ("fileTracking.", Rights.TrackingSettings),
         ("tags.", Rights.TagSettings), ("tasks.", Rights.TaskSettings), ("editor.", Rights.EditorSettings),

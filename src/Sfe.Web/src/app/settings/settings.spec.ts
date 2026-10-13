@@ -95,7 +95,7 @@ describe('settings on the administration page', () => {
     const view = (overrides: Record<string, unknown> = {}, customized = false): SettingsView => ({ values: values(overrides), customized });
     const control = <T extends HTMLElement = HTMLInputElement>(key: string) => element.querySelector<T>(`#setting-${key.replaceAll('.', '-')}`)!;
     const navItem = (title: string) => [...element.querySelectorAll<HTMLAnchorElement>('.admin-nav > ul > li > a')].find(a => a.querySelector('span')!.textContent === title)!;
-    const sectionShown = () => element.querySelector('.admin-head .admin-eyebrow')!.textContent;
+    const sectionShown = () => element.querySelector('.admin-crumbs li:nth-child(3) a')!.textContent;
     const currentSubItem = () => element.querySelector('.admin-subnav a[aria-current=page]')!;
     const subItem = (title: string) => [...element.querySelectorAll('.admin-subnav a')].find(a => a.querySelector('span')!.textContent === title)!;
     const fieldError = (key: string) => control(key).closest('.field, .check')!.querySelector('.field-error')?.textContent ?? null;

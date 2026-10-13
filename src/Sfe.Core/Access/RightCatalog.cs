@@ -14,6 +14,7 @@ public static class Rights
     public const string ExternalPlayer = "files.external";
     public const string CopyPaths = "files.copyPaths";
     public const string EditImages = "files.edit";
+    public const string Stream = "files.stream";
     public const string ViewTags = "tags.view";
     public const string AssignTags = "tags.assign";
     public const string ManageTags = "tags.manage";
@@ -46,6 +47,7 @@ public static class Rights
     public const string Shutdown = "server.shutdown";
     public const string Dismount = "server.dismount";
     public const string Backup = "server.backup";
+    public const string ViewStreams = "server.streams";
 }
 
 /// <summary>Space rights are granted to a space's groups; server rights belong to server administrators only.</summary>
@@ -83,6 +85,7 @@ public static class RightCatalog
         Tenant(Rights.ExternalPlayer, true, Members, "Library", "Open in an external player", "Get a link to a file that works without signing in, for a while, in an app such as VLC."),
         Tenant(Rights.CopyPaths, false, Administrators, "Library", "Copy full paths", "See and copy where files are on the server's disk."),
         Tenant(Rights.EditImages, false, Members, "Library", "Edit pictures", "Crop pictures and save the result as a new file in the folder for edited pictures; originals are never changed.", since: 1),
+        Tenant(Rights.Stream, true, Members, "Library", "Play videos converted by the server", "Play videos the browser can't play as they are, converted by ffmpeg on the server while they play (it keeps the server's processor busy).", since: 2),
         Tenant(Rights.ViewTags, true, Everyone, "Tags", "See tags", "See the tags of files, the tag list and the tag sidebar."),
         Tenant(Rights.AssignTags, false, Members, "Tags", "Tag files", "Add tags to files and remove them, also to whole folders and searches."),
         Tenant(Rights.ManageTags, false, Administrators, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),
@@ -114,6 +117,7 @@ public static class RightCatalog
         Server(Rights.ManageUsers, "All accounts", "Create, change and delete every account, put it in any space, make server administrators."),
         Server(Rights.Shutdown, "Shut down", "Shut the server's computer down (when the server allows it)."),
         Server(Rights.Dismount, "Dismount", "Run the server's dismount command (when one is set)."),
+        Server(Rights.ViewStreams, "Video streams", "See the videos the server converts while they play, in every space, and who watches them."),
         Server(Rights.Backup, "Back up", "Download a backup of the databases and configuration files (it holds password hashes and connection strings)."),
     ];
 

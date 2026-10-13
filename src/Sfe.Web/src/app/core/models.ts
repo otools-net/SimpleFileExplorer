@@ -126,6 +126,8 @@ export interface LibraryItem {
     duration?: number | null;
     /** Browsing only: false for a file or folder no scan has indexed yet; null/absent when unknown (search results). */
     indexed?: boolean | null;
+    /** Browsing only, for an indexed folder: how many files and sub-folders directly inside it the index has. */
+    indexedItems?: number | null;
 }
 
 export interface DirectoryListing {
@@ -208,6 +210,52 @@ export interface ClientConfig {
     tenants: SessionTenant[];
     /** The picture editor's settings (Editor:*); null without the right to edit pictures (and from older servers). */
     editor?: EditorConfig | null;
+    /**
+     * Videos the browser can't play are converted by the server (`always`: every video is); null when streaming is off,
+     * ffmpeg is missing or without the right `files.stream` (and from older servers).
+     */
+    streaming?: { always: boolean } | null;
+}
+
+/** `api/streaming/probe`: a video the server can convert. */
+export interface StreamProbe {
+    /** Seconds; null when unknown. */
+    duration: number | null;
+    /** Its pictures are encoded again (false: copied, lighter, but seeking lands on key frames). */
+    transcoded: boolean;
+}
+
+export type StreamingMode = 'off' | 'fallback' | 'always';
+
+/** A video being converted for a viewer. */
+export interface StreamActivity {
+    id: string;
+    /** Relative to its library's root. */
+    path: string;
+    viewer: { library: string; user: string | null; address: string | null };
+    /** Position (seconds) the conversion started from. */
+    start: number;
+    transcoded: boolean;
+    started: string;
+    /** Sent so far. */
+    bytes: number;
+}
+
+export interface StreamingStatus {
+    /** ffmpeg was found and streaming is on in this library. */
+    available: boolean;
+    mode: StreamingMode;
+    /** Videos the whole server converts at once. */
+    maxStreams: number;
+    streams: StreamActivity[];
+}
+
+/** `api/system/info`: what the server administrators see in System › About. */
+export interface SystemInfo {
+    /** Full path of the library root on the server. */
+    root: string;
+    /** `path` null: not found where `configured` says. */
+    ffmpeg: { configured: string; path: string | null; version: string | null };
 }
 
 export interface EditorConfig {

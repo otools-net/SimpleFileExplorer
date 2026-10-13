@@ -28,7 +28,9 @@ Search only finds indexed files: **Scan this folder** in the ⋮ menu brings the
 | `-t:work`, `-e:jpg` | a `-` before any term finds the files that term doesn't |
 
 Search is case-insensitive. Every term, its units and the fine print are in the
-[search syntax reference](../reference/search-syntax.md). The **?** button in the box shows a summary:
+[search syntax reference](../reference/search-syntax.md). The **?** button in the box (or the `?` key, anywhere
+on the page but in a text box) opens a summary by theme, with a few tips; click an example to add it to your search.
+Press `/` to jump to the search box.
 
 ![The search syntax summary](../images/search-help.png)
 

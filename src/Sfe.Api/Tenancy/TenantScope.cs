@@ -5,6 +5,7 @@ using Sfe.Api.Security;
 using Sfe.Core;
 using Sfe.Core.Data;
 using Sfe.Core.Options;
+using Sfe.Core.Streaming;
 using Sfe.Core.Thumbnails;
 
 namespace Sfe.Api.Tenancy;
@@ -104,6 +105,7 @@ public static class TenancyServiceCollectionExtensions
     public static IServiceCollection AddSfeTenancy(this IServiceCollection services, IConfiguration configuration, string contentRootPath)
     {
         services.AddSingleton<FfmpegLimits>();
+        services.AddSingleton<VideoStreams>();
         // The update of an install to this version, which the libraries wait for, and its backups.
         services.AddSingleton<Maintenance.MigrationCoordinator>();
         services.AddSingleton<Maintenance.BackupSources>();

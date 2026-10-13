@@ -281,3 +281,8 @@ a.tracking-name:hover { color: var(--accent); }
     .tracking-more { margin-left: 0; }
 }
 
+
+/* System › Video streams: who watches and how far, in two lines on the right. */
+.stream-detail { display: flex; flex-direction: column; align-items: flex-end; max-width: 55%; text-align: right; }
+.stream-detail > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stream-who { color: var(--text); }

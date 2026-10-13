@@ -24,11 +24,11 @@ import { VideoPlayerComponent } from './video-player.component';
                 @case ('playing') {
                     <sfe-video-player [src]="urls()!.file(path)" [name]="name" [poster]="poster()" [seekStep]="config.config()!.seekSeconds"
                                       [loop]="config.config()!.loop"
-                                      [startAt]="startAt" (unsupported)="state.set('unsupported')" />
+                                      [startAt]="startAt" [stream]="stream()" (unsupported)="state.set('unsupported'); converted.set($event)" />
                 }
                 @case ('unsupported') {
                     <div class="viewer-message">
-                        <p>This browser cannot play this video.</p>
+                        <p>This browser cannot play this video{{ converted() ? ', and the server could not convert it (it may be converting as many videos as it can).' : '.' }}</p>
                         <p class="player-page-links">
                             @if (urls()!.externalName; as name) {
                                 <button type="button" class="button" [title]="'Open the video in ' + name + ' (a link working without signing in, for a while)'"
@@ -64,6 +64,10 @@ export class PlayerPageComponent implements OnInit {
     protected readonly state = signal<'loading' | 'playing' | 'unsupported' | 'no-video' | 'unreachable'>('loading');
     protected readonly error = signal('');
     protected readonly urls = this.config.urls;
+    /** The server's conversion, once the configuration says it converts videos. */
+    protected readonly stream = computed(() => this.config.config() ? this.config.videoStream(this.path) : null);
+    /** The server's conversion failed too. */
+    protected readonly converted = signal(false);
     protected readonly poster = computed(() => this.config.config()?.features.thumbnails ? this.urls()!.thumbnail(this.path) : null);
 
     constructor() {

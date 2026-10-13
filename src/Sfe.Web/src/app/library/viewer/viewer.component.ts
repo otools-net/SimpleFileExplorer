@@ -66,7 +66,7 @@ const WHEEL_PAUSE_MS = 250;
                 @for (shown of shownItem(); track shown.path) {
                     @if (unsupported()) {
                         <div class="viewer-message">
-                            <p>This browser cannot play this format.</p>
+                            <p>This browser cannot play this format{{ converted() ? ', and the server could not convert it (it may be converting as many videos as it can).' : '.' }}</p>
                             <p>{{ urls()?.externalName ? 'Use “Open in ' + urls()?.externalName + '” or download it.' : 'Download it to play it in another app.' }}</p>
                         </div>
                     } @else {
@@ -80,7 +80,8 @@ const WHEEL_PAUSE_MS = 250;
                             }
                             @case ('video') {
                                 <sfe-video-player [src]="urls()!.file(shown.path)" [name]="shown.name" [poster]="urls()!.thumbnail(shown.path)"
-                                                  [seekStep]="config.config()?.seekSeconds ?? 10" [loop]="config.config()?.loop ?? false" (unsupported)="unsupported.set(true)" />
+                                                  [seekStep]="config.config()?.seekSeconds ?? 10" [loop]="config.config()?.loop ?? false" [stream]="videoStream()"
+                                                  (unsupported)="unsupported.set(true); converted.set($event)" />
                             }
                             @default {
                                 <audio [src]="urls()!.file(shown.path)" controls autoplay preload="metadata" (error)="unsupported.set(true)"></audio>
@@ -114,6 +115,13 @@ export class ViewerComponent {
         return item ? [item] : [];
     }, { equal: (a, b) => a[0]?.path === b[0]?.path });
     protected readonly unsupported = signal(false);
+    /** The server's conversion failed too. */
+    protected readonly converted = signal(false);
+    /** The server's conversion of the video shown, one per item (a new one would start the player over). */
+    protected readonly videoStream = computed(() => {
+        const item = this.shownItem()[0];
+        return item?.kind === 'video' ? this.config.videoStream(item.path) : null;
+    });
     private readonly loadingMore = signal(false);
     protected readonly nextDisabled = computed(() =>
         this.loadingMore() || (this.index() >= this.store.media().length - 1 && !this.store.hasMore()));
@@ -182,6 +190,7 @@ export class ViewerComponent {
         this.index.set(index);
         const item = list[index];
         this.unsupported.set(false);
+        this.converted.set(false);
         this.thumbnailFailed.set(false);
         this.originalReady.set(false);
         this.progressive.set(this.config.isLargeImage(item));

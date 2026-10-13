@@ -1,6 +1,7 @@
 # Playback
 
-**Administration › Playback**: the video player, an app to open videos in, and where files are streamed from. Right:
+**Administration › Playback**: the video player, an app to open videos in, where files are streamed from, and videos
+converted by the server. Right:
 `settings.playback`.
 
 ![Administration › Playback](../images/admin-playback.png)
@@ -54,3 +55,26 @@ library. When it is empty (the default), SFE streams the files itself, with rang
   a query string), e.g. `http://nas/files/{url}?raw=1` or `http://nas/get?file={encodedUrl}`.
 
 That server has no sign-in of SFE's: anyone reaching it can read the files.
+
+## Videos converted by the server
+
+Browsers play few video formats: AVI, WMV, MPEG-2 and most MKV files, or HEVC (H.265) pictures, give "This browser
+cannot play this format", or play with sound but a black picture. With ffmpeg on the server (see
+[System › About](system.md#server)), SFE converts such a video while it plays, to H.264 pictures and AAC sound that
+every browser plays. The player switches to it by itself, from where it was, and shows the video's whole length; a
+seek further than what arrived asks the server for a new conversion from there (it starts within a second or two).
+The player's ⟳ button converts the video on screen by hand, e.g. one that plays without sound.
+
+| Setting | Default | |
+|---|---|---|
+| **Convert videos** | When the browser can't play them | Or **Always** (every video, even those the browser plays), or **Never** (`Sfe:Streaming:Mode`: `Fallback`, `Always`, `Off`). A setting of the space |
+| **Videos converted at once** | 2 | For the whole server: each one keeps a processor core or more busy; a viewer asking for one more is told to try again later (`MaxStreams`) |
+| **Quality (CRF)** | 23 | 15-40; lower is better and heavier (18 looks like the original, 28 is small) (`Quality`) |
+| **Largest height (pixels)** | 1080 | Taller videos are scaled down while converted; 0 keeps their size (`MaxHeight`) |
+| **Copy H.264 pictures** | on | 8-bit H.264 pictures are only repackaged, with the sound converted: almost no processor time, but a seek lands on the nearest earlier key frame and the largest height doesn't apply (`CopyVideo`) |
+
+All but the first are server settings. Playing converted videos needs the right `files.stream` (Administrators and
+Users by default, not guests); [System › Video streams](system.md#video-streams) lists the videos being converted.
+
+The conversion has no length and can't be downloaded or opened in an external player: those still get the file
+itself. Safari (iPhone, iPad, Mac) may refuse converted videos, as it only plays streams it can seek in.
