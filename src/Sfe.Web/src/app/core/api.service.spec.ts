@@ -208,6 +208,29 @@ describe('Api', () => {
         expect(navigate).toHaveBeenCalledWith(['/setup']);
     });
 
+    it('opens the update page while the install waits for its update, from any request', async () => {
+        const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+        const setup = api.setupInfo();
+        http.expectOne('api/setup').flush({ type: 'migration-required', status: 503 }, { status: 503, statusText: 'Service Unavailable' });
+
+        await expect(setup).rejects.toMatchObject({ status: 503, type: 'migration-required' });
+        expect(redirected(await setup.catch((error: unknown) => error))).toBe(true);
+        expect(navigate).toHaveBeenCalledWith(['/migration']);
+    });
+
+    it('sends the setup code to start the update and to make a backup', () => {
+        void api.startMigration('the-setup-code');
+        void api.migrationBackup('the-setup-code');
+
+        const start = http.expectOne('api/migration');
+        const backup = http.expectOne('api/migration/backup');
+        expect(start.request.method).toBe('POST');
+        expect(start.request.body).toEqual({ code: 'the-setup-code' });
+        expect(start.request.headers.get('X-SFE-Request')).toBe('1');
+        expect(backup.request.body).toEqual({ code: 'the-setup-code' });
+    });
+
     it('leaves the session and setup routes alone: their pages handle the answers', async () => {
         const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 

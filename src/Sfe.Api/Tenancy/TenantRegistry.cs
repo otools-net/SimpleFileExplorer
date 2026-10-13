@@ -1,14 +1,17 @@
 using System.Collections.Concurrent;
+using Sfe.Api.Maintenance;
 using Sfe.Core.Access;
 
 namespace Sfe.Api.Tenancy;
 
 /// <summary>
 /// The services of every library (<see cref="TenantHost"/>), started with the application (so that their schedules
-/// and trickplay passes run) or when a library is created, stopped when it is disabled or deleted.
+/// and trickplay passes run) or when a library is created, stopped when it is disabled or deleted. None starts while
+/// the install waits for its update (<see cref="MigrationCoordinator"/>): starting one updates its index.
 /// </summary>
 public sealed class TenantRegistry(
-    IServiceProvider application, IConfiguration configuration, IWebHostEnvironment environment, AccessService accounts, ILogger<TenantRegistry> logger)
+    IServiceProvider application, IConfiguration configuration, IWebHostEnvironment environment, AccessService accounts, MigrationCoordinator migration,
+    ILogger<TenantRegistry> logger)
     : IHostedService, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<int, TenantHost> _hosts = new();
@@ -47,7 +50,11 @@ public sealed class TenantRegistry(
             await host.DisposeAsync();
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken) =>
+        migration.IsBlocking ? Task.CompletedTask : StartLibrariesAsync(cancellationToken);
+
+    /// <summary>Starts every enabled library (at start-up, or once the install is updated).</summary>
+    public async Task StartLibrariesAsync(CancellationToken cancellationToken)
     {
         foreach (var tenant in await accounts.GetTenantsAsync(cancellationToken))
         {

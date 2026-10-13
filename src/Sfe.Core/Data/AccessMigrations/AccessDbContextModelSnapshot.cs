@@ -53,6 +53,23 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("GroupRights", "SFE");
                 });
 
+            modelBuilder.Entity("Sfe.Core.Data.ServerProperty", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("ServerProperties", "SFE");
+                });
+
             modelBuilder.Entity("Sfe.Core.Data.Tenant", b =>
                 {
                     b.Property<int>("Id")

@@ -541,6 +541,38 @@ export interface SetupInfo {
     hosting: HostingKind;
 }
 
+/** none = the install belongs to this version; the others keep everything but the update page closed (503 `migration-required`). */
+export type MigrationStatus = 'none' | 'required' | 'running' | 'failed' | 'newer' | 'unavailable';
+
+/** A version of CHANGELOG.md: its sections (Added, Changed, Fixed), each item in the changelog's Markdown. */
+export interface ChangelogEntry {
+    version: string;
+    sections: { title: string; items: string[] }[];
+}
+
+/** /api/migration: whether the install waits for its update to this version, and what changed since its version. */
+export interface MigrationInfo {
+    status: MigrationStatus;
+    appVersion: string;
+    /** null: unknown (installs before 1.37.0 recorded none). */
+    databaseVersion: string | null;
+    /** The versions after the install's up to this one, newest first. */
+    changes: ChangelogEntry[];
+    log: string[];
+    error: string | null;
+    codeConfigured: boolean;
+    codeTooShort: boolean;
+    minimumCodeLength: number;
+    hosting: HostingKind;
+}
+
+/** A backup made on the update page: downloaded once from `url`. */
+export interface BackupLink {
+    url: string;
+    fileName: string;
+    size: number;
+}
+
 export interface SetupInput {
     code: string;
     userName: string;

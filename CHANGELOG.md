@@ -3,6 +3,20 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.37.0
+
+### Added
+
+- Update page: after an upgrade, SFE stays closed until someone with the setup code confirms the update of its
+  databases and settings. Nothing is changed before that, and the page lists every change since the installed version.
+- Backups: a zip file of the databases and configuration files, from Administration › System › About or from the update
+  page before updating (right `server.backup`).
+
+### Fixed
+
+- SQLite index: parallel work (a scan's folders, simultaneous requests) could share one database connection, which
+  made a scan skip a folder now and then with "database is locked" or hang.
+
 ## 1.36.0
 
 ### Added

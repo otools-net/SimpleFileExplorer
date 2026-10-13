@@ -45,6 +45,7 @@ public static class Rights
     public const string ManageUsers = "server.users";
     public const string Shutdown = "server.shutdown";
     public const string Dismount = "server.dismount";
+    public const string Backup = "server.backup";
 }
 
 /// <summary>Space rights are granted to a space's groups; server rights belong to server administrators only.</summary>
@@ -113,6 +114,7 @@ public static class RightCatalog
         Server(Rights.ManageUsers, "All accounts", "Create, change and delete every account, put it in any space, make server administrators."),
         Server(Rights.Shutdown, "Shut down", "Shut the server's computer down (when the server allows it)."),
         Server(Rights.Dismount, "Dismount", "Run the server's dismount command (when one is set)."),
+        Server(Rights.Backup, "Back up", "Download a backup of the databases and configuration files (it holds password hashes and connection strings)."),
     ];
 
     /// <summary>

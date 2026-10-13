@@ -8,13 +8,15 @@
 // --work        scratch folder for the build, library, database and caches (default <tmp>/sfe-docs); emptied unless
 //               --shots-only
 // --shots-only  reuses the library and database of an earlier run: starts the app and takes the shots only
-// scene...      only these scenes of shots.mjs (default: all)
+// scene...      only these scenes of shots.mjs (default: all), or `update-page`: the update page, on a copy of the
+//               database marked as belonging to an earlier version, served by a second app on the next port
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { sleep } from './cdp.mjs';
+import { DatabaseSync } from 'node:sqlite';
+import { launch, sleep } from './cdp.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../../..');
@@ -26,7 +28,8 @@ const work = path.resolve(option('--work') ?? path.join(os.tmpdir(), 'sfe-docs')
 const port = option('--port') ?? '5093';
 const skipBuild = flag('--skip-build');
 const shotsOnly = flag('--shots-only');
-const scenes = args;
+const updatePage = args.length === 0 || args.includes('update-page');
+const scenes = args.filter(scene => scene !== 'update-page');
 const url = `http://localhost:${port}/`;
 const setupCode = 'doc-screenshots-setup';
 const library = path.join(work, 'library');
@@ -68,37 +71,79 @@ if (!shotsOnly) {
     node('make-media.mjs', library, ...(ffmpeg ? [ffmpeg] : []));
 }
 
-step(`app on ${url}`);
-const app = spawn('dotnet', [dll, '--contentRoot', path.join(repo, 'src/Sfe.Api')], {
-    cwd: work,
-    stdio: ['ignore', fs.openSync(path.join(work, 'app.log'), 'w'), fs.openSync(path.join(work, 'app.err.log'), 'w')],
-    env: {
-        ...process.env,
-        ASPNETCORE_ENVIRONMENT: 'Development',
-        Urls: url,
-        Sfe__Root: library,
-        Sfe__Database__Provider: 'Sqlite',
-        ConnectionStrings__Sfe: `Data Source=${path.join(data, 'sfe.db')}`,
-        Sfe__SettingsFile: path.join(data, 'settings.json'),
-        Sfe__Thumbnails__CacheDirectory: path.join(data, 'cache'),
-        Sfe__Security__KeysDirectory: path.join(data, 'keys'),
-        Sfe__Setup__Code: setupCode,
-        Sfe__System__EnableShutdown: 'true',
-        ...(ffmpeg ? { Sfe__Thumbnails__FfmpegPath: ffmpeg } : {}),
-    },
-});
-try {
-    let up = false;
-    for (let i = 0; i < 120 && !up; i++) {
-        try { await fetch(url + 'api/config'); up = true; } catch { await sleep(500); }
+/** The app on the sample library with the database, settings and caches of `folder`; resolves once it answers. */
+async function startApp(appUrl, folder, log) {
+    const app = spawn('dotnet', [dll, '--contentRoot', path.join(repo, 'src/Sfe.Api')], {
+        cwd: work,
+        stdio: ['ignore', fs.openSync(path.join(work, `${log}.log`), 'w'), fs.openSync(path.join(work, `${log}.err.log`), 'w')],
+        env: {
+            ...process.env,
+            ASPNETCORE_ENVIRONMENT: 'Development',
+            Urls: appUrl,
+            Sfe__Root: library,
+            Sfe__Database__Provider: 'Sqlite',
+            ConnectionStrings__Sfe: `Data Source=${path.join(folder, 'sfe.db')}`,
+            Sfe__SettingsFile: path.join(folder, 'settings.json'),
+            Sfe__Thumbnails__CacheDirectory: path.join(folder, 'cache'),
+            Sfe__Security__KeysDirectory: path.join(folder, 'keys'),
+            Sfe__Setup__Code: setupCode,
+            Sfe__System__EnableShutdown: 'true',
+            ...(ffmpeg ? { Sfe__Thumbnails__FfmpegPath: ffmpeg } : {}),
+        },
+    });
+    for (let i = 0; i < 120; i++) {
+        try { await fetch(appUrl + 'api/migration'); return app; } catch { await sleep(500); }
     }
-    if (!up) throw new Error(`the app didn't start: see ${path.join(work, 'app.err.log')}`);
+    app.kill();
+    throw new Error(`the app didn't start: see ${path.join(work, `${log}.err.log`)}`);
+}
+
+/**
+ * The update page: a copy of the seeded database said to belong to 1.35.0 (the page lists the changes since), served
+ * by a second app, which changes nothing until the update is confirmed (it never is here).
+ */
+async function shootUpdatePage() {
+    const folder = path.join(work, 'update');
+    fs.rmSync(folder, { recursive: true, force: true });
+    fs.mkdirSync(folder, { recursive: true });
+    const source = new DatabaseSync(path.join(data, 'sfe.db'));
+    source.exec(`VACUUM INTO '${path.join(folder, 'sfe.db').replaceAll("'", "''")}'`);
+    source.close();
+    const copy = new DatabaseSync(path.join(folder, 'sfe.db'));
+    copy.exec(`UPDATE ServerProperties SET Value = '1.35.0' WHERE Key = 'Version'`);
+    copy.close();
+
+    const updateUrl = `http://localhost:${Number(port) + 1}/`;
+    const app = await startApp(updateUrl, folder, 'update');
+    try {
+        const b = await launch({ width: 1280, height: 1000 });
+        await b.goto(updateUrl, 3000);
+        await b.waitFor('.migration-version');
+        await b.eval(`document.querySelector('#migration-code').focus(); 1`);
+        await b.type(setupCode);
+        await sleep(500);
+        await b.shot(path.join(repo, 'docs/images/update-page.png'));
+        await b.close();
+    } finally {
+        app.kill();
+    }
+}
+
+step(`app on ${url}`);
+const app = await startApp(url, data, 'app');
+try {
     if (!shotsOnly) {
         step('seed');
         node('seed.mjs', library);
     }
-    step('screenshots');
-    node('shots.mjs', ...scenes);
+    if (scenes.length || args.length === 0) {
+        step('screenshots');
+        node('shots.mjs', ...scenes);
+    }
+    if (updatePage) {
+        step('update page');
+        await shootUpdatePage();
+    }
     step('links');
     node('check-links.mjs');
 } finally {

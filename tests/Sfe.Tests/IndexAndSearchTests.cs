@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sfe.Core.Data;
@@ -54,6 +55,52 @@ public sealed class IndexAndSearchTests
         Assert.AreEqual(".mp4", file.Extension);
         Assert.AreEqual(5L * 1024 * 1024, file.Size);
         Assert.IsNotNull(file.Sha1);
+    }
+
+    [TestMethod]
+    public void ParallelContextsNeverShareAPooledConnection()
+    {
+        // Microsoft.Data.Sqlite's pool can hand a connection still in use to a second Open while it grows (its
+        // "leaked connection" reclaim races with Activate): a scan's first parallel folder workers then failed with
+        // "database is locked", or the pool deadlocked. SqliteOpenGate serialises the opens. Each round starts a new
+        // pool (another connection string), with every thread opening at once, as at the start of a scan.
+        var connectionString = SfeDatabase.PrepareSqlite(_library.ConnectionString, null);
+        var errors = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        var until = DateTime.UtcNow.AddSeconds(15);
+        for (var round = 0; DateTime.UtcNow < until && errors.IsEmpty; round++)
+        {
+            var roundConnection = new SqliteConnectionStringBuilder(connectionString) { DefaultTimeout = 1000 + round }.ToString();
+            var options = (DbContextOptions<SfeDbContext>)SfeDatabase.Configure(
+                new DbContextOptionsBuilder<SfeDbContext>(), Core.Options.DatabaseProvider.Sqlite, roundConnection).Options;
+            using var start = new Barrier(64);
+            var threads = Enumerable.Range(0, 64).Select(_ => new Thread(() =>
+            {
+                try
+                {
+                    start.SignalAndWait();
+                    for (var i = 0; i < 3; i++)
+                    {
+                        using var db = new SfeDbContext(options);
+                        db.Files.Count();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Enqueue(ex.Message);
+                }
+            }) { IsBackground = true }).ToList();
+            threads.ForEach(t => t.Start());
+            if (!threads.All(t => t.Join(TimeSpan.FromSeconds(30))))
+            {
+                // Clearing would wait on the deadlocked pool's lock too.
+                errors.Enqueue($"round {round}: the connection pool deadlocked");
+                break;
+            }
+
+            SqliteConnection.ClearPool(new SqliteConnection(roundConnection));
+        }
+
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors.Take(5)));
     }
 
     [TestMethod]

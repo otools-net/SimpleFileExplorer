@@ -32,13 +32,14 @@ spaces' storage.
 | `Sfe:DataServer` | Optional web server already publishing the library ([Playback › Streaming](administration/playback.md#streaming-data-server)) |
 | `Sfe:SettingsFile` | Where the administration page saves (see [below](#the-settings-file)) |
 | `Sfe:System:EnableShutdown`, `ShutdownCommand`, `DismountCommand` | Server commands, opt-in (see [System](administration/system.md)) |
+| `Sfe:Backup:SqlServerFolder` | SQL Server only: where the database server writes the [backups](administration/system.md#backup) (as it sees it); empty = its default backup folder |
 | `Urls` | Listening address, default `http://*:5080` |
 
 ## Sign-in, accounts and spaces
 
 | Setting | Notes |
 |---|---|
-| `Sfe:Setup:Code` | The setup code the first administrator is created with (at least 12 characters); not needed afterwards. See [First start](first-start.md) |
+| `Sfe:Setup:Code` | The setup code the first administrator is created with (at least 12 characters), and that confirms each [update](upgrading.md#the-update-page-137-and-later). See [First start](first-start.md) |
 | `Sfe:Setup:Recover` | `true` opens the setup page again to reset a lost administrator password (with the code); turn it off afterwards |
 | `Sfe:Security:AnonymousGuests` | Default `true`: spaces may let visitors in without an account; `false` forbids it everywhere |
 | `Sfe:Security:SessionDays`, `MinimumPasswordLength`, `MaxFailedSignIns`, `LockoutMinutes`, `SignInsPerMinute` | Sign-in: 30 days, 8 characters, 5 failures lock an account for 15 minutes, 10 attempts per minute and address |

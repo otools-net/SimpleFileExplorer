@@ -71,6 +71,10 @@ public static class SfeSession
         var principal = context.Principal;
         if (principal?.UserId() is not { } userId)
             return;
+        // An install waiting for its update may lack what the accounts' query reads: the session is checked once it is done
+        // (nothing but the update page answers meanwhile, and it needs no session).
+        if (context.HttpContext.RequestServices.GetRequiredService<Maintenance.MigrationCoordinator>().IsBlocking)
+            return;
 
         var accounts = context.HttpContext.RequestServices.GetRequiredService<AccessService>();
         var user = await accounts.GetSessionUserAsync(userId, context.HttpContext.RequestAborted);

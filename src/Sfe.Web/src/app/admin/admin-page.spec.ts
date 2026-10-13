@@ -258,6 +258,19 @@ describe('SystemSectionComponent', () => {
         expect(element.querySelector<HTMLAnchorElement>('a[href="api/docs"]')).not.toBeNull();
     });
 
+    it('offers a backup of the databases and configuration files to those with the right', async () => {
+        await setUp();
+        await open('/admin?section=system');
+        const link = element.querySelector<HTMLAnchorElement>('a[href="api/system/backup"]');
+        expect(link?.hasAttribute('download')).toBe(true);
+        expect(link?.title).toContain('backup');
+
+        TestBed.resetTestingModule();
+        await setUp({ rights: [Rights.apiDocs] });
+        await open('/admin?section=system');
+        expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
+    });
+
     it('shows the server commands only when they are on', async () => {
         await commands({});
         await open('/admin?section=system');

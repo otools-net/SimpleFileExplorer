@@ -1,6 +1,9 @@
 /*
  * What the unit tests' DOM (jsdom) lacks and the app uses: modal dialogs, media queries, scrolling into view.
- * Loaded before every spec (angular.json, test > setupFiles).
+ * Loaded before every spec (angular.json, test > setupFiles). Angular runs Vitest with `isolate: false`: the spec
+ * files of a worker share one global scope and this file runs again for each of them, so whatever it installs must
+ * be replaced as a whole (never `??=` next to state of this module), and what specs change on globals is put back
+ * after each test (which files share a worker changes from run to run).
  */
 
 if (!HTMLDialogElement.prototype.showModal) {
@@ -63,7 +66,10 @@ class TestIntersectionObserver {
 
     observe(element: Element): void { this.observed.add(element); }
     unobserve(element: Element): void { this.observed.delete(element); }
-    disconnect(): void { this.observed.clear(); }
+    disconnect(): void {
+        this.observed.clear();
+        TestIntersectionObserver.instances.delete(this);
+    }
     takeRecords(): IntersectionObserverEntry[] { return []; }
 
     report(elements: Element[]): void {
@@ -73,8 +79,37 @@ class TestIntersectionObserver {
     }
 }
 
-window.IntersectionObserver ??= TestIntersectionObserver as unknown as typeof IntersectionObserver;
+// Always replaced: with `??=`, a later spec file kept an earlier run's class while `intersect` below read this run's
+// `instances`, so it reached no observer (CoversService, LocationComponent failed depending on the file order).
+window.IntersectionObserver = TestIntersectionObserver as unknown as typeof IntersectionObserver;
 (globalThis as { intersect?: (...elements: Element[]) => void }).intersect = (...elements) => {
     for (const observer of TestIntersectionObserver.instances)
         observer.report(elements);
 };
+
+/**
+ * Globals specs replace for a test (`Object.defineProperty(window, 'isSecureContext', …)`, `document.execCommand = …`):
+ * their own properties are put back as they were before the test, so a value can't leak into the next spec file.
+ */
+const patchedGlobals: [object, PropertyKey][] = [
+    [window, 'isSecureContext'],
+    [window, 'scrollY'],
+    [navigator, 'clipboard'],
+    [document, 'execCommand'],
+];
+let savedGlobals: (PropertyDescriptor | undefined)[] = [];
+beforeEach(() => {
+    // Storage outlives a spec file too: each test starts with none (preferences, search history, theme).
+    localStorage.clear();
+    sessionStorage.clear();
+    savedGlobals = patchedGlobals.map(([target, key]) => Object.getOwnPropertyDescriptor(target, key));
+});
+afterEach(() => {
+    patchedGlobals.forEach(([target, key], index) => {
+        const saved = savedGlobals[index];
+        if (saved)
+            Object.defineProperty(target, key, saved);
+        else
+            delete (target as Record<PropertyKey, unknown>)[key];
+    });
+});

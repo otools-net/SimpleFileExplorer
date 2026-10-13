@@ -4,7 +4,8 @@ import { ApiMock, buttonNamed, mockApi, settle, testProviders } from '../../test
 import { ApiError } from '../core/api.service';
 import { SessionInfo, SetupInfo } from '../core/models';
 import { LoginPageComponent } from './login-page.component';
-import { SETUP_CODE_STEPS, SetupPageComponent } from './setup-page.component';
+import { SETUP_CODE_STEPS } from './setup-code.component';
+import { SetupPageComponent } from './setup-page.component';
 
 function session(overrides: Partial<SessionInfo> = {}): SessionInfo {
     return { user: null, tenant: null, tenants: [], guestTenants: [], setupRequired: false, setupAvailable: false, canBrowse: false, ...overrides };

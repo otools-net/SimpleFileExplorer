@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { CommandResult } from '../core/models';
+import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { IconComponent } from '../shared/icon.component';
 
 /**
- * "System" on the administration page: the server's version and API reference, and the server commands when they
- * are configured. (Each browser's own theme is in Interface › Appearance, next to the default one.)
+ * "System" on the administration page: the server's version and API reference, backups (`server.backup`), and the
+ * server commands when they are configured. (Each browser's own theme is in Interface › Appearance, next to the default one.)
  */
 @Component({
     selector: 'sfe-system-section',
@@ -28,6 +29,22 @@ import { IconComponent } from '../shared/icon.component';
                 <a class="button small" href="api/docs" target="_blank" rel="noopener" title="Documentation of the server API, in a new tab"><svg sfeIcon="docs"></svg>API reference</a>
             </div>
         </section>
+
+        @if (canBackup()) {
+            <section class="settings-group">
+                <header class="settings-group-head">
+                    <h3>Backup</h3>
+                    <p class="field-hint">
+                        A zip file of the databases (accounts, spaces, and every library's index and tags) and of the configuration
+                        files. Thumbnails and trickplay are left out: they are made again. It holds password hashes and connection
+                        strings: keep it somewhere safe.
+                    </p>
+                </header>
+                <div class="settings-action inline">
+                    <a class="button small" href="api/system/backup" download title="Download a backup of the databases and configuration files (zip)"><svg sfeIcon="download"></svg>Download a backup</a>
+                </div>
+            </section>
+        }
 
         <section class="settings-group">
             <header class="settings-group-head">
@@ -52,7 +69,9 @@ import { IconComponent } from '../shared/icon.component';
 export class SystemSectionComponent {
     private readonly api = inject(Api);
     private readonly toasts = inject(ToastService);
-    protected readonly config = inject(ConfigService).config;
+    private readonly configService = inject(ConfigService);
+    protected readonly config = this.configService.config;
+    protected readonly canBackup = computed(() => this.configService.can(Rights.backup));
 
     protected readonly hasCommands = computed(() => Boolean(this.config()?.features.shutdown || this.config()?.features.dismount));
 

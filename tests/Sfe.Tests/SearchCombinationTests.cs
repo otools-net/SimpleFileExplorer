@@ -83,10 +83,11 @@ public sealed class SearchCombinationTests
     public async Task InitializeAsync()
     {
         _library = new TestLibrary();
-        _services = await CoreServices.CreateAsync(_library);
+        var log = new WarningLog();
+        _services = await CoreServices.CreateAsync(_library, logging: log.AddTo);
         var progress = new ScanProgress();
         await _services.Get<DirectoryIndexer>().IndexAsync(_library.Root, true, progress, TestContext.CancellationToken);
-        Assert.AreEqual(0, progress.Errors);
+        Assert.AreEqual(0, progress.Errors, log.ToString());
         await TagLibraryAsync();
         await SetResolutionsAsync();
     }

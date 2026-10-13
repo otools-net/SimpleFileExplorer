@@ -24,7 +24,7 @@ public static class SfeDatabase
                 sql.MigrationsHistoryTable(migrationsHistoryTable, SfeDbContext.Schema);
                 sql.EnableRetryOnFailure();
             }),
-            DatabaseProvider.Sqlite => builder.UseSqlite(connectionString),
+            DatabaseProvider.Sqlite => builder.UseSqlite(connectionString).AddInterceptors(SqliteOpenGate.Instance),
             _ => throw new NotSupportedException($"Database provider '{provider}' is not supported."),
         }).ConfigureWarnings(w => w.Ignore(CoreEventId.RowLimitingOperationWithoutOrderByWarning));
 

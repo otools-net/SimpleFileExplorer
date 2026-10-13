@@ -41,6 +41,7 @@ export const Rights = {
     manageUsers: 'server.users',
     shutdown: 'server.shutdown',
     dismount: 'server.dismount',
+    backup: 'server.backup',
 } as const;
 
 export type Right = typeof Rights[keyof typeof Rights];

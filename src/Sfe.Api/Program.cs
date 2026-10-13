@@ -3,13 +3,12 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using Sfe.Api;
 using Sfe.Api.Endpoints;
+using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
 using Sfe.Api.Tenancy;
 using Sfe.Core;
 using Sfe.Core.Access;
-using Sfe.Core.Data;
 using Sfe.Core.Options;
-using Sfe.Core.Settings;
 
 var builder = WebApplication.CreateBuilder(PortableBuild.CreateOptions(args));
 
@@ -63,6 +62,7 @@ app.MapStaticAssets();
 
 var api = app.MapGroup("/api");
 api.MapSetupEndpoints();
+api.MapMigrationEndpoints();
 api.MapSessionEndpoints();
 api.MapAccessEndpoints();
 api.MapTenantEndpoints();
@@ -80,50 +80,47 @@ api.MapFallback(() => TypedResults.NotFound()).AllowAnonymous();
 
 app.MapFallbackToFile("index.html");
 
-// Read from the configuration: the options themselves read the libraries' settings, which need the database first.
-if (builder.Configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Database)}").Get<DatabaseOptions>()?.MigrateOnStartup ?? true)
+// The install's version first, read without changing anything: one of an earlier version waits for its update,
+// confirmed with the setup code on the update page, before anything touches its databases or settings. Otherwise the
+// schema, the first library, the rights added since and the settings are brought up as at every start.
+var migration = app.Services.GetRequiredService<MigrationCoordinator>();
+await migration.InitializeAsync();
+var code = app.Services.GetRequiredService<IOptionsMonitor<SetupOptions>>().CurrentValue;
+switch (migration.Status)
 {
-    try
-    {
-        // The accounts and libraries first: each library initializes its own index when it starts (TenantHost).
-        await app.Services.GetRequiredService<AccessDatabaseInitializer>().InitializeAsync();
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "The accounts' database cannot be created or updated; nobody can sign in until it is fixed");
-    }
-}
-
-try
-{
-    // The library of the configuration becomes the first library (tenant) with its index, tags and settings.
-    var access = app.Services.GetRequiredService<AccessService>();
-    var library = await access.EnsureDefaultTenantAsync("Library");
-    // Rights added by this version reach the groups of the spaces created before (once).
-    if (await access.GrantNewRightsAsync() is > 0 and var updated)
-        app.Logger.LogInformation("Granted the rights added by this version to the built-in groups of {Count} spaces", updated);
-    await app.Services.GetRequiredService<SettingLayers>().MovePerLibrarySettingsAsync(library.Id);
-    app.Services.GetRequiredService<SettingLayers>().NotifyChanged();
-
-    var setup = app.Services.GetRequiredService<SetupService>();
-    var code = app.Services.GetRequiredService<IOptionsMonitor<SetupOptions>>().CurrentValue;
-    if (await setup.IsRequiredAsync())
-    {
-        if (code.HasUsableCode)
-            app.Logger.LogWarning("No administrator yet: open the app in a browser and enter the setup code (Sfe:Setup:Code) to create one");
-        else
-            app.Logger.LogWarning(
-                "No administrator yet and no setup code: set Sfe:Setup:Code (e.g. the environment variable Sfe__Setup__Code) to at least {Length} characters, restart, then open the app",
-                SetupOptions.MinimumCodeLength);
-    }
-    else if (!string.IsNullOrWhiteSpace(code.Code) && !code.Recover)
-    {
-        app.Logger.LogInformation("Sfe:Setup:Code is set but no longer needed: an administrator exists");
-    }
-}
-catch (Exception ex)
-{
-    app.Logger.LogError(ex, "Cannot read the accounts and libraries; nobody can sign in until the database is fixed");
+    case MigrationStatus.Required:
+        app.Logger.LogWarning(
+            "The databases and settings belong to SFE {Installed}; this is SFE {Version}. Nobody can use the app until they are updated: open it in a browser and confirm the update with the setup code{Hint}",
+            migration.DatabaseVersion ?? "(before 1.37.0)", AppVersion.Version,
+            code.HasUsableCode ? "" : $" (set Sfe:Setup:Code to at least {SetupOptions.MinimumCodeLength} characters first, then restart)");
+        break;
+    case MigrationStatus.Newer:
+        app.Logger.LogError("The databases belong to SFE {Installed}, later than this SFE {Version}: install that version again, or restore a backup",
+            migration.DatabaseVersion, AppVersion.Version);
+        break;
+    case MigrationStatus.None:
+        try
+        {
+            var setup = app.Services.GetRequiredService<SetupService>();
+            if (await setup.IsRequiredAsync())
+            {
+                if (code.HasUsableCode)
+                    app.Logger.LogWarning("No administrator yet: open the app in a browser and enter the setup code (Sfe:Setup:Code) to create one");
+                else
+                    app.Logger.LogWarning(
+                        "No administrator yet and no setup code: set Sfe:Setup:Code (e.g. the environment variable Sfe__Setup__Code) to at least {Length} characters, restart, then open the app",
+                        SetupOptions.MinimumCodeLength);
+            }
+            else if (!string.IsNullOrWhiteSpace(code.Code) && !code.Recover)
+            {
+                app.Logger.LogInformation("Sfe:Setup:Code is set but no longer needed: an administrator exists (keep it for the next update)");
+            }
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogError(ex, "Cannot read the accounts and libraries; nobody can sign in until the database is fixed");
+        }
+        break;
 }
 
 app.Run();

@@ -3,27 +3,10 @@ import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { HostingKind, SetupInfo } from '../core/models';
+import { SetupInfo } from '../core/models';
 import { valueOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
-
-/** How to give the server its setup code, by the way it runs ([title, steps]). */
-export const SETUP_CODE_STEPS: Record<HostingKind, [string, string]> = {
-    windowsService: ['Windows service',
-        'Add "Setup": { "Code": "…" } to the "Sfe" section of appsettings.json, next to SFE\'s program, or set the system environment variable Sfe__Setup__Code; then restart the SFE service.'],
-    systemd: ['systemd service',
-        'Add Environment=Sfe__Setup__Code=… to the [Service] section of SFE\'s unit (systemctl edit sfe), then restart it (systemctl restart sfe).'],
-    iis: ['IIS',
-        'Add <environmentVariable name="Sfe__Setup__Code" value="…" /> to the environmentVariables of the site\'s web.config (or set it in IIS Manager\'s configuration editor), then recycle the application pool.'],
-    docker: ['Container',
-        'Give the container the environment variable Sfe__Setup__Code (docker run -e, the environment of a compose file, or the container settings of your NAS), then restart it.'],
-    appImage: ['AppImage',
-        'Add "Setup": { "Code": "…" } to the "Sfe" section of ~/.config/sfe/appsettings.json, or start SFE with the environment variable Sfe__Setup__Code; then start it again.'],
-    portable: ['Portable package',
-        'Add "Setup": { "Code": "…" } to the "Sfe" section of appsettings.json, next to SFE\'s program, or start it with the environment variable Sfe__Setup__Code; then start it again.'],
-    other: ['Configuration or environment variable',
-        'Set the environment variable Sfe__Setup__Code (or Sfe:Setup:Code in the configuration files), then restart the server.'],
-};
+import { SetupCodeStepsComponent } from './setup-code.component';
 
 /**
  * The first administrator (`setup`). Nothing else works until one exists. The page needs the setup code of the
@@ -32,7 +15,7 @@ export const SETUP_CODE_STEPS: Record<HostingKind, [string, string]> = {
  */
 @Component({
     selector: 'sfe-setup-page',
-    imports: [IconComponent],
+    imports: [IconComponent, SetupCodeStepsComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'account-page' },
     template: `
@@ -53,21 +36,8 @@ export const SETUP_CODE_STEPS: Record<HostingKind, [string, string]> = {
                         needs a <strong>setup code</strong> of at least {{ info()!.minimumCodeLength }} characters, given in its
                         environment; this page then asks for it.
                     </p>
-                    @if (info()!.codeTooShort) {
-                        <p class="form-error">The setup code the server has is too short: it needs at least {{ info()!.minimumCodeLength }} characters.</p>
-                    }
-                    <h2>{{ steps()[0] }}</h2>
-                    <p>{{ steps()[1] }}</p>
-                    <details>
-                        <summary>Other ways SFE runs</summary>
-                        <dl>
-                            @for (other of otherSteps(); track other[0]) {
-                                <dt>{{ other[0] }}</dt>
-                                <dd>{{ other[1] }}</dd>
-                            }
-                        </dl>
-                    </details>
-                    <p class="field-hint">Pick a long code nobody can guess, and remove it once the administrator exists: it is only used for this.</p>
+                    <sfe-setup-code-steps [hosting]="info()!.hosting" [minimumCodeLength]="info()!.minimumCodeLength" [codeTooShort]="info()!.codeTooShort" />
+                    <p class="field-hint">Pick a long code nobody can guess. Afterwards it is only asked for again to confirm the update after an upgrade.</p>
                     <button type="button" class="button primary" title="Ask the server whether it has a setup code now" (click)="load()">Check again</button>
                 </div>
             } @else {
@@ -159,10 +129,6 @@ export class SetupPageComponent implements OnInit {
     protected readonly errors = signal<Record<string, string>>({});
 
     protected readonly mismatch = computed(() => this.confirm() !== '' && this.confirm() !== this.password());
-    protected readonly steps = computed(() => SETUP_CODE_STEPS[this.info()?.hosting ?? 'other']);
-    protected readonly otherSteps = computed(() => Object.entries(SETUP_CODE_STEPS)
-        .filter(([kind]) => kind !== (this.info()?.hosting ?? 'other'))
-        .map(([, steps]) => steps));
 
     protected readonly valueOf = valueOf;
 

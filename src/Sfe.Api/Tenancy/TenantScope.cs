@@ -37,7 +37,8 @@ public sealed class TenantMiddleware(RequestDelegate next)
     {
         var path = context.Request.Path;
         if (!path.StartsWithSegments("/api") && !path.StartsWithSegments("/openapi")
-            || path.StartsWithSegments("/api/setup") || path.StartsWithSegments("/api/session") || path.StartsWithSegments("/api/docs"))
+            || path.StartsWithSegments("/api/setup") || path.StartsWithSegments("/api/session") || path.StartsWithSegments("/api/docs")
+            || path.StartsWithSegments("/api/migration"))
         {
             await next(context);
             return;
@@ -103,6 +104,10 @@ public static class TenancyServiceCollectionExtensions
     public static IServiceCollection AddSfeTenancy(this IServiceCollection services, IConfiguration configuration, string contentRootPath)
     {
         services.AddSingleton<FfmpegLimits>();
+        // The update of an install to this version, which the libraries wait for, and its backups.
+        services.AddSingleton<Maintenance.MigrationCoordinator>();
+        services.AddSingleton<Maintenance.BackupSources>();
+        services.AddSingleton<Maintenance.BackupDownloads>();
         services.AddSingleton<TenantRegistry>();
         services.AddHostedService(sp => sp.GetRequiredService<TenantRegistry>());
         services.AddScoped<TenantScope>();

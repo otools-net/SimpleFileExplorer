@@ -3,8 +3,8 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    ClientConfig, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
-    FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, MissingFileResults, RelinkPassResult, RemovedDuplicate,
+    BackupLink, ClientConfig, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, MigrationInfo, MissingFileResults, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
     TaskActionResult, TaskInfo, TaskKind, TaskOverview, TaskRunDetails, TaskRunPage, TaskSchedule, TaskScheduleInput, TenantAccess, TenantDetails,
@@ -157,6 +157,12 @@ export class Api {
     changePassword = (current: string, password: string) => this.put<SessionInfo>('api/session/password', { current, password });
     setupInfo = () => this.get<SetupInfo>('api/setup', {}, undefined, false);
     completeSetup = (input: SetupInput) => this.post<SessionInfo>('api/setup', input, undefined, false);
+    /** Whether the install waits for its update to this version (works while everything else is closed). */
+    migrationInfo = () => this.get<MigrationInfo>('api/migration', {}, undefined, false);
+    /** Starts the update (in the background: poll `migrationInfo`); rejects with the code's error. */
+    startMigration = (code: string) => this.post<MigrationInfo>('api/migration', { code }, undefined, false);
+    /** Makes a backup before the update; the browser downloads it from the link answered, once. */
+    migrationBackup = (code: string) => this.post<BackupLink>('api/migration/backup', { code }, undefined, false);
 
     /** A link to `path` working without signing in, for a while: for external players. */
     fileLink = (path: string) => this.post<FileLink>('api/files/links', { path });
@@ -227,7 +233,8 @@ export class Api {
     /**
      * The response as a promise; aborting `signal` unsubscribes, which cancels the request. Unless `redirect` is
      * off, a request refused for want of a session (401) opens the sign-in page, one refused before the server is
-     * set up (503 `setup-required`) the setup page.
+     * set up (503 `setup-required`) the setup page. One refused while the install waits for its update (503
+     * `migration-required`) always opens the update page: no other page works then.
      */
     private send<T>(request: Observable<T>, signal?: AbortSignal, redirect = true): Promise<T> {
         return new Promise<T>((resolve, reject) => {
@@ -246,7 +253,7 @@ export class Api {
                     } else if (error instanceof HttpErrorResponse && error.status === 409)
                         resolve(error.error as T);
                     else {
-                        if (redirect && error instanceof HttpErrorResponse)
+                        if (error instanceof HttpErrorResponse && (redirect || type === 'migration-required'))
                             this.redirect(error.status, type);
                         reject(toApiError(error));
                     }
@@ -260,13 +267,16 @@ export class Api {
     }
 
     private redirect(status: number, type: string | null): void {
-        if (status !== 401 && !(status === 503 && type === 'setup-required'))
+        if (status !== 401 && !(status === 503 && (type === 'setup-required' || type === 'migration-required')))
             return;
         const router = this.injector.get(Router);
         const page = router.url.split('?')[0];
-        if (status === 503 && type === 'setup-required' && page !== '/setup')
+        if (status === 503 && type === 'migration-required') {
+            if (page !== '/migration')
+                void router.navigate(['/migration']);
+        } else if (status === 503 && type === 'setup-required' && page !== '/setup')
             void router.navigate(['/setup']);
-        else if (status === 401 && page !== '/login' && page !== '/setup')
+        else if (status === 401 && page !== '/login' && page !== '/setup' && page !== '/migration')
             void router.navigate(['/login'], { queryParams: { return: router.url === '/' ? null : router.url } });
     }
 }
@@ -294,7 +304,7 @@ function toApiError(error: unknown): ApiError {
     return new ApiError(error.status, message, body?.errors ?? null, problemType(error));
 }
 
-/** The request was refused for want of a session or of the setup: the Api has opened the sign-in or setup page. */
+/** The request was refused for want of a session, of the setup or of the update: the Api has opened the sign-in, setup or update page. */
 export function redirected(error: unknown): boolean {
-    return error instanceof ApiError && (error.status === 401 || error.status === 503 && error.type === 'setup-required');
+    return error instanceof ApiError && (error.status === 401 || error.status === 503 && (error.type === 'setup-required' || error.type === 'migration-required'));
 }

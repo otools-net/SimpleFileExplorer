@@ -45,3 +45,21 @@
 .account-steps dt { margin-top: 8px; color: var(--text); font-weight: 600; }
 .account-steps dd { margin: 2px 0 0; line-height: 1.5; }
 .account-steps .button { align-self: flex-start; }
+/* The steps of the setup code: laid out by the page's .account-steps. */
+.setup-code-steps { display: contents; }
+
+/* ---------- Update page (after an upgrade): the changes since the installed version, a backup, the update ---------- */
+
+.migration-card { max-width: 680px; }
+.migration-card > p { margin: 0; line-height: 1.5; }
+.migration-card .form-error p { margin: 0; }
+.migration-changes { display: flex; flex-direction: column; gap: 4px; max-height: 50vh; overflow: auto; padding: 12px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
+.migration-changes h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+.migration-version h3 { margin: 10px 0 0; font-size: 14px; font-weight: 600; }
+.migration-version h4 { margin: 6px 0 0; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.migration-version ul, .migration-log { margin: 4px 0 0; padding-left: 20px; line-height: 1.5; }
+.migration-version code { font-size: 12px; }
+.migration-backup { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.migration-running { display: flex; align-items: center; gap: 10px; }
+.migration-log { color: var(--text-muted); font-size: 13px; }

@@ -44,6 +44,9 @@ src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceColl
   Trickplay/            TrickplayService (background passes + player queue), VideoFingerprint
   FileTracking/         DuplicateFinder/Remover, RelinkService, MissingFileRecorder, SimilarVideoFinder, VideoMatcher
   Editing/              EditedImages (saves the web editor's pictures as new files: format check, name, index)
+  Upgrades/             InstalledVersion (the install's version, ServerProperties table), Changelog (CHANGELOG.md parser),
+                        SemanticVersion
+  Backup/               BackupWriter (zip of databases + config files, manifest, README)
   Tasks/                BackgroundTasks (status/start/cancel of every job), TaskScheduleService (+ loop),
                         ScheduleCalculator, TaskHistory (TaskRuns), TaskRunLog + TaskLogProvider (run logs)
   Settings/ Options/    SettingsStore (server level, settings.json)/Service, EditableSettings, SettingCatalog (scope and
@@ -56,6 +59,8 @@ src/Sfe.Api/            Program.cs, Endpoints/*Endpoints.cs (one class per area)
                         policy provider, RequestGuard (setup gate, X-SFE-Request, /api/docs), FileLinks (player tokens)
   Tenancy/              TenantRegistry/TenantHost (one AddSfeCore container per library), TenantMiddleware +
                         TenantRequestServices (routes get their library's Core services)
+  Maintenance/          MigrationCoordinator (version check at start-up, the update gate, the update itself),
+                        BackupSources (what a backup holds) + BackupDownloads (one-time links of the update page)
 src/Sfe.Web/            the web client (Angular workspace: angular.json, package.json, proxy.conf.json)
   public/               copied as is: favicon.svg
   src/theme-boot.ts     classic script run before first paint (theme), compiled alone by `npm run boot`
@@ -64,7 +69,8 @@ src/Sfe.Web/            the web client (Angular workspace: angular.json, package
   src/app/core/         Api (the only HTTP client), models (API shapes), ConfigService (+ Urls, rights: can/canAny),
                         rights (right ids, SETTINGS_RIGHTS), format, paths, preferences (localStorage), ToastService,
                         ThemeService, CopyPathService
-  src/app/account/      LoginPage (`login`), SetupPage (`setup`), AccountSection (My account: preferences, password)
+  src/app/account/      LoginPage (`login`), SetupPage (`setup`), SetupCodeSteps (how to set the code), AccountSection (My account)
+  src/app/migration/    MigrationPage (`migration`: the update after an upgrade), changelog.ts (inline Markdown of items)
   src/app/access/       People (Accounts, Groups, GuestAccess) and Libraries sections of the admin page
   src/app/shared/       icon + IconSprite, SheetComponent (dialog card), BusyDirective, highlight, toasts, empty state
   src/app/library/      the listing page: LibraryPageComponent, ListingStore (state), library-route, Dialogs registry,
@@ -93,6 +99,8 @@ Directory.Build.props   the app version (all projects)
   - database: a new SQL Server migration (never edit, remove or squash a shipped one) **and** the SQLite path (next
     bullet); new columns nullable, existing rows back-filled (e.g. the next scan reads what is still null, as for
     `Files.Duration`) or given a correct default; no data dropped without the user asking;
+  - nothing writes to a database or the settings file before the update is confirmed: steps run at each start go in
+    `MigrationCoordinator.UpdateAsync` (not Program.cs), and a new root hosted service checks `IsBlocking` first;
   - settings: never rename or remove a key of `SfeOptions`/`EditableSettings` silently (saved `settings.json` files and
     appsettings use it); a new key needs no step (`SettingsStore` keeps the configured value for keys missing from the
     file); per-browser keys (`core/preferences.ts`, `sfe.*`) are read in their old form too, or dropped harmlessly;
@@ -109,7 +117,9 @@ Directory.Build.props   the app version (all projects)
   - **feature added or changed** → bump minor, reset patch: `1.0.1` → `1.1.0` (a task doing both bumps minor only);
   - major only when the user asks; no bump for changes to docs, tests or build scripts alone.
 - **Changelog:** every version bump adds (or extends, when the version was already bumped) its section at the top of
-  `CHANGELOG.md`: `## x.y.z`, then `### Added` / `### Changed` / `### Fixed`, one short user-facing line per item.
+  `CHANGELOG.md`: `## x.y.z`, then `### Added` / `### Changed` / `### Fixed`, one short user-facing line per item. The
+  file is embedded in Sfe.Api and shown on the update page (`TheShippedChangelogHasTheRunningVersion` checks the top
+  section is the running version); items may use `` `code` `` and `**bold**` only.
   What an upgrade does to an install stays in `docs/upgrading.md`.
 - **Docs:** user-visible changes (behaviour, settings, UI) go in `docs/`, kept user-oriented: the page of that screen
   (`docs/user-guide/` for the listing page and its dialogs, `docs/administration/` one page per admin section,
@@ -179,6 +189,8 @@ Directory.Build.props   the app version (all projects)
 - **Every new feature comes with tests**, in the same change: backend (MSTest in `tests/Sfe.Tests`) for server
   behaviour, frontend (a `*.spec.ts`) for client behaviour, both when it spans the two. A bug fix gets a test that
   fails without it. Not done until `dotnet test` and `npm test` pass.
+- **Tests:** a test that makes a database first (`CoreServices`, an old settings file + index) and then starts the
+  HTTP server meets the update gate: call `ApiClients.MigrateAsync(factory)` before anything else.
 - **Tests:** each test gets its own `TestLibrary` (temp tree with odd/Unicode names + own SQLite file, setup code,
   keys folder); `CoreServices.CreateAsync` for Core (no accounts: the server level only), `WebApplicationFactory<Program>`
   for HTTP through `ApiClients` (`CreateFactory`, `SetUpAsync` = signed in as the server administrator, `SignInAsync`,
@@ -279,6 +291,12 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
 - Never call `SqliteConnection.ClearAllPools()` in tests: under method-level parallelism it disposes handles
   other tests are opening (`ObjectDisposedException: SQLitePCL.sqlite3`, "database is locked"). `TestLibrary`
   clears only its own pool. If SQLite contention still shows up occasionally, rerun before chasing it.
+- Microsoft.Data.Sqlite's pool can hand an in-use connection to a second `Open` while it grows (leaked-connection
+  reclaim races `Activate`): "database is locked" from `SqliteConnection.Open()`, or a deadlocked pool.
+  `SqliteOpenGate` (added by `SfeDatabase.Configure`) serialises EF's opens; open raw pooled `SqliteConnection`s in
+  parallel only for a test of it (`ParallelContextsNeverShareAPooledConnection`).
+- A scan's `progress.Errors` is only logged: pass a `WarningLog` (`Infrastructure/`) to `CoreServices.CreateAsync` and
+  use it as the assert message to see why.
 - ffmpeg tests (`TrickplayTests`, `SimilarVideoTests`) are inconclusive without `SFE_TEST_FFMPEG`/PATH. Tiny clips
   finish in milliseconds: assert "waiting" states before starting `RunAsync`. Moving test pictures: lavfi
   `mandelbrot`, `life`.
@@ -294,8 +312,11 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   image or video, and `r:hr` and `r:lr` are not complements (unknown resolutions are neither). `type:` has no column: it is an
   OR of the `MediaClassifier` extension lists (`MediaKinds`), `type:other` the negation of all three; several OR-ed like `e:`. On SQLite, `LIKE` and `NOCASE` fold ASCII only:
   `русский` / `ESPAÑOL` don't find `Русский` / `Español` (SQL Server's CI collation does).
-- Client suite flakes under load, before 1.35 too: `CoversService` (parts of 100, known folder), `LocationComponent
-  header visibility` and `CopyPathService` fail in some full runs and pass alone. Rerun before chasing them.
+- Angular runs Vitest with `isolate: false`: a worker's spec files share globals (window, storage, prototypes) and
+  `src/testing/setup.ts` runs again for each file; which files share a worker varies per run, so a leak fails "only
+  sometimes". setup.ts must replace what it installs (a `??=` IntersectionObserver once made `intersect()` miss every
+  observer), clears storage before each test and restores `isSecureContext`, `scrollY`, `navigator.clipboard`,
+  `document.execCommand`: add any other global a spec redefines to its `patchedGlobals`.
 - Client specs (Vitest + jsdom, zoneless TestBed): `await settle(ms)` lets timers, promises and change detection
   run. It waits on a real timer, so it hangs under `vi.useFakeTimers()`: use `vi.advanceTimersByTimeAsync` +
   `fixture.detectChanges()` there. An `async` helper must not return the promise under test (it gets awaited): wrap
@@ -318,15 +339,17 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
 
 - **Client routes:** `''` = `LibraryPageComponent` (the query string `?path=&q=&sort=&desc=1` says what it lists),
   `admin` = `AdminPageComponent` (`config`, its former address, redirects there), `player` = `PlayerPageComponent`,
-  `login` = `LoginPageComponent` (`?return=`), `setup` = `SetupPageComponent`; the last three load lazily (`loadComponent`:
+  `login` = `LoginPageComponent` (`?return=`), `setup` = `SetupPageComponent`, `migration` = `MigrationPageComponent`;
+  all but the first two load lazily (`loadComponent`:
   their chunks keep the initial bundle under its 600 kB budget), so the admin page's guard lives apart
   (`admin/leave-admin-page.ts`). `<base href="./">` + `APP_BASE_HREF` from
   `document.baseURI` keep them working under a virtual directory, which is why routes stay one level deep; the
-  server's `MapFallbackToFile("index.html")` serves `/admin`, `/player`, `/login` and `/setup`.
+  server's `MapFallbackToFile("index.html")` serves `/admin`, `/player`, `/login`, `/setup` and `/migration`.
 - **Sessions:** a cookie (`sfe.session`: user id, security stamp, library id; `SfeSession`), because `<img>`/`<video>`
   send cookies and nothing else. `OnValidatePrincipal` rejects it when the stamp changed (password, disabled, kind,
   admin flag) through `AccessService.GetSessionUserAsync` (cached until `AccessChanges.Version` moves). Data Protection
-  keys persist in `Sfe:Security:KeysDirectory`. Pipeline: authentication → `RequestGuard` (503 `setup-required` until
+  keys persist in `Sfe:Security:KeysDirectory`. Pipeline: authentication → `RequestGuard` (503 `migration-required`
+  while an update is due, except `api/migration`; 503 `setup-required` until
   an administrator exists, except `api/setup` and `api/session`; 400 for non-GET `/api` without `X-SFE-Request`;
   `/api/docs` needs `system.apiDocs`) → authorization (`RequireRight` policies `right:a,b`, `RightHandler` reads
   `CurrentAccess`) → rate limiter (`sign-in` per address) → `TenantMiddleware`. Client: `Api` sends `X-SFE-Request` on
@@ -339,6 +362,25 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   rights for guests (anonymous or `UserKind.Guest`), minus `Sfe:Rights:Disabled` (applied at each read). A library
   membership is a group in it. `CurrentAccess` picks the library: the cookie's if the account still reaches it, else
   its first; for visitors the `sfe.guest` cookie's if open to guests, else the first library.
+- **Update (migration):** `MigrationCoordinator.InitializeAsync` (Program.cs, before `app.Run`) reads the install's
+  version read-only (`InstalledVersion`: database exists + has tables? `ServerProperties` table? its `Version` row).
+  No database or no tables = new install; same version = current: both run `UpdateAsync` (access schema, first space,
+  `GrantNewRightsAsync`, `MovePerLibrarySettingsAsync`) and record the version. Earlier or unknown (installs before
+  1.37.0 have no table) = `Required`; later = `Newer`; unreadable = `Unavailable` (retried by `RequestGuard` every
+  10 s). Every status but `None` blocks: `RequestGuard` answers 503 `migration-required` except `api/migration*`,
+  `TenantRegistry` starts no library, `SfeSession.ValidateAsync` skips the accounts' query. `POST api/migration`
+  (setup code, `PasswordHashing.SameSecret`) runs `UpdateAsync` strictly in the background, starts each library and
+  initializes its index again (so an index error fails the update), records the version; the page polls
+  `GET api/migration`. `Sfe:Database:MigrateOnStartup=false` skips the check. The client's `Api` opens `/migration`
+  on any 503 `migration-required`, even for calls with redirects off.
+- **Backups:** `BackupSources` (Api) lists the main database, every other library's (`Tenants` read by projection,
+  connection strings as `TenantHost.ConnectionString`), `settings.json` and the content root's `appsettings*.json`;
+  `BackupWriter` (Core) writes a temp zip: SQLite via `SqliteConnection.BackupDatabase` (read-only, no pooling),
+  SQL Server via `BACKUP DATABASE … COPY_ONLY` into `Sfe:Backup:SqlServerFolder` or the instance default, added if
+  readable from here (untested: no SQL Server on the dev machine). Served with `FileOptions.DeleteOnClose`:
+  `GET api/system/backup` (`server.backup`) directly, the update page through `POST api/migration/backup` (code) →
+  a one-time `GET api/migration/backup/{token}` link (`BackupDownloads`, 15 min), so the browser streams it to disk.
+  The manifest's `version` is the install's (`DatabaseVersion`), `madeBy` the running one.
 - **Space administrators** (`tenant.members` without `server.users`) only touch accounts already in a group of their
   space: `AccessEndpoints` 404s the others, keeps a shared account's other fields, and passes `membersOfTenantOnly` to
   the group methods. An account in their space alone (`OwnedBy`) is fully theirs (password too), so any route putting

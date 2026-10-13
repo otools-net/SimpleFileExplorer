@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Access;
+using Sfe.Core.Backup;
 using Sfe.Core.Data;
 using Sfe.Core.Editing;
 using Sfe.Core.FileTracking;
@@ -18,6 +19,7 @@ using Sfe.Core.Tagging;
 using Sfe.Core.Tasks;
 using Sfe.Core.Thumbnails;
 using Sfe.Core.Trickplay;
+using Sfe.Core.Upgrades;
 
 namespace Sfe.Core;
 
@@ -116,6 +118,7 @@ public static class ServiceCollectionExtensions
         services.AddOptions<SecurityOptions>().Bind(section.GetSection(nameof(SfeOptions.Security)));
         services.AddOptions<RightOptions>().Bind(section.GetSection(nameof(SfeOptions.Rights)));
         services.AddOptions<TenantOptions>().Bind(section.GetSection(nameof(SfeOptions.Tenants)));
+        services.AddOptions<BackupOptions>().Bind(section.GetSection(nameof(SfeOptions.Backup)));
 
         var provider = section.GetSection(nameof(SfeOptions.Database)).Get<DatabaseOptions>()?.Provider ?? DatabaseProvider.SqlServer;
         var connectionString = configuration.GetConnectionString(ConnectionStringName)
@@ -132,6 +135,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUserDirectory, LocalUserDirectory>();
         services.AddSingleton<SignInService>();
         services.AddSingleton<SetupService>();
+        // The version the install belongs to (read before anything else at start-up), and its backups.
+        services.AddSingleton<InstalledVersion>();
+        services.AddSingleton<BackupWriter>();
 
         // Settings by level: the server's settings file, the libraries' and users' rows.
         AddSettingsStore(services, section.Get<SfeOptions>() ?? new SfeOptions(), contentRootPath ?? Directory.GetCurrentDirectory());

@@ -1,8 +1,39 @@
 # Upgrading
 
 Install the new version over the old one (or replace the portable package, keeping its `appsettings.json` and `data`
-folder). The index, tags, thumbnails, trickplay and settings are kept: new database tables and columns are added on
-the first start, on SQL Server and SQLite alike. The notes below say what you may notice.
+folder). The index, tags, thumbnails, trickplay and settings are kept: new database tables and columns are added by
+the update described below, on SQL Server and SQLite alike. The notes after it say what you may notice.
+
+## The update page (1.37 and later)
+
+When the new version starts on an install of an earlier version, it changes nothing yet: every page shows the **update
+page** and the app can't be used, by anyone, until the update is done.
+
+![The update page](images/update-page.png)
+
+1. The page says which version the databases belong to and lists every change since then (from the
+   [changelog](../CHANGELOG.md)).
+2. It asks for the **setup code**, the same as for the [first start](first-start.md#the-setup-code). If the server has
+   none any more, the page says where to set it for the way your server runs; set it and restart.
+3. **Download a backup** (recommended) saves a zip file of the databases and configuration files, to go back to the
+   earlier version if needed (see [Backups](administration/system.md#backup)).
+4. **Start the update** updates the databases (accounts, then every space's index) and the settings, and follows it on
+   the page. **Open SFE** then opens the library; sessions of before keep working.
+
+If the update stops on an error, the page shows it: fix the cause (the server's log has the details) and start it
+again. Before you confirm, nothing in the databases or the settings file has been changed, so you can still go back
+to the earlier version by installing it again.
+
+- Installs from before 1.37 recorded no version: the page says "an earlier version" and lists every change.
+- A database that belongs to a **later** version than the one installed is never touched: install that version again,
+  or restore a backup made with this one.
+- While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
+- With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
+
+## To 1.37
+
+- The first start of 1.37 shows the update page above (installs before it recorded no version). The accounts'
+  database gets a small `ServerProperties` table with the version (SQL Server: a migration; SQLite: a new table).
 
 ## To 1.36
 

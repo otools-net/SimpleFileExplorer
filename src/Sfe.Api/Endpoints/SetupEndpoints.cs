@@ -73,7 +73,7 @@ public static class SetupEndpoints
         return TypedResults.Ok(await SessionEndpoints.DescribeAsync(context));
     }
 
-    private static HostingKind DetectHosting()
+    internal static HostingKind DetectHosting()
     {
         if (WindowsServiceHelpers.IsWindowsService())
             return HostingKind.WindowsService;

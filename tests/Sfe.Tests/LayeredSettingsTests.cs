@@ -226,7 +226,9 @@ public sealed class LayeredSettingsTests
         old["player"]!.AsObject().Remove("linkLifetimeMinutes");
         await File.WriteAllTextAsync(_library.SettingsPath, old.ToJsonString(), TestContext.CancellationToken);
 
-        var admin = await AdminAsync(Factory());
+        var factory = Factory();
+        await ApiClients.MigrateAsync(factory, TestContext.CancellationToken);
+        var admin = await AdminAsync(factory);
         using var search = await admin.GetAsync("/api/search?q=photo", TestContext.CancellationToken);
         var results = (await search.Content.ReadFromJsonAsync<SearchResults>(Json, TestContext.CancellationToken))!;
         var library = await SettingsAsync(admin, "tenant");

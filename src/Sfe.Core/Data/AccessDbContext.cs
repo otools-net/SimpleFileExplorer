@@ -14,6 +14,9 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public const int MaxRightLength = 64;
     public const int MaxSettingKeyLength = 200;
 
+    /// <summary>Found by name before the model can be trusted (<see cref="Upgrades.InstalledVersion"/>).</summary>
+    public const string ServerPropertiesTable = "ServerProperties";
+
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<UserGroup> Groups => Set<UserGroup>();
@@ -22,6 +25,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public DbSet<TenantDisabledRight> TenantDisabledRights => Set<TenantDisabledRight>();
     public DbSet<TenantSetting> TenantSettings => Set<TenantSetting>();
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
+    public DbSet<ServerProperty> ServerProperties => Set<ServerProperty>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -130,6 +134,14 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
                 .WithMany()
                 .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ServerProperty>(entity =>
+        {
+            entity.ToTable(ServerPropertiesTable);
+            entity.HasKey(p => p.Key);
+            entity.Property(p => p.Key).HasMaxLength(64).IsUnicode(false);
+            entity.Property(p => p.Value).HasMaxLength(400).IsRequired();
         });
     }
 }

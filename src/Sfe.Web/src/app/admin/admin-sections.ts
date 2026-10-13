@@ -139,8 +139,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         group: 'Server',
         title: 'System',
         icon: 'power',
-        description: 'The server\'s version and API, and the server commands.',
-        subpages: [page('about', 'About', Rights.serverSettings, Rights.apiDocs, Rights.shutdown, Rights.dismount)],
+        description: 'The server\'s version and API, backups, and the server commands.',
+        subpages: [page('about', 'About', Rights.serverSettings, Rights.apiDocs, Rights.backup, Rights.shutdown, Rights.dismount)],
     },
     {
         id: 'account',

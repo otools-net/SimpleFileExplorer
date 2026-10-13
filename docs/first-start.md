@@ -28,7 +28,8 @@ Open the app: it asks for the code, the administrator's name, display name and p
 [Spaces & accounts](administration/spaces-and-accounts.md)). The administrator is signed in at once and is a **server
 administrator**: every right in every space.
 
-The code is not used again: remove it from the environment (the log reminds you).
+Afterwards the code is only asked for by the [update page](upgrading.md#the-update-page-137-and-later), after an
+upgrade: keep it, or remove it and set one again before the next upgrade.
 
 ## Next steps
 

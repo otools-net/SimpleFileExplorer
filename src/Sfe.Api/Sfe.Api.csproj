@@ -41,6 +41,11 @@
     <Content Update="data/**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- What the update page lists between the install's version and this one (Endpoints/MigrationEndpoints.cs). -->
+    <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="CHANGELOG.md" Link="CHANGELOG.md" />
+  </ItemGroup>
+
   <!--
     The web client: the Angular app in ../Sfe.Web, built with npm into wwwroot (git-ignored) before the static web
     assets are collected. Needs Node.js (npm) on the PATH. Skipped when its sources are older than wwwroot/index.html;
