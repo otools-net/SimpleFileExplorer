@@ -71,6 +71,8 @@ Linux override at least `Sfe:Root`, the connection string and `Sfe:Thumbnails:Ca
 | `Sfe:Tenants:AllowedRoots`                    | Folders new libraries may be created in (default: `Sfe:Root`) |
 | `Sfe:Tenants:ConnectionString`                | Index of a new library, `{tenant}` standing for its short name; default next to the first library's |
 | `Sfe:Player:LinkLifetimeMinutes`              | How long a link given to an external player works (default 360) |
+| `Sfe:Editor:OutputFolder`                     | Library folder (path from the root) where edited pictures are saved (default `Edited`; empty = next to the originals); see [Editing pictures](#editing-pictures) |
+| `Sfe:Editor:Quality`                          | Quality of the JPEG and WebP pictures the editor saves, 10–100 (default 92) |
 
 Other settings: `Sfe:Database:Provider` (`SqlServer` or `Sqlite`), `Sfe:ShowHiddenItems` (on Linux, hidden means a
 name starting with `.`), `Sfe:Scan:Parallelism`, `Sfe:Scan:ComputeHashes`, `Sfe:Scan:ReadResolution`, `Sfe:Browse:ShowResolution|ShowDuration|ResolutionMark|ImageHighResolutionPixels|VideoHighResolutionPixels`, `Sfe:Thumbnails:FfmpegPath|Width|MaxConcurrency`,
@@ -329,6 +331,7 @@ Rights marked "no" are never given to guests.
 | `files.download` | download files | yes | Administrators, Users |
 | `files.external` | open files in an external player (a link of its own) | yes | Administrators, Users |
 | `files.copyPaths` | copy full paths (shows the server's folders) | no | Administrators |
+| `files.edit` | edit pictures (crop) and save the result as a new file | no | Administrators, Users |
 | `tags.view` | see tags, the tag sidebar | yes | all |
 | `tags.assign` | tag files, folders and searches | no | Administrators, Users |
 | `tags.manage` | create, edit, delete tags; clear the tag history | no | Administrators |
@@ -336,7 +339,7 @@ Rights marked "no" are never given to guests.
 | `tracking.duplicates`, `tracking.duplicatesRemove`, `tracking.similar`, `tracking.missing` | duplicates, deleting copies, similar videos, moved files | no | Administrators |
 | `trickplay.manage` | trickplay activity | no | Administrators |
 | `tasks.view`, `tasks.run`, `tasks.schedule` | background tasks, running them, schedules | no | Administrators |
-| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks` | the library's settings, by section | no | Administrators |
+| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.editor` | the library's settings, by section | no | Administrators |
 | `tenant.members` | the library's accounts, groups and guest access | no | Administrators |
 | `account.preferences`, `account.password` | own preferences and password | no | Administrators, Users |
 | `system.apiDocs` | the API documentation (`/api/docs`) | no | Administrators |
@@ -406,6 +409,13 @@ meanwhile. Turn it off afterwards.
   log says so); everything else in `settings.json` keeps applying as the server level.
 - Media players opened with ▶ now get links that expire (see [External player](#external-player)).
 - Browsers keep their own theme and search history as before.
+
+### Upgrading to 1.35
+
+- The rights added by 1.35 (`files.edit`, `settings.editor`) are given once, at the first start, to the built-in groups
+  of every existing library as a new library would have them: Administrators and Users may edit pictures,
+  Administrators change the editor's settings. Take them away afterwards if you wish: later starts don't give them back.
+- The accounts' database gets one new column (SQL Server: a migration; SQLite: added on start-up).
 
 ## Deploy
 
@@ -525,6 +535,29 @@ the current folder (the folder searched in while searching), on each folder and 
 the viewer for the file shown. It is off by default because it tells every visitor where the library lives on the
 server's disk. Copying also works over plain `http://` from another computer on the network. Folders and files
 whose path you copied get a dashed outline in the listing, until the page is reloaded.
+
+### Editing pictures
+
+The viewer's **Edit** button (crop icon, or the E key) opens a picture in the editor, for those with the right
+`files.edit`. **Crop** is its first tool: drag the frame's sides and corners, drag inside it to move it, drag outside
+it to draw a new one, or type its position and size in pixels. The **Aspect ratio** buttons keep the frame to a
+shape: Free, Original (the picture's own), Square (1:1), 4:3, 3:2, 5:4, 7:5, 16:9, 16:10 and 21:9, each also in
+portrait (3:4, 2:3, 4:5, 5:7, 9:16, 10:16, 9:21). Picking one gives the largest frame of that shape around the current
+frame's centre; the **Portrait** / **Landscape** button (or X) turns the chosen ratio the other way round. **Apply** (Enter) crops and lets you go on, **Undo**
+(Ctrl+Z) takes the last edit back, and **Save a copy** (Ctrl+S) saves the result.
+
+The original is never changed: the result is saved as a **new file**, in the folder for edited pictures under the
+original's own folders (`Photos/2024/beach.jpg` becomes `Edited/Photos/2024/beach.jpg`), with ` (2)`, ` (3)`... added
+when that name is taken. Set the folder in Administration › Media › Picture editor (`Sfe:Editor:OutputFolder`, default
+`Edited`, a setting of each library); left empty, edited pictures go next to their originals as `beach (edited).jpg`.
+Pictures already in that folder are saved next to themselves. The new file is added to the index at once, so search
+finds it straight away.
+
+The browser does the editing: JPEG, PNG and WebP pictures keep their format (JPEG and WebP at **Quality**,
+`Sfe:Editor:Quality`, default 92), other formats are saved as PNG. The saved picture keeps no metadata of the
+original (EXIF date, camera, location); a photo's orientation is applied to its pixels. A browser can only edit
+pictures it can show, and phones may refuse very large ones. Saves are limited to 200 MB; behind IIS, raise its own
+request limit (`maxAllowedContentLength`, 30 MB by default) to save larger pictures.
 
 ## Search syntax
 

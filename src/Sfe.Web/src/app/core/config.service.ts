@@ -17,6 +17,11 @@ export interface Urls {
     /** Direct link to the file: the data server when configured, the API otherwise. */
     file(path: string): string;
     download(path: string): string;
+    /**
+     * The file from this server even with a data server: the editor draws it on a canvas, which a picture of another
+     * origin would taint (nothing could be read back from it).
+     */
+    original(path: string): string;
     /** Not cached by the browser (the server keeps them on disk), so the URL needs no version. */
     thumbnail(path: string): string;
     /** Versioned (the trickplay's `version`), so the browser may cache the sheets. */
@@ -51,6 +56,7 @@ export function createUrls(config: ClientConfig): Urls {
     return {
         file,
         download: path => `api/files/raw/${encodePath(path)}?download=true`,
+        original: path => `api/files/raw/${encodePath(path)}`,
         thumbnail: path => `api/thumbnails/${encodePath(path)}`,
         trickplaySheet: (path, index, version) => `api/trickplay/files/${encodePath(path)}?sheet=${index}&v=${version}`,
         player: (path, start = 0) => {

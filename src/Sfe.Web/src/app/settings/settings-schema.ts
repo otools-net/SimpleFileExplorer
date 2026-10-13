@@ -71,6 +71,7 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'fileTracking.relink.enabled',
     'tags.recordHistory',
     'tasks.logRetentionDays',
+    'editor.outputFolder',
 ]);
 
 // Players that a web page can open a file in through a link they register, for the "External player" choice:
@@ -413,6 +414,22 @@ export const TABS: SettingTab[] = [
                 fields: [
                     { key: 'tags.recordHistory', label: 'Remember tag history', type: 'checkbox',
                         hint: 'Records the tags you search for and the tags of the files you open, for the sidebar\'s “Last searched” and “Last viewed” lists. When off, nothing new is recorded and those lists are hidden.' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'editor',
+        title: 'Picture editor',
+        intro: 'The Edit button of the viewer crops pictures. The result is always saved as a new file: originals are never changed.',
+        groups: [
+            {
+                title: 'Saving',
+                fields: [
+                    { key: 'editor.outputFolder', label: 'Folder for edited pictures', type: 'text', placeholder: 'Edited',
+                        hint: 'A folder of the library (path from the library root) where edited pictures are saved, in the same sub-folders as their originals: Photos/2024/beach.jpg is saved as Edited/Photos/2024/beach.jpg. Created when first needed. Empty: next to the original, as “beach (edited).jpg”. Existing files are never replaced: a number is added to the name.' },
+                    { key: 'editor.quality', label: 'Quality (JPEG and WebP)', type: 'number', min: 10, max: 100,
+                        hint: 'How much detail JPEG and WebP pictures keep when saved: higher is sharper and larger. PNG pictures are saved without loss; other formats are saved as PNG.' },
                 ],
             },
         ],

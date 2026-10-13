@@ -34,6 +34,9 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     /// <summary>A week: an external player's link is meant for watching now, not for sharing.</summary>
     public const int MaxLinkLifetimeMinutes = 10_080;
 
+    /// <summary>Leaves room under SQL Server's 260 characters for the originals' folders and names.</summary>
+    public const int MaxEditorFolderLength = 100;
+
     /// <summary>The server level: the configuration with the server settings page's values over it.</summary>
     public SettingsView Get()
     {
@@ -324,6 +327,9 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         settings.FileTypes.Audio = Extensions(settings.FileTypes.Audio);
         settings.Scan.ExcludedFolders = Folders(settings.Scan.ExcludedFolders);
         settings.Trickplay.Folders = Folders(settings.Trickplay.Folders);
+        settings.Editor.OutputFolder = string.IsNullOrWhiteSpace(settings.Editor.OutputFolder)
+            ? null
+            : LibraryPaths.NormalizeRelative(settings.Editor.OutputFolder.Trim()) ?? settings.Editor.OutputFolder.Trim();
 
         static List<string> Names(IEnumerable<string>? names) => (names ?? [])
             .Select(n => n?.Trim())
@@ -410,6 +416,11 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Range(s.FileTracking.Relink.RetentionDays, 0, MaxRetentionDays, "fileTracking.relink.retentionDays", "The days missing files are kept");
         Range(s.FileTracking.SimilarVideos.MinimumPercent, FileTracking.SimilarVideoFinder.LowestMinimumPercent, 100, "fileTracking.similarVideos.minimumPercent", "The match");
         Range(s.Tasks.LogRetentionDays, 0, MaxRetentionDays, "tasks.logRetentionDays", "The days task logs are kept");
+        Check(s.Editor.OutputFolder is null || LibraryPaths.NormalizeRelative(s.Editor.OutputFolder) is not null,
+            "editor.outputFolder", $"“{s.Editor.OutputFolder}” is not a folder of the library: enter a path relative to the library, like Edited or Photos/Edited, or leave it empty.");
+        Check(s.Editor.OutputFolder is null || s.Editor.OutputFolder.Length <= MaxEditorFolderLength,
+            "editor.outputFolder", $"The folder can be at most {MaxEditorFolderLength} characters.");
+        Range(s.Editor.Quality, Editing.EditedImages.MinQuality, 100, "editor.quality", "The quality");
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
         return errors;
 

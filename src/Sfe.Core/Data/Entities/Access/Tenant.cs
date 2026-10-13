@@ -28,6 +28,12 @@ public sealed class Tenant
     public bool Disabled { get; set; }
     public DateTime Created { get; set; }
 
+    /// <summary>
+    /// The revision of the rights catalog its built-in groups were given (<see cref="Access.RightCatalog.Revision"/>):
+    /// rights added since are granted once at start-up. Null = the spaces created by 1.34 (revision 0).
+    /// </summary>
+    public int? RightsRevision { get; set; }
+
     public List<UserGroup> Groups { get; set; } = [];
     public List<TenantDisabledRight> DisabledRights { get; set; } = [];
 }

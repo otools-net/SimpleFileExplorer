@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Editing;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
@@ -25,6 +26,10 @@ public sealed record ExternalPlayer(string Name, string Url);
 
 /// <summary>Smallest shorter side, in pixels, of a high-resolution image and of a high-resolution video.</summary>
 public sealed record ResolutionThresholds(int Image, int Video);
+
+/// <param name="OutputFolder">Library folder edited pictures are saved in, under their originals' folders; empty = next to the originals.</param>
+/// <param name="Quality">Quality (1-100) of the JPEG and WebP pictures the editor encodes.</param>
+public sealed record EditorConfig(string OutputFolder, int Quality);
 
 /// <param name="DataServer">When set, the client links files to this server instead of <c>/api/files/raw</c>: a base the path is appended to, or a template with <c>{url}</c> / <c>{encodedUrl}</c> (<see cref="DataServerUrl"/>).</param>
 /// <param name="PageSize">Items the client loads at a time while browsing a folder.</param>
@@ -56,8 +61,9 @@ public sealed record ResolutionThresholds(int Image, int Video);
 /// <param name="User">The signed-in account; null for a visitor without one.</param>
 /// <param name="Tenant">The library being browsed.</param>
 /// <param name="Tenants">The libraries the account can switch to (empty for a visitor without one).</param>
+/// <param name="Editor">The picture editor's settings; null without the right to edit pictures.</param>
 public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
-    IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants);
+    IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor);
 
 public static class ConfigEndpoints
 {
@@ -115,6 +121,11 @@ public static class ConfigEndpoints
             state.Access.Rights.Order(StringComparer.Ordinal).ToList(),
             state.User is { } user ? new SessionAccount(user.Id, user.UserName, user.DisplayName, user.Kind, user.IsServerAdmin, user.IsLocal) : null,
             state.Tenant is { } tenant ? new SessionTenant(tenant.Id, tenant.Slug, tenant.Name) : null,
-            tenants.Where(t => reachable.Contains(t.Id)).Select(t => new SessionTenant(t.Id, t.Slug, t.Name)).ToList()));
+            tenants.Where(t => reachable.Contains(t.Id)).Select(t => new SessionTenant(t.Id, t.Slug, t.Name)).ToList(),
+            state.Has(Rights.EditImages)
+                ? new EditorConfig(
+                    LibraryPaths.NormalizeRelative(server.Editor.OutputFolder?.Trim()) ?? string.Empty,
+                    Math.Clamp(server.Editor.Quality, EditedImages.MinQuality, 100))
+                : null));
     }
 }

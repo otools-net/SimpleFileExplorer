@@ -42,6 +42,7 @@ src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceColl
   Thumbnails/           ThumbnailService (disk cache, concurrency gate), Ffmpeg (locate + run)
   Trickplay/            TrickplayService (background passes + player queue), VideoFingerprint
   FileTracking/         DuplicateFinder/Remover, RelinkService, MissingFileRecorder, SimilarVideoFinder, VideoMatcher
+  Editing/              EditedImages (saves the web editor's pictures as new files: format check, name, index)
   Tasks/                BackgroundTasks (status/start/cancel of every job), TaskScheduleService (+ loop),
                         ScheduleCalculator, TaskHistory (TaskRuns), TaskRunLog + TaskLogProvider (run logs)
   Settings/ Options/    SettingsStore (server level, settings.json)/Service, EditableSettings, SettingCatalog (scope and
@@ -70,6 +71,7 @@ src/Sfe.Web/            the web client (Angular workspace: angular.json, package
   src/app/player/       VideoPlayerComponent, PlayerPageComponent (`player?path=&t=`)
   src/app/admin/        AdminPageComponent (`admin?section=&page=`), admin-sections.ts (sidebar groups, sections, sub-pages), System section
   src/app/settings/     settings-schema.ts, SettingsForm (one form for every settings tab), SettingsPanel (one tab)
+  src/app/editor/       ImageEditorDialog (over the viewer), edits.ts (operations, EDIT_KINDS, renderEdits), crop.ts
   src/app/tags/ trickplay/ tracking/   their dialogs, sections of the admin page and parts
   src/app/tasks/        TasksSection (sub-pages Tasks/Schedules/History of the admin page), ScheduleForm, TaskHistory, tasks.ts wording
 tests/Sfe.Tests/        unit, SQLite integration, HTTP tests; Infrastructure/ = TestLibrary + CoreServices + ApiClients
@@ -126,7 +128,10 @@ Directory.Build.props   the app version (all projects)
   the session/setup routes (a route checking a token itself adds `RightMetadata` too). `AccessTests.EveryRouteNamesARight`
   fails otherwise. A new function gets a right in `RightCatalog` (scope, `GuestAllowed` = false for anything that
   changes something or tells about the server, default groups), the same id in the client's `core/rights.ts`, and the
-  client hides what needs it (`config.can(...)`, `AdminSubpage.rights`).
+  client hides what needs it (`config.can(...)`, `AdminSubpage.rights`). A right added after 1.34 gets
+  `since: RightCatalog.Revision + 1` (`RightDefinition.Since`): `AccessService.GrantNewRightsAsync` (Program.cs, each
+  start) gives it once to the built-in groups of existing spaces by `DefaultGroups`, tracked by `Tenants.RightsRevision`
+  (null = 0); new spaces get `Revision`. Without it, existing installs never get the right.
 - **Settings levels:** a new key of `EditableSettings` is a library setting (`SettingLevel.Tenant`) unless listed in
   `SettingCatalog.ServerKeys` (server resources) or `UserKeys` (personal preferences); paths inside a library go in
   `PerLibraryKeys`. Its right comes from its prefix (`RightsByPrefix`, matching its settings tab and `SETTINGS_RIGHTS`).
@@ -220,21 +225,21 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   another container's singletons that way (that's why routes get library services through `TenantRequestServices`).
 - Anything non-GET under `/api` without `X-SFE-Request` is a 400 (curl, PowerShell, tests): add the header.
 - Visual check: `msedge --headless=new --screenshot=out.png --virtual-time-budget=6000 URL` (fresh `--user-data-dir`
-  each run; no H.264, use WebM). To click: Edge `--remote-debugging-port` + PowerShell `ClientWebSocket`,
-  `Runtime.evaluate` then `Page.captureScreenshot`. Covers and previews load lazily: give a screenshot a budget of
+  each run; no H.264, use WebM). To click: Edge `--remote-debugging-port=0` (fixed ports like 9333 are reserved
+  here: "bind() … forbidden"; read the port from `<user-data-dir>/DevToolsActivePort`), then a Node script with the
+  built-in `WebSocket`: `Runtime.evaluate` (setup with `fetch('api/setup', …)`) then `Page.captureScreenshot`. Covers and previews load lazily: give a screenshot a budget of
   ~20 s before calling an image missing.
 
 ### Dev machine
 
-- Windows; shells PowerShell 5.1 and Git Bash. `C:\Program Files\nodejs` holds Node.js **18.16** (checked 2026-10-13),
-  too old for the Angular CLI (needs ≥ 22.22): `dotnet build`/`test` fail in `SfeWebBuild` and `npm test` can't run until
-  Node 24 is installed. Meanwhile `dotnet test -p:SfeSkipWebClient=true` runs everything but
-  `ServesTheWebClientAndOpenApi` (no `wwwroot`). Python 3.12 is installed. ffmpeg is not installed (the
+- Windows; shells PowerShell 5.1 and Git Bash. The `node` on PATH is **26.11** (checked 2026-10-13): `npm test`,
+  `npm run build` and the full `dotnet build`/`test` work. `dotnet test -p:SfeSkipWebClient=true` skips the client build
+  (then `ServesTheWebClientAndOpenApi` needs an existing `wwwroot`). Python 3.12 is installed (no `websockets`). ffmpeg is not installed (the
   `C:/Portables/ffmpeg` of earlier notes is gone): the ffmpeg tests are skipped. With it on PATH, the default
   `FfmpegPath` (`ffmpeg`) finds it, so scans in tests run it on the fixture's fake media too (assert either way). `docker` points at
   an unreachable remote context. WSL Ubuntu exists but has no .NET SDK.
-- Line endings: the index is all LF; working copies are mostly LF, ~20 are CRLF (e.g. `Program.cs`,
-  `SfeOptions.cs`, `ServiceCollectionExtensions.cs`). List with `git ls-files --eol`, check one with `file` (Git
+- Line endings: the index is all LF; working copies are mostly LF, a few may be CRLF. `dotnet ef migrations add`
+  writes CRLF (with BOM): normalise the new files and the snapshot to LF (`sed -i 's/\r$//'`). List with `git ls-files --eol`, check one with `file` (Git
   Bash `grep` doesn't see `\r`). Keep each file's existing endings. `sed`/`perl` multi-line edits silently miss on
   CRLF files, and inserted lines come out LF: prefer the Edit tool, check `git diff --stat`, normalise with
   `sed -i 's/\r*$/\r/'`. New `.sh` files need LF (`.gitattributes`). Git Bash's `perl` reading a CRLF file through
@@ -265,6 +270,8 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   unit typed; a clock ± 0.5 s), `d:=` the same whole second; `r:hr`/`r:lr` need the file's extension classified as
   image or video, and `r:hr` and `r:lr` are not complements (unknown resolutions are neither). On SQLite, `LIKE` and `NOCASE` fold ASCII only:
   `русский` / `ESPAÑOL` don't find `Русский` / `Español` (SQL Server's CI collation does).
+- Client suite flakes under load, before 1.35 too: `CoversService` (parts of 100, known folder), `LocationComponent
+  header visibility` and `CopyPathService` fail in some full runs and pass alone. Rerun before chasing them.
 - Client specs (Vitest + jsdom, zoneless TestBed): `await settle(ms)` lets timers, promises and change detection
   run. It waits on a real timer, so it hangs under `vi.useFakeTimers()`: use `vi.advanceTimersByTimeAsync` +
   `fixture.detectChanges()` there. An `async` helper must not return the promise under test (it gets awaited): wrap
@@ -467,6 +474,22 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   out of `.meta` (`FileTileComponent.durationBadge`): videos with a preview, and audio always, over its placeholder
   (`.tile.kind-audio` overrides the rule hiding badges until an image loads); preview-less videos keep it in `.meta`.
   Rows put it in the size cell, the viewer in its details. Search: `d:` → `DurationFilter` (predicates require `> 0`).
+- **Picture editor:** the browser edits, the server stores. `editor/edits.ts`: an edit is an `EditOperation` (kind +
+  parameters) with an `EDIT_KINDS` handler (`size`, `draw` on a 2D canvas, `describe`) and a tool in `EDITOR_TOOLS`;
+  `renderEdits` applies the list in turn from the original (each step a new canvas), `encode` = `canvas.toBlob` in the
+  original's type if JPEG/PNG/WebP, else PNG, at `config.editor.quality`. A new edit (rotate, flip, resize) = a new
+  operation + handler + tool (+ its panel in `ImageEditorDialog`); nothing changes on the server. The dialog loads the
+  original through `urls.original` (always `api/files/raw`: a data server's picture would taint the canvas) via
+  `PICTURE_LOADER` (tests provide fake pictures; `fakeCanvases()` stubs `getContext`/`toBlob`). Crop coordinates are in
+  pixels of the current result (`crop.ts`, whole pixels; `ASPECTS` lists each ratio with its portrait twin, which
+`flipAspect` relies on; picking one = `largestAround` the frame's centre); drags scale screen → picture pixels by the
+  `.crop-layer` box (`.crop-clip` around it reaches past the picture so edge handles aren't cut). Save:
+  `POST api/editor/images?path=` with the raw bytes (no JSON, any Content-Type) → `EditedImages.SaveAsync`: buffers
+  ≤ 200 MB (`RequestSizeLimitAttribute` lifts Kestrel's 30 MB), sniffs JPEG/PNG/WebP and needs a readable size
+  (`MediaDimensions.ReadImageHeader`), writes `FileMode.CreateNew` to `Editor:OutputFolder` + the original's folder
+  (`name (2).ext`...; empty setting or already inside it → beside the original, `name (edited)`), then
+  `DirectoryIndexer.IndexFilesAsync`. Errors are 404/400/413/500, never 409 (the client's `Api` resolves 409s).
+  `editor.outputFolder` is per library (`PerLibraryKeys`); `/api/config` `editor` is null without `files.edit`.
 - **Caching:** images/thumbnails are sent `no-store`; trickplay sheets are cacheable (URL carries its `version`).
 - **Trickplay:** Core's `TrickplayService` run by the Api's `TrickplayWorker`. Per video
   `{CacheDirectory}/trickplay/{SHA1(folder)}/{SHA1(file)}/`: `info.json`, `{n}.jpg`, `fingerprint.bin`. Fresh =

@@ -1,0 +1,174 @@
+/* ---------- Picture editor (over the viewer, dark like it) ---------- */
+
+.image-editor {
+    --editor-panel: 280px;
+    --editor-bar: 60px;
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgb(5 6 8 / .98);
+    color: #f2f3f5;
+}
+
+.image-editor::backdrop { background: rgb(0 0 0 / .7); }
+.image-editor[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); }
+
+.editor-bar { background: rgb(255 255 255 / .04); border-bottom: 1px solid rgb(255 255 255 / .08); }
+.editor-tools { display: flex; flex: none; gap: 6px; }
+
+.image-editor .icon-button {
+    border-color: transparent;
+    background: rgb(255 255 255 / .08);
+    color: #f2f3f5;
+}
+
+.image-editor .icon-button:hover { background: rgb(255 255 255 / .18); }
+.image-editor .icon-button:disabled { opacity: .4; cursor: default; }
+.image-editor .icon-button.active { background: var(--accent); color: var(--accent-contrast); }
+.image-editor .button:not(.primary) { border-color: rgb(255 255 255 / .16); background: rgb(255 255 255 / .08); color: #f2f3f5; }
+.image-editor .button:not(.primary):hover { background: rgb(255 255 255 / .18); }
+
+.editor-body { display: grid; grid-template-columns: minmax(0, 1fr) var(--editor-panel); min-height: 0; }
+
+.editor-stage {
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 0;
+    padding: 16px;
+    overflow: hidden;
+}
+
+.editor-stage .viewer-message { color: #a9afba; text-align: center; }
+
+/* The picture and its crop frame share one box, the canvas's size on screen: the frame is placed in percents of it. */
+.editor-picture { position: relative; line-height: 0; touch-action: none; user-select: none; }
+.editor-picture[hidden] { display: none; }
+
+.editor-canvas > canvas {
+    display: block;
+    max-width: calc(100vw - var(--editor-panel) - 32px);
+    max-height: calc(100dvh - var(--editor-bar) - 32px);
+    background:
+        repeating-conic-gradient(#2a2d33 0 25%, #1d1f23 0 50%) 0 0 / 16px 16px;   /* shows transparent parts */
+}
+
+/*
+ * The frame's shadow darkens what is left out, up to the edges of the clip, which reaches past the picture so that the
+ * handles on its edges show whole; the layer itself is the picture's box (drags are measured on it).
+ */
+.crop-clip { position: absolute; inset: -16px; overflow: hidden; pointer-events: none; }
+.crop-layer { position: absolute; inset: 16px; cursor: crosshair; pointer-events: auto; }
+
+.crop-frame {
+    position: absolute;
+    outline: 1px solid rgb(255 255 255 / .9);
+    box-shadow: 0 0 0 100vmax rgb(0 0 0 / .58);   /* darkens what is left out */
+    cursor: move;
+    background:
+        linear-gradient(to right, transparent calc(33.33% - .5px), rgb(255 255 255 / .35) 0 calc(33.33% + .5px), transparent 0 calc(66.66% - .5px), rgb(255 255 255 / .35) 0 calc(66.66% + .5px), transparent 0),
+        linear-gradient(to bottom, transparent calc(33.33% - .5px), rgb(255 255 255 / .35) 0 calc(33.33% + .5px), transparent 0 calc(66.66% - .5px), rgb(255 255 255 / .35) 0 calc(66.66% + .5px), transparent 0);
+}
+
+.crop-handle {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border: 2px solid #fff;
+    border-radius: 3px;
+    background: rgb(0 0 0 / .35);
+}
+
+/* Larger targets on touch screens. */
+@media (pointer: coarse) {
+    .crop-handle { width: 28px; height: 28px; margin: -14px 0 0 -14px; }
+}
+
+.crop-handle[data-handle="nw"] { left: 0; top: 0; cursor: nwse-resize; }
+.crop-handle[data-handle="n"] { left: 50%; top: 0; cursor: ns-resize; }
+.crop-handle[data-handle="ne"] { left: 100%; top: 0; cursor: nesw-resize; }
+.crop-handle[data-handle="e"] { left: 100%; top: 50%; cursor: ew-resize; }
+.crop-handle[data-handle="se"] { left: 100%; top: 100%; cursor: nwse-resize; }
+.crop-handle[data-handle="s"] { left: 50%; top: 100%; cursor: ns-resize; }
+.crop-handle[data-handle="sw"] { left: 0; top: 100%; cursor: nesw-resize; }
+.crop-handle[data-handle="w"] { left: 0; top: 50%; cursor: ew-resize; }
+
+.editor-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    overflow-y: auto;
+    border-left: 1px solid rgb(255 255 255 / .08);
+    background: rgb(255 255 255 / .03);
+}
+
+.editor-panel h3 { margin: 4px 0 0; font-size: 14px; }
+.editor-panel .field-hint { color: #a9afba; }
+.editor-panel :is(input, select) {
+    width: 100%;
+    padding: 7px 9px;
+    border: 1px solid rgb(255 255 255 / .16);
+    border-radius: var(--radius-sm);
+    background: rgb(255 255 255 / .06);
+    color: inherit;
+    font: inherit;
+}
+
+.editor-panel option { background: #1d1f23; }
+.editor-panel .field > span { font-size: 12px; color: #c4c9d2; }
+
+.aspect-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: #c4c9d2; }
+
+/* The ratios as buttons, each with a little frame of its shape. */
+.aspect-choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
+
+.aspect-choice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    min-height: 58px;
+    padding: 6px 4px 5px;
+    border: 1px solid rgb(255 255 255 / .12);
+    border-radius: var(--radius-sm);
+    background: rgb(255 255 255 / .05);
+    color: #c4c9d2;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.aspect-choice:hover:not(:disabled) { background: rgb(255 255 255 / .12); }
+.aspect-choice:disabled { opacity: .45; cursor: default; }
+.aspect-choice[aria-checked="true"] { border-color: var(--accent); background: rgb(255 255 255 / .1); color: #fff; }
+
+.aspect-shape {
+    display: block;
+    width: 30px;
+    max-height: 26px;
+    border: 1.5px solid currentColor;
+    border-radius: 2px;
+}
+
+/* Portrait shapes are as tall as allowed, aspect-ratio giving their width. */
+.aspect-shape.portrait { width: auto; height: 26px; }
+.aspect-shape.free { width: 22px; height: 22px; border-style: dashed; }
+.aspect-choice[aria-checked="true"] .aspect-shape { border-color: var(--accent); }
+.crop-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.editor-panel-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.editor-history { margin: 0; padding-left: 20px; color: #c4c9d2; font-size: 13px; }
+
+@media (max-width: 760px) {
+    .image-editor { --editor-panel: 0px; --editor-bar: 300px; }
+    .editor-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+    .editor-stage { padding: 8px; }
+    .editor-panel { max-height: 40dvh; border-left: 0; border-top: 1px solid rgb(255 255 255 / .08); }
+    .editor-bar .viewer-title span { display: none; }
+}

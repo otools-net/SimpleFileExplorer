@@ -43,6 +43,9 @@ const WHEEL_PAUSE_MS = 250;
                     @if (config.can('tags.view')) {
                         <button type="button" class="icon-button" title="Tags (T)" aria-label="Tags" (click)="openTags()"><svg sfeIcon="tag"></svg></button>
                     }
+                    @if (editable()) {
+                        <button type="button" class="icon-button" title="Edit: crop, then save a copy (E)" aria-label="Edit" (click)="edit()"><svg sfeIcon="crop"></svg></button>
+                    }
                     @if (copyPaths.enabled()) {
                         <button type="button" class="icon-button" title="Copy the full path" aria-label="Copy the full path" (click)="copyPath()"><svg sfeIcon="copy"></svg></button>
                     }
@@ -125,6 +128,9 @@ export class ViewerComponent {
     protected readonly downloadUrl = computed(() => this.item() ? this.urls()!.download(this.item()!.path) : null);
     /** The item can be opened in the external player (videos and audio, when the server has one for this session). */
     protected readonly external = computed(() => Boolean(this.item() && this.item()!.kind !== 'image' && this.urls()?.externalName));
+
+    /** The picture can be edited (the right, and a server with the editor). */
+    protected readonly editable = computed(() => this.item()?.kind === 'image' && this.config.can('files.edit') && Boolean(this.config.config()?.editor));
 
     /** A large image shows its thumbnail, stretched to the stage, until the original has loaded and decoded. */
     protected readonly progressive = signal(false);
@@ -231,6 +237,13 @@ export class ViewerComponent {
             this.dialogs.fileTags()?.open(item);
     }
 
+    /** Opens the picture in the editor, over the viewer. */
+    protected edit(): void {
+        const item = this.item();
+        if (item && this.editable())
+            void this.dialogs.imageEditor()?.open(item);
+    }
+
     protected openExternal(): void {
         const item = this.item();
         if (item)
@@ -288,6 +301,9 @@ export class ViewerComponent {
         } else if (event.key.toLowerCase() === 't' && plain && this.item()) {
             event.preventDefault();
             this.openTags();
+        } else if (event.key.toLowerCase() === 'e' && plain && this.editable()) {
+            event.preventDefault();
+            this.edit();
         }
     }
 

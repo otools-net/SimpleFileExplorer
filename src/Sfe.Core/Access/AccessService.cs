@@ -78,6 +78,41 @@ public sealed partial class AccessService(
         return ToInfo(tenant);
     }
 
+    /// <summary>
+    /// Rights added to the catalog after a space was created (<see cref="RightDefinition.Since"/>) go to its built-in
+    /// groups as a new space would have them, once: a right an administrator took away later is not given back.
+    /// </summary>
+    /// <returns>The spaces updated.</returns>
+    public async Task<int> GrantNewRightsAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var outdated = await db.Tenants
+            .Where(t => (t.RightsRevision ?? 0) < RightCatalog.Revision)
+            .Include(t => t.Groups.Where(g => g.BuiltIn != null))
+            .ThenInclude(g => g.Rights)
+            .ToListAsync(cancellationToken);
+        foreach (var tenant in outdated)
+        {
+            var since = tenant.RightsRevision ?? 0;
+            foreach (var group in tenant.Groups)
+            {
+                foreach (var right in RightCatalog.TenantRights.Where(r => r.Since > since && r.DefaultGroups.Contains(group.BuiltIn!.Value)))
+                {
+                    if (group.Rights.All(r => r.Right != right.Id))
+                        group.Rights.Add(new GroupRight { Right = right.Id });
+                }
+            }
+
+            tenant.RightsRevision = RightCatalog.Revision;
+        }
+
+        if (outdated.Count == 0)
+            return 0;
+        await db.SaveChangesAsync(cancellationToken);
+        changes.Changed();
+        return outdated.Count;
+    }
+
     public async Task<AccessResult<TenantInfo>> CreateTenantAsync(TenantInput input, string root, CancellationToken cancellationToken = default)
     {
         var name = input.Name?.Trim();
@@ -542,6 +577,7 @@ public sealed partial class AccessService(
         Name = name,
         Slug = slug,
         Created = DateTime.UtcNow,
+        RightsRevision = RightCatalog.Revision,
         Groups = Enum.GetValues<BuiltInGroup>().Select(builtIn => new UserGroup
         {
             Name = builtIn.ToString(),

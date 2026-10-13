@@ -81,6 +81,9 @@ namespace Sfe.Core.Data.AccessMigrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("RightsRevision")
+                        .HasColumnType("int");
+
                     b.Property<string>("Root")
                         .HasColumnType("nvarchar(max)");
 

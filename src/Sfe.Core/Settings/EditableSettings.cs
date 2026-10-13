@@ -27,6 +27,7 @@ public sealed class EditableSettings
     public FileTrackingSettings FileTracking { get; set; } = new();
     public AppearanceSettings Appearance { get; set; } = new();
     public TaskSettings Tasks { get; set; } = new();
+    public EditorSettings Editor { get; set; } = new();
 
     public static EditableSettings From(SfeOptions options) => new()
     {
@@ -117,6 +118,7 @@ public sealed class EditableSettings
         },
         Appearance = new() { Theme = options.Appearance.Theme },
         Tasks = new() { LogRetentionDays = options.Tasks.LogRetentionDays },
+        Editor = new() { OutputFolder = options.Editor.OutputFolder, Quality = options.Editor.Quality },
     };
 
     public void ApplyTo(SfeOptions options)
@@ -179,6 +181,8 @@ public sealed class EditableSettings
         options.FileTracking.SimilarVideos.MinimumPercent = FileTracking.SimilarVideos.MinimumPercent;
         options.Appearance.Theme = Appearance.Theme;
         options.Tasks.LogRetentionDays = Tasks.LogRetentionDays;
+        options.Editor.OutputFolder = Editor.OutputFolder;
+        options.Editor.Quality = Editor.Quality;
     }
 }
 
@@ -307,4 +311,11 @@ public sealed record SettingsView(EditableSettings Values, bool Customized, Sett
 public sealed class TaskSettings
 {
     public int LogRetentionDays { get; set; }
+}
+
+public sealed class EditorSettings
+{
+    /// <summary>A library folder, relative to the root and separated by <c>/</c>; empty = next to the originals.</summary>
+    public string? OutputFolder { get; set; }
+    public int Quality { get; set; }
 }

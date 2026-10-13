@@ -13,6 +13,7 @@ public static class Rights
     public const string Download = "files.download";
     public const string ExternalPlayer = "files.external";
     public const string CopyPaths = "files.copyPaths";
+    public const string EditImages = "files.edit";
     public const string ViewTags = "tags.view";
     public const string AssignTags = "tags.assign";
     public const string ManageTags = "tags.manage";
@@ -34,6 +35,7 @@ public static class Rights
     public const string ThumbnailSettings = "settings.thumbnails";
     public const string TrickplaySettings = "settings.trickplay";
     public const string TaskSettings = "settings.tasks";
+    public const string EditorSettings = "settings.editor";
     public const string ManageMembers = "tenant.members";
     public const string OwnPreferences = "account.preferences";
     public const string OwnPassword = "account.password";
@@ -59,8 +61,12 @@ public enum RightScope
 /// </param>
 /// <param name="DefaultGroups">The built-in groups granted it when a space is created; changed by hand afterwards.</param>
 /// <param name="Area">Heading the right is listed under on the groups page.</param>
+/// <param name="Since">
+/// The catalog revision that added it (<see cref="RightCatalog.Revision"/>): the spaces created before get it once, in
+/// their built-in groups by <paramref name="DefaultGroups"/> (<see cref="AccessService.GrantNewRightsAsync"/>).
+/// </param>
 public sealed record RightDefinition(
-    string Id, RightScope Scope, bool GuestAllowed, IReadOnlyList<BuiltInGroup> DefaultGroups, string Area, string Title, string Description);
+    string Id, RightScope Scope, bool GuestAllowed, IReadOnlyList<BuiltInGroup> DefaultGroups, string Area, string Title, string Description, int Since = 0);
 
 public static class RightCatalog
 {
@@ -75,6 +81,7 @@ public static class RightCatalog
         Tenant(Rights.Download, true, Members, "Library", "Download files", "Save a file to the device."),
         Tenant(Rights.ExternalPlayer, true, Members, "Library", "Open in an external player", "Get a link to a file that works without signing in, for a while, in an app such as VLC."),
         Tenant(Rights.CopyPaths, false, Administrators, "Library", "Copy full paths", "See and copy where files are on the server's disk."),
+        Tenant(Rights.EditImages, false, Members, "Library", "Edit pictures", "Crop pictures and save the result as a new file in the folder for edited pictures; originals are never changed.", since: 1),
         Tenant(Rights.ViewTags, true, Everyone, "Tags", "See tags", "See the tags of files, the tag list and the tag sidebar."),
         Tenant(Rights.AssignTags, false, Members, "Tags", "Tag files", "Add tags to files and remove them, also to whole folders and searches."),
         Tenant(Rights.ManageTags, false, Administrators, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),
@@ -96,6 +103,7 @@ public static class RightCatalog
         Tenant(Rights.ThumbnailSettings, false, Administrators, "Settings", "Thumbnail settings", "Thumbnails of photos and videos."),
         Tenant(Rights.TrickplaySettings, false, Administrators, "Settings", "Trickplay settings", "Which videos get trickplay and how."),
         Tenant(Rights.TaskSettings, false, Administrators, "Settings", "Background task settings", "How long task logs are kept."),
+        Tenant(Rights.EditorSettings, false, Administrators, "Settings", "Picture editor settings", "Where edited pictures are saved, and their quality.", since: 1),
         Tenant(Rights.ManageMembers, false, Administrators, "Access", "Manage the space's accounts and groups", "Create accounts in the space, put them in its groups, choose what each group may do, open the space to visitors."),
         Tenant(Rights.OwnPreferences, false, Members, "Account", "Own preferences", "Keep one's own theme, page sizes and player preferences on the server."),
         Tenant(Rights.OwnPassword, false, Members, "Account", "Change own password", "Change the password of one's own local account."),
@@ -106,6 +114,12 @@ public static class RightCatalog
         Server(Rights.Shutdown, "Shut down", "Shut the server's computer down (when the server allows it)."),
         Server(Rights.Dismount, "Dismount", "Run the server's dismount command (when one is set)."),
     ];
+
+    /// <summary>
+    /// The latest revision of the catalog: one more each time rights are added (their <see cref="RightDefinition.Since"/>).
+    /// 0 is the catalog of 1.34.0, the first with rights.
+    /// </summary>
+    public static int Revision { get; } = All.Max(r => r.Since);
 
     private static readonly Dictionary<string, RightDefinition> ById = All.ToDictionary(r => r.Id, StringComparer.Ordinal);
 
@@ -129,8 +143,8 @@ public static class RightCatalog
 
     public static bool MatchesAny(IEnumerable<string> patterns, string right) => patterns.Any(p => Matches(p, right));
 
-    private static RightDefinition Tenant(string id, bool guestAllowed, BuiltInGroup[] defaults, string area, string title, string description) =>
-        new(id, RightScope.Tenant, guestAllowed, defaults, area, title, description);
+    private static RightDefinition Tenant(string id, bool guestAllowed, BuiltInGroup[] defaults, string area, string title, string description, int since = 0) =>
+        new(id, RightScope.Tenant, guestAllowed, defaults, area, title, description, since);
 
     private static RightDefinition Server(string id, string title, string description) =>
         new(id, RightScope.Server, false, [], "Server", title, description);

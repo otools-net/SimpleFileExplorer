@@ -1,4 +1,5 @@
 import { DestroyRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
+import type { ImageEditorDialog } from '../editor/image-editor.dialog';
 import type { FileTagsDialog } from '../tags/file-tags.dialog';
 import type { FilesTagsDialog } from '../tags/files-tags.dialog';
 import type { ScopeTagsDialog } from '../tags/scope-tags.dialog';
@@ -20,6 +21,7 @@ export class Dialogs {
     readonly tagEditor = signal<TagEditorDialog | null>(null);
     readonly tagManager = signal<TagManagerDialog | null>(null);
     readonly removeFromIndex = signal<RemoveFromIndexDialog | null>(null);
+    readonly imageEditor = signal<ImageEditorDialog | null>(null);
 
     /** Closes the open dialogs, e.g. before searching for a tag picked in one. */
     closeAll(): void {

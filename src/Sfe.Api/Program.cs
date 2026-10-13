@@ -73,6 +73,7 @@ api.MapTagEndpoints();
 api.MapTrickplayEndpoints();
 api.MapTaskEndpoints();
 api.MapFileTrackingEndpoints();
+api.MapEditorEndpoints();
 api.MapSettingsEndpoints();
 api.MapSystemEndpoints();
 api.MapFallback(() => TypedResults.NotFound()).AllowAnonymous();
@@ -96,7 +97,11 @@ if (builder.Configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptio
 try
 {
     // The library of the configuration becomes the first library (tenant) with its index, tags and settings.
-    var library = await app.Services.GetRequiredService<AccessService>().EnsureDefaultTenantAsync("Library");
+    var access = app.Services.GetRequiredService<AccessService>();
+    var library = await access.EnsureDefaultTenantAsync("Library");
+    // Rights added by this version reach the groups of the spaces created before (once).
+    if (await access.GrantNewRightsAsync() is > 0 and var updated)
+        app.Logger.LogInformation("Granted the rights added by this version to the built-in groups of {Count} spaces", updated);
     await app.Services.GetRequiredService<SettingLayers>().MovePerLibrarySettingsAsync(library.Id);
     app.Services.GetRequiredService<SettingLayers>().NotifyChanged();
 

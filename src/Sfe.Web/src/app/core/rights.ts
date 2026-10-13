@@ -9,6 +9,7 @@ export const Rights = {
     download: 'files.download',
     externalPlayer: 'files.external',
     copyPaths: 'files.copyPaths',
+    editImages: 'files.edit',
     viewTags: 'tags.view',
     assignTags: 'tags.assign',
     manageTags: 'tags.manage',
@@ -30,6 +31,7 @@ export const Rights = {
     thumbnailSettings: 'settings.thumbnails',
     trickplaySettings: 'settings.trickplay',
     taskSettings: 'settings.tasks',
+    editorSettings: 'settings.editor',
     manageMembers: 'tenant.members',
     ownPreferences: 'account.preferences',
     ownPassword: 'account.password',
@@ -57,4 +59,5 @@ export const SETTINGS_RIGHTS: Record<string, Right> = {
     tracking: Rights.trackingSettings,
     tasks: Rights.taskSettings,
     tags: Rights.tagSettings,
+    editor: Rights.editorSettings,
 };

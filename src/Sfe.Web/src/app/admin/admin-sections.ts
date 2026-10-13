@@ -103,6 +103,14 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         subpages: [page('activity', 'Activity', Rights.manageTrickplay), settingsPage('trickplay')],
     },
     {
+        id: 'editor',
+        group: 'Media',
+        title: 'Picture editor',
+        icon: 'crop',
+        description: 'Where the pictures cropped in the viewer are saved, and their quality.',
+        subpages: [settingsPage('editor')],
+    },
+    {
         id: 'access',
         group: 'Access',
         title: 'Spaces & accounts',

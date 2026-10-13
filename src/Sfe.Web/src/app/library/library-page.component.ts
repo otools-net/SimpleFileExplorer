@@ -5,6 +5,7 @@ import { redirected } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { baseName, parentPath } from '../core/paths';
 import { ThemeService } from '../core/theme.service';
+import { ImageEditorDialog } from '../editor/image-editor.dialog';
 import { EmptyStateComponent } from '../shared/empty-state.component';
 import { FileTagsDialog } from '../tags/file-tags.dialog';
 import { FilesTagsDialog } from '../tags/files-tags.dialog';
@@ -40,7 +41,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog],
+        RemoveFromIndexDialog, ImageEditorDialog],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -70,6 +71,8 @@ let created = false;
             <sfe-tag-editor />
             <sfe-tag-manager />
             <sfe-remove-from-index />
+            <!-- After the viewer: it opens over it. -->
+            <sfe-image-editor />
         }
     `,
 })

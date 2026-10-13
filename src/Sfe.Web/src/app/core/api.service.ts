@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    ClientConfig, CommandResult, DirectoryListing, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    ClientConfig, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, MissingFileResults, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
@@ -160,6 +160,8 @@ export class Api {
 
     /** A link to `path` working without signing in, for a while: for external players. */
     fileLink = (path: string) => this.post<FileLink>('api/files/links', { path });
+    /** Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original stays. */
+    saveEditedImage = (path: string, image: Blob) => this.post<EditedImage>(withQuery('api/editor/images', { path }), image);
 
     /*
      * Accounts, groups and rights. `tenant` names another space than the session's (server administrators manage every

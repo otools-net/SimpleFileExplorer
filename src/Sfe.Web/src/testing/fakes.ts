@@ -107,6 +107,7 @@ export function fakeConfig(overrides: Partial<ClientConfig> = {}): ClientConfig 
         user: { id: 1, userName: 'admin', displayName: null, kind: 'user', isServerAdmin: true, local: true },
         tenant: LIBRARY,
         tenants: [LIBRARY],
+        editor: { outputFolder: 'Edited', quality: 92 },
         ...overrides,
     };
 }
@@ -233,4 +234,19 @@ export function settingsValues(): SettingsValues {
             : field.type === 'list' || field.type === 'extensions' ? [] : field.type === 'select' ? field.options[0][0] : null;
     }
     return result;
+}
+
+/**
+ * Canvases whose 2D context records what is drawn ([canvas, ...drawImage arguments]) and whose `toBlob` gives a blob of
+ * the type asked for: jsdom draws nothing. Undone by `vi.restoreAllMocks()`.
+ */
+export function fakeCanvases(): { drawn: unknown[][] } {
+    const drawn: unknown[][] = [];
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (this: HTMLCanvasElement) {
+        return { drawImage: (...args: unknown[]) => drawn.push([this, ...args]) } as unknown as CanvasRenderingContext2D;
+    } as never);
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (this: HTMLCanvasElement, callback: BlobCallback, type?: string) {
+        callback(new Blob([`${this.width}x${this.height}`], { type }));
+    });
+    return { drawn };
 }

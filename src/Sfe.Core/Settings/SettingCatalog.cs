@@ -45,7 +45,7 @@ public static class SettingCatalog
         "trickplay.hoverPreview", "search.historySize", "tags.sidebarCount",
     ];
 
-    private static readonly HashSet<string> PerLibraryKeys = ["scan.excludedFolders", "trickplay.folders"];
+    private static readonly HashSet<string> PerLibraryKeys = ["scan.excludedFolders", "trickplay.folders", "editor.outputFolder"];
 
     /// <summary>The right of a key, by its first part (the settings page's sections).</summary>
     private static readonly (string Prefix, string Right)[] RightsByPrefix =
@@ -54,7 +54,7 @@ public static class SettingCatalog
         ("player.", Rights.PlaybackSettings), ("dataServer", Rights.PlaybackSettings),
         ("showHiddenItems", Rights.ScanningSettings), ("scan.", Rights.ScanningSettings), ("fileTypes.", Rights.ScanningSettings),
         ("thumbnails.", Rights.ThumbnailSettings), ("trickplay.", Rights.TrickplaySettings), ("fileTracking.", Rights.TrackingSettings),
-        ("tags.", Rights.TagSettings), ("tasks.", Rights.TaskSettings),
+        ("tags.", Rights.TagSettings), ("tasks.", Rights.TaskSettings), ("editor.", Rights.EditorSettings),
     ];
 
     public static IReadOnlyList<SettingDefinition> All { get; } = SettingKeys.Flatten(SettingKeys.ToJson(new EditableSettings()))

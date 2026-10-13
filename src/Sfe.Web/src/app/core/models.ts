@@ -204,6 +204,23 @@ export interface ClientConfig {
     tenant: SessionTenant | null;
     /** The spaces the account can switch to (empty for a visitor without one). */
     tenants: SessionTenant[];
+    /** The picture editor's settings (Editor:*); null without the right to edit pictures (and from older servers). */
+    editor?: EditorConfig | null;
+}
+
+export interface EditorConfig {
+    /** Library folder edited pictures are saved in, under their originals' folders; '' = next to the originals. */
+    outputFolder: string;
+    /** Quality (1-100) of the JPEG and WebP pictures the editor encodes. */
+    quality: number;
+}
+
+/** A picture saved by the editor: a new file of the library. */
+export interface EditedImage {
+    path: string;
+    width: number;
+    height: number;
+    size: number;
 }
 
 export type ScanState = 'idle' | 'running' | 'completed' | 'cancelled' | 'failed';

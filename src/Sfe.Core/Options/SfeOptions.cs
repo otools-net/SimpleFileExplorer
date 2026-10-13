@@ -40,6 +40,7 @@ public sealed class SfeOptions
     public FileTrackingOptions FileTracking { get; set; } = new();
     public AppearanceOptions Appearance { get; set; } = new();
     public TaskOptions Tasks { get; set; } = new();
+    public EditorOptions Editor { get; set; } = new();
     public SetupOptions Setup { get; set; } = new();
     public SecurityOptions Security { get; set; } = new();
     public RightOptions Rights { get; set; } = new();
@@ -136,6 +137,23 @@ public sealed class TaskOptions
 {
     /// <summary>Days the runs of the background tasks are kept, with their logs; 0 = forever.</summary>
     public int LogRetentionDays { get; set; } = 30;
+}
+
+/// <summary>
+/// The web client's picture editor (crop...). The browser applies the changes and sends the result, which the server
+/// saves as a new file: the original is never changed.
+/// </summary>
+public sealed class EditorOptions
+{
+    /// <summary>
+    /// Library folder (relative to the root, separated by <c>/</c>) where edited pictures are saved, in the same
+    /// sub-folders as their originals: <c>Photos/2024/beach.jpg</c> is saved as <c>Edited/Photos/2024/beach.jpg</c>.
+    /// Empty = next to the original, as <c>beach (edited).jpg</c>. Created when first needed.
+    /// </summary>
+    public string? OutputFolder { get; set; } = "Edited";
+
+    /// <summary>Quality (1-100) of the JPEG and WebP pictures the editor saves; PNG pictures are lossless.</summary>
+    public int Quality { get; set; } = 92;
 }
 
 /// <summary>Duplicate files and files moved, renamed or deleted since they were indexed.</summary>

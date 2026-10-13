@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
+using Sfe.Core.Editing;
 using Sfe.Core.FileTracking;
 using Sfe.Core.Indexing;
 using Sfe.Core.Library;
@@ -85,6 +86,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<SystemCommandService>();
         services.AddSingleton<TagService>();
         services.AddSingleton<ScopeTagger>();
+        services.AddSingleton<EditedImages>();
         services.AddSingleton<DuplicateFinder>();
         services.AddSingleton<DuplicateRemover>();
         services.AddSingleton<SimilarVideoFinder>();
