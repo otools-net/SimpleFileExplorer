@@ -1,7 +1,8 @@
 # AGENTS.md
 
-Guidance for AI agents working on this repository. `README.md` is the end-user documentation (setup, settings,
-features); everything about building, testing and the code lives here.
+Guidance for AI agents working on this repository. `README.md` is a short overview (features, quick start, links);
+the end-user documentation (setup, settings, every screen, with screenshots) lives in `docs/`; everything about
+building, testing and the code lives here.
 
 **Keep this file current:** add what the next agent would need (a convention, a gotcha, a command that works or
 fails), fix or delete what is wrong. One fact per bullet, short.
@@ -76,6 +77,9 @@ src/Sfe.Web/            the web client (Angular workspace: angular.json, package
   src/app/tasks/        TasksSection (sub-pages Tasks/Schedules/History of the admin page), ScheduleForm, TaskHistory, tasks.ts wording
 tests/Sfe.Tests/        unit, SQLite integration, HTTP tests; Infrastructure/ = TestLibrary + CoreServices + ApiClients
 build/                  build.ps1 / build.sh (portable packages), portable/appsettings.json, windows/ linux/ smoke tests
+  docs/                 screenshot tooling for docs/images (cdp.mjs, make-media, seed, shots) + check-links.mjs
+docs/                   end-user documentation: installation, first-start, configuration, upgrading, user-guide/,
+                        administration/ (one page per admin section), reference/, images/ (screenshots)
 Directory.Build.props   the app version (all projects)
 ```
 
@@ -93,7 +97,7 @@ Directory.Build.props   the app version (all projects)
   - caches (thumbnails, trickplay, fingerprints): a layout change either reads the old one or rebuilds it lazily,
     without breaking listings meanwhile;
   - test the upgrade from the previous shape (e.g. drop the new column / null the new values, then initialize and
-    scan: `AddsTheDurationColumnToAnExistingSqliteIndex`), and say in `README.md` what an upgrade does when the user
+    scan: `AddsTheDurationColumnToAnExistingSqliteIndex`), and say in `docs/upgrading.md` what an upgrade does when the user
     notices (a slower first scan, rebuilt caches, a setting moved).
 - **Versioning** (`<Version>` in `Directory.Build.props`, semantic `major.minor.patch`; the build scripts accept
   nothing else). Once per delivery, i.e. per commit: when the version was already bumped by uncommitted work (compare
@@ -102,9 +106,14 @@ Directory.Build.props   the app version (all projects)
   - **bug fix** → bump patch: `1.0.0` → `1.0.1`;
   - **feature added or changed** → bump minor, reset patch: `1.0.1` → `1.1.0` (a task doing both bumps minor only);
   - major only when the user asks; no bump for changes to docs, tests or build scripts alone.
-- **Docs:** user-visible changes (behaviour, settings, UI) go in `README.md`, kept user-oriented; implementation
-  facts go here. Routes are documented by OpenAPI, not in the README: give every route `.WithName`,
-  `.WithSummary`, `.WithTags` (and `.WithDescription` for details).
+- **Docs:** user-visible changes (behaviour, settings, UI) go in `docs/`, kept user-oriented: the page of that screen
+  (`docs/user-guide/` for the listing page and its dialogs, `docs/administration/` one page per admin section,
+  `docs/reference/` for rights, settings levels, search syntax), plus `docs/configuration.md` for a configuration key
+  and `docs/upgrading.md` for what an upgrade changes. Every web-UI function is documented, with a screenshot in
+  `docs/images/` where it shows something (regenerate with `build/docs/`, §3). `README.md` stays short: overview,
+  quick start, links into `docs/`; add to it only what every user needs. Implementation facts go here. Routes are
+  documented by OpenAPI, not in the docs: give every route `.WithName`, `.WithSummary`, `.WithTags` (and
+  `.WithDescription` for details).
 - **Two DB providers must both work.** SQL Server: add a migration (`Data/Migrations`, schema `SFE`). SQLite has no
   migrations: `DatabaseInitializer.AddMissingSqliteObjectsAsync` must create new tables **and indexes** in existing
   files (it also sets WAL) and adds new **nullable** columns (`ALTER TABLE ADD COLUMN`, from the model). Other column
@@ -228,7 +237,18 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   each run; no H.264, use WebM). To click: Edge `--remote-debugging-port=0` (fixed ports like 9333 are reserved
   here: "bind() … forbidden"; read the port from `<user-data-dir>/DevToolsActivePort`), then a Node script with the
   built-in `WebSocket`: `Runtime.evaluate` (setup with `fetch('api/setup', …)`) then `Page.captureScreenshot`. Covers and previews load lazily: give a screenshot a budget of
-  ~20 s before calling an image missing.
+  ~20 s before calling an image missing. `build/docs/cdp.mjs` does all this (`launch`, `eval`, `realClick`, `shot`).
+- **Docs screenshots** (`docs/images/`, 1280×800 or ×900, dark theme, phone 390×844): `build/docs/`, run from that
+  folder in order: `node make-media.mjs <empty scratch dir>` (sample photos drawn on a canvas, WebM clips from
+  `MediaRecorder`, WAV tones, duplicates in `Inbox/`: no ffmpeg or image library needed); start the app on it (env as
+  in "App on a scratch library", `Urls=http://localhost:5093`, `Sfe__Setup__Code=doc-screenshots-setup`,
+  `Sfe__System__EnableShutdown=true`; else `SFE_URL`/`SFE_SETUP_CODE`); `node seed.mjs <that dir>` once on an empty
+  database (setup page shot, admin `admin`/`admin-password-1`, tags, accounts, schedules, a missing file, task runs);
+  then `node shots.mjs [scene…]` (all scenes by default; each opens a fresh browser, so per-browser state such as
+  search history is seeded in the scene). `mask()` replaces the scratch library path with `D:\Media` in what is shown.
+  Without ffmpeg, video tiles show an icon and trickplay/similar videos stay empty. `node check-links.mjs` checks
+  every link, image and `#anchor` of `README.md`, `AGENTS.md` and `docs/` (GitHub heading slugs) and lists unused
+  images.
 
 ### Dev machine
 
@@ -555,7 +575,7 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   under `/tmp` (files on `/mnt/c` all look executable). Smoke tests: start the package on a temp library, check
   version, client (`<sfe-root` + its hashed `main-*.js`), browse, scan, search, data folder.
 - **Config files:** `src/Sfe.Api/appsettings*.json` hold this machine's values (Windows paths, `REVAN\SQLEXPRESS`;
-  Development: SQLite in `src/Sfe.Api/data/`, git-ignored, root fixed to a local folder although the README says `~`).
+  Development: SQLite in `src/Sfe.Api/data/`, git-ignored, root fixed to a local folder although `docs/installation.md` says `~`).
 
 ## 4. External resources
 
