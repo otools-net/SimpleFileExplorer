@@ -4,16 +4,21 @@ import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { MEDIA_KINDS } from '../core/format';
 import { FileTags, FolderSiblings, LibraryItem, ListingPage, TagDetails, TagScope, TagSummary } from '../core/models';
-import { parentPath } from '../core/paths';
+import { baseName, parentPath } from '../core/paths';
 import { readPreference, writePreference } from '../core/preferences';
 import { ToastService } from '../core/toast.service';
 import { restorePosition } from './items/listing-position';
+import { Dialogs } from './dialogs.service';
 import { SidebarService } from './sidebar/sidebar.service';
 import { currentSort, LibraryRoute, RestoreState, routeParams } from './library-route';
 
 export type View = 'grid' | 'list' | 'single';
 export const VIEWS: readonly View[] = ['grid', 'list', 'single'];
 const VIEW_KEY = 'sfe.view';
+/** A file shown by `reveal` is looked for among this many items of its folder at most (pages are loaded until then). */
+export const REVEAL_LIMIT = 2000;
+/** How long (ms) a revealed file stays highlighted. */
+const REVEAL_HIGHLIGHT = 2500;
 
 /**
  * The listing page's state: the route (folder or search), the items loaded so far page by page, the folders around
@@ -27,6 +32,7 @@ export class ListingStore {
     private readonly toasts = inject(ToastService);
     private readonly sidebar = inject(SidebarService);
     private readonly injector = inject(Injector);
+    private readonly dialogs = inject(Dialogs);
 
     readonly route = signal<LibraryRoute>({ path: '', q: '', sort: '', desc: false });
     readonly view = signal<View>(readView());
@@ -44,6 +50,8 @@ export class ListingStore {
     readonly generation = signal(0);
     /** Paths of the selected files (tagged together); cleared on navigation. */
     readonly selection = signal<ReadonlySet<string>>(new Set());
+    /** The file `reveal` just showed, highlighted for a moment. */
+    readonly revealed = signal<string | null>(null);
 
     /** The media among the loaded items, in order: what the viewer steps through. */
     readonly media = computed(() => this.items().filter(item => MEDIA_KINDS.has(item.kind)));
@@ -58,6 +66,10 @@ export class ListingStore {
     private loading: Promise<boolean> | null = null;
     /** The current listing's requests: navigating cancels them, on the server too. */
     private requests = new AbortController();
+
+    /** The file to show once its folder is listed, see `reveal`. */
+    private revealing: string | null = null;
+    private revealTimer = 0;
 
     /** Cancelled when the listing changes. */
     get signal(): AbortSignal {
@@ -120,12 +132,55 @@ export class ListingStore {
             if (/(^|[\s,-])(t|tag):/i.test(route.q))
                 this.sidebar.refresh();
             afterNextRender(() => restorePosition(restore), { injector: this.injector });
+            const reveal = this.revealing;
+            this.revealing = null;
+            if (reveal !== null && !route.q && parentPath(reveal) === route.path)
+                void this.show(reveal, generation);
         } catch (error) {
             if (generation !== this.generation())
                 return;
             this.error.set(error instanceof ApiError ? error : new ApiError(0, String(error)));
             this.status.set('error');
         }
+    }
+
+    /**
+     * Lists the folder of the file `path` and shows the file there (a quick link): media opens in the viewer, other
+     * files are scrolled to and highlighted. Pages of a big folder are loaded until the file is found (`REVEAL_LIMIT`).
+     */
+    reveal(path: string): void {
+        const route = this.route();
+        if (!route.q && route.path === parentPath(path) && this.status() === 'ready') {
+            void this.show(path, this.generation());
+            return;
+        }
+        this.revealing = path;
+        this.navigate({ path: parentPath(path), q: '' });
+    }
+
+    private async show(path: string, generation: number): Promise<void> {
+        while (!this.items().some(item => item.path === path) && this.hasMore() && this.items().length < REVEAL_LIMIT) {
+            if (!await this.loadMore() || generation !== this.generation())
+                return;
+        }
+        const item = this.items().find(candidate => candidate.path === path);
+        if (generation !== this.generation())
+            return;
+        if (!item) {
+            this.toasts.show(this.hasMore()
+                ? `“${baseName(path)}” is not among the first ${REVEAL_LIMIT.toLocaleString()} items of this folder: scroll down to find it.`
+                : `“${baseName(path)}” is not in this folder any more.`);
+            return;
+        }
+        clearTimeout(this.revealTimer);
+        this.revealed.set(path);
+        this.revealTimer = setTimeout(() => this.revealed.set(null), REVEAL_HIGHLIGHT);
+        afterNextRender(() => {
+            const element = [...document.querySelectorAll('sfe-listing [data-path]')].find(candidate => candidate.getAttribute('data-path') === path);
+            element?.scrollIntoView?.({ block: 'center' });
+            if (MEDIA_KINDS.has(item.kind))
+                this.dialogs.viewer()?.open(item);
+        }, { injector: this.injector });
     }
 
     /** Fetches the next page (once at a time) and appends it. Resolves false when nothing more is available. */

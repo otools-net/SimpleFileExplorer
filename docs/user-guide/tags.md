@@ -33,7 +33,8 @@ for it. Tagging a file that isn't indexed yet indexes it first.
 
 Tick their checkboxes (top-left of a tile, first column of the list). Shift-click selects a range,
 <kbd>Ctrl</kbd>+<kbd>A</kbd> everything loaded, <kbd>Esc</kbd> clears. While files are selected, clicking a file
-selects it. The bar at the bottom says how many are selected, with **Select all** and **Tags**.
+selects it. The bar at the bottom says how many are selected, with **Select all**, **Quick links** (adds them to your
+[quick links](browsing.md#quick-links)) and **Tags**.
 
 ![Tags of several files](../images/files-tags-dialog.png)
 

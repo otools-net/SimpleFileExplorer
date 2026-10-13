@@ -53,6 +53,40 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("GroupRights", "SFE");
                 });
 
+            modelBuilder.Entity("Sfe.Core.Data.QuickLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsFolder")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId", "TenantId");
+
+                    b.ToTable("QuickLinks", "SFE");
+                });
+
             modelBuilder.Entity("Sfe.Core.Data.ServerProperty", b =>
                 {
                     b.Property<string>("Key")
@@ -307,6 +341,21 @@ namespace Sfe.Core.Data.AccessMigrations
                         .IsRequired();
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("Sfe.Core.Data.QuickLink", b =>
+                {
+                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Sfe.Core.Data.TenantDisabledRight", b =>

@@ -96,6 +96,29 @@ export async function launch({ width = 1280, height = 800, mobile = false, scale
             const r = await api.rect(selector);
             await api.mouse('mouseMoved', r.x + r.width / 2, r.y + r.height / 2);
         },
+        /**
+         * A real drag and drop (the browser's own, intercepted): pressed on `from`, moved to (x, y), then dropped
+         * there unless `drop` is false (the page then shows the drag over its target until the next call).
+         */
+        async drag(from, x, y, { drop = true } = {}) {
+            await send('Input.setInterceptDrags', { enabled: true });
+            const started = new Promise(resolve => listeners.push(m => { if (m.method === 'Input.dragIntercepted') resolve(m.params.data); }));
+            const r = await api.rect(from);
+            const sx = r.x + r.width / 2, sy = r.y + r.height / 2;
+            await api.mouse('mouseMoved', sx, sy);
+            await api.mouse('mousePressed', sx, sy);
+            for (let i = 1; i <= 5; i++)
+                await api.mouse('mouseMoved', sx + (x - sx) * i / 5, sy + (y - sy) * i / 5, { buttons: 1 });
+            const data = await Promise.race([started, sleep(3000).then(() => { throw new Error('no drag started on ' + from); })]);
+            await send('Input.dispatchDragEvent', { type: 'dragEnter', x, y, data });
+            await send('Input.dispatchDragEvent', { type: 'dragOver', x, y, data });
+            if (drop) {
+                await send('Input.dispatchDragEvent', { type: 'drop', x, y, data });
+                await api.mouse('mouseReleased', x, y);
+                await send('Input.setInterceptDrags', { enabled: false });
+            }
+            return data;
+        },
         async type(text) { await send('Input.insertText', { text }); },
         async key(key, code = key, keyCode = 0, modifiers = 0) {
             await send('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: keyCode, modifiers });

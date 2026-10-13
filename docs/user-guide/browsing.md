@@ -5,7 +5,7 @@ file to open it in the [viewer](viewer.md).
 
 ![A folder in the grid layout](../images/library-grid.png)
 
-The top bar holds, from left to right: the tag sidebar's button, **SFE** (back to the library's top folder), the
+The top bar holds, from left to right: the sidebar's button ([quick links](#quick-links) and [tags](tags.md#the-tag-sidebar)), **SFE** (back to the library's top folder), the
 [search box](search.md), the three layouts and the [⋮ menu](signing-in.md#the--menu). Every button shows a hint (and
 its keyboard shortcut, if any) when you rest the mouse on it.
 
@@ -50,6 +50,41 @@ layout. Hover the number for its meaning.
   says where you are: the page, how many items you have scrolled to out of the total, and a bar for the same.
 - Reloading the page, or coming back to it (from the viewer, the administration page or the browser's back button),
   brings you back to the item you were looking at.
+
+## Quick links
+
+![The quick links at the top of the sidebar](../images/quick-links.png)
+
+**Quick links**, at the top of the sidebar, keep the folders and files you use most one click away, like the Quick
+access of Windows Explorer. Each account has its own, in each space; visitors without an account have none (right
+`account.quickLinks`).
+
+- **Click a folder** to open it; the one you are in is highlighted.
+- **Click a file** to open its folder and show it there: pictures, videos and audio open in the [viewer](viewer.md),
+  other files are scrolled to and outlined for a moment. Ctrl+click (or the middle button) opens the file in a new tab
+  instead.
+- A link whose folder or file was moved, renamed or deleted stays in the list, struck through, until you remove it.
+- At most 100 links per list.
+
+**Adding.** Drag a folder, a file or a breadcrumb of the path onto the quick links, and drop it where it should go: a
+line shows the place. Dragging one of several selected files adds all of them. Without dragging, use the pin buttons:
+
+| Where | Pins |
+|---|---|
+| After the path, at the top of the listing | the folder you are in |
+| On each folder (on hover with a mouse) | that folder |
+| In the [selection bar](tags.md#several-files-at-once), **Quick links** | the selected files |
+| In the [viewer](viewer.md)'s top bar | the file shown |
+
+A filled pin means the folder or file is a quick link already: click it again to remove it.
+
+![A folder dragged onto the quick links](../images/quick-links-drag.png)
+
+**Reordering and removing.** Drag a link up or down the list. The × at the end of a link (on hover with a mouse)
+removes it; the folder or file itself stays. The pencil button next to **Quick links** turns on the edit mode, with ↑
+and ↓ buttons on each link: that is how links are moved on a phone, where pages can't be dragged and dropped.
+
+<img src="../images/phone-quick-links.png" alt="The quick links on a phone, in the edit mode" width="300">
 
 ## Folder pictures
 
@@ -119,6 +154,6 @@ The separate video player window always stays dark.
 
 <img src="../images/phone-library.png" alt="A folder on a phone" width="300"> <img src="../images/phone-scrolled.png" alt="The compact location bar on a phone" width="300">
 
-The same page adapts to small screens: the tag sidebar becomes a drawer (its button at the top left), the search box
+The same page adapts to small screens: the sidebar (quick links and tags) becomes a drawer (its button at the top left), the search box
 narrows, and the slim location bar appears as you scroll. Tile buttons are always shown, since there is no hover. In
 the viewer, swipe to go to the previous or next file.

@@ -5,6 +5,7 @@ import { TagSummary, TagUsage } from '../../core/models';
 import { IconComponent } from '../../shared/icon.component';
 import { TagChipComponent } from '../../tags/tag-chip.component';
 import { Dialogs } from '../dialogs.service';
+import { QuickLinksComponent } from '../quick-links/quick-links.component';
 import { ListingStore } from '../listing.store';
 import { tagQuery } from '../../tags/tags';
 import { SidebarService } from './sidebar.service';
@@ -23,20 +24,21 @@ const SECTIONS: Section[] = [
     { key: 'lucky', title: 'I feel lucky', empty: 'No other tags.' },
 ];
 
-/** Collapsible tag sidebar: most used tags, last searched tags, tags of the last viewed files and random others. */
+/** Collapsible sidebar: the user's quick links, then the tags: most used tags, last searched tags, tags of the last viewed files and random others. */
 @Component({
     selector: 'sfe-sidebar',
-    imports: [IconComponent, TagChipComponent],
+    imports: [IconComponent, TagChipComponent, QuickLinksComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'sidebar',
         id: 'sidebar',
-        'aria-label': 'Tags',
+        'aria-label': 'Quick links and tags',
         role: 'complementary',
         '(document:keydown.escape)': 'closeDrawer()',
         '(document:click)': 'closeOnOutsideClick($event)',
     },
     template: `
+        <section sfeQuickLinks></section>
         @for (section of sections; track section.key) {
             @let usages = sidebar.data()?.[section.key] ?? [];
             <section class="sidebar-section" [hidden]="section.history && sidebar.data()?.historyEnabled === false">

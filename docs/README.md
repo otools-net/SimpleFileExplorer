@@ -19,7 +19,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | Page | What it covers |
 |---|---|
 | [Signing in](user-guide/signing-in.md) | The sign-in page, visitors, switching spaces, the ⋮ menu |
-| [Browsing](user-guide/browsing.md) | Folders, layouts, sorting, folder pictures, resolutions and durations, copying paths, themes, phones |
+| [Browsing](user-guide/browsing.md) | Folders, layouts, sorting, quick links, folder pictures, resolutions and durations, copying paths, themes, phones |
 | [Viewer](user-guide/viewer.md) | Opening pictures, videos and audio full screen |
 | [Video player](user-guide/video-player.md) | The player's controls and keys, its own window, external players |
 | [Picture editor](user-guide/picture-editor.md) | Cropping a picture and saving it as a new file |

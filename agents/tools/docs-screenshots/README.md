@@ -21,7 +21,7 @@ node agents/tools/docs-screenshots/check-links.mjs
 | File | |
 |---|---|
 | `run.mjs` | The whole run (see its header for the options). Work folder: `<tmp>/sfe-docs` by default (build, library, database, caches, `app.log`). Its own scene `update-page` shoots the update page on a copy of the database marked as 1.35.0, served by a second app on the next port (`node:sqlite`) |
-| `cdp.mjs` | Minimal Chrome DevTools Protocol driver for headless Edge (env `EDGE` = any Chromium browser, else Edge or Chrome in their usual folders or on the `PATH`): `launch({ width, height, mobile, colorScheme })`, then `goto`, `eval`, `waitFor`, `click`, `realClick`, `hover`, `type`, `key`, `mouse`, `rect`, `shot(file, clip?)` |
+| `cdp.mjs` | Minimal Chrome DevTools Protocol driver for headless Edge (env `EDGE` = any Chromium browser, else Edge or Chrome in their usual folders or on the `PATH`): `launch({ width, height, mobile, colorScheme })`, then `goto`, `eval`, `waitFor`, `click`, `realClick`, `hover`, `drag(from, x, y, { drop })` (a real drag and drop), `type`, `key`, `mouse`, `rect`, `shot(file, clip?)` |
 | `make-media.mjs` | The sample library: landscape photos drawn on a canvas (various sizes, for HR/LR), WebM clips, audio, duplicates in `Inbox/`, documents. With ffmpeg: 40 s clips, two re-encoded copies for similar videos, an MP3 |
 | `seed.mjs` | On an empty database: setup page shot, the administrator (`admin` / `admin-password-1`), trickplay on every 2 s, scan, tags, accounts (`sam`, guest `kids`), a group, schedules; then deletes a tagged file, scans again (a moved file, task history), waits for trickplay and compares similar videos |
 | `shots.mjs` | The screenshots, as named scenes (`node shots.mjs viewer tags`); each scene opens a fresh browser |

@@ -36,6 +36,8 @@ abstract class FileItemBase {
     protected readonly hasPreview = computed(() => this.sources().length > 0 && !this.previewFailed());
     protected readonly selected = computed(() => this.store.selection().has(this.item().path));
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));
+    /** Just shown by a quick link (`ListingStore.reveal`). */
+    protected readonly revealed = computed(() => this.store.revealed() === this.item().path);
     protected readonly isVideo = computed(() => this.item().kind === 'video');
     protected readonly resolutionMark = computed(() => this.config.resolutionMark(this.item()));
     protected readonly unindexed = computed(() => this.item().indexed === false);
@@ -71,6 +73,7 @@ function sameStrings(a: string[], b: string[]): boolean {
         '[class.no-preview]': '!hasPreview()',
         '[class.selected]': 'selected()',
         '[class.copied]': 'copied()',
+        '[class.revealed]': 'revealed()',
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
         '[style.--ratio]': 'ratio()',
@@ -160,6 +163,7 @@ export class FileTileComponent extends FileItemBase {
         '[class]': '"row item kind-" + item().kind',
         '[class.selected]': 'selected()',
         '[class.copied]': 'copied()',
+        '[class.revealed]': 'revealed()',
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
     },

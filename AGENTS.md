@@ -31,7 +31,8 @@ cache are not adopted. **SFE itself is in production** (since 1.33.0): installs 
 src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceCollectionExtensions (singletons):
                         AddSfeCore = one library's services, AddSfeAccess = the server's accounts and settings levels
   Access/               RightCatalog (+ Rights ids), AccessService (libraries, accounts, groups), RightsEvaluator,
-                        SignInService + IUserDirectory/LocalUserDirectory, SetupService, PasswordHashing, AccessChanges
+                        SignInService + IUserDirectory/LocalUserDirectory, SetupService, PasswordHashing, AccessChanges,
+                        QuickLinkService (each user's quick links per library)
   Data/                 SfeDbContext, Migrations (SQL Server), DatabaseInitializer, SfeDatabase; AccessDbContext,
                         AccessMigrations (its own history table), AccessDatabaseInitializer
     Entities/           one class per file in Index/ Tags/ MissingFiles/ Tasks/ Access/, all in namespace Sfe.Core.Data
@@ -77,7 +78,7 @@ src/Sfe.Web/            the web client (Angular workspace: angular.json, package
   src/app/access/       People (Accounts, Groups, GuestAccess) and Libraries sections of the admin page
   src/app/shared/       icon + IconSprite, SheetComponent (dialog card), BusyDirective, highlight, toasts, empty state
   src/app/library/      the listing page: LibraryPageComponent, ListingStore (state), library-route, Dialogs registry,
-                        topbar/ location/ items/ search-explain/ scan/ sidebar/ viewer/, selection bar
+                        topbar/ location/ items/ search-explain/ scan/ sidebar/ quick-links/ viewer/, selection bar
   src/app/player/       VideoPlayerComponent, PlayerPageComponent (`player?path=&t=`)
   src/app/admin/        AdminPageComponent (`admin?section=&page=`), admin-sections.ts (sidebar groups, sections, sub-pages), System section
   src/app/settings/     settings-schema.ts, SettingsForm (one form for every settings tab), SettingsPanel (one tab)
@@ -357,7 +358,7 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   `admin` = `AdminPageComponent` (`config`, its former address, redirects there), `player` = `PlayerPageComponent`,
   `login` = `LoginPageComponent` (`?return=`), `setup` = `SetupPageComponent`, `migration` = `MigrationPageComponent`;
   all but the first two load lazily (`loadComponent`:
-  their chunks keep the initial bundle under its 600 kB budget), so the admin page's guard lives apart
+  their chunks keep the initial bundle under its 600 kB budget, a warning only; 598 kB at 1.42.0), so the admin page's guard lives apart
   (`admin/leave-admin-page.ts`). `<base href="./">` + `APP_BASE_HREF` from
   `document.baseURI` keep them working under a virtual directory, which is why routes stay one level deep; the
   server's `MapFallbackToFile("index.html")` serves `/admin`, `/player`, `/login`, `/setup` and `/migration`.
@@ -458,6 +459,16 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   `Dialogs` (`registerDialog`) so any part opens them: `dialogs.fileTags()?.open(item)`. Infinite scroll: the
   sentinel's `IntersectionObserver` in `ListingComponent` re-observes after the next render (`afterNextRender`),
   otherwise it would still see the sentinel and load every page.
+- **Quick links:** `QuickLinks` table in the accounts' database (user, tenant, path, `IsFolder`, `Position`; no unique
+  index, since paths compare as the host file system does: `QuickLinkService` keeps one row per path, max 100).
+  `api/me/quick-links` (`account.quickLinks`, never guests): GET, POST `{ paths, position }` (adds, or moves those
+  already there, before the link now at `position`; null = new ones at the end), DELETE `?path=`; all answer the whole
+  list with `exists`/`kind` read from the disk. Client: `QuickLinksService` (root), `section[sfeQuickLinks]` first in
+  the sidebar, `button[sfePin]` (location head, folder actions, viewer), the selection bar's **Quick links**. Drags:
+  `QuickLinksComponent` listens to `document:dragstart` and takes the nearest `[data-path]` (tiles, rows, folders,
+  breadcrumbs; the selection when a selected file is dragged) as `DRAG_ITEMS`; links move with `DRAG_LINK`. A file link
+  calls `ListingStore.reveal`: navigates to the parent, `load()` loads pages until the file is there (`REVEAL_LIMIT`),
+  then opens media in the viewer or highlights it (`revealed`). Phones reorder in the edit mode (↑/↓), not by dragging.
 - **Client details:** the multi-file tags dialog (`FilesTagsDialog`) sends changes in parts of
   `config.maxFilesPerTagChange`.
 - **Folder / search tagging:** `ScopeTagsDialog` (location header's tag button, `.folder-tags-button` in

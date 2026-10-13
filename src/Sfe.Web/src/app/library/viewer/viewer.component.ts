@@ -11,6 +11,7 @@ import { TrickplayMarksService } from '../../trickplay/trickplay-marks.service';
 import { VideoPlayerComponent } from '../../player/video-player.component';
 import { Dialogs, registerDialog } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
+import { PinButtonComponent } from '../quick-links/pin-button.component';
 
 // Mouse wheel: down = next, up = previous. A touchpad sends a long burst of small deltas (with inertia), so they add
 // up to a step and the rest of the gesture is ignored until it pauses, otherwise one flick would skip several files.
@@ -33,7 +34,7 @@ function clampAxis(position: number, room: number, size: number): number {
  */
 @Component({
     selector: 'sfe-viewer',
-    imports: [IconComponent, TagChipComponent, VideoPlayerComponent],
+    imports: [IconComponent, TagChipComponent, VideoPlayerComponent, PinButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { '(window:resize)': 'onResize()' },
     template: `
@@ -51,6 +52,9 @@ function clampAxis(position: number, room: number, size: number): number {
                 <div class="viewer-actions">
                     @if (config.can('tags.view')) {
                         <button type="button" class="icon-button" title="Tags (T)" aria-label="Tags" (click)="openTags()"><svg sfeIcon="tag"></svg></button>
+                    }
+                    @if (item(); as shown) {
+                        <button [sfePin]="shown.path" [name]="shown.name"></button>
                     }
                     @if (zoomed()) {
                         <button type="button" class="icon-button" title="Fit to the screen (Z, or click the picture)" aria-label="Fit to the screen" (click)="zoomOut()"><svg sfeIcon="zoom-out"></svg></button>

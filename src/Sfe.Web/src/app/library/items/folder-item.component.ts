@@ -8,16 +8,17 @@ import { Rights } from '../../core/rights';
 import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
+import { PinButtonComponent } from '../quick-links/pin-button.component';
 import { FolderCoverComponent } from './folder-cover.component';
 import { CopyPathButtonComponent, NOT_INDEXED } from './item-parts';
 
 /**
  * A listed folder: a card with its first pictures (`cards`), or a line with its name. Buttons can't sit inside
- * the link: the tags and copy buttons go next to it, in the box this component is.
+ * the link: the pin, tags and copy buttons go next to it, in the box this component is.
  */
 @Component({
     selector: 'sfe-folder-item',
-    imports: [IconComponent, RouterLink, FolderCoverComponent, CopyPathButtonComponent],
+    imports: [IconComponent, RouterLink, FolderCoverComponent, CopyPathButtonComponent, PinButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'folder-item', '[class.copied]': 'copied()', '[class.unindexed]': 'unindexed()', '[attr.data-path]': 'item().path' },
     template: `
@@ -37,6 +38,7 @@ import { CopyPathButtonComponent, NOT_INDEXED } from './item-parts';
             }
         </a>
         <span class="folder-actions">
+            <button [sfePin]="item().path" [name]="item().name" class="small"></button>
             @if (canTag()) {
                 <button type="button" class="icon-button small folder-tags-button" [attr.aria-label]="'Tags of the files in ' + item().name"
                         title="Add or remove tags on all the files of this folder, or of its sub-folders too (asks first)" (click)="openTags()">

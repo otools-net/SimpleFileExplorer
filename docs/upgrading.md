@@ -30,6 +30,13 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.42
+
+- The accounts' database gets a new table, `QuickLinks` (the sidebar's [quick links](user-guide/browsing.md#quick-links)),
+  created by the update page; nothing else changes in the databases or the settings file.
+- The groups Administrators and Users of existing spaces get the new right `account.quickLinks` once, at the update;
+  guests don't. A group made by hand gets it only if you add it.
+
 ## To 1.40
 
 - The thumbnail and trickplay caches get a new folder layout (two levels of folders named after a hash, instead of one

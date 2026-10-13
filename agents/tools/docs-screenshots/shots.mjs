@@ -67,6 +67,26 @@ const scenes = {
         await b.shot(OUT + 'library-folders.png');
         await b.close();
     },
+    async quickLinks() {
+        const b = await session();
+        await b.open('?path=Photos');
+        await b.shot(OUT + 'quick-links.png', { x: 0, y: 60, width: 260, height: 220 });
+        // A folder card dragged between the first two links: the line shows where it goes.
+        const second = await b.rect('li.quick-link:nth-child(2)');
+        await b.drag('.folder-item[data-path="Photos/2024 Beach trip"] a.folder', second.x + 60, second.y + 4, { drop: false });
+        await sleep(400);
+        await b.shot(OUT + 'quick-links-drag.png');
+        await b.send('Input.dispatchDragEvent', { type: 'dragCancel', x: 0, y: 0, data: { items: [], dragOperationsMask: 1 } }).catch(() => { });
+        await b.close();
+        // Phones: the drawer, in the edit mode (no drag and drop there).
+        const phone = await session({ width: 390, height: 844, mobile: true });
+        await phone.open('?path=Photos');
+        await phone.clickTitle('Show the sidebar');
+        await phone.clickTitle('Edit: move and remove');
+        await sleep(400);
+        await phone.shot(OUT + 'phone-quick-links.png');
+        await phone.close();
+    },
     async menu() {
         const b = await session();
         await b.open('?path=Photos');

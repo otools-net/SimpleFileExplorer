@@ -139,6 +139,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUserDirectory, LocalUserDirectory>();
         services.AddSingleton<SignInService>();
         services.AddSingleton<SetupService>();
+        services.AddSingleton<QuickLinkService>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();
         services.AddSingleton<BackupWriter>();

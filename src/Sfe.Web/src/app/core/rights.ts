@@ -36,6 +36,7 @@ export const Rights = {
     manageMembers: 'tenant.members',
     ownPreferences: 'account.preferences',
     ownPassword: 'account.password',
+    quickLinks: 'account.quickLinks',
     apiDocs: 'system.apiDocs',
     serverSettings: 'server.settings',
     manageTenants: 'server.tenants',

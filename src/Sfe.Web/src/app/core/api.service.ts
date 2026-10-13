@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
     BackupLink, ClientConfig, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
-    FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, MigrationInfo, MissingFileResults, RelinkPassResult, RemovedDuplicate,
+    FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
     TaskActionResult, TaskInfo, TaskKind, TaskOverview, TaskRunDetails, TaskRunPage, TaskSchedule, TaskScheduleInput, TenantAccess, TenantDetails,
@@ -114,6 +114,11 @@ export class Api {
     preferences = () => this.get<SettingsView>('api/me/preferences');
     savePreferences = (values: SettingsValues) => this.put<SettingsView>('api/me/preferences', values);
     resetPreferences = () => this.delete<SettingsView>('api/me/preferences');
+    /** The signed-in user's quick links in the library, in order. */
+    quickLinks = () => this.get<QuickLink[]>('api/me/quick-links');
+    /** Adds `paths` before the link at `position` (at the end without one); links already there move. Resolves with the whole list. */
+    addQuickLinks = (paths: string[], position: number | null = null) => this.post<QuickLink[]>('api/me/quick-links', { paths, position });
+    removeQuickLink = (path: string) => this.delete<QuickLink[]>(withQuery('api/me/quick-links', { path }));
 
     /** Trickplay of a video; rejects (404) when it has none yet. */
     trickplay = (path: string) => this.get<TrickplayManifest>(`api/trickplay/files/${encodePath(path)}`);

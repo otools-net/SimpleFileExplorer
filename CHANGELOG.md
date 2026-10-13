@@ -3,6 +3,15 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.42.0
+
+### Added
+
+- **Quick links** at the top of the sidebar: keep the folders and files you use most at hand, as in Windows Explorer.
+  Drag folders, files or the selection onto it, or use the pin buttons (folder bar, folder cards, selection bar,
+  viewer); drag the links to reorder them, or use **Edit** on phones. Each account has its own links in each library
+  (right `account.quickLinks`, given to the Administrators and Users groups).
+
 ## 1.41.0
 
 ### Added

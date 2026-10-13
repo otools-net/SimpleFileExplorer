@@ -40,6 +40,7 @@ public static class Rights
     public const string ManageMembers = "tenant.members";
     public const string OwnPreferences = "account.preferences";
     public const string OwnPassword = "account.password";
+    public const string QuickLinks = "account.quickLinks";
     public const string ApiDocs = "system.apiDocs";
     public const string ServerSettings = "server.settings";
     public const string ManageTenants = "server.tenants";
@@ -111,6 +112,7 @@ public static class RightCatalog
         Tenant(Rights.ManageMembers, false, Administrators, "Access", "Manage the space's accounts and groups", "Create accounts in the space, put them in its groups, choose what each group may do, open the space to visitors."),
         Tenant(Rights.OwnPreferences, false, Members, "Account", "Own preferences", "Keep one's own theme, page sizes and player preferences on the server."),
         Tenant(Rights.OwnPassword, false, Members, "Account", "Change own password", "Change the password of one's own local account."),
+        Tenant(Rights.QuickLinks, false, Members, "Account", "Quick links", "Keep folders and files at hand in the sidebar's quick links.", since: 3),
         Tenant(Rights.ApiDocs, false, Administrators, "Server", "API documentation", "Open the API's documentation and try its routes."),
         Server(Rights.ServerSettings, "Server settings", "Settings of the whole server and the defaults of every space."),
         Server(Rights.ManageTenants, "Spaces", "Create, change and delete spaces, and manage the accounts and groups of every space."),

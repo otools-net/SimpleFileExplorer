@@ -76,6 +76,7 @@ api.MapTaskEndpoints();
 api.MapFileTrackingEndpoints();
 api.MapEditorEndpoints();
 api.MapSettingsEndpoints();
+api.MapQuickLinkEndpoints();
 api.MapSystemEndpoints();
 api.MapFallback(() => TypedResults.NotFound()).AllowAnonymous();
 

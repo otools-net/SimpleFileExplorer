@@ -13,6 +13,7 @@ tags. Hidden tags such as **Archived** are shown here too.
 | Button | Key | |
 |---|---|---|
 | ‹ / › at the sides | ← / →, mouse wheel down / up, a swipe | Previous / next file of the listing (the wheel works anywhere but over the video controls) |
+| Pin | | Adds the file to your [quick links](browsing.md#quick-links), or removes it (filled pin) |
 | Actual size / Fit to the screen (magnifier) | Z | Pictures larger than the screen: [100%](#actual-size) or whole again |
 | Tags | T | The file's [tags](tags.md) |
 | Edit (crop icon) | E | Opens a picture in the [picture editor](picture-editor.md) (right `files.edit`) |

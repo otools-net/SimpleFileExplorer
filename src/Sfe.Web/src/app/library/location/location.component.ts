@@ -10,6 +10,7 @@ import { Dialogs } from '../dialogs.service';
 import { defaultSort, SEARCH_SORTS } from '../library-route';
 import { ListingStore } from '../listing.store';
 import { SearchBoxState, SearchExplainComponent } from '../search-explain/search-explain.component';
+import { PinButtonComponent } from '../quick-links/pin-button.component';
 import { FolderNavComponent } from './folder-nav.component';
 import { LocationLinks } from './location-links.service';
 
@@ -26,7 +27,7 @@ const SORT_OPTIONS: [SortField, string][] = [
 /** Where the listing is: folder navigation, breadcrumbs, the search in words, the counts and the sort. */
 @Component({
     selector: 'section[sfeLocation]',
-    imports: [IconComponent, RouterLink, SearchExplainComponent, FolderNavComponent],
+    imports: [IconComponent, RouterLink, SearchExplainComponent, FolderNavComponent, PinButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'location' },
     template: `
@@ -42,7 +43,8 @@ const SORT_OPTIONS: [SortField, string][] = [
                     @if (last && !store.route().q) {
                         <span class="current" aria-current="page">{{ crumb.name }}</span>
                     } @else {
-                        <a routerLink="/" [queryParams]="store.browseParams(crumb.path)">{{ crumb.name }}</a>
+                        <!-- data-path: dragged onto the quick links, it adds the folder. -->
+                        <a routerLink="/" [queryParams]="store.browseParams(crumb.path)" [attr.data-path]="crumb.path">{{ crumb.name }}</a>
                     }
                 }
                 @if (store.route().q) {
@@ -50,6 +52,9 @@ const SORT_OPTIONS: [SortField, string][] = [
                     <span class="current search-label">Search “{{ store.route().q }}”</span>
                 }
             </nav>
+            @if (!store.route().q) {
+                <button [sfePin]="store.route().path" [name]="folderName()" class="small ghost"></button>
+            }
             @if (canTag()) {
                 <button type="button" class="icon-button small ghost scope-tags-button" [attr.aria-label]="scopeTagsTitle()" [title]="scopeTagsTitle()"
                         (click)="openScopeTags()">
@@ -133,6 +138,9 @@ export class LocationComponent {
             ])
             : '';
     });
+
+    /** The folder browsed, named as its breadcrumb (the library's name for the root). */
+    protected readonly folderName = computed(() => this.links.crumbs().at(-1)?.name ?? '');
 
     protected readonly scopeTagsTitle = computed(() => this.store.searching()
         ? 'Add or remove tags on all the results of this search (asks first)'

@@ -1,0 +1,93 @@
+/* ---------- Quick links (first section of the sidebar) ---------- */
+
+/* A drop zone while folders or files are dragged: dashed, then lit when they are over it. */
+.quick-links {
+    margin: -6px;
+    padding: 6px;
+    border: 1px dashed transparent;
+    border-radius: var(--radius-sm);
+    transition: background .15s, border-color .15s;
+}
+
+.quick-links.drop-ready { border-color: var(--border); }
+.quick-links.drop-over { border-color: var(--accent); background: var(--surface-2); }
+.quick-links-edit.active { color: var(--accent); }
+
+.quick-link-list { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.quick-link-list .sidebar-empty { color: var(--text-muted); font-size: 12px; line-height: 1.45; }
+
+.quick-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    border-radius: 6px;
+}
+
+.quick-link:hover, .quick-link.current { background: var(--surface-2); }
+.quick-link.current .quick-link-name { font-weight: 600; }
+.quick-link.dragged { opacity: .4; }
+
+/* Where a drop goes: a line above the link it goes before, or below the last one. */
+.quick-link.drop-before::before, .quick-link-drop-end {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: 4px;
+    left: 4px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--accent);
+}
+
+.quick-link-drop-end { position: relative; top: 0; right: 0; left: 0; margin: 0 4px; }
+
+.quick-link-target {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 5px 6px;
+    color: var(--text);
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.quick-link-target .icon { width: 18px; height: 18px; color: var(--file); }
+.quick-link[data-kind="directory"] .quick-link-target .icon { color: var(--folder); }
+.quick-link[data-kind="image"] .quick-link-target .icon { color: var(--image); }
+.quick-link[data-kind="video"] .quick-link-target .icon { color: var(--video); }
+.quick-link[data-kind="audio"] .quick-link-target .icon { color: var(--audio); }
+.quick-link-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quick-link.missing .quick-link-target { color: var(--text-muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--text-muted) 60%, transparent); }
+
+.quick-link-actions { display: flex; flex: none; gap: 2px; }
+.quick-link-actions .icon-button { width: 26px; height: 26px; min-height: 26px; color: var(--text-muted); }
+.quick-link-actions .icon-button:hover { color: var(--text); }
+.quick-link-actions .icon-button:disabled { opacity: .3; cursor: default; }
+.quick-link-actions .icon { width: 15px; height: 15px; }
+
+/* × appears on hover; in the edit mode, and on touch screens, the buttons stay. */
+.quick-link-remove { opacity: 0; transition: opacity .15s; }
+.quick-link:hover .quick-link-remove, .quick-link:focus-within .quick-link-remove, .quick-links.editing .quick-link-remove { opacity: 1; }
+.quick-link[draggable="true"] { cursor: grab; }
+.quick-link[draggable="true"] .quick-link-target { cursor: pointer; }
+
+/* The pin buttons: filled once the folder or file is a quick link. */
+.pin-button.pinned { color: var(--accent); }
+.pin-button.pinned .icon { fill: currentColor; }
+.location-head .pin-button { flex: none; color: var(--text-muted); }
+.location-head .pin-button:hover, .location-head .pin-button.pinned { color: var(--accent); }
+.folder-actions .pin-button.pinned { color: var(--accent); }
+.folders.covers .folder-actions .pin-button.pinned { color: var(--accent); }
+
+/* A file opened from a quick link (not media: those open in the viewer) is pointed out a moment. */
+.item.revealed { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row.revealed { outline-offset: -2px; }
+
+@media (hover: none) {
+    .quick-link-remove { opacity: 1; }
+    .quick-link[draggable="true"] { cursor: default; }
+}

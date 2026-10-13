@@ -26,6 +26,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public DbSet<TenantSetting> TenantSettings => Set<TenantSetting>();
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
     public DbSet<ServerProperty> ServerProperties => Set<ServerProperty>();
+    public DbSet<QuickLink> QuickLinks => Set<QuickLink>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -142,6 +143,24 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.HasKey(p => p.Key);
             entity.Property(p => p.Key).HasMaxLength(64).IsUnicode(false);
             entity.Property(p => p.Value).HasMaxLength(400).IsRequired();
+        });
+
+        modelBuilder.Entity<QuickLink>(entity =>
+        {
+            entity.ToTable("QuickLinks");
+            entity.Property(l => l.Path).HasMaxLength(SfeDbContext.MaxPathLength).IsRequired();
+            // Not unique: paths compare as the host file system does (case-sensitive on Linux), which SQL Server's
+            // collation doesn't; QuickLinkService keeps one row per path.
+            entity.HasIndex(l => new { l.UserId, l.TenantId });
+            entity.HasIndex(l => l.TenantId);
+            entity.HasOne<UserAccount>()
+                .WithMany()
+                .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Tenant>()
+                .WithMany()
+                .HasForeignKey(l => l.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

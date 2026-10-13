@@ -109,6 +109,17 @@ export interface TagColor {
     hex: string;
 }
 
+/** A folder or file kept in the sidebar's quick links (`api/me/quick-links`). */
+export interface QuickLink {
+    path: string;
+    name: string;
+    /** `directory`, or the kind of file by its extension, as it was when added. */
+    kind: ItemKind;
+    extension: string | null;
+    /** False once it was moved, renamed or deleted. */
+    exists: boolean;
+}
+
 export interface LibraryItem {
     name: string;
     path: string;

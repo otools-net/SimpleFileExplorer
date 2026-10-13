@@ -1,11 +1,14 @@
+import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { ApiError } from '../core/api.service';
 import { DirectoryListing, LibraryItem, SearchResults } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { ApiMock, deferred, fakeConfig, fileTags, item, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
+import { Dialogs } from './dialogs.service';
 import { ListingStore } from './listing.store';
 import { SidebarService } from './sidebar/sidebar.service';
+import { ViewerComponent } from './viewer/viewer.component';
 
 function listing(items: LibraryItem[], overrides: Partial<DirectoryListing> = {}): DirectoryListing {
     return { path: '', name: 'Root', parentPath: null, items, offset: 0, limit: items.length, total: items.length, directoryCount: 0, fileCount: items.length, ...overrides };
@@ -395,6 +398,82 @@ describe('ListingStore', () => {
             await settle();
 
             expect(error).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('revealing a file (quick links)', () => {
+        let viewer: { open: ReturnType<typeof vi.fn> };
+        let navigate: ReturnType<typeof vi.spyOn>;
+
+        beforeEach(() => {
+            viewer = { open: vi.fn() };
+            TestBed.inject(Dialogs).viewer.set(viewer as unknown as ViewerComponent);
+            navigate = vi.spyOn(store, 'navigate').mockImplementation(() => { });
+        });
+
+        /** What the listing page does on the navigation `reveal` starts. */
+        async function arrive(path: string): Promise<void> {
+            store.route.set({ path, q: '', sort: '', desc: false });
+            await store.load();
+            await settle();
+            TestBed.inject(ApplicationRef).tick();
+        }
+
+        it('lists the folder of the file, takes pages until it is there, and opens media in the viewer', async () => {
+            const target = item('Media/d.jpg');
+            api.browse
+                .mockResolvedValueOnce(listing([item('Media/a.jpg'), item('Media/b.mp4'), item('Media/c.txt')], { path: 'Media', total: 4 }))
+                .mockResolvedValueOnce(listing([target], { path: 'Media', offset: 3, total: 4 }));
+            store.route.set({ path: 'Other', q: 'cats', sort: 'size', desc: false });
+
+            store.reveal('Media/d.jpg');
+            expect(navigate).toHaveBeenCalledWith({ path: 'Media', q: '' });
+            await arrive('Media');
+
+            expect(api.browse).toHaveBeenCalledTimes(2);
+            expect(viewer.open).toHaveBeenCalledWith(target);
+            expect(store.revealed()).toBe('Media/d.jpg');
+        });
+
+        it('only highlights other files', async () => {
+            api.browse.mockResolvedValue(listing([item('Docs/notes.txt')], { path: 'Docs' }));
+            store.reveal('Docs/notes.txt');
+            await arrive('Docs');
+
+            expect(viewer.open).not.toHaveBeenCalled();
+            expect(store.revealed()).toBe('Docs/notes.txt');
+        });
+
+        it('shows a file of the folder already listed without listing it again', async () => {
+            api.browse.mockResolvedValue(listing([a, b], { total: 2 }));
+            await store.load();
+
+            store.reveal('b.mp4');
+            await settle();
+            TestBed.inject(ApplicationRef).tick();
+
+            expect(navigate).not.toHaveBeenCalled();
+            expect(api.browse).toHaveBeenCalledTimes(1);
+            expect(viewer.open).toHaveBeenCalledWith(b);
+        });
+
+        it('says so when the file is not in its folder any more', async () => {
+            const show = vi.spyOn(TestBed.inject(ToastService), 'show');
+            api.browse.mockResolvedValue(listing([a], { total: 1 }));
+            store.reveal('gone.jpg');
+            await arrive('');
+
+            expect(viewer.open).not.toHaveBeenCalled();
+            expect(show).toHaveBeenCalledWith(expect.stringContaining('“gone.jpg” is not in this folder any more'));
+        });
+
+        it('forgets the file when another folder is listed meanwhile', async () => {
+            api.browse.mockResolvedValue(listing([a], { path: 'Elsewhere', total: 1 }));
+            store.reveal('Media/a.jpg');
+            await arrive('Elsewhere');
+            await arrive('Media');
+
+            expect(viewer.open).not.toHaveBeenCalled();
         });
     });
 

@@ -23,6 +23,7 @@ are given by the groups of a space ([Spaces & accounts](../administration/spaces
 | `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.editor` | the space's settings, by section | no | Administrators |
 | `tenant.members` | the space's accounts, groups and visitors | no | Administrators |
 | `account.preferences`, `account.password` | own preferences and password | no | Administrators, Users |
+| `account.quickLinks` | own [quick links](../user-guide/browsing.md#quick-links) in the sidebar | no | Administrators, Users |
 | `system.apiDocs` | the API documentation (`/api/docs`) | no | Administrators |
 | `server.settings`, `server.tenants`, `server.users`, `server.shutdown`, `server.dismount`, `server.backup`, `server.streams` | the server's settings, spaces, every account, system commands, backups, the list of video streams | no | server administrators only |
 

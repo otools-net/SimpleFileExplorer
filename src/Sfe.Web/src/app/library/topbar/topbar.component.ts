@@ -20,8 +20,8 @@ const VIEW_BUTTONS: { view: View; icon: string; label: string; title: string }[]
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'topbar', '(document:click)': 'closePopovers($event)' },
     template: `
-        <button type="button" class="icon-button ghost sidebar-toggle" aria-controls="sidebar" aria-label="Tags sidebar"
-                [attr.aria-expanded]="sidebar.open()" [title]="sidebar.open() ? 'Hide tags' : 'Show tags'" (click)="sidebar.toggle()">
+        <button type="button" class="icon-button ghost sidebar-toggle" aria-controls="sidebar" aria-label="Sidebar"
+                [attr.aria-expanded]="sidebar.open()" [title]="sidebar.open() ? 'Hide the sidebar (quick links and tags)' : 'Show the sidebar (quick links and tags)'" (click)="sidebar.toggle()">
             <svg sfeIcon="sidebar"></svg>
         </button>
         <a class="brand" routerLink="/" [queryParams]="store.browseParams('')" title="Library root">
