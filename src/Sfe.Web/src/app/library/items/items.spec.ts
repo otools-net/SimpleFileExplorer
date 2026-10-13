@@ -465,6 +465,30 @@ describe('FolderItemComponent', () => {
     });
 });
 
+describe('Items not indexed yet', () => {
+    beforeEach(async () => await setUp());
+
+    it('fades the tiles, rows and folders the index lacks, and says why in their hint', async () => {
+        const make = async (type: Type<{ item: unknown }>, value: LibraryItem) => {
+            const fixture = TestBed.createComponent(type);
+            fixture.componentRef.setInput('item', value);
+            await fixture.whenStable();
+            return fixture.nativeElement as HTMLElement;
+        };
+        const tile = await make(FileTileComponent, item('a.jpg', { indexed: false }));
+        const row = await make(FileRowComponent, item('a.jpg', { indexed: false }));
+        const folder = await make(FolderItemComponent, item('Films', { kind: 'directory', indexed: false }));
+        const indexed = await make(FileTileComponent, item('b.jpg', { indexed: true }));
+        const searched = await make(FileTileComponent, item('c.jpg'));
+
+        expect([tile, row, folder].map(e => e.classList.contains('unindexed'))).toEqual([true, true, true]);
+        expect(tile.querySelector('.item-link')!.getAttribute('title')).toContain('not indexed yet');
+        expect(folder.querySelector('.folder')!.getAttribute('title')).toContain('not indexed yet');
+        expect([indexed, searched].map(e => e.classList.contains('unindexed'))).toEqual([false, false]);
+        expect(indexed.querySelector('.item-link')!.getAttribute('title')).toBe('b.jpg');
+    });
+});
+
 describe('Copied paths', () => {
     beforeEach(async () => {
         await setUp(fakeConfig({ rootPath: '/m/' }));

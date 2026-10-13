@@ -351,6 +351,25 @@ public sealed class TaggingTests
     }
 
     [TestMethod]
+    public async Task ListingsTellWhichFilesAndFoldersAreNotIndexed()
+    {
+        await ScanAsync("Media");
+        _library.AddFile("Media/after the scan.jpg", 10);
+        var browser = _services.Get<Sfe.Core.Library.LibraryBrowser>();
+
+        var root = await Tags.AttachIndexDataAsync(browser.List("", 0, 100)!.Items, TestContext.CancellationToken);
+        var media = await Tags.AttachIndexDataAsync(browser.List("Media", 0, 100)!.Items, TestContext.CancellationToken);
+
+        Assert.IsTrue(root.Single(i => i.Name == "Media").Indexed);
+        Assert.IsFalse(root.Single(i => i.Name == "ChildDir").Indexed);
+        Assert.IsFalse(root.Single(i => i.Name == "RFile1.txt").Indexed);
+        Assert.IsTrue(media.Single(i => i.Name == "photo.jpg").Indexed);
+        Assert.IsTrue(media.Single(i => i.Name == "Episode 2.mkv").Indexed);
+        Assert.IsFalse(media.Single(i => i.Name == "after the scan.jpg").Indexed);
+        Assert.IsEmpty(media.Single(i => i.Name == "after the scan.jpg").Tags!);
+    }
+
+    [TestMethod]
     public async Task AddsTheTaggingTablesToAnExistingSqliteIndex()
     {
         // The index as the version before tagging created it.

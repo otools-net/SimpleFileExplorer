@@ -9,7 +9,7 @@ import { TrickplayHoverService } from '../../trickplay/trickplay-hover.service';
 import { TrickplayMarkComponent } from '../../trickplay/trickplay-mark.component';
 import { ListingStore } from '../listing.store';
 import { ItemActions } from './item-actions.service';
-import { CopyPathButtonComponent, ItemFolderComponent, ItemTagsComponent, SelectBoxComponent, TagButtonComponent } from './item-parts';
+import { CopyPathButtonComponent, ItemFolderComponent, ItemTagsComponent, NOT_INDEXED, SelectBoxComponent, TagButtonComponent } from './item-parts';
 import { PreviewImageDirective } from './preview-image.directive';
 import { PreviewsService } from './previews.service';
 
@@ -38,6 +38,9 @@ abstract class FileItemBase {
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));
     protected readonly isVideo = computed(() => this.item().kind === 'video');
     protected readonly resolutionMark = computed(() => this.config.resolutionMark(this.item()));
+    protected readonly unindexed = computed(() => this.item().indexed === false);
+    /** The links' hint: the name, and whether the index has the file yet. */
+    protected readonly linkTitle = computed(() => this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''));
 
     /** The box of the preview, where the trickplay hover plays. */
     protected abstract previewContainer(): HTMLElement | undefined;
@@ -68,11 +71,12 @@ function sameStrings(a: string[], b: string[]): boolean {
         '[class.no-preview]': '!hasPreview()',
         '[class.selected]': 'selected()',
         '[class.copied]': 'copied()',
+        '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
         '[style.--ratio]': 'ratio()',
     },
     template: `
-        <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="item().name" (click)="actions.openFile($event, item())">
+        <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
             <div #preview class="preview">
                 <div class="placeholder"><svg [sfeIcon]="icon()"></svg><span class="ext">{{ item().extension || 'file' }}</span></div>
                 @if (hasPreview()) {
@@ -104,7 +108,7 @@ function sameStrings(a: string[], b: string[]): boolean {
             <button [sfeCopyPath]="item().path" [name]="item().name"></button>
         }
         <div class="info">
-            <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="item().name" (click)="actions.openFile($event, item())">
+            <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
                 <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
             </a>
             <sfe-item-folder [item]="item()" [pattern]="pattern()" />
@@ -156,11 +160,12 @@ export class FileTileComponent extends FileItemBase {
         '[class]': '"row item kind-" + item().kind',
         '[class.selected]': 'selected()',
         '[class.copied]': 'copied()',
+        '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
     },
     template: `
         <label sfeSelectBox [item]="item()"></label>
-        <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="item().name" (click)="actions.openFile($event, item())">
+        <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
             <span #thumb class="thumb">
                 <svg [sfeIcon]="icon()"></svg>
                 @if (hasPreview()) {
@@ -175,7 +180,7 @@ export class FileTileComponent extends FileItemBase {
             </span>
         </a>
         <div class="row-main">
-            <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="item().name" (click)="actions.openFile($event, item())">
+            <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
                 <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
             </a>
             <sfe-item-folder [item]="item()" [pattern]="pattern()" />

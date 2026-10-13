@@ -204,7 +204,8 @@ export class ListingStore {
 
     applyFileTags(files: FileTags[]): void {
         const byPath = new Map(files.map(file => [file.path, file.tags]));
-        this.updateItems(item => byPath.has(item.path) ? { ...item, tags: byPath.get(item.path) } : item);
+        // Tagging indexes the files it changes.
+        this.updateItems(item => byPath.has(item.path) ? { ...item, tags: byPath.get(item.path), indexed: item.indexed === false || item.indexed } : item);
         this.sidebar.refresh();
     }
 
@@ -238,6 +239,9 @@ export class ListingStore {
         this.updateItems(item => {
             if (item.kind === 'directory' || !inScope(item))
                 return item;
+            // A folder scope is indexed before it is tagged.
+            if (item.indexed === false)
+                item = { ...item, indexed: true };
             const tags = item.tags ?? [];
             if (change.add && !tags.some(t => t.id === change.add!.id))
                 return { ...item, tags: [...tags, change.add] };

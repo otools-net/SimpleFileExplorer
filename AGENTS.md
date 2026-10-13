@@ -238,7 +238,8 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
 - A POST endpoint taking a JSON body param doesn't match a request without `Content-Type: application/json`, and
   `api.MapFallback` then answers 404 (not 415): take optional inputs of bodyless actions from the query
   (`POST api/tasks/{task}/start?path=`).
-- User's app running → locked DLLs: build/test with `--artifacts-path <scratch dir>`, don't stop it.
+- User's app running → locked DLLs: build/test with `--artifacts-path <scratch dir>`, don't stop it. There,
+  `TheShippedChangelogHasTheRunningVersion` fails (it finds `CHANGELOG.md` from the output folder): run it alone without.
 - App on a scratch library: `ASPNETCORE_ENVIRONMENT=Development` + env `Sfe__Root`, `ConnectionStrings__Sfe`,
   `Sfe__Database__Provider=Sqlite`, `Sfe__SettingsFile`, `Sfe__Thumbnails__CacheDirectory`, `Urls`, then
   `dotnet run --no-launch-profile` (or `dotnet <artifacts>/bin/Sfe.Api/debug/Sfe.Api.dll --contentRoot <absolute
@@ -556,6 +557,9 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   (`name (2).ext`...; empty setting or already inside it → beside the original, `name (edited)`), then
   `DirectoryIndexer.IndexFilesAsync`. Errors are 404/400/413/500, never 409 (the client's `Api` resolves 409s).
   `editor.outputFolder` is per library (`PerLibraryKeys`); `/api/config` `editor` is null without `files.edit`.
+- **Not indexed marks:** browse only: `AttachIndexDataAsync` sets `LibraryItem.Indexed` (files and folders, null when the
+  index can't be read and in search results); the client fades `indexed === false` (`.unindexed`, `styles/items.css`)
+  and `ListingStore.applyFileTags`/`applyScopeTags` clear it, since tagging indexes the files.
 - **Caching:** images/thumbnails are sent `no-store`; trickplay sheets are cacheable (URL carries its `version`).
 - **Trickplay:** Core's `TrickplayService` run by the Api's `TrickplayWorker`. Per video
   `{CacheDirectory}/trickplay/{SHA1(folder)}/{SHA1(file)}/`: `info.json`, `{n}.jpg`, `fingerprint.bin`. Fresh =

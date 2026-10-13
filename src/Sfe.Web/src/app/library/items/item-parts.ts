@@ -11,6 +11,9 @@ import { ItemActions } from './item-actions.service';
 
 /* The small parts shared by the tiles and rows of the listing. */
 
+/** Added to the hint of a file or folder the index doesn't have yet (shown faded). */
+export const NOT_INDEXED = '(not indexed yet: search, tags and duplicates find it after a scan)';
+
 /** Chips of the tags set on a file; clicking one searches for it. */
 @Component({
     selector: 'sfe-item-tags',

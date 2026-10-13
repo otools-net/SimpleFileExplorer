@@ -342,6 +342,18 @@ describe('ListingStore', () => {
             expect(sidebar.refresh).toHaveBeenCalled();
         });
 
+        it('drops the not-indexed mark of the files tagging indexed, and only theirs', () => {
+            store.items.update(items => items.map(i => ({ ...i, indexed: false })));
+            const nested = { ...item('Sub/n.jpg'), indexed: false };
+            store.items.update(items => [...items, nested]);
+
+            store.applyFileTags([fileTags(c.path, [sea])]);
+            expect(store.items().map(i => i.indexed)).toEqual([false, false, false, true, false]);
+
+            store.applyScopeTags({ path: '', recursive: false, query: null }, { add: sea });
+            expect(store.items().map(i => i.indexed)).toEqual([false, true, true, true, false]);
+        });
+
         it('gives a tag added to the results of a search to the files listed for that search only', () => {
             const before = store.items();
 

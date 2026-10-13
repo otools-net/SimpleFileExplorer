@@ -26,6 +26,11 @@ The three buttons at the top right switch between:
 Each tile or row shows the file's name, resolution, size and date, its tags (click one to search for it) and, on
 hover, a checkbox to [select it](tags.md#several-files-at-once) and a tag button.
 
+Files and folders that are **not indexed yet** (added since the last [scan](scanning.md), or in a folder never scanned)
+are shown faded, back to full strength under the mouse; their hint says so. Browsing and viewing them works as usual,
+but search, duplicates and tag searches only find them after a scan. Tagging a file, or the files of a folder, indexes
+them.
+
 ## Moving around
 
 ![A folder with its folder pictures](../images/library-folders.png)

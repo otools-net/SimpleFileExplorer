@@ -3,6 +3,12 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.38.0
+
+### Added
+
+- Listings show files and folders that are not indexed yet faded, with a hint saying a scan will add them.
+
 ## 1.37.0
 
 ### Added

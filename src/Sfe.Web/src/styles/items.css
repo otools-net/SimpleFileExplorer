@@ -45,3 +45,9 @@ mark {
     color: var(--mark-text);
 }
 
+
+/* A file or folder the index doesn't have yet (browsing only, until a scan reaches it): faded, which moves nothing and
+   leaves the selection's accent and the copied outline their meaning; full strength again under the pointer. */
+.item.unindexed, .folder-item.unindexed { opacity: .55; transition: opacity .15s; }
+.item.unindexed:hover, .item.unindexed:focus-within, .item.unindexed.selected,
+.folder-item.unindexed:hover, .folder-item.unindexed:focus-within { opacity: 1; }

@@ -124,6 +124,8 @@ export interface LibraryItem {
     height?: number | null;
     /** Seconds of a video or audio file, when the index knows them. */
     duration?: number | null;
+    /** Browsing only: false for a file or folder no scan has indexed yet; null/absent when unknown (search results). */
+    indexed?: boolean | null;
 }
 
 export interface DirectoryListing {

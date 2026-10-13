@@ -34,6 +34,10 @@ public enum SortField
 /// <param name="Width">Pixel width of an image or video, when the index knows it (see <see cref="Data.FileEntry.Width"/>).</param>
 /// <param name="Height">Pixel height, set along with <paramref name="Width"/>.</param>
 /// <param name="Duration">Seconds of a video or audio file, when the index knows them (see <see cref="Data.FileEntry.Duration"/>).</param>
+/// <param name="Indexed">
+/// Browsing only: whether the index has this file or folder (false until a scan reaches it); null when the index could
+/// not be read, and for search results, which all come from the index.
+/// </param>
 public sealed record LibraryItem(
     string Name,
     string Path,
@@ -45,7 +49,8 @@ public sealed record LibraryItem(
     IReadOnlyList<TagSummary>? Tags = null,
     int? Width = null,
     int? Height = null,
-    double? Duration = null);
+    double? Duration = null,
+    bool? Indexed = null);
 
 public sealed record Breadcrumb(string Name, string Path);
 

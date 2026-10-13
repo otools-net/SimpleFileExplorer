@@ -8,7 +8,7 @@ import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { FolderCoverComponent } from './folder-cover.component';
-import { CopyPathButtonComponent } from './item-parts';
+import { CopyPathButtonComponent, NOT_INDEXED } from './item-parts';
 
 /**
  * A listed folder: a card with its first pictures (`cards`), or a line with its name. Buttons can't sit inside
@@ -18,9 +18,9 @@ import { CopyPathButtonComponent } from './item-parts';
     selector: 'sfe-folder-item',
     imports: [IconComponent, RouterLink, FolderCoverComponent, CopyPathButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'folder-item', '[class.copied]': 'copied()', '[attr.data-path]': 'item().path' },
+    host: { class: 'folder-item', '[class.copied]': 'copied()', '[class.unindexed]': 'unindexed()', '[attr.data-path]': 'item().path' },
     template: `
-        <a class="folder item kind-directory" [class.card]="cards()" routerLink="/" [queryParams]="store.browseParams(item().path)" [title]="item().name">
+        <a class="folder item kind-directory" [class.card]="cards()" routerLink="/" [queryParams]="store.browseParams(item().path)" [title]="linkTitle()">
             @if (cards()) {
                 <sfe-folder-cover [path]="item().path" />
                 <span class="folder-caption"><svg sfeIcon="folder"></svg><span class="item-name">{{ item().name }}</span></span>
@@ -51,6 +51,8 @@ export class FolderItemComponent {
     protected readonly store = inject(ListingStore);
     protected readonly copyPaths = inject(CopyPathService);
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));
+    protected readonly unindexed = computed(() => this.item().indexed === false);
+    protected readonly linkTitle = computed(() => this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''));
     private readonly dialogs = inject(Dialogs);
 
     /** The tags of the files of this folder (the dialog offers its sub-folders too). */

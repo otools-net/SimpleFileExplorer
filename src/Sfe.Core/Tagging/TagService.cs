@@ -478,48 +478,71 @@ public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, Librar
 
     /// <summary>
     /// Fills what the index knows of the files among <paramref name="items"/>: their <see cref="LibraryItem.Tags"/>,
-    /// the resolution of images and videos and the duration of videos and audio files.
+    /// the resolution of images and videos and the duration of videos and audio files; and for files and folders
+    /// alike, whether the index has them (<see cref="LibraryItem.Indexed"/>).
     /// </summary>
     public async Task<IReadOnlyList<LibraryItem>> AttachIndexDataAsync(IReadOnlyList<LibraryItem> items, CancellationToken cancellationToken = default)
     {
         var byFullName = new Dictionary<string, int>(LibraryPaths.PathComparer);
+        var folderByFullName = new Dictionary<string, int>(LibraryPaths.PathComparer);
         for (var i = 0; i < items.Count; i++)
         {
-            if (items[i].Kind != ItemKind.Directory && paths.TryResolve(items[i].Path, out var fullPath))
-                byFullName[fullPath] = i;
+            if (paths.TryResolve(items[i].Path, out var fullPath))
+                (items[i].Kind == ItemKind.Directory ? folderByFullName : byFullName)[fullPath] = i;
         }
 
-        if (byFullName.Count == 0)
+        if (byFullName.Count == 0 && folderByFullName.Count == 0)
             return items;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var result = items.Select(i => i.Kind == ItemKind.Directory ? i with { Indexed = false } : i with { Tags = [], Indexed = false }).ToList();
+
+        if (folderByFullName.Count > 0)
+        {
+            var folderNames = folderByFullName.Keys.ToList();
+            var indexedFolders = await db.Directories
+                .Where(d => folderNames.Contains(d.FullName))
+                .Select(d => d.FullName)
+                .ToListAsync(cancellationToken);
+            foreach (var folder in indexedFolders)
+            {
+                if (folderByFullName.TryGetValue(folder, out var index))
+                    result[index] = result[index] with { Indexed = true };
+            }
+        }
+
+        if (byFullName.Count == 0)
+            return result;
+
         var names = byFullName.Keys.ToList();
         var links = await db.FileTags
             .Where(l => names.Contains(l.File!.FullName))
             .Select(l => new { l.File!.FullName, l.TagId })
             .ToListAsync(cancellationToken);
 
-        var result = items.Select(i => i.Kind == ItemKind.Directory ? i : i with { Tags = [] }).ToList();
-        var media = byFullName.Where(f => items[f.Value].Kind is ItemKind.Image or ItemKind.Video or ItemKind.Audio).Select(f => f.Key).ToList();
-        if (media.Count > 0)
+        // One row per indexed file (the page's files at most): its presence, and the resolution and duration of media.
+        var rows = await db.Files
+            .Where(f => names.Contains(f.FullName))
+            .Select(f => new { f.FullName, f.Width, f.Height, f.Duration })
+            .ToListAsync(cancellationToken);
+        foreach (var row in rows)
         {
-            var sizes = await db.Files
-                .Where(f => media.Contains(f.FullName) && (f.Width > 0 && f.Height > 0 || f.Duration > 0))
-                .Select(f => new { f.FullName, f.Width, f.Height, f.Duration })
-                .ToListAsync(cancellationToken);
-            foreach (var size in sizes)
+            if (!byFullName.TryGetValue(row.FullName, out var index))
+                continue;
+            if (items[index].Kind is not (ItemKind.Image or ItemKind.Video or ItemKind.Audio))
             {
-                if (byFullName.TryGetValue(size.FullName, out var index))
-                {
-                    var known = size.Width > 0 && size.Height > 0;
-                    result[index] = result[index] with
-                    {
-                        Width = known ? size.Width : null,
-                        Height = known ? size.Height : null,
-                        Duration = size.Duration > 0 ? size.Duration : null,
-                    };
-                }
+                result[index] = result[index] with { Indexed = true };
+                continue;
             }
+
+            var known = row.Width > 0 && row.Height > 0;
+            result[index] = result[index] with
+            {
+                Indexed = true,
+                Width = known ? row.Width : null,
+                Height = known ? row.Height : null,
+                Duration = row.Duration > 0 ? row.Duration : null,
+            };
         }
 
         if (links.Count > 0)
