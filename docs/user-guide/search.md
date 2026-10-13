@@ -18,6 +18,7 @@ Search only finds indexed files: **Scan this folder** in the ⋮ menu brings the
 | `cat -kitten` | exclude a word |
 | `s:>1gb`, `s:<=10mb`, `s:700mb` | size larger / smaller / about |
 | `e:mp4` | extension |
+| `type:image`, `type:video`, `type:audio`, `type:other` | photos / videos / audio files / anything else |
 | `w:>=1920`, `h:<720`, `r:1920x1080` | width / height / both sides, in pixels |
 | `r:hr`, `r:lr` | high / low resolution, as the [HR/LR marks](browsing.md#resolutions-durations-and-hrlr-marks) say |
 | `d:>10m`, `d:1:30` | videos and audio longer than 10 minutes / about a minute and a half |
@@ -46,8 +47,14 @@ administrator can remove the button for everyone ([Interface › Search](../admi
 - Each result shows its folder under its name: click the folder to browse there.
 - The count of matches shows in small grey numbers at the end of the box (`10,000+` beyond 10,000); hover it for the
   words. It disappears while you change the query, until the new results are in.
-- Results are grouped by folder (sort **Path**) unless you pick another sort: name, date modified, size or type, in
-  either direction. Name and type sorts use the database order, not the natural number order used when browsing.
+- Results are grouped by folder (sort **Path**) unless you pick another sort: name, date modified, size, type,
+  **Duration** or **Resolution** (width × height, the number of pixels), in either direction. Name and type sorts use
+  the database order, not the natural number order used when browsing.
+- Sorted by duration or resolution, the files whose value is known come first, in the order you chose (shortest or
+  longest first, smallest or largest first), then every other file (photos for a duration, documents, files a scan
+  hasn't read yet) by path. These two sorts, like Path, are only offered for searches: a folder lists its files from
+  disk, where durations and resolutions are not known. To sort the videos of a folder (and of its sub-folders) by
+  length, search `type:video` in it.
 - Pressing Enter on the search already shown keeps the results and your place.
 - Files with a hidden tag, like **Archived**, only show up when the search names that tag (or a parent of it).
 - The [tag button next to the location](tags.md#a-whole-folder-or-every-search-result) tags every result at once.

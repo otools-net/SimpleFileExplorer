@@ -15,6 +15,8 @@ const DURATION_PATTERN = /^(<=|>=|<|>|=)?(?:(\d{1,9}(?:\.\d+)?)(s|m|h)?|(\d{1,6}
 const DURATION_UNITS: Record<string, [seconds: number, singular: string]> = { s: [1, 'second'], m: [60, 'minute'], h: [3600, 'hour'] };
 const DURATION_PHRASES: Record<string, string> = { '<': 'shorter than', '<=': 'lasting at most', '>': 'longer than', '>=': 'lasting at least', '=': 'lasting exactly', '': 'lasting about' };
 const LEVELS: Record<string, boolean> = { hr: true, lr: false };
+/** The values of `type:` (SearchQuery.TryParseKind) and how a sentence names them. */
+const KINDS: Record<string, string> = { image: 'photos', video: 'videos', audio: 'audio files', other: 'other files' };
 const DIMENSION_PREFIXES = ['w:', 'h:', 'r:'];
 const TAG_PREFIXES = ['t:', 'tag:'];
 const UNTAGGED = 'special:untagged';
@@ -35,6 +37,8 @@ type Clause =
     | { kind: 'text'; include: Word[]; exclude: Word[] }
     /** The included extensions (OR-ed), or the excluded ones (each left out). */
     | { kind: 'extension'; values: Word[]; negated: boolean }
+    /** `type:`, grouped like extensions: the included kinds (OR-ed), or the excluded ones. */
+    | { kind: 'type'; values: Word[]; negated: boolean }
     | { kind: 'size'; op: string; label: string; min: number; max: number; token: string; negated: boolean }
     /** `w:`, `h:` or `r:` (both sides, compared alike); null for a side not compared. Negated = not the whole term. */
     | { kind: 'dimension'; op: string; width: number | null; height: number | null; token: string; negated: boolean }
@@ -121,6 +125,7 @@ function parseGroup(group: string, fullPath: boolean, notes: Segment[][]): Group
     const clauses: Clause[] = [];
     let words: Extract<Clause, { kind: 'text' }> | null = null;
     const extensions: Record<'in' | 'out', Extract<Clause, { kind: 'extension' }> | null> = { in: null, out: null };
+    const types: Record<'in' | 'out', Extract<Clause, { kind: 'type' }> | null> = { in: null, out: null };
 
     const addWord = (word: string, excluded: boolean, token: string) => {
         if (!words)
@@ -146,6 +151,17 @@ function parseGroup(group: string, fullPath: boolean, notes: Segment[][]): Group
                 clauses.push(size);
             else
                 notes.push([term(token, 'size', negated), text(' is ignored: not a valid size (try '), term('s:>1gb', 'size'), text(' or '), term('s:<=10mb', 'size'), text(').')]);
+        } else if (hasPrefix(body, 'type:')) {
+            const value = body.slice(5).toLowerCase();
+            if (!(value in KINDS)) {
+                notes.push([term(token, 'extension', negated), text(' is ignored: not a type of file (try '), term('type:image', 'extension'), text(', '),
+                    term('type:video', 'extension'), text(', '), term('type:audio', 'extension'), text(' or '), term('type:other', 'extension'), text(').')]);
+                continue;
+            }
+            const key = negated ? 'out' : 'in';
+            if (!types[key])
+                clauses.push(types[key] = { kind: 'type', values: [], negated });
+            types[key].values.push({ value: KINDS[value], token });
         } else if (hasPrefix(body, 'd:')) {
             const duration = parseDuration(body.slice(2), token, negated);
             if (duration)
@@ -253,6 +269,8 @@ export function explain(query: string, path: string): Explanation {
     const { fullPath, groups, notes } = parseQuery(query);
     if (groups.some(group => group.clauses.some(clause => clause.kind === 'tag')))
         notes.push([text('A tag also matches by its shorthand or aliases, and includes the tags inheriting from it.')]);
+    if (groups.some(group => group.clauses.some(clause => clause.kind === 'type')))
+        notes.push([text('The type of a file comes from its extension, by the lists of Administration › Scanning › File types.')]);
     const resolution = (clause: Clause) => clause.kind === 'dimension' || clause.kind === 'level';
     if (groups.some(group => group.clauses.some(clause => clause.kind === 'level')))
         notes.push([text('High and low resolution compare the shorter side with the thresholds of the HR/LR marks, one for photos and one for videos (Administration › Interface › Browsing).')]);
@@ -303,6 +321,9 @@ function clausePhrase(clause: Clause, fullPath: boolean): Segment[] {
             // Excluded: neither of them, "without the extension .mp4 or .mkv".
             return [...(clause.negated ? [op('without', true), text(' ')] : [text('with ')]), text('the extension '),
                 ...list(clause.values.map(e => term(e.value, 'extension', clause.negated, e.token)), 'or')];
+        case 'type':
+            // Excluded: none of them, "that are not photos or videos".
+            return [text('that are '), ...not(clause.negated), ...list(clause.values.map(k => term(k.value, 'extension', clause.negated, k.token)), 'or')];
         case 'size': {
             const title = clause.op ? clause.token : `${clause.token}: from ${formatSize(clause.min)} to ${formatSize(clause.max)}`;
             return [...not(clause.negated), text(`${SIZE_PHRASES[clause.op]} `), { ...term(clause.label, 'size', clause.negated), title } as Segment];

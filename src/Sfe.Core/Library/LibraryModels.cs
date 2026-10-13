@@ -20,6 +20,12 @@ public enum SortField
 
     /// <summary>Full path, grouping search results by folder; the same as <see cref="Name"/> when browsing.</summary>
     Path,
+
+    /// <summary>Length of videos and audio, from the index: searches only; the same as <see cref="Name"/> when browsing.</summary>
+    Duration,
+
+    /// <summary>Width × height of images and videos, from the index: searches only; the same as <see cref="Name"/> when browsing.</summary>
+    Resolution,
 }
 
 /// <param name="Path">Path relative to the library root, '/' separated.</param>

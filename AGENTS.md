@@ -79,6 +79,7 @@ tests/Sfe.Tests/        unit, SQLite integration, HTTP tests; Infrastructure/ = 
 build/                  build.ps1 / build.sh (portable packages), portable/appsettings.json, windows/ linux/ smoke tests
 agents/tools/           reusable helpers for agents, one folder per job, each with a README.md
   docs-screenshots/     regenerates docs/images (run.mjs = everything; cdp.mjs = headless Edge driver) + check-links.mjs
+CHANGELOG.md            what each version added or fixed (1.33.0 on; earlier versions are not recorded)
 docs/                   end-user documentation: installation, first-start, configuration, upgrading, user-guide/,
                         administration/ (one page per admin section), reference/, images/ (screenshots)
 Directory.Build.props   the app version (all projects)
@@ -107,6 +108,9 @@ Directory.Build.props   the app version (all projects)
   - **bug fix** → bump patch: `1.0.0` → `1.0.1`;
   - **feature added or changed** → bump minor, reset patch: `1.0.1` → `1.1.0` (a task doing both bumps minor only);
   - major only when the user asks; no bump for changes to docs, tests or build scripts alone.
+- **Changelog:** every version bump adds (or extends, when the version was already bumped) its section at the top of
+  `CHANGELOG.md`: `## x.y.z`, then `### Added` / `### Changed` / `### Fixed`, one short user-facing line per item.
+  What an upgrade does to an install stays in `docs/upgrading.md`.
 - **Docs:** user-visible changes (behaviour, settings, UI) go in `docs/`, kept user-oriented: the page of that screen
   (`docs/user-guide/` for the listing page and its dialogs, `docs/administration/` one page per admin section,
   `docs/reference/` for rights, settings levels, search syntax), plus `docs/configuration.md` for a configuration key
@@ -117,7 +121,8 @@ Directory.Build.props   the app version (all projects)
   `.WithDescription` for details).
 - **Two DB providers must both work.** SQL Server: add a migration (`Data/Migrations`, schema `SFE`). SQLite has no
   migrations: `DatabaseInitializer.AddMissingSqliteObjectsAsync` must create new tables **and indexes** in existing
-  files (it also sets WAL) and adds new **nullable** columns (`ALTER TABLE ADD COLUMN`, from the model). Other column
+  files (it also sets WAL) and adds new **nullable** columns (`ALTER TABLE ADD COLUMN`, from the model; computed
+  ones last, as `GENERATED ALWAYS AS (…) VIRTUAL`; `pragma_table_xinfo`, since `table_info` hides generated columns). Other column
   changes to existing tables are not handled on SQLite: make new columns nullable. Indexed strings need a max
   length on SQL Server.
 - **Scale:** millions of files, folders of 100k+. No per-request work proportional to a folder or the index: browse
@@ -126,7 +131,7 @@ Directory.Build.props   the app version (all projects)
 - **Schema:** tables in schema `SFE` on SQL Server (`Directories`, `Files`, tags in `TagDefinitions`); thumbnail cache
   `{SHA1(folder)}/{SHA1(file)}.bin` (empty file = no thumbnail). Migrations are shipped: only add new ones.
 - **Search terms are negatable:** every term the search accepts (words, `e:`, `s:`, `w:`/`h:`/`r:` (with `r:hr`/`r:lr`),
-  `d:`, `t:`, `special:untagged`, any new one) must accept a leading `-` that finds exactly the files the term doesn't (pure
+  `d:`, `type:`, `t:`, `special:untagged`, any new one) must accept a leading `-` that finds exactly the files the term doesn't (pure
   complement: `-w:1920` includes unknown resolutions). A new filter term goes through `SearchQuery.AddFilter`, so it
   gets `SearchGroup.ExcludedFilters` for free; add it to `EveryTermAndItsNegationSplitTheVisibleFiles`.
 - **Paths:** API paths are root-relative with `/`; always resolve through `LibraryPaths`. Comparison follows the
@@ -286,7 +291,8 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   `-w:` is ignored like a malformed `s:`, not searched as a word (so is a full-path `*D:\Media`: `D:` is the duration
   prefix, as `E:`/`S:`/`H:`... are filters); `d:` without a unit is minutes, without an operator "about" (± half the
   unit typed; a clock ± 0.5 s), `d:=` the same whole second; `r:hr`/`r:lr` need the file's extension classified as
-  image or video, and `r:hr` and `r:lr` are not complements (unknown resolutions are neither). On SQLite, `LIKE` and `NOCASE` fold ASCII only:
+  image or video, and `r:hr` and `r:lr` are not complements (unknown resolutions are neither). `type:` has no column: it is an
+  OR of the `MediaClassifier` extension lists (`MediaKinds`), `type:other` the negation of all three; several OR-ed like `e:`. On SQLite, `LIKE` and `NOCASE` fold ASCII only:
   `русский` / `ESPAÑOL` don't find `Русский` / `Español` (SQL Server's CI collation does).
 - Client suite flakes under load, before 1.35 too: `CoversService` (parts of 100, known folder), `LocationComponent
   header visibility` and `CopyPathService` fail in some full runs and pass alone. Rerun before chasing them.
@@ -549,6 +555,10 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   ascending `FullName` in both directions. Keyset cursor: bare path for `Path`, else `{value}/{path}` (the value has
   no `/`; a file without extension has `Extension` = `""`); the client must page with the sort it started with. Client: `route.sort` `''` = default,
   `currentSort` in `library/library-route.ts`.
+  `Duration`/`Resolution` (search only, like `Path`: `SEARCH_SORTS`; browse falls back to name) read two parts
+  (`FileSearchService.ReadAsync`): files with a value `> 0` by it (`IX_Files_Duration`, `IX_Files_Pixels`), then the
+  rest by ascending path in both directions; their cursor is `/{path}` (empty value) once in the second part.
+  `Files.Pixels` = Width × Height is a **virtual computed column** (EF never writes it, SQL Server `CAST(... AS bigint)`).
   The match count (`Take(10001).Count`) is unordered on purpose: EF's `RowLimitingOperationWithoutOrderByWarning` is
   ignored in `SfeDatabase.Configure` (even `ORDER BY (SELECT 1)` makes SQLite sort every match), so nothing warns
   about an unordered page any more: order every `Take`.

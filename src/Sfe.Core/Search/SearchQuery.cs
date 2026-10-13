@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Sfe.Core.Library;
 
 namespace Sfe.Core.Search;
 
@@ -9,10 +10,12 @@ namespace Sfe.Core.Search;
 /// <item><c>,</c> separates alternatives (OR).</item>
 /// <item>a space separates terms that must all match (AND).</item>
 /// <item><c>-term</c> excludes names containing <c>term</c>. A <c>-</c> before any other term (<c>-s:</c>, <c>-e:</c>,
-/// <c>-w:</c>, <c>-h:</c>, <c>-r:</c>, <c>-t:</c>, <c>-special:untagged</c>) finds exactly the files that term doesn't,
+/// <c>-w:</c>, <c>-h:</c>, <c>-r:</c>, <c>-d:</c>, <c>-type:</c>, <c>-t:</c>, <c>-special:untagged</c>) finds exactly the files that term doesn't,
 /// e.g. <c>-w:1920</c> also finds files whose resolution is not known.</item>
 /// <item><c>s:&lt;10mb</c>, <c>s:&gt;=1gb</c>, <c>s:=0b</c>, <c>s:700mb</c> (approximately) filter by size; units b, kb, mb (default), gb, tb.</item>
 /// <item><c>e:mp4</c> filters by extension.</item>
+/// <item><c>type:image</c>, <c>type:video</c>, <c>type:audio</c>, <c>type:other</c> filter by kind of file, as the listing
+/// classifies extensions; several in a group are alternatives, like <c>e:</c>.</item>
 /// <item><c>w:&gt;=1920</c>, <c>h:&lt;720</c> filter by the width or height in pixels of images and videos, <c>r:&gt;720x1024</c> by
 /// both (each side compared); <c>&lt;</c>, <c>&lt;=</c>, <c>&gt;</c>, <c>&gt;=</c>, <c>=</c>, none = exactly. Files whose
 /// resolution is not known never match.</item>
@@ -43,6 +46,7 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
     public const string HeightPrefix = "h:";
     public const string ResolutionPrefix = "r:";
     public const string DurationPrefix = "d:";
+    public const string TypePrefix = "type:";
     public static readonly string[] TagPrefixes = ["t:", "tag:"];
     public const string Untagged = "special:untagged";
 
@@ -149,16 +153,17 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
         public List<DimensionFilter> Dimensions { get; } = [];
         public List<DurationFilter> Durations { get; } = [];
         public List<ResolutionLevel> Levels { get; } = [];
+        public List<ItemKind> Kinds { get; } = [];
 
         public SearchGroup ToGroup(List<string> include, List<string> exclude, List<TagFilter> tags, List<SearchGroup> excludedFilters) =>
-            new(include, exclude, Sizes, Extensions, tags, Dimensions, excludedFilters, Durations, Levels);
+            new(include, exclude, Sizes, Extensions, tags, Dimensions, excludedFilters, Durations, Levels, Kinds);
     }
 
-    private static readonly string[] FilterPrefixes = [SizePrefix, ExtensionPrefix, WidthPrefix, HeightPrefix, ResolutionPrefix, DurationPrefix];
+    private static readonly string[] FilterPrefixes = [SizePrefix, ExtensionPrefix, WidthPrefix, HeightPrefix, ResolutionPrefix, DurationPrefix, TypePrefix];
 
     private static bool IsFilter(string token) => FilterPrefixes.Any(p => token.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>Adds a size, resolution, duration or extension filter; false when the token is none. Malformed ones are ignored.</summary>
+    /// <summary>Adds a size, resolution, duration, extension or type filter; false when the token is none. Malformed ones are ignored.</summary>
     private static bool AddFilter(string token, Filters filters)
     {
         if (!IsFilter(token))
@@ -174,6 +179,11 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
             var extension = token[ExtensionPrefix.Length..].TrimStart('.');
             if (extension.Length > 0)
                 filters.Extensions.Add("." + extension);
+        }
+        else if (token.StartsWith(TypePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            if (TryParseKind(token[TypePrefix.Length..], out var kind))
+                filters.Kinds.Add(kind);
         }
         else if (token.StartsWith(DurationPrefix, StringComparison.OrdinalIgnoreCase))
         {
@@ -201,6 +211,20 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
             _ => (ResolutionLevel)(-1),
         };
         return Enum.IsDefined(level);
+    }
+
+    /// <summary>The kind after <c>type:</c>, in any case; <c>other</c> is every file that is neither image, video nor audio.</summary>
+    private static bool TryParseKind(string value, out ItemKind kind)
+    {
+        kind = value.ToLowerInvariant() switch
+        {
+            "image" => ItemKind.Image,
+            "video" => ItemKind.Video,
+            "audio" => ItemKind.Audio,
+            "other" => ItemKind.File,
+            _ => ItemKind.Directory,
+        };
+        return kind != ItemKind.Directory;
     }
 
     private static bool TryParseTag(string token, bool negated, out TagFilter filter)
@@ -236,10 +260,11 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
 }
 
 /// <param name="ExcludedFilters">
-/// One group per negated size, extension, resolution or duration term (<c>-s:</c>, <c>-e:</c>, <c>-w:</c>, <c>-h:</c>,
-/// <c>-r:</c>, <c>-d:</c>): files matching it are left out.
+/// One group per negated size, extension, resolution, duration or type term (<c>-s:</c>, <c>-e:</c>, <c>-w:</c>, <c>-h:</c>,
+/// <c>-r:</c>, <c>-d:</c>, <c>-type:</c>): files matching it are left out.
 /// </param>
 /// <param name="Levels">High or low resolution terms (<c>r:hr</c>, <c>r:lr</c>).</param>
+/// <param name="Kinds">Kinds of file (<c>type:</c>), alternatives; <see cref="ItemKind.File"/> = none of the media kinds.</param>
 public sealed record SearchGroup(
     IReadOnlyList<string> Include,
     IReadOnlyList<string> Exclude,
@@ -249,10 +274,11 @@ public sealed record SearchGroup(
     IReadOnlyList<DimensionFilter> Dimensions,
     IReadOnlyList<SearchGroup> ExcludedFilters,
     IReadOnlyList<DurationFilter> Durations,
-    IReadOnlyList<ResolutionLevel> Levels)
+    IReadOnlyList<ResolutionLevel> Levels,
+    IReadOnlyList<ItemKind> Kinds)
 {
     public bool IsEmpty => Include.Count == 0 && Exclude.Count == 0 && Sizes.Count == 0 && Extensions.Count == 0 && Tags.Count == 0
-        && Dimensions.Count == 0 && ExcludedFilters.Count == 0 && Durations.Count == 0 && Levels.Count == 0;
+        && Dimensions.Count == 0 && ExcludedFilters.Count == 0 && Durations.Count == 0 && Levels.Count == 0 && Kinds.Count == 0;
 }
 
 /// <summary>An image or video of high or low resolution, as the HR/LR marks say (<c>r:hr</c>, <c>r:lr</c>).</summary>

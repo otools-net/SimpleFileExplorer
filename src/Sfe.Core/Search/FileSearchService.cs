@@ -26,6 +26,8 @@ public sealed class FileSearchService(
     /// <param name="sort">
     /// <see cref="SortField.Path"/> (the default) groups the results by folder; <see cref="SortField.Name"/> sorts by
     /// file name without extension. Ties are broken by ascending path in both directions, as when browsing.
+    /// <see cref="SortField.Duration"/> and <see cref="SortField.Resolution"/> (width × height) list the files whose
+    /// value is known first, then the others by path, in both directions.
     /// </param>
     /// <returns>null when <paramref name="relativeDirectory"/> or <paramref name="after"/> is not valid.</returns>
     /// <remarks>
@@ -62,16 +64,9 @@ public sealed class FileSearchService(
             // Unordered on purpose (see SfeDatabase.Configure): ordering would sort every match just to count them.
             total = await files.Take(CountLimit + 1).CountAsync(cancellationToken);
         }
-        else
-        {
-            files = After(files, sort, descending, cursor);
-        }
 
         // Fetch one extra row to know whether another page exists without a COUNT query.
-        var rows = await Order(files, sort, descending)
-            .Take(limit + 1)
-            .Select(f => new { f.FullName, f.Name, f.Extension, f.Size, f.LastWriteTime, f.Width, f.Height, f.Duration, TagIds = f.TagLinks.Select(l => l.TagId).ToList() })
-            .ToListAsync(cancellationToken);
+        var rows = await ReadAsync(files, sort, descending, cursor, limit + 1, cancellationToken);
 
         var items = new List<LibraryItem>(Math.Min(rows.Count, limit));
         foreach (var row in rows.Take(limit))
@@ -105,6 +100,9 @@ public sealed class FileSearchService(
                 SortField.Modified => $"{last.LastWriteTime.Ticks.ToString(CultureInfo.InvariantCulture)}/{lastPath}",
                 SortField.Size => $"{last.Size.ToString(CultureInfo.InvariantCulture)}/{lastPath}",
                 SortField.Type => $"{last.Extension}/{lastPath}",
+                // An empty value: a file whose duration or resolution is not known, listed after the others.
+                SortField.Duration => last.Duration > 0 ? $"{last.Duration.Value.ToString(CultureInfo.InvariantCulture)}/{lastPath}" : $"/{lastPath}",
+                SortField.Resolution => last.Pixels > 0 ? $"{last.Pixels.Value.ToString(CultureInfo.InvariantCulture)}/{lastPath}" : $"/{lastPath}",
                 _ => lastPath,
             };
         }
@@ -126,6 +124,10 @@ public sealed class FileSearchService(
     /// </summary>
     public IQueryable<FileEntry> Matches(SfeDbContext db, TagGraph graph, string? query, string directory) =>
         Matches(db, graph, SearchQuery.Parse(query), directory, out _);
+
+    /// <summary>What <c>type:</c> compares with: the current file types of the listing.</summary>
+    private MediaKinds MediaKinds() =>
+        new(classifier.Extensions(ItemKind.Image), classifier.Extensions(ItemKind.Video), classifier.Extensions(ItemKind.Audio));
 
     /// <summary>The thresholds of <c>r:hr</c> and <c>r:lr</c>: those of the HR/LR marks, current file types.</summary>
     private HighResolution HighResolution()
@@ -149,7 +151,7 @@ public sealed class FileSearchService(
 
         var files = db.Files
             .AsNoTracking()
-            .Where(SearchPredicateBuilder.Build(parsed, name => resolved[name], HighResolution()))
+            .Where(SearchPredicateBuilder.Build(parsed, name => resolved[name], HighResolution(), MediaKinds()))
             .Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, directory));
 
         // Files with a hidden tag (e.g. "Archived") only show up when the search asks for one of those tags.
@@ -165,14 +167,56 @@ public sealed class FileSearchService(
         return files;
     }
 
+    private sealed record Row(
+        string FullName, string Name, string Extension, long Size, DateTime LastWriteTime, int? Width, int? Height, double? Duration, long? Pixels,
+        List<int> TagIds);
+
+    /// <summary>The page following <paramref name="cursor"/> (the first one without it), <paramref name="count"/> rows at most.</summary>
+    /// <remarks>
+    /// Sorted by duration or resolution, the files with a known value come first (a range of that column's index),
+    /// then those without one by ascending path (the path index): neither direction starts with every file that has
+    /// none, and no page sorts every match. A page may hold the end of the first part and the start of the second.
+    /// </remarks>
+    private static async Task<List<Row>> ReadAsync(
+        IQueryable<FileEntry> files, SortField sort, bool descending, Cursor? cursor, int count, CancellationToken cancellationToken)
+    {
+        if (sort is not (SortField.Duration or SortField.Resolution))
+            return await ToRowsAsync(Order(cursor is null ? files : After(files, sort, descending, cursor), sort, descending), count, cancellationToken);
+
+        var known = sort == SortField.Duration ? files.Where(f => f.Duration > 0) : files.Where(f => f.Pixels > 0);
+        var unknown = sort == SortField.Duration
+            ? files.Where(f => f.Duration == null || f.Duration <= 0)
+            : files.Where(f => f.Pixels == null || f.Pixels <= 0);
+        var rows = new List<Row>();
+        if (cursor is not { Unknown: true })
+            rows = await ToRowsAsync(Order(cursor is null ? known : After(known, sort, descending, cursor), sort, descending), count, cancellationToken);
+        if (rows.Count < count)
+        {
+            var path = cursor is { Unknown: true } ? cursor.FullName : null;
+            var rest = path is null ? unknown : unknown.Where(f => string.Compare(f.FullName, path) > 0);
+            rows.AddRange(await ToRowsAsync(rest.OrderBy(f => f.FullName), count - rows.Count, cancellationToken));
+        }
+
+        return rows;
+    }
+
+    private static Task<List<Row>> ToRowsAsync(IQueryable<FileEntry> files, int count, CancellationToken cancellationToken) =>
+        files
+            .Take(count)
+            .Select(f => new Row(
+                f.FullName, f.Name, f.Extension, f.Size, f.LastWriteTime, f.Width, f.Height, f.Duration, f.Pixels, f.TagLinks.Select(l => l.TagId).ToList()))
+            .ToListAsync(cancellationToken);
+
     /// <param name="FullName">Physical path of the last file of the previous page.</param>
     /// <param name="Text">Its name or extension (name and type sorts).</param>
-    /// <param name="Number">Its size or modification ticks (size and date sorts).</param>
-    private sealed record Cursor(string FullName, string? Text = null, long Number = 0);
+    /// <param name="Number">Its size, modification ticks or pixels (size, date and resolution sorts).</param>
+    /// <param name="Seconds">Its duration (duration sort).</param>
+    /// <param name="Unknown">Its duration or resolution is not known: the page goes on with the files without one.</param>
+    private sealed record Cursor(string FullName, string? Text = null, long Number = 0, double Seconds = 0, bool Unknown = false);
 
     /// <summary>
     /// Reads "{value}/{path}", or the bare path of the path sort. The value never holds a '/': names and extensions
-    /// are parts of a file name.
+    /// are parts of a file name, numbers have none. An empty duration or resolution stands for an unknown one.
     /// </summary>
     private Cursor? ParseCursor(string after, SortField sort)
     {
@@ -192,6 +236,13 @@ public sealed class FileSearchService(
 
         return sort switch
         {
+            SortField.Duration or SortField.Resolution when value.Length == 0 => new Cursor(fullName, Unknown: true),
+            SortField.Duration =>
+                double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var seconds) && double.IsFinite(seconds)
+                    ? new Cursor(fullName, Seconds: seconds)
+                    : null,
+            SortField.Resolution =>
+                long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var pixels) ? new Cursor(fullName, Number: pixels) : null,
             SortField.Name or SortField.Type => new Cursor(fullName, value),
             SortField.Size or SortField.Modified =>
                 long.TryParse(value, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var number)
@@ -213,6 +264,10 @@ public sealed class FileSearchService(
         (SortField.Size, true) => files.OrderByDescending(f => f.Size).ThenBy(f => f.FullName),
         (SortField.Type, false) => files.OrderBy(f => f.Extension).ThenBy(f => f.FullName),
         (SortField.Type, true) => files.OrderByDescending(f => f.Extension).ThenBy(f => f.FullName),
+        (SortField.Duration, false) => files.OrderBy(f => f.Duration).ThenBy(f => f.FullName),
+        (SortField.Duration, true) => files.OrderByDescending(f => f.Duration).ThenBy(f => f.FullName),
+        (SortField.Resolution, false) => files.OrderBy(f => f.Pixels).ThenBy(f => f.FullName),
+        (SortField.Resolution, true) => files.OrderByDescending(f => f.Pixels).ThenBy(f => f.FullName),
         (_, false) => files.OrderBy(f => f.FullName),
         (_, true) => files.OrderByDescending(f => f.FullName),
     };
@@ -224,6 +279,7 @@ public sealed class FileSearchService(
         var path = cursor.FullName;
         var text = cursor.Text;
         var number = cursor.Number;
+        var seconds = cursor.Seconds;
         var time = sort == SortField.Modified ? new DateTime(number) : default;
         return (sort, descending) switch
         {
@@ -235,6 +291,10 @@ public sealed class FileSearchService(
             (SortField.Size, true) => files.Where(f => f.Size < number || f.Size == number && string.Compare(f.FullName, path) > 0),
             (SortField.Type, false) => files.Where(f => string.Compare(f.Extension, text) > 0 || f.Extension == text && string.Compare(f.FullName, path) > 0),
             (SortField.Type, true) => files.Where(f => string.Compare(f.Extension, text) < 0 || f.Extension == text && string.Compare(f.FullName, path) > 0),
+            (SortField.Duration, false) => files.Where(f => f.Duration > seconds || f.Duration == seconds && string.Compare(f.FullName, path) > 0),
+            (SortField.Duration, true) => files.Where(f => f.Duration < seconds || f.Duration == seconds && string.Compare(f.FullName, path) > 0),
+            (SortField.Resolution, false) => files.Where(f => f.Pixels > number || f.Pixels == number && string.Compare(f.FullName, path) > 0),
+            (SortField.Resolution, true) => files.Where(f => f.Pixels < number || f.Pixels == number && string.Compare(f.FullName, path) > 0),
             (_, false) => files.Where(f => string.Compare(f.FullName, path) > 0),
             (_, true) => files.Where(f => string.Compare(f.FullName, path) < 0),
         };

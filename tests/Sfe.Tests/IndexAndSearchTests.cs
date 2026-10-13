@@ -199,6 +199,10 @@ public sealed class IndexAndSearchTests
     [DataRow(SortField.Size, true)]
     [DataRow(SortField.Type, false)]
     [DataRow(SortField.Type, true)]
+    [DataRow(SortField.Duration, false)]
+    [DataRow(SortField.Duration, true)]
+    [DataRow(SortField.Resolution, false)]
+    [DataRow(SortField.Resolution, true)]
     public async Task SortedSearchPagesFollowTheSortWithoutGapsOrRepeats(SortField sort, bool descending)
     {
         // Sizes and dates shared by several files, so pages also break inside ties.

@@ -65,12 +65,15 @@ public static class LibraryEndpoints
             .WithDescription("""
                 `,` separates alternatives (OR), a space separates required terms (AND), `-term` excludes,
                 `s:<10mb` / `s:>=1gb` / `s:700mb` filter by size, `e:mp4` by extension, `w:>=1920` / `h:<720` /
-                `r:1920x1080` by resolution, a leading `*` matches the whole path instead of the file name, `t:name`
+                `r:1920x1080` by resolution, `d:>10m` by duration, `type:image` / `type:video` / `type:audio` /
+                `type:other` by kind of file, a leading `*` matches the whole path instead of the file name, `t:name`
                 (or `tag:"two words"`) finds files with a tag or any tag inheriting from it, and `special:untagged`
                 files without tags. A `-` before any term (`-e:mp4`, `-s:>1gb`, `-w:1920`, `-t:name`) finds the files
                 that term doesn't. Files with a hidden tag (Archived) are left out unless the search names that tag.
 
-                `sort` is `path` (default, grouped by folder), `name`, `modified`, `size` or `type`; `desc` reverses it.
+                `sort` is `path` (default, grouped by folder), `name`, `modified`, `size`, `type`, `duration` or
+                `resolution` (width × height); `desc` reverses it. The last two list the files whose value is known
+                first, then the others by path, in both directions.
                 Pages follow each other by passing the previous page's `next` as `after`, with the same sort.
                 The first page also gives `total`, the number of matches counted up to 10,000 (`totalCapped` when there
                 are more); the next pages leave it null.

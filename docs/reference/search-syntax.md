@@ -10,13 +10,14 @@ sub-folders; it only finds indexed files.
 | `cat -kitten` | exclude a word (per alternative) |
 | `s:>1gb`, `s:<=10mb`, `s:=0b`, `s:700mb` | size larger / smaller / exact / about (units b, kb, mb, gb, tb; mb by default) |
 | `e:mp4` | extension |
+| `type:image`, `type:video`, `type:audio`, `type:other` | photos / videos / audio files / every other file, by extension ([Types of file](#types-of-file)) |
 | `w:>=1920`, `h:<720`, `r:>720x1024`, `r:1920x1080` | width / height / both sides of a photo or video, in pixels (`<`, `<=`, `>`, `>=`, `=`; none = exactly) |
 | `r:hr`, `r:lr` | photos and videos of high / low resolution, as the HR/LR marks say |
 | `d:>10m`, `d:<=30s`, `d:1h`, `d:>1:30:00` | videos and audio files longer / shorter / about that long (units s, m, h; m by default; or a clock `m:ss`, `h:mm:ss`) |
 | `*holiday 2020` | match the whole path instead of the file name |
 | `t:beach`, `tag:"science fiction"`, `t:science_fiction` | tagged with it, or with a tag inheriting from it (the search box suggests tags) |
 | `special:untagged` | files without tags |
-| `-t:work`, `-e:jpg`, `-s:>1gb`, `-r:1920x1080`, `-d:>1h`, `-special:untagged` | a `-` before any term finds the files that term doesn't: not tagged with it, any other extension, not larger than 1 GB, not exactly 1920×1080, not longer than an hour, with at least one tag |
+| `-t:work`, `-e:jpg`, `-s:>1gb`, `-r:1920x1080`, `-d:>1h`, `-type:video`, `-special:untagged` | a `-` before any term finds the files that term doesn't: not tagged with it, any other extension, not larger than 1 GB, not exactly 1920×1080, not longer than an hour, not a video, with at least one tag |
 | `"a, b"` | double quotes keep spaces and commas in a term |
 
 ## Names and paths
@@ -24,6 +25,15 @@ sub-folders; it only finds indexed files.
 - A file's name is searched without its extension: use `e:` for the extension (`clip.mp4` as a name finds nothing; the
   [explanation](../user-guide/search.md#explanations) points that out).
 - `*` only counts at the start of the query, and then applies to every alternative.
+
+## Types of file
+
+`type:` finds files by kind: `image` (photos), `video`, `audio`, or `other` (everything that is none of the three). The
+kind comes from the extension, by the same lists as the listing's icons and previews
+([Scanning › File types](../administration/scanning.md#file-types)): change a list and searches follow at once, without a scan.
+Several `type:` terms in one alternative are either-or, like `e:`: `type:image type:video` finds photos and videos.
+`-type:video` finds everything but videos; `-type:image -type:video` neither photos nor videos. An unknown kind
+(`type:folder`) is ignored, as the [explanation](../user-guide/search.md#explanations) points out.
 
 ## Resolutions
 

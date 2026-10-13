@@ -112,12 +112,12 @@ describe('LocationComponent', () => {
         expect(nav()).toEqual([]);
     });
 
-    it('offers the path order in searches only', async () => {
+    it('offers the path, duration and resolution orders in searches only', async () => {
         await show('Media');
-        expect(sortOptions()).not.toContain('path');
+        expect(sortOptions()).toEqual(['name', 'modified', 'size', 'type']);
 
         await show('Media', 'x');
-        expect(sortOptions()).toContain('path');
+        expect(sortOptions()).toEqual(['name', 'modified', 'size', 'type', 'duration', 'resolution', 'path']);
     });
 
     it('leaves the default sort out of the URL, and flips the direction', async () => {

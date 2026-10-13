@@ -58,6 +58,13 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.HasIndex(f => f.Extension);
             // Search results sorted by date (FileSearchService). An existing SQLite index gets it from DatabaseInitializer.
             entity.HasIndex(f => f.LastWriteTime);
+            // Search results sorted by duration or resolution. Virtual (not stored) because SQLite can only add a
+            // virtual generated column to an existing table (DatabaseInitializer); bigint so that no odd header
+            // overflows an int on SQL Server.
+            entity.HasIndex(f => f.Duration);
+            entity.Property(f => f.Pixels).HasComputedColumnSql(
+                isSqlServer ? "CAST([Width] AS bigint) * [Height]" : "\"Width\" * \"Height\"", stored: false);
+            entity.HasIndex(f => f.Pixels);
             entity.HasOne(f => f.Directory)
                 .WithMany(d => d.Files)
                 .HasForeignKey(f => f.DirectoryId)

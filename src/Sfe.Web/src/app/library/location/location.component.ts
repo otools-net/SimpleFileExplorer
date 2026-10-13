@@ -7,7 +7,7 @@ import { SortField } from '../../core/models';
 import { Rights } from '../../core/rights';
 import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
-import { defaultSort } from '../library-route';
+import { defaultSort, SEARCH_SORTS } from '../library-route';
 import { ListingStore } from '../listing.store';
 import { SearchBoxState, SearchExplainComponent } from '../search-explain/search-explain.component';
 import { FolderNavComponent } from './folder-nav.component';
@@ -18,6 +18,8 @@ const SORT_OPTIONS: [SortField, string][] = [
     ['modified', 'Date modified'],
     ['size', 'Size'],
     ['type', 'Type'],
+    ['duration', 'Duration'],
+    ['resolution', 'Resolution'],
     ['path', 'Path'],
 ];
 
@@ -71,8 +73,8 @@ const SORT_OPTIONS: [SortField, string][] = [
                 <label for="sort-select" class="visually-hidden">Sort by</label>
                 <select id="sort-select" (change)="changeSort($event)">
                     @for (option of sortOptions; track option[0]) {
-                        <!-- Only searches have a path order. -->
-                        @if (option[0] !== 'path' || store.searching()) {
+                        <!-- Only searches have a path, duration or resolution order. -->
+                        @if (!searchSorts.has(option[0]) || store.searching()) {
                             <option [value]="option[0]" [selected]="option[0] === store.sort()">{{ option[1] }}</option>
                         }
                     }
@@ -95,6 +97,7 @@ export class LocationComponent {
     /** Tagging every file of the folder or search changes tags: hidden without the right. */
     protected readonly canTag = computed(() => this.config.rights().has(Rights.assignTags));
     protected readonly sortOptions = SORT_OPTIONS;
+    protected readonly searchSorts = SEARCH_SORTS;
     private readonly head = viewChild.required<ElementRef<HTMLElement>>('head');
 
     constructor() {

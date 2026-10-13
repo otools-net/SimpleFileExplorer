@@ -4,6 +4,13 @@ Install the new version over the old one (or replace the portable package, keepi
 folder). The index, tags, thumbnails, trickplay and settings are kept: new database tables and columns are added on
 the first start, on SQL Server and SQLite alike. The notes below say what you may notice.
 
+## To 1.36
+
+- The index gets an indexed `Pixels` column (width × height, computed by the database) and an index on durations, for
+  the new Duration and Resolution sorts of searches (SQL Server: a migration; SQLite: added on start-up). The values
+  come from what scans already read: no scan is needed. On a large SQLite index, that first start takes a little
+  longer while the indexes are built (the log says so).
+
 ## To 1.35
 
 - The rights added by 1.35 (`files.edit`, `settings.editor`, for the [picture editor](user-guide/picture-editor.md))

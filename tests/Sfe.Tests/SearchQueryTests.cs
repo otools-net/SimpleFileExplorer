@@ -1,3 +1,4 @@
+using Sfe.Core.Library;
 using Sfe.Core.Search;
 
 namespace Sfe.Tests;
@@ -114,6 +115,30 @@ public sealed class SearchQueryTests
         CollectionAssert.AreEqual(new[] { ResolutionLevel.High }, group.ExcludedFilters.Single().Levels.ToArray());
         // Anything else after r: is a width x height, ignored when malformed.
         AssertGroup(SearchQuery.Parse("movie r:mr").Groups.Single(), include: ["movie"], excludedFilters: 0);
+    }
+
+    [TestMethod]
+    public void ParsesTypeFilters()
+    {
+        var group = SearchQuery.Parse("type:image TYPE:Video type:audio type:other -type:video").Groups.Single();
+
+        CollectionAssert.AreEqual(new[] { ItemKind.Image, ItemKind.Video, ItemKind.Audio, ItemKind.File }, group.Kinds.ToArray());
+        CollectionAssert.AreEqual(new[] { ItemKind.Video }, group.ExcludedFilters.Single().Kinds.ToArray());
+        // "type:" is not "t:": no tag term.
+        Assert.IsEmpty(group.Tags);
+    }
+
+    [TestMethod]
+    [DataRow("type:")]
+    [DataRow("type:folder")]
+    [DataRow("type:images")]
+    [DataRow("-type:picture")]
+    public void IgnoresMalformedTypeFilters(string token)
+    {
+        var group = SearchQuery.Parse("movie " + token).Groups.Single();
+
+        AssertGroup(group, include: ["movie"], excludedFilters: 0);
+        Assert.IsEmpty(group.Kinds);
     }
 
     [TestMethod]
@@ -281,9 +306,10 @@ public sealed class SearchQueryTests
     [TestMethod]
     public void AnExcludedFilterHoldsOnlyItsOwnTerm()
     {
-        foreach (var excluded in SearchQuery.Parse("-s:1mb -e:mkv -w:10 -d:>5m -r:lr").Groups.Single().ExcludedFilters)
+        foreach (var excluded in SearchQuery.Parse("-s:1mb -e:mkv -w:10 -d:>5m -r:lr -type:image").Groups.Single().ExcludedFilters)
         {
-            Assert.AreEqual(1, excluded.Sizes.Count + excluded.Extensions.Count + excluded.Dimensions.Count + excluded.Durations.Count + excluded.Levels.Count);
+            Assert.AreEqual(1, excluded.Sizes.Count + excluded.Extensions.Count + excluded.Dimensions.Count + excluded.Durations.Count + excluded.Levels.Count
+                + excluded.Kinds.Count);
             AssertGroup(excluded, sizes: [.. excluded.Sizes], extensions: [.. excluded.Extensions], excludedFilters: 0);
         }
     }

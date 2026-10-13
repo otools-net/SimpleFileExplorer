@@ -92,17 +92,21 @@ internal static partial class DatabaseSchema
                 continue;
 
             var columns = (await db.Database
-                    .SqlQuery<string>($"SELECT name AS Value FROM pragma_table_info({table})")
+                    // xinfo: table_info leaves out generated columns (Files.Pixels).
+                    .SqlQuery<string>($"SELECT name AS Value FROM pragma_table_xinfo({table})")
                     .ToListAsync(cancellationToken))
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
             var store = StoreObjectIdentifier.Table(table, entity.GetSchema());
-            foreach (var property in entity.GetProperties())
+            // Computed columns last: they read the others (Pixels = Width × Height).
+            foreach (var property in entity.GetProperties().OrderBy(p => p.GetComputedColumnSql(store) is not null))
             {
                 var column = property.GetColumnName(store);
                 if (column is null || columns.Contains(column) || !property.IsColumnNullable(store))
                     continue;
 
-                var statement = $"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {property.GetColumnType(store)}";
+                // A computed column fills itself for the existing rows; SQLite can only add a virtual one.
+                var statement = $"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {property.GetColumnType(store)}"
+                    + (property.GetComputedColumnSql(store) is { } sql ? $" GENERATED ALWAYS AS ({sql}) VIRTUAL" : "");
                 logger.LogWarning("Updating the existing SQLite database: {Statement}", statement);
                 await db.Database.ExecuteSqlRawAsync(statement, cancellationToken);
                 columns.Add(column);

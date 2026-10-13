@@ -109,6 +109,11 @@ namespace Sfe.Core.Data.Migrations
                         .HasMaxLength(260)
                         .HasColumnType("nvarchar(260)");
 
+                    b.Property<long?>("Pixels")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bigint")
+                        .HasComputedColumnSql("CAST([Width] AS bigint) * [Height]", false);
+
                     b.Property<DateTime>("RegisterTime")
                         .HasColumnType("datetime2");
 
@@ -127,6 +132,8 @@ namespace Sfe.Core.Data.Migrations
 
                     b.HasIndex("DirectoryId");
 
+                    b.HasIndex("Duration");
+
                     b.HasIndex("Extension");
 
                     b.HasIndex("FullName")
@@ -135,6 +142,8 @@ namespace Sfe.Core.Data.Migrations
                     b.HasIndex("LastWriteTime");
 
                     b.HasIndex("Name");
+
+                    b.HasIndex("Pixels");
 
                     b.HasIndex("Sha1");
 

@@ -17,6 +17,15 @@ describe('library route', () => {
         expect(currentSort({ path: '', q: '', sort: 'path', desc: false })).toBe('name');
     });
 
+    it('keeps the duration and resolution sorts for searches, and lists folders by name instead', () => {
+        expect(readRoute(convertToParamMap({ q: 'x', sort: 'duration' })).sort).toBe('duration');
+        expect(readRoute(convertToParamMap({ q: 'x', sort: 'resolution' })).sort).toBe('resolution');
+        expect(currentSort({ path: '', q: 'x', sort: 'duration', desc: true })).toBe('duration');
+        expect(currentSort({ path: '', q: 'x', sort: 'resolution', desc: false })).toBe('resolution');
+        expect(currentSort({ path: 'a', q: '', sort: 'duration', desc: false })).toBe('name');
+        expect(currentSort({ path: 'a', q: '', sort: 'resolution', desc: false })).toBe('name');
+    });
+
     it('reads only the values of the right type from a history state', () => {
         expect(readRestoreState({ scrollY: 120, loaded: 'x', anchor: 'a/b.jpg', anchorTop: '5', navigationId: 3 }))
             .toEqual({ scrollY: 120, loaded: undefined, anchor: 'a/b.jpg', anchorTop: undefined });

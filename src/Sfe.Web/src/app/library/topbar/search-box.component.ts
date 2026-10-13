@@ -62,7 +62,9 @@ interface TagTerm {
                 <dt><code>cat -kitten</code></dt><dd>exclude a word</dd>
                 <dt><code>s:&gt;1gb</code> <code>s:&lt;=10mb</code> <code>s:700mb</code></dt><dd>size: larger, smaller, about</dd>
                 <dt><code>e:mp4</code></dt><dd>extension</dd>
+                <dt><code>type:image</code> <code>type:video</code> <code>type:audio</code> <code>type:other</code></dt><dd>kind of file, by its extension</dd>
                 <dt><code>w:&gt;=1920</code> <code>h:&lt;720</code> <code>r:&gt;1280x720</code></dt><dd>resolution of photos and videos: width, height, both sides</dd>
+                <dt><code>d:&gt;10m</code> <code>d:1:30</code></dt><dd>duration of videos and audio: longer than, about</dd>
                 <dt><code>*holiday</code></dt><dd>match the whole path, not just the name</dd>
                 <dt><code>t:beach</code> <code>t:"two words"</code></dt><dd>tagged with it, or with a tag inheriting from it; type <code>t:</code> for suggestions</dd>
                 <dt><code>special:untagged</code></dt><dd>files without tags</dd>

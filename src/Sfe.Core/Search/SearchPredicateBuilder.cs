@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Sfe.Core.Data;
+using Sfe.Core.Library;
 
 namespace Sfe.Core.Search;
 
@@ -9,6 +10,9 @@ namespace Sfe.Core.Search;
 /// <param name="ImagePixels">Smallest shorter side of a high-resolution image.</param>
 public sealed record HighResolution(
     IReadOnlyCollection<string> ImageExtensions, int ImagePixels, IReadOnlyCollection<string> VideoExtensions, int VideoPixels);
+
+/// <summary>The extensions (without dot) the listing classifies as each kind of media (<c>type:</c>).</summary>
+public sealed record MediaKinds(IReadOnlyCollection<string> Images, IReadOnlyCollection<string> Videos, IReadOnlyCollection<string> Audio);
 
 /// <summary>Translates a <see cref="SearchQuery"/> into an EF Core predicate over <see cref="FileEntry"/>.</summary>
 public static class SearchPredicateBuilder
@@ -20,19 +24,20 @@ public static class SearchPredicateBuilder
     /// nothing.
     /// </param>
     /// <param name="highResolution">What <c>r:hr</c> and <c>r:lr</c> compare with; without it, they match nothing.</param>
+    /// <param name="kinds">What <c>type:</c> compares with; without it, type terms match nothing.</param>
     public static Expression<Func<FileEntry, bool>> Build(
-        SearchQuery query, Func<string, IReadOnlyCollection<int>>? resolveTag = null, HighResolution? highResolution = null)
+        SearchQuery query, Func<string, IReadOnlyCollection<int>>? resolveTag = null, HighResolution? highResolution = null, MediaKinds? kinds = null)
     {
         if (query.IsEmpty)
             return _ => true;
 
-        var context = new Context(resolveTag ?? (_ => []), highResolution);
+        var context = new Context(resolveTag ?? (_ => []), highResolution, kinds);
         return query.Groups
             .Select(group => BuildGroup(group, query.MatchFullPath, context))
             .Aggregate(Or);
     }
 
-    private sealed record Context(Func<string, IReadOnlyCollection<int>> ResolveTag, HighResolution? HighResolution);
+    private sealed record Context(Func<string, IReadOnlyCollection<int>> ResolveTag, HighResolution? HighResolution, MediaKinds? Kinds);
 
     /// <summary>Files with at least one of the tags.</summary>
     public static Expression<Func<FileEntry, bool>> HasAnyTag(IReadOnlyCollection<int> tagIds)
@@ -110,6 +115,8 @@ public static class SearchPredicateBuilder
         conditions.AddRange(group.Levels.Select(level => Level(level, context.HighResolution)));
         if (group.Extensions.Count > 0)
             conditions.Add(group.Extensions.Select(Extension).Aggregate(Or));
+        if (group.Kinds.Count > 0)
+            conditions.Add(group.Kinds.Select(kind => Kind(kind, context.Kinds)).Aggregate(Or));
         conditions.AddRange(group.Tags.Select(tag => Tag(tag, context.ResolveTag)));
         conditions.AddRange(group.ExcludedFilters.Select(excluded => Negate(BuildGroup(excluded, matchFullPath, context))));
 
@@ -160,6 +167,21 @@ public static class SearchPredicateBuilder
             })
             .DefaultIfEmpty(f => false)
             .Aggregate(Or);
+    }
+
+    /// <summary>Files whose extension the listing classifies as <paramref name="kind"/>; "other" files have none of the media ones.</summary>
+    private static Expression<Func<FileEntry, bool>> Kind(ItemKind kind, MediaKinds? kinds)
+    {
+        if (kinds is null)
+            return _ => false;
+
+        return kind switch
+        {
+            ItemKind.Image => HasExtension(kinds.Images),
+            ItemKind.Video => HasExtension(kinds.Videos),
+            ItemKind.Audio => HasExtension(kinds.Audio),
+            _ => Negate(HasExtension([.. kinds.Images, .. kinds.Videos, .. kinds.Audio])),
+        };
     }
 
     private static Expression<Func<FileEntry, bool>> Contains(string term, bool matchFullPath)

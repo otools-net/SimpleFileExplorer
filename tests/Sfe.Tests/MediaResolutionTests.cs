@@ -175,7 +175,10 @@ public sealed class MediaResolutionTests
         // The index as the version before durations created it, with a file in it.
         await ScanAsync();
         await using (var db = await CreateDbAsync())
+        {
+            await db.Database.ExecuteSqlAsync($"DROP INDEX IX_Files_Duration", TestContext.CancellationToken);
             await db.Database.ExecuteSqlAsync($"ALTER TABLE Files DROP COLUMN Duration", TestContext.CancellationToken);
+        }
 
         await _services.Get<DatabaseInitializer>().InitializeAsync(TestContext.CancellationToken);
 
@@ -185,6 +188,59 @@ public sealed class MediaResolutionTests
             Assert.IsFalse(await db.Files.AnyAsync(f => f.Duration != null, TestContext.CancellationToken), "Read again by the next scan.");
         }
         Assert.IsNotEmpty(await SearchAsync("holiday -d:>1h"));
+    }
+
+    [TestMethod]
+    public async Task AddsThePixelsColumnAndTheSortIndexesToAnExistingSqliteIndex()
+    {
+        // The index as 1.35 created it: no Pixels column, no duration or pixels index, resolutions already read.
+        await ScanAsync();
+        var holiday = _library.FullPath("Media/Holiday 2020.mp4");
+        await using (var db = await CreateDbAsync())
+        {
+            await db.Database.ExecuteSqlAsync($"DROP INDEX IX_Files_Pixels", TestContext.CancellationToken);
+            await db.Database.ExecuteSqlAsync($"DROP INDEX IX_Files_Duration", TestContext.CancellationToken);
+            await db.Database.ExecuteSqlAsync($"ALTER TABLE Files DROP COLUMN Pixels", TestContext.CancellationToken);
+            await db.Database.ExecuteSqlAsync($"UPDATE Files SET Width = 1920, Height = 1080, Duration = 60 WHERE FullName = {holiday}", TestContext.CancellationToken);
+        }
+
+        await _services.Get<DatabaseInitializer>().InitializeAsync(TestContext.CancellationToken);
+
+        await using (var db = await CreateDbAsync())
+        {
+            var indexes = await db.Database.SqlQuery<string>($"SELECT name AS Value FROM sqlite_master WHERE type = 'index'").ToListAsync(TestContext.CancellationToken);
+            CollectionAssert.IsSubsetOf(new[] { "IX_Files_Pixels", "IX_Files_Duration" }, indexes);
+            Assert.AreEqual(1920L * 1080, await db.Files.Where(f => f.FullName == holiday).Select(f => f.Pixels).SingleAsync(TestContext.CancellationToken),
+                "Computed for the existing rows.");
+        }
+
+        var search = _services.Get<FileSearchService>();
+        foreach (var sort in new[] { SortField.Resolution, SortField.Duration })
+        {
+            var first = (await search.SearchAsync("", "", null, 1, sort, true, TestContext.CancellationToken))!;
+            Assert.AreEqual("Media/Holiday 2020.mp4", first.Items.Single().Path, $"{sort}");
+        }
+
+        // A later scan writes the file again; the database keeps computing the column.
+        File.SetLastWriteTimeUtc(holiday, DateTime.UtcNow.AddMinutes(-5));
+        await ScanAsync();
+        await using (var db = await CreateDbAsync())
+        {
+            var row = await db.Files.Where(f => f.FullName == holiday).Select(f => new { f.Width, f.Height, f.Pixels }).SingleAsync(TestContext.CancellationToken);
+            Assert.AreEqual((long?)row.Width * row.Height, row.Pixels);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(SortField.Duration, "abc/RFile1.txt")]
+    [DataRow(SortField.Duration, "NaN/RFile1.txt")]
+    [DataRow(SortField.Resolution, "-5/RFile1.txt")]
+    [DataRow(SortField.Resolution, "RFile1.txt")]
+    public async Task SearchRejectsMalformedDurationAndResolutionCursors(SortField sort, string after)
+    {
+        await ScanAsync();
+
+        Assert.IsNull(await _services.Get<FileSearchService>().SearchAsync("", "", after, 10, sort, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -277,6 +333,9 @@ public sealed class MediaResolutionTests
         // The index as the version before resolutions created it.
         await using (var db = await CreateDbAsync())
         {
+            // Its resolution sort came later still: column and index go first.
+            await db.Database.ExecuteSqlAsync($"DROP INDEX IX_Files_Pixels", TestContext.CancellationToken);
+            await db.Database.ExecuteSqlAsync($"ALTER TABLE Files DROP COLUMN Pixels", TestContext.CancellationToken);
             await db.Database.ExecuteSqlAsync($"ALTER TABLE Files DROP COLUMN Width", TestContext.CancellationToken);
             await db.Database.ExecuteSqlAsync($"ALTER TABLE Files DROP COLUMN Height", TestContext.CancellationToken);
         }

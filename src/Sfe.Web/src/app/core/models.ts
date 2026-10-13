@@ -4,7 +4,7 @@
  */
 
 export type ItemKind = 'directory' | 'image' | 'video' | 'audio' | 'file';
-export type SortField = 'name' | 'modified' | 'size' | 'type' | 'path';
+export type SortField = 'name' | 'modified' | 'size' | 'type' | 'path' | 'duration' | 'resolution';
 export type Theme = 'system' | 'light' | 'dark';
 
 export interface TagSummary {

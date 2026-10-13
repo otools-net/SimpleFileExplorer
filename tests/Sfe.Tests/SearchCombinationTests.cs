@@ -127,6 +127,55 @@ public sealed class SearchCombinationTests
     public Task NameTermsIgnoreTheExtensionWhichHasItsOwnFilter(string query, string expected) => AssertFindsAsync(query, expected);
 
     [TestMethod]
+    [DataRow("type:image", Photo)]
+    [DataRow("type:VIDEO", Holiday + "|" + Episode2 + "|" + Episode10)]
+    [DataRow("type:audio", "")]
+    [DataRow("type:other", TextFiles + "|" + NoExtension + "|" + SDEnglish + "|" + SFEnglish)]
+    [DataRow("type:image type:video", MediaFiles)]
+    [DataRow("type:image, type:video", MediaFiles)]
+    [DataRow("type:video episode", Episode2 + "|" + Episode10)]
+    [DataRow("type:video -e:mkv", Holiday)]
+    [DataRow("type:video -type:video", "")]
+    [DataRow("type:other e:con", SDEnglish + "|" + SFEnglish)]
+    [DataRow("type:image e:mkv", "")]
+    [DataRow("holiday type:nothing", Holiday)]
+    public Task FindsByKindOfFile(string query, string expected) => AssertFindsAsync(query, expected);
+
+    [TestMethod]
+    [DataRow(SortField.Resolution, false, Episode2 + "|" + Holiday + "|" + Photo)]
+    [DataRow(SortField.Resolution, true, Photo + "|" + Holiday + "|" + Episode2)]
+    [DataRow(SortField.Duration, false, Episode2 + "|" + Holiday)]
+    [DataRow(SortField.Duration, true, Holiday + "|" + Episode2)]
+    public async Task SortsByDurationAndResolutionWithUnknownValuesLast(SortField sort, bool descending, string known)
+    {
+        // Known values in order, then every other file (unknown or unreadable) by path, whichever the direction.
+        var search = _services.Get<FileSearchService>();
+        var all = (await search.SearchAsync("", "", null, 100, sort, descending, TestContext.CancellationToken))!.Items.Select(i => i.Path).ToArray();
+        var expected = known.Split('|');
+        CollectionAssert.AreEqual(expected, all.Take(expected.Length).ToArray());
+        var rest = all.Skip(expected.Length).ToArray();
+        var byPath = (await search.SearchAsync("", "", null, 100, SortField.Path, false, TestContext.CancellationToken))!.Items.Select(i => i.Path);
+        CollectionAssert.AreEqual(byPath.Where(rest.Contains).ToArray(), rest);
+        Assert.HasCount(20, all);
+        CollectionAssert.Contains(rest, Episode10, "Unreadable (0) counts as unknown.");
+
+        // Pages of every size give the same order, across the switch from known to unknown values too.
+        foreach (var size in new[] { 1, 2, 3, 5 })
+        {
+            var paged = new List<string>();
+            string? after = null;
+            do
+            {
+                var page = (await search.SearchAsync("", "", after, size, sort, descending, TestContext.CancellationToken))!;
+                paged.AddRange(page.Items.Select(i => i.Path));
+                after = page.Next;
+            }
+            while (after is not null);
+            CollectionAssert.AreEqual(all, paged.ToArray(), $"Pages of {size}");
+        }
+    }
+
+    [TestMethod]
     [DataRow("episode -10", Episode2)]
     [DataRow("episode -EPISODE", "")]
     [DataRow("afile -2", ChildAFile1 + "|" + RepeatedAFile1)]
@@ -278,7 +327,7 @@ public sealed class SearchCombinationTests
         // The rule for "-": it finds exactly the files the term doesn't (unknown resolutions and durations included).
         var all = await SearchPathsAsync("s:>=0b");
         string[] terms = ["episode", "e:mkv", "e:txt", "s:<1mb", "s:5mb", "s:=10b", "w:>=1920", "w:<2000", "h:720", "r:1920x1080",
-            "r:<=1920x1080", "r:hr", "r:lr", "d:>1h", "d:25m", "d:<=1:30:00", "t:animal", "t:vac", "special:untagged"];
+            "r:<=1920x1080", "r:hr", "r:lr", "d:>1h", "d:25m", "d:<=1:30:00", "type:image", "type:video", "type:audio", "type:other", "t:animal", "t:vac", "special:untagged"];
         foreach (var term in terms)
         {
             var found = await SearchPathsAsync(term);

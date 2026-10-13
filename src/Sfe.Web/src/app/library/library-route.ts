@@ -10,7 +10,10 @@ export interface LibraryRoute {
     desc: boolean;
 }
 
-const SORTS = new Set<string>(['name', 'modified', 'size', 'type', 'path']);
+const SORTS = new Set<string>(['name', 'modified', 'size', 'type', 'path', 'duration', 'resolution']);
+
+/** The sorts only a search has: they read the index (a folder is listed from disk) or group by folder. */
+export const SEARCH_SORTS = new Set<SortField>(['path', 'duration', 'resolution']);
 
 export function readRoute(params: ParamMap): LibraryRoute {
     const sort = params.get('sort') ?? '';
@@ -37,10 +40,10 @@ export function defaultSort(route: LibraryRoute): SortField {
     return route.q ? 'path' : 'name';
 }
 
-/** The sort in effect. A folder has no path order: it lists by name instead. */
+/** The sort in effect. A folder has no path, duration or resolution order: it lists by name instead. */
 export function currentSort(route: LibraryRoute): SortField {
     const sort = route.sort || defaultSort(route);
-    return sort === 'path' && !route.q ? 'name' : sort;
+    return SEARCH_SORTS.has(sort) && !route.q ? 'name' : sort;
 }
 
 /** Where "back" returns to: the scroll position and how many items were loaded. */

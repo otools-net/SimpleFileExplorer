@@ -27,5 +27,11 @@ public sealed class FileEntry : IndexEntry
     /// </summary>
     public double? Duration { get; set; }
 
+    /// <summary>
+    /// <see cref="Width"/> × <see cref="Height"/>, computed by the database (never written): indexed for the search
+    /// sorted by resolution, and filled for every existing row as soon as the column exists.
+    /// </summary>
+    public long? Pixels { get; private set; }
+
     public List<FileTag> TagLinks { get; set; } = [];
 }

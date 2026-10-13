@@ -45,6 +45,21 @@ describe('search explanation (mirrors SearchQuery.Parse)', () => {
         expect(words(explain('-special:untagged', '').sentence)).toBe('Finds files in the whole library with at least one tag.');
     });
 
+    it('reads types of file, grouped like extensions, and ignores unknown ones', () => {
+        expect(words(explain('type:image TYPE:Video', '').sentence)).toBe('Finds files in the whole library that are [photos] OR [videos].');
+        expect(words(explain('cat -type:audio -type:other', '').sentence))
+            .toBe('Finds files in the whole library with [cat] in their name AND that are NOT [audio files] OR [other files].');
+        const parsed = parseQuery('cat type:folder -type:');
+        expect(parsed.groups[0].clauses.map(clause => clause.kind)).toEqual(['text']);
+        const notes = parsed.notes.map(words);
+        expect(notes.some(note => note.startsWith('[type:folder] is ignored: not a type of file'))).toBe(true);
+        expect(notes.some(note => note.startsWith('[-type:] is ignored'))).toBe(true);
+        // "type:" is no tag term.
+        expect(notes.some(note => note.includes('has no tag name'))).toBe(false);
+        expect(explain('type:image', '').notes.map(words)).toContain(
+            'The type of a file comes from its extension, by the lists of Administration › Scanning › File types.');
+    });
+
     it('reads widths, heights and resolutions', () => {
         expect(words(explain('w:>=1920 h:<720', '').sentence))
             .toBe('Finds files in the whole library at least [1920 pixels] wide AND less than [720 pixels] high.');

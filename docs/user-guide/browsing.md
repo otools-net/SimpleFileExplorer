@@ -35,7 +35,8 @@ hover, a checkbox to [select it](tags.md#several-files-at-once) and a tag button
   folder** of the parent (also `[` and `]`), in the order the parent is sorted by the current sort.
 - Once you scroll down past the path, a slim bar under the top bar keeps these buttons and the folder's name (with its
   parent, or the search) in view; click the name to go back to the top.
-- The sort list (Name, Date modified, Size, Type) and the arrow next to it set the order and its direction.
+- The sort list (Name, Date modified, Size, Type) and the arrow next to it set the order and its direction. Searches
+  also sort by Duration, Resolution and Path ([Search results](search.md#results)).
 - Long folders and search results load more items as you scroll. Once you scroll down, a small box at the bottom right
   says where you are: the page, how many items you have scrolled to out of the total, and a bar for the same.
 - Reloading the page, or coming back to it (from the viewer, the administration page or the browser's back button),
