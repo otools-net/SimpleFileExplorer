@@ -3,6 +3,14 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.41.0
+
+### Added
+
+- The viewer shows a picture larger than the screen at its actual size (100%): click it, press `Z` or use the new
+  button; drag it with the mouse or a finger to look around, scroll it with the wheel, and click again (or `Esc`) to
+  see it whole.
+
 ## 1.40.0
 
 ### Changed

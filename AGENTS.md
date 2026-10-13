@@ -274,6 +274,9 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   videos stay empty: always pass it. Edge has no H.264, so sample videos are WebM (VP8). `--shots-only` after a
   version bump meets the update gate (every scene fails on a missing element) and `run.mjs` then hangs with the app
   still up: run the update (`POST api/migration` with `{"code":"doc-screenshots-setup"}`), then `node shots.mjs <scene>`.
+  The last scene (`streams`) can leave its headless Edge alive, so `shots.mjs` never exits (log stops after
+  `admin-system-streams.png`): `taskkill /PID <that msedge> /T /F` and the run goes on. A full run re-saves every
+  image with tiny pixel changes: `git checkout` the ones whose screen didn't change.
 - **Agent tools:** put any reusable helper (scripts, drivers, generators) in `agents/tools/<job>/` with a `README.md`,
   never only in the scratchpad; work output goes to a temp folder, not the repo.
 

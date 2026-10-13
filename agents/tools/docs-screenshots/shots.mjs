@@ -80,6 +80,20 @@ const scenes = {
         await b.click('a.item-link[href*="Summit"]');
         await sleep(2500);
         await b.shot(OUT + 'viewer.png');
+        // Actual size: a click on the summit, then a drag with the hand.
+        const picture = await b.rect('.viewer-stage > img');
+        const x = picture.x + picture.width * 0.6, y = picture.y + picture.height * 0.35;
+        await b.mouse('mouseMoved', x, y);
+        await b.mouse('mousePressed', x, y);
+        await b.mouse('mouseReleased', x, y);
+        await sleep(500);
+        await b.mouse('mousePressed', x, y);
+        await b.mouse('mouseMoved', x - 120, y - 60, { buttons: 1 });
+        await sleep(300);
+        await b.shot(OUT + 'viewer-actual-size.png');
+        await b.mouse('mouseReleased', x - 120, y - 60);
+        await b.key('z', 'KeyZ', 90);
+        await sleep(500);
         await b.clickTitle('Edit');
         await sleep(2000);
         await b.shot(OUT + 'image-editor.png');

@@ -13,6 +13,7 @@ tags. Hidden tags such as **Archived** are shown here too.
 | Button | Key | |
 |---|---|---|
 | ‹ / › at the sides | ← / →, mouse wheel down / up, a swipe | Previous / next file of the listing (the wheel works anywhere but over the video controls) |
+| Actual size / Fit to the screen (magnifier) | Z | Pictures larger than the screen: [100%](#actual-size) or whole again |
 | Tags | T | The file's [tags](tags.md) |
 | Edit (crop icon) | E | Opens a picture in the [picture editor](picture-editor.md) (right `files.edit`) |
 | Open in a new window | W | Videos: moves the video to a [window of its own](video-player.md#its-own-window) |
@@ -24,3 +25,15 @@ tags. Hidden tags such as **Archived** are shown here too.
 
 Photos larger than **Large image size** ([Thumbnails](../administration/thumbnails.md)) are shown through their
 thumbnail, in the viewer as in the listings.
+
+## Actual size
+
+A picture larger than the screen is shrunk to fit it, and the pointer turns into a magnifier over it. Click it (or press
+<kbd>Z</kbd>, or the magnifier button) to see it at its actual size, 100%, with the point clicked staying under the
+pointer. The pointer then becomes a hand: drag the picture (with the mouse, or a finger on a touch screen) to look
+around it, or scroll it with the mouse wheel (<kbd>Shift</kbd> + wheel: sideways). A click without dragging, the button,
+<kbd>Z</kbd> or <kbd>Esc</kbd> show it whole again. Moving to another file shows it whole too.
+
+![A picture at its actual size, being dragged](../images/viewer-actual-size.png)
+
+A large photo shown through its thumbnail can be seen at its actual size once its original has loaded.

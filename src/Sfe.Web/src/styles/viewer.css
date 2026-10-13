@@ -65,3 +65,20 @@
 
 .viewer-stage > audio { width: min(560px, 100%); }
 
+/* A picture shown smaller than it is: a click shows it at its actual size, which can then be dragged around. */
+.viewer-stage > img.zoomable { cursor: zoom-in; }
+.viewer-stage.zoomed { position: relative; overflow: hidden; }
+.viewer-stage > img.actual-size {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+    cursor: grab;
+    touch-action: none;   /* a finger moves the picture instead of scrolling or swiping */
+    user-select: none;
+}
+.viewer-stage > img.actual-size.dragging { cursor: grabbing; }
+

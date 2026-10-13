@@ -17,16 +17,25 @@ import { ListingStore } from '../listing.store';
 // Wheel notches are large: they only wait a short fixed time, so each one still moves.
 const WHEEL_STEP = 50;
 const WHEEL_PAUSE_MS = 250;
+/** A press on the picture that moves less than this (CSS pixels) is a click (zoom), not a drag. */
+const CLICK_SLOP = 4;
+
+/** Where a picture of `size` goes along one side of a stage `room` long: centred if it fits, else never leaving a gap. */
+function clampAxis(position: number, room: number, size: number): number {
+    return size <= room ? (room - size) / 2 : Math.min(0, Math.max(room - size, position));
+}
 
 /**
  * Full-screen preview for the images, videos and audio of the listing, with keyboard, swipe and wheel navigation;
  * reaching the end loads the next page. Large images show their thumbnail while the original downloads. A video can
- * move to a window of its own (W), where it goes on from the same position.
+ * move to a window of its own (W), where it goes on from the same position. A picture shown smaller than it is can
+ * be seen at its actual size (click it, or Z) and dragged around, as browsers do with a big picture on its own.
  */
 @Component({
     selector: 'sfe-viewer',
     imports: [IconComponent, TagChipComponent, VideoPlayerComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { '(window:resize)': 'onResize()' },
     template: `
         <dialog #dialog class="viewer" aria-label="Preview" [class.has-video]="item()?.kind === 'video'" (close)="onClose()" (keydown)="onKeydown($event)">
             <header class="viewer-bar">
@@ -42,6 +51,11 @@ const WHEEL_PAUSE_MS = 250;
                 <div class="viewer-actions">
                     @if (config.can('tags.view')) {
                         <button type="button" class="icon-button" title="Tags (T)" aria-label="Tags" (click)="openTags()"><svg sfeIcon="tag"></svg></button>
+                    }
+                    @if (zoomed()) {
+                        <button type="button" class="icon-button" title="Fit to the screen (Z, or click the picture)" aria-label="Fit to the screen" (click)="zoomOut()"><svg sfeIcon="zoom-out"></svg></button>
+                    } @else if (zoomable()) {
+                        <button type="button" class="icon-button" title="Actual size, 100% (Z, or click the picture)" aria-label="Actual size" (click)="zoomIn()"><svg sfeIcon="zoom-in"></svg></button>
                     }
                     @if (editable()) {
                         <button type="button" class="icon-button" title="Edit: crop, then save a copy (E)" aria-label="Edit" (click)="edit()"><svg sfeIcon="crop"></svg></button>
@@ -62,7 +76,7 @@ const WHEEL_PAUSE_MS = 250;
                     <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
                 </div>
             </header>
-            <div #stage class="viewer-stage" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
+            <div #stage class="viewer-stage" [class.zoomed]="zoomed()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
                 @for (shown of shownItem(); track shown.path) {
                     @if (unsupported()) {
                         <div class="viewer-message">
@@ -75,7 +89,12 @@ const WHEEL_PAUSE_MS = 250;
                                 @if (progressive() && !originalReady()) {
                                     <img class="preview" [src]="urls()!.thumbnail(shown.path)" [alt]="shown.name" [style.visibility]="thumbnailFailed() ? 'hidden' : null" (error)="thumbnailFailed.set(true)">
                                 } @else {
-                                    <img [src]="urls()!.file(shown.path)" [alt]="shown.name" decoding="async">
+                                    <img #picture [src]="urls()!.file(shown.path)" [alt]="shown.name" decoding="async"
+                                         [class.zoomable]="zoomable()" [class.actual-size]="zoomed()" [class.dragging]="dragging()"
+                                         [style.width.px]="zoomed() ? actualSize().width : null" [style.height.px]="zoomed() ? actualSize().height : null"
+                                         [style.transform]="zoomed() ? 'translate(' + pan().x + 'px, ' + pan().y + 'px)' : null"
+                                         (load)="measure()" (dragstart)="$event.preventDefault()" (pointerdown)="onPicturePointerDown($event)"
+                                         (pointermove)="onPicturePointerMove($event)" (pointerup)="onPicturePointerUp($event)" (pointercancel)="endDrag()">
                                 }
                             }
                             @case ('video') {
@@ -106,6 +125,7 @@ export class ViewerComponent {
     private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
     private readonly stage = viewChild.required<ElementRef<HTMLElement>>('stage');
     private readonly player = viewChild(VideoPlayerComponent);
+    private readonly picture = viewChild<ElementRef<HTMLImageElement>>('picture');
 
     protected readonly index = signal(-1);
     protected readonly item = computed((): LibraryItem | null => this.store.media()[this.index()] ?? null);
@@ -147,6 +167,16 @@ export class ViewerComponent {
     /** The original of a large image, loading behind its thumbnail. */
     private pending: HTMLImageElement | null = null;
 
+    /** The original is shown smaller than it is (fitted to the stage): clicking it shows it at its actual size. */
+    protected readonly zoomable = signal(false);
+    /** The picture at its actual size (one picture pixel per CSS pixel, as a browser shows a picture at 100%). */
+    protected readonly zoomed = signal(false);
+    protected readonly actualSize = signal({ width: 0, height: 0 });
+    /** The zoomed picture's top-left corner, relative to the stage. */
+    protected readonly pan = signal({ x: 0, y: 0 });
+    protected readonly dragging = signal(false);
+    private drag: { pointerId: number; startX: number; startY: number; panX: number; panY: number; moved: boolean } | null = null;
+
     private touchStart: Touch | null = null;
     private wheelDelta = 0;
     private wheelBlockedUntil = 0;
@@ -187,6 +217,7 @@ export class ViewerComponent {
         if (index < 0 || index >= list.length)
             return;
         this.stopPending();
+        this.resetZoom();
         this.index.set(index);
         const item = list[index];
         this.unsupported.set(false);
@@ -237,7 +268,107 @@ export class ViewerComponent {
 
     protected onClose(): void {
         this.stopPending();
+        this.resetZoom();
         this.index.set(-1);
+    }
+
+    /* ---------- Actual size (zoom) and drag ---------- */
+
+    private resetZoom(): void {
+        this.zoomed.set(false);
+        this.zoomable.set(false);
+        this.endDrag();
+    }
+
+    /** Once the original is drawn, and when the window changes size: is it shown smaller than it is? */
+    protected measure(): void {
+        const picture = this.picture()?.nativeElement;
+        if (!picture || this.zoomed())
+            return;
+        const box = picture.getBoundingClientRect();
+        this.zoomable.set(picture.naturalWidth > box.width + 1 || picture.naturalHeight > box.height + 1);
+    }
+
+    protected onResize(): void {
+        if (this.zoomed())
+            this.pan.update(pan => this.clampPan(pan.x, pan.y));
+        else
+            this.measure();
+    }
+
+    /** Shows the picture at its actual size, keeping the point clicked (else the centre) where it is on the screen. */
+    protected zoomIn(clientX?: number, clientY?: number): void {
+        const picture = this.picture()?.nativeElement;
+        if (!picture || this.zoomed() || !this.zoomable())
+            return;
+        const box = picture.getBoundingClientRect();
+        const stage = this.stage().nativeElement.getBoundingClientRect();
+        const x = clientX ?? box.left + box.width / 2;
+        const y = clientY ?? box.top + box.height / 2;
+        const width = picture.naturalWidth;
+        const height = picture.naturalHeight;
+        this.actualSize.set({ width, height });
+        this.zoomed.set(true);
+        this.pan.set(this.clampPan(
+            x - stage.left - (box.width ? (x - box.left) / box.width : 0.5) * width,
+            y - stage.top - (box.height ? (y - box.top) / box.height : 0.5) * height));
+    }
+
+    protected zoomOut(): void {
+        this.zoomed.set(false);
+        this.endDrag();
+    }
+
+    private clampPan(x: number, y: number): { x: number; y: number } {
+        const stage = this.stage().nativeElement.getBoundingClientRect();
+        const { width, height } = this.actualSize();
+        return { x: clampAxis(x, stage.width, width), y: clampAxis(y, stage.height, height) };
+    }
+
+    protected onPicturePointerDown(event: PointerEvent): void {
+        if (event.button !== 0 || !(this.zoomed() || this.zoomable()))
+            return;
+        const pan = this.pan();
+        this.drag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, panX: pan.x, panY: pan.y, moved: false };
+        if (this.zoomed()) {
+            // Keeps the moves coming when the pointer leaves the picture, and stops the browser selecting it.
+            (event.target as Element).setPointerCapture?.(event.pointerId);
+            event.preventDefault();
+        }
+    }
+
+    protected onPicturePointerMove(event: PointerEvent): void {
+        const drag = this.drag;
+        if (!drag || event.pointerId !== drag.pointerId)
+            return;
+        const dx = event.clientX - drag.startX;
+        const dy = event.clientY - drag.startY;
+        if (!drag.moved && Math.abs(dx) <= CLICK_SLOP && Math.abs(dy) <= CLICK_SLOP)
+            return;
+        drag.moved = true;
+        if (this.zoomed()) {
+            this.dragging.set(true);
+            this.pan.set(this.clampPan(drag.panX + dx, drag.panY + dy));
+        }
+    }
+
+    /** A press that didn't move is a click: actual size, or back to fitting the screen. */
+    protected onPicturePointerUp(event: PointerEvent): void {
+        const drag = this.drag;
+        if (!drag || event.pointerId !== drag.pointerId)
+            return;
+        this.endDrag();
+        if (drag.moved)
+            return;
+        if (this.zoomed())
+            this.zoomOut();
+        else
+            this.zoomIn(event.clientX, event.clientY);
+    }
+
+    protected endDrag(): void {
+        this.drag = null;
+        this.dragging.set(false);
     }
 
     protected openTags(): void {
@@ -298,7 +429,17 @@ export class ViewerComponent {
             return;
         }
         const plain = !event.ctrlKey && !event.metaKey && !event.altKey;
-        if (event.key === 'ArrowLeft') {
+        if (event.key === 'Escape' && this.zoomed()) {
+            // Back to the whole picture first; the next Esc closes.
+            event.preventDefault();
+            this.zoomOut();
+        } else if (event.key.toLowerCase() === 'z' && plain && (this.zoomed() || this.zoomable())) {
+            event.preventDefault();
+            if (this.zoomed())
+                this.zoomOut();
+            else
+                this.zoomIn();
+        } else if (event.key === 'ArrowLeft') {
             event.preventDefault();
             void this.go(-1);
         } else if (event.key === 'ArrowRight') {
@@ -319,9 +460,9 @@ export class ViewerComponent {
     /* ---------- Swipe left/right on touch screens ---------- */
 
     protected onTouchStart(event: TouchEvent): void {
-        // Dragging the video seek bar is not a swipe.
+        // Dragging the video seek bar is not a swipe, nor is moving a picture shown at its actual size.
         const onControls = (event.target as Element).closest?.('.player-controls');
-        this.touchStart = event.touches.length === 1 && !onControls ? event.touches[0] : null;
+        this.touchStart = event.touches.length === 1 && !onControls && !this.zoomed() ? event.touches[0] : null;
     }
 
     protected onTouchEnd(event: TouchEvent): void {
@@ -346,6 +487,14 @@ export class ViewerComponent {
         if (event.ctrlKey || (event.target as Element).closest?.('.player-controls'))
             return;
         event.preventDefault();
+        if (this.zoomed()) {
+            // A picture at its actual size scrolls instead, as a page would (Shift: sideways).
+            const lines = event.deltaMode === 0 ? 1 : WHEEL_STEP;
+            const dx = (event.shiftKey ? event.deltaY : event.deltaX) * lines;
+            const dy = (event.shiftKey ? 0 : event.deltaY) * lines;
+            this.pan.update(pan => this.clampPan(pan.x - dx, pan.y - dy));
+            return;
+        }
         const raw = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
         // deltaMode 1 = lines, 2 = pages: count each as a full step.
         const delta = event.deltaMode === 0 ? raw : Math.sign(raw) * WHEEL_STEP;
