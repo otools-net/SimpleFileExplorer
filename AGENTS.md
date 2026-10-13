@@ -47,6 +47,8 @@ src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceColl
   Editing/              EditedImages (saves the web editor's pictures as new files: format check, name, index)
   Upgrades/             InstalledVersion (the install's version, ServerProperties table), Changelog (CHANGELOG.md parser),
                         SemanticVersion
+    Steps/              IUpgradeStep + UpgradeSteps.All (changes outside the DB schemas), one folder per version:
+                        V1_40_0/ShardCacheLayout (caches → ab/cd/rest)
   Backup/               BackupWriter (zip of databases + config files, manifest, README)
   Tasks/                BackgroundTasks (status/start/cancel of every job), TaskScheduleService (+ loop),
                         ScheduleCalculator, TaskHistory (TaskRuns), TaskRunLog + TaskLogProvider (run logs)
@@ -105,8 +107,13 @@ Directory.Build.props   the app version (all projects)
   - settings: never rename or remove a key of `SfeOptions`/`EditableSettings` silently (saved `settings.json` files and
     appsettings use it); a new key needs no step (`SettingsStore` keeps the configured value for keys missing from the
     file); per-browser keys (`core/preferences.ts`, `sfe.*`) are read in their old form too, or dropped harmlessly;
-  - caches (thumbnails, trickplay, fingerprints): a layout change either reads the old one or rebuilds it lazily,
-    without breaking listings meanwhile;
+  - caches (thumbnails, trickplay, fingerprints): a layout change either reads the old one, rebuilds it lazily
+    without breaking listings meanwhile, or moves it with an upgrade step (next bullet);
+  - anything outside the databases' schemas (cache layouts, stored files) that an update must convert is an
+    idempotent `IUpgradeStep` in `Core/Upgrades/Steps/V<major>_<minor>_<patch>/`, listed in `UpgradeSteps.All`:
+    `MigrationCoordinator` runs those after the installed version, after the accounts' update and before any library
+    starts (all of them at each start with `MigrateOnStartup=false`); `UpgradeContext` gives every library's cache
+    folder and the update page's log;
   - test the upgrade from the previous shape (e.g. drop the new column / null the new values, then initialize and
     scan: `AddsTheDurationColumnToAnExistingSqliteIndex`), and say in `docs/upgrading.md` what an upgrade does when the user
     notices (a slower first scan, rebuilt caches, a setting moved).
@@ -140,7 +147,9 @@ Directory.Build.props   the app version (all projects)
   reuses a sorted snapshot, search/duplicates page by key (`after` cursor, no `OFFSET`), indexer batches of 1000 +
   `ChangeTracker.Clear()`, tag counts cached briefly, unwanted thumbnail jobs dropped before ffmpeg.
 - **Schema:** tables in schema `SFE` on SQL Server (`Directories`, `Files`, tags in `TagDefinitions`); thumbnail cache
-  `{SHA1(folder)}/{SHA1(file)}.bin` (empty file = no thumbnail). Migrations are shipped: only add new ones.
+  `{k[0..2]}/{k[2..4]}/{k[4..]}.bin`, `k` = `ThumbnailService.CacheKey` = lower hex SHA1 of
+  `{SHA1(folder)}/{SHA1(file)}` (the pre-1.40 folder/file names, so the update renames without the sources; empty
+  file = no thumbnail). Migrations are shipped: only add new ones.
 - **Search terms are negatable:** every term the search accepts (words, `e:`, `s:`, `w:`/`h:`/`r:` (with `r:hr`/`r:lr`),
   `d:`, `type:`, `t:`, `special:untagged`, any new one) must accept a leading `-` that finds exactly the files the term doesn't (pure
   complement: `-w:1920` includes unknown resolutions). A new filter term goes through `SearchQuery.AddFilter`, so it
@@ -580,7 +589,7 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   found path, `GetVersionAsync` read once), shown in System › About; System › Video streams polls `api/streaming/sessions`.
 - **Caching:** images/thumbnails are sent `no-store`; trickplay sheets are cacheable (URL carries its `version`).
 - **Trickplay:** Core's `TrickplayService` run by the Api's `TrickplayWorker`. Per video
-  `{CacheDirectory}/trickplay/{SHA1(folder)}/{SHA1(file)}/`: `info.json`, `{n}.jpg`, `fingerprint.bin`. Fresh =
+  `{CacheDirectory}/trickplay/{k[0..2]}/{k[2..4]}/{k[4..]}/` (same key as the thumbnail): `info.json`, `{n}.jpg`, `fingerprint.bin`. Fresh =
   size + mtime + `ImageKey`; failures recorded. `PassSettings` changes cancel and restart the pass. ffmpeg
   `fps=1/N:round=up` (default rounding is half an interval early), then a second run tiles. A pass = one discovery
   task filling `_pending` (`PendingVideos`) + `Parallelism` workers; player requests go to `_requested` first.

@@ -4,6 +4,7 @@ using Sfe.Core.Data;
 using Sfe.Core.Options;
 using Sfe.Core.Settings;
 using Sfe.Core.Upgrades;
+using Sfe.Core.Upgrades.Steps;
 
 namespace Sfe.Api.Maintenance;
 
@@ -131,6 +132,7 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
         try
         {
             await UpdateAsync(strict: true, CancellationToken.None);
+            await RunStepsAsync(SemanticVersion.TryParse(DatabaseVersion, out var from) ? from : null, strict: true, CancellationToken.None);
             await StartLibrariesAsync(strict: true, CancellationToken.None);
             await installed.RecordAsync(AppVersion.ToString());
             Note($"The install now belongs to SFE {AppVersion}.");
@@ -154,6 +156,8 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
             // Whoever runs the server updates the schema: its version is neither checked nor recorded.
             Status = MigrationStatus.None;
             await UpdateAsync(strict: false, cancellationToken);
+            // Nothing tells which steps this install had: all of them, which do nothing when already done.
+            await RunStepsAsync(null, strict: false, cancellationToken);
             return;
         }
 
@@ -244,6 +248,37 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
         catch (Exception ex) when (!strict && ex is not OperationCanceledException)
         {
             logger.LogError(ex, "Cannot read the accounts and libraries; nobody can sign in until the database is fixed");
+        }
+    }
+
+    /// <summary>
+    /// The changes outside the databases' schemas (<see cref="IUpgradeStep"/>) from <paramref name="installed"/> on,
+    /// before any library starts: their background jobs would write into what a step moves.
+    /// </summary>
+    private async Task RunStepsAsync(SemanticVersion? installed, bool strict, CancellationToken cancellationToken)
+    {
+        var steps = UpgradeSteps.Due(installed, AppVersion);
+        if (steps.Count == 0)
+            return;
+
+        try
+        {
+            var contentRoot = services.GetRequiredService<IHostEnvironment>().ContentRootPath;
+            var tenants = await services.GetRequiredService<AccessService>().GetTenantsAsync(cancellationToken);
+            var context = new UpgradeContext(
+                [.. tenants.Select(tenant => TenantHost.CacheDirectory(tenant, configuration, contentRoot))],
+                Note,
+                logger);
+            foreach (var step in steps)
+            {
+                Note($"{step.Version}: {step.Description}…");
+                logger.LogInformation("Upgrade step {Version}: {Description}", step.Version, step.Description);
+                await step.RunAsync(context, cancellationToken);
+            }
+        }
+        catch (Exception ex) when (!strict && ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "An upgrade step failed");
         }
     }
 

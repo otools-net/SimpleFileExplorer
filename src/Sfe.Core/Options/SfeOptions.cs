@@ -410,6 +410,10 @@ public sealed class ThumbnailOptions
     /// </summary>
     public string CacheDirectory { get; set; } = "data/thumbs";
 
+    /// <summary>The full path of a configured <see cref="CacheDirectory"/>, relative ones against <paramref name="basePath"/>.</summary>
+    public static string ResolveCacheDirectory(string cacheDirectory, string basePath) =>
+        Path.GetFullPath(Paths.LibraryPaths.ExpandHome(cacheDirectory), basePath);
+
     /// <summary>ffmpeg executable; a bare name is looked up on PATH.</summary>
     public string FfmpegPath { get; set; } = "ffmpeg";
 

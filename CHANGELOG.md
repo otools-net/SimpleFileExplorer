@@ -3,6 +3,13 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.40.0
+
+### Changed
+
+- Thumbnails and trickplay are stored in two levels of folders (`ab/cd/...`) instead of one folder per folder of the
+  library, so the cache folder no longer holds hundreds of thousands of folders. The update moves the existing ones.
+
 ## 1.39.0
 
 ### Added

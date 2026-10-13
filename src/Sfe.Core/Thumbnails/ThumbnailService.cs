@@ -10,7 +10,8 @@ namespace Sfe.Core.Thumbnails;
 
 /// <summary>
 /// JPEG previews for videos and images, rendered with ffmpeg and cached on disk.
-/// The cache layout is <c>{SHA1(folder)}/{SHA1(file name)}.bin</c>; an empty file means "no thumbnail".
+/// The cache layout is <c>{k[0..2]}/{k[2..4]}/{k[4..]}.bin</c> with <c>k</c> = <see cref="CacheKey"/>: two levels of
+/// 256 folders keep every folder small whatever the library's shape. An empty file means "no thumbnail".
 /// Keys are lower-cased only on case-insensitive file systems (Windows): a path finds its thumbnail whatever its case.
 /// </summary>
 public sealed class ThumbnailService
@@ -181,12 +182,7 @@ public sealed class ThumbnailService
         }
     }
 
-    public string GetCachePath(string sourceFullPath)
-    {
-        var directory = Path.GetDirectoryName(sourceFullPath) ?? string.Empty;
-        var fileName = Path.GetFileName(sourceFullPath);
-        return Path.Combine(Options.CacheDirectory, Hash(directory), Hash(fileName) + ".bin");
-    }
+    public string GetCachePath(string sourceFullPath) => Path.Combine(Options.CacheDirectory, ShardedPath(CacheKey(sourceFullPath)) + ".bin");
 
     private static bool IsFresh(string cacheFile, FileInfo source)
     {
@@ -244,7 +240,25 @@ public sealed class ThumbnailService
         return output.ToArray();
     }
 
-    /// <summary>Cache key: upper-case hex SHA1 of the (lower-cased) name without trailing separators.</summary>
+    /// <summary>
+    /// Cache key of a file (thumbnail and trickplay): lower-case hex SHA1 of <c>{Hash(folder)}/{Hash(file name)}</c>.
+    /// Built from the two hashes of the layout before 1.40.0 (one folder per hashed folder), so that the update could
+    /// rename those entries without knowing their files (<see cref="Upgrades.Steps.V1_40_0.ShardCacheLayout"/>).
+    /// </summary>
+    public static string CacheKey(string sourceFullPath)
+    {
+        var directory = Path.GetDirectoryName(sourceFullPath) ?? string.Empty;
+        return CacheKey(Hash(directory), Hash(Path.GetFileName(sourceFullPath)));
+    }
+
+    /// <inheritdoc cref="CacheKey(string)"/>
+    internal static string CacheKey(string folderHash, string fileHash) =>
+        Convert.ToHexStringLower(SHA1.HashData(Encoding.ASCII.GetBytes(folderHash + "/" + fileHash)));
+
+    /// <summary>Relative cache path of a key: <c>ab/cd/rest</c> (65 536 folders over two levels).</summary>
+    public static string ShardedPath(string key) => Path.Combine(key[..2], key[2..4], key[4..]);
+
+    /// <summary>Hash of a folder or file name: upper-case hex SHA1 of the (lower-cased) name without trailing separators.</summary>
     internal static string Hash(string key)
     {
         if (LibraryPaths.IsCaseInsensitiveFileSystem)

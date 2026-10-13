@@ -88,8 +88,8 @@ public sealed record TrickplayManifest(int Interval, int Count, int Columns, int
 /// </summary>
 /// <remarks>
 /// <para>
-/// Layout: <c>{CacheDirectory}/trickplay/{SHA1(folder)}/{SHA1(file name)}/</c> holds <c>info.json</c> and the sheets
-/// <c>0.jpg</c>, <c>1.jpg</c>… (same keys as the thumbnails, see <see cref="ThumbnailService"/>). <c>info.json</c>
+/// Layout: <c>{CacheDirectory}/trickplay/{k[0..2]}/{k[2..4]}/{k[4..]}/</c> holds <c>info.json</c> and the sheets
+/// <c>0.jpg</c>, <c>1.jpg</c>… (same keys as the thumbnails, <see cref="ThumbnailService.CacheKey(string)"/>). <c>info.json</c>
 /// records the size and date of the video and the settings used, so a changed video or new settings make it stale.
 /// A failure is recorded too, so that one broken file isn't sent to ffmpeg again on every pass.
 /// </para>
@@ -318,12 +318,8 @@ public sealed class TrickplayService : IDisposable
         return File.Exists(sheet) ? sheet : null;
     }
 
-    public string GetCacheFolder(string sourceFullPath)
-    {
-        var directory = Path.GetDirectoryName(sourceFullPath) ?? string.Empty;
-        var fileName = Path.GetFileName(sourceFullPath);
-        return Path.Combine(_options.CurrentValue.Thumbnails.CacheDirectory, FolderName, ThumbnailService.Hash(directory), ThumbnailService.Hash(fileName));
-    }
+    public string GetCacheFolder(string sourceFullPath) =>
+        Path.Combine(_options.CurrentValue.Thumbnails.CacheDirectory, FolderName, ThumbnailService.ShardedPath(ThumbnailService.CacheKey(sourceFullPath)));
 
     /// <summary>Background work, until <paramref name="stoppingToken"/> is cancelled (application shutdown).</summary>
     public async Task RunAsync(CancellationToken stoppingToken)

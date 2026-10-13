@@ -91,6 +91,16 @@ public sealed class TenantHost : IAsyncDisposable
         };
     }
 
+    /// <summary>A library's thumbnail cache folder (full path), as its services see it, without starting it.</summary>
+    public static string CacheDirectory(TenantInfo tenant, IConfiguration configuration, string contentRootPath)
+    {
+        var key = $"{SfeOptions.SectionName}:{nameof(SfeOptions.Thumbnails)}:{nameof(ThumbnailOptions.CacheDirectory)}";
+        var cache = Overrides(tenant, configuration, contentRootPath).GetValueOrDefault(key) ?? configuration[key];
+        if (string.IsNullOrWhiteSpace(cache))
+            cache = new ThumbnailOptions().CacheDirectory;
+        return ThumbnailOptions.ResolveCacheDirectory(cache, contentRootPath);
+    }
+
     /// <summary>
     /// The index of a new library: <c>Sfe:Tenants:ConnectionString</c> with its slug, else next to the first library's
     /// (SQLite: <c>tenants/{slug}.db</c> beside its file; SQL Server: the same server, database <c>{database}_{slug}</c>).

@@ -122,6 +122,30 @@ public sealed class MigrationTests
     }
 
     [TestMethod]
+    public async Task TheUpdateMovesTheCachesToTheNewLayout()
+    {
+        await InstallAsync("1.39.0");
+        var photo = _library.FullPath("Media/photo.jpg");
+        var old = Path.Combine(_library.ThumbnailPath, Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetDirectoryName(photo)!),
+            Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetFileName(photo)) + ".bin");
+        Directory.CreateDirectory(Path.GetDirectoryName(old)!);
+        await File.WriteAllBytesAsync(old, [0xFF, 0xD8, 0xFF, 0x01], TestContext.CancellationToken);
+        File.SetLastWriteTimeUtc(old, DateTime.UtcNow.AddDays(1));
+
+        var factory = Factory();
+        await ApiClients.MigrateAsync(factory, TestContext.CancellationToken);
+        var done = await MigrationAsync(ApiClients.Create(factory));
+        var admin = await ApiClients.SignInAsync(factory, ApiClients.AdminName, ApiClients.AdminPassword, TestContext.CancellationToken);
+        using var thumbnail = await admin.GetAsync("/api/thumbnails/Media/photo.jpg", TestContext.CancellationToken);
+
+        Assert.AreEqual(MigrationStatus.None, done.Status);
+        Assert.IsTrue(done.Log.Any(line => line.StartsWith("1.40.0: ", StringComparison.Ordinal)), string.Join("\n", done.Log));
+        Assert.IsFalse(File.Exists(old));
+        Assert.AreEqual(HttpStatusCode.OK, thumbnail.StatusCode, "The moved thumbnail is found at its new place (no ffmpeg run)");
+        CollectionAssert.AreEqual(new byte[] { 0xFF, 0xD8, 0xFF, 0x01 }, await thumbnail.Content.ReadAsByteArrayAsync(TestContext.CancellationToken));
+    }
+
+    [TestMethod]
     public async Task AnInstallOfALaterVersionIsNeverUpdated()
     {
         await InstallAsync("99.0.0");

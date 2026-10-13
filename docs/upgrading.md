@@ -17,8 +17,8 @@ page** and the app can't be used, by anyone, until the update is done.
    none any more, the page says where to set it for the way your server runs; set it and restart.
 3. **Download a backup** (recommended) saves a zip file of the databases and configuration files, to go back to the
    earlier version if needed (see [Backups](administration/system.md#backup)).
-4. **Start the update** updates the databases (accounts, then every space's index) and the settings, and follows it on
-   the page. **Open SFE** then opens the library; sessions of before keep working.
+4. **Start the update** updates the databases (accounts, then every space's index), the settings and the caches when
+   the version changes their layout, and follows it on the page. **Open SFE** then opens the library; sessions of before keep working.
 
 If the update stops on an error, the page shows it: fix the cause (the server's log has the details) and start it
 again. Before you confirm, nothing in the databases or the settings file has been changed, so you can still go back
@@ -29,6 +29,14 @@ to the earlier version by installing it again.
   or restore a backup made with this one.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
+
+## To 1.40
+
+- The thumbnail and trickplay caches get a new folder layout (two levels of folders named after a hash, instead of one
+  folder per folder of the library). The update page moves what is already there: nothing is rendered again, and on a
+  large cache this step takes a few minutes (the page shows its progress). A cached file that can't be moved (e.g. open
+  in another program) is listed on the page and rendered again when needed.
+- Nothing changes in the databases or the settings file.
 
 ## To 1.39
 

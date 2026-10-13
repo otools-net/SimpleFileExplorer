@@ -63,7 +63,7 @@ public static class ServiceCollectionExtensions
             {
                 var cache = options.Thumbnails.CacheDirectory;
                 if (!string.IsNullOrWhiteSpace(cache))
-                    options.Thumbnails.CacheDirectory = Path.GetFullPath(LibraryPaths.ExpandHome(cache), basePath);
+                    options.Thumbnails.CacheDirectory = ThumbnailOptions.ResolveCacheDirectory(cache, basePath);
             })
             .ValidateOnStart();
 
