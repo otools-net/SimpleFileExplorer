@@ -19,10 +19,10 @@ function onPath(program) {
 }
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-export async function launch({ width = 1280, height = 800, mobile = false, scale = 1, colorScheme = 'dark' } = {}) {
+export async function launch({ width = 1280, height = 800, mobile = false, scale = 1, colorScheme = 'dark', scrollbars = false } = {}) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sfe-edge-'));
     const proc = spawn(EDGE, ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${dir}`,
-        '--no-first-run', '--no-default-browser-check', '--hide-scrollbars', '--autoplay-policy=no-user-gesture-required',
+        '--no-first-run', '--no-default-browser-check', ...(scrollbars ? [] : ['--hide-scrollbars']), '--autoplay-policy=no-user-gesture-required',
         `--window-size=${width},${height}`, 'about:blank'], { stdio: 'ignore' });
     let port;
     for (let i = 0; i < 100 && !port; i++) {

@@ -340,6 +340,69 @@ describe('VideoPlayerComponent', () => {
         });
     });
 
+    describe('cinema mode and size', () => {
+        @Component({
+            imports: [VideoPlayerComponent],
+            template: `<sfe-video-player src="api/files/raw?path=clip.webm" [cinemaButton]="cinema()" />`,
+        })
+        class CinemaHost {
+            readonly cinema = signal(true);
+        }
+
+        let host: ComponentFixture<CinemaHost>;
+        const element = () => host.debugElement.children[0].nativeElement as HTMLElement;
+        const component = () => host.debugElement.children[0].componentInstance as VideoPlayerComponent;
+        const cinemaButton = () => host.nativeElement.querySelector('.player-cinema') as HTMLButtonElement | null;
+        const minWidth = () => parseFloat(element().style.getPropertyValue('--player-min-width'));
+
+        async function createWith(cinema: boolean): Promise<void> {
+            host = TestBed.createComponent(CinemaHost);
+            host.componentInstance.cinema.set(cinema);
+            await settle();
+        }
+
+        it('is at least as wide as its row of buttons, wider with more of them', async () => {
+            await createWith(false);
+            const buttons = element().querySelectorAll('.player-row > .player-button, .player-speed-wrap > .player-button').length;
+            const without = minWidth();
+            expect(without).toBeGreaterThanOrEqual(buttons * 40 + 80);
+
+            host.componentInstance.cinema.set(true);
+            await settle();
+            expect(cinemaButton()).not.toBeNull();
+            expect(minWidth()).toBeGreaterThan(without);
+        });
+
+        it('switches cinema mode with its button and remembers it in this browser', async () => {
+            await createWith(true);
+            expect(element().classList).not.toContain('cinema');
+            expect(cinemaButton()!.title).toBe('Cinema mode (C)');
+
+            cinemaButton()!.click();
+            await settle();
+            expect(element().classList).toContain('cinema');
+            expect(cinemaButton()!.getAttribute('aria-pressed')).toBe('true');
+            expect(cinemaButton()!.title).toBe('Default view (C)');
+            expect(localStorage.getItem('sfe.player.cinema')).toBe('1');
+
+            // The next video (the viewer makes a player per item) opens in cinema mode too.
+            await createWith(true);
+            expect(element().classList).toContain('cinema');
+        });
+
+        it('switches with the C key only where it is offered', async () => {
+            await createWith(false);
+            expect(cinemaButton()).toBeNull();
+            expect(component().handleKey(new KeyboardEvent('keydown', { key: 'c' }))).toBe(false);
+            expect(element().classList).not.toContain('cinema');
+
+            await createWith(true);
+            expect(component().handleKey(new KeyboardEvent('keydown', { key: 'C' }))).toBe(true);
+            await settle();
+            expect(element().classList).toContain('cinema');
+        });
+    });
+
     it('toggles the loop with the R key', async () => {
         await create(true);
         expect(player().handleKey(new KeyboardEvent('keydown', { key: 'R' }))).toBe(true);

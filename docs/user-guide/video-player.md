@@ -15,6 +15,7 @@ Videos and audio files play in SFE's own player, in the [viewer](viewer.md) or i
 | Loop | R | Starts the video over when it ends; whether it is on when a video opens is the **Loop videos** setting (off by default) |
 | Camera | S | Saves the frame on screen as a PNG at the video's resolution, named after the video and the position (e.g. `Holiday 1-23.png`) |
 | Mute | M | |
+| Cinema mode | C | In the viewer: the player spans the whole width of the window and the video is enlarged to it (as YouTube's theater mode); press again for the default view. Remembered by this browser |
 | Fullscreen | F | |
 | Convert (⟳) | | Shown when the server can convert videos: plays the video converted by the server, from where it is (see below) |
 
@@ -22,6 +23,9 @@ Videos and audio files play in SFE's own player, in the [viewer](viewer.md) or i
 
 On a touch screen, double-tap the left or right of the picture to jump (keep tapping to jump further), and hold a
 finger on the right of a playing video for 1.5 s to play it at 2× until you lift it.
+
+A video smaller than its controls is shown wider, so that every button stays visible; on a phone, the buttons that
+don't fit go to a second row.
 
 ## Formats the browser can't play
 

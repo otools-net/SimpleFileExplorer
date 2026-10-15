@@ -2,6 +2,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyR
 import { formatDuration as formatTime } from '../core/format';
 import { VideoStream } from '../core/config.service';
 import { StreamProbe, TrickplayManifest } from '../core/models';
+import { readPreference, writePreference } from '../core/preferences';
 import { IconComponent } from '../shared/icon.component';
 
 const DOUBLE_TAP_MS = 300;      // max delay between the two taps of a double tap
@@ -12,6 +13,11 @@ const HOLD_FAST_MS = 1500;      // holding a finger on the right third this long
 const FAST_RATE = 2;
 const HOLD_SLOP_PX = 20;        // a finger moving further than this is not holding
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+const CINEMA_KEY = 'sfe.player.cinema';
+// Room the control row needs: each button with its gap, the time text, the controls' side padding.
+const BUTTON_WIDTH = 42;
+const TIME_CHAR_WIDTH = 7.5;
+const CONTROLS_PADDING = 28;
 
 interface Playback {
     url: string;
@@ -29,6 +35,9 @@ interface Playback {
  * double-tap the middle to play/pause, single tap to show/hide the controls, hold the right third (1.5 s) to play at 2×
  * until the finger lifts (the speed button keeps the chosen rate, which comes back).
  * Mouse: click plays/pauses, double-click toggles fullscreen.
+ * `cinemaButton`: offers cinema mode (C), where the player spans the whole width, the video scaled up to it (as
+ * YouTube's theater mode); the choice is remembered per browser (`sfe.player.cinema`).
+ * A small video is shown at least as wide as its control row (`--player-min-width`), so no button is cut off.
  * Hovering or dragging the seek bar shows the time there, and the frame once `setTrickplay` provided the trickplay.
  * `startAt`: position (seconds) to start from, e.g. where another player left off.
  * `stream`: the server's conversion of the video (`ConfigService.videoStream`), played when the browser can't play the
@@ -48,6 +57,8 @@ interface Playback {
         '[class.waiting]': 'waiting()',
         '[class.fullscreen]': 'fullscreen()',
         '[class.fast]': 'fast()',
+        '[class.cinema]': 'cinemaButton() && cinema()',
+        '[style.--player-min-width]': "minWidth() + 'px'",
         '(pointermove)': '$event.pointerType === "mouse" && showControls()',
         '(document:fullscreenchange)': 'onFullscreenChange()',
         '(document:pointerdown)': 'closeSpeedMenu($event)',
@@ -113,6 +124,11 @@ interface Playback {
                 <button type="button" class="player-button" [title]="muteLabel()" [attr.aria-label]="muteLabel()" (click)="toggleMute()">
                     <svg [sfeIcon]="muted() ? 'muted' : 'volume'"></svg>
                 </button>
+                @if (cinemaButton() && !fullscreen()) {
+                    <button type="button" class="player-button player-cinema" [title]="cinemaLabel()" [attr.aria-label]="cinemaLabel()" [attr.aria-pressed]="cinema()" (click)="toggleCinema(); showControls()">
+                        <svg [sfeIcon]="cinema() ? 'exit-cinema' : 'cinema'"></svg>
+                    </button>
+                }
                 <button type="button" class="player-button" [title]="fullscreen() ? 'Exit fullscreen (F)' : 'Fullscreen (F)'" [attr.aria-label]="fullscreen() ? 'Exit fullscreen (F)' : 'Fullscreen (F)'" (click)="toggleFullscreen()">
                     <svg [sfeIcon]="fullscreen() ? 'exit-fullscreen' : 'fullscreen'"></svg>
                 </button>
@@ -130,6 +146,8 @@ export class VideoPlayerComponent {
     readonly loop = input(false);
     /** The server's conversion, when it offers one. */
     readonly stream = input<VideoStream | null>(null);
+    /** Whether the player offers cinema mode (the viewer; the player page already fills its window). */
+    readonly cinemaButton = input(false);
     /** The browser can't play the video; true when the server's conversion failed too. */
     readonly unsupported = output<boolean>();
 
@@ -171,6 +189,17 @@ export class VideoPlayerComponent {
     protected readonly playLabel = computed(() => this.paused() ? 'Play (K)' : 'Pause (K)');
     protected readonly muteLabel = computed(() => this.muted() ? 'Unmute (M)' : 'Mute (M)');
     protected readonly loopLabel = computed(() => this.looping() ? 'Stop looping (R)' : 'Loop (R)');
+    /** Cinema mode: the player spans the whole width (when `cinemaButton`). */
+    protected readonly cinema = signal(readPreference(CINEMA_KEY) === '1');
+    protected readonly cinemaLabel = computed(() => this.cinema() ? 'Default view (C)' : 'Cinema mode (C)');
+    /** Narrowest player showing every control of the row: a video smaller than that is letterboxed to it. */
+    protected readonly minWidth = computed(() => {
+        // Back, play, forward, speed, loop, frame, mute, fullscreen; then the ones that come and go.
+        const buttons = 8
+            + (this.stream() && !this.playback().streamed ? 1 : 0)
+            + (this.cinemaButton() && !this.fullscreen() ? 1 : 0);
+        return Math.ceil(CONTROLS_PADDING + buttons * BUTTON_WIDTH + 8 + this.timeText().length * TIME_CHAR_WIDTH);
+    });
 
     protected pointerType = 'mouse';
     private hideTimer = 0;
@@ -227,6 +256,11 @@ export class VideoPlayerComponent {
             case 'm': this.toggleMute(); break;
             case 's': this.saveFrame(); break;
             case 'r': this.toggleLoop(); break;
+            case 'c':
+                if (!this.cinemaButton())
+                    return false;
+                this.toggleCinema();
+                break;
             default: return false;
         }
         this.showControls();
@@ -264,6 +298,11 @@ export class VideoPlayerComponent {
 
     protected toggleLoop(): void {
         this.looping.update(on => !on);
+    }
+
+    protected toggleCinema(): void {
+        this.cinema.update(on => !on);
+        writePreference(CINEMA_KEY, this.cinema() ? '1' : '0');
     }
 
     protected toggleMute(): void {

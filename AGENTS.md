@@ -619,6 +619,15 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   `VideoStream` once per item (`computed`): a new object resets the player. Safari may refuse it (no ranges).
 - **System info:** `GET api/system/info` (`server.settings`): the library's `LibraryPaths.Root` and `Ffmpeg` (configured,
   found path, `GetVersionAsync` read once), shown in System › About; System › Video streams polls `api/streaming/sessions`.
+- **Player size:** `VideoPlayerComponent.minWidth` (buttons shown + time text) → host `--player-min-width`; the video's
+  `min-width: min(var(--player-min-width), 100cqw)` against `.viewer-stage` (`container-type: size`): a `100%`
+  there resolved against the player, which the video itself sizes, and capped it at ~320 px. `.player-row` wraps on phones.
+  Heights in the viewer use `100cqh` (the stage), not `100dvh - 90px`: the title bar grows with tags, and a full-height
+  video (cinema mode) then overflowed the dialog, which showed a scrollbar.
+  Cinema mode (`cinemaButton`, viewer only, `sfe.player.cinema`) = host class `cinema`, `.viewer-stage:has(> .player.cinema)`.
+- **Scrollbar gutter:** `html { scrollbar-gutter: stable }` (`base.css`): the grid's justified rows are taller on a
+  wider page, so a listing overflowing by a few px only at full width kept a scrollbar it didn't need (the sidebar is
+  exactly `100dvh` tall). The player page opts out. Headless shots hide scrollbars: `launch({ scrollbars: true })`.
 - **Caching:** images/thumbnails are sent `no-store`; trickplay sheets are cacheable (URL carries its `version`).
 - **Trickplay:** Core's `TrickplayService` run by the Api's `TrickplayWorker`. Per video
   `{CacheDirectory}/trickplay/{k[0..2]}/{k[2..4]}/{k[4..]}/` (same key as the thumbnail): `info.json`, `{n}.jpg`, `fingerprint.bin`. Fresh =

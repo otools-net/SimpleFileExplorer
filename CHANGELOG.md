@@ -3,6 +3,21 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.44.0
+
+### Added
+
+- **Cinema mode** (C) in the viewer's video player: the video spans the whole width of the window, as YouTube's
+  theater mode; the browser remembers the choice.
+
+### Fixed
+
+- A small video in the viewer no longer cuts off the player's buttons: the player is at least as wide as its controls,
+  and on a phone the buttons that don't fit go to a second row.
+- A video in cinema mode, or a picture in the viewer, no longer overflows below a title bar made taller by tags (which
+  showed a scrollbar).
+- Some folders showed a scrollbar with nothing to scroll: the page now always keeps the scrollbar's room.
+
 ## 1.43.0
 
 ### Added

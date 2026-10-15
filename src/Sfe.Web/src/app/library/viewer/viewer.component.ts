@@ -103,7 +103,7 @@ function clampAxis(position: number, room: number, size: number): number {
                             }
                             @case ('video') {
                                 <sfe-video-player [src]="urls()!.file(shown.path)" [name]="shown.name" [poster]="urls()!.thumbnail(shown.path)"
-                                                  [seekStep]="config.config()?.seekSeconds ?? 10" [loop]="config.config()?.loop ?? false" [stream]="videoStream()"
+                                                  [seekStep]="config.config()?.seekSeconds ?? 10" [loop]="config.config()?.loop ?? false" [stream]="videoStream()" [cinemaButton]="true"
                                                   (unsupported)="unsupported.set(true); converted.set($event)" />
                             }
                             @default {

@@ -53,7 +53,9 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-padding-top: calc(var(--topbar-h) + var(--location-strip-h) + 8px); }
+/* The scrollbar's room is always kept: the grid's rows are as tall as the page is wide, so a listing that overflows
+   only at full width got a scrollbar, fitted once narrowed by it, and kept it with nothing to scroll. */
+html { scroll-padding-top: calc(var(--topbar-h) + var(--location-strip-h) + 8px); scrollbar-gutter: stable; }
 
 body {
     margin: 0;

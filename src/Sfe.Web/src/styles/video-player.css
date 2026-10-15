@@ -20,10 +20,19 @@
 .player video {
     display: block;
     max-width: 100%;
-    max-height: calc(100dvh - 90px);
-    min-width: min(320px, 100%);
+    /* No taller than the viewer's stage (a size container: cqh), so it never overflows the viewer, which would then
+       scroll; on the player page (no container, cqh = the window) the window less some room. */
+    max-height: min(calc(100dvh - 90px), 100cqh);
+    /* At least as wide as the control row (set by the player from its buttons), so a small video cuts none off; but
+       no wider than the viewer's stage (a container: 100% would resolve against the player, sized by this video). */
+    min-width: min(var(--player-min-width, 320px), 100cqw);
     min-height: 180px;
 }
+
+/* Cinema mode (viewer): the player spans the stage's whole width and the video is scaled up to it, as YouTube's
+   theater mode; still no taller than the screen (black bars beside it then). Before fullscreen, which wins. */
+.player.cinema { width: 100%; border-radius: 0; box-shadow: none; }
+.player.cinema video { width: 100%; height: auto; object-fit: contain; }
 
 .player.fullscreen { width: 100vw; height: 100vh; border-radius: 0; }
 .player.fullscreen video { width: 100%; height: 100%; max-height: none; object-fit: contain; }
@@ -136,7 +145,8 @@
 
 .player:not(.controls-visible) .player-controls { opacity: 0; pointer-events: none; }
 
-.player-row { display: flex; align-items: center; gap: 2px; }
+/* Wraps where even the widest player is too narrow for every button (a phone): a second row rather than cut ones. */
+.player-row { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
 .player-spacer { flex: 1; }
 .player-time { margin-left: 8px; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
@@ -199,6 +209,7 @@
 
 /* The player page (player?path=...): the player alone, filling its window. */
 .player-page { display: block; height: 100dvh; overflow: hidden; background: #000; }
+html:has(.player-page) { scrollbar-gutter: auto; }    /* never scrolls: no grey strip beside the black page */
 .player-page-stage { display: grid; place-items: center; height: 100%; }
 .player-page .player { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
 .player-page .player video { width: 100%; height: 100%; max-height: none; object-fit: contain; }

@@ -44,11 +44,14 @@
     place-items: center;
     min-height: 0;
     padding: 0 64px var(--viewer-stage-bottom);
+    /* What it shows is sized against it (cqw, cqh): the room left by the title bar, whose height varies (tags), rather
+       than the window; the player's minimum width also is (100% there would resolve against the player itself). */
+    container-type: size;
 }
 
 .viewer-stage > img, .viewer-stage > video {
     max-width: 100%;
-    max-height: calc(100dvh - 90px);
+    max-height: 100cqh;
     border-radius: 6px;
     background: #000;
     box-shadow: 0 20px 60px rgb(0 0 0 / .6);
@@ -57,11 +60,14 @@
 /* Thumbnail of a large image while its original loads: as big as the original will be (blurry, but not tiny). */
 .viewer-stage > img.preview {
     width: 100%;
-    height: calc(100dvh - 90px);
+    height: 100cqh;
     object-fit: contain;
     background: none;
     box-shadow: none;
 }
+
+/* Cinema mode: the player reaches both sides of the window (the arrows sit over it). */
+.viewer-stage:has(> .player.cinema) { padding-left: 0; padding-right: 0; }
 
 .viewer-stage > audio { width: min(560px, 100%); }
 
