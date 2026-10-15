@@ -1,10 +1,11 @@
-// Checks the relative links, images and #anchors of README.md, AGENTS.md and docs/, and lists unused images.
+// Checks the relative links, images and #anchors of README.md, AGENTS.md, agents/docs/ and docs/, and lists unused images.
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 const root = process.argv[2] ?? fileURLToPath(new URL('../../..', import.meta.url));
 const files = [path.join(root, 'README.md'), path.join(root, 'AGENTS.md')];
-(function walk(d) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (p.endsWith('.md')) files.push(p); } })(path.join(root, 'docs'));
+function walk(d) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (p.endsWith('.md')) files.push(p); } }
+walk(path.join(root, 'docs')); walk(path.join(root, 'agents/docs'));
 const slug = h => h.trim().toLowerCase().replace(/[`*_]/g, '').replace(/[^\p{L}\p{N} -]/gu, '').replace(/ /g, '-');
 const anchors = f => new Set(fs.readFileSync(f, 'utf8').split('\n').filter(l => /^#{1,6} /.test(l)).map(l => slug(l.replace(/^#+ /, ''))));
 let bad = 0; const usedImages = new Set();

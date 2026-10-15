@@ -5,7 +5,7 @@ Node.js 22+, the .NET SDK and Microsoft Edge are needed; no npm packages.
 
 ffmpeg is needed for real screenshots (video thumbnails, durations, trickplay, similar videos). `run.mjs` takes it
 from `--ffmpeg <path>`, else the `FFMPEG` environment variable, else `ffmpeg` on the `PATH`; without one it warns and
-the video parts come out empty. Where it lives differs per machine: see AGENTS.md › Dev machine.
+the video parts come out empty. Where it lives differs per machine: see `agents/docs/environment/dev-machine.md`.
 
 ```sh
 # everything: build, sample library, app on :5093, seed, all screenshots, link check
@@ -14,7 +14,7 @@ node agents/tools/docs-screenshots/run.mjs --ffmpeg <path to ffmpeg>
 # again after a UI change, reusing the library and database of the last run
 node agents/tools/docs-screenshots/run.mjs --ffmpeg <path to ffmpeg> --skip-build --shots-only viewer search
 
-# links, images and #anchors of README.md, AGENTS.md and docs/ (also lists unused images)
+# links, images and #anchors of README.md, AGENTS.md, agents/docs/ and docs/ (also lists unused images)
 node agents/tools/docs-screenshots/check-links.mjs
 ```
 
