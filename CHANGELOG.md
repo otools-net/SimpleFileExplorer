@@ -3,6 +3,17 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.45.0
+
+### Changed
+
+- Administration: server administrators pick whether a settings page edits **This space** or the **Whole server**
+  with tabs instead of radio buttons.
+- Switching between **This space** and **Whole server** keeps the changes not saved yet in each (a dot marks the tab)
+  instead of asking to forget them; **Save** saves both, **Discard** forgets both.
+- Saving settings sends only the settings changed (new `PATCH api/settings` and `PATCH api/me/preferences`): a space or
+  a user keeps following the server for everything else, even when the page was opened before the server changed.
+
 ## 1.44.0
 
 ### Added

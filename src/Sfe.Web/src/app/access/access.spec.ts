@@ -453,7 +453,7 @@ describe('AccountSectionComponent', () => {
                 'scan.computeHashes': { scope: 'tenant', source: 'environment', editable: false, lockable: false, locked: false, lockedBy: null, inherited: true },
             },
         });
-        api.savePreferences.mockImplementation(async values => ({ values, customized: true, level: 'user', keys: null }));
+        api.savePreferenceChanges.mockResolvedValue({ values: settingsValues(), customized: true, level: 'user', keys: null });
         TestBed.configureTestingModule({ providers: testProviders(api) });
         await loadConfig(api);
         const fixture = TestBed.createComponent(AccountSectionComponent);
@@ -473,7 +473,6 @@ describe('AccountSectionComponent', () => {
         buttonNamed(element, 'Save')!.click();
         await settle();
 
-        expect(api.savePreferences).toHaveBeenCalled();
-        expect((api.savePreferences.mock.lastCall![0] as { player: { seekSeconds: number } }).player.seekSeconds).toBe(30);
+        expect(api.savePreferenceChanges).toHaveBeenCalledWith({ values: { 'player.seekSeconds': 30 } });
     });
 });

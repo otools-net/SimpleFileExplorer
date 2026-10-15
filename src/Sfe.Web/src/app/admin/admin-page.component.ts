@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { redirected } from '../core/api.service';
+import { SettingLevel } from '../core/models';
 import { ConfigService } from '../core/config.service';
 import { ThemeService } from '../core/theme.service';
 import { routeParams } from '../library/library-route';
@@ -29,6 +30,9 @@ const FROM_LIBRARY = 'sfeFromLibrary';
 const FROM_LIST = 'sfeFromList';
 /** Phones: the sections are a list of their own instead of a sidebar (the breakpoint of admin.css). */
 const PHONE = '(max-width: 760px)';
+
+/** The level tabs' names, in the save bar. */
+const LEVEL_TITLES: Partial<Record<SettingLevel, string>> = { tenant: 'This space', server: 'Whole server' };
 
 export { leaveAdminPage } from './leave-admin-page';
 
@@ -159,19 +163,25 @@ export { leaveAdminPage } from './leave-admin-page';
                              [attr.aria-labelledby]="phone() && section().subpages.length > 1 ? 'admin-chip-' + subpage().id : null">
                             @if (subpage().settings; as settings) {
                                 @if (form.levels().length > 1) {
-                                    <div class="settings-level" role="radiogroup" aria-label="Settings of">
-                                        <span>Settings of</span>
-                                        <label title="This space's own settings, over the server's: they apply to this space only">
-                                            <input type="radio" name="settings-level" [checked]="form.level() === 'tenant'" (change)="form.useLevel('tenant')">
-                                            this space{{ config.tenant() ? ' (' + config.tenant()!.name + ')' : '' }}
-                                        </label>
-                                        <label title="The server's settings: the defaults of every space, and what the whole server shares">
-                                            <input type="radio" name="settings-level" [checked]="form.level() === 'server'" (change)="form.useLevel('server')">
-                                            the whole server
-                                        </label>
+                                    <div class="settings-tabs settings-level" role="tablist" aria-label="Settings of" (keydown)="onLevelKey($event)">
+                                        <button type="button" role="tab" class="settings-tab" id="settings-level-tenant" aria-controls="settings-level-panel"
+                                                [attr.aria-selected]="form.level() === 'tenant'" [tabIndex]="form.level() === 'tenant' ? 0 : -1"
+                                                title="This space's own settings, over the server's: they apply to this space only" (click)="form.useLevel('tenant')">
+                                            This space{{ config.tenant() ? ' (' + config.tenant()!.name + ')' : '' }}
+                                            <ng-container [ngTemplateOutlet]="levelMark" [ngTemplateOutletContext]="{ $implicit: 'tenant' }" />
+                                        </button>
+                                        <button type="button" role="tab" class="settings-tab" id="settings-level-server" aria-controls="settings-level-panel"
+                                                [attr.aria-selected]="form.level() === 'server'" [tabIndex]="form.level() === 'server' ? 0 : -1"
+                                                title="The server's settings: the defaults of every space, and what the whole server shares" (click)="form.useLevel('server')">
+                                            Whole server
+                                            <ng-container [ngTemplateOutlet]="levelMark" [ngTemplateOutletContext]="{ $implicit: 'server' }" />
+                                        </button>
                                     </div>
                                 }
-                                <sfe-settings-panel [tab]="settings" (submitted)="save()" (activity)="select('activity')" />
+                                <sfe-settings-panel [tab]="settings" (submitted)="save()" (activity)="select('activity')"
+                                                    [attr.id]="form.levels().length > 1 ? 'settings-level-panel' : null"
+                                                    [attr.role]="form.levels().length > 1 ? 'tabpanel' : null"
+                                                    [attr.aria-labelledby]="form.levels().length > 1 ? 'settings-level-' + form.level() : null" />
                             } @else {
                                 @switch (section().id) {
                                     @case ('tags') {
@@ -215,7 +225,7 @@ export { leaveAdminPage } from './leave-admin-page';
                                         [title]="form.customized() ? resetHint() : 'Nothing saved yet'" (click)="form.reset()">Reset to defaults</button>
                             }
                             @if (form.changed()) {
-                                <button type="button" class="button" title="Undo the changes not saved yet, on every page" (click)="form.discard()">Discard</button>
+                                <button type="button" class="button" [title]="form.levels().length > 1 ? 'Undo the changes not saved yet, on every page of both tabs' : 'Undo the changes not saved yet, on every page'" (click)="form.discard()">Discard</button>
                             }
                             <button type="button" class="button primary" [title]="saveHint()"
                                     [disabled]="form.saving() || !form.changed()" (click)="save()">Save</button>
@@ -225,6 +235,13 @@ export { leaveAdminPage } from './leave-admin-page';
             </div>
             <sfe-tag-editor />
         }
+
+        <!-- A dot on a level's tab while it has changes not saved yet (they stay while the other level shows). -->
+        <ng-template #levelMark let-level>
+            @if (form.changedLevels().has(level)) {
+                <span class="admin-mark" title="Changed settings, not saved yet"><span class="visually-hidden"> (not saved)</span></span>
+            }
+        </ng-template>
 
         <!-- A dot for settings changed and not saved yet in these sub-pages, red when some need fixing. -->
         <ng-template #mark let-pages>
@@ -281,8 +298,11 @@ export class AdminPageComponent implements OnInit {
 
     protected readonly saveStatus = computed(() => {
         const changed = [...this.form.changedTabs()].map(id => this.titleOfSettings(id)).filter(Boolean);
+        const others = [...this.form.changedLevels()].filter(level => level !== this.form.level()).map(level => LEVEL_TITLES[level]);
         if (changed.length)
-            return `Not saved yet: ${changed.join(', ')}`;
+            return `Not saved yet: ${changed.join(', ')}${others.length ? `; also in ${others.join(', ')}` : ''}`;
+        if (others.length)
+            return `Not saved yet in ${others.join(', ')}`;
         // Servers without levels answer without states: their settings are the server's.
         if (this.form.states() && this.form.level() === 'tenant')
             return this.form.customized() ? 'This space has settings of its own' : 'Following the server\'s settings';
@@ -291,9 +311,11 @@ export class AdminPageComponent implements OnInit {
     protected readonly resetHint = computed(() => this.form.states() && this.form.level() === 'tenant'
         ? 'Forget the space\'s own settings and follow the server\'s again (asks first)'
         : 'Forget the saved settings and go back to the server\'s configuration (asks first)');
-    protected readonly saveHint = computed(() => this.form.states() && this.form.level() === 'tenant'
-        ? 'Save and apply the settings of every page, for everyone using this space'
-        : 'Save and apply the settings of every page, for everyone using this server');
+    protected readonly saveHint = computed(() => this.form.changedLevels().size > 1
+        ? 'Save and apply the settings changed in both tabs: the whole server\'s, then this space\'s'
+        : this.form.states() && this.form.level() === 'tenant'
+            ? 'Save and apply the settings of every page, for everyone using this space'
+            : 'Save and apply the settings of every page, for everyone using this server');
 
     constructor() {
         const title = inject(Title);
@@ -419,6 +441,19 @@ export class AdminPageComponent implements OnInit {
             return;
         event.preventDefault();
         this.select(ids[(target + ids.length) % ids.length], { focus: true });
+    }
+
+    /** Arrow keys, Home and End move between the level tabs (this space, whole server), as between the chips. */
+    protected onLevelKey(event: KeyboardEvent): void {
+        const levels = this.form.levels();
+        const index = levels.indexOf(this.form.level());
+        const target = ({ ArrowLeft: index - 1, ArrowRight: index + 1, Home: 0, End: levels.length - 1 } as Record<string, number>)[event.key];
+        if (target === undefined)
+            return;
+        event.preventDefault();
+        const level = levels[(target + levels.length) % levels.length];
+        void this.form.useLevel(level);
+        (event.currentTarget as HTMLElement).querySelector<HTMLElement>('#settings-level-' + level)?.focus();
     }
 
     /**

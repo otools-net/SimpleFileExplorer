@@ -7,7 +7,8 @@ import { ClientConfig, SettingLevel, SettingState, SettingsValues, SettingsView,
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { ListingStore } from '../library/listing.store';
-import { ApiMock, buttonNamed, adminPageProviders, fakeConfig, loadConfig, mockApi, setMediaQuery, settingsValues, settle, tag } from '../../testing/fakes';
+import { ApiMock, buttonNamed, adminPageProviders, deferred, fakeConfig, loadConfig, mockApi, setMediaQuery, settingsValues, settle, tag, type } from '../../testing/fakes';
+import { setValue } from '../settings/settings-schema';
 import { ADMIN_GROUPS, ADMIN_SECTIONS } from './admin-sections';
 
 let api: ApiMock;
@@ -44,8 +45,8 @@ const subItems = () => [...element.querySelectorAll<HTMLAnchorElement>('.admin-s
 const subItem = (title: string) => subItems().find(a => a.querySelector('span')!.textContent === title)!;
 const currentSubItem = () => element.querySelector<HTMLAnchorElement>('.admin-subnav a[aria-current=page]')!;
 /** The sub-pages as chips (phones). */
-const chips = () => [...element.querySelectorAll<HTMLButtonElement>('[role=tab]')];
-const selectedChip = () => element.querySelector<HTMLButtonElement>('[role=tab][aria-selected=true]')!;
+const chips = () => [...element.querySelectorAll<HTMLButtonElement>('.admin-chips [role=tab]')];
+const selectedChip = () => element.querySelector<HTMLButtonElement>('.admin-chips [role=tab][aria-selected=true]')!;
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -404,17 +405,217 @@ describe('AdminPageComponent by rights and levels', () => {
         await setUp();
         api.settings.mockImplementation(async level => view(level ?? 'server'));
         await open('/admin?section=playback');
-        const radios = [...element.querySelectorAll<HTMLInputElement>('.settings-level input')];
+        const tabs = () => [...element.querySelectorAll<HTMLButtonElement>('.settings-level [role=tab]')];
 
-        expect(radios.map(radio => radio.checked)).toEqual([true, false]);
-        expect(element.querySelector('.settings-level')!.textContent).toContain('this space (Library)');
+        expect(element.querySelector('.settings-level')!.getAttribute('role')).toBe('tablist');
+        expect(tabs().map(tab => tab.getAttribute('aria-selected'))).toEqual(['true', 'false']);
+        expect(tabs()[0].textContent).toContain('This space (Library)');
+        expect(element.querySelector('sfe-settings-panel')!.getAttribute('aria-labelledby')).toBe('settings-level-tenant');
         expect(api.settings).toHaveBeenLastCalledWith('tenant');
 
-        radios[1].click();
+        tabs()[1].click();
         await settle();
 
+        expect(tabs().map(tab => tab.getAttribute('aria-selected'))).toEqual(['false', 'true']);
         expect(api.settings).toHaveBeenLastCalledWith('server');
         expect(localStorage.getItem('sfe.settings.level')).toBe('server');
+
+        tabs()[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+        await settle();
+
+        expect(tabs()[0].getAttribute('aria-selected')).toBe('true');
+        expect(document.activeElement).toBe(tabs()[0]);
+        expect(api.settings).toHaveBeenLastCalledWith('tenant');
+    });
+
+    describe('changes of both levels', () => {
+        const seek = () => element.querySelector<HTMLInputElement>('#setting-player-seekSeconds')!;
+        const levelTab = (level: SettingLevel) => element.querySelector<HTMLButtonElement>(`#settings-level-${level}`)!;
+        const marked = (level: SettingLevel) => levelTab(level).querySelector('.admin-mark') !== null;
+        const status = () => element.querySelector('.admin-savebar-status')!.textContent;
+        const fieldError = () => seek().closest('.field')!.querySelector('.field-error')?.textContent ?? null;
+        /** The settings with the seek step at `seconds`. */
+        const seekOf = (seconds: number) => {
+            const values = structuredClone(settingsValues());
+            setValue(values, 'player.seekSeconds', seconds);
+            return values;
+        };
+        let views: Record<'server' | 'tenant', SettingsView>;
+
+        async function edit(seconds: string): Promise<void> {
+            type(seek(), seconds);
+            await settle();
+        }
+
+        async function show(level: SettingLevel): Promise<void> {
+            levelTab(level).click();
+            await settle();
+        }
+
+        beforeEach(async () => {
+            await setUp();
+            views = { server: view('server', {}, seekOf(10)), tenant: view('tenant', {}, seekOf(12)) };
+            api.settings.mockImplementation(async level => views[level as 'server' | 'tenant']);
+            api.saveSettingChanges.mockImplementation(async (_, level) => views[level as 'server' | 'tenant']);
+            await open('/admin?section=playback');
+        });
+
+        it('keeps a level\'s changes while the other shows, without asking, and loads it again on return', async () => {
+            const ask = vi.spyOn(window, 'confirm');
+            await edit('20');
+
+            await show('server');
+            expect(ask).not.toHaveBeenCalled();
+            expect(seek().value).toBe('10');
+            expect(marked('tenant')).toBe(true);
+            expect(marked('server')).toBe(false);
+            expect(status()).toBe('Not saved yet in This space');
+
+            // The space's settings changed meanwhile (another level's save): the change goes over the new ones.
+            api.settings.mockClear();
+            views.tenant = view('tenant', {}, seekOf(14));
+            await show('tenant');
+
+            expect(api.settings).toHaveBeenCalledWith('tenant');
+            expect(seek().value).toBe('20');
+            expect(status()).toBe('Not saved yet: Playback');
+            expect(api.saveSettingChanges).not.toHaveBeenCalled();
+        });
+
+        it('forgets a level\'s kept changes once it shows them unchanged', async () => {
+            await edit('20');
+            await show('server');
+            await show('tenant');
+            await edit('12');
+            await show('server');
+
+            expect(marked('tenant')).toBe(false);
+            expect(buttonNamed(element, 'Save')!.disabled).toBe(true);
+        });
+
+        it('saves the changes of both levels in one go, the server\'s first, sending only what changed', async () => {
+            await edit('20');
+            await show('server');
+            await edit('15');
+            expect(status()).toBe('Not saved yet: Playback; also in This space');
+
+            buttonNamed(element, 'Save')!.click();
+            await settle();
+
+            expect(api.saveSettingChanges.mock.calls).toEqual([
+                [{ values: { 'player.seekSeconds': 15 }, lock: [], unlock: [] }, 'server'],
+                [{ values: { 'player.seekSeconds': 20 }, lock: [], unlock: [] }, 'tenant'],
+            ]);
+            expect(levelTab('server').getAttribute('aria-selected')).toBe('true');
+            expect(marked('server') || marked('tenant')).toBe(false);
+            expect(buttonNamed(element, 'Save')!.disabled).toBe(true);
+        });
+
+        it('shows the level whose values are refused, with its errors and changes; the one saved before stays saved', async () => {
+            const toast = vi.spyOn(TestBed.inject(ToastService), 'show');
+            api.saveSettingChanges.mockImplementation(async (_, level) => {
+                if (level === 'tenant')
+                    throw new ApiError(400, 'x', { 'player.seekSeconds': ['Too long a step.'] });
+                return views.server;
+            });
+            await edit('20');
+            await show('server');
+            await edit('15');
+
+            buttonNamed(element, 'Save')!.click();
+            await settle();
+
+            expect(levelTab('tenant').getAttribute('aria-selected')).toBe('true');
+            expect(seek().value).toBe('20');
+            expect(fieldError()).toBe('Too long a step.');
+            expect(marked('server')).toBe(false);
+            expect(marked('tenant')).toBe(true);
+            expect(toast).toHaveBeenCalledWith('Saved the settings of the whole server; those of this space need fixing.');
+        });
+
+        it('checks the numbers of the other level before sending anything, and shows them', async () => {
+            await edit('2.5');
+            await show('server');
+            await edit('15');
+
+            buttonNamed(element, 'Save')!.click();
+            await settle();
+
+            expect(api.saveSettingChanges).not.toHaveBeenCalled();
+            expect(levelTab('tenant').getAttribute('aria-selected')).toBe('true');
+            expect(fieldError()).toBe('Enter a whole number.');
+            expect(marked('server')).toBe(true);
+        });
+
+        it('drops a kept change the level can no longer make (locked above meanwhile)', async () => {
+            await edit('20');
+            await show('server');
+            views.tenant = view('tenant', { 'player.seekSeconds': { editable: false, lockedBy: 'server' } }, seekOf(10));
+            await show('tenant');
+
+            expect(seek().value).toBe('10');
+            expect(seek().disabled).toBe(true);
+            expect(marked('tenant')).toBe(false);
+            expect(buttonNamed(element, 'Save')!.disabled).toBe(true);
+        });
+
+        it('keeps a kept lock only where the level can still lock', async () => {
+            views.tenant = view('tenant', { 'player.loop': { lockable: true } }, seekOf(12));
+            await show('server');
+            await show('tenant');
+            element.querySelector<HTMLInputElement>('.settings-show-all input')!.click();
+            await settle();
+            const lock = () => element.querySelector('#setting-player-loop')!.closest('.setting-check')!.querySelector<HTMLInputElement>('.setting-lock input');
+            lock()!.click();
+            await settle();
+            await show('server');
+            await show('tenant');
+            expect(lock()!.checked).toBe(true);
+
+            await show('server');
+            views.tenant = view('tenant', { 'player.loop': { lockable: false } }, seekOf(12));
+            await show('tenant');
+            expect(lock()).toBeNull();
+            expect(marked('tenant')).toBe(false);
+        });
+
+        it('discards the changes of both levels', async () => {
+            await edit('20');
+            await show('server');
+            await edit('15');
+
+            buttonNamed(element, 'Discard')!.click();
+            await settle();
+            expect(seek().value).toBe('10');
+            await show('tenant');
+
+            expect(seek().value).toBe('12');
+            expect(marked('server') || marked('tenant')).toBe(false);
+            expect(buttonNamed(element, 'Save')!.disabled).toBe(true);
+        });
+
+        it('asks before leaving while only the hidden level has changes', async () => {
+            await edit('20');
+            await show('server');
+            const unload = new Event('beforeunload', { cancelable: true });
+
+            window.dispatchEvent(unload);
+
+            expect(unload.defaultPrevented).toBe(true);
+        });
+
+        it('ignores a level\'s answer coming after another level was picked', async () => {
+            const late = deferred<SettingsView>();
+            api.settings.mockImplementation(level => level === 'server' ? late.promise : Promise.resolve(views.tenant));
+            await show('server');
+            await show('tenant');
+
+            late.resolve(views.server);
+            await settle();
+
+            expect(levelTab('tenant').getAttribute('aria-selected')).toBe('true');
+            expect(seek().value).toBe('12');
+        });
     });
 
     it('says why a setting cannot change at this level, and locks those it may', async () => {
@@ -424,8 +625,7 @@ describe('AdminPageComponent by rights and levels', () => {
             'player.loop': { lockable: true },
             'dataServer': { scope: 'server', editable: false },
         }));
-        api.saveSettings.mockImplementation(async values => view('tenant', { 'player.loop': { lockable: true } }, values));
-        api.saveSettingLocks.mockResolvedValue(view('tenant', { 'player.loop': { lockable: true, locked: true } }));
+        api.saveSettingChanges.mockResolvedValue(view('tenant', { 'player.loop': { lockable: true, locked: true } }));
         await open('/admin?section=playback');
         element.querySelector<HTMLInputElement>('.settings-show-all input')!.click();
         await settle();
@@ -443,8 +643,7 @@ describe('AdminPageComponent by rights and levels', () => {
         buttonNamed(element, 'Save')!.click();
         await settle();
 
-        expect(api.saveSettings).toHaveBeenCalledWith(expect.anything(), 'tenant');
-        expect(api.saveSettingLocks).toHaveBeenCalledWith(['player.loop'], 'tenant');
+        expect(api.saveSettingChanges).toHaveBeenCalledWith({ values: {}, lock: ['player.loop'], unlock: [] }, 'tenant');
         expect(lock.checked).toBe(true);
         expect(element.querySelector('.admin-savebar-status')!.textContent).toBe('Following the server\'s settings');
     });

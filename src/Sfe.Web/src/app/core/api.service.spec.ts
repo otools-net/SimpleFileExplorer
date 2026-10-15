@@ -256,4 +256,17 @@ describe('Api', () => {
         expect(http.expectOne(r => r.url === 'api/settings' && r.method === 'DELETE')).toBeTruthy();
         expect(http.expectOne('api/me/preferences').request.method).toBe('PUT');
     });
+
+    it('saves only the changes of a level, or of the preferences, with PATCH', () => {
+        void api.saveSettingChanges({ values: { 'player.seekSeconds': 15 }, lock: ['player.loop'], unlock: [] }, 'server');
+        void api.savePreferenceChanges({ values: { 'player.loop': true } });
+
+        const level = http.expectOne('api/settings?level=server');
+        expect(level.request.method).toBe('PATCH');
+        expect(level.request.headers.get('X-SFE-Request')).toBe('1');
+        expect(level.request.body).toEqual({ values: { 'player.seekSeconds': 15 }, lock: ['player.loop'], unlock: [] });
+        const preferences = http.expectOne('api/me/preferences');
+        expect(preferences.request.method).toBe('PATCH');
+        expect(preferences.request.body).toEqual({ values: { 'player.loop': true } });
+    });
 });

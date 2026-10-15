@@ -39,9 +39,13 @@ something sees only **My account**, a visitor without an account no administrati
 - Errors are shown next to their fields, and their sections and pages are marked in red.
 - The page shows the most used settings; tick **Show all settings** in the bottom bar for the others (each browser
   remembers the choice).
-- Server administrators choose at the top of a settings page whether they edit **this space** or **the whole server**
-  (the defaults of every space), and can **lock** a setting for the levels below: see
-  [Settings by level](../reference/settings-levels.md).
+- Server administrators choose with the tabs at the top of a settings page whether they edit **This space** or the
+  **Whole server** (the defaults of every space), and can **lock** a setting for the levels below: see
+  [Settings by level](../reference/settings-levels.md). Changes made in one tab are kept while the other shows (a dot
+  marks the tab); **Save** saves both tabs, the whole server's first, and **Discard** forgets both. When the values of
+  a tab are refused, that tab opens with its errors; the other tab's saved changes stay saved.
+- Only the settings you changed are saved: a space keeps following the server for the others, even if someone changed
+  the server's settings while your page was open.
 - A setting you can't change says why: set by the configuration, locked by the server or the space, a server setting,
   or not your section.
 

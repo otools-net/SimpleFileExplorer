@@ -6,7 +6,7 @@ import {
     BackupLink, ClientConfig, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
-    RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingLevel,
+    RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
     TaskActionResult, TaskInfo, TaskKind, TaskOverview, TaskRunDetails, TaskRunPage, TaskSchedule, TaskScheduleInput, TenantAccess, TenantDetails,
     TenantInput, StreamingStatus, StreamProbe, SystemInfo, TrickplayActivity, TrickplayManifest, TrickplayStates, TrickplayStatus, UserInfo, UserInput,
@@ -108,12 +108,16 @@ export class Api {
     /** The settings of a level: the server's (server administrators) or the space's; without one, the caller's default. */
     settings = (level?: SettingLevel) => this.get<SettingsView>('api/settings', { level });
     saveSettings = (values: SettingsValues, level?: SettingLevel) => this.put<SettingsView>(withLevel('api/settings', level), values);
+    /** Saves only the settings (and locks) in `changes` at `level`: what the level has for the others stays. */
+    saveSettingChanges = (changes: SettingChanges, level?: SettingLevel) => this.patch<SettingsView>(withLevel('api/settings', level), changes);
     /** Locks `keys` at `level` for the levels below; the other settings it may lock are unlocked. */
     saveSettingLocks = (keys: string[], level: SettingLevel) => this.put<SettingsView>(withLevel('api/settings/locks', level), { keys });
     resetSettings = (level?: SettingLevel) => this.delete<SettingsView>(withLevel('api/settings', level));
     /** The signed-in user's own preferences (the user level). */
     preferences = () => this.get<SettingsView>('api/me/preferences');
     savePreferences = (values: SettingsValues) => this.put<SettingsView>('api/me/preferences', values);
+    /** Saves only the preferences in `changes.values`; the others keep following the space. */
+    savePreferenceChanges = (changes: SettingChanges) => this.patch<SettingsView>('api/me/preferences', changes);
     resetPreferences = () => this.delete<SettingsView>('api/me/preferences');
     /** The signed-in user's quick links in the library, in order. */
     quickLinks = () => this.get<QuickLink[]>('api/me/quick-links');
@@ -232,6 +236,10 @@ export class Api {
 
     private put<T>(url: string, body: unknown): Promise<T> {
         return this.send(this.http.put<T>(url, body, { headers: this.headers(true) }));
+    }
+
+    private patch<T>(url: string, body: unknown): Promise<T> {
+        return this.send(this.http.patch<T>(url, body, { headers: this.headers(true) }));
     }
 
     private delete<T>(url: string): Promise<T> {

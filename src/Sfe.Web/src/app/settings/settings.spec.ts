@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { ApiError } from '../core/api.service';
-import { SettingsValues, SettingsView } from '../core/models';
+import { SettingChanges, SettingsValues, SettingsView } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { SearchHistory } from '../library/search-history.service';
 import { SidebarService } from '../library/sidebar/sidebar.service';
@@ -113,8 +113,10 @@ describe('settings on the administration page', () => {
         box.dispatchEvent(new Event('change'));
         await settle();
     };
-    /** The values of the last save. */
-    const sent = () => api.saveSettings.mock.lastCall![0] as Record<string, unknown>;
+    /** The values of the last save, by setting key: only those changed are sent. */
+    const sent = () => (api.saveSettingChanges.mock.lastCall![0] as SettingChanges).values!;
+    /** The server's answer to a save: the defaults with the changes over them. */
+    const answer = async (changes: SettingChanges): Promise<SettingsView> => ({ values: values(changes.values), customized: true });
 
     /** Shows the sub-page of the tab `settings` of settings-schema.ts. */
     async function go(settings: string): Promise<void> {
@@ -218,8 +220,8 @@ describe('settings on the administration page', () => {
         }
     });
 
-    it('keeps the changes made in several sections, and saves them all cleaned up, with the values it has no field for', async () => {
-        api.saveSettings.mockImplementation(async settings => ({ values: settings, customized: true }));
+    it('keeps the changes made in several sections, and saves only those, cleaned up', async () => {
+        api.saveSettingChanges.mockImplementation(answer);
         await open({ values: { ...values({ 'browse.defaultPageSize': 100 }), unknownFutureSetting: { kept: true } }, customized: false });
         showAll().click();
         await settle();
@@ -246,13 +248,15 @@ describe('settings on the administration page', () => {
         api.config.mockClear();
         await save();
 
-        expect(getValue(sent(), 'browse.defaultPageSize')).toBe(300);
-        expect(getValue(sent(), 'dataServer')).toBeNull();
-        expect(getValue(sent(), 'player.externalName')).toBe('VLC');
-        expect(getValue(sent(), 'scan.ignoredFiles')).toEqual(['Thumbs.db', 'desktop.ini']);
-        expect(getValue(sent(), 'fileTypes.videos')).toEqual(['.mp4', '.mkv', '.webm']);
-        expect(getValue(sent(), 'search.explain')).toBe(true);
-        expect(sent()['unknownFutureSetting']).toEqual({ kept: true });
+        expect(sent()['browse.defaultPageSize']).toBe(300);
+        expect(sent()['dataServer']).toBeNull();
+        expect(sent()['player.externalName']).toBe('VLC');
+        expect(sent()['scan.ignoredFiles']).toEqual(['Thumbs.db', 'desktop.ini']);
+        expect(sent()['fileTypes.videos']).toEqual(['.mp4', '.mkv', '.webm']);
+        expect(sent()['search.explain']).toBe(true);
+        expect(Object.keys(sent()).sort(), 'Only the settings changed are sent').toEqual(['browse.defaultPageSize', 'dataServer',
+            'fileTypes.videos', 'player.externalName', 'scan.ignoredFiles', 'search.explain']);
+        expect(sent()['unknownFutureSetting']).toBeUndefined();
         // What the client derives from the settings is read again.
         expect(api.config).toHaveBeenCalled();
         expect(status()).toBe('Using saved settings');
@@ -260,14 +264,14 @@ describe('settings on the administration page', () => {
     });
 
     it('saves on Enter in a field', async () => {
-        api.saveSettings.mockImplementation(async settings => ({ values: settings, customized: true }));
+        api.saveSettingChanges.mockImplementation(answer);
         await open();
         type(control('browse.defaultPageSize'), '300');
 
         element.querySelector('form.settings-form')!.dispatchEvent(new Event('submit', { cancelable: true }));
         await settle();
 
-        expect(getValue(sent(), 'browse.defaultPageSize')).toBe(300);
+        expect(sent()['browse.defaultPageSize']).toBe(300);
     });
 
     it('discards the changes not saved', async () => {
@@ -292,7 +296,7 @@ describe('settings on the administration page', () => {
         await settle();
         await save();
 
-        expect(api.saveSettings).not.toHaveBeenCalled();
+        expect(api.saveSettingChanges).not.toHaveBeenCalled();
         expect(fieldError('player.seekSeconds')).toBe('Enter a whole number.');
         expect(summary()).toBe('Some settings need fixing (see the marked sections).');
         expect(navItem('Interface').classList).toContain('has-error');
@@ -303,7 +307,7 @@ describe('settings on the administration page', () => {
     });
 
     it('shows the server\'s errors by their fields, opening their sub-page, and the others in the summary', async () => {
-        api.saveSettings.mockRejectedValue(new ApiError(400, 'x', {
+        api.saveSettingChanges.mockRejectedValue(new ApiError(400, 'x', {
             'trickplay.width': ['Between 64 and 1280.'],
             'somethingElse': ['The settings file is read-only.'],
         }));
@@ -327,7 +331,7 @@ describe('settings on the administration page', () => {
     });
 
     it('shows an error about a group of fields above the group', async () => {
-        api.saveSettings.mockRejectedValue(new ApiError(400, 'x', { fileTypes: ['An extension is in two lists.'] }));
+        api.saveSettingChanges.mockRejectedValue(new ApiError(400, 'x', { fileTypes: ['An extension is in two lists.'] }));
         await open(view(), 'fileTypes');
         type(control('fileTypes.videos'), '.mp4');
         await settle();
@@ -338,7 +342,7 @@ describe('settings on the administration page', () => {
     });
 
     it('stays on the current sub-page when it has errors too', async () => {
-        api.saveSettings.mockRejectedValue(new ApiError(400, 'x', { 'tags.sidebarCount': ['Too many.'], 'trickplay.width': ['No.'] }));
+        api.saveSettingChanges.mockRejectedValue(new ApiError(400, 'x', { 'tags.sidebarCount': ['Too many.'], 'trickplay.width': ['No.'] }));
         await open(view(), 'tags');
         type(control('tags.sidebarCount'), '19');
         await settle();
@@ -351,7 +355,7 @@ describe('settings on the administration page', () => {
 
     it('reports a save that failed without validation errors', async () => {
         const error = vi.spyOn(toasts, 'error');
-        api.saveSettings.mockRejectedValue(new ApiError(0, 'The server is not reachable'));
+        api.saveSettingChanges.mockRejectedValue(new ApiError(0, 'The server is not reachable'));
         await open();
         type(control('browse.defaultPageSize'), '300');
         await settle();
@@ -364,7 +368,7 @@ describe('settings on the administration page', () => {
 
     it('disables Save while saving', async () => {
         const pending = deferred<SettingsView>();
-        api.saveSettings.mockReturnValue(pending.promise);
+        api.saveSettingChanges.mockReturnValue(pending.promise);
         await open();
         type(control('browse.defaultPageSize'), '300');
         await settle();
@@ -380,19 +384,19 @@ describe('settings on the administration page', () => {
 
     describe('external player presets', () => {
         it('fills the link and the name from a preset, and empties them for none', async () => {
-            api.saveSettings.mockImplementation(async settings => ({ values: settings, customized: true }));
+            api.saveSettingChanges.mockImplementation(answer);
             await open(view(), 'playback');
 
             await select('player.externalPreset', '0');
             await save();
-            expect(getValue(sent(), 'player.externalUrl')).toBe(EXTERNAL_PLAYERS[0][2]);
-            expect(getValue(sent(), 'player.externalName')).toBe(EXTERNAL_PLAYERS[0][1]);
+            expect(sent()['player.externalUrl']).toBe(EXTERNAL_PLAYERS[0][2]);
+            expect(sent()['player.externalName']).toBe(EXTERNAL_PLAYERS[0][1]);
 
             await open(view({ 'player.externalUrl': 'vlc://{url}', 'player.externalName': 'VLC' }), 'playback');
             await select('player.externalPreset', '');
             await save();
-            expect(getValue(sent(), 'player.externalUrl')).toBeNull();
-            expect(getValue(sent(), 'player.externalName')).toBeNull();
+            expect(sent()['player.externalUrl']).toBeNull();
+            expect(sent()['player.externalName']).toBeNull();
         });
 
         it('shows the preset matching the link, "Custom…" for another link, none without one', async () => {

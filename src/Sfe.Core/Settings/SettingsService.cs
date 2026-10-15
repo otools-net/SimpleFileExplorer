@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Access;
@@ -6,6 +7,12 @@ using Sfe.Core.Options;
 using Sfe.Core.Paths;
 
 namespace Sfe.Core.Settings;
+
+/// <summary>Some settings of a level to change, the others left as they are (<see cref="SettingsService.SaveChangesAsync"/>).</summary>
+/// <param name="Values">New values by setting key (<c>player.seekSeconds</c>); a value equal to the inherited one follows the levels above again.</param>
+/// <param name="Lock">Settings this level locks for the levels below.</param>
+/// <param name="Unlock">Settings this level stops locking.</param>
+public sealed record SettingChanges(IReadOnlyDictionary<string, JsonNode?>? Values = null, IReadOnlyList<string>? Lock = null, IReadOnlyList<string>? Unlock = null);
 
 /// <summary>
 /// Reads and changes the settings exposed to the web client (see <see cref="EditableSettings"/>), by level
@@ -145,6 +152,134 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
 
         await WriteAsync(level, tenantId, userId, kept, sources, cancellationToken);
         return (await GetAsync(level, tenantId, userId, canChange, cancellationToken), null);
+    }
+
+    /// <summary>
+    /// Saves only the settings named in <paramref name="changes"/> at a level; what the level stores for the others
+    /// stays as it is. Unlike <see cref="SaveAsync(SettingLevel, int?, int?, EditableSettings, Func{SettingDefinition, bool}?, CancellationToken)"/>,
+    /// which takes every value, a page holding values loaded before another level changed cannot pin them here: an
+    /// inherited value nobody touched keeps following the levels above. The values are checked together with those
+    /// in effect (a page size against the largest page), and nothing is written when any check fails.
+    /// </summary>
+    public async Task<(SettingsView? View, Dictionary<string, string[]>? Errors)> SaveChangesAsync(
+        SettingLevel level, int? tenantId, int? userId, SettingChanges changes, Func<SettingDefinition, bool>? canChange,
+        CancellationToken cancellationToken = default)
+    {
+        if (layers is null || level is not (SettingLevel.Server or SettingLevel.Tenant or SettingLevel.User))
+            throw new InvalidOperationException("Settings by level need the accounts' database.");
+
+        var sources = level == SettingLevel.Server ? ServerSources() : await layers.LoadAsync(Tenant(tenantId), userId, cancellationToken);
+        var resolved = SettingLayers.Resolve(sources, level);
+        var states = SettingLayers.States(resolved, level, canChange);
+        var submitted = changes.Values ?? new Dictionary<string, JsonNode?>();
+        var toLock = (changes.Lock ?? []).ToHashSet(StringComparer.Ordinal);
+        var toUnlock = (changes.Unlock ?? []).ToHashSet(StringComparer.Ordinal);
+        var errors = new Dictionary<string, string[]>();
+
+        foreach (var key in submitted.Keys.Where(k => SettingCatalog.Find(k) is null))
+            errors[key] = ["There is no such setting."];
+        foreach (var key in toLock.Concat(toUnlock).Where(k => level == SettingLevel.User || !states.TryGetValue(k, out var state) || !state.Lockable))
+            errors[key] = ["This setting cannot be locked here."];
+        foreach (var key in toLock.Intersect(toUnlock))
+            errors[key] = ["A setting cannot be locked and unlocked at once."];
+        var known = submitted.Where(s => SettingCatalog.Find(s.Key) is not null).ToDictionary(s => s.Key, s => s.Value, StringComparer.Ordinal);
+
+        // The values in effect with the changes over them, checked and normalized together.
+        var candidate = new JsonObject();
+        foreach (var (key, setting) in resolved)
+            SettingKeys.Set(candidate, key, setting.Value);
+        foreach (var (key, value) in known)
+            SettingKeys.Set(candidate, key, value);
+        EditableSettings settings;
+        try
+        {
+            settings = SettingKeys.FromJson(candidate);
+        }
+        catch (JsonException)
+        {
+            foreach (var key in known.Keys.Where(k => !Readable(resolved, k, known[k])))
+                errors[key] = ["This value has the wrong type for this setting."];
+            return (null, errors);
+        }
+
+        Normalize(settings);
+        foreach (var (key, messages) in Validate(settings))
+            errors.TryAdd(key, messages);
+        var normalized = SettingKeys.Flatten(SettingKeys.ToJson(settings));
+        var current = Normalized(resolved, s => s.Value);
+        var inherited = Normalized(resolved, s => s.Inherited);
+
+        var locked = states.Where(s => s.Value.Locked).Select(s => s.Key).ToHashSet(StringComparer.Ordinal);
+        locked.UnionWith(toLock);
+        locked.ExceptWith(toUnlock);
+
+        // The level's own values, as stored, with each change written over (or removed when it is the inherited one).
+        var layer = level switch
+        {
+            SettingLevel.Server => sources.Server.ToDictionary(v => v.Key, v => v.Value, StringComparer.Ordinal),
+            SettingLevel.Tenant => sources.Tenant.ToDictionary(v => v.Key, v => v.Value.Value, StringComparer.Ordinal),
+            _ => sources.User.ToDictionary(v => v.Key, v => v.Value, StringComparer.Ordinal),
+        };
+        foreach (var key in known.Keys)
+        {
+            var value = normalized[key];
+            var state = states[key];
+            if (!state.Editable)
+            {
+                if (!SettingKeys.Same(value, current[key]))
+                    errors.TryAdd(key, [Unchangeable(SettingCatalog.Find(key)!, state, level)]);
+                continue;
+            }
+
+            if (SettingKeys.Same(value, inherited[key]) && !locked.Contains(key))
+                layer.Remove(key);
+            else
+                layer[key] = value;
+        }
+
+        if (errors.Count > 0)
+            return (null, errors);
+
+        switch (level)
+        {
+            case SettingLevel.Server:
+                await store.SaveLayerAsync(layer, toLock.Count + toUnlock.Count > 0 ? locked : store.Locked, cancellationToken);
+                layers.NotifyChanged();
+                break;
+            case SettingLevel.Tenant:
+                var tenant = Tenant(tenantId) ?? throw new InvalidOperationException("No library yet.");
+                // A newly locked setting pins the value in effect; an unlocked one with the inherited value needs no row.
+                foreach (var key in toLock.Where(k => !layer.ContainsKey(k)))
+                    layer[key] = normalized[key];
+                var rows = layer.ToDictionary(v => v.Key, v => new StoredSetting(v.Value, locked.Contains(v.Key)), StringComparer.Ordinal);
+                foreach (var key in toUnlock.Where(k => rows.ContainsKey(k) && SettingKeys.Same(rows[k].Value, inherited[k])))
+                    rows.Remove(key);
+                await layers.Rows.SaveTenantAsync(tenant, rows, cancellationToken);
+                break;
+            default:
+                await layers.Rows.SaveUserAsync(userId ?? throw new InvalidOperationException("No user."), layer, cancellationToken);
+                break;
+        }
+
+        return (await GetAsync(level, tenantId, userId, canChange, cancellationToken), null);
+    }
+
+    /// <summary>The settings in effect still read with <paramref name="value"/> for <paramref name="key"/> alone (its type fits).</summary>
+    private static bool Readable(Dictionary<string, ResolvedSetting> resolved, string key, JsonNode? value)
+    {
+        var json = new JsonObject();
+        foreach (var (k, setting) in resolved)
+            SettingKeys.Set(json, k, setting.Value);
+        SettingKeys.Set(json, key, value);
+        try
+        {
+            SettingKeys.FromJson(json);
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     /// <summary>

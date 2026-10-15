@@ -37,6 +37,16 @@ public static class SettingsEndpoints
                 not change (locked above, outside its scope, or without the section's right) is a validation error.
                 """);
 
+        settings.MapPatch("/", SaveChanges)
+            .WithName("SaveSettingChanges")
+            .WithSummary("Saves only the settings sent (and lock changes) at a level; the others keep what the level has.")
+            .WithDescription(LevelDescription + """
+
+                `values` maps setting keys (`player.seekSeconds`) to their new value; one equal to what the level inherits
+                follows the levels above again. `lock` / `unlock` list the settings this level starts or stops locking for
+                the levels below. The values are checked with those in effect; nothing is saved when one is refused.
+                """);
+
         settings.MapPut("/locks", SaveLocks)
             .WithName("SaveSettingLocks")
             .WithSummary("Locks settings at a level: the levels below (libraries, users) cannot change them.")
@@ -56,6 +66,10 @@ public static class SettingsEndpoints
         preferences.MapPut("/", SavePreferences)
             .WithName("SavePreferences")
             .WithSummary("Saves the signed-in user's own preferences; settings locked by the library or the server cannot change.");
+
+        preferences.MapPatch("/", SavePreferenceChanges)
+            .WithName("SavePreferenceChanges")
+            .WithSummary("Saves only the preferences sent (`values` by setting key); the others stay as they are.");
 
         preferences.MapDelete("/", ResetPreferences)
             .WithName("ResetPreferences")
@@ -96,6 +110,24 @@ public static class SettingsEndpoints
         if (Resolve(state, level) is not var (chosen, canChange))
             return TypedResults.Forbid();
         var (view, errors) = await service.SaveAsync(chosen, state.Tenant?.Id, null, values, canChange, cancellationToken);
+        return view is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Ok(view);
+    }
+
+    private static async Task<Results<Ok<SettingsView>, ValidationProblem, ForbidHttpResult>> SaveChanges(
+        SettingsService service, CurrentAccess current, SettingChanges changes, CancellationToken cancellationToken, string? level = null)
+    {
+        var state = await current.GetAsync();
+        if (Resolve(state, level) is not var (chosen, canChange))
+            return TypedResults.Forbid();
+        var (view, errors) = await service.SaveChangesAsync(chosen, state.Tenant?.Id, null, changes, canChange, cancellationToken);
+        return view is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Ok(view);
+    }
+
+    private static async Task<Results<Ok<SettingsView>, ValidationProblem>> SavePreferenceChanges(
+        SettingsService service, CurrentAccess current, SettingChanges changes, CancellationToken cancellationToken)
+    {
+        var state = await current.GetAsync();
+        var (view, errors) = await service.SaveChangesAsync(SettingLevel.User, state.Tenant?.Id, state.User!.Id, changes, null, cancellationToken);
         return view is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Ok(view);
     }
 

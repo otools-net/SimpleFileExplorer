@@ -98,7 +98,5 @@
 .setting-check .check input:disabled { opacity: .55; cursor: not-allowed; }
 
 /* Which level the settings pages edit (server administrators): the library's or the server's. */
-.settings-level { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 0 0 4px; font-size: 13px; }
-.settings-level > span { color: var(--text-muted); font-weight: 600; }
-.settings-level label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-.settings-level input { margin: 0; accent-color: var(--accent); }
+.settings-level { padding: 0; margin: 0 0 12px; }
+.settings-level .settings-tab { padding-inline: 14px; }
