@@ -1,0 +1,88 @@
+/* Administration › Logs: the filters, then the entries, newest first (LogsSectionComponent). */
+.logs-section { display: flex; flex-direction: column; gap: 10px; }
+
+.logs-filters { display: flex; flex-direction: column; gap: 8px; }
+.logs-filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.logs-filters :is(input[type="search"], input[type="date"], select) {
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: inherit;
+    font: inherit;
+}
+
+.logs-text { position: relative; display: flex; flex: 1 1 260px; min-width: 200px; }
+.logs-text > .icon { position: absolute; top: 8px; left: 9px; width: 14px; height: 14px; color: var(--text-muted); pointer-events: none; }
+.logs-filters .logs-text input { width: 100%; padding-left: 30px; }
+.logs-day { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 13px; }
+
+.logs-levels { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.logs-level-chip { position: relative; display: inline-flex; cursor: pointer; }
+.logs-level-chip input { position: absolute; opacity: 0; pointer-events: none; }
+.logs-level-chip span {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.logs-level-chip input:checked + span { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--text); }
+.logs-level-chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+.logs-level-chip:is(.level-error, .level-critical) input:checked + span { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, transparent); }
+
+.logs-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+
+.log-entries { display: flex; flex-direction: column; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); list-style: none; }
+.log-entries:empty { display: none; }
+.log-entry { border-bottom: 1px solid var(--border); }
+.log-entry:last-child { border-bottom: 0; }
+.log-entry-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    padding: 5px 10px;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    font: 400 12px/1.5 var(--mono);
+    text-align: left;
+}
+
+.log-entry-head:hover { background: color-mix(in srgb, var(--surface-3) 45%, transparent); }
+.log-entry-head time { flex: none; color: var(--text-muted); }
+.log-level { flex: none; width: 62px; color: var(--text-muted); }
+.log-space { flex: none; max-width: 120px; overflow: hidden; color: var(--text-muted); text-overflow: ellipsis; white-space: nowrap; }
+.log-category { flex: none; max-width: 180px; overflow: hidden; color: var(--text-muted); text-overflow: ellipsis; white-space: nowrap; }
+.log-message { flex: 1; min-width: 0; overflow: hidden; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.log-entry.open .log-message { white-space: pre-wrap; overflow-wrap: anywhere; }
+.log-has-error { flex: none; padding: 0 6px; border-radius: 4px; background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
+
+.log-entry.level-warning .log-level { color: var(--accent); }
+.log-entry:is(.level-error, .level-critical) :is(.log-level, .log-message) { color: var(--danger); }
+.log-entry:is(.level-debug, .level-trace) .log-entry-head { opacity: .75; }
+
+.log-entry-details { display: flex; flex-direction: column; gap: 6px; padding: 0 10px 10px; font-size: 12px; }
+.log-entry-details p { margin: 0; overflow-wrap: anywhere; font-family: var(--mono); }
+.log-exception {
+    max-height: 340px;
+    margin: 0;
+    padding: 8px 10px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    font: 12px/1.5 var(--mono);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+    .log-entry-head { flex-wrap: wrap; gap: 2px 10px; }
+    .log-category, .log-space { max-width: none; }
+    .log-message { flex-basis: 100%; white-space: normal; overflow-wrap: anywhere; }
+}

@@ -24,6 +24,7 @@ export const Rights = {
     viewTasks: 'tasks.view',
     runTasks: 'tasks.run',
     scheduleTasks: 'tasks.schedule',
+    viewLogs: 'logs.view',
     interfaceSettings: 'settings.interface',
     playbackSettings: 'settings.playback',
     scanningSettings: 'settings.scanning',
@@ -32,6 +33,7 @@ export const Rights = {
     thumbnailSettings: 'settings.thumbnails',
     trickplaySettings: 'settings.trickplay',
     taskSettings: 'settings.tasks',
+    logSettings: 'settings.logs',
     editorSettings: 'settings.editor',
     manageMembers: 'tenant.members',
     ownPreferences: 'account.preferences',
@@ -62,6 +64,7 @@ export const SETTINGS_RIGHTS: Record<string, Right> = {
     trickplay: Rights.trickplaySettings,
     tracking: Rights.trackingSettings,
     tasks: Rights.taskSettings,
+    logs: Rights.logSettings,
     tags: Rights.tagSettings,
     editor: Rights.editorSettings,
 };

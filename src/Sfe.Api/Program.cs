@@ -102,6 +102,7 @@ api.MapEditorEndpoints();
 api.MapSettingsEndpoints();
 api.MapQuickLinkEndpoints();
 api.MapSystemEndpoints();
+api.MapLogEndpoints();
 api.MapFallback(() => TypedResults.NotFound()).AllowAnonymous();
 
 app.MapFallbackToFile("index.html");

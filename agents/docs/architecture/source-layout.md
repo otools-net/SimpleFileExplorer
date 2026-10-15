@@ -24,6 +24,8 @@ src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceColl
                         SemanticVersion
     Steps/              IUpgradeStep + UpgradeSteps.All (changes outside the DB schemas), one folder per version:
                         V1_40_0/ShardCacheLayout (caches → ab/cd/rest)
+  Logs/                 AuditLogProvider (every logger's entries, queued) + AuditLogService (database, daily files,
+                        search, purge)
   Backup/               BackupWriter (zip of databases + config files, manifest, README)
   Tasks/                BackgroundTasks (status/start/cancel of every job), TaskScheduleService (+ loop),
                         ScheduleCalculator, TaskHistory (TaskRuns), TaskRunLog + TaskLogProvider (run logs)
@@ -31,7 +33,7 @@ src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceColl
                         right of each key), SettingLayers (resolution by level), SettingRows (library/user rows) /
                         SfeOptions ("Sfe" section), AccessOptions (Setup, Security, Rights, Tenants)
   SystemCommands/       shutdown / dismount through the shell
-src/Sfe.Api/            Program.cs, Endpoints/*Endpoints.cs (one class per area), TrickplayWorker, TaskScheduleWorker, PortableBuild,
+src/Sfe.Api/            Program.cs, Endpoints/*Endpoints.cs (one class per area), TrickplayWorker, TaskScheduleWorker, AuditLogWorker, PortableBuild,
                         AppVersion, StartupErrors (bad JSON, port in use), BrowserLauncher (portable: open the browser),
                         WindowsServiceSetup (--install-service); wwwroot/ = the built client (generated, git-ignored)
   Security/             cookie session (SfeSession), CurrentAccess (the request's account, library, rights), RequireRight +
@@ -63,6 +65,7 @@ src/Sfe.Web/            the web client (Angular workspace: angular.json, package
   src/app/settings/     settings-schema.ts, SettingsForm (one form for every settings tab), SettingsPanel (one tab)
   src/app/editor/       ImageEditorDialog (over the viewer), edits.ts (operations, EDIT_KINDS, renderEdits), crop.ts
   src/app/tags/ trickplay/ tracking/   their dialogs, sections of the admin page and parts
+  src/app/logs/         LogsSection (Administration › Logs › Log), logs.ts (filters → api/logs query)
   src/app/tasks/        TasksSection (sub-pages Tasks/Schedules/History of the admin page), ScheduleForm, TaskHistory, tasks.ts wording
 tests/Sfe.Tests/        unit, SQLite integration, HTTP tests; Infrastructure/ = TestLibrary + CoreServices + ApiClients
 build/                  build.ps1 / build.sh (portable packages), portable/appsettings.json, windows/ linux/ smoke tests,

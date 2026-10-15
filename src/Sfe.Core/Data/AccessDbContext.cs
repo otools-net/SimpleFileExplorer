@@ -13,6 +13,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public const int MaxUserNameLength = 100;
     public const int MaxRightLength = 64;
     public const int MaxSettingKeyLength = 200;
+    public const int MaxLogCategoryLength = 256;
 
     /// <summary>Found by name before the model can be trusted (<see cref="Upgrades.InstalledVersion"/>).</summary>
     public const string ServerPropertiesTable = "ServerProperties";
@@ -27,6 +28,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
     public DbSet<ServerProperty> ServerProperties => Set<ServerProperty>();
     public DbSet<QuickLink> QuickLinks => Set<QuickLink>();
+    public DbSet<LogEntry> LogEntries => Set<LogEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -161,6 +163,17 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
                 .WithMany()
                 .HasForeignKey(l => l.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<LogEntry>(entity =>
+        {
+            entity.ToTable("LogEntries");
+            entity.Property(e => e.Category).HasMaxLength(MaxLogCategoryLength).IsUnicode(false).IsRequired();
+            entity.Property(e => e.Message).IsRequired();
+            // No foreign key: the entries of a deleted library stay until they expire.
+            // Date ranges and the purge; the pages themselves go by Id (newest first).
+            entity.HasIndex(e => e.Timestamp);
+            entity.HasIndex(e => new { e.TenantId, e.Id });
         });
     }
 }

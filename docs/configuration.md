@@ -82,6 +82,17 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Trickplay:…` | [Trickplay › Settings](administration/trickplay.md#settings) |
 | `Sfe:Editor:OutputFolder`, `Quality` | [Picture editor](administration/picture-editor.md) |
 | `Sfe:Tasks:LogRetentionDays` | [Background tasks › Settings](administration/background-tasks.md#settings) |
+| `Sfe:Logs:RetentionDays`, `WriteFiles` | [Logs › Settings](administration/logs.md#settings) |
+
+## Logs
+
+What the server logs goes to its console (or the service's log) and to [Administration › Logs](administration/logs.md),
+at the levels of the standard `Logging` section of `appsettings.json` (`"Default": "Information"`, and `Warning` for
+`Microsoft.AspNetCore` and `Microsoft.EntityFrameworkCore`): lower a level there to see more, in both.
+
+| Setting | Notes |
+|---|---|
+| `Sfe:Logs:Directory` | The logs folder, where the daily files go when the log is also saved to files (default `data/logs`, next to the database and the thumbnails); only set in the configuration |
 
 ## The settings file
 

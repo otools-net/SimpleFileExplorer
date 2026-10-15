@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import {
     BackupLink, ClientConfig, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
-    InstallationView, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
+    InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
     TaskActionResult, TaskInfo, TaskKind, TaskOverview, TaskRunDetails, TaskRunPage, TaskSchedule, TaskScheduleInput, TenantAccess, TenantDetails,
@@ -88,6 +88,8 @@ export class Api {
     taskRuns = (query: { task: TaskKind | null; before: number | null }) => this.get<TaskRunPage>('api/tasks/runs', query);
     taskRun = (id: number) => this.get<TaskRunDetails>(`api/tasks/runs/${id}`);
     clearTaskRuns = () => this.delete<void>('api/tasks/runs');
+
+    logs = (query: LogQuery, signal?: AbortSignal) => this.get<LogSearchResult>('api/logs', { ...query }, signal);
 
     tags = (query: { q: string; limit: number }) => this.get<TagSearchResults>('api/tags', query);
     tag = (id: number) => this.get<TagDetails>(`api/tags/${id}`);

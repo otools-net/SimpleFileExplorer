@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 using Sfe.Core;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
+using Sfe.Core.Logs;
 using Sfe.Core.Options;
 using Sfe.Core.Settings;
 using Sfe.Core.Streaming;
@@ -40,9 +41,10 @@ public sealed class TenantHost : IAsyncDisposable
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(tenantConfiguration);
         services.AddLogging(logging => logging.AddConfiguration(configuration.GetSection("Logging")));
-        // The application's log outputs, as instances: the library's services don't dispose them.
+        // The application's log outputs, as instances: the library's services don't dispose them. The server's log marks
+        // the library's entries with it.
         foreach (var output in application.GetServices<ILoggerProvider>())
-            services.AddSingleton(output);
+            services.AddSingleton(output is AuditLogProvider log ? log.ForTenant(tenant.Id) : output);
         services.AddSingleton(application.GetRequiredService<SettingsStore>());
         services.AddSingleton(application.GetRequiredService<SettingLayers>());
         services.AddSingleton(application.GetRequiredService<FfmpegLimits>());

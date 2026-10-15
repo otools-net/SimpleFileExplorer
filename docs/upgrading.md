@@ -30,6 +30,15 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.46
+
+- The accounts' database gets a new table, `LogEntries` (the server's [log](administration/logs.md)), created by the
+  update page. What the server logs while the update waits is kept in memory and written once it is done.
+- The Administrators group of every space gets the new rights `logs.view` and `settings.logs` once, at the update; a
+  group made by hand gets them only if you add them.
+- Log entries are kept 30 days by default; nothing is written to files unless you turn it on. Nothing changes in the
+  settings file.
+
 ## To 1.43
 
 - **No file to edit for the setup code any more:** when the configuration sets none, SFE makes one and keeps it in

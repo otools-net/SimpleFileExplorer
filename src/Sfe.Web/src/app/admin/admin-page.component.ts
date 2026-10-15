@@ -9,6 +9,7 @@ import { ConfigService } from '../core/config.service';
 import { ThemeService } from '../core/theme.service';
 import { routeParams } from '../library/library-route';
 import { ListingStore } from '../library/listing.store';
+import { LogsSectionComponent } from '../logs/logs-section.component';
 import { SettingsForm } from '../settings/settings-form.service';
 import { SettingsPanelComponent } from '../settings/settings-panel.component';
 import { TABS } from '../settings/settings-schema';
@@ -46,7 +47,7 @@ export { leaveAdminPage } from './leave-admin-page';
     selector: 'sfe-admin-page',
     imports: [RouterLink, NgTemplateOutlet, IconComponent, EmptyStateComponent, SettingsPanelComponent, TagListComponent, TagEditorDialog,
         TrackingSectionComponent, TasksSectionComponent, TrickplayActivityComponent, SystemSectionComponent, AccessSectionComponent,
-        AccountSectionComponent],
+        AccountSectionComponent, LogsSectionComponent],
     providers: [SettingsForm],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'admin-page', '(window:beforeunload)': 'onBeforeUnload($event)' },
@@ -195,6 +196,9 @@ export { leaveAdminPage } from './leave-admin-page';
                                     }
                                     @case ('tasks') {
                                         <sfe-tasks-section [tab]="subpage().id" (selectTab)="select($event)" (openTrickplay)="go('trickplay', 'activity')" />
+                                    }
+                                    @case ('logs') {
+                                        <sfe-logs-section (openSettings)="select('settings')" />
                                     }
                                     @case ('system') {
                                         <sfe-system-section [tab]="subpage().id" />

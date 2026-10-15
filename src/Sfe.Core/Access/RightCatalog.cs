@@ -28,6 +28,7 @@ public static class Rights
     public const string ViewTasks = "tasks.view";
     public const string RunTasks = "tasks.run";
     public const string ScheduleTasks = "tasks.schedule";
+    public const string ViewLogs = "logs.view";
     public const string InterfaceSettings = "settings.interface";
     public const string PlaybackSettings = "settings.playback";
     public const string ScanningSettings = "settings.scanning";
@@ -36,6 +37,7 @@ public static class Rights
     public const string ThumbnailSettings = "settings.thumbnails";
     public const string TrickplaySettings = "settings.trickplay";
     public const string TaskSettings = "settings.tasks";
+    public const string LogSettings = "settings.logs";
     public const string EditorSettings = "settings.editor";
     public const string ManageMembers = "tenant.members";
     public const string OwnPreferences = "account.preferences";
@@ -100,6 +102,7 @@ public static class RightCatalog
         Tenant(Rights.ViewTasks, false, Administrators, "Background tasks", "See background tasks", "See what runs, when tasks run next, and their history and logs."),
         Tenant(Rights.RunTasks, false, Administrators, "Background tasks", "Run background tasks", "Start and cancel background tasks."),
         Tenant(Rights.ScheduleTasks, false, Administrators, "Background tasks", "Schedule background tasks", "Create, change and delete schedules; clear the history."),
+        Tenant(Rights.ViewLogs, false, Administrators, "Logs", "See the logs", "Read and search the warnings, errors and messages the server logged for the space (server administrators see those of the whole server).", since: 4),
         Tenant(Rights.InterfaceSettings, false, Administrators, "Settings", "Interface settings", "Appearance, browsing and search settings of the space."),
         Tenant(Rights.PlaybackSettings, false, Administrators, "Settings", "Playback settings", "The video player and the external player of the space."),
         Tenant(Rights.ScanningSettings, false, Administrators, "Settings", "Scanning settings", "What scans leave out, file types, what scans read."),
@@ -109,6 +112,7 @@ public static class RightCatalog
         Tenant(Rights.TrickplaySettings, false, Administrators, "Settings", "Trickplay settings", "Which videos get trickplay and how."),
         Tenant(Rights.TaskSettings, false, Administrators, "Settings", "Background task settings", "How long task logs are kept."),
         Tenant(Rights.EditorSettings, false, Administrators, "Settings", "Picture editor settings", "Where edited pictures are saved, and their quality.", since: 1),
+        Tenant(Rights.LogSettings, false, Administrators, "Settings", "Log settings", "How long the logs are kept, and whether they are also written to files (both set for the whole server).", since: 4),
         Tenant(Rights.ManageMembers, false, Administrators, "Access", "Manage the space's accounts and groups", "Create accounts in the space, put them in its groups, choose what each group may do, open the space to visitors."),
         Tenant(Rights.OwnPreferences, false, Members, "Account", "Own preferences", "Keep one's own theme, page sizes and player preferences on the server."),
         Tenant(Rights.OwnPassword, false, Members, "Account", "Change own password", "Change the password of one's own local account."),

@@ -72,6 +72,8 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'fileTracking.relink.enabled',
     'tags.recordHistory',
     'tasks.logRetentionDays',
+    'logs.retentionDays',
+    'logs.writeFiles',
     'editor.outputFolder',
 ]);
 
@@ -411,6 +413,22 @@ export const TABS: SettingTab[] = [
                 fields: [
                     { key: 'tasks.logRetentionDays', label: 'Keep runs and logs for (days)', type: 'number', min: 0, max: 3650,
                         hint: 'Runs that finished longer ago are forgotten, with their logs. 0: until cleared by hand.' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'logs',
+        title: 'Logs',
+        intro: 'What the server logs (its messages, warnings and errors, for every space) is kept for the Logs page. Both settings are the whole server\'s.',
+        groups: [
+            {
+                title: 'Keeping the log',
+                fields: [
+                    { key: 'logs.retentionDays', label: 'Keep log entries for (days)', type: 'number', min: 0, max: 3650,
+                        hint: 'Older entries are forgotten, and so are the daily files. 0: kept forever (the database keeps growing).' },
+                    { key: 'logs.writeFiles', label: 'Also save the log to files', type: 'checkbox',
+                        hint: 'Writes a copy of every entry to a file per day (sfe-yyyymmdd.log) in the logs folder, next to the database and the thumbnails (data/logs unless the server\'s configuration says otherwise). The files are written even while the database can\'t be.' },
                 ],
             },
         ],

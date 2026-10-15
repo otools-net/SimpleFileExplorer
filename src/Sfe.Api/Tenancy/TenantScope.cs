@@ -114,6 +114,8 @@ public static class TenancyServiceCollectionExtensions
         services.AddSingleton<Security.InstallationAccess>();
         services.AddSingleton<TenantRegistry>();
         services.AddHostedService(sp => sp.GetRequiredService<TenantRegistry>());
+        // The server's log, written while the app runs (after the update gate: AuditLogWorker).
+        services.AddHostedService<AuditLogWorker>();
         services.AddScoped<TenantScope>();
 
         // The types a library's services register, but those the whole server shares (registered here already).

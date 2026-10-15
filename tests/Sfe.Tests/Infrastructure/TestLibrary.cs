@@ -52,6 +52,7 @@ public sealed class TestLibrary : IDisposable
     public string DatabasePath { get; }
     public string ThumbnailPath { get; }
     public string SettingsPath => Path.Combine(BasePath, "settings.json");
+    public string LogsPath => Path.Combine(BasePath, "logs");
     public string ConnectionString => $"Data Source={DatabasePath}";
 
     /// <summary>Folders under (and including) <see cref="Root"/>.</summary>
@@ -89,6 +90,8 @@ public sealed class TestLibrary : IDisposable
         ["Sfe:Setup:CodeFile"] = Path.Combine(BasePath, "setup-code.txt"),
         ["Sfe:InstallationFile"] = Path.Combine(BasePath, "installation.json"),
         ["Sfe:Security:KeysDirectory"] = Path.Combine(BasePath, "keys"),
+        // The daily log files, when a test turns them on (Sfe:Logs:WriteFiles).
+        ["Sfe:Logs:Directory"] = LogsPath,
     };
 
     public void Dispose()

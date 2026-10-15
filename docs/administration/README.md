@@ -1,7 +1,7 @@
 # The administration page
 
 **Administration** in the [⋮ menu](../user-guide/signing-in.md#the--menu) opens the administration page: the settings,
-the tag list, duplicates, accounts, background tasks and your own account.
+the tag list, duplicates, accounts, background tasks, the server's log and your own account.
 
 ![The administration page](../images/admin-interface-browsing.png)
 
@@ -23,6 +23,7 @@ from page to page: click the section to open its first page, or **Administration
 | | [Picture editor](picture-editor.md) | where edited pictures go |
 | Access | [Spaces & accounts](spaces-and-accounts.md) | Spaces, Accounts |
 | Server | [Background tasks](background-tasks.md) | Tasks, Schedules, History, Settings |
+| | [Logs](logs.md) | Log, Settings |
 | | [System](system.md) | version, API reference, shutdown/dismount |
 | Account | [My account](my-account.md) | Preferences, Password |
 

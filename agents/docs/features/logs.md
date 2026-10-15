@@ -1,0 +1,26 @@
+# Server log (Administration › Logs)
+
+Code: `src/Sfe.Core/Logs/` (`AuditLogProvider`, `AuditLogService`), entity `Data/Entities/Logs/LogEntry.cs`
+(`AccessDbContext.LogEntries`, migration `AuditLog`), `src/Sfe.Api/AuditLogWorker.cs`, `Endpoints/LogEndpoints.cs`
+(`GET api/logs`); client `src/app/logs/` (`LogsSectionComponent`, `logs.ts` filters), `styles/logs.css`. User docs:
+`docs/administration/logs.md`.
+
+- `AuditLogProvider` is one root `ILoggerProvider` (registered in `AddSfeAccess`): it only queues (bounded at
+  `MaxQueued`, oldest dropped and counted). `TenantHost` hands libraries `ForTenant(id)` instead of the instance, which
+  marks their entries with `TenantId`; root entries (requests' own loggers, start-up, accounts) have none.
+- Levels follow the `Logging` section through the logger factory's filters, as the console: no extra filter.
+- `AuditLogProvider.Suppress()` (an `AsyncLocal`) keeps the log's own EF commands and failures out of it, else EF at
+  Information would log every insert into the log forever. Use it around anything the log service does.
+- `AuditLogWorker` (root hosted service) flushes every 2 s and purges hourly; while `MigrationCoordinator.IsBlocking`
+  it flushes with `database: false` (files still written, entries kept in `_pending`, bounded) and never purges.
+- The service reads its settings with `SettingLayers.ServerLevel()` (configuration + `settings.json`, no database):
+  it works while the database is down or not updated.
+- Settings `logs.retentionDays`, `logs.writeFiles` are server keys (`SettingCatalog.ServerKeys`) with the tenant right
+  `settings.logs` (every setting needs a tenant right: `LayeredSettingsTests`). `Sfe:Logs:Directory` is configuration
+  only (decides where data lives), resolved against the content root in `AddSfeAccess`.
+- Rights: `logs.view` is a tenant right (since 4), so a space's groups can be given it; the route forces `tenant` to
+  the caller's space unless `IsServerAdmin`, and only server administrators get `filesDirectory`.
+- Search: keyset by `Id` desc (`before`), text by `LIKE` with `\` escaping (SQL Server's `[` too) over message, category
+  and exception, so it scans; the retention bounds the table.
+- Tests: `LogTests` (call `AuditLogService.FlushAsync` instead of waiting for the worker); `TestLibrary.LogsPath` keeps
+  the files out of `src/Sfe.Api/data`.

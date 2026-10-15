@@ -16,7 +16,8 @@ Code: `src/Sfe.Api/Tenancy/` (`TenantRegistry`, `TenantHost`, `TenantMiddleware`
 ## How it works
 
 - `TenantRegistry` (hosted service) starts a `TenantHost` per enabled library: a `ServiceCollection` with
-  `AddSfeCore(config + overrides, contentRoot, tenantId)`, the application's log outputs,
+  `AddSfeCore(config + overrides, contentRoot, tenantId)`, the application's log outputs (the server log's as
+  `ForTenant`, [logs.md](../features/logs.md)),
   `SettingsStore`/`SettingLayers`/`FfmpegLimits` instances, and the workers; it initializes the library's index.
 - The first library uses the configuration as it is; others get `Sfe:Root` = their root, their connection string
   (`TenantHost.ConnectionString`: template, else `tenants/{slug}.db` beside the SQLite file or `{db}_{slug}` on SQL

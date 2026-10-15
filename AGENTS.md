@@ -127,6 +127,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [picture-editor](agents/docs/features/picture-editor.md) | browser edits, server saves | `app/editor/`, `Core/Editing/` |
 | [background-tasks](agents/docs/features/background-tasks.md) | jobs, run history, run logs | `Core/Tasks/`, `app/tasks/` |
 | [schedules](agents/docs/features/schedules.md) | task schedules | `TaskScheduleService`, `ScheduleCalculator` |
+| [logs](agents/docs/features/logs.md) | server log: capture, files, search, rights | `Core/Logs/`, `AuditLogWorker`, `app/logs/` |
 | [missing-files](agents/docs/features/missing-files.md) | missing tagged files, relink | `Core/FileTracking/` |
 | [duplicates](agents/docs/features/duplicates.md) | duplicate groups and removal | `DuplicateFinder`, `DuplicateRemover` |
 | [similar-videos](agents/docs/features/similar-videos.md) | video fingerprints and matching | `VideoFingerprint`, `VideoMatcher` |

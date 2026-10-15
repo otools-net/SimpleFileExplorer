@@ -135,6 +135,14 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         ],
     },
     {
+        id: 'logs',
+        group: 'Server',
+        title: 'Logs',
+        icon: 'docs',
+        description: 'The messages, warnings and errors the server logged, searchable by text, date and severity, and how long they are kept.',
+        subpages: [page('entries', 'Log', Rights.viewLogs), settingsPage('logs')],
+    },
+    {
         id: 'system',
         group: 'Server',
         title: 'System',

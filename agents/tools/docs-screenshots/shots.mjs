@@ -31,6 +31,9 @@ async function mask(b) {
         const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
         for (let n; (n = walker.nextNode());) n.nodeValue = n.nodeValue.replace(re, 'D:\\\\Media');
         for (const i of document.querySelectorAll('input, textarea')) i.value = i.value.replace(re, 'D:\\\\Media');
+        // The Logs page: the app's own folder (content root) on this machine.
+        const app = /[A-Z]:[\\\\/][^\\s"']*?[\\\\/]src[\\\\/]Sfe\\.Api/gi;
+        for (const e of document.querySelectorAll('.log-message, .log-entry-details')) e.textContent = e.textContent.replace(app, 'C:\\\\Program Files\\\\SFE');
         // System › About: this machine's ffmpeg.
         for (const c of document.querySelectorAll('.system-ffmpeg code')) c.textContent = 'C:\\\\Program Files\\\\ffmpeg\\\\bin\\\\ffmpeg.exe';
         for (const i of document.querySelectorAll('#installation-ffmpeg')) i.value = 'C:\\\\Program Files\\\\ffmpeg\\\\bin\\\\ffmpeg.exe';
@@ -343,6 +346,25 @@ const scenes = {
             await mask(b);
             await b.shot(OUT + `admin-${section}${page ? '-' + page : ''}.png`);
         }
+        await b.close();
+    },
+    async logs() {
+        const b = await session({ height: 900 });
+        await b.open(admin('logs'), 2500);
+        await mask(b);
+        await b.shot(OUT + 'admin-logs.png');
+        // Warnings and errors only, the first one opened (on its error when it has one).
+        await b.eval(`[...document.querySelectorAll('.logs-level-chip')].filter(l => /Warning|Error/.test(l.textContent)).forEach(l => l.querySelector('input').click()); 1`);
+        await sleep(1500);
+        await b.eval(`(document.querySelector('.log-entry.level-error .log-entry-head') ?? document.querySelector('.log-entry-head'))?.click(); 1`);
+        await sleep(800);
+        await mask(b);
+        await b.shot(OUT + 'admin-logs-problems.png');
+        await b.open(admin('logs', 'settings'), 2000);
+        // Both settings are the whole server's: shown on its tab.
+        await b.eval(`document.querySelector('#settings-level-server').click(); 1`);
+        await sleep(1200);
+        await b.shot(OUT + 'admin-logs-settings.png');
         await b.close();
     },
     async installation() {

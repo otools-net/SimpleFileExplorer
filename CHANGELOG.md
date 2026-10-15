@@ -3,6 +3,17 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.46.0
+
+### Added
+
+- **Logs** (Administration › Server › Logs): every message, warning and error the server logs is kept and can be
+  searched by text, severity, days and space; an entry opens on its error's details.
+- New right **See the logs** (`logs.view`), given to the Administrators group of every space: a space's
+  administrators see the entries of their space, server administrators those of the whole server.
+- Settings (whole server) to choose how long log entries are kept (30 days by default) and to also save them to a
+  file per day in the logs folder (`data/logs`, next to the database and the thumbnails; `Sfe:Logs:Directory`).
+
 ## 1.45.0
 
 ### Changed

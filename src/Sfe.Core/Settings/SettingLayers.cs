@@ -102,6 +102,27 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
         }
     }
 
+    /// <summary>
+    /// The settings in effect for the whole server: the configuration's, then the server settings page's, without
+    /// reading the database (what the server's own services use, e.g. the log, also while the database is down).
+    /// </summary>
+    public SfeOptions ServerLevel()
+    {
+        var options = Configured();
+        try
+        {
+            var sources = new SettingSources(SettingKeys.Flatten(SettingKeys.ToJson(EditableSettings.From(options))), options.Locked,
+                _server.Values, _server.Locked, new Dictionary<string, StoredSetting>(), new Dictionary<string, JsonNode?>());
+            ToSettings(Resolve(sources, SettingLevel.Server)).ApplyTo(options);
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException)
+        {
+            _logger.LogWarning(ex, "Ignoring the saved settings: they don't match the expected format");
+        }
+
+        return options;
+    }
+
     public async Task<SettingSources> LoadAsync(int? tenantId, int? userId, CancellationToken cancellationToken = default)
     {
         var configured = Configured();

@@ -565,6 +565,7 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Range(s.FileTracking.Relink.RetentionDays, 0, MaxRetentionDays, "fileTracking.relink.retentionDays", "The days missing files are kept");
         Range(s.FileTracking.SimilarVideos.MinimumPercent, FileTracking.SimilarVideoFinder.LowestMinimumPercent, 100, "fileTracking.similarVideos.minimumPercent", "The match");
         Range(s.Tasks.LogRetentionDays, 0, MaxRetentionDays, "tasks.logRetentionDays", "The days task logs are kept");
+        Range(s.Logs.RetentionDays, 0, MaxRetentionDays, "logs.retentionDays", "The days log entries are kept");
         Check(s.Editor.OutputFolder is null || LibraryPaths.NormalizeRelative(s.Editor.OutputFolder) is not null,
             "editor.outputFolder", $"“{s.Editor.OutputFolder}” is not a folder of the library: enter a path relative to the library, like Edited or Photos/Edited, or leave it empty.");
         Check(s.Editor.OutputFolder is null || s.Editor.OutputFolder.Length <= MaxEditorFolderLength,

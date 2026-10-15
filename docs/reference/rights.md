@@ -20,7 +20,8 @@ are given by the groups of a space ([Spaces & accounts](../administration/spaces
 | `tracking.duplicates`, `tracking.duplicatesRemove`, `tracking.similar`, `tracking.missing` | duplicates, deleting copies, similar videos, moved files | no | Administrators |
 | `trickplay.manage` | trickplay activity | no | Administrators |
 | `tasks.view`, `tasks.run`, `tasks.schedule` | background tasks, running them, schedules | no | Administrators |
-| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.editor` | the space's settings, by section | no | Administrators |
+| `logs.view` | the [log](../administration/logs.md) of the space (server administrators: of the whole server) | no | Administrators |
+| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.logs`, `.editor` | the space's settings, by section | no | Administrators |
 | `tenant.members` | the space's accounts, groups and visitors | no | Administrators |
 | `account.preferences`, `account.password` | own preferences and password | no | Administrators, Users |
 | `account.quickLinks` | own [quick links](../user-guide/browsing.md#quick-links) in the sidebar | no | Administrators, Users |

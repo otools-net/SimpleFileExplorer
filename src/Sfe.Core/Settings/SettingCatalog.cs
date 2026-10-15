@@ -35,7 +35,7 @@ public static class SettingCatalog
     private static readonly HashSet<string> ServerKeys =
     [
         "dataServer", "browse.maxPageSize", "search.maxPageSize", "scan.parallelism", "thumbnails.maxConcurrency",
-        "thumbnails.timeoutSeconds", "trickplay.parallelism", "trickplay.timeoutMinutes", "tasks.logRetentionDays", "streaming.maxStreams", "streaming.quality",
+        "thumbnails.timeoutSeconds", "trickplay.parallelism", "trickplay.timeoutMinutes", "tasks.logRetentionDays", "logs.retentionDays", "logs.writeFiles", "streaming.maxStreams", "streaming.quality",
         "streaming.maxHeight", "streaming.copyVideo",
     ];
 
@@ -55,7 +55,7 @@ public static class SettingCatalog
         ("player.", Rights.PlaybackSettings), ("dataServer", Rights.PlaybackSettings), ("streaming.", Rights.PlaybackSettings),
         ("showHiddenItems", Rights.ScanningSettings), ("scan.", Rights.ScanningSettings), ("fileTypes.", Rights.ScanningSettings),
         ("thumbnails.", Rights.ThumbnailSettings), ("trickplay.", Rights.TrickplaySettings), ("fileTracking.", Rights.TrackingSettings),
-        ("tags.", Rights.TagSettings), ("tasks.", Rights.TaskSettings), ("editor.", Rights.EditorSettings),
+        ("tags.", Rights.TagSettings), ("tasks.", Rights.TaskSettings), ("logs.", Rights.LogSettings), ("editor.", Rights.EditorSettings),
     ];
 
     public static IReadOnlyList<SettingDefinition> All { get; } = SettingKeys.Flatten(SettingKeys.ToJson(new EditableSettings()))

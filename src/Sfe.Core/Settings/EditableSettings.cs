@@ -28,6 +28,7 @@ public sealed class EditableSettings
     public FileTrackingSettings FileTracking { get; set; } = new();
     public AppearanceSettings Appearance { get; set; } = new();
     public TaskSettings Tasks { get; set; } = new();
+    public LogSettings Logs { get; set; } = new();
     public EditorSettings Editor { get; set; } = new();
 
     public static EditableSettings From(SfeOptions options) => new()
@@ -127,6 +128,7 @@ public sealed class EditableSettings
         },
         Appearance = new() { Theme = options.Appearance.Theme },
         Tasks = new() { LogRetentionDays = options.Tasks.LogRetentionDays },
+        Logs = new() { RetentionDays = options.Logs.RetentionDays, WriteFiles = options.Logs.WriteFiles },
         Editor = new() { OutputFolder = options.Editor.OutputFolder, Quality = options.Editor.Quality },
     };
 
@@ -195,6 +197,8 @@ public sealed class EditableSettings
         options.FileTracking.SimilarVideos.MinimumPercent = FileTracking.SimilarVideos.MinimumPercent;
         options.Appearance.Theme = Appearance.Theme;
         options.Tasks.LogRetentionDays = Tasks.LogRetentionDays;
+        options.Logs.RetentionDays = Logs.RetentionDays;
+        options.Logs.WriteFiles = Logs.WriteFiles;
         options.Editor.OutputFolder = Editor.OutputFolder;
         options.Editor.Quality = Editor.Quality;
     }
@@ -334,6 +338,13 @@ public sealed record SettingsView(EditableSettings Values, bool Customized, Sett
 public sealed class TaskSettings
 {
     public int LogRetentionDays { get; set; }
+}
+
+/// <summary>The server's log; its folder (<see cref="LogOptions.Directory"/>) is only set in the configuration.</summary>
+public sealed class LogSettings
+{
+    public int RetentionDays { get; set; }
+    public bool WriteFiles { get; set; }
 }
 
 public sealed class EditorSettings

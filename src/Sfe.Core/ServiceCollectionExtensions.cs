@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -10,6 +11,7 @@ using Sfe.Core.Editing;
 using Sfe.Core.FileTracking;
 using Sfe.Core.Indexing;
 using Sfe.Core.Library;
+using Sfe.Core.Logs;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Search;
@@ -154,6 +156,14 @@ public static class ServiceCollectionExtensions
         AddSettingsStore(services, section.Get<SfeOptions>() ?? new SfeOptions(), contentRootPath ?? Directory.GetCurrentDirectory());
         services.AddSingleton<SettingRows>();
         services.AddSingleton<SettingLayers>();
+
+        // The server's log: every logger's entries (also the libraries', TenantHost), in the database and daily files.
+        var logsDirectory = section.GetSection(nameof(SfeOptions.Logs)).Get<LogOptions>()?.Directory is { Length: > 0 } logs ? logs : new LogOptions().Directory;
+        logsDirectory = Path.GetFullPath(LibraryPaths.ExpandHome(logsDirectory), contentRootPath ?? Directory.GetCurrentDirectory());
+        services.AddSingleton<AuditLogProvider>();
+        services.AddSingleton<ILoggerProvider>(sp => sp.GetRequiredService<AuditLogProvider>());
+        services.AddSingleton(sp => new AuditLogService(sp.GetRequiredService<AuditLogProvider>(), sp.GetRequiredService<IDbContextFactory<AccessDbContext>>(),
+            sp.GetRequiredService<SettingLayers>(), logsDirectory, sp.GetRequiredService<ILogger<AuditLogService>>()));
         return services;
     }
 
