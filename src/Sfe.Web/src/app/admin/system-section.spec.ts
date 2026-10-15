@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ApiMock, fakeConfig, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
+import { ApiMock, buttonNamed, fakeConfig, installationView, limitedConfig, loadConfig, mockApi, settle, testProviders, type } from '../../testing/fakes';
+import { ApiError } from '../core/api.service';
 import { StreamingStatus, SystemInfo } from '../core/models';
 import { Rights } from '../core/rights';
 import { findSection, visibleSections } from './admin-sections';
@@ -96,10 +97,39 @@ describe('System section', () => {
         expect(text()).toContain('Turned off in this space');
     });
 
+    it('asks for the setup code before showing the installation settings, then saves them', async () => {
+        api.systemInfo.mockResolvedValue(INFO);
+        api.serverFolders.mockResolvedValue({ path: null, parent: null, folders: [] });
+        await create('installation');
+        const element = fixture.nativeElement as HTMLElement;
+        expect(element.querySelector('sfe-installation-form')).toBeNull();
+
+        api.checkInstallation.mockRejectedValueOnce(new ApiError(400, 'x', { code: ['This is not the server\'s setup code.'] }));
+        type(element.querySelector<HTMLInputElement>('#installation-code')!, 'wrong-code-0000');
+        await settle();
+        buttonNamed(element, 'Unlock')!.click();
+        await settle();
+        expect(element.querySelector('.field-error')!.textContent).toContain('setup code');
+
+        api.checkInstallation.mockResolvedValue({ token: 'the-token', settings: installationView() });
+        api.saveInstallation.mockResolvedValue({ settings: installationView({ port: 8080, restartRequired: true }), restartRequired: true });
+        buttonNamed(element, 'Unlock')!.click();
+        await settle();
+        expect(element.querySelector('sfe-installation-form')).not.toBeNull();
+        expect(text()).toContain('the next scan treats the files of the old folder as gone');
+        type(element.querySelector<HTMLInputElement>('#installation-port')!, '8080');
+        await settle();
+        buttonNamed(element, 'Save')!.click();
+        await settle();
+
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { network: false, port: 8080 });
+        expect(text()).toContain('applies once SFE starts again');
+    });
+
     it('shows the streams page to those with its right only', () => {
         const pages = (rights: string[]) => findSection('system', visibleSections(wanted => wanted.some(r => rights.includes(r)))).subpages.map(p => p.id);
         expect(pages([Rights.viewStreams])).toEqual(['streams']);
-        expect(pages([Rights.serverSettings, Rights.viewStreams])).toEqual(['about', 'streams']);
+        expect(pages([Rights.serverSettings, Rights.viewStreams])).toEqual(['about', 'installation', 'streams']);
         expect(pages([Rights.backup])).toEqual(['about']);
     });
 });

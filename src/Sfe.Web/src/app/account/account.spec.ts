@@ -1,8 +1,10 @@
+import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
-import { ApiMock, buttonNamed, mockApi, settle, testProviders } from '../../testing/fakes';
+import { ApiMock, buttonNamed, installationView, mockApi, settle, testProviders } from '../../testing/fakes';
 import { ApiError } from '../core/api.service';
 import { SessionInfo, SetupInfo } from '../core/models';
+import { InstallationFormComponent } from './installation-form.component';
 import { LoginPageComponent } from './login-page.component';
 import { SETUP_CODE_STEPS } from './setup-code.component';
 import { SetupPageComponent } from './setup-page.component';
@@ -121,10 +123,30 @@ describe('SetupPageComponent', () => {
     async function create(info: SetupInfo): Promise<void> {
         api = mockApi();
         api.setupInfo.mockResolvedValue(info);
+        api.checkInstallation.mockResolvedValue({ token: 'the-token', settings: installationView() });
+        api.serverFolders.mockImplementation(async (_token, path) => path
+            ? { path, parent: null, folders: [] }
+            : { path: null, parent: null, folders: [{ name: 'D:', path: 'D:\\' }], places: [{ name: 'Home', path: 'C:\\Users\\me' }] });
         TestBed.configureTestingModule({ providers: testProviders(api) });
         navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
         const fixture = TestBed.createComponent(SetupPageComponent);
         element = fixture.nativeElement;
+        await settle();
+    }
+
+    /** Step 1: the code, then Next. */
+    async function enterCode(code = 'the-setup-code-0123'): Promise<void> {
+        type(element, '#setup-code', code);
+        await settle();
+        buttonNamed(element, 'Next')!.click();
+        await settle();
+    }
+
+    /** Step 3: the administrator's fields. */
+    async function fillAccount(): Promise<void> {
+        type(element, '#setup-name', ' admin ');
+        type(element, '#setup-password', 'secret-password');
+        type(element, '#setup-confirm', 'secret-password');
         await settle();
     }
 
@@ -145,17 +167,35 @@ describe('SetupPageComponent', () => {
         expect(element.querySelector('form')).not.toBeNull();
     });
 
-    it('creates the administrator with the code, then opens the library', async () => {
+    it('says where to find a code the server made itself', async () => {
+        await create(setup({ codeGenerated: true, codeFile: 'data/setup-code.txt', hosting: 'portable' }));
+
+        const hint = element.querySelector('#setup-code-hint')!.textContent!;
+        expect(hint).toContain('SFE made this code when it started');
+        expect(hint).toContain('in the window where SFE runs');
+        expect(hint).toContain('data/setup-code.txt in SFE\'s folder');
+        expect(element.querySelector('.setup-progress')!.textContent).toBe('Step 1 of 3');
+    });
+
+    it('checks the code, picks the library folder, then creates the administrator and opens the library', async () => {
         await create(setup());
+        api.saveInstallation.mockImplementation(async (_token, input) =>
+            ({ settings: installationView({ root: { value: input.root!, locked: false, lockedBy: null } }), restartRequired: false }));
         api.completeSetup.mockResolvedValue({} as SessionInfo);
 
-        type(element, '#setup-code', 'the-setup-code-0123');
-        type(element, '#setup-name', ' admin ');
-        type(element, '#setup-password', 'secret-password');
-        type(element, '#setup-confirm', 'secret-password');
+        await enterCode(' the-setup-code-0123 ');
+        expect(api.checkInstallation).toHaveBeenCalledWith('the-setup-code-0123');
+        expect(element.querySelector('sfe-installation-form')).not.toBeNull();
+        buttonNamed(element, 'D:')!.click();
+        await settle();
+        buttonNamed(element, 'Next')!.click();
+        await settle();
+
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { root: 'D:\\' });
+        await fillAccount();
         type(element, '#setup-library', 'Family');
         await settle();
-        element.querySelector<HTMLButtonElement>('button[type=submit]')!.click();
+        buttonNamed(element, 'Create the administrator')!.click();
         await settle();
 
         expect(api.completeSetup).toHaveBeenCalledWith({
@@ -164,30 +204,149 @@ describe('SetupPageComponent', () => {
         expect(navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
     });
 
+    it('stays on the code while it is wrong', async () => {
+        await create(setup());
+        api.checkInstallation.mockRejectedValue(new ApiError(400, 'x', { code: ['This is not the server\'s setup code.'] }));
+
+        await enterCode('wrong-code-wrong');
+
+        expect(element.querySelector('.field-error')!.textContent).toContain('setup code');
+        expect(element.querySelector('#setup-code')).not.toBeNull();
+        expect(element.querySelector('sfe-installation-form')).toBeNull();
+    });
+
     it('shows the errors by their fields, and holds back differing passwords', async () => {
         await create(setup());
+        await enterCode();
+        buttonNamed(element, 'Next')!.click();
+        await settle();
 
+        expect(api.saveInstallation).not.toHaveBeenCalled();
         type(element, '#setup-password', 'secret-password');
         type(element, '#setup-confirm', 'other');
         await settle();
         expect(element.textContent).toContain('The two passwords differ.');
-        expect(element.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled).toBe(true);
+        expect(buttonNamed(element, 'Create the administrator')!.disabled).toBe(true);
 
-        api.completeSetup.mockRejectedValue(new ApiError(400, 'x', { code: ['This is not the server\'s setup code.'] }));
+        api.completeSetup.mockRejectedValue(new ApiError(400, 'x', { password: ['At least 8 characters.'] }));
         type(element, '#setup-confirm', 'secret-password');
-        type(element, '#setup-code', 'wrong-code-wrong');
         type(element, '#setup-name', 'admin');
         await settle();
-        element.querySelector<HTMLButtonElement>('button[type=submit]')!.click();
+        buttonNamed(element, 'Create the administrator')!.click();
         await settle();
 
-        expect(element.querySelector('.field-error')!.textContent).toContain('setup code');
+        expect(element.querySelector('.field-error')!.textContent).toContain('At least 8');
         expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('asks to restart SFE when the network setting changed', async () => {
+        await create(setup());
+        api.saveInstallation.mockResolvedValue({ settings: installationView({ network: true, restartRequired: true }), restartRequired: true });
+        api.completeSetup.mockResolvedValue({} as SessionInfo);
+
+        await enterCode();
+        element.querySelectorAll<HTMLInputElement>('input[name=installation-network]')[1].click();
+        await settle();
+        buttonNamed(element, 'Next')!.click();
+        await settle();
+        await fillAccount();
+        buttonNamed(element, 'Create the administrator')!.click();
+        await settle();
+
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { network: true, port: 5080 });
+        expect(element.textContent).toContain('applies once SFE starts again');
+        expect(navigate).not.toHaveBeenCalled();
+        buttonNamed(element, 'Open the library')!.click();
+        expect(navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
+    });
+
+    it('skips the library in recovery mode', async () => {
+        await create(setup({ required: false, recover: true }));
+        api.completeSetup.mockResolvedValue({} as SessionInfo);
+
+        await enterCode();
+
+        expect(element.querySelector('sfe-installation-form')).toBeNull();
+        expect(element.querySelector('#setup-library')).toBeNull();
+        expect(element.querySelector('.setup-progress')!.textContent).toBe('Step 2 of 2');
+        await fillAccount();
+        buttonNamed(element, 'Restore the administrator')!.click();
+        await settle();
+        expect(api.completeSetup).toHaveBeenCalledWith(expect.objectContaining({ userName: 'admin', libraryName: null }));
     });
 
     it('leaves when there is nothing to set up', async () => {
         await create(setup({ required: false, available: false }));
 
         expect(navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
+    });
+});
+
+describe('InstallationFormComponent', () => {
+    @Component({
+        imports: [InstallationFormComponent],
+        template: `<sfe-installation-form token="the-token" [initial]="view" />`,
+    })
+    class Host {
+        view = installationView();
+        readonly form = viewChild.required(InstallationFormComponent);
+    }
+
+    let api: ApiMock;
+
+    async function create(view = installationView()): Promise<{ element: HTMLElement; form: InstallationFormComponent }> {
+        api = mockApi();
+        api.serverFolders.mockImplementation(async (_token, path) => path
+            ? { path, parent: 'D:\\', folders: [{ name: 'Photos', path: 'D:\\Photos' }] }
+            : { path: null, parent: null, folders: [{ name: 'D:', path: 'D:\\' }] });
+        TestBed.configureTestingModule({ providers: testProviders(api) });
+        const fixture = TestBed.createComponent(Host);
+        fixture.componentInstance.view = view;
+        await settle();
+        return { element: fixture.nativeElement, form: fixture.componentInstance.form() };
+    }
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it('browses the server\'s folders with the token and sends only what changed', async () => {
+        const { element, form } = await create();
+        api.saveInstallation.mockResolvedValue({ settings: installationView(), restartRequired: false });
+
+        expect(api.serverFolders).toHaveBeenCalledWith('the-token', null);
+        buttonNamed(element, 'D:')!.click();
+        await settle();
+        buttonNamed(element, 'Photos')!.click();
+        await settle();
+        type(element, '#installation-ffmpeg', ' C:\\Tools\\ffmpeg ');
+        await settle();
+        await form.save();
+
+        expect(element.querySelector('.folder-picker-path')!.textContent).toContain('D:\\Photos');
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { root: 'D:\\Photos', ffmpegPath: 'C:\\Tools\\ffmpeg' });
+    });
+
+    it('shows what the server\'s environment sets, without a way to change it', async () => {
+        const locked = { value: 'http://*:8080', locked: true, lockedBy: 'an environment variable of the server' };
+        const { element, form } = await create(installationView({ urls: locked, port: 8080, network: true, ffmpegFound: null, ffmpegVersion: null }));
+
+        expect(element.querySelector('input[name=installation-network]')).toBeNull();
+        expect(element.querySelector('.installation-network')!.textContent).toContain('Set by an environment variable of the server.');
+        expect(element.querySelector('.system-badge')!.textContent).toContain('Not found');
+        expect(await form.save()).toEqual({ settings: expect.anything(), restartRequired: false });
+        expect(api.saveInstallation).not.toHaveBeenCalled();
+    });
+
+    it('shows the server\'s errors by their fields', async () => {
+        const { element, form } = await create();
+        api.saveInstallation.mockRejectedValue(new ApiError(400, 'x', { port: ['A port is a number from 1 to 65535.'] }));
+
+        type(element, '#installation-port', '7000');
+        await settle();
+        const result = await form.save();
+        await settle();
+
+        expect(result).toBeNull();
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { network: false, port: 7000 });
+        expect(element.querySelector('.installation-network .field-error')!.textContent).toContain('1 to 65535');
     });
 });

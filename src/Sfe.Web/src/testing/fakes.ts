@@ -6,7 +6,7 @@ import { Api } from '../app/core/api.service';
 import { AdminPageComponent, leaveAdminPage } from '../app/admin/admin-page.component';
 import { routes } from '../app/app.routes';
 import { ConfigService } from '../app/core/config.service';
-import { ClientConfig, FileTagChangeResult, FileTags, LibraryItem, SettingsValues, TagDetails, TagSummary } from '../app/core/models';
+import { ClientConfig, FileTagChangeResult, FileTags, InstallationView, LibraryItem, SettingsValues, TagDetails, TagSummary } from '../app/core/models';
 import { Rights } from '../app/core/rights';
 import { TABS } from '../app/settings/settings-schema';
 
@@ -219,6 +219,18 @@ export function deferred<T>(): Deferred<T> {
 /** Reports elements as scrolled into view to the IntersectionObservers watching them (see setup.ts). */
 export function intersect(...elements: Element[]): void {
     (globalThis as unknown as { intersect(...elements: Element[]): void }).intersect(...elements);
+}
+
+/** The installation page's settings: the home folder, this computer only on 5080, ffmpeg found; nothing locked. */
+export function installationView(overrides: Partial<InstallationView> = {}): InstallationView {
+    const free = (value: string | null) => ({ value, locked: false, lockedBy: null });
+    return {
+        root: free('C:\\Users\\me\\'), rootExists: true,
+        urls: free('http://localhost:5080'), port: 5080, network: false,
+        ffmpegPath: free('ffmpeg'), ffmpegFound: 'C:\\ffmpeg\\bin\\ffmpeg.exe', ffmpegVersion: '7.1',
+        restartRequired: false,
+        ...overrides,
+    };
 }
 
 /** A valid value for every field of the settings pages (the lowest numbers, empty lists...), as the server sends them all. */

@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sfe.Core\Sfe.Core.csproj" />
+    <InternalsVisibleTo Include="Sfe.Tests" />
   </ItemGroup>
 
   <ItemGroup>
@@ -78,8 +79,10 @@
 
   <ItemGroup Condition="'$(SfePortable)' == 'true'">
     <AssemblyMetadata Include="SfePortable" Value="true" />
-    <Content Update="appsettings.json;appsettings.Development.json" CopyToPublishDirectory="Never" />
+    <Content Update="appsettings.json;appsettings.Development.json;appsettings.Local.json" CopyToPublishDirectory="Never" />
     <Content Include="..\..\build\portable\appsettings.json" Link="appsettings.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="PreserveNewest" />
+    <!-- Windows: install-service.cmd / uninstall-service.cmd next to the program (Program.cs, WindowsServiceSetup). -->
+    <Content Include="..\..\build\windows\*.cmd" Condition="$(RuntimeIdentifier.StartsWith('win'))" Link="%(Filename)%(Extension)" CopyToOutputDirectory="Never" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

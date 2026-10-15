@@ -41,9 +41,16 @@ public sealed class AccessTests
     }
 
     [TestMethod]
-    public async Task WithoutASetupCodeOnlyTheInstructionsWork()
+    public async Task WithoutAUsableSetupCodeOnlyTheInstructionsWork()
     {
-        var factory = Factory(settings => settings["Sfe:Setup:Code"] = "");
+        // No code configured, and none can be made (its folder is a file): the page can only say how to set one.
+        var blocker = Path.Combine(_library.BasePath, "not-a-folder");
+        File.WriteAllText(blocker, "");
+        var factory = Factory(settings =>
+        {
+            settings["Sfe:Setup:Code"] = "";
+            settings["Sfe:Setup:CodeFile"] = Path.Combine(blocker, "setup-code.txt");
+        });
         var client = Client(factory);
 
         var setup = await GetAsync<SetupInfo>(client, "/api/setup");

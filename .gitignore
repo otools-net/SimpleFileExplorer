@@ -493,3 +493,6 @@ src/Sfe.Web/.angular/
 
 # This machine's development settings (local paths, setup code)
 src/Sfe.Api/appsettings.Development.json
+
+# This machine's own settings over the neutral appsettings.json (Program.cs loads it after appsettings.json)
+src/Sfe.Api/appsettings.Local.json

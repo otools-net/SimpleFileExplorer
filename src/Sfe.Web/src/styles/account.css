@@ -48,6 +48,29 @@
 /* The steps of the setup code: laid out by the page's .account-steps. */
 .setup-code-steps { display: contents; }
 
+/* The setup's steps: which one of how many, and Back / Next under each. */
+.setup-progress { margin: 0; color: var(--text-muted); font-size: 13px; }
+.setup-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+
+/* ---------- Installation settings (setup page, Administration > System > Installation) ---------- */
+
+.installation-form { display: flex; flex-direction: column; gap: 14px; }
+.installation-form fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.installation-form legend { padding: 0; }
+.installation-form .field-hint code, .installation-locked code { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.installation-network { display: flex; flex-direction: column; gap: 8px; }
+.installation-port { max-width: 160px; }
+.installation-locked { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+.installation-ffmpeg { display: flex; flex-direction: column; gap: 6px; }
+.installation-ffmpeg .system-ffmpeg { margin: 0; font-size: 13px; }
+.installation-ffmpeg-path { display: flex; gap: 8px; }
+.installation-ffmpeg-path input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 12px; }
+.folder-picker-place .link-button { font-weight: 600; }
+.installation-unlock { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.installation-unlock .field { flex: 1 1 220px; max-width: 320px; }
+.installation-warning, .installation-restart { margin: 0 0 12px; }
+.installation-restart { color: var(--accent); }
+
 /* ---------- Update page (after an upgrade): the changes since the installed version, a backup, the update ---------- */
 
 .migration-card { max-width: 680px; }

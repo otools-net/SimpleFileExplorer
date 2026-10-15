@@ -5,21 +5,25 @@ import { CommandResult, SystemInfo } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { IconComponent } from '../shared/icon.component';
+import { InstallationSectionComponent } from './installation-section.component';
 import { VideoStreamsComponent } from './video-streams.component';
 
 /**
  * "System" on the administration page. About (`tab` = `about`): the server's version, the library's folder and ffmpeg
  * (`server.settings`), the API reference, backups (`server.backup`), and the server commands when they are configured.
+ * Installation (`installation`): the library folder, network and ffmpeg, behind the setup code (`server.settings`).
  * Video streams (`streams`): the videos the server converts now (`server.streams`). (Each browser's own theme is in Interface › Appearance, next to the default one.)
  */
 @Component({
     selector: 'sfe-system-section',
-    imports: [IconComponent, VideoStreamsComponent],
+    imports: [IconComponent, InstallationSectionComponent, VideoStreamsComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'settings-panel system-section' },
     template: `
         @if (tab() === 'streams') {
             <sfe-video-streams />
+        } @else if (tab() === 'installation') {
+            <sfe-installation-section />
         } @else {
             <section class="settings-group">
                 <header class="settings-group-head"><h3>Server</h3></header>
@@ -44,8 +48,8 @@ import { VideoStreamsComponent } from './video-streams.component';
                                     <span class="system-badge missing"><svg sfeIcon="close"></svg>Not found</span>
                                     <span class="field-hint">
                                         Looked for <code>{{ info.ffmpeg.configured }}</code>: video thumbnails, trickplay, video
-                                        resolutions and durations, and converted videos are off. Set its path
-                                        (Thumbnails:FfmpegPath) in the server's configuration file.
+                                        resolutions and durations, and converted videos are off. Pick its folder in
+                                        System › Installation.
                                     </span>
                                 }
                             </dd>
@@ -103,7 +107,7 @@ export class SystemSectionComponent {
     protected readonly config = this.configService.config;
     protected readonly canBackup = computed(() => this.configService.can(Rights.backup));
 
-    /** The sub-page: `about` or `streams`. */
+    /** The sub-page: `about`, `installation` or `streams`. */
     readonly tab = input('about');
 
     /** Where the library is and the ffmpeg found: for server administrators (`server.settings`). */

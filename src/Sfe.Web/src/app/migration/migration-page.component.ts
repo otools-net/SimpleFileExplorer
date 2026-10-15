@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { SetupCodeStepsComponent } from '../account/setup-code.component';
+import { generatedCodeWhere, SetupCodeStepsComponent } from '../account/setup-code.component';
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { formatSize } from '../core/format';
@@ -125,7 +125,13 @@ export const MIGRATION_POLL_MS = 1000;
                                 <label class="field-label" for="migration-code">Setup code</label>
                                 <input id="migration-code" type="password" autocomplete="off" required [value]="code()" (input)="code.set(valueOf($event))"
                                        aria-describedby="migration-code-hint">
-                                <span class="field-hint" id="migration-code-hint">The code given in the server's environment (Sfe:Setup:Code).</span>
+                                <span class="field-hint" id="migration-code-hint">
+                                    @if (info.codeGenerated) {
+                                        The code SFE made at its setup: {{ codeWhere(info) }}.
+                                    } @else {
+                                        The code given in the server's environment (Sfe:Setup:Code).
+                                    }
+                                </span>
                                 @if (codeError(); as error) {
                                     <span class="field-error">{{ error }}</span>
                                 }
@@ -179,6 +185,7 @@ export class MigrationPageComponent implements OnInit {
     private timer: ReturnType<typeof setTimeout> | null = null;
 
     protected readonly valueOf = valueOf;
+    protected readonly codeWhere = (info: MigrationInfo) => generatedCodeWhere(info.hosting, info.codeFile ?? null);
     protected readonly parts = changelogParts;
     protected readonly size = formatSize;
 

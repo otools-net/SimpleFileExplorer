@@ -1,12 +1,31 @@
 # First start
 
 SFE has accounts, and nothing works until its first administrator exists: until then every page shows the setup
-page and the API answers nothing else.
+page and the API answers nothing else. The setup is done in the browser, with no file to edit.
 
 ## The setup code
 
-So that only whoever runs the server can claim it, the setup page asks for a **setup code** that you give the server in
-its environment first, at least 12 characters long:
+So that only whoever runs the server can claim it, the setup page asks for a **setup code**. Without one in its
+configuration, SFE makes one itself at its first start (16 letters and digits, like `K7QF-9WZM-2HXA-PL4D`):
+
+- it is shown in the window where SFE runs (for a service: in its log, see below), with the address to open;
+- it is kept in `data/setup-code.txt`, in SFE's folder (`~/.config/sfe/data/` for the AppImage).
+
+Type it in any case, with or without the dashes. Keep the file: the [update page](upgrading.md#the-update-page-137-and-later)
+asks for the same code after each upgrade.
+
+| How SFE runs | Where the code is shown |
+|---|---|
+| Portable package / AppImage / from source | The console window of SFE |
+| Windows service | The Windows event log (Windows Logs › Application, source `Sfe.Api`), or the file |
+| systemd | `journalctl -u sfe` |
+| IIS | The site's stdout log, or the file in the site's folder |
+| Container | `docker logs <container>` (keep `data/` on a volume, or set the code yourself) |
+
+### Setting the code yourself
+
+A code set in the configuration (at least 12 characters) replaces the generated one, e.g. for a container whose data
+folder isn't kept, or to use a code you choose:
 
 | How SFE runs | Where the code goes |
 |---|---|
@@ -17,19 +36,32 @@ its environment first, at least 12 characters long:
 | Portable package / AppImage | `"Setup": { "Code": "…" }` in the `Sfe` section of its `appsettings.json` (`~/.config/sfe` for the AppImage) |
 | From source | `Sfe__Setup__Code=…` in the environment, or `appsettings.Development.json` |
 
-Without a code, or with one that is too short, the page shows these instructions for the way your server runs.
+When SFE can't write its data folder and no code is set, the page shows these instructions for the way your server
+runs.
 
-## Creating the administrator
+## The setup page
 
 ![The setup page](images/setup-page.png)
 
-Open the app: it asks for the code, the administrator's name, display name and password, and the name of the first
-**space** (your library, its index, tags and settings; more spaces come later in
-[Spaces & accounts](administration/spaces-and-accounts.md)). The administrator is signed in at once and is a **server
-administrator**: every right in every space.
+Open the app (`http://localhost:5080`; the portable package on Windows opens it in your browser by itself). The page
+has three steps:
 
-Afterwards the code is only asked for by the [update page](upgrading.md#the-update-page-137-and-later), after an
-upgrade: keep it, or remove it and set one again before the next upgrade.
+1. **Setup code**: the code above.
+2. **Your library** (the [installation settings](administration/system.md#installation)):
+   - **Library folder**: click through the server's drives and folders to the folder of your photos, videos and music
+     (**Home**, **Pictures**, **Videos** and **Music** are listed first). It becomes the first space's library.
+   - **Who can open SFE**: **Only this computer**, or **Also the other devices of my network** (phones, TVs, other
+     computers; everyone still signs in), and the port. This one applies once SFE is started again.
+   - **ffmpeg** (optional): whether it was found; to add it, download it from [ffmpeg.org](https://ffmpeg.org/), unzip
+     it and pick its folder. Without it there are no video thumbnails, trickplay, video durations or converted videos.
+3. **Administrator**: name, display name, password, and the name of the first **space** (your library, its index, tags
+   and settings; more spaces come later in [Spaces & accounts](administration/spaces-and-accounts.md)).
+
+The administrator is signed in at once and is a **server administrator**: every right in every space. If the network
+setting changed, the page asks you to start SFE again.
+
+A value set by the server's environment (an environment variable or the command line, e.g. `Sfe__Root` in a systemd
+unit) is shown but can't be changed on the page.
 
 ## Next steps
 
@@ -39,9 +71,11 @@ upgrade: keep it, or remove it and set one again before the next upgrade.
 2. **Create accounts** for the others, or let visitors in without one:
    [Spaces & accounts](administration/spaces-and-accounts.md).
 3. Look through the [administration page](administration/README.md) for the settings of your library.
+4. To start SFE with the computer on Windows, run `install-service.cmd` in its folder
+   ([Windows service](installation.md#windows-service)).
 
 ## Lost administrator password
 
-Set `Sfe__Setup__Recover=true` (with the setup code) and restart: the sign-in page links to the setup page, which now
-gives a local administrator (by name) a new password, unlocked and enabled, or creates one. The app keeps working
-meanwhile. Turn it off afterwards.
+Set `Sfe__Setup__Recover=true` and restart: the sign-in page links to the setup page, which asks for the setup code
+(the configured one, or the one in `data/setup-code.txt`), then gives a local administrator (by name) a new password,
+unlocked and enabled, or creates one. The app keeps working meanwhile. Turn it off afterwards.

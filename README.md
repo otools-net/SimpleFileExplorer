@@ -28,13 +28,13 @@ one machine or a private network, with accounts, groups and several libraries ("
    dotnet run --project src/Sfe.Api          # http://localhost:5080
    ```
 
-2. Tell it where your library is (`Sfe:Root` in `appsettings.json`, or `Sfe__Root=/srv/media` in the environment).
-3. Give it a **setup code** of at least 12 characters (`Sfe__Setup__Code=…`, or `"Setup": { "Code": "…" }` in the
-   `Sfe` section of `appsettings.json`) and restart it.
-4. Open `http://localhost:5080`, enter the code and create the administrator.
+2. Start it: `SFE\Sfe.Api.exe` on Windows (it opens your browser), the AppImage on Linux, or the command above.
+3. Open `http://localhost:5080` and enter the **setup code** shown in SFE's window (also kept in `data/setup-code.txt`).
+4. Pick the folder of your library, who may open SFE (this computer or your whole network), then create the
+   administrator. No file to edit; services and containers can still set everything in the configuration.
 5. ⋮ menu › **Scan this folder** to index the library.
 
-Optional: [ffmpeg](https://ffmpeg.org/) on the `PATH` for video thumbnails, trickplay, similar videos and durations;
+Optional: [ffmpeg](https://ffmpeg.org/) (on the `PATH`, or its folder picked on the setup page) for video thumbnails, trickplay, similar videos and durations;
 SQL Server instead of the built-in SQLite database.
 
 ## Documentation

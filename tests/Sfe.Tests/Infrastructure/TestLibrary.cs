@@ -85,6 +85,9 @@ public sealed class TestLibrary : IDisposable
         ["Sfe:System:DismountCommand"] = "",
         ["Sfe:SettingsFile"] = SettingsPath,
         ["Sfe:Setup:Code"] = SetupCode,
+        // Never next to the app (src/Sfe.Api/data): a test without a code makes one, the installation page writes.
+        ["Sfe:Setup:CodeFile"] = Path.Combine(BasePath, "setup-code.txt"),
+        ["Sfe:InstallationFile"] = Path.Combine(BasePath, "installation.json"),
         ["Sfe:Security:KeysDirectory"] = Path.Combine(BasePath, "keys"),
     };
 

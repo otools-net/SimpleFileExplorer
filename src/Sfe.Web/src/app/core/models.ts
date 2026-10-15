@@ -600,6 +600,10 @@ export interface SetupInfo {
     minimumPasswordLength: number;
     libraryName: string;
     hosting: HostingKind;
+    /** The code is the one the server made itself: shown in its console and kept in `codeFile`. */
+    codeGenerated?: boolean;
+    /** Where that code is kept, as configured (usually relative to SFE's folder). */
+    codeFile?: string | null;
 }
 
 /** none = the install belongs to this version; the others keep everything but the update page closed (503 `migration-required`). */
@@ -625,6 +629,8 @@ export interface MigrationInfo {
     codeTooShort: boolean;
     minimumCodeLength: number;
     hosting: HostingKind;
+    codeGenerated?: boolean;
+    codeFile?: string | null;
 }
 
 /** A backup made on the update page: downloaded once from `url`. */
@@ -632,6 +638,47 @@ export interface BackupLink {
     url: string;
     fileName: string;
     size: number;
+}
+
+/** A setting of the installation page; `locked` when the server's environment (variables, command line) decides it. */
+export interface InstallationField {
+    value: string | null;
+    locked: boolean;
+    lockedBy: string | null;
+}
+
+/** /api/installation: the library folder, listening address and ffmpeg of the server. */
+export interface InstallationView {
+    root: InstallationField;
+    rootExists: boolean;
+    urls: InstallationField;
+    port: number;
+    /** Listens for other devices of the network, not only this computer. */
+    network: boolean;
+    ffmpegPath: InstallationField;
+    ffmpegFound: string | null;
+    ffmpegVersion: string | null;
+    /** The address saved applies once SFE starts again. */
+    restartRequired: boolean;
+}
+
+/** What the installation page changes; a field left out stays. `ffmpegPath` empty = look for it on PATH. */
+export interface InstallationInput {
+    root?: string | null;
+    network?: boolean | null;
+    port?: number | null;
+    ffmpegPath?: string | null;
+}
+
+export interface InstallationGrant {
+    /** Sent back in `X-SFE-Installation` for an hour. */
+    token: string;
+    settings: InstallationView;
+}
+
+export interface InstallationSaved {
+    settings: InstallationView;
+    restartRequired: boolean;
 }
 
 export interface SetupInput {
@@ -754,6 +801,10 @@ export interface FolderPicker {
     path: string | null;
     parent: string | null;
     folders: FolderChoice[];
+    /** At the top of the installation page's picker: the home folder, the library folder now, Pictures... */
+    places?: FolderChoice[];
+    /** More sub-folders than the server lists. */
+    truncated?: boolean;
 }
 
 /** A link to a file working without signing in, for a while (external players). */

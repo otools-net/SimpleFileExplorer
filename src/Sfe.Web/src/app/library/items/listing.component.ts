@@ -2,6 +2,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyR
 import { RouterLink } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
 import { highlightPattern } from '../../core/format';
+import { Rights } from '../../core/rights';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { ListingStore } from '../listing.store';
 import { FileRowComponent, FileTileComponent } from './file-tile.component';
@@ -30,11 +31,21 @@ import { ScrollProgressComponent } from './scroll-progress.component';
                 }
                 @case ('error') {
                     @let error = store.error();
-                    <sfe-empty-state [icon]="error?.status === 404 ? 'folder' : 'close'"
-                                     [heading]="error?.status === 404 ? 'Folder not found' : store.searching() ? 'Search is unavailable' : 'Could not load this folder'"
-                                     [text]="error?.status === 404 ? 'It may have been moved or deleted.' : error?.message ?? null">
-                        <a class="button" routerLink="/" [queryParams]="store.browseParams('')">Go to library root</a>
-                    </sfe-empty-state>
+                    @if (error?.type === 'library-root-missing') {
+                        <sfe-empty-state icon="folder" heading="The library folder is missing"
+                                         [text]="error!.message + (canInstall() ? ' Plug its drive in, or pick another folder.' : ' Ask an administrator to plug its drive in or pick another folder.')">
+                            @if (canInstall()) {
+                                <a class="button" routerLink="/admin" [queryParams]="{ section: 'system', page: 'installation' }" [state]="{ sfeFromLibrary: true }"
+                                   title="Pick the library folder in Administration › System › Installation">Pick another folder</a>
+                            }
+                        </sfe-empty-state>
+                    } @else {
+                        <sfe-empty-state [icon]="error?.status === 404 ? 'folder' : 'close'"
+                                         [heading]="error?.status === 404 ? 'Folder not found' : store.searching() ? 'Search is unavailable' : 'Could not load this folder'"
+                                         [text]="error?.status === 404 ? 'It may have been moved or deleted.' : error?.message ?? null">
+                            <a class="button" routerLink="/" [queryParams]="store.browseParams('')">Go to library root</a>
+                        </sfe-empty-state>
+                    }
                 }
                 @case ('ready') {
                     @if (!store.items().length) {
@@ -87,6 +98,8 @@ export class ListingComponent {
     protected readonly pattern = computed(() => this.store.route().q ? highlightPattern(this.store.route().q) : null);
     /** Folders are cards with pictures (`config.folderPictures`, 0 = off), except in the list view. */
     protected readonly folderCards = computed(() => this.store.view() !== 'list' && (this.config.config()?.folderPictures ?? 0) > 0);
+    /** Server administrators can pick another library folder (System › Installation). */
+    protected readonly canInstall = computed(() => this.config.can(Rights.serverSettings));
     protected readonly folderLayout = computed(() => this.store.view() === 'list' ? 'list' : this.folderCards() ? 'grid covers' : 'grid');
 
     private readonly observer = new IntersectionObserver(entries => {

@@ -95,6 +95,24 @@ public sealed class MigrationTests
     }
 
     [TestMethod]
+    public async Task WithoutAConfiguredCodeTheUpdateIsConfirmedWithTheOneTheServerMade()
+    {
+        await InstallAsync("1.40.0");
+        var factory = ApiClients.CreateFactory(_library, settings => settings["Sfe:Setup:Code"] = "");
+        _disposables.Add(factory);
+        var visitor = ApiClients.Create(factory);
+
+        var info = await MigrationAsync(visitor);
+        var code = (await File.ReadAllTextAsync(Path.Combine(_library.BasePath, "setup-code.txt"), TestContext.CancellationToken)).Trim();
+        using var started = await visitor.PostAsJsonAsync("/api/migration", new MigrationInput(code), TestContext.CancellationToken);
+
+        Assert.AreEqual(MigrationStatus.Required, info.Status);
+        Assert.IsTrue(info.CodeConfigured);
+        Assert.IsTrue(info.CodeGenerated);
+        Assert.AreEqual(HttpStatusCode.OK, started.StatusCode, await started.Content.ReadAsStringAsync(TestContext.CancellationToken));
+    }
+
+    [TestMethod]
     public async Task TheConfirmedUpdateBringsTheInstallUpAndOpensIt()
     {
         await InstallAsync(null);
@@ -197,6 +215,7 @@ public sealed class MigrationTests
                    TestContext.CancellationToken))
             Assert.AreEqual(HttpStatusCode.Created, created.StatusCode, await created.Content.ReadAsStringAsync(TestContext.CancellationToken));
         await File.WriteAllTextAsync(_library.SettingsPath, """{ "player": { "seekSeconds": 25 } }""", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(_library.BasePath, "installation.json"), """{ "Urls": "http://*:5181" }""", TestContext.CancellationToken);
 
         using var backup = await admin.GetAsync("/api/system/backup", TestContext.CancellationToken);
         var zip = await backup.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
@@ -207,6 +226,7 @@ public sealed class MigrationTests
         StringAssert.StartsWith(backup.Content.Headers.ContentDisposition?.FileName?.Trim('"'), "SFE-backup-");
         var entries = AssertBackup(zip, MigrationCoordinator.AppVersion.ToString());
         CollectionAssert.Contains(entries, "databases/tenants/other.db", "Every library's index");
+        CollectionAssert.Contains(entries, "config/installation.json", "What the installation page saved");
         Assert.AreEqual(HttpStatusCode.Unauthorized, visitor.StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, migrationBackup.StatusCode, "The setup code backs up only while an update waits");
     }

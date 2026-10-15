@@ -33,6 +33,7 @@ async function mask(b) {
         for (const i of document.querySelectorAll('input, textarea')) i.value = i.value.replace(re, 'D:\\\\Media');
         // System › About: this machine's ffmpeg.
         for (const c of document.querySelectorAll('.system-ffmpeg code')) c.textContent = 'C:\\\\Program Files\\\\ffmpeg\\\\bin\\\\ffmpeg.exe';
+        for (const i of document.querySelectorAll('#installation-ffmpeg')) i.value = 'C:\\\\Program Files\\\\ffmpeg\\\\bin\\\\ffmpeg.exe';
         return 1;
     })()`);
 }
@@ -342,6 +343,18 @@ const scenes = {
             await mask(b);
             await b.shot(OUT + `admin-${section}${page ? '-' + page : ''}.png`);
         }
+        await b.close();
+    },
+    async installation() {
+        const b = await session({ height: 900 });
+        await b.open(admin('system', 'installation'), 2000);
+        await b.eval(`document.querySelector('#installation-code').focus(); 1`);
+        await b.type(process.env.SFE_SETUP_CODE ?? 'doc-screenshots-setup');
+        await b.clickTitle('Check the setup code');
+        await b.waitFor('sfe-installation-form .folder-picker li');
+        await sleep(1500);
+        await mask(b);
+        await b.shot(OUT + 'admin-system-installation.png');
         await b.close();
     },
     async streams() {

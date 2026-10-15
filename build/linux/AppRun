@@ -12,7 +12,7 @@ mkdir -p "$DATA"
 if [ ! -f "$DATA/appsettings.json" ]; then
     cp "$APP/appsettings.json" "$DATA/appsettings.json"
     chmod u+w "$DATA/appsettings.json"
-    echo "SFE: created $DATA/appsettings.json (edit it to change the library root, port...)" >&2
+    echo "SFE: created $DATA/appsettings.json (the library folder, port and ffmpeg can be set from the web page)" >&2
 fi
 
 # .NET needs ICU for culture data. Rather than refuse to start on a system without it, run culture-invariant.

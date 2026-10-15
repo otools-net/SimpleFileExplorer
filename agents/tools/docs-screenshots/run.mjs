@@ -73,14 +73,21 @@ if (!shotsOnly) {
 
 /** The app on the sample library with the database, settings and caches of `folder`; resolves once it answers. */
 async function startApp(appUrl, folder, log) {
+    // The library folder, address and ffmpeg as the setup page saves them (not environment variables, which the
+    // installation page would show locked).
+    const installation = path.join(folder, 'installation.json');
+    fs.writeFileSync(installation, JSON.stringify({
+        Urls: appUrl.replace(/\/$/, ''),
+        Sfe: { Root: library, ...(ffmpeg ? { Thumbnails: { FfmpegPath: ffmpeg } } : {}) },
+    }, null, 2));
     const app = spawn('dotnet', [dll, '--contentRoot', path.join(repo, 'src/Sfe.Api')], {
         cwd: work,
         stdio: ['ignore', fs.openSync(path.join(work, `${log}.log`), 'w'), fs.openSync(path.join(work, `${log}.err.log`), 'w')],
         env: {
             ...process.env,
             ASPNETCORE_ENVIRONMENT: 'Development',
-            Urls: appUrl,
-            Sfe__Root: library,
+            Sfe__InstallationFile: installation,
+            Sfe__Setup__CodeFile: path.join(folder, 'setup-code.txt'),
             Sfe__Database__Provider: 'Sqlite',
             ConnectionStrings__Sfe: `Data Source=${path.join(folder, 'sfe.db')}`,
             Sfe__SettingsFile: path.join(folder, 'settings.json'),
@@ -88,7 +95,6 @@ async function startApp(appUrl, folder, log) {
             Sfe__Security__KeysDirectory: path.join(folder, 'keys'),
             Sfe__Setup__Code: setupCode,
             Sfe__System__EnableShutdown: 'true',
-            ...(ffmpeg ? { Sfe__Thumbnails__FfmpegPath: ffmpeg } : {}),
         },
     });
     for (let i = 0; i < 120; i++) {

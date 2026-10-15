@@ -15,12 +15,13 @@ namespace Sfe.Api.Maintenance;
 
 /// <summary>
 /// What a backup holds: the database of <c>ConnectionStrings:Sfe</c> (accounts, spaces, the first library's index),
-/// the index of every other library, the settings file and the configuration files of the content root. Read without
+/// the index of every other library, the settings file, the installation file and the configuration files of the content
+/// root. Read without
 /// the libraries' services, so that it works while the install waits for its update too.
 /// </summary>
 public sealed class BackupSources(
     IConfiguration configuration, IWebHostEnvironment environment, IDbContextFactory<AccessDbContext> dbFactory, SettingsStore settings, BackupWriter writer,
-    ILogger<BackupSources> logger)
+    InstallationSettings installation, ILogger<BackupSources> logger)
 {
     /// <param name="installedVersion">The version the databases belong to (<see cref="MigrationCoordinator.DatabaseVersion"/>).</param>
     public async Task<BackupArchive> WriteAsync(string? installedVersion, CancellationToken cancellationToken = default)
@@ -42,8 +43,8 @@ public sealed class BackupSources(
             databases.Add(new BackupDatabase(Entry(provider, resolved, "databases/tenants"), $"Index of the space {name} ({slug})", provider, resolved));
         }
 
-        var files = new List<BackupFile> { new("config/settings.json", settings.FilePath) };
-        foreach (var name in new[] { "appsettings.json", $"appsettings.{environment.EnvironmentName}.json" }.Distinct())
+        var files = new List<BackupFile> { new("config/settings.json", settings.FilePath), new("config/installation.json", installation.FilePath) };
+        foreach (var name in new[] { "appsettings.json", "appsettings.Local.json", $"appsettings.{environment.EnvironmentName}.json" }.Distinct())
             files.Add(new BackupFile("config/" + name, Path.Combine(contentRoot, name)));
 
         return await writer.WriteAsync(new BackupContents(installedVersion, Api.AppVersion.Version, databases, files, notes), cancellationToken);

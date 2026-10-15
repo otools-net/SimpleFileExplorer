@@ -30,6 +30,20 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.43
+
+- **No file to edit for the setup code any more:** when the configuration sets none, SFE makes one and keeps it in
+  `data/setup-code.txt` (shown in its window or log). An install that kept its `Sfe:Setup:Code` keeps using it; one
+  that removed it finds the code for this update page in that file.
+- The library folder, the listening address and the ffmpeg path can be changed on the new
+  [Administration › System › Installation](administration/system.md#installation) page (with the setup code). Values
+  you set in `appsettings.json` stay as they are; those set by environment variables or the command line keep winning.
+- **From source (IIS, systemd from `dotnet publish`):** the repository's `src/Sfe.Api/appsettings.json` is now neutral
+  (library root `~`, SQLite). If you deployed it with your own values in it, keep your file when you publish over it,
+  or move those values into `appsettings.Local.json` next to it, which is read after `appsettings.json`. Portable
+  packages are not concerned (their `appsettings.json` is kept, as before).
+- Nothing changes in the databases or the settings file.
+
 ## To 1.42
 
 - The accounts' database gets a new table, `QuickLinks` (the sidebar's [quick links](user-guide/browsing.md#quick-links)),

@@ -5,20 +5,29 @@ about the configuration files, which also hold what the web page may never chang
 
 ## Where settings come from
 
-Everything lives in `src/Sfe.Api/appsettings.json` (next to the executable in a package). Any value can be overridden
-with environment variables (`Sfe__Root=D:\Media`, `ConnectionStrings__Sfe=...`) or on the command line
-(`--Sfe:Root=D:\Media`).
+Everything lives in `appsettings.json` (next to the executable in a package, `src/Sfe.Api/` from source), read in this
+order, each one overriding the ones before:
 
-The shipped `appsettings.json` describes the original Windows host (`V:\`, SQL Express); on Linux override at least
-`Sfe:Root`, the connection string and `Sfe:Thumbnails:CacheDirectory`. Relative paths (thumbnail cache, SQLite file)
-are relative to the application folder; a leading `~` is the home folder.
+1. `appsettings.json`: neutral defaults (library root `~`, SQLite in `data/`, `ffmpeg` from the `PATH`);
+2. `appsettings.Local.json`, when it exists: your own machine's values, kept out of git and of the portable packages;
+3. `appsettings.{Environment}.json` (e.g. `appsettings.Development.json` with `dotnet run`);
+4. `data/installation.json` (`Sfe:InstallationFile`): what the [setup page](first-start.md#the-setup-page) and
+   [Administration › System › Installation](administration/system.md#installation) saved: the library folder
+   (`Sfe:Root`), the listening address (`Urls`) and ffmpeg (`Sfe:Thumbnails:FfmpegPath`). Written by SFE, not meant to
+   be edited;
+5. environment variables (`Sfe__Root=D:\Media`, `ConnectionStrings__Sfe=...`), then the command line
+   (`--Sfe:Root=D:\Media`). A value set here can't be changed from the web: the installation page shows it locked.
+
+Relative paths (thumbnail cache, SQLite file, data files) are relative to the application folder; a leading `~` is the
+home folder.
 
 Values saved on the administration page take precedence over these files, at several levels (server, space, user):
 see [Settings by level](reference/settings-levels.md).
 
-**Only in the configuration**, because they decide which programs run or where data lives: the library root, the
-thumbnail cache folder, the database, the ffmpeg path, shutdown/dismount, and everything about the setup, sign-in and
-spaces' storage.
+**Only in the configuration**, because they decide which programs run or where data lives: the thumbnail cache folder,
+the database, shutdown/dismount, and everything about the setup, sign-in and spaces' storage. The library folder, the
+listening address and the ffmpeg path are the exception: they can also be changed on the installation page, which asks
+for the setup code first (only whoever runs the server knows it).
 
 ## Main settings
 
@@ -33,13 +42,16 @@ spaces' storage.
 | `Sfe:SettingsFile` | Where the administration page saves (see [below](#the-settings-file)) |
 | `Sfe:System:EnableShutdown`, `ShutdownCommand`, `DismountCommand` | Server commands, opt-in (see [System](administration/system.md)) |
 | `Sfe:Backup:SqlServerFolder` | SQL Server only: where the database server writes the [backups](administration/system.md#backup) (as it sees it); empty = its default backup folder |
-| `Urls` | Listening address, default `http://*:5080` |
+| `Urls` | Listening address, default `http://*:5080` (portable packages: `http://localhost:5080`) |
+| `Sfe:InstallationFile` | Where the installation page saves (default `data/installation.json`); see [above](#where-settings-come-from) |
+| `Sfe:OpenBrowser` | Portable packages started by hand open the app in the browser (default `true`; never as a service) |
 
 ## Sign-in, accounts and spaces
 
 | Setting | Notes |
 |---|---|
-| `Sfe:Setup:Code` | The setup code the first administrator is created with (at least 12 characters), and that confirms each [update](upgrading.md#the-update-page-137-and-later). See [First start](first-start.md) |
+| `Sfe:Setup:Code` | The setup code the first administrator is created with (at least 12 characters), and that confirms each [update](upgrading.md#the-update-page-137-and-later) and the installation page. Empty: SFE makes one. See [First start](first-start.md) |
+| `Sfe:Setup:CodeFile` | Where SFE keeps the code it made when `Sfe:Setup:Code` is empty (default `data/setup-code.txt`) |
 | `Sfe:Setup:Recover` | `true` opens the setup page again to reset a lost administrator password (with the code); turn it off afterwards |
 | `Sfe:Security:AnonymousGuests` | Default `true`: spaces may let visitors in without an account; `false` forbids it everywhere |
 | `Sfe:Security:SessionDays`, `MinimumPasswordLength`, `MaxFailedSignIns`, `LockoutMinutes`, `SignInsPerMinute` | Sign-in: 30 days, 8 characters, 5 failures lock an account for 15 minutes, 10 attempts per minute and address |

@@ -12,7 +12,10 @@ namespace Sfe.Core.Access;
 /// <param name="CodeTooShort">A setup code is set but shorter than <see cref="SetupOptions.MinimumCodeLength"/>.</param>
 /// <param name="Recover">The setup resets or adds a local administrator rather than starting from nothing.</param>
 /// <param name="LibraryName">Name of the first library so far (the setup may rename it).</param>
-public sealed record SetupState(bool Required, bool Available, bool CodeConfigured, bool CodeTooShort, bool Recover, int MinimumCodeLength, string LibraryName);
+/// <param name="CodeGenerated">The code is the one the server made itself (<see cref="GeneratedSetupCode"/>), shown in its console.</param>
+/// <param name="CodeFile">Where that code is kept, as configured (<see cref="SetupOptions.CodeFile"/>, usually relative to SFE's folder).</param>
+public sealed record SetupState(bool Required, bool Available, bool CodeConfigured, bool CodeTooShort, bool Recover, int MinimumCodeLength, string LibraryName,
+    bool CodeGenerated = false, string? CodeFile = null);
 
 /// <param name="Code">The setup code of the environment.</param>
 /// <param name="LibraryName">New name of the first library; empty keeps it.</param>
@@ -27,6 +30,7 @@ public sealed class SetupService(
     AccessService accounts,
     AccessChanges changes,
     IOptionsMonitor<SetupOptions> options,
+    GeneratedSetupCode generatedCode,
     ILogger<SetupService> logger)
 {
     private (long Version, bool HasAdmin)? _hasAdmin;
@@ -46,10 +50,12 @@ public sealed class SetupService(
     public async Task<SetupState> GetStateAsync(CancellationToken cancellationToken = default)
     {
         var setup = options.CurrentValue;
-        var code = setup.Code?.Trim();
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var library = await db.Tenants.AsNoTracking().Where(t => t.IsDefault).Select(t => t.Name).FirstOrDefaultAsync(cancellationToken);
         var required = await IsRequiredAsync(cancellationToken);
+        if (required || setup.Recover)
+            setup = EnsureCode(setup);
+        var code = setup.Code?.Trim();
         return new SetupState(
             required,
             required || setup.Recover,
@@ -57,7 +63,9 @@ public sealed class SetupService(
             !string.IsNullOrEmpty(code) && code.Length < SetupOptions.MinimumCodeLength,
             setup.Recover,
             SetupOptions.MinimumCodeLength,
-            library ?? "Library");
+            library ?? "Library",
+            setup.CodeIsGenerated,
+            setup.CodeFile);
     }
 
     /// <summary>
@@ -71,7 +79,7 @@ public sealed class SetupService(
             return AccessResult<SessionUser>.Conflict("The server is set up already: sign in instead.");
         if (!setup.HasUsableCode)
             return AccessResult<SessionUser>.Conflict("The server has no setup code: set one in its environment first.");
-        if (!PasswordHashing.SameSecret(input.Code?.Trim() ?? string.Empty, setup.Code!.Trim()))
+        if (!setup.Matches(input.Code))
         {
             logger.LogWarning("Setup refused: wrong setup code");
             return AccessResult<SessionUser>.Invalid("code", "This is not the server's setup code.");
@@ -102,6 +110,26 @@ public sealed class SetupService(
             ? "Recovery: {User} is a server administrator again. Turn Sfe:Setup:Recover off."
             : "Setup done: {User} is the server administrator. Sfe:Setup:Code is no longer needed.", result.Value!.UserName);
         return AccessResult<SessionUser>.Ok((await accounts.GetSessionUserAsync(result.Value.Id, cancellationToken))!);
+    }
+
+    /// <summary>
+    /// Without a code in the configuration, the one the server makes itself (Program.cs also does it at start-up and
+    /// prints it): the setup page needs one.
+    /// </summary>
+    private SetupOptions EnsureCode(SetupOptions setup)
+    {
+        if (!string.IsNullOrWhiteSpace(setup.Code))
+            return setup;
+        try
+        {
+            generatedCode.Ensure();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogError(ex, "Cannot write the setup code to {Path}: set Sfe:Setup:Code instead", generatedCode.FilePath);
+        }
+
+        return options.CurrentValue;
     }
 
     private async Task<UserAccount?> FindLocalAsync(string userName, CancellationToken cancellationToken)

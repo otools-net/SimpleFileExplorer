@@ -3,6 +3,27 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.43.0
+
+### Added
+
+- Setting SFE up needs no file edited: without a configured setup code, SFE makes one at its first start, shows it in
+  its window (or log) and keeps it in `data/setup-code.txt`; type it with or without the dashes.
+- The setup page now has three steps: the code, **your library** (pick its folder on the server's disks, choose this
+  computer only or the whole network, and find ffmpeg), then the administrator.
+- **Administration › System › Installation** changes the library folder, the network address and ffmpeg later, after
+  entering the setup code. Values set by environment variables or the command line are shown locked.
+- The Windows portable package opens the app in the browser when started, and installs itself as a Windows service with
+  `install-service.cmd` (`Sfe.Api.exe --install-service`).
+
+### Changed
+
+- A configuration file that isn't valid JSON, or a port already in use, now stops SFE with a plain message (the file's
+  line, what to do) instead of an error dump.
+- A library folder that doesn't exist (an unplugged drive) is said as such in the listing, with a link to pick another.
+- The repository's `appsettings.json` is neutral (library root `~`, SQLite); a machine's own values go in
+  `appsettings.Local.json`.
+
 ## 1.42.0
 
 ### Added

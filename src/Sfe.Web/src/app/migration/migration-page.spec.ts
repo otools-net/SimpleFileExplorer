@@ -132,6 +132,14 @@ describe('MigrationPageComponent', () => {
         expect(buttonNamed(element, 'Check again')).toBeDefined();
     });
 
+    it('says where to find the code the server made itself', async () => {
+        await create(migration({ codeGenerated: true, codeFile: 'data/setup-code.txt', hosting: 'appImage' }));
+
+        const hint = element.querySelector('#migration-code-hint')!.textContent!;
+        expect(hint).toContain('The code SFE made at its setup');
+        expect(hint).toContain('~/.config/sfe/data/setup-code.txt');
+    });
+
     it('offers only a backup when the install belongs to a later version', async () => {
         await create(migration({ status: 'newer', databaseVersion: '2.0.0', changes: [] }));
 

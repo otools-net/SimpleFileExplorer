@@ -27,6 +27,17 @@ public sealed class SfeOptions
     /// <summary>Show files and folders flagged as hidden or system (on Linux and macOS: names starting with a dot).</summary>
     public bool ShowHiddenItems { get; set; }
 
+    /// <summary>
+    /// Portable packages started by hand open the app in the default browser once it listens (never a service).
+    /// </summary>
+    public bool OpenBrowser { get; set; } = true;
+
+    /// <summary>
+    /// The configuration file the installation page writes (library folder, listening address, ffmpeg), between
+    /// <c>appsettings*.json</c> and the environment. Relative paths are resolved against the content root.
+    /// </summary>
+    public string InstallationFile { get; set; } = "data/installation.json";
+
     public DatabaseOptions Database { get; set; } = new();
     public BrowseOptions Browse { get; set; } = new();
     public SearchOptions Search { get; set; } = new();

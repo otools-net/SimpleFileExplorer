@@ -111,21 +111,75 @@ public sealed class Ffmpeg
         var configured = _options.CurrentValue.Thumbnails.FfmpegPath;
         if (string.IsNullOrWhiteSpace(configured))
             return null;
+        var found = Find(configured);
+        if (found is null)
+            _logger.LogWarning("ffmpeg not found at '{Path}': thumbnails and trickplay are disabled", configured);
+        return found;
+    }
+
+    /// <summary>
+    /// The executable <paramref name="configured"/> names: a file path, a folder holding it (or its <c>bin</c>), or a
+    /// name looked up on PATH. Null when none exists.
+    /// </summary>
+    public static string? Find(string? configured)
+    {
+        if (string.IsNullOrWhiteSpace(configured))
+            return null;
+        configured = configured.Trim();
+        var names = OperatingSystem.IsWindows() ? ["ffmpeg.exe", "ffmpeg"] : new[] { "ffmpeg" };
 
         if (Path.IsPathRooted(configured) || configured.Contains(Path.DirectorySeparatorChar) || configured.Contains(Path.AltDirectorySeparatorChar))
-            return File.Exists(configured) ? configured : Warn(configured);
-
-        var names = OperatingSystem.IsWindows() && !Path.HasExtension(configured) ? [configured + ".exe", configured] : new[] { configured };
-        var found = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
-            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-            .SelectMany(dir => names.Select(name => Path.Combine(dir, name)))
-            .FirstOrDefault(File.Exists);
-
-        return found ?? Warn(configured);
-
-        string? Warn(string path)
         {
-            _logger.LogWarning("ffmpeg not found at '{Path}': thumbnails and trickplay are disabled", path);
+            if (File.Exists(configured))
+                return configured;
+            // A folder, as picked on the installation page: ffmpeg's own folder or the one of its download.
+            return Directory.Exists(configured)
+                ? new[] { configured, Path.Combine(configured, "bin") }.SelectMany(dir => names.Select(name => Path.Combine(dir, name))).FirstOrDefault(File.Exists)
+                : null;
+        }
+
+        var candidates = OperatingSystem.IsWindows() && !Path.HasExtension(configured) ? [configured + ".exe", configured] : new[] { configured };
+        return (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .SelectMany(dir => candidates.Select(name => Path.Combine(dir, name)))
+            .FirstOrDefault(File.Exists);
+    }
+
+    /// <summary>The version an ffmpeg executable reports, for a path not yet configured (the installation page).</summary>
+    public static async Task<string?> ProbeVersionAsync(string executable, CancellationToken cancellationToken = default)
+    {
+        var start = new ProcessStartInfo(executable)
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+        start.ArgumentList.Add("-hide_banner");
+        start.ArgumentList.Add("-version");
+        try
+        {
+            using var process = Process.Start(start);
+            if (process is null)
+                return null;
+            using var limit = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            limit.CancelAfter(TimeSpan.FromSeconds(10));
+            var output = process.StandardOutput.ReadToEndAsync(limit.Token);
+            var errors = process.StandardError.ReadToEndAsync(limit.Token);
+            try
+            {
+                await Task.WhenAll(output, errors, process.WaitForExitAsync(limit.Token));
+            }
+            catch (OperationCanceledException)
+            {
+                process.Kill(entireProcessTree: true);
+                return null;
+            }
+
+            return ParseVersion(output.Result);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
             return null;
         }
     }

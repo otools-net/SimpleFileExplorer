@@ -9,7 +9,8 @@ administrator.
 
 Optional, for every way:
 
-- [ffmpeg](https://ffmpeg.org/) on the `PATH` (`apt install ffmpeg` on Debian/Ubuntu): video thumbnails,
+- [ffmpeg](https://ffmpeg.org/) on the `PATH` (`apt install ffmpeg` on Debian/Ubuntu), or unzipped anywhere and its
+  folder picked on the setup page: video thumbnails,
   [trickplay](administration/trickplay.md), [similar videos](administration/duplicates-and-moves.md#similar-videos),
   video and audio durations. Without it, listings show photos from the files themselves and videos with an icon;
   everything else works.
@@ -18,20 +19,24 @@ Optional, for every way:
 ## Portable packages
 
 Self-contained packages that need no .NET install: `SFE-<version>-win-x64.zip` and `SFE-<version>-x86_64.AppImage`.
-They start with neutral settings: library root `~` (your home folder), SQLite index, `ffmpeg` from the `PATH`, system
-commands off, listening on **`http://localhost:5080` only** (set `"Urls": "http://*:5080"` in their
-`appsettings.json` to open it to the network).
+Nothing needs editing before the first start: the [setup page](first-start.md#the-setup-page) asks for the library
+folder, who may open SFE and ffmpeg. They start with neutral settings: library root `~` (your home folder) until you
+pick one, SQLite index, `ffmpeg` from the `PATH`, system commands off, listening on **`http://localhost:5080` only**
+(the setup page, or later Administration › System › Installation, opens it to the network).
 
-Before the first start, add a setup code to their `appsettings.json` (`"Setup": { "Code": "…" }` in the `Sfe`
-section): see [First start](first-start.md).
-
-- **Windows:** unzip, run `SFE\Sfe.Api.exe`. Settings (`appsettings.json`) and data (`data\`: index, thumbnails, saved
-  settings) stay in that folder, which must be writable.
+- **Windows:** unzip, run `SFE\Sfe.Api.exe`. It opens the app in your browser, and its window shows the
+  [setup code](first-start.md#the-setup-code). Settings (`appsettings.json`) and data (`data\`: index, thumbnails, saved
+  settings, setup code, installation settings) stay in that folder, which must be writable. To start SFE with the
+  computer, run `install-service.cmd` (see [Windows service](#windows-service)).
 - **Linux:** `chmod +x SFE-*.AppImage` and run it. Settings and data live in `~/.config/sfe` (or `$SFE_HOME`); the first
-  start copies the default `appsettings.json` there: edit it to set the library root. To keep everything next to the
-  AppImage, create a `SFE-….AppImage.config` folder beside it. Without FUSE, run it with `--appimage-extract-and-run`.
-  Without ICU (`libicu`), the app runs culture-invariant.
-- Any setting can be given on the command line, e.g. `Sfe.Api.exe --Sfe:Root=D:\Media --urls http://*:8080`.
+  start copies the default `appsettings.json` there. To keep everything next to the AppImage, create a
+  `SFE-….AppImage.config` folder beside it. Without FUSE, run it with `--appimage-extract-and-run`. Without ICU
+  (`libicu`), the app runs culture-invariant.
+- Any setting can still be given on the command line, e.g. `Sfe.Api.exe --Sfe:Root=D:\Media --urls http://*:8080`
+  (it then wins over the setup page). `--Sfe:OpenBrowser=false` keeps the browser closed.
+
+If SFE doesn't start, its window says why: a configuration file that isn't valid JSON (with the line), or a port used by
+another program.
 
 ## From source
 
@@ -41,8 +46,9 @@ Needs the .NET 10 SDK and [Node.js](https://nodejs.org/) 22.22 or 24.15+ (npm bu
 dotnet run --project src/Sfe.Api          # http://localhost:5080, Development settings
 ```
 
-The Development settings browse your home folder (`"Root": "~"`) and keep the index in SQLite
-(`src/Sfe.Api/data/sfe-dev.db`). Point them elsewhere with `Sfe__Root=/srv/media`.
+The shipped `appsettings.json` browses your home folder (`"Root": "~"`) and keeps the index in SQLite
+(`src/Sfe.Api/data/`); pick another folder on the setup page, or with `Sfe__Root=/srv/media`. Your own machine's
+values can go in `src/Sfe.Api/appsettings.Local.json` (not in git), read after `appsettings.json`.
 
 ## IIS
 
@@ -52,17 +58,25 @@ The Development settings browse your home folder (`"Root": "~"`) and keep the in
 3. The app pool identity needs read access to the library and write access to the thumbnail cache.
 
 The application folder is usually not writable under IIS: point the saved settings elsewhere, e.g.
-`Sfe__SettingsFile=D:\sfe-data\settings.json` (see [Configuration](configuration.md#the-settings-file)). To let the
-[picture editor](user-guide/picture-editor.md) save pictures over 30 MB, raise IIS's own request limit
-(`maxAllowedContentLength`).
+`Sfe__SettingsFile=D:\sfe-data\settings.json` (see [Configuration](configuration.md#the-settings-file)), and the same
+for the setup code and the installation settings: `Sfe__Setup__CodeFile=D:\sfe-data\setup-code.txt`,
+`Sfe__InstallationFile=D:\sfe-data\installation.json`. To let the [picture editor](user-guide/picture-editor.md) save
+pictures over 30 MB, raise IIS's own request limit (`maxAllowedContentLength`).
 
 ## Windows service
+
+With the portable package, run `install-service.cmd` in SFE's folder (it asks for administrator rights): SFE becomes the
+Windows service **SFE**, starts with the computer and keeps that folder's settings and data. `uninstall-service.cmd`
+removes it (the data stays). The same from a console opened as administrator: `Sfe.Api.exe --install-service` (or
+`--uninstall-service`; `--name` picks another service name).
+
+The service runs as the Local System account: it reads local drives, not the network drives a user mapped. Pick the
+library folder (setup page) before installing it, or change it afterwards in Administration › System › Installation. To
+run it under another account (e.g. one that can read a NAS share), change it in the Services console. By hand:
 
 ```bat
 sc.exe create SFE binPath= "C:\sfe\Sfe.Api.exe" start= auto
 ```
-
-Use a service account that can read the library drives.
 
 ## Linux (systemd)
 
@@ -84,7 +98,9 @@ Environment=Sfe__Database__Provider=Sqlite
 Environment=ConnectionStrings__Sfe="Data Source=/var/lib/sfe/sfe.db"
 Environment=Sfe__Thumbnails__CacheDirectory=/var/lib/sfe/thumbs
 Environment=Sfe__SettingsFile=/var/lib/sfe/settings.json
-# For the first start only: the code the setup page asks for (remove it once the administrator exists).
+Environment=Sfe__Setup__CodeFile=/var/lib/sfe/setup-code.txt
+Environment=Sfe__InstallationFile=/var/lib/sfe/installation.json
+# Optional: a setup code of your own (else SFE makes one, shown by journalctl -u sfe and kept in the file above).
 Environment=Sfe__Setup__Code=pick-a-long-code-nobody-guesses
 StateDirectory=sfe
 Restart=on-failure
@@ -98,7 +114,8 @@ Then `systemctl enable --now sfe`; it logs to the journal. The `sfe` user needs 
 ## Network address
 
 The default listening address is `http://*:5080` (`Urls` in `appsettings.json`), except for the portable packages
-(localhost only).
+(localhost only). The setup page and Administration › System › Installation change it (this computer only, or the
+network, and the port) unless the environment or the command line sets it.
 
 ## Fully local
 

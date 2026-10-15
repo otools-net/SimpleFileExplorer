@@ -1,21 +1,27 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { SetupInfo } from '../core/models';
+import { InstallationView, SetupInfo } from '../core/models';
 import { valueOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
-import { SetupCodeStepsComponent } from './setup-code.component';
+import { InstallationFormComponent } from './installation-form.component';
+import { generatedCodeWhere, SetupCodeStepsComponent } from './setup-code.component';
+
+/** The setup's steps: the code, then the library folder and network (skipped in recovery), then the administrator. */
+type SetupStep = 'code' | 'library' | 'account' | 'restart';
 
 /**
- * The first administrator (`setup`). Nothing else works until one exists. The page needs the setup code of the
- * server's environment: without one it says how to set it for the way the server runs. With `Sfe:Setup:Recover`, the
- * same page resets the password of a local administrator (or adds one).
+ * The first administrator (`setup`). Nothing else works until one exists. The page needs the setup code: the one the
+ * server made itself (shown in its console) or one set in its environment; without either, it says how to set one for
+ * the way the server runs. Then it asks for the library folder, who may open SFE and ffmpeg (the installation page,
+ * saved before the administrator exists), then for the administrator. With `Sfe:Setup:Recover`, the same page resets
+ * the password of a local administrator (or adds one), without the library step.
  */
 @Component({
     selector: 'sfe-setup-page',
-    imports: [IconComponent, SetupCodeStepsComponent],
+    imports: [IconComponent, SetupCodeStepsComponent, InstallationFormComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'account-page' },
     template: `
@@ -23,6 +29,9 @@ import { SetupCodeStepsComponent } from './setup-code.component';
             <header class="account-head">
                 <span class="brand"><svg sfeIcon="folder"></svg><span>SFE</span></span>
                 <h1>{{ info()?.recover ? 'Recover an administrator' : 'Set up SFE' }}</h1>
+                @if (stepNumber(); as number) {
+                    <p class="setup-progress">Step {{ number }} of {{ stepCount() }}</p>
+                }
             </header>
             @if (loadError(); as error) {
                 <p class="form-error" role="alert">The server is not reachable: {{ error }}</p>
@@ -41,72 +50,123 @@ import { SetupCodeStepsComponent } from './setup-code.component';
                     <button type="button" class="button primary" title="Ask the server whether it has a setup code now" (click)="load()">Check again</button>
                 </div>
             } @else {
-                <form class="account-form" novalidate (submit)="submit($event)">
-                    @if (info()!.recover) {
-                        <p>
-                            The server is in recovery mode: enter the name of a local administrator to give it a new password, or a new
-                            name to add an administrator. Turn recovery off (Sfe:Setup:Recover) afterwards.
-                        </p>
-                    } @else if (info()!.required) {
-                        <p>
-                            Create the administrator of this server. Your library, its index, tags and settings are kept: they become
-                            the first <strong>space</strong>, which you can name here. More spaces, and accounts for the others, come later in Administration.
-                        </p>
-                    }
-                    <div class="field">
-                        <label class="field-label" for="setup-code">Setup code</label>
-                        <input id="setup-code" type="password" autocomplete="off" required [value]="code()" (input)="code.set(valueOf($event))" aria-describedby="setup-code-hint">
-                        <span class="field-hint" id="setup-code-hint">The code given in the server's environment (Sfe:Setup:Code).</span>
-                        @if (errors()['code']; as error) {
-                            <span class="field-error">{{ error }}</span>
-                        }
-                    </div>
-                    <div class="field">
-                        <label class="field-label" for="setup-name">Administrator's name</label>
-                        <input id="setup-name" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required
-                               [value]="userName()" (input)="userName.set(valueOf($event))">
-                        @if (errors()['userName']; as error) {
-                            <span class="field-error">{{ error }}</span>
-                        }
-                    </div>
-                    <div class="field">
-                        <label class="field-label" for="setup-display">Display name <span class="field-hint">(optional)</span></label>
-                        <input id="setup-display" type="text" autocomplete="name" [value]="displayName()" (input)="displayName.set(valueOf($event))">
-                    </div>
-                    <div class="field">
-                        <label class="field-label" for="setup-password">Password</label>
-                        <input id="setup-password" type="password" autocomplete="new-password" required [value]="password()" (input)="password.set(valueOf($event))"
-                               aria-describedby="setup-password-hint">
-                        <span class="field-hint" id="setup-password-hint">At least {{ info()!.minimumPasswordLength }} characters.</span>
-                        @if (errors()['password']; as error) {
-                            <span class="field-error">{{ error }}</span>
-                        }
-                    </div>
-                    <div class="field">
-                        <label class="field-label" for="setup-confirm">Password again</label>
-                        <input id="setup-confirm" type="password" autocomplete="new-password" required [value]="confirm()" (input)="confirm.set(valueOf($event))">
-                        @if (mismatch()) {
-                            <span class="field-error">The two passwords differ.</span>
-                        }
-                    </div>
-                    @if (!info()!.recover) {
-                        <div class="field">
-                            <label class="field-label" for="setup-library">Name of the first space</label>
-                            <input id="setup-library" type="text" [value]="libraryName()" (input)="libraryName.set(valueOf($event))" aria-describedby="setup-library-hint">
-                            <span class="field-hint" id="setup-library-hint">A space holds one library and who may see it, e.g. Family. You can rename it later.</span>
-                            @if (errors()['libraryName']; as error) {
-                                <span class="field-error">{{ error }}</span>
+                @switch (step()) {
+                    @case ('code') {
+                        <form class="account-form" novalidate (submit)="checkCode($event)">
+                            @if (info()!.recover) {
+                                <p>
+                                    The server is in recovery mode: enter the setup code, then the name of a local administrator to give it a new
+                                    password, or a new name to add an administrator. Turn recovery off (Sfe:Setup:Recover) afterwards.
+                                </p>
+                            } @else {
+                                <p>
+                                    Welcome. SFE needs three things: the setup code that proves you run this server, the folder of your library,
+                                    and an administrator account.
+                                </p>
                             }
+                            <div class="field">
+                                <label class="field-label" for="setup-code">Setup code</label>
+                                <input id="setup-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" required
+                                       [value]="code()" (input)="code.set(valueOf($event))" aria-describedby="setup-code-hint">
+                                <span class="field-hint" id="setup-code-hint">
+                                    @if (info()!.codeGenerated) {
+                                        SFE made this code when it started: {{ codeWhere() }}.
+                                    } @else {
+                                        The code given in the server's environment (Sfe:Setup:Code).
+                                    }
+                                </span>
+                                @if (errors()['code']; as error) {
+                                    <span class="field-error">{{ error }}</span>
+                                }
+                            </div>
+                            @if (error(); as error) {
+                                <p class="form-error" role="alert">{{ error }}</p>
+                            }
+                            <button type="submit" class="button primary account-submit" title="Check the setup code and go on" [disabled]="busy() || !code().trim()">Next</button>
+                        </form>
+                    }
+                    @case ('library') {
+                        <form class="account-form" novalidate (submit)="saveLibrary($event)">
+                            <p>Where are your photos, videos and music, and who may open SFE? All of it can be changed later in Administration › System › Installation.</p>
+                            <sfe-installation-form [token]="token()!" [initial]="installation()!" />
+                            <div class="setup-actions">
+                                <button type="button" class="button" title="Back to the setup code" (click)="step.set('code')">Back</button>
+                                <button type="submit" class="button primary" title="Save these and go on to the administrator" [disabled]="busy()">Next</button>
+                            </div>
+                        </form>
+                    }
+                    @case ('account') {
+                        <form class="account-form" novalidate (submit)="submit($event)">
+                            @if (info()!.recover) {
+                                <p>Enter the name of a local administrator to give it a new password, or a new name to add an administrator.</p>
+                            } @else {
+                                <p>
+                                    Create the administrator of this server. Your library, its index, tags and settings become the first
+                                    <strong>space</strong>, which you can name here. More spaces, and accounts for the others, come later in Administration.
+                                </p>
+                            }
+                            <div class="field">
+                                <label class="field-label" for="setup-name">Administrator's name</label>
+                                <input id="setup-name" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required
+                                       [value]="userName()" (input)="userName.set(valueOf($event))">
+                                @if (errors()['userName']; as error) {
+                                    <span class="field-error">{{ error }}</span>
+                                }
+                            </div>
+                            <div class="field">
+                                <label class="field-label" for="setup-display">Display name <span class="field-hint">(optional)</span></label>
+                                <input id="setup-display" type="text" autocomplete="name" [value]="displayName()" (input)="displayName.set(valueOf($event))">
+                            </div>
+                            <div class="field">
+                                <label class="field-label" for="setup-password">Password</label>
+                                <input id="setup-password" type="password" autocomplete="new-password" required [value]="password()" (input)="password.set(valueOf($event))"
+                                       aria-describedby="setup-password-hint">
+                                <span class="field-hint" id="setup-password-hint">At least {{ info()!.minimumPasswordLength }} characters.</span>
+                                @if (errors()['password']; as error) {
+                                    <span class="field-error">{{ error }}</span>
+                                }
+                            </div>
+                            <div class="field">
+                                <label class="field-label" for="setup-confirm">Password again</label>
+                                <input id="setup-confirm" type="password" autocomplete="new-password" required [value]="confirm()" (input)="confirm.set(valueOf($event))">
+                                @if (mismatch()) {
+                                    <span class="field-error">The two passwords differ.</span>
+                                }
+                            </div>
+                            @if (!info()!.recover) {
+                                <div class="field">
+                                    <label class="field-label" for="setup-library">Name of the first space</label>
+                                    <input id="setup-library" type="text" [value]="libraryName()" (input)="libraryName.set(valueOf($event))" aria-describedby="setup-library-hint">
+                                    <span class="field-hint" id="setup-library-hint">A space holds one library and who may see it, e.g. Family. You can rename it later.</span>
+                                    @if (errors()['libraryName']; as error) {
+                                        <span class="field-error">{{ error }}</span>
+                                    }
+                                </div>
+                            }
+                            @if (errors()['code']; as error) {
+                                <p class="form-error" role="alert">{{ error }}</p>
+                            }
+                            @if (error(); as error) {
+                                <p class="form-error" role="alert">{{ error }}</p>
+                            }
+                            <div class="setup-actions">
+                                <button type="button" class="button" [title]="info()!.recover ? 'Back to the setup code' : 'Back to the library folder'"
+                                        (click)="step.set(info()!.recover ? 'code' : 'library')">Back</button>
+                                <button type="submit" class="button primary" title="Create the administrator and sign in"
+                                        [disabled]="busy() || mismatch() || !userName().trim() || !password()">
+                                    {{ info()!.recover ? 'Restore the administrator' : 'Create the administrator' }}
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    @case ('restart') {
+                        <div class="account-steps">
+                            <p><strong>SFE is set up.</strong> One more thing: the new network setting applies once SFE starts again.</p>
+                            <p>Close SFE and start it again (or restart its service). Until then, it keeps answering at this address.</p>
+                            <button type="button" class="button primary" title="Open the library" (click)="finish()">Open the library</button>
                         </div>
                     }
-                    @if (error(); as error) {
-                        <p class="form-error" role="alert">{{ error }}</p>
-                    }
-                    <button type="submit" class="button primary account-submit" title="Create the administrator and sign in"
-                            [disabled]="busy() || mismatch() || !code() || !userName().trim() || !password()">
-                        {{ info()!.recover ? 'Restore the administrator' : 'Create the administrator' }}
-                    </button>
-                </form>
+                }
             }
         </section>
     `,
@@ -115,9 +175,14 @@ export class SetupPageComponent implements OnInit {
     private readonly api = inject(Api);
     private readonly config = inject(ConfigService);
     private readonly router = inject(Router);
+    private readonly installationForm = viewChild(InstallationFormComponent);
 
     protected readonly info = signal<SetupInfo | null>(null);
     protected readonly loadError = signal<string | null>(null);
+    protected readonly step = signal<SetupStep>('code');
+    protected readonly token = signal<string | null>(null);
+    protected readonly installation = signal<InstallationView | null>(null);
+    private readonly restartRequired = signal(false);
     protected readonly code = signal('');
     protected readonly userName = signal('');
     protected readonly displayName = signal('');
@@ -129,6 +194,18 @@ export class SetupPageComponent implements OnInit {
     protected readonly errors = signal<Record<string, string>>({});
 
     protected readonly mismatch = computed(() => this.confirm() !== '' && this.confirm() !== this.password());
+    protected readonly codeWhere = computed(() => this.info() ? generatedCodeWhere(this.info()!.hosting, this.info()!.codeFile ?? null) : '');
+    protected readonly stepCount = computed(() => this.info()?.recover ? 2 : 3);
+    protected readonly stepNumber = computed(() => {
+        if (!this.info()?.codeConfigured)
+            return null;
+        switch (this.step()) {
+            case 'code': return 1;
+            case 'library': return 2;
+            case 'account': return this.stepCount();
+            default: return null;
+        }
+    });
 
     protected readonly valueOf = valueOf;
 
@@ -156,26 +233,73 @@ export class SetupPageComponent implements OnInit {
         }
     }
 
+    /** Step 1: the code opens the installation settings (and is sent again with the administrator). */
+    protected async checkCode(event: Event): Promise<void> {
+        event.preventDefault();
+        await this.run(async () => {
+            const grant = await this.api.checkInstallation(this.code().trim());
+            this.token.set(grant.token);
+            this.installation.set(grant.settings);
+            this.step.set(this.info()?.recover ? 'account' : 'library');
+        });
+    }
+
+    /** Step 2: the library folder, network and ffmpeg, saved at once (the library starts again on its new folder). */
+    protected async saveLibrary(event: Event): Promise<void> {
+        event.preventDefault();
+        const form = this.installationForm();
+        if (!form)
+            return;
+        this.busy.set(true);
+        try {
+            const saved = await form.save();
+            if (saved) {
+                this.installation.set(saved.settings);
+                this.restartRequired.set(saved.restartRequired);
+                this.step.set('account');
+            }
+        } finally {
+            this.busy.set(false);
+        }
+    }
+
+    /** Step 3: the administrator, signed in at once. */
     protected async submit(event: Event): Promise<void> {
         event.preventDefault();
         if (this.mismatch())
             return;
-        this.busy.set(true);
-        this.error.set(null);
-        this.errors.set({});
-        try {
+        await this.run(async () => {
             await this.api.completeSetup({
-                code: this.code(),
+                code: this.code().trim(),
                 userName: this.userName().trim(),
                 password: this.password(),
                 displayName: this.displayName().trim() || null,
                 libraryName: this.info()?.recover ? null : this.libraryName().trim() || null,
             });
             this.config.clear();
-            void this.router.navigate(['/'], { replaceUrl: true });
+            if (this.restartRequired())
+                this.step.set('restart');
+            else
+                this.finish();
+        });
+    }
+
+    protected finish(): void {
+        void this.router.navigate(['/'], { replaceUrl: true });
+    }
+
+    /** Runs a request of the page: its errors are shown by their fields, or above the button. */
+    private async run(action: () => Promise<void>): Promise<void> {
+        this.busy.set(true);
+        this.error.set(null);
+        this.errors.set({});
+        try {
+            await action();
         } catch (error) {
             if (error instanceof ApiError && error.errors)
                 this.errors.set(Object.fromEntries(Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')])));
+            else if (error instanceof ApiError && error.status === 429)
+                this.error.set('Too many attempts: wait a minute, then try again.');
             else
                 this.error.set((error as Error).message);
         } finally {

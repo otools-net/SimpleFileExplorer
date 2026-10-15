@@ -1,7 +1,8 @@
 # System
 
 **Administration › System**: the server's version, library folder and ffmpeg, its API, backups, the server commands
-(**About**), and the videos the server converts (**Video streams**).
+(**About**), the library folder, network address and ffmpeg of the installation (**Installation**), and the videos the
+server converts (**Video streams**).
 
 ![Administration › System](../images/admin-system.png)
 
@@ -13,8 +14,8 @@ Server administrators (`server.settings`) also see:
 - **Library folder**: where the space's library is on the server's disk (`Sfe:Root`, or the space's own folder).
 - **ffmpeg**: **Found**, with where and its version, or **Not found**, with what was looked for
   (`Sfe:Thumbnails:FfmpegPath`, a path or a name looked up on the `PATH`). Without it there are no video thumbnails,
-  trickplay, video resolutions and durations, nor [converted videos](playback.md#videos-converted-by-the-server); set its
-  path in the [configuration](../configuration.md) and restart.
+  trickplay, video resolutions and durations, nor [converted videos](playback.md#videos-converted-by-the-server); pick its
+  folder in [Installation](#installation).
 
 **API reference** opens the [API documentation](../reference/api.md) (right `system.apiDocs`).
 
@@ -53,6 +54,29 @@ databases belong to.
 
 Commands run through `cmd.exe /c` on Windows, `/bin/sh -c` elsewhere. On Linux the service account usually may not shut
 down: use e.g. `sudo -n /usr/sbin/shutdown -h +1` and allow that command in sudoers (or polkit).
+
+## Installation
+
+![Administration › System › Installation](../images/admin-system-installation.png)
+
+The settings of the [setup page](../first-start.md#the-setup-page)'s second step, for server administrators
+(`server.settings`). They decide where data lives and which program runs, so the page first asks for the **setup code**
+(the one in `data/setup-code.txt` in SFE's folder, or the one the configuration sets), as the
+[update page](../upgrading.md#the-update-page-137-and-later) does; it stays unlocked for an hour.
+
+- **Library folder**: the first space's folder (`Sfe:Root`), picked by clicking through the server's drives and folders.
+  Saving starts the libraries again on it at once. Another folder makes the space show other files: the next scan
+  treats the files of the old folder as gone (tagged ones are kept as [moved files](duplicates-and-moves.md) for a while,
+  and found again if the new folder holds them). Other spaces keep their own folder.
+- **Who can open SFE**: **Only this computer** (`http://localhost:<port>`) or **Also the other devices of my network**
+  (`http://*:<port>`), and the port. It applies once SFE starts again (the page says so).
+- **ffmpeg**: **Found** with its path and version, or **Not found**. Type its program or folder, or **Browse** to the
+  folder it was unzipped to (its `bin` folder is found too); empty = look for `ffmpeg` on the `PATH`. Saving checks it
+  and starts the libraries again with it.
+
+What the page saves goes to `data/installation.json` (see [Configuration](../configuration.md#where-settings-come-from)).
+A value the server's environment variables or command line set (e.g. `Sfe__Root` in a systemd unit, `--urls`) wins
+over it: the page shows it with **Set by …** and can't change it.
 
 ## Video streams
 

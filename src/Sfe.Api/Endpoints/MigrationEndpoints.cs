@@ -11,9 +11,11 @@ namespace Sfe.Api.Endpoints;
 /// <param name="DatabaseVersion">The version the install belongs to; null when unknown (installs before 1.37.0).</param>
 /// <param name="Changes">The changelog of the versions after it up to this one, newest first (while an update is due).</param>
 /// <param name="Log">What the update did so far.</param>
-/// <param name="CodeConfigured">The environment gives a setup code long enough: the update can be confirmed.</param>
+/// <param name="CodeConfigured">The server has a setup code long enough (configured, or made by itself): the update can be confirmed.</param>
+/// <param name="CodeGenerated">The code is the one the server made itself: shown in its console and kept in <paramref name="CodeFile"/>.</param>
 public sealed record MigrationInfo(MigrationStatus Status, string AppVersion, string? DatabaseVersion, IReadOnlyList<ChangelogEntry> Changes,
-    IReadOnlyList<string> Log, string? Error, bool CodeConfigured, bool CodeTooShort, int MinimumCodeLength, HostingKind Hosting);
+    IReadOnlyList<string> Log, string? Error, bool CodeConfigured, bool CodeTooShort, int MinimumCodeLength, HostingKind Hosting,
+    bool CodeGenerated = false, string? CodeFile = null);
 
 public sealed record MigrationInput(string? Code);
 
@@ -59,8 +61,24 @@ public static class MigrationEndpoints
         return api;
     }
 
-    private static Ok<MigrationInfo> GetMigration(MigrationCoordinator migration, IOptionsMonitor<SetupOptions> setup) =>
-        TypedResults.Ok(Describe(migration, setup.CurrentValue));
+    private static Ok<MigrationInfo> GetMigration(MigrationCoordinator migration, IOptionsMonitor<SetupOptions> setup, GeneratedSetupCode generated,
+        ILoggerFactory loggers)
+    {
+        // An update to confirm needs a code: without one in the configuration, the one the server makes itself.
+        if (migration.Status is MigrationStatus.Required or MigrationStatus.Failed && string.IsNullOrWhiteSpace(setup.CurrentValue.Code))
+        {
+            try
+            {
+                generated.Ensure();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                loggers.CreateLogger(typeof(MigrationEndpoints)).LogError(ex, "Cannot write the setup code to {Path}: set Sfe:Setup:Code instead", generated.FilePath);
+            }
+        }
+
+        return TypedResults.Ok(Describe(migration, setup.CurrentValue));
+    }
 
     private static async Task<Results<Ok<MigrationInfo>, ValidationProblem, ProblemHttpResult>> StartMigration(
         MigrationCoordinator migration, IOptionsMonitor<SetupOptions> setup, ILoggerFactory loggers, MigrationInput input)
@@ -100,7 +118,7 @@ public static class MigrationEndpoints
     {
         if (!setup.HasUsableCode)
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["The server has no setup code: set one in its environment first."] });
-        if (PasswordHashing.SameSecret(code?.Trim() ?? string.Empty, setup.Code!.Trim()))
+        if (setup.Matches(code))
             return null;
         loggers.CreateLogger(typeof(MigrationEndpoints)).LogWarning("Update refused: wrong setup code");
         return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["This is not the server's setup code."] });
@@ -114,7 +132,7 @@ public static class MigrationEndpoints
             : [];
         return new MigrationInfo(migration.Status, MigrationCoordinator.AppVersion.ToString(), migration.DatabaseVersion, changes, migration.Log, migration.Error,
             setup.HasUsableCode, !string.IsNullOrEmpty(code) && code.Length < SetupOptions.MinimumCodeLength, SetupOptions.MinimumCodeLength,
-            SetupEndpoints.DetectHosting());
+            SetupEndpoints.DetectHosting(), setup.CodeIsGenerated, setup.CodeIsGenerated ? setup.CodeFile : null);
     }
 
     /// <summary>CHANGELOG.md, built into the application (Sfe.Api.csproj).</summary>

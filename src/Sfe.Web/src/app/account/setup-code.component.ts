@@ -19,6 +19,28 @@ export const SETUP_CODE_STEPS: Record<HostingKind, [string, string]> = {
         'Set the environment variable Sfe__Setup__Code (or Sfe:Setup:Code in the configuration files), then restart the server.'],
 };
 
+/** Where the server's log goes, by the way it runs: a code the server made itself is shown there. */
+const LOG_PLACES: Record<HostingKind, string> = {
+    windowsService: 'in the Windows event log (Applications)',
+    systemd: 'in its log (journalctl -u sfe)',
+    iis: 'in the site\'s log',
+    docker: 'in the container\'s log (docker logs)',
+    appImage: 'in the window where SFE runs',
+    portable: 'in the window where SFE runs',
+    other: 'in the window or log where SFE runs',
+};
+
+/**
+ * Where to find the setup code the server made itself: its log, and its file (`codeFile` as configured; a relative one
+ * is in SFE's folder, ~/.config/sfe for the AppImage).
+ */
+export function generatedCodeWhere(hosting: HostingKind, codeFile: string | null): string {
+    const file = codeFile ?? 'data/setup-code.txt';
+    const relative = !/^([a-zA-Z]:|[\\/~])/.test(file);
+    const where = !relative ? file : hosting === 'appImage' ? `~/.config/sfe/${file}` : `${file} in SFE's folder`;
+    return `it is shown ${LOG_PLACES[hosting]}, and kept in ${where}`;
+}
+
 /**
  * The steps giving the server a setup code, for the way it runs first and the others folded: shown by the setup page
  * and the update page while the server has none. Laid out in the page's `.account-steps` (the host adds no box).

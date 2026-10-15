@@ -4,7 +4,8 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
     BackupLink, ClientConfig, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
-    FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
+    FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
+    InstallationView, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
     TaskActionResult, TaskInfo, TaskKind, TaskOverview, TaskRunDetails, TaskRunPage, TaskSchedule, TaskScheduleInput, TenantAccess, TenantDetails,
@@ -169,6 +170,14 @@ export class Api {
     changePassword = (current: string, password: string) => this.put<SessionInfo>('api/session/password', { current, password });
     setupInfo = () => this.get<SetupInfo>('api/setup', {}, undefined, false);
     completeSetup = (input: SetupInput) => this.post<SessionInfo>('api/setup', input, undefined, false);
+    /** Checks the setup code; the token answered opens the other installation routes for an hour. */
+    checkInstallation = (code: string) => this.post<InstallationGrant>('api/installation/check', { code }, undefined, false);
+    installation = (token: string) => this.send(this.http.get<InstallationView>('api/installation', { headers: this.installationHeaders(token, false) }), undefined, false);
+    saveInstallation = (token: string, input: InstallationInput) =>
+        this.send(this.http.put<InstallationSaved>('api/installation', input, { headers: this.installationHeaders(token, true) }), undefined, false);
+    /** The folders of the server's disks (the drives and usual places for null). */
+    serverFolders = (token: string, path: string | null) =>
+        this.send(this.http.get<FolderPicker>('api/installation/folders', { params: params({ path }), headers: this.installationHeaders(token, false) }), undefined, false);
     /** Whether the install waits for its update to this version (works while everything else is closed). */
     migrationInfo = () => this.get<MigrationInfo>('api/migration', {}, undefined, false);
     /** Starts the update (in the background: poll `migrationInfo`); rejects with the code's error. */
@@ -240,6 +249,11 @@ export class Api {
         if (this.tenantId !== null)
             headers = headers.set('X-SFE-Tenant', String(this.tenantId));
         return headers;
+    }
+
+    /** The installation page's routes: the token of `checkInstallation` instead of a session. */
+    private installationHeaders(token: string, changes: boolean): HttpHeaders {
+        return this.headers(changes).set('X-SFE-Installation', token);
     }
 
     /**

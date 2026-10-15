@@ -142,6 +142,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         description: 'The server\'s version, library folder and ffmpeg, its API, backups, the server commands, and the videos it converts.',
         subpages: [
             page('about', 'About', Rights.serverSettings, Rights.apiDocs, Rights.backup, Rights.shutdown, Rights.dismount),
+            page('installation', 'Installation', Rights.serverSettings),
             page('streams', 'Video streams', Rights.viewStreams),
         ],
     },

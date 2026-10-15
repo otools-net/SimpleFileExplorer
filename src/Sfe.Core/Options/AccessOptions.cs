@@ -21,7 +21,29 @@ public sealed class SetupOptions
     /// </summary>
     public bool Recover { get; set; }
 
+    /// <summary>
+    /// Where the server keeps the setup code it makes itself when none is configured (<see cref="Access.GeneratedSetupCode"/>),
+    /// so that nobody has to edit a file before the first start. Relative paths are resolved against the content root.
+    /// </summary>
+    public string CodeFile { get; set; } = "data/setup-code.txt";
+
+    /// <summary><see cref="Code"/> comes from <see cref="CodeFile"/>, not from the configuration.</summary>
+    public bool CodeIsGenerated { get; internal set; }
+
     public bool HasUsableCode => Code is { } code && code.Trim().Length >= MinimumCodeLength;
+
+    /// <summary>
+    /// <paramref name="input"/> is the setup code, compared in constant time. A generated code is compared without its
+    /// dashes, spaces and case (people retype it from a console); a configured one exactly, trimmed.
+    /// </summary>
+    public bool Matches(string? input)
+    {
+        if (!HasUsableCode)
+            return false;
+        return CodeIsGenerated
+            ? Access.PasswordHashing.SameSecret(Access.GeneratedSetupCode.Normalize(input), Access.GeneratedSetupCode.Normalize(Code))
+            : Access.PasswordHashing.SameSecret(input?.Trim() ?? string.Empty, Code!.Trim());
+    }
 }
 
 /// <summary>Accounts, sign-in and guests.</summary>

@@ -59,7 +59,7 @@ fi
 
 echo "Starting $APPIMAGE_FILE on $BASE"
 # Started from another folder on purpose: nothing may depend on the working directory.
-(cd "$WORK" && SFE_HOME="$WORK/home" exec setsid "$APPIMAGE_FILE" --urls "$BASE" --Sfe:Root="$LIBRARY" --Sfe:Setup:Code="$SETUP_CODE") > "$WORK/app.log" 2>&1 &
+(cd "$WORK" && SFE_HOME="$WORK/home" exec setsid "$APPIMAGE_FILE" --urls "$BASE" --Sfe:Root="$LIBRARY" --Sfe:Setup:Code="$SETUP_CODE" --Sfe:OpenBrowser=false) > "$WORK/app.log" 2>&1 &
 PID=$!
 
 for _ in $(seq 1 60); do

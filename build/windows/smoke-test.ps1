@@ -53,7 +53,7 @@ try {
     Write-Host "Starting $($exe.FullName) on $base"
     # Started from another folder on purpose: nothing may depend on the working directory.
     $process = Start-Process -FilePath $exe.FullName -WorkingDirectory $work -PassThru -NoNewWindow `
-        -ArgumentList '--urls', $base, "--Sfe:Root=`"$library`"", "--Sfe:Setup:Code=$setupCode" `
+        -ArgumentList '--urls', $base, "--Sfe:Root=`"$library`"", "--Sfe:Setup:Code=$setupCode", '--Sfe:OpenBrowser=false' `
         -RedirectStandardOutput (Join-Path $work 'app.log') -RedirectStandardError (Join-Path $work 'app.err.log')
 
     $started = $false

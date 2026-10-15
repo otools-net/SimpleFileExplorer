@@ -21,8 +21,9 @@ public enum HostingKind
 }
 
 /// <param name="Hosting">How the server runs (the setup page explains how to set the code for it).</param>
+/// <param name="CodeGenerated">The code is the one the server made itself: shown in its console and kept in <paramref name="CodeFile"/>.</param>
 public sealed record SetupInfo(bool Required, bool Available, bool CodeConfigured, bool CodeTooShort, bool Recover, int MinimumCodeLength,
-    int MinimumPasswordLength, string LibraryName, HostingKind Hosting);
+    int MinimumPasswordLength, string LibraryName, HostingKind Hosting, bool CodeGenerated = false, string? CodeFile = null);
 
 public static class SetupEndpoints
 {
@@ -53,7 +54,8 @@ public static class SetupEndpoints
     {
         var state = await setup.GetStateAsync(cancellationToken);
         return TypedResults.Ok(new SetupInfo(state.Required, state.Available, state.CodeConfigured, state.CodeTooShort, state.Recover, state.MinimumCodeLength,
-            Math.Max(1, security.CurrentValue.MinimumPasswordLength), state.LibraryName, DetectHosting()));
+            Math.Max(1, security.CurrentValue.MinimumPasswordLength), state.LibraryName, DetectHosting(),
+            state.CodeGenerated, state.CodeGenerated ? state.CodeFile : null));
     }
 
     private static async Task<Results<Ok<SessionInfo>, ValidationProblem, ProblemHttpResult>> CompleteSetup(

@@ -8,9 +8,24 @@ import { launch, sleep } from './cdp.mjs';
 const BASE = process.env.SFE_URL ?? 'http://localhost:5093/';
 const OUT = fileURLToPath(new URL('../../../docs/images/', import.meta.url));
 
-const b = await launch({ width: 1280, height: 800 });
+// The setup page at its second step (library folder, network, ffmpeg), after the code.
+const b = await launch({ width: 1280, height: 1000 });
 await b.goto(BASE, 3000);
-await b.waitFor('input');
+await b.waitFor('#setup-code');
+await b.eval(`document.querySelector('#setup-code').focus(); 1`);
+await b.type(process.env.SFE_SETUP_CODE ?? 'doc-screenshots-setup');
+await b.eval(`[...document.querySelectorAll('button')].find(x => x.textContent.trim() === 'Next').click(); 1`);
+await b.waitFor('sfe-installation-form .folder-picker li');
+await sleep(1500);
+await b.eval(`(() => {
+    // This machine's paths: the scratch library and ffmpeg.
+    const re = /[A-Z]:[\\\\/]Users[\\\\/][^\\s"']*?[\\\\/]library[\\\\/]?/gi;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let n; (n = walker.nextNode());) n.nodeValue = n.nodeValue.replace(re, 'D:\\\\Media');
+    for (const c of document.querySelectorAll('.system-ffmpeg code')) c.textContent = 'C:\\\\Program Files\\\\ffmpeg\\\\bin\\\\ffmpeg.exe';
+    for (const i of document.querySelectorAll('#installation-ffmpeg')) i.value = 'C:\\\\Program Files\\\\ffmpeg\\\\bin\\\\ffmpeg.exe';
+    return 1;
+})()`);
 await b.shot(OUT + 'setup-page.png');
 
 const js = body => `(async () => {

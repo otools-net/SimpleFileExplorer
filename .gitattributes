@@ -2,3 +2,6 @@
 *.sh text eol=lf
 build/linux/AppRun text eol=lf
 build/linux/*.desktop text eol=lf
+
+# Windows batch files (portable package): cmd.exe expects CRLF.
+*.cmd text eol=crlf

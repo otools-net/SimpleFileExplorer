@@ -102,7 +102,8 @@ public sealed class LibraryPaths
         return string.Join('/', segments);
     }
 
-    private static string NormalizeRoot(string root)
+    /// <summary>A root folder as typed (<c>~</c>, <c>V:</c>...) as a full path ending with a directory separator.</summary>
+    public static string NormalizeRoot(string root)
     {
         root = ExpandHome(root.Trim());
         // "V:" means "current directory of drive V" for Windows APIs; as a root it can only mean the drive root.

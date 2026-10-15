@@ -31,7 +31,8 @@ cache are not adopted. **SFE itself is in production** (since 1.33.0): installs 
 src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceCollectionExtensions (singletons):
                         AddSfeCore = one library's services, AddSfeAccess = the server's accounts and settings levels
   Access/               RightCatalog (+ Rights ids), AccessService (libraries, accounts, groups), RightsEvaluator,
-                        SignInService + IUserDirectory/LocalUserDirectory, SetupService, PasswordHashing, AccessChanges,
+                        SignInService + IUserDirectory/LocalUserDirectory, SetupService, GeneratedSetupCode (the code the
+                        server makes when none is configured), PasswordHashing, AccessChanges,
                         QuickLinkService (each user's quick links per library)
   Data/                 SfeDbContext, Migrations (SQL Server), DatabaseInitializer, SfeDatabase; AccessDbContext,
                         AccessMigrations (its own history table), AccessDatabaseInitializer
@@ -58,13 +59,16 @@ src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceColl
                         SfeOptions ("Sfe" section), AccessOptions (Setup, Security, Rights, Tenants)
   SystemCommands/       shutdown / dismount through the shell
 src/Sfe.Api/            Program.cs, Endpoints/*Endpoints.cs (one class per area), TrickplayWorker, TaskScheduleWorker, PortableBuild,
-                        AppVersion; wwwroot/ = the built client (generated, git-ignored)
+                        AppVersion, StartupErrors (bad JSON, port in use), BrowserLauncher (portable: open the browser),
+                        WindowsServiceSetup (--install-service); wwwroot/ = the built client (generated, git-ignored)
   Security/             cookie session (SfeSession), CurrentAccess (the request's account, library, rights), RequireRight +
-                        policy provider, RequestGuard (setup gate, X-SFE-Request, /api/docs), FileLinks (player tokens)
+                        policy provider, RequestGuard (setup gate, X-SFE-Request, /api/docs), FileLinks (player tokens),
+                        InstallationAccess (setup code -> token of the installation page)
   Tenancy/              TenantRegistry/TenantHost (one AddSfeCore container per library), TenantMiddleware +
                         TenantRequestServices (routes get their library's Core services)
   Maintenance/          MigrationCoordinator (version check at start-up, the update gate, the update itself),
-                        BackupSources (what a backup holds) + BackupDownloads (one-time links of the update page)
+                        BackupSources (what a backup holds) + BackupDownloads (one-time links of the update page),
+                        InstallationSettings (data/installation.json: root, Urls, ffmpeg from the web)
 src/Sfe.Web/            the web client (Angular workspace: angular.json, package.json, proxy.conf.json)
   public/               copied as is: favicon.svg
   src/theme-boot.ts     classic script run before first paint (theme), compiled alone by `npm run boot`
@@ -73,10 +77,12 @@ src/Sfe.Web/            the web client (Angular workspace: angular.json, package
   src/app/core/         Api (the only HTTP client), models (API shapes), ConfigService (+ Urls, rights: can/canAny),
                         rights (right ids, SETTINGS_RIGHTS), format, paths, preferences (localStorage), ToastService,
                         ThemeService, CopyPathService
-  src/app/account/      LoginPage (`login`), SetupPage (`setup`), SetupCodeSteps (how to set the code), AccountSection (My account)
+  src/app/account/      LoginPage (`login`), SetupPage (`setup`: code, library, administrator), SetupCodeSteps (how to set
+                        the code), InstallationForm (folder, network, ffmpeg; also System › Installation), AccountSection
   src/app/migration/    MigrationPage (`migration`: the update after an upgrade), changelog.ts (inline Markdown of items)
   src/app/access/       People (Accounts, Groups, GuestAccess) and Libraries sections of the admin page
-  src/app/shared/       icon + IconSprite, SheetComponent (dialog card), BusyDirective, highlight, toasts, empty state
+  src/app/shared/       icon + IconSprite, SheetComponent (dialog card), BusyDirective, highlight, toasts, empty state,
+                        FolderPicker (click through the server's folders)
   src/app/library/      the listing page: LibraryPageComponent, ListingStore (state), library-route, Dialogs registry,
                         topbar/ location/ items/ search-explain/ scan/ sidebar/ quick-links/ viewer/, selection bar
   src/app/player/       VideoPlayerComponent, PlayerPageComponent (`player?path=&t=`)
@@ -86,7 +92,8 @@ src/Sfe.Web/            the web client (Angular workspace: angular.json, package
   src/app/tags/ trickplay/ tracking/   their dialogs, sections of the admin page and parts
   src/app/tasks/        TasksSection (sub-pages Tasks/Schedules/History of the admin page), ScheduleForm, TaskHistory, tasks.ts wording
 tests/Sfe.Tests/        unit, SQLite integration, HTTP tests; Infrastructure/ = TestLibrary + CoreServices + ApiClients
-build/                  build.ps1 / build.sh (portable packages), portable/appsettings.json, windows/ linux/ smoke tests
+build/                  build.ps1 / build.sh (portable packages), portable/appsettings.json, windows/ linux/ smoke tests,
+                        windows/*.cmd (install-service / uninstall-service, published in the win-x64 package)
 agents/tools/           reusable helpers for agents, one folder per job, each with a README.md
   docs-screenshots/     regenerates docs/images (run.mjs = everything; cdp.mjs = headless Edge driver) + check-links.mjs
 CHANGELOG.md            what each version added or fixed (1.33.0 on; earlier versions are not recorded)
@@ -104,7 +111,8 @@ Directory.Build.props   the app version (all projects)
     bullet); new columns nullable, existing rows back-filled (e.g. the next scan reads what is still null, as for
     `Files.Duration`) or given a correct default; no data dropped without the user asking;
   - nothing writes to a database or the settings file before the update is confirmed: steps run at each start go in
-    `MigrationCoordinator.UpdateAsync` (not Program.cs), and a new root hosted service checks `IsBlocking` first;
+    `MigrationCoordinator.UpdateAsync` (not Program.cs), and a new root hosted service checks `IsBlocking` first (the
+    one exception: `data/setup-code.txt`, a new file the update page itself needs, `GeneratedSetupCode.Ensure`);
   - settings: never rename or remove a key of `SfeOptions`/`EditableSettings` silently (saved `settings.json` files and
     appsettings use it); a new key needs no step (`SettingsStore` keeps the configured value for keys missing from the
     file); per-browser keys (`core/preferences.ts`, `sfe.*`) are read in their old form too, or dropped harmlessly;
@@ -184,9 +192,11 @@ Directory.Build.props   the app version (all projects)
   choice filling the `fills` fields from `presets`, e.g. `EXTERNAL_PLAYERS`); add its key to
   `SIMPLE_SETTINGS` (same file) to show it in the default simple view, whose groups without a listed key
   are hidden (a tab with none shows a "Show all settings" note; an error on a hidden field shows all). Saved values
-  override appsettings/env and flow through `IOptionsMonitor`. Never make root, DB, ffmpeg path, system commands,
-  cache dir, setup, security or tenant storage options editable from the UI: they run programs or decide where data
-  lives, which only whoever runs the server may decide.
+  override appsettings/env and flow through `IOptionsMonitor`. Never make DB, system commands, cache dir, setup,
+  security or tenant storage options editable from the UI: they run programs or decide where data lives, which only
+  whoever runs the server may decide. The library root, `Urls` and the ffmpeg path are the only exceptions, and only
+  through `InstallationSettings` (allow-list `Keys`, written to `data/installation.json`) behind the setup code (a
+  token from `api/installation/check`), never as `EditableSettings`.
 - **Frontend:** standalone components with `ChangeDetectionStrategy.OnPush`, `input()`/`output()`/`viewChild()`,
   state in signals (the app is zoneless: a change outside a signal is not drawn), `inject()`, built-in control flow
   (`@if`/`@for`/`@switch`), 4-space indents, `strict` + `strictTemplates`. Only `core/api.service.ts` makes HTTP
@@ -296,7 +306,9 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   CRLF files, and inserted lines come out LF: prefer the Edit tool, check `git diff --stat`, normalise with
   `sed -i 's/\r*$/\r/'`. New `.sh` files need LF (`.gitattributes`). Git Bash's `perl` reading a CRLF file through
   stdin drops the CRs, `awk` too; a heredoc holding `'` inside `$(…)`/quotes breaks the whole command: write long files
-  with the Write tool.
+  with the Write tool. Git Bash also rewrites arguments that look like paths (`printf '>nul'` came out `>/dev/null`) and
+  heredocs swallow `\\`: write batch files and scripts with backslashes with the Write tool too (`.cmd` files are CRLF,
+  `.gitattributes`).
 - `warning: in the working copy of '…', LF will be replaced by CRLF` on every git command touching a changed LF
   file is harmless noise from the system gitconfig's `core.autocrlf=true` (commits stay LF): don't convert files
   to "fix" it; run git as `git -c core.safecrlf=false …` (e.g. `diff`, `status`, `add`) to keep the output clean.
@@ -403,7 +415,13 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   the group methods. An account in their space alone (`OwnedBy`) is fully theirs (password too), so any route putting
   outside accounts into a space's group must stay server-wide.
 - **Setup:** `SetupService`: required while no enabled server administrator exists; needs `Sfe:Setup:Code` (≥ 12,
-  constant-time compare); creates the local admin in the first library's Administrators group, renames the library.
+  constant-time compare, `SetupOptions.Matches`); creates the local admin in the first library's Administrators group,
+  renames the library. Without a configured code, `GeneratedSetupCode` (post-configures `SetupOptions`,
+  `CodeIsGenerated`) writes one to `Sfe:Setup:CodeFile` (`data/setup-code.txt`) when needed: Program.cs at start (and
+  prints it in a box after `StartAsync`), and lazily in `GET api/setup` / `GET api/migration`, since under
+  `WebApplicationFactory` nothing after `builder.Build()` in Program.cs runs. A generated code compares without dashes,
+  spaces and case; a configured one exactly. The setup page's steps: `checkInstallation(code)` (token +
+  `InstallationView`), `InstallationForm.save()`, `completeSetup` (code sent again); recovery skips the library step.
   `Sfe:Setup:Recover` re-opens it (the app keeps working) to reset a local admin. Program.cs creates the first library
   (`EnsureDefaultTenantAsync`) at every start and moves per-library keys out of `settings.json`
   (`SettingLayers.MovePerLibrarySettingsAsync`).
@@ -669,8 +687,21 @@ dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current v
   `build.ps1` publishes linux-x64 on Windows; only `appimagetool` and the smoke test run in WSL; the AppDir is built
   under `/tmp` (files on `/mnt/c` all look executable). Smoke tests: start the package on a temp library, check
   version, client (`<sfe-root` + its hashed `main-*.js`), browse, scan, search, data folder.
-- **Config files:** `src/Sfe.Api/appsettings*.json` hold this machine's values (Windows paths, `REVAN\SQLEXPRESS`;
-  Development: SQLite in `src/Sfe.Api/data/`, git-ignored, root fixed to a local folder although `docs/installation.md` says `~`).
+- **Config files:** `src/Sfe.Api/appsettings.json` is neutral (root `~`, SQLite `data/sfe.db`); this machine's values
+  (Windows paths, `REVAN\SQLEXPRESS`) are in the git-ignored `appsettings.Local.json`, inserted by Program.cs right
+  after `appsettings.json` (so `appsettings.Development.json` still overrides it: SQLite in `src/Sfe.Api/data/`,
+  git-ignored, root fixed to a local folder) and never published by portable builds. Source order: appsettings.json,
+  Local, {Environment}, `installation.json` (`InstallationSettings.AddTo`, after the last `appsettings*`), env, command
+  line. Tests: `WebApplicationFactory`'s `UseSetting` values come after `installation.json`, so they show as locked on
+  the installation page (remove `Sfe:Root` from the test settings to change it there).
+- **Installation page:** `api/installation/check` (code, rate-limited) answers a token (`InstallationAccess`, data
+  protection, 1 h, hash of the code) sent in `X-SFE-Installation` to `GET|PUT api/installation` and
+  `GET api/installation/folders` (all `AllowAnonymous`, open before the setup: `RequestGuard` and `TenantMiddleware`
+  let `/api/installation` through). `PUT` writes only changed keys and reloads the file's provider; a new root or
+  ffmpeg runs `TenantRegistry.RestartAsync` (the libraries read both once), a new `Urls` answers `restartRequired`.
+  `Field` reports a key as locked when a provider after the file gives it. `Ffmpeg.Find` also accepts ffmpeg's folder
+  (or its `bin`). Portable builds open the browser (`BrowserLauncher`, `Sfe:OpenBrowser`): smoke tests pass
+  `--Sfe:OpenBrowser=false`.
 
 ## 4. External resources
 

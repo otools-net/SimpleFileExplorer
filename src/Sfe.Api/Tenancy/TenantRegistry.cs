@@ -71,6 +71,18 @@ public sealed class TenantRegistry(
         }
     }
 
+    /// <summary>
+    /// Starts every running library again, over the configuration as it is now: the installation page changed the
+    /// first library's folder or ffmpeg, which the libraries' services read once.
+    /// </summary>
+    public async Task RestartAsync(CancellationToken cancellationToken)
+    {
+        foreach (var id in _hosts.Keys.ToList())
+            await StopAsync(id);
+        if (!migration.IsBlocking)
+            await StartLibrariesAsync(cancellationToken);
+    }
+
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         foreach (var id in _hosts.Keys.ToList())

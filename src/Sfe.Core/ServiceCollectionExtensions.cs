@@ -119,6 +119,12 @@ public static class ServiceCollectionExtensions
     {
         var section = configuration.GetSection(SfeOptions.SectionName);
         services.AddOptions<SetupOptions>().Bind(section.GetSection(nameof(SfeOptions.Setup)));
+        // Without a configured setup code, the one the server made itself (written at start-up when needed).
+        var codeFile = section.GetSection(nameof(SfeOptions.Setup)).Get<SetupOptions>()?.CodeFile is { Length: > 0 } file ? file : new SetupOptions().CodeFile;
+        var codePath = Path.GetFullPath(LibraryPaths.ExpandHome(codeFile), contentRootPath ?? Directory.GetCurrentDirectory());
+        services.AddSingleton(sp => new GeneratedSetupCode(codePath, sp.GetRequiredService<ILogger<GeneratedSetupCode>>()));
+        services.AddSingleton<IPostConfigureOptions<SetupOptions>>(sp => sp.GetRequiredService<GeneratedSetupCode>());
+        services.AddSingleton<IOptionsChangeTokenSource<SetupOptions>>(sp => sp.GetRequiredService<GeneratedSetupCode>());
         services.AddOptions<SecurityOptions>().Bind(section.GetSection(nameof(SfeOptions.Security)));
         services.AddOptions<RightOptions>().Bind(section.GetSection(nameof(SfeOptions.Rights)));
         services.AddOptions<TenantOptions>().Bind(section.GetSection(nameof(SfeOptions.Tenants)));

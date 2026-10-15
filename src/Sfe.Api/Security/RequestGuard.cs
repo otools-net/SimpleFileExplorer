@@ -9,7 +9,8 @@ namespace Sfe.Api.Security;
 /// <list type="bullet">
 /// <item>while the install waits for its update to this version (<see cref="MigrationCoordinator"/>), only the update
 /// page's routes answer (503 <c>migration-required</c>): nothing may read or change what the update hasn't brought up yet;</item>
-/// <item>until the first administrator exists, only the setup and the session answer (503 <c>setup-required</c>);</item>
+/// <item>until the first administrator exists, only the setup, the installation page (its own code check) and the
+/// session answer (503 <c>setup-required</c>);</item>
 /// <item>a request changing something must carry <see cref="Header"/>: a page of another site cannot add it without the
 /// browser asking this server first (CORS), which never agrees, so it can't act with a visitor's cookie;</item>
 /// <item>the API's documentation pages (served by Swagger UI, not routes) need <see cref="Rights.ApiDocs"/>.</item>
@@ -50,7 +51,8 @@ public sealed class RequestGuard(RequestDelegate next)
             return;
         }
 
-        if (!path.StartsWithSegments("/api/setup") && !path.StartsWithSegments("/api/session") && !path.StartsWithSegments("/api/migration")
+        if (!path.StartsWithSegments("/api/setup") && !path.StartsWithSegments("/api/installation") && !path.StartsWithSegments("/api/session")
+            && !path.StartsWithSegments("/api/migration")
             && await setup.IsRequiredAsync(context.RequestAborted))
         {
             await TypedResults.Problem(

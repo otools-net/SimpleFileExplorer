@@ -113,8 +113,12 @@ public static class LibraryEndpoints
         return api;
     }
 
-    private static async Task<Results<Ok<DirectoryListing>, NotFound>> Browse(
+    /// <summary>The problem type of a browse whose library folder doesn't exist (moved drive, folder renamed, new install).</summary>
+    public const string LibraryRootMissingType = "library-root-missing";
+
+    private static async Task<Results<Ok<DirectoryListing>, NotFound, ProblemHttpResult>> Browse(
         LibraryBrowser browser,
+        LibraryPaths paths,
         TagService tags,
         IOptionsMonitor<SfeOptions> options,
         ILoggerFactory loggerFactory,
@@ -130,7 +134,13 @@ public static class LibraryEndpoints
         var page = options.CurrentValue.Browse;
         var listing = browser.List(path, Math.Max(0, offset), Clamp(limit, page.DefaultPageSize, page.MaxPageSize), sortField, desc);
         if (listing is null)
-            return TypedResults.NotFound();
+        {
+            // Said apart from a missing sub-folder: the whole library is gone, and an administrator can pick another.
+            return LibraryPaths.NormalizeRelative(path) is "" && !Directory.Exists(paths.Root)
+                ? TypedResults.Problem($"The library folder {paths.Root} does not exist on the server.", statusCode: StatusCodes.Status404NotFound,
+                    type: LibraryRootMissingType)
+                : TypedResults.NotFound();
+        }
 
         try
         {
