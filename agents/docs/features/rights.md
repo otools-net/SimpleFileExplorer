@@ -10,8 +10,8 @@ Code: `src/Sfe.Core/Access/RightCatalog.cs` (+ `Rights` ids), `RightsEvaluator.c
   session/setup routes (a route checking a token itself adds `RightMetadata` too). `AccessTests.EveryRouteNamesARight`
   fails otherwise.
 - A new function gets a right in `RightCatalog` (scope, `GuestAllowed` = false for anything that changes something or
-  tells about the server, default groups), the same id in the client's `core/rights.ts`, and the client hides what
-  needs it (`config.can(...)`, `AdminSubpage.rights`).
+  tells about the server, default groups, `Kind` and `AtFolder`: [right-kinds.md](right-kinds.md)), the same id in the
+  client's `core/rights.ts`, and the client hides what needs it (`config.can(...)`, `AdminSubpage.rights`).
 - A right added after 1.34 gets `since: RightCatalog.Revision + 1` (`RightDefinition.Since`):
   `AccessService.GrantNewRightsAsync` (Program.cs, each start) gives it once to the built-in groups of existing spaces
   by `DefaultGroups`, tracked by `Tenants.RightsRevision` (null = 0); new spaces get `Revision`. Without it, existing
@@ -22,7 +22,9 @@ Code: `src/Sfe.Core/Access/RightCatalog.cs` (+ `Rights` ids), `RightsEvaluator.c
 - `RightsEvaluator.GetAsync(new AccessSubject(tenant, user))`: server administrators everything; others the union of
   their groups' rights in the library; a visitor without an account the Guests group's when the library has
   `GuestAccess` (and `Sfe:Security:AnonymousGuests`); minus the library's `TenantDisabledRights`, minus guest-forbidden
-  rights for guests (anonymous or `UserKind.Guest`), minus `Sfe:Rights:Disabled` (applied at each read).
+  rights for guests (anonymous or `UserKind.Guest`), minus `Sfe:Rights:Disabled` (applied at each read; ids,
+  `prefix*`, `kind:write`, `folder:write`).
+- Per folder: nothing yet; the design is [folder-access.md](folder-access.md).
 - A library membership is a group in it.
 - `CurrentAccess` picks the library: the cookie's if the account still reaches it, else its first; for visitors the
   `sfe.guest` cookie's if open to guests, else the first library.

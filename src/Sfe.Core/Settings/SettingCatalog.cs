@@ -80,7 +80,7 @@ public static class SettingCatalog
     /// <paramref name="pattern"/> names <paramref name="key"/>: equal, or a prefix ending with <c>*</c>
     /// (<c>player.*</c>; <c>*</c> alone names every setting).
     /// </summary>
-    public static bool Matches(string pattern, string key) => RightCatalog.Matches(pattern, key);
+    public static bool Matches(string pattern, string key) => RightCatalog.MatchesName(pattern, key);
 }
 
 /// <summary>Settings as JSON, flattened to their keys (<c>browse.defaultPageSize</c>) and back.</summary>

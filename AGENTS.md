@@ -67,6 +67,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons | `src/Sfe.Web/src/` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
+| [file-operations](agents/docs/development/file-operations.md) | planned: rules for changing library files, moving rules with folders | `FolderRuleService` (planned) |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
@@ -90,6 +91,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | Note | Covers | Code |
 |---|---|---|
 | [rights](agents/docs/features/rights.md) | adding a right, how rights are evaluated | `Core/Access/RightCatalog`, `RightsEvaluator`, `core/rights.ts` |
+| [right-kinds](agents/docs/features/right-kinds.md) | Read/Write rights, `AtFolder`, `kind:write`/`folder:write`, read-only switches | `RightCatalog`, `access-parts.ts` |
+| [folder-access](agents/docs/features/folder-access.md) | design of per-folder permissions (to build) | `FolderPolicy` (planned) |
 | [accounts](agents/docs/features/accounts.md) | sign-in directories, space administrators | `Core/Access/`, `app/access/`, `app/account/` |
 | [setup](agents/docs/features/setup.md) | setup code (configured / generated), first administrator | `SetupService`, `GeneratedSetupCode`, `app/account/` |
 | [local-start](agents/docs/features/local-start.md) | browser at start, `--no-browser`, setup without code locally, fast sign-in | `BrowserLauncher`, `LocalVisitor`, `FastSignIn` |

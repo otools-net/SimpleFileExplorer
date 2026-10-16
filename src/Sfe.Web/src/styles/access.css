@@ -184,6 +184,10 @@ h3.access-subhead, .access-subhead h3 { font-size: 14px; font-weight: 600; }
 .access-choices legend { padding: 0 6px; }
 .access-choices.rights, .access-choices.members { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px 16px; }
 .access-choices.rights legend { grid-column: 1 / -1; }
+.access-choices.rights .right-title { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.access-choices.rights .right-mark { font-size: 10px; }
+/* A badge widens the label: the box keeps its size. */
+.access-choices.rights .check input { flex: none; }
 
 .access-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
 .access-option {

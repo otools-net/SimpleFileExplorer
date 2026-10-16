@@ -60,6 +60,25 @@ public enum RightScope
     Server,
 }
 
+/// <summary>What a right does: only looks (<see cref="Read"/>), or changes something through one of its routes.</summary>
+public enum RightKind
+{
+    Read,
+    Write,
+}
+
+/// <summary>
+/// What a folder lets a subject do in it, ordered: <see cref="Write"/> includes <see cref="Read"/>. Read means the
+/// folder's files may be seen and used (tagged too, which changes the index, not the files); Write that its files on
+/// disk may be changed.
+/// </summary>
+public enum FolderLevel
+{
+    Hidden,
+    Read,
+    Write,
+}
+
 /// <param name="GuestAllowed">
 /// Guests (visitors without an account and guest accounts) may get it. Off for everything that changes the library,
 /// the settings or the accounts, and for what tells about the server: such a right is never theirs, whatever their
@@ -71,8 +90,18 @@ public enum RightScope
 /// The catalog revision that added it (<see cref="RightCatalog.Revision"/>): the spaces created before get it once, in
 /// their built-in groups by <paramref name="DefaultGroups"/> (<see cref="AccessService.GrantNewRightsAsync"/>).
 /// </param>
+/// <param name="Kind">Write when any route it opens changes something (files, index, tags, settings, accounts).</param>
+/// <param name="AtFolder">
+/// What a folder must allow for the right to apply in it: <see cref="FolderLevel.Write"/> only for rights that change
+/// the library's files on disk; null for a right of the whole space (settings, tasks, accounts).
+/// </param>
 public sealed record RightDefinition(
-    string Id, RightScope Scope, bool GuestAllowed, IReadOnlyList<BuiltInGroup> DefaultGroups, string Area, string Title, string Description, int Since = 0);
+    string Id, RightScope Scope, bool GuestAllowed, IReadOnlyList<BuiltInGroup> DefaultGroups, string Area, string Title, string Description, int Since = 0,
+    RightKind Kind = RightKind.Read, FolderLevel? AtFolder = null)
+{
+    /// <summary>Changes the library's files on disk (selector <c>folder:write</c>).</summary>
+    public bool ChangesFiles => AtFolder == FolderLevel.Write;
+}
 
 public static class RightCatalog
 {
@@ -80,52 +109,66 @@ public static class RightCatalog
     private static readonly BuiltInGroup[] Members = [BuiltInGroup.Administrators, BuiltInGroup.Users];
     private static readonly BuiltInGroup[] Administrators = [BuiltInGroup.Administrators];
 
+    // Kind and AtFolder (agents/docs/features/folder-access.md): a right is Write when any of its routes changes
+    // something; it needs Write at a folder only when it changes the library's files on disk. Index-only changes
+    // (tags, relinks, removal from the index) need the folder to be readable.
+    private const RightKind R = RightKind.Read;
+    private const RightKind W = RightKind.Write;
+    private const FolderLevel Readable = FolderLevel.Read;
+    private const FolderLevel Writable = FolderLevel.Write;
+
     public static IReadOnlyList<RightDefinition> All { get; } =
     [
-        Tenant(Rights.Browse, true, Everyone, "Library", "Browse and search", "List the folders, search the index, see the scan's progress."),
-        Tenant(Rights.ViewFiles, true, Everyone, "Library", "View and play files", "Open pictures, play videos and audio, see thumbnails and trickplay."),
-        Tenant(Rights.Download, true, Members, "Library", "Download files", "Save a file to the device."),
-        Tenant(Rights.ExternalPlayer, true, Members, "Library", "Open in an external player", "Get a link to a file that works without signing in, for a while, in an app such as VLC."),
-        Tenant(Rights.CopyPaths, false, Administrators, "Library", "Copy full paths", "See and copy where files are on the server's disk."),
-        Tenant(Rights.EditImages, false, Members, "Library", "Edit pictures", "Crop pictures and save the result as a new file in the folder for edited pictures; originals are never changed.", since: 1),
-        Tenant(Rights.Stream, true, Members, "Library", "Play videos converted by the server", "Play videos the browser can't play as they are, converted by ffmpeg on the server while they play (it keeps the server's processor busy).", since: 2),
-        Tenant(Rights.ViewTags, true, Everyone, "Tags", "See tags", "See the tags of files, the tag list and the tag sidebar."),
-        Tenant(Rights.AssignTags, false, Members, "Tags", "Tag files", "Add tags to files and remove them, also to whole folders and searches."),
-        Tenant(Rights.ManageTags, false, Administrators, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),
-        Tenant(Rights.Scan, false, Administrators, "Index", "Scan", "Start and stop scans of the space's library."),
-        Tenant(Rights.RemoveFromIndex, false, Administrators, "Index", "Remove folders from the index", "Forget a folder's files and tags, and keep scans out of it."),
-        Tenant(Rights.Duplicates, false, Administrators, "Duplicates & moves", "See duplicates", "List identical files."),
-        Tenant(Rights.RemoveDuplicates, false, Administrators, "Duplicates & moves", "Delete duplicates", "Delete a copy of a file from the disk (its tags go to the copy kept)."),
-        Tenant(Rights.SimilarVideos, false, Administrators, "Duplicates & moves", "Similar videos", "Compare videos and list the similar ones."),
-        Tenant(Rights.MissingFiles, false, Administrators, "Duplicates & moves", "Moved files", "List tagged files no longer found, relink and forget them."),
-        Tenant(Rights.ManageTrickplay, false, Administrators, "Media", "Trickplay activity", "See and start the trickplay generation."),
-        Tenant(Rights.ViewTasks, false, Administrators, "Background tasks", "See background tasks", "See what runs, when tasks run next, and their history and logs."),
-        Tenant(Rights.RunTasks, false, Administrators, "Background tasks", "Run background tasks", "Start and cancel background tasks."),
-        Tenant(Rights.ScheduleTasks, false, Administrators, "Background tasks", "Schedule background tasks", "Create, change and delete schedules; clear the history."),
-        Tenant(Rights.ViewLogs, false, Administrators, "Logs", "See the logs", "Read and search the warnings, errors and messages the server logged for the space (server administrators see those of the whole server).", since: 4),
-        Tenant(Rights.InterfaceSettings, false, Administrators, "Settings", "Interface settings", "Appearance, browsing and search settings of the space."),
-        Tenant(Rights.PlaybackSettings, false, Administrators, "Settings", "Playback settings", "The video player and the external player of the space."),
-        Tenant(Rights.ScanningSettings, false, Administrators, "Settings", "Scanning settings", "What scans leave out, file types, what scans read."),
-        Tenant(Rights.TagSettings, false, Administrators, "Settings", "Tag settings", "The tag sidebar and its history."),
-        Tenant(Rights.TrackingSettings, false, Administrators, "Settings", "Duplicates & moves settings", "Duplicates, moved files and similar videos."),
-        Tenant(Rights.ThumbnailSettings, false, Administrators, "Settings", "Thumbnail settings", "Thumbnails of photos and videos."),
-        Tenant(Rights.TrickplaySettings, false, Administrators, "Settings", "Trickplay settings", "Which videos get trickplay and how."),
-        Tenant(Rights.TaskSettings, false, Administrators, "Settings", "Background task settings", "How long task logs are kept."),
-        Tenant(Rights.EditorSettings, false, Administrators, "Settings", "Picture editor settings", "Where edited pictures are saved, and their quality.", since: 1),
-        Tenant(Rights.LogSettings, false, Administrators, "Settings", "Log settings", "How long the logs are kept, and whether they are also written to files (both set for the whole server).", since: 4),
-        Tenant(Rights.ManageMembers, false, Administrators, "Access", "Manage the space's accounts and groups", "Create accounts in the space, put them in its groups, choose what each group may do, open the space to visitors."),
-        Tenant(Rights.OwnPreferences, false, Members, "Account", "Own preferences", "Keep one's own theme, page sizes and player preferences on the server."),
-        Tenant(Rights.OwnPassword, false, Members, "Account", "Change own password", "Change the password of one's own local account."),
-        Tenant(Rights.QuickLinks, false, Members, "Account", "Quick links", "Keep folders and files at hand in the sidebar's quick links.", since: 3),
-        Tenant(Rights.ApiDocs, false, Administrators, "Server", "API documentation", "Open the API's documentation and try its routes."),
-        Server(Rights.ServerSettings, "Server settings", "Settings of the whole server and the defaults of every space."),
-        Server(Rights.ManageTenants, "Spaces", "Create, change and delete spaces, and manage the accounts and groups of every space."),
-        Server(Rights.ManageUsers, "All accounts", "Create, change and delete every account, put it in any space, make server administrators."),
-        Server(Rights.Shutdown, "Shut down", "Shut the server's computer down (when the server allows it)."),
-        Server(Rights.Dismount, "Dismount", "Run the server's dismount command (when one is set)."),
-        Server(Rights.ViewStreams, "Video streams", "See the videos the server converts while they play, in every space, and who watches them."),
-        Server(Rights.Backup, "Back up", "Download a backup of the databases and configuration files (it holds password hashes and connection strings)."),
+        Tenant(Rights.Browse, true, Everyone, R, Readable, "Library", "Browse and search", "List the folders, search the index, see the scan's progress."),
+        Tenant(Rights.ViewFiles, true, Everyone, R, Readable, "Library", "View and play files", "Open pictures, play videos and audio, see thumbnails and trickplay."),
+        Tenant(Rights.Download, true, Members, R, Readable, "Library", "Download files", "Save a file to the device."),
+        Tenant(Rights.ExternalPlayer, true, Members, R, Readable, "Library", "Open in an external player", "Get a link to a file that works without signing in, for a while, in an app such as VLC."),
+        Tenant(Rights.CopyPaths, false, Administrators, R, Readable, "Library", "Copy full paths", "See and copy where files are on the server's disk."),
+        Tenant(Rights.EditImages, false, Members, W, Writable, "Library", "Edit pictures", "Crop pictures and save the result as a new file in the folder for edited pictures; originals are never changed.", since: 1),
+        Tenant(Rights.Stream, true, Members, R, Readable, "Library", "Play videos converted by the server", "Play videos the browser can't play as they are, converted by ffmpeg on the server while they play (it keeps the server's processor busy).", since: 2),
+        Tenant(Rights.ViewTags, true, Everyone, R, Readable, "Tags", "See tags", "See the tags of files, the tag list and the tag sidebar."),
+        Tenant(Rights.AssignTags, false, Members, W, Readable, "Tags", "Tag files", "Add tags to files and remove them, also to whole folders and searches."),
+        Tenant(Rights.ManageTags, false, Administrators, W, null, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),
+        Tenant(Rights.Scan, false, Administrators, W, Readable, "Index", "Scan", "Start and stop scans of the space's library."),
+        Tenant(Rights.RemoveFromIndex, false, Administrators, W, Readable, "Index", "Remove folders from the index", "Forget a folder's files and tags, and keep scans out of it."),
+        Tenant(Rights.Duplicates, false, Administrators, R, Readable, "Duplicates & moves", "See duplicates", "List identical files."),
+        Tenant(Rights.RemoveDuplicates, false, Administrators, W, Writable, "Duplicates & moves", "Delete duplicates", "Delete a copy of a file from the disk (its tags go to the copy kept)."),
+        Tenant(Rights.SimilarVideos, false, Administrators, R, Readable, "Duplicates & moves", "Similar videos", "Compare videos and list the similar ones."),
+        Tenant(Rights.MissingFiles, false, Administrators, W, Readable, "Duplicates & moves", "Moved files", "List tagged files no longer found, relink and forget them."),
+        Tenant(Rights.ManageTrickplay, false, Administrators, W, null, "Media", "Trickplay activity", "See and start the trickplay generation."),
+        Tenant(Rights.ViewTasks, false, Administrators, R, null, "Background tasks", "See background tasks", "See what runs, when tasks run next, and their history and logs."),
+        Tenant(Rights.RunTasks, false, Administrators, W, null, "Background tasks", "Run background tasks", "Start and cancel background tasks."),
+        Tenant(Rights.ScheduleTasks, false, Administrators, W, null, "Background tasks", "Schedule background tasks", "Create, change and delete schedules; clear the history."),
+        Tenant(Rights.ViewLogs, false, Administrators, R, null, "Logs", "See the logs", "Read and search the warnings, errors and messages the server logged for the space (server administrators see those of the whole server).", since: 4),
+        Tenant(Rights.InterfaceSettings, false, Administrators, W, null, "Settings", "Interface settings", "Appearance, browsing and search settings of the space."),
+        Tenant(Rights.PlaybackSettings, false, Administrators, W, null, "Settings", "Playback settings", "The video player and the external player of the space."),
+        Tenant(Rights.ScanningSettings, false, Administrators, W, null, "Settings", "Scanning settings", "What scans leave out, file types, what scans read."),
+        Tenant(Rights.TagSettings, false, Administrators, W, null, "Settings", "Tag settings", "The tag sidebar and its history."),
+        Tenant(Rights.TrackingSettings, false, Administrators, W, null, "Settings", "Duplicates & moves settings", "Duplicates, moved files and similar videos."),
+        Tenant(Rights.ThumbnailSettings, false, Administrators, W, null, "Settings", "Thumbnail settings", "Thumbnails of photos and videos."),
+        Tenant(Rights.TrickplaySettings, false, Administrators, W, null, "Settings", "Trickplay settings", "Which videos get trickplay and how."),
+        Tenant(Rights.TaskSettings, false, Administrators, W, null, "Settings", "Background task settings", "How long task logs are kept."),
+        Tenant(Rights.EditorSettings, false, Administrators, W, null, "Settings", "Picture editor settings", "Where edited pictures are saved, and their quality.", since: 1),
+        Tenant(Rights.LogSettings, false, Administrators, W, null, "Settings", "Log settings", "How long the logs are kept, and whether they are also written to files (both set for the whole server).", since: 4),
+        Tenant(Rights.ManageMembers, false, Administrators, W, null, "Access", "Manage the space's accounts and groups", "Create accounts in the space, put them in its groups, choose what each group may do, open the space to visitors."),
+        Tenant(Rights.OwnPreferences, false, Members, W, null, "Account", "Own preferences", "Keep one's own theme, page sizes and player preferences on the server."),
+        Tenant(Rights.OwnPassword, false, Members, W, null, "Account", "Change own password", "Change the password of one's own local account."),
+        Tenant(Rights.QuickLinks, false, Members, W, Readable, "Account", "Quick links", "Keep folders and files at hand in the sidebar's quick links.", since: 3),
+        Tenant(Rights.ApiDocs, false, Administrators, R, null, "Server", "API documentation", "Open the API's documentation and try its routes."),
+        Server(Rights.ServerSettings, W, "Server settings", "Settings of the whole server and the defaults of every space."),
+        Server(Rights.ManageTenants, W, "Spaces", "Create, change and delete spaces, and manage the accounts and groups of every space."),
+        Server(Rights.ManageUsers, W, "All accounts", "Create, change and delete every account, put it in any space, make server administrators."),
+        Server(Rights.Shutdown, W, "Shut down", "Shut the server's computer down (when the server allows it)."),
+        Server(Rights.Dismount, W, "Dismount", "Run the server's dismount command (when one is set)."),
+        Server(Rights.ViewStreams, R, "Video streams", "See the videos the server converts while they play, in every space, and who watches them."),
+        Server(Rights.Backup, R, "Back up", "Download a backup of the databases and configuration files (it holds password hashes and connection strings)."),
     ];
+
+    /// <summary>Selector naming every right that changes something (<see cref="RightKind.Write"/>).</summary>
+    public const string WriteSelector = "kind:write";
+
+    /// <summary>Selector naming every right that changes the library's files on disk (<see cref="RightDefinition.ChangesFiles"/>).</summary>
+    public const string FileWriteSelector = "folder:write";
 
     /// <summary>
     /// The latest revision of the catalog: one more each time rights are added (their <see cref="RightDefinition.Since"/>).
@@ -142,22 +185,38 @@ public static class RightCatalog
     public static bool IsTenantRight(string id) => Find(id) is { Scope: RightScope.Tenant };
 
     /// <summary>
-    /// <paramref name="pattern"/> names <paramref name="right"/>: equal (ignoring case), or a prefix ending with
-    /// <c>*</c> (<c>files.*</c>; <c>*</c> alone names every right).
+    /// <paramref name="pattern"/> names <paramref name="right"/>: equal (ignoring case), a prefix ending with <c>*</c>
+    /// (<c>files.*</c>; <c>*</c> alone names every right), or a selector: <see cref="WriteSelector"/>,
+    /// <see cref="FileWriteSelector"/>.
     /// </summary>
     public static bool Matches(string pattern, string right)
     {
         var trimmed = pattern.Trim();
-        return trimmed.EndsWith('*')
-            ? right.StartsWith(trimmed[..^1], StringComparison.OrdinalIgnoreCase)
-            : string.Equals(trimmed, right, StringComparison.OrdinalIgnoreCase);
+        if (string.Equals(trimmed, WriteSelector, StringComparison.OrdinalIgnoreCase))
+            return Find(right) is { Kind: RightKind.Write };
+        if (string.Equals(trimmed, FileWriteSelector, StringComparison.OrdinalIgnoreCase))
+            return Find(right) is { ChangesFiles: true };
+        return MatchesName(trimmed, right);
     }
 
     public static bool MatchesAny(IEnumerable<string> patterns, string right) => patterns.Any(p => Matches(p, right));
 
-    private static RightDefinition Tenant(string id, bool guestAllowed, BuiltInGroup[] defaults, string area, string title, string description, int since = 0) =>
-        new(id, RightScope.Tenant, guestAllowed, defaults, area, title, description, since);
+    /// <summary>
+    /// <paramref name="pattern"/> names <paramref name="name"/> by its text alone: equal (ignoring case), or a prefix
+    /// ending with <c>*</c>. Shared with setting keys (<see cref="Settings.SettingCatalog.Matches"/>).
+    /// </summary>
+    public static bool MatchesName(string pattern, string name)
+    {
+        var trimmed = pattern.Trim();
+        return trimmed.EndsWith('*')
+            ? name.StartsWith(trimmed[..^1], StringComparison.OrdinalIgnoreCase)
+            : string.Equals(trimmed, name, StringComparison.OrdinalIgnoreCase);
+    }
 
-    private static RightDefinition Server(string id, string title, string description) =>
-        new(id, RightScope.Server, false, [], "Server", title, description);
+    private static RightDefinition Tenant(
+        string id, bool guestAllowed, BuiltInGroup[] defaults, RightKind kind, FolderLevel? atFolder, string area, string title, string description, int since = 0) =>
+        new(id, RightScope.Tenant, guestAllowed, defaults, area, title, description, since, kind, atFolder);
+
+    private static RightDefinition Server(string id, RightKind kind, string title, string description) =>
+        new(id, RightScope.Server, false, [], "Server", title, description, Kind: kind);
 }

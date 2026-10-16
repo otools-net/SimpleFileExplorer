@@ -7,7 +7,7 @@ import { checkedOf, valueOf } from '../shared/events';
 import { HelpComponent } from '../shared/help.component';
 import { IconComponent } from '../shared/icon.component';
 import { SheetComponent } from '../shared/sheet.component';
-import { fieldErrors, toggled } from './access-parts';
+import { changingRights, fieldErrors, fileChangingRights, rightMark, toggled } from './access-parts';
 
 /** A space being created (`id` null) or changed. */
 interface SpaceDraft {
@@ -111,14 +111,32 @@ interface SpaceDraft {
                                 <p>A right ticked here is taken from everyone in this space, whatever their groups say; only server administrators
                                    can tick it, the space's own administrators can't give it back.</p>
                                 <p>Example: tick <em>Delete duplicates</em> on a space whose files must never be deleted from the web page.</p>
+                                <p><strong>Files read-only</strong> ticks every right that creates, changes or deletes files (marked
+                                   <em>Changes files</em>): people can still tag and use the space. <strong>Read-only</strong> ticks every right
+                                   that changes anything (marked <em>Changes things</em> too): the space can only be looked at.</p>
                             </sfe-help>
+                        </div>
+                        <div class="access-presets">
+                            <span class="field-hint">Switch off at once</span>
+                            <button type="button" class="button small" title="Tick every right that creates, changes or deletes files in this space"
+                                    (click)="switchOff(fileChangingRights(rights()))">Files read-only</button>
+                            <button type="button" class="button small" title="Tick every right that changes something in this space"
+                                    (click)="switchOff(changingRights(rights()))">Read-only</button>
                         </div>
                         <fieldset class="access-choices rights">
                             <legend class="visually-hidden">Rights switched off in this space</legend>
                             @for (right of rights(); track right.id) {
+                                @let mark = rightMark(right);
                                 <label class="check" [title]="right.description">
                                     <input type="checkbox" [checked]="draft.disabledRights.has(right.id)" (change)="toggleRight(right.id, checkedOf($event))">
-                                    <span>{{ right.title }}<span class="field-hint">{{ right.area }}</span></span>
+                                    <span>
+                                        <span class="right-title">{{ right.title }}
+                                            @if (mark) {
+                                                <span class="access-badge right-mark" [class.danger]="mark.kind === 'files'" [title]="mark.hint">{{ mark.label }}</span>
+                                            }
+                                        </span>
+                                        <span class="field-hint">{{ right.area }}</span>
+                                    </span>
                                 </label>
                             }
                         </fieldset>
@@ -155,6 +173,9 @@ export class SpaceEditorComponent {
 
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;
+    protected readonly rightMark = rightMark;
+    protected readonly fileChangingRights = fileChangingRights;
+    protected readonly changingRights = changingRights;
 
     open(space: TenantDetails | null): void {
         this.draft.set({
@@ -183,6 +204,11 @@ export class SpaceEditorComponent {
 
     protected toggleRight(id: string, disabled: boolean): void {
         this.draft.update(draft => draft && { ...draft, disabledRights: toggled(draft.disabledRights, id, disabled) });
+    }
+
+    /** Ticks `ids` too, keeping the rights already ticked. */
+    protected switchOff(ids: string[]): void {
+        this.draft.update(draft => draft && { ...draft, disabledRights: new Set([...draft.disabledRights, ...ids]) });
     }
 
     /** Opens a folder of the picker (the allowed roots for null); a folder opened is the one chosen. */

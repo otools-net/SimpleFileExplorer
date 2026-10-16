@@ -754,7 +754,16 @@ export interface RightDefinition {
     area: string;
     title: string;
     description: string;
+    /** `write` when one of its functions changes something (files, index, tags, settings, accounts). */
+    kind: RightKind;
+    /** What a folder must allow for it to apply there; null for a right of the whole space. */
+    atFolder: FolderLevel | null;
 }
+
+export type RightKind = 'read' | 'write';
+
+/** What a folder lets a subject do in it: `write` includes `read`; only `write` lets its files on disk change. */
+export type FolderLevel = 'hidden' | 'read' | 'write';
 
 export interface RightsCatalog {
     rights: RightDefinition[];

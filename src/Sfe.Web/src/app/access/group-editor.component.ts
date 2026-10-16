@@ -7,7 +7,7 @@ import { ToastService } from '../core/toast.service';
 import { checkedOf, valueOf } from '../shared/events';
 import { HelpComponent } from '../shared/help.component';
 import { SheetComponent } from '../shared/sheet.component';
-import { fieldErrors, rightAreas, toggled } from './access-parts';
+import { fieldErrors, rightAreas, rightMark, toggled } from './access-parts';
 
 /** A group being created (`id` null) or changed. */
 interface GroupDraft {
@@ -58,6 +58,9 @@ interface GroupDraft {
                                <em>Users</em> (browse, play, tag) and in <em>Downloaders</em> (download files): he may do all four.</p>
                             <p>A right greyed out can't be given here: guests may never change anything, and an administrator of the server
                                may switch a right off for a whole space or for the whole server.</p>
+                            <p>In each part, the rights that only look come first. <strong>Changes things</strong> marks a right that changes
+                               the space (its index, tags, settings or accounts); <strong>Changes files</strong> one that creates, changes or
+                               deletes files in the library's folders: give those with care.</p>
                         </sfe-help>
                     </div>
                     @if (draft.id === null) {
@@ -74,10 +77,18 @@ interface GroupDraft {
                             <legend class="field-label">{{ area.title }}</legend>
                             @for (right of area.rights; track right.id) {
                                 @let note = rightNote(right, draft);
+                                @let mark = rightMark(right);
                                 <label class="check" [title]="right.description">
                                     <input type="checkbox" [disabled]="note !== null && !draft.rights.has(right.id)" [checked]="draft.rights.has(right.id)"
                                            (change)="toggleRight(right.id, checkedOf($event))">
-                                    <span>{{ right.title }}<span class="field-hint">{{ note ?? right.description }}</span></span>
+                                    <span>
+                                        <span class="right-title">{{ right.title }}
+                                            @if (mark) {
+                                                <span class="access-badge right-mark" [class.danger]="mark.kind === 'files'" [title]="mark.hint">{{ mark.label }}</span>
+                                            }
+                                        </span>
+                                        <span class="field-hint">{{ note ?? right.description }}</span>
+                                    </span>
                                 </label>
                             }
                         </fieldset>
@@ -160,6 +171,7 @@ export class GroupEditorComponent {
 
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;
+    protected readonly rightMark = rightMark;
 
     open(group: GroupInfo | null): void {
         this.draft.set({

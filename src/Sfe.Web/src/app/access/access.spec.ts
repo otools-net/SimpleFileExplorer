@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AccountSectionComponent } from '../account/account-section.component';
 import { ApiError } from '../core/api.service';
-import { GroupInfo, RightDefinition, RightsCatalog, SessionInfo, TenantDetails, UserInfo } from '../core/models';
+import { FolderLevel, GroupInfo, RightDefinition, RightKind, RightsCatalog, SessionInfo, TenantDetails, UserInfo } from '../core/models';
 import { Rights } from '../core/rights';
 import { HelpComponent } from '../shared/help.component';
 import { ApiMock, buttonNamed, fakeConfig, LIBRARY, limitedConfig, loadConfig, mockApi, settingsValues, settle, testProviders } from '../../testing/fakes';
@@ -43,12 +43,18 @@ function space(id: number, name: string, overrides: Partial<TenantDetails> = {})
     return { id, slug: name.toLowerCase(), name, guestAccess: false, isDefault: id === LIBRARY.id, disabled: false, root: `D:\\Media\\${name}`, disabledRights: [], members: 0, groups: 3, ...overrides };
 }
 
-function right(id: string, guestAllowed: boolean, area = 'Library'): RightDefinition {
-    return { id, scope: 'tenant', guestAllowed, defaultGroups: guestAllowed ? ['administrators', 'users', 'guests'] : ['administrators'], area, title: id, description: `About ${id}` };
+function right(id: string, guestAllowed: boolean, area = 'Library', kind: RightKind = guestAllowed ? 'read' : 'write', atFolder: FolderLevel | null = null): RightDefinition {
+    return {
+        id, scope: 'tenant', guestAllowed, defaultGroups: guestAllowed ? ['administrators', 'users', 'guests'] : ['administrators'], area, title: id,
+        description: `About ${id}`, kind, atFolder,
+    };
 }
 
 const catalog: RightsCatalog = {
-    rights: [right(Rights.browse, true), right(Rights.manageTags, false, 'Tags'), right(Rights.download, true), { ...right(Rights.manageTenants, false, 'Server'), scope: 'server' }],
+    rights: [
+        right(Rights.editImages, false, 'Library', 'write', 'write'), right(Rights.browse, true, 'Library', 'read', 'read'), right(Rights.manageTags, false, 'Tags'),
+        right(Rights.download, true, 'Library', 'read', 'read'), { ...right(Rights.manageTenants, false, 'Server'), scope: 'server' },
+    ],
     disabledByServer: [Rights.download],
     disabledInTenant: [],
 };
@@ -372,6 +378,51 @@ describe('SpacesPageComponent', () => {
         await settle();
 
         expect(api.createGroup).toHaveBeenCalledWith({ name: 'Kids', externalName: null, rights: [Rights.browse, Rights.download], memberIds: [3] }, WORK.id);
+    });
+
+    it('marks the rights that change things, those that change files the most, after those that only look', async () => {
+        serverSpaces();
+        api.groups.mockResolvedValue(work);
+        await create(SpacesPageComponent);
+        await openSpace('Work');
+
+        buttonNamed(element, 'New group')!.click();
+        await settle();
+        const library = [...element.querySelectorAll<HTMLElement>('.access-choices.rights')].find(area => area.querySelector('legend')!.textContent === 'Library')!;
+        const titles = [...library.querySelectorAll('.right-title')].map(title => title.firstChild!.textContent!.trim());
+        const marks = (id: string) => checkbox('.access-choices.rights label', id, library).closest('label')!.querySelector('.right-mark');
+
+        expect(titles).toEqual([Rights.browse, Rights.download, Rights.editImages]);
+        expect(marks(Rights.browse)).toBeNull();
+        expect(marks(Rights.editImages)!.textContent).toBe('Changes files');
+        expect(marks(Rights.editImages)!.classList).toContain('danger');
+        expect(checkbox('.access-choices.rights label', Rights.manageTags).closest('label')!.querySelector('.right-mark')!.textContent).toBe('Changes things');
+    });
+
+    it('switches off at once the rights that change files, or every right that changes something', async () => {
+        serverSpaces();
+        api.groups.mockResolvedValue(work);
+        api.updateTenant.mockResolvedValue(space(WORK.id, 'Work'));
+        await create(SpacesPageComponent);
+        await openSpace('Work');
+
+        buttonNamed(element, 'Edit space')!.click();
+        await settle();
+        buttonNamed(element, 'Files read-only')!.click();
+        await settle();
+        expect(checkbox('.access-choices.rights label', Rights.editImages).checked).toBe(true);
+        expect(checkbox('.access-choices.rights label', Rights.manageTags).checked).toBe(false);
+        buttonNamed(element.querySelector('sfe-space-editor')!, 'Save')!.click();
+        await settle();
+        expect(api.updateTenant).toHaveBeenLastCalledWith(WORK.id, expect.objectContaining({ disabledRights: [Rights.editImages] }));
+
+        buttonNamed(element, 'Edit space')!.click();
+        await settle();
+        buttonNamed(element, 'Read-only')!.click();
+        await settle();
+        buttonNamed(element.querySelector('sfe-space-editor')!, 'Save')!.click();
+        await settle();
+        expect(api.updateTenant).toHaveBeenLastCalledWith(WORK.id, expect.objectContaining({ disabledRights: [Rights.editImages, Rights.manageTags] }));
     });
 
     it('creates a space on a folder picked inside the allowed roots, then opens it', async () => {

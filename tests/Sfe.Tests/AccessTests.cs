@@ -542,6 +542,36 @@ public sealed class AccessTests
     }
 
     [TestMethod]
+    public async Task TheServerCanSwitchOffEveryRightThatChangesFiles()
+    {
+        var factory = Factory(settings => settings["Sfe:Rights:Disabled:0"] = RightCatalog.FileWriteSelector);
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+
+        var config = await GetAsync<ClientConfig>(admin, "/api/config");
+        var catalog = await GetAsync<RightsCatalogInfo>(admin, "/api/access/rights");
+
+        CollectionAssert.AreEquivalent(new[] { Rights.EditImages, Rights.RemoveDuplicates }, catalog.DisabledByServer.ToList());
+        CollectionAssert.DoesNotContain(config.Rights.ToList(), Rights.EditImages);
+        CollectionAssert.Contains(config.Rights.ToList(), Rights.AssignTags);
+        Assert.AreEqual(FolderLevel.Write, catalog.Rights.Single(r => r.Id == Rights.EditImages).AtFolder);
+        Assert.AreEqual(RightKind.Write, catalog.Rights.Single(r => r.Id == Rights.AssignTags).Kind);
+    }
+
+    [TestMethod]
+    public async Task TheServerCanBeMadeReadOnly()
+    {
+        var factory = Factory(settings => settings["Sfe:Rights:Disabled:0"] = RightCatalog.WriteSelector);
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+
+        var config = await GetAsync<ClientConfig>(admin, "/api/config");
+        using var tag = await admin.PostAsJsonAsync("/api/file-tags", new { paths = Array.Empty<string>(), add = Array.Empty<int>() }, TestContext.CancellationToken);
+
+        Assert.IsTrue(config.Rights.All(r => RightCatalog.Find(r)!.Kind == RightKind.Read), string.Join(", ", config.Rights));
+        CollectionAssert.Contains(config.Rights.ToList(), Rights.Browse);
+        Assert.AreEqual(HttpStatusCode.Forbidden, tag.StatusCode);
+    }
+
+    [TestMethod]
     public async Task ChangingAnAccountEndsItsSessions()
     {
         var factory = Factory();

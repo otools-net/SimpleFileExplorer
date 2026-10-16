@@ -3,6 +3,17 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.51.0
+
+### Added
+
+- **Read and Write rights:** every right is now either Read (it only looks) or Write (it changes something). The group
+  and space editors list the Read rights first and mark the others **Changes things**, or **Changes files** for the
+  rights that create, change or delete the library's files.
+- **Read-only spaces:** editing a space, **Files read-only** switches off every right that changes files and
+  **Read-only** every right that changes anything. In the configuration, `folder:write` and `kind:write` in
+  `Sfe:Rights:Disabled` do the same for the whole server.
+
 ## 1.50.0
 
 ### Added
