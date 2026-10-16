@@ -55,5 +55,5 @@ It works without signing in for a while (6 hours by default, enough for a film: 
 and stops earlier when your account's password changes, the account is disabled, or it loses the right to use
 external players. Anyone holding the link can play the file until then: share it as you would the file.
 
-The app streams the file from SFE (or from the [data server](../administration/playback.md#streaming-data-server)),
+The app streams the file from SFE (or from the [data server](../administration/playback.md#data-server)),
 so the device must reach that address.

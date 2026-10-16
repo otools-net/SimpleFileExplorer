@@ -38,7 +38,7 @@ for the setup code first (only whoever runs the server knows it).
 | `Sfe:Database:Provider` | `SqlServer` or `Sqlite` (see [Database](#database)) |
 | `Sfe:Thumbnails:CacheDirectory` | Thumbnails and trickplay |
 | `Sfe:Thumbnails:FfmpegPath` | Default `ffmpeg` (found on the `PATH`) |
-| `Sfe:DataServer` | Optional web server already publishing the library ([Playback › Streaming](administration/playback.md#streaming-data-server)) |
+| `Sfe:DataServer` | Optional web server already publishing the library ([Playback › Streaming](administration/playback.md#data-server)) |
 | `Sfe:SettingsFile` | Where the administration page saves (see [below](#the-settings-file)) |
 | `Sfe:System:EnableShutdown`, `ShutdownCommand`, `DismountCommand` | Server commands, opt-in (see [System](administration/system.md)) |
 | `Sfe:Backup:SqlServerFolder` | SQL Server only: where the database server writes the [backups](administration/system.md#backup) (as it sees it); empty = its default backup folder |

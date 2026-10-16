@@ -98,7 +98,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [backups](agents/docs/features/backups.md) | backup zip, download links | `BackupSources`, `Core/Backup/` |
 | [settings-new-key](agents/docs/features/settings-new-key.md) | adding a setting (options, schema, level, right) | `SfeOptions`, `EditableSettings`, `settings-schema.ts` |
 | [settings-levels](agents/docs/features/settings-levels.md) | environment/server/library/user layers, locks, saving | `Core/Settings/`, `app/settings/` |
-| [admin-page](agents/docs/features/admin-page.md) | administration sections, sub-pages, phones | `app/admin/` |
+| [admin-page](agents/docs/features/admin-page.md) | administration sections, overview, sub-pages, moved pages, phones | `app/admin/` |
+| [admin-search](agents/docs/features/admin-search.md) | search box of the administration page | `admin-search.ts` |
 | [listing-page](agents/docs/features/listing-page.md) | listing state, navigation, dialogs, infinite scroll | `app/library/`, `LibraryBrowser` |
 | [position-restore](agents/docs/features/position-restore.md) | scroll restore, same-URL reloads | `items/listing-position.ts` |
 | [folder-navigation](agents/docs/features/folder-navigation.md) | up / previous / next folder | `LibraryBrowser.Siblings` |
@@ -133,4 +134,4 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [missing-files](agents/docs/features/missing-files.md) | missing tagged files, relink | `Core/FileTracking/` |
 | [duplicates](agents/docs/features/duplicates.md) | duplicate groups and removal | `DuplicateFinder`, `DuplicateRemover` |
 | [similar-videos](agents/docs/features/similar-videos.md) | video fingerprints and matching | `VideoFingerprint`, `VideoMatcher` |
-| [system-info](agents/docs/features/system-info.md) | System › About, Video streams | `api/system/info` |
+| [system-info](agents/docs/features/system-info.md) | System › About, Playback › Video streams | `api/system/info` |

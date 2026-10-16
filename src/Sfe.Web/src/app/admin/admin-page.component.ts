@@ -11,8 +11,10 @@ import { routeParams } from '../library/library-route';
 import { ListingStore } from '../library/listing.store';
 import { LogsSectionComponent } from '../logs/logs-section.component';
 import { SettingsForm } from '../settings/settings-form.service';
+import { settingFieldId } from '../settings/settings-form.service';
 import { SettingsPanelComponent } from '../settings/settings-panel.component';
-import { TABS } from '../settings/settings-schema';
+import { SIMPLE_SETTINGS, TABS } from '../settings/settings-schema';
+import { valueOf } from '../shared/events';
 import { EmptyStateComponent } from '../shared/empty-state.component';
 import { IconComponent } from '../shared/icon.component';
 import { TagEditorDialog } from '../tags/tag-editor.dialog';
@@ -22,8 +24,10 @@ import { TrackingSectionComponent } from '../tracking/tracking-section.component
 import { TrickplayActivityComponent } from '../trickplay/trickplay-activity.component';
 import { AccountSectionComponent } from '../account/account-section.component';
 import { AccessSectionComponent } from '../access/access-section.component';
-import { ADMIN_SECTIONS, AdminSubpage, findSection, findSubpage, groupsOf, locateSettings, visibleSections } from './admin-sections';
+import { ADMIN_SEARCH_LIMIT, AdminSearchResult, markWords, searchAdmin, searchWords } from './admin-search';
+import { ADMIN_SECTIONS, AdminSubpage, findSection, findSubpage, groupId, groupsOf, locateSettings, movedPage, visibleSections } from './admin-sections';
 import { SystemSectionComponent } from './system-section.component';
+import { VideoStreamsComponent } from './video-streams.component';
 
 /** History state of the entries of this page opened from the listing page: "back" returns there. */
 const FROM_LIBRARY = 'sfeFromLibrary';
@@ -40,14 +44,16 @@ export { leaveAdminPage } from './leave-admin-page';
 /**
  * The administration page (`admin?section=&page=`): the sections of admin-sections.ts in a sidebar, the sub-pages of
  * the open section listed under it (on phones, where the sections are a list of their own, as chips above the
- * sub-page); breadcrumbs above the heading say where the page is. The settings sub-pages share one form (SettingsForm), saved from the bar at the bottom. Moving between
- * sections and sub-pages replaces the history entry, so that "back" returns to the listing page.
+ * sub-page); breadcrumbs above the heading say where the page is. Without a section, it shows the sections as cards by
+ * group (the overview; on phones, the list of sections), unless the session sees only one. A search box above the sections finds sections,
+ * sub-pages and settings (admin-search.ts). The settings sub-pages share one form (SettingsForm), saved from the bar at
+ * the bottom. Moving between sections and sub-pages replaces the history entry, so that "back" returns to the listing page.
  */
 @Component({
     selector: 'sfe-admin-page',
     imports: [RouterLink, NgTemplateOutlet, IconComponent, EmptyStateComponent, SettingsPanelComponent, TagListComponent, TagEditorDialog,
         TrackingSectionComponent, TasksSectionComponent, TrickplayActivityComponent, SystemSectionComponent, AccessSectionComponent,
-        AccountSectionComponent, LogsSectionComponent],
+        AccountSectionComponent, LogsSectionComponent, VideoStreamsComponent],
     providers: [SettingsForm],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'admin-page', '(window:beforeunload)': 'onBeforeUnload($event)' },
@@ -67,11 +73,40 @@ export { leaveAdminPage } from './leave-admin-page';
             <div class="admin-layout" [class.section-list]="sectionList()">
                 @if (!phone() || sectionList()) {
                     <nav class="admin-nav" aria-label="Administration sections">
-                        @for (group of groups(); track group.title) {
+                        <div class="admin-search" role="search">
+                            <svg sfeIcon="search" class="search-icon"></svg>
+                            <input #searchBox type="search" placeholder="Find a setting…" aria-label="Find a setting or a page" aria-controls="admin-search-results"
+                                   title="Find the settings and pages whose name or description has these words (Enter opens the first one, Esc clears)"
+                                   spellcheck="false" autocomplete="off" enterkeyhint="go" [value]="query()" (input)="query.set(valueOf($event))" (keydown)="onSearchKey($event)">
+                            @if (query()) {
+                                <button type="button" class="icon-button ghost small admin-search-clear" aria-label="Clear the search"
+                                        title="Clear the search and show the sections again (Esc)" (click)="query.set(''); searchBox.focus()">
+                                    <svg sfeIcon="close"></svg>
+                                </button>
+                            }
+                        </div>
+                        @if (searching()) {
+                            <p class="admin-search-count" role="status">{{ resultsCount() }}</p>
+                            <ul class="admin-search-results" id="admin-search-results" aria-label="Found">
+                                @for (result of shownResults(); track $index) {
+                                    <li>
+                                        <a routerLink="/admin" [queryParams]="resultParams(result)" [state]="linkState()" [replaceUrl]="!phone()"
+                                           [title]="'Open ' + result.where + (result.setting ? ' at this setting' : '')" (click)="found(result)">
+                                            <span class="admin-search-title"><ng-container [ngTemplateOutlet]="markedText" [ngTemplateOutletContext]="{ $implicit: result.title }" /></span>
+                                            <small class="admin-search-where">{{ result.where }}</small>
+                                            @if (result.text) {
+                                                <small class="admin-search-text"><ng-container [ngTemplateOutlet]="markedText" [ngTemplateOutletContext]="{ $implicit: result.text }" /></small>
+                                            }
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        @for (group of searching() ? [] : groups(); track group.title) {
                             <h2>{{ group.title }}</h2>
                             <ul>
                                 @for (item of group.sections; track item.id) {
-                                    @let open = !phone() && item.id === section().id;
+                                    @let open = !phone() && !overview() && item.id === section().id;
                                     <li>
                                         <a routerLink="/admin" [queryParams]="{ section: item.id }" [state]="linkState()" [replaceUrl]="!phone()"
                                            [attr.aria-current]="open && item.subpages.length === 1 ? 'page' : null" [class.open]="open" [title]="item.description"
@@ -114,7 +149,42 @@ export { leaveAdminPage } from './leave-admin-page';
                 }
 
                 <main class="admin-main">
-                    @if (!sectionList()) {
+                    @if (overview()) {
+                        <header class="admin-head">
+                            <h2>Administration</h2>
+                            <p>Everything this account can change or look at, by section.</p>
+                        </header>
+                        <div class="admin-overview">
+                            @for (group of groups(); track group.title) {
+                                <section class="admin-overview-group" [attr.aria-labelledby]="groupId(group.title)">
+                                    <h3 [id]="groupId(group.title)">{{ group.title }}</h3>
+                                    <div class="admin-cards">
+                                        @for (item of group.sections; track item.id) {
+                                            <article class="admin-card" [class.has-error]="faulty(item.subpages)">
+                                                <a class="admin-card-title" routerLink="/admin" [queryParams]="{ section: item.id }" [state]="historyState" replaceUrl
+                                                   [title]="'Open ' + item.title">
+                                                    <svg [sfeIcon]="item.icon"></svg>
+                                                    <span>{{ item.title }}</span>
+                                                    <ng-container [ngTemplateOutlet]="mark" [ngTemplateOutletContext]="{ $implicit: item.subpages }" />
+                                                </a>
+                                                <p>{{ item.description }}</p>
+                                                @if (item.subpages.length > 1) {
+                                                    <ul class="admin-card-pages" [attr.aria-label]="item.title">
+                                                        @for (page of item.subpages; track page.id) {
+                                                            <li>
+                                                                <a routerLink="/admin" [queryParams]="{ section: item.id, page: page.id === item.subpages[0].id ? null : page.id }"
+                                                                   [state]="historyState" replaceUrl [title]="page.description ?? ''" [class.has-error]="faulty([page])">{{ page.title }}</a>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </article>
+                                        }
+                                    </div>
+                                </section>
+                            }
+                        </div>
+                    } @else if (!sectionList()) {
                         <header class="admin-head">
                             <!-- Where this page is: Administration › group › section › sub-page (phones leave the group out). -->
                             <nav class="admin-crumbs" aria-label="Breadcrumb">
@@ -123,10 +193,17 @@ export { leaveAdminPage } from './leave-admin-page';
                                         @if (phone()) {
                                             <button type="button" class="admin-crumb-link" title="Show the list of sections" (click)="back()">Administration</button>
                                         } @else {
-                                            <a routerLink="/admin" [state]="historyState" replaceUrl title="Open the first section">Administration</a>
+                                            <a routerLink="/admin" [state]="historyState" replaceUrl title="Show every section">Administration</a>
                                         }
                                     </li>
-                                    <li class="admin-crumb-group">{{ section().group }}</li>
+                                    <li class="admin-crumb-group">
+                                        @if (phone()) {
+                                            {{ section().group }}
+                                        } @else {
+                                            <a routerLink="/admin" [fragment]="groupId(section().group)" [state]="historyState" replaceUrl
+                                               [title]="'Show the sections of ' + section().group">{{ section().group }}</a>
+                                        }
+                                    </li>
                                     @if (section().subpages.length > 1) {
                                         <li>
                                             <a routerLink="/admin" [queryParams]="{ section: section().id }" [state]="stayState()" replaceUrl
@@ -139,7 +216,7 @@ export { leaveAdminPage } from './leave-admin-page';
                                 </ol>
                             </nav>
                             <h2>{{ section().subpages.length > 1 ? subpage().title : section().title }}</h2>
-                            <p>{{ section().description }}</p>
+                            <p>{{ subpage().description ?? section().description }}</p>
                         </header>
                         <!-- Phones have no sidebar: the sub-pages are chips. -->
                         @if (phone() && section().subpages.length > 1) {
@@ -194,6 +271,9 @@ export { leaveAdminPage } from './leave-admin-page';
                                     @case ('trickplay') {
                                         <sfe-trickplay-activity />
                                     }
+                                    @case ('playback') {
+                                        <sfe-video-streams />
+                                    }
                                     @case ('tasks') {
                                         <sfe-tasks-section [tab]="subpage().id" (selectTab)="select($event)" (openTrickplay)="go('trickplay', 'activity')" />
                                     }
@@ -240,6 +320,12 @@ export { leaveAdminPage } from './leave-admin-page';
             <sfe-tag-editor />
         }
 
+        <!-- Text with the words searched for marked. -->
+        <ng-template #markedText let-text>
+            <!-- On one line: no spaces between the parts. -->
+            @for (part of marked(text); track $index) {@if (part.match) {<mark>{{ part.text }}</mark>} @else {<span>{{ part.text }}</span>}}
+        </ng-template>
+
         <!-- A dot on a level's tab while it has changes not saved yet (they stay while the other level shows). -->
         <ng-template #levelMark let-level>
             @if (form.changedLevels().has(level)) {
@@ -280,7 +366,10 @@ export class AdminPageComponent implements OnInit {
     protected readonly ready = signal(false);
     protected readonly unreachable = signal<string | null>(null);
 
-    private readonly params = toSignal(inject(ActivatedRoute).queryParamMap, { requireSync: true });
+    private readonly route = inject(ActivatedRoute);
+    private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
+    /** The group the overview scrolls to (the breadcrumbs' group link). */
+    private readonly fragment = toSignal(this.route.fragment, { requireSync: true });
     protected readonly section = computed(() => findSection(this.params().get('section'), this.sections()));
     protected readonly subpage = computed(() => findSubpage(this.section(), this.params().get('page')));
 
@@ -295,10 +384,29 @@ export class AdminPageComponent implements OnInit {
      */
     protected readonly phone = signal(false);
     protected readonly sectionList = computed(() => this.phone() && !this.params().has('section'));
+    /** Computers, without a section: the sections as cards, by group (a session seeing one section gets it instead). */
+    protected readonly overview = computed(() => !this.phone() && !this.params().has('section') && this.sections().length > 1);
+    protected readonly groupId = groupId;
     protected readonly linkState = computed(() => this.sectionList() ? { ...this.historyState, [FROM_LIST]: true } : this.historyState);
     protected readonly backHint = computed(() => this.phone() && !this.sectionList() ? 'Back to the sections' : 'Back to the library');
     /** The settings tab of settings-schema.ts on screen, if any. */
-    protected readonly settingsShown = computed(() => this.sectionList() ? undefined : this.subpage().settings);
+    protected readonly settingsShown = computed(() => this.sectionList() || this.overview() ? undefined : this.subpage().settings);
+
+    /** The search box's text, and what it finds among the sections the session sees. */
+    protected readonly query = signal('');
+    private readonly words = computed(() => searchWords(this.query()));
+    protected readonly searching = computed(() => this.words().length > 0);
+    private readonly results = computed(() => searchAdmin(this.query(), this.sections()));
+    protected readonly shownResults = computed(() => this.results().slice(0, ADMIN_SEARCH_LIMIT));
+    protected readonly resultsCount = computed(() => {
+        const count = this.results().length;
+        return count === 0 ? 'Nothing found'
+            : count > ADMIN_SEARCH_LIMIT ? `The first ${ADMIN_SEARCH_LIMIT} of ${count} found: add words to narrow them`
+                : count === 1 ? '1 found' : `${count} found`;
+    });
+    /** The setting picked among the results, brought into view once its sub-page shows it. */
+    private readonly reveal = signal<string | null>(null);
+    protected readonly valueOf = valueOf;
 
     protected readonly saveStatus = computed(() => {
         const changed = [...this.form.changedTabs()].map(id => this.titleOfSettings(id)).filter(Boolean);
@@ -324,9 +432,31 @@ export class AdminPageComponent implements OnInit {
     constructor() {
         const title = inject(Title);
         effect(() => {
+            if (this.overview() || this.sectionList())
+                return title.setTitle('Administration – SFE');
             const section = this.section();
             const page = section.subpages.length > 1 ? `${this.subpage().title} – ` : '';
             title.setTitle(`${page}${section.title} – Administration – SFE`);
+        });
+        // The address of a sub-page that moved (a bookmark, history): replaced by where it is now.
+        effect(() => {
+            const params = this.params();
+            const moved = movedPage(params.get('section'), params.get('page'));
+            if (moved)
+                untracked(() => void this.go(moved.section, moved.page));
+        });
+        // The overview opens at its top, or at the group of the breadcrumbs' link.
+        effect(() => {
+            if (!this.overview())
+                return;
+            const fragment = this.fragment();
+            afterNextRender(() => {
+                const group = fragment && document.getElementById(fragment);
+                if (group)
+                    group.scrollIntoView({ block: 'start' });
+                else
+                    window.scrollTo({ top: 0 });
+            }, { injector: this.injector });
         });
         const phoneQuery = matchMedia(PHONE);
         const onPhoneChange = () => this.phone.set(phoneQuery.matches);
@@ -339,6 +469,12 @@ export class AdminPageComponent implements OnInit {
             this.sectionList();
             if (untracked(this.phone))
                 window.scrollTo({ top: 0 });
+        });
+        // A setting picked in the search: once its sub-page and the settings are shown, it is scrolled to and focused.
+        effect(() => {
+            const key = this.reveal();
+            if (key && this.form.loaded() && this.subpage().settings)
+                afterNextRender(() => this.revealSetting(key), { injector: this.injector });
         });
         // The tag list loads once shown (it is created again with its section).
         effect(() => {
@@ -384,6 +520,55 @@ export class AdminPageComponent implements OnInit {
 
     protected checked(event: Event): boolean {
         return (event.target as HTMLInputElement).checked;
+    }
+
+    protected marked(text: string): { text: string; match: boolean }[] {
+        return markWords(text, this.words());
+    }
+
+    protected resultParams(result: AdminSearchResult): Record<string, string | null> {
+        return { section: result.section.id, page: result.subpage.id === result.section.subpages[0].id ? null : result.subpage.id };
+    }
+
+    /** A result is opened: a setting is brought into view, in the full view when the simple one hides it. */
+    protected found(result: AdminSearchResult): void {
+        if (!result.setting)
+            return;
+        // As for an error on a hidden setting: shown without remembering the choice.
+        if (!SIMPLE_SETTINGS.has(result.setting))
+            this.form.showAll.set(true);
+        this.reveal.set(result.setting);
+    }
+
+    /** Enter opens the first result, Escape empties the box. */
+    protected onSearchKey(event: KeyboardEvent): void {
+        if (event.key === 'Escape' && this.query()) {
+            event.preventDefault();
+            this.query.set('');
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            const first = this.results()[0];
+            if (!first)
+                return;
+            this.found(first);
+            void this.router.navigate(['/admin'], { queryParams: this.resultParams(first), state: this.linkState(), replaceUrl: !this.phone() });
+        }
+    }
+
+    /** Scrolls to the field of the setting `key` and focuses it, once its sub-page shows it. */
+    private revealSetting(key: string): void {
+        const control = this.host.querySelector<HTMLElement>(`#${settingFieldId(key)}`);
+        const field = control?.closest<HTMLElement>('.field, .setting-check');
+        if (!control || !field || this.reveal() !== key)
+            return;
+        this.reveal.set(null);
+        field.scrollIntoView({ block: 'center' });
+        control.focus({ preventScroll: true });
+        // Flashes, again when found again.
+        field.classList.remove('setting-found');
+        void field.offsetWidth;
+        field.classList.add('setting-found');
+        field.addEventListener('animationend', () => field.classList.remove('setting-found'), { once: true });
     }
 
     /** "Section › Sub-page" of the tab `settings` of settings-schema.ts, the section alone when it has one sub-page. */

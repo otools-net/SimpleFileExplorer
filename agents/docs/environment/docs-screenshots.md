@@ -12,7 +12,7 @@ Tool: `agents/tools/docs-screenshots/` (how to add a scene: its `README.md`).
   hangs with the app still up: run the update (`POST api/migration` with `{"code":"doc-screenshots-setup"}`), then
   `node shots.mjs <scene>`.
 - The last scene (`streams`) can leave its headless Edge alive, so `shots.mjs` never exits (log stops after
-  `admin-system-streams.png`): `taskkill /PID <that msedge> /T /F` and the run goes on.
+  `admin-playback-streams.png`): `taskkill /PID <that msedge> /T /F` and the run goes on.
 - After a client change, the run's first build fails once ("build failed": `No file exists for the asset …
   wwwroot\chunk-….js`, the static web assets list still names the previous build's chunks): run it again. A single-scene run without `--shots-only` still reseeds everything (and re-saves
   `setup-page.png`).

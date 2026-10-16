@@ -3,18 +3,24 @@
 **Administration** in the [⋮ menu](../user-guide/signing-in.md#the--menu) opens the administration page: the settings,
 the tag list, duplicates, accounts, background tasks, the server's log and your own account.
 
-![The administration page](../images/admin-interface-browsing.png)
+![The administration page](../images/admin-overview.png)
 
-The sidebar groups the sections; the section open lists its pages under it. The arrow at the top left goes back to the
-folder you came from, scrolled where you left it.
+It opens on the overview: every section you may use, by group, as a card saying what it holds, with links to its
+pages. The sidebar lists the same sections, **My account** first; the section open lists its pages under it. The arrow
+at the top left goes back to the folder you came from, scrolled where you left it. An account that can only change its
+own preferences and password goes straight to **My account**.
+
+![A page of the administration](../images/admin-interface-browsing.png)
 
 Breadcrumbs above the page's title say where you are (**Administration › Library › Tags › All tags**) and follow you
-from page to page: click the section to open its first page, or **Administration** to go back to the first section.
+from page to page: click the section to open its first page, the group to see its sections on the overview, or
+**Administration** for the whole overview. Under the title, a line says what the page holds.
 
 | Group | Section | Pages |
 |---|---|---|
-| Preferences | [Interface](interface.md) | Appearance, Browsing, Search |
-| | [Playback](playback.md) | video player, external player, data server |
+| Account | [My account](my-account.md) | Preferences, Password |
+| Viewing | [Interface](interface.md) | Appearance, Browsing, Search |
+| | [Playback](playback.md) | Player, Streaming, Video streams |
 | Library | [Scanning](scanning.md) | What to scan, File types, Indexing |
 | | [Tags](tags.md) | All tags, Settings |
 | | [Duplicates & moves](duplicates-and-moves.md) | Duplicates, Similar videos, Moved files, Settings |
@@ -24,11 +30,24 @@ from page to page: click the section to open its first page, or **Administration
 | Access | [Spaces & accounts](spaces-and-accounts.md) | Spaces, Accounts |
 | Server | [Background tasks](background-tasks.md) | Tasks, Schedules, History, Settings |
 | | [Logs](logs.md) | Log, Settings |
-| | [System](system.md) | version, API reference, shutdown/dismount |
-| Account | [My account](my-account.md) | Preferences, Password |
+| | [System](system.md) | About, Installation, Start-up, Maintenance |
+
+Addresses of pages that moved (a bookmark of the old **System › Video streams**, now **Playback › Video streams**)
+still open them.
 
 Each page shows only to the accounts with its [right](../reference/rights.md): an account without any right to change
 something sees only **My account**, a visitor without an account no administration page at all.
+
+## Finding a setting
+
+![Searching the administration page](../images/admin-search.png)
+
+The box above the sections finds the settings and pages whose name, description or choices hold every word you type
+(upper or lower case and accents don't matter; a setting's configuration key, like `browse.defaultPageSize`, works
+too). What is found replaces the sections while you type, the names first, each with where it is
+(**Interface › Browsing › Resolution and duration**). Click one, or press **Enter** for the first, to open its page: a
+setting is scrolled into view, briefly highlighted and ready to change, the full view shown when it is one of the less
+used ones. The **✕** in the box, or **Esc**, empties it and brings the sections back. Only what you are allowed to see is searched.
 
 ## Settings pages
 
@@ -59,6 +78,6 @@ sign-in. Set them in the [configuration](../configuration.md).
 <img src="../images/phone-admin.png" alt="The administration page on a phone" width="300">
 <img src="../images/phone-admin-section.png" alt="A section on a phone, with its breadcrumbs and pages as chips" width="300">
 
-On phones the page opens on the list of sections, each one then a page of its own with a back arrow to the list and its
-pages as chips at the top. The breadcrumbs leave the group out there, and **Administration** in them returns to the list
+On phones the page opens on the list of sections, with the search box at its top, each one then a page of its own with a
+back arrow to the list and its pages as chips at the top. The breadcrumbs leave the group out there, and **Administration** in them returns to the list
 of sections.

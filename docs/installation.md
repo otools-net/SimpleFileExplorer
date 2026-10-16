@@ -179,4 +179,4 @@ provides https (Caddy, nginx, Traefik, IIS, your NAS's): passwords and the sign-
 
 The application never calls an external service. The web client and the API reference are served by the app itself,
 with no CDN, web fonts, telemetry or online validator. The only outbound connections are the ones you configure: the
-database server, and the [data server](administration/playback.md#streaming-data-server) when it is set.
+database server, and the [data server](administration/playback.md#data-server) when it is set.

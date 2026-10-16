@@ -9,7 +9,7 @@ import { ToastService } from '../core/toast.service';
 import { ListingStore } from '../library/listing.store';
 import { ApiMock, buttonNamed, adminPageProviders, deferred, fakeConfig, loadConfig, mockApi, setMediaQuery, settingsValues, settle, tag, type } from '../../testing/fakes';
 import { setValue } from '../settings/settings-schema';
-import { ADMIN_GROUPS, ADMIN_SECTIONS } from './admin-sections';
+import { ADMIN_GROUPS, ADMIN_SECTIONS, groupId } from './admin-sections';
 
 let api: ApiMock;
 let harness: RouterTestingHarness;
@@ -53,20 +53,45 @@ afterEach(() => vi.restoreAllMocks());
 describe('AdminPageComponent', () => {
     beforeEach(() => setUp());
 
-    it('lists its sections by group, and opens on the first sub-page of the first one', async () => {
+    it('lists its sections by group, and opens on their overview, as cards with their sub-pages', async () => {
         await open('/admin');
 
         expect([...element.querySelectorAll('.admin-nav h2')].map(h => h.textContent)).toEqual(ADMIN_GROUPS.map(g => g.title));
         expect([...element.querySelectorAll('.admin-nav > ul > li > a')].map(a => a.querySelector('span')!.textContent)).toEqual(ADMIN_SECTIONS.map(s => s.title));
-        expect(eyebrow()).toBe('Interface');
-        expect(heading()).toBe('Appearance');
-        expect(navItem('Interface').classList).toContain('open');
+        expect(heading()).toBe('Administration');
+        expect(element.querySelector('.admin-crumbs')).toBeNull();
+        expect(element.querySelector('.admin-nav a.open, .admin-nav [aria-current]')).toBeNull();
+        expect(subItems()).toHaveLength(0);
+        expect(document.title).toBe('Administration – SFE');
+
+        expect([...element.querySelectorAll('.admin-overview h3')].map(h => h.id)).toEqual(ADMIN_GROUPS.map(g => groupId(g.title)));
+        const cards = [...element.querySelectorAll('.admin-card')];
+        expect(cards.map(c => c.querySelector('.admin-card-title span')!.textContent)).toEqual(ADMIN_SECTIONS.map(s => s.title));
+        const playback = cards.find(c => c.querySelector('.admin-card-title span')!.textContent === 'Playback')!;
+        expect(playback.querySelector('p')!.textContent).toBe(ADMIN_SECTIONS.find(s => s.id === 'playback')!.description);
+        expect([...playback.querySelectorAll('.admin-card-pages a')].map(a => a.textContent!.trim())).toEqual(['Player', 'Streaming', 'Video streams']);
+        // A section with one page has no page links.
+        expect(cards.find(c => c.textContent!.includes('Thumbnails'))!.querySelector('.admin-card-pages')).toBeNull();
+
+        [...playback.querySelectorAll<HTMLAnchorElement>('.admin-card-pages a')][1].click();
+        await settle();
+        expect(url()).toBe('/admin?section=playback&page=streaming');
+        expect(heading()).toBe('Streaming');
+    });
+
+    it('opens on the first sub-page of a section', async () => {
+        await open('/admin?section=account');
+
+        expect(ADMIN_SECTIONS[0].id).toBe('account');
+        expect(eyebrow()).toBe('My account');
+        expect(heading()).toBe('Preferences');
+        expect(navItem('My account').classList).toContain('open');
         // Only the open section lists its sub-pages, the current one marked.
-        expect(subItems().map(a => a.textContent!.trim())).toEqual(['Appearance', 'Browsing', 'Search']);
-        expect(currentSubItem().textContent!.trim()).toBe('Appearance');
-        expect(navItem('Interface').getAttribute('aria-current')).toBeNull();
+        expect(subItems().map(a => a.textContent!.trim())).toEqual(['Preferences', 'Password']);
+        expect(currentSubItem().textContent!.trim()).toBe('Preferences');
+        expect(navItem('My account').getAttribute('aria-current')).toBeNull();
         expect(chips()).toHaveLength(0);
-        expect(document.title).toBe('Appearance – Interface – Administration – SFE');
+        expect(document.title).toBe('Preferences – My account – Administration – SFE');
     });
 
     it('lists nothing under a section with a single page', async () => {
@@ -100,6 +125,28 @@ describe('AdminPageComponent', () => {
         expect(eyebrow()).toBe('Tags');
     });
 
+    it('opens a sub-page that moved from its earlier address, in place of it', async () => {
+        await open('/admin?section=system&page=streams', { sfeFromLibrary: true });
+
+        expect(url()).toBe('/admin?section=playback&page=streams');
+        expect(heading()).toBe('Video streams');
+        expect(element.querySelector('sfe-video-streams')).not.toBeNull();
+        expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true }));
+
+        await open('/admin?section=playback&page=settings');
+        expect(url()).toBe('/admin?section=playback');
+        expect(heading()).toBe('Player');
+    });
+
+    it('describes the sub-page shown, the section when it has a single one', async () => {
+        const system = ADMIN_SECTIONS.find(s => s.id === 'system')!;
+        await open('/admin?section=system&page=maintenance');
+        expect(element.querySelector('.admin-head p')!.textContent).toBe(system.subpages.find(p => p.id === 'maintenance')!.description);
+
+        await open('/admin?section=thumbnails');
+        expect(element.querySelector('.admin-head p')!.textContent).toBe(ADMIN_SECTIONS.find(s => s.id === 'thumbnails')!.description);
+    });
+
     it('moves between sections and sub-pages, keeping "back" to where it was opened from', async () => {
         await open('/admin', { sfeFromLibrary: true });
 
@@ -124,9 +171,9 @@ describe('AdminPageComponent', () => {
     });
 
     it('follows the sections and sub-pages in its breadcrumbs, which lead back up', async () => {
-        await open('/admin', { sfeFromLibrary: true });
-        expect(crumbs()).toEqual(['Administration', 'Preferences', 'Interface', 'Appearance']);
-        expect(element.querySelector('.admin-crumbs [aria-current=page]')!.textContent).toBe('Appearance');
+        await open('/admin?section=account', { sfeFromLibrary: true });
+        expect(crumbs()).toEqual(['Administration', 'Account', 'My account', 'Preferences']);
+        expect(element.querySelector('.admin-crumbs [aria-current=page]')!.textContent).toBe('Preferences');
 
         navItem('Background tasks').click();
         await settle();
@@ -140,10 +187,20 @@ describe('AdminPageComponent', () => {
         expect(crumbs()).toEqual(['Administration', 'Server', 'Background tasks', 'Tasks']);
         expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true }));
 
+        const scroll = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => { });
+        element.querySelector<HTMLAnchorElement>('.admin-crumbs li:nth-child(2) a')!.click();
+        await settle();
+        expect(url()).toBe('/admin#admin-group-server');
+        expect(heading()).toBe('Administration');
+        expect(scroll.mock.contexts[0]).toBe(element.querySelector('#admin-group-server'));
+        expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true }));
+
+        navItem('Logs').click();
+        await settle();
         element.querySelector<HTMLAnchorElement>('.admin-crumbs li:first-child a')!.click();
         await settle();
         expect(url()).toBe('/admin');
-        expect(heading()).toBe('Appearance');
+        expect(element.querySelector('.admin-overview')).not.toBeNull();
         expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true }));
     });
 
@@ -257,6 +314,114 @@ describe('AdminPageComponent', () => {
     });
 });
 
+describe('AdminPageComponent search', () => {
+    beforeEach(() => setUp());
+
+    const box = () => element.querySelector<HTMLInputElement>('.admin-search input')!;
+    const results = () => [...element.querySelectorAll<HTMLAnchorElement>('.admin-search-results a')];
+    const titles = () => results().map(a => a.querySelector('.admin-search-title')!.textContent!.trim());
+    const count = () => element.querySelector('.admin-search-count')!.textContent!.trim();
+    async function search(text: string): Promise<void> {
+        type(box(), text);
+        await settle();
+    }
+    async function press(key: string): Promise<void> {
+        box().dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+        await settle();
+    }
+
+    it('lists the settings and pages found in place of the sections, the words marked', async () => {
+        await open('/admin');
+
+        await search('high RESOLUTION');
+
+        expect(element.querySelector('.admin-nav h2')).toBeNull();
+        expect(titles().slice(0, 3)).toEqual(['Mark high and low resolution', 'Photos are high resolution from (pixels)', 'Videos are high resolution from (pixels)']);
+        expect(results()[0].querySelector('.admin-search-where')!.textContent).toBe('Interface › Browsing › Resolution and duration');
+        expect([...results()[0].querySelectorAll('.admin-search-title mark')].map(m => m.textContent)).toEqual(['high', 'resolution']);
+        expect(count()).toBe(`${results().length} found`);
+
+        await search('nothing like this');
+        expect(results()).toHaveLength(0);
+        expect(count()).toBe('Nothing found');
+
+        await press('Escape');
+        expect(box().value).toBe('');
+        expect(element.querySelector('.admin-search-results')).toBeNull();
+        expect(navItem('Interface')).toBeDefined();
+    });
+
+    it('clears the search with its button, shown only while there is text', async () => {
+        await open('/admin');
+        const clear = () => element.querySelector<HTMLButtonElement>('.admin-search [aria-label="Clear the search"]');
+        expect(clear()).toBeNull();
+
+        await search('trickplay');
+        clear()!.click();
+        await settle();
+
+        expect(box().value).toBe('');
+        expect(document.activeElement).toBe(box());
+        expect(element.querySelector('.admin-search-results')).toBeNull();
+        expect(navItem('Interface')).toBeDefined();
+        expect(clear()).toBeNull();
+    });
+
+    it('opens a setting found, in the full view when the simple one hides it, and focuses it', async () => {
+        await open('/admin', { sfeFromLibrary: true });
+        expect(localStorage.getItem('sfe.settings.showAll')).toBeNull();
+
+        await search('largest');
+        const largest = results().find(a => a.querySelector('.admin-search-where')!.textContent === 'Interface › Browsing › Listings')!;
+        largest.click();
+        await settle();
+
+        expect(url()).toBe('/admin?section=interface&page=browsing');
+        expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true }));
+        const field = element.querySelector<HTMLInputElement>('#setting-browse-maxPageSize')!;
+        expect(field.closest<HTMLElement>('.field')!.hidden).toBe(false);
+        expect(document.activeElement).toBe(field);
+        expect(field.closest('.field')!.classList).toContain('setting-found');
+        // Shown for this once: the browser's choice is not changed.
+        expect(localStorage.getItem('sfe.settings.showAll')).toBeNull();
+        // The results stay, to open another one.
+        expect(titles()).toContain('Largest page');
+    });
+
+    it('opens the first page found with Enter', async () => {
+        await open('/admin');
+
+        await search('similar');
+        await press('Enter');
+
+        expect(url()).toBe('/admin?section=tracking&page=similar');
+        expect(heading()).toBe('Similar videos');
+    });
+
+    it('finds only in the sections the session has rights for', async () => {
+        TestBed.resetTestingModule();
+        await setUp({ rights: [Rights.browse, Rights.ownPassword, Rights.ownPreferences], user: { id: 2, userName: 'alice', displayName: null, kind: 'user', isServerAdmin: false, local: true } });
+        await open('/admin');
+
+        await search('password');
+        expect(titles()).toEqual(['Password', 'My account']);
+        await search('resolution');
+        expect(results()).toHaveLength(0);
+    });
+
+    it('searches from the list of sections on phones', async () => {
+        setMediaQuery('(max-width: 760px)', true);
+        await open('/admin', { sfeFromLibrary: true });
+
+        await search('trickplay');
+        results()[0].click();
+        await settle();
+
+        expect(url()).toBe('/admin?section=trickplay');
+        expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true, sfeFromList: true }));
+    });
+});
+
 describe('AdminPageComponent opened directly', () => {
     it('loads the configuration, and says when the server can\'t be reached', async () => {
         api = mockApi();
@@ -301,37 +466,40 @@ describe('SystemSectionComponent', () => {
         expect(element.querySelector('.system-facts')!.textContent).toContain('SFE 1.2.3');
         expect(element.querySelector('.system-facts code')!.textContent).toBe('abc1234');
         expect(element.querySelector<HTMLAnchorElement>('a[href="api/docs"]')).not.toBeNull();
+        // Backups and the server commands are on Maintenance.
+        expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
+        expect(element.textContent).not.toContain('Server commands');
     });
 
     it('offers a backup of the databases and configuration files to those with the right', async () => {
         await setUp();
-        await open('/admin?section=system');
+        await open('/admin?section=system&page=maintenance');
         const link = element.querySelector<HTMLAnchorElement>('a[href="api/system/backup"]');
         expect(link?.hasAttribute('download')).toBe(true);
         expect(link?.title).toContain('backup');
 
         TestBed.resetTestingModule();
         await setUp({ rights: [Rights.apiDocs] });
-        await open('/admin?section=system');
+        await open('/admin?section=system&page=maintenance');
         expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
     });
 
     it('shows the server commands only when they are on', async () => {
         await commands({});
-        await open('/admin?section=system');
+        await open('/admin?section=system&page=maintenance');
         expect(buttonNamed(element, 'Shut down server')).toBeUndefined();
         expect(element.textContent).toContain('None configured.');
 
         TestBed.resetTestingModule();
         await commands({ shutdown: true, dismount: true });
-        await open('/admin?section=system');
+        await open('/admin?section=system&page=maintenance');
         expect(buttonNamed(element, 'Shut down server')).toBeDefined();
         expect(buttonNamed(element, 'Dismount drives')).toBeDefined();
     });
 
     it('runs a server command after asking, with what it answered', async () => {
         await commands({ shutdown: true, dismount: true });
-        await open('/admin?section=system');
+        await open('/admin?section=system&page=maintenance');
         const show = vi.spyOn(TestBed.inject(ToastService), 'show');
         vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValue(true);
         api.shutdown.mockResolvedValue({ output: 'Bye' });
@@ -350,7 +518,7 @@ describe('SystemSectionComponent', () => {
 
     it('reports a command that failed', async () => {
         await commands({ shutdown: true });
-        await open('/admin?section=system');
+        await open('/admin?section=system&page=maintenance');
         const error = vi.spyOn(TestBed.inject(ToastService), 'error');
         vi.spyOn(window, 'confirm').mockReturnValue(true);
         api.shutdown.mockRejectedValue(new ApiError(409, 'Shutdown is disabled.'));
@@ -396,7 +564,7 @@ describe('AdminPageComponent by rights and levels', () => {
         api.settings.mockResolvedValue(view('tenant'));
         await open('/admin');
 
-        expect(heading()).toBe('Playback');
+        expect(heading()).toBe('Player');
         expect(element.querySelector('.settings-level')).toBeNull();
         expect(api.settings).toHaveBeenCalledWith('tenant');
     });
@@ -478,7 +646,7 @@ describe('AdminPageComponent by rights and levels', () => {
 
             expect(api.settings).toHaveBeenCalledWith('tenant');
             expect(seek().value).toBe('20');
-            expect(status()).toBe('Not saved yet: Playback');
+            expect(status()).toBe('Not saved yet: Playback › Player');
             expect(api.saveSettingChanges).not.toHaveBeenCalled();
         });
 
@@ -497,7 +665,7 @@ describe('AdminPageComponent by rights and levels', () => {
             await edit('20');
             await show('server');
             await edit('15');
-            expect(status()).toBe('Not saved yet: Playback; also in This space');
+            expect(status()).toBe('Not saved yet: Playback › Player; also in This space');
 
             buttonNamed(element, 'Save')!.click();
             await settle();
@@ -626,14 +794,15 @@ describe('AdminPageComponent by rights and levels', () => {
             'dataServer': { scope: 'server', editable: false },
         }));
         api.saveSettingChanges.mockResolvedValue(view('tenant', { 'player.loop': { lockable: true, locked: true } }));
-        await open('/admin?section=playback');
+        await open('/admin?section=playback&page=streaming');
         element.querySelector<HTMLInputElement>('.settings-show-all input')!.click();
         await settle();
+        expect(element.querySelector('#setting-dataServer')!.closest('.field')!.textContent).toContain('A setting of the whole server');
+        await open('/admin?section=playback');
 
         const seek = element.querySelector<HTMLInputElement>('#setting-player-seekSeconds')!;
         expect(seek.disabled).toBe(true);
         expect(seek.closest('.field')!.querySelector('.setting-lock-note')!.textContent).toContain('server\'s configuration');
-        expect(element.querySelector('#setting-dataServer')!.closest('.field')!.textContent).toContain('A setting of the whole server');
         const lock = element.querySelector('#setting-player-loop')!.closest('.setting-check')!.querySelector<HTMLInputElement>('.setting-lock input')!;
         expect(element.querySelector('#setting-player-loop')!.closest('.setting-check')!.textContent).toContain('Lock for users');
 

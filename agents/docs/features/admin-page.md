@@ -9,6 +9,15 @@ Code: `src/app/admin/` (`AdminPageComponent`, `admin-sections.ts`, `leave-admin-
 - Sections × sub-pages from `admin-sections.ts`, filtered by `visibleSections(canAny)` on each sub-page's `rights`;
   none = "Nothing to administer". The open section lists its sub-pages under it in the sidebar, phones show them as
   chips (`role=tab`) instead.
+- `/admin` without `section` is the overview (`overview()`: computers, more than one section seen): `.admin-card`s by
+  group, each linking to its section and sub-pages; no section is open in the sidebar then. A session seeing one
+  section (only My account) gets that section instead; phones get the list of sections.
+- Group headings of the overview have `groupId(group)` ids; the breadcrumbs' group links to `/admin#<id>` and an
+  effect scrolls to it (no router `anchorScrolling`).
+- A sub-page's `description` replaces the section's under the heading and in search results; sections with one
+  sub-page keep the section's.
+- Moving a sub-page: add `'oldSection/oldPage'` to `ADMIN_MOVED` (an effect replaces the URL) and never remove an
+  entry: bookmarks and history keep old addresses. Video streams moved from System to Playback this way.
 - Only the active sub-page is rendered, so sections poll from their constructor and stop on destroy.
 - Breadcrumbs (`.admin-crumbs` in `.admin-head`: Administration › group › section › sub-page) link with `stayState()`
   (keeps `sfeFromList`); on phones the group is hidden by CSS and Administration is a button running `back()`.

@@ -3,6 +3,24 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.49.0
+
+### Added
+
+- **Search on the administration page:** a box above the sections finds settings and pages by the words of their
+  names, descriptions and choices (or their configuration key). Opening a setting found shows its page, scrolled to
+  it, even when it is only in the full view.
+- **Overview of the administration page:** it opens on every section you may use as a card, by group, with links to
+  its pages; **Administration** and the group in the breadcrumbs lead back to it.
+- Each page of the administration says what it holds under its title.
+
+### Changed
+
+- **My account** is now the first section of the administration page.
+- **Administration reorganised:** the Preferences group is now **Viewing**; **Playback** has **Player**, **Streaming**
+  and **Video streams** (moved from System); **System › Maintenance** holds backups and the server commands, which
+  left **About**. Old addresses of moved pages still open them.
+
 ## 1.48.0
 
 ### Added

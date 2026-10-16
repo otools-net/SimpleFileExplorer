@@ -169,8 +169,8 @@ export const TABS: SettingTab[] = [
         ],
     },
     {
-        id: 'playback',
-        title: 'Playback',
+        id: 'player',
+        title: 'Player',
         groups: [
             {
                 title: 'Video player',
@@ -195,8 +195,14 @@ export const TABS: SettingTab[] = [
                         hint: 'The player gets a link of its own to the file, working without signing in, for this long: long enough to watch a whole film, as players ask again at each seek. A new password or a disabled account ends the links it gave out.' },
                 ],
             },
+        ],
+    },
+    {
+        id: 'streaming',
+        title: 'Streaming',
+        groups: [
             {
-                title: 'Streaming',
+                title: 'Data server',
                 fields: [
                     { key: 'dataServer', label: 'Data server', type: 'text', placeholder: 'Empty: SFE streams the files',
                         hint: 'Optional http:// or https:// address of another web server that already publishes the library. Files then open from there instead of being streamed by SFE. The file\'s path is added after the address, or put where you write {url} (e.g. http://nas/files/{url}?raw=1); {encodedUrl} is the same path fully percent-encoded, slashes too (e.g. http://nas/get?file={encodedUrl}).' },
@@ -204,7 +210,7 @@ export const TABS: SettingTab[] = [
             },
             {
                 title: 'Videos converted by the server',
-                hint: 'Needs ffmpeg on the server (System › About tells whether it was found). Converted videos play as H.264 with AAC sound, which every browser plays; the conversion keeps the server\'s processor busy while someone watches. System › Video streams lists those being converted.',
+                hint: 'Needs ffmpeg on the server (System › About tells whether it was found). Converted videos play as H.264 with AAC sound, which every browser plays; the conversion keeps the server\'s processor busy while someone watches. Playback › Video streams lists those being converted.',
                 fields: [
                     { key: 'streaming.mode', label: 'Convert videos', type: 'select',
                         options: [['fallback', 'When the browser can\'t play them'], ['always', 'Always'], ['off', 'Never']],

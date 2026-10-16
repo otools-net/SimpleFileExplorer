@@ -165,7 +165,7 @@ describe('settings on the administration page', () => {
         expect(control('browse.defaultPageSize').value).toBe('250');
         await go('search');
         expect(control('search.explain').checked).toBe(true);
-        await go('playback');
+        await go('streaming');
         expect(control('dataServer').value).toBe('');
         await go('appearance');
         expect(control<HTMLSelectElement>('appearance.theme').value).toBe('light');
@@ -228,8 +228,9 @@ describe('settings on the administration page', () => {
         expect(bar('Save')!.disabled).toBe(true);
 
         type(control('browse.defaultPageSize'), '300');
-        await go('playback');
+        await go('streaming');
         type(control('dataServer'), '   ');
+        await go('player');
         type(control('player.externalName'), '  VLC  ');
         await go('search');
         control('search.explain').click();
@@ -238,7 +239,7 @@ describe('settings on the administration page', () => {
         await go('fileTypes');
         type(control('fileTypes.videos'), '.mp4,  .mkv  .webm,,');
         await settle();
-        expect(status()).toBe('Not saved yet: Interface › Browsing, Interface › Search, Playback, Scanning › What to scan, Scanning › File types');
+        expect(status()).toBe('Not saved yet: Interface › Browsing, Interface › Search, Playback › Player, Playback › Streaming, Scanning › What to scan, Scanning › File types');
         // Marked on the sections, and on the sub-pages of the open one.
         expect(navItem('Interface').querySelector('.admin-mark')).not.toBeNull();
         expect(navItem('Playback').querySelector('.admin-mark')).not.toBeNull();
@@ -291,7 +292,7 @@ describe('settings on the administration page', () => {
         await open();
 
         type(control('browse.defaultPageSize'), '');
-        await go('playback');
+        await go('player');
         type(control('player.seekSeconds'), '2.5');
         await settle();
         await save();
@@ -385,14 +386,14 @@ describe('settings on the administration page', () => {
     describe('external player presets', () => {
         it('fills the link and the name from a preset, and empties them for none', async () => {
             api.saveSettingChanges.mockImplementation(answer);
-            await open(view(), 'playback');
+            await open(view(), 'player');
 
             await select('player.externalPreset', '0');
             await save();
             expect(sent()['player.externalUrl']).toBe(EXTERNAL_PLAYERS[0][2]);
             expect(sent()['player.externalName']).toBe(EXTERNAL_PLAYERS[0][1]);
 
-            await open(view({ 'player.externalUrl': 'vlc://{url}', 'player.externalName': 'VLC' }), 'playback');
+            await open(view({ 'player.externalUrl': 'vlc://{url}', 'player.externalName': 'VLC' }), 'player');
             await select('player.externalPreset', '');
             await save();
             expect(sent()['player.externalUrl']).toBeNull();
@@ -402,19 +403,19 @@ describe('settings on the administration page', () => {
         it('shows the preset matching the link, "Custom…" for another link, none without one', async () => {
             const preset = () => control<HTMLSelectElement>('player.externalPreset').value;
 
-            await open(view({ 'player.externalUrl': ` ${EXTERNAL_PLAYERS[4][2]} ` }), 'playback');
+            await open(view({ 'player.externalUrl': ` ${EXTERNAL_PLAYERS[4][2]} ` }), 'player');
             expect(preset()).toBe('4');
 
-            await open(view({ 'player.externalUrl': 'myplayer://{url}' }), 'playback');
+            await open(view({ 'player.externalUrl': 'myplayer://{url}' }), 'player');
             expect(preset()).toBe('custom');
 
-            await open(view({ 'player.externalUrl': null }), 'playback');
+            await open(view({ 'player.externalUrl': null }), 'player');
             expect(preset()).toBe('');
         });
 
         it('disables the link and the name while the choice is none', async () => {
             const disabled = () => [control<HTMLInputElement>('player.externalUrl').disabled, control<HTMLInputElement>('player.externalName').disabled];
-            await open(view({ 'player.externalUrl': null }), 'playback');
+            await open(view({ 'player.externalUrl': null }), 'player');
             expect(disabled()).toEqual([true, true]);
 
             await select('player.externalPreset', '0');
@@ -423,13 +424,13 @@ describe('settings on the administration page', () => {
             await select('player.externalPreset', '');
             expect(disabled()).toEqual([true, true]);
 
-            await open(view({ 'player.externalUrl': 'myplayer://{url}' }), 'playback');
+            await open(view({ 'player.externalUrl': 'myplayer://{url}' }), 'player');
             expect(disabled()).toEqual([false, false]);
         });
 
         it('keeps "Custom…" with an empty link, so that one can be written', async () => {
             const preset = () => control<HTMLSelectElement>('player.externalPreset').value;
-            await open(view({ 'player.externalUrl': null }), 'playback');
+            await open(view({ 'player.externalUrl': null }), 'player');
 
             await select('player.externalPreset', 'custom');
             expect(preset()).toBe('custom');
@@ -443,7 +444,7 @@ describe('settings on the administration page', () => {
         });
 
         it('shows the link field to write a custom one', async () => {
-            await open(view(), 'playback');
+            await open(view(), 'player');
             expect(showAll().checked).toBe(false);
 
             await select('player.externalPreset', 'custom');

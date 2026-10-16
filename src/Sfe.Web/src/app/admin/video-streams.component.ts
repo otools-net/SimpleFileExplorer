@@ -6,7 +6,7 @@ import { StreamActivity, StreamingStatus } from '../core/models';
 const REFRESH_MS = 2000;
 
 const MODES: Record<StreamingStatus['mode'], string> = {
-    off: 'Turned off in this space: videos the browser can\'t play are not converted (Playback › Settings).',
+    off: 'Turned off in this space: videos the browser can\'t play are not converted (Playback › Streaming).',
     fallback: 'Videos the browser can\'t play are converted while they play.',
     always: 'Every video is converted while it plays.',
 };
@@ -22,7 +22,7 @@ interface Row {
 }
 
 /**
- * System › Video streams on the administration page: the videos the server converts with ffmpeg at the moment, in every
+ * Playback › Video streams on the administration page: the videos the server converts with ffmpeg at the moment, in every
  * space, with who watches them (`server.streams`). Refreshed while shown.
  */
 @Component({

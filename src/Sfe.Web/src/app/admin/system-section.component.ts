@@ -6,24 +6,56 @@ import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { IconComponent } from '../shared/icon.component';
 import { InstallationSectionComponent } from './installation-section.component';
-import { VideoStreamsComponent } from './video-streams.component';
 
 /**
  * "System" on the administration page. About (`tab` = `about`): the server's version, the library's folder and ffmpeg
- * (`server.settings`), the API reference, backups (`server.backup`), and the server commands when they are configured.
- * Installation (`installation`): the library folder, network and ffmpeg, behind the setup code (`server.settings`).
- * Video streams (`streams`): the videos the server converts now (`server.streams`). (Each browser's own theme is in Interface › Appearance, next to the default one.)
+ * (`server.settings`) and the API reference. Installation (`installation`): the library folder, network and ffmpeg,
+ * behind the setup code (`server.settings`). Maintenance (`maintenance`): backups (`server.backup`) and the server
+ * commands when they are configured. (The videos the server converts are in Playback › Video streams.)
  */
 @Component({
     selector: 'sfe-system-section',
-    imports: [IconComponent, InstallationSectionComponent, VideoStreamsComponent],
+    imports: [IconComponent, InstallationSectionComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'settings-panel system-section' },
     template: `
-        @if (tab() === 'streams') {
-            <sfe-video-streams />
-        } @else if (tab() === 'installation') {
+        @if (tab() === 'installation') {
             <sfe-installation-section />
+        } @else if (tab() === 'maintenance') {
+            @if (canBackup()) {
+                <section class="settings-group">
+                    <header class="settings-group-head">
+                        <h3>Backup</h3>
+                        <p class="field-hint">
+                            A zip file of the databases (accounts, spaces, and every library's index and tags) and of the configuration
+                            files. Thumbnails and trickplay are left out: they are made again. It holds password hashes and connection
+                            strings: keep it somewhere safe.
+                        </p>
+                    </header>
+                    <div class="settings-action inline">
+                        <a class="button small" href="api/system/backup" download title="Download a backup of the databases and configuration files (zip)"><svg sfeIcon="download"></svg>Download a backup</a>
+                    </div>
+                </section>
+            }
+
+            <section class="settings-group">
+                <header class="settings-group-head">
+                    <h3>Server commands</h3>
+                    <p class="field-hint">Commands of the server's computer, set in its configuration file. Each asks first.</p>
+                </header>
+                @if (hasCommands()) {
+                    <div class="settings-action inline">
+                        @if (config()?.features?.dismount) {
+                            <button type="button" class="button small" title="Run the server command that dismounts the drives (asks first)" (click)="dismount()"><svg sfeIcon="eject"></svg>Dismount drives</button>
+                        }
+                        @if (config()?.features?.shutdown) {
+                            <button type="button" class="button small danger" title="Run the server command that shuts it down (asks first)" (click)="shutdown()"><svg sfeIcon="power"></svg>Shut down server</button>
+                        }
+                    </div>
+                } @else {
+                    <p class="muted">None configured.</p>
+                }
+            </section>
         } @else {
             <section class="settings-group">
                 <header class="settings-group-head"><h3>Server</h3></header>
@@ -62,41 +94,6 @@ import { VideoStreamsComponent } from './video-streams.component';
                     <a class="button small" href="api/docs" target="_blank" rel="noopener" title="Documentation of the server API, in a new tab"><svg sfeIcon="docs"></svg>API reference</a>
                 </div>
             </section>
-
-            @if (canBackup()) {
-                <section class="settings-group">
-                    <header class="settings-group-head">
-                        <h3>Backup</h3>
-                        <p class="field-hint">
-                            A zip file of the databases (accounts, spaces, and every library's index and tags) and of the configuration
-                            files. Thumbnails and trickplay are left out: they are made again. It holds password hashes and connection
-                            strings: keep it somewhere safe.
-                        </p>
-                    </header>
-                    <div class="settings-action inline">
-                        <a class="button small" href="api/system/backup" download title="Download a backup of the databases and configuration files (zip)"><svg sfeIcon="download"></svg>Download a backup</a>
-                    </div>
-                </section>
-            }
-
-            <section class="settings-group">
-                <header class="settings-group-head">
-                    <h3>Server commands</h3>
-                    <p class="field-hint">Commands of the server's computer, set in its configuration file. Each asks first.</p>
-                </header>
-                @if (hasCommands()) {
-                    <div class="settings-action inline">
-                        @if (config()?.features?.dismount) {
-                            <button type="button" class="button small" title="Run the server command that dismounts the drives (asks first)" (click)="dismount()"><svg sfeIcon="eject"></svg>Dismount drives</button>
-                        }
-                        @if (config()?.features?.shutdown) {
-                            <button type="button" class="button small danger" title="Run the server command that shuts it down (asks first)" (click)="shutdown()"><svg sfeIcon="power"></svg>Shut down server</button>
-                        }
-                    </div>
-                } @else {
-                    <p class="muted">None configured.</p>
-                }
-            </section>
         }
     `,
 })
@@ -107,7 +104,7 @@ export class SystemSectionComponent {
     protected readonly config = this.configService.config;
     protected readonly canBackup = computed(() => this.configService.can(Rights.backup));
 
-    /** The sub-page: `about`, `installation` or `streams`. */
+    /** The sub-page: `about`, `installation` or `maintenance`. */
     readonly tab = input('about');
 
     /** Where the library is and the ffmpeg found: for server administrators (`server.settings`). */

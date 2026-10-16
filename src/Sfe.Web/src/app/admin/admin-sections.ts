@@ -3,7 +3,8 @@
  * with its sub-pages listed under it (on phones, as chips above the page). A sub-page with `settings` shows that tab of
  * settings-schema.ts; the others show the section's tools (the tag list, duplicates, the background tasks...). Every
  * tab of settings-schema.ts belongs to exactly one sub-page. A sub-page shows to those with one of its `rights`
- * (/api/config); a section with none of its sub-pages left is not listed.
+ * (/api/config); a section with none of its sub-pages left is not listed. My account comes first: everyone has it.
+ * `/admin` without a section is the overview of the sections (on phones, their list).
  */
 
 import { Right, Rights, SETTINGS_RIGHTS } from '../core/rights';
@@ -11,6 +12,8 @@ import { Right, Rights, SETTINGS_RIGHTS } from '../core/rights';
 export interface AdminSubpage {
     id: string;
     title: string;
+    /** Under its title, instead of the section's description; a section with a single sub-page shows its own. */
+    description?: string;
     /** The id of the tab of settings-schema.ts it shows. */
     settings?: string;
     /** Rights, one of which shows it. */
@@ -28,30 +31,45 @@ export interface AdminSection {
 }
 
 /** The settings of a tab: those with its section's right in the library, and server administrators. */
-const settingsPage = (settings: string, title = 'Settings', id = 'settings'): AdminSubpage =>
-    ({ id, title, settings, rights: [SETTINGS_RIGHTS[settings], Rights.serverSettings] });
-const page = (id: string, title: string, ...rights: Right[]): AdminSubpage => ({ id, title, rights });
+const settingsPage = (settings: string, description?: string, title = 'Settings', id = 'settings'): AdminSubpage =>
+    ({ id, title, description, settings, rights: [SETTINGS_RIGHTS[settings], Rights.serverSettings] });
+const page = (id: string, title: string, description: string, ...rights: Right[]): AdminSubpage => ({ id, title, description, rights });
 
 export const ADMIN_SECTIONS: AdminSection[] = [
     {
+        id: 'account',
+        group: 'Account',
+        title: 'My account',
+        icon: 'user',
+        description: 'Your own preferences, kept by the server for every device you sign in on, and your password.',
+        subpages: [
+            page('preferences', 'Preferences', 'Your own choices over the space\'s settings, kept by the server for every device you sign in on.', Rights.ownPreferences),
+            page('password', 'Password', 'The password you sign in with.', Rights.ownPassword),
+        ],
+    },
+    {
         id: 'interface',
-        group: 'Preferences',
+        group: 'Viewing',
         title: 'Interface',
         icon: 'theme',
         description: 'Colors, listings and the search box: the defaults of the library and of the server.',
         subpages: [
-            settingsPage('appearance', 'Appearance', 'appearance'),
-            settingsPage('browsing', 'Browsing', 'browsing'),
-            settingsPage('search', 'Search', 'search'),
+            settingsPage('appearance', 'The default theme, and this browser\'s own.', 'Appearance', 'appearance'),
+            settingsPage('browsing', 'How many items a listing loads, the pictures on folders, and the resolutions and durations shown.', 'Browsing', 'browsing'),
+            settingsPage('search', 'How many results a search loads, its wording as you type, and the searches remembered.', 'Search', 'search'),
         ],
     },
     {
         id: 'playback',
-        group: 'Preferences',
+        group: 'Viewing',
         title: 'Playback',
         icon: 'play',
-        description: 'The video player, an app to open videos in, and where files are streamed from.',
-        subpages: [settingsPage('playback')],
+        description: 'The video player, an app to open videos in, and how videos reach the browser: from a data server, or converted by this one.',
+        subpages: [
+            settingsPage('player', 'The player\'s jumps and loop, and the app the viewer\'s ▶ button opens videos and audio in.', 'Player', 'player'),
+            settingsPage('streaming', 'Where files are streamed from, and how the server converts the videos a browser can\'t play.', 'Streaming', 'streaming'),
+            page('streams', 'Video streams', 'The videos the server converts now, in every space, and who watches them.', Rights.viewStreams),
+        ],
     },
     {
         id: 'scanning',
@@ -60,9 +78,9 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         icon: 'scan',
         description: 'What scans leave out, which files are photos, videos and audio, and what scans read from them.',
         subpages: [
-            settingsPage('skipped', 'What to scan', 'skipped'),
-            settingsPage('fileTypes', 'File types', 'types'),
-            settingsPage('indexing', 'Indexing', 'indexing'),
+            settingsPage('skipped', 'The folders and files scans leave out, and hidden items.', 'What to scan', 'skipped'),
+            settingsPage('fileTypes', 'Which extensions are photos, videos and audio.', 'File types', 'types'),
+            settingsPage('indexing', 'What scans read from files (fingerprints, resolutions, durations), and how many folders at once.', 'Indexing', 'indexing'),
         ],
     },
     {
@@ -71,7 +89,10 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         title: 'Tags',
         icon: 'tag',
         description: 'Create, edit and delete tags; the tag sidebar and its history.',
-        subpages: [page('list', 'All tags', Rights.manageTags), settingsPage('tags')],
+        subpages: [
+            page('list', 'All tags', 'Create, edit and delete the tags of the library.', Rights.manageTags),
+            settingsPage('tags', 'How many tags the sidebar shows, and the history of the tags given.'),
+        ],
     },
     {
         id: 'tracking',
@@ -80,10 +101,10 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         icon: 'copy',
         description: 'Identical files, similar videos, and tagged files that were moved or renamed.',
         subpages: [
-            page('duplicates', 'Duplicates', Rights.duplicates),
-            page('similar', 'Similar videos', Rights.similarVideos),
-            page('missing', 'Moved files', Rights.missingFiles),
-            settingsPage('tracking'),
+            page('duplicates', 'Duplicates', 'Groups of identical files, and removing the extra copies.', Rights.duplicates),
+            page('similar', 'Similar videos', 'Videos showing the same pictures in other files: another resolution, quality or format, or trimmed.', Rights.similarVideos),
+            page('missing', 'Moved files', 'Tagged files that are no longer where they were, and where they went.', Rights.missingFiles),
+            settingsPage('tracking', 'The smallest duplicates, how alike similar videos are, and how moved files keep their tags.'),
         ],
     },
     {
@@ -100,7 +121,10 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         title: 'Trickplay',
         icon: 'trickplay',
         description: 'Frames along each video, shown above the player\'s seek bar and when hovering a video.',
-        subpages: [page('activity', 'Activity', Rights.manageTrickplay), settingsPage('trickplay')],
+        subpages: [
+            page('activity', 'Activity', 'What the trickplay job works on, what waits, and what it did last.', Rights.manageTrickplay),
+            settingsPage('trickplay', 'Which videos get trickplay, its frames, and how much of the server it uses.'),
+        ],
     },
     {
         id: 'editor',
@@ -117,8 +141,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         icon: 'group',
         description: 'Who can sign in, which spaces they see, and what they may do in each. A space is one library with its own groups and accounts.',
         subpages: [
-            page('spaces', 'Spaces', Rights.manageTenants, Rights.manageMembers),
-            page('accounts', 'Accounts', Rights.manageUsers, Rights.manageMembers),
+            page('spaces', 'Spaces', 'Each space\'s library, groups, accounts and visitors.', Rights.manageTenants, Rights.manageMembers),
+            page('accounts', 'Accounts', 'Everyone who can sign in, with the spaces each one sees and their groups there.', Rights.manageUsers, Rights.manageMembers),
         ],
     },
     {
@@ -128,10 +152,10 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         icon: 'clock',
         description: 'What runs now, when each task runs next, the schedules that start them, and their logs.',
         subpages: [
-            page('tasks', 'Tasks', Rights.viewTasks),
-            page('schedules', 'Schedules', Rights.scheduleTasks),
-            page('history', 'History', Rights.viewTasks),
-            settingsPage('tasks'),
+            page('tasks', 'Tasks', 'What runs now and when each task runs next; start or cancel them.', Rights.viewTasks),
+            page('schedules', 'Schedules', 'When the tasks start by themselves.', Rights.scheduleTasks),
+            page('history', 'History', 'The past runs of the tasks, with their logs.', Rights.viewTasks),
+            settingsPage('tasks', 'How long runs and their logs are kept.'),
         ],
     },
     {
@@ -140,33 +164,40 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         title: 'Logs',
         icon: 'docs',
         description: 'The messages, warnings and errors the server logged, searchable by text, date and severity, and how long they are kept.',
-        subpages: [page('entries', 'Log', Rights.viewLogs), settingsPage('logs')],
+        subpages: [
+            page('entries', 'Log', 'The messages, warnings and errors the server logged, searchable by text, date and severity.', Rights.viewLogs),
+            settingsPage('logs', 'How long the log is kept, and whether it is also saved to files.'),
+        ],
     },
     {
         id: 'system',
         group: 'Server',
         title: 'System',
         icon: 'power',
-        description: 'The server\'s version, library folder and ffmpeg, what it does at start, its API, backups, the server commands, and the videos it converts.',
+        description: 'The server\'s version, library folder and ffmpeg, what it does at start, its API, backups and the server commands.',
         subpages: [
-            page('about', 'About', Rights.serverSettings, Rights.apiDocs, Rights.backup, Rights.shutdown, Rights.dismount),
-            page('installation', 'Installation', Rights.serverSettings),
-            settingsPage('startup', 'Start-up', 'startup'),
-            page('streams', 'Video streams', Rights.viewStreams),
-        ],
-    },
-    {
-        id: 'account',
-        group: 'Account',
-        title: 'My account',
-        icon: 'user',
-        description: 'Your own preferences, kept by the server for every device you sign in on, and your password.',
-        subpages: [
-            page('preferences', 'Preferences', Rights.ownPreferences),
-            page('password', 'Password', Rights.ownPassword),
+            page('about', 'About', 'The server\'s version, its library folder, the ffmpeg it found, and its API reference.', Rights.serverSettings, Rights.apiDocs),
+            page('installation', 'Installation', 'The first space\'s library folder, who can open SFE, and ffmpeg, behind the setup code.', Rights.serverSettings),
+            settingsPage('startup', 'What SFE does when it starts on this computer.', 'Start-up', 'startup'),
+            page('maintenance', 'Maintenance', 'A backup of the databases and configuration files, and the commands of the server\'s computer.',
+                Rights.backup, Rights.shutdown, Rights.dismount),
         ],
     },
 ];
+
+/**
+ * Sub-pages that moved, from "section/page" to where they are now: addresses kept in bookmarks and history still open
+ * them. Never remove an entry.
+ */
+export const ADMIN_MOVED: Readonly<Record<string, { section: string; page: string }>> = {
+    'system/streams': { section: 'playback', page: 'streams' },
+    'playback/settings': { section: 'playback', page: 'player' },
+};
+
+/** Where the sub-page of an address that moved is now, if it moved. */
+export function movedPage(section: string | null, page: string | null): { section: string; page: string } | undefined {
+    return section && page ? ADMIN_MOVED[`${section}/${page}`] : undefined;
+}
 
 /** The sections by group, in order, for the sidebar. */
 export function groupsOf(sections: AdminSection[]): { title: string; sections: AdminSection[] }[] {
@@ -174,6 +205,9 @@ export function groupsOf(sections: AdminSection[]): { title: string; sections: A
 }
 
 export const ADMIN_GROUPS = groupsOf(ADMIN_SECTIONS);
+
+/** The id of a group's heading on the overview, the breadcrumbs' link to it. */
+export const groupId = (group: string) => `admin-group-${group.toLowerCase()}`;
 
 /** The sections and sub-pages a session sees: those with one of their rights (`canAny`). */
 export function visibleSections(canAny: (rights: readonly string[]) => boolean): AdminSection[] {

@@ -1,12 +1,15 @@
 # System
 
-**Administration › System**: the server's version, library folder and ffmpeg, its API, backups, the server commands
-(**About**), the library folder, network address and ffmpeg of the installation (**Installation**), what SFE does when
-it starts (**Start-up**), and the videos the server converts (**Video streams**).
+**Administration › System**: the server's version, library folder, ffmpeg and API (**About**), the library folder,
+network address and ffmpeg of the installation (**Installation**), what SFE does when it starts (**Start-up**), and
+backups and the server commands (**Maintenance**). The videos the server converts are in
+[Playback › Video streams](playback.md#video-streams).
 
-![Administration › System](../images/admin-system.png)
+## About
 
-## Server
+![Administration › System › About](../images/admin-system.png)
+
+### Server
 
 The version of SFE and the commit it was built from (also at the bottom of the ⋮ menu), and the space's short name.
 Server administrators (`server.settings`) also see:
@@ -19,7 +22,13 @@ Server administrators (`server.settings`) also see:
 
 **API reference** opens the [API documentation](../reference/api.md) (right `system.apiDocs`).
 
-## Backup
+## Maintenance
+
+![Administration › System › Maintenance](../images/admin-system-maintenance.png)
+
+Shown to those with the right to download backups or to run a server command.
+
+### Backup
 
 **Download a backup** (right `server.backup`, server administrators) saves a zip file with:
 
@@ -41,7 +50,7 @@ To restore: stop SFE, put the files back where `manifest.json` says (SQLite: rep
 `-wal` and `-shm` files next to it; SQL Server: `RESTORE DATABASE` from the `.bak`), then start the version the
 databases belong to.
 
-## Server commands
+### Server commands
 
 **Shut down server** and **Dismount drives** run commands on the server's computer (rights `server.shutdown`,
 `server.dismount`); each asks first. They are opt-in and set only in the configuration:
@@ -93,14 +102,3 @@ server administrators (`server.settings`). Both are settings of the whole server
   opened at start signs the server administrator in without a password, with a link that works once, for a minute,
   from that computer only. Only while the server has a single administrator. Leave it off unless SFE is used on that
   computer alone.
-
-## Video streams
-
-![Administration › System › Video streams](../images/admin-system-streams.png)
-
-The videos the server is converting now (see [Playback](playback.md#videos-converted-by-the-server)), in every space,
-refreshed every 2 seconds: the video and its folder, who watches it (account, space, network address), where in the
-video the conversion started, whether its pictures are **converted** or only **repackaged** (H.264 copied), what was
-sent and for how long. Above the list: whether this space converts videos, whether ffmpeg was found, and how many
-videos the server converts at once. A video leaves the list when its viewer closes or seeks it (a seek starts a new
-conversion). Right `server.streams` (server administrators).

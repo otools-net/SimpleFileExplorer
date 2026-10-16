@@ -340,20 +340,35 @@ const scenes = {
     async admin() {
         const b = await session({ height: 900 });
         const pages = [
-            ['interface', 'appearance'], ['interface', 'browsing'], ['interface', 'search'], ['playback'],
+            ['interface', 'appearance'], ['interface', 'browsing'], ['interface', 'search'], ['playback', 'player'], ['playback', 'streaming'],
             ['scanning', 'skipped'], ['scanning', 'fileTypes'], ['scanning', 'indexing'],
             ['tags', 'list'], ['tags', 'settings'],
             ['tracking', 'duplicates'], ['tracking', 'similar'], ['tracking', 'missing'], ['tracking', 'settings'],
             ['thumbnails'], ['trickplay', 'activity'], ['trickplay', 'settings'], ['editor'],
             ['access', 'spaces'], ['access', 'accounts'],
             ['tasks', 'tasks'], ['tasks', 'settings'],
-            ['system'], ['account', 'preferences'], ['account', 'password'],
+            ['system'], ['system', 'maintenance'], ['account', 'preferences'], ['account', 'password'],
         ];
         for (const [section, page] of pages) {
             await b.open(admin(section, page), 3000);
             await mask(b);
             await b.shot(OUT + `admin-${section}${page ? '-' + page : ''}.png`);
         }
+        // The overview of the sections, which /admin opens on.
+        await b.open('admin', 3000);
+        await b.shot(OUT + 'admin-overview.png');
+        await b.close();
+    },
+    async adminSearch() {
+        const b = await session({ height: 900 });
+        await b.open('admin', 3000);
+        await b.eval(`document.querySelector('.admin-search input').focus(); 1`);
+        await b.type('high resolution');
+        await sleep(600);
+        // The second one found opened: its setting is brought into view and flashes.
+        await b.eval(`document.querySelectorAll('.admin-search-results a')[1].click(); 1`);
+        await sleep(700);
+        await b.shot(OUT + 'admin-search.png');
         await b.close();
     },
     async logs() {
@@ -401,7 +416,7 @@ const scenes = {
     },
     async streams() {
         const b = await session({ height: 900 });
-        await b.open(admin('system', 'streams'), 2000);
+        await b.open(admin('playback', 'streams'), 2000);
         // Two conversions started from this page (leaving it would end them). The sample clips convert in a moment:
         // a slow download makes ffmpeg wait, so that they stay listed until the next refresh shows them.
         await b.send('Network.enable');
@@ -409,7 +424,7 @@ const scenes = {
         await b.eval(`window.held = [['Videos/Holidays/Beach walk.webm', 0], ['Videos/Timelapses/Clouds.webm', 2]].map(([path, t], i) =>
             fetch('api/streaming/play?' + new URLSearchParams({ path, t: String(t), id: 'doc' + i })).then(r => r.status)); 1`);
         await b.eval(`new Promise(resolve => setTimeout(() => resolve(1), 4500))`);
-        await b.shot(OUT + 'admin-system-streams.png');
+        await b.shot(OUT + 'admin-playback-streams.png');
         await b.close();
     },
 };

@@ -1,7 +1,7 @@
 /* ---------- Administration page: sections sidebar and their sub-pages, save bar ---------- */
 
 sfe-admin-page { display: block; }
-sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section { display: flex; flex-direction: column; gap: 14px; }
+sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sfe-video-streams { display: flex; flex-direction: column; gap: 14px; }
 
 .admin-topbar { gap: 8px; }
 .admin-title { margin: 0 0 0 6px; font-size: 16px; font-weight: 600; }
@@ -28,7 +28,7 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section { d
     letter-spacing: .04em;
     text-transform: uppercase;
 }
-.admin-nav h2:first-child { margin-top: 0; }
+.admin-search + h2 { margin-top: 0; }
 .admin-nav ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
 
 .admin-nav a {
@@ -56,6 +56,48 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section { d
 .admin-nav .admin-subnav .tracking-badge { margin-left: auto; }
 .admin-nav .admin-subnav .tracking-badge + .admin-mark { margin-left: 0; }
 
+/* The search box above the sections, and what it finds in their place. */
+.admin-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    margin: 0 0 14px;
+    padding: 0 4px 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    transition: border-color .15s, box-shadow .15s;
+}
+.admin-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.admin-search .icon { flex: none; width: 16px; height: 16px; }
+.admin-search input { flex: 1; min-width: 0; height: 100%; padding: 0 4px; border: 0; background: transparent; outline: none; }
+/* Its own clear button, in every browser: the native one is hidden. */
+.admin-search input::-webkit-search-cancel-button { display: none; }
+.admin-search-clear { flex: none; width: 26px; height: 26px; color: var(--text-muted); }
+.admin-search-clear .icon { width: 14px; height: 14px; }
+.admin-search-count { margin: 0 10px 8px; color: var(--text-muted); font-size: 12.5px; }
+.admin-nav .admin-search-results a { display: flex; flex-direction: column; align-items: stretch; gap: 1px; min-height: 0; color: var(--text); font-weight: 600; }
+.admin-search-where { color: var(--text-muted); font-size: 11.5px; font-weight: 500; }
+.admin-search-text {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.35;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+.admin-search-results mark { border-radius: 2px; background: color-mix(in srgb, var(--accent) 28%, transparent); color: inherit; }
+
+/* The setting opened from the search flashes once. */
+@keyframes setting-found {
+    from { background: color-mix(in srgb, var(--accent) 22%, transparent); box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 22%, transparent); }
+    to { background: transparent; box-shadow: 0 0 0 8px transparent; }
+}
+.setting-found { border-radius: var(--radius-sm); animation: setting-found 2s ease-out; }
+
 /* A section with settings changed and not saved yet (or needing fixing). */
 .admin-mark { flex: none; width: 7px; height: 7px; margin-left: auto; border-radius: 50%; background: var(--accent); }
 .admin-mark.error { background: var(--danger); }
@@ -82,6 +124,49 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section { d
 .admin-head p { margin: 4px 0 0; color: var(--text-muted); }
 
 .admin-panel { display: flex; flex: 1; flex-direction: column; gap: 14px; padding-bottom: 28px; }
+
+/* The overview (no section open): the sections as cards, by group, each with links to its sub-pages. */
+.admin-overview { display: flex; flex: 1; flex-direction: column; gap: 22px; padding-bottom: 28px; }
+.admin-overview-group h3 {
+    margin: 0 0 10px;
+    scroll-margin-top: calc(var(--topbar-h) + 16px);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.admin-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.admin-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition: border-color .15s;
+}
+.admin-card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.admin-card-title { display: flex; align-items: center; gap: 10px; color: var(--text); font-size: 15px; font-weight: 600; text-decoration: none; }
+.admin-card-title:hover { color: var(--accent); }
+.admin-card-title .icon { flex: none; width: 20px; height: 20px; color: var(--accent); }
+.admin-card.has-error .admin-card-title { color: var(--danger); }
+.admin-card p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.4; }
+.admin-card-pages { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; padding: 0; list-style: none; }
+.admin-card-pages a {
+    display: inline-block;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color .15s, color .15s, background .15s;
+}
+.admin-card-pages a:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface-2)); color: var(--text); }
+.admin-card-pages a.has-error { border-color: var(--danger); color: var(--danger); }
 
 .admin-savebar {
     position: sticky;
@@ -129,6 +214,9 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section { d
         background: none;
     }
     .admin-nav h2 { margin: 20px 4px 8px; }
+    .admin-search { height: 42px; margin: 0; background: var(--surface); }
+    .admin-search-count { margin: 14px 4px 8px; }
+    .admin-nav .admin-search-results a { padding: 10px 14px; }
     .admin-nav ul {
         gap: 0;
         overflow: hidden;

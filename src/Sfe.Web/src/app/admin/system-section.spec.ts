@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiMock, buttonNamed, fakeConfig, installationView, limitedConfig, loadConfig, mockApi, settle, testProviders, type } from '../../testing/fakes';
 import { ApiError } from '../core/api.service';
-import { StreamingStatus, SystemInfo } from '../core/models';
+import { SystemInfo } from '../core/models';
 import { Rights } from '../core/rights';
 import { findSection, visibleSections } from './admin-sections';
 import { SystemSectionComponent } from './system-section.component';
@@ -24,10 +24,6 @@ describe('System section', () => {
         root: 'D:\\Media\\',
         ffmpeg: { configured: 'ffmpeg', path: 'C:\\ffmpeg\\bin\\ffmpeg.exe', version: '7.1-full_build' },
     };
-
-    function status(overrides: Partial<StreamingStatus> = {}): StreamingStatus {
-        return { available: true, mode: 'fallback', maxStreams: 2, streams: [], ...overrides };
-    }
 
     async function create(tab = 'about', config = fakeConfig()): Promise<void> {
         await loadConfig(api, config);
@@ -68,35 +64,6 @@ describe('System section', () => {
         expect(text()).not.toContain('Library folder');
     });
 
-    it('lists the videos being converted, with who watches them', async () => {
-        api.streamingStatus.mockResolvedValue(status({
-            streams: [{
-                id: 'a', path: 'Films/Old/film.avi', viewer: { library: 'Home', user: 'alice', address: '10.0.0.2' },
-                start: 754, transcoded: true, started: new Date(Date.now() - 125_000).toISOString(), bytes: 3 * 1024 * 1024,
-            }],
-        }));
-        await create('streams');
-        const row = fixture.nativeElement.querySelector('.stream-row') as HTMLElement;
-        expect(row.querySelector('.trickplay-name')!.textContent).toBe('film.avi');
-        expect(row.querySelector('.trickplay-folder')!.textContent).toBe('Films/Old');
-        expect(row.querySelector('.stream-who')!.textContent).toBe('alice · Home · 10.0.0.2');
-        expect(row.textContent).toContain('from 12:34 · converted · 3 MB · for 2m 05s');
-        expect(text()).toContain('At most 2 videos at once');
-        expect(api.systemInfo).toHaveBeenCalled();     // loaded for About, not shown here
-        expect(text()).not.toContain('Library folder');
-    });
-
-    it('says why nothing is converted', async () => {
-        api.streamingStatus.mockResolvedValue(status({ available: false }));
-        await create('streams');
-        expect(text()).toContain('No video is being converted.');
-        expect(text()).toContain('ffmpeg can\'t be found');
-
-        api.streamingStatus.mockResolvedValue(status({ available: false, mode: 'off' }));
-        await create('streams');
-        expect(text()).toContain('Turned off in this space');
-    });
-
     it('asks for the setup code before showing the installation settings, then saves them', async () => {
         api.systemInfo.mockResolvedValue(INFO);
         api.serverFolders.mockResolvedValue({ path: null, parent: null, folders: [] });
@@ -126,10 +93,13 @@ describe('System section', () => {
         expect(text()).toContain('applies once SFE starts again');
     });
 
-    it('shows the streams page to those with its right only', () => {
-        const pages = (rights: string[]) => findSection('system', visibleSections(wanted => wanted.some(r => rights.includes(r)))).subpages.map(p => p.id);
-        expect(pages([Rights.viewStreams])).toEqual(['streams']);
-        expect(pages([Rights.serverSettings, Rights.viewStreams])).toEqual(['about', 'installation', 'startup', 'streams']);
-        expect(pages([Rights.backup])).toEqual(['about']);
+    it('shows each page to those with its rights only', () => {
+        const pages = (section: string, rights: string[]) =>
+            findSection(section, visibleSections(wanted => wanted.some(r => rights.includes(r)))).subpages.map(p => p.id);
+        expect(pages('system', [Rights.serverSettings])).toEqual(['about', 'installation', 'startup']);
+        expect(pages('system', [Rights.serverSettings, Rights.backup])).toEqual(['about', 'installation', 'startup', 'maintenance']);
+        expect(pages('system', [Rights.backup])).toEqual(['maintenance']);
+        expect(pages('system', [Rights.apiDocs, Rights.shutdown])).toEqual(['about', 'maintenance']);
+        expect(pages('playback', [Rights.viewStreams])).toEqual(['streams']);
     });
 });

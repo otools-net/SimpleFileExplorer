@@ -1,12 +1,14 @@
 # Playback
 
-**Administration › Playback**: the video player, an app to open videos in, where files are streamed from, and videos
-converted by the server. Right:
-`settings.playback`.
+**Administration › Playback**: the video player and an app to open videos in (**Player**), where files are streamed
+from and how the server converts videos (**Streaming**), and the videos it converts now (**Video streams**). Rights:
+`settings.playback` for the settings, `server.streams` for Video streams.
 
-![Administration › Playback](../images/admin-playback.png)
+## Player
 
-## Video player
+![Administration › Playback › Player](../images/admin-playback-player.png)
+
+### Video player
 
 | Setting | Default | |
 |---|---|---|
@@ -16,7 +18,7 @@ converted by the server. Right:
 Users can change both for themselves in [My account](my-account.md). The player itself is described in
 [Video player](../user-guide/video-player.md).
 
-## External player
+### External player
 
 The viewer's ▶ button opens the video or audio file in a player app installed on the device. Pick your player from
 the **External player** list (the players in the table below) and its link and name are filled in; pick “Custom…” to
@@ -44,7 +46,11 @@ The address the player gets is a link of its own to that one file (`api/files/sh
 link lifetime and ended early by a password change, a disabled account or the loss of the right `files.external`. With
 a data server, the player gets that server's address instead.
 
-## Streaming (data server)
+## Streaming
+
+![Administration › Playback › Streaming](../images/admin-playback-streaming.png)
+
+### Data server
 
 **Data server** (`Sfe:DataServer`, a server setting, all settings view): an optional web server already publishing the
 library. When it is empty (the default), SFE streams the files itself, with range support.
@@ -56,7 +62,7 @@ library. When it is empty (the default), SFE streams the files itself, with rang
 
 That server has no sign-in of SFE's: anyone reaching it can read the files.
 
-## Videos converted by the server
+### Videos converted by the server
 
 Browsers play few video formats: AVI, WMV, MPEG-2 and most MKV files, or HEVC (H.265) pictures, give "This browser
 cannot play this format", or play with sound but a black picture. With ffmpeg on the server (see
@@ -74,7 +80,18 @@ The player's ⟳ button converts the video on screen by hand, e.g. one that play
 | **Copy H.264 pictures** | on | 8-bit H.264 pictures are only repackaged, with the sound converted: almost no processor time, but a seek lands on the nearest earlier key frame and the largest height doesn't apply (`CopyVideo`) |
 
 All but the first are server settings. Playing converted videos needs the right `files.stream` (Administrators and
-Users by default, not guests); [System › Video streams](system.md#video-streams) lists the videos being converted.
+Users by default, not guests); [Video streams](#video-streams) lists the videos being converted.
 
 The conversion has no length and can't be downloaded or opened in an external player: those still get the file
 itself. Safari (iPhone, iPad, Mac) may refuse converted videos, as it only plays streams it can seek in.
+
+## Video streams
+
+![Administration › Playback › Video streams](../images/admin-playback-streams.png)
+
+The videos the server is converting now (see [Videos converted by the server](#videos-converted-by-the-server)), in every space,
+refreshed every 2 seconds: the video and its folder, who watches it (account, space, network address), where in the
+video the conversion started, whether its pictures are **converted** or only **repackaged** (H.264 copied), what was
+sent and for how long. Above the list: whether this space converts videos, whether ffmpeg was found, and how many
+videos the server converts at once. A video leaves the list when its viewer closes or seeks it (a seek starts a new
+conversion). Right `server.streams` (server administrators).
