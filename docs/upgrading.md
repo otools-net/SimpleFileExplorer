@@ -30,6 +30,30 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.47
+
+Security changes; nothing changes in the databases.
+
+- **The setup code SFE made itself is renewed** by the update (1.46 also wrote it to the server's log). The next time
+  one is needed (the next update, a recovery), a new one is shown in SFE's window and kept in `data/setup-code.txt`. A
+  code you set in the configuration (`Sfe:Setup:Code`) is not touched.
+- **Administration › System › Installation** needs a signed-in server administrator as well as the setup code.
+- **ffmpeg** set on that page must be named `ffmpeg` (`ffmpeg.exe`) and be outside the spaces' folders; one already
+  saved keeps working.
+- **Files of a library that a browser could run** (`.html`, `.svg`, `.xml`…) are downloaded instead of opened in a
+  tab; pictures, videos, audio and text open as before.
+- **Sign-in:** wrong passwords now block the address they come from for that account, not the account (`MaxFailedSignIns`,
+  `LockoutMinutes`); the account itself is locked only after 50 failures from all addresses
+  (`Sfe:Security:AccountLockoutFailures`). A locked-out administrator recovers the account from the sign-in page with
+  a code shown in SFE's console ([Locked out](first-start.md#locked-out-or-lost-administrator-password)).
+- **Behind a reverse proxy** on the same computer, SFE now uses the visitor's address and scheme it forwards. A proxy
+  on another computer must be named in `Sfe:Security:TrustedProxies` (see
+  [Installation](installation.md#reaching-it-from-outside-https-and-a-reverse-proxy)).
+- The server's [log](administration/logs.md) gets the severity **Security warning** (failed sign-ins, lockouts, wrong
+  setup codes, recoveries…). Entries logged before the update keep their level (**Warning**).
+- Files of SFE's own folders (keys, setup code, databases, settings) are never served as files of a library, even
+  when a space's folder holds them or a folder link leads there.
+
 ## To 1.46
 
 - The accounts' database gets a new table, `LogEntries` (the server's [log](administration/logs.md)), created by the

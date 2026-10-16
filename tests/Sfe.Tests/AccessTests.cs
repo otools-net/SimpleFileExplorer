@@ -147,6 +147,48 @@ public sealed class AccessTests
     }
 
     [TestMethod]
+    [DataRow("/api/thumbnails/{**path}", RequestLimits.Media)]
+    [DataRow("/api/browse/covers", RequestLimits.Media)]
+    [DataRow("/api/streaming/probe", RequestLimits.Media)]
+    [DataRow("/api/streaming/play", RequestLimits.Media)]
+    [DataRow("/api/trickplay/states", RequestLimits.Media)]
+    [DataRow("/api/trickplay/files/{**path}", RequestLimits.Media)]
+    [DataRow("/api/search", RequestLimits.Search)]
+    [DataRow("/api/editor/images", RequestLimits.Upload)]
+    public void ExpensiveRoutesAreLimitedPerCaller(string route, string policy)
+    {
+        var factory = Factory();
+        Client(factory);
+
+        var endpoint = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
+            .SingleOrDefault(e => e.RoutePattern.RawText == route);
+
+        Assert.IsNotNull(endpoint, route);
+        Assert.AreEqual(policy, endpoint.Metadata.GetMetadata<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>()?.PolicyName, route);
+    }
+
+    [TestMethod]
+    public async Task OneCallersFloodWaitsForItsOwnTurn()
+    {
+        var factory = Factory();
+        var flooder = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        _disposables.Add(flooder);
+        await CreateUserAsync(flooder, new UserInput("bob", Password: "bob-password", GroupIds: [(await GroupAsync(flooder, BuiltInGroup.Users)).Id]));
+        // Another account, from the same address: limits follow the account.
+        var other = await ApiClients.SignInAsync(factory, "bob", "bob-password", TestContext.CancellationToken);
+        _disposables.Add(other);
+
+        // As many searches as the limit allows a minute, then one more: the flood is refused, others are not.
+        await Task.WhenAll(Enumerable.Range(0, RequestLimits.SearchesPerMinute).Select(async _ =>
+            (await flooder.GetAsync("/api/search?q=x", TestContext.CancellationToken)).Dispose()));
+        using var refused = await flooder.GetAsync("/api/search?q=x", TestContext.CancellationToken);
+        using var served = await other.GetAsync("/api/search?q=x", TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.TooManyRequests, refused.StatusCode);
+        Assert.AreNotEqual(HttpStatusCode.TooManyRequests, served.StatusCode);
+    }
+
+    [TestMethod]
     public async Task SignInChecksThePasswordAndLocksAfterRepeatedFailures()
     {
         var factory = Factory(settings => settings["Sfe:Security:MaxFailedSignIns"] = "3");
@@ -168,6 +210,184 @@ public sealed class AccessTests
         Assert.AreEqual(HttpStatusCode.BadRequest, locked.StatusCode);
         StringAssert.Contains(await locked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
         Assert.IsNull((await GetAsync<SessionInfo>(client, "/api/session")).User);
+    }
+
+    [TestMethod]
+    public async Task AStrangersFailuresDontLockTheOwnerOut()
+    {
+        var factory = Factory(settings => settings["Sfe:Security:MaxFailedSignIns"] = "3");
+        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var attacker = ApiClients.CreateFrom(factory, "203.0.113.7");
+        var owner = ApiClients.CreateFrom(factory, "192.168.1.20");
+        _disposables.Add(attacker);
+        _disposables.Add(owner);
+
+        for (var i = 0; i < 3; i++)
+            (await SignInAsync(attacker, ApiClients.AdminName, "wrong-password")).Dispose();
+        using var attackerLocked = await SignInAsync(attacker, ApiClients.AdminName, ApiClients.AdminPassword);
+        using var ownerSignsIn = await SignInAsync(owner, ApiClients.AdminName, ApiClients.AdminPassword);
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, attackerLocked.StatusCode);
+        StringAssert.Contains(await attackerLocked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
+        Assert.AreEqual(HttpStatusCode.OK, ownerSignsIn.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task UnknownNamesAreThrottledAsKnownOnes()
+    {
+        var factory = Factory(settings => settings["Sfe:Security:MaxFailedSignIns"] = "2");
+        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var client = ApiClients.CreateFrom(factory, "203.0.113.8");
+        _disposables.Add(client);
+
+        async Task<string> ThirdAnswerAsync(string name)
+        {
+            for (var i = 0; i < 2; i++)
+                (await SignInAsync(client, name, "wrong-password")).Dispose();
+            using var third = await SignInAsync(client, name, "wrong-password");
+            return await third.Content.ReadAsStringAsync(TestContext.CancellationToken);
+        }
+
+        StringAssert.Contains(await ThirdAnswerAsync(ApiClients.AdminName), "Too many failed attempts");
+        StringAssert.Contains(await ThirdAnswerAsync("nobody"), "Too many failed attempts", "An unknown name answers as a known one");
+    }
+
+    [TestMethod]
+    public async Task GuessesFromManyAddressesLockTheAccount()
+    {
+        var factory = Factory(settings => settings["Sfe:Security:AccountLockoutFailures"] = "4");
+        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+
+        for (var i = 0; i < 4; i++)
+        {
+            using var client = ApiClients.CreateFrom(factory, $"203.0.113.{10 + i}");
+            (await SignInAsync(client, ApiClients.AdminName, "wrong-password")).Dispose();
+        }
+
+        using var owner = ApiClients.CreateFrom(factory, "192.168.1.20");
+        using var locked = await SignInAsync(owner, ApiClients.AdminName, ApiClients.AdminPassword);
+
+        StringAssert.Contains(await locked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
+    }
+
+    private string RecoveryFile => Path.Combine(_library.BasePath, "recovery-code.txt");
+
+    /// <summary>The code the server wrote for <paramref name="userName"/>, as its administrator reads it from the file.</summary>
+    private string RecoveryCodeOf(string userName) =>
+        File.ReadAllLines(RecoveryFile).Single(l => l.StartsWith(userName + ": ", StringComparison.Ordinal)).Split(' ')[1];
+
+    [TestMethod]
+    public async Task ALockedOutAdministratorRecoversWithACodeFromTheConsole()
+    {
+        var factory = Factory(settings => settings["Sfe:Security:AccountLockoutFailures"] = "3");
+        var oldSession = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        _disposables.Add(oldSession);
+        // Guesses from many addresses lock the account itself.
+        for (var i = 0; i < 3; i++)
+        {
+            using var attacker = ApiClients.CreateFrom(factory, $"203.0.113.{40 + i}");
+            (await SignInAsync(attacker, ApiClients.AdminName, "wrong-password")).Dispose();
+        }
+
+        var owner = ApiClients.CreateFrom(factory, "192.168.1.20");
+        _disposables.Add(owner);
+        using (var locked = await SignInAsync(owner, ApiClients.AdminName, ApiClients.AdminPassword))
+            StringAssert.Contains(await locked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
+
+        using var asked = await owner.PostAsJsonAsync("/api/session/recovery", new RecoveryRequest(ApiClients.AdminName), TestContext.CancellationToken);
+        Assert.AreEqual(HttpStatusCode.OK, asked.StatusCode, await asked.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        var code = RecoveryCodeOf(ApiClients.AdminName);
+        using var askedAgain = await owner.PostAsJsonAsync("/api/session/recovery", new RecoveryRequest(ApiClients.AdminName), TestContext.CancellationToken);
+        var codeAgain = RecoveryCodeOf(ApiClients.AdminName);
+        using var wrongCode = await owner.PostAsJsonAsync("/api/session/recovery/complete",
+            new RecoveryCompletion(ApiClients.AdminName, "AAAA-BBBB-CCCC-DDDD", "new-admin-password"), TestContext.CancellationToken);
+        using var shortPassword = await owner.PostAsJsonAsync("/api/session/recovery/complete",
+            new RecoveryCompletion(ApiClients.AdminName, code, "short"), TestContext.CancellationToken);
+        // Retyped from the console: lower case, without the dashes.
+        using var recovered = await owner.PostAsJsonAsync("/api/session/recovery/complete",
+            new RecoveryCompletion(ApiClients.AdminName, code.Replace("-", "").ToLowerInvariant(), "new-admin-password"), TestContext.CancellationToken);
+        var session = (await recovered.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!;
+        using var reused = await owner.PostAsJsonAsync("/api/session/recovery/complete",
+            new RecoveryCompletion(ApiClients.AdminName, code, "another-password"), TestContext.CancellationToken);
+        using var oldSessionAfter = await oldSession.GetAsync("/api/config", TestContext.CancellationToken);
+        using var newPassword = await SignInAsync(Client(factory), ApiClients.AdminName, "new-admin-password");
+
+        Assert.AreEqual(HttpStatusCode.OK, asked.StatusCode);
+        Assert.AreEqual(code, codeAgain, "Asking again shows the same code: nobody can replace it");
+        Assert.AreEqual(HttpStatusCode.BadRequest, wrongCode.StatusCode);
+        Assert.AreEqual(HttpStatusCode.BadRequest, shortPassword.StatusCode);
+        StringAssert.Contains(await shortPassword.Content.ReadAsStringAsync(TestContext.CancellationToken), "password");
+        Assert.AreEqual(HttpStatusCode.OK, recovered.StatusCode, "A wrong attempt doesn't use the code up");
+        Assert.AreEqual(ApiClients.AdminName, session.User?.UserName);
+        Assert.AreEqual(HttpStatusCode.BadRequest, reused.StatusCode, "A code works once");
+        Assert.IsFalse(File.Exists(RecoveryFile), "No code left");
+        Assert.AreEqual(HttpStatusCode.Unauthorized, oldSessionAfter.StatusCode, "The other sessions end");
+        Assert.AreEqual(HttpStatusCode.OK, newPassword.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task RecoveryAnswersTheSameForEveryNameAndOnlyServesAdministrators()
+    {
+        var factory = Factory();
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        _disposables.Add(admin);
+        await CreateUserAsync(admin, new UserInput("alice", Password: "alice-password", GroupIds: [(await GroupAsync(admin, BuiltInGroup.Administrators)).Id]));
+        var visitor = Client(factory);
+
+        using var unknown = await visitor.PostAsJsonAsync("/api/session/recovery", new RecoveryRequest("nobody"), TestContext.CancellationToken);
+        // A space's administrator, not the server's: another administrator unlocks it.
+        using var notServerAdmin = await visitor.PostAsJsonAsync("/api/session/recovery", new RecoveryRequest("alice"), TestContext.CancellationToken);
+        using var completeUnknown = await visitor.PostAsJsonAsync("/api/session/recovery/complete",
+            new RecoveryCompletion("alice", "AAAA-BBBB-CCCC-DDDD", "new-alice-password"), TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, unknown.StatusCode);
+        Assert.AreEqual(await unknown.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            await notServerAdmin.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.IsFalse(File.Exists(RecoveryFile));
+        Assert.AreEqual(HttpStatusCode.BadRequest, completeUnknown.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task OnlyTrustedProxiesTellTheVisitorsAddressAndScheme()
+    {
+        var factory = Factory(settings => settings["Sfe:Security:SignInsPerMinute"] = "1");
+        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+
+        // Behind a proxy on this computer: each visitor has their own limit, and https at the proxy secures the cookie.
+        HttpClient ThroughProxy(string proxy, string visitor)
+        {
+            var client = ApiClients.CreateFrom(factory, proxy);
+            client.DefaultRequestHeaders.Add("X-Forwarded-For", visitor);
+            client.DefaultRequestHeaders.Add("X-Forwarded-Proto", "https");
+            _disposables.Add(client);
+            return client;
+        }
+
+        using var first = await SignInAsync(ThroughProxy("127.0.0.1", "198.51.100.1"), ApiClients.AdminName, ApiClients.AdminPassword);
+        using var second = await SignInAsync(ThroughProxy("127.0.0.1", "198.51.100.2"), ApiClients.AdminName, ApiClients.AdminPassword);
+        // Not a proxy: what it says about the visitor is ignored.
+        var stranger = ThroughProxy("203.0.113.9", "198.51.100.3");
+        using var spoofed = await SignInAsync(stranger, ApiClients.AdminName, ApiClients.AdminPassword);
+        using var spoofedAgain = await SignInAsync(ThroughProxy("203.0.113.9", "198.51.100.4"), ApiClients.AdminName, ApiClients.AdminPassword);
+
+        Assert.AreEqual(HttpStatusCode.OK, first.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, second.StatusCode, "Another visitor of the same proxy");
+        StringAssert.Contains(string.Join(";", first.Headers.GetValues("Set-Cookie")), "secure", StringComparison.OrdinalIgnoreCase);
+        Assert.AreEqual(HttpStatusCode.OK, spoofed.StatusCode);
+        Assert.DoesNotContain("secure", string.Join(";", spoofed.Headers.GetValues("Set-Cookie")).ToLowerInvariant());
+        Assert.AreEqual(HttpStatusCode.TooManyRequests, spoofedAgain.StatusCode, "Its own address counts, whatever it forwards");
+    }
+
+    [TestMethod]
+    public async Task RequireHttpsSecuresTheCookie()
+    {
+        var factory = Factory(settings => settings["Sfe:Security:RequireHttps"] = "true");
+        (await ApiClients.SetUpAsync(factory, TestContext.CancellationToken)).Dispose();
+        var client = Client(factory);
+
+        using var signIn = await SignInAsync(client, ApiClients.AdminName, ApiClients.AdminPassword);
+
+        StringAssert.Contains(string.Join(";", signIn.Headers.GetValues("Set-Cookie")), "secure", StringComparison.OrdinalIgnoreCase);
     }
 
     [TestMethod]

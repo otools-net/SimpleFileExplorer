@@ -47,6 +47,7 @@ public static class LibraryEndpoints
                 """);
 
         api.MapPost("/browse/covers", Covers)
+            .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.Browse)
             .WithName("GetFolderCovers")
             .WithTags("Library")
@@ -58,6 +59,7 @@ public static class LibraryEndpoints
                 """);
 
         api.MapGet("/search", Search)
+            .RequireRateLimiting(RequestLimits.Search)
             .RequireRight(Rights.Browse)
             .WithName("Search")
             .WithTags("Library")
@@ -105,6 +107,7 @@ public static class LibraryEndpoints
             .WithSummary("Streams the file of a link made by `CreateFileLink` (the token stands for the sign-in; range requests supported).");
 
         api.MapGet("/thumbnails/{**path}", Thumbnail)
+            .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.ViewFiles)
             .WithName("GetThumbnail")
             .WithTags("Library")
@@ -191,9 +194,10 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound, ForbidHttpResult>> Raw(
-        LibraryPaths paths, CurrentAccess current, HttpContext context, string path, bool download = false)
+        LibraryPaths paths, CurrentAccess current, ServerFiles serverFiles, HttpContext context, string path, bool download = false)
     {
-        if (!paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath))
+        // The server's own files answer as if they weren't there, wherever a link put them.
+        if (!paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
             return TypedResults.NotFound();
         if (download && !(await current.GetAsync()).Has(Rights.Download))
             return TypedResults.Forbid();
@@ -202,10 +206,10 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<Ok<FileLink>, NotFound>> CreateLink(
-        LibraryPaths paths, CurrentAccess current, FileLinks links, IOptionsMonitor<SfeOptions> options, FileLinkRequest request)
+        LibraryPaths paths, CurrentAccess current, FileLinks links, ServerFiles serverFiles, IOptionsMonitor<SfeOptions> options, FileLinkRequest request)
     {
         var path = LibraryPaths.NormalizeRelative(request.Path);
-        if (path is null || !paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath))
+        if (path is null || !paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
             return TypedResults.NotFound();
 
         var state = await current.GetAsync();
@@ -214,7 +218,8 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound, ProblemHttpResult>> Shared(
-        HttpContext context, FileLinks links, AccessService accounts, RightsEvaluator rights, TenantRegistry tenants, string token, string name)
+        HttpContext context, FileLinks links, AccessService accounts, RightsEvaluator rights, TenantRegistry tenants, ServerFiles serverFiles,
+        string token, string name)
     {
         if (links.Read(token) is not { } claims)
             return TypedResults.NotFound();
@@ -232,13 +237,17 @@ public static class LibraryEndpoints
             return TypedResults.Problem("This link no longer works: ask for a new one.", statusCode: StatusCodes.Status403Forbidden);
 
         var paths = (await tenants.GetAsync(claims.Tenant, context.RequestAborted))?.Services.GetRequiredService<LibraryPaths>();
-        if (paths is null || !paths.TryResolve(claims.Path, out var fullPath) || !File.Exists(fullPath))
+        if (paths is null || !paths.TryResolve(claims.Path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
             return TypedResults.NotFound();
 
         return ServeFile(context, fullPath, download: false);
     }
 
-    /// <summary>A file of the library, with range requests (seeking in media) and the right type for players.</summary>
+    /// <summary>
+    /// A file of the library, with range requests (seeking in media) and the right type for players. Its content is
+    /// anyone's who can write in the library: it is sandboxed (<see cref="SecurityHeaders.FilePolicy"/>), and a type the
+    /// browser could run as a page (HTML, SVG, XML...) is only ever downloaded (<see cref="OpensInline"/>).
+    /// </summary>
     internal static PhysicalFileHttpResult ServeFile(HttpContext context, string fullPath, bool download)
     {
         if (!ContentTypes.TryGetContentType(fullPath, out var contentType))
@@ -247,11 +256,12 @@ public static class LibraryEndpoints
         // Pictures are not kept by the browser: an edited or replaced photo shows up as it is now.
         if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
             context.Response.Headers[HeaderNames.CacheControl] = NoStore;
+        context.Response.Headers[HeaderNames.ContentSecurityPolicy] = SecurityHeaders.FilePolicy;
 
         return TypedResults.PhysicalFile(
             fullPath,
             contentType,
-            fileDownloadName: download ? Path.GetFileName(fullPath) : null,
+            fileDownloadName: download || !OpensInline(contentType) ? Path.GetFileName(fullPath) : null,
             lastModified: File.GetLastWriteTimeUtc(fullPath),
             enableRangeProcessing: true);
     }
@@ -270,6 +280,16 @@ public static class LibraryEndpoints
         context.Response.Headers[HeaderNames.CacheControl] = NoStore;
         return TypedResults.PhysicalFile(thumbnail, "image/jpeg", lastModified: File.GetLastWriteTimeUtc(thumbnail));
     }
+
+    /// <summary>
+    /// Pictures, videos, audio and plain text open in the browser; anything else is downloaded. SVG pictures are
+    /// documents that run scripts when opened by themselves: they still show in &lt;img&gt;, which ignores the download.
+    /// </summary>
+    internal static bool OpensInline(string contentType) =>
+        contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase)
+        || contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase)
+        || contentType.Equals("text/plain", StringComparison.OrdinalIgnoreCase)
+        || (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) && !contentType.Contains("svg", StringComparison.OrdinalIgnoreCase));
 
     private static int Clamp(int? requested, int fallback, int max) =>
         Math.Clamp(requested ?? fallback, 1, Math.Max(1, max));

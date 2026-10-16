@@ -55,7 +55,8 @@ public static class SetupEndpoints
         var state = await setup.GetStateAsync(cancellationToken);
         return TypedResults.Ok(new SetupInfo(state.Required, state.Available, state.CodeConfigured, state.CodeTooShort, state.Recover, state.MinimumCodeLength,
             Math.Max(1, security.CurrentValue.MinimumPasswordLength), state.LibraryName, DetectHosting(),
-            state.CodeGenerated, state.CodeGenerated ? state.CodeFile : null));
+            // Where the code is kept tells about the server: only while the setup page can be used.
+            state.CodeGenerated, state.CodeGenerated && state.Available ? state.CodeFile : null));
     }
 
     private static async Task<Results<Ok<SessionInfo>, ValidationProblem, ProblemHttpResult>> CompleteSetup(

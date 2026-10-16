@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Logs;
 using Sfe.Core.Options;
 using Sfe.Core.Upgrades;
 
@@ -120,19 +121,22 @@ public static class MigrationEndpoints
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["The server has no setup code: set one in its environment first."] });
         if (setup.Matches(code))
             return null;
-        loggers.CreateLogger(typeof(MigrationEndpoints)).LogWarning("Update refused: wrong setup code");
+        loggers.CreateLogger(typeof(MigrationEndpoints)).LogSecurityWarning("Update refused: wrong setup code");
         return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["This is not the server's setup code."] });
     }
 
     private static MigrationInfo Describe(MigrationCoordinator migration, SetupOptions setup)
     {
         var code = setup.Code?.Trim();
-        var changes = migration.Status is MigrationStatus.Required or MigrationStatus.Running or MigrationStatus.Failed
+        var due = migration.Status is MigrationStatus.Required or MigrationStatus.Running or MigrationStatus.Failed;
+        var changes = due
             ? Core.Upgrades.Changelog.Between(Changelog.Value, SemanticVersion.TryParse(migration.DatabaseVersion, out var from) ? from : null, MigrationCoordinator.AppVersion)
             : [];
+        // Where the code is kept tells about the server: only while the update page needs it.
         return new MigrationInfo(migration.Status, MigrationCoordinator.AppVersion.ToString(), migration.DatabaseVersion, changes, migration.Log, migration.Error,
             setup.HasUsableCode, !string.IsNullOrEmpty(code) && code.Length < SetupOptions.MinimumCodeLength, SetupOptions.MinimumCodeLength,
-            SetupEndpoints.DetectHosting(), setup.CodeIsGenerated, setup.CodeIsGenerated ? setup.CodeFile : null);
+            SetupEndpoints.DetectHosting(), setup.CodeIsGenerated,
+            setup.CodeIsGenerated && (due || migration.Status == MigrationStatus.Newer) ? setup.CodeFile : null);
     }
 
     /// <summary>CHANGELOG.md, built into the application (Sfe.Api.csproj).</summary>

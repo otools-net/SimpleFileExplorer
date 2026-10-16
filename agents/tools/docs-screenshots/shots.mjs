@@ -50,6 +50,14 @@ const scenes = {
         const b = await session({ user: null });
         await b.goto(BASE + 'login', 2500);
         await b.shot(OUT + 'login-page.png');
+        // Account recovery: the code is asked for (and shown in the app's console, app.log), the form waits for it.
+        await b.click('a[title^="Recover a server"]');
+        await sleep(300);
+        await b.eval(`(() => { const i = document.querySelector('#recover-name'); i.value = 'admin'; i.dispatchEvent(new Event('input')); })()`);
+        await sleep(200);
+        await b.click('button[title^="Show a recovery code"]');
+        await sleep(1000);
+        await b.shot(OUT + 'login-recover.png');
         await b.close();
     },
     async library() {
@@ -350,11 +358,14 @@ const scenes = {
     },
     async logs() {
         const b = await session({ height: 900 });
+        // A wrong password, logged as a security warning (the session stays: a failed sign-in changes no cookie).
+        await b.eval(api('POST', 'api/session/login', { userName: 'sam', password: 'not-sams-password' }));
+        await sleep(2500);
         await b.open(admin('logs'), 2500);
         await mask(b);
         await b.shot(OUT + 'admin-logs.png');
-        // Warnings and errors only, the first one opened (on its error when it has one).
-        await b.eval(`[...document.querySelectorAll('.logs-level-chip')].filter(l => /Warning|Error/.test(l.textContent)).forEach(l => l.querySelector('input').click()); 1`);
+        // Warnings, security warnings and errors only, the first one opened (on its error when it has one).
+        await b.eval(`[...document.querySelectorAll('.logs-level-chip')].filter(l => /Warning|warning|Error/.test(l.textContent)).forEach(l => l.querySelector('input').click()); 1`);
         await sleep(1500);
         await b.eval(`(document.querySelector('.log-entry.level-error .log-entry-head') ?? document.querySelector('.log-entry-head'))?.click(); 1`);
         await sleep(800);

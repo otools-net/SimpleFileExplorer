@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Data;
+using Sfe.Core.Logs;
 using Sfe.Core.Options;
 
 namespace Sfe.Core.Access;
@@ -81,7 +82,7 @@ public sealed class SetupService(
             return AccessResult<SessionUser>.Conflict("The server has no setup code: set one in its environment first.");
         if (!setup.Matches(input.Code))
         {
-            logger.LogWarning("Setup refused: wrong setup code");
+            logger.LogSecurityWarning("Setup refused: wrong setup code");
             return AccessResult<SessionUser>.Invalid("code", "This is not the server's setup code.");
         }
 
@@ -106,7 +107,7 @@ public sealed class SetupService(
         if (!string.IsNullOrEmpty(libraryName) && libraryName != tenant.Name && !setup.Recover)
             await accounts.UpdateTenantAsync(tenant.Id, new TenantInput(libraryName, GuestAccess: tenant.GuestAccess, Disabled: tenant.Disabled), cancellationToken);
 
-        logger.LogWarning(setup.Recover
+        logger.LogSecurityWarning(setup.Recover
             ? "Recovery: {User} is a server administrator again. Turn Sfe:Setup:Recover off."
             : "Setup done: {User} is the server administrator. Sfe:Setup:Code is no longer needed.", result.Value!.UserName);
         return AccessResult<SessionUser>.Ok((await accounts.GetSessionUserAsync(result.Value.Id, cancellationToken))!);

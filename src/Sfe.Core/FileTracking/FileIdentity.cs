@@ -11,7 +11,6 @@ namespace Sfe.Core.FileTracking;
 internal static class FileIdentity
 {
     private const int CompareChunk = 1024 * 1024;
-    private const int MaxLinkDepth = 40;
 
     /// <summary>
     /// The paths lead to the same file: equal once symbolic links and junctions on the way are resolved, or, on
@@ -48,26 +47,8 @@ internal static class FileIdentity
             bufferSize: 1, FileOptions.Asynchronous | FileOptions.SequentialScan);
     }
 
-    /// <summary>The path with every symbolic link or junction along it replaced by its final target.</summary>
-    internal static string RealPath(string path, int depth = 0)
-    {
-        var full = Path.GetFullPath(path);
-        var root = Path.GetPathRoot(full) ?? string.Empty;
-        var current = root;
-        foreach (var part in full[root.Length..].Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries))
-        {
-            current = Path.Join(current, part);
-            FileSystemInfo info = new FileInfo(current);
-            if (!info.Exists)
-                info = new DirectoryInfo(current);
-            if (info.LinkTarget is null || depth >= MaxLinkDepth)
-                continue;
-            if (info.ResolveLinkTarget(returnFinalTarget: true) is { } target)
-                current = RealPath(target.FullName, depth + 1);   // the target's own folders can be links too
-        }
-
-        return Path.TrimEndingDirectorySeparator(current);
-    }
+    /// <inheritdoc cref="LibraryPaths.RealPath"/>
+    internal static string RealPath(string path) => LibraryPaths.RealPath(path);
 
     private static (uint Volume, ulong Index)? WindowsFileId(string path)
     {

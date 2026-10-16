@@ -114,6 +114,72 @@ public sealed class LibraryPaths
         return Path.EndsInDirectorySeparator(full) ? full : full + Path.DirectorySeparatorChar;
     }
 
+    private const int MaxLinkDepth = 40;
+
+    /// <summary>
+    /// Where a path really is: every symbolic link or junction along it replaced by its final target, and on Windows
+    /// short (8.3) names by long ones, so that two spellings of one place compare equal. Parts that don't exist are kept as
+    /// written.
+    /// </summary>
+    public static string RealPath(string path) => LongPath(RealPath(path, 0));
+
+    private static string RealPath(string path, int depth)
+    {
+        var full = Path.GetFullPath(path);
+        var root = Path.GetPathRoot(full) ?? string.Empty;
+        var current = root;
+        foreach (var part in full[root.Length..].Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries))
+        {
+            current = Path.Join(current, part);
+            FileSystemInfo info = new FileInfo(current);
+            if (!info.Exists)
+                info = new DirectoryInfo(current);
+            if (info.LinkTarget is null || depth >= MaxLinkDepth)
+                continue;
+            try
+            {
+                if (info.ResolveLinkTarget(returnFinalTarget: true) is { } target)
+                    current = RealPath(target.FullName, depth + 1);   // the target's own folders can be links too
+            }
+            catch (IOException)
+            {
+                // A broken or looping link: it leads nowhere that can be read.
+            }
+        }
+
+        return Path.TrimEndingDirectorySeparator(current);
+    }
+
+    /// <summary>On Windows, the long names of the parts of <paramref name="path"/> that exist (<c>PROGRA~1</c> → <c>Program Files</c>).</summary>
+    private static string LongPath(string path)
+    {
+        if (!OperatingSystem.IsWindows() || !path.Contains('~'))
+            return path;
+
+        // The longest part that exists, then the rest as written.
+        var existing = path;
+        while (!File.Exists(existing) && !Directory.Exists(existing) && Path.GetDirectoryName(existing) is { } parent)
+            existing = parent;
+        var buffer = new char[32768];
+        var length = NativeMethods.GetLongPathNameW(existing, buffer, (uint)buffer.Length);
+        return length == 0 || length > buffer.Length ? path : new string(buffer, 0, (int)length) + path[existing.Length..];
+    }
+
+    private static class NativeMethods
+    {
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+        public static extern uint GetLongPathNameW(string shortPath, char[] longPath, uint bufferLength);
+    }
+
+    /// <summary><paramref name="path"/> is <paramref name="folder"/> or inside it (both full paths, compared as the file system does).</summary>
+    public static bool IsSameOrInside(string path, string folder)
+    {
+        // A drive or file system root keeps its separator.
+        var trimmed = Path.TrimEndingDirectorySeparator(folder);
+        var prefix = Path.EndsInDirectorySeparator(trimmed) ? trimmed : trimmed + Path.DirectorySeparatorChar;
+        return string.Equals(Path.TrimEndingDirectorySeparator(path), trimmed, PathComparison) || path.StartsWith(prefix, PathComparison);
+    }
+
     /// <summary>Expands a leading <c>~</c> to the user's home folder (e.g. <c>~/Videos</c>).</summary>
     public static string ExpandHome(string path)
     {

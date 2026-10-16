@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
 using Sfe.Api.Tenancy;
+using Sfe.Core.Access;
 using Sfe.Core.Library;
+using Sfe.Core.Logs;
 using Sfe.Core.Paths;
 
 namespace Sfe.Api.Endpoints;
@@ -27,7 +29,8 @@ public sealed record ServerFolders(string? Path, string? Parent, IReadOnlyList<S
 /// <summary>
 /// The installation page (setup wizard, Administration › System › Installation): the first library's folder, the
 /// listening address and ffmpeg, written to <see cref="InstallationSettings"/>. These decide where data lives and which
-/// program runs, so they need the setup code, not a right: only whoever runs the server knows it.
+/// program runs, so they need the setup code, not a right: only whoever runs the server knows it. Once an administrator
+/// exists, the visitor must also be a signed-in server administrator (<see cref="InstallationAccess.CheckVisitorAsync"/>).
 /// </summary>
 public static class InstallationEndpoints
 {
@@ -42,7 +45,11 @@ public static class InstallationEndpoints
             .RequireRateLimiting(SessionEndpoints.SignInRateLimit)
             .WithName("CheckInstallationCode")
             .WithSummary("Checks the setup code and answers the installation settings with a token for the other installation routes.")
-            .WithDescription("The token goes in the `X-SFE-Installation` header; it lasts an hour, and ends when the setup code changes.");
+            .WithDescription("""
+                The token goes in the `X-SFE-Installation` header; it lasts an hour, and ends when the setup code changes.
+                Once the server has an administrator, every installation route also needs a signed-in server
+                administrator (401 without a session, 403 for other accounts).
+                """);
 
         installation.MapGet("/", Get)
             .AllowAnonymous()
@@ -69,35 +76,54 @@ public static class InstallationEndpoints
         return api;
     }
 
-    private static async Task<Results<Ok<InstallationGrant>, ValidationProblem>> Check(
-        InstallationAccess access, InstallationSettings settings, ILoggerFactory loggers, InstallationCheck input, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<InstallationGrant>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>> Check(
+        HttpContext context, InstallationAccess access, InstallationSettings settings, ILoggerFactory loggers, InstallationCheck input,
+        CancellationToken cancellationToken)
     {
+        switch (await InstallationAccess.CheckVisitorAsync(context))
+        {
+            case InstallationVisitor.NotSignedIn:
+                return TypedResults.Unauthorized();
+            case InstallationVisitor.NotServerAdmin:
+                return TypedResults.Forbid();
+        }
+
         if (access.Grant(input.Code) is not { } token)
         {
-            loggers.CreateLogger(typeof(InstallationEndpoints)).LogWarning("Installation page refused: wrong setup code");
+            loggers.CreateLogger(typeof(InstallationEndpoints)).LogSecurityWarning("Installation page refused: wrong setup code");
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["This is not the server's setup code."] });
         }
 
         return TypedResults.Ok(new InstallationGrant(token, await settings.DescribeAsync(cancellationToken)));
     }
 
-    private static async Task<Results<Ok<InstallationView>, UnauthorizedHttpResult>> Get(
+    private static async Task<Results<Ok<InstallationView>, UnauthorizedHttpResult, ForbidHttpResult>> Get(
         HttpContext context, InstallationAccess access, InstallationSettings settings, CancellationToken cancellationToken) =>
-        access.IsGranted(context) ? TypedResults.Ok(await settings.DescribeAsync(cancellationToken)) : TypedResults.Unauthorized();
+        await CheckAsync(context, access) switch
+        {
+            InstallationVisitor.NotSignedIn => TypedResults.Unauthorized(),
+            InstallationVisitor.NotServerAdmin => TypedResults.Forbid(),
+            _ => TypedResults.Ok(await settings.DescribeAsync(cancellationToken)),
+        };
 
-    private static async Task<Results<Ok<InstallationSaved>, ValidationProblem, UnauthorizedHttpResult>> Save(
-        HttpContext context, InstallationAccess access, InstallationSettings settings, TenantRegistry libraries, ILoggerFactory loggers,
-        InstallationInput input, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<InstallationSaved>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>> Save(
+        HttpContext context, InstallationAccess access, InstallationSettings settings, TenantRegistry libraries, AccessService accounts,
+        IConfiguration configuration, ILoggerFactory loggers, InstallationInput input, CancellationToken cancellationToken)
     {
-        if (!access.IsGranted(context))
-            return TypedResults.Unauthorized();
+        switch (await CheckAsync(context, access))
+        {
+            case InstallationVisitor.NotSignedIn:
+                return TypedResults.Unauthorized();
+            case InstallationVisitor.NotServerAdmin:
+                return TypedResults.Forbid();
+        }
 
-        var (errors, changed) = settings.Save(input);
+        var (errors, changed) = settings.Save(input, await LibraryRootsAsync(accounts, configuration, cancellationToken));
         if (errors is not null)
             return TypedResults.ValidationProblem(errors);
 
         if (changed.Count > 0)
-            loggers.CreateLogger(typeof(InstallationEndpoints)).LogWarning("Installation page: {Keys} saved in {File}", string.Join(", ", changed), settings.FilePath);
+            loggers.CreateLogger(typeof(InstallationEndpoints)).LogSecurityWarning("Installation page: {Keys} saved in {File}", string.Join(", ", changed), settings.FilePath);
         // The libraries' services read the folder and ffmpeg once: start them again over the new values.
         if (changed.Any(key => key != InstallationSettings.UrlsKey))
             await libraries.RestartAsync(cancellationToken);
@@ -106,11 +132,16 @@ public static class InstallationEndpoints
         return TypedResults.Ok(new InstallationSaved(view, view.RestartRequired));
     }
 
-    private static Results<Ok<ServerFolders>, ValidationProblem, UnauthorizedHttpResult> Folders(
+    private static async Task<Results<Ok<ServerFolders>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>> Folders(
         HttpContext context, InstallationAccess access, IConfiguration configuration, string? path = null)
     {
-        if (!access.IsGranted(context))
-            return TypedResults.Unauthorized();
+        switch (await CheckAsync(context, access))
+        {
+            case InstallationVisitor.NotSignedIn:
+                return TypedResults.Unauthorized();
+            case InstallationVisitor.NotServerAdmin:
+                return TypedResults.Forbid();
+        }
 
         if (string.IsNullOrWhiteSpace(path))
             return TypedResults.Ok(new ServerFolders(null, null, Drives(), Places(configuration), false));
@@ -139,6 +170,25 @@ public static class InstallationEndpoints
         var parent = Directory.GetParent(Path.TrimEndingDirectorySeparator(folder))?.FullName;
         return TypedResults.Ok(new ServerFolders(Path.TrimEndingDirectorySeparator(folder) is { Length: > 0 } trimmed && !trimmed.EndsWith(':') ? trimmed : folder,
             parent, folders, [], truncated));
+    }
+
+    /// <summary>
+    /// The visitor may use the page (<see cref="InstallationAccess.CheckVisitorAsync"/>) and its token is good; a bad or
+    /// missing token answers as not signed in (401), as before the setup.
+    /// </summary>
+    private static async Task<InstallationVisitor> CheckAsync(HttpContext context, InstallationAccess access) =>
+        await InstallationAccess.CheckVisitorAsync(context) is var visitor && visitor != InstallationVisitor.Allowed ? visitor
+        : access.IsGranted(context) ? InstallationVisitor.Allowed
+        : InstallationVisitor.NotSignedIn;
+
+    /// <summary>The folders of every library (those without their own use the configured root).</summary>
+    private static async Task<IReadOnlyList<string>> LibraryRootsAsync(AccessService accounts, IConfiguration configuration, CancellationToken cancellationToken)
+    {
+        var roots = new List<string>();
+        if (configuration[InstallationSettings.RootKey] is { Length: > 0 } root)
+            roots.Add(root);
+        roots.AddRange((await accounts.GetCachedTenantsAsync(cancellationToken)).Select(t => t.Root).OfType<string>());
+        return roots;
     }
 
     private static List<ServerFolder> Drives()

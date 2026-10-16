@@ -58,6 +58,12 @@ builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document,
 var app = builder.Build();
 app.Logger.LogInformation("SFE {Version} ({Commit})", AppVersion.Version, AppVersion.Commit ?? "unknown commit");
 
+// The visitor's address and scheme behind a trusted reverse proxy, before anything reads them (sign-in limits, cookie).
+app.UseForwardedHeaders();
+if (app.Services.GetRequiredService<IOptions<SecurityOptions>>().Value.RequireHttps)
+    app.UseHsts();
+// First, so that every answer (errors and 401s too) carries them.
+app.UseMiddleware<SecurityHeaders>();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
@@ -204,22 +210,27 @@ async Task<bool> SetupStillRequiredAsync()
     }
 }
 
-// After the start, so that the addresses are known and the box is the last thing in the console.
+// After the start, so that the addresses are known and the box is the last thing in the console. The code goes to the
+// console (the journal under systemd) and never through the logger: the server's log is kept in the database and in
+// files, which administrators read and backups hold.
 void AnnounceSetupCode(string setupCode)
 {
     var address = app.Services.GetRequiredService<Microsoft.AspNetCore.Hosting.Server.IServer>()
         .Features.Get<Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature>()?.Addresses.FirstOrDefault();
     var url = BrowserLauncher.BrowserUrl(address) ?? "SFE's address";
-    app.Logger.LogWarning("""
+    var file = app.Services.GetRequiredService<GeneratedSetupCode>().FilePath;
+    app.Logger.LogWarning("A setup code is needed: it is shown in the console and kept in {File}", file);
+    Console.Out.WriteLine($"""
 
         ==============================================================
-          Open {Url} in a browser and enter this setup code:
+          Open {url} in a browser and enter this setup code:
 
-              {Code}
+              {setupCode}
 
-          (also kept in {File})
+          (also kept in {file})
         ==============================================================
-        """, url, setupCode, app.Services.GetRequiredService<GeneratedSetupCode>().FilePath);
+        """);
+    Console.Out.Flush();
 }
 
 

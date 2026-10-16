@@ -117,6 +117,11 @@ public sealed class Ffmpeg
         return found;
     }
 
+    /// <summary>The file is named as ffmpeg's program (<c>ffmpeg</c>, <c>ffmpeg.exe</c> on Windows), whatever the case.</summary>
+    public static bool IsFfmpegName(string path) =>
+        Path.GetFileName(path) is var name
+        && (name.Equals("ffmpeg", StringComparison.OrdinalIgnoreCase) || (OperatingSystem.IsWindows() && name.Equals("ffmpeg.exe", StringComparison.OrdinalIgnoreCase)));
+
     /// <summary>
     /// The executable <paramref name="configured"/> names: a file path, a folder holding it (or its <c>bin</c>), or a
     /// name looked up on PATH. Null when none exists.

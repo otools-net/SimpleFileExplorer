@@ -1,4 +1,5 @@
 using Sfe.Core.Upgrades.Steps.V1_40_0;
+using Sfe.Core.Upgrades.Steps.V1_47_0;
 
 namespace Sfe.Core.Upgrades.Steps;
 
@@ -8,6 +9,7 @@ public static class UpgradeSteps
     public static IReadOnlyList<IUpgradeStep> All { get; } =
     [
         new ShardCacheLayout(),
+        new RenewSetupCode(),
     ];
 
     /// <summary>

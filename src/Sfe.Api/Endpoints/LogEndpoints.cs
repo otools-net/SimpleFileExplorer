@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Data;
 using Sfe.Core.Logs;
 
 namespace Sfe.Api.Endpoints;
@@ -26,7 +27,8 @@ public static class LogEndpoints
             .WithSummary("Entries of the server's log, newest first: warnings, errors and messages.")
             .WithDescription($"""
                 Filters, all optional: `q` (text found in the message, the logger's name or the exception, ignoring
-                case), `levels` (comma-separated: `trace`, `debug`, `information`, `warning`, `error`, `critical`),
+                case), `levels` (comma-separated: `trace`, `debug`, `information`, `warning`, `securityWarning`, `error`,
+                `critical`; `securityWarning` = security events: wrong passwords, lockouts, wrong setup codes, recoveries),
                 `from` and `to` (ISO 8601 moments; `to` excluded), `tenant` (a space's id; `0` = the server's own
                 entries, outside any space). Server administrators see every space's entries; others only those of
                 their space, whatever `tenant` says. Pages of `limit` entries (default {AuditLogService.DefaultPageSize},
@@ -45,7 +47,7 @@ public static class LogEndpoints
         {
             return TypedResults.ValidationProblem(new Dictionary<string, string[]>
             {
-                ["levels"] = ["Use trace, debug, information, warning, error or critical, separated by commas."],
+                ["levels"] = ["Use trace, debug, information, warning, securityWarning, error or critical, separated by commas."],
             });
         }
 
@@ -56,12 +58,12 @@ public static class LogEndpoints
         return TypedResults.Ok(new LogSearchResult(page.Entries, page.Next, options.RetentionDays, options.WriteFiles, all ? log.Directory : null, all));
     }
 
-    private static bool TryParseLevels(string? text, out List<LogLevel> levels)
+    private static bool TryParseLevels(string? text, out List<LogEntryLevel> levels)
     {
         levels = [];
         foreach (var part in (text ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            if (!Enum.TryParse<LogLevel>(part, ignoreCase: true, out var level) || level == LogLevel.None || char.IsDigit(part[0]))
+            if (!Enum.TryParse<LogEntryLevel>(part, ignoreCase: true, out var level) || !Enum.IsDefined(level) || char.IsDigit(part[0]))
                 return false;
             levels.Add(level);
         }

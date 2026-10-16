@@ -9,6 +9,7 @@ using Sfe.Api.Endpoints;
 using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Data;
 using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
@@ -249,6 +250,103 @@ public sealed class InstallationTests
     [DataRow(null, null)]
     public void TheBrowserOpensAnAddressOfThisComputer(string? address, string? url) =>
         Assert.AreEqual(url, BrowserLauncher.BrowserUrl(address));
+
+    [TestMethod]
+    public async Task OnceSetUpTheCodeAloneOpensNothing()
+    {
+        var factory = Factory();
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
+        var spaceAdmins = groups.Single(g => g.BuiltIn == BuiltInGroup.Administrators);
+        using (var created = await admin.PostAsJsonAsync("/api/access/users",
+                   new UserInput("spaceadmin", Password: "spaceadmin-password", GroupIds: [spaceAdmins.Id]), Json, TestContext.CancellationToken))
+            Assert.AreEqual(HttpStatusCode.Created, created.StatusCode, await created.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        var spaceAdmin = await ApiClients.SignInAsync(factory, "spaceadmin", "spaceadmin-password", TestContext.CancellationToken);
+        var visitor = ApiClients.Create(factory);
+
+        using var anonymous = await visitor.PostAsJsonAsync("/api/installation/check", new InstallationCheck(TestLibrary.SetupCode), TestContext.CancellationToken);
+        using var notServerAdmin = await spaceAdmin.PostAsJsonAsync("/api/installation/check", new InstallationCheck(TestLibrary.SetupCode), TestContext.CancellationToken);
+        // A token given to the server administrator does not work for others.
+        var grant = await GrantAsync(admin);
+        visitor.DefaultRequestHeaders.Add(InstallationAccess.Header, grant.Token);
+        spaceAdmin.DefaultRequestHeaders.Add(InstallationAccess.Header, grant.Token);
+        using var visitorSave = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(Port: 6000), TestContext.CancellationToken);
+        using var visitorFolders = await visitor.GetAsync("/api/installation/folders", TestContext.CancellationToken);
+        using var spaceAdminGet = await spaceAdmin.GetAsync("/api/installation", TestContext.CancellationToken);
+        using var adminGet = await admin.GetAsync("/api/installation", TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Forbidden, notServerAdmin.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Unauthorized, visitorSave.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Unauthorized, visitorFolders.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Forbidden, spaceAdminGet.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, adminGet.StatusCode);
+        Assert.IsFalse(File.Exists(InstallationFile));
+    }
+
+    [TestMethod]
+    public async Task FfmpegMustBeFfmpegAndNotInALibrary()
+    {
+        var visitor = ApiClients.Create(Factory());
+        await GrantAsync(visitor);
+        var name = OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg";
+        // Anyone who can add files to the library would choose the program SFE runs.
+        var planted = _library.AddFile($"Tools/{name}", 10);
+        var other = Path.Combine(_library.BasePath, "programs", OperatingSystem.IsWindows() ? "evil.exe" : "evil");
+        Directory.CreateDirectory(Path.GetDirectoryName(other)!);
+        await File.WriteAllTextAsync(other, "x", TestContext.CancellationToken);
+
+        using var inLibrary = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(FfmpegPath: planted), TestContext.CancellationToken);
+        using var folderInLibrary = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(FfmpegPath: _library.FullPath("Tools")),
+            TestContext.CancellationToken);
+        using var notFfmpeg = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(FfmpegPath: other), TestContext.CancellationToken);
+
+        foreach (var (response, expected) in new[] { (inLibrary, "library folder"), (folderInLibrary, "library folder"), (notFfmpeg, "not ffmpeg") })
+        {
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+            StringAssert.Contains(await response.Content.ReadAsStringAsync(TestContext.CancellationToken), expected);
+        }
+
+        Assert.IsFalse(File.Exists(InstallationFile));
+    }
+
+    [TestMethod]
+    public async Task WhereTheCodeIsKeptIsToldOnlyWhileTheSetupNeedsIt()
+    {
+        var factory = Factory(settings => settings["Sfe:Setup:Code"] = "");
+        var visitor = ApiClients.Create(factory);
+        var before = await GetAsync<SetupInfo>(visitor, "/api/setup");
+        var code = (await File.ReadAllTextAsync(CodeFile, TestContext.CancellationToken)).Trim();
+        using (var done = await visitor.PostAsJsonAsync("/api/setup", new SetupInput(code, "admin", "admin-password"), TestContext.CancellationToken))
+            Assert.AreEqual(HttpStatusCode.OK, done.StatusCode);
+
+        var after = await GetAsync<SetupInfo>(ApiClients.Create(factory), "/api/setup");
+        var migration = await GetAsync<MigrationInfo>(ApiClients.Create(factory), "/api/migration");
+
+        Assert.IsNotNull(before.CodeFile);
+        Assert.IsNull(after.CodeFile);
+        Assert.IsNull(migration.CodeFile);
+    }
+
+    [TestMethod]
+    public async Task TheUpdateTo147RenewsAGeneratedCode()
+    {
+        var generated = new GeneratedSetupCode(CodeFile, Microsoft.Extensions.Logging.Abstractions.NullLogger<GeneratedSetupCode>.Instance);
+        var old = generated.Ensure();
+        var notes = new List<string>();
+        var step = new Sfe.Core.Upgrades.Steps.V1_47_0.RenewSetupCode();
+        var context = new Sfe.Core.Upgrades.Steps.UpgradeContext([], notes.Add, Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance, generated);
+
+        await step.RunAsync(context, TestContext.CancellationToken);
+        Assert.IsFalse(File.Exists(CodeFile), "Forgotten until needed");
+        await step.RunAsync(context, TestContext.CancellationToken);
+        var renewed = generated.Ensure();
+
+        Assert.HasCount(1, notes, "Idempotent: nothing to renew the second time");
+        Assert.AreNotEqual(old, renewed);
+        Assert.IsTrue(Sfe.Core.Upgrades.Steps.UpgradeSteps.Due(new(1, 46, 0), new(1, 47, 0)).Any(s => s is Sfe.Core.Upgrades.Steps.V1_47_0.RenewSetupCode),
+            "Runs for installs of 1.46.0");
+    }
 
     private async Task<InstallationGrant> GrantAsync(HttpClient client)
     {

@@ -11,6 +11,10 @@ Installation step: [installation-page.md](installation-page.md).
   `Sfe:Setup:CodeFile` (`data/setup-code.txt`) when needed: Program.cs at start (and prints it in a box after
   `StartAsync`), and lazily in `GET api/setup` / `GET api/migration`, since under `WebApplicationFactory` nothing after
   `builder.Build()` in Program.cs runs.
+- The box goes to `Console.Out`, **never through a logger**: `AuditLogProvider` stores every log entry (database, daily
+  files, backups). The logger only says where the file is. The 1.47.0 upgrade step `RenewSetupCode` deletes the file
+  (1.46 logged codes); `GeneratedSetupCode.Renew` forgets it until the next `Ensure`.
+- `SetupInfo.CodeFile` / `MigrationInfo.CodeFile` are only filled while the page needs the code (anonymous routes).
 - A generated code compares without dashes, spaces and case; a configured one exactly.
 - The setup page's steps: `checkInstallation(code)` (token + `InstallationView`), `InstallationForm.save()`,
   `completeSetup` (code sent again); recovery skips the library step.

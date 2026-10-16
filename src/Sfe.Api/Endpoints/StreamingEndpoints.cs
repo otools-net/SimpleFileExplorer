@@ -26,12 +26,14 @@ public static class StreamingEndpoints
         var streaming = api.MapGroup("/streaming").WithTags("Streaming");
 
         streaming.MapGet("/probe", Probe)
+            .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.Stream)
             .WithName("ProbeVideoStream")
             .WithSummary("Whether a video can be played converted by the server, and its length.")
             .WithDescription("404 when streaming is off (`Streaming:Mode`), ffmpeg is missing, or `path` is not a video of the library.");
 
         streaming.MapGet("/play", Play)
+            .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.Stream)
             .WithName("PlayVideoStream")
             .WithSummary("A video converted by ffmpeg while it plays (H.264 and AAC in fragmented MP4), from `t` seconds.")

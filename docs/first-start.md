@@ -8,7 +8,8 @@ page and the API answers nothing else. The setup is done in the browser, with no
 So that only whoever runs the server can claim it, the setup page asks for a **setup code**. Without one in its
 configuration, SFE makes one itself at its first start (16 letters and digits, like `K7QF-9WZM-2HXA-PL4D`):
 
-- it is shown in the window where SFE runs (for a service: in its log, see below), with the address to open;
+- it is shown in the window where SFE runs (for a service: its console output, see below), with the address to open;
+  it never goes to the server's [log](administration/logs.md);
 - it is kept in `data/setup-code.txt`, in SFE's folder (`~/.config/sfe/data/` for the AppImage).
 
 Type it in any case, with or without the dashes. Keep the file: the [update page](upgrading.md#the-update-page-137-and-later)
@@ -17,7 +18,7 @@ asks for the same code after each upgrade.
 | How SFE runs | Where the code is shown |
 |---|---|
 | Portable package / AppImage / from source | The console window of SFE |
-| Windows service | The Windows event log (Windows Logs › Application, source `Sfe.Api`), or the file |
+| Windows service | The file (a service has no window; the event log says where the file is) |
 | systemd | `journalctl -u sfe` |
 | IIS | The site's stdout log, or the file in the site's folder |
 | Container | `docker logs <container>` (keep `data/` on a volume, or set the code yourself) |
@@ -74,8 +75,24 @@ unit) is shown but can't be changed on the page.
 4. To start SFE with the computer on Windows, run `install-service.cmd` in its folder
    ([Windows service](installation.md#windows-service)).
 
-## Lost administrator password
+## Locked out, or lost administrator password
 
-Set `Sfe__Setup__Recover=true` and restart: the sign-in page links to the setup page, which asks for the setup code
+Wrong passwords block only the address they come from, so someone guessing yours doesn't keep you out. If the account
+itself got locked (guesses from many addresses, 50 by default) or you forgot the password, recover it from the sign-in
+page, without restarting anything:
+
+1. **Recover the account** under the sign-in form; enter the administrator's name and **Show a recovery code on the
+   server**.
+2. The code appears where SFE runs, as the [setup code](#the-setup-code) does: its console window or the service's
+   output, and the file `recovery-code.txt` beside `setup-code.txt` in SFE's data folder (for a Windows service).
+   Only whoever runs the server can read it, which is what it proves.
+3. Type the code and a new password: the account is unlocked, signed in, and its other sessions end (someone who knew
+   the old password is out).
+
+A code works once, for 15 minutes; asking again shows the same one. Only enabled local server administrators can be
+recovered this way: other accounts are unlocked by an administrator (Administration › Accounts). The server's log
+records each request with the address it came from, never the code.
+
+For a disabled administrator, or a server whose last administrator is gone, set `Sfe__Setup__Recover=true` and restart: the sign-in page links to the setup page, which asks for the setup code
 (the configured one, or the one in `data/setup-code.txt`), then gives a local administrator (by name) a new password,
 unlocked and enabled, or creates one. The app keeps working meanwhile. Turn it off afterwards.

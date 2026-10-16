@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Data;
+using Sfe.Core.Logs;
 using Sfe.Core.Options;
 
 namespace Sfe.Core.Access;
@@ -43,7 +45,8 @@ public sealed record DirectoryResult(DirectoryStatus Status, DirectoryUser? User
 /// The accounts with a password in the database. Locks an account for a while after repeated failures, and stores
 /// a stronger hash when the password was hashed with fewer iterations than today's.
 /// </summary>
-public sealed class LocalUserDirectory(IDbContextFactory<AccessDbContext> dbFactory, AccessChanges changes, IOptionsMonitor<SecurityOptions> security) : IUserDirectory
+public sealed class LocalUserDirectory(
+    IDbContextFactory<AccessDbContext> dbFactory, AccessChanges changes, IOptionsMonitor<SecurityOptions> security, ILogger<LocalUserDirectory> logger) : IUserDirectory
 {
     public string Source => UserAccount.LocalSource;
 
@@ -67,10 +70,13 @@ public sealed class LocalUserDirectory(IDbContextFactory<AccessDbContext> dbFact
         {
             var options = security.CurrentValue;
             user.FailedSignIns++;
-            if (options.MaxFailedSignIns > 0 && user.FailedSignIns >= options.MaxFailedSignIns)
+            // From every address together: the Api counts each address's own (SignInThrottle), far fewer.
+            if (options.AccountLockoutFailures > 0 && user.FailedSignIns >= options.AccountLockoutFailures)
             {
                 user.FailedSignIns = 0;
                 user.LockedUntil = now.AddMinutes(Math.Max(1, options.LockoutMinutes));
+                logger.LogSecurityWarning("The account {User} is locked until {Until:u}: {Failures} wrong passwords in a row, from all addresses",
+                    user.UserName, user.LockedUntil, options.AccountLockoutFailures);
             }
 
             await db.SaveChangesAsync(cancellationToken);

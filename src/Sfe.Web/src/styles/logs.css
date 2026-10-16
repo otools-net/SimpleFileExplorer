@@ -31,7 +31,7 @@
 
 .logs-level-chip input:checked + span { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--text); }
 .logs-level-chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
-.logs-level-chip:is(.level-error, .level-critical) input:checked + span { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, transparent); }
+.logs-level-chip:is(.level-securityWarning, .level-error, .level-critical) input:checked + span { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, transparent); }
 
 .logs-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 
@@ -55,7 +55,8 @@
 
 .log-entry-head:hover { background: color-mix(in srgb, var(--surface-3) 45%, transparent); }
 .log-entry-head time { flex: none; color: var(--text-muted); }
-.log-level { flex: none; width: 62px; color: var(--text-muted); }
+/* Wide enough for "Security warning". */
+.log-level { flex: none; width: 140px; color: var(--text-muted); white-space: nowrap; }
 .log-space { flex: none; max-width: 120px; overflow: hidden; color: var(--text-muted); text-overflow: ellipsis; white-space: nowrap; }
 .log-category { flex: none; max-width: 180px; overflow: hidden; color: var(--text-muted); text-overflow: ellipsis; white-space: nowrap; }
 .log-message { flex: 1; min-width: 0; overflow: hidden; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
@@ -63,6 +64,8 @@
 .log-has-error { flex: none; padding: 0 6px; border-radius: 4px; background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
 
 .log-entry.level-warning .log-level { color: var(--accent); }
+/* Security events: someone acting against the server's protections; the message stays readable. */
+.log-entry.level-securityWarning .log-level { color: var(--danger); font-weight: 600; }
 .log-entry:is(.level-error, .level-critical) :is(.log-level, .log-message) { color: var(--danger); }
 .log-entry:is(.level-debug, .level-trace) .log-entry-head { opacity: .75; }
 

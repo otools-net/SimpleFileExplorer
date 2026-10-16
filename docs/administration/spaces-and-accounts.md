@@ -99,7 +99,10 @@ administrators, guest accounts, disabled and locked accounts, and accounts from 
 | **Spaces and groups** | The groups it belongs to, space by space |
 | **Disabled** | Can't sign in; signed out everywhere, and the links it gave out stop working. Its tags stay |
 
-A locked account (too many wrong passwords) can be unlocked here. The last server administrator cannot be removed.
+A locked account (too many wrong passwords from many addresses) can be unlocked here. A locked-out server
+administrator recovers the account from the sign-in page with a code the server shows where it runs
+([Locked out](../first-start.md#locked-out-or-lost-administrator-password)). The last server administrator cannot be
+removed.
 
 A space's administrators only change, in accounts other spaces share, their groups in their own space; an account that
 is only in their space is fully theirs.

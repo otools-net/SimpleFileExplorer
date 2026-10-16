@@ -17,5 +17,7 @@ Rules and helpers: [testing.md](testing.md). Code: `src/Sfe.Web/src/testing/setu
 - jsdom doesn't implement `HTMLMediaElement` `play`/`pause`/`load`: `video-player.component.spec.ts` stubs them on the
   prototype and calls `TestBed.resetTestingModule()` before `vi.restoreAllMocks()` (the player pauses on destroy).
 - Tag picker press flags: see [tags.md](../features/tags.md).
+- One spec file: `npm test -- --include src/app/account/account.spec.ts`; plain `npx vitest run` fails (no Angular
+  build: `history is not defined`).
 - Use dotless host names in specs ([fully-local.md](fully-local.md)).
 - Settings schema field order is read by a backend test: see [settings-new-key.md](../features/settings-new-key.md).

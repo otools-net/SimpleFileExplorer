@@ -70,7 +70,7 @@ public sealed class LogTests
         using var badLevel = await admin.GetAsync("/api/logs?levels=loud", TestContext.CancellationToken);
 
         CollectionAssert.AreEqual(new[] { "probe gamma", "probe beta 100%_done[1]", "probe alpha 1" }, probes.Entries.Select(e => e.Message).ToArray(), "Newest first");
-        CollectionAssert.AreEqual(new[] { LogLevel.Error, LogLevel.Warning }, problems.Entries.Select(e => e.Level).ToArray());
+        CollectionAssert.AreEqual(new[] { LogEntryLevel.Error, LogEntryLevel.Warning }, problems.Entries.Select(e => e.Level).ToArray());
         Assert.AreEqual("probe beta 100%_done[1]", literal.Entries.Single().Message, "%, _ and [ are plain characters");
         Assert.IsEmpty(wildcard.Entries, "_ is no wildcard");
         Assert.AreEqual("probe gamma", anyCase.Entries.Single().Message);
@@ -169,6 +169,52 @@ public sealed class LogTests
     }
 
     [TestMethod]
+    public async Task SecurityEventsAreKeptAsSecurityWarnings()
+    {
+        var factory = Factory(settings => settings["Sfe:Logs:WriteFiles"] = "true");
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var log = factory.Services.GetRequiredService<AuditLogService>();
+        var logger = factory.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Category);
+        logger.LogWarning("probe plain warning");
+        logger.LogSecurityWarning("probe security {What}", "event");
+        // A wrong password and a wrong setup code, through the API.
+        using (var visitor = ApiClients.CreateFrom(factory, "203.0.113.50"))
+        {
+            (await visitor.PostAsJsonAsync("/api/session/login", new SignInRequest(ApiClients.AdminName, "wrong-password"), TestContext.CancellationToken)).Dispose();
+            (await visitor.PostAsJsonAsync("/api/migration", new Sfe.Api.Endpoints.MigrationInput("not-the-code"), TestContext.CancellationToken)).Dispose();
+        }
+        await log.FlushAsync(cancellationToken: TestContext.CancellationToken);
+
+        var probes = await SearchAsync(admin, "q=probe");
+        var security = await SearchAsync(admin, "levels=securityWarning");
+        var warnings = await SearchAsync(admin, "q=probe&levels=warning");
+        var file = await File.ReadAllTextAsync(Path.Combine(_library.LogsPath, AuditLogService.FileName(DateOnly.FromDateTime(DateTime.UtcNow))),
+            TestContext.CancellationToken);
+
+        Assert.AreEqual(LogEntryLevel.SecurityWarning, probes.Entries.Single(e => e.Message == "probe security event").Level);
+        Assert.AreEqual(LogEntryLevel.Warning, probes.Entries.Single(e => e.Message == "probe plain warning").Level);
+        Assert.IsTrue(security.Entries.All(e => e.Level == LogEntryLevel.SecurityWarning));
+        Assert.IsTrue(security.Entries.Any(e => e.Message.Contains("Sign-in refused for admin from 203.0.113.50: wrong name or password")),
+            string.Join("\n", security.Entries.Select(e => e.Message)));
+        Assert.IsTrue(security.Entries.Any(e => e.Message == "Update refused: wrong setup code"));
+        Assert.AreEqual("probe plain warning", warnings.Entries.Single().Message, "Plain warnings are filtered apart");
+        StringAssert.Contains(file, $" SEC {Category}: probe security event");
+    }
+
+    [TestMethod]
+    public async Task TheSecurityLevelTravelsByName()
+    {
+        var factory = Factory();
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        factory.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Category).LogSecurityWarning("probe by name");
+        await FlushAsync(factory);
+
+        var json = JsonNode.Parse(await admin.GetStringAsync("/api/logs?q=probe+by+name", TestContext.CancellationToken))!;
+
+        Assert.AreEqual("securityWarning", json["entries"]![0]!["level"]!.GetValue<string>());
+    }
+
+    [TestMethod]
     public async Task WritesDailyFilesWhenAskedAndForgetsOldEntriesAndFiles()
     {
         var factory = Factory(settings => settings["Sfe:Logs:WriteFiles"] = "true");
@@ -187,7 +233,7 @@ public sealed class LogTests
         var dbFactory = factory.Services.GetRequiredService<IDbContextFactory<AccessDbContext>>();
         await using (var db = await dbFactory.CreateDbContextAsync(TestContext.CancellationToken))
         {
-            db.LogEntries.Add(new LogEntry { Timestamp = new DateTime(2020, 1, 1), Level = LogLevel.Warning, Category = Category, Message = "old probe" });
+            db.LogEntries.Add(new LogEntry { Timestamp = new DateTime(2020, 1, 1), Level = LogEntryLevel.Warning, Category = Category, Message = "old probe" });
             await db.SaveChangesAsync(TestContext.CancellationToken);
         }
 

@@ -67,10 +67,32 @@ public sealed class SecurityOptions
     /// <summary>Shortest password accepted for a local account.</summary>
     public int MinimumPasswordLength { get; set; } = 8;
 
-    /// <summary>Failed sign-ins in a row after which a local account is locked for <see cref="LockoutMinutes"/>.</summary>
+    /// <summary>
+    /// Failed sign-ins in a row to one account from one address, after which that address can't sign in to it for
+    /// <see cref="LockoutMinutes"/>. Others still can: a stranger can't lock the administrator out.
+    /// </summary>
     public int MaxFailedSignIns { get; set; } = 5;
 
     public int LockoutMinutes { get; set; } = 15;
+
+    /// <summary>
+    /// Failed sign-ins in a row to a local account, from all addresses together, after which the account itself is
+    /// locked for <see cref="LockoutMinutes"/>: guessing from many addresses at once. 0 = never.
+    /// </summary>
+    public int AccountLockoutFailures { get; set; } = 50;
+
+    /// <summary>
+    /// Reverse proxies (addresses, or networks such as <c>10.0.0.0/8</c>) whose <c>X-Forwarded-For</c> and
+    /// <c>X-Forwarded-Proto</c> are believed, besides this computer's own (always): the visitor's address then counts for
+    /// the sign-in limits, and https at the proxy marks the cookie secure.
+    /// </summary>
+    public List<string> TrustedProxies { get; set; } = [];
+
+    /// <summary>
+    /// The app is only used over https (directly or behind a proxy): the sign-in cookie is never sent over plain http,
+    /// and browsers are told to use https only (HSTS).
+    /// </summary>
+    public bool RequireHttps { get; set; }
 
     /// <summary>Sign-in and setup attempts accepted per minute from one address.</summary>
     public int SignInsPerMinute { get; set; } = 10;

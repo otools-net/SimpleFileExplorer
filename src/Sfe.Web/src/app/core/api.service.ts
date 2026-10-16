@@ -172,6 +172,11 @@ export class Api {
     signOut = () => this.post<SessionInfo>('api/session/logout', null, undefined, false);
     /** Browses `tenant` (a slug) as a visitor without an account. */
     browseAsGuest = (tenant: string) => this.post<SessionInfo>('api/session/guest', { tenant }, undefined, false);
+    /** Has the server show a one-time code for `userName` where it runs (console, recovery file); same answer for any name. */
+    requestRecovery = (userName: string) => this.post<{ minutes: number }>('api/session/recovery', { userName }, undefined, false);
+    /** A new password with the code: unlocks the account and signs it in. */
+    completeRecovery = (userName: string, code: string, password: string, remember: boolean) =>
+        this.post<SessionInfo>('api/session/recovery/complete', { userName, code, password, remember }, undefined, false);
     switchTenant = (tenant: string) => this.post<SessionInfo>('api/session/tenant', { tenant }, undefined, false);
     changePassword = (current: string, password: string) => this.put<SessionInfo>('api/session/password', { current, password });
     setupInfo = () => this.get<SetupInfo>('api/setup', {}, undefined, false);

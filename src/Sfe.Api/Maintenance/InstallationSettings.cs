@@ -118,8 +118,11 @@ public sealed class InstallationSettings
     }
 
     /// <summary>Checks and writes the changed values.</summary>
+    /// <param name="libraryRoots">
+    /// The libraries' folders: ffmpeg is never taken from one, where whoever can add files would choose the program SFE runs.
+    /// </param>
     /// <returns>The errors by field (<c>root</c>, <c>port</c>, <c>ffmpegPath</c>), or the keys that changed.</returns>
-    public (Dictionary<string, string[]>? Errors, IReadOnlyList<string> Changed) Save(InstallationInput input)
+    public (Dictionary<string, string[]>? Errors, IReadOnlyList<string> Changed) Save(InstallationInput input, IReadOnlyList<string> libraryRoots)
     {
         var errors = new Dictionary<string, string[]>();
         var values = new Dictionary<string, string?>();
@@ -155,7 +158,13 @@ public sealed class InstallationSettings
             }
             else if (Ffmpeg.Find(LibraryPaths.ExpandHome(typed)) is { } found)
             {
-                values[FfmpegKey] = found;
+                var full = Path.GetFullPath(found);
+                if (!Ffmpeg.IsFfmpegName(full))
+                    errors["ffmpegPath"] = ["This program is not ffmpeg: pick ffmpeg itself, or the folder it is in."];
+                else if (libraryRoots.Any(root => LibraryPaths.NormalizeRoot(root) is var folder && full.StartsWith(folder, LibraryPaths.PathComparison)))
+                    errors["ffmpegPath"] = ["ffmpeg cannot be taken from a library folder: install it elsewhere on the server."];
+                else
+                    values[FfmpegKey] = found;
             }
             else
             {

@@ -147,6 +147,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUserDirectory, LocalUserDirectory>();
         services.AddSingleton<SignInService>();
         services.AddSingleton<SetupService>();
+        // Its codes are kept beside the setup code (a service has no console to show them in).
+        services.AddSingleton(sp => new AccountRecovery(sp.GetRequiredService<IDbContextFactory<AccessDbContext>>(), sp.GetRequiredService<AccessService>(),
+            Path.Combine(Path.GetDirectoryName(codePath)!, "recovery-code.txt"), sp.GetRequiredService<ILogger<AccountRecovery>>()));
         services.AddSingleton<QuickLinkService>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();

@@ -268,7 +268,8 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
             var context = new UpgradeContext(
                 [.. tenants.Select(tenant => TenantHost.CacheDirectory(tenant, configuration, contentRoot))],
                 Note,
-                logger);
+                logger,
+                services.GetRequiredService<GeneratedSetupCode>());
             foreach (var step in steps)
             {
                 Note($"{step.Version}: {step.Description}…");

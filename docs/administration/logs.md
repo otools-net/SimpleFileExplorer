@@ -14,14 +14,19 @@ server's own: start-up, sign-ins, the accounts), the part of SFE that wrote it, 
 - **Search** by text: the words are looked for in the message, the name of the part that logged it and the error's
   details, ignoring case. The list follows as you type; **Refresh** reads it again (new entries reach the list a few
   seconds after they are logged).
-- **Severity:** tick one or more of Trace, Debug, Info, Warning, Error, Critical; none ticked shows them all.
+- **Severity:** tick one or more of Trace, Debug, Info, Warning, Security warning, Error, Critical; none ticked shows
+  them all. **Security warning** marks what someone did against the server's protections: wrong passwords (with the
+  name and the address they came from), an address or an account blocked after too many, a wrong setup code (setup,
+  installation page, update), account recoveries asked for, refused or done, the first administrator created, and
+  changes saved on the installation page. Tick it alone to see who tried what. The console and the log files show
+  them too (`SEC` in the files).
 - **From** / **To:** days, both included, in your browser's time zone.
 - **Space** (server administrators): every space and the server, the server's own entries only, or one space.
 - **Clear filters** shows every entry again; **Load older entries** at the bottom adds the next ones.
 - Click an entry to read all of it: the whole message, the full name of the part that logged it and, for an error, its
   details (the error's type, message and where it happened).
 
-![Warnings and errors, one opened](../images/admin-logs-problems.png)
+![Warnings, security warnings and errors, one opened](../images/admin-logs-problems.png)
 
 **Who sees what:** server administrators see the whole server's log. Anyone else with `logs.view` (by default the
 Administrators group of each space) sees only the entries of the space they work in: not the server's own entries,

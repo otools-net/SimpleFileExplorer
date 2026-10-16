@@ -11,7 +11,10 @@ Code: `src/Sfe.Api/Maintenance/InstallationSettings.cs`, `Security/InstallationA
   `TenantRegistry.RestartAsync` (the libraries read both once), a new `Urls` answers `restartRequired`.
 - `Field` reports a key as locked when a provider after the file gives it
   ([config-files.md](../architecture/config-files.md)).
-- `Ffmpeg.Find` also accepts ffmpeg's folder (or its `bin`).
+- Once an administrator exists, every installation route (`check` too) also needs a signed-in server administrator
+  (`InstallationAccess.CheckVisitorAsync`: 401 / 403); a bad token stays 401. The code alone must never run programs.
+- `Ffmpeg.Find` also accepts ffmpeg's folder (or its `bin`); `Save` then refuses a file not named `ffmpeg[.exe]`
+  (`Ffmpeg.IsFfmpegName`) or inside a library root (the configured root and every tenant's).
 - Only the allow-list `InstallationSettings.Keys` (library root, `Urls`, ffmpeg path) is writable here, into
   `data/installation.json`, behind the setup code: never as `EditableSettings`
   ([settings-new-key.md](settings-new-key.md)).

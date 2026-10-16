@@ -39,6 +39,7 @@ public static class TrickplayEndpoints
             .WithSummary("Videos being processed, the first waiting ones (`limit`, default 100) and the last ones finished.");
 
         trickplay.MapPost("/states", States)
+            .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.ViewFiles)
             .WithName("GetTrickplayStates")
             .WithSummary("Which of the given videos are waiting for their trickplay or being processed.")
@@ -48,6 +49,7 @@ public static class TrickplayEndpoints
                 """);
 
         trickplay.MapGet("/files/{**path}", Get)
+            .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.ViewFiles)
             .WithName("GetTrickplay")
             .WithSummary("Trickplay of a video: its description, or one of its sheets with `?sheet=n`.")

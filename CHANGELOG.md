@@ -3,6 +3,43 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.47.0
+
+### Added
+
+- Settings `Sfe:Security:TrustedProxies` (reverse proxies on other computers whose forwarded visitor address and
+  scheme are believed) and `Sfe:Security:RequireHttps` (secure cookie and HSTS when the app is only used over https).
+- `Sfe:Security:AccountLockoutFailures` (default 50): failures from all addresses together that lock a local account.
+- **Recover the account** on the sign-in page: a server administrator locked out, or who forgot the password, asks
+  for a one-time code that the server shows only where it runs (its console, and `recovery-code.txt` beside the setup
+  code); with it, a new password unlocks the account and signs it in, ending its other sessions. No restart needed.
+- **Security warning**, a new severity in **Logs**: wrong passwords (with the name and address), blocked addresses
+  and locked accounts, wrong setup codes, account recoveries, the first administrator and installation changes are
+  logged with it, and can be filtered apart from other warnings (`SEC` in the log files).
+
+### Changed
+
+- **Sign-in:** wrong passwords block the address they come from for that account (`MaxFailedSignIns`,
+  `LockoutMinutes`), no longer the account itself: a stranger can't lock the administrator out. Unknown names are
+  answered the same way.
+- Behind a reverse proxy on the same computer, the visitor's own address counts for the sign-in limits, and https at
+  the proxy marks the sign-in cookie secure.
+- **Administration › System › Installation** needs a signed-in server administrator as well as the setup code.
+- The setup code SFE makes itself is shown in its console and kept in its file, never written to the server's log;
+  the update renews it.
+- Searches, thumbnails, previews, video conversions and picture uploads are limited per account (or address): one
+  visitor flooding them can no longer slow the server down for everyone.
+
+### Fixed
+
+- Files of a library that a browser could run as a page (`.html`, `.svg`, `.xml`…) are downloaded instead of opened
+  in the app: such a file could act with the rights of whoever opened it. Every file is also served in a sandbox.
+- Every page of the app carries a content security policy and refuses to be framed by other sites.
+- The keys, setup code, databases and settings of SFE are never served as files of a library, even when a space's
+  folder holds them or a folder link leads to them.
+- ffmpeg can't be set to a program that isn't ffmpeg, or to one in a space's folder.
+- The setup and update pages no longer tell visitors where the setup code file is once it is not needed.
+
 ## 1.46.0
 
 ### Added

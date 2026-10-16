@@ -489,7 +489,7 @@ export interface TaskRunDetails extends TaskRunSummary {
 }
 
 /** The severities of the server's log, from the least to the most severe. */
-export type LogLevelName = 'trace' | 'debug' | 'information' | 'warning' | 'error' | 'critical';
+export type LogLevelName = 'trace' | 'debug' | 'information' | 'warning' | 'securityWarning' | 'error' | 'critical';
 
 export interface LogEntry {
     id: number;

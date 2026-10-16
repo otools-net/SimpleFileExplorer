@@ -62,7 +62,8 @@ down: use e.g. `sudo -n /usr/sbin/shutdown -h +1` and allow that command in sudo
 The settings of the [setup page](../first-start.md#the-setup-page)'s second step, for server administrators
 (`server.settings`). They decide where data lives and which program runs, so the page first asks for the **setup code**
 (the one in `data/setup-code.txt` in SFE's folder, or the one the configuration sets), as the
-[update page](../upgrading.md#the-update-page-137-and-later) does; it stays unlocked for an hour.
+[update page](../upgrading.md#the-update-page-137-and-later) does; it stays unlocked for an hour. Both are needed: a
+signed-in server administrator without the code can't use it, nor can anyone with the code alone.
 
 - **Library folder**: the first space's folder (`Sfe:Root`), picked by clicking through the server's drives and folders.
   Saving starts the libraries again on it at once. Another folder makes the space show other files: the next scan
@@ -72,7 +73,8 @@ The settings of the [setup page](../first-start.md#the-setup-page)'s second step
   (`http://*:<port>`), and the port. It applies once SFE starts again (the page says so).
 - **ffmpeg**: **Found** with its path and version, or **Not found**. Type its program or folder, or **Browse** to the
   folder it was unzipped to (its `bin` folder is found too); empty = look for `ffmpeg` on the `PATH`. Saving checks it
-  and starts the libraries again with it.
+  and starts the libraries again with it. The program must be named `ffmpeg` (`ffmpeg.exe` on Windows) and be outside
+  every space's folder: whoever can add files to a library must not choose the program SFE runs.
 
 What the page saves goes to `data/installation.json` (see [Configuration](../configuration.md#where-settings-come-from)).
 A value the server's environment variables or command line set (e.g. `Sfe__Root` in a systemd unit, `--urls`) wins

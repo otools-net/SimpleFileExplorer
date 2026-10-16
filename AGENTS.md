@@ -66,6 +66,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [code-style](agents/docs/development/code-style.md) | C# style | |
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons | `src/Sfe.Web/src/` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
+| [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |

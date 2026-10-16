@@ -54,7 +54,10 @@ for the setup code first (only whoever runs the server knows it).
 | `Sfe:Setup:CodeFile` | Where SFE keeps the code it made when `Sfe:Setup:Code` is empty (default `data/setup-code.txt`) |
 | `Sfe:Setup:Recover` | `true` opens the setup page again to reset a lost administrator password (with the code); turn it off afterwards |
 | `Sfe:Security:AnonymousGuests` | Default `true`: spaces may let visitors in without an account; `false` forbids it everywhere |
-| `Sfe:Security:SessionDays`, `MinimumPasswordLength`, `MaxFailedSignIns`, `LockoutMinutes`, `SignInsPerMinute` | Sign-in: 30 days, 8 characters, 5 failures lock an account for 15 minutes, 10 attempts per minute and address |
+| `Sfe:Security:SessionDays`, `MinimumPasswordLength`, `MaxFailedSignIns`, `LockoutMinutes`, `SignInsPerMinute` | Sign-in: 30 days, 8 characters, after 5 failures to an account from one address that address waits 15 minutes before trying it again (others still sign in), 10 attempts per minute and address |
+| `Sfe:Security:AccountLockoutFailures` | Default `50`: failures to a local account from all addresses together, after which the account itself is locked for `LockoutMinutes`; `0` never |
+| `Sfe:Security:TrustedProxies` | Reverse proxies on other computers (addresses or networks like `10.0.0.0/8`) whose `X-Forwarded-For`/`X-Forwarded-Proto` are believed; one on this computer always is. See [https and a reverse proxy](installation.md#reaching-it-from-outside-https-and-a-reverse-proxy) |
+| `Sfe:Security:RequireHttps` | Default `false`; `true` when the app is only used over https: secure cookie, HSTS |
 | `Sfe:Security:KeysDirectory` | Keys signing the sign-in cookies and the external players' links (default `data/keys`); keep it, or everyone is signed out |
 | `Sfe:Security:Directories` | Directories checking passwords, in order (empty = local accounts only; see [Directories](administration/spaces-and-accounts.md#directories-ldap)) |
 | `Sfe:Rights:Disabled` | Rights nobody gets, not even administrators (e.g. `tracking.duplicatesRemove`, `files.*`); see [Rights](reference/rights.md) |

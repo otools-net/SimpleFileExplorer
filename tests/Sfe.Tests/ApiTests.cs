@@ -370,6 +370,139 @@ public sealed class ApiTests
     }
 
     [TestMethod]
+    [DataRow("evil.html", "text/html")]
+    [DataRow("evil.htm", "text/html")]
+    [DataRow("evil.svg", "image/svg+xml")]
+    [DataRow("evil.xml", "text/xml")]
+    [DataRow("evil.xhtml", "application/xhtml+xml")]
+    public async Task FilesThatCouldRunScriptsAreOnlyDownloaded(string name, string type)
+    {
+        File.WriteAllText(_library.FullPath(name), "<script>fetch('api/access/users')</script>");
+
+        using var response = await _client.GetAsync($"/api/files/raw/{name}", TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(type, response.Content.Headers.ContentType?.MediaType);
+        Assert.AreEqual("attachment", response.Content.Headers.ContentDisposition?.DispositionType);
+        Assert.AreEqual(Sfe.Api.Security.SecurityHeaders.FilePolicy, string.Join(';', response.Headers.GetValues("Content-Security-Policy")));
+        Assert.AreEqual("nosniff", string.Join(',', response.Headers.GetValues("X-Content-Type-Options")));
+    }
+
+    [TestMethod]
+    public async Task SharedLinksOfPagesAreOnlyDownloaded()
+    {
+        File.WriteAllText(_library.FullPath("evil.html"), "<script>alert(1)</script>");
+        using var created = await _client.PostAsJsonAsync("/api/files/links", new FileLinkRequest("evil.html"), TestContext.CancellationToken);
+        var link = (await created.Content.ReadFromJsonAsync<Sfe.Api.Security.FileLink>(Json, TestContext.CancellationToken))!;
+
+        using var visitor = ApiClients.Create(_factory);
+        using var response = await visitor.GetAsync("/" + link.Url, TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual("attachment", response.Content.Headers.ContentDisposition?.DispositionType);
+        Assert.AreEqual(Sfe.Api.Security.SecurityHeaders.FilePolicy, string.Join(';', response.Headers.GetValues("Content-Security-Policy")));
+    }
+
+    [TestMethod]
+    public async Task TheServersOwnFilesAreNeverServedThroughALink()
+    {
+        // A link in the library to the folder holding the keys (forged cookies), the database and the settings.
+        var link = _library.FullPath("escape");
+        if (!LinkFolder(link, _library.BasePath))
+            Assert.Inconclusive("Cannot make a folder link here.");
+        try
+        {
+            var key = Directory.GetFiles(Path.Combine(_library.BasePath, "keys"), "*.xml").Select(Path.GetFileName).First();
+            File.WriteAllText(Path.Combine(_library.BasePath, "settings.json"), "{}");
+
+            using var keyFile = await _client.GetAsync($"/api/files/raw/escape/keys/{key}", TestContext.CancellationToken);
+            using var database = await _client.GetAsync("/api/files/raw/escape/index.db", TestContext.CancellationToken);
+            using var settings = await _client.GetAsync("/api/files/raw/escape/settings.json", TestContext.CancellationToken);
+            using var shared = await _client.PostAsJsonAsync("/api/files/links", new FileLinkRequest("escape/index.db"), TestContext.CancellationToken);
+            // Links still work for the library's own content.
+            using var media = await _client.GetAsync("/api/files/raw/escape/Root/RFile1.txt", TestContext.CancellationToken);
+
+            Assert.AreEqual(HttpStatusCode.NotFound, keyFile.StatusCode);
+            Assert.AreEqual(HttpStatusCode.NotFound, database.StatusCode);
+            Assert.AreEqual(HttpStatusCode.NotFound, settings.StatusCode);
+            Assert.AreEqual(HttpStatusCode.NotFound, shared.StatusCode);
+            Assert.AreEqual(HttpStatusCode.OK, media.StatusCode);
+        }
+        finally
+        {
+            // Not through the link: it leads back to the library's own folder.
+            Directory.Delete(link);
+        }
+    }
+
+    private static bool LinkFolder(string link, string target)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{target}\"")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            })!;
+            process.WaitForExit();
+            return process.ExitCode == 0;
+        }
+
+        try
+        {
+            Directory.CreateSymbolicLink(link, target);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    [TestMethod]
+    [DataRow("/api/files/raw/Media/photo.jpg")]
+    [DataRow("/api/files/raw/Media/Episode%202.mkv")]
+    [DataRow("/api/files/raw/RFile1.txt")]
+    public async Task MediaAndTextStillOpenInTheBrowser(string url)
+    {
+        using var response = await _client.GetAsync(url, TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.IsNull(response.Content.Headers.ContentDisposition);
+        Assert.AreEqual(Sfe.Api.Security.SecurityHeaders.FilePolicy, string.Join(';', response.Headers.GetValues("Content-Security-Policy")));
+    }
+
+    [TestMethod]
+    [DataRow("/")]
+    [DataRow("/api/config")]
+    [DataRow("/api/missing")]
+    public async Task EveryAnswerCarriesTheSecurityHeaders(string url)
+    {
+        using var visitor = ApiClients.Create(_factory);
+        foreach (var client in new[] { _client, visitor })
+        {
+            using var response = await client.GetAsync(url, TestContext.CancellationToken);
+
+            Assert.AreEqual("nosniff", string.Join(',', response.Headers.GetValues("X-Content-Type-Options")), url);
+            Assert.AreEqual("DENY", string.Join(',', response.Headers.GetValues("X-Frame-Options")), url);
+            Assert.AreEqual("same-origin", string.Join(',', response.Headers.GetValues("Referrer-Policy")), url);
+            Assert.AreEqual(Sfe.Api.Security.SecurityHeaders.AppPolicy, string.Join(';', response.Headers.GetValues("Content-Security-Policy")), url);
+        }
+    }
+
+    [TestMethod]
+    public async Task TheWebClientHasNoInlineScripts()
+    {
+        // The app's policy runs only the app's own script files: an inline script would not run.
+        using var response = await _client.GetAsync("/", TestContext.CancellationToken);
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex(@"<script(?![^>]*\ssrc=)[^>]*>", System.Text.RegularExpressions.RegexOptions.IgnoreCase), html);
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex(@"\son[a-z]+\s*=", System.Text.RegularExpressions.RegexOptions.IgnoreCase), html);
+    }
+
+    [TestMethod]
     public async Task SearchPagesFollowTheCursor()
     {
         using var start = await _client.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken);

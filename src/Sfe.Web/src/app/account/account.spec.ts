@@ -101,6 +101,62 @@ describe('LoginPageComponent', () => {
         expect(navigateByUrl).toHaveBeenCalledWith('/player?path=a.mp4', { replaceUrl: true });
     });
 
+    it('recovers an administrator with the code the server shows, then signs in', async () => {
+        await create(session(), '/admin');
+        api.requestRecovery.mockResolvedValue({ minutes: 15 });
+        api.completeRecovery.mockResolvedValue(session({ user: { id: 1, userName: 'admin', displayName: null, kind: 'user', isServerAdmin: true, local: true }, canBrowse: true }));
+
+        type(element, '#login-name', 'admin');
+        element.querySelector<HTMLAnchorElement>('a[title^="Recover a server"]')!.click();
+        await settle();
+        expect((element.querySelector<HTMLInputElement>('#recover-name'))!.value).toBe('admin');
+        buttonNamed(element, 'Show a recovery code on the server')!.click();
+        await settle();
+
+        expect(api.requestRecovery).toHaveBeenCalledWith('admin');
+        expect(element.textContent).toContain('works for 15 minutes');
+        type(element, '#recover-code', ' ab2c-de3f-gh4j-km5n ');
+        type(element, '#recover-password', 'new-password-1');
+        type(element, '#recover-confirm', 'new-password-2');
+        await settle();
+        expect(element.textContent).toContain('The two passwords differ.');
+        expect(buttonNamed(element, 'Set the password and sign in')!.disabled).toBe(true);
+
+        type(element, '#recover-confirm', 'new-password-1');
+        await settle();
+        buttonNamed(element, 'Set the password and sign in')!.click();
+        await settle();
+
+        expect(api.completeRecovery).toHaveBeenCalledWith('admin', 'ab2c-de3f-gh4j-km5n', 'new-password-1', false);
+        expect(navigateByUrl).toHaveBeenCalledWith('/admin', { replaceUrl: true });
+    });
+
+    it('shows a wrong recovery code by its field and stays', async () => {
+        await create(session());
+        api.requestRecovery.mockResolvedValue({ minutes: 15 });
+        api.completeRecovery.mockRejectedValue(new ApiError(400, 'One or more validation errors occurred.', { code: ['This recovery code is wrong or has expired: ask for a new one.'] }));
+
+        element.querySelector<HTMLAnchorElement>('a[title^="Recover a server"]')!.click();
+        await settle();
+        type(element, '#recover-name', 'admin');
+        await settle();
+        buttonNamed(element, 'Show a recovery code on the server')!.click();
+        await settle();
+        type(element, '#recover-code', 'WRONG');
+        type(element, '#recover-password', 'new-password-1');
+        type(element, '#recover-confirm', 'new-password-1');
+        await settle();
+        buttonNamed(element, 'Set the password and sign in')!.click();
+        await settle();
+
+        expect(element.querySelector('.field-error')!.textContent).toContain('wrong or has expired');
+        expect(navigateByUrl).not.toHaveBeenCalled();
+
+        buttonNamed(element, 'Back')!.click();
+        await settle();
+        expect(element.querySelector('#login-password')).not.toBeNull();
+    });
+
     it('never goes back to another site', async () => {
         await create(session(), 'http://evil/');
         api.signIn.mockResolvedValue(session({ user: { id: 1, userName: 'a', displayName: null, kind: 'user', isServerAdmin: false, local: true }, canBrowse: true }));

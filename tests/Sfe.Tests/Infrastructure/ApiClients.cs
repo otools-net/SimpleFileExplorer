@@ -2,8 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Sfe.Api.Endpoints;
 using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
@@ -27,7 +29,36 @@ public static class ApiClients
             builder.UseEnvironment("Testing");
             foreach (var (key, value) in settings)
                 builder.UseSetting(key, value);
+            builder.ConfigureServices(services => services.AddSingleton<IStartupFilter, TestAddressFilter>());
         });
+    }
+
+    /// <summary>
+    /// The test server has no network: a request with this header comes from that address (before the app's own
+    /// middleware, as a connection would), e.g. to test the limits per address or a trusted proxy.
+    /// </summary>
+    public const string AddressHeader = "X-Test-Remote-Address";
+
+    /// <summary>A client of <paramref name="factory"/> whose requests come from <paramref name="address"/>.</summary>
+    public static HttpClient CreateFrom(WebApplicationFactory<Program> factory, string address)
+    {
+        var client = Create(factory);
+        client.DefaultRequestHeaders.Add(AddressHeader, address);
+        return client;
+    }
+
+    private sealed class TestAddressFilter : IStartupFilter
+    {
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
+        {
+            app.Use((context, nextMiddleware) =>
+            {
+                if (context.Request.Headers[AddressHeader].ToString() is { Length: > 0 } address)
+                    context.Connection.RemoteIpAddress = IPAddress.Parse(address);
+                return nextMiddleware(context);
+            });
+            next(app);
+        };
     }
 
     /// <summary>A client that is not signed in (a visitor without an account).</summary>

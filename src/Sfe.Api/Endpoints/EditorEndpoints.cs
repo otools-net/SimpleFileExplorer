@@ -11,6 +11,7 @@ public static class EditorEndpoints
     public static RouteGroupBuilder MapEditorEndpoints(this RouteGroupBuilder api)
     {
         api.MapPost("/editor/images", SaveImage)
+            .RequireRateLimiting(RequestLimits.Upload)
             .RequireRight(Rights.EditImages)
             // Room for a large lossless picture (Kestrel's default stops at 30 MB); the service checks the size again.
             .WithMetadata(new RequestSizeLimitAttribute(EditedImages.MaxBytes + 1))

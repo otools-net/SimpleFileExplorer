@@ -68,6 +68,25 @@ public sealed class GeneratedSetupCode(string filePath, ILogger<GeneratedSetupCo
         }
     }
 
+    /// <summary>
+    /// Forgets the code in the file: the next time one is needed (<see cref="Ensure"/>), a new one is made and printed.
+    /// </summary>
+    /// <returns>There was a code to forget.</returns>
+    /// <exception cref="IOException">The file cannot be deleted.</exception>
+    public bool Renew()
+    {
+        lock (_lock)
+        {
+            if (!File.Exists(FilePath))
+                return false;
+            File.Delete(FilePath);
+            var changed = _changed;
+            _changed = new CancellationTokenSource();
+            changed.Cancel();
+            return true;
+        }
+    }
+
     public void PostConfigure(string? name, SetupOptions options)
     {
         if (!string.IsNullOrWhiteSpace(options.Code) || Read() is not { } code)

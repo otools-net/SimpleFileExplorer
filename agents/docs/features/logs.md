@@ -9,6 +9,11 @@ Code: `src/Sfe.Core/Logs/` (`AuditLogProvider`, `AuditLogService`), entity `Data
   `MaxQueued`, oldest dropped and counted). `TenantHost` hands libraries `ForTenant(id)` instead of the instance, which
   marks their entries with `TenantId`; root entries (requests' own loggers, start-up, accounts) have none.
 - Levels follow the `Logging` section through the logger factory's filters, as the console: no extra filter.
+- **Security warnings:** log security events with `logger.LogSecurityWarning(...)` (`Core/Logs/SecurityLog`: a
+  warning with `EventId` 9000 "Security"). The console shows a warning; `AuditLogProvider` stores
+  `LogEntryLevel.SecurityWarning` (7; `LogEntry.Level` is `LogEntryLevel`, same numbers as `LogLevel`, so no
+  migration), the API and client name it `securityWarning`, files write `SEC`. Use it for anything acting against the
+  protections (sign-in failures, lockouts, codes, recoveries, installation changes), not for operational warnings.
 - `AuditLogProvider.Suppress()` (an `AsyncLocal`) keeps the log's own EF commands and failures out of it, else EF at
   Information would log every insert into the log forever. Use it around anything the log service does.
 - `AuditLogWorker` (root hosted service) flushes every 2 s and purges hourly; while `MigrationCoordinator.IsBlocking`

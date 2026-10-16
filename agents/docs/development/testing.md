@@ -16,7 +16,9 @@ Code: `tests/Sfe.Tests/` (`Infrastructure/`: `TestLibrary`, `CoreServices`, `Api
 - Each test gets its own `TestLibrary` (temp tree with odd/Unicode names + own SQLite file, setup code, keys folder).
 - `CoreServices.CreateAsync` for Core (no accounts: the server level only).
 - `WebApplicationFactory<Program>` for HTTP through `ApiClients` (`CreateFactory`, `SetUpAsync` = signed in as the
-  server administrator, `SignInAsync`, `Create` = a visitor; all send `X-SFE-Request`).
+  server administrator, `SignInAsync`, `Create` = a visitor; all send `X-SFE-Request`). The test server has no network
+  address: `CreateFrom(factory, "203.0.113.7")` (header `ApiClients.AddressHeader`, applied by a startup filter before
+  the app's middleware) for limits per address and forwarded headers (`127.0.0.1` = a local proxy).
 - A test that makes a database first (`CoreServices`, an old settings file + index) and then starts the HTTP server
   meets the update gate: call `ApiClients.MigrateAsync(factory)` before anything else.
 - Core has `InternalsVisibleTo Sfe.Tests`.
