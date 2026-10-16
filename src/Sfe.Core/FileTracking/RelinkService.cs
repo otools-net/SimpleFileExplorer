@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Sfe.Core.Indexing;
 using Sfe.Core.Library;
@@ -117,11 +118,15 @@ public sealed class RelinkService(
 
     /// <summary>Missing files to relink, oldest first, with the indexed files that may be them.</summary>
     /// <param name="after"><see cref="MissingFileResults.Next"/> of the previous page.</param>
-    public async Task<MissingFileResults> ListAsync(int? after, int? limit, CancellationToken cancellationToken = default)
+    /// <param name="visible">
+    /// Where the asker may see files (folder rules): only the missing files that were there, and the candidates that
+    /// are there, are listed (a missing file outside the library's folder is never listed then); null = everywhere.
+    /// </param>
+    public async Task<MissingFileResults> ListAsync(int? after, int? limit, CancellationToken cancellationToken = default, PathFilter? visible = null)
     {
         var pageSize = Math.Clamp(limit ?? DefaultPageSize, 1, MaxPageSize);
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var query = db.MissingFiles.AsNoTracking();
+        var query = db.MissingFiles.AsNoTracking().WhereVisible(visible, m => m.FullName, paths);
         var total = after is null ? await query.CountAsync(cancellationToken) : (int?)null;
         if (after is { } afterId)
             query = query.Where(m => m.Id > afterId);
@@ -149,6 +154,7 @@ public sealed class RelinkService(
             new DateTimeOffset(DateTime.SpecifyKind(m.MissingSince, DateTimeKind.Local)),
             TagService.Summaries(graph, links[m.Id]),
             candidates[m.Id]
+                .Where(c => visible is null || (paths.ToRelative(c.FullName) is { } relative && visible.Includes(relative)))
                 .OrderByDescending(c => c.SameName)
                 .ThenBy(c => c.FullName, StringComparer.CurrentCultureIgnoreCase)
                 .Take(MaxCandidates)
@@ -163,13 +169,14 @@ public sealed class RelinkService(
 
     /// <summary>Gives the tags of a missing file to a file of the library chosen by the user, and forgets the missing file.</summary>
     /// <param name="relativePath">Any existing file: it is indexed if needed.</param>
-    public async Task<RelinkStatus> RelinkAsync(int missingId, string? relativePath, CancellationToken cancellationToken = default)
+    /// <param name="visible">Where the asker may see files: a missing file that was elsewhere is not found.</param>
+    public async Task<RelinkStatus> RelinkAsync(int missingId, string? relativePath, CancellationToken cancellationToken = default, PathFilter? visible = null)
     {
         if (!paths.TryResolve(relativePath, out var fullPath) || !File.Exists(fullPath))
             return RelinkStatus.InvalidPath;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        if (!await db.MissingFiles.AnyAsync(m => m.Id == missingId, cancellationToken))
+        if (!await db.MissingFiles.WhereVisible(visible, m => m.FullName, paths).AnyAsync(m => m.Id == missingId, cancellationToken))
             return RelinkStatus.NotFound;
 
         var ids = await indexer.IndexFilesAsync([fullPath], cancellationToken);
@@ -196,11 +203,12 @@ public sealed class RelinkService(
     }
 
     /// <summary>Forgets a missing file and its tags (all of them when <paramref name="missingId"/> is null).</summary>
+    /// <param name="visible">Where the asker may see files: only the missing files that were there are forgotten.</param>
     /// <returns>Missing files forgotten.</returns>
-    public async Task<int> ForgetAsync(int? missingId, CancellationToken cancellationToken = default)
+    public async Task<int> ForgetAsync(int? missingId, CancellationToken cancellationToken = default, PathFilter? visible = null)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var query = missingId is { } id ? db.MissingFiles.Where(m => m.Id == id) : db.MissingFiles;
+        var query = (missingId is { } id ? db.MissingFiles.Where(m => m.Id == id) : db.MissingFiles).WhereVisible(visible, m => m.FullName, paths);
         return await query.ExecuteDeleteAsync(cancellationToken);
     }
 

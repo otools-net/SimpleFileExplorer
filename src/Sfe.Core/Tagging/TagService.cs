@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Sfe.Core.Indexing;
 using Sfe.Core.Library;
@@ -24,11 +25,12 @@ public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, Librar
     /// Tags whose name, shorthand or alias contains <paramref name="text"/>. As in TagStudio, names starting with
     /// the text come first (shortest first), and tags inheriting from a match are listed separately.
     /// </summary>
-    public async Task<TagSearchResults> SearchAsync(string? text, int limit, CancellationToken cancellationToken = default)
+    /// <param name="visible">Where the asker may see files (folder rules): file counts count only those; null = everywhere.</param>
+    public async Task<TagSearchResults> SearchAsync(string? text, int limit, CancellationToken cancellationToken = default, PathFilter? visible = null)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
-        var counts = await FileCountsAsync(db, cancellationToken);
+        var counts = await FileCountsAsync(db, cancellationToken, visible);
         text = text?.Trim() ?? string.Empty;
 
         if (text.Length == 0)
@@ -80,11 +82,12 @@ public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, Librar
             ? (0, name.Length, name.ToLowerInvariant())
             : (1, 0, name.ToLowerInvariant());
 
-    public async Task<TagDetails?> GetAsync(int id, CancellationToken cancellationToken = default)
+    /// <param name="visible">Where the asker may see files (folder rules): the file count counts only those.</param>
+    public async Task<TagDetails?> GetAsync(int id, CancellationToken cancellationToken = default, PathFilter? visible = null)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
-        return graph.Find(id) is { } node ? Details(graph, node, await FileCountsAsync(db, cancellationToken)) : null;
+        return graph.Find(id) is { } node ? Details(graph, node, await FileCountsAsync(db, cancellationToken, visible)) : null;
     }
 
     public async Task<TagEditResult> CreateAsync(TagInput input, CancellationToken cancellationToken = default)
@@ -247,25 +250,54 @@ public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, Librar
 
     private sealed record FileCounts(Dictionary<int, int> Counts, long Version, DateTime LoadedAt);
 
+    /// <summary>Counts kept for subjects that folder rules restrict, by <see cref="PathFilter.Key"/>; all dropped when full.</summary>
+    private const int CachedFilteredCounts = 64;
+
     private FileCounts? _fileCounts;
+    private readonly Dictionary<string, FileCounts> _filteredCounts = [];
+    private readonly Lock _filteredCountsGate = new();
     private long _fileCountsVersion;
 
     /// <summary>
     /// Number of files per tag. Counting reads every file-tag link, and the tag picker asks for counts as the user
-    /// types, so they are kept a short while and dropped when this service changes links.
+    /// types, so they are kept a short while and dropped when this service changes links. With a
+    /// <paramref name="visible"/> filter (folder rules) only those files count, kept per filter.
     /// </summary>
-    private async Task<Dictionary<int, int>> FileCountsAsync(SfeDbContext db, CancellationToken cancellationToken)
+    private async Task<Dictionary<int, int>> FileCountsAsync(SfeDbContext db, CancellationToken cancellationToken, PathFilter? visible = null)
     {
         var version = Interlocked.Read(ref _fileCountsVersion);
-        if (_fileCounts is { } cached && cached.Version == version && DateTime.UtcNow - cached.LoadedAt < FileCountLifetime)
-            return cached.Counts;
+        if (visible is null || visible.IsEverything)
+        {
+            if (_fileCounts is { } cached && cached.Version == version && DateTime.UtcNow - cached.LoadedAt < FileCountLifetime)
+                return cached.Counts;
 
-        var counts = await db.FileTags
+            var counts = await db.FileTags
+                .GroupBy(l => l.TagId)
+                .Select(g => new { TagId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(g => g.TagId, g => g.Count, cancellationToken);
+            _fileCounts = new FileCounts(counts, version, DateTime.UtcNow);
+            return counts;
+        }
+
+        lock (_filteredCountsGate)
+        {
+            if (_filteredCounts.TryGetValue(visible.Key, out var cached) && cached.Version == version && DateTime.UtcNow - cached.LoadedAt < FileCountLifetime)
+                return cached.Counts;
+        }
+
+        var filtered = await db.Files.AsNoTracking()
+            .WhereVisible(visible, f => f.FullName, paths)
+            .SelectMany(f => f.TagLinks)
             .GroupBy(l => l.TagId)
             .Select(g => new { TagId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.TagId, g => g.Count, cancellationToken);
-        _fileCounts = new FileCounts(counts, version, DateTime.UtcNow);
-        return counts;
+        lock (_filteredCountsGate)
+        {
+            if (_filteredCounts.Count >= CachedFilteredCounts)
+                _filteredCounts.Clear();
+            _filteredCounts[visible.Key] = new FileCounts(filtered, version, DateTime.UtcNow);
+        }
+        return filtered;
     }
 
     /// <summary>Drops the cached counts: file-tag links changed (also used by relinking).</summary>
@@ -279,13 +311,14 @@ public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, Librar
     /// Most used tags, last searched tags, tags of the last viewed files, and random tags in none of those lists,
     /// <see cref="TagOptions.SidebarCount"/> of each. The history lists stay empty while history is off.
     /// </summary>
-    public async Task<TagSidebar> GetSidebarAsync(CancellationToken cancellationToken = default)
+    /// <param name="visible">Where the asker may see files (folder rules): counts, hence the most used tags, count only those.</param>
+    public async Task<TagSidebar> GetSidebarAsync(CancellationToken cancellationToken = default, PathFilter? visible = null)
     {
         var count = Math.Max(1, Settings.SidebarCount);
         var history = Settings.RecordHistory;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
-        var counts = await FileCountsAsync(db, cancellationToken);
+        var counts = await FileCountsAsync(db, cancellationToken, visible);
 
         TagUsage Usage(int id) => new(graph.Summary(id)!, counts.GetValueOrDefault(id));
 

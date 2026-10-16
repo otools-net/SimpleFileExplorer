@@ -4,6 +4,16 @@ using Sfe.Core.Paths;
 
 namespace Sfe.Core.Library;
 
+/// <summary>
+/// What a listing leaves out (folder rules): the entries named in <paramref name="Hidden"/>, or, when
+/// <paramref name="Only"/> is set, every entry but those (a folder shown only to lead to what is below it). Names
+/// compare as the host file system does.
+/// </summary>
+public sealed record ListingFilter(IReadOnlySet<string> Hidden, IReadOnlySet<string>? Only = null)
+{
+    public bool Shows(string name) => !Hidden.Contains(name) && (Only is null || Only.Contains(name));
+}
+
 /// <summary>Lists folders straight from disk.</summary>
 public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifier, IOptionsMonitor<SfeOptions> options)
 {
@@ -22,15 +32,27 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
     private sealed record ListingKey(string FullPath, SortField Sort, bool Descending, bool ShowHidden);
 
     /// <param name="Version">Last write time of the folder: it changes when an entry is added, removed or renamed.</param>
-    private sealed record CachedListing(ListingKey Key, DateTime Version, List<LibraryItem> Items, int DirectoryCount);
+    private sealed record CachedListing(ListingKey Key, DateTime Version, List<LibraryItem> Items, int DirectoryCount)
+    {
+        private Dictionary<string, int>? _positions;
 
+        /// <summary>Where each name is in <see cref="Items"/>: built once, for the listings that folder rules filter.</summary>
+        public Dictionary<string, int> Positions => _positions ??= Items
+            .Select((item, index) => (item.Name, index))
+            .DistinctBy(e => e.Name, LibraryPaths.PathComparer)
+            .ToDictionary(e => e.Name, e => e.index, LibraryPaths.PathComparer);
+    }
+
+    /// <param name="filter">What folder rules leave out; offsets and counts are those of what is left.</param>
     /// <returns>null when the folder does not exist or is outside the library.</returns>
     /// <remarks>
     /// The first page (offset 0) lists the folder from disk. The next pages reuse that sorted listing while the
     /// folder is unchanged: scrolling through a folder of a hundred thousand entries lists and sorts it once instead
-    /// of once per page. Sizes and dates on later pages are those read for the first page.
+    /// of once per page. Sizes and dates on later pages are those read for the first page. A filter costs what it
+    /// names (the few entries folder rules are about), not the size of the folder.
     /// </remarks>
-    public DirectoryListing? List(string? relativePath, int offset, int limit, SortField sort = SortField.Name, bool descending = false)
+    public DirectoryListing? List(string? relativePath, int offset, int limit, SortField sort = SortField.Name, bool descending = false,
+        ListingFilter? filter = null)
     {
         if (!paths.TryResolve(relativePath, out var fullPath))
             return null;
@@ -42,28 +64,68 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         var listing = GetListing(directory, sort, descending, reuse: offset > 0);
 
         var path = paths.ToRelative(directory.FullName) ?? string.Empty;
-        var entries = listing.Items;
+        var (items, total, directories) = filter is null
+            ? (listing.Items.Skip(offset).Take(limit).ToList(), listing.Items.Count, listing.DirectoryCount)
+            : Filtered(listing, filter, offset, limit);
 
         return new DirectoryListing(
             Path: path,
             Name: path.Length == 0 ? paths.RootName : directory.Name,
             ParentPath: path.Length == 0 ? null : ParentOf(path),
             Breadcrumbs: BuildBreadcrumbs(path),
-            Items: entries.Skip(offset).Take(limit).ToList(),
+            Items: items,
             Offset: offset,
             Limit: limit,
-            Total: entries.Count,
-            DirectoryCount: listing.DirectoryCount,
-            FileCount: entries.Count - listing.DirectoryCount);
+            Total: total,
+            DirectoryCount: directories,
+            FileCount: total - directories);
+    }
+
+    /// <summary>A page of the listing without what <paramref name="filter"/> leaves out, with the counts of what is left.</summary>
+    private static (List<LibraryItem> Items, int Total, int Directories) Filtered(CachedListing listing, ListingFilter filter, int offset, int limit)
+    {
+        var entries = listing.Items;
+        var positions = listing.Positions;
+        if (filter.Only is { } only)
+        {
+            var shown = only.Where(name => !filter.Hidden.Contains(name))
+                .Select(name => positions.TryGetValue(name, out var index) ? index : -1)
+                .Where(index => index >= 0)
+                .Distinct()
+                .Order()
+                .Select(index => entries[index])
+                .ToList();
+            return (shown.Skip(offset).Take(limit).ToList(), shown.Count, shown.Count(i => i.Kind == ItemKind.Directory));
+        }
+
+        var hidden = filter.Hidden.Select(name => positions.TryGetValue(name, out var index) ? index : -1).Where(index => index >= 0).ToHashSet();
+        var sorted = hidden.Order().ToList();
+        // The entry at `offset` once the hidden ones are left out: each hidden one up to it moves it one further.
+        var raw = offset;
+        foreach (var index in sorted)
+        {
+            if (index > raw)
+                break;
+            raw++;
+        }
+
+        var page = new List<LibraryItem>(Math.Min(limit, Math.Max(0, entries.Count - raw)));
+        for (; raw < entries.Count && page.Count < limit; raw++)
+        {
+            if (!hidden.Contains(raw))
+                page.Add(entries[raw]);
+        }
+        return (page, entries.Count - hidden.Count, listing.DirectoryCount - sorted.Count(index => index < listing.DirectoryCount));
     }
 
     /// <summary>The folders before and after a folder in its parent, listed with the given sort.</summary>
+    /// <param name="filter">What folder rules leave out of the parent's listing.</param>
     /// <returns>null when the folder does not exist or is outside the library; no siblings for the root.</returns>
     /// <remarks>
     /// Reuses the parent's sorted listing while the parent is unchanged: stepping folder after folder through a parent
     /// of many sub-folders lists it once.
     /// </remarks>
-    public FolderSiblings? Siblings(string? relativePath, SortField sort = SortField.Name, bool descending = false)
+    public FolderSiblings? Siblings(string? relativePath, SortField sort = SortField.Name, bool descending = false, ListingFilter? filter = null)
     {
         if (!paths.TryResolve(relativePath, out var fullPath))
             return null;
@@ -78,7 +140,7 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
 
         var listing = GetListing(parent, sort, descending, reuse: true);
         // Folders come first in a listing.
-        var folders = listing.Items.Take(listing.DirectoryCount).ToList();
+        var folders = listing.Items.Take(listing.DirectoryCount).Where(i => filter is null || filter.Shows(i.Name)).ToList();
         var index = folders.FindIndex(i => string.Equals(i.Path, path, LibraryPaths.PathComparison));
         if (index < 0)
             return new FolderSiblings(path, null, null, 0, folders.Count);   // hidden, or created since the listing

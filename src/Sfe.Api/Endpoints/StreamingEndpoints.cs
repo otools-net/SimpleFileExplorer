@@ -1,3 +1,4 @@
+using Sfe.Core.Paths;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
@@ -28,6 +29,7 @@ public static class StreamingEndpoints
         streaming.MapGet("/probe", Probe)
             .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.Stream)
+            .FolderScoped("files.stream at the video")
             .WithName("ProbeVideoStream")
             .WithSummary("Whether a video can be played converted by the server, and its length.")
             .WithDescription("404 when streaming is off (`Streaming:Mode`), ffmpeg is missing, or `path` is not a video of the library.");
@@ -35,6 +37,7 @@ public static class StreamingEndpoints
         streaming.MapGet("/play", Play)
             .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.Stream)
+            .FolderScoped("files.stream and files.view at the video")
             .WithName("PlayVideoStream")
             .WithSummary("A video converted by ffmpeg while it plays (H.264 and AAC in fragmented MP4), from `t` seconds.")
             .WithDescription("""
@@ -51,8 +54,11 @@ public static class StreamingEndpoints
         return api;
     }
 
-    private static async Task<Results<Ok<StreamProbe>, NotFound>> Probe(VideoStreamer streamer, IOptionsMonitor<SfeOptions> options, string path, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<StreamProbe>, NotFound>> Probe(
+        VideoStreamer streamer, LibraryPaths paths, CurrentAccess current, IOptionsMonitor<SfeOptions> options, string path, CancellationToken cancellationToken)
     {
+        if ((await current.GetAsync()).Check(paths, path, Rights.Stream) != PathVerdict.Allowed)
+            return TypedResults.NotFound();
         var probe = await streamer.ProbeAsync(path, cancellationToken);
         return probe is null
             ? TypedResults.NotFound()
@@ -60,10 +66,14 @@ public static class StreamingEndpoints
     }
 
     private static async Task<Results<PushStreamHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>> Play(
-        VideoStreamer streamer, CurrentAccess current, HttpContext context, string path, double t = 0, string? id = null)
+        VideoStreamer streamer, LibraryPaths paths, CurrentAccess current, HttpContext context, string path, double t = 0, string? id = null)
     {
         var state = await current.GetAsync();
         if (!state.Has(Rights.ViewFiles))
+            return TypedResults.Forbid();
+        if (state.Check(paths, path, Rights.Stream) is var verdict and not PathVerdict.Allowed)
+            return verdict == PathVerdict.NotFound ? TypedResults.NotFound() : TypedResults.Forbid();
+        if (state.Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
             return TypedResults.Forbid();
         if (await streamer.ProbeAsync(path, context.RequestAborted) is not { } probe)
             return TypedResults.NotFound();

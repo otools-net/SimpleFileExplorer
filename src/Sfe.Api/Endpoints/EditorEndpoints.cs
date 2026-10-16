@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Editing;
+using Sfe.Core.Paths;
 
 namespace Sfe.Api.Endpoints;
 
@@ -13,6 +14,7 @@ public static class EditorEndpoints
         api.MapPost("/editor/images", SaveImage)
             .RequireRateLimiting(RequestLimits.Upload)
             .RequireRight(Rights.EditImages)
+            .FolderScoped("files.view at the original, files.edit at the folder the new file goes to")
             // Room for a large lossless picture (Kestrel's default stops at 30 MB); the service checks the size again.
             .WithMetadata(new RequestSizeLimitAttribute(EditedImages.MaxBytes + 1))
             .WithName("SaveEditedImage")
@@ -31,8 +33,16 @@ public static class EditorEndpoints
     }
 
     private static async Task<Results<Created<EditedImage>, ProblemHttpResult>> SaveImage(
-        EditedImages editor, HttpRequest request, CancellationToken cancellationToken, string? path = null)
+        EditedImages editor, LibraryPaths paths, CurrentAccess current, HttpRequest request, CancellationToken cancellationToken, string? path = null)
     {
+        var state = await current.GetAsync();
+        if (state.Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
+            return TypedResults.Problem("The original picture was not found.", statusCode: StatusCodes.Status404NotFound);
+        // The new file goes to a folder of its own (Editor:OutputFolder): its files must be the subject's to change.
+        if (LibraryPaths.NormalizeRelative(path) is { } source && editor.TargetFolder(source) is { } folder
+            && state.Check(paths, folder, Rights.EditImages) != PathVerdict.Allowed)
+            return TypedResults.Problem("You may not add files to the folder the edited picture would go to.", statusCode: StatusCodes.Status403Forbidden);
+
         var result = await editor.SaveAsync(path, request.Body, cancellationToken);
         return result.Outcome switch
         {

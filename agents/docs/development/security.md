@@ -18,6 +18,10 @@ library by others). Keep these rules when changing it.
   folder served by the app.
 - Every route names its right; every check of a path goes through `LibraryPaths` (lexical) **and** the served file
   must not be one of the server's own files (links can lead out of the root).
+- Every route taking a library path applies the folder rules (`FolderChecks`, [folder-access.md](../features/folder-access.md)):
+  answer 404 for what the subject doesn't see (never tell it apart from missing), check the canonical path and where it
+  really leads, filter index queries with `Visible()` and re-check shown items with `Seen()`; mark the route
+  `.FolderScoped(...)` (a test fails otherwise).
 - New expensive routes (ffmpeg, full scans of the index) get a limit per caller.
 - What only "this computer" may do (setup without code, fast sign-in) goes through `LocalVisitor.IsOnThisComputer`
   (loopback, not forwarded, loopback `Host`), never a bare loopback check ([local-start.md](../features/local-start.md)).
@@ -60,6 +64,10 @@ input, LIKE escaped, no `innerHTML` in the client.
   space admin vs server admin and shared accounts; guest-forbidden rights.
 - **Paths:** `..`, encoded separators, `\`, `C:`, `::$DATA`, `CON`, trailing dots/spaces, NUL, long names; links and
   junctions out of the root and onto the data folder; hard links in duplicate removal.
+- **Folder rules:** a hidden folder through case variants, `Private.`, `PRIVAT~1`, a junction or link from a visible
+  folder (raw, listing, search after a scan), a path-only folder's own files, counts (tags, duplicates, listings),
+  covers, siblings, quick links, scan status, a shared link made before the rule, the editor's output folder,
+  duplicate removal keeping a hidden copy; a user in two groups (rights stay with the group granting them).
 - **Content:** `.html`/`.svg`/`.xml`/polyglot files via raw, shared and download; `<script>` in file, folder and tag
   names; external player and data server URLs (`javascript:` variants).
 - **CSRF/framing/rebinding:** cross-site POST without the header, framing the app, foreign `Host`.

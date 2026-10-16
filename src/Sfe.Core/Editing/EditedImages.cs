@@ -112,7 +112,7 @@ public sealed class EditedImages(
     /// folder; the original's own folder when the setting is empty or the original is already in the output folder
     /// (editing an edited picture again).
     /// </summary>
-    internal string? TargetFolder(string source)
+    public string? TargetFolder(string source)
     {
         var sourceFolder = ParentOf(source);
         var configured = options.CurrentValue.Editor.OutputFolder;

@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
@@ -31,7 +32,9 @@ public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, L
     /// Biggest files first (the most space to win back), paged by key on (size, fingerprint) like searches: the
     /// <c>(Size, Sha1)</c> index gives the groups in order, so no page sorts or skips the whole index.
     /// </remarks>
-    public async Task<DuplicateResults?> FindAsync(string? relativeDirectory, string? after, int? limit, CancellationToken cancellationToken = default)
+    /// <param name="visible">Where the asker may see files (folder rules): groups count only those; null = everywhere.</param>
+    public async Task<DuplicateResults?> FindAsync(string? relativeDirectory, string? after, int? limit, CancellationToken cancellationToken = default,
+        PathFilter? visible = null)
     {
         if (!paths.TryResolve(relativeDirectory, out var directory))
             return null;
@@ -53,6 +56,7 @@ public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, L
         var isRoot = paths.ToRelative(directory) is "";
         if (!isRoot)
             files = files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, directory));
+        files = files.WhereVisible(visible, f => f.FullName, paths);
 
         var groups = files
             .GroupBy(f => new { f.Size, f.Sha1 })

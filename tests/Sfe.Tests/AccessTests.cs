@@ -146,6 +146,34 @@ public sealed class AccessTests
         Assert.IsEmpty(unknown, "Rights not in the catalog: " + string.Join(", ", unknown));
     }
 
+    /// <summary>
+    /// A route taking a path (a <c>path</c> or <c>paths</c> parameter, or a body with a <c>Path</c>, <c>Paths</c> or
+    /// <c>Keep</c>) says how it applies the folder rules, or that its paths are the server's own folders.
+    /// </summary>
+    [TestMethod]
+    public async Task EveryRouteTakingAPathSaysHowFolderRulesApply()
+    {
+        var factory = Factory();
+        Client(factory);
+        string[] pathNames = ["path", "paths", "keep"];
+
+        var routes = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
+            .Where(e => e.RoutePattern.RawText?.TrimStart('/').StartsWith("api/", StringComparison.Ordinal) == true)
+            .Where(e => e.Metadata.GetMetadata<System.Reflection.MethodInfo>() is { } handler
+                && handler.GetParameters().Any(p => (pathNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase) && typeof(IEnumerable<char>).IsAssignableFrom(p.ParameterType))
+                    // Request bodies are the app's records (HttpRequest and some services have a Path of their own).
+                    || (p.ParameterType.Namespace?.StartsWith("Sfe.", StringComparison.Ordinal) == true && p.ParameterType.GetMethod("<Clone>$") is not null
+                        && p.ParameterType.GetProperties().Any(property => pathNames.Contains(property.Name, StringComparer.OrdinalIgnoreCase)))))
+            .ToList();
+        var silent = routes
+            .Where(e => e.Metadata.GetMetadata<FolderMetadata>() is null)
+            .Select(e => $"{string.Join('/', e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? [])} {e.RoutePattern.RawText}")
+            .ToList();
+
+        Assert.IsGreaterThan(25, routes.Count);
+        Assert.IsEmpty(silent, "Routes taking a path without FolderScoped or NotLibraryPaths: " + string.Join(", ", silent));
+    }
+
     [TestMethod]
     [DataRow("/api/thumbnails/{**path}", RequestLimits.Media)]
     [DataRow("/api/browse/covers", RequestLimits.Media)]

@@ -208,6 +208,12 @@ public sealed class FolderAccess
 
     public bool Has(string right) => _granted.Contains(right) && (_atFolder is null || _atFolder.Contains(right));
 
+    /// <summary>What both allow: one place reached by two paths (a link and its target) gets the stricter access.</summary>
+    public FolderAccess And(FolderAccess other) =>
+        _atFolder is null && other._atFolder is null
+            ? this
+            : new FolderAccess(_granted, Allowed.Where(other.Has).ToHashSet(), PathOnly && other.PathOnly);
+
     /// <summary>The rights the subject has here.</summary>
     public IEnumerable<string> Allowed => _atFolder is null ? _granted : _granted.Where(_atFolder.Contains);
 }
@@ -231,6 +237,9 @@ public sealed class PathFilter
     public IReadOnlyList<PathRegion> Regions { get; }
 
     public bool IsEverything => Regions is [{ Path.Length: 0, Except.Count: 0 }];
+
+    /// <summary>Equal for equal filters: what results computed with it can be cached by.</summary>
+    public string Key => string.Join('|', Regions.Select(r => r.Path + " " + string.Join(' ', r.Except)));
     public bool IsNothing => Regions.Count == 0;
 
     /// <summary>The right applies at <paramref name="path"/> (root-relative).</summary>
@@ -254,4 +263,14 @@ public sealed class PathFilter
         }
         return Expression.Lambda<Func<T, bool>>(body, fullName.Parameters);
     }
+}
+
+public static class PathFilterQueries
+{
+    /// <summary>
+    /// The rows whose full path (selected by <paramref name="fullName"/>) <paramref name="filter"/> includes; all of them
+    /// for a null filter or <see cref="PathFilter.Everything"/> (no condition added: the query stays as it was).
+    /// </summary>
+    public static IQueryable<T> WhereVisible<T>(this IQueryable<T> query, PathFilter? filter, Expression<Func<T, string>> fullName, LibraryPaths paths) =>
+        filter is null || filter.IsEverything ? query : query.Where(filter.ToPredicate(fullName, paths));
 }

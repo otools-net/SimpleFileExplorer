@@ -1,12 +1,14 @@
-# Folder access (rules and evaluation built; not enforced yet)
+# Folder access (rules, evaluation and enforcement built; management to build)
 
-Status: phase 1 (right kinds, [right-kinds.md](right-kinds.md)) and **phase 2 (rules, evaluation, moves) built**;
-phases 3 (enforcement) and 4 (management) to build. **No route reads the policy yet and nothing creates rules**, so
-installs behave as before. Code: `Core/Access/FolderPolicy.cs` (`FolderPolicy`, `FolderPrincipal`, `FolderAccess`,
-`PathFilter`), `FolderRuleService.cs` (`FolderRuleMove`), `RightsEvaluator` (`EffectiveAccess.Folders`/`At`/
-`FilterFor`), `Data/Entities/Access/FolderRule.cs`, `AccessMigrations/*_FolderRules`. Planned:
-`Api/Security/RightAuthorization.cs` (`RequireRightAt`, `FolderScoped`), `CurrentAccess`. Tests: `FolderPolicyTests`,
-`FolderRuleServiceTests`, `FolderFilterIndexTests`, `FolderRulesUpgradeTests`. What file management must do with it:
+Status: phases 1 (right kinds, [right-kinds.md](right-kinds.md)), 2 (rules, evaluation, moves) and **3 (every route
+applies the rules) built**; phase 4 (management API and pages) to build. **Nothing creates rules yet** (only
+`FolderRuleService`, from tests), so installs behave as before. Code: `Core/Access/FolderPolicy.cs` (`FolderPolicy`,
+`FolderPrincipal`, `FolderAccess`, `PathFilter`, `PathFilterQueries.WhereVisible`), `FolderRuleService.cs`
+(`FolderRuleMove`), `RightsEvaluator` (`EffectiveAccess.Folders`/`At`/`FilterFor`), `Data/Entities/Access/FolderRule.cs`,
+`AccessMigrations/*_FolderRules`; `Api/Security/FolderChecks.cs` (`At`, `Check`, `Visible`, `Seen`,
+`ListingFilterOf`, `FolderScoped`, `NotLibraryPaths`); `Core/Library/LibraryBrowser` (`ListingFilter`). Tests:
+`FolderPolicyTests`, `FolderRuleServiceTests`, `FolderFilterIndexTests`, `FolderRulesUpgradeTests`,
+`FolderAccessRouteTests`, `AccessTests.EveryRouteTakingAPathSaysHowFolderRulesApply`. What file management must do with it:
 [file-operations.md](../development/file-operations.md). Prior art: Nextcloud group-folder ACLs (inherit / allow /
 deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per sub-folder).
 
@@ -80,11 +82,23 @@ deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per 
 - New table only: SQL Server migration in `AccessMigrations` + `AddMissingSqliteObjectsAsync` (check the check
   constraint, else enforce in the service). Upgrade test: an access database without the table, rights unchanged.
 
-## Enforcement (phase 3)
+## Enforcement (phase 3, built in 1.53.0)
 
-- `AccessState.At(path)` (canonical) → `FolderAccess`. Conventions `.RequireRightAt(right, "path")` and
-  `.FolderScoped()` add `FolderMetadata`; a test next to `EveryRouteNamesARight`: every route with a path parameter or
-  body declares it. 404 when the subject can't browse the path (same as missing), 403 when visible but not allowed.
+- As built: each handler checks (no endpoint filter): `state.At(paths, path)` (canonical: `TryResolve` then
+  `ToRelative`, and `LibraryPaths.RealRelative` for links/8.3 names, the stricter wins via `FolderAccess.And`;
+  nothing read from disk when unrestricted) and `state.Check(paths, path, right)` → `PathVerdict` (404 not seen,
+  403 seen but not allowed). `.FolderScoped("how")` / `.NotLibraryPaths()` add `FolderMetadata`;
+  `EveryRouteTakingAPathSaysHowFolderRulesApply` finds routes by a string `path`/`paths` parameter or an `Sfe.*`
+  record body with `Path`/`Paths`/`Keep` (services and `HttpRequest` have a `Path` too: not counted).
+- `RealRelative` measures from the root's own real path (a root reached through a junction would otherwise put every
+  link target "outside").
+- Scans follow folder links to siblings (only links back to an ancestor are skipped), so index rows can lead through a
+  link into a hidden folder: `Seen` re-checks the items of search, duplicates and similar-video pages for restricted
+  subjects (counts and totals may still include them).
+- Path-only folders list only the children leading to what is seen (`ListingFilter.Only`); listings, siblings and
+  covers of a path-only folder show nothing of its own. The listing's paging works on the filtered list
+  (`CachedListing.Positions`, built once per snapshot).
+- The planned design (kept for reference):
 - One path: `files/raw`, `files/animated`, `thumbnails`, `trickplay/files`, `streaming/probe|play`, `file-tags` GET,
   `file-tags/viewed`, `files/links`, `index/folder`, `scan` POST, `tasks/{task}/start`.
 - Shared links (`files/shared/{token}`, token = tenant, user, stamp, path; rights re-evaluated per request): add
@@ -117,8 +131,7 @@ deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per 
 ## Phases (one commit each, minor version)
 
 2. Done (1.52.0): rules model and evaluation, the subtree move and the before/after access comparison.
-3. Enforcement: conventions + route test, every route above, Core filters, canonical paths, links; security.md attack
-   vectors (case, `Private.`, `PRIVAT~1`, junction into a hidden folder, shared link after a rule).
+3. Done (1.53.0): enforcement on every route, Core filters, canonical and real paths, links, route test.
 4. Management API and UI, `canAt`, re-pointing, `docs/` with screenshots.
 
 Tests to write: nearest wins, union, rights paired per principal, account rules only add, path-only, unrestricted

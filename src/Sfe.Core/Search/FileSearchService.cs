@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Library;
@@ -29,6 +30,7 @@ public sealed class FileSearchService(
     /// <see cref="SortField.Duration"/> and <see cref="SortField.Resolution"/> (width × height) list the files whose
     /// value is known first, then the others by path, in both directions.
     /// </param>
+    /// <param name="visible">Where the asker may see files (folder rules); null = everywhere.</param>
     /// <returns>null when <paramref name="relativeDirectory"/> or <paramref name="after"/> is not valid.</returns>
     /// <remarks>
     /// Results are paged by key ("after this sort value and path") rather than by offset: an index on the sort column
@@ -42,7 +44,8 @@ public sealed class FileSearchService(
         int limit,
         SortField sort = SortField.Path,
         bool descending = false,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null)
     {
         if (!paths.TryResolve(relativeDirectory, out var directory))
             return null;
@@ -53,7 +56,7 @@ public sealed class FileSearchService(
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var parsed = SearchQuery.Parse(query);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
-        var files = Matches(db, graph, parsed, directory, out var wanted);
+        var files = Matches(db, graph, parsed, directory, out var wanted).WhereVisible(visible, f => f.FullName, paths);
 
         // The tags the search names (not their descendants) become the "last searched" ones. Next pages of the same
         // search don't count again, nor count the matches again.
@@ -122,8 +125,8 @@ public sealed class FileSearchService(
     /// The indexed files a search matches in <paramref name="directory"/> and below, unordered: what a search lists,
     /// and what tagging the results of a search changes (<see cref="ScopeTagger"/>).
     /// </summary>
-    public IQueryable<FileEntry> Matches(SfeDbContext db, TagGraph graph, string? query, string directory) =>
-        Matches(db, graph, SearchQuery.Parse(query), directory, out _);
+    public IQueryable<FileEntry> Matches(SfeDbContext db, TagGraph graph, string? query, string directory, PathFilter? visible = null) =>
+        Matches(db, graph, SearchQuery.Parse(query), directory, out _).WhereVisible(visible, f => f.FullName, paths);
 
     /// <summary>What <c>type:</c> compares with: the current file types of the listing.</summary>
     private MediaKinds MediaKinds() =>

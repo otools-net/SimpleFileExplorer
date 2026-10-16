@@ -69,6 +69,7 @@ public static class InstallationEndpoints
                 """);
 
         installation.MapGet("/folders", Folders)
+            .NotLibraryPaths()
             .AllowAnonymous()
             .WithName("ListServerFolders")
             .WithSummary("The folders of the server's disks, to pick the library folder or ffmpeg's folder.")

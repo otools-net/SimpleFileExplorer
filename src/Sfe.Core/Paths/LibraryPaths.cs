@@ -33,7 +33,10 @@ public sealed class LibraryPaths
             throw new InvalidOperationException($"'{SfeOptions.SectionName}:{nameof(SfeOptions.Root)}' is not configured.");
 
         Root = NormalizeRoot(root);
+        _realRoot = new Lazy<string>(() => RealPath(Root));
     }
+
+    private readonly Lazy<string> _realRoot;
 
     /// <summary>Absolute root, always ending with a directory separator.</summary>
     public string Root { get; }
@@ -76,6 +79,20 @@ public sealed class LibraryPaths
         return candidate.Length <= Root.Length
             ? string.Empty
             : candidate[Root.Length..].Replace(Path.DirectorySeparatorChar, '/');
+    }
+
+    /// <summary>
+    /// The API path of where <paramref name="fullPath"/> really is (<see cref="RealPath"/>: links and 8.3 names
+    /// resolved), measured from the root's own real place; null when it really is outside the library.
+    /// </summary>
+    public string? RealRelative(string fullPath)
+    {
+        var real = RealPath(fullPath);
+        var root = _realRoot.Value;
+        if (!IsSameOrInside(real, root))
+            return null;
+        var trimmed = Path.TrimEndingDirectorySeparator(root);
+        return real.Length <= trimmed.Length + 1 ? string.Empty : real[(trimmed.Length + (Path.EndsInDirectorySeparator(trimmed) ? 0 : 1))..].Replace(Path.DirectorySeparatorChar, '/');
     }
 
     public bool IsInsideRoot(string fullPath) =>

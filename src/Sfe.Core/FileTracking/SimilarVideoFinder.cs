@@ -2,6 +2,7 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
@@ -246,8 +247,13 @@ public sealed class SimilarVideoFinder(
 
     /// <param name="relativeDirectory">Only groups with a video in this folder (or below) are listed; empty for all.</param>
     /// <param name="after"><see cref="SimilarVideoResults.Next"/> of the previous page; null for the first one.</param>
+    /// <param name="visible">
+    /// Where the asker may see files (folder rules): the other videos are left out of the groups, and groups with
+    /// fewer than two left out of the list; null = everywhere.
+    /// </param>
     /// <returns>null when <paramref name="relativeDirectory"/> is invalid, or <paramref name="after"/> is not a page of the last comparison.</returns>
-    public async Task<SimilarVideoResults?> FindAsync(string? relativeDirectory, string? after, int? limit, CancellationToken cancellationToken = default)
+    public async Task<SimilarVideoResults?> FindAsync(string? relativeDirectory, string? after, int? limit, CancellationToken cancellationToken = default,
+        PathFilter? visible = null)
     {
         if (!paths.TryResolve(relativeDirectory, out var directory))
             return null;
@@ -273,6 +279,8 @@ public sealed class SimilarVideoFinder(
         var groups = path is ""
             ? snapshot.Groups
             : [.. snapshot.Groups.Where(g => g.Videos.Any(v => v.FullName.StartsWith(prefix, LibraryPaths.PathComparison)))];
+        if (visible is { IsEverything: false })
+            groups = [.. groups.Select(g => Visible(g, visible)).OfType<StoredGroup>()];
         var pageSize = Math.Clamp(limit ?? options.CurrentValue.FileTracking.Duplicates.GroupsPerPage, 1, DuplicateFinder.MaxGroupsPerPage);
         var page = groups.Skip(start).Take(pageSize).ToList();
 
@@ -289,6 +297,15 @@ public sealed class SimilarVideoFinder(
             HasMore: hasMore,
             Next: hasMore ? $"{snapshot.Run}:{start + page.Count}" : null,
             TrickplayEnabled: trickplayEnabled);
+    }
+
+    /// <summary>The group with only the videos the asker may see; null when fewer than two are left.</summary>
+    private StoredGroup? Visible(StoredGroup group, PathFilter visible)
+    {
+        var videos = group.Videos.Where(v => paths.ToRelative(v.FullName) is { } relative && visible.Includes(relative)).ToList();
+        if (videos.Count == group.Videos.Count)
+            return group;
+        return videos.Count < 2 ? null : new StoredGroup(videos, videos.Sum(v => v.Size) - videos.Max(v => v.Size));
     }
 
     /// <summary>The groups' videos as they are indexed now, with their tags; videos no longer indexed are left out.</summary>

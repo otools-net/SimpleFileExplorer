@@ -92,7 +92,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 |---|---|---|
 | [rights](agents/docs/features/rights.md) | adding a right, how rights are evaluated | `Core/Access/RightCatalog`, `RightsEvaluator`, `core/rights.ts` |
 | [right-kinds](agents/docs/features/right-kinds.md) | Read/Write rights, `AtFolder`, `kind:write`/`folder:write`, read-only switches | `RightCatalog`, `access-parts.ts` |
-| [folder-access](agents/docs/features/folder-access.md) | per-folder permissions: model, compiled policy, rules (enforcement to build) | `FolderPolicy`, `FolderRuleService`, `RightsEvaluator` |
+| [folder-access](agents/docs/features/folder-access.md) | per-folder permissions: model, policy, rules, enforcement on every route (management to build) | `FolderPolicy`, `FolderRuleService`, `FolderChecks` |
 | [accounts](agents/docs/features/accounts.md) | sign-in directories, space administrators | `Core/Access/`, `app/access/`, `app/account/` |
 | [setup](agents/docs/features/setup.md) | setup code (configured / generated), first administrator | `SetupService`, `GeneratedSetupCode`, `app/account/` |
 | [local-start](agents/docs/features/local-start.md) | browser at start, `--no-browser`, setup without code locally, fast sign-in | `BrowserLauncher`, `LocalVisitor`, `FastSignIn` |

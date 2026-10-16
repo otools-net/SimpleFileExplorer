@@ -30,6 +30,7 @@ public static class TenantEndpoints
             .WithSummary("Every space (tenant), with its library folder and its numbers of accounts and groups.");
 
         tenants.MapGet("/folders", Folders)
+            .NotLibraryPaths()
             .WithName("GetTenantFolders")
             .WithSummary("Folders a space's library folder can be chosen in (`Sfe:Tenants:AllowedRoots`, else the configured root).")
             .WithDescription("Without `path`, the allowed roots; with one, its sub-folders (hidden ones left out).");

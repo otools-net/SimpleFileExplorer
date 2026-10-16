@@ -35,12 +35,14 @@ public static class LibraryEndpoints
     {
         api.MapGet("/browse", Browse)
             .RequireRight(Rights.Browse)
+            .FolderScoped("404 for a folder the subject doesn't see; hidden entries left out of the listing and its counts")
             .WithName("Browse")
             .WithTags("Library")
             .WithSummary("Lists a folder of the library (folders first).");
 
         api.MapGet("/browse/siblings", Siblings)
             .RequireRight(Rights.Browse)
+            .FolderScoped("404 for a folder the subject doesn't see; hidden siblings skipped")
             .WithName("GetFolderSiblings")
             .WithTags("Library")
             .WithSummary("The folders before and after a folder in its parent.")
@@ -52,6 +54,7 @@ public static class LibraryEndpoints
         api.MapPost("/browse/covers", Covers)
             .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.Browse)
+            .FolderScoped("folders the subject doesn't browse get no cover; hidden pictures left out")
             .WithName("GetFolderCovers")
             .WithTags("Library")
             .WithSummary("The first pictures of folders, shown on their cards.")
@@ -64,6 +67,7 @@ public static class LibraryEndpoints
         api.MapGet("/search", Search)
             .RequireRateLimiting(RequestLimits.Search)
             .RequireRight(Rights.Browse)
+            .FolderScoped("404 for a scope the subject doesn't see; only the files it sees are searched")
             .WithName("Search")
             .WithTags("Library")
             .WithSummary("Searches the file index.")
@@ -86,6 +90,7 @@ public static class LibraryEndpoints
 
         api.MapGet("/files/raw/{**path}", Raw)
             .RequireRight(Rights.ViewFiles)
+            .FolderScoped("files.view (files.download to download) at the file")
             .WithName("GetFile")
             .WithTags("Library")
             .WithSummary("Streams a file (supports HTTP range requests for media seeking).")
@@ -94,6 +99,7 @@ public static class LibraryEndpoints
         api.MapGet("/files/animated/{**path}", Animated)
             .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.ViewFiles)
+            .FolderScoped("files.view at the file")
             .WithName("GetImageAnimation")
             .WithTags("Library")
             .WithSummary("Whether a picture is animated (GIF, APNG, WebP or AVIF with more than one frame).")
@@ -104,6 +110,7 @@ public static class LibraryEndpoints
 
         api.MapPost("/files/links", CreateLink)
             .RequireRight(Rights.ExternalPlayer)
+            .FolderScoped("files.view and files.external at the file")
             .WithName("CreateFileLink")
             .WithTags("Library")
             .WithSummary("A link to a file that works without signing in, for a while: for external players.")
@@ -116,6 +123,7 @@ public static class LibraryEndpoints
         api.MapGet("/files/shared/{token}/{**name}", Shared)
             .AllowAnonymous()
             .WithMetadata(new RightMetadata([Rights.ExternalPlayer]))
+            .FolderScoped("the token's subject: files.view and files.external at the file, as the rules are now")
             .WithName("GetSharedFile")
             .WithTags("Library")
             .WithSummary("Streams the file of a link made by `CreateFileLink` (the token stands for the sign-in; range requests supported).");
@@ -123,6 +131,7 @@ public static class LibraryEndpoints
         api.MapGet("/thumbnails/{**path}", Thumbnail)
             .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.ViewFiles)
+            .FolderScoped("files.view at the file")
             .WithName("GetThumbnail")
             .WithTags("Library")
             .WithSummary("JPEG preview of a video or image.");
@@ -137,6 +146,7 @@ public static class LibraryEndpoints
         LibraryBrowser browser,
         LibraryPaths paths,
         TagService tags,
+        CurrentAccess current,
         IOptionsMonitor<SfeOptions> options,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken,
@@ -149,7 +159,9 @@ public static class LibraryEndpoints
         // Parsed by hand: enum binding of query values is case-sensitive and the client sends "size", "name"...
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Name;
         var page = options.CurrentValue.Browse;
-        var listing = browser.List(path, Math.Max(0, offset), Clamp(limit, page.DefaultPageSize, page.MaxPageSize), sortField, desc);
+        if (FolderListing(await current.GetAsync(), paths, path) is not { } folder)
+            return TypedResults.NotFound();
+        var listing = browser.List(path, Math.Max(0, offset), Clamp(limit, page.DefaultPageSize, page.MaxPageSize), sortField, desc, folder.Filter);
         if (listing is null)
         {
             // Said apart from a missing sub-folder: the whole library is gone, and an administrator can pick another.
@@ -172,25 +184,60 @@ public static class LibraryEndpoints
         return TypedResults.Ok(listing);
     }
 
-    private static Results<Ok<FolderSiblings>, NotFound> Siblings(LibraryBrowser browser, string? path = null, string? sort = null, bool desc = false)
+    private static async Task<Results<Ok<FolderSiblings>, NotFound>> Siblings(
+        LibraryBrowser browser, LibraryPaths paths, CurrentAccess current, string? path = null, string? sort = null, bool desc = false)
     {
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Name;
-        var siblings = browser.Siblings(path, sortField, desc);
+        var state = await current.GetAsync();
+        ListingFilter? filter = null;
+        if (!state.Access.FolderPolicy.IsUnrestricted)
+        {
+            if (state.At(paths, path) is not { IsVisible: true } || Canonical(paths, path) is not { } folder)
+                return TypedResults.NotFound();
+            var parent = folder.Contains('/') ? folder[..folder.LastIndexOf('/')] : string.Empty;
+            if (folder.Length > 0 && FolderListing(state, paths, parent) is { } listing)
+                filter = listing.Filter;
+        }
+        var siblings = browser.Siblings(path, sortField, desc, filter);
         return siblings is null ? TypedResults.NotFound() : TypedResults.Ok(siblings);
     }
 
-    private static Results<Ok<IReadOnlyList<FolderCover>>, ValidationProblem> Covers(
-        LibraryBrowser browser, ThumbnailService thumbnails, FolderCoversRequest? request)
+    /// <summary>The path as the file system names it, root-relative; null when not a path of the library.</summary>
+    private static string? Canonical(LibraryPaths paths, string? path) =>
+        paths.TryResolve(path, out var full) ? paths.ToRelative(full) : null;
+
+    /// <summary>
+    /// Whether the subject may list <paramref name="path"/> (also when it only leads to what it sees), and what the
+    /// listing leaves out; null when it may not.
+    /// </summary>
+    private static (ListingFilter? Filter, bool PathOnly)? FolderListing(AccessState state, LibraryPaths paths, string? path)
     {
-        var paths = request?.Paths ?? [];
-        if (paths.Count > LibraryBrowser.MaxCoverPaths)
+        if (state.Access.FolderPolicy.IsUnrestricted)
+            return (null, false);
+        if (state.At(paths, path) is not { IsVisible: true } access || Canonical(paths, path) is not { } folder)
+            return null;
+        return (state.ListingFilterOf(folder, access), access.PathOnly);
+    }
+
+    private static async Task<Results<Ok<IReadOnlyList<FolderCover>>, ValidationProblem>> Covers(
+        LibraryBrowser browser, ThumbnailService thumbnails, LibraryPaths paths, CurrentAccess current, FolderCoversRequest? request)
+    {
+        var folders = request?.Paths ?? [];
+        if (folders.Count > LibraryBrowser.MaxCoverPaths)
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["paths"] = [$"At most {LibraryBrowser.MaxCoverPaths} paths."] });
 
-        return TypedResults.Ok(browser.Covers(paths, videos: thumbnails.IsAvailable));
+        var state = await current.GetAsync();
+        if (state.Access.FolderPolicy.IsUnrestricted)
+            return TypedResults.Ok(browser.Covers(folders, videos: thumbnails.IsAvailable));
+        // A folder only on the way to others shows nothing of its own.
+        var covers = browser.Covers(folders.Where(f => state.Sees(paths, f ?? string.Empty)), videos: thumbnails.IsAvailable);
+        return TypedResults.Ok<IReadOnlyList<FolderCover>>([.. covers.Select(c => c with { Items = [.. c.Items.Where(i => state.Sees(paths, i.Path))] })]);
     }
 
     private static async Task<Results<Ok<SearchResults>, NotFound>> Search(
         FileSearchService search,
+        LibraryPaths paths,
+        CurrentAccess current,
         IOptionsMonitor<SfeOptions> options,
         CancellationToken cancellationToken,
         string? q = null,
@@ -202,9 +249,13 @@ public static class LibraryEndpoints
     {
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Path;
         var page = options.CurrentValue.Search;
+        var state = await current.GetAsync();
+        if (state.At(paths, path) is not { IsVisible: true })
+            return TypedResults.NotFound();
         var results = await search.SearchAsync(
-            q, path, string.IsNullOrEmpty(after) ? null : after, Clamp(limit, page.DefaultPageSize, page.MaxPageSize), sortField, desc, cancellationToken);
-        return results is null ? TypedResults.NotFound() : TypedResults.Ok(results);
+            q, path, string.IsNullOrEmpty(after) ? null : after, Clamp(limit, page.DefaultPageSize, page.MaxPageSize), sortField, desc, cancellationToken,
+            state.Visible());
+        return results is null ? TypedResults.NotFound() : TypedResults.Ok(results with { Items = state.Seen(paths, results.Items) });
     }
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound, ForbidHttpResult>> Raw(
@@ -213,16 +264,21 @@ public static class LibraryEndpoints
         // The server's own files answer as if they weren't there, wherever a link put them.
         if (!paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
             return TypedResults.NotFound();
-        if (download && !(await current.GetAsync()).Has(Rights.Download))
+        var state = await current.GetAsync();
+        if (state.Check(paths, path, Rights.ViewFiles) is var verdict and not PathVerdict.Allowed)
+            return verdict == PathVerdict.NotFound ? TypedResults.NotFound() : TypedResults.Forbid();
+        if (download && state.Check(paths, path, Rights.Download) != PathVerdict.Allowed)
             return TypedResults.Forbid();
 
         return ServeFile(context, fullPath, download);
     }
 
     private static async Task<Results<Ok<ImageAnimationInfo>, NotFound>> Animated(
-        LibraryPaths paths, ServerFiles serverFiles, ILoggerFactory loggerFactory, string path, CancellationToken cancellationToken)
+        LibraryPaths paths, CurrentAccess current, ServerFiles serverFiles, ILoggerFactory loggerFactory, string path, CancellationToken cancellationToken)
     {
         if (!paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
+            return TypedResults.NotFound();
+        if ((await current.GetAsync()).Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
             return TypedResults.NotFound();
 
         try
@@ -238,7 +294,7 @@ public static class LibraryEndpoints
         }
     }
 
-    private static async Task<Results<Ok<FileLink>, NotFound>> CreateLink(
+    private static async Task<Results<Ok<FileLink>, NotFound, ForbidHttpResult>> CreateLink(
         LibraryPaths paths, CurrentAccess current, FileLinks links, ServerFiles serverFiles, IOptionsMonitor<SfeOptions> options, FileLinkRequest request)
     {
         var path = LibraryPaths.NormalizeRelative(request.Path);
@@ -246,6 +302,10 @@ public static class LibraryEndpoints
             return TypedResults.NotFound();
 
         var state = await current.GetAsync();
+        if (state.Check(paths, path, Rights.ViewFiles) is var verdict and not PathVerdict.Allowed)
+            return verdict == PathVerdict.NotFound ? TypedResults.NotFound() : TypedResults.Forbid();
+        if (state.Check(paths, path, Rights.ExternalPlayer) != PathVerdict.Allowed)
+            return TypedResults.Forbid();
         var lifetime = TimeSpan.FromMinutes(Math.Clamp(options.CurrentValue.Player.LinkLifetimeMinutes, 1, SettingsService.MaxLinkLifetimeMinutes));
         return TypedResults.Ok(links.Create(state.TenantId, state.User, path, lifetime));
     }
@@ -272,6 +332,10 @@ public static class LibraryEndpoints
         var paths = (await tenants.GetAsync(claims.Tenant, context.RequestAborted))?.Services.GetRequiredService<LibraryPaths>();
         if (paths is null || !paths.TryResolve(claims.Path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
             return TypedResults.NotFound();
+        // The folder rules as they are now: a rule made after the link hides the file from it too.
+        var subject = new AccessState(null, null, access);
+        if (subject.Check(paths, claims.Path, Rights.ViewFiles) != PathVerdict.Allowed || subject.Check(paths, claims.Path, Rights.ExternalPlayer) != PathVerdict.Allowed)
+            return TypedResults.Problem("This link no longer works: ask for a new one.", statusCode: StatusCodes.Status403Forbidden);
 
         return ServeFile(context, fullPath, download: false);
     }
@@ -301,10 +365,14 @@ public static class LibraryEndpoints
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound>> Thumbnail(
         ThumbnailService thumbnails,
+        LibraryPaths paths,
+        CurrentAccess current,
         HttpContext context,
         string path,
         CancellationToken cancellationToken)
     {
+        if ((await current.GetAsync()).Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
+            return TypedResults.NotFound();
         var thumbnail = await thumbnails.GetAsync(path, cancellationToken);
         if (thumbnail is null)
             return TypedResults.NotFound();

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Sfe.Core.Indexing;
 using Sfe.Core.Paths;
@@ -24,15 +25,16 @@ public sealed class ScopeTagger(
     private const int BatchSize = 1000;
 
     /// <summary>The indexed files of the scope, and how many of them have each tag.</summary>
+    /// <param name="visible">Where the asker may see files (folder rules); null = everywhere.</param>
     /// <returns>null when the scope's folder is not a folder of the library.</returns>
-    public async Task<ScopeTags?> GetTagsAsync(TagScope scope, CancellationToken cancellationToken = default)
+    public async Task<ScopeTags?> GetTagsAsync(TagScope scope, CancellationToken cancellationToken = default, PathFilter? visible = null)
     {
         if (!TryResolve(scope, out var directory))
             return null;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
-        var files = await FilesAsync(db, graph, scope, directory, cancellationToken);
+        var files = (await FilesAsync(db, graph, scope, directory, cancellationToken)).WhereVisible(visible, f => f.FullName, paths);
         var count = await files.CountAsync(cancellationToken);
         var counts = count == 0 ? [] : (await files
             .SelectMany(f => f.TagLinks)
@@ -59,9 +61,10 @@ public sealed class ScopeTagger(
     /// <remarks>
     /// The files are changed by batches in order of their index id, each batch read after the previous one is
     /// written: a search whose matches depend on the tags changed (<c>-t:x</c> while adding x) still reaches every
-    /// file it matched at the start. A cancelled request keeps the batches already written.
+    /// file it matched at the start. A cancelled request keeps the batches already written. With
+    /// <paramref name="visible"/> (folder rules), only the files the asker may see are changed.
     /// </remarks>
-    public async Task<ScopeTagOutcome> ChangeAsync(ScopeTagChange change, CancellationToken cancellationToken = default)
+    public async Task<ScopeTagOutcome> ChangeAsync(ScopeTagChange change, CancellationToken cancellationToken = default, PathFilter? visible = null)
     {
         var add = (change.Add ?? []).Distinct().ToList();
         var remove = (change.Remove ?? []).Distinct().Where(id => !add.Contains(id)).ToList();
@@ -85,7 +88,7 @@ public sealed class ScopeTagger(
             await indexer.IndexAsync(directory, scope.Recursive, new ScanProgress(), cancellationToken);
         }
 
-        var files = await FilesAsync(db, graph, scope, directory, cancellationToken);
+        var files = (await FilesAsync(db, graph, scope, directory, cancellationToken)).WhereVisible(visible, f => f.FullName, paths);
         var count = 0;
         var added = 0;
         var removed = 0;

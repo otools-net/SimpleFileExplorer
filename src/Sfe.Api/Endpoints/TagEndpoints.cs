@@ -1,3 +1,4 @@
+using Sfe.Core.Paths;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
@@ -19,12 +20,16 @@ public static class TagEndpoints
 
         tags.MapGet("/", Search)
             .RequireRight(Rights.ViewTags)
+            .FolderScoped("file counts count only the files the subject sees")
+            .FolderScoped("file counts count only the files the subject sees")
             .WithName("SearchTags")
             .WithSummary("Lists tags, or finds the ones whose name, shorthand or alias contains `q`.")
             .WithDescription("Names starting with `q` come first. `descendants` lists the tags inheriting from a match.");
 
-        tags.MapGet("/sidebar", (TagService service, CancellationToken cancellationToken) => service.GetSidebarAsync(cancellationToken))
+        tags.MapGet("/sidebar", async (TagService service, CurrentAccess current, CancellationToken cancellationToken) =>
+                await service.GetSidebarAsync(cancellationToken, (await current.GetAsync()).Visible()))
             .RequireRight(Rights.ViewTags)
+            .FolderScoped("file counts (and the most used tags) count only the files the subject sees")
             .WithName("GetTagSidebar")
             .WithSummary("Most used tags, last searched tags, tags of the last viewed files, and random other tags.");
 
@@ -39,6 +44,8 @@ public static class TagEndpoints
 
         tags.MapGet("/{id:int}", Get)
             .RequireRight(Rights.ViewTags)
+            .FolderScoped("the file count counts only the files the subject sees")
+            .FolderScoped("the file count counts only the files the subject sees")
             .WithName("GetTag")
             .WithSummary("A tag with its aliases and parent tags.");
 
@@ -61,23 +68,31 @@ public static class TagEndpoints
 
         files.MapGet("/", GetFileTags)
             .RequireRight(Rights.ViewTags)
+            .FolderScoped("tags.view at the file")
+            .FolderScoped("tags.view at the file")
             .WithName("GetFileTags")
             .WithSummary("Tags of a file, also grouped by category tag.");
 
         files.MapPost("/", ChangeFileTags)
             .RequireRight(Rights.AssignTags)
+            .FolderScoped("tags.assign at every file, else nothing changes")
+            .FolderScoped("tags.assign at every file, else nothing changes")
             .WithName("ChangeFileTags")
             .WithSummary("Adds and removes tags on one or more files.")
             .WithDescription("Files that are not indexed yet are indexed (their folder only) before being tagged.");
 
         files.MapGet("/scope", GetScopeTags)
             .RequireRight(Rights.ViewTags)
+            .FolderScoped("404 for a scope the subject doesn't see; only the files it sees count")
+            .FolderScoped("404 for a scope the subject doesn't see; only the files it sees count")
             .WithName("GetScopeTags")
             .WithSummary("Tags of the files of a folder (or a folder tree), or of the matches of a search, with the number of files having each.")
             .WithDescription("Without `q`: the indexed files of the folder `path`, and of its sub-folders with `recursive`. With `q`: what that search finds in `path`.");
 
         files.MapPost("/scope", ChangeScopeTags)
             .RequireRight(Rights.AssignTags)
+            .FolderScoped("404 for a scope the subject doesn't see; only the files where it may tag change")
+            .FolderScoped("404 for a scope the subject doesn't see; only the files where it may tag change")
             .WithName("ChangeScopeTags")
             .WithSummary("Adds and removes tags on every file of a folder (or a folder tree), or on every match of a search.")
             .WithDescription("A folder is indexed first (with its sub-folders when `recursive`), so that its files not indexed yet are tagged too; "
@@ -86,20 +101,26 @@ public static class TagEndpoints
 
         files.MapPost("/viewed", Viewed)
             .RequireRight(Rights.ViewFiles)
+            .FolderScoped("files.view at the file")
+            .FolderScoped("files.view at the file")
             .WithName("RecordFileViewed")
             .WithSummary("Records that a file was viewed: its tags become the last viewed tags.");
 
         return api;
     }
 
-    private static async Task<Results<NoContent, NotFound>> Viewed(TagService service, ViewedFile file, CancellationToken cancellationToken) =>
-        await service.RecordViewedAsync(file.Path, cancellationToken) ? TypedResults.NoContent() : TypedResults.NotFound();
+    private static async Task<Results<NoContent, NotFound>> Viewed(
+        TagService service, LibraryPaths paths, CurrentAccess current, ViewedFile file, CancellationToken cancellationToken) =>
+        (await current.GetAsync()).Check(paths, file.Path, Rights.ViewFiles) == PathVerdict.Allowed && await service.RecordViewedAsync(file.Path, cancellationToken)
+            ? TypedResults.NoContent()
+            : TypedResults.NotFound();
 
-    private static async Task<Ok<TagSearchResults>> Search(TagService service, CancellationToken cancellationToken, string? q = null, int? limit = null) =>
-        TypedResults.Ok(await service.SearchAsync(q, Math.Clamp(limit ?? DefaultTagLimit, 1, MaxTagLimit), cancellationToken));
+    private static async Task<Ok<TagSearchResults>> Search(
+        TagService service, CurrentAccess current, CancellationToken cancellationToken, string? q = null, int? limit = null) =>
+        TypedResults.Ok(await service.SearchAsync(q, Math.Clamp(limit ?? DefaultTagLimit, 1, MaxTagLimit), cancellationToken, (await current.GetAsync()).Visible()));
 
-    private static async Task<Results<Ok<TagDetails>, NotFound>> Get(TagService service, int id, CancellationToken cancellationToken) =>
-        await service.GetAsync(id, cancellationToken) is { } tag ? TypedResults.Ok(tag) : TypedResults.NotFound();
+    private static async Task<Results<Ok<TagDetails>, NotFound>> Get(TagService service, CurrentAccess current, int id, CancellationToken cancellationToken) =>
+        await service.GetAsync(id, cancellationToken, (await current.GetAsync()).Visible()) is { } tag ? TypedResults.Ok(tag) : TypedResults.NotFound();
 
     private static async Task<Results<Created<TagDetails>, ValidationProblem, NotFound>> Create(TagService service, TagInput input, CancellationToken cancellationToken)
     {
@@ -131,23 +152,39 @@ public static class TagEndpoints
             _ => TypedResults.NotFound(),
         };
 
-    private static async Task<Results<Ok<FileTags>, NotFound>> GetFileTags(TagService service, string path, CancellationToken cancellationToken) =>
-        await service.GetFileTagsAsync(path, cancellationToken) is { } tags ? TypedResults.Ok(tags) : TypedResults.NotFound();
+    private static async Task<Results<Ok<FileTags>, NotFound>> GetFileTags(
+        TagService service, LibraryPaths paths, CurrentAccess current, string path, CancellationToken cancellationToken) =>
+        (await current.GetAsync()).Check(paths, path, Rights.ViewTags) == PathVerdict.Allowed && await service.GetFileTagsAsync(path, cancellationToken) is { } tags
+            ? TypedResults.Ok(tags)
+            : TypedResults.NotFound();
 
-    private static async Task<Results<Ok<FileTagChangeResult>, ValidationProblem>> ChangeFileTags(TagService service, FileTagChange change, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<FileTagChangeResult>, ValidationProblem>> ChangeFileTags(
+        TagService service, LibraryPaths paths, CurrentAccess current, FileTagChange change, CancellationToken cancellationToken)
     {
+        // A file the subject may not tag fails the whole change, as a file that isn't there does.
+        if (!(await current.GetAsync()).AllowsAll(paths, change.Paths ?? [], Rights.AssignTags))
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["paths"] = ["Some of these files are not files of the library."] });
         var (result, errors) = await service.ChangeFileTagsAsync(change, cancellationToken);
         return result is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Ok(result);
     }
 
     private static async Task<Results<Ok<ScopeTags>, NotFound>> GetScopeTags(
-        ScopeTagger tagger, CancellationToken cancellationToken, string? path = null, bool recursive = false, string? q = null) =>
-        await tagger.GetTagsAsync(new TagScope(path, recursive, q), cancellationToken) is { } tags ? TypedResults.Ok(tags) : TypedResults.NotFound();
+        ScopeTagger tagger, LibraryPaths paths, CurrentAccess current, CancellationToken cancellationToken, string? path = null, bool recursive = false, string? q = null)
+    {
+        var state = await current.GetAsync();
+        if (state.At(paths, path) is not { IsVisible: true })
+            return TypedResults.NotFound();
+        return await tagger.GetTagsAsync(new TagScope(path, recursive, q), cancellationToken, state.Visible()) is { } tags ? TypedResults.Ok(tags) : TypedResults.NotFound();
+    }
 
     private static async Task<Results<Ok<ScopeTagChangeResult>, ValidationProblem, NotFound, ProblemHttpResult>> ChangeScopeTags(
-        ScopeTagger tagger, ScopeTagChange change, CancellationToken cancellationToken)
+        ScopeTagger tagger, LibraryPaths paths, CurrentAccess current, ScopeTagChange change, CancellationToken cancellationToken)
     {
-        var outcome = await tagger.ChangeAsync(change, cancellationToken);
+        var state = await current.GetAsync();
+        if (state.At(paths, change.Path) is not { IsVisible: true })
+            return TypedResults.NotFound();
+        var where = state.Access.FilterFor(Rights.AssignTags) is { IsEverything: false } filter ? filter : null;
+        var outcome = await tagger.ChangeAsync(change, cancellationToken, where);
         return outcome.Status switch
         {
             ScopeTagStatus.Ok => TypedResults.Ok(outcome.Result!),

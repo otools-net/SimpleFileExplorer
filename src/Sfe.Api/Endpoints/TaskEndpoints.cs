@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Options;
+using Sfe.Core.Paths;
 using Sfe.Core.Tasks;
 
 namespace Sfe.Api.Endpoints;
@@ -32,6 +33,7 @@ public static class TaskEndpoints
 
         tasks.MapPost("/{task}/start", Start)
             .RequireRight(Rights.RunTasks)
+            .FolderScoped("a task on a folder (a scan) needs index.scan there")
             .WithName("StartTask")
             .WithSummary("Starts a task now (thumbnails can't be started: listings ask for them).")
             .WithDescription("A scan covers `path` (relative to the library root; empty: the whole library). 409 when it already runs, or is turned off; a trickplay pass asked for while one runs follows it (202).");
@@ -47,11 +49,13 @@ public static class TaskEndpoints
 
         tasks.MapPost("/schedules", CreateSchedule)
             .RequireRight(Rights.ScheduleTasks)
+            .FolderScoped("a schedule's folder must be one the subject sees")
             .WithName("CreateTaskSchedule")
             .WithSummary("Schedules a task: once, every N minutes from a start, or on days of the week at a time.");
 
         tasks.MapPut("/schedules/{id:int}", UpdateSchedule)
             .RequireRight(Rights.ScheduleTasks)
+            .FolderScoped("a schedule's folder must be one the subject sees")
             .WithName("UpdateTaskSchedule")
             .WithSummary("Changes a schedule; its next run is worked out again from now.");
 
@@ -61,6 +65,7 @@ public static class TaskEndpoints
             .WithSummary("Deletes a schedule; its past runs stay in the history.");
 
         tasks.MapPost("/schedules/preview", PreviewSchedule)
+            .FolderScoped("only works out run times: the folder is checked when the schedule is saved")
             .RequireRight(Rights.ScheduleTasks)
             .WithName("PreviewTaskSchedule")
             .WithSummary("The next runs of a schedule being edited, or its validation errors.");
@@ -94,9 +99,12 @@ public static class TaskEndpoints
             options.CurrentValue.Tasks.LogRetentionDays));
 
     private static async Task<Results<Accepted<TaskActionResult>, Conflict<TaskActionResult>, NotFound>> Start(
-        BackgroundTasks tasks, string task, string? path, CancellationToken cancellationToken)
+        BackgroundTasks tasks, LibraryPaths paths, CurrentAccess current, string task, string? path, CancellationToken cancellationToken)
     {
         if (!TryParseTask(task, out var kind))
+            return TypedResults.NotFound();
+        // A task on a folder (a scan) runs only where the subject may scan.
+        if (!string.IsNullOrEmpty(path) && (await current.GetAsync()).Check(paths, path, Rights.Scan) != PathVerdict.Allowed)
             return TypedResults.NotFound();
         var result = tasks.Start(kind, path, TaskTrigger.Manual);
         var body = new TaskActionResult(result, await DescribeAsync(tasks, kind, cancellationToken));
@@ -122,20 +130,30 @@ public static class TaskEndpoints
         (await tasks.DescribeAsync(cancellationToken)).First(t => t.Task == task);
 
     private static async Task<Results<Created<TaskScheduleView>, ValidationProblem>> CreateSchedule(
-        TaskScheduleService schedules, TaskScheduleInput input, CancellationToken cancellationToken)
+        TaskScheduleService schedules, LibraryPaths paths, CurrentAccess current, TaskScheduleInput input, CancellationToken cancellationToken)
     {
+        if (await UnseenFolder(paths, current, input.Path) is { } unseen)
+            return unseen;
         var (view, errors) = await schedules.CreateAsync(input, cancellationToken);
         return view is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Created($"/api/tasks/schedules/{view.Id}", view);
     }
 
     private static async Task<Results<Ok<TaskScheduleView>, NotFound, ValidationProblem>> UpdateSchedule(
-        TaskScheduleService schedules, int id, TaskScheduleInput input, CancellationToken cancellationToken)
+        TaskScheduleService schedules, LibraryPaths paths, CurrentAccess current, int id, TaskScheduleInput input, CancellationToken cancellationToken)
     {
+        if (await UnseenFolder(paths, current, input.Path) is { } unseen)
+            return unseen;
         var (found, view, errors) = await schedules.UpdateAsync(id, input, cancellationToken);
         return !found ? TypedResults.NotFound()
             : view is null ? TypedResults.ValidationProblem(errors!)
             : TypedResults.Ok(view);
     }
+
+    /// <summary>A schedule's folder must be one the subject sees: answered as an invalid folder otherwise.</summary>
+    private static async Task<ValidationProblem?> UnseenFolder(LibraryPaths paths, CurrentAccess current, string? path) =>
+        string.IsNullOrEmpty(path) || (await current.GetAsync()).At(paths, path) is { IsVisible: true }
+            ? null
+            : TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["path"] = ["Invalid library path."] });
 
     private static async Task<Results<NoContent, NotFound>> DeleteSchedule(TaskScheduleService schedules, int id, CancellationToken cancellationToken) =>
         await schedules.DeleteAsync(id, cancellationToken) ? TypedResults.NoContent() : TypedResults.NotFound();

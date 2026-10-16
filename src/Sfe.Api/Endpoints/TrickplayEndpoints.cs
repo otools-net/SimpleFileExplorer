@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Paths;
 using Sfe.Core.Trickplay;
 
 namespace Sfe.Api.Endpoints;
@@ -41,6 +42,7 @@ public static class TrickplayEndpoints
         trickplay.MapPost("/states", States)
             .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.ViewFiles)
+            .FolderScoped("videos the subject may not view are left out")
             .WithName("GetTrickplayStates")
             .WithSummary("Which of the given videos are waiting for their trickplay or being processed.")
             .WithDescription($"""
@@ -51,6 +53,7 @@ public static class TrickplayEndpoints
         trickplay.MapGet("/files/{**path}", Get)
             .RequireRateLimiting(RequestLimits.Media)
             .RequireRight(Rights.ViewFiles)
+            .FolderScoped("files.view at the video")
             .WithName("GetTrickplay")
             .WithSummary("Trickplay of a video: its description, or one of its sheets with `?sheet=n`.")
             .WithDescription("""
@@ -68,22 +71,30 @@ public static class TrickplayEndpoints
             ? TypedResults.Accepted("/api/trickplay", service.Status)
             : TypedResults.Conflict(service.Status);
 
-    private static Results<Ok<TrickplayStates>, ValidationProblem> States(TrickplayService service, TrickplayStatesRequest? request)
+    private static async Task<Results<Ok<TrickplayStates>, ValidationProblem>> States(
+        TrickplayService service, LibraryPaths libraryPaths, CurrentAccess current, TrickplayStatesRequest? request)
     {
         var paths = request?.Paths ?? [];
         if (paths.Count > TrickplayService.MaxStatePaths)
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["paths"] = [$"At most {TrickplayService.MaxStatePaths} paths."] });
 
+        var state = await current.GetAsync();
+        if (!state.Access.FolderPolicy.IsUnrestricted)
+            paths = [.. paths.Where(p => state.Check(libraryPaths, p, Rights.ViewFiles) == PathVerdict.Allowed)];
         return TypedResults.Ok(new TrickplayStates(service.Status.State == TrickplayState.Running, service.GetStates(paths)));
     }
 
-    private static Results<Ok<TrickplayManifest>, PhysicalFileHttpResult, NotFound> Get(
+    private static async Task<Results<Ok<TrickplayManifest>, PhysicalFileHttpResult, NotFound>> Get(
         TrickplayService service,
+        LibraryPaths paths,
+        CurrentAccess current,
         HttpContext context,
         string path,
         int? sheet = null,
         bool queue = true)
     {
+        if ((await current.GetAsync()).Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
+            return TypedResults.NotFound();
         if (sheet is null)
             return service.Get(path, queue) is { } manifest ? TypedResults.Ok(manifest) : TypedResults.NotFound();
 

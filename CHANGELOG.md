@@ -3,6 +3,15 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.53.0
+
+### Added
+
+- **Folder permissions are applied everywhere:** listings, search, files, thumbnails, players, tags and their counts,
+  duplicates, similar videos, moved files, quick links, shared links and the picture editor all follow the rules on
+  folders. A folder someone may not see answers as if it weren't there; one that only leads to a folder they may see
+  lists only the way there. Rules can't be set from the web page yet, so nothing changes until then.
+
 ## 1.52.0
 
 ### Added

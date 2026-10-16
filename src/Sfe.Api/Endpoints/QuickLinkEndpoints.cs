@@ -26,10 +26,12 @@ public static class QuickLinkEndpoints
         var links = api.MapGroup("/me/quick-links").WithTags("Quick links").RequireRight(Rights.QuickLinks);
 
         links.MapGet("/", List)
+            .FolderScoped("links to what the subject doesn't see show as missing")
             .WithName("GetQuickLinks")
             .WithSummary("The signed-in user's quick links in the library, in order, with whether each one is still there.");
 
         links.MapPost("/", Add)
+            .FolderScoped("new links only to what the subject sees")
             .WithName("AddQuickLinks")
             .WithSummary("Adds folders and files to the quick links, or moves those already there; answers the whole list.")
             .WithDescription($"""
@@ -38,6 +40,7 @@ public static class QuickLinkEndpoints
                 """);
 
         links.MapDelete("/", Remove)
+            .FolderScoped("removes a link of the subject's own list, wherever it leads")
             .WithName("RemoveQuickLink")
             .WithSummary("Removes the quick link to `path` (the folder or file stays); answers the whole list.");
 
@@ -49,7 +52,7 @@ public static class QuickLinkEndpoints
     {
         if (await current.GetAsync() is not { User: { } user } state)
             return TypedResults.Forbid();
-        return TypedResults.Ok(View(await service.GetAsync(user.Id, state.TenantId, cancellationToken), paths, classifier));
+        return TypedResults.Ok(View(await service.GetAsync(user.Id, state.TenantId, cancellationToken), paths, classifier, state));
     }
 
     private static async Task<Results<Ok<IReadOnlyList<QuickLinkView>>, ValidationProblem, NotFound, ForbidHttpResult>> Add(
@@ -73,7 +76,7 @@ public static class QuickLinkEndpoints
                 return TypedResults.NotFound();
             if (known.TryGetValue(path, out var existing))
                 entries.Add(existing);
-            else if (paths.TryResolve(path, out var full) && (Directory.Exists(full) || File.Exists(full)))
+            else if (paths.TryResolve(path, out var full) && (Directory.Exists(full) || File.Exists(full)) && state.At(paths, path) is { IsVisible: true })
                 entries.Add(new QuickLinkEntry(path, Directory.Exists(full)));
             else
                 return TypedResults.NotFound();
@@ -82,7 +85,7 @@ public static class QuickLinkEndpoints
         var (status, links) = await service.AddAsync(user.Id, state.TenantId, entries, input.Position, cancellationToken);
         return status == QuickLinkAddStatus.Full
             ? TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["paths"] = [TooMany] })
-            : TypedResults.Ok(View(links, paths, classifier));
+            : TypedResults.Ok(View(links, paths, classifier, state));
     }
 
     private static async Task<Results<Ok<IReadOnlyList<QuickLinkView>>, ForbidHttpResult>> Remove(
@@ -92,16 +95,18 @@ public static class QuickLinkEndpoints
         if (await current.GetAsync() is not { User: { } user } state)
             return TypedResults.Forbid();
         var links = await service.RemoveAsync(user.Id, state.TenantId, LibraryPaths.NormalizeRelative(path) ?? path ?? "", cancellationToken);
-        return TypedResults.Ok(View(links, paths, classifier));
+        return TypedResults.Ok(View(links, paths, classifier, state));
     }
 
     private static readonly string TooMany = $"Quick links hold at most {QuickLinkService.MaxLinks} folders and files: remove some first.";
 
-    private static IReadOnlyList<QuickLinkView> View(IReadOnlyList<QuickLinkEntry> links, LibraryPaths paths, MediaClassifier classifier) =>
+    /// <summary>The links as the sidebar shows them; one leading where the subject no longer sees is shown as missing.</summary>
+    private static IReadOnlyList<QuickLinkView> View(IReadOnlyList<QuickLinkEntry> links, LibraryPaths paths, MediaClassifier classifier, AccessState state) =>
         [.. links.Select(link =>
         {
             var name = link.Path.Length == 0 ? paths.RootName : link.Path[(link.Path.LastIndexOf('/') + 1)..];
-            var exists = paths.TryResolve(link.Path, out var full) && (link.IsFolder ? Directory.Exists(full) : File.Exists(full));
+            var exists = paths.TryResolve(link.Path, out var full) && (link.IsFolder ? Directory.Exists(full) : File.Exists(full))
+                && state.At(paths, link.Path) is { IsVisible: true };
             if (link.IsFolder)
                 return new QuickLinkView(link.Path, name, ItemKind.Directory, null, exists);
             var extension = LibraryBrowser.NormalizeExtension(Path.GetExtension(name));
