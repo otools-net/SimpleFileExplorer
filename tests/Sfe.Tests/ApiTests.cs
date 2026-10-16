@@ -137,6 +137,31 @@ public sealed class ApiTests
     }
 
     [TestMethod]
+    public async Task AnimatedHoverIsOnByDefaultAndCanBeTurnedOff()
+    {
+        var settings = await GetAsync<SettingsView>("/api/settings");
+        Assert.IsTrue(settings.Values.Thumbnails.AnimatedHover);
+        Assert.IsTrue((await GetAsync<ClientConfig>("/api/config")).AnimatedHover);
+
+        settings.Values.Thumbnails.AnimatedHover = false;
+        using var saved = await _client.PutAsJsonAsync("/api/settings", settings.Values, Json, TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
+        Assert.IsFalse((await GetAsync<ClientConfig>("/api/config")).AnimatedHover);
+    }
+
+    [TestMethod]
+    public async Task PicturesSayWhetherTheyAreAnimated()
+    {
+        await File.WriteAllBytesAsync(_library.FullPath("Media/moving #1.gif"), ImageAnimationTests.Gif(frames: 2), TestContext.CancellationToken);
+        await File.WriteAllBytesAsync(_library.FullPath("Media/still.gif"), ImageAnimationTests.Gif(frames: 1), TestContext.CancellationToken);
+
+        Assert.IsTrue((await GetAsync<ImageAnimationInfo>("/api/files/animated/Media/moving%20%231.gif")).Animated);
+        Assert.IsFalse((await GetAsync<ImageAnimationInfo>("/api/files/animated/Media/still.gif")).Animated);
+        Assert.IsFalse((await GetAsync<ImageAnimationInfo>("/api/files/animated/Media/photo.jpg")).Animated);
+    }
+
+    [TestMethod]
     public async Task ExternalPlayerCanBeChangedOrRemoved()
     {
         var settings = await GetAsync<SettingsView>("/api/settings");
@@ -297,6 +322,8 @@ public sealed class ApiTests
     [DataRow("/api/browse?path=Missing")]
     [DataRow("/api/files/raw/..%2F..%2Fwin.ini")]
     [DataRow("/api/files/raw/Missing.txt")]
+    [DataRow("/api/files/animated/Missing.gif")]
+    [DataRow("/api/files/animated/..%2F..%2Fwin.ini")]
     [DataRow("/api/thumbnails/RFile1.txt")]
     [DataRow("/api/trickplay/files/Media/Holiday%202020.mp4")]
     [DataRow("/api/trickplay/files/Media/Holiday%202020.mp4?sheet=0")]

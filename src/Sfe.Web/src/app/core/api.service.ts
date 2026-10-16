@@ -132,6 +132,8 @@ export class Api {
     /** Same, without queueing a video that has none (a thumbnail's hover preview). */
     existingTrickplay = (path: string) => this.get<TrickplayManifest>(`api/trickplay/files/${encodePath(path)}`, { queue: 'false' });
     trickplayStatus = () => this.get<TrickplayStatus>('api/trickplay');
+    /** Whether a picture has more than one frame (read from its structure on the server). */
+    imageAnimation = (path: string) => this.get<{ animated: boolean }>(`api/files/animated/${encodePath(path)}`);
     /** Running videos, the first `limit` waiting ones and the last ones finished. */
     trickplayActivity = (limit: number) => this.get<TrickplayActivity>('api/trickplay/activity', { limit });
     /** Those of `paths` waiting or being processed. */

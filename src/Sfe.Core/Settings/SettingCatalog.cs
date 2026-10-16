@@ -45,7 +45,7 @@ public static class SettingCatalog
     private static readonly HashSet<string> UserKeys =
     [
         "appearance.theme", "browse.defaultPageSize", "search.defaultPageSize", "browse.folderPictures", "browse.showResolution",
-        "browse.showDuration", "browse.resolutionMark", "thumbnails.singleViewOriginals", "player.seekSeconds", "player.loop",
+        "browse.showDuration", "browse.resolutionMark", "thumbnails.singleViewOriginals", "thumbnails.animatedHover", "player.seekSeconds", "player.loop",
         "trickplay.hoverPreview", "search.historySize", "tags.sidebarCount",
     ];
 

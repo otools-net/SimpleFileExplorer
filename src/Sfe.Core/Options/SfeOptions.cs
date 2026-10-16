@@ -477,6 +477,12 @@ public sealed class ThumbnailOptions
     /// </summary>
     public bool SingleViewOriginals { get; set; }
 
+    /// <summary>
+    /// Resting the mouse on an animated image the listing shows through its thumbnail (see
+    /// <see cref="LargeImageKilobytes"/>) plays the original in its place; each hover downloads it whole.
+    /// </summary>
+    public bool AnimatedHover { get; set; } = true;
+
     /// <summary>Thumbnails generated concurrently.</summary>
     public int MaxConcurrency { get; set; } = 2;
 

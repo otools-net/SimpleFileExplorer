@@ -70,7 +70,7 @@ public sealed record StreamingConfig(bool Always);
 /// Videos the browser can't play are converted by the server (<c>/api/streaming/play</c>); null when streaming is off,
 /// ffmpeg is missing, or without the right <c>files.stream</c>.
 /// </param>
-public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
+public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool AnimatedHover, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
     IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor, StreamingConfig? Streaming);
 
 public static class ConfigEndpoints
@@ -112,6 +112,7 @@ public static class ConfigEndpoints
             server.Search.Explain,
             Math.Clamp(settings.Search.HistorySize, 0, SettingsService.MaxSearchHistory),
             settings.Thumbnails.SingleViewOriginals,
+            settings.Thumbnails.AnimatedHover,
             settings.Browse.ShowResolution,
             settings.Browse.ShowDuration,
             settings.Browse.ResolutionMark

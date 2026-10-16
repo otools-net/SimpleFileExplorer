@@ -86,9 +86,11 @@ describe('Api', () => {
     it('encodes each segment of a path in the URL', () => {
         void api.trickplay('Ñandú/a #1?.mp4');
         void api.existingTrickplay('x/y.mp4');
+        void api.imageAnimation('a b/c#.gif');
 
         expect(http.expectOne('api/trickplay/files/%C3%91and%C3%BA/a%20%231%3F.mp4')).toBeTruthy();
         expect(http.expectOne(r => r.url === 'api/trickplay/files/x/y.mp4').request.params.get('queue')).toBe('false');
+        expect(http.expectOne('api/files/animated/a%20b/c%23.gif')).toBeTruthy();
     });
 
     it('forgets one missing file, or all of them', () => {

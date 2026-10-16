@@ -199,6 +199,8 @@ export interface ClientConfig {
     searchHistory: number;
     /** The "one per row" view shows images themselves, not their thumbnails (Thumbnails:SingleViewOriginals). */
     singleViewOriginals: boolean;
+    /** Hovering an animated image shown through its thumbnail plays the original (Thumbnails:AnimatedHover). */
+    animatedHover: boolean;
     /** Listings and the viewer show the resolution of images and videos (Browse:ShowResolution). */
     showResolution: boolean;
     /** Listings and the viewer show the duration of videos and audio files (Browse:ShowDuration). */

@@ -84,6 +84,7 @@ public sealed class EditableSettings
             Width = options.Thumbnails.Width,
             LargeImageKilobytes = options.Thumbnails.LargeImageKilobytes,
             SingleViewOriginals = options.Thumbnails.SingleViewOriginals,
+            AnimatedHover = options.Thumbnails.AnimatedHover,
             MaxConcurrency = options.Thumbnails.MaxConcurrency,
             TimeoutSeconds = options.Thumbnails.TimeoutSeconds,
         },
@@ -173,6 +174,7 @@ public sealed class EditableSettings
         options.Thumbnails.Width = Thumbnails.Width;
         options.Thumbnails.LargeImageKilobytes = Thumbnails.LargeImageKilobytes;
         options.Thumbnails.SingleViewOriginals = Thumbnails.SingleViewOriginals;
+        options.Thumbnails.AnimatedHover = Thumbnails.AnimatedHover;
         options.Thumbnails.MaxConcurrency = Thumbnails.MaxConcurrency;
         options.Thumbnails.TimeoutSeconds = Thumbnails.TimeoutSeconds;
         options.Trickplay.Enabled = Trickplay.Enabled;
@@ -263,6 +265,7 @@ public sealed class ThumbnailSettings
     public int Width { get; set; }
     public int LargeImageKilobytes { get; set; }
     public bool SingleViewOriginals { get; set; }
+    public bool AnimatedHover { get; set; }
     public int MaxConcurrency { get; set; }
     public int TimeoutSeconds { get; set; }
 }

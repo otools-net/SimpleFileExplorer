@@ -8,3 +8,5 @@ Code: `TrickplayHoverService` (client, `src/app/trickplay/`), `TrickplayService.
 - Off with `Trickplay:HoverPreview` (`/api/config` `trickplayHover`).
 - It asks with `?queue=false` (`TrickplayService.Get(path, queue: false)`) so hovering never queues a video.
 - Resets on each new listing (`ListingStore.generation`).
+- The gestures serve any `HoverPlayer` (`enabled`, `ready`, `isReady`, `play`) passed to `attach`: the trickplay one by
+  default, animated images ([animated-hover.md](animated-hover.md)). `insertUnderMarks` puts an overlay under the marks.

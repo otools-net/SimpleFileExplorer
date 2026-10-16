@@ -11,11 +11,24 @@ const HOLD_DELAY_MS = 350;          // touch: pressing this long, without slidin
 const HOLD_SLOP_PX = 10;            // finger movement still counted as holding still
 const HOLD_CLICK_MS = 600;          // after a hold, the click the browser may send on release is dropped
 
+/** What a hovered (or held) card plays over its preview: the trickplay of a video, an animated image. */
+export interface HoverPlayer {
+    /** Whether hovering the card now may play anything (settings, the item's kind and preview). */
+    enabled(): boolean;
+    /** Resolves to whether there is something to play for `path` (asked once the hover delay is up). */
+    ready(path: string): Promise<boolean>;
+    /** `ready`'s answer when it has come, false before. */
+    isReady(path: string): boolean;
+    /** Starts playing in `container`; returns what stops it. */
+    play(container: HTMLElement, path: string): () => void;
+}
+
 /**
  * Plays the existing trickplay of a video over its thumbnail while the mouse rests on its tile or row (touch: while
  * a finger holds it): frames picked evenly along the whole video, looping, with a thin bar showing where they are.
  * Only what exists is shown: hovering doesn't queue a video. One preview plays at a time; the descriptions are kept
- * for the listing (`Trickplay:HoverPreview`, off in the settings).
+ * for the listing (`Trickplay:HoverPreview`, off in the settings). The hover and hold gestures also serve other
+ * players (`attach`'s `player`, e.g. animated images), one preview playing at a time among them all.
  */
 @Injectable({ providedIn: 'root' })
 export class TrickplayHoverService {
@@ -32,6 +45,12 @@ export class TrickplayHoverService {
         const config = this.config.config();
         return Boolean(config?.features.trickplay && config.trickplayHover);
     });
+    private readonly videos: HoverPlayer = {
+        enabled: () => this.enabled(),
+        ready: async path => ((await this.load(path))?.count ?? 0) > 0,
+        isReady: path => (this.known.get(path)?.count ?? 0) > 0,
+        play: (container, path) => this.play(container, path, this.known.get(path)!),
+    };
 
     constructor() {
         // A new listing: videos may have got (new) trickplay since.
@@ -46,9 +65,9 @@ export class TrickplayHoverService {
      * Hovering `card` (the listing's tile or row) plays the trickplay of the video at `path()` in `container()` (its
      * thumbnail's box, positioned). Touch screens have no hover: pressing and holding the card plays it until the
      * finger lifts; a tap still opens the video and a scroll cancels the hold (the browser takes the touch over).
-     * Stops listening when `destroyRef` is destroyed.
+     * Stops listening when `destroyRef` is destroyed. `player`: what plays, the video's trickplay by default.
      */
-    attach(card: HTMLElement, container: () => HTMLElement, path: () => string, destroyRef: DestroyRef): void {
+    attach(card: HTMLElement, container: () => HTMLElement, path: () => string, destroyRef: DestroyRef, player: HoverPlayer = this.videos): void {
         let hover: { timer: number; stop: (() => void) | null; touch: boolean } | null = null;
         let origin: { x: number; y: number } | null = null;     // where the finger went down
         let swallowClick = false;                               // the click that follows a hold
@@ -58,10 +77,16 @@ export class TrickplayHoverService {
         const start = (delay: number, touch: boolean) => {
             const current = hover = { timer: 0, stop: null as (() => void) | null, touch };
             current.timer = setTimeout(async () => {
-                const info = await this.load(path());
-                if (hover === current && info && info.count > 0) {
+                const playable = await player.ready(path());
+                if (hover === current && playable) {
                     this.active?.();
-                    current.stop = this.active = this.play(container(), path(), info);
+                    const stop = player.play(container(), path());
+                    const stopActive = () => {
+                        stop();
+                        if (this.active === stopActive)
+                            this.active = null;
+                    };
+                    current.stop = this.active = stopActive;
                 }
             }, delay);
         };
@@ -77,7 +102,7 @@ export class TrickplayHoverService {
         const listeners: [string, (event: never) => void, boolean?][] = [
             ['pointerenter', (event: PointerEvent) => {
                 // Moving across the listing doesn't ask for anything.
-                if (event.pointerType !== 'touch' && this.enabled())
+                if (event.pointerType !== 'touch' && player.enabled())
                     start(HOVER_DELAY_MS, false);
             }],
             ['pointerleave', (event: PointerEvent) => {
@@ -85,9 +110,9 @@ export class TrickplayHoverService {
                     leave();
             }],
             ['pointerdown', (event: PointerEvent) => {
-                if (event.pointerType !== 'touch' || !event.isPrimary || !this.enabled())
+                if (event.pointerType !== 'touch' || !event.isPrimary || !player.enabled())
                     return;
-                void this.load(path());     // asked while the finger rests, so the frames come right after the hold delay
+                void player.ready(path());     // asked while the finger rests, so the frames come right after the hold delay
                 origin = { x: event.clientX, y: event.clientY };
                 start(HOLD_DELAY_MS, true);
             }],
@@ -100,7 +125,7 @@ export class TrickplayHoverService {
             ['pointercancel', () => release()],
             // A long press opens the browser's menu for the link (Android), which would end the touch.
             ['contextmenu', (event: Event) => {
-                if (hover?.touch && (hover.stop || (this.known.get(path())?.count ?? 0) > 0))
+                if (hover?.touch && (hover.stop || player.isReady(path())))
                     event.preventDefault();
             }],
             // Capturing, so it comes before the link's own handler.
@@ -172,10 +197,7 @@ export class TrickplayHoverService {
             context.drawImage(sheet, (cell % columns) * width, Math.floor(cell / columns) * height, width, height, 0, 0, width, height);
             bar.style.width = `${(100 * (frame + 1) / info.count).toFixed(1)}%`;
             if (!shown) {
-                // Under the marks (badge, HR/LR, trickplay), over the thumbnail.
-                const before = container.querySelector(':scope > .preview-marks, :scope > .resolution-mark, :scope > .trickplay-mark');
-                container.insertBefore(canvas, before);
-                container.insertBefore(progress, before);
+                insertUnderMarks(container, canvas, progress);
                 shown = true;
             }
             frame += step;
@@ -188,10 +210,15 @@ export class TrickplayHoverService {
             clearInterval(timer);
             canvas.remove();
             progress.remove();
-            if (this.active === stop)
-                this.active = null;
         };
         tick();
         return stop;
     }
+}
+
+/** Puts `nodes` in a preview's box under its marks (badge, HR/LR, trickplay), over the thumbnail. */
+export function insertUnderMarks(container: HTMLElement, ...nodes: Node[]): void {
+    const before = container.querySelector(':scope > .preview-marks, :scope > .resolution-mark, :scope > .trickplay-mark');
+    for (const node of nodes)
+        container.insertBefore(node, before);
 }

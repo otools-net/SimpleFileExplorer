@@ -19,7 +19,7 @@ Each setting has a lowest level:
 - what a space decides (file types, skipped and excluded folders, thumbnails, trickplay, duplicates, the external
   player...) at the **space**;
 - personal choices (theme, page sizes, folder pictures, resolution and duration display, seek step, loop, hover
-  previews, search and sidebar sizes) go down to each **user**.
+  previews of videos and animated images, search and sidebar sizes) go down to each **user**.
 
 The folders of a space (excluded folders, trickplay folders, the folder for edited pictures) are only set in the space
 itself.

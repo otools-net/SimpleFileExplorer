@@ -35,8 +35,11 @@
 .row .thumb .trickplay-mark .icon { width: 12px; height: 12px; }
 .row .thumb .trickplay-mark .trickplay-spinner { width: 11px; height: 11px; }
 
-/* Trickplay played over a hovered video thumbnail, cropped like the thumbnail; the bar shows where along the video. */
-.trickplay-hover {
+/*
+ * Trickplay played over a hovered video thumbnail, and the original of a hovered animated image, cropped like the
+ * thumbnail; the bar shows where along the video, or that the image is loading.
+ */
+.trickplay-hover, .animated-hover {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -57,6 +60,12 @@
 
 .trickplay-hover-progress > span { display: block; height: 100%; background: var(--video); }
 .row .thumb .trickplay-hover-progress { height: 2px; }
+.animated-hover-loading > span { width: 30%; background: var(--image); animation: animated-hover-loading 1s ease-in-out infinite alternate; }
+
+@keyframes animated-hover-loading {
+    from { margin-left: 0; }
+    to { margin-left: 70%; }
+}
 
 /* Touch: holding a video's card plays the preview; the hold mustn't select text, open the link callout or drag. */
 @media (hover: none) {

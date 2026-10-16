@@ -66,6 +66,7 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'scan.computeHashes',
     'scan.readResolution',
     'thumbnails.enabled',
+    'thumbnails.animatedHover',
     'trickplay.enabled',
     'trickplay.folders',
     'trickplay.hoverPreview',
@@ -309,6 +310,8 @@ export const TABS: SettingTab[] = [
                         hint: 'Larger photos are previewed through their thumbnail instead of being downloaded whole; the viewer shows the thumbnail until the original has loaded. 0 uses thumbnails for every photo.' },
                     { key: 'thumbnails.singleViewOriginals', label: 'Full images in one-per-row view', type: 'checkbox',
                         hint: 'The one-per-row view shows each photo itself instead of its thumbnail, sharp at any size, even above the large image size. Large photos are downloaded whole as you scroll past them, which can be slow over the network.' },
+                    { key: 'thumbnails.animatedHover', label: 'Play animated images on hover', type: 'checkbox',
+                        hint: 'Resting the mouse on an animated GIF, PNG, WebP or AVIF shown through its thumbnail (or, on a touch screen, holding it) plays the image itself. Each time, the whole file is downloaded.' },
                 ],
             },
             {

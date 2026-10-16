@@ -26,6 +26,11 @@ The three buttons at the top right switch between:
 Each tile or row shows the file's name, resolution, size and date, its tags (click one to search for it) and, on
 hover, a checkbox to [select it](tags.md#several-files-at-once) and a tag button.
 
+Large photos are shown through their thumbnail, which is still. Resting the mouse on a large **animated image** (GIF,
+PNG, WebP or AVIF with several frames) plays the image itself over its thumbnail, after a thin bar while it loads; on a
+touch screen, press and hold it (a tap still opens it). Only files that are really animated are played. See
+[Thumbnails](../administration/thumbnails.md) to turn it off.
+
 Files and folders that are **not indexed yet** (added since the last [scan](scanning.md), or in a folder never scanned)
 are shown faded, back to full strength under the mouse; their hint says so. Browsing and viewing them works as usual,
 but search, duplicates and tag searches only find them after a scan. Tagging a file, or the files of a folder, indexes

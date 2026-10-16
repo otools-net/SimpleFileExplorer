@@ -95,6 +95,7 @@ export function fakeConfig(overrides: Partial<ClientConfig> = {}): ClientConfig 
         searchExplain: true,
         searchHistory: 10,
         singleViewOriginals: false,
+        animatedHover: true,
         showResolution: true,
         showDuration: true,
         resolutionMark: null,

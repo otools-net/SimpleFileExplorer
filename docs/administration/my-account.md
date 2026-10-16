@@ -11,10 +11,10 @@ Your own choices, over the space's settings: kept by the server, they follow you
 A setting the space or the server locked cannot be changed here. Right: `account.preferences`.
 
 They include the theme (and **This browser's theme**, kept in this browser only), items and results per page, pictures
-per folder, the display of resolutions, durations and HR/LR marks, the player's jump and loop, play on hover, searches
-remembered and tags per sidebar section. Each has the same meaning as on the
-[Interface](interface.md), [Playback](playback.md), [Trickplay](trickplay.md#settings) and [Tags](tags.md#settings)
-pages.
+per folder, the display of resolutions, durations and HR/LR marks, the player's jump and loop, play on hover (videos
+and animated images), searches remembered and tags per sidebar section. Each has the same meaning as on the
+[Interface](interface.md), [Playback](playback.md), [Thumbnails](thumbnails.md), [Trickplay](trickplay.md#settings)
+and [Tags](tags.md#settings) pages.
 
 ## Password
 

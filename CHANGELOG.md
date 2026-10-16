@@ -3,6 +3,15 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.50.0
+
+### Added
+
+- **Animated images play on hover:** a large GIF, PNG, WebP or AVIF shown through its still thumbnail plays the image
+  itself while the mouse rests on it (on a touch screen, while you hold it), like the trickplay of videos. Only files
+  with several frames are played. Each user can turn it off (**Thumbnails › Play animated images on hover**,
+  `Sfe:Thumbnails:AnimatedHover`).
+
 ## 1.49.0
 
 ### Added

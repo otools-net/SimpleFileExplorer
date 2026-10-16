@@ -21,6 +21,9 @@ public sealed record FolderCoversRequest(IReadOnlyList<string>? Paths);
 /// <param name="Path">File, relative to the library root.</param>
 public sealed record FileLinkRequest(string? Path);
 
+/// <param name="Animated">The picture has more than one frame.</param>
+public sealed record ImageAnimationInfo(bool Animated);
+
 public static class LibraryEndpoints
 {
     private static readonly FileExtensionContentTypeProvider ContentTypes = CreateContentTypes();
@@ -87,6 +90,17 @@ public static class LibraryEndpoints
             .WithTags("Library")
             .WithSummary("Streams a file (supports HTTP range requests for media seeking).")
             .WithDescription("`download=true` asks the browser to save it, which needs the right `files.download`.");
+
+        api.MapGet("/files/animated/{**path}", Animated)
+            .RequireRateLimiting(RequestLimits.Media)
+            .RequireRight(Rights.ViewFiles)
+            .WithName("GetImageAnimation")
+            .WithTags("Library")
+            .WithSummary("Whether a picture is animated (GIF, APNG, WebP or AVIF with more than one frame).")
+            .WithDescription("""
+                Read from the file's structure, without decoding it. The listings ask before playing the original of an
+                image they show through its thumbnail, on hover.
+                """);
 
         api.MapPost("/files/links", CreateLink)
             .RequireRight(Rights.ExternalPlayer)
@@ -203,6 +217,25 @@ public static class LibraryEndpoints
             return TypedResults.Forbid();
 
         return ServeFile(context, fullPath, download);
+    }
+
+    private static async Task<Results<Ok<ImageAnimationInfo>, NotFound>> Animated(
+        LibraryPaths paths, ServerFiles serverFiles, ILoggerFactory loggerFactory, string path, CancellationToken cancellationToken)
+    {
+        if (!paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
+            return TypedResults.NotFound();
+
+        try
+        {
+            await using var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 64 * 1024, useAsync: false);
+            return TypedResults.Ok(new ImageAnimationInfo(await Task.Run(() => ImageAnimation.IsAnimated(stream), cancellationToken)));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Unreadable now (locked, drive gone): shown as still, the thumbnail stays.
+            loggerFactory.CreateLogger(typeof(LibraryEndpoints)).LogWarning(ex, "Cannot tell whether {Path} is animated", path);
+            return TypedResults.Ok(new ImageAnimationInfo(false));
+        }
     }
 
     private static async Task<Results<Ok<FileLink>, NotFound>> CreateLink(

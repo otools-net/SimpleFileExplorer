@@ -7,6 +7,7 @@ import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
 import { TrickplayHoverService } from '../../trickplay/trickplay-hover.service';
 import { TrickplayMarkComponent } from '../../trickplay/trickplay-mark.component';
+import { AnimatedHoverService } from './animated-hover.service';
 import { ListingStore } from '../listing.store';
 import { ItemActions } from './item-actions.service';
 import { CopyPathButtonComponent, ItemFolderComponent, ItemTagsComponent, NOT_INDEXED, SelectBoxComponent, TagButtonComponent } from './item-parts';
@@ -15,7 +16,8 @@ import { PreviewsService } from './previews.service';
 
 /**
  * What a listed file shows, shared by its tile and its row: the preview, which only exists for images and videos
- * and goes away when none of its sources can be shown, the trickplay hover on videos, the selection.
+ * and goes away when none of its sources can be shown, the trickplay hover on videos, the animated image hover on
+ * images shown through their thumbnail, the selection.
  */
 @Directive()
 abstract class FileItemBase {
@@ -44,16 +46,20 @@ abstract class FileItemBase {
     /** The links' hint: the name, and whether the index has the file yet. */
     protected readonly linkTitle = computed(() => this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''));
 
-    /** The box of the preview, where the trickplay hover plays. */
+    /** The box of the preview, where the hover previews play. */
     protected abstract previewContainer(): HTMLElement | undefined;
 
     constructor() {
         const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
         const hover = inject(TrickplayHoverService);
+        const animated = inject(AnimatedHoverService);
         const destroyRef = inject(DestroyRef);
         afterNextRender(() => {
             if (this.isVideo())
                 hover.attach(host, () => this.previewContainer()!, () => this.item().path, destroyRef);
+            else if (this.item().kind === 'image')
+                animated.attach(host, () => this.previewContainer()!, () => this.item(),
+                    () => this.hasPreview() && this.sources()[0] !== this.url(), destroyRef);
         });
     }
 }
