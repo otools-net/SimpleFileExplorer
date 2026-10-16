@@ -17,6 +17,9 @@ using Sfe.Core.Paths;
 if (WindowsServiceSetup.TryRun(args) is { } serviceExitCode)
     return serviceExitCode;
 
+// "--no-browser": the portable packages don't open the browser at start (BrowserLauncher), whatever the settings say.
+args = BrowserLauncher.TakeNoBrowser(args, out var noBrowser);
+
 WebApplicationBuilder builder;
 try
 {
@@ -174,8 +177,8 @@ catch (IOException ex) when (ex.InnerException is AddressInUseException)
 }
 
 if (code.CodeIsGenerated && (migration.Status == MigrationStatus.Required || code.Recover || await SetupStillRequiredAsync()))
-    AnnounceSetupCode(code.Code!);
-BrowserLauncher.OpenIfWanted(app);
+    AnnounceSetupCode(code.Code!, migration.Status != MigrationStatus.Required && await NewInstallAsync());
+await BrowserLauncher.OpenIfWantedAsync(app, noBrowser, migration.IsBlocking);
 await app.WaitForShutdownAsync();
 return 0;
 
@@ -210,17 +213,43 @@ async Task<bool> SetupStillRequiredAsync()
     }
 }
 
+// No account yet: a browser on this computer may set it up without the code (Sfe:Setup:LocalWithoutCode).
+async Task<bool> NewInstallAsync()
+{
+    try
+    {
+        return setupOptions.CurrentValue.LocalWithoutCode && await app.Services.GetRequiredService<SetupService>().IsFreshAsync();
+    }
+    catch (Exception)
+    {
+        return false;
+    }
+}
+
 // After the start, so that the addresses are known and the box is the last thing in the console. The code goes to the
 // console (the journal under systemd) and never through the logger: the server's log is kept in the database and in
 // files, which administrators read and backups hold.
-void AnnounceSetupCode(string setupCode)
+void AnnounceSetupCode(string setupCode, bool localWithoutCode)
 {
     var address = app.Services.GetRequiredService<Microsoft.AspNetCore.Hosting.Server.IServer>()
         .Features.Get<Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature>()?.Addresses.FirstOrDefault();
     var url = BrowserLauncher.BrowserUrl(address) ?? "SFE's address";
     var file = app.Services.GetRequiredService<GeneratedSetupCode>().FilePath;
     app.Logger.LogWarning("A setup code is needed: it is shown in the console and kept in {File}", file);
-    Console.Out.WriteLine($"""
+    Console.Out.WriteLine(localWithoutCode
+        ? $"""
+
+        ==============================================================
+          Open {url} in a browser on this computer to set SFE up
+          (no code needed there). From another computer, enter this
+          setup code:
+
+              {setupCode}
+
+          (also kept in {file})
+        ==============================================================
+        """
+        : $"""
 
         ==============================================================
           Open {url} in a browser and enter this setup code:

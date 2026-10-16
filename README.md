@@ -29,7 +29,8 @@ one machine or a private network, with accounts, groups and several libraries ("
    ```
 
 2. Start it: `SFE\Sfe.Api.exe` on Windows (it opens your browser), the AppImage on Linux, or the command above.
-3. Open `http://localhost:5080` and enter the **setup code** shown in SFE's window (also kept in `data/setup-code.txt`).
+3. Open `http://localhost:5080`. On the computer SFE runs on, no code is asked; from another device, enter the
+   **setup code** shown in SFE's window (also kept in `data/setup-code.txt`).
 4. Pick the folder of your library, who may open SFE (this computer or your whole network), then create the
    administrator. No file to edit; services and containers can still set everything in the configuration.
 5. ⋮ menu › **Scan this folder** to index the library.

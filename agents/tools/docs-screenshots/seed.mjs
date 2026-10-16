@@ -8,13 +8,16 @@ import { launch, sleep } from './cdp.mjs';
 const BASE = process.env.SFE_URL ?? 'http://localhost:5093/';
 const OUT = fileURLToPath(new URL('../../../docs/images/', import.meta.url));
 
-// The setup page at its second step (library folder, network, ffmpeg), after the code.
+// The setup page at its first step with a library (folder, network, ffmpeg). A browser on the server's own computer
+// skips the code of a new install; on another host name (or an older SFE) it is asked first.
 const b = await launch({ width: 1280, height: 1000 });
 await b.goto(BASE, 3000);
-await b.waitFor('#setup-code');
-await b.eval(`document.querySelector('#setup-code').focus(); 1`);
-await b.type(process.env.SFE_SETUP_CODE ?? 'doc-screenshots-setup');
-await b.eval(`[...document.querySelectorAll('button')].find(x => x.textContent.trim() === 'Next').click(); 1`);
+await b.waitFor('#setup-code, sfe-installation-form');
+if (await b.eval(`!!document.querySelector('#setup-code')`)) {
+    await b.eval(`document.querySelector('#setup-code').focus(); 1`);
+    await b.type(process.env.SFE_SETUP_CODE ?? 'doc-screenshots-setup');
+    await b.eval(`[...document.querySelectorAll('button')].find(x => x.textContent.trim() === 'Next').click(); 1`);
+}
 await b.waitFor('sfe-installation-form .folder-picker li');
 await sleep(1500);
 await b.eval(`(() => {

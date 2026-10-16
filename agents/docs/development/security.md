@@ -19,6 +19,8 @@ library by others). Keep these rules when changing it.
 - Every route names its right; every check of a path goes through `LibraryPaths` (lexical) **and** the served file
   must not be one of the server's own files (links can lead out of the root).
 - New expensive routes (ffmpeg, full scans of the index) get a limit per caller.
+- What only "this computer" may do (setup without code, fast sign-in) goes through `LocalVisitor.IsOnThisComputer`
+  (loopback, not forwarded, loopback `Host`), never a bare loopback check ([local-start.md](../features/local-start.md)).
 - Security events (failed or refused sign-ins, lockouts, wrong codes, recoveries, changes of what runs) are logged
   with `LogSecurityWarning` ([logs.md](../features/logs.md)), with the name and address, never a secret.
 
@@ -49,6 +51,9 @@ input, LIKE escaped, no `innerHTML` in the client.
 
 - **Session:** brute force (direct, via proxy, spoofed `X-Forwarded-For`), locking another's account, name enumeration
   (timing, lockout, disabled messages), tampered cookies, stamp change ends sessions and links.
+- **Local only:** setup without code and `api/session/start` from another address, through a local proxy
+  (`X-Forwarded-For`), with a foreign `Host` (DNS rebinding), after an account exists; a start link reused, late, or
+  after a second server administrator.
 - **Setup/installation/migration:** every route after setup with and without code and session; ffmpeg path to a
   non-ffmpeg program or a file of a library; root at `C:\` or `/` or around the data folder; old-code tokens; Recover left on.
 - **Authorization:** each route × anonymous/guest/user/space admin/server admin; `X-SFE-Tenant` and cookie mismatches;

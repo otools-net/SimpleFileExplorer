@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sfe.Api.Endpoints;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
@@ -73,6 +74,8 @@ public static class SecurityServiceCollectionExtensions
             }
         });
         services.AddSingleton<SignInThrottle>();
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<FastSignIn>();
 
         services.AddRateLimiter(options =>
         {

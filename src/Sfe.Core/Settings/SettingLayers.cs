@@ -236,6 +236,28 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
         _logger.LogWarning("Moved the settings {Settings} from {File} to the first library's own settings", string.Join(", ", perLibrary.Select(d => d.Key)), _server.FilePath);
     }
 
+    /// <summary>
+    /// Sets one setting at the server level, outside the settings page (the setup's choices): kept only when it
+    /// differs from the configuration's value. Nothing changes when the configuration locks it.
+    /// </summary>
+    /// <returns>The value applies now.</returns>
+    public async Task<bool> SaveServerValueAsync(string key, JsonNode? value, CancellationToken cancellationToken = default)
+    {
+        var configured = Configured();
+        if (SettingCatalog.Find(key) is null || configured.Locked.Any(pattern => SettingCatalog.Matches(pattern, key)))
+            return false;
+
+        var environment = SettingKeys.Flatten(SettingKeys.ToJson(EditableSettings.From(configured)));
+        var values = _server.Values.ToDictionary(v => v.Key, v => v.Value, StringComparer.Ordinal);
+        if (SettingKeys.Same(value, environment.GetValueOrDefault(key)) && !_server.Locked.Contains(key))
+            values.Remove(key);
+        else
+            values[key] = value?.DeepClone();
+        await _server.SaveLayerAsync(values, _server.Locked, cancellationToken);
+        NotifyChanged();
+        return true;
+    }
+
     /// <summary>Signals the libraries' options after a save of the server level (the libraries' own saves signal through <see cref="AccessChanges"/>).</summary>
     public void NotifyChanged()
     {

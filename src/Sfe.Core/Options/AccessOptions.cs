@@ -27,6 +27,12 @@ public sealed class SetupOptions
     /// </summary>
     public string CodeFile { get; set; } = "data/setup-code.txt";
 
+    /// <summary>
+    /// A new install (no account yet) is set up without the code from a browser on the server's own computer: whoever
+    /// sits there runs the server anyway. From any other computer, or once an account exists, the code is still asked.
+    /// </summary>
+    public bool LocalWithoutCode { get; set; } = true;
+
     /// <summary><see cref="Code"/> comes from <see cref="CodeFile"/>, not from the configuration.</summary>
     public bool CodeIsGenerated { get; internal set; }
 

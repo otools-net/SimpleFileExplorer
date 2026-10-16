@@ -255,6 +255,13 @@ public sealed partial class AccessService(
         return await db.Users.AnyAsync(u => u.IsServerAdmin && !u.Disabled, cancellationToken);
     }
 
+    /// <summary>The enabled server administrators, at most two: enough to tell whether there is a single one (fast sign-in).</summary>
+    public async Task<IReadOnlyList<int>> GetServerAdminIdsAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        return await db.Users.AsNoTracking().Where(u => u.IsServerAdmin && !u.Disabled).OrderBy(u => u.Id).Select(u => u.Id).Take(2).ToListAsync(cancellationToken);
+    }
+
     /// <param name="tenantScope">
     /// The library whose groups <see cref="UserInput.GroupIds"/> may name (a library's own administrator); null = any.
     /// </param>

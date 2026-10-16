@@ -25,5 +25,6 @@ silently: [production-upgrades.md](../development/production-upgrades.md).
 - **Never editable from the UI:** DB, system commands, cache dir, setup, security or tenant storage options: they run
   programs or decide where data lives, which only whoever runs the server may decide. The library root, `Urls` and the
   ffmpeg path are the only exceptions, and only through `InstallationSettings`
-  ([installation-page.md](installation-page.md)), never as `EditableSettings`.
+  ([installation-page.md](installation-page.md)), never as `EditableSettings`. `openBrowser`/`fastSignIn` are
+  server-level `EditableSettings` with right `server.settings` ([local-start.md](local-start.md)).
 - Document a configuration key in `docs/configuration.md`.

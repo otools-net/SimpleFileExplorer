@@ -23,7 +23,10 @@ public enum SettingLevel
 /// resources), <see cref="SettingLevel.Tenant"/> for what a library decides, <see cref="SettingLevel.User"/> for
 /// personal preferences. Settings only the configuration sets (root, database, ffmpeg...) are not in the catalog.
 /// </param>
-/// <param name="Right">The right a library's administrator needs to change it (server levels need <see cref="Rights.ServerSettings"/>).</param>
+/// <param name="Right">
+/// The right a library's administrator needs to change it (server levels need <see cref="Rights.ServerSettings"/>);
+/// <see cref="Rights.ServerSettings"/> itself for the settings about the server alone (how it starts).
+/// </param>
 /// <param name="PerLibrary">
 /// Paths inside a library (relative to its root): no server-wide value, as they mean nothing in another library.
 /// </param>
@@ -36,7 +39,7 @@ public static class SettingCatalog
     [
         "dataServer", "browse.maxPageSize", "search.maxPageSize", "scan.parallelism", "thumbnails.maxConcurrency",
         "thumbnails.timeoutSeconds", "trickplay.parallelism", "trickplay.timeoutMinutes", "tasks.logRetentionDays", "logs.retentionDays", "logs.writeFiles", "streaming.maxStreams", "streaming.quality",
-        "streaming.maxHeight", "streaming.copyVideo",
+        "streaming.maxHeight", "streaming.copyVideo", "openBrowser", "fastSignIn",
     ];
 
     private static readonly HashSet<string> UserKeys =
@@ -56,6 +59,8 @@ public static class SettingCatalog
         ("showHiddenItems", Rights.ScanningSettings), ("scan.", Rights.ScanningSettings), ("fileTypes.", Rights.ScanningSettings),
         ("thumbnails.", Rights.ThumbnailSettings), ("trickplay.", Rights.TrickplaySettings), ("fileTracking.", Rights.TrackingSettings),
         ("tags.", Rights.TagSettings), ("tasks.", Rights.TaskSettings), ("logs.", Rights.LogSettings), ("editor.", Rights.EditorSettings),
+        // How the server starts: only its administrators (System › Start-up).
+        ("openBrowser", Rights.ServerSettings), ("fastSignIn", Rights.ServerSettings),
     ];
 
     public static IReadOnlyList<SettingDefinition> All { get; } = SettingKeys.Flatten(SettingKeys.ToJson(new EditableSettings()))

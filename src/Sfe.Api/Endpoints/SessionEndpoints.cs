@@ -74,6 +74,17 @@ public static class SessionEndpoints
             .WithName("SwitchTenant")
             .WithSummary("Switches the signed-in account to another of its spaces.");
 
+        session.MapGet("/start", StartWithLink)
+            .AllowAnonymous()
+            .RequireRateLimiting(SignInRateLimit)
+            .WithName("FastSignIn")
+            .WithSummary("Signs the server's only administrator in with the one-time link of the browser SFE opened at start, then opens the app.")
+            .WithDescription($"""
+                Only with `Sfe:FastSignIn` (Administration › System › Start-up), from the server's own computer, while the
+                server has a single enabled administrator. The link (`token`) is made when SFE starts, works once and for
+                {FastSignIn.Lifetime.TotalMinutes:0} minute. Whatever happens, the answer sends the browser to the app.
+                """);
+
         session.MapPost("/recovery", RequestRecovery)
             .AllowAnonymous()
             .RequireRateLimiting(SignInRateLimit)
@@ -166,6 +177,31 @@ public static class SessionEndpoints
         await SfeSession.SignInAsync(context, result.User!, context.User.TenantId(), request.Remember);
         context.Response.Cookies.Delete(SfeSession.GuestTenantCookie);
         return TypedResults.Ok(await DescribeAsync(context));
+    }
+
+    private static async Task<RedirectHttpResult> StartWithLink(
+        HttpContext context, FastSignIn fastSignIn, AccessService accounts, ILoggerFactory loggers, string? token = null, CancellationToken cancellationToken = default)
+    {
+        var home = context.Request.PathBase.HasValue ? context.Request.PathBase.Value + "/" : "/";
+        var logger = loggers.CreateLogger(typeof(SessionEndpoints));
+        var address = context.Connection.RemoteIpAddress?.ToString();
+        if (!LocalVisitor.IsOnThisComputer(context))
+        {
+            logger.LogSecurityWarning("Fast sign-in refused from {Address}: only a browser on the server's own computer may use it", address);
+            return TypedResults.Redirect(home);
+        }
+
+        if (await fastSignIn.RedeemAsync(token, cancellationToken) is not { Disabled: false } user)
+        {
+            logger.LogSecurityWarning("Fast sign-in refused from {Address}: the link is used, expired or no longer valid", address);
+            return TypedResults.Redirect(home);
+        }
+
+        await SfeSession.SignInAsync(context, user, null, persistent: false);
+        context.Response.Cookies.Delete(SfeSession.GuestTenantCookie);
+        await accounts.RecordSignInAsync(user.Id, cancellationToken);
+        logger.LogSecurityWarning("Fast sign-in: {User} signed in with the link of the browser SFE opened at start", user.UserName);
+        return TypedResults.Redirect(home);
     }
 
     private static async Task<Ok<RecoveryRequested>> RequestRecovery(

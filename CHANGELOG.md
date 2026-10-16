@@ -3,6 +3,18 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.48.0
+
+### Added
+
+- **No setup code on the server's own computer:** a new install opened in a browser on the computer SFE runs on skips
+  the code; from any other device, or once an account exists, it is still asked (`Sfe:Setup:LocalWithoutCode`).
+- **Fast sign-in** for SFE used on one computer: the browser the portable package opens at start signs the
+  administrator in without a password, with a one-time link. Offered by the setup page, switched in **Administration ›
+  System › Start-up**; only while the server has a single administrator (`Sfe:FastSignIn`).
+- **Administration › System › Start-up:** whether the portable package opens the browser when it starts.
+- `--no-browser` on the command line keeps the browser closed, whatever the settings say.
+
 ## 1.47.0
 
 ### Added

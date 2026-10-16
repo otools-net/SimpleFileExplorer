@@ -1,8 +1,8 @@
 # System
 
 **Administration › System**: the server's version, library folder and ffmpeg, its API, backups, the server commands
-(**About**), the library folder, network address and ffmpeg of the installation (**Installation**), and the videos the
-server converts (**Video streams**).
+(**About**), the library folder, network address and ffmpeg of the installation (**Installation**), what SFE does when
+it starts (**Start-up**), and the videos the server converts (**Video streams**).
 
 ![Administration › System](../images/admin-system.png)
 
@@ -79,6 +79,20 @@ signed-in server administrator without the code can't use it, nor can anyone wit
 What the page saves goes to `data/installation.json` (see [Configuration](../configuration.md#where-settings-come-from)).
 A value the server's environment variables or command line set (e.g. `Sfe__Root` in a systemd unit, `--urls`) wins
 over it: the page shows it with **Set by …** and can't change it.
+
+## Start-up
+
+![Administration › System › Start-up](../images/admin-system-startup.png)
+
+What the portable package and the AppImage do when they are started by hand (a service never opens a browser), for
+server administrators (`server.settings`). Both are settings of the whole server, on its **Whole server** tab.
+
+- **Open the browser**: opens SFE in the computer's default browser once it is ready (`Sfe:OpenBrowser`). Starting SFE
+  with `--no-browser` keeps it closed whatever this says.
+- **Sign the administrator in at once** ([fast sign-in](../first-start.md#fast-sign-in), `Sfe:FastSignIn`): the browser
+  opened at start signs the server administrator in without a password, with a link that works once, for a minute,
+  from that computer only. Only while the server has a single administrator. Leave it off unless SFE is used on that
+  computer alone.
 
 ## Video streams
 

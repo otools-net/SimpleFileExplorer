@@ -255,9 +255,57 @@ describe('SetupPageComponent', () => {
         await settle();
 
         expect(api.completeSetup).toHaveBeenCalledWith({
-            code: 'the-setup-code-0123', userName: 'admin', password: 'secret-password', displayName: null, libraryName: 'Family',
+            code: 'the-setup-code-0123', userName: 'admin', password: 'secret-password', displayName: null, libraryName: 'Family', fastSignIn: false,
         });
         expect(navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
+    });
+
+    it('asks no code of a new install opened on the server\'s own computer', async () => {
+        await create(setup({ codeRequired: false, codeConfigured: false }));
+        api.saveInstallation.mockResolvedValue({ settings: installationView(), restartRequired: false });
+        api.completeSetup.mockResolvedValue({} as SessionInfo);
+
+        expect(element.querySelector('#setup-code')).toBeNull();
+        expect(api.checkInstallation).toHaveBeenCalledWith('');
+        expect(element.querySelector('sfe-installation-form')).not.toBeNull();
+        expect(element.querySelector('.setup-progress')!.textContent).toBe('Step 1 of 2');
+        expect(buttonNamed(element, 'Back')).toBeFalsy();
+        buttonNamed(element, 'Next')!.click();
+        await settle();
+        expect(element.querySelector('.setup-progress')!.textContent).toBe('Step 2 of 2');
+        await fillAccount();
+        buttonNamed(element, 'Create the administrator')!.click();
+        await settle();
+
+        expect(api.completeSetup).toHaveBeenCalledWith(expect.objectContaining({ code: '', userName: 'admin' }));
+    });
+
+    it('offers fast sign-in when the server opens a browser at start', async () => {
+        await create(setup({ codeRequired: false, hosting: 'portable' }));
+        api.saveInstallation.mockResolvedValue({ settings: installationView(), restartRequired: false });
+        api.completeSetup.mockResolvedValue({} as SessionInfo);
+        buttonNamed(element, 'Next')!.click();
+        await settle();
+        await fillAccount();
+
+        const box = [...element.querySelectorAll<HTMLLabelElement>('label.check')].find(label => label.textContent!.includes('Sign me in when SFE starts'));
+        expect(box).toBeDefined();
+        box!.querySelector('input')!.click();
+        await settle();
+        buttonNamed(element, 'Create the administrator')!.click();
+        await settle();
+
+        expect(api.completeSetup).toHaveBeenCalledWith(expect.objectContaining({ fastSignIn: true }));
+    });
+
+    it('offers no fast sign-in for a server started otherwise', async () => {
+        await create(setup({ hosting: 'windowsService' }));
+        await enterCode();
+        buttonNamed(element, 'Next')!.click();
+        await settle();
+
+        expect(element.querySelector('#setup-name')).not.toBeNull();
+        expect(element.textContent).not.toContain('Sign me in when SFE starts');
     });
 
     it('stays on the code while it is wrong', async () => {

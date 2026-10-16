@@ -654,6 +654,8 @@ export interface SetupInfo {
     codeGenerated?: boolean;
     /** Where that code is kept, as configured (usually relative to SFE's folder). */
     codeFile?: string | null;
+    /** The setup asks this visitor for the code; false for a new install set up from the server's own computer (missing from older servers: true). */
+    codeRequired?: boolean;
 }
 
 /** none = the install belongs to this version; the others keep everything but the update page closed (503 `migration-required`). */
@@ -737,6 +739,8 @@ export interface SetupInput {
     password: string;
     displayName?: string | null;
     libraryName?: string | null;
+    /** Sign the administrator in at once in the browser SFE opens when it starts (server setting `fastSignIn`). */
+    fastSignIn?: boolean;
 }
 
 export interface RightDefinition {

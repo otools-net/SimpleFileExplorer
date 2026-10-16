@@ -5,7 +5,8 @@ Code: `src/Sfe.Core/Access/SetupService.cs`, `GeneratedSetupCode.cs`, `Options/A
 Installation step: [installation-page.md](installation-page.md).
 
 - `SetupService`: required while no enabled server administrator exists; needs `Sfe:Setup:Code` (≥ 12, constant-time
-  compare, `SetupOptions.Matches`); creates the local admin in the first library's Administrators group, renames the
+  compare, `SetupOptions.Matches`), except a new install set up from the server's own computer
+  ([local-start.md](local-start.md)); creates the local admin in the first library's Administrators group, renames the
   library.
 - Without a configured code, `GeneratedSetupCode` (post-configures `SetupOptions`, `CodeIsGenerated`) writes one to
   `Sfe:Setup:CodeFile` (`data/setup-code.txt`) when needed: Program.cs at start (and prints it in a box after

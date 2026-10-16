@@ -395,7 +395,11 @@ public sealed class LayeredSettingsTests
         var keys = SettingKeys.Flatten(SettingKeys.ToJson(new EditableSettings())).Keys.ToList();
 
         CollectionAssert.AreEquivalent(keys, SettingCatalog.All.Select(d => d.Key).ToList());
-        Assert.IsTrue(SettingCatalog.All.All(d => RightCatalog.Find(d.Right) is { Scope: RightScope.Tenant }));
+        // A library section's right; server.settings itself only for what concerns the server alone (how it starts).
+        Assert.IsTrue(SettingCatalog.All.All(d => RightCatalog.Find(d.Right) is { Scope: RightScope.Tenant }
+                                                  || d.Right == Rights.ServerSettings && d.Scope == SettingLevel.Server));
+        Assert.AreEqual(SettingLevel.Server, SettingCatalog.Find("openBrowser")!.Scope);
+        Assert.AreEqual(Rights.ServerSettings, SettingCatalog.Find("fastSignIn")!.Right);
         Assert.AreEqual(SettingLevel.User, SettingCatalog.Find("appearance.theme")!.Scope);
         Assert.AreEqual(SettingLevel.Server, SettingCatalog.Find("scan.parallelism")!.Scope);
         Assert.IsTrue(SettingCatalog.Find("scan.excludedFolders")!.PerLibrary);

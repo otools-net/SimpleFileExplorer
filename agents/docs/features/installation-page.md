@@ -4,7 +4,8 @@ Code: `src/Sfe.Api/Maintenance/InstallationSettings.cs`, `Security/InstallationA
 `Endpoints/` (installation routes); client `src/app/account/` (`InstallationForm`, also System › Installation),
 `src/app/shared/` (`FolderPicker`).
 
-- `api/installation/check` (code, rate-limited) answers a token (`InstallationAccess`, data protection, 1 h, hash of
+- `api/installation/check` (code, rate-limited; no code for a new install on the server's own computer:
+  [local-start.md](local-start.md)) answers a token (`InstallationAccess`, data protection, 1 h, hash of
   the code) sent in `X-SFE-Installation` to `GET|PUT api/installation` and `GET api/installation/folders` (all
   `AllowAnonymous`, open before the setup: `RequestGuard` and `TenantMiddleware` let `/api/installation` through).
 - `PUT` writes only changed keys and reloads the file's provider; a new root or ffmpeg runs

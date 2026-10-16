@@ -10,7 +10,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | Page | What it covers |
 |---|---|
 | [Installation](installation.md) | Running from source, portable packages, IIS, Windows service, systemd |
-| [First start](first-start.md) | The setup code, creating the first administrator, recovering a lost password |
+| [First start](first-start.md) | The setup code, creating the first administrator, fast sign-in, recovering a lost password |
 | [Configuration](configuration.md) | `appsettings.json`, environment variables, every server setting, the database |
 | [Upgrading](upgrading.md) | What each version changes on an existing install |
 

@@ -47,6 +47,7 @@ public static class InstallationEndpoints
             .WithSummary("Checks the setup code and answers the installation settings with a token for the other installation routes.")
             .WithDescription("""
                 The token goes in the `X-SFE-Installation` header; it lasts an hour, and ends when the setup code changes.
+                A new install set up from the server's own computer needs no code (see `CompleteSetup`).
                 Once the server has an administrator, every installation route also needs a signed-in server
                 administrator (401 without a session, 403 for other accounts).
                 """);
@@ -88,7 +89,8 @@ public static class InstallationEndpoints
                 return TypedResults.Forbid();
         }
 
-        if (access.Grant(input.Code) is not { } token)
+        // A new install set up from the server's own computer needs no code (LocalVisitor).
+        if ((await LocalVisitor.SetupCodeWaivedAsync(context) ? access.GrantWithoutCode() : access.Grant(input.Code)) is not { } token)
         {
             loggers.CreateLogger(typeof(InstallationEndpoints)).LogSecurityWarning("Installation page refused: wrong setup code");
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["This is not the server's setup code."] });
@@ -178,7 +180,7 @@ public static class InstallationEndpoints
     /// </summary>
     private static async Task<InstallationVisitor> CheckAsync(HttpContext context, InstallationAccess access) =>
         await InstallationAccess.CheckVisitorAsync(context) is var visitor && visitor != InstallationVisitor.Allowed ? visitor
-        : access.IsGranted(context) ? InstallationVisitor.Allowed
+        : await access.IsGrantedAsync(context) ? InstallationVisitor.Allowed
         : InstallationVisitor.NotSignedIn;
 
     /// <summary>The folders of every library (those without their own use the configured root).</summary>

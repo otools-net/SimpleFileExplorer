@@ -20,7 +20,12 @@ public sealed record SetupState(bool Required, bool Available, bool CodeConfigur
 
 /// <param name="Code">The setup code of the environment.</param>
 /// <param name="LibraryName">New name of the first library; empty keeps it.</param>
-public sealed record SetupInput(string? Code, string? UserName, string? Password, string? DisplayName = null, string? LibraryName = null);
+/// <param name="FastSignIn">
+/// Sign the administrator in at once in the browser SFE opens when it starts (<see cref="SfeOptions.FastSignIn"/>):
+/// for an app used on this computer alone.
+/// </param>
+public sealed record SetupInput(string? Code, string? UserName, string? Password, string? DisplayName = null, string? LibraryName = null,
+    bool FastSignIn = false);
 
 /// <summary>
 /// The first administrator. Until one exists, nothing but the setup page works; the page needs the code set in the
@@ -35,6 +40,7 @@ public sealed class SetupService(
     ILogger<SetupService> logger)
 {
     private (long Version, bool HasAdmin)? _hasAdmin;
+    private (long Version, bool HasAccounts)? _hasAccounts;
 
     /// <summary>No server administrator yet. Asked on every request: cached until the next change of the accounts.</summary>
     public async Task<bool> IsRequiredAsync(CancellationToken cancellationToken = default)
@@ -46,6 +52,25 @@ public sealed class SetupService(
         var hasAdmin = await accounts.HasServerAdminAsync(cancellationToken);
         _hasAdmin = (version, hasAdmin);
         return !hasAdmin;
+    }
+
+    /// <summary>
+    /// A new install: no account at all yet (not even a disabled one), and not in recovery. Its setup may skip the code
+    /// for a visitor on this computer (<see cref="SetupOptions.LocalWithoutCode"/>, decided by the Api); an install
+    /// whose administrators were all disabled or deleted still needs it.
+    /// </summary>
+    public async Task<bool> IsFreshAsync(CancellationToken cancellationToken = default)
+    {
+        if (options.CurrentValue.Recover || !await IsRequiredAsync(cancellationToken))
+            return false;
+        var version = changes.Version;
+        if (_hasAccounts is { } cached && cached.Version == version)
+            return !cached.HasAccounts;
+
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var hasAccounts = await db.Users.AnyAsync(cancellationToken);
+        _hasAccounts = (version, hasAccounts);
+        return !hasAccounts;
     }
 
     public async Task<SetupState> GetStateAsync(CancellationToken cancellationToken = default)
@@ -73,14 +98,19 @@ public sealed class SetupService(
     /// Creates the first server administrator (or, in recovery, resets the password of a local one with that name,
     /// enables it and makes it an administrator) and puts it in the first library's Administrators group.
     /// </summary>
-    public async Task<AccessResult<SessionUser>> CompleteAsync(SetupInput input, CancellationToken cancellationToken = default)
+    /// <param name="codeWaived">
+    /// The visitor may skip the code: a new install (<see cref="IsFreshAsync"/>, checked again here) set up from the
+    /// server's own computer, as the Api decided.
+    /// </param>
+    public async Task<AccessResult<SessionUser>> CompleteAsync(SetupInput input, bool codeWaived = false, CancellationToken cancellationToken = default)
     {
         var setup = options.CurrentValue;
         if (!setup.Recover && !await IsRequiredAsync(cancellationToken))
             return AccessResult<SessionUser>.Conflict("The server is set up already: sign in instead.");
-        if (!setup.HasUsableCode)
+        codeWaived = codeWaived && await IsFreshAsync(cancellationToken);
+        if (!codeWaived && !setup.HasUsableCode)
             return AccessResult<SessionUser>.Conflict("The server has no setup code: set one in its environment first.");
-        if (!setup.Matches(input.Code))
+        if (!codeWaived && !setup.Matches(input.Code))
         {
             logger.LogSecurityWarning("Setup refused: wrong setup code");
             return AccessResult<SessionUser>.Invalid("code", "This is not the server's setup code.");
@@ -109,7 +139,9 @@ public sealed class SetupService(
 
         logger.LogSecurityWarning(setup.Recover
             ? "Recovery: {User} is a server administrator again. Turn Sfe:Setup:Recover off."
-            : "Setup done: {User} is the server administrator. Sfe:Setup:Code is no longer needed.", result.Value!.UserName);
+            : codeWaived
+                ? "Setup done from the server's own computer, without the setup code: {User} is the server administrator."
+                : "Setup done: {User} is the server administrator. Sfe:Setup:Code is no longer needed.", result.Value!.UserName);
         return AccessResult<SessionUser>.Ok((await accounts.GetSessionUserAsync(result.Value.Id, cancellationToken))!);
     }
 

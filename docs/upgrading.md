@@ -30,6 +30,12 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.48
+
+Nothing changes in the databases or settings. An install that already has accounts keeps asking for the setup code
+everywhere; only a new install opened on the server's own computer skips it. **Fast sign-in** stays off until you turn
+it on (Administration › System › Start-up).
+
 ## To 1.47
 
 Security changes; nothing changes in the databases.

@@ -147,10 +147,11 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         group: 'Server',
         title: 'System',
         icon: 'power',
-        description: 'The server\'s version, library folder and ffmpeg, its API, backups, the server commands, and the videos it converts.',
+        description: 'The server\'s version, library folder and ffmpeg, what it does at start, its API, backups, the server commands, and the videos it converts.',
         subpages: [
             page('about', 'About', Rights.serverSettings, Rights.apiDocs, Rights.backup, Rights.shutdown, Rights.dismount),
             page('installation', 'Installation', Rights.serverSettings),
+            settingsPage('startup', 'Start-up', 'startup'),
             page('streams', 'Video streams', Rights.viewStreams),
         ],
     },

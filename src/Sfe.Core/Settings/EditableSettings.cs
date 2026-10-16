@@ -16,6 +16,12 @@ public sealed class EditableSettings
     /// <inheritdoc cref="SfeOptions.ShowHiddenItems"/>
     public bool ShowHiddenItems { get; set; }
 
+    /// <inheritdoc cref="SfeOptions.OpenBrowser"/>
+    public bool OpenBrowser { get; set; } = true;
+
+    /// <inheritdoc cref="SfeOptions.FastSignIn"/>
+    public bool FastSignIn { get; set; }
+
     public BrowseSettings Browse { get; set; } = new();
     public SearchSettings Search { get; set; } = new();
     public ScanSettings Scan { get; set; } = new();
@@ -35,6 +41,8 @@ public sealed class EditableSettings
     {
         DataServer = options.DataServer,
         ShowHiddenItems = options.ShowHiddenItems,
+        OpenBrowser = options.OpenBrowser,
+        FastSignIn = options.FastSignIn,
         Browse = new()
         {
             DefaultPageSize = options.Browse.DefaultPageSize,
@@ -136,6 +144,8 @@ public sealed class EditableSettings
     {
         options.DataServer = DataServer;
         options.ShowHiddenItems = ShowHiddenItems;
+        options.OpenBrowser = OpenBrowser;
+        options.FastSignIn = FastSignIn;
         options.Browse.DefaultPageSize = Browse.DefaultPageSize;
         options.Browse.MaxPageSize = Browse.MaxPageSize;
         options.Browse.FolderPictures = Browse.FolderPictures;

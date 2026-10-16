@@ -28,9 +28,17 @@ public sealed class SfeOptions
     public bool ShowHiddenItems { get; set; }
 
     /// <summary>
-    /// Portable packages started by hand open the app in the default browser once it listens (never a service).
+    /// Portable packages started by hand open the app in the default browser once it listens (never a service). The
+    /// command line's <c>--no-browser</c> keeps it closed whatever this says.
     /// </summary>
     public bool OpenBrowser { get; set; } = true;
+
+    /// <summary>
+    /// The browser opened at start (<see cref="OpenBrowser"/>) is signed in at once, with a one-time link that lasts a
+    /// minute, as the server's only administrator: for an app used on this computer alone. Ignored while the server has
+    /// several administrators.
+    /// </summary>
+    public bool FastSignIn { get; set; }
 
     /// <summary>
     /// The configuration file the installation page writes (library folder, listening address, ffmpeg), between

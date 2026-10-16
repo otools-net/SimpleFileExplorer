@@ -75,6 +75,8 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'logs.retentionDays',
     'logs.writeFiles',
     'editor.outputFolder',
+    'openBrowser',
+    'fastSignIn',
 ]);
 
 // Players that a web page can open a file in through a link they register, for the "External player" choice:
@@ -429,6 +431,22 @@ export const TABS: SettingTab[] = [
                         hint: 'Older entries are forgotten, and so are the daily files. 0: kept forever (the database keeps growing).' },
                     { key: 'logs.writeFiles', label: 'Also save the log to files', type: 'checkbox',
                         hint: 'Writes a copy of every entry to a file per day (sfe-yyyymmdd.log) in the logs folder, next to the database and the thumbnails (data/logs unless the server\'s configuration says otherwise). The files are written even while the database can\'t be.' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'startup',
+        title: 'Start-up',
+        intro: 'What SFE does when it is started by hand from its portable package (a double click on Windows, the AppImage on Linux). A service never opens a browser. Both settings are the whole server\'s.',
+        groups: [
+            {
+                title: 'When SFE starts',
+                fields: [
+                    { key: 'openBrowser', label: 'Open the browser', type: 'checkbox',
+                        hint: 'Opens SFE in this computer\'s default browser once it is ready. Starting SFE with --no-browser keeps it closed whatever this says.' },
+                    { key: 'fastSignIn', label: 'Sign the administrator in at once', type: 'checkbox',
+                        hint: 'The browser opened at start signs the server\'s administrator in without a password, with a link that works once, for a minute, from this computer only. Only while the server has a single administrator. For SFE used on this computer alone: anyone who can start SFE here gets in as the administrator.' },
                 ],
             },
         ],

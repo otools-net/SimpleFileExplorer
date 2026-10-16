@@ -33,7 +33,8 @@ pick one, SQLite index, `ffmpeg` from the `PATH`, system commands off, listening
   `SFE-….AppImage.config` folder beside it. Without FUSE, run it with `--appimage-extract-and-run`. Without ICU
   (`libicu`), the app runs culture-invariant.
 - Any setting can still be given on the command line, e.g. `Sfe.Api.exe --Sfe:Root=D:\Media --urls http://*:8080`
-  (it then wins over the setup page). `--Sfe:OpenBrowser=false` keeps the browser closed.
+  (it then wins over the setup page). `--no-browser` keeps the browser closed (or switch it off in
+  [System › Start-up](administration/system.md#start-up)).
 
 If SFE doesn't start, its window says why: a configuration file that isn't valid JSON (with the line), or a port used by
 another program.

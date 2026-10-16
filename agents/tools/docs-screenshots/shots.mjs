@@ -390,6 +390,15 @@ const scenes = {
         await b.shot(OUT + 'admin-system-installation.png');
         await b.close();
     },
+    async startup() {
+        const b = await session({ height: 900 });
+        await b.open(admin('system', 'startup'), 2000);
+        // Both settings are the whole server's: shown on its tab.
+        await b.eval(`document.querySelector('#settings-level-server').click(); 1`);
+        await sleep(1200);
+        await b.shot(OUT + 'admin-system-startup.png');
+        await b.close();
+    },
     async streams() {
         const b = await session({ height: 900 });
         await b.open(admin('system', 'streams'), 2000);

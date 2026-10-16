@@ -67,4 +67,6 @@ export const SETTINGS_RIGHTS: Record<string, Right> = {
     logs: Rights.logSettings,
     tags: Rights.tagSettings,
     editor: Rights.editorSettings,
+    // How the server starts: its administrators only.
+    startup: Rights.serverSettings,
 };

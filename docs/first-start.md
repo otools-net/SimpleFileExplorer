@@ -5,8 +5,9 @@ page and the API answers nothing else. The setup is done in the browser, with no
 
 ## The setup code
 
-So that only whoever runs the server can claim it, the setup page asks for a **setup code**. Without one in its
-configuration, SFE makes one itself at its first start (16 letters and digits, like `K7QF-9WZM-2HXA-PL4D`):
+So that only whoever runs the server can claim it, the setup page asks for a **setup code**, except on the server's
+own computer (below). Without one in its configuration, SFE makes one itself at its first start (16 letters and
+digits, like `K7QF-9WZM-2HXA-PL4D`):
 
 - it is shown in the window where SFE runs (for a service: its console output, see below), with the address to open;
   it never goes to the server's [log](administration/logs.md);
@@ -22,6 +23,14 @@ asks for the same code after each upgrade.
 | systemd | `journalctl -u sfe` |
 | IIS | The site's stdout log, or the file in the site's folder |
 | Container | `docker logs <container>` (keep `data/` on a volume, or set the code yourself) |
+
+### On the server's own computer: no code
+
+A new install (no account yet) opened in a browser **on the computer SFE runs on** (`http://localhost:5080`) skips the
+code: whoever sits there runs the server anyway. That is the case of the portable package on Windows, which opens the
+setup page in your browser by itself. From a phone or another computer, through a reverse proxy, or once any account
+exists, the code is asked as above. To ask for it on the server's computer too, set `Sfe:Setup:LocalWithoutCode` to
+`false`.
 
 ### Setting the code yourself
 
@@ -45,7 +54,7 @@ runs.
 ![The setup page](images/setup-page.png)
 
 Open the app (`http://localhost:5080`; the portable package on Windows opens it in your browser by itself). The page
-has three steps:
+has three steps (two on the server's own computer, which skips the code):
 
 1. **Setup code**: the code above.
 2. **Your library** (the [installation settings](administration/system.md#installation)):
@@ -56,13 +65,29 @@ has three steps:
    - **ffmpeg** (optional): whether it was found; to add it, download it from [ffmpeg.org](https://ffmpeg.org/), unzip
      it and pick its folder. Without it there are no video thumbnails, trickplay, video durations or converted videos.
 3. **Administrator**: name, display name, password, and the name of the first **space** (your library, its index, tags
-   and settings; more spaces come later in [Spaces & accounts](administration/spaces-and-accounts.md)).
+   and settings; more spaces come later in [Spaces & accounts](administration/spaces-and-accounts.md)). For the
+   portable package and the AppImage, **Sign me in when SFE starts on this computer** turns on
+   [fast sign-in](#fast-sign-in).
 
 The administrator is signed in at once and is a **server administrator**: every right in every space. If the network
 setting changed, the page asks you to start SFE again.
 
 A value set by the server's environment (an environment variable or the command line, e.g. `Sfe__Root` in a systemd
 unit) is shown but can't be changed on the page.
+
+## Fast sign-in
+
+For SFE used on one computer only, as an app: each time you start it, the browser it opens signs you in without your
+password. Turn it on at the setup page's last step, or later in
+[Administration › System › Start-up](administration/system.md#start-up).
+
+- Only for the portable package and the AppImage started by hand (a service opens no browser), with the browser opening
+  at start (not with `--no-browser`).
+- The link the browser opens works once, for a minute, and only from that computer. Other browsers and devices still
+  sign in with the password.
+- Only while the server has a **single** server administrator: with a second one, nobody is signed in that way.
+- Anyone who can start SFE on that computer gets in as the administrator: leave it off on a shared computer, or when
+  other devices of your network use SFE.
 
 ## Next steps
 

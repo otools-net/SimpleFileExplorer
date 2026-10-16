@@ -129,7 +129,7 @@ describe('System section', () => {
     it('shows the streams page to those with its right only', () => {
         const pages = (rights: string[]) => findSection('system', visibleSections(wanted => wanted.some(r => rights.includes(r)))).subpages.map(p => p.id);
         expect(pages([Rights.viewStreams])).toEqual(['streams']);
-        expect(pages([Rights.serverSettings, Rights.viewStreams])).toEqual(['about', 'installation', 'streams']);
+        expect(pages([Rights.serverSettings, Rights.viewStreams])).toEqual(['about', 'installation', 'startup', 'streams']);
         expect(pages([Rights.backup])).toEqual(['about']);
     });
 });

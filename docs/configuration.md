@@ -44,7 +44,8 @@ for the setup code first (only whoever runs the server knows it).
 | `Sfe:Backup:SqlServerFolder` | SQL Server only: where the database server writes the [backups](administration/system.md#backup) (as it sees it); empty = its default backup folder |
 | `Urls` | Listening address, default `http://*:5080` (portable packages: `http://localhost:5080`) |
 | `Sfe:InstallationFile` | Where the installation page saves (default `data/installation.json`); see [above](#where-settings-come-from) |
-| `Sfe:OpenBrowser` | Portable packages started by hand open the app in the browser (default `true`; never as a service) |
+| `Sfe:OpenBrowser` | Portable packages started by hand open the app in the browser (default `true`; never as a service). Also in [System › Start-up](administration/system.md#start-up); `--no-browser` on the command line wins |
+| `Sfe:FastSignIn` | The browser opened at start signs the only server administrator in with a one-time link (default `false`). Also in [System › Start-up](administration/system.md#start-up); see [Fast sign-in](first-start.md#fast-sign-in) |
 
 ## Sign-in, accounts and spaces
 
@@ -52,6 +53,7 @@ for the setup code first (only whoever runs the server knows it).
 |---|---|
 | `Sfe:Setup:Code` | The setup code the first administrator is created with (at least 12 characters), and that confirms each [update](upgrading.md#the-update-page-137-and-later) and the installation page. Empty: SFE makes one. See [First start](first-start.md) |
 | `Sfe:Setup:CodeFile` | Where SFE keeps the code it made when `Sfe:Setup:Code` is empty (default `data/setup-code.txt`) |
+| `Sfe:Setup:LocalWithoutCode` | A new install (no account yet) is set up without the code from a browser on the server's own computer (default `true`). `false` asks for it there too |
 | `Sfe:Setup:Recover` | `true` opens the setup page again to reset a lost administrator password (with the code); turn it off afterwards |
 | `Sfe:Security:AnonymousGuests` | Default `true`: spaces may let visitors in without an account; `false` forbids it everywhere |
 | `Sfe:Security:SessionDays`, `MinimumPasswordLength`, `MaxFailedSignIns`, `LockoutMinutes`, `SignInsPerMinute` | Sign-in: 30 days, 8 characters, after 5 failures to an account from one address that address waits 15 minutes before trying it again (others still sign in), 10 attempts per minute and address |
