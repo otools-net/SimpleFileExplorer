@@ -80,6 +80,9 @@ console.log(await b.eval(js(`
     await call('POST', 'api/access/users', { userName: 'sam', displayName: 'Sam', password: 'sam-password-1', kind: 'user', isServerAdmin: false, disabled: false, groupIds: [users.id] });
     await call('POST', 'api/access/users', { userName: 'kids', displayName: 'Kids', password: 'kids-password-1', kind: 'guest', isServerAdmin: false, disabled: false, groupIds: [guests.id] });
     await call('POST', 'api/access/groups', { name: 'Family editors', rights: ['library.browse', 'files.view', 'files.download', 'tags.view', 'tags.assign', 'files.edit'] });
+    // Folder rules (Folder access on the space's page): visitors don't see the documents, Users may only read the inbox.
+    await call('PUT', 'api/access/folder-rules', { path: 'Documents', groupId: guests.id, userId: null, level: 'hidden' });
+    await call('PUT', 'api/access/folder-rules', { path: 'Inbox', groupId: users.id, userId: null, level: 'read' });
     const start = new Date(); start.setHours(3, 0, 0, 0);
     await call('POST', 'api/tasks/schedules', { task: 'scan', path: null, kind: 'weekly', start: start.toISOString(), intervalMinutes: 0, days: 127, enabled: true });
     await call('POST', 'api/tasks/schedules', { task: 'scan', path: 'Photos', kind: 'interval', start: start.toISOString(), intervalMinutes: 360, enabled: true, days: 0 });

@@ -1,6 +1,5 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ConfigService } from '../../core/config.service';
 import { CopyPathService } from '../../core/copy-path.service';
 import { joinParts, plural } from '../../core/format';
 import { SortField } from '../../core/models';
@@ -98,9 +97,8 @@ export class LocationComponent {
     protected readonly search = inject(SearchBoxState);
     protected readonly links = inject(LocationLinks);
     private readonly dialogs = inject(Dialogs);
-    private readonly config = inject(ConfigService);
-    /** Tagging every file of the folder or search changes tags: hidden without the right. */
-    protected readonly canTag = computed(() => this.config.rights().has(Rights.assignTags));
+    /** Tagging every file of the folder or search changes tags: hidden without the right (here, with folder rules). */
+    protected readonly canTag = computed(() => this.store.can(Rights.assignTags));
     protected readonly sortOptions = SORT_OPTIONS;
     protected readonly searchSorts = SEARCH_SORTS;
     private readonly head = viewChild.required<ElementRef<HTMLElement>>('head');

@@ -58,6 +58,7 @@ public sealed record LibraryItem(
 
 public sealed record Breadcrumb(string Name, string Path);
 
+/// <param name="Access">What folder rules let the asker do here; null when none apply to it (every right of the space).</param>
 public sealed record DirectoryListing(
     string Path,
     string Name,
@@ -68,7 +69,14 @@ public sealed record DirectoryListing(
     int Limit,
     int Total,
     int DirectoryCount,
-    int FileCount);
+    int FileCount,
+    FolderAccessView? Access = null);
+
+/// <summary>What folder rules let the asker do in a folder (agents/docs/features/folder-access.md).</summary>
+/// <param name="Rights">The rights it has here.</param>
+/// <param name="PathOnly">It doesn't see the folder: the folder only leads to what it sees below.</param>
+/// <param name="Children">The entries whose access differs from the folder's, by name; the others have the folder's.</param>
+public sealed record FolderAccessView(IReadOnlyList<string> Rights, bool PathOnly, IReadOnlyDictionary<string, FolderAccessView>? Children = null);
 
 /// <param name="Previous">The folder listed before this one in its parent; null for the first one or the root.</param>
 /// <param name="Next">The folder listed after this one; null for the last one or the root.</param>

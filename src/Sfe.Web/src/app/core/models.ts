@@ -151,6 +151,17 @@ export interface DirectoryListing {
     total: number;
     directoryCount: number;
     fileCount: number;
+    /** What folder rules let the session do here; absent or null when none apply (every right of the space). */
+    access?: FolderAccessView | null;
+}
+
+/** What folder rules let the session do in a folder. */
+export interface FolderAccessView {
+    rights: string[];
+    /** The session doesn't see the folder: it only leads to folders below that it sees. */
+    pathOnly: boolean;
+    /** The entries whose access differs from the folder's, by name; the others have the folder's. */
+    children?: Record<string, FolderAccessView> | null;
 }
 
 export interface SearchResults {
@@ -761,6 +772,52 @@ export interface RightDefinition {
 }
 
 export type RightKind = 'read' | 'write';
+
+/** A folder rule: what a group, or one account, may do in a folder and below it. */
+export interface FolderRuleView {
+    id: number;
+    path: string;
+    groupId: number | null;
+    userId: number | null;
+    /** The group's name, or the account's. */
+    name: string;
+    level: FolderLevel;
+    /** The folder is still there (false once moved or renamed outside SFE). */
+    exists: boolean;
+    created: string;
+}
+
+/** Sets a group's or an account's level at a folder; `level` null removes its rule there. */
+export interface FolderRuleChange {
+    path: string;
+    groupId: number | null;
+    userId: number | null;
+    level: FolderLevel | null;
+}
+
+export interface FolderAccessEntry {
+    groupId: number | null;
+    userId: number | null;
+    name: string;
+    /** A group's level there; an account's own rule's (null: its groups decide). */
+    level: FolderLevel | null;
+    /** From a rule on this very folder. */
+    explicit: boolean;
+    /** May browse the folder, all things counted. */
+    sees: boolean;
+    /** May change its files. */
+    changesFiles: boolean;
+}
+
+/** Who may see and change a folder. */
+export interface FolderAccessReport {
+    path: string;
+    exists: boolean;
+    groups: FolderAccessEntry[];
+    accounts: FolderAccessEntry[];
+    /** Visitors without an account, when the space lets them in. */
+    visitors: FolderAccessEntry | null;
+}
 
 /** What a folder lets a subject do in it: `write` includes `read`; only `write` lets its files on disk change. */
 export type FolderLevel = 'hidden' | 'read' | 'write';

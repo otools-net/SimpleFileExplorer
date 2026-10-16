@@ -159,9 +159,18 @@ public static class LibraryEndpoints
         // Parsed by hand: enum binding of query values is case-sensitive and the client sends "size", "name"...
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Name;
         var page = options.CurrentValue.Browse;
-        if (FolderListing(await current.GetAsync(), paths, path) is not { } folder)
+        var state = await current.GetAsync();
+        if (FolderListing(state, paths, path) is not { } folder)
             return TypedResults.NotFound();
         var listing = browser.List(path, Math.Max(0, offset), Clamp(limit, page.DefaultPageSize, page.MaxPageSize), sortField, desc, folder.Filter);
+        if (listing is not null && !state.Access.FolderPolicy.IsUnrestricted && state.At(paths, path) is { } here)
+        {
+            // The client shows only what the asker may do here: tag, download, edit...
+            var children = state.Access.FolderPolicy.ChildrenWithRules(listing.Path, state.Access.Rights)
+                .Where(c => c.Value.IsVisible)
+                .ToDictionary(c => c.Key, c => new FolderAccessView([.. c.Value.Allowed.Order(StringComparer.Ordinal)], c.Value.PathOnly), LibraryPaths.PathComparer);
+            listing = listing with { Access = new FolderAccessView([.. here.Allowed.Order(StringComparer.Ordinal)], here.PathOnly, children) };
+        }
         if (listing is null)
         {
             // Said apart from a missing sub-folder: the whole library is gone, and an administrator can pick another.

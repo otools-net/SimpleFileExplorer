@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
     BackupLink, ClientConfig, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
-    FolderCover, FolderPicker, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
+    FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
@@ -219,6 +219,17 @@ export class Api {
     updateGroup = (id: number, group: GroupInput, tenant?: number | null) => this.put<GroupInfo>(withQuery(`api/access/groups/${id}`, { tenant }), group);
     deleteGroup = (id: number, tenant?: number | null) => this.delete<void>(withQuery(`api/access/groups/${id}`, { tenant }));
     tenantAccess = () => this.get<TenantAccess>('api/access/tenant');
+    /** The space's folder rules. */
+    folderRules = (tenant?: number | null) => this.get<FolderRuleView[]>('api/access/folder-rules', { tenant });
+    /** Sets (or with `level` null removes) a rule; answers every rule. */
+    setFolderRule = (change: FolderRuleChange, tenant?: number | null) => this.put<FolderRuleView[]>(withQuery('api/access/folder-rules', { tenant }), change);
+    /** Moves the rules of a folder gone outside SFE to `to`; answers every rule. */
+    repointFolderRules = (from: string, to: string, tenant?: number | null) =>
+        this.post<FolderRuleView[]>(withQuery('api/access/folder-rules/repoint', { tenant }), { from, to });
+    /** Who may see and change the folder `path`. */
+    folderAccess = (path: string, tenant?: number | null) => this.get<FolderAccessReport>('api/access/folder-access', { path, tenant });
+    /** Every sub-folder of `path` in the space (for choosing where a rule goes). */
+    spaceFolders = (path: string | null, tenant?: number | null) => this.get<FolderPicker>('api/access/folders', { path, tenant });
     setGuestAccess = (guestAccess: boolean) => this.put<TenantAccess>('api/access/tenant/guest-access', { guestAccess });
 
     /** Every space (server administrators). */

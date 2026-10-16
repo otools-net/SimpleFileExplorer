@@ -24,7 +24,8 @@ Code: `src/Sfe.Core/Access/RightCatalog.cs` (+ `Rights` ids), `RightsEvaluator.c
   `GuestAccess` (and `Sfe:Security:AnonymousGuests`); minus the library's `TenantDisabledRights`, minus guest-forbidden
   rights for guests (anonymous or `UserKind.Guest`), minus `Sfe:Rights:Disabled` (applied at each read; ids,
   `prefix*`, `kind:write`, `folder:write`).
-- Per folder: nothing yet; the design is [folder-access.md](folder-access.md).
+- Per folder: folder rules narrow where the rights apply ([folder-access.md](folder-access.md)); in the client,
+  `ListingStore.can(right, item?)` for what depends on the folder, `config.can` for the rest.
 - A library membership is a group in it.
 - `CurrentAccess` picks the library: the cookie's if the account still reaches it, else its first; for visitors the
   `sfe.guest` cookie's if open to guests, else the first library.

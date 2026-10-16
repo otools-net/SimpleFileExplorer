@@ -42,6 +42,32 @@ describe('ListingStore', () => {
 
     afterEach(() => vi.restoreAllMocks());
 
+    describe('folder rules', () => {
+        it('narrows the rights of the space to those the folder rules give here and on each entry', async () => {
+            api.browse.mockResolvedValue(listing([folder, a], {
+                access: { rights: ['library.browse', 'tags.view', 'tags.assign'], pathOnly: false, children: { folder: { rights: ['library.browse'], pathOnly: true } } },
+            }));
+            await store.load();
+
+            expect(store.can('tags.assign')).toBe(true);
+            expect(store.can('files.edit')).toBe(false);
+            expect(store.can('tags.assign', a)).toBe(true);
+            expect(store.can('tags.assign', folder)).toBe(false);
+        });
+
+        it('leaves the rights of the space as they are without rules, and in searches', async () => {
+            api.browse.mockResolvedValue(listing([a]));
+            await store.load();
+            expect(store.can('files.edit', a)).toBe(true);
+
+            api.search.mockResolvedValue(results([a]));
+            store.route.set({ path: '', q: 'x', sort: '', desc: false });
+            await store.load();
+            expect(store.folderAccess()).toBeNull();
+            expect(store.can('files.edit', a)).toBe(true);
+        });
+    });
+
     describe('loading', () => {
         it('browses a folder in its sort, a page at a time', async () => {
             api.browse.mockResolvedValue(listing([folder, a, b], { total: 5 }));

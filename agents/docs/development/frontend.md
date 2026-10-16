@@ -16,4 +16,7 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
 - A template event handler whose expression evaluates to `false` makes Angular call `preventDefault()`:
   `(pointerdown)="flag = a === b"` silently cancelled the mouse events of every press in the dialogs (native
   `<select>`s stopped opening). Put assignments with a boolean result in a method.
-- The client hides what a right forbids: `config.can(...)` ([rights.md](../features/rights.md)).
+- A `<select>` whose options come from `@for`: bind `[selected]` on each `<option>`, not `[value]` on the select
+  (Angular sets it before the options exist, so it shows the first option; a spec checks the shown value).
+- The client hides what a right forbids: `config.can(...)`, or `ListingStore.can(right, item)` for what depends on the
+  folder (folder rules) ([rights.md](../features/rights.md)).

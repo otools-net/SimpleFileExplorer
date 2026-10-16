@@ -24,7 +24,7 @@ import { ListingStore } from './listing.store';
                 <span>Quick links</span>
             </button>
         }
-        @if (config.can('tags.assign')) {
+        @if (store.can('tags.assign')) {
             <button type="button" class="button small primary" title="Add or remove tags on the selected files" (click)="tagSelection()">
                 <svg sfeIcon="tag"></svg>
                 <span>Tags</span>

@@ -84,14 +84,14 @@ export class CopyPathButtonComponent {
         title: 'Tags',
         '[attr.aria-label]': '"Tags of " + sfeTagButton().name',
         '(click)': 'actions.openTags(sfeTagButton())',
-        '[hidden]': '!config.can("tags.view")',
+        '[hidden]': '!store.can("tags.view", sfeTagButton())',
     },
     template: `<svg sfeIcon="tag"></svg>`,
 })
 export class TagButtonComponent {
     readonly sfeTagButton = input.required<LibraryItem>();
     protected readonly actions = inject(ItemActions);
-    protected readonly config = inject(ConfigService);
+    protected readonly store = inject(ListingStore);
 }
 
 /** The folder of a search result, linking to it. */

@@ -27,6 +27,7 @@ are browsing. **Open** shows its page:
 | **Groups** | **New group**, and **Edit** / **Delete** for each |
 | **Accounts** | The accounts in a group of this space: **New account** (in its Users group to start with), put an account of another space in this one too, **Edit**, **Remove** (from this space) or **Delete** |
 | **Visitors without an account** | **Let visitors browse … without an account** |
+| **Folder access** | Rules on folders: what a group, or one account, may do in a folder and below it ([below](#folder-access)) |
 | **Edit space** | Rename it, disable it, switch rights off in it (server administrators) |
 
 ### Groups
@@ -54,6 +55,33 @@ When **Let visitors browse … without an account** is ticked, anyone who reache
 signing in: the sign-in page offers a button for each such space. They get the rights of the **Guests** group, and never
 a right that changes something. For someone who should sign in but only look, make a *guest account* instead. The
 configuration can forbid visitors everywhere (`Sfe:Security:AnonymousGuests=false`).
+
+### Folder access
+
+![Folder access](../images/folder-access.png)
+
+Without rules, every group's rights apply in every folder of the space. A **rule** narrows that for one folder and
+everything below it, for a group (Guests included: visitors without an account) or for one account:
+
+| Level | They… |
+|---|---|
+| **Hidden** | don't see the folder: it answers as if it weren't there, in listings, searches, tags, duplicates and links |
+| **Read only** | see its files and use them with their rights (play, download, tag), but nothing that changes the files themselves (editing pictures, deleting duplicates) |
+| **Read & write** | have their rights in full |
+
+- **The nearest rule wins.** Hide *Private* and set *Private/Shared* to Read only again: *Private* then only shows the
+  way to *Shared* (none of its own files), and everything else in *Private* stays hidden.
+- **Groups add up.** An account sees a folder when **any** of its groups does, and may do there what each group's own
+  rights and level allow. To hide a folder from the kids, hide it from every group they are in.
+- **An account's own rule only adds** to what its groups give: open one folder to one person without a new group.
+- Server administrators always see everything. A space has at most 250 rules.
+
+**New rule** picks the folder (every folder of the space, whatever rules apply to you), who it is for and the level.
+Each rule's list changes its level, or **Inherit (remove)** drops it. **Who has access** lists every account (and the
+visitors) with whether they see the folder and may change its files, all groups and rules counted.
+
+A rule follows the folder's path. A folder renamed or moved **outside SFE** leaves its rules behind, marked **Folder
+not found**: **Re-point…** moves them to the folder's new place.
 
 ### Creating a space
 

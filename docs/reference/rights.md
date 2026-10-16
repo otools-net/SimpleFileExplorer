@@ -50,6 +50,9 @@ Three levels decide who gets what:
    right that changes anything: a read-only server);
 2. a server administrator can switch rights off in one **space** (Edit space › **Rights switched off in this space**;
    **Files read-only** and **Read-only** tick the rights that change files, or every right that changes something);
-3. **groups** give the rest.
+3. **groups** give the rest;
+4. **folder rules** then say where: a group, or one account, may be kept out of a folder (Hidden), only use its files
+   (Read only: the rights marked *Changes files* don't apply there) or have its rights in full
+   ([Folder access](../administration/spaces-and-accounts.md#folder-access)).
 
 Rights added by an upgrade are given once to the built-in groups of existing spaces (see [Upgrading](../upgrading.md)).

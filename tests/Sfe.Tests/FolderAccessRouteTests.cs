@@ -265,6 +265,62 @@ public sealed class FolderAccessRouteTests
         Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(visitor, "/api/files/raw/Media/photo.jpg"));
     }
 
+    [TestMethod]
+    public async Task ListingsTellWhatTheSubjectMayDoThere()
+    {
+        var root = await GetAsync<DirectoryListing>(_alice, "/api/browse");
+        var media = await GetAsync<DirectoryListing>(_alice, "/api/browse?path=Media");
+        var admin = await GetAsync<DirectoryListing>(_admin, "/api/browse");
+
+        Assert.IsNull(admin.Access, "No rule applies to server administrators");
+        CollectionAssert.Contains(root.Access!.Rights.ToList(), Rights.EditImages);
+        Assert.IsTrue(root.Access.Children!["RepeatedDir"].PathOnly);
+        CollectionAssert.DoesNotContain(root.Access.Children["Media"].Rights.ToList(), Rights.EditImages, "Media is read-only");
+        CollectionAssert.Contains(root.Access.Children["Media"].Rights.ToList(), Rights.AssignTags);
+        Assert.IsFalse(root.Access.Children.ContainsKey("SpecialDir"), "Nothing about a hidden folder");
+        CollectionAssert.DoesNotContain(media.Access!.Rights.ToList(), Rights.EditImages);
+    }
+
+    [TestMethod]
+    public async Task ManagersSetRulesAndSeeWhoMayDoWhat()
+    {
+        using var refused = await _alice.PutAsJsonAsync("/api/access/folder-rules", new FolderRuleChange("Media", _users, null, FolderLevel.Write), Json, Token);
+        using var set = await _admin.PutAsJsonAsync("/api/access/folder-rules", new FolderRuleChange("ChildDir", _users, null, FolderLevel.Hidden), Json, Token);
+        var rules = (await set.Content.ReadFromJsonAsync<List<FolderRuleView>>(Json, Token))!;
+        var report = await GetAsync<FolderAccessReport>(_admin, "/api/access/folder-access?path=ChildDir");
+        var picker = await GetAsync<FolderPicker>(_admin, "/api/access/folders");
+
+        Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode, "Only those who manage the space's groups");
+        Assert.AreEqual(HttpStatusCode.OK, set.StatusCode);
+        var rule = rules.Single(r => r.Path == "ChildDir");
+        Assert.AreEqual("Users", rule.Name);
+        Assert.IsTrue(rule.Exists);
+        var users = report.Groups.Single(g => g.GroupId == _users);
+        Assert.AreEqual(FolderLevel.Hidden, users.Level);
+        Assert.IsTrue(users.Explicit);
+        Assert.IsFalse(users.Sees);
+        Assert.IsFalse(report.Accounts.Single(a => a.Name == "alice").Sees);
+        Assert.IsTrue(report.Accounts.Single(a => a.Name != "alice").Sees, "The server administrator");
+        CollectionAssert.Contains(picker.Folders.Select(f => f.Name).ToList(), "SpecialDir", "Managers pick among every folder");
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/browse?path=ChildDir"));
+    }
+
+    [TestMethod]
+    public async Task RulesOfAFolderGoneOutsideSfeCanBeRepointed()
+    {
+        await RuleAsync("Gone/Away", FolderLevel.Hidden);
+
+        var listed = await GetAsync<List<FolderRuleView>>(_admin, "/api/access/folder-rules");
+        using var stillThere = await _admin.PostAsJsonAsync("/api/access/folder-rules/repoint", new FolderRuleRepoint("Media", "ChildDir"), Json, Token);
+        var moved = await PostAsync<List<FolderRuleView>>(_admin, "/api/access/folder-rules/repoint", new FolderRuleRepoint("Gone/Away", "ChildDir"));
+
+        Assert.IsFalse(listed.Single(r => r.Path == "Gone/Away").Exists);
+        Assert.AreEqual(HttpStatusCode.Conflict, stillThere.StatusCode, "A folder that is there moves with its rules, not without");
+        Assert.IsFalse(moved.Any(r => r.Path == "Gone/Away"));
+        Assert.IsTrue(moved.Single(r => r.Path == "ChildDir").Exists);
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/browse?path=ChildDir"));
+    }
+
     private async Task RuleAsync(string path, FolderLevel level) =>
         Assert.AreEqual(AccessStatus.Ok, (await _rules.SetAsync(_tenant, path, FolderPrincipalRef.Group(_users), level, null, Token)).Status);
 

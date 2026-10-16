@@ -153,7 +153,7 @@ public sealed class RightsEvaluator(
     }
 
     /// <summary>A principal's rules by path; two rows for one path (concurrent changes) count as the stricter one.</summary>
-    internal static Dictionary<string, FolderLevel> RuleMap(IEnumerable<(string Path, FolderLevel Level)> rules) =>
+    public static Dictionary<string, FolderLevel> RuleMap(IEnumerable<(string Path, FolderLevel Level)> rules) =>
         rules.GroupBy(r => r.Path, LibraryPaths.PathComparer).ToDictionary(g => g.Key, g => g.Min(r => r.Level), LibraryPaths.PathComparer);
 
     private static HashSet<string> Union(Dictionary<int, HashSet<string>> groupRights) => groupRights.Values.SelectMany(r => r).ToHashSet();

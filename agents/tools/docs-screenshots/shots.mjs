@@ -269,6 +269,17 @@ const scenes = {
         await sleep(1500);
         await mask(b);
         await b.shot(OUT + 'admin-access-space.png');
+        await b.eval(`document.querySelector('sfe-folder-access').scrollIntoView({ block: 'start' }); 1`);
+        await sleep(400);
+        await b.clickTitle('Who may see and change Documents');
+        await sleep(800);
+        // the page only grows long enough once the report is open
+        await b.eval(`document.querySelector('sfe-folder-access').scrollIntoView({ block: 'start' }); 1`);
+        await sleep(400);
+        await mask(b);
+        await b.shot(OUT + 'folder-access.png');
+        await b.eval(`document.querySelector('.space-title, h3').scrollIntoView({ block: 'start' }); 1`);
+        await sleep(300);
         await b.clickTitle('Change what Users may do');
         await sleep(800);
         await b.shot(OUT + 'group-editor.png');

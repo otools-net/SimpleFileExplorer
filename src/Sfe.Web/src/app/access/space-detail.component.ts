@@ -10,6 +10,7 @@ import { HelpComponent } from '../shared/help.component';
 import { IconComponent } from '../shared/icon.component';
 import { AccountEditorComponent } from './account-editor.component';
 import { BUILT_IN_PURPOSE, groupNamesIn, inSpace, SpaceRef } from './access-parts';
+import { FolderAccessComponent } from './folder-access.component';
 import { GroupEditorComponent } from './group-editor.component';
 
 /** The space a page shows: from `api/tenants` for server administrators, from `api/access/tenant` for the space's own. */
@@ -32,7 +33,7 @@ export interface SpaceView {
  */
 @Component({
     selector: 'sfe-space-detail',
-    imports: [IconComponent, HelpComponent, GroupEditorComponent, AccountEditorComponent],
+    imports: [IconComponent, HelpComponent, GroupEditorComponent, AccountEditorComponent, FolderAccessComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'space-detail' },
     template: `
@@ -204,6 +205,8 @@ export interface SpaceView {
                     <p class="field-hint">The server's configuration forbids visitors without an account (Sfe:Security:AnonymousGuests).</p>
                 }
             </section>
+
+            <sfe-folder-access [space]="tenantParam()" [groups]="groups()" [members]="members()" />
 
             <sfe-group-editor [space]="tenantParam()" [spaceName]="space().name" [candidates]="candidates()" [catalog]="catalog()" (saved)="load()" />
             <sfe-account-editor [spaces]="spaceRefs()" [groups]="groups()" [serverWide]="allAccounts()" (saved)="load()" />

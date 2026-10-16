@@ -60,6 +60,26 @@ export class ListingStore {
     readonly files = computed(() => this.items().filter(item => item.kind !== 'directory'));
     readonly searching = computed(() => Boolean(this.route().q));
     readonly sort = computed(() => currentSort(this.route()));
+    /** What folder rules let the session do in the folder listed; null when none apply to it, and for searches. */
+    readonly folderAccess = computed(() => {
+        const page = this.listing();
+        return page && 'directoryCount' in page ? page.access ?? null : null;
+    });
+
+    /**
+     * The session may use `right` in the folder listed, or on `item` of it: a right of the space that the folder rules
+     * let through there. The server checks again: this only hides what would be refused.
+     */
+    can(right: string, item?: LibraryItem | null): boolean {
+        if (!this.config.can(right))
+            return false;
+        const access = this.folderAccess();
+        if (!access)
+            return true;
+        const children = access.children ?? {};
+        const own = item ? children[item.name] ?? Object.entries(children).find(([name]) => name.toLowerCase() === item.name.toLowerCase())?.[1] : undefined;
+        return (own ?? access).rights.includes(right);
+    }
 
     /** Path of the file last (de)selected: shift-click extends from it. */
     private anchor: string | null = null;

@@ -239,3 +239,15 @@ h3.access-subhead, .access-subhead h3 { font-size: 14px; font-weight: 600; }
     .access-card-head .spacer { display: none; }
     .access-add-existing { max-width: none; flex: 1 1 100%; }
 }
+
+/* Folder access: rules by folder, a level per group or account */
+.folder-rule-form { margin-bottom: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.folder-rule-form .access-row-actions { justify-content: flex-end; }
+.folder-rules .access-row-main .icon { align-self: center; width: 16px; height: 16px; fill: var(--folder); stroke: none; }
+.folder-rule-principals { grid-column: 1; display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.folder-rule-principals li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; font-size: 13px; }
+.folder-rule-principals li > span { display: flex; align-items: baseline; gap: 6px; }
+.folder-access-report { grid-column: 1 / -1; overflow-x: auto; }
+.folder-access-report table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.folder-access-report th, .folder-access-report td { padding: 4px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+.folder-access-report th { color: var(--text-muted); font-weight: 600; }

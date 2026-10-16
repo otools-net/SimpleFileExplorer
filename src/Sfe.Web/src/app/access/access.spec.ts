@@ -3,11 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AccountSectionComponent } from '../account/account-section.component';
 import { ApiError } from '../core/api.service';
-import { FolderLevel, GroupInfo, RightDefinition, RightKind, RightsCatalog, SessionInfo, TenantDetails, UserInfo } from '../core/models';
+import { FolderLevel, FolderRuleView, GroupInfo, RightDefinition, RightKind, RightsCatalog, SessionInfo, TenantDetails, UserInfo } from '../core/models';
 import { Rights } from '../core/rights';
 import { HelpComponent } from '../shared/help.component';
 import { ApiMock, buttonNamed, fakeConfig, LIBRARY, limitedConfig, loadConfig, mockApi, settingsValues, settle, testProviders } from '../../testing/fakes';
 import { AccountsPageComponent } from './accounts-page.component';
+import { FolderAccessComponent } from './folder-access.component';
 import { SpacesPageComponent } from './spaces-page.component';
 
 let api: ApiMock;
@@ -472,6 +473,91 @@ describe('SpacesPageComponent', () => {
         const visitors = [...element.querySelectorAll<HTMLElement>('.access-card')][3];
         expect(visitors.querySelector<HTMLInputElement>('input[type=checkbox]')!.disabled).toBe(true);
         expect(visitors.textContent).toContain('Sfe:Security:AnonymousGuests');
+    });
+});
+
+describe('FolderAccessComponent', () => {
+    const groups = builtIns(LIBRARY.id, 10);
+    const tom = user(3, 'tom', { groups: [member(groups[1])] });
+    const rule = (id: number, path: string, overrides: Partial<FolderRuleView> = {}): FolderRuleView =>
+        ({ id, path, groupId: 11, userId: null, name: 'Users', level: 'hidden', exists: true, created: '2026-10-16T00:00:00Z', ...overrides });
+
+    async function show(rules: FolderRuleView[]): Promise<void> {
+        api.folderRules.mockResolvedValue(rules);
+        TestBed.configureTestingModule({ providers: testProviders(api) });
+        await loadConfig(api, fakeConfig());
+        const fixture = TestBed.createComponent(FolderAccessComponent);
+        fixture.componentRef.setInput('groups', groups);
+        fixture.componentRef.setInput('members', [tom]);
+        element = fixture.nativeElement;
+        await settle();
+    }
+
+    it('lists the rules by folder, and changes or removes one', async () => {
+        await show([rule(1, 'Private'), rule(2, 'Private', { groupId: null, userId: 3, name: 'tom', level: 'read' }), rule(3, 'Old', { exists: false })]);
+        api.setFolderRule.mockResolvedValue([rule(1, 'Private', { level: 'read' })]);
+
+        const rows = [...element.querySelectorAll<HTMLElement>('.folder-rules > .access-row')];
+        expect(rows.map(row => row.querySelector('strong')!.textContent)).toEqual(['Old', 'Private']);
+        expect(rows[0].textContent).toContain('Folder not found');
+        expect(rows[1].querySelectorAll('.folder-rule-principals li')).toHaveLength(2);
+        // each select shows its own rule's level, not the first option
+        expect(element.querySelector<HTMLSelectElement>('select[aria-label="Level of tom at Private"]')!.value).toBe('read');
+
+        choose('select[aria-label="Level of Users at Private"]', 'read');
+        await settle();
+        expect(api.setFolderRule).toHaveBeenCalledWith({ path: 'Private', groupId: 11, userId: null, level: 'read' }, null);
+
+        choose('select[aria-label="Level of Users at Private"]', '');
+        await settle();
+        expect(api.setFolderRule).toHaveBeenLastCalledWith({ path: 'Private', groupId: 11, userId: null, level: null }, null);
+    });
+
+    it('sets a new rule on a folder picked among every folder of the space', async () => {
+        await show([]);
+        api.spaceFolders.mockImplementation(async path => path
+            ? { path, parent: '', folders: [] }
+            : { path: '', parent: null, folders: [{ name: 'Kids', path: 'Kids' }] });
+        api.setFolderRule.mockResolvedValue([rule(1, 'Kids', { userId: 3, groupId: null, name: 'tom', level: 'write' })]);
+
+        expect(element.textContent).toContain('No folder rules');
+        buttonNamed(element, 'New rule')!.click();
+        await settle();
+        buttonNamed(element, 'Kids')!.click();
+        await settle();
+        choose('#folder-rule-principal', 'u3');
+        choose('#folder-rule-level', 'write');
+        buttonNamed(element, 'Set the rule')!.click();
+        await settle();
+
+        expect(api.setFolderRule).toHaveBeenCalledWith({ path: 'Kids', groupId: null, userId: 3, level: 'write' }, null);
+        expect(element.querySelector('.folder-rules strong')!.textContent).toBe('Kids');
+    });
+
+    it('tells who has access to a folder, and re-points the rules of one that is gone', async () => {
+        await show([rule(1, 'Private'), rule(2, 'Gone', { exists: false })]);
+        api.folderAccess.mockResolvedValue({
+            path: 'Private', exists: true, groups: [],
+            accounts: [{ groupId: null, userId: 3, name: 'tom', level: null, explicit: false, sees: false, changesFiles: false }],
+            visitors: null,
+        });
+        api.spaceFolders.mockImplementation(async path => path
+            ? { path, parent: '', folders: [] }
+            : { path: '', parent: null, folders: [{ name: 'Moved', path: 'Moved' }] });
+        api.repointFolderRules.mockResolvedValue([rule(1, 'Private'), rule(2, 'Moved')]);
+
+        buttonNamed(element, 'Who has access')!.click();
+        await settle();
+        expect(element.querySelector('.folder-access-report')!.textContent).toContain('tom');
+        expect(api.folderAccess).toHaveBeenCalledWith('Private', null);
+
+        buttonNamed(element, 'Re-point…')!.click();
+        await settle();
+        buttonNamed(element, 'Moved')!.click();
+        await settle();
+        buttonNamed(element, 'Move the rules here')!.click();
+        await settle();
+        expect(api.repointFolderRules).toHaveBeenCalledWith('Gone', 'Moved', null);
     });
 });
 

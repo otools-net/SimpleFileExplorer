@@ -3,6 +3,16 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.54.0
+
+### Added
+
+- **Folder access:** a space's page has a new **Folder access** part, where you choose what a group, or one account,
+  may do in a folder and below it: **Hidden**, **Read only** (use the files, but not change them) or **Read & write**.
+  **Who has access** tells, for every account and the visitors, whether they see a folder and may change its files;
+  **Re-point…** moves the rules of a folder renamed outside SFE to its new place.
+- The listing only offers what folder rules allow where you are (tagging, downloading, editing pictures).
+
 ## 1.53.0
 
 ### Added

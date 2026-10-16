@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ConfigService } from '../../core/config.service';
 import { plural } from '../../core/format';
 import { CopyPathService } from '../../core/copy-path.service';
 import { LibraryItem } from '../../core/models';
@@ -55,9 +54,8 @@ export class FolderItemComponent {
     readonly item = input.required<LibraryItem>();
     /** Folders are cards with pictures (`config.folderPictures`), except in the list view. */
     readonly cards = input(false);
-    private readonly config = inject(ConfigService);
-    /** Tagging a whole folder changes tags: hidden without the right. */
-    protected readonly canTag = computed(() => this.config.rights().has(Rights.assignTags));
+    /** Tagging a whole folder changes tags: hidden without the right (there, with folder rules). */
+    protected readonly canTag = computed(() => this.store.can(Rights.assignTags, this.item()));
     protected readonly store = inject(ListingStore);
     protected readonly copyPaths = inject(CopyPathService);
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));

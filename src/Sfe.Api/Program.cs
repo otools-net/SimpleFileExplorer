@@ -98,6 +98,7 @@ api.MapInstallationEndpoints();
 api.MapMigrationEndpoints();
 api.MapSessionEndpoints();
 api.MapAccessEndpoints();
+api.MapFolderRuleEndpoints();
 api.MapTenantEndpoints();
 api.MapConfigEndpoints();
 api.MapLibraryEndpoints();

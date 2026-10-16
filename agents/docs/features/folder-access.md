@@ -1,12 +1,13 @@
-# Folder access (rules, evaluation and enforcement built; management to build)
+# Folder access
 
-Status: phases 1 (right kinds, [right-kinds.md](right-kinds.md)), 2 (rules, evaluation, moves) and **3 (every route
-applies the rules) built**; phase 4 (management API and pages) to build. **Nothing creates rules yet** (only
-`FolderRuleService`, from tests), so installs behave as before. Code: `Core/Access/FolderPolicy.cs` (`FolderPolicy`,
+Status: built (1.51–1.54): right kinds ([right-kinds.md](right-kinds.md)), rules, evaluation, moves, enforcement on
+every route, management API and the space page's **Folder access** card. What file management must still do with it:
+[file-operations.md](../development/file-operations.md). Code: `Core/Access/FolderPolicy.cs` (`FolderPolicy`,
 `FolderPrincipal`, `FolderAccess`, `PathFilter`, `PathFilterQueries.WhereVisible`), `FolderRuleService.cs`
 (`FolderRuleMove`), `RightsEvaluator` (`EffectiveAccess.Folders`/`At`/`FilterFor`), `Data/Entities/Access/FolderRule.cs`,
 `AccessMigrations/*_FolderRules`; `Api/Security/FolderChecks.cs` (`At`, `Check`, `Visible`, `Seen`,
-`ListingFilterOf`, `FolderScoped`, `NotLibraryPaths`); `Core/Library/LibraryBrowser` (`ListingFilter`). Tests:
+`ListingFilterOf`, `FolderScoped`, `NotLibraryPaths`); `Core/Library/LibraryBrowser` (`ListingFilter`);
+`Api/Endpoints/FolderRuleEndpoints.cs`; client `access/folder-access.component.ts`, `ListingStore.can`/`folderAccess`. Tests:
 `FolderPolicyTests`, `FolderRuleServiceTests`, `FolderFilterIndexTests`, `FolderRulesUpgradeTests`,
 `FolderAccessRouteTests`, `AccessTests.EveryRouteTakingAPathSaysHowFolderRulesApply`. What file management must do with it:
 [file-operations.md](../development/file-operations.md). Prior art: Nextcloud group-folder ACLs (inherit / allow /
@@ -115,7 +116,23 @@ deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per 
 - `scan` GET blanks `Path`/`CurrentDirectory` not visible. Not filtered (admin, see every name): `tasks/runs`,
   `logs`, `trickplay/activity`.
 
-## Management (phase 4)
+## Management (phase 4, built in 1.54.0)
+
+- As built: `FolderRuleEndpoints` (`GET/PUT api/access/folder-rules`, `POST api/access/folder-rules/repoint`,
+  `GET api/access/folder-access`, `GET api/access/folders`), right `tenant.members`, `tenant` for other spaces (server
+  administrators), like `AccessEndpoints`; another space's paths come from its `TenantHost` (`TenantRegistry`).
+  Re-pointing refuses a `from` that still exists (409) and is `BeginMoveAsync` + `CompleteAsync` without a disk step.
+  Rules giving Guests Read/Write and re-points are `LogSecurityWarning`, other changes `LogInformation`.
+- `GET api/browse` carries `access` (`FolderAccessView`: rights here, `pathOnly`, `children` that differ, by name) for
+  restricted subjects only; `ListingStore.can(right, item?)` narrows `config.can` with it (the tag button, folder
+  tagging, the location bar, the selection bar, the viewer's tags/download/edit). Searches carry none: the server
+  refuses there. Children are matched by name, then ignoring case (the rule's spelling can differ on Windows).
+- The card (`sfe-folder-access`, last on the space page so the cards before keep their order for the specs): rules
+  grouped by folder, a level per rule (`Inherit (remove)` deletes it), **New rule** with the unfiltered picker,
+  **Who has access** (`folder-access`: accounts and visitors with `sees` / `changesFiles`, computed with
+  `RightsEvaluator` per account), **Re-point…** for folders not found.
+- Not built: an "Access…" item on a folder's menu in the listing (the card's report covers it).
+- The planned design (kept for reference):
 
 - Right `tenant.members` (same power as editing group rights); server administrators any space; space
   administrators only their space's accounts (`membersOfTenantOnly`).
@@ -132,7 +149,7 @@ deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per 
 
 2. Done (1.52.0): rules model and evaluation, the subtree move and the before/after access comparison.
 3. Done (1.53.0): enforcement on every route, Core filters, canonical and real paths, links, route test.
-4. Management API and UI, `canAt`, re-pointing, `docs/` with screenshots.
+4. Done (1.54.0): management API and card, `ListingStore.can`, re-pointing, `docs/` with `folder-access.png`.
 
 Tests to write: nearest wins, union, rights paired per principal, account rules only add, path-only, unrestricted
 path, the cap; `PathFilter` on SQLite equals `At()` in memory over random trees; a route matrix (hidden, read-only,

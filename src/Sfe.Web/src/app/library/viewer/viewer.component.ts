@@ -50,7 +50,7 @@ function clampAxis(position: number, room: number, size: number): number {
                     </div>
                 </div>
                 <div class="viewer-actions">
-                    @if (config.can('tags.view')) {
+                    @if (can('tags.view')) {
                         <button type="button" class="icon-button" title="Tags (T)" aria-label="Tags" (click)="openTags()"><svg sfeIcon="tag"></svg></button>
                     }
                     @if (item(); as shown) {
@@ -74,7 +74,7 @@ function clampAxis(position: number, room: number, size: number): number {
                         <button type="button" class="icon-button" [title]="'Open in ' + urls()?.externalName + ' (a link working without signing in, for a while)'" [attr.aria-label]="'Open in ' + urls()?.externalName" (click)="openExternal()"><svg sfeIcon="play"></svg></button>
                     }
                     <a class="icon-button" [href]="fileUrl()" target="_blank" rel="noopener" title="Open in new tab" aria-label="Open in new tab"><svg sfeIcon="external"></svg></a>
-                    @if (config.can('files.download')) {
+                    @if (can('files.download')) {
                         <a class="icon-button" [href]="downloadUrl()" title="Download" aria-label="Download"><svg sfeIcon="download"></svg></a>
                     }
                     <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
@@ -162,7 +162,12 @@ export class ViewerComponent {
     protected readonly external = computed(() => Boolean(this.item() && this.item()!.kind !== 'image' && this.urls()?.externalName));
 
     /** The picture can be edited (the right, and a server with the editor). */
-    protected readonly editable = computed(() => this.item()?.kind === 'image' && this.config.can('files.edit') && Boolean(this.config.config()?.editor));
+    protected readonly editable = computed(() => this.item()?.kind === 'image' && this.can('files.edit') && Boolean(this.config.config()?.editor));
+
+    /** The session may use `right` on the item shown (a right of the space that the folder rules let through there). */
+    protected can(right: string): boolean {
+        return this.store.can(right, this.item());
+    }
 
     /** A large image shows its thumbnail, stretched to the stage, until the original has loaded and decoded. */
     protected readonly progressive = signal(false);
@@ -377,7 +382,7 @@ export class ViewerComponent {
 
     protected openTags(): void {
         const item = this.item();
-        if (item && this.config.can('tags.view'))
+        if (item && this.can('tags.view'))
             this.dialogs.fileTags()?.open(item);
     }
 
