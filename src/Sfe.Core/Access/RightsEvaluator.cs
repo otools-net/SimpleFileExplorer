@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Data;
 using Sfe.Core.Options;
+using Sfe.Core.Paths;
 
 namespace Sfe.Core.Access;
 
@@ -12,18 +13,29 @@ public sealed record AccessSubject(int TenantId, int? UserId);
 /// <summary>What a subject may do in a library.</summary>
 /// <param name="IsGuest">A visitor without an account or a guest account: the guest limit applies.</param>
 /// <param name="IsMember">Belongs to the library (a group there, or a server administrator); visitors never do.</param>
-public sealed record EffectiveAccess(IReadOnlySet<string> Rights, bool IsGuest, bool IsServerAdmin, bool IsMember)
+/// <param name="Folders">Where it may use its rights (folder rules); null = everywhere.</param>
+public sealed record EffectiveAccess(IReadOnlySet<string> Rights, bool IsGuest, bool IsServerAdmin, bool IsMember, FolderPolicy? Folders = null)
 {
     public static readonly EffectiveAccess None = new(new HashSet<string>(), true, false, false);
 
+    /// <summary>Has the right somewhere in the library (what <c>RequireRight</c> checks).</summary>
     public bool Has(string right) => Rights.Contains(right);
+
+    public FolderPolicy FolderPolicy => Folders ?? FolderPolicy.Unrestricted;
+
+    /// <summary>What it may do at a root-relative, canonical path.</summary>
+    public FolderAccess At(string path) => FolderPolicy.At(path, Rights);
+
+    /// <summary>Where it may use <paramref name="right"/>, for the queries over the index.</summary>
+    public PathFilter FilterFor(string right) => FolderPolicy.FilterFor(right, Rights);
 }
 
 /// <summary>
 /// The rights of a subject in a library: those its groups grant (the Guests group for visitors without an account),
 /// less those the server disables (<see cref="RightOptions.Disabled"/>), those the library disables, and for guests
-/// every right not <see cref="RightDefinition.GuestAllowed"/>. Server administrators have every right but the
-/// disabled ones. Cached until accounts, groups or libraries change.
+/// every right not <see cref="RightDefinition.GuestAllowed"/>; and where it may use them, from the folder rules of its
+/// groups and account (<see cref="FolderPolicy"/>). Server administrators have every right everywhere but the
+/// disabled ones. Cached until accounts, groups, folder rules or libraries change.
 /// </summary>
 public sealed class RightsEvaluator(
     IDbContextFactory<AccessDbContext> dbFactory,
@@ -83,11 +95,13 @@ public sealed class RightsEvaluator(
         {
             if (!tenant.GuestAccess)
                 return EffectiveAccess.None;
-            var guestRights = await db.GroupRights.AsNoTracking()
-                .Where(r => r.Group!.TenantId == tenant.Id && r.Group.BuiltIn == BuiltInGroup.Guests)
-                .Select(r => r.Right)
+            var guests = await db.Groups.AsNoTracking()
+                .Where(g => g.TenantId == tenant.Id && g.BuiltIn == BuiltInGroup.Guests)
+                .Select(g => g.Id)
                 .ToListAsync(cancellationToken);
-            return new EffectiveAccess(Allowed(guestRights, tenantDisabled, guest: true), IsGuest: true, IsServerAdmin: false, IsMember: false);
+            var guestRights = await GroupRightsAsync(db, guests, tenantDisabled, guest: true, cancellationToken);
+            var guestFolders = await FoldersAsync(db, tenant.Id, guestRights, userId: null, cancellationToken);
+            return new EffectiveAccess(Union(guestRights), IsGuest: true, IsServerAdmin: false, IsMember: false, guestFolders);
         }
 
         var user = await accounts.GetSessionUserAsync(userId, cancellationToken);
@@ -100,12 +114,49 @@ public sealed class RightsEvaluator(
             .Where(m => m.UserId == userId && m.Group!.TenantId == tenant.Id)
             .Select(m => m.GroupId)
             .ToListAsync(cancellationToken);
-        var rights = await db.GroupRights.AsNoTracking()
-            .Where(r => memberOf.Contains(r.GroupId))
-            .Select(r => r.Right)
-            .ToListAsync(cancellationToken);
-        return new EffectiveAccess(Allowed(rights, tenantDisabled, user.IsGuest), user.IsGuest, false, memberOf.Count > 0);
+        var rights = await GroupRightsAsync(db, memberOf, tenantDisabled, user.IsGuest, cancellationToken);
+        var folders = await FoldersAsync(db, tenant.Id, rights, userId, cancellationToken);
+        return new EffectiveAccess(Union(rights), user.IsGuest, false, memberOf.Count > 0, folders);
     }
+
+    /// <summary>The rights each group grants, those the library or the guest limit takes away left out.</summary>
+    private static async Task<Dictionary<int, HashSet<string>>> GroupRightsAsync(
+        AccessDbContext db, IReadOnlyCollection<int> groupIds, HashSet<string> tenantDisabled, bool guest, CancellationToken cancellationToken)
+    {
+        var rows = await db.GroupRights.AsNoTracking()
+            .Where(r => groupIds.Contains(r.GroupId))
+            .Select(r => new { r.GroupId, r.Right })
+            .ToListAsync(cancellationToken);
+        return groupIds.ToDictionary(id => id, id => Allowed(rows.Where(r => r.GroupId == id).Select(r => r.Right), tenantDisabled, guest));
+    }
+
+    /// <summary>
+    /// The folder rules of the groups and of the account, compiled: each group with its own rights (rights stay with
+    /// the group that grants them), the account with all of them.
+    /// </summary>
+    private static async Task<FolderPolicy?> FoldersAsync(
+        AccessDbContext db, int tenantId, Dictionary<int, HashSet<string>> groupRights, int? userId, CancellationToken cancellationToken)
+    {
+        var groupIds = groupRights.Keys.ToList();
+        var rules = await db.FolderRules.AsNoTracking()
+            .Where(r => r.TenantId == tenantId && ((r.GroupId != null && groupIds.Contains(r.GroupId.Value)) || (userId != null && r.UserId == userId)))
+            .Select(r => new { r.GroupId, r.UserId, r.Path, r.Level })
+            .ToListAsync(cancellationToken);
+        if (rules.Count == 0)
+            return null;
+
+        var principals = groupRights
+            .Select(g => new FolderPrincipal(RuleMap(rules.Where(r => r.GroupId == g.Key).Select(r => (r.Path, r.Level))), g.Value, true))
+            .Append(new FolderPrincipal(RuleMap(rules.Where(r => r.UserId is not null).Select(r => (r.Path, r.Level))), Union(groupRights), false))
+            .ToList();
+        return FolderPolicy.Compile(principals);
+    }
+
+    /// <summary>A principal's rules by path; two rows for one path (concurrent changes) count as the stricter one.</summary>
+    internal static Dictionary<string, FolderLevel> RuleMap(IEnumerable<(string Path, FolderLevel Level)> rules) =>
+        rules.GroupBy(r => r.Path, LibraryPaths.PathComparer).ToDictionary(g => g.Key, g => g.Min(r => r.Level), LibraryPaths.PathComparer);
+
+    private static HashSet<string> Union(Dictionary<int, HashSet<string>> groupRights) => groupRights.Values.SelectMany(r => r).ToHashSet();
 
     private static HashSet<string> Allowed(IEnumerable<string> granted, HashSet<string> tenantDisabled, bool guest) =>
         granted

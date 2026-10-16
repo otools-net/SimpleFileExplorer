@@ -17,4 +17,8 @@ Code: `src/Sfe.Core/Data/` (`SfeDbContext`, `Migrations/`, `DatabaseInitializer`
   ([line-endings.md](../environment/line-endings.md)).
 - The match count query is unordered on purpose and EF's `RowLimitingOperationWithoutOrderByWarning` is ignored: order
   every `Take` ([search-sort.md](../features/search-sort.md)).
+- SQL Server uses `EnableRetryOnFailure`: an explicit transaction must run inside
+  `db.Database.CreateExecutionStrategy().ExecuteAsync(...)` (as `SettingRows`, `DeleteGroupAsync`), or it throws.
+- SQL Server refuses two cascade paths to one table (e.g. `Tenants→Groups→FolderRules` and `Tenants→FolderRules`):
+  make one `ClientCascade` and delete those rows in the service.
 - SQLite connection pool gotchas: [testing-backend.md](testing-backend.md).

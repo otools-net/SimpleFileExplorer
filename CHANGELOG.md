@@ -3,6 +3,14 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.52.0
+
+### Added
+
+- **Groundwork for folder permissions:** the accounts database gets a table for rules that will say which groups and
+  accounts may see or change each folder. No rules can be set yet, so nothing changes: every right still applies to
+  the whole space.
+
 ## 1.51.0
 
 ### Added

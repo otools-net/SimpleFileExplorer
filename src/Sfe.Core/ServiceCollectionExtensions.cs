@@ -151,6 +151,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(sp => new AccountRecovery(sp.GetRequiredService<IDbContextFactory<AccessDbContext>>(), sp.GetRequiredService<AccessService>(),
             Path.Combine(Path.GetDirectoryName(codePath)!, "recovery-code.txt"), sp.GetRequiredService<ILogger<AccountRecovery>>()));
         services.AddSingleton<QuickLinkService>();
+        services.AddSingleton<FolderRuleService>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();
         services.AddSingleton<BackupWriter>();

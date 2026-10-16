@@ -28,6 +28,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
     public DbSet<ServerProperty> ServerProperties => Set<ServerProperty>();
     public DbSet<QuickLink> QuickLinks => Set<QuickLink>();
+    public DbSet<FolderRule> FolderRules => Set<FolderRule>();
     public DbSet<LogEntry> LogEntries => Set<LogEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -162,6 +163,34 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.HasOne<Tenant>()
                 .WithMany()
                 .HasForeignKey(l => l.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<FolderRule>(entity =>
+        {
+            // A rule is for a group or for an account, never both nor neither.
+            entity.ToTable("FolderRules", table => table.HasCheckConstraint(
+                "CK_FolderRules_Principal", "(GroupId IS NULL AND UserId IS NOT NULL) OR (GroupId IS NOT NULL AND UserId IS NULL)"));
+            entity.Property(r => r.Path).HasMaxLength(SfeDbContext.MaxPathLength).IsRequired();
+            entity.Property(r => r.Level).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
+            // Not unique by path: paths compare as the host file system does (see QuickLinks); FolderRuleService keeps
+            // one rule per principal and path.
+            entity.HasIndex(r => r.TenantId);
+            entity.HasIndex(r => r.GroupId);
+            entity.HasIndex(r => r.UserId);
+            entity.HasOne<Tenant>()
+                .WithMany()
+                .HasForeignKey(r => r.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Tenants → Groups → FolderRules next to Tenants → FolderRules would be two cascade paths, which SQL
+            // Server refuses: AccessService.DeleteGroupAsync deletes the group's rules itself.
+            entity.HasOne(r => r.Group)
+                .WithMany()
+                .HasForeignKey(r => r.GroupId)
+                .OnDelete(DeleteBehavior.ClientCascade);
+            entity.HasOne<UserAccount>()
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

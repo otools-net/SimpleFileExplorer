@@ -22,17 +22,25 @@ access ([folder-access.md](../features/folder-access.md)). Today only `files.edi
   every principal (also rules the person can't see): rules whose path is the folder or starts with `folder/`
   (`PathComparer`; `Photos2` is not under `Photos`) get the new prefix. Renaming a parent rewrites the deep rules.
   Case-only renames on Windows rewrite the stored path too. The root never moves.
-- Fail-safe order (disk and access database share no transaction), `FolderRuleService`:
-  1. `BeginMoveAsync(tenant, from, to)`: copy the subtree's rules to the new paths in one transaction (both protected;
-     bump `AccessChanges`);
+- Fail-safe order (disk and access database share no transaction), built in `FolderRuleService` (1.52.0):
+  1. `BeginMoveAsync(tenant, from, to, keepAccess, changedBy)` copies the subtree's rules to the new paths in one
+     `SaveChanges` (both protected; bumps `AccessChanges`) and returns a `FolderRuleMove` that **holds the space's
+     lock**: `await using` it;
   2. rename or move on disk;
-  3. `CompleteMoveAsync` deletes the old paths' rules, or `AbortMoveAsync` deletes the copies on failure.
-  A crash between steps leaves both sets: never less protection, only stale rules ("folder not found"). A lock per
-  space keeps rule edits and moves apart; the 250-rule cap doesn't apply to the copies.
+  3. `move.CompleteAsync()` deletes the old paths' rules, or `move.AbortAsync()` deletes the copies (and pins).
+  Disposing without either (an exception after the disk changed) only releases the lock: both sets stay. A crash
+  between steps leaves both sets: never less protection, only stale rules ("folder not found"). Rule edits wait for
+  the lock; the 250-rule cap doesn't apply to the copies.
+- Case-only renames (`PathComparer` equal) rewrite the rows in place; abort writes the old spelling back.
+- Refused: the root, into itself, the same path, and any existing rule at or below the destination (stale rules of a
+  folder that is gone would apply to the moved one: `Conflict`, remove or re-point them first).
 - Inheritance follows the new place: explicit rules move, inherited access comes from the new parent. Before moving,
-  compare the moved folder's effective access before/after for every group and account (`FolderPolicy`, no disk):
-  anyone **gaining** access (Hidden → Read, Read → Write, Guests included) needs an explicit confirmation naming who
-  gains what; **Keep current access** adds rules on the moved folder pinning each principal's previous level.
+  `CompareMoveAsync(tenant, from, to)` gives each group, and each account with rules, whose level at the folder
+  changes (`FolderLevelChange`; null = an account without a say): anyone with `Gains` (Hidden → Read, Read → Write,
+  Guests included; an account at Hidden adds nothing) needs an explicit confirmation naming who gains what;
+  **Keep current access** (`keepAccess: true`) adds rules on the moved folder pinning each changed principal's
+  previous level (an account without a say before gets Hidden). Comparing at the moved folder is enough: everything
+  below either has its own rule (moved with it) or inherits the folder's level.
 
 ## Other data keyed by path (moved by the same operation)
 

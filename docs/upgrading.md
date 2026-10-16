@@ -30,6 +30,12 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.52
+
+The accounts' database gets a new, empty table, `FolderRules` (rules saying who may see or change each folder, for
+a later version), created by the update page (SQL Server: a migration; SQLite: a new table in the same file). Nothing
+else changes: every right still applies to the whole space.
+
 ## To 1.48
 
 Nothing changes in the databases or settings. An install that already has accounts keeps asking for the setup code

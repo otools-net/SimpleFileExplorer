@@ -1,10 +1,33 @@
-# Folder access (design; not built yet)
+# Folder access (rules and evaluation built; not enforced yet)
 
-Status: **designed, phases 2–4 to build** (phase 1, the right kinds, is done: [right-kinds.md](right-kinds.md)).
-Planned code: `Core/Access/FolderPolicy.cs`, `FolderRuleService.cs`, `Data/Entities/Access/FolderRule.cs`,
-`Api/Security/RightAuthorization.cs` (`RequireRightAt`, `FolderScoped`), `CurrentAccess`. What file management must
-do with it: [file-operations.md](../development/file-operations.md). Prior art: Nextcloud group-folder ACLs (inherit
-/ allow / deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per sub-folder).
+Status: phase 1 (right kinds, [right-kinds.md](right-kinds.md)) and **phase 2 (rules, evaluation, moves) built**;
+phases 3 (enforcement) and 4 (management) to build. **No route reads the policy yet and nothing creates rules**, so
+installs behave as before. Code: `Core/Access/FolderPolicy.cs` (`FolderPolicy`, `FolderPrincipal`, `FolderAccess`,
+`PathFilter`), `FolderRuleService.cs` (`FolderRuleMove`), `RightsEvaluator` (`EffectiveAccess.Folders`/`At`/
+`FilterFor`), `Data/Entities/Access/FolderRule.cs`, `AccessMigrations/*_FolderRules`. Planned:
+`Api/Security/RightAuthorization.cs` (`RequireRightAt`, `FolderScoped`), `CurrentAccess`. Tests: `FolderPolicyTests`,
+`FolderRuleServiceTests`, `FolderFilterIndexTests`, `FolderRulesUpgradeTests`. What file management must do with it:
+[file-operations.md](../development/file-operations.md). Prior art: Nextcloud group-folder ACLs (inherit / allow /
+deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per sub-folder).
+
+## As built (phase 2)
+
+- `RightsEvaluator` compiles the policy with the rights (cached together, `AccessChanges` invalidates both): one
+  `FolderPrincipal` per group of the subject (its own allowed rights, unrestricted by default) plus one for the
+  account (all its groups' rights, no say by default); visitors: the Guests group. No rule row = `Folders` null =
+  unrestricted (no extra cost). Server administrators: always unrestricted.
+- `EffectiveAccess.At(path)` intersects with `Rights` at each call, so `Sfe:Rights:Disabled` (applied after the
+  cache) still wins; `Has(right)` stays "somewhere in the space" (what `RequireRight` checks).
+- Two rows for one principal and path (concurrent edits) count as the stricter (`RightsEvaluator.RuleMap`).
+- `FolderPolicy.ChildrenWithRules(folder)` gives the children whose access differs from the folder's (for listings);
+  `AllowsThroughout(folder, right)` the check before changing a tree; `FilterFor(right)` gives a `PathFilter`
+  (`Includes` in memory, `ToPredicate` for EF: every `InTree` shares the parameter of `fullName`, so the bodies combine
+  without rewriting).
+- `FolderRuleService.SetAsync(tenant, path, principal, level or null, changedBy)`: `NormalizeRelative` paths;
+  refuses Windows names ending in a dot or a space, a group of another space, an account in no group of the space,
+  more than `MaxRules` (250); one lock per space (`SemaphoreSlim`) shared with moves.
+- Checked on LocalDB: the check constraint holds; deleting a group with rules is refused by the database (so
+  `DeleteGroupAsync` deletes them first, inside an execution strategy); deleting a space cascades through both paths.
 
 ## Model
 
@@ -93,8 +116,7 @@ do with it: [file-operations.md](../development/file-operations.md). Prior art: 
 
 ## Phases (one commit each, minor version)
 
-2. Rules model + evaluation: entity, migration, SQLite, upgrade test; `FolderPolicy`; `FolderRuleService` with the
-   subtree move and the before/after access diff; unit tests (nothing uses it, nothing creates rules: safe to ship).
+2. Done (1.52.0): rules model and evaluation, the subtree move and the before/after access comparison.
 3. Enforcement: conventions + route test, every route above, Core filters, canonical paths, links; security.md attack
    vectors (case, `Private.`, `PRIVAT~1`, junction into a hidden folder, shared link after a rule).
 4. Management API and UI, `canAt`, re-pointing, `docs/` with screenshots.

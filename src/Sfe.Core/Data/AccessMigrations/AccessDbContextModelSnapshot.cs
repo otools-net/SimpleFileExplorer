@@ -23,6 +23,54 @@ namespace Sfe.Core.Data.AccessMigrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Sfe.Core.Data.FolderRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FolderRules", "SFE", t =>
+                        {
+                            t.HasCheckConstraint("CK_FolderRules_Principal", "(GroupId IS NULL AND UserId IS NOT NULL) OR (GroupId IS NOT NULL AND UserId IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("Sfe.Core.Data.GroupMember", b =>
                 {
                     b.Property<int>("GroupId")
@@ -350,6 +398,27 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.HasKey("UserId", "Key");
 
                     b.ToTable("UserSettings", "SFE");
+                });
+
+            modelBuilder.Entity("Sfe.Core.Data.FolderRule", b =>
+                {
+                    b.HasOne("Sfe.Core.Data.UserGroup", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.ClientCascade);
+
+                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("Sfe.Core.Data.GroupMember", b =>
