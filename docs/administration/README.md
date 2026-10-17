@@ -22,6 +22,7 @@ from page to page: click the section to open its first page, the group to see it
 | Viewing | [Interface](interface.md) | Appearance, Browsing, Search |
 | | [Playback](playback.md) | Player, Streaming, Video streams |
 | Library | [Scanning](scanning.md) | What to scan, File types, Indexing |
+| | [File management](file-management.md) | names, the work folder |
 | | [Tags](tags.md) | All tags, Settings |
 | | [Duplicates & moves](duplicates-and-moves.md) | Duplicates, Similar videos, Moved files, Settings |
 | Media | [Thumbnails](thumbnails.md) | previews in listings and the viewer |

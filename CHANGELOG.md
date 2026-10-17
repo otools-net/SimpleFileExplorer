@@ -3,6 +3,20 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.55.0
+
+### Added
+
+- **New folder and Rename:** the listing can now create folders (the button next to the folder's name, or
+  **Shift+N**) and rename files and folders (**F2**, or the item's menu), for the groups given the new rights
+  `files.createFolders` and `files.rename` (no group has them until an administrator ticks them). A renamed folder keeps
+  its tags, folder access, quick links, schedules, thumbnails and trickplay; renaming is refused while a scan runs over
+  it.
+- **Item menu:** right-click a file or folder (or use its **⋮** button) for Rename, Tags and Copy full path;
+  Shift+right-click still opens the browser's own menu.
+- **Administration › File management:** whether new names must also suit Windows (on by default), and whether SFE's
+  work files go in a hidden `.sfe` folder of the library or in the server's data folder.
+
 ## 1.54.0
 
 ### Added

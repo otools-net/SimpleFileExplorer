@@ -30,6 +30,17 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.55
+
+- New rights `files.createFolders` and `files.rename` ([managing files](user-guide/managing-files.md)): given to **no
+  group**, so nothing changes until an administrator ticks them for a group. `settings.files` (the new
+  [File management](administration/file-management.md) settings) goes to the Administrators groups.
+- The name `.sfe` at a library's root is now SFE's own (its work folder, for the trash and uploads of later versions):
+  a folder of that name already there is no longer listed, scanned or reachable; rename it on the server's disk if
+  you need it.
+- To create folders and rename, the server's account needs write access to the library (see
+  [Installation](installation.md)).
+
 ## To 1.52
 
 The accounts' database gets a new, empty table, `FolderRules` (rules saying who may see or change each folder, for

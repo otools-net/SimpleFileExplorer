@@ -411,6 +411,39 @@ public sealed class DirectoryIndexer(
         return stats;
     }
 
+    /// <summary>
+    /// Forgets what the index still holds at <paramref name="fullPath"/>, a folder (with what is below it) or a file
+    /// that is not on the disk any more: before a file or folder takes that name (<see cref="Files.PathMoves"/>). Tagged
+    /// files are kept as missing files, as by a scan.
+    /// </summary>
+    internal async Task ForgetAsync(string fullPath, CancellationToken cancellationToken = default)
+    {
+        var path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(fullPath));
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        await MissingFileRecorder.DeleteAsync(
+            db,
+            db.Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, path)),
+            async ct => await db.Directories.Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, path)).ExecuteDeleteAsync(ct)
+                + await db.Files.Where(f => f.FullName == path).ExecuteDeleteAsync(ct),
+            RememberMissing,
+            cancellationToken);
+    }
+
+    /// <summary>The index row of the folder <paramref name="fullPath"/>, made (with its own parent's link) when <paramref name="create"/> and missing.</summary>
+    /// <returns>null when it has none (and none was made: not asked, ignored, too long a path).</returns>
+    internal async Task<int?> FolderIdAsync(SfeDbContext db, string fullPath, bool create, CancellationToken cancellationToken = default)
+    {
+        var path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(fullPath));
+        var id = await db.Directories.Where(d => d.FullName == path).Select(d => (int?)d.Id).FirstOrDefaultAsync(cancellationToken);
+        var folder = new DirectoryInfo(path);
+        if (id is not null || !create || !folder.Exists || IsIgnoredDirectory(folder) || !IsStorable(folder.FullName, db.PathLengthLimit))
+            return id;
+        var entry = await FindOrCreateDirectoryAsync(db, folder, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+        db.ChangeTracker.Clear();
+        return entry.Id;
+    }
+
     /// <summary>What the index holds of a folder and its sub-folders.</summary>
     public async Task<IndexedFolderStats> GetStatsAsync(string fullPath, CancellationToken cancellationToken = default)
     {
@@ -426,7 +459,10 @@ public sealed class DirectoryIndexer(
 
     private bool IsIgnoredDirectory(DirectoryInfo directory) =>
         NameSet(ref _ignoredDirectories, Scan.IgnoredDirectories).Contains(directory.Name)
-        || ExcludedSet().Contains(Path.TrimEndingDirectorySeparator(directory.FullName));
+        || ExcludedSet().Contains(Path.TrimEndingDirectorySeparator(directory.FullName))
+        // SFE's work folder (the trash...) is never indexed.
+        || (directory.Name.Length == LibraryPaths.WorkFolderName.Length && paths.ToRelative(directory.FullName) is { } relative
+            && LibraryPaths.IsWorkFolderRelative(relative));
 
     /// <summary>Full paths of <see cref="ScanOptions.ExcludedFolders"/>, without trailing separator.</summary>
     private HashSet<string> ExcludedSet()

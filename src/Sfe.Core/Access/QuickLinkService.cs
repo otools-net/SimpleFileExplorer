@@ -91,6 +91,24 @@ public sealed class QuickLinkService(IDbContextFactory<AccessDbContext> dbFactor
         return [.. rows.Select(ToEntry)];
     }
 
+    /// <summary>
+    /// Every user's links to <paramref name="from"/> and to what is below it follow it to <paramref name="to"/> (a
+    /// file or folder renamed or moved in the library; root-relative paths).
+    /// </summary>
+    /// <returns>Links changed.</returns>
+    public async Task<int> MovePathsAsync(int tenantId, string from, string to, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        // A hundred links per user at most: read the library's and compare as the host's file system does.
+        var rows = (await db.QuickLinks.Where(l => l.TenantId == tenantId).ToListAsync(cancellationToken))
+            .Where(l => FolderPolicy.IsSameOrBelow(l.Path, from) && from.Length > 0)
+            .ToList();
+        foreach (var row in rows)
+            row.Path = to + row.Path[from.Length..];
+        await db.SaveChangesAsync(cancellationToken);
+        return rows.Count;
+    }
+
     /// <summary>The user's rows in order, tracked; duplicates left by two concurrent adds are dropped.</summary>
     private static async Task<List<QuickLink>> LoadAsync(AccessDbContext db, int userId, int tenantId, CancellationToken cancellationToken)
     {

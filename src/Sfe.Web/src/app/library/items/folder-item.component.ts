@@ -4,6 +4,7 @@ import { plural } from '../../core/format';
 import { CopyPathService } from '../../core/copy-path.service';
 import { LibraryItem } from '../../core/models';
 import { Rights } from '../../core/rights';
+import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
 import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
@@ -17,9 +18,16 @@ import { CopyPathButtonComponent, NOT_INDEXED } from './item-parts';
  */
 @Component({
     selector: 'sfe-folder-item',
-    imports: [IconComponent, RouterLink, FolderCoverComponent, CopyPathButtonComponent, PinButtonComponent],
+    imports: [IconComponent, RouterLink, FolderCoverComponent, CopyPathButtonComponent, PinButtonComponent, ItemMenuButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'folder-item', '[class.copied]': 'copied()', '[class.unindexed]': 'unindexed()', '[attr.data-path]': 'item().path' },
+    host: {
+        class: 'folder-item',
+        '[class.copied]': 'copied()',
+        '[class.unindexed]': 'unindexed()',
+        '[class.revealed]': 'store.revealed() === item().path',
+        '[attr.data-path]': 'item().path',
+        '(contextmenu)': 'menu.fromEvent($event, item())',
+    },
     template: `
         <a class="folder item kind-directory" [class.card]="cards()" routerLink="/" [queryParams]="store.browseParams(item().path)" [title]="linkTitle()">
             @if (cards()) {
@@ -47,6 +55,7 @@ import { CopyPathButtonComponent, NOT_INDEXED } from './item-parts';
             @if (copyPaths.enabled()) {
                 <button [sfeCopyPath]="item().path" [name]="item().name"></button>
             }
+            <button [sfeItemMenu]="item()"></button>
         </span>
     `,
 })
@@ -58,6 +67,7 @@ export class FolderItemComponent {
     protected readonly canTag = computed(() => this.store.can(Rights.assignTags, this.item()));
     protected readonly store = inject(ListingStore);
     protected readonly copyPaths = inject(CopyPathService);
+    protected readonly menu = inject(ItemMenu);
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));
     protected readonly unindexed = computed(() => this.item().indexed === false);
     protected readonly linkTitle = computed(() => this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''));

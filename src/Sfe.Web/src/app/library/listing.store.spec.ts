@@ -529,4 +529,44 @@ describe('ListingStore', () => {
             expect(TestBed.inject(ListingStore).view()).toBe('grid');
         });
     });
+
+    describe('file management', () => {
+        const zoo = item('Zoo', { kind: 'directory' });
+
+        it('puts a new folder where the name sort puts it among the folders loaded, and counts it', async () => {
+            api.browse.mockResolvedValue(listing([folder, zoo, a, b], { directoryCount: 2, fileCount: 2 }));
+            await store.load();
+
+            store.applyAdded(item('Photos', { kind: 'directory' }));
+            store.applyAdded(item('Aardvark', { kind: 'directory' }));
+            store.applyAdded(item('Zzz', { kind: 'directory' }));
+
+            expect(store.items().map(i => i.name)).toEqual(['Aardvark', 'Folder', 'Photos', 'Zoo', 'Zzz', 'a.jpg', 'b.mp4']);
+            expect(store.listing()).toMatchObject({ total: 7, directoryCount: 5, fileCount: 2 });
+            expect(store.total()).toEqual({ count: 7, capped: false });
+        });
+
+        it('puts it first among its kind in other sorts, and ignores one made elsewhere', async () => {
+            store.route.set({ path: '', q: '', sort: 'modified', desc: false });
+            api.browse.mockResolvedValue(listing([a, b]));
+            await store.load();
+
+            store.applyAdded(item('New', { kind: 'directory' }));
+            store.applyAdded(item('Other/New', { kind: 'directory' }));
+
+            expect(store.items().map(i => i.path)).toEqual(['New', 'a.jpg', 'b.mp4']);
+        });
+
+        it('leaves out of the next page what was added meanwhile', async () => {
+            api.browse.mockResolvedValueOnce(listing([folder, a, b], { total: 5, limit: 3 }));
+            await store.load();
+            store.applyAdded(item('New', { kind: 'directory' }));
+            // The folder listed again from disk: everything after the new folder moved one place.
+            api.browse.mockResolvedValueOnce(listing([b, c, d], { offset: 3, total: 6, limit: 3 }));
+
+            await store.loadMore();
+
+            expect(store.items().map(i => i.path)).toEqual(['Folder', 'New', 'a.jpg', 'b.mp4', 'c.txt', 'd.jpg']);
+        });
+    });
 });

@@ -354,6 +354,79 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         await layers.Rows.SaveTenantAsync(tenant, rows, cancellationToken);
     }
 
+    /// <summary>
+    /// The library's settings naming folders (<see cref="SettingCatalog"/>'s per-library keys: excluded folders,
+    /// trickplay folders, the editor's folder) follow the folder <paramref name="from"/>, renamed or moved to
+    /// <paramref name="to"/> (root-relative, canonical), with what is below it. Saved for the library, like
+    /// <see cref="ExcludeFolderAsync"/>.
+    /// </summary>
+    /// <returns>The keys changed.</returns>
+    public async Task<IReadOnlyList<string>> MoveFolderPathsAsync(string from, string to, int? tenantId = null, CancellationToken cancellationToken = default)
+    {
+        if (layers is null)
+        {
+            var settings = EditableSettings.From(options.CurrentValue);
+            var changed = MoveFolderPaths(settings, from, to);
+            if (changed.Count > 0)
+            {
+                Normalize(settings);
+                await store.SaveAsync(settings, cancellationToken);
+            }
+            return changed;
+        }
+
+        var tenant = Tenant(tenantId);
+        if (tenant is null)
+            return [];
+        var sources = await layers.LoadAsync(tenant, null, cancellationToken);
+        var current = SettingLayers.ToSettings(SettingLayers.Resolve(sources, SettingLevel.Tenant));
+        var keys = MoveFolderPaths(current, from, to);
+        if (keys.Count == 0)
+            return keys;
+
+        Normalize(current);
+        var values = SettingKeys.Flatten(SettingKeys.ToJson(current));
+        var rows = sources.Tenant.ToDictionary(r => r.Key, r => r.Value, StringComparer.Ordinal);
+        foreach (var key in keys)
+            rows[key] = new StoredSetting(values[key], rows.GetValueOrDefault(key)?.Locked ?? false);
+        await layers.Rows.SaveTenantAsync(tenant.Value, rows, cancellationToken);
+        return keys;
+    }
+
+    /// <returns>The keys of the settings changed.</returns>
+    private static List<string> MoveFolderPaths(EditableSettings settings, string from, string to)
+    {
+        var changed = new List<string>();
+        if (Moved(settings.Scan.ExcludedFolders) is { } excluded)
+        {
+            settings.Scan.ExcludedFolders = excluded;
+            changed.Add("scan.excludedFolders");
+        }
+        if (Moved(settings.Trickplay.Folders) is { } trickplay)
+        {
+            settings.Trickplay.Folders = trickplay;
+            changed.Add("trickplay.folders");
+        }
+        if (settings.Editor.OutputFolder is { } output && Move(output) is { } moved)
+        {
+            settings.Editor.OutputFolder = moved;
+            changed.Add("editor.outputFolder");
+        }
+        return changed;
+
+        List<string>? Moved(List<string> folders)
+        {
+            var result = folders.Select(f => Move(f) ?? f).ToList();
+            return result.SequenceEqual(folders, StringComparer.Ordinal) ? null : result;
+        }
+
+        // The new path of a folder at or below `from`; null for the others.
+        string? Move(string folder) =>
+            LibraryPaths.NormalizeRelative(folder) is { Length: > 0 } path && FolderPolicy.IsSameOrBelow(path, from)
+                ? to + path[from.Length..]
+                : null;
+    }
+
     /// <summary>Back to the values of the configuration files.</summary>
     public SettingsView Reset()
     {

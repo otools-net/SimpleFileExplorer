@@ -11,6 +11,8 @@ export const Rights = {
     copyPaths: 'files.copyPaths',
     editImages: 'files.edit',
     stream: 'files.stream',
+    createFolders: 'files.createFolders',
+    renameFiles: 'files.rename',
     viewTags: 'tags.view',
     assignTags: 'tags.assign',
     manageTags: 'tags.manage',
@@ -35,6 +37,7 @@ export const Rights = {
     taskSettings: 'settings.tasks',
     logSettings: 'settings.logs',
     editorSettings: 'settings.editor',
+    fileSettings: 'settings.files',
     manageMembers: 'tenant.members',
     ownPreferences: 'account.preferences',
     ownPassword: 'account.password',
@@ -68,6 +71,7 @@ export const SETTINGS_RIGHTS: Record<string, Right> = {
     logs: Rights.logSettings,
     tags: Rights.tagSettings,
     editor: Rights.editorSettings,
+    files: Rights.fileSettings,
     // How the server starts: its administrators only.
     startup: Rights.serverSettings,
 };

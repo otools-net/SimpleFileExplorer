@@ -1,0 +1,64 @@
+/* ---------- File management: the item menu, the ⋮ buttons, the New folder button ---------- */
+
+.item-menu {
+    position: fixed;
+    z-index: 60;
+    min-width: 200px;
+    padding: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.item-menu-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.item-menu-entry:is(:hover, :focus-visible) { background: var(--surface-2); outline: none; }
+.item-menu-entry .icon { flex: none; width: 17px; height: 17px; color: var(--text-muted); }
+.item-menu-entry span { flex: 1; }
+.item-menu-entry kbd { color: var(--text-muted); font-size: 11px; }
+
+/* Over a tile's picture, where the tag button was: the tag and copy buttons move one place left. */
+.tile .item-menu-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    border-color: transparent;
+    background: rgb(0 0 0 / .55);
+    color: #fff;
+    opacity: 0;
+    transition: opacity .15s, background .15s;
+}
+
+.tile .item-menu-button:hover { background: rgb(0 0 0 / .75); }
+.tile:hover .item-menu-button, .tile:focus-within .item-menu-button { opacity: 1; }
+.tile:has(.item-menu-button:not([hidden])) .tag-button { right: 44px; }
+.tile:has(.item-menu-button:not([hidden])) .copy-path-button { right: 80px; }
+.row .item-menu-button { border-color: transparent; background: transparent; color: var(--text-muted); }
+.row .item-menu-button:hover { background: var(--surface-3); color: var(--text); }
+.item-menu-button .icon { width: 17px; height: 17px; }
+
+@media (hover: none) {
+    .tile .item-menu-button { opacity: 1; }
+}
+
+/* A folder line with a fourth button (pin, tags, copy path, ⋮). */
+.folder-item:not(:has(.card)):has(.folder-actions > :not([hidden]):nth-of-type(4)) .folder { padding-right: 152px; }
+/* Just made or renamed. */
+.folder-item.revealed .folder { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.location-head .new-folder-button { flex: none; color: var(--text-muted); }
+.location-head .new-folder-button:hover { color: var(--text); }

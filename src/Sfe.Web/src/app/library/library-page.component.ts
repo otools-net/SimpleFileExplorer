@@ -6,6 +6,10 @@ import { ConfigService } from '../core/config.service';
 import { baseName, parentPath } from '../core/paths';
 import { ThemeService } from '../core/theme.service';
 import { ImageEditorDialog } from '../editor/image-editor.dialog';
+import { ItemMenu, ItemMenuComponent } from '../files/item-menu';
+import { NameDialog } from '../files/name.dialog';
+import { LibraryItem } from '../core/models';
+import { Rights } from '../core/rights';
 import { EmptyStateComponent } from '../shared/empty-state.component';
 import { FileTagsDialog } from '../tags/file-tags.dialog';
 import { FilesTagsDialog } from '../tags/files-tags.dialog';
@@ -42,7 +46,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, ImageEditorDialog],
+        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, ItemMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -72,6 +76,8 @@ let created = false;
             <sfe-tag-editor />
             <sfe-tag-manager />
             <sfe-remove-from-index />
+            <sfe-name-dialog />
+            <sfe-item-menu />
             <!-- After the viewer: it opens over it. -->
             <sfe-image-editor />
         }
@@ -84,6 +90,7 @@ export class LibraryPageComponent implements OnInit {
     private readonly theme = inject(ThemeService);
     private readonly popovers = inject(Popovers);
     private readonly dialogs = inject(Dialogs);
+    private readonly menu = inject(ItemMenu);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly destroyRef = inject(DestroyRef);
@@ -170,6 +177,21 @@ export class LibraryPageComponent implements OnInit {
             history.replaceState({ ...history.state, ...currentPosition(), loaded: this.store.items().length }, '');
     }
 
+    /** New folders can be made in the folder listed. */
+    private canCreateFolder(): boolean {
+        return !this.store.route().q && this.store.status() === 'ready' && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFolders);
+    }
+
+    /** The item that has the keyboard focus, else the only file selected. */
+    private focusedItem(): LibraryItem | null {
+        const path = (document.activeElement as Element | null)?.closest?.('sfe-listing [data-path]')?.getAttribute('data-path');
+        const focused = path !== null && path !== undefined ? this.store.items().find(item => item.path === path) : undefined;
+        if (focused)
+            return focused;
+        const selected = this.store.selectedFiles();
+        return selected.length === 1 ? selected[0] : null;
+    }
+
     protected onKeydown(event: KeyboardEvent): void {
         const target = event.target as Element;
         // A selection checkbox is an input, but not one being typed in.
@@ -179,9 +201,23 @@ export class LibraryPageComponent implements OnInit {
             this.store.selectAll();
             return;
         }
+        // New folder: Ctrl+Shift+N as in Explorer where the browser leaves it to the page (Chrome keeps it), Shift+N.
+        if (!typing && event.shiftKey && !event.altKey && event.key.toLowerCase() === 'n' && this.canCreateFolder()) {
+            event.preventDefault();
+            this.dialogs.name()?.newFolder();
+            return;
+        }
         if (typing || event.ctrlKey || event.metaKey)
             return;
         const { path, q } = this.store.route();
+        if (event.key === 'F2') {
+            const item = this.focusedItem();
+            if (item && this.menu.canRename(item)) {
+                event.preventDefault();
+                this.dialogs.name()?.rename(item);
+            }
+            return;
+        }
         if (event.key === '/') {
             event.preventDefault();
             this.topbar()?.searchBox().focus();

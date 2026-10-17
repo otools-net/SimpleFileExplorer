@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { DirectoryListing } from '../../core/models';
-import { ApiMock, fakeConfig, intersect, item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
+import { ApiMock, fakeConfig, intersect, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
 import { ListingStore } from '../listing.store';
 import { SidebarService } from '../sidebar/sidebar.service';
 import { LocationLinks } from './location-links.service';
@@ -105,5 +105,35 @@ describe('LocationComponent header visibility', () => {
         links.headHidden.set(true);
         fixture.destroy();
         expect(links.headHidden()).toBe(false);
+    });
+});
+
+describe('LocationComponent new folder button', () => {
+    function button(): HTMLButtonElement | null {
+        const fixture = TestBed.createComponent(LocationComponent);
+        fixture.detectChanges();
+        return (fixture.nativeElement as HTMLElement).querySelector('.new-folder-button');
+    }
+
+    it('is there with the right, in a folder', async () => {
+        await show('Media');
+        expect(button()).not.toBeNull();
+    });
+
+    it('is not there in a search, in a folder only on the way to another, or without the right', async () => {
+        await show('Media', 'beach');
+        expect(button()).toBeNull();
+
+        api.browse.mockResolvedValue({
+            path: 'Media', name: '', parentPath: null, items: [], offset: 0, limit: 100, total: 0, directoryCount: 0, fileCount: 0,
+            access: { rights: ['library.browse', 'files.createFolders'], pathOnly: true },
+        } as DirectoryListing);
+        store.route.set({ path: 'Media', q: '', sort: '', desc: false });
+        await store.load();
+        expect(button()).toBeNull();
+
+        await loadConfig(api, limitedConfig(['library.browse']));
+        await show('Media');
+        expect(button()).toBeNull();
     });
 });

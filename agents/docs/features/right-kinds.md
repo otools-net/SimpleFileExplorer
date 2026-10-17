@@ -11,15 +11,16 @@ Code: `src/Sfe.Core/Access/RightCatalog.cs` (`RightKind`, `FolderLevel`, `RightD
 - `Kind`: `Write` when **any** route it opens changes something (files, index, tags, settings, accounts, own data);
   `Read` when it only looks. Classify by the right's most powerful route (`tracking.missing` lists and relinks: Write).
 - `AtFolder`: what a folder must allow for the right to apply in it. `Write` **only** for rights that change the
-  library's files on disk (`files.edit`, `tracking.duplicatesRemove`, the future file-management rights); `Read` for
+  library's files on disk (`files.edit`, `tracking.duplicatesRemove`, the file-management rights `files.createFolders`, `files.rename`…); `Read` for
   rights about files or folders that change at most the index (tags, relinks, removal from the index, quick links);
   null for rights of the whole space (settings, tasks, logs, accounts, tag definitions) and for server rights.
 - Invariants tested: a Write right is never `GuestAllowed`; `AtFolder = Write` implies `Kind = Write`; server rights
   have no `AtFolder`; the rights changing files are exactly the expected list (update the test with a new one).
 - Space-wide Read rights that **see every folder's names** (`tasks.view`, `logs.view`: run logs and log text carry
   paths) won't be filtered by folder rules: say so in their description when folder rules ship.
-- Future file-management rights: `Write`, `AtFolder = Write`, `GuestAllowed = false`, **`DefaultGroups = []`** (with
-  `since`, `GrantNewRightsAsync` then gives them to nobody: only server administrators and groups ticked by hand).
+- File-management rights (`files.createFolders`, `files.rename`, later ones too): `Write`, `AtFolder = Write`,
+  `GuestAllowed = false`, **`DefaultGroups = []`** (with `since`, `GrantNewRightsAsync` then gives them to nobody:
+  only server administrators and groups ticked by hand).
 
 ## Selectors
 

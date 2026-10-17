@@ -20,6 +20,8 @@ Each right is of one of two kinds (column **Kind**):
 | `files.copyPaths` | copy full paths (shows the server's folders) | Read | no | Administrators |
 | `files.edit` | edit pictures (crop) and save the result as a new file | Write (files) | no | Administrators, Users |
 | `files.stream` | play videos converted by the server (ffmpeg) when the browser can't play them | Read | yes | Administrators, Users |
+| `files.createFolders` | [create folders](../user-guide/managing-files.md#new-folder) | Write (files) | no | none |
+| `files.rename` | [rename files and folders](../user-guide/managing-files.md#rename) | Write (files) | no | none |
 | `tags.view` | see tags, the tag sidebar | Read | yes | all |
 | `tags.assign` | tag files, folders and searches | Write | no | Administrators, Users |
 | `tags.manage` | create, edit, delete tags; clear the tag history | Write | no | Administrators |
@@ -31,7 +33,7 @@ Each right is of one of two kinds (column **Kind**):
 | `tasks.view` | background tasks and their history | Read | no | Administrators |
 | `tasks.run`, `tasks.schedule` | running background tasks, schedules | Write | no | Administrators |
 | `logs.view` | the [log](../administration/logs.md) of the space (server administrators: of the whole server) | Read | no | Administrators |
-| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.logs`, `.editor` | the space's settings, by section | Write | no | Administrators |
+| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.logs`, `.editor`, `.files` | the space's settings, by section | Write | no | Administrators |
 | `tenant.members` | the space's accounts, groups and visitors | Write | no | Administrators |
 | `account.preferences`, `account.password` | own preferences and password | Write | no | Administrators, Users |
 | `account.quickLinks` | own [quick links](../user-guide/browsing.md#quick-links) in the sidebar | Write | no | Administrators, Users |
@@ -39,7 +41,12 @@ Each right is of one of two kinds (column **Kind**):
 | `server.settings`, `server.tenants`, `server.users`, `server.shutdown`, `server.dismount` | the server's settings, spaces, every account, system commands | Write | no | server administrators only |
 | `server.backup`, `server.streams` | backups, the list of video streams | Read | no | server administrators only |
 
-**Server administrators** have every right in every space, plus the server's own.
+**Server administrators** have every right in every space, plus the server's own. The file management rights
+(`files.createFolders`, `files.rename`) are in no group by default, even after an upgrade: tick them for the groups
+that may change the library's files.
+
+Renaming a folder also needs the right everywhere below it: someone kept out of a sub-folder, or with it read-only,
+can't rename (nor later move or delete) the folder holding it.
 
 ## Who decides
 

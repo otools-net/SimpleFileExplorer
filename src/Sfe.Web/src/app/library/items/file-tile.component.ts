@@ -3,6 +3,7 @@ import { ConfigService } from '../../core/config.service';
 import { CopyPathService } from '../../core/copy-path.service';
 import { formatDate, formatSize, joinParts, kindIcon } from '../../core/format';
 import { LibraryItem } from '../../core/models';
+import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
 import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
 import { TrickplayHoverService } from '../../trickplay/trickplay-hover.service';
@@ -28,6 +29,7 @@ abstract class FileItemBase {
     protected readonly actions = inject(ItemActions);
     protected readonly copyPaths = inject(CopyPathService);
     protected readonly config = inject(ConfigService);
+    protected readonly menu = inject(ItemMenu);
     private readonly previews = inject(PreviewsService);
 
     protected readonly url = computed(() => this.config.links.file(this.item().path));
@@ -72,7 +74,7 @@ function sameStrings(a: string[], b: string[]): boolean {
 @Component({
     selector: 'article[sfeFileTile]',
     imports: [IconComponent, HighlightComponent, PreviewImageDirective, TrickplayMarkComponent, ItemTagsComponent, SelectBoxComponent,
-        TagButtonComponent, CopyPathButtonComponent, ItemFolderComponent],
+        TagButtonComponent, CopyPathButtonComponent, ItemFolderComponent, ItemMenuButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class]': '"tile item kind-" + item().kind',
@@ -83,6 +85,7 @@ function sameStrings(a: string[], b: string[]): boolean {
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
         '[style.--ratio]': 'ratio()',
+        '(contextmenu)': 'menu.fromEvent($event, item())',
     },
     template: `
         <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
@@ -113,6 +116,7 @@ function sameStrings(a: string[], b: string[]): boolean {
         </a>
         <label sfeSelectBox [item]="item()"></label>
         <button [sfeTagButton]="item()"></button>
+        <button [sfeItemMenu]="item()"></button>
         @if (copyPaths.enabled()) {
             <button [sfeCopyPath]="item().path" [name]="item().name"></button>
         }
@@ -163,7 +167,7 @@ export class FileTileComponent extends FileItemBase {
 @Component({
     selector: 'div[sfeFileRow]',
     imports: [IconComponent, HighlightComponent, PreviewImageDirective, TrickplayMarkComponent, ItemTagsComponent, SelectBoxComponent,
-        TagButtonComponent, CopyPathButtonComponent, ItemFolderComponent],
+        TagButtonComponent, CopyPathButtonComponent, ItemFolderComponent, ItemMenuButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class]': '"row item kind-" + item().kind',
@@ -172,6 +176,7 @@ export class FileTileComponent extends FileItemBase {
         '[class.revealed]': 'revealed()',
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
+        '(contextmenu)': 'menu.fromEvent($event, item())',
     },
     template: `
         <label sfeSelectBox [item]="item()"></label>
@@ -204,6 +209,7 @@ export class FileTileComponent extends FileItemBase {
                 <button [sfeCopyPath]="item().path" [name]="item().name"></button>
             }
             <button [sfeTagButton]="item()"></button>
+            <button [sfeItemMenu]="item()"></button>
         </span>
     `,
 })

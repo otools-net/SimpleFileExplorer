@@ -76,6 +76,8 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'logs.retentionDays',
     'logs.writeFiles',
     'editor.outputFolder',
+    'files.portableNames',
+    'files.workFolder',
     'openBrowser',
     'fastSignIn',
 ]);
@@ -493,6 +495,28 @@ export const TABS: SettingTab[] = [
                         hint: 'A folder of the library (path from the library root) where edited pictures are saved, in the same sub-folders as their originals: Photos/2024/beach.jpg is saved as Edited/Photos/2024/beach.jpg. Created when first needed. Empty: next to the original, as “beach (edited).jpg”. Existing files are never replaced: a number is added to the name.' },
                     { key: 'editor.quality', label: 'Quality (JPEG and WebP)', type: 'number', min: 10, max: 100,
                         hint: 'How much detail JPEG and WebP pictures keep when saved: higher is sharper and larger. PNG pictures are saved without loss; other formats are saved as PNG.' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'files',
+        title: 'File management',
+        intro: 'Creating folders and renaming files and folders from the listing, for the groups given those rights (Spaces & accounts).',
+        groups: [
+            {
+                title: 'Names',
+                fields: [
+                    { key: 'files.portableNames', label: 'Only names Windows accepts', type: 'checkbox',
+                        hint: 'New names must also work on Windows: no < > : " \\ | ? *, no name ending with a dot or a space, no CON, NUL, COM1… Keep it on when the library is shared with Windows computers or may move to one. A Windows server always refuses them.' },
+                ],
+            },
+            {
+                title: 'Work folder',
+                fields: [
+                    { key: 'files.workFolder', label: 'Where SFE keeps its work files', type: 'select',
+                        options: [['library', 'In the library'], ['server', 'On the server']],
+                        hint: 'For the trash and unfinished uploads (coming in later versions). In the library (a hidden .sfe folder at its root), they stay on its own drive, so moving a file there is instant; in the server\'s data folder, the library holds nothing of SFE\'s, but large files are copied from one drive to the other. The name .sfe at the library\'s root stays reserved either way.' },
                 ],
             },
         ],

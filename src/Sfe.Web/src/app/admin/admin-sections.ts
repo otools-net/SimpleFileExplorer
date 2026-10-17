@@ -84,6 +84,14 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         ],
     },
     {
+        id: 'files',
+        group: 'Library',
+        title: 'File management',
+        icon: 'folder',
+        description: 'The names new files and folders may have, and where SFE keeps its work files.',
+        subpages: [settingsPage('files')],
+    },
+    {
         id: 'tags',
         group: 'Library',
         title: 'Tags',

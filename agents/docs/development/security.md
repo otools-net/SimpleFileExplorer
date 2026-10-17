@@ -22,6 +22,11 @@ library by others). Keep these rules when changing it.
   answer 404 for what the subject doesn't see (never tell it apart from missing), check the canonical path and where it
   really leads, filter index queries with `Visible()` and re-check shown items with `Seen()`; mark the route
   `.FolderScoped(...)` (a test fails otherwise).
+- A route that **writes** to the library also refuses (404) a place whose real path is among the server's files or in
+  SFE's work folder (`FileEndpoints.Protected`), refuses names the system reads as another one, never replaces
+  anything, and needs its right throughout a folder it changes as a whole (`AllowsThroughout`)
+  ([new-folder-and-rename.md](../features/new-folder-and-rename.md)). `.sfe` at the root is never reachable
+  ([work-folder.md](../features/work-folder.md)).
 - New expensive routes (ffmpeg, full scans of the index) get a limit per caller.
 - What only "this computer" may do (setup without code, fast sign-in) goes through `LocalVisitor.IsOnThisComputer`
   (loopback, not forwarded, loopback `Host`), never a bare loopback check ([local-start.md](../features/local-start.md)).
@@ -63,7 +68,8 @@ input, LIKE escaped, no `innerHTML` in the client.
 - **Authorization:** each route × anonymous/guest/user/space admin/server admin; `X-SFE-Tenant` and cookie mismatches;
   space admin vs server admin and shared accounts; guest-forbidden rights.
 - **Paths:** `..`, encoded separators, `\`, `C:`, `::$DATA`, `CON`, trailing dots/spaces, NUL, long names; links and
-  junctions out of the root and onto the data folder; hard links in duplicate removal.
+  junctions out of the root and onto the data folder (also to write there: `FileRouteTests`); hard links in duplicate
+  removal; `.sfe`, `.SFE.`, `ChildDir/../.sfe` and its 8.3 name.
 - **Folder rules:** a hidden folder through case variants, `Private.`, `PRIVAT~1`, a junction or link from a visible
   folder (raw, listing, search after a scan), a path-only folder's own files, counts (tags, duplicates, listings),
   covers, siblings, quick links, scan status, a shared link made before the rule, the editor's output folder,

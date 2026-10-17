@@ -15,6 +15,8 @@ public static class Rights
     public const string CopyPaths = "files.copyPaths";
     public const string EditImages = "files.edit";
     public const string Stream = "files.stream";
+    public const string CreateFolders = "files.createFolders";
+    public const string RenameFiles = "files.rename";
     public const string ViewTags = "tags.view";
     public const string AssignTags = "tags.assign";
     public const string ManageTags = "tags.manage";
@@ -39,6 +41,7 @@ public static class Rights
     public const string TaskSettings = "settings.tasks";
     public const string LogSettings = "settings.logs";
     public const string EditorSettings = "settings.editor";
+    public const string FileSettings = "settings.files";
     public const string ManageMembers = "tenant.members";
     public const string OwnPreferences = "account.preferences";
     public const string OwnPassword = "account.password";
@@ -126,6 +129,9 @@ public static class RightCatalog
         Tenant(Rights.CopyPaths, false, Administrators, R, Readable, "Library", "Copy full paths", "See and copy where files are on the server's disk."),
         Tenant(Rights.EditImages, false, Members, W, Writable, "Library", "Edit pictures", "Crop pictures and save the result as a new file in the folder for edited pictures; originals are never changed.", since: 1),
         Tenant(Rights.Stream, true, Members, R, Readable, "Library", "Play videos converted by the server", "Play videos the browser can't play as they are, converted by ffmpeg on the server while they play (it keeps the server's processor busy).", since: 2),
+        // File management (agents/docs/development/file-management-plan.md): nobody gets these by upgrade or by default.
+        Tenant(Rights.CreateFolders, false, [], W, Writable, "File management", "Create folders", "Create new folders in the library.", since: 5),
+        Tenant(Rights.RenameFiles, false, [], W, Writable, "File management", "Rename", "Rename files and folders (the tags, folder access and quick links of a folder follow it).", since: 5),
         Tenant(Rights.ViewTags, true, Everyone, R, Readable, "Tags", "See tags", "See the tags of files, the tag list and the tag sidebar."),
         Tenant(Rights.AssignTags, false, Members, W, Readable, "Tags", "Tag files", "Add tags to files and remove them, also to whole folders and searches."),
         Tenant(Rights.ManageTags, false, Administrators, W, null, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),
@@ -149,6 +155,7 @@ public static class RightCatalog
         Tenant(Rights.TrickplaySettings, false, Administrators, W, null, "Settings", "Trickplay settings", "Which videos get trickplay and how."),
         Tenant(Rights.TaskSettings, false, Administrators, W, null, "Settings", "Background task settings", "How long task logs are kept."),
         Tenant(Rights.EditorSettings, false, Administrators, W, null, "Settings", "Picture editor settings", "Where edited pictures are saved, and their quality.", since: 1),
+        Tenant(Rights.FileSettings, false, Administrators, W, null, "Settings", "File management settings", "Which names new files and folders may have, and where the work files go.", since: 5),
         Tenant(Rights.LogSettings, false, Administrators, W, null, "Settings", "Log settings", "How long the logs are kept, and whether they are also written to files (both set for the whole server).", since: 4),
         Tenant(Rights.ManageMembers, false, Administrators, W, null, "Access", "Manage the space's accounts and groups", "Create accounts in the space, put them in its groups, choose what each group may do, open the space to visitors."),
         Tenant(Rights.OwnPreferences, false, Members, W, null, "Account", "Own preferences", "Keep one's own theme, page sizes and player preferences on the server."),

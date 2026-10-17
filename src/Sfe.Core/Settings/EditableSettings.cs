@@ -36,6 +36,7 @@ public sealed class EditableSettings
     public TaskSettings Tasks { get; set; } = new();
     public LogSettings Logs { get; set; } = new();
     public EditorSettings Editor { get; set; } = new();
+    public FileSettings Files { get; set; } = new();
 
     public static EditableSettings From(SfeOptions options) => new()
     {
@@ -139,6 +140,7 @@ public sealed class EditableSettings
         Tasks = new() { LogRetentionDays = options.Tasks.LogRetentionDays },
         Logs = new() { RetentionDays = options.Logs.RetentionDays, WriteFiles = options.Logs.WriteFiles },
         Editor = new() { OutputFolder = options.Editor.OutputFolder, Quality = options.Editor.Quality },
+        Files = new() { PortableNames = options.Files.PortableNames, WorkFolder = options.Files.WorkFolder },
     };
 
     public void ApplyTo(SfeOptions options)
@@ -213,6 +215,8 @@ public sealed class EditableSettings
         options.Logs.WriteFiles = Logs.WriteFiles;
         options.Editor.OutputFolder = Editor.OutputFolder;
         options.Editor.Quality = Editor.Quality;
+        options.Files.PortableNames = Files.PortableNames;
+        options.Files.WorkFolder = Files.WorkFolder;
     }
 }
 
@@ -365,4 +369,10 @@ public sealed class EditorSettings
     /// <summary>A library folder, relative to the root and separated by <c>/</c>; empty = next to the originals.</summary>
     public string? OutputFolder { get; set; }
     public int Quality { get; set; }
+}
+
+public sealed class FileSettings
+{
+    public bool PortableNames { get; set; }
+    public WorkFolderLocation WorkFolder { get; set; }
 }

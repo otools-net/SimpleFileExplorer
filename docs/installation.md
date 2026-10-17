@@ -91,7 +91,7 @@ sc.exe stop SFE
 rem SFE's folder: read; its data folder (databases, keys, thumbnails, settings): change
 icacls "C:\sfe" /grant "NT SERVICE\SFE:(OI)(CI)RX"
 icacls "C:\sfe\data" /grant "NT SERVICE\SFE:(OI)(CI)M"
-rem The library: read (add M only to let the picture editor save and duplicates be deleted)
+rem The library: read; M instead of RX to let SFE change files (new folders, renames, the picture editor, deleting duplicates)
 icacls "D:\Media" /grant "NT SERVICE\SFE:(OI)(CI)RX"
 sc.exe config SFE obj= "NT SERVICE\SFE"
 sc.exe start SFE
@@ -139,14 +139,16 @@ ProtectKernelModules=yes
 ProtectControlGroups=yes
 RestrictSUIDSGID=yes
 LockPersonality=yes
-# Add the library here if the picture editor saves pictures or duplicates are deleted:
+# Add the library here to let SFE change files (new folders, renames, the picture editor, deleting duplicates):
 # ReadWritePaths=/srv/media
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-Then `systemctl enable --now sfe`; it logs to the journal. The `sfe` user needs read access to the library.
+Then `systemctl enable --now sfe`; it logs to the journal. The `sfe` user needs read access to the library, and write
+access too for [managing files](user-guide/managing-files.md) (with `ReadWritePaths` above): without it, a new folder
+or a rename answers that the server's account may not change files there.
 
 The hardening lines make `/opt/sfe` read-only for SFE: everything it writes must be under `/var/lib/sfe`, as above. On
 an install that kept its keys or logs in `/opt/sfe/data`, move `keys/` and `logs/` to `/var/lib/sfe` before adding

@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, output, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, output, viewChild } from '@angular/core';
+import { ConfigService } from '../../core/config.service';
+import { Rights } from '../../core/rights';
 import { SheetComponent } from '../../shared/sheet.component';
 import { registerDialog } from '../dialogs.service';
 
@@ -91,6 +93,9 @@ export const SEARCH_SYNTAX: SyntaxSection[] = [
                     <li>Files with a hidden tag, like <strong>Archived</strong>, only show up when the search names that tag.</li>
                     <li>The speech-bubble button in the box explains a search in plain words.</li>
                     <li>Press <kbd>/</kbd> to go to the search box, <kbd>?</kbd> to open this help.</li>
+                    @if (managesFiles()) {
+                        <li>In a folder, <kbd>Shift</kbd>+<kbd>N</kbd> makes a new folder and <kbd>F2</kbd> renames the item selected; right-click an item (Shift for the browser's menu) or use its ⋮ button for more.</li>
+                    }
                 </ul>
             </section>
             <span sheetFooter class="spacer"></span>
@@ -104,6 +109,8 @@ export class SearchHelpDialog {
 
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
     protected readonly sections = SEARCH_SYNTAX;
+    private readonly config = inject(ConfigService);
+    protected readonly managesFiles = computed(() => this.config.can(Rights.createFolders) || this.config.can(Rights.renameFiles));
 
     constructor() {
         registerDialog(dialogs => dialogs.searchHelp, this);

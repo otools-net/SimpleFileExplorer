@@ -57,12 +57,35 @@ public sealed class LibraryPaths
 
         var candidate = Path.TrimEndingDirectorySeparator(
             Path.GetFullPath(Path.Combine(Root, normalized.Replace('/', Path.DirectorySeparatorChar))));
-        if (!IsInsideRoot(candidate))
+        if (!IsInsideRoot(candidate) || IsWorkFolder(candidate))
             return false;
 
         fullPath = candidate;
         return true;
     }
+
+    /// <summary>Name of SFE's work folder at the root of a library (the trash, uploads not finished yet).</summary>
+    public const string WorkFolderName = ".sfe";
+
+    /// <summary>
+    /// <paramref name="fullPath"/> (inside the root, as <see cref="Path.GetFullPath(string)"/> made it) is SFE's work
+    /// folder or inside it: no route reaches it. Its short (8.3) name on Windows too.
+    /// </summary>
+    private bool IsWorkFolder(string fullPath)
+    {
+        if (IsWorkFolderRelative(fullPath.Length <= Root.Length ? string.Empty : fullPath[Root.Length..]))
+            return true;
+        if (!OperatingSystem.IsWindows() || !fullPath.Contains('~'))
+            return false;
+        var longPath = LongPath(fullPath);
+        return longPath.StartsWith(Root, PathComparison) && IsWorkFolderRelative(longPath[Root.Length..]);
+    }
+
+    /// <summary>The root-relative path (either separator) is the work folder at the root, or inside it.</summary>
+    /// <remarks>Called for every entry of a listing: no allocation.</remarks>
+    public static bool IsWorkFolderRelative(string relative) =>
+        relative.StartsWith(WorkFolderName, PathComparison)
+        && (relative.Length == WorkFolderName.Length || relative[WorkFolderName.Length] == '/' || relative[WorkFolderName.Length] == Path.DirectorySeparatorChar);
 
     public string Resolve(string? relativePath) =>
         TryResolve(relativePath, out var fullPath)

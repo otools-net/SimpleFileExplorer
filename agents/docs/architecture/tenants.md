@@ -7,7 +7,8 @@ Code: `src/Sfe.Api/Tenancy/` (`TenantRegistry`, `TenantHost`, `TenantMiddleware`
 
 - Core services are per library (`AddSfeCore` per `TenantHost`); routes get them through `TenantRequestServices`.
 - Services of the whole server (access, settings levels, `FfmpegLimits`) are registered in the application and handed
-  to each library's container (`TenantHost.StartAsync`).
+  to each library's container (`TenantHost.StartAsync`): also `FolderRuleService` and `QuickLinkService`, for file
+  management (`PathMoves`, `FileOperations` take them as optional parameters: Core tests have no accounts).
 - A root singleton must never depend on a Core type (the root's registrations of Core types throw: they only tell
   minimal APIs which parameters are services).
 - A DI factory registration (`AddScoped(type, sp => …)`) owns what it returns: the scope disposes it. Never forward

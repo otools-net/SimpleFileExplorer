@@ -141,6 +141,23 @@ export interface LibraryItem {
     indexedItems?: number | null;
 }
 
+/**
+ * Why a file operation was not done although the request was fine (409): something of that name is there
+ * (`file-exists`), a scan runs over the folder (`scan-running`), folder rules are set where a folder would go
+ * (`folder-rules`).
+ */
+export interface FileConflict {
+    type: 'file-exists' | 'scan-running' | 'folder-rules' | string;
+    detail?: string | null;
+}
+
+/** The answer of a file operation: the new or renamed item, or why it was not done. */
+export type FileOperationResult = LibraryItem | FileConflict;
+
+export function isFileConflict(result: FileOperationResult): result is FileConflict {
+    return !('path' in result);
+}
+
 export interface DirectoryListing {
     path: string;
     name: string;

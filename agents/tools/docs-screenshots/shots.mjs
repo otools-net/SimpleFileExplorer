@@ -348,6 +348,31 @@ const scenes = {
         await b.shot(OUT + 'library-light.png');
         await b.close();
     },
+    async files() {
+        const b = await session();
+        await b.open('?path=Photos');
+        // A folder's menu, opened by a right click on its card.
+        const card = await b.rect('.folder-item[data-path="Photos/2024 Beach trip"] a.folder');
+        const x = card.x + card.width / 2, y = card.y + card.height / 3;
+        await b.mouse('mouseMoved', x, y);
+        await b.mouse('mousePressed', x, y, { button: 'right' });
+        await b.mouse('mouseReleased', x, y, { button: 'right' });
+        await sleep(600);
+        await b.shot(OUT + 'item-menu.png');
+        await b.clickTitle('Give 2024 Beach trip another name');
+        await sleep(600);
+        await b.shot(OUT + 'rename-dialog.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(400);
+        await b.clickTitle('New folder in this folder');
+        await sleep(600);
+        await b.shot(OUT + 'new-folder-dialog.png');
+        await b.close();
+        const a = await session({ height: 900 });
+        await a.open(admin('files'), 3000);
+        await a.shot(OUT + 'admin-files.png');
+        await a.close();
+    },
     async admin() {
         const b = await session({ height: 900 });
         const pages = [

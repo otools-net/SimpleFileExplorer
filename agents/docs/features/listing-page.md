@@ -12,8 +12,9 @@ User docs: `docs/user-guide/`.
   listing (`CoversService`, `TrickplayHoverService`) reset in an `effect` on it.
 - Navigate with `store.navigate(changes, { replace })` or a `routerLink="/"` + `store.browseParams(path)` (keeps the
   sort).
-- Item objects are replaced, never mutated (`applyFileTags`/`applyTagChanged`/`applyTagDeleted`): track lists by
-  `path`.
+- Item objects are replaced, never mutated (`applyFileTags`/`applyTagChanged`/`applyTagDeleted`,
+  `applyAdded`/`applyRenamed` for file management): track lists by `path`; `accept` drops a page's items already
+  loaded (a folder changed between pages can list one again).
 - Dialogs register themselves in `Dialogs` (`registerDialog`) so any part opens them: `dialogs.fileTags()?.open(item)`.
 - Infinite scroll: the sentinel's `IntersectionObserver` in `ListingComponent` re-observes after the next render
   (`afterNextRender`), otherwise it would still see the sentinel and load every page.

@@ -253,6 +253,23 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         return cover;
     }
 
+    /// <summary>
+    /// Forgets what is kept of the folder <paramref name="fullPath"/> (its sorted listings, its cover), after SFE
+    /// changed it: its last write time, which tells a change otherwise, is not reliable everywhere (FAT keeps it to
+    /// 2 seconds, some network shares don't update it).
+    /// </summary>
+    public void Invalidate(string fullPath)
+    {
+        var folder = Path.TrimEndingDirectorySeparator(fullPath);
+        lock (_cacheGate)
+            _cache.RemoveAll(c => LibraryPaths.PathComparer.Equals(Path.TrimEndingDirectorySeparator(c.Key.FullPath), folder));
+        lock (_coversGate)
+        {
+            foreach (var key in _covers.Keys.Where(k => LibraryPaths.PathComparer.Equals(Path.TrimEndingDirectorySeparator(k.FullPath), folder)).ToList())
+                _covers.Remove(key);
+        }
+    }
+
     /// <param name="reuse">Take the cached listing when the folder is unchanged; false lists it from disk anew.</param>
     private CachedListing GetListing(DirectoryInfo directory, SortField sort, bool descending, bool reuse)
     {
@@ -298,10 +315,11 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         }
     }
 
+    /// <returns>null outside the library, and for SFE's work folder at its root (never listed, hidden items or not).</returns>
     public LibraryItem? ToItem(FileSystemInfo info)
     {
         var path = paths.ToRelative(info.FullName);
-        if (path is null)
+        if (path is null || LibraryPaths.IsWorkFolderRelative(path))
             return null;
 
         return info switch

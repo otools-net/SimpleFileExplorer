@@ -8,6 +8,7 @@ using Sfe.Core.Access;
 using Sfe.Core.Backup;
 using Sfe.Core.Data;
 using Sfe.Core.Editing;
+using Sfe.Core.Files;
 using Sfe.Core.FileTracking;
 using Sfe.Core.Indexing;
 using Sfe.Core.Library;
@@ -95,6 +96,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TagService>();
         services.AddSingleton<ScopeTagger>();
         services.AddSingleton<EditedImages>();
+        services.AddSingleton<WorkFolder>();
+        services.AddSingleton<PathMoves>();
+        services.AddSingleton<FileOperations>();
         services.AddSingleton<DuplicateFinder>();
         services.AddSingleton<DuplicateRemover>();
         services.AddSingleton<SimilarVideoFinder>();

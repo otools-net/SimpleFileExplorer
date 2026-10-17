@@ -109,6 +109,7 @@ api.MapStreamingEndpoints();
 api.MapTaskEndpoints();
 api.MapFileTrackingEndpoints();
 api.MapEditorEndpoints();
+api.MapFileEndpoints();
 api.MapSettingsEndpoints();
 api.MapQuickLinkEndpoints();
 api.MapSystemEndpoints();

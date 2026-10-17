@@ -192,14 +192,21 @@ export class ListingStore {
                 : `“${baseName(path)}” is not in this folder any more.`);
             return;
         }
+        this.highlight(path, () => {
+            if (MEDIA_KINDS.has(item.kind))
+                this.dialogs.viewer()?.open(item);
+        });
+    }
+
+    /** Highlights the listed item `path` for a moment and scrolls it into view (then runs `then`). */
+    highlight(path: string, then?: () => void): void {
         clearTimeout(this.revealTimer);
         this.revealed.set(path);
         this.revealTimer = setTimeout(() => this.revealed.set(null), REVEAL_HIGHLIGHT);
         afterNextRender(() => {
             const element = [...document.querySelectorAll('sfe-listing [data-path]')].find(candidate => candidate.getAttribute('data-path') === path);
             element?.scrollIntoView?.({ block: 'center' });
-            if (MEDIA_KINDS.has(item.kind))
-                this.dialogs.viewer()?.open(item);
+            then?.();
         }, { injector: this.injector });
     }
 
@@ -348,6 +355,48 @@ export class ListingStore {
         });
     }
 
+    /* ---------- Files and folders changed through file management ---------- */
+
+    /**
+     * A file or folder just made in the folder listed: added where the sort puts it among those loaded (at the start
+     * of its kind for other sorts than the name), counted, and highlighted. The scroll position stays.
+     */
+    applyAdded(item: LibraryItem): void {
+        const route = this.route();
+        if (route.q || parentPath(item.path) !== route.path || this.items().some(existing => existing.path === item.path))
+            return;
+        this.items.update(items => {
+            const folder = item.kind === 'directory';
+            const sameKind = items.map((existing, index) => ({ existing, index })).filter(e => (e.existing.kind === 'directory') === folder);
+            const desc = route.desc;
+            const after = this.sort() === 'name'
+                ? sameKind.find(e => compareNames(item.name, e.existing.name) * (desc ? -1 : 1) < 0)
+                : sameKind[0];
+            // Folders come first: a folder sorting after every loaded one goes before the first file.
+            const index = after?.index ?? (sameKind.length ? sameKind.at(-1)!.index + 1 : folder ? 0 : items.length);
+            return [...items.slice(0, index), item, ...items.slice(index)];
+        });
+        this.listing.update(page => page && 'directoryCount' in page
+            ? { ...page, total: page.total + 1, ...(item.kind === 'directory' ? { directoryCount: page.directoryCount + 1 } : { fileCount: page.fileCount + 1 }) }
+            : page);
+        this.total.update(total => total && { ...total, count: total.count + 1 });
+        this.highlight(item.path);
+    }
+
+    /** The listed item `oldPath` was renamed to `item`: replaced where it is (selected still if it was), and highlighted. */
+    applyRenamed(oldPath: string, item: LibraryItem): void {
+        this.updateItems(existing => existing.path === oldPath ? item : existing);
+        if (this.selection().has(oldPath)) {
+            const selection = new Set(this.selection());
+            selection.delete(oldPath);
+            selection.add(item.path);
+            this.selection.set(selection);
+        }
+        if (this.anchor === oldPath)
+            this.anchor = item.path;
+        this.highlight(item.path);
+    }
+
     /* ---------- Pages ---------- */
 
     /** Items loaded at a time: the search and browse page sizes are separate settings. */
@@ -369,7 +418,11 @@ export class ListingStore {
 
     private accept(page: ListingPage): void {
         this.listing.set(page);
-        this.items.update(items => [...items, ...page.items]);
+        // A folder changed since its first page (a new folder, a rename) can list an item again on the next one.
+        this.items.update(items => {
+            const loaded = new Set(items.map(item => item.path));
+            return [...items, ...page.items.filter(item => !loaded.has(item.path))];
+        });
         this.hasMore.set('hasMore' in page ? page.hasMore : page.offset + page.items.length < page.total);
         // A search counts its matches on its first page only.
         if (!('hasMore' in page))
@@ -398,4 +451,9 @@ export class ListingStore {
 function readView(): View {
     const view = readPreference(VIEW_KEY);
     return VIEWS.includes(view as View) ? view as View : 'grid';
+}
+
+/** Names as the server sorts them: numbers by value (“Episode 2” before “Episode 10”), case and accents aside. */
+function compareNames(a: string, b: string): number {
+    return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 }

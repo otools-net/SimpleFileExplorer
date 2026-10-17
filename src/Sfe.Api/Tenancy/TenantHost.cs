@@ -49,6 +49,9 @@ public sealed class TenantHost : IAsyncDisposable
         services.AddSingleton(application.GetRequiredService<SettingLayers>());
         services.AddSingleton(application.GetRequiredService<FfmpegLimits>());
         services.AddSingleton(application.GetRequiredService<VideoStreams>());
+        // File management moves the folder rules and quick links of what it renames (the accounts' database).
+        services.AddSingleton(application.GetRequiredService<FolderRuleService>());
+        services.AddSingleton(application.GetRequiredService<QuickLinkService>());
         services.AddSfeCore(tenantConfiguration, contentRootPath, tenant.Id);
         services.AddSingleton<IHostedService, TrickplayWorker>();
         services.AddSingleton<IHostedService, TaskScheduleWorker>();

@@ -68,6 +68,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
 | [file-operations](agents/docs/development/file-operations.md) | rules for changing library files (planned), moving folder rules with folders | `FolderRuleService.BeginMoveAsync` |
+| [file-management-plan](agents/docs/development/file-management-plan.md) | **file management epic: phases, todo list, open questions** (update as it is built) | `Core/Files/` (planned) |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
@@ -132,6 +133,10 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [copy-paths](agents/docs/features/copy-paths.md) | copying full server paths | `CopyPathService` |
 | [theme](agents/docs/features/theme.md) | light/dark before first paint | `theme-boot.ts`, `ThemeService` |
 | [picture-editor](agents/docs/features/picture-editor.md) | browser edits, server saves | `app/editor/`, `Core/Editing/` |
+| [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
+| [file-names](agents/docs/features/file-names.md) | names refused, keep-both names, portable names | `Core/Files/FileNames` |
+| [work-folder](agents/docs/features/work-folder.md) | `.sfe` at the root or the server's data folder; the reserved name | `WorkFolder`, `LibraryPaths.TryResolve` |
+| [path-moves](agents/docs/features/path-moves.md) | index rows, settings, schedules, quick links, caches following a rename | `PathMoves` |
 | [background-tasks](agents/docs/features/background-tasks.md) | jobs, run history, run logs | `Core/Tasks/`, `app/tasks/` |
 | [schedules](agents/docs/features/schedules.md) | task schedules | `TaskScheduleService`, `ScheduleCalculator` |
 | [logs](agents/docs/features/logs.md) | server log: capture, files, search, rights | `Core/Logs/`, `AuditLogWorker`, `app/logs/` |

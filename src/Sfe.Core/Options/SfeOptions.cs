@@ -62,6 +62,7 @@ public sealed class SfeOptions
     public TaskOptions Tasks { get; set; } = new();
     public LogOptions Logs { get; set; } = new();
     public EditorOptions Editor { get; set; } = new();
+    public FileManagementOptions Files { get; set; } = new();
     public SetupOptions Setup { get; set; } = new();
     public SecurityOptions Security { get; set; } = new();
     public RightOptions Rights { get; set; } = new();
@@ -241,6 +242,37 @@ public sealed class EditorOptions
 
     /// <summary>Quality (1-100) of the JPEG and WebP pictures the editor saves; PNG pictures are lossless.</summary>
     public int Quality { get; set; } = 92;
+}
+
+/// <summary>Where file management keeps its work files (the trash, uploads not finished yet).</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<WorkFolderLocation>))]
+public enum WorkFolderLocation
+{
+    /// <summary>
+    /// A hidden folder at the library's root (<see cref="Sfe.Core.Files.WorkFolder.Name"/>): on the library's own drive, so
+    /// that moving a file there is a rename, however large the file.
+    /// </summary>
+    Library,
+
+    /// <summary>
+    /// In the server's data folder, beside the thumbnails: the library holds nothing of SFE's, but a file going to the
+    /// trash or an upload finishing is copied from one drive to the other.
+    /// </summary>
+    Server,
+}
+
+/// <summary>Managing the library's files from the web client: new folders, renames (and, later, moves, the trash, uploads).</summary>
+public sealed class FileManagementOptions
+{
+    /// <summary>
+    /// New names must also be valid on Windows (no <c>&lt; &gt; : " \ | ? *</c>, no name ending with a dot or a space,
+    /// no <c>CON</c>, <c>NUL</c>…), even on a Linux server: libraries are often shared with Windows computers or moved
+    /// to one. Off, a Linux server only refuses what Linux itself refuses. Windows servers always refuse them.
+    /// </summary>
+    public bool PortableNames { get; set; } = true;
+
+    /// <summary>Where the work files of file management go (<see cref="WorkFolderLocation"/>).</summary>
+    public WorkFolderLocation WorkFolder { get; set; } = WorkFolderLocation.Library;
 }
 
 /// <summary>Duplicate files and files moved, renamed or deleted since they were indexed.</summary>

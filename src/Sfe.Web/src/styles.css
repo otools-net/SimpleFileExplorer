@@ -15,6 +15,7 @@
 @import "./styles/editor.css";
 @import "./styles/tags.css";
 @import "./styles/copy-full-paths.css";
+@import "./styles/file-management.css";
 @import "./styles/selection.css";
 @import "./styles/scroll-progress.css";
 @import "./styles/tag-sidebar.css";

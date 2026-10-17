@@ -241,7 +241,14 @@ public sealed class EditorTests
 
         CollectionAssert.Contains(users.Rights.ToList(), Rights.EditImages);
         CollectionAssert.DoesNotContain(users.Rights.ToList(), Rights.EditorSettings);
-        CollectionAssert.IsSubsetOf(added, administrators.Rights.ToList());
+        CollectionAssert.IsSubsetOf(RightCatalog.All.Where(r => r.Since > 0 && r.DefaultGroups.Contains(BuiltInGroup.Administrators)).Select(r => r.Id).ToList(),
+            administrators.Rights.ToList());
+        // File management's rights go to nobody: an administrator ticks them by hand.
+        foreach (var group in new[] { administrators, users, guests })
+        {
+            CollectionAssert.DoesNotContain(group.Rights.ToList(), Rights.CreateFolders);
+            CollectionAssert.DoesNotContain(group.Rights.ToList(), Rights.RenameFiles);
+        }
         CollectionAssert.DoesNotContain(guests.Rights.ToList(), Rights.EditImages);
         CollectionAssert.Contains(users.Rights.ToList(), Rights.Stream, "Added in revision 2");
         CollectionAssert.DoesNotContain(guests.Rights.ToList(), Rights.Stream);

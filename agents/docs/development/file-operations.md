@@ -3,10 +3,12 @@
 Status: **requirements for the file-management feature** (create, rename, move, copy, delete), to build after folder
 access ([folder-access.md](../features/folder-access.md)). Today only `files.edit` (a new file) and
 `tracking.duplicatesRemove` (deletes a copy) write to the library. Rights: [right-kinds.md](../features/right-kinds.md).
+The plan and progress of the epic: [file-management-plan.md](file-management-plan.md).
 
 ## Rights and checks
 
-- New rights (`files.create`, `files.rename`, `files.move`, `files.delete`, …): `Kind = Write`, `AtFolder = Write`,
+- Rights (`files.createFolders`, `files.rename` built in 1.55.0; `files.move`, `files.delete`, … to come), each added
+  in the phase that uses it: `Kind = Write`, `AtFolder = Write`,
   `GuestAllowed = false`, `DefaultGroups = []`, `since` (nobody gets them by upgrade). `folder:write` in
   `Sfe:Rights:Disabled` or the space's **Files read-only** switches them off with the others.
 - Move: Write at the source and at the destination parent. Copy: Read at the source, Write at the destination.

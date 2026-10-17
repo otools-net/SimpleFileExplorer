@@ -60,6 +60,12 @@ const SORT_OPTIONS: [SortField, string][] = [
                     <svg sfeIcon="tag"></svg>
                 </button>
             }
+            @if (canCreateFolder()) {
+                <button type="button" class="icon-button small ghost new-folder-button" aria-label="New folder" title="New folder in this folder (Shift+N)"
+                        (click)="newFolder()">
+                    <svg sfeIcon="folder-plus"></svg>
+                </button>
+            }
             @if (copyPaths.enabled()) {
                 <!-- Copies the folder browsed, or searched in. -->
                 <button type="button" class="icon-button small ghost copy-folder-path" aria-label="Copy the full path of this folder"
@@ -99,6 +105,9 @@ export class LocationComponent {
     private readonly dialogs = inject(Dialogs);
     /** Tagging every file of the folder or search changes tags: hidden without the right (here, with folder rules). */
     protected readonly canTag = computed(() => this.store.can(Rights.assignTags));
+    /** Folders are made in the folder browsed (not in a search, nor in a folder shown only on the way to another). */
+    protected readonly canCreateFolder = computed(() =>
+        !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFolders));
     protected readonly sortOptions = SORT_OPTIONS;
     protected readonly searchSorts = SEARCH_SORTS;
     private readonly head = viewChild.required<ElementRef<HTMLElement>>('head');
@@ -143,6 +152,10 @@ export class LocationComponent {
     protected readonly scopeTagsTitle = computed(() => this.store.searching()
         ? 'Add or remove tags on all the results of this search (asks first)'
         : 'Add or remove tags on all the files of this folder, or of its sub-folders too (asks first)');
+
+    protected newFolder(): void {
+        this.dialogs.name()?.newFolder(this.store.route().path);
+    }
 
     /** The tags of every file of the folder browsed, or of every match of the search. */
     protected openScopeTags(): void {

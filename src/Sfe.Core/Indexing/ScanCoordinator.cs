@@ -77,6 +77,13 @@ public sealed class ScanCoordinator(DirectoryIndexer indexer, RelinkService reli
     private ScanProgress _progress = new();
     private ScanState _state = ScanState.Idle;
     private string? _path;
+    private string? _fullPath;
+
+    /// <summary>The paths file operations are changing now (<see cref="TryBeginOperation"/>).</summary>
+    private readonly List<string> _operations = [];
+
+    /// <summary>Completed when an operation ends: a scan waiting for them looks again.</summary>
+    private TaskCompletionSource? _operationEnded;
     private DateTimeOffset? _startedAt;
     private DateTimeOffset? _finishedAt;
     private string? _message;
@@ -118,6 +125,7 @@ public sealed class ScanCoordinator(DirectoryIndexer indexer, RelinkService reli
             _progress = new ScanProgress();
             _state = ScanState.Running;
             _path = paths.ToRelative(fullPath);
+            _fullPath = fullPath;
             _startedAt = DateTimeOffset.Now;
             _finishedAt = null;
             _message = null;
@@ -151,6 +159,7 @@ public sealed class ScanCoordinator(DirectoryIndexer indexer, RelinkService reli
         string? message = null;
         try
         {
+            await WaitForOperationsAsync(fullPath, cancellationToken);
             await indexer.IndexAsync(fullPath, recursive: true, progress, cancellationToken);
             // Files moved during the scan are only all indexed now, at their old and new places: match them up.
             await RelinkAsync(progress, cancellationToken);
@@ -219,6 +228,64 @@ public sealed class ScanCoordinator(DirectoryIndexer indexer, RelinkService reli
         var removed = await indexer.RemoveTreeAsync(fullPath, cancellationToken);
         logger.LogInformation("{Path} removed from the index: {Directories} folders, {Files} files", fullPath, removed.Directories, removed.Files);
         return removed;
+    }
+
+    /// <summary>
+    /// Begins a file operation (a rename, a new folder…) changing <paramref name="fullPaths"/>, for as long as the
+    /// result is not disposed. Refused (null) while a scan runs over one of them: the scan could index the old place
+    /// after the change, or remember a moved tagged file as missing. A scan starting meanwhile waits for it to end.
+    /// </summary>
+    public IDisposable? TryBeginOperation(params string[] fullPaths)
+    {
+        lock (_gate)
+        {
+            if (_state == ScanState.Running && _fullPath is { } scanned && fullPaths.Any(path => Overlaps(path, scanned)))
+                return null;
+            _operations.AddRange(fullPaths);
+            return new Operation(this, fullPaths);
+        }
+    }
+
+    private void EndOperation(string[] fullPaths)
+    {
+        TaskCompletionSource? ended;
+        lock (_gate)
+        {
+            foreach (var path in fullPaths)
+                _operations.Remove(path);
+            ended = _operationEnded;
+            _operationEnded = null;
+        }
+        ended?.TrySetResult();
+    }
+
+    private async Task WaitForOperationsAsync(string fullPath, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            Task ended;
+            lock (_gate)
+            {
+                if (!_operations.Any(path => Overlaps(path, fullPath)))
+                    return;
+                ended = (_operationEnded ??= new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)).Task;
+            }
+            await ended.WaitAsync(cancellationToken);
+        }
+    }
+
+    /// <summary>One path is the other or inside it.</summary>
+    private static bool Overlaps(string a, string b) => LibraryPaths.IsSameOrInside(a, b) || LibraryPaths.IsSameOrInside(b, a);
+
+    private sealed class Operation(ScanCoordinator coordinator, string[] fullPaths) : IDisposable
+    {
+        private int _disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                coordinator.EndOperation(fullPaths);
+        }
     }
 
     private async Task RelinkAsync(ScanProgress progress, CancellationToken cancellationToken)
