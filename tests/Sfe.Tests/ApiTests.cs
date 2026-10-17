@@ -963,6 +963,7 @@ public sealed class ApiTests
             Assert.AreEqual(HttpStatusCode.OK, removed.StatusCode);
             var body = (await removed.Content.ReadFromJsonAsync<RemovedDuplicate>(Json, TestContext.CancellationToken))!;
             Assert.AreEqual("Media/photo.jpg", body.Kept.Path);
+            Assert.IsNotNull(body.TrashId, "Moved to the trash");
         }
         Assert.IsFalse(File.Exists(_library.FullPath("photo copy.jpg")));
 

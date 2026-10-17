@@ -14,6 +14,7 @@ import { SelectionBarComponent } from '../selection-bar.component';
 import { SidebarService } from '../sidebar/sidebar.service';
 import { ViewerComponent } from '../viewer/viewer.component';
 import { CopyPathService } from '../../core/copy-path.service';
+import { ItemMenu } from '../../files/item-menu';
 import { CoversService } from './covers.service';
 import { FileRowComponent, FileTileComponent } from './file-tile.component';
 import { FolderItemComponent } from './folder-item.component';
@@ -566,6 +567,20 @@ describe('Copied paths', () => {
         document.execCommand = vi.fn(() => true);
     });
 
+    it('keeps only the tags and ⋮ buttons on cards and rows: the path is copied from the item menu', async () => {
+        const make = async (type: Type<{ item: unknown }>, value: LibraryItem) => {
+            const fixture = TestBed.createComponent(type);
+            fixture.componentRef.setInput('item', value);
+            await fixture.whenStable();
+            return fixture.nativeElement as HTMLElement;
+        };
+        const buttons = (element: HTMLElement) => [...element.querySelectorAll('button')].map(button => button.className.split(' ').find(c => c.endsWith('-button') && c !== 'icon-button'));
+
+        expect(buttons(await make(FileTileComponent, item('a.jpg')))).toEqual(['tag-button', 'item-menu-button']);
+        expect(buttons(await make(FileRowComponent, item('a.jpg')))).toEqual(['tag-button', 'item-menu-button']);
+        expect(buttons(await make(FolderItemComponent, item('Films', { kind: 'directory' })))).toEqual(['folder-tags-button', 'item-menu-button']);
+    });
+
     it('outlines the tiles, rows and folders whose path was copied, and only those', async () => {
         const make = async (type: Type<{ item: unknown }>, value: LibraryItem) => {
             const fixture = TestBed.createComponent(type);
@@ -579,9 +594,11 @@ describe('Copied paths', () => {
         const folder = await make(FolderItemComponent, item('Films', { kind: 'directory' }));
         expect(tile.classList.contains('copied')).toBe(false);
 
-        tile.querySelector<HTMLButtonElement>('.copy-path-button')!.click();
+        const menu = TestBed.inject(ItemMenu);
+        const copy = (value: LibraryItem) => menu.entries(value).find(entry => entry.id === 'copyPath')!.run();
+        copy(item('a.jpg'));
         await settle();
-        folder.querySelector<HTMLButtonElement>('.copy-path-button')!.click();
+        copy(item('Films', { kind: 'directory' }));
         await settle();
 
         expect(tile.classList.contains('copied')).toBe(true);

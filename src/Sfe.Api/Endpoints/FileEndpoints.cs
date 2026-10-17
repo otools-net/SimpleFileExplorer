@@ -456,7 +456,7 @@ public static class FileEndpoints
         }
     }
 
-    private static FileActor Actor(AccessState state) =>
+    internal static FileActor Actor(AccessState state) =>
         new(state.User?.Id, state.User is { } user ? user.DisplayName ?? user.UserName : "A visitor");
 
     private static string ParentOf(string path) => path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;

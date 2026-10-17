@@ -80,8 +80,6 @@
 .pin-button.pinned .icon { fill: currentColor; }
 .location-head .pin-button { flex: none; color: var(--text-muted); }
 .location-head .pin-button:hover, .location-head .pin-button.pinned { color: var(--accent); }
-.folder-actions .pin-button.pinned { color: var(--accent); }
-.folders.covers .folder-actions .pin-button.pinned { color: var(--accent); }
 
 /* A file opened from a quick link (not media: those open in the viewer) is pointed out a moment. */
 .item.revealed { outline: 2px solid var(--accent); outline-offset: 2px; }

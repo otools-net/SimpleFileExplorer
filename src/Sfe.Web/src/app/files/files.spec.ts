@@ -158,6 +158,25 @@ describe('ItemMenu', () => {
         expect(menu.open()?.item).toBe(photo);
     });
 
+    it('adds an item to the quick links, or takes it out when it is one', async () => {
+        await setUp();
+        const menu = TestBed.inject(ItemMenu);
+        const quickLinks = TestBed.inject(QuickLinksService);
+        const toggle = vi.spyOn(quickLinks, 'toggle').mockResolvedValue(true);
+        const entry = () => menu.entries(folder).find(e => e.id === 'quickLink')!;
+
+        expect(entry().label).toBe('Add to quick links');
+        entry().run();
+        expect(toggle).toHaveBeenCalledWith('Media/Holidays');
+        quickLinks.links.set([{ path: 'Media/Holidays', name: 'Holidays', kind: 'directory', extension: null, exists: true }]);
+        expect(entry().label).toBe('Remove from quick links');
+    });
+
+    it('has no quick links entry without the right', async () => {
+        await setUp([Rights.browse]);
+        expect(TestBed.inject(ItemMenu).entries(photo).map(e => e.id)).toEqual(['properties']);
+    });
+
     it('follows the folder rules of the folder listed and of each folder in it', async () => {
         await setUp();
         api.browse.mockResolvedValue(listing([folder, photo], {
@@ -188,7 +207,7 @@ describe('ItemMenu', () => {
         const element: HTMLElement = fixture.nativeElement;
 
         expect(event.defaultPrevented).toBe(true);
-        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'properties']);
+        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'quickLink', 'properties']);
         expect(document.activeElement?.getAttribute('data-entry')).toBe('rename');
         (element.querySelector('[data-entry="rename"]') as HTMLButtonElement).click();
         await settle();

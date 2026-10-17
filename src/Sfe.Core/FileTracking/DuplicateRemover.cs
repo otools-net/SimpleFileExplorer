@@ -2,27 +2,27 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Data;
+using Sfe.Core.Files;
 using Sfe.Core.Indexing;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Tagging;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
 
 namespace Sfe.Core.FileTracking;
 
 /// <summary>
-/// Deletes one copy of a duplicate from the disk, after adding its tags to the copy kept. The client has no login, so
-/// the content must never be lost: the copies are compared byte for byte (the fingerprint only covers the first
-/// megabyte), and two paths leading to the same file (folder links) are refused.
+/// Removes one copy of a duplicate, after adding its tags to the copy kept: to the library's <see cref="Trash"/>, or for
+/// good when the space deletes permanently (<see cref="FileManagementOptions.DeletePermanently"/>). The content must
+/// never be lost: the copies are compared byte for byte (the fingerprint only covers the first megabyte), and two paths
+/// leading to the same file (folder links) are refused.
 /// </summary>
 public sealed class DuplicateRemover(
     IDbContextFactory<SfeDbContext> dbFactory,
     LibraryPaths paths,
     DirectoryIndexer indexer,
     TagService tags,
-    ThumbnailService thumbnails,
-    TrickplayService trickplay,
+    Trash trash,
+    ScanCoordinator scans,
     IOptionsMonitor<SfeOptions> options,
     ILogger<DuplicateRemover> logger)
 {
@@ -30,7 +30,8 @@ public sealed class DuplicateRemover(
 
     /// <param name="relativePath">The copy to delete.</param>
     /// <param name="relativeKeep">An identical copy, kept: it gets the tags of the deleted one.</param>
-    public async Task<DuplicateRemoval> RemoveAsync(string? relativePath, string? relativeKeep, CancellationToken cancellationToken = default)
+    /// <param name="actor">Who removes it: the trash entry is theirs.</param>
+    public async Task<DuplicateRemoval> RemoveAsync(string? relativePath, string? relativeKeep, FileActor actor, CancellationToken cancellationToken = default)
     {
         if (!IsEnabled)
             return DuplicateRemoval.Fail(DuplicateRemovalStatus.Disabled, "Removing duplicates is turned off (Administration › Duplicates & moves › Settings).");
@@ -51,56 +52,45 @@ public sealed class DuplicateRemover(
             return DuplicateRemoval.Fail(DuplicateRemovalStatus.Failed, $"The files could not be compared: {ex.Message}");
         }
 
+        using var operation = scans.TryBeginOperation(remove);
+        if (operation is null)
+            return DuplicateRemoval.Fail(DuplicateRemovalStatus.Failed, "A scan is running over its folder: try again when it has finished.");
+
         var ids = await indexer.IndexFilesAsync([remove, keep], cancellationToken);
         if (!ids.TryGetValue(keep, out var keepId))
             return DuplicateRemoval.Fail(DuplicateRemovalStatus.Invalid, $"“{relativeKeep}” cannot be indexed (ignored, or its path is too long), so it cannot take the tags.", "keep");
 
         // Tags first: if the delete then fails, both copies have them, which loses nothing.
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         if (ids.TryGetValue(remove, out var removeId))
         {
+            await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
             var moved = await db.FileTags.Where(l => l.FileId == removeId).Select(l => l.TagId).ToListAsync(cancellationToken);
             var existing = await db.FileTags.Where(l => l.FileId == keepId).Select(l => l.TagId).ToListAsync(cancellationToken);
             foreach (var tagId in moved.Except(existing))
                 db.FileTags.Add(new FileTag { FileId = keepId, TagId = tagId });
             await db.SaveChangesAsync(cancellationToken);
-            db.ChangeTracker.Clear();
         }
 
+        // The trash then takes its index row (not kept as a missing file: its tags are on the copy kept) and keeps its
+        // tags with it for a restore.
+        var relative = paths.ToRelative(remove);
+        int? trashId = null;
         try
         {
-            File.Delete(remove);
+            if (trash.AlwaysPermanent)
+                await trash.DeleteForGoodAsync(remove, relative, isFolder: false, actor, cancellationToken);
+            else
+                trashId = await trash.MoveInAsync(remove, relative, isFolder: false, actor, cancellationToken);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             tags.InvalidateFileCounts();
-            return DuplicateRemoval.Fail(DuplicateRemovalStatus.Failed, $"“{relativePath}” could not be deleted: {ex.Message}");
+            return DuplicateRemoval.Fail(DuplicateRemovalStatus.Failed, $"“{relativePath}” could not be {(trash.AlwaysPermanent ? "deleted" : "moved to the trash")}: {ex.Message}");
         }
-
-        // Its row goes without being kept as a missing file: its tags are on the copy kept.
-        if (ids.ContainsKey(remove))
-            await db.Files.Where(f => f.Id == removeId).ExecuteDeleteAsync(cancellationToken);
-        tags.InvalidateFileCounts();
-        DeleteCache(remove);
-        logger.LogInformation("Deleted duplicate {Removed}, kept {Kept}", remove, keep);
+        logger.LogInformation("Removed duplicate {Removed} ({Where}), kept {Kept}", remove, trashId is null ? "deleted" : "to the trash", keep);
 
         var kept = await tags.GetFileTagsAsync(paths.ToRelative(keep), cancellationToken);
-        return new DuplicateRemoval(DuplicateRemovalStatus.Removed, Kept: kept);
-    }
-
-    private void DeleteCache(string fullPath)
-    {
-        try
-        {
-            File.Delete(thumbnails.GetCachePath(fullPath));
-            var folder = trickplay.GetCacheFolder(fullPath);
-            if (Directory.Exists(folder))
-                Directory.Delete(folder, recursive: true);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            logger.LogDebug(ex, "Could not delete the cached previews of {File}", fullPath);
-        }
+        return new DuplicateRemoval(DuplicateRemovalStatus.Removed, Kept: kept, TrashId: trashId);
     }
 }
 
@@ -114,7 +104,8 @@ public enum DuplicateRemovalStatus
 
 /// <param name="Field">Request field an <see cref="DuplicateRemovalStatus.Invalid"/> error is about.</param>
 /// <param name="Kept">Tags of the copy kept, now including those of the deleted one.</param>
-public sealed record DuplicateRemoval(DuplicateRemovalStatus Status, string? Error = null, string? Field = null, FileTags? Kept = null)
+/// <param name="TrashId">The trash entry of the copy removed, for an Undo; null when it was deleted for good.</param>
+public sealed record DuplicateRemoval(DuplicateRemovalStatus Status, string? Error = null, string? Field = null, FileTags? Kept = null, int? TrashId = null)
 {
     public static DuplicateRemoval Fail(DuplicateRemovalStatus status, string error, string? field = null) => new(status, error, field);
 }

@@ -3,6 +3,20 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.63.0
+
+### Changed
+
+- **Removing a duplicate** moves the copy to the trash instead of deleting it for good: **Undo** in the message, or
+  **Restore** on the trash page, puts it back (deleted for good only when the space deletes permanently).
+- **Cards and rows** of files and folders keep two buttons, tags and **⋮**: **Copy full path** and the new **Add to
+  quick links** / **Remove from quick links** are in the item menu.
+
+### Fixed
+
+- **Phones:** the item menu and the dialogs that open at the bottom of the screen cover the whole width, without a gap
+  on the right where the scrollbar goes.
+
 ## 1.62.0
 
 ### Added

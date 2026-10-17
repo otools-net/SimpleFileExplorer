@@ -30,6 +30,13 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.63
+
+- Duplicates removed now go to the trash, where they keep taking disk space until it is emptied or purged
+  (**Days in the trash**, [File management](administration/file-management.md#settings)). Nothing changes in the
+  databases or the rights.
+- The pin and copy buttons on folders and files moved into the item menu (**Add to quick links**, **Copy full path**).
+
 ## To 1.62
 
 - New right `files.createFiles` (empty files), given to **no group**, as for 1.55.

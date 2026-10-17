@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { checkedOf, valueOf } from '../shared/events';
 import { baseName, encodePath, parentPath } from './paths';
 import { readPreference, writePreference } from './preferences';
+import { trackScrollbarWidth } from './scrollbar-width';
 import { ToastService } from './toast.service';
 
 describe('paths', () => {
@@ -96,5 +97,32 @@ describe('events', () => {
 
         expect(valueOf(read(input))).toBe('typed');
         expect(checkedOf(read(box))).toBe(true);
+    });
+});
+
+describe('trackScrollbarWidth', () => {
+    it('keeps the scrollbar width on the root, measured on a probe it removes, again on resize', () => {
+        const width = vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(100);
+        const client = vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(85);
+        const root = document.documentElement.style;
+        const children = document.body.children.length;
+        try {
+            const stop = trackScrollbarWidth();
+            expect(root.getPropertyValue('--scrollbar-w')).toBe('15px');
+            expect(document.body.children.length).toBe(children);
+
+            client.mockReturnValue(100);
+            window.dispatchEvent(new Event('resize'));
+            expect(root.getPropertyValue('--scrollbar-w')).toBe('0px');
+
+            stop();
+            client.mockReturnValue(80);
+            window.dispatchEvent(new Event('resize'));
+            expect(root.getPropertyValue('--scrollbar-w')).toBe('0px');
+        } finally {
+            width.mockRestore();
+            client.mockRestore();
+            root.removeProperty('--scrollbar-w');
+        }
     });
 });

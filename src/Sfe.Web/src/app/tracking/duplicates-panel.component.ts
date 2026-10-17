@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { formatSize, joinParts, plural } from '../core/format';
-import { DuplicateGroup, DuplicateResults, FileTags, LibraryItem } from '../core/models';
+import { DuplicateGroup, DuplicateResults, FileTags, isFileConflict, LibraryItem } from '../core/models';
 import { readPreference, writePreference } from '../core/preferences';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
@@ -10,7 +10,7 @@ import { StatusBoxComponent, TrackingFileComponent } from './tracking-parts';
 
 const SCOPE_KEY = 'sfe.duplicates.folderOnly';
 
-/** A copy deleted from a group: the copy that was kept, with its tags now. */
+/** A copy removed from a group: the copy that was kept, with its tags now. */
 export interface RemovedCopy {
     file: LibraryItem;
     keepPath: string;
@@ -19,9 +19,17 @@ export interface RemovedCopy {
     dissolved: boolean;
 }
 
+/** A removed copy put back from the trash (Undo). */
+export interface RestoredCopy {
+    file: LibraryItem;
+    /** The group had a single copy left: it is one again. */
+    revived: boolean;
+}
+
 /**
  * A group of identical files. When the server allows it, a copy can be removed: "Remove" opens a confirmation under
- * the file, where the copy getting its tags is chosen.
+ * the file, where the copy getting its tags is chosen. It goes to the trash (Undo in the message that says so), or for
+ * good when the space deletes permanently (`permanent`).
  */
 @Component({
     selector: 'section[sfeDuplicateGroup]',
@@ -38,14 +46,14 @@ export interface RemovedCopy {
                 <li [sfeTrackingFile]="file" (openFolder)="openFolder.emit($event)">
                     @if (canRemove()) {
                         <span class="tracking-actions">
-                            <button type="button" class="button small danger" title="Delete this copy from the disk, keeping another one (asks first)" (click)="confirm(file)">Remove</button>
+                            <button type="button" class="button small danger" [title]="permanent() ? 'Delete this copy for good, keeping another one (asks first)' : 'Move this copy to the trash, keeping another one (asks first)'" (click)="confirm(file)">Remove</button>
                         </span>
                     }
                     @if (confirming() === file.path) {
                         @let others = othersOf(file);
                         <div class="tracking-confirm" role="group" [attr.aria-label]="'Remove ' + file.name">
                             <span>
-                                {{ file.tags?.length ? 'Delete this file from the disk and add its tags to ' : 'Delete this file from the disk and keep ' }}
+                                {{ permanent() ? 'Delete this file for good' : 'Move this file to the trash' }}{{ file.tags?.length ? ' and add its tags to ' : ' and keep ' }}
                                 @if (others.length > 1) {
                                     <select class="tracking-keep" aria-label="Copy to keep" (change)="keep.set(valueOf($event))">
                                         @for (other of others; track other.path) {
@@ -58,7 +66,7 @@ export interface RemovedCopy {
                             </span>
                             <span class="tracking-actions">
                                 <button type="button" class="button small" title="Keep the file" (click)="confirming.set(null)">Cancel</button>
-                                <button type="button" class="button small danger" title="Delete this file from the disk now" [sfeBusy]="removing()" [disabled]="removing()" (click)="remove(file)">Delete this copy</button>
+                                <button type="button" class="button small danger" [title]="permanent() ? 'Delete this file from the disk now' : 'Move this file to the trash now (it can be put back)'" [sfeBusy]="removing()" [disabled]="removing()" (click)="remove(file)">{{ permanent() ? 'Delete this copy' : 'Move to the trash' }}</button>
                             </span>
                         </div>
                     }
@@ -73,8 +81,11 @@ export interface RemovedCopy {
 export class DuplicateGroupComponent {
     readonly group = input.required<DuplicateGroup>({ alias: 'sfeDuplicateGroup' });
     readonly canRemove = input(false);
+    /** Copies removed are deleted for good (`Files:DeletePermanently`), not moved to the trash. */
+    readonly permanent = input(false);
     readonly openFolder = output<string>();
     readonly removed = output<RemovedCopy>();
+    readonly restored = output<RestoredCopy>();
 
     private readonly api = inject(Api);
     private readonly toasts = inject(ToastService);
@@ -84,6 +95,12 @@ export class DuplicateGroupComponent {
     protected readonly keep = signal('');
     protected readonly removing = signal(false);
     protected readonly valueOf = valueOf;
+    private destroyed = false;
+
+    constructor() {
+        // An Undo can come after the panel was reloaded.
+        inject(DestroyRef).onDestroy(() => this.destroyed = true);
+    }
 
     protected readonly files = computed(() => this.group().files
         .filter(file => !this.removedPaths().has(file.path))
@@ -110,11 +127,39 @@ export class DuplicateGroupComponent {
             this.confirming.set(null);
             this.removedPaths.update(paths => new Set([...paths, file.path]));
             this.keptTags.update(tags => new Map(tags).set(keepPath, result.kept.tags));
-            this.toasts.show(`“${file.name}” deleted; “${keepPath}” is kept${result.kept.tags.length ? ' with its tags' : ''}.`);
+            const kept = `“${keepPath}” is kept${result.kept.tags.length ? ' with its tags' : ''}.`;
+            const trashId = result.trashId;
+            if (typeof trashId === 'number')
+                this.toasts.show(`“${file.name}” moved to the trash; ${kept}`, {
+                    timeout: 10000,
+                    action: { label: 'Undo', title: 'Put it back where it was', run: () => void this.undo(file, trashId) },
+                });
+            else
+                this.toasts.show(`“${file.name}” deleted; ${kept}`);
             this.removed.emit({ file, keepPath, kept: result.kept, dissolved: this.count() < 2 });
         } catch (error) {
             this.toasts.error(`Could not remove “${file.name}”: ${(error as Error).message}`, 8000);
         }
+    }
+
+    /** Puts a removed copy back from the trash; the tags it gave to the copy kept stay there. */
+    private async undo(file: LibraryItem, trashId: number): Promise<void> {
+        try {
+            const result = await this.api.restoreFromTrash(trashId);
+            if (isFileConflict(result)) {
+                this.toasts.error(result.detail ?? `“${file.name}” could not be put back.`);
+                return;
+            }
+        } catch (error) {
+            this.toasts.error(`Could not put “${file.name}” back: ${(error as Error).message}`);
+            return;
+        }
+        this.toasts.show(`“${file.name}” put back.`);
+        if (this.destroyed || !this.removedPaths().has(file.path))
+            return;
+        const revived = this.count() < 2;
+        this.removedPaths.update(paths => new Set([...paths].filter(path => path !== file.path)));
+        this.restored.emit({ file, revived });
     }
 }
 
@@ -141,9 +186,9 @@ export class DuplicateGroupComponent {
                 <div class="tag-loading"><span class="spinner"></span></div>
             }
             @for (group of groups(); track group.fingerprint + group.size) {
-                @if (!dissolved().has(group.fingerprint + group.size)) {
-                    <section [sfeDuplicateGroup]="group" [canRemove]="canRemove()" (openFolder)="openFolder.emit($event)" (removed)="onRemoved(group, $event)"></section>
-                }
+                <!-- Hidden rather than dropped: an Undo brings it back. -->
+                <section [sfeDuplicateGroup]="group" [canRemove]="canRemove()" [permanent]="permanent()" [hidden]="dissolved().has(group.fingerprint + group.size)"
+                         (openFolder)="openFolder.emit($event)" (removed)="onRemoved(group, $event)" (restored)="onRestored(group, $event)"></section>
             }
         </div>
         <button type="button" class="button" title="Show the next page" [hidden]="!hasMore()" [sfeBusy]="loadingMore()" [disabled]="loadingMore()" (click)="more()">Load more</button>
@@ -160,6 +205,7 @@ export class DuplicatesPanelComponent {
     protected readonly groups = signal<DuplicateGroup[]>([]);
     protected readonly dissolved = signal<ReadonlySet<string>>(new Set());
     protected readonly canRemove = signal(false);
+    protected readonly permanent = signal(false);
     protected readonly hasMore = signal(false);
     protected readonly loading = signal(false);
     protected readonly loadingMore = signal(false);
@@ -212,6 +258,7 @@ export class DuplicatesPanelComponent {
                 this.failure.set(null);
             }
             this.canRemove.set(result.canRemove);
+            this.permanent.set(result.removesPermanently ?? false);
             this.groups.update(groups => [...groups, ...result.groups]);
             this.next = result.next;
             this.hasMore.set(result.hasMore);
@@ -248,5 +295,21 @@ export class DuplicatesPanelComponent {
         });
         if (removed.dissolved)
             this.dissolved.update(keys => new Set([...keys, group.fingerprint + group.size]));
+    }
+
+    protected onRestored(group: DuplicateGroup, restored: RestoredCopy): void {
+        this.changed.emit();
+        this.first.update(first => {
+            if (!first?.summary)
+                return first;
+            const summary = { ...first.summary };
+            summary.files += restored.revived ? 2 : 1;
+            summary.wastedBytes += group.size;
+            if (restored.revived)
+                summary.groups++;
+            return { ...first, summary };
+        });
+        if (restored.revived)
+            this.dissolved.update(keys => new Set([...keys].filter(key => key !== group.fingerprint + group.size)));
     }
 }

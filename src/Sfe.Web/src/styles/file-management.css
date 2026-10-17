@@ -30,7 +30,7 @@
 .item-menu-entry span { flex: 1; }
 .item-menu-entry kbd { color: var(--text-muted); font-size: 11px; }
 
-/* Over a tile's picture, where the tag button was: the tag and copy buttons move one place left. */
+/* Over a tile's picture, where the tag button was: the tag button moves one place left. */
 .tile .item-menu-button {
     position: absolute;
     top: 8px;
@@ -46,7 +46,6 @@
 .tile .item-menu-button:hover { background: rgb(0 0 0 / .75); }
 .tile:hover .item-menu-button, .tile:focus-within .item-menu-button { opacity: 1; }
 .tile:has(.item-menu-button:not([hidden])) .tag-button { right: 44px; }
-.tile:has(.item-menu-button:not([hidden])) .copy-path-button { right: 80px; }
 .row .item-menu-button { border-color: transparent; background: transparent; color: var(--text-muted); }
 .row .item-menu-button:hover { background: var(--surface-3); color: var(--text); }
 .item-menu-button .icon { width: 17px; height: 17px; }
@@ -55,8 +54,6 @@
     .tile .item-menu-button { opacity: 1; }
 }
 
-/* A folder line with a fourth button (pin, tags, copy path, ⋮). */
-.folder-item:not(:has(.card)):has(.folder-actions > :not([hidden]):nth-of-type(4)) .folder { padding-right: 152px; }
 /* Just made or renamed. */
 .folder-item.revealed .folder { outline: 2px solid var(--accent); outline-offset: 2px; }
 

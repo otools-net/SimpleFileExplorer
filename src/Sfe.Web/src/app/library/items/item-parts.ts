@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
-import { CopyPathService } from '../../core/copy-path.service';
 import { LibraryItem } from '../../core/models';
 import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
@@ -45,32 +44,6 @@ export class SelectBoxComponent {
     readonly item = input.required<LibraryItem>();
     protected readonly store = inject(ListingStore);
     protected readonly selected = computed(() => this.store.selection().has(this.item().path));
-}
-
-/** The button copying the full path of a file or folder (`Browse:CopyPaths`). */
-@Component({
-    selector: 'button[sfeCopyPath]',
-    imports: [IconComponent],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    host: {
-        type: 'button',
-        class: 'icon-button small copy-path-button',
-        title: 'Copy the full path',
-        '[attr.aria-label]': '"Copy the full path of " + name()',
-        '(click)': 'copy($event)',
-    },
-    template: `<svg sfeIcon="copy"></svg>`,
-})
-export class CopyPathButtonComponent {
-    readonly sfeCopyPath = input.required<string>();
-    readonly name = input.required<string>();
-    private readonly copyPaths = inject(CopyPathService);
-
-    protected copy(event: MouseEvent): void {
-        event.preventDefault();
-        event.stopPropagation();
-        void this.copyPaths.copy(this.sfeCopyPath());
-    }
 }
 
 /** The button opening the tags of a file (hidden without the right to see tags). */

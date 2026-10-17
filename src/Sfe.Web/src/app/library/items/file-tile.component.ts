@@ -12,7 +12,7 @@ import { TrickplayMarkComponent } from '../../trickplay/trickplay-mark.component
 import { AnimatedHoverService } from './animated-hover.service';
 import { ListingStore } from '../listing.store';
 import { ItemActions } from './item-actions.service';
-import { CopyPathButtonComponent, ItemFolderComponent, ItemTagsComponent, NOT_INDEXED, SelectBoxComponent, TagButtonComponent } from './item-parts';
+import { ItemFolderComponent, ItemTagsComponent, NOT_INDEXED, SelectBoxComponent, TagButtonComponent } from './item-parts';
 import { PreviewImageDirective } from './preview-image.directive';
 import { PreviewsService } from './previews.service';
 
@@ -28,7 +28,7 @@ abstract class FileItemBase {
 
     protected readonly store = inject(ListingStore);
     protected readonly actions = inject(ItemActions);
-    protected readonly copyPaths = inject(CopyPathService);
+    private readonly copyPaths = inject(CopyPathService);
     protected readonly config = inject(ConfigService);
     protected readonly menu = inject(ItemMenu);
     private readonly previews = inject(PreviewsService);
@@ -78,7 +78,7 @@ function sameStrings(a: string[], b: string[]): boolean {
 @Component({
     selector: 'article[sfeFileTile]',
     imports: [IconComponent, HighlightComponent, PreviewImageDirective, TrickplayMarkComponent, ItemTagsComponent, SelectBoxComponent,
-        TagButtonComponent, CopyPathButtonComponent, ItemFolderComponent, ItemMenuButtonComponent],
+        TagButtonComponent, ItemFolderComponent, ItemMenuButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class]': '"tile item kind-" + item().kind',
@@ -122,9 +122,6 @@ function sameStrings(a: string[], b: string[]): boolean {
         <label sfeSelectBox [item]="item()"></label>
         <button [sfeTagButton]="item()"></button>
         <button [sfeItemMenu]="item()"></button>
-        @if (copyPaths.enabled()) {
-            <button [sfeCopyPath]="item().path" [name]="item().name"></button>
-        }
         <div class="info">
             <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
                 <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
@@ -172,7 +169,7 @@ export class FileTileComponent extends FileItemBase {
 @Component({
     selector: 'div[sfeFileRow]',
     imports: [IconComponent, HighlightComponent, PreviewImageDirective, TrickplayMarkComponent, ItemTagsComponent, SelectBoxComponent,
-        TagButtonComponent, CopyPathButtonComponent, ItemFolderComponent, ItemMenuButtonComponent],
+        TagButtonComponent, ItemFolderComponent, ItemMenuButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class]': '"row item kind-" + item().kind',
@@ -211,9 +208,6 @@ export class FileTileComponent extends FileItemBase {
         <span class="size">{{ size() }}@if (resolution()) {<span class="resolution">{{ resolution() }}</span>}@if (duration()) {<span class="duration">{{ duration() }}</span>}</span>
         <span class="date">{{ date() }}</span>
         <span class="row-actions">
-            @if (copyPaths.enabled()) {
-                <button [sfeCopyPath]="item().path" [name]="item().name"></button>
-            }
             <button [sfeTagButton]="item()"></button>
             <button [sfeItemMenu]="item()"></button>
         </span>

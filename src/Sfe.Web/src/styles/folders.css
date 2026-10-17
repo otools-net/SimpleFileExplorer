@@ -102,7 +102,7 @@
 }
 
 
-/* ---------- A folder's buttons (tags, copy path) ---------- */
+/* ---------- A folder's buttons (tags, ⋮) ---------- */
 
 /* A folder and its buttons share a box: a button can't be inside the link. */
 .folder-item { position: relative; display: grid; }
@@ -122,10 +122,9 @@
 
 /* At the end of a line. */
 .folder-item:not(:has(.card)) .folder-actions { top: 50%; right: 7px; translate: 0 -50%; }
-/* Room for its buttons (pin, tags, copy path: those it has). */
+/* Room for its buttons (tags, ⋮: those it has). */
 .folder-item:not(:has(.card)) .folder { padding-right: 44px; }
 .folder-item:not(:has(.card)):has(.folder-actions > :not([hidden]):nth-of-type(2)) .folder { padding-right: 80px; }
-.folder-item:not(:has(.card)):has(.folder-actions > :not([hidden]):nth-of-type(3)) .folder { padding-right: 116px; }
 
 /* Over a card's pictures: dark like a file tile's buttons. */
 .folders.covers .folder-actions { top: 8px; right: 8px; }

@@ -39,7 +39,7 @@ describe('DuplicatesPanelComponent', () => {
         summary: { groups: groups.length, files: groups.reduce((n, g) => n + g.count, 0), wastedBytes: groups.reduce((n, g) => n + g.wastedBytes, 0), unfingerprinted: 0 },
         ...overrides,
     });
-    const groupElements = () => [...element.querySelectorAll<HTMLElement>('section.tracking-group')];
+    const groupElements = () => [...element.querySelectorAll<HTMLElement>('section.tracking-group:not([hidden])')];
 
     async function create(answer: DuplicateResults, folder = ''): Promise<void> {
         api.duplicates.mockResolvedValue(answer);
@@ -126,7 +126,7 @@ describe('DuplicatesPanelComponent', () => {
         const keep = element.querySelector<HTMLSelectElement>('.tracking-keep')!;
         expect([...keep.options].map(o => o.value)).toEqual(['a/x.jpg', 'c/x.jpg']);
         expect(keep.value).toBe('a/x.jpg');
-        expect(element.querySelector('.tracking-confirm')!.textContent).toContain('Delete this file from the disk and keep');
+        expect(element.querySelector('.tracking-confirm')!.textContent).toContain('Move this file to the trash and keep');
     });
 
     it('names the only other copy, and says where the tags go', async () => {
@@ -152,21 +152,21 @@ describe('DuplicatesPanelComponent', () => {
         expect(api.removeDuplicate).not.toHaveBeenCalled();
     });
 
-    it('deletes a copy keeping the chosen one, which gets the tags', async () => {
+    it('moves a copy to the trash keeping the chosen one, which gets the tags', async () => {
         const show = vi.spyOn(toasts, 'show');
         await create(results([group(MB, 'a/tagged.jpg', 'b/x.jpg', 'c/x.jpg'), group(MB, 'd', 'e')]));
-        api.removeDuplicate.mockResolvedValue({ removed: 'a/tagged.jpg', kept: fileTags('c/x.jpg', [sun]) });
+        api.removeDuplicate.mockResolvedValue({ removed: 'a/tagged.jpg', kept: fileTags('c/x.jpg', [sun]), trashId: 7 });
 
         groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
         await settle();
         const keep = element.querySelector<HTMLSelectElement>('.tracking-keep')!;
         keep.value = 'c/x.jpg';
         keep.dispatchEvent(new Event('change'));
-        buttonNamed(element, 'Delete this copy')!.click();
+        buttonNamed(element, 'Move to the trash')!.click();
         await settle();
 
         expect(api.removeDuplicate).toHaveBeenCalledWith('a/tagged.jpg', 'c/x.jpg');
-        expect(show).toHaveBeenCalledWith('“tagged.jpg” deleted; “c/x.jpg” is kept with its tags.');
+        expect(show).toHaveBeenCalledWith('“tagged.jpg” moved to the trash; “c/x.jpg” is kept with its tags.', expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) }));
         const rows = [...groupElements()[0].querySelectorAll('li.tracking-row')];
         expect(rows.map(r => r.querySelector('.tracking-name')!.textContent)).toEqual(['x.jpg', 'x.jpg']);
         expect(rows[1].querySelector('.tag-name')!.textContent!.trim()).toBe('Sun');
@@ -175,13 +175,49 @@ describe('DuplicatesPanelComponent', () => {
         expect(changed).toBe(1);
     });
 
+    it('puts a copy back from the trash with Undo, bringing its group back', async () => {
+        const show = vi.spyOn(toasts, 'show');
+        await create(results([group(MB, 'a/x.jpg', 'b/x.jpg'), group(2 * MB, 'c', 'd')]));
+        api.removeDuplicate.mockResolvedValue({ removed: 'a/x.jpg', kept: fileTags('b/x.jpg'), trashId: 3 });
+        api.restoreFromTrash.mockResolvedValue(item('a/x.jpg'));
+        groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
+        await settle();
+        buttonNamed(element, 'Move to the trash')!.click();
+        await settle();
+        expect(groupElements()).toHaveLength(1);
+
+        (show.mock.calls[0][1] as { action: { run: () => void } }).action.run();
+        await settle();
+
+        expect(api.restoreFromTrash).toHaveBeenCalledWith(3);
+        expect(show).toHaveBeenLastCalledWith('“x.jpg” put back.');
+        expect(groupElements()).toHaveLength(2);
+        expect(groupElements()[0].querySelectorAll('li.tracking-row')).toHaveLength(2);
+        expect(statusText(element)).toBe('2 groups of identical files in the library: 3 MB could be freed');
+        expect(changed).toBe(2);
+    });
+
+    it('says a copy is deleted for good when the space deletes permanently', async () => {
+        const show = vi.spyOn(toasts, 'show');
+        await create({ ...results([group(MB, 'a/x.jpg', 'b/x.jpg')]), removesPermanently: true });
+        api.removeDuplicate.mockResolvedValue({ removed: 'a/x.jpg', kept: fileTags('b/x.jpg'), trashId: null });
+
+        groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
+        await settle();
+        expect(element.querySelector('.tracking-confirm')!.textContent).toContain('Delete this file for good');
+        buttonNamed(element, 'Delete this copy')!.click();
+        await settle();
+
+        expect(show).toHaveBeenCalledWith('“x.jpg” deleted; “b/x.jpg” is kept.');
+    });
+
     it('drops a group once a single copy is left', async () => {
         await create(results([group(MB, 'a/x.jpg', 'b/x.jpg'), group(2 * MB, 'c', 'd')]));
         api.removeDuplicate.mockResolvedValue({ removed: 'a/x.jpg', kept: fileTags('b/x.jpg') });
 
         groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
         await settle();
-        buttonNamed(element, 'Delete this copy')!.click();
+        buttonNamed(element, 'Move to the trash')!.click();
         await settle();
 
         expect(groupElements()).toHaveLength(1);
@@ -196,7 +232,7 @@ describe('DuplicatesPanelComponent', () => {
 
         groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
         await settle();
-        buttonNamed(element, 'Delete this copy')!.click();
+        buttonNamed(element, 'Move to the trash')!.click();
         await settle();
 
         expect(error).toHaveBeenCalledWith('Could not remove “x.jpg”: The files are no longer identical.', 8000);
@@ -211,7 +247,7 @@ describe('DuplicatesPanelComponent', () => {
 
         groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
         await settle();
-        buttonNamed(element, 'Delete this copy')!.click();
+        buttonNamed(element, 'Move to the trash')!.click();
         await settle();
 
         const button = element.querySelector<HTMLButtonElement>('.tracking-confirm button.danger')!;

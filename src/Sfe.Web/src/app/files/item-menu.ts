@@ -7,13 +7,14 @@ import { IconComponent } from '../shared/icon.component';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { ItemActions } from '../library/items/item-actions.service';
+import { QuickLinksService } from '../library/quick-links/quick-links.service';
 import { FileDownloads } from './downloads';
 import { FileActions } from './file-actions';
 import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu. */
 export interface MenuEntry {
-    id: 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'copyPath' | 'properties';
+    id: 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'properties';
     label: string;
     icon: string;
     /** Its key, shown at the end of the line. */
@@ -37,13 +38,17 @@ export class ItemMenu {
     private readonly transfers = inject(FileTransfers);
     private readonly downloads = inject(FileDownloads);
     private readonly config = inject(ConfigService);
+    private readonly quickLinks = inject(QuickLinksService);
 
     /** The item whose menu is open, and where. */
     readonly open = signal<{ item: LibraryItem; x: number; y: number; trigger: HTMLElement | null } | null>(null);
 
-    /** Everyone who browses has the menu, for Properties at least (the browser's own menu with Shift). */
+    /**
+     * Everyone who browses has the menu, for Properties at least (the browser's own menu with Shift). The item's card
+     * only has its tags and ⋮ buttons: quick links and copying the path are here too.
+     */
     hasActions(item: LibraryItem): boolean {
-        return this.canSeeProperties() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
+        return this.canSeeProperties() || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
     }
 
     /** Properties of what is listed: whoever browses. */
@@ -124,6 +129,16 @@ export class ItemMenu {
                     ? this.dialogs.scopeTags()?.open({ path: item.path, recursive: false, query: null })
                     : this.actions.openTags(item),
             });
+        if (this.quickLinks.enabled()) {
+            const pinned = this.quickLinks.paths().has(item.path);
+            entries.push({
+                id: 'quickLink',
+                label: pinned ? 'Remove from quick links' : 'Add to quick links',
+                icon: 'pin',
+                title: pinned ? `Take ${item.name} out of your quick links` : `Show ${item.name} in your quick links, in the sidebar`,
+                run: () => void this.quickLinks.toggle(item.path),
+            });
+        }
         if (this.copyPaths.enabled())
             entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => void this.copyPaths.copy(item.path) });
         if (this.canSeeProperties())

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sfe.Core.Data;
+using Sfe.Core.Files;
 using Sfe.Core.FileTracking;
 using Sfe.Core.Indexing;
 using Sfe.Core.Settings;
@@ -14,6 +15,7 @@ namespace Sfe.Tests;
 public sealed class FileTrackingTests
 {
     private const int Kb = 1024;
+    private static readonly FileActor Actor = new(null, "Tester");
 
     private TestLibrary _library = null!;
     private CoreServices _services = null!;
@@ -23,6 +25,7 @@ public sealed class FileTrackingTests
     private DuplicateFinder Duplicates => _services.Get<DuplicateFinder>();
     private DuplicateRemover Remover => _services.Get<DuplicateRemover>();
     private RelinkService Relink => _services.Get<RelinkService>();
+    private Trash Trash => _services.Get<Trash>();
     private TagService Tags => _services.Get<TagService>();
 
     [TestInitialize]
@@ -131,7 +134,7 @@ public sealed class FileTrackingTests
     /* ---------- Removing duplicates ---------- */
 
     [TestMethod]
-    public async Task RemovingACopyDeletesItAndMergesItsTagsIntoTheKeptOne()
+    public async Task RemovingACopyMovesItToTheTrashAndMergesItsTagsIntoTheKeptOne()
     {
         var cat = await CreateTagAsync("Cat");
         var beach = await CreateTagAsync("Beach");
@@ -140,7 +143,7 @@ public sealed class FileTrackingTests
         await TagAsync(cat, "Media/photo.jpg");
         await TagAsync(beach, "Copies/photo (1).jpg");
 
-        var result = await Remover.RemoveAsync("Copies/photo (1).jpg", "Media/photo.jpg", TestContext.CancellationToken);
+        var result = await Remover.RemoveAsync("Copies/photo (1).jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
 
         Assert.AreEqual(DuplicateRemovalStatus.Removed, result.Status, result.Error);
         Assert.IsFalse(File.Exists(_library.FullPath("Copies/photo (1).jpg")));
@@ -150,6 +153,31 @@ public sealed class FileTrackingTests
         Assert.IsEmpty((await Duplicates.FindAsync("", null, null, TestContext.CancellationToken))!.Groups);
         // Its tags went to the kept copy: it is not waiting to be relinked, now or after the next scan.
         Assert.AreEqual(0, (await ScanAsync()).Missing);
+
+        // In the trash, with its own tags for a restore.
+        var entry = Assert.ContainsSingle((await Trash.ListAsync(null, null, _ => true, TestContext.CancellationToken)).Items);
+        Assert.AreEqual(result.TrashId, entry.Id);
+        Assert.AreEqual("Copies/photo (1).jpg", entry.Path);
+        Assert.AreEqual(FileOperationStatus.Done, (await Trash.RestoreAsync(entry.Id, Actor, TestContext.CancellationToken)).Status);
+        Assert.IsTrue(File.Exists(_library.FullPath("Copies/photo (1).jpg")));
+        CollectionAssert.AreEquivalent(new[] { beach }, await TagIdsAsync("Copies/photo (1).jpg"));
+        CollectionAssert.AreEquivalent(new[] { cat, beach }, await TagIdsAsync("Media/photo.jpg"));
+    }
+
+    [TestMethod]
+    public async Task ACopyIsDeletedForGoodWhenTheSpaceDeletesPermanently()
+    {
+        await UseServicesAsync(s => s["Sfe:Files:DeletePermanently"] = "true");
+        Copy("Media/photo.jpg", "Copies/photo.jpg");
+        await ScanAsync();
+        Assert.IsTrue((await Duplicates.FindAsync("", null, null, TestContext.CancellationToken))!.RemovesPermanently);
+
+        var result = await Remover.RemoveAsync("Copies/photo.jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
+
+        Assert.AreEqual(DuplicateRemovalStatus.Removed, result.Status, result.Error);
+        Assert.IsNull(result.TrashId);
+        Assert.IsFalse(File.Exists(_library.FullPath("Copies/photo.jpg")));
+        Assert.IsEmpty((await Trash.ListAsync(null, null, _ => true, TestContext.CancellationToken)).Items);
     }
 
     [TestMethod]
@@ -163,7 +191,7 @@ public sealed class FileTrackingTests
         await ScanAsync();
         Assert.ContainsSingle((await Duplicates.FindAsync("", null, null, TestContext.CancellationToken))!.Groups);
 
-        var result = await Remover.RemoveAsync("same-start-b.bin", "same-start-a.bin", TestContext.CancellationToken);
+        var result = await Remover.RemoveAsync("same-start-b.bin", "same-start-a.bin", Actor, TestContext.CancellationToken);
 
         Assert.AreEqual(DuplicateRemovalStatus.Invalid, result.Status);
         Assert.AreEqual("keep", result.Field);
@@ -184,7 +212,7 @@ public sealed class FileTrackingTests
             Assert.IsTrue(groups.Any(g => g.Files.Select(f => f.Path).Order().SequenceEqual(["Linked/photo.jpg", "Media/photo.jpg"])),
                 "The photo is listed through both paths.");
 
-            var result = await Remover.RemoveAsync("Linked/photo.jpg", "Media/photo.jpg", TestContext.CancellationToken);
+            var result = await Remover.RemoveAsync("Linked/photo.jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
 
             Assert.AreEqual(DuplicateRemovalStatus.Invalid, result.Status);
             Assert.IsTrue(File.Exists(_library.FullPath("Media/photo.jpg")));
@@ -202,7 +230,7 @@ public sealed class FileTrackingTests
         if (!OperatingSystem.IsWindows() || !RunCmd($"mklink /H \"{_library.FullPath("photo link.jpg")}\" \"{_library.FullPath("Media/photo.jpg")}\""))
             Assert.Inconclusive("Hard links are only checked on Windows.");
 
-        var result = await Remover.RemoveAsync("photo link.jpg", "Media/photo.jpg", TestContext.CancellationToken);
+        var result = await Remover.RemoveAsync("photo link.jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
 
         Assert.AreEqual(DuplicateRemovalStatus.Invalid, result.Status);
         Assert.IsTrue(File.Exists(_library.FullPath("photo link.jpg")));
@@ -216,7 +244,7 @@ public sealed class FileTrackingTests
         await ScanAsync();
 
         Assert.IsFalse((await Duplicates.FindAsync("", null, null, TestContext.CancellationToken))!.CanRemove);
-        var result = await Remover.RemoveAsync("Copies/photo.jpg", "Media/photo.jpg", TestContext.CancellationToken);
+        var result = await Remover.RemoveAsync("Copies/photo.jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
 
         Assert.AreEqual(DuplicateRemovalStatus.Disabled, result.Status);
         Assert.IsTrue(File.Exists(_library.FullPath("Copies/photo.jpg")));

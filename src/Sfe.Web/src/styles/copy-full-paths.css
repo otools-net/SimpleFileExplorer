@@ -2,28 +2,7 @@
 
 .row-actions { display: flex; gap: 2px; }
 
-.copy-path-button .icon { width: 16px; height: 16px; }
-.row .copy-path-button { border-color: transparent; background: transparent; color: var(--text-muted); }
-.row .copy-path-button:hover { background: var(--surface-3); color: var(--text); }
-
-/* Over a picture: dark like the tag button, left of it. */
-.tile .copy-path-button {
-    position: absolute;
-    top: 8px;
-    right: 44px;
-    z-index: 2;
-    border-color: transparent;
-    background: rgb(0 0 0 / .55);
-    color: #fff;
-}
-
-.tile .copy-path-button { opacity: 0; transition: opacity .15s, background .15s; }
-.tile .copy-path-button:hover { background: rgb(0 0 0 / .75); color: #fff; }
-.tile:hover .copy-path-button, .tile:focus-within .copy-path-button { opacity: 1; }
-
-@media (hover: none) {
-    .tile .copy-path-button { opacity: 1; }
-}
+/* The copy itself is in the item menu (Copy full path). */
 
 .viewer-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 

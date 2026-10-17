@@ -109,7 +109,8 @@ public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, L
             Summary: summary,
             Fingerprinting: options.CurrentValue.Scan.ComputeHashes,
             MinimumSize: minimumSize,
-            CanRemove: Settings.AllowRemove);
+            CanRemove: Settings.AllowRemove,
+            RemovesPermanently: options.CurrentValue.Files.DeletePermanently);
     }
 
     /// <summary>A file of the index as a listing item; null when it is outside the library.</summary>
@@ -158,7 +159,8 @@ public sealed record DuplicateSummary(int Groups, int Files, long WastedBytes, i
 /// <param name="Summary">Totals over every page; only on the first page.</param>
 /// <param name="Fingerprinting">Scans fingerprint files (<c>Scan:ComputeHashes</c>); without it no new file can be compared.</param>
 /// <param name="MinimumSize">Smaller files are left out (bytes).</param>
-/// <param name="CanRemove">Copies can be deleted (<c>POST /api/duplicates/remove</c>, see <see cref="DuplicateRemover"/>).</param>
+/// <param name="CanRemove">Copies can be removed (<c>POST /api/duplicates/remove</c>, see <see cref="DuplicateRemover"/>).</param>
+/// <param name="RemovesPermanently">A copy removed is deleted for good, not moved to the trash (<c>Files:DeletePermanently</c>).</param>
 public sealed record DuplicateResults(
     string Path,
     IReadOnlyList<DuplicateGroup> Groups,
@@ -167,4 +169,5 @@ public sealed record DuplicateResults(
     DuplicateSummary? Summary,
     bool Fingerprinting,
     long MinimumSize,
-    bool CanRemove);
+    bool CanRemove,
+    bool RemovesPermanently = false);

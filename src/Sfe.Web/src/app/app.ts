@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { trackScrollbarWidth } from './core/scrollbar-width';
 import { IconSpriteComponent } from './shared/icon-sprite.component';
 import { ToastsComponent } from './shared/toasts.component';
 
@@ -14,4 +15,8 @@ import { ToastsComponent } from './shared/toasts.component';
         <sfe-toasts />
     `,
 })
-export class App {}
+export class App {
+    constructor() {
+        inject(DestroyRef).onDestroy(trackScrollbarWidth());
+    }
+}

@@ -173,7 +173,7 @@ describe('ItemMenu, moves and copies', () => {
     it('offers cut, copy, paste into a folder, move to and copy to by rights', async () => {
         await setUp();
         const menu = TestBed.inject(ItemMenu);
-        expect(menu.entries(photo).map(e => e.id)).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'properties']);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'quickLink', 'properties']);
 
         TestBed.inject(FileTransfers).keep('move', [photo]);
         const paste = menu.entries(folder).find(e => e.id === 'paste')!;

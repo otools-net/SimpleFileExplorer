@@ -9,18 +9,17 @@ import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
 import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
-import { PinButtonComponent } from '../quick-links/pin-button.component';
 import { FolderCoverComponent } from './folder-cover.component';
 import { ItemActions } from './item-actions.service';
-import { CopyPathButtonComponent, NOT_INDEXED, SelectBoxComponent } from './item-parts';
+import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
 
 /**
  * A listed folder: a card with its first pictures (`cards`), or a line with its name. Buttons can't sit inside
- * the link: the pin, tags and copy buttons go next to it, in the box this component is.
+ * the link: the tags and ⋮ buttons go next to it, in the box this component is (the rest is in the item menu).
  */
 @Component({
     selector: 'sfe-folder-item',
-    imports: [IconComponent, RouterLink, FolderCoverComponent, CopyPathButtonComponent, PinButtonComponent, ItemMenuButtonComponent, SelectBoxComponent],
+    imports: [IconComponent, RouterLink, FolderCoverComponent, ItemMenuButtonComponent, SelectBoxComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'folder-item',
@@ -52,15 +51,11 @@ import { CopyPathButtonComponent, NOT_INDEXED, SelectBoxComponent } from './item
         </a>
         <label sfeSelectBox [item]="item()"></label>
         <span class="folder-actions">
-            <button [sfePin]="item().path" [name]="item().name" class="small"></button>
             @if (canTag()) {
                 <button type="button" class="icon-button small folder-tags-button" [attr.aria-label]="'Tags of the files in ' + item().name"
                         title="Add or remove tags on all the files of this folder, or of its sub-folders too (asks first)" (click)="openTags()">
                     <svg sfeIcon="tag"></svg>
                 </button>
-            }
-            @if (copyPaths.enabled()) {
-                <button [sfeCopyPath]="item().path" [name]="item().name"></button>
             }
             <button [sfeItemMenu]="item()"></button>
         </span>
@@ -73,7 +68,7 @@ export class FolderItemComponent {
     /** Tagging a whole folder changes tags: hidden without the right (there, with folder rules). */
     protected readonly canTag = computed(() => this.store.can(Rights.assignTags, this.item()));
     protected readonly store = inject(ListingStore);
-    protected readonly copyPaths = inject(CopyPathService);
+    private readonly copyPaths = inject(CopyPathService);
     protected readonly menu = inject(ItemMenu);
     protected readonly transfers = inject(FileTransfers);
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));

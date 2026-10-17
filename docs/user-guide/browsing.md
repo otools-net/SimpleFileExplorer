@@ -76,16 +76,17 @@ access of Windows Explorer. Each account has its own, in each space; visitors wi
 - At most 100 links per list.
 
 **Adding.** Drag a folder, a file or a breadcrumb of the path onto the quick links, and drop it where it should go: a
-line shows the place. Dragging one of several selected files adds all of them. Without dragging, use the pin buttons:
+line shows the place. Dragging one of several selected files adds all of them. Without dragging:
 
-| Where | Pins |
+| Where | Adds |
 |---|---|
-| After the path, at the top of the listing | the folder you are in |
-| On each folder (on hover with a mouse) | that folder |
+| The pin after the path, at the top of the listing | the folder you are in |
+| **Add to quick links** in the [menu](managing-files.md#the-item-menu) of a folder or file (right click or **⋮**) | that folder or file |
 | In the [selection bar](tags.md#several-files-at-once), **Quick links** | the selected files |
-| In the [viewer](viewer.md)'s top bar | the file shown |
+| The pin in the [viewer](viewer.md)'s top bar | the file shown |
 
-A filled pin means the folder or file is a quick link already: click it again to remove it.
+A filled pin means the folder or file is a quick link already: click it again to remove it; in the item menu, the entry
+reads **Remove from quick links**.
 
 ![A folder dragged onto the quick links](../images/quick-links-drag.png)
 
@@ -121,7 +122,7 @@ corner of its preview instead.
 Resting the mouse on a video that has [trickplay](../administration/trickplay.md) plays its frames over the thumbnail
 (on a phone: press and hold it).
 
-![High and low resolution marks, and copy-path buttons](../images/library-marks-copy-paths.png)
+![High and low resolution marks, and the folder's copy-path button](../images/library-marks-copy-paths.png)
 
 With **Mark high and low resolution** on, each photo and video whose resolution is known is labelled **HR** (high
 resolution, highlighted) or **LR** (low resolution) in the bottom-right corner of its preview, and on the thumbnail in
@@ -143,9 +144,9 @@ whole as you scroll past it.
 ## Copying full paths
 
 When **Copy full paths** is on (for accounts with the right `files.copyPaths`), buttons copy the full path of an item on
-the server, e.g. `D:\Media\Photos\beach.jpg`, to paste it into another program: after the location for the current
-folder (the folder searched in while searching), on each folder and file (on hover with a mouse), and in the viewer
-for the file shown. Copying also works over plain `http://` from another computer on the network. Folders and files
+the server, e.g. `D:\Media\Photos\beach.jpg`, to paste it into another program: a button after the location for the
+current folder (the folder searched in while searching), **Copy full path** in the menu of each folder and file (right
+click or **⋮**), and a button in the viewer for the file shown. Copying also works over plain `http://` from another computer on the network. Folders and files
 whose path you copied get a dashed outline in the listing, until the page is reloaded.
 
 It is off by default because it tells every visitor where the library lives on the server's disk.

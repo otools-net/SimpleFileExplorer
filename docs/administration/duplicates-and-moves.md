@@ -14,9 +14,11 @@ Groups of indexed files with the same size and fingerprint, biggest first, with 
 - **Only in “folder”** compares only the folder being browsed.
 - The fingerprint (read by scans, [Scanning › Indexing](scanning.md#indexing)) covers the first megabyte, so files
   differing only further in can show up; files indexed without one are not compared.
-- **Remove** deletes a copy from the disk and adds its tags to the copy you keep (right `tracking.duplicatesRemove`).
-  SFE first compares the two files byte for byte and refuses two paths to the same file (folder link, junction, hard
-  link), so an identical copy always remains. The deletion is permanent (no recycle bin).
+- **Remove** moves a copy to the [trash](file-management.md#trash) and adds its tags to the copy you keep (right
+  `tracking.duplicatesRemove`); **Undo** in the message puts it back, and so does **Restore** on the trash page, with
+  its own tags. SFE first compares the two files byte for byte and refuses two paths to the same file (folder link,
+  junction, hard link), so an identical copy always remains. When the space deletes permanently
+  (`Files:DeletePermanently`), the copy is deleted for good instead, and the confirmation says so.
 
 ## Similar videos
 

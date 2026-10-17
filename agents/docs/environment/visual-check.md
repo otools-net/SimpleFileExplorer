@@ -9,3 +9,4 @@ Driver: `agents/tools/docs-screenshots/cdp.mjs` (`launch`, `eval`, `realClick`, 
   `Runtime.evaluate` (setup with `fetch('api/setup', …)`) then `Page.captureScreenshot`.
 - Covers and previews load lazily: give a screenshot a budget of ~20 s before calling an image missing.
 - Headless shots hide scrollbars: `launch({ scrollbars: true })`.
+- Ready-made checks (phone sheets...): `agents/tools/visual-check/`.

@@ -15,7 +15,7 @@ public sealed record RelinkRequest(string? Path);
 public sealed record RemoveDuplicateRequest(string? Path, string? Keep);
 
 /// <param name="Kept">Tags of the copy kept, now including those of the deleted one.</param>
-public sealed record RemovedDuplicate(string Removed, FileTags Kept);
+public sealed record RemovedDuplicate(string Removed, FileTags Kept, int? TrashId = null);
 
 /// <param name="Forgotten">Missing files forgotten.</param>
 public sealed record ForgetResult(int Forgotten);
@@ -138,10 +138,10 @@ public static class FileTrackingEndpoints
         if (state.Check(paths, request.Path, Rights.RemoveDuplicates) is var verdict and not PathVerdict.Allowed)
             return verdict == PathVerdict.NotFound ? TypedResults.NotFound() : TypedResults.Forbid();
 
-        var result = await remover.RemoveAsync(request.Path, request.Keep, cancellationToken);
+        var result = await remover.RemoveAsync(request.Path, request.Keep, FileEndpoints.Actor(state), cancellationToken);
         return result.Status switch
         {
-            DuplicateRemovalStatus.Removed => TypedResults.Ok(new RemovedDuplicate(request.Path!, result.Kept!)),
+            DuplicateRemovalStatus.Removed => TypedResults.Ok(new RemovedDuplicate(request.Path!, result.Kept!, result.TrashId)),
             DuplicateRemovalStatus.Invalid => TypedResults.ValidationProblem(new Dictionary<string, string[]> { [result.Field ?? "path"] = [result.Error!] }),
             _ => TypedResults.Problem(result.Error, statusCode: StatusCodes.Status409Conflict),
         };

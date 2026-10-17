@@ -524,11 +524,15 @@ export interface DuplicateResults {
     fingerprinting: boolean;
     minimumSize: number;
     canRemove: boolean;
+    /** A copy removed is deleted for good, not moved to the trash (`Files:DeletePermanently`). */
+    removesPermanently?: boolean;
 }
 
 export interface RemovedDuplicate {
     removed: string;
     kept: FileTags;
+    /** Its entry in the trash, for an Undo; null when it was deleted for good. */
+    trashId?: number | null;
 }
 
 export type SimilarVideoState = 'idle' | 'running' | 'completed' | 'cancelled' | 'failed';

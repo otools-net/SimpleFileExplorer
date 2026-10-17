@@ -9,5 +9,8 @@ Code: `core/copy-path.service.ts` (`CopyPathService`); server `Browse:CopyPaths`
   `execCommand('copy')`, appended inside the open `<dialog>` (the rest of the page is inert under a modal).
 - `CopyPathService.copied` (in memory only, gone on reload) gives tiles, rows and folders the class `copied` (dashed
   outline).
-- A folder link sits in `sfe-folder-item` (`.folder-item`) next to its button (no button inside `<a>`); list rows put
-  buttons in `.row-actions` (last grid column `auto`).
+- Items have no copy button (1.63): **Copy full path** is an entry of the item menu (`ItemMenu.entries`, id
+  `copyPath`); the location head and the viewer keep their buttons.
+- Cards and rows keep only two buttons: tags and ⋮ (`items.spec.ts` checks it). A folder link sits in
+  `sfe-folder-item` (`.folder-item`) next to them (no button inside `<a>`); list rows put them in `.row-actions`.
+  Anything new for an item goes in the item menu, not on the card.

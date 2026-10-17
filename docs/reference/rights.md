@@ -33,7 +33,7 @@ Each right is of one of two kinds (column **Kind**):
 | `tags.manage` | create, edit, delete tags; clear the tag history | Write | no | Administrators |
 | `index.scan`, `index.remove` | scan; remove folders from the index | Write | no | Administrators |
 | `tracking.duplicates`, `tracking.similar` | duplicates, similar videos | Read | no | Administrators |
-| `tracking.duplicatesRemove` | delete a copy of a duplicate from the disk | Write (files) | no | Administrators |
+| `tracking.duplicatesRemove` | remove a copy of a duplicate (to the trash) | Write (files) | no | Administrators |
 | `tracking.missing` | moved files: list, relink, forget | Write | no | Administrators |
 | `trickplay.manage` | trickplay activity | Write | no | Administrators |
 | `tasks.view` | background tasks and their history | Read | no | Administrators |

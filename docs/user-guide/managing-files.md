@@ -25,7 +25,8 @@ that item:
 | **Move to…**, **Copy to…** | | Moves or copies it (or the selection) into a folder you pick |
 | **Download** / **Download as zip** | | Saves the file to your device; a folder, or several items selected, as one zip ([below](#download-several-files-or-a-folder)) |
 | **Tags…** / **Tag its files…** | | The tags of a file; adding tags to every file of a folder ([Tags](tags.md)) |
-| **Copy full path** | | Where it is on the server, when [copying paths](browsing.md) is on |
+| **Add to quick links** / **Remove from quick links** | | Keeps it in your [quick links](browsing.md#quick-links), in the sidebar |
+| **Copy full path** | | Where it is on the server, when [copying paths](browsing.md#copying-full-paths) is on |
 | **Properties** | Alt+Enter | Its size, dates and what SFE knows of it; a folder's size; a file's checksum ([below](#properties)) |
 
 ![The menu of a folder](../images/item-menu.png)

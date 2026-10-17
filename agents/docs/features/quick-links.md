@@ -10,7 +10,8 @@ Code: `src/Sfe.Core/Access/QuickLinkService.cs`, entity in `Data/Entities/Access
   already there, before the link now at `position`; null = new ones at the end), DELETE `?path=`; all answer the whole
   list with `exists`/`kind` read from the disk.
 - Client: `QuickLinksService` (root), `section[sfeQuickLinks]` first in the sidebar, `button[sfePin]` (location head,
-  folder actions, viewer), the selection bar's **Quick links**.
+  viewer), the item menu's **Add to / Remove from quick links** (`ItemMenu`, id `quickLink`, folders and files), the
+  selection bar's **Quick links**.
 - Drags: `QuickLinksComponent` listens to `document:dragstart` and takes the nearest `[data-path]` (tiles, rows,
   folders, breadcrumbs; the selection when a selected file is dragged) as `DRAG_ITEMS`; links move with `DRAG_LINK`.
 - A file link calls `ListingStore.reveal`: navigates to the parent, `load()` loads pages until the file is there
