@@ -242,6 +242,50 @@ export class ListingStore {
         return this.loading;
     }
 
+    /**
+     * The folder listed changed elsewhere (another tab, another person, a job: the change feed): the part loaded so
+     * far is fetched again and replaces the items in place, keeping the scroll position and the selection of what is
+     * still there. Searches are left as they are.
+     */
+    async refresh(): Promise<void> {
+        const route = this.route();
+        if (route.q || this.status() !== 'ready' || this.loading)
+            return;
+        const generation = this.generation();
+        const wanted = Math.max(this.pageSize(), this.items().length);
+        const items: LibraryItem[] = [];
+        const seen = new Set<string>();
+        let page: ListingPage;
+        try {
+            do {
+                page = await this.api.browse({ path: route.path, offset: items.length, limit: wanted - items.length, sort: this.sort(), desc: route.desc }, this.requests.signal);
+                if (generation !== this.generation())
+                    return;
+                for (const item of page.items) {
+                    if (!seen.has(item.path)) {
+                        seen.add(item.path);
+                        items.push(item);
+                    }
+                }
+            } while (items.length < wanted && 'offset' in page && page.items.length && page.offset + page.items.length < page.total);
+        } catch {
+            // Seen at the next change, or the next visit.
+            return;
+        }
+        if (generation !== this.generation() || this.loading)
+            return;
+        // Browsing pages (searches are not refreshed).
+        const last = page as Extract<ListingPage, { offset: number }>;
+        this.removedLoaded = 0;
+        this.listing.set(last);
+        this.items.set(items);
+        this.hasMore.set(last.offset + last.items.length < last.total);
+        this.total.set({ count: last.total, capped: false });
+        const selection = this.selection();
+        if (selection.size && [...selection].some(path => !seen.has(path)))
+            this.selection.set(new Set([...selection].filter(path => seen.has(path))));
+    }
+
     /* ---------- Selection ---------- */
 
     isSelected(path: string): boolean {

@@ -30,6 +30,14 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.62
+
+- New right `files.createFiles` (empty files), given to **no group**, as for 1.55.
+- Open listings keep a connection to the server (`GET /api/files/changes`, server-sent events) to hear of folders
+  changed elsewhere. Behind a reverse proxy it must not be buffered: nginx is told so by the response
+  (`X-Accel-Buffering: no`); other proxies may need response buffering off for that path. Nothing changes in the
+  databases.
+
 ## To 1.61
 
 - A right click on a file or folder now opens SFE's item menu for everyone who may browse (it has **Properties**);

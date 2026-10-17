@@ -16,6 +16,8 @@ namespace Sfe.Api.Endpoints;
 /// <param name="Name">The new folder's name.</param>
 public sealed record CreateFolderRequest(string? Path, string? Name);
 
+public sealed record CreateFileRequest(string? Path, string? Name);
+
 /// <param name="Path">The file or folder to rename (root-relative).</param>
 /// <param name="Name">Its new name, in the same folder.</param>
 public sealed record RenameRequest(string? Path, string? Name);
@@ -58,6 +60,16 @@ public static class FileEndpoints
     {
         var files = api.MapGroup("/files").WithTags("Files");
 
+        files.MapPost("/new-file", CreateFile)
+            .RequireRight(Rights.CreateFiles)
+            .FolderScoped("files.createFiles at the folder the new file goes in")
+            .WithName("CreateFile")
+            .WithSummary("Creates an empty file.")
+            .WithDescription($"""
+                Creates the empty file `name` in the folder `path` (never over anything: 409 `{ExistsType}` when the name
+                is taken, even by an item the caller doesn't see) and indexes it. Answers the new file as listings show it;
+                400 for a name that can't be used, 404 when the folder is not there, 409 `{ScanRunningType}` during a scan.
+                """);
         files.MapPost("/folders", CreateFolder)
             .RequireRight(Rights.CreateFolders)
             .FolderScoped("files.createFolders at the folder the new one goes in")
@@ -349,6 +361,19 @@ public static class FileEndpoints
             ? state.Has(Rights.ManageMembers)
             : state.Check(paths, ParentOf(item.Path), Rights.DeleteFiles) == PathVerdict.Allowed
                 || state.Check(paths, ParentOf(item.Path), Rights.DeletePermanently) == PathVerdict.Allowed);
+
+    private static async Task<Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult>> CreateFile(
+        FileOperations operations, TagService tags, LibraryPaths paths, ServerFiles serverFiles, WorkFolder workFolder, CurrentAccess current,
+        ILoggerFactory loggers, CreateFileRequest request, CancellationToken cancellationToken)
+    {
+        var state = await current.GetAsync();
+        if (state.Check(paths, request.Path, Rights.CreateFiles) is var verdict and not PathVerdict.Allowed)
+            return Refused(verdict, state, paths, request.Path, "create a file in", loggers);
+        if (paths.TryResolve(request.Path, out var folder) && Protected(folder, serverFiles, workFolder))
+            return Refused(PathVerdict.NotFound, state, paths, request.Path, "create a file in", loggers, protectedPlace: true);
+
+        return await ResultAsync(await operations.CreateFileAsync(request.Path, request.Name, Actor(state), cancellationToken), tags, cancellationToken);
+    }
 
     private static async Task<Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult>> CreateFolder(
         FileOperations operations, TagService tags, LibraryPaths paths, ServerFiles serverFiles, WorkFolder workFolder, CurrentAccess current,

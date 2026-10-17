@@ -51,6 +51,15 @@ export class ItemMenu {
         return this.config.can(Rights.browse);
     }
 
+    /** Several items selected that may be renamed: the batch rename opens for them. False when fewer than two. */
+    renameSelection(): boolean {
+        const items = this.store.selectedItems().filter(item => this.canRename(item));
+        if (items.length < 2 || this.store.searching())
+            return false;
+        this.dialogs.batchRename()?.open(items);
+        return true;
+    }
+
     /** May rename `item`: in the folder listed (its list of names changes) and on the item itself. */
     canRename(item: LibraryItem): boolean {
         return this.files.canRename(item);
@@ -58,8 +67,14 @@ export class ItemMenu {
 
     entries(item: LibraryItem): MenuEntry[] {
         const entries: MenuEntry[] = [];
-        if (this.canRename(item))
-            entries.push({ id: 'rename', label: 'Rename…', icon: 'edit', shortcut: 'F2', title: `Give ${item.name} another name (F2)`, run: () => this.dialogs.name()?.rename(item) });
+        if (this.canRename(item)) {
+            const several = this.targets(item).filter(target => this.canRename(target)).length > 1 && !this.store.searching();
+            entries.push({
+                id: 'rename', label: 'Rename…', icon: 'edit', shortcut: 'F2',
+                title: several ? 'Rename the selected items together: find and replace, or numbered names (F2)' : `Give ${item.name} another name (F2)`,
+                run: () => several ? this.renameSelection() : this.dialogs.name()?.rename(item),
+            });
+        }
         if (this.files.canDelete(item))
             entries.push({
                 id: 'delete',
@@ -125,11 +140,19 @@ export class ItemMenu {
         return this.store.isSelected(item.path) ? this.store.selectedItems() : [item];
     }
 
-    /** A right click (or long press) on `item`: its menu, at the pointer; the browser's own with Shift, or when there's none. */
+    /**
+     * A right click on `item`: its menu, at the pointer; the browser's own with Shift, or when there's none. A long press
+     * on a touch screen selects it instead, as phone file managers do (its ⋮ button opens the menu there).
+     */
     fromEvent(event: MouseEvent, item: LibraryItem): void {
         if (event.shiftKey || !this.hasActions(item))
             return;
         event.preventDefault();
+        if (fromTouch(event)) {
+            this.store.select(item, !this.store.isSelected(item.path));
+            navigator.vibrate?.(15);
+            return;
+        }
         this.show(item, event.clientX, event.clientY, event.currentTarget as HTMLElement | null);
     }
 
@@ -148,6 +171,14 @@ export class ItemMenu {
     }
 }
 
+/** The menu event comes from a finger: a long press (Chrome tells it; others, by a screen without a mouse). */
+export function fromTouch(event: MouseEvent): boolean {
+    const pointer = (event as Partial<PointerEvent>).pointerType;
+    if (pointer)
+        return pointer === 'touch';
+    return typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches;
+}
+
 /** The open item menu (one for the page), kept inside the window, closed by a click elsewhere, Esc, scrolling or navigating. */
 @Component({
     selector: 'sfe-item-menu',
@@ -160,8 +191,11 @@ export class ItemMenu {
     },
     template: `
         @if (menu.open(); as open) {
+            <!-- On phones: an action sheet at the bottom, under its item's name, over a backdrop that closes it. -->
+            <div class="item-menu-backdrop" aria-hidden="true"></div>
             <div #box class="item-menu" role="menu" [attr.aria-label]="'Actions for ' + open.item.name"
                  [style.left.px]="position().x" [style.top.px]="position().y" (keydown)="keydown($event)">
+                <div class="item-menu-title">{{ open.item.name }}</div>
                 @for (entry of entries(); track entry.id) {
                     <button type="button" role="menuitem" class="item-menu-entry" [attr.data-entry]="entry.id" [title]="entry.title" (click)="run(entry)">
                         <svg [sfeIcon]="entry.icon"></svg>

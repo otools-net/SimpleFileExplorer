@@ -276,14 +276,21 @@ download the file.
 - [x] (1.61.0) Tests: `PropertiesTests`, `PropertyRouteTests`, `properties.spec.ts`.
 - Not done: Properties of several items at once (their total size); a button in the viewer.
 
-### Phase 8 — Comfort
+### Phase 8 — Comfort (built in 1.62.0)
 
-- [ ] Undo of the last rename/move (toast), restore covers deletes.
-- [ ] Batch rename of a selection (pattern with counter, find/replace, preview before applying).
-- [ ] New empty file / new text file (decide whether a text editor follows).
-- [ ] Other tabs and users see changes: refresh the listing when it comes back into view, or a change feed
-      (server-sent events from the operations, not a file-system watcher over millions of files).
-- [ ] Phone layout: action sheet for the menu, long press to select, drag replaced by Move to….
+Decided 2026-10-17: all in one commit; an empty file without editor; a live change feed (SSE); undo of renames and
+moves. Lasting facts: [batch-rename.md](../features/batch-rename.md), [change-feed.md](../features/change-feed.md),
+[new-folder-and-rename.md](../features/new-folder-and-rename.md) (new file, undo),
+[selection-and-keys.md](../features/selection-and-keys.md) (phones).
+
+- [x] (1.62.0) Undo of the last rename and move (toast); restore covers deletes.
+- [x] (1.62.0) Batch rename of a selection (find/replace, numbered with `#`, preview, undo).
+- [x] (1.62.0) New empty file (right `files.createFiles`); no text editor (still under Later).
+- [x] (1.62.0) Change feed: `GET api/files/changes` (SSE) from `LibraryBrowser.Invalidate`; listings refresh in place.
+- [x] (1.62.0) Phones: the item menu as a bottom sheet, long press selects, no finger drags.
+- [x] (1.62.0) Tests: `FileOperationsTests` (new file), `ChangeFeedRouteTests`, `comfort.spec.ts`.
+- Not done: undo of copies and uploads (delete them); a refresh of folder covers in a parent listing; the change
+  feed for searches.
 
 ### Later / optional (not planned yet)
 

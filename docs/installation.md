@@ -175,6 +175,10 @@ provides https (Caddy, nginx, Traefik, IIS, your NAS's): passwords and the sign-
   plain http, and browsers are told to use https only.
 - Uploads are sent in pieces of 8 MB. A proxy that refuses large requests (nginx: 1 MB by default) makes SFE send
   smaller ones, down to 256 KB, which is slower: raise its limit to at least 16 MB (nginx: `client_max_body_size 16m;`).
+- Open listings keep a long request open (`/api/files/changes`, server-sent events) to hear of changes made elsewhere.
+  The proxy must pass it on as it comes, not buffered (nginx does, told by the response; with others turn response
+  buffering off for that path) and not close it before 10 minutes (nginx: `proxy_read_timeout` above 30 s is enough:
+  SFE sends something every 25 s).
 - Name the addresses people use: `AllowedHosts` (e.g. `"AllowedHosts": "photos.example.com;nas.local;localhost"`).
   SFE then refuses requests for any other host name, which keeps a web page elsewhere from reaching it through a
   name it controls (DNS rebinding).

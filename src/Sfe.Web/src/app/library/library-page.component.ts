@@ -12,7 +12,9 @@ import { DeleteDialog } from '../files/delete.dialog';
 import { FileActions } from '../files/file-actions';
 import { FileTransfers } from '../files/file-transfers';
 import { OperationsPanelComponent } from '../files/operations-panel.component';
+import { BatchRenameDialog } from '../files/batch-rename.dialog';
 import { PropertiesDialog } from '../files/properties.dialog';
+import { ChangeFeed } from './change-feed.service';
 import { TransferDialog } from '../files/transfer.dialog';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
@@ -53,7 +55,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, PropertiesDialog, OperationsPanelComponent, ItemMenuComponent],
+        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent, ItemMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -88,6 +90,7 @@ let created = false;
             <sfe-delete-dialog />
             <sfe-transfer-dialog />
             <sfe-properties-dialog />
+            <sfe-batch-rename-dialog />
             <sfe-item-menu />
             <!-- After the viewer: it opens over it. -->
             <sfe-image-editor />
@@ -104,6 +107,7 @@ export class LibraryPageComponent implements OnInit {
     private readonly menu = inject(ItemMenu);
     private readonly fileActions = inject(FileActions);
     private readonly transfers = inject(FileTransfers);
+    private readonly changes = inject(ChangeFeed);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly destroyRef = inject(DestroyRef);
@@ -141,6 +145,9 @@ export class LibraryPageComponent implements OnInit {
         this.store.route.set(readRoute(this.route.snapshot.queryParamMap));
         this.ready.set(true);
         void this.store.load(restore);
+        // Folders changed elsewhere are listed again; the feed closes when leaving the page.
+        this.changes.start();
+        this.destroyRef.onDestroy(() => this.changes.stop());
     }
 
     /**
@@ -297,6 +304,11 @@ export class LibraryPageComponent implements OnInit {
             return;
         }
         if (event.key === 'F2') {
+            // Several selected: renamed together.
+            if (this.menu.renameSelection()) {
+                event.preventDefault();
+                return;
+            }
             const item = this.focusedItem();
             if (item && this.menu.canRename(item)) {
                 event.preventDefault();

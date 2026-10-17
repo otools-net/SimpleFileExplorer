@@ -51,7 +51,8 @@ Either way, the name `.sfe` at the library's root is reserved: it is never liste
 scanned, searched or reachable from the web pages, and no file or folder can be given that name there.
 
 Changing the setting doesn't move what is in the trash: each item stays (and is restored) from where it went. Who may
-create folders, rename, move, copy, upload and delete is decided by the rights `files.createFolders`, `files.rename`,
-`files.move`, `files.copy`, `files.upload`, `files.delete` and `files.deletePermanently`, which no group has
+create folders and files, rename, move, copy, upload and delete is decided by the rights `files.createFolders`,
+`files.createFiles`, `files.rename`, `files.move`, `files.copy`, `files.upload`, `files.delete` and
+`files.deletePermanently`, which no group has
 until you give them ([Spaces & accounts](spaces-and-accounts.md#groups)), and by [folder access](spaces-and-accounts.md#folder-access).
 The server's account needs write access to the library ([Installation](../installation.md)).

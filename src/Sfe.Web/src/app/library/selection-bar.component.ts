@@ -37,6 +37,11 @@ import { ListingStore } from './listing.store';
                 <svg sfeIcon="edit"></svg>
                 <span>Rename</span>
             </button>
+        } @else if (renamableTogether()) {
+            <button type="button" class="button small selection-rename" title="Rename the selected items together: find and replace, or numbered names (F2)" (click)="menu.renameSelection()">
+                <svg sfeIcon="edit"></svg>
+                <span>Rename</span>
+            </button>
         }
         @if (deletable()) {
             <button type="button" class="button small selection-delete" [title]="deleteTitle()" (click)="deleteSelection()">
@@ -76,7 +81,7 @@ export class SelectionBarComponent {
     protected readonly config = inject(ConfigService);
     protected readonly quickLinks = inject(QuickLinksService);
 
-    private readonly menu = inject(ItemMenu);
+    protected readonly menu = inject(ItemMenu);
     private readonly fileActions = inject(FileActions);
     protected readonly transfers = inject(FileTransfers);
     private readonly downloads = inject(FileDownloads);
@@ -101,6 +106,10 @@ export class SelectionBarComponent {
         const selected = this.selected();
         return selected.length === 1 && this.menu.canRename(selected[0]) ? selected[0] : null;
     });
+
+    /** Several selected that may be renamed (in a folder, not a search: names are compared with the folder's). */
+    protected readonly renamableTogether = computed(() =>
+        !this.store.searching() && this.selected().filter(item => this.menu.canRename(item)).length > 1);
 
     protected readonly movable = computed(() => this.selected().some(item => this.transfers.canMove(item)));
     protected readonly copyable = computed(() => this.selected().some(item => this.transfers.canCopy(item)));

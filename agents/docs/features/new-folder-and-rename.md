@@ -47,3 +47,10 @@ Code: `src/Sfe.Core/Files/FileOperations.cs`, `src/Sfe.Api/Endpoints/FileEndpoin
   a folder that isn't path-only. Listed in the search help for those with the rights.
 - The library page is in the initial bundle: these components count toward its 600 kB budget warning (631 kB at
   1.55.0).
+- **New file** (1.62.0): `POST api/files/new-file` (right `files.createFiles`, since 9), `FileOperations.CreateFileAsync`
+  (`FileMode.CreateNew`, indexed with `IndexFilesAsync`); `NameDialog.newFile` (mode `file`, `New file.txt` selected
+  up to its extension), the location bar's file-plus button. No editor.
+- **Undo** (1.62.0): after a rename, a toast's Undo renames back (`NameDialog.undoRename`); after a move job,
+  `FileTransfers.undoMove` moves each item back into its old folder (one `transfer` per folder: the gains check runs).
+  `ToastService.show` takes `actions` (several buttons); `toast.action` is the first.
+- Several items: [batch-rename.md](batch-rename.md).

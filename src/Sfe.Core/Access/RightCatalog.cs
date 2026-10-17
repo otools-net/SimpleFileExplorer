@@ -22,6 +22,7 @@ public static class Rights
     public const string MoveFiles = "files.move";
     public const string CopyFiles = "files.copy";
     public const string UploadFiles = "files.upload";
+    public const string CreateFiles = "files.createFiles";
     public const string ViewTags = "tags.view";
     public const string AssignTags = "tags.assign";
     public const string ManageTags = "tags.manage";
@@ -142,6 +143,7 @@ public static class RightCatalog
         Tenant(Rights.MoveFiles, false, [], W, Writable, "File management", "Move", "Move files and folders to other folders (their tags, folder access and quick links follow them).", since: 7),
         Tenant(Rights.CopyFiles, false, [], W, Writable, "File management", "Copy", "Copy files and folders into folders one may change (only what one may see is copied).", since: 7),
         Tenant(Rights.UploadFiles, false, [], W, Writable, "File management", "Upload", "Upload files and folders from one's computer into folders one may change.", since: 8),
+        Tenant(Rights.CreateFiles, false, [], W, Writable, "File management", "Create files", "Create new empty files in the library.", since: 9),
         Tenant(Rights.ViewTags, true, Everyone, R, Readable, "Tags", "See tags", "See the tags of files, the tag list and the tag sidebar."),
         Tenant(Rights.AssignTags, false, Members, W, Readable, "Tags", "Tag files", "Add tags to files and remove them, also to whole folders and searches."),
         Tenant(Rights.ManageTags, false, Administrators, W, null, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),

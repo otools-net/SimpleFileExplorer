@@ -1,8 +1,8 @@
 # Managing files
 
-You can create folders, rename, move, copy and delete files and folders from the listing, if your groups have the
-rights `files.createFolders`, `files.rename`, `files.move`, `files.copy`, `files.upload`, `files.delete` (to the
-trash) and `files.deletePermanently` ([Rights](../reference/rights.md)). No group has them until an administrator gives them.
+You can create folders and empty files, rename, move, copy and delete files and folders from the listing, if your
+groups have the rights `files.createFolders`, `files.createFiles`, `files.rename`, `files.move`, `files.copy`,
+`files.upload`, `files.delete` (to the trash) and `files.deletePermanently` ([Rights](../reference/rights.md)). No group has them until an administrator gives them.
 Folder access rules also apply: in a read-only folder these actions are not offered, and in a folder you can't see
 they don't exist.
 
@@ -12,12 +12,13 @@ which members have ([below](#download-several-files-or-a-folder)).
 ## The item menu
 
 Right-click a file or folder for its menu, or use its **⋮** button (it shows when the pointer is over the item, and
-always on phones and tablets; on Android, pressing and holding the item opens the menu too). The menu offers what you
-may do with that item:
+always on phones and tablets). On a phone the menu opens at the bottom of the screen, under the item's name, and
+pressing and holding an item **selects** it instead ([On phones](#on-phones)). The menu offers what you may do with
+that item:
 
 | Entry | Key | |
 |---|---|---|
-| **Rename…** | F2 | Gives it another name (below) |
+| **Rename…** | F2 | Gives it another name; several selected: [renamed together](#rename-several-at-once) |
 | **Delete…** | Delete | Moves it to the trash ([below](#delete)); with items selected, all of them |
 | **Cut**, **Copy** | Ctrl+X, Ctrl+C | Keeps it (or the selection) to move or copy with **Paste** ([below](#move-and-copy)) |
 | **Paste into …** | | On a folder, after Cut or Copy: puts what was kept into it |
@@ -39,6 +40,12 @@ folder you are viewing. In a search there is no New folder button.
 
 ![New folder](../images/new-folder-dialog.png)
 
+## New file
+
+The **New file** button next to it asks for the name of an **empty** file to create there (`New file.txt` to start
+with; the name is selected up to its extension). It needs the right `files.createFiles`. SFE has no text editor:
+open the file with a program of your computer to fill it.
+
 ## Rename
 
 **Rename…** in the item menu, or **F2** with one file selected (or the item focused with the keyboard), asks for the new
@@ -52,6 +59,24 @@ folder, its folder access rules, quick links, scheduled scans and the settings t
 folders, the folder for edited pictures).
 
 On Windows servers you can change only the case of a name (`photo.jpg` to `Photo.jpg`).
+
+A message in the corner offers **Undo** for a few seconds, which gives the item its old name back (unless something
+took that name meanwhile).
+
+## Rename several at once
+
+With several files or folders of one folder selected, **Rename** in the selection bar (or **Rename…** in the menu, or
+**F2**) renames them together:
+
+- **Find and replace**: a text in their names replaced by another (**Match case** to tell `IMG` from `img`);
+- **Numbered**: a new name for each, `#` standing for the number (`Beach trip ##` gives `Beach trip 01`,
+  `Beach trip 02`…), counting from the number you choose, in the listing's order.
+
+Extensions stay. The preview shows every new name before anything changes; names that can't be given are shown in red
+and left out: empty, holding `/`, given to two items, already taken by another item of the folder, or the current name
+of another item renamed (rename in two steps then). **Undo**, in the message afterwards, gives them all their names back.
+
+![Renaming several files at once](../images/batch-rename-dialog.png)
 
 ## Delete
 
@@ -100,7 +125,8 @@ There are several ways to move or copy files and folders, as in a file browser o
 
 Moves and copies run on the server in the background: you can go on browsing. A panel at the bottom right shows each
 one with its progress; **Cancel** stops it (what is done stays, nothing half copied does). When it is over, the panel
-says what was done and what was not, and why; close it with ×.
+says what was done and what was not, and why; close it with ×. After a move, a message offers **Undo** for a few
+seconds: the items go back into the folders they came from.
 
 When the folder already holds an item with the same name, the panel asks, showing the size and date of both:
 **Replace** (the one there goes to the trash: you need the right to delete there), **Skip** (leave this one out) or
@@ -159,6 +185,23 @@ An uploaded file keeps its date from your computer and is added to the index at 
   and uploads** (1 GB by default).
 - Behind a reverse proxy, SFE sends smaller pieces by itself when the proxy refuses large requests
   ([Installation](../installation.md#reaching-it-from-outside-https-and-a-reverse-proxy)).
+
+## Seeing changes made elsewhere
+
+When someone else (or you, in another tab) creates, renames, moves, copies, uploads or deletes something through SFE,
+the folder you are viewing is listed again by itself a moment later: what was added shows, what went away goes,
+without losing your place or what you selected. Changes made to the disk outside SFE show when you open the folder
+again.
+
+## On phones
+
+- **Press and hold** a file or folder to select it (as phone file managers do); press and hold others, or tick their
+  boxes, to add them, then use the selection bar.
+- The **⋮** button of each item opens its menu, as a sheet at the bottom of the screen.
+
+  ![The item menu on a phone](../images/phone-item-menu.png)
+
+- Items are not dragged with a finger: use **Move to…** and **Copy to…** in the menu or the selection bar.
 
 ## Download several files or a folder
 

@@ -3,6 +3,24 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.62.0
+
+### Added
+
+- **Undo** after a rename and after a move (the items go back where they were), in the message that says it is done.
+- **Rename several at once**: find and replace in their names, or numbered names (`Trip ##`), with a preview of every
+  new name and of those that can't be given; undone together.
+- **New file**: an empty file in the folder listed (new right `files.createFiles`, in no group).
+- **Changes made elsewhere show by themselves**: when another person or tab changes the folder you are viewing through
+  SFE, it is listed again in place (a live feed from the server), keeping your position and selection.
+- **Phones**: the item menu opens as a sheet at the bottom; pressing and holding an item selects it; items are not
+  dragged with a finger (Move to… and Copy to… do it).
+
+### Fixed
+
+- **Phones:** the folder's buttons (tags, upload, new file, new folder) go below its name instead of squeezing it into
+  a narrow column.
+
 ## 1.61.0
 
 ### Added

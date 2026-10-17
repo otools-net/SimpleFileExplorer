@@ -14,6 +14,9 @@ import {
 import { encodePath } from './paths';
 
 /** A failed request: the message of the problem response, and its validation messages by field. */
+/** This tab, for the change feed: its own changes are not told back to it. */
+export const TAB_ID = Math.random().toString(36).slice(2, 12);
+
 export class ApiError extends Error {
     /** @param type The problem's `type` (`setup-required`, `tenant-changed`...), when it has one. */
     constructor(readonly status: number, message: string, readonly errors: Record<string, string[]> | null = null, readonly type: string | null = null) {
@@ -202,6 +205,8 @@ export class Api {
     fileLink = (path: string) => this.post<FileLink>('api/files/links', { path });
     /** Creates the folder `name` in the folder `path`. Resolves with the conflict (409: the name is taken, a scan runs...). */
     createFolder = (path: string, name: string) => this.post<FileOperationResult>('api/files/folders', { path, name });
+    /** Creates the empty file `name` in the folder `path`. Resolves with the conflict (409) as `createFolder`. */
+    createFile = (path: string, name: string) => this.post<FileOperationResult>('api/files/new-file', { path, name });
     /** Renames the file or folder `path` to `name`, in its folder. Resolves with the conflict (409) as `createFolder`. */
     renameItem = (path: string, name: string) => this.post<FileOperationResult>('api/files/rename', { path, name });
     /** Deletes `paths`, to the trash or for good; a result per path. */
@@ -315,7 +320,8 @@ export class Api {
      * consent (CORS), so it cannot act with this browser's session.
      */
     private headers(changes: boolean): HttpHeaders {
-        let headers = new HttpHeaders();
+        // The change feed tells other tabs of this tab's changes, not this one.
+        let headers = new HttpHeaders().set('X-SFE-Tab', TAB_ID);
         if (changes)
             headers = headers.set('X-SFE-Request', '1');
         if (this.tenantId !== null)

@@ -153,6 +153,11 @@ export class QuickLinksComponent implements OnInit {
 
     /** A drag started on the page: a folder or file (or the selection) can be dropped here. */
     protected onPageDragStart(event: DragEvent): void {
+        // A finger drags nothing (a long press selects): Move to… and Copy to… do it there.
+        if (typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches) {
+            event.preventDefault();
+            return;
+        }
         if (!this.links.enabled() || !event.dataTransfer)
             return;
         const paths = this.links.dragPaths(event.target);

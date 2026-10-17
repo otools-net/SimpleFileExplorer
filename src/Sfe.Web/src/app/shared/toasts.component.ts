@@ -10,8 +10,8 @@ import { ToastService } from '../core/toast.service';
         @for (toast of toasts(); track toast.id) {
             <div class="toast" [class.error]="toast.error">
                 <span>{{ toast.message }}</span>
-                @if (toast.action; as action) {
-                    <button type="button" class="button small toast-action" [title]="action.title" (click)="service.act(toast)">{{ action.label }}</button>
+                @for (action of toast.actions; track action.label) {
+                    <button type="button" class="button small toast-action" [title]="action.title" (click)="service.act(toast, action)">{{ action.label }}</button>
                 }
             </div>
         }

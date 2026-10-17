@@ -359,6 +359,34 @@ const scenes = {
         await b.shot(OUT + 'phone-admin.png');
         await b.open(admin('tracking', 'missing'));
         await b.shot(OUT + 'phone-admin-section.png');
+        // The item menu as a sheet at the bottom, from an item's ⋮ button.
+        await b.open('?path=Photos');
+        await b.eval(`document.querySelector('.folder-item[data-path="Photos/2024 Beach trip"] .item-menu-button').click(); 1`);
+        await sleep(800);
+        await b.shot(OUT + 'phone-item-menu.png');
+        await b.close();
+    },
+    async batchRename() {
+        const b = await session();
+        await b.open('?path=Photos%2F2024%20Beach%20trip');
+        for (const name of ['Dunes', 'Harbour', 'Night swim'])
+            await b.realClick(`input[aria-label="Select ${name}.jpg"], input[title="Select ${name}.jpg"]`);
+        await sleep(400);
+        await b.clickTitle('Rename the selected items together');
+        await sleep(800);
+        await b.eval(`(() => {
+            document.querySelector('sfe-batch-rename-dialog input[value="number"]').click();
+            return 1;
+        })()`);
+        await sleep(300);
+        await b.eval(`(() => {
+            const input = document.querySelector('sfe-batch-rename-dialog input[name="pattern"]');
+            input.value = 'Beach trip ##';
+            input.dispatchEvent(new Event('input'));
+            return 1;
+        })()`);
+        await sleep(600);
+        await b.shot(OUT + 'batch-rename-dialog.png');
         await b.close();
     },
     async light() {

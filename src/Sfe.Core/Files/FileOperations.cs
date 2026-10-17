@@ -121,6 +121,50 @@ public sealed class FileOperations(
         return new FileOperationResult(FileOperationStatus.Done, item);
     }
 
+    /// <summary>Creates the empty file <paramref name="name"/> in the folder <paramref name="parent"/>, indexed at once.</summary>
+    public async Task<FileOperationResult> CreateFileAsync(string? parent, string? name, FileActor actor, CancellationToken cancellationToken = default)
+    {
+        if (LibraryPaths.NormalizeRelative(parent) is not { } parentPath || !paths.TryResolve(parentPath, out var parentFull) || !Directory.Exists(parentFull))
+            return FileOperationResult.Fail(FileOperationStatus.NotFound, "The folder was not found.");
+        if (Target(parentPath, name) is { Error: { } error })
+            return error;
+        var target = Path.Join(parentFull, name);
+        if (File.Exists(target) || Directory.Exists(target))
+            return Exists(name!);
+
+        using var operation = scans.TryBeginOperation(target);
+        if (operation is null)
+            return ScanRunning();
+        try
+        {
+            // Never over something that appeared since the check.
+            await using (new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { }
+        }
+        catch (IOException) when (File.Exists(target) || Directory.Exists(target))
+        {
+            return Exists(name!);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(ex, "{Account} could not create the file {Name} in {Folder}", actor.Name, name, Display(parentPath));
+            return DiskFailure(ex, $"The file “{name}” could not be created");
+        }
+
+        try
+        {
+            await indexer.IndexFilesAsync([target], cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "Could not index the new file {Name}", target);
+        }
+
+        browser.Invalidate(parentFull);
+        var item = browser.ToItem(new FileInfo(target))!;
+        logger.LogInformation("{Account} created the file {Path}", actor.Name, item.Path);
+        return new FileOperationResult(FileOperationStatus.Done, item);
+    }
+
     /// <summary>
     /// Renames the file or folder <paramref name="path"/> to <paramref name="name"/>, in the same folder: what SFE
     /// keeps by path (index rows and tags, folder rules, settings, quick links, caches) follows it.

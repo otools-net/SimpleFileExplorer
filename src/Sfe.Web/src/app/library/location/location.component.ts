@@ -73,6 +73,12 @@ const SORT_OPTIONS: [SortField, string][] = [
             }
             <input #filesInput type="file" multiple hidden (change)="upload(filesInput)">
             <input #folderInput type="file" webkitdirectory hidden (change)="upload(folderInput)">
+            @if (canCreateFile()) {
+                <button type="button" class="icon-button small ghost new-file-button" aria-label="New file" title="New empty file in this folder"
+                        (click)="newFile()">
+                    <svg sfeIcon="file-plus"></svg>
+                </button>
+            }
             @if (canCreateFolder()) {
                 <button type="button" class="icon-button small ghost new-folder-button" aria-label="New folder" title="New folder in this folder (Shift+N)"
                         (click)="newFolder()">
@@ -128,6 +134,8 @@ export class LocationComponent {
 
     protected readonly canCreateFolder = computed(() =>
         !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFolders));
+    protected readonly canCreateFile = computed(() =>
+        !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFiles));
     protected readonly sortOptions = SORT_OPTIONS;
     protected readonly searchSorts = SEARCH_SORTS;
     private readonly head = viewChild.required<ElementRef<HTMLElement>>('head');
@@ -175,6 +183,10 @@ export class LocationComponent {
 
     protected newFolder(): void {
         this.dialogs.name()?.newFolder(this.store.route().path);
+    }
+
+    protected newFile(): void {
+        this.dialogs.name()?.newFile(this.store.route().path);
     }
 
     /** The tags of every file of the folder browsed, or of every match of the search. */

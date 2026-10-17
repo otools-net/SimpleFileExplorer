@@ -2,7 +2,7 @@ import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core'
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { plural } from '../core/format';
-import { ConflictChoice, FileJobKind, FileJobRequest, FileJobView, LibraryItem } from '../core/models';
+import { ConflictChoice, FileJobItem, FileJobKind, FileJobRequest, FileJobView, LibraryItem } from '../core/models';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
@@ -211,6 +211,12 @@ export class FileTransfers {
             this.poll();
     }
 
+    /** Undo of a move: the items go back into the folders they came from. */
+    private undoMove(done: FileJobItem[]): void {
+        for (const [origin, paths] of groupByOrigin(done))
+            void this.transfer('move', paths, origin);
+    }
+
     /** A job followed has ended: the listing shows its result, a toast says it. */
     private ended(job: FileJobView): void {
         const done = job.results.filter(result => result.status === 'done');
@@ -225,17 +231,32 @@ export class FileTransfers {
         const where = baseName(job.target) || this.config.config()?.rootName || 'the library';
         if (job.state === 'cancelled')
             this.toasts.show(`Stopped: ${plural(done.length, 'item')} ${verb} to “${where}” before.`);
-        else if (done.length)
-            this.toasts.show(`${plural(done.length, 'item')} ${verb} to “${where}”.`, job.target === listed ? {} : {
-                timeout: 8000,
-                action: { label: 'Open', title: `Open ${where}`, run: () => this.store.navigate({ path: job.target }) },
-            });
+        else if (done.length) {
+            const actions = [];
+            if (job.kind === 'move')
+                actions.push({ label: 'Undo', title: 'Move them back where they were', run: () => this.undoMove(done) });
+            if (job.target !== listed)
+                actions.push({ label: 'Open', title: `Open ${where}`, run: () => this.store.navigate({ path: job.target }) });
+            this.toasts.show(`${plural(done.length, 'item')} ${verb} to “${where}”.`, { timeout: 8000, actions });
+        }
         const failed = job.results.filter(result => result.status !== 'done' && result.status !== 'skipped');
         if (failed.length)
             this.toasts.error(failed.length === 1
                 ? failed[0].message ?? `“${baseName(failed[0].path)}” could not be ${verb}.`
                 : `${plural(failed.length, 'item')} could not be ${verb}: ${failed[0].message ?? baseName(failed[0].path)}`, 8000);
     }
+}
+
+/** The moves `done` undone: each item back into the folder it came from (one job per folder), asking about names taken there. */
+function groupByOrigin(done: FileJobItem[]): Map<string, string[]> {
+    const groups = new Map<string, string[]>();
+    for (const result of done) {
+        if (!result.newPath)
+            continue;
+        const origin = parentPath(result.path);
+        groups.set(origin, [...groups.get(origin) ?? [], result.newPath]);
+    }
+    return groups;
 }
 
 export function finished(job: FileJobView): boolean {

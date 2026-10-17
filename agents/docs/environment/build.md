@@ -24,3 +24,6 @@ Code: `src/Sfe.Api/Sfe.Api.csproj` (targets), `src/Sfe.Web/package.json`, `angul
 - `ng build --configuration development` writes an unminified client into `src/Sfe.Api/wwwroot`, whose Angular
   comments hold sample URLs (cloudinary, imagekit): `WebClientHasNoExternalResources` then fails. Rebuild with `npm run
   build` (or `dotnet build`) before `dotnet test`.
+- After a client change, the next `dotnet build`/`dotnet test` fails once in `DefineStaticWebAssets` ("No file exists
+  for the asset … wwwroot\chunk-….js"); run it again. A `dotnet test | grep Passed` then prints nothing at all: look
+  for `error` too, or read the tail.

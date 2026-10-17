@@ -148,7 +148,9 @@ describe('FileTransfers', () => {
         expect(messages).toContain('1 item moved to “Holidays”.');
         expect(messages).toContain('“clip.mp4” could not be moved: it is in use.');
         const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => undefined as never);
-        toasts.act(toasts.toasts().find(t => t.action)!);
+        const moved = toasts.toasts().find(t => t.actions.length)!;
+        expect(moved.actions.map(action => action.label)).toEqual(['Undo', 'Open']);
+        toasts.act(moved, moved.actions[1]);
         expect(navigate).toHaveBeenCalledWith({ path: 'Media/Holidays' });
     });
 

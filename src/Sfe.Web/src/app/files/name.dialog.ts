@@ -2,16 +2,19 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signa
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { FileOperationResult, isFileConflict, LibraryItem } from '../core/models';
+import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { SheetComponent } from '../shared/sheet.component';
 import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
 
-type Mode = { kind: 'folder'; parent: string } | { kind: 'rename'; item: LibraryItem };
+type Mode = { kind: 'folder'; parent: string } | { kind: 'file'; parent: string } | { kind: 'rename'; item: LibraryItem };
+
+const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
 
 /**
- * Asks for a name: of a new folder in the folder listed (New folder, Ctrl+Shift+N), or the new name of a file or
+ * Asks for a name: of a new folder (New folder, Ctrl+Shift+N) or empty file (New file) in the folder listed, or the new name of a file or
  * folder (Rename, F2), with the name selected up to its extension as in Explorer. The server checks the name; its
  * answer shows under the field. Done, the listing takes the item in place, without loading again.
  */
@@ -46,6 +49,7 @@ export class NameDialog {
     private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
     private readonly quickLinks = inject(QuickLinksService);
+    private readonly toasts = inject(ToastService);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
     private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
 
@@ -54,7 +58,7 @@ export class NameDialog {
     protected readonly error = signal<string | null>(null);
     protected readonly saving = signal(false);
 
-    protected readonly heading = computed(() => this.mode()?.kind === 'rename' ? 'Rename' : 'New folder');
+    protected readonly heading = computed(() => HEADINGS[this.mode()?.kind ?? 'folder']);
     protected readonly subtitle = computed(() => {
         const mode = this.mode();
         if (!mode)
@@ -62,7 +66,10 @@ export class NameDialog {
         return mode.kind === 'rename' ? mode.item.name : `In ${mode.parent ? `“${mode.parent}”` : this.config.config()?.rootName ?? 'the library'}`;
     });
     protected readonly actionLabel = computed(() => this.mode()?.kind === 'rename' ? 'Rename' : 'Create');
-    protected readonly actionTitle = computed(() => this.mode()?.kind === 'rename' ? 'Give it this name (Enter)' : 'Create the folder (Enter)');
+    protected readonly actionTitle = computed(() => {
+        const kind = this.mode()?.kind;
+        return kind === 'rename' ? 'Give it this name (Enter)' : kind === 'file' ? 'Create the empty file (Enter)' : 'Create the folder (Enter)';
+    });
     protected readonly hidden = computed(() => this.name().trim().startsWith('.'));
     protected readonly canSave = computed(() => {
         const name = this.name();
@@ -79,6 +86,11 @@ export class NameDialog {
         this.show({ kind: 'folder', parent }, 'New folder');
     }
 
+    /** Asks for the name of a new empty file in `parent` (the folder listed by default). */
+    newFile(parent = this.store.route().path): void {
+        this.show({ kind: 'file', parent }, 'New file.txt');
+    }
+
     /** Asks for the new name of `item`. */
     rename(item: LibraryItem): void {
         this.show({ kind: 'rename', item }, item.name);
@@ -92,7 +104,7 @@ export class NameDialog {
         // The name selected up to its extension (a file's), so that typing replaces the name and keeps the type.
         const input = this.input().nativeElement;
         input.value = name;
-        const dot = mode.kind === 'rename' && mode.item.kind !== 'directory' ? name.lastIndexOf('.') : -1;
+        const dot = mode.kind === 'file' || (mode.kind === 'rename' && mode.item.kind !== 'directory') ? name.lastIndexOf('.') : -1;
         input.focus();
         input.setSelectionRange(0, dot > 0 ? dot : name.length);
     }
@@ -112,7 +124,7 @@ export class NameDialog {
         try {
             result = await whileBusy(this.saving, () => mode.kind === 'rename'
                 ? this.api.renameItem(mode.item.path, name)
-                : this.api.createFolder(mode.parent, name));
+                : mode.kind === 'file' ? this.api.createFile(mode.parent, name) : this.api.createFolder(mode.parent, name));
         } catch (error) {
             this.error.set(error instanceof ApiError && error.status === 404
                 ? 'It is not there any more: it may have been moved or deleted.'
@@ -125,12 +137,34 @@ export class NameDialog {
         }
         this.sheet().close();
         if (mode.kind === 'rename') {
-            this.store.applyRenamed(mode.item.path, result);
-            // The server moved the quick links to it (and below it) too.
-            const old = mode.item.path;
-            if (this.quickLinks.links().some(link => link.path === old || link.path.startsWith(`${old}/`)))
-                void this.quickLinks.load();
+            this.renamed(mode.item.path, result);
+            const renamed = result;
+            this.toasts.show(`Renamed to “${renamed.name}”.`, {
+                timeout: 8000,
+                action: { label: 'Undo', title: `Give it back its name “${mode.item.name}”`, run: () => void this.undoRename(renamed, mode.item.name) },
+            });
         } else
             this.store.applyAdded(result);
+    }
+
+    /** The listing (and the quick links, which the server moved too) take the new name. */
+    private renamed(oldPath: string, item: LibraryItem): void {
+        this.store.applyRenamed(oldPath, item);
+        if (this.quickLinks.links().some(link => link.path === oldPath || link.path.startsWith(`${oldPath}/`)))
+            void this.quickLinks.load();
+    }
+
+    /** Undo of a rename: the old name back, unless something took it meanwhile. */
+    private async undoRename(item: LibraryItem, name: string): Promise<void> {
+        try {
+            const result = await this.api.renameItem(item.path, name);
+            if (isFileConflict(result)) {
+                this.toasts.error(result.detail ?? `“${name}” could not be given back.`);
+                return;
+            }
+            this.renamed(item.path, result);
+        } catch (error) {
+            this.toasts.error(`“${name}” could not be given back: ${(error as Error).message}`);
+        }
     }
 }

@@ -100,11 +100,13 @@ describe('SelectionBarComponent', () => {
         expect(button(fixture.nativeElement, 'Select all').title).toContain('the 2 items loaded so far');
     });
 
-    it('offers Rename for one item, and Tags only with files selected', async () => {
+    it('offers Rename for one item or several together, and Tags only with files selected', async () => {
         const folder = item('Folder', { kind: 'directory' });
         await list([folder, a, b]);
         const rename = vi.fn();
+        const batch = vi.fn();
         TestBed.inject(Dialogs).name.set({ rename } as never);
+        TestBed.inject(Dialogs).batchRename.set({ open: batch } as never);
         const fixture = await bar();
         const element: HTMLElement = fixture.nativeElement;
         store.select(folder, true);
@@ -116,7 +118,8 @@ describe('SelectionBarComponent', () => {
 
         store.select(a, true);
         await settle();
-        expect(button(element, 'Rename')).toBeUndefined();
+        button(element, 'Rename').click();
+        expect(batch).toHaveBeenCalledWith([folder, a]);
         expect(button(element, 'Tags')).toBeDefined();
     });
 

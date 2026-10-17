@@ -11,7 +11,10 @@ export interface Toast {
     id: number;
     message: string;
     error: boolean;
+    /** The first of `actions`. */
     action?: ToastAction;
+    /** Its buttons (Undo, Open). */
+    actions: ToastAction[];
 }
 
 /** Short messages in the corner of the page (see ToastsComponent), each removed after its timeout. */
@@ -21,8 +24,9 @@ export class ToastService {
     private readonly list = signal<Toast[]>([]);
     readonly toasts = this.list.asReadonly();
 
-    show(message: string, { error = false, timeout = 4500, action }: { error?: boolean; timeout?: number; action?: ToastAction } = {}): void {
-        const toast: Toast = { id: ++this.nextId, message, error, action };
+    show(message: string, { error = false, timeout = 4500, action, actions = [] }: { error?: boolean; timeout?: number; action?: ToastAction; actions?: ToastAction[] } = {}): void {
+        const all = action ? [action, ...actions] : actions;
+        const toast: Toast = { id: ++this.nextId, message, error, action: all[0], actions: all };
         this.list.update(list => [...list, toast]);
         setTimeout(() => this.dismiss(toast.id), timeout);
     }
@@ -35,9 +39,9 @@ export class ToastService {
         this.list.update(list => list.filter(t => t.id !== id));
     }
 
-    /** Runs the toast's action and closes it. */
-    act(toast: Toast): void {
+    /** Runs one of the toast's actions (its first by default) and closes it. */
+    act(toast: Toast, action = toast.action): void {
         this.dismiss(toast.id);
-        toast.action?.run();
+        action?.run();
     }
 }

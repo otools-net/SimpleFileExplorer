@@ -254,6 +254,12 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
     }
 
     /// <summary>
+    /// A folder (root-relative) was changed through SFE: file management, uploads, the trash (agents/docs/features/
+    /// change-feed.md). Raised synchronously by <see cref="Invalidate"/>, in the request or job that changed it.
+    /// </summary>
+    public event Action<string>? FolderChanged;
+
+    /// <summary>
     /// Forgets what is kept of the folder <paramref name="fullPath"/> (its sorted listings, its cover), after SFE
     /// changed it: its last write time, which tells a change otherwise, is not reliable everywhere (FAT keeps it to
     /// 2 seconds, some network shares don't update it).
@@ -267,6 +273,21 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         {
             foreach (var key in _covers.Keys.Where(k => LibraryPaths.PathComparer.Equals(Path.TrimEndingDirectorySeparator(k.FullPath), folder)).ToList())
                 _covers.Remove(key);
+        }
+        // After the listing is forgotten: whoever listens lists it anew.
+        if (paths.ToRelative(folder) is { } changed && FolderChanged is { } handlers)
+        {
+            // A listener failing (a connection gone) must not fail the operation that changed the folder.
+            foreach (var handler in handlers.GetInvocationList().Cast<Action<string>>())
+            {
+                try
+                {
+                    handler(changed);
+                }
+                catch (Exception ex) when (ex is not OutOfMemoryException)
+                {
+                }
+            }
         }
     }
 

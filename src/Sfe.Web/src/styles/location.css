@@ -10,6 +10,11 @@
 
 .location-head { display: flex; align-items: flex-start; gap: 8px; }
 .location-head .crumbs { flex: 1; min-width: 0; }
+/* Phones: the folder's name keeps the first line (beside the up / previous / next buttons); its buttons go below. */
+@media (max-width: 640px) {
+    .location-head { flex-wrap: wrap; }
+    .location-head .crumbs { flex: 1 1 calc(100% - 140px); }
+}
 .location-head .copy-folder-path, .location-head .scope-tags-button { flex: none; color: var(--text-muted); }
 .location-head .copy-folder-path:hover, .location-head .scope-tags-button:hover { color: var(--text); }
 

@@ -139,6 +139,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [uploads](agents/docs/features/uploads.md) | resumable chunked uploads, folder uploads, desktop drops, admin list | `Uploads`, `UploadEndpoints`, `app/files/uploads.ts` |
 | [archives](agents/docs/features/archives.md) | several files or a folder downloaded as one streamed zip, one-time links | `Archives`, `ArchiveEndpoints`, `ArchiveLinks`, `app/files/downloads.ts` |
 | [properties](agents/docs/features/properties.md) | properties sheet, folder totals and disk counts, checksums | `Properties`, `PropertyJobs`, `PropertyEndpoints`, `app/files/properties.dialog.ts` |
+| [batch-rename](agents/docs/features/batch-rename.md) | several items renamed at once: find/replace, numbered, preview, undo | `app/files/batch-rename.dialog.ts` |
+| [change-feed](agents/docs/features/change-feed.md) | folders changed elsewhere told to open listings (SSE), refresh in place | `LibraryBrowser.FolderChanged`, `ChangeEndpoints`, `change-feed.service.ts` |
 | [file-names](agents/docs/features/file-names.md) | names refused, keep-both names, portable names | `Core/Files/FileNames` |
 | [work-folder](agents/docs/features/work-folder.md) | `.sfe` at the root or the server's data folder; the reserved name | `WorkFolder`, `LibraryPaths.TryResolve` |
 | [selection-and-keys](agents/docs/features/selection-and-keys.md) | selecting files and folders, the selection bar, arrow keys | `ListingStore`, `listing-keys.ts` |

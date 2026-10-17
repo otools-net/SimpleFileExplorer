@@ -79,6 +79,31 @@ public sealed class FileOperationsTests
         Assert.IsFalse(await db.Directories.AnyAsync(Token));
     }
 
+    /* ---------- New file ---------- */
+
+    [TestMethod]
+    public async Task ANewFileIsEmptyIndexedAndNeverOverAnother()
+    {
+        await ScanAsync();
+        var changed = new List<string>();
+        _services.Get<LibraryBrowser>().FolderChanged += changed.Add;
+
+        var result = await Files.CreateFileAsync("ChildDir", "notes.txt", Me, Token);
+        var again = await Files.CreateFileAsync("ChildDir", "notes.txt", Me, Token);
+        var overFolder = await Files.CreateFileAsync("", "ChildDir", Me, Token);
+
+        Assert.AreEqual(FileOperationStatus.Done, result.Status, result.Message);
+        Assert.AreEqual("ChildDir/notes.txt", result.Item!.Path);
+        Assert.AreEqual(0, new FileInfo(_library.FullPath("ChildDir/notes.txt")).Length);
+        Assert.AreEqual(FileOperationStatus.Exists, again.Status);
+        Assert.AreEqual(FileOperationStatus.Exists, overFolder.Status);
+        Assert.AreEqual(FileOperationStatus.Invalid, (await Files.CreateFileAsync("", "a/b.txt", Me, Token)).Status);
+        Assert.AreEqual(FileOperationStatus.NotFound, (await Files.CreateFileAsync("Nothing", "x.txt", Me, Token)).Status);
+        await using var db = await DbAsync();
+        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("ChildDir/notes.txt"), Token), "Indexed at once");
+        CollectionAssert.Contains(changed, "ChildDir", "The change feed hears of it");
+    }
+
     [TestMethod]
     public async Task NamesThatCantBeUsedAreRefused()
     {
