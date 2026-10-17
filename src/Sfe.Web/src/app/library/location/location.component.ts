@@ -1,3 +1,4 @@
+import { pickedFiles, UploadQueue } from '../../files/uploads';
 import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CopyPathService } from '../../core/copy-path.service';
@@ -60,6 +61,18 @@ const SORT_OPTIONS: [SortField, string][] = [
                     <svg sfeIcon="tag"></svg>
                 </button>
             }
+            @if (uploads.canUploadInto()) {
+                <button type="button" class="icon-button small ghost upload-button" aria-label="Upload files" title="Upload files into this folder (or drop them on the page)"
+                        (click)="filesInput.click()">
+                    <svg sfeIcon="upload"></svg>
+                </button>
+                <button type="button" class="icon-button small ghost upload-folder-button" aria-label="Upload a folder" title="Upload a folder, with everything in it, into this folder"
+                        (click)="folderInput.click()">
+                    <svg sfeIcon="folder-up"></svg>
+                </button>
+            }
+            <input #filesInput type="file" multiple hidden (change)="upload(filesInput)">
+            <input #folderInput type="file" webkitdirectory hidden (change)="upload(folderInput)">
             @if (canCreateFolder()) {
                 <button type="button" class="icon-button small ghost new-folder-button" aria-label="New folder" title="New folder in this folder (Shift+N)"
                         (click)="newFolder()">
@@ -103,9 +116,16 @@ export class LocationComponent {
     protected readonly search = inject(SearchBoxState);
     protected readonly links = inject(LocationLinks);
     private readonly dialogs = inject(Dialogs);
+    protected readonly uploads = inject(UploadQueue);
     /** Tagging every file of the folder or search changes tags: hidden without the right (here, with folder rules). */
     protected readonly canTag = computed(() => this.store.can(Rights.assignTags));
     /** Folders are made in the folder browsed (not in a search, nor in a folder shown only on the way to another). */
+    /** Uploads the files picked into the folder listed. */
+    protected upload(input: HTMLInputElement): void {
+        void this.uploads.add(pickedFiles(input), this.store.route().path);
+        input.value = '';
+    }
+
     protected readonly canCreateFolder = computed(() =>
         !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFolders));
     protected readonly sortOptions = SORT_OPTIONS;

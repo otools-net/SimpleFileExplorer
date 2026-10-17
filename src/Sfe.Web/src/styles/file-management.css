@@ -142,3 +142,16 @@
 
 /* Cut (Ctrl+X), until pasted. */
 :is(.tile, .row, .folder-item).cut { opacity: .5; }
+
+/* ---------- Uploads: the panel's files, the page as a drop target ---------- */
+
+.uploads-panel { display: contents; }
+.upload-files { margin: 8px 0 0; padding: 0; list-style: none; font-size: 12px; }
+.upload-file { display: flex; align-items: center; gap: 6px; min-height: 28px; }
+.upload-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-state { flex: none; max-width: 55%; color: var(--text-muted); overflow-wrap: anywhere; text-align: right; }
+.upload-file[data-state="failed"] .upload-state { color: var(--danger); }
+.upload-file .button.small { padding: 2px 8px; }
+main.page.drop-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
+.location-head :is(.upload-button, .upload-folder-button) { flex: none; color: var(--text-muted); }
+.location-head :is(.upload-button, .upload-folder-button):hover { color: var(--text); }

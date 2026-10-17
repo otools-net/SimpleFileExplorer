@@ -128,7 +128,7 @@ covered by unit tests of the pure logic plus the portable AppImage smoke test.
       (decision above). `RightCatalogTests`, `AccessTests` (switching off rights changing files) and the upgrade test
       in `EditorTests` list them.
 - [~] Settings: `Files:PortableNames`, `Files:WorkFolder` (tab **File management**, right `settings.files`) in 1.55.0;
-      `DeletePermanently`, `Trash:RetentionDays`, `Uploads:*`, `MinimumFreeSpace` with their phases.
+      `DeletePermanently`, `Trash:RetentionDays`, `Uploads:*`, `MinimumFreeSpace` with their phases (built through 1.59.0).
 - [x] Decided open questions 2, 3, 4 (see [Decisions](#decisions)).
 
 ### Phase 1 — New folder and rename (built in 1.55.0)
@@ -217,24 +217,30 @@ Lasting facts: [move-and-copy.md](../features/move-and-copy.md).
 - Reference: filebrowser moves with `Rename` and falls back to copy + `RemoveAll`; its conflict prompt shows origin
   and destination per file with checkboxes. Ours: a job with progress and a report.
 
-### Phase 5 — Upload
+### Phase 5 — Upload (built in 1.59.0)
 
-- [ ] Resumable chunked uploads (own small protocol, not a full tus server): `POST` start (target, name, size,
-      conflict choice) → id; `PUT` chunks with offsets; `HEAD`/`GET` status to resume; finish = rename from
-      `.sfe/uploads/<id>.part` (same volume) with `CreateNew`; abandoned parts removed after a while. Chunks keep each
-      request under proxy limits (nginx 1 MB default, Cloudflare 100 MB) and Kestrel's 30 MB.
-- [ ] Limits: max file size, free-space margin, per-caller concurrent uploads (`RequestLimits`), total per request;
-      names validated per file; folder uploads (`webkitdirectory`, dropped folders) create sub-folders, each relative
-      path checked segment by segment (no `..`, no zip-slip-like escape), Write checked at each created folder.
-- [ ] Index each finished file (`IndexFilesAsync`), invalidate the listing, thumbnails come lazily.
-- [ ] Client: **Upload files** / **Upload folder** buttons, drop from the desktop onto the listing or a folder,
-      an uploads panel (per file progress, speed, pause/resume, retry, cancel), conflicts asked once with "for all";
-      warn before leaving the page while uploading.
-- [ ] Tests: chunk order, resume after a dropped connection, wrong offset, size mismatch, cancel cleans up, conflict
-      choices, folder upload escaping attempts, limits, rights and folder rules, a hidden clash answers "exists".
+Lasting facts: [uploads.md](../features/uploads.md). Decided 2026-10-17: no size limit by default (a setting sets
+one), names taken asked before sending with "for all", resume also after a reload, administrators see all uploads.
+
+- [x] (1.59.0) Resumable chunked uploads (own protocol): `POST` start → id; `PUT` chunks at the server's offset (409
+      with it otherwise); `GET` status; `POST finish` moves `{work}/uploads/{id}.part` into place (`File.Move`, never
+      overwriting); records in `{id}.json` survive restarts; abandoned ones removed after `KeepUnfinishedHours`.
+- [x] (1.59.0) Limits: `MaxFileSizeMegabytes` (0 = none), free-space margin, 16 MB per chunk, `RequestLimits.Chunks`
+      (4 at once per caller), 200 unfinished per person; names checked per segment, no escape, `files.upload` at each
+      folder made, checked again at the finish.
+- [x] (1.59.0) Each finished file indexed (`IndexFilesAsync`), the listing updated (the file added, or reloaded for
+      folder uploads).
+- [x] (1.59.0) Client: **Upload files** / **Upload a folder** buttons, drops from the desktop onto the page, a folder or
+      a location crumb, uploads in the operations panel (progress, speed, pause/resume, retry, cancel), names taken
+      asked once with "for all", warning before leaving; interrupted uploads listed and resumed by picking the file
+      again; chunks shrink after a 413. **Administration › File management › Uploads**.
+- [x] (1.59.0) Tests: `UploadsTests` (chunks, offsets, refused chunk leaves nothing, restart, conflicts, folder uploads,
+      escapes, work folder, hidden, limits, cancel, abandoned), `UploadRouteTests` (HTTP, rights, rules, check,
+      owners/admin, chunk limit), `uploads.spec.ts`.
+- Not done: no `fsync` of the folder after the move (the file is flushed before); uploads into a folder picked in a
+  dialog.
 - Reference: filebrowser uses tus (`POST` create, `PATCH` chunks, `HEAD` offset), drains rejected chunk bodies so the
-  browser sees the status instead of a reset, and removes abandoned uploads on cache eviction. Worth keeping: drain
-  refused chunk bodies, `fsync` before finishing.
+  browser sees the status instead of a reset, and removes abandoned uploads on cache eviction.
 
 ### Phase 6 — Download several files or a folder
 

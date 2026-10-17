@@ -1,6 +1,6 @@
 # File management
 
-**Administration › Library › File management**: the trash of the space and the settings of
+**Administration › Library › File management**: the trash of the space, the uploads under way and the settings of
 [managing files](../user-guide/managing-files.md).
 
 ## Trash
@@ -13,6 +13,14 @@ space's access. Server administrators see everything.
 
 ![Administration › File management › Trash](../images/admin-files-trash.png)
 
+## Uploads
+
+Everyone's unfinished uploads in the space (right `settings.files`): the file, who sends it, how much arrived and when
+the last piece came. **Cancel** stops one and removes what it received. Each person sees their own in the page's
+panel; uploads that receive nothing for **Keep unfinished uploads for** are removed by themselves.
+
+![Administration › File management › Uploads](../images/admin-files-uploads.png)
+
 ## Settings
 
 Right: `settings.files`.
@@ -23,13 +31,15 @@ Right: `settings.files`.
 |---|---|---|
 | **Always delete permanently** (`Sfe:Files:DeletePermanently`) | off | Every delete skips the trash: files are gone at once, and only those with `files.deletePermanently` can delete. What is already in the trash stays (restore and purge still work) |
 | **Days in the trash** (`Sfe:Files:Trash:RetentionDays`) | 30 | Then the **Trash purge** task deletes it for good (it also runs by itself when the trash is used); 0 keeps everything until the trash is emptied |
-| **Free space kept by copies** (`Sfe:Files:MinimumFreeSpaceMegabytes`) | 1024 | A [copy](../user-guide/managing-files.md#move-and-copy) is refused when it would leave less free space than this (in MB) on the drive it goes to; 0 lets copies fill the drive |
+| **Free space kept by copies and uploads** (`Sfe:Files:MinimumFreeSpaceMegabytes`) | 1024 | A [copy](../user-guide/managing-files.md#move-and-copy) or an [upload](../user-guide/managing-files.md#upload) is refused when it would leave less free space than this (in MB) on the drive it goes to; 0 lets them fill the drive |
+| **Largest file to upload** (`Sfe:Files:Uploads:MaxFileSizeMegabytes`) | 0 | In MB; 0: no limit |
+| **Keep unfinished uploads for** (`Sfe:Files:Uploads:KeepUnfinishedHours`) | 48 | Hours without a piece arriving before an unfinished upload is removed with what it received |
 | **Only names Windows accepts** (`Sfe:Files:PortableNames`) | on | New names must also work on Windows: no `< > : " \ \| ? *`, no name ending with a dot or a space, no device names (`CON`, `NUL`, `COM1`…). Keep it on when the library is shared with Windows computers or may move to one. A Windows server always refuses them |
 | **Where SFE keeps its work files** (`Sfe:Files:WorkFolder`) | In the library | **In the library** (`Library`): a hidden folder `.sfe` at the library's root. **On the server** (`Server`): the server's data folder, beside the thumbnails (`work`) |
 
 ## The work folder
 
-File management keeps work files of its own: the trash, and uploads not finished yet (a later version).
+File management keeps work files of its own: the trash, and uploads not finished yet (`uploads`).
 
 - **In the library** (the default), they stay on the library's own drive, so putting a file in the trash is a rename,
   however large the file. The folder is hidden (Windows' hidden attribute; on Linux its dot hides it).
@@ -40,7 +50,7 @@ Either way, the name `.sfe` at the library's root is reserved: it is never liste
 scanned, searched or reachable from the web pages, and no file or folder can be given that name there.
 
 Changing the setting doesn't move what is in the trash: each item stays (and is restored) from where it went. Who may
-create folders, rename, move, copy and delete is decided by the rights `files.createFolders`, `files.rename`,
-`files.move`, `files.copy`, `files.delete` and `files.deletePermanently`, which no group has
+create folders, rename, move, copy, upload and delete is decided by the rights `files.createFolders`, `files.rename`,
+`files.move`, `files.copy`, `files.upload`, `files.delete` and `files.deletePermanently`, which no group has
 until you give them ([Spaces & accounts](spaces-and-accounts.md#groups)), and by [folder access](spaces-and-accounts.md#folder-access).
 The server's account needs write access to the library ([Installation](../installation.md)).

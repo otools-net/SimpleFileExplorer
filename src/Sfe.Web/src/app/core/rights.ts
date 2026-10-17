@@ -17,6 +17,7 @@ export const Rights = {
     deletePermanently: 'files.deletePermanently',
     moveFiles: 'files.move',
     copyFiles: 'files.copy',
+    uploadFiles: 'files.upload',
     viewTags: 'tags.view',
     assignTags: 'tags.assign',
     manageTags: 'tags.manage',

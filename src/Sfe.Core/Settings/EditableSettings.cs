@@ -147,6 +147,7 @@ public sealed class EditableSettings
             DeletePermanently = options.Files.DeletePermanently,
             Trash = new() { RetentionDays = options.Files.Trash.RetentionDays },
             MinimumFreeSpaceMegabytes = options.Files.MinimumFreeSpaceMegabytes,
+            Uploads = new() { MaxFileSizeMegabytes = options.Files.Uploads.MaxFileSizeMegabytes, KeepUnfinishedHours = options.Files.Uploads.KeepUnfinishedHours },
         },
     };
 
@@ -227,6 +228,8 @@ public sealed class EditableSettings
         options.Files.DeletePermanently = Files.DeletePermanently;
         options.Files.Trash.RetentionDays = Files.Trash.RetentionDays;
         options.Files.MinimumFreeSpaceMegabytes = Files.MinimumFreeSpaceMegabytes;
+        options.Files.Uploads.MaxFileSizeMegabytes = Files.Uploads.MaxFileSizeMegabytes;
+        options.Files.Uploads.KeepUnfinishedHours = Files.Uploads.KeepUnfinishedHours;
     }
 }
 
@@ -388,6 +391,13 @@ public sealed class FileSettings
     public bool DeletePermanently { get; set; }
     public TrashSettings Trash { get; set; } = new();
     public int MinimumFreeSpaceMegabytes { get; set; }
+    public UploadSettings Uploads { get; set; } = new();
+}
+
+public sealed class UploadSettings
+{
+    public int MaxFileSizeMegabytes { get; set; }
+    public int KeepUnfinishedHours { get; set; }
 }
 
 public sealed class TrashSettings

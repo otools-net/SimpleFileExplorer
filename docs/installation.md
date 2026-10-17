@@ -173,6 +173,8 @@ provides https (Caddy, nginx, Traefik, IIS, your NAS's): passwords and the sign-
   visitor seems to be the proxy, and a few wrong passwords from anyone slow everyone's sign-ins down.
 - Once the app is only used over https: `Sfe:Security:RequireHttps` = `true`. The cookie is then never sent over
   plain http, and browsers are told to use https only.
+- Uploads are sent in pieces of 8 MB. A proxy that refuses large requests (nginx: 1 MB by default) makes SFE send
+  smaller ones, down to 256 KB, which is slower: raise its limit to at least 16 MB (nginx: `client_max_body_size 16m;`).
 - Name the addresses people use: `AllowedHosts` (e.g. `"AllowedHosts": "photos.example.com;nas.local;localhost"`).
   SFE then refuses requests for any other host name, which keeps a web page elsewhere from reaching it through a
   name it controls (DNS rebinding).

@@ -55,6 +55,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
             <symbol id="i-window" viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="11" rx="2"/><path d="M8 19h11a2 2 0 0 0 2-2V9"/></symbol>
             <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/></symbol>
             <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+            <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+            <symbol id="i-folder-up" viewBox="0 0 24 24"><path d="M3 7.5V18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9.5a2 2 0 0 0-2-2h-8l-2-2H5a2 2 0 0 0-2 2z"/><path d="M12 17v-6M9.5 13.5 12 11l2.5 2.5"/></symbol>
             <symbol id="i-move" viewBox="0 0 24 24"><path d="M3 7.5V18a2 2 0 0 0 2 2h7"/><path d="M3 7.5A2 2 0 0 1 5 5.5h4l2 2h8a2 2 0 0 1 2 2V12"/><path d="M14 17h7M18 14l3 3-3 3"/></symbol>
             <symbol id="i-cut" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M7.8 16.2 17 4M16.2 16.2 7 4"/></symbol>
             <symbol id="i-paste" viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5V3h6v1.5M9 3.5h6v3H9z"/><path d="M9 12h6M9 16h4"/></symbol>

@@ -100,6 +100,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<PathMoves>();
         services.AddSingleton<Trash>();
         services.AddSingleton<FileJobs>();
+        services.AddSingleton<Uploads>();
         services.AddSingleton<FileOperations>();
         services.AddSingleton<DuplicateFinder>();
         services.AddSingleton<DuplicateRemover>();

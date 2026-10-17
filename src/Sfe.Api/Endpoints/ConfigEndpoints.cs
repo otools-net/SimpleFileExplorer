@@ -37,7 +37,9 @@ public sealed record StreamingConfig(bool Always);
 
 /// <param name="DeletePermanently">Every delete skips the trash (<c>Files:DeletePermanently</c>).</param>
 /// <param name="TrashRetentionDays">Days in the trash before the purge; 0 = until emptied.</param>
-public sealed record FilesConfig(bool DeletePermanently, int TrashRetentionDays);
+/// <param name="MaxUploadMegabytes">The largest file one may upload; 0 = no limit.</param>
+/// <param name="KeepUnfinishedUploadsHours">Hours an unfinished upload is kept without receiving anything.</param>
+public sealed record FilesConfig(bool DeletePermanently, int TrashRetentionDays, int MaxUploadMegabytes = 0, int KeepUnfinishedUploadsHours = 48);
 
 /// <param name="DataServer">When set, the client links files to this server instead of <c>/api/files/raw</c>: a base the path is appended to, or a template with <c>{url}</c> / <c>{encodedUrl}</c> (<see cref="DataServerUrl"/>).</param>
 /// <param name="PageSize">Items the client loads at a time while browsing a folder.</param>
@@ -144,8 +146,9 @@ public static class ConfigEndpoints
             streamer.IsAvailable && state.Has(Rights.Stream) && state.Has(Rights.ViewFiles)
                 ? new StreamingConfig(streamer.Mode == StreamingMode.Always)
                 : null,
-            state.Has(Rights.DeleteFiles) || state.Has(Rights.DeletePermanently)
-                ? new FilesConfig(settings.Files.DeletePermanently, Math.Max(0, settings.Files.Trash.RetentionDays))
+            state.Has(Rights.DeleteFiles) || state.Has(Rights.DeletePermanently) || state.Has(Rights.UploadFiles) || state.Has(Rights.FileSettings)
+                ? new FilesConfig(settings.Files.DeletePermanently, Math.Max(0, settings.Files.Trash.RetentionDays),
+                    Math.Max(0, settings.Files.Uploads.MaxFileSizeMegabytes), Math.Max(1, settings.Files.Uploads.KeepUnfinishedHours))
                 : null));
     }
 }

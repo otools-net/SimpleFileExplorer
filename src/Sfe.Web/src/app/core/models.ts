@@ -230,6 +230,27 @@ export interface FileJobView {
     finished: string | null;
 }
 
+/** An upload not finished yet, as the server has it (`received` bytes so far). */
+export interface UploadInfo {
+    id: string;
+    target: string;
+    /** The file's name, or its path below `target` for a folder upload. */
+    name: string;
+    size: number;
+    received: number;
+    modified: string | null;
+    ownerId: number | null;
+    ownerName: string;
+    started: string;
+    lastActivity: string;
+}
+
+/** The names already taken in a folder, and whether the session may replace them. */
+export interface UploadCheck {
+    existing: string[];
+    canReplace: boolean;
+}
+
 /** Someone who would see or change more of a moved folder than before. */
 export interface AccessGain {
     folder: string;
@@ -361,7 +382,7 @@ export interface ClientConfig {
      */
     streaming?: { always: boolean } | null;
     /** How deleting works in the space; null without a right to delete (and from older servers). */
-    files?: { deletePermanently: boolean; trashRetentionDays: number } | null;
+    files?: { deletePermanently: boolean; trashRetentionDays: number; maxUploadMegabytes?: number; keepUnfinishedUploadsHours?: number } | null;
 }
 
 /** `api/streaming/probe`: a video the server can convert. */

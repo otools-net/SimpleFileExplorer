@@ -1,12 +1,12 @@
 # Managing files
 
 You can create folders, rename, move, copy and delete files and folders from the listing, if your groups have the
-rights `files.createFolders`, `files.rename`, `files.move`, `files.copy`, `files.delete` (to the trash) and
-`files.deletePermanently` ([Rights](../reference/rights.md)). No group has them until an administrator gives them.
+rights `files.createFolders`, `files.rename`, `files.move`, `files.copy`, `files.upload`, `files.delete` (to the
+trash) and `files.deletePermanently` ([Rights](../reference/rights.md)). No group has them until an administrator gives them.
 Folder access rules also apply: in a read-only folder these actions are not offered, and in a folder you can't see
 they don't exist.
 
-Uploading and downloading several files at once will come in later versions.
+Downloading several files at once will come in a later version.
 
 ## The item menu
 
@@ -125,6 +125,39 @@ people would see or change a folder in its new place, SFE says who, and offers t
 - A copy is refused when it would leave less free space on the drive than the space's
   [Free space kept by copies](../administration/file-management.md#settings) (1 GB by default).
 
+## Upload
+
+Files and folders from your computer go into the folder you are viewing:
+
+- **Upload files** (the arrow next to the folder's name) picks files; **Upload a folder** picks a folder, uploaded with
+  everything in it (its sub-folders are made as they come).
+- Or **drop** files and folders from your computer onto the page: they go into the folder listed, or into a folder of
+  the listing (or of the location bar) when you drop them on it.
+
+![Uploading files](../images/upload-panel.png)
+
+Before sending anything, SFE checks the names. When some are already taken there, the panel asks for each:
+**Replace** (the file there goes to the trash: you need the right to delete there), **Skip**, or **Keep both** (a
+number is added to the new name); tick **The same for the other names taken** to answer once.
+
+The panel at the bottom right shows each upload with its progress and speed. Files are sent in pieces, two files at a
+time: **Pause** and **Resume** stop and go on, a piece that fails is sent again by itself, **Retry** goes on with a
+file that failed, and **Cancel** stops (what was sent of an unfinished file is removed). The browser warns you before
+you leave the page while files are being sent.
+
+**Interrupted uploads go on:** if the page is reloaded or closed, or the connection drops, the panel lists the
+unfinished files when you come back. Pick or drop the same files into the same folder again: they go on where they
+stopped. What was sent is kept on the server for the space's **Keep unfinished uploads for** (48 hours by default)
+after the last piece arrived.
+
+An uploaded file keeps its date from your computer and is added to the index at once.
+
+- A space can set the **largest file** one may upload (no limit by default); larger files are left out before sending.
+- An upload is refused when it would leave less free space on the drive than the space's **Free space kept by copies
+  and uploads** (1 GB by default).
+- Behind a reverse proxy, SFE sends smaller pieces by itself when the proxy refuses large requests
+  ([Installation](../installation.md#reaching-it-from-outside-https-and-a-reverse-proxy)).
+
 ## Names that can't be used
 
 SFE refuses a name, and says why, when it:
@@ -144,7 +177,7 @@ A name starting with a dot (`.config`) is a hidden item: the listing shows it on
 ## When it can't be done
 
 - **A scan is running** over that folder: try again when the scan has finished.
-- **The drive is (nearly) full**: a copy keeps the free space the space asks for.
+- **The drive is (nearly) full**: copies and uploads keep the free space the space asks for.
 - **The file is in use**: another program has it open, or a video is playing. Close it and try again.
 - **The server's account may not change files there**: the server was installed with read-only access to the library
   ([Installation](../installation.md) says how to give it write access).

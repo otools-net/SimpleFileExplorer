@@ -4,9 +4,13 @@ import { ClashSide, FileJobView, LibraryItem } from '../core/models';
 import { baseName } from '../core/paths';
 import { checkedOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
+import { ConfigService } from '../core/config.service';
+import { Rights } from '../core/rights';
 import { ListingStore } from '../library/listing.store';
 import { DRAG_ITEMS } from '../library/quick-links/quick-links.service';
 import { FileTransfers, finished } from './file-transfers';
+import { UploadsPanelComponent } from './uploads-panel.component';
+import { droppedFiles, UploadQueue } from './uploads';
 
 /** Drop targets: listed folders and the folders of the location bar (`data-drop` holding their path). */
 const DROP_TARGET = '[data-drop]';
@@ -14,17 +18,18 @@ const DROP_TARGET = '[data-drop]';
 /**
  * The moves and copies of the session, at the bottom of the page while they run and until closed: progress, Cancel,
  * the question of a name clash (with "for the rest"), then what was done and what was not. It also takes the drops of
- * listed items onto folders: a move, a copy with Ctrl (the drag starts in the quick links, see QuickLinksComponent).
+ * listed items onto folders: a move, a copy with Ctrl (the drag starts in the quick links, see QuickLinksComponent);
+ * and of files and folders from the computer: uploaded into the folder dropped on, else the folder listed.
  */
 @Component({
     selector: 'sfe-operations-panel',
-    imports: [IconComponent],
+    imports: [IconComponent, UploadsPanelComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'operations-panel',
         role: 'region',
-        'aria-label': 'Moves and copies',
-        '[hidden]': '!transfers.jobs().length && !transfers.clipboard()',
+        'aria-label': 'Moves, copies and uploads',
+        '[hidden]': '!transfers.jobs().length && !transfers.clipboard() && !uploads.batches().length',
         '(document:dragstart)': 'onDragStart($event)',
         '(document:dragover)': 'onDragOver($event)',
         '(document:dragleave)': 'onDragLeave($event)',
@@ -32,6 +37,7 @@ const DROP_TARGET = '[data-drop]';
         '(document:dragend)': 'endDrag()',
     },
     template: `
+        <sfe-uploads-panel />
         @if (transfers.clipboard(); as clipboard) {
             <section class="operation clipboard">
                 <header class="operation-head">
@@ -98,7 +104,9 @@ const DROP_TARGET = '[data-drop]';
 })
 export class OperationsPanelComponent implements OnInit {
     protected readonly transfers = inject(FileTransfers);
+    protected readonly uploads = inject(UploadQueue);
     private readonly store = inject(ListingStore);
+    private readonly config = inject(ConfigService);
 
     protected readonly forAll = signal(false);
     protected readonly baseName = baseName;
@@ -107,6 +115,7 @@ export class OperationsPanelComponent implements OnInit {
 
     ngOnInit(): void {
         this.transfers.resume();
+        void this.uploads.resume();
     }
 
     protected clipboardText(): string {
@@ -188,6 +197,15 @@ export class OperationsPanelComponent implements OnInit {
     }
 
     protected onDragOver(event: DragEvent): void {
+        if (this.isUpload(event)) {
+            const place = this.uploadPlace(event);
+            this.highlight(place?.element ?? null);
+            if (place) {
+                event.preventDefault();
+                event.dataTransfer!.dropEffect = 'copy';
+            }
+            return;
+        }
         const target = this.dropTarget(event);
         this.highlight(target);
         if (!target || !event.dataTransfer?.types.includes(DRAG_ITEMS))
@@ -205,6 +223,16 @@ export class OperationsPanelComponent implements OnInit {
     }
 
     protected onDrop(event: DragEvent): void {
+        if (this.isUpload(event)) {
+            const place = this.uploadPlace(event);
+            this.endDrag();
+            if (place && event.dataTransfer) {
+                event.preventDefault();
+                // The items are read at once: the browser empties them once the event is over.
+                void droppedFiles(event.dataTransfer).then(files => this.uploads.add(files, place.path));
+            }
+            return;
+        }
         const target = this.dropTarget(event);
         const data = event.dataTransfer?.getData(DRAG_ITEMS);
         this.endDrag();
@@ -223,6 +251,24 @@ export class OperationsPanelComponent implements OnInit {
 
     protected endDrag(): void {
         this.highlight(null);
+    }
+
+    /** Files dragged from the computer (not items of the page). */
+    private isUpload(event: DragEvent): boolean {
+        const types = event.dataTransfer?.types ?? [];
+        return types.includes('Files') && !types.includes(DRAG_ITEMS);
+    }
+
+    /** Where dropped files go: a folder of the page under the pointer, else the folder listed (anywhere on the listing). */
+    private uploadPlace(event: DragEvent): { path: string; element: HTMLElement | null } | null {
+        const target = this.dropTarget(event);
+        if (target) {
+            const path = target.getAttribute('data-drop')!;
+            const folder = this.store.items().find(item => item.path === path && item.kind === 'directory');
+            return (folder ? this.uploads.canUploadInto(folder) : this.config.can(Rights.uploadFiles)) ? { path, element: target } : null;
+        }
+        const page = event.target instanceof Element ? event.target.closest<HTMLElement>('main.page') : null;
+        return page && this.uploads.canUploadInto() ? { path: this.store.route().path, element: page } : null;
     }
 
     private dropTarget(event: DragEvent): HTMLElement | null {

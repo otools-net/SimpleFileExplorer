@@ -646,6 +646,8 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Range(s.Editor.Quality, Editing.EditedImages.MinQuality, 100, "editor.quality", "The quality");
         Range(s.Files.Trash.RetentionDays, 0, MaxRetentionDays, "files.trash.retentionDays", "The days in the trash");
         Range(s.Files.MinimumFreeSpaceMegabytes, 0, 1_048_576, "files.minimumFreeSpaceMegabytes", "The free space kept");
+        Range(s.Files.Uploads.MaxFileSizeMegabytes, 0, 1_073_741_823, "files.uploads.maxFileSizeMegabytes", "The largest upload");
+        Range(s.Files.Uploads.KeepUnfinishedHours, 1, 8760, "files.uploads.keepUnfinishedHours", "The hours unfinished uploads are kept");
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
         return errors;
 

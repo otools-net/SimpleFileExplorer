@@ -368,6 +368,37 @@ const scenes = {
         await b.shot(OUT + 'library-light.png');
         await b.close();
     },
+    async uploads() {
+        const b = await session();
+        const call = (method, url, body) => `fetch('${url}', { method: '${method}', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: ${body ? `JSON.stringify(${JSON.stringify(body)})` : 'undefined'} }).then(r => r.status === 204 ? null : r.json())`;
+        await b.open('?path=Photos');
+        // Three pictures dropped from the computer onto the page, one of them with a name already taken there.
+        await b.eval(`(() => {
+            const data = new DataTransfer();
+            const bytes = n => new Uint8Array(n).map((_, i) => i % 251);
+            data.items.add(new File([bytes(3_500_000)], 'Sunrise.jpg', { type: 'image/jpeg' }));
+            data.items.add(new File([bytes(2_400_000)], 'Harbour at night.jpg', { type: 'image/jpeg' }));
+            data.items.add(new File([bytes(1_800_000)], 'Old town.jpg', { type: 'image/jpeg' }));
+            const page = document.querySelector('main.page');
+            page.dispatchEvent(new DragEvent('dragover', { dataTransfer: data, bubbles: true, cancelable: true }));
+            page.dispatchEvent(new DragEvent('drop', { dataTransfer: data, bubbles: true, cancelable: true }));
+            return 1;
+        })()`);
+        await sleep(2500);
+        await b.shot(OUT + 'upload-panel.png');
+        await b.clickTitle("Don't upload this one");
+        await sleep(1500);
+        await b.eval(call('POST', 'api/files/delete', { paths: ['Photos/Harbour at night.jpg', 'Photos/Old town.jpg'], permanent: true }));
+        // An upload cut off halfway, for the administration's list.
+        const started = await b.eval(call('POST', 'api/files/uploads', { target: 'Videos', name: 'Holiday 2025.webm', size: 48_000_000, modified: null }));
+        await b.eval(`fetch('api/files/uploads/${started.id}?offset=0', { method: 'PUT', headers: { 'Content-Type': 'application/octet-stream', 'X-SFE-Request': '1' }, body: new Uint8Array(8_388_608) }).then(r => r.status)`);
+        await b.close();
+        const a = await session({ height: 900 });
+        await a.open(admin('files', 'uploads'), 3000);
+        await a.shot(OUT + 'admin-files-uploads.png');
+        await a.eval(call('DELETE', `api/files/uploads/${started.id}`));
+        await a.close();
+    },
     async files() {
         const b = await session();
         await b.open('?path=Photos');

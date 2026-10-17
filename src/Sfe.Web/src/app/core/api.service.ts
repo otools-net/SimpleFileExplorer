@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, BackupLink, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, BackupLink, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -220,6 +220,20 @@ export class Api {
     fileJobs = () => this.get<FileJobView[]>('api/files/jobs');
     answerFileJob = (id: number, choice: ConflictChoice, forAll: boolean) => this.post<void>(`api/files/jobs/${id}/answer`, { choice, forAll });
     cancelFileJob = (id: number) => this.post<void>(`api/files/jobs/${id}/cancel`);
+    /** Which of `names` (paths below `target` for a folder upload) are taken in `target`. */
+    checkUploads = (target: string, names: string[]) => this.post<UploadCheck>('api/files/uploads/check', { target, names });
+    startUpload = (start: { target: string; name: string; size: number; modified: string | null }) => this.post<UploadInfo>('api/files/uploads', start);
+    /** The session's unfinished uploads; `all`: everyone's (right `settings.files`). */
+    uploads = (all = false) => this.get<UploadInfo[]>('api/files/uploads', { all: all || null });
+    /** Sends `chunk` at `offset`; resolves with the upload also when the server has another offset (409): go on from there. */
+    sendUploadChunk = (id: string, offset: number, chunk: Blob, signal?: AbortSignal) =>
+        this.send(this.http.put<UploadInfo>(`api/files/uploads/${id}`, chunk, {
+            params: params({ offset }),
+            headers: this.headers(true).set('Content-Type', 'application/octet-stream'),
+        }), signal);
+    /** Puts a sent upload in its folder: the new file, the conflict (409: the name is taken), or null when skipped. */
+    finishUpload = (id: string, conflicts: ConflictChoice) => this.post<FileOperationResult | null>(`api/files/uploads/${id}/finish`, { conflicts });
+    cancelUpload = (id: string) => this.delete<void>(`api/files/uploads/${id}`);
 
     /** Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original stays. */
     saveEditedImage = (path: string, image: Blob) => this.post<EditedImage>(withQuery('api/editor/images', { path }), image);

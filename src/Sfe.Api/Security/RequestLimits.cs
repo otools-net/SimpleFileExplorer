@@ -20,6 +20,9 @@ public static class RequestLimits
     /// <summary>Uploads of edited pictures (up to 200 MB each, held in memory): one at a time per caller.</summary>
     public const string Upload = "upload";
 
+    /// <summary>Chunks of resumable uploads (16 MB at most, streamed to disk): a few at once per caller, the rest queued.</summary>
+    public const string Chunks = "chunks";
+
     public const int MediaConcurrency = 8;
     public const int MediaQueue = 500;
     public const int SearchesPerMinute = 240;
@@ -36,6 +39,12 @@ public static class RequestLimits
         {
             PermitLimit = SearchesPerMinute,
             Window = TimeSpan.FromMinutes(1),
+        }));
+        options.AddPolicy(Chunks, context => RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions
+        {
+            PermitLimit = 4,
+            QueueLimit = 32,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
         }));
         options.AddPolicy(Upload, context => RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions
         {

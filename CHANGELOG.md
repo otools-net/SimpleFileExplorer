@@ -3,6 +3,19 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.59.0
+
+### Added
+
+- **Upload:** **Upload files** and **Upload a folder** next to the folder's name, or drop files and folders from the
+  computer onto the page or onto a folder. Names already taken are asked about first (**Replace**, **Skip**, **Keep
+  both**, the same for the rest). Files go up in pieces with progress and speed, **Pause**, **Resume**, **Retry** and
+  **Cancel**; an upload interrupted by a reload or a dropped connection goes on where it stopped when the same file is
+  picked again.
+- **Administration › File management › Uploads** lists everyone's unfinished uploads, to cancel them. New settings
+  **Largest file to upload** (no limit by default) and **Keep unfinished uploads for** (48 hours); new right
+  `files.upload` (no group has it until an administrator ticks it).
+
 ## 1.58.0
 
 ### Added
