@@ -3,6 +3,7 @@ import { ConfigService } from '../../core/config.service';
 import { CopyPathService } from '../../core/copy-path.service';
 import { formatDate, formatSize, joinParts, kindIcon } from '../../core/format';
 import { LibraryItem } from '../../core/models';
+import { FileTransfers } from '../../files/file-transfers';
 import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
 import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
@@ -31,6 +32,9 @@ abstract class FileItemBase {
     protected readonly config = inject(ConfigService);
     protected readonly menu = inject(ItemMenu);
     private readonly previews = inject(PreviewsService);
+    private readonly transfers = inject(FileTransfers);
+    /** Cut (Ctrl+X): faded until pasted. */
+    protected readonly cut = computed(() => this.transfers.cutPaths().has(this.item().path));
 
     protected readonly url = computed(() => this.config.links.file(this.item().path));
     protected readonly icon = computed(() => kindIcon[this.item().kind]);
@@ -81,6 +85,7 @@ function sameStrings(a: string[], b: string[]): boolean {
         '[class.no-preview]': '!hasPreview()',
         '[class.selected]': 'selected()',
         '[class.copied]': 'copied()',
+        '[class.cut]': 'cut()',
         '[class.revealed]': 'revealed()',
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
@@ -173,6 +178,7 @@ export class FileTileComponent extends FileItemBase {
         '[class]': '"row item kind-" + item().kind',
         '[class.selected]': 'selected()',
         '[class.copied]': 'copied()',
+        '[class.cut]': 'cut()',
         '[class.revealed]': 'revealed()',
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',

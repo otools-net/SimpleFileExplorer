@@ -48,6 +48,10 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
   [file-names.md](../features/file-names.md)).
 - **Scan running** (question 4): **refused with 409** (`scan-running`) while a scan runs over an overlapping tree; a
   scan starting meanwhile waits for the operations on its tree (`ScanCoordinator.TryBeginOperation`, 1.55.0).
+- **Big operations** (question 5, decided 2026-10-17): every move and copy is a background job (in memory, not
+  `TaskRuns`), shown in the operations panel; deletes stay a direct request (a rename into the trash).
+- **Replace** (question 6): needs the right to delete at the item replaced, which goes to the trash (deleted for good,
+  needing `files.deletePermanently`, when the space always deletes permanently).
 - Each phase adds only the rights and settings it uses (not all in phase 0): the group editor and the settings pages
   would otherwise offer functions that don't exist yet.
 
@@ -63,12 +67,7 @@ Decide at the start of the phase that needs them (recommended answer first).
    falls back to "can't go to the trash: delete permanently?". Whatever is chosen, `Files:DeletePermanently` (see
    [Decisions](#decisions)) switches the trash off for a library.
 2. ~~Work folder~~, 3. ~~Names on Linux~~, 4. ~~Scan running~~: decided, see [Decisions](#decisions).
-5. **Big operations** (phase 4): every move/copy/delete as a background job (`TaskRuns`, progress, cancel) or only
-   above a size. Recommended: one code path, a job per request; the client waits inline for small ones (a second)
-   and shows the operations panel otherwise.
-6. **Replace** (phase 4): a separate right or "replace needs `files.delete` at the target". Recommended: needs
-   `files.delete` (replacing destroys data), the replaced file goes to the trash (with `Files:DeletePermanently` on:
-   it is deleted, and replacing needs `files.deletePermanently`).
+5. ~~Big operations~~, 6. ~~Replace~~: decided, see [Decisions](#decisions).
 7. **Links inside the library** (phases 3–4): deleting or moving a symbolic link/junction acts on the link only;
    copying a folder copies links as links (Windows needs a privilege for symlinks) or skips them with a report.
    Recommended: never follow a link while copying or deleting; report skipped links.
@@ -190,31 +189,31 @@ Lasting facts: [trash.md](../features/trash.md).
 - [x] (1.57.0) Tests: `TrashTests`, `TrashRouteTests`, `delete.spec.ts`.
 - Not done: Replace (phase 4) must send what it replaces to the trash through `Trash.MoveInAsync`.
 
-### Phase 4 — Move and copy
+### Phase 4 — Move and copy (built in 1.58.0)
 
-- [ ] Decide open questions 5 and 6.
-- [ ] (from phase 2) Clipboard store (cut/copy, source space and paths, survives navigation, cleared on paste after
-      cut), Ctrl+X/C/V, "Paste" in the folder's menu and the location bar; cut items look faded.
-- [ ] (from phase 2) Drag and drop inside the app: items onto a folder, a breadcrumb, a quick link (moves; Ctrl =
-      copy, as in Explorer); the drop target highlights; the existing drag to the quick-links sidebar keeps working
-      (`QuickLinksService.dragPaths` already carries every selected item).
-- [ ] Core `MoveAsync`/`CopyAsync(policy, paths, targetFolder, conflicts)` as a background job carrying the subject
-      (`AccessSubject`), re-evaluating the policy per item when it runs; moves: Write at source and target,
-      `AllowsThroughout` for folders, `CompareMoveAsync` → confirmation naming who gains access, `keepAccess`; copies:
-      Read at source (hidden sub-folders are left out, not copied), Write at target; refuse into itself, the same
-      place, the work folder; same volume = rename, else copy-then-delete with cleanup of a partial copy.
-- [ ] Conflicts: per item **Replace** (needs `files.delete`, replaced item to the trash), **Skip**, **Keep both**, "do
-      the same for the rest"; folders merge (ask per file inside) or keep both; show sizes and dates of both sides.
-- [ ] Index and caches: moves through `PathMoves`; copies index the new files (`IndexFilesAsync` in batches) and copy
-      the thumbnail/trickplay caches instead of regenerating; copies don't copy tags (decide: Explorer-like = no tags,
-      or ask).
-- [ ] Free space check before a copy; progress (items, bytes), cancel, a final report (done, skipped, failed with why).
-- [ ] Client: **Move to…** / **Copy to…** with a library folder picker (only folders where one may write, new folder
-      inside it), paste of the clipboard, drop targets of phase 2, the operations panel (running jobs, progress, cancel,
-      results, links to the target).
-- [ ] Tests: same and other volume (a second temp folder or a junction/mount on another drive where available),
-      cancel mid-copy leaves no partial file, rules moved with a folder, gains confirmation, a scan running at the same
-      time, conflicts of each kind, case-only clash on Windows vs two files on Linux (pure logic), quota/free space.
+Lasting facts: [move-and-copy.md](../features/move-and-copy.md).
+
+- [x] Decided open questions 5 and 6 (see [Decisions](#decisions)); copies' tags: asked each time (`keepTags`).
+- [x] (1.58.0) Clipboard in `FileTransfers` (cut/copy of items, survives navigation, a cut is cleared on paste),
+      Ctrl+X/C/V, **Paste into** in a folder's menu, **Paste here** in the operations panel (not in the location bar);
+      cut items look faded.
+- [x] (1.58.0) Drag and drop onto listed folders and the location bar's folders (move; Ctrl = copy), highlighted; the
+      drag to the quick links still works. Not done: dropping onto a quick link.
+- [x] (1.58.0) Core `FileJobs` (in-memory jobs, `IFileJobAccess` re-reading the person's access per item): moves
+      (`files.move` at item, parent, target, `AllowsThroughout`; rules moved, `keepAccess`; `FileTree.Move` handles other
+      drives), copies (`files.copy` at target, `files.view` at the source and each sub-folder, links and work folders
+      left out); into itself, already there, the work folder refused.
+- [x] (1.58.0) Conflicts: **Replace** (delete right, to the trash), **Skip**, **Keep both**, for the rest; sizes and
+      dates of both sides. Not done: merging folders.
+- [x] (1.58.0) Index and caches: moves through `PathMoves`; copies indexed (`IndexFilesAsync`, folders by a scan), caches
+      copied, tags with `keepTags`.
+- [x] (1.58.0) Free space (`Files:MinimumFreeSpaceMegabytes`, 1024), progress (items, bytes), cancel (no partial file),
+      report per item.
+- [x] (1.58.0) Client: **Move to…** / **Copy to…** picker (folders where one may not write refused; no "new folder"
+      in it yet), gains confirmation, operations panel (progress, cancel, clash prompt, results, Open toast).
+- [x] (1.58.0) Tests: `FileJobsTests` (tags, folders, copy rights, clashes and answers, replace right, cancel, refusals,
+      work folder, free space, owners), `FileJobRouteTests` (HTTP, owners, rights, gains, keepAccess),
+      `transfer.spec.ts`. Other volumes are covered by `FileTree` (phase 3).
 - Reference: filebrowser moves with `Rename` and falls back to copy + `RemoveAll`; its conflict prompt shows origin
   and destination per file with checkboxes. Ours: a job with progress and a report.
 

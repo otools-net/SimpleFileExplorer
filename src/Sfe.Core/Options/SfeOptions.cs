@@ -281,6 +281,9 @@ public sealed class FileManagementOptions
     public bool DeletePermanently { get; set; }
 
     public TrashOptions Trash { get; set; } = new();
+
+    /// <summary>A copy is refused when it would leave less free space than this on the target's drive (megabytes).</summary>
+    public int MinimumFreeSpaceMegabytes { get; set; } = 1024;
 }
 
 public sealed class TrashOptions

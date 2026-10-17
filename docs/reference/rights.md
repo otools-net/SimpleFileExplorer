@@ -22,6 +22,8 @@ Each right is of one of two kinds (column **Kind**):
 | `files.stream` | play videos converted by the server (ffmpeg) when the browser can't play them | Read | yes | Administrators, Users |
 | `files.createFolders` | [create folders](../user-guide/managing-files.md#new-folder) | Write (files) | no | none |
 | `files.rename` | [rename files and folders](../user-guide/managing-files.md#rename) | Write (files) | no | none |
+| `files.move` | [move files and folders](../user-guide/managing-files.md#move-and-copy) (at the place they leave, the folder they go to, and everywhere inside a folder) | Write (files) | no | none |
+| `files.copy` | [copy files and folders](../user-guide/managing-files.md#move-and-copy) into folders one may change (from folders one may only look at, too) | Write (files) | no | none |
 | `files.delete` | [delete to the trash](../user-guide/managing-files.md#delete), restore from it | Write (files) | no | none |
 | `files.deletePermanently` | delete for good (Shift+Delete), empty the [trash](../administration/file-management.md#trash) | Write (files) | no | none |
 | `tags.view` | see tags, the tag sidebar | Read | yes | all |
@@ -44,7 +46,7 @@ Each right is of one of two kinds (column **Kind**):
 | `server.backup`, `server.streams` | backups, the list of video streams | Read | no | server administrators only |
 
 **Server administrators** have every right in every space, plus the server's own. The file management rights
-(`files.createFolders`, `files.rename`, `files.delete`, `files.deletePermanently`) are in no group by default, even after an upgrade: tick them for the groups
+(`files.createFolders`, `files.rename`, `files.move`, `files.copy`, `files.delete`, `files.deletePermanently`) are in no group by default, even after an upgrade: tick them for the groups
 that may change the library's files.
 
 Renaming a folder also needs the right everywhere below it: someone kept out of a sub-folder, or with it read-only,

@@ -513,6 +513,8 @@ export const TABS: SettingTab[] = [
                         hint: 'Every delete skips the trash: files are gone at once, and only those who may delete permanently can delete. What is already in the trash stays there.' },
                     { key: 'files.trash.retentionDays', label: 'Days in the trash', type: 'number', min: 0, max: 3650,
                         hint: 'What was deleted is deleted for good after this many days in the trash (a background task, Background tasks › Trash purge); 0 keeps it until the trash is emptied.' },
+                    { key: 'files.minimumFreeSpaceMegabytes', label: 'Free space kept by copies (MB)', type: 'number', min: 0, max: 1048576,
+                        hint: 'A copy is refused when it would leave less free space than this on the drive it goes to. 0: copies may fill the drive.' },
                 ],
             },
             {

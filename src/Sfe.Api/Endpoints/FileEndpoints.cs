@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Data;
 using Sfe.Core.Files;
 using Sfe.Core.Library;
 using Microsoft.Extensions.Options;
@@ -29,6 +30,18 @@ public sealed record DeletedItem(string Path, FileOperationStatus Status, string
 public sealed record DeleteResults(IReadOnlyList<DeletedItem> Items, bool Permanent);
 
 public sealed record EmptiedTrash(int Purged);
+
+/// <param name="Paths">What would move.</param>
+/// <param name="Target">The folder it would go into.</param>
+public sealed record MoveCheckRequest(IReadOnlyList<string>? Paths, string? Target);
+
+/// <summary>Someone who would see or change more of a moved folder than before (its new parent gives more access).</summary>
+/// <param name="Who">The group's or account's name ("Visitors" for the Guests group).</param>
+public sealed record AccessGain(string Folder, string Who, bool IsGroup, FolderLevel Before, FolderLevel After);
+
+public sealed record MoveCheck(IReadOnlyList<AccessGain> Gains);
+
+public sealed record JobAnswer(ConflictChoice Choice, bool ForAll = false);
 
 /// <summary>File management (agents/docs/development/file-management-plan.md): changes to the library's files.</summary>
 public static class FileEndpoints
@@ -84,6 +97,47 @@ public static class FileEndpoints
                 with links on another drive than the trash: delete it permanently instead), `failed` (in use, no write
                 access), with a message.
                 """);
+
+        var jobs = files.MapGroup("/jobs");
+        jobs.MapPost("/check", CheckMove)
+            .RequireRight(Rights.MoveFiles)
+            .FolderScoped("only the folders the caller may move, seen by their rules")
+            .WithName("CheckMove")
+            .WithSummary("Who would gain access to folders if they moved there.")
+            .WithDescription("Each group, and each account with rules, that would see or change more of a moved folder than now: the client asks for a confirmation (and offers to keep the current access) before starting the move.");
+        jobs.MapPost("", StartJob)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
+            .FolderScoped("files.move at each item, its parent, below a folder and at the target; files.copy at the target, files.view at what is copied (checked again at each item as the job runs)")
+            .WithName("StartFileJob")
+            .WithSummary("Moves or copies files and folders, in the background.")
+            .WithDescription($"""
+                Starts a job and answers its first state (202). `conflicts` says what to do when the target holds an item of
+                the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies), `replace` (needs
+                the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth` (` (2)` added). Moves
+                keep tags, folder rules (`keepAccess` pins each group's current access), quick links and caches; copies
+                never follow links, leave out folders the caller may not see, and get the tags of their originals with
+                `keepTags`. Results per item in `results`.
+                """);
+        jobs.MapGet("", ListJobs)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
+            .NotLibraryPaths()
+            .WithName("ListFileJobs")
+            .WithSummary("The caller's moves and copies, running and recent.");
+        jobs.MapGet("/{id:int}", GetJob)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
+            .NotLibraryPaths()
+            .WithName("GetFileJob")
+            .WithSummary("One of the caller's moves or copies.");
+        jobs.MapPost("/{id:int}/answer", AnswerJob)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
+            .NotLibraryPaths()
+            .WithName("AnswerFileJob")
+            .WithSummary("Answers a job's question about a name clash (`forAll`: the same for the next ones).");
+        jobs.MapPost("/{id:int}/cancel", CancelJob)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
+            .NotLibraryPaths()
+            .WithName("CancelFileJob")
+            .WithSummary("Stops a move or copy: what is done stays, nothing half copied does.");
 
         var trash = files.MapGroup("/trash");
         trash.MapGet("", ListTrash)
@@ -219,6 +273,70 @@ public static class FileEndpoints
         return TypedResults.Ok(new EmptiedTrash(purged));
     }
 
+    private static async Task<Results<Ok<MoveCheck>, ValidationProblem>> CheckMove(
+        FolderRuleService rules, AccessService accounts, LibraryPaths paths, CurrentAccess current, MoveCheckRequest request, CancellationToken cancellationToken)
+    {
+        var state = await current.GetAsync();
+        if (state.Tenant is not { } tenant || !paths.TryResolve(request.Target, out var targetFull) || paths.ToRelative(targetFull) is not { } target)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["target"] = ["Not a folder of the library."] });
+        var groups = (await accounts.GetGroupsAsync(tenant.Id, cancellationToken)).ToDictionary(g => g.Id);
+        var gains = new List<AccessGain>();
+        foreach (var path in request.Paths ?? [])
+        {
+            if (!paths.TryResolve(path, out var full) || !Directory.Exists(full) || paths.ToRelative(full) is not { Length: > 0 } folder
+                || state.Check(paths, folder, Rights.MoveFiles) != PathVerdict.Allowed)
+                continue;
+            var name = folder.Split('/')[^1];
+            var compared = await rules.CompareMoveAsync(tenant.Id, folder, target.Length == 0 ? name : $"{target}/{name}", cancellationToken);
+            foreach (var change in compared.Value?.Where(c => c.Gains) ?? [])
+            {
+                var who = change.Principal.GroupId is { } groupId
+                    ? groups.TryGetValue(groupId, out var group) ? group.BuiltIn == BuiltInGroup.Guests ? "Visitors" : group.Name : "A group"
+                    : (await accounts.GetUserAsync(change.Principal.UserId!.Value, cancellationToken)) is { } user ? user.DisplayName ?? user.UserName : "An account";
+                gains.Add(new AccessGain(folder, who, change.Principal.GroupId is not null, change.Before ?? FolderLevel.Hidden, change.After ?? FolderLevel.Hidden));
+            }
+        }
+        return TypedResults.Ok(new MoveCheck(gains));
+    }
+
+    private static async Task<Results<Accepted<FileJobView>, ForbidHttpResult, ValidationProblem>> StartJob(
+        FileJobs jobs, AccessService accounts, RightsEvaluator rights, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current,
+        FileJobRequest request)
+    {
+        var state = await current.GetAsync();
+        if (state.Tenant is not { } tenant)
+            return TypedResults.Forbid();
+        if (!state.Has(request.Kind == FileJobKind.Move ? Rights.MoveFiles : Rights.CopyFiles))
+            return TypedResults.Forbid();
+        if (request.Paths is not { Count: > 0 } || request.Paths.Count > MaxDeletePaths)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["paths"] = [$"Name 1 to {MaxDeletePaths} files or folders."] });
+        // Every item is checked as the job reaches it, with the person's access then.
+        var access = new FileJobAccess(accounts, rights, paths, serverFiles, work, tenant, state.User?.Id);
+        var view = jobs.Start(request, Actor(state), access);
+        return TypedResults.Accepted($"api/files/jobs/{view.Id}", view);
+    }
+
+    private static async Task<Ok<IReadOnlyList<FileJobView>>> ListJobs(FileJobs jobs, CurrentAccess current) =>
+        TypedResults.Ok(jobs.List((await current.GetAsync()).User?.Id ?? -1));
+
+    private static async Task<Results<Ok<FileJobView>, NotFound>> GetJob(FileJobs jobs, CurrentAccess current, int id) =>
+        jobs.Find(id) is { } job && job.OwnerId == (await current.GetAsync()).User?.Id ? TypedResults.Ok(job) : TypedResults.NotFound();
+
+    private static async Task<Results<NoContent, NotFound, Conflict>> AnswerJob(FileJobs jobs, CurrentAccess current, int id, JobAnswer answer)
+    {
+        if (jobs.Find(id) is not { } job || job.OwnerId != (await current.GetAsync()).User?.Id)
+            return TypedResults.NotFound();
+        return jobs.Answer(id, answer.Choice, answer.ForAll) ? TypedResults.NoContent() : TypedResults.Conflict();
+    }
+
+    private static async Task<Results<NoContent, NotFound>> CancelJob(FileJobs jobs, CurrentAccess current, int id, CancellationToken cancellationToken)
+    {
+        if (jobs.Find(id) is not { } job || job.OwnerId != (await current.GetAsync()).User?.Id)
+            return TypedResults.NotFound();
+        jobs.Cancel(id);
+        return TypedResults.NoContent();
+    }
+
     /// <summary>
     /// The caller sees a trash entry: one they deleted, or one deleted where they may delete (to the trash or for good);
     /// server administrators see them all. A folder that had access rules of its own (kept in the entry until a restore)
@@ -301,7 +419,7 @@ public static class FileEndpoints
     /// <paramref name="full"/> really is (through a folder link) among the server's own files or SFE's work folder:
     /// a link made in the library must never become a way to write keys, settings or the trash.
     /// </summary>
-    private static bool Protected(string full, ServerFiles serverFiles, WorkFolder workFolder)
+    internal static bool Protected(string full, ServerFiles serverFiles, WorkFolder workFolder)
     {
         try
         {

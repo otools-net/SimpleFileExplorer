@@ -10,6 +10,9 @@ import { ItemMenu, ItemMenuComponent } from '../files/item-menu';
 import { NameDialog } from '../files/name.dialog';
 import { DeleteDialog } from '../files/delete.dialog';
 import { FileActions } from '../files/file-actions';
+import { FileTransfers } from '../files/file-transfers';
+import { OperationsPanelComponent } from '../files/operations-panel.component';
+import { TransferDialog } from '../files/transfer.dialog';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { EmptyStateComponent } from '../shared/empty-state.component';
@@ -49,7 +52,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, DeleteDialog, ItemMenuComponent],
+        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, OperationsPanelComponent, ItemMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -70,6 +73,7 @@ let created = false;
                     <section sfeLocation></section>
                     <sfe-listing />
                     <sfe-selection-bar />
+                    <sfe-operations-panel />
                 </main>
             </div>
             <sfe-viewer />
@@ -81,6 +85,7 @@ let created = false;
             <sfe-remove-from-index />
             <sfe-name-dialog />
             <sfe-delete-dialog />
+            <sfe-transfer-dialog />
             <sfe-item-menu />
             <!-- After the viewer: it opens over it. -->
             <sfe-image-editor />
@@ -96,6 +101,7 @@ export class LibraryPageComponent implements OnInit {
     private readonly dialogs = inject(Dialogs);
     private readonly menu = inject(ItemMenu);
     private readonly fileActions = inject(FileActions);
+    private readonly transfers = inject(FileTransfers);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly destroyRef = inject(DestroyRef);
@@ -228,6 +234,20 @@ export class LibraryPageComponent implements OnInit {
         return true;
     }
 
+    /**
+     * Ctrl+X and Ctrl+C keep the selection (else the item with the focus) to move or copy, Ctrl+V puts it into the
+     * folder listed; the browser's own copy goes on while text is selected. True when handled.
+     */
+    private onClipboardKey(key: string): boolean {
+        const clipboard = this.transfers.clipboard();
+        if (key === 'v')
+            return clipboard !== null && this.transfers.canInto(clipboard.kind) && this.transfers.paste(this.store.route().path);
+        if ((key !== 'x' && key !== 'c') || String(window.getSelection() ?? ''))
+            return false;
+        const items = this.store.selection().size ? this.store.selectedItems() : [this.focusedItem()].filter((item): item is LibraryItem => item !== null);
+        return items.length > 0 && this.transfers.keep(key === 'x' ? 'move' : 'copy', items);
+    }
+
     private itemAt(element: HTMLElement): LibraryItem | undefined {
         const path = element.getAttribute('data-path');
         return this.store.items().find(item => item.path === path);
@@ -244,6 +264,10 @@ export class LibraryPageComponent implements OnInit {
         }
         if (!typing && this.onListingKey(event))
             return;
+        if (!typing && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && this.onClipboardKey(event.key.toLowerCase())) {
+            event.preventDefault();
+            return;
+        }
         // New folder: Ctrl+Shift+N as in Explorer where the browser leaves it to the page (Chrome keeps it), Shift+N.
         if (!typing && event.shiftKey && !event.altKey && event.key.toLowerCase() === 'n' && this.canCreateFolder()) {
             event.preventDefault();

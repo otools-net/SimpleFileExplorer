@@ -1,11 +1,12 @@
 # Managing files
 
-You can create folders, rename and delete files and folders from the listing, if your groups have the rights
-`files.createFolders`, `files.rename`, `files.delete` (to the trash) and `files.deletePermanently`
-([Rights](../reference/rights.md)). No group has them until an administrator gives them. Folder access rules also apply: in a read-only folder these actions are not offered, and in a folder you
-can't see they don't exist.
+You can create folders, rename, move, copy and delete files and folders from the listing, if your groups have the
+rights `files.createFolders`, `files.rename`, `files.move`, `files.copy`, `files.delete` (to the trash) and
+`files.deletePermanently` ([Rights](../reference/rights.md)). No group has them until an administrator gives them.
+Folder access rules also apply: in a read-only folder these actions are not offered, and in a folder you can't see
+they don't exist.
 
-Moving, copying, uploading and downloading several files at once will come in later versions.
+Uploading and downloading several files at once will come in later versions.
 
 ## The item menu
 
@@ -17,6 +18,9 @@ may do with that item:
 |---|---|---|
 | **Rename…** | F2 | Gives it another name (below) |
 | **Delete…** | Delete | Moves it to the trash ([below](#delete)); with items selected, all of them |
+| **Cut**, **Copy** | Ctrl+X, Ctrl+C | Keeps it (or the selection) to move or copy with **Paste** ([below](#move-and-copy)) |
+| **Paste into …** | | On a folder, after Cut or Copy: puts what was kept into it |
+| **Move to…**, **Copy to…** | | Moves or copies it (or the selection) into a folder you pick |
 | **Tags…** / **Tag its files…** | | The tags of a file; adding tags to every file of a folder ([Tags](tags.md)) |
 | **Copy full path** | | Where it is on the server, when [copying paths](browsing.md) is on |
 
@@ -77,6 +81,50 @@ folder is scanned again. **Delete** and **Empty the trash** delete for good (rig
 What stays in the trash longer than the space's **Days in the trash** (30 by default) is deleted for good by the
 **Trash purge** task ([Background tasks](../administration/background-tasks.md)).
 
+## Move and copy
+
+There are several ways to move or copy files and folders, as in a file browser on your computer:
+
+- **Move to…** or **Copy to…** in the item menu, or **Move** or **Copy** in the selection bar, opens a folder picker:
+  click through the folders (the names at the top go back up), then **Move here** or **Copy here**. Folders where you
+  may not move or copy are refused, and a folder can't go into itself.
+- **Cut** (Ctrl+X) or **Copy** (Ctrl+C) keeps the selection, or the item with the keyboard focus; open the folder
+  they should go to and press **Ctrl+V**, or use **Paste here** in the panel at the bottom right, or **Paste into …**
+  in a folder's menu. Cut items look faded until they are pasted. What was copied can be pasted again elsewhere.
+- **Drag** files and folders (all the selected ones when you drag one of them) onto a folder of the listing, or onto a
+  folder of the location bar above it: they are moved there. Hold **Ctrl** when you drop them to copy them instead.
+
+![Picking the folder to move to](../images/move-dialog.png)
+
+Moves and copies run on the server in the background: you can go on browsing. A panel at the bottom right shows each
+one with its progress; **Cancel** stops it (what is done stays, nothing half copied does). When it is over, the panel
+says what was done and what was not, and why; close it with ×.
+
+When the folder already holds an item with the same name, the panel asks, showing the size and date of both:
+**Replace** (the one there goes to the trash: you need the right to delete there), **Skip** (leave this one out) or
+**Keep both** (a number is added to the new one's name). Tick **The same for the next ones** to answer once for the
+rest. A copy into the folder it is in always keeps both.
+
+![A copy asking about a name already taken](../images/operations-panel.png)
+
+**Moving** keeps what SFE knows about the files and folders, as a [rename](#rename) does: tags, thumbnails and
+trickplay, a folder's access rules, quick links, scheduled scans and settings naming it. A folder takes along the
+access it has in its own rules; what it got from the folder it was in changes to what the new place gives. When more
+people would see or change a folder in its new place, SFE says who, and offers to **Keep the access they have now**
+(rules on the moved folder keep it as before). You can move a folder only if you may move everywhere inside it.
+
+**Copying**:
+
+- **Copy their tags too** (asked each time) gives the copies the tags of the files they come from.
+- Copies are added to the index at once (a copied folder is scanned), with the thumbnails and trickplay of their
+  originals.
+- Only what you may see is copied: sub-folders you can't see or open are left out, and the panel says which.
+- Links (shortcuts or junctions to other folders) inside a copied folder are left out too: SFE never copies what they
+  lead to.
+- A read-only folder's files can be copied elsewhere.
+- A copy is refused when it would leave less free space on the drive than the space's
+  [Free space kept by copies](../administration/file-management.md#settings) (1 GB by default).
+
 ## Names that can't be used
 
 SFE refuses a name, and says why, when it:
@@ -96,6 +144,7 @@ A name starting with a dot (`.config`) is a hidden item: the listing shows it on
 ## When it can't be done
 
 - **A scan is running** over that folder: try again when the scan has finished.
+- **The drive is (nearly) full**: a copy keeps the free space the space asks for.
 - **The file is in use**: another program has it open, or a video is playing. Close it and try again.
 - **The server's account may not change files there**: the server was installed with read-only access to the library
   ([Installation](../installation.md) says how to give it write access).

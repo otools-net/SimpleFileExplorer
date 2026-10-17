@@ -146,6 +146,7 @@ public sealed class EditableSettings
             WorkFolder = options.Files.WorkFolder,
             DeletePermanently = options.Files.DeletePermanently,
             Trash = new() { RetentionDays = options.Files.Trash.RetentionDays },
+            MinimumFreeSpaceMegabytes = options.Files.MinimumFreeSpaceMegabytes,
         },
     };
 
@@ -225,6 +226,7 @@ public sealed class EditableSettings
         options.Files.WorkFolder = Files.WorkFolder;
         options.Files.DeletePermanently = Files.DeletePermanently;
         options.Files.Trash.RetentionDays = Files.Trash.RetentionDays;
+        options.Files.MinimumFreeSpaceMegabytes = Files.MinimumFreeSpaceMegabytes;
     }
 }
 
@@ -385,6 +387,7 @@ public sealed class FileSettings
     public WorkFolderLocation WorkFolder { get; set; }
     public bool DeletePermanently { get; set; }
     public TrashSettings Trash { get; set; } = new();
+    public int MinimumFreeSpaceMegabytes { get; set; }
 }
 
 public sealed class TrashSettings

@@ -174,6 +174,71 @@ export interface DeleteResults {
     permanent: boolean;
 }
 
+export type FileJobKind = 'move' | 'copy';
+export type FileJobState = 'running' | 'waiting' | 'completed' | 'cancelled';
+/** What a job does when the target holds an item of the same name; `ask`: it waits for the answer. */
+export type ConflictChoice = 'ask' | 'replace' | 'skip' | 'keepBoth';
+
+export interface FileJobRequest {
+    kind: FileJobKind;
+    paths: string[];
+    target: string;
+    conflicts?: ConflictChoice;
+    /** Moved folders keep the access each group and account had. */
+    keepAccess?: boolean;
+    /** Copies get the tags of their originals. */
+    keepTags?: boolean;
+}
+
+/** An item on one side of a name clash. */
+export interface ClashSide {
+    name: string;
+    isFolder: boolean;
+    size: number | null;
+    modified: string | null;
+}
+
+export interface FileJobConflict {
+    source: ClashSide;
+    existing: ClashSide;
+    /** The session may replace it (it would go to the trash). */
+    canReplace: boolean;
+}
+
+/** What became of one item of a job; `newPath`: where it is now (moved, or the copy). */
+export interface FileJobItem {
+    path: string;
+    newPath: string | null;
+    status: DeleteStatus | 'skipped' | 'invalid' | 'conflict';
+    message?: string | null;
+}
+
+/** A move or copy running in the background, or done. */
+export interface FileJobView {
+    id: number;
+    kind: FileJobKind;
+    state: FileJobState;
+    target: string;
+    total: number;
+    done: number;
+    bytesTotal: number;
+    bytesDone: number;
+    current: string | null;
+    conflict: FileJobConflict | null;
+    results: FileJobItem[];
+    started: string;
+    finished: string | null;
+}
+
+/** Someone who would see or change more of a moved folder than before. */
+export interface AccessGain {
+    folder: string;
+    who: string;
+    isGroup: boolean;
+    before: FolderLevel;
+    after: FolderLevel;
+}
+
 /** A file or folder in the trash. `path`: where it was. */
 export interface TrashItem {
     id: number;

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { ConfigService } from '../core/config.service';
 import { joinParts, plural } from '../core/format';
 import { FileActions } from '../files/file-actions';
+import { FileTransfers } from '../files/file-transfers';
 import { ItemMenu } from '../files/item-menu';
 import { LibraryItem } from '../core/models';
 import { IconComponent } from '../shared/icon.component';
@@ -11,7 +12,7 @@ import { ListingStore } from './listing.store';
 
 /**
  * The bar at the bottom while files or folders are selected: their count, select all, adding them to the quick links,
- * renaming the one selected, the tags of the files selected.
+ * renaming the one selected, moving, copying and deleting them, the tags of the files selected.
  */
 @Component({
     selector: 'sfe-selection-bar',
@@ -42,6 +43,18 @@ import { ListingStore } from './listing.store';
                 <span>Delete</span>
             </button>
         }
+        @if (movable()) {
+            <button type="button" class="button small selection-move" title="Move the selected items to another folder (Ctrl+X, then Ctrl+V there; or drag them onto a folder)" (click)="transfers.pick('move', store.selectedItems())">
+                <svg sfeIcon="move"></svg>
+                <span>Move</span>
+            </button>
+        }
+        @if (copyable()) {
+            <button type="button" class="button small selection-copy" title="Copy the selected items into another folder (Ctrl+C, then Ctrl+V there; or drag them onto a folder with Ctrl)" (click)="transfers.pick('copy', store.selectedItems())">
+                <svg sfeIcon="copy"></svg>
+                <span>Copy</span>
+            </button>
+        }
         @if (store.can('tags.assign') && files()) {
             <button type="button" class="button small primary" [title]="tagsTitle()" (click)="tagSelection()">
                 <svg sfeIcon="tag"></svg>
@@ -58,6 +71,7 @@ export class SelectionBarComponent {
 
     private readonly menu = inject(ItemMenu);
     private readonly fileActions = inject(FileActions);
+    protected readonly transfers = inject(FileTransfers);
 
     protected readonly count = computed(() => this.store.selection().size);
     private readonly selected = computed(() => this.store.selectedItems());
@@ -79,6 +93,9 @@ export class SelectionBarComponent {
         const selected = this.selected();
         return selected.length === 1 && this.menu.canRename(selected[0]) ? selected[0] : null;
     });
+
+    protected readonly movable = computed(() => this.selected().some(item => this.transfers.canMove(item)));
+    protected readonly copyable = computed(() => this.selected().some(item => this.transfers.canCopy(item)));
 
     /** Some of the selection may be deleted (only those are, the confirmation names them). */
     protected readonly deletable = computed(() => this.selected().some(item => this.fileActions.canDelete(item)));

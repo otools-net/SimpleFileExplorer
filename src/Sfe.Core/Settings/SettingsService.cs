@@ -645,6 +645,7 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
             "editor.outputFolder", $"The folder can be at most {MaxEditorFolderLength} characters.");
         Range(s.Editor.Quality, Editing.EditedImages.MinQuality, 100, "editor.quality", "The quality");
         Range(s.Files.Trash.RetentionDays, 0, MaxRetentionDays, "files.trash.retentionDays", "The days in the trash");
+        Range(s.Files.MinimumFreeSpaceMegabytes, 0, 1_048_576, "files.minimumFreeSpaceMegabytes", "The free space kept");
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
         return errors;
 

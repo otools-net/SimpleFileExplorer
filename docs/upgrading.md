@@ -30,6 +30,11 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.58
+
+- New rights `files.move` and `files.copy`, given to **no group**, as for 1.55. Nothing else changes: moves and copies
+  keep no data of their own (the panel's list of recent ones lives in the server's memory).
+
 ## To 1.57
 
 - Every space's index gets two new, empty tables for the trash, `TrashEntries` and `TrashTags` (SQL Server: a

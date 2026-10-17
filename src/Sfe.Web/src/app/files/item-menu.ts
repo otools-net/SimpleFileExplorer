@@ -7,10 +7,11 @@ import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { ItemActions } from '../library/items/item-actions.service';
 import { FileActions } from './file-actions';
+import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu. */
 export interface MenuEntry {
-    id: 'rename' | 'delete' | 'tags' | 'copyPath';
+    id: 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'tags' | 'copyPath';
     label: string;
     icon: string;
     /** Its key, shown at the end of the line. */
@@ -31,13 +32,14 @@ export class ItemMenu {
     private readonly actions = inject(ItemActions);
     private readonly copyPaths = inject(CopyPathService);
     private readonly files = inject(FileActions);
+    private readonly transfers = inject(FileTransfers);
 
     /** The item whose menu is open, and where. */
     readonly open = signal<{ item: LibraryItem; x: number; y: number; trigger: HTMLElement | null } | null>(null);
 
     /** What the session may do with `item` that file management adds: the menu is worth showing. */
     hasActions(item: LibraryItem): boolean {
-        return this.canRename(item) || this.files.canDelete(item);
+        return this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
     }
 
     /** May rename `item`: in the folder listed (its list of names changes) and on the item itself. */
@@ -58,6 +60,25 @@ export class ItemMenu {
                 title: this.files.alwaysPermanent ? `Delete ${item.name} for good (Delete)` : `Move ${item.name} to the trash (Delete; Shift+Delete: for good)`,
                 run: () => this.files.delete(this.targets(item)),
             });
+        const canMove = this.transfers.canMove(item);
+        const canCopy = this.transfers.canCopy(item);
+        if (canMove)
+            entries.push({ id: 'cut', label: 'Cut', icon: 'cut', shortcut: 'Ctrl+X', title: 'Keep it to move into a folder with Paste (Ctrl+X)', run: () => this.transfers.keep('move', this.targets(item)) });
+        if (canCopy)
+            entries.push({ id: 'copy', label: 'Copy', icon: 'copy', shortcut: 'Ctrl+C', title: 'Keep it to copy into a folder with Paste (Ctrl+C)', run: () => this.transfers.keep('copy', this.targets(item)) });
+        const clipboard = this.transfers.clipboard();
+        if (clipboard && item.kind === 'directory' && this.transfers.canInto(clipboard.kind, item))
+            entries.push({
+                id: 'paste',
+                label: `Paste into ${item.name}`,
+                icon: 'paste',
+                title: `${clipboard.kind === 'move' ? 'Move' : 'Copy'} ${clipboard.items.length === 1 ? clipboard.items[0].name : `the ${clipboard.items.length} items kept`} into this folder`,
+                run: () => this.transfers.paste(item.path),
+            });
+        if (canMove)
+            entries.push({ id: 'moveTo', label: 'Move to…', icon: 'move', title: 'Move it to another folder, picked next', run: () => this.transfers.pick('move', this.targets(item)) });
+        if (canCopy)
+            entries.push({ id: 'copyTo', label: 'Copy to…', icon: 'copy', title: 'Copy it into another folder, picked next', run: () => this.transfers.pick('copy', this.targets(item)) });
         if (item.kind === 'directory' ? this.store.can(Rights.assignTags, item) : this.store.can(Rights.viewTags, item))
             entries.push({
                 id: 'tags',

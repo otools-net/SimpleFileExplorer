@@ -3,6 +3,21 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.58.0
+
+### Added
+
+- **Move and copy:** **Move to…** and **Copy to…** (item menu, selection bar) pick a folder of the library; **Cut**,
+  **Copy** and **Paste** (Ctrl+X, Ctrl+C, Ctrl+V, the item menu's **Paste into**); dragging items onto a folder or a
+  folder of the location bar moves them, with Ctrl copies them. They run in the background: a panel shows the progress,
+  asks what to do when a name is taken (**Replace**, **Skip**, **Keep both**, the same for the rest), offers
+  **Cancel**, and says what was done.
+- Moved files and folders keep their tags, folder access rules, quick links, thumbnails and trickplay; a move into a
+  place where more people would see a folder says who, and can keep the folder's access as it was. Copies can take the
+  tags of their originals, leave out what one may not see, and are indexed at once.
+- New rights `files.move` and `files.copy` (no group has them until an administrator ticks them); the setting **Free
+  space kept by copies** (1 GB by default).
+
 ## 1.57.0
 
 ### Added

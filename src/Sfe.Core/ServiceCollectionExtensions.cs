@@ -99,6 +99,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<WorkFolder>();
         services.AddSingleton<PathMoves>();
         services.AddSingleton<Trash>();
+        services.AddSingleton<FileJobs>();
         services.AddSingleton<FileOperations>();
         services.AddSingleton<DuplicateFinder>();
         services.AddSingleton<DuplicateRemover>();

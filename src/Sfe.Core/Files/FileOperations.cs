@@ -33,6 +33,9 @@ public enum FileOperationStatus
     /// <summary>The disk refused: in use, or the server's account may not write there.</summary>
     Failed,
 
+    /// <summary>Left as it was (a move to where it is, a name clash answered "skip").</summary>
+    Skipped,
+
     /// <summary>The caller may not do it there (refused by the routes).</summary>
     Forbidden,
 

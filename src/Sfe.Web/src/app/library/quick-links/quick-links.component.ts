@@ -159,8 +159,9 @@ export class QuickLinksComponent implements OnInit {
         if (!paths?.length)
             return;
         event.dataTransfer.setData(DRAG_ITEMS, JSON.stringify(paths));
-        // Copy and link: dropping a file's link elsewhere (another tab, the desktop) keeps working.
-        event.dataTransfer.effectAllowed = 'copyLink';
+        // Every effect: dropping a file's link elsewhere (another tab, the desktop) keeps working, and on a folder of
+        // the page it is moved or copied (OperationsPanelComponent).
+        event.dataTransfer.effectAllowed = 'all';
         this.links.dragging.set(true);
     }
 

@@ -135,6 +135,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [picture-editor](agents/docs/features/picture-editor.md) | browser edits, server saves | `app/editor/`, `Core/Editing/` |
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
 | [trash](agents/docs/features/trash.md) | delete, trash, restore, purge task, links as links | `Trash`, `FileTree`, `app/files/delete.dialog.ts` |
+| [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, conflicts, clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |
 | [file-names](agents/docs/features/file-names.md) | names refused, keep-both names, portable names | `Core/Files/FileNames` |
 | [work-folder](agents/docs/features/work-folder.md) | `.sfe` at the root or the server's data folder; the reserved name | `WorkFolder`, `LibraryPaths.TryResolve` |
 | [selection-and-keys](agents/docs/features/selection-and-keys.md) | selecting files and folders, the selection bar, arrow keys | `ListingStore`, `listing-keys.ts` |

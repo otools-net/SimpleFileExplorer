@@ -42,8 +42,8 @@ const SORT_OPTIONS: [SortField, string][] = [
                     @if (last && !store.route().q) {
                         <span class="current" aria-current="page">{{ crumb.name }}</span>
                     } @else {
-                        <!-- data-path: dragged onto the quick links, it adds the folder. -->
-                        <a routerLink="/" [queryParams]="store.browseParams(crumb.path)" [attr.data-path]="crumb.path">{{ crumb.name }}</a>
+                        <!-- data-path: dragged onto the quick links, it adds the folder; data-drop: items dropped on it move there. -->
+                        <a routerLink="/" [queryParams]="store.browseParams(crumb.path)" [attr.data-path]="crumb.path" [attr.data-drop]="crumb.path">{{ crumb.name }}</a>
                     }
                 }
                 @if (store.route().q) {

@@ -19,6 +19,8 @@ public static class Rights
     public const string RenameFiles = "files.rename";
     public const string DeleteFiles = "files.delete";
     public const string DeletePermanently = "files.deletePermanently";
+    public const string MoveFiles = "files.move";
+    public const string CopyFiles = "files.copy";
     public const string ViewTags = "tags.view";
     public const string AssignTags = "tags.assign";
     public const string ManageTags = "tags.manage";
@@ -136,6 +138,8 @@ public static class RightCatalog
         Tenant(Rights.RenameFiles, false, [], W, Writable, "File management", "Rename", "Rename files and folders (the tags, folder access and quick links of a folder follow it).", since: 5),
         Tenant(Rights.DeleteFiles, false, [], W, Writable, "File management", "Delete to the trash", "Delete files and folders to the space's trash, and restore what one deleted (or what is in folders one may change).", since: 6),
         Tenant(Rights.DeletePermanently, false, [], W, Writable, "File management", "Delete permanently", "Delete files and folders for good, skipping the trash, and empty the trash.", since: 6),
+        Tenant(Rights.MoveFiles, false, [], W, Writable, "File management", "Move", "Move files and folders to other folders (their tags, folder access and quick links follow them).", since: 7),
+        Tenant(Rights.CopyFiles, false, [], W, Writable, "File management", "Copy", "Copy files and folders into folders one may change (only what one may see is copied).", since: 7),
         Tenant(Rights.ViewTags, true, Everyone, R, Readable, "Tags", "See tags", "See the tags of files, the tag list and the tag sidebar."),
         Tenant(Rights.AssignTags, false, Members, W, Readable, "Tags", "Tag files", "Add tags to files and remove them, also to whole folders and searches."),
         Tenant(Rights.ManageTags, false, Administrators, W, null, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),

@@ -90,6 +90,9 @@ public sealed class Trash(
 
     public int RetentionDays => Math.Max(0, options.CurrentValue.Files.Trash.RetentionDays);
 
+    /// <summary>The space deletes everything for good (<see cref="FileManagementOptions.DeletePermanently"/>).</summary>
+    public bool AlwaysPermanent => options.CurrentValue.Files.DeletePermanently;
+
     /* ---------- Deleting ---------- */
 
     /// <summary>

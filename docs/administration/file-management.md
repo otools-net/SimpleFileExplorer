@@ -23,6 +23,7 @@ Right: `settings.files`.
 |---|---|---|
 | **Always delete permanently** (`Sfe:Files:DeletePermanently`) | off | Every delete skips the trash: files are gone at once, and only those with `files.deletePermanently` can delete. What is already in the trash stays (restore and purge still work) |
 | **Days in the trash** (`Sfe:Files:Trash:RetentionDays`) | 30 | Then the **Trash purge** task deletes it for good (it also runs by itself when the trash is used); 0 keeps everything until the trash is emptied |
+| **Free space kept by copies** (`Sfe:Files:MinimumFreeSpaceMegabytes`) | 1024 | A [copy](../user-guide/managing-files.md#move-and-copy) is refused when it would leave less free space than this (in MB) on the drive it goes to; 0 lets copies fill the drive |
 | **Only names Windows accepts** (`Sfe:Files:PortableNames`) | on | New names must also work on Windows: no `< > : " \ \| ? *`, no name ending with a dot or a space, no device names (`CON`, `NUL`, `COM1`…). Keep it on when the library is shared with Windows computers or may move to one. A Windows server always refuses them |
 | **Where SFE keeps its work files** (`Sfe:Files:WorkFolder`) | In the library | **In the library** (`Library`): a hidden folder `.sfe` at the library's root. **On the server** (`Server`): the server's data folder, beside the thumbnails (`work`) |
 
@@ -39,7 +40,7 @@ Either way, the name `.sfe` at the library's root is reserved: it is never liste
 scanned, searched or reachable from the web pages, and no file or folder can be given that name there.
 
 Changing the setting doesn't move what is in the trash: each item stays (and is restored) from where it went. Who may
-create folders, rename and delete is decided by the rights `files.createFolders`, `files.rename`, `files.delete` and
-`files.deletePermanently`, which no group has
+create folders, rename, move, copy and delete is decided by the rights `files.createFolders`, `files.rename`,
+`files.move`, `files.copy`, `files.delete` and `files.deletePermanently`, which no group has
 until you give them ([Spaces & accounts](spaces-and-accounts.md#groups)), and by [folder access](spaces-and-accounts.md#folder-access).
 The server's account needs write access to the library ([Installation](../installation.md)).

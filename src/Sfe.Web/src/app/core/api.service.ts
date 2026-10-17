@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    BackupLink, ClientConfig, DeleteResults, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, BackupLink, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -212,6 +212,14 @@ export class Api {
     restoreFromTrash = (id: number) => this.post<FileOperationResult>(`api/files/trash/${id}/restore`);
     purgeFromTrash = (id: number) => this.delete<void>(`api/files/trash/${id}`);
     emptyTrash = () => this.delete<{ purged: number }>('api/files/trash');
+    /** Who would see or change more of the folders among `paths` once moved into `target`. */
+    checkMove = (paths: string[], target: string) => this.post<{ gains: AccessGain[] }>('api/files/jobs/check', { paths, target });
+    /** Starts a move or copy in the background; its first state. */
+    startFileJob = (request: FileJobRequest) => this.post<FileJobView>('api/files/jobs', request);
+    /** The session's moves and copies, running and recent, newest first. */
+    fileJobs = () => this.get<FileJobView[]>('api/files/jobs');
+    answerFileJob = (id: number, choice: ConflictChoice, forAll: boolean) => this.post<void>(`api/files/jobs/${id}/answer`, { choice, forAll });
+    cancelFileJob = (id: number) => this.post<void>(`api/files/jobs/${id}/cancel`);
 
     /** Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original stays. */
     saveEditedImage = (path: string, image: Blob) => this.post<EditedImage>(withQuery('api/editor/images', { path }), image);

@@ -4,6 +4,7 @@ import { plural } from '../../core/format';
 import { CopyPathService } from '../../core/copy-path.service';
 import { LibraryItem } from '../../core/models';
 import { Rights } from '../../core/rights';
+import { FileTransfers } from '../../files/file-transfers';
 import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
 import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
@@ -24,10 +25,13 @@ import { CopyPathButtonComponent, NOT_INDEXED, SelectBoxComponent } from './item
     host: {
         class: 'folder-item',
         '[class.copied]': 'copied()',
+        '[class.cut]': 'transfers.cutPaths().has(item().path)',
         '[class.unindexed]': 'unindexed()',
         '[class.revealed]': 'store.revealed() === item().path',
         '[class.selected]': 'store.selection().has(item().path)',
         '[attr.data-path]': 'item().path',
+        // Items dropped on it are moved (copied with Ctrl) into it: OperationsPanelComponent.
+        '[attr.data-drop]': 'item().path',
         '(contextmenu)': 'menu.fromEvent($event, item())',
     },
     template: `
@@ -71,6 +75,7 @@ export class FolderItemComponent {
     protected readonly store = inject(ListingStore);
     protected readonly copyPaths = inject(CopyPathService);
     protected readonly menu = inject(ItemMenu);
+    protected readonly transfers = inject(FileTransfers);
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));
     protected readonly unindexed = computed(() => this.item().indexed === false);
     protected readonly linkTitle = computed(() => this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''));

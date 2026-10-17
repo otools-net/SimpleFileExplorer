@@ -24,6 +24,26 @@ async function session({ user = 'admin', password = 'admin-password-1', ...opts 
     return b;
 }
 
+/**
+ * The operations panel asking about a name clash: a photo copied into Inbox twice (the second copy waits for the
+ * answer), the page opened again to follow it, Skip; then the copy is deleted so that the library stays as it was.
+ */
+async function operations() {
+    const b = await session();
+    const post = (url, body) => `fetch('${url}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify(${JSON.stringify(body)}) }).then(r => r.status)`;
+    const copy = { kind: 'copy', paths: ['Photos/Sunrise.jpg'], target: 'Inbox' };
+    await b.open('?path=Inbox');
+    await b.eval(post('api/files/jobs', copy));
+    await sleep(1500);
+    await b.eval(post('api/files/jobs', copy));
+    await b.open('?path=Inbox', 3000);
+    await b.shot(OUT + 'operations-panel.png');
+    await b.clickTitle('Leave this one out');
+    await sleep(1000);
+    await b.eval(post('api/files/delete', { paths: ['Inbox/Sunrise.jpg'], permanent: true }));
+    await b.close();
+}
+
 /** Replaces this machine's scratch library path with a neutral one, in text and inputs. */
 async function mask(b) {
     await b.eval(`(() => {
@@ -374,6 +394,14 @@ const scenes = {
         await b.realClick('input[aria-label="Select Sunrise.jpg"]');
         await sleep(600);
         await b.shot(OUT + 'selection-folders.png');
+        // Move: the folder picker, from the selection bar.
+        await b.clickTitle('Move the selected items to another folder');
+        await sleep(1000);
+        await b.clickTitle('Open Family');
+        await sleep(1000);
+        await b.shot(OUT + 'move-dialog.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(400);
         // Deleted to the trash (the selection), then put back below so that the other scenes find them.
         await b.clickTitle('Move the selected items to the trash');
         await sleep(600);
@@ -391,6 +419,7 @@ const scenes = {
         await a.open(admin('files', 'settings'), 3000);
         await a.shot(OUT + 'admin-files.png');
         await a.close();
+        await operations();
     },
     async admin() {
         const b = await session({ height: 900 });

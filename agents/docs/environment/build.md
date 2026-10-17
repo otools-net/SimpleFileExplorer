@@ -21,3 +21,6 @@ Code: `src/Sfe.Api/Sfe.Api.csproj` (targets), `src/Sfe.Web/package.json`, `angul
   `TheShippedChangelogHasTheRunningVersion` fails (it finds `CHANGELOG.md` from the output folder): run it alone
   without.
 - The initial bundle budget is 600 kB (warning only): [client-routes.md](../architecture/client-routes.md).
+- `ng build --configuration development` writes an unminified client into `src/Sfe.Api/wwwroot`, whose Angular
+  comments hold sample URLs (cloudinary, imagekit): `WebClientHasNoExternalResources` then fails. Rebuild with `npm run
+  build` (or `dotnet build`) before `dotnet test`.
