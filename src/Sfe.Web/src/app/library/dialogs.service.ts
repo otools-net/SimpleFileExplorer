@@ -2,6 +2,7 @@ import { DestroyRef, inject, Injectable, signal, WritableSignal } from '@angular
 import type { ImageEditorDialog } from '../editor/image-editor.dialog';
 import type { DeleteDialog } from '../files/delete.dialog';
 import type { NameDialog } from '../files/name.dialog';
+import type { PropertiesDialog } from '../files/properties.dialog';
 import type { TransferDialog } from '../files/transfer.dialog';
 import type { FileTagsDialog } from '../tags/file-tags.dialog';
 import type { FilesTagsDialog } from '../tags/files-tags.dialog';
@@ -32,6 +33,7 @@ export class Dialogs {
     readonly delete = signal<DeleteDialog | null>(null);
     /** Move to… and Copy to…, and the confirmation of a paste or a drop. */
     readonly transfer = signal<TransferDialog | null>(null);
+    readonly properties = signal<PropertiesDialog | null>(null);
 
     /** Closes the open dialogs, e.g. before searching for a tag picked in one. */
     closeAll(): void {

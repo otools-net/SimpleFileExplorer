@@ -262,13 +262,19 @@ always included, two zips at once per person and a size setting (none by default
 - Not done: a **Download folder** button for the folder listed (select it from its parent, or use the menu).
 - Reference: filebrowser offers zip and several tar formats; zip alone is enough here.
 
-### Phase 7 — Properties
+### Phase 7 — Properties (built in 1.61.0)
 
-- [ ] Item properties: full name, kind, size, dates (created, modified), path (with `files.copyPaths`), folder:
-      count of files and folders and total size (from the index when the folder is indexed, else a background count
-      with a cap and cancel), media data already in the index, tags.
-- [ ] On demand: checksum (SHA-256) of one file, limited per caller.
-- [ ] Client: **Properties** (Alt+Enter) in the menu, a side sheet.
+Lasting facts: [properties.md](../features/properties.md). Decided 2026-10-17: the item menu opens for everyone who
+browses; a folder's totals from the index, then counted on the disk on demand; SHA-256, SHA-1 or MD5 for whoever may
+download the file.
+
+- [x] (1.61.0) `GET api/files/properties`: name, kind, size, dates (created, modified, opened), hidden / read-only /
+      link, the index's data and tags; **Copy full path** with `Browse:CopyPaths`. Folder totals from the index among
+      what the caller sees; **Count on disk** as a job (progress, cap 2 000 000, stop, links not followed).
+- [x] (1.61.0) Checksum (SHA-256, SHA-1, MD5) of one file as a job, one per caller at a time.
+- [x] (1.61.0) Client: **Properties** (Alt+Enter) in the item menu, which now opens for everyone who browses; a sheet.
+- [x] (1.61.0) Tests: `PropertiesTests`, `PropertyRouteTests`, `properties.spec.ts`.
+- Not done: Properties of several items at once (their total size); a button in the viewer.
 
 ### Phase 8 — Comfort
 

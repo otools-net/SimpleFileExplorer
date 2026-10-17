@@ -171,7 +171,7 @@ describe('ItemMenu, moves and copies', () => {
     it('offers cut, copy, paste into a folder, move to and copy to by rights', async () => {
         await setUp();
         const menu = TestBed.inject(ItemMenu);
-        expect(menu.entries(photo).map(e => e.id)).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags']);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'properties']);
 
         TestBed.inject(FileTransfers).keep('move', [photo]);
         const paste = menu.entries(folder).find(e => e.id === 'paste')!;
@@ -181,7 +181,7 @@ describe('ItemMenu, moves and copies', () => {
         expect(transfer).toHaveBeenCalledWith('move', [photo.path], folder.path);
 
         await loadConfig(api, limitedConfig([Rights.browse, Rights.viewFiles]));
-        expect(menu.hasActions(photo)).toBe(false);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['properties']);
     });
 
     it('opens the picker for the whole selection', async () => {

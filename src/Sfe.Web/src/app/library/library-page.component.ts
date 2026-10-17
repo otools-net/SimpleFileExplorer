@@ -12,6 +12,7 @@ import { DeleteDialog } from '../files/delete.dialog';
 import { FileActions } from '../files/file-actions';
 import { FileTransfers } from '../files/file-transfers';
 import { OperationsPanelComponent } from '../files/operations-panel.component';
+import { PropertiesDialog } from '../files/properties.dialog';
 import { TransferDialog } from '../files/transfer.dialog';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
@@ -52,7 +53,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, OperationsPanelComponent, ItemMenuComponent],
+        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, PropertiesDialog, OperationsPanelComponent, ItemMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -86,6 +87,7 @@ let created = false;
             <sfe-name-dialog />
             <sfe-delete-dialog />
             <sfe-transfer-dialog />
+            <sfe-properties-dialog />
             <sfe-item-menu />
             <!-- After the viewer: it opens over it. -->
             <sfe-image-editor />
@@ -282,6 +284,16 @@ export class LibraryPageComponent implements OnInit {
             const items = this.store.selection().size ? this.store.selectedItems() : [this.focusedItem()].filter((item): item is LibraryItem => item !== null);
             if (items.length && this.fileActions.delete(items, event.shiftKey))
                 event.preventDefault();
+            return;
+        }
+        // Properties: Alt+Enter as in Explorer, of the item with the focus (else the only one selected).
+        if (event.key === 'Enter' && event.altKey && !event.shiftKey) {
+            const selected = this.store.selectedItems();
+            const item = this.focusedItem() ?? (selected.length === 1 ? selected[0] : null);
+            if (item && this.menu.canSeeProperties()) {
+                event.preventDefault();
+                void this.dialogs.properties()?.open(item);
+            }
             return;
         }
         if (event.key === 'F2') {

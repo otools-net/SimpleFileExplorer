@@ -146,16 +146,16 @@ describe('ItemMenu', () => {
         return new MouseEvent('contextmenu', { cancelable: true, clientX: 30, clientY: 40, shiftKey });
     }
 
-    it('offers renaming only to those who may rename here, and leaves them the browser\'s menu otherwise', async () => {
+    it('offers renaming only to those who may rename here, and Properties to everyone who browses', async () => {
         await setUp([Rights.browse, Rights.viewTags]);
         const menu = TestBed.inject(ItemMenu);
         const event = menuEvent();
         menu.fromEvent(event, photo);
 
-        expect(menu.hasActions(photo)).toBe(false);
-        expect(menu.entries(photo).map(e => e.id)).toEqual(['tags']);
-        expect(event.defaultPrevented).toBe(false);
-        expect(menu.open()).toBeNull();
+        expect(menu.hasActions(photo)).toBe(true);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['tags', 'properties']);
+        expect(event.defaultPrevented).toBe(true);
+        expect(menu.open()?.item).toBe(photo);
     });
 
     it('follows the folder rules of the folder listed and of each folder in it', async () => {
@@ -166,8 +166,8 @@ describe('ItemMenu', () => {
         await store.load();
         const menu = TestBed.inject(ItemMenu);
 
-        expect(menu.hasActions(photo)).toBe(true);
-        expect(menu.hasActions(folder)).toBe(false);
+        expect(menu.canRename(photo)).toBe(true);
+        expect(menu.canRename(folder)).toBe(false);
     });
 
     it('opens at the pointer on a right click, and the browser\'s own menu with Shift', async () => {
@@ -188,7 +188,7 @@ describe('ItemMenu', () => {
         const element: HTMLElement = fixture.nativeElement;
 
         expect(event.defaultPrevented).toBe(true);
-        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags']);
+        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'properties']);
         expect(document.activeElement?.getAttribute('data-entry')).toBe('rename');
         (element.querySelector('[data-entry="rename"]') as HTMLButtonElement).click();
         await settle();

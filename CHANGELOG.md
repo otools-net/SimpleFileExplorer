@@ -3,6 +3,19 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.61.0
+
+### Added
+
+- **Properties** of a file or folder (item menu, **Alt+Enter**): name, kind, folder, exact size, dates (modified,
+  created, last opened), hidden / read-only / link, resolution, length and tags from the index. A folder shows what it
+  holds as the index knows it, and **Count on disk** counts it on the server now (progress, stop). A file's
+  **checksum** (SHA-256, SHA-1 or MD5) for those who may download it.
+
+### Changed
+
+- A right click on a file or folder opens SFE's item menu for everyone who may browse (Shift: the browser's menu).
+
 ## 1.60.0
 
 ### Added

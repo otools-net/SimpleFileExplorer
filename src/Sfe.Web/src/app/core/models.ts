@@ -842,6 +842,60 @@ export interface MigrationInfo {
     codeFile?: string | null;
 }
 
+/** What the disk says of a file or folder (Properties). Dates are ISO, null when the file system doesn't keep them. */
+export interface ItemDetails {
+    path: string;
+    name: string;
+    isFolder: boolean;
+    size: number | null;
+    created: string | null;
+    modified: string;
+    accessed: string | null;
+    /** A name starting with a dot, or the system's hidden attribute. */
+    hidden: boolean;
+    readOnly: boolean;
+    /** A symbolic link or junction (where it leads is not told). */
+    isLink: boolean;
+}
+
+export interface ItemProperties {
+    item: LibraryItem;
+    details: ItemDetails;
+    /** May read the file whole for a checksum (right to download it). */
+    canChecksum: boolean;
+}
+
+/** What the index knows below a folder, among what the session sees. */
+export interface FolderTotals {
+    indexed: boolean;
+    files: number;
+    folders: number;
+    bytes: number;
+}
+
+export type ChecksumAlgorithm = 'sha256' | 'sha1' | 'md5';
+
+/** A folder counted on the disk, or a file's checksum, running on the server. */
+export interface PropertyJob {
+    id: string;
+    kind: 'count' | 'checksum';
+    path: string;
+    algorithm: ChecksumAlgorithm | null;
+    done: boolean;
+    files: number;
+    folders: number;
+    /** Counted, or read so far for a checksum. */
+    bytes: number;
+    /** The file's size, for a checksum. */
+    total: number | null;
+    /** Links not followed and folders that couldn't be read. */
+    leftOut: number;
+    /** The count stopped at its limit: the folder holds more. */
+    capped: boolean;
+    checksum: string | null;
+    error: string | null;
+}
+
 /** A zip of several files or folders: the browser downloads it once from `url`, soon. */
 export interface ArchiveLink {
     url: string;

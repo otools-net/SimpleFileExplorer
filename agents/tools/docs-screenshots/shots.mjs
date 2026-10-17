@@ -452,6 +452,35 @@ const scenes = {
         await a.close();
         await operations();
     },
+    async properties() {
+        const b = await session();
+        /** Right click on the item `selector`, then Properties in its menu. */
+        const properties = async selector => {
+            const box = await b.rect(selector);
+            const x = box.x + box.width / 2, y = box.y + box.height / 3;
+            await b.mouse('mouseMoved', x, y);
+            await b.mouse('mousePressed', x, y, { button: 'right' });
+            await b.mouse('mouseReleased', x, y, { button: 'right' });
+            await sleep(500);
+            await b.eval(`document.querySelector('.item-menu [data-entry="properties"]').click(); 1`);
+            await sleep(1500);
+        };
+        // A picture, with its checksum.
+        await b.open('?path=Photos%2F2024%20Beach%20trip');
+        await properties('[data-path="Photos/2024 Beach trip/Dunes.jpg"]');
+        await b.eval(`document.querySelector('sfe-properties-dialog .checksum-button').click(); 1`);
+        await sleep(2000);
+        await b.shot(OUT + 'properties-file.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(400);
+        // A folder: what the index knows, then counted on the disk.
+        await b.open('?path=Photos');
+        await properties('.folder-item[data-path="Photos/2024 Beach trip"] a.folder');
+        await b.eval(`document.querySelector('sfe-properties-dialog .count-button').click(); 1`);
+        await sleep(2000);
+        await b.shot(OUT + 'properties-folder.png');
+        await b.close();
+    },
     async admin() {
         const b = await session({ height: 900 });
         const pages = [

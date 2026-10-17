@@ -102,6 +102,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<FileJobs>();
         services.AddSingleton<Uploads>();
         services.AddSingleton<Archives>();
+        services.AddSingleton<Properties>();
+        services.AddSingleton<PropertyJobs>();
         services.AddSingleton<FileOperations>();
         services.AddSingleton<DuplicateFinder>();
         services.AddSingleton<DuplicateRemover>();

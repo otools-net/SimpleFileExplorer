@@ -155,3 +155,16 @@
 main.page.drop-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
 .location-head :is(.upload-button, .upload-folder-button) { flex: none; color: var(--text-muted); }
 .location-head :is(.upload-button, .upload-folder-button):hover { color: var(--text); }
+
+/* Properties of a file or folder. */
+.properties { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; }
+.properties dt { color: var(--text-muted); }
+.properties dd { margin: 0; overflow-wrap: anywhere; }
+.properties-name { font-weight: 600; }
+.properties-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.properties-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+.properties-section h3 { margin: 0 0 8px; font-size: 14px; }
+.properties-section p { margin: 0 0 8px; }
+.properties-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.properties-checksum { display: flex; align-items: center; gap: 8px; margin-top: 8px !important; }
+.properties-checksum code { min-width: 0; overflow-wrap: anywhere; font-size: 12px; user-select: all; }

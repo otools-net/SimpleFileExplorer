@@ -30,6 +30,11 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.61
+
+- A right click on a file or folder now opens SFE's item menu for everyone who may browse (it has **Properties**);
+  **Shift** with the right click still opens the browser's own menu. Nothing changes in the databases or the rights.
+
 ## To 1.60
 
 - Whoever may download files (`files.download`, members by default) may now download several files or a folder as a

@@ -1,4 +1,5 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injectable, Injector, input, signal, untracked, viewChild } from '@angular/core';
+import { ConfigService } from '../core/config.service';
 import { CopyPathService } from '../core/copy-path.service';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
@@ -12,7 +13,7 @@ import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu. */
 export interface MenuEntry {
-    id: 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'copyPath';
+    id: 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'copyPath' | 'properties';
     label: string;
     icon: string;
     /** Its key, shown at the end of the line. */
@@ -35,13 +36,19 @@ export class ItemMenu {
     private readonly files = inject(FileActions);
     private readonly transfers = inject(FileTransfers);
     private readonly downloads = inject(FileDownloads);
+    private readonly config = inject(ConfigService);
 
     /** The item whose menu is open, and where. */
     readonly open = signal<{ item: LibraryItem; x: number; y: number; trigger: HTMLElement | null } | null>(null);
 
-    /** What the session may do with `item` that file management adds: the menu is worth showing. */
+    /** Everyone who browses has the menu, for Properties at least (the browser's own menu with Shift). */
     hasActions(item: LibraryItem): boolean {
-        return this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
+        return this.canSeeProperties() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
+    }
+
+    /** Properties of what is listed: whoever browses. */
+    canSeeProperties(): boolean {
+        return this.config.can(Rights.browse);
     }
 
     /** May rename `item`: in the folder listed (its list of names changes) and on the item itself. */
@@ -104,6 +111,12 @@ export class ItemMenu {
             });
         if (this.copyPaths.enabled())
             entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => void this.copyPaths.copy(item.path) });
+        if (this.canSeeProperties())
+            entries.push({
+                id: 'properties', label: 'Properties', icon: 'info', shortcut: 'Alt+Enter',
+                title: item.kind === 'directory' ? 'Its dates, and what it holds (Alt+Enter)' : 'Its size, dates and what the index knows of it; its checksum (Alt+Enter)',
+                run: () => void this.dialogs.properties()?.open(item),
+            });
         return entries;
     }
 

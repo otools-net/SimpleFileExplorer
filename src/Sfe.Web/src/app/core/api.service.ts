@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, ArchiveLink, BackupLink, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, ArchiveLink, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -236,6 +236,13 @@ export class Api {
     cancelUpload = (id: string) => this.delete<void>(`api/files/uploads/${id}`);
     /** Names the items of a zip; the browser downloads it from the link answered, once. */
     createArchive = (paths: string[]) => this.post<ArchiveLink>('api/files/archive', { paths });
+    properties = (path: string) => this.get<ItemProperties>('api/files/properties', { path });
+    /** What the index knows below a folder. */
+    folderTotals = (path: string, signal?: AbortSignal) => this.get<FolderTotals>('api/files/properties/totals', { path }, signal);
+    countFolder = (path: string) => this.post<PropertyJob>('api/files/properties/count', { path });
+    startChecksum = (path: string, algorithm: ChecksumAlgorithm) => this.post<PropertyJob>('api/files/properties/checksum', { path, algorithm });
+    propertyJob = (id: string) => this.get<PropertyJob>(`api/files/properties/jobs/${id}`);
+    cancelPropertyJob = (id: string) => this.delete<void>(`api/files/properties/jobs/${id}`);
 
     /** Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original stays. */
     saveEditedImage = (path: string, image: Blob) => this.post<EditedImage>(withQuery('api/editor/images', { path }), image);

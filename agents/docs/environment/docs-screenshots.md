@@ -14,7 +14,8 @@ Tool: `agents/tools/docs-screenshots/` (how to add a scene: its `README.md`).
 - **Watchdog:** `run.mjs` prints each screenshot as it is written (`  + name.png`) and stops a step (seed, shots,
   links) that writes no screenshot and prints nothing for `--stall` minutes (default 5, `0` = never): the run fails
   naming the last screenshot, so a stuck scene is the one after it. Run it in the background and read its output
-  instead of waiting on a silent process.
+  instead of waiting on a silent process. `node()` in `run.mjs` is async: a script call without `await` runs alongside
+  the next step (a missing one let seeding start before the sample videos existed).
 - The last scene (`streams`) can leave its headless Edge alive, so `shots.mjs` never exits (log stops after
   `admin-playback-streams.png`): the watchdog stops it after `--stall` minutes (the images are already written), or
   `taskkill /PID <that msedge> /T /F` and the run goes on.

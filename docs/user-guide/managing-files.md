@@ -25,12 +25,12 @@ may do with that item:
 | **Download** / **Download as zip** | | Saves the file to your device; a folder, or several items selected, as one zip ([below](#download-several-files-or-a-folder)) |
 | **Tags…** / **Tag its files…** | | The tags of a file; adding tags to every file of a folder ([Tags](tags.md)) |
 | **Copy full path** | | Where it is on the server, when [copying paths](browsing.md) is on |
+| **Properties** | Alt+Enter | Its size, dates and what SFE knows of it; a folder's size; a file's checksum ([below](#properties)) |
 
 ![The menu of a folder](../images/item-menu.png)
 
 Arrow keys move through the menu and Esc closes it. To get the browser's own menu (to open a link in a new tab, for
-example), hold **Shift** while you right-click. Without the rights above there is no item menu: a right click opens the
-browser's menu as before.
+example), hold **Shift** while you right-click. Everyone who may browse has the menu, with **Properties** at least.
 
 ## New folder
 
@@ -177,6 +177,28 @@ downloaded as it is.
 - Each person downloads at most two zips at once.
 - A space can set the **largest zip** ([File management](../administration/file-management.md#settings)): a larger
   one is refused before it starts.
+
+## Properties
+
+**Properties** in the item menu, or **Alt+Enter** on the item with the focus (or the one selected), shows:
+
+- its name, kind, the folder it is in, its size (exact, in bytes), when it was modified, created and last opened (as
+  far as the server's disk keeps it), and whether it is hidden, read-only or a link to another place;
+- what the index knows: a picture's or video's resolution, a video's or song's length, its tags, or that no scan has
+  indexed it yet.
+
+![The properties of a picture, with its checksum](../images/properties-file.png)
+
+**A folder** shows what it holds as the index knows it (as of the last scan) at once. **Count on disk** goes through
+the folder on the server for the exact count now, with its progress; **Stop**, or closing the sheet, stops it. Folders
+you can't see are never counted; links to other places are not followed (the count says how many were left out). A
+count stops at two million files and folders ("more than").
+
+![The properties of a folder, counted on the disk](../images/properties-folder.png)
+
+**A file's checksum** (SHA-256, SHA-1 or MD5), to compare it with one published elsewhere: pick the algorithm, then
+**Compute**. The server reads the whole file, with its progress; **Copy** puts the result on the clipboard. Only those
+who may download the file can compute it, one file at a time.
 
 ## Names that can't be used
 

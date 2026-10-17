@@ -47,7 +47,7 @@ export class CopyPathService {
  * The asynchronous clipboard only exists on secure pages (https or localhost), and may still be refused (no focus,
  * permission policy); otherwise the text is copied the old way, through a selected text box.
  */
-async function copyText(text: string): Promise<void> {
+export async function copyText(text: string): Promise<void> {
     if (window.isSecureContext && navigator.clipboard) {
         try {
             await navigator.clipboard.writeText(text);

@@ -72,7 +72,7 @@ function node(script, ...scriptArgs) {
         const forward = target => chunk => { active = Date.now(); target.write(chunk); };
         child.stdout.on('data', forward(process.stdout));
         child.stderr.on('data', forward(process.stderr));
-        const watch = setInterval(() => {
+        const report = () => {
             for (const image of writtenSince(started)) {
                 if (seen.get(image.name) === image.time)
                     continue;
@@ -81,6 +81,9 @@ function node(script, ...scriptArgs) {
                 active = Date.now();
                 console.log(`  + ${image.name}`);
             }
+        };
+        const watch = setInterval(() => {
+            report();
             if (stallMinutes > 0 && Date.now() - active > stallMinutes * 60_000) {
                 clearInterval(watch);
                 child.kill();
@@ -90,6 +93,8 @@ function node(script, ...scriptArgs) {
         }, 2000);
         child.on('exit', code => {
             clearInterval(watch);
+            // Those written since the last look.
+            report();
             if (code === 0)
                 resolve();
             else
@@ -123,7 +128,7 @@ if (!fs.existsSync(dll)) throw new Error(`no build at ${dll}: run without --skip
 
 if (!shotsOnly) {
     step('sample library');
-    node('make-media.mjs', library, ...(ffmpeg ? [ffmpeg] : []));
+    await node('make-media.mjs', library, ...(ffmpeg ? [ffmpeg] : []));
 }
 
 /** The app on the sample library with the database, settings and caches of `folder`; resolves once it answers. */
