@@ -14,6 +14,9 @@ public sealed record FolderPrincipalRef(int? GroupId, int? UserId)
     internal bool Owns(FolderRule rule) => rule.GroupId == GroupId && rule.UserId == UserId;
 }
 
+/// <summary>A folder rule kept while its folder is out of the library (in the trash); its path relative to that folder.</summary>
+public sealed record KeptFolderRule(string Path, int? GroupId, int? UserId, FolderLevel Level, DateTime Created, int? CreatedById);
+
 public sealed record FolderRuleInfo(int Id, string Path, FolderPrincipalRef Principal, FolderLevel Level, DateTime Created, int? CreatedById);
 
 /// <summary>
@@ -194,6 +197,72 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
         {
             if (!handed)
                 gate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Takes away the rules of <paramref name="folder"/> and of everything below it, for every principal: the folder
+    /// left the library (deleted to the trash, or for good). The result keeps them, relative to the folder, for
+    /// <see cref="PutBackAsync"/> when it comes back.
+    /// </summary>
+    public async Task<IReadOnlyList<KeptFolderRule>> TakeTreeAsync(int tenantId, string folder, CancellationToken cancellationToken = default)
+    {
+        if (LibraryPaths.NormalizeRelative(folder) is not { Length: > 0 } source)
+            return [];
+        var gate = Gate(tenantId);
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+            var rules = (await db.FolderRules.Where(r => r.TenantId == tenantId).ToListAsync(cancellationToken))
+                .Where(r => FolderPolicy.IsSameOrBelow(r.Path, source))
+                .ToList();
+            if (rules.Count == 0)
+                return [];
+            db.FolderRules.RemoveRange(rules);
+            await db.SaveChangesAsync(cancellationToken);
+            changes.Changed();
+            return [.. rules.Select(r => new KeptFolderRule(r.Path[source.Length..].TrimStart('/'), r.GroupId, r.UserId, r.Level, r.Created, r.CreatedById))];
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Gives back rules taken by <see cref="TakeTreeAsync"/> to the folder now at <paramref name="folder"/> (restored,
+    /// maybe under another name). Rules of groups deleted meanwhile, or of accounts no longer in the library, are dropped.
+    /// </summary>
+    /// <returns>Rules put back.</returns>
+    public async Task<int> PutBackAsync(int tenantId, string folder, IReadOnlyList<KeptFolderRule> rules, CancellationToken cancellationToken = default)
+    {
+        if (rules.Count == 0 || LibraryPaths.NormalizeRelative(folder) is not { Length: > 0 } target)
+            return 0;
+        var gate = Gate(tenantId);
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+            var kept = new List<FolderRule>();
+            foreach (var rule in rules)
+            {
+                if (await PrincipalErrorAsync(db, tenantId, new FolderPrincipalRef(rule.GroupId, rule.UserId), cancellationToken) is not null)
+                    continue;
+                kept.Add(new FolderRule
+                {
+                    TenantId = tenantId, Path = rule.Path.Length == 0 ? target : $"{target}/{rule.Path}", GroupId = rule.GroupId, UserId = rule.UserId,
+                    Level = rule.Level, Created = rule.Created, CreatedById = rule.CreatedById,
+                });
+            }
+            db.FolderRules.AddRange(kept);
+            await db.SaveChangesAsync(cancellationToken);
+            changes.Changed();
+            return kept.Count;
+        }
+        finally
+        {
+            gate.Release();
         }
     }
 

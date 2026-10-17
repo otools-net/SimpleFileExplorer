@@ -30,6 +30,13 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.57
+
+- Every space's index gets two new, empty tables for the trash, `TrashEntries` and `TrashTags` (SQL Server: a
+  migration; SQLite: new tables in the same file), created by the update page.
+- New rights `files.delete` and `files.deletePermanently`, given to **no group**, as for 1.55.
+- A new background task, **Trash purge**, appears in Background tasks; it has nothing to do until something is deleted.
+
 ## To 1.55
 
 - New rights `files.createFolders` and `files.rename` ([managing files](user-guide/managing-files.md)): given to **no

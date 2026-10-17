@@ -8,6 +8,8 @@ import { ThemeService } from '../core/theme.service';
 import { ImageEditorDialog } from '../editor/image-editor.dialog';
 import { ItemMenu, ItemMenuComponent } from '../files/item-menu';
 import { NameDialog } from '../files/name.dialog';
+import { DeleteDialog } from '../files/delete.dialog';
+import { FileActions } from '../files/file-actions';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { EmptyStateComponent } from '../shared/empty-state.component';
@@ -47,7 +49,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, ItemMenuComponent],
+        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, DeleteDialog, ItemMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -78,6 +80,7 @@ let created = false;
             <sfe-tag-manager />
             <sfe-remove-from-index />
             <sfe-name-dialog />
+            <sfe-delete-dialog />
             <sfe-item-menu />
             <!-- After the viewer: it opens over it. -->
             <sfe-image-editor />
@@ -92,6 +95,7 @@ export class LibraryPageComponent implements OnInit {
     private readonly popovers = inject(Popovers);
     private readonly dialogs = inject(Dialogs);
     private readonly menu = inject(ItemMenu);
+    private readonly fileActions = inject(FileActions);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly destroyRef = inject(DestroyRef);
@@ -249,6 +253,13 @@ export class LibraryPageComponent implements OnInit {
         if (typing || event.ctrlKey || event.metaKey)
             return;
         const { path, q } = this.store.route();
+        if (event.key === 'Delete' && !event.altKey) {
+            // The selection, else the item with the focus; Shift: for good.
+            const items = this.store.selection().size ? this.store.selectedItems() : [this.focusedItem()].filter((item): item is LibraryItem => item !== null);
+            if (items.length && this.fileActions.delete(items, event.shiftKey))
+                event.preventDefault();
+            return;
+        }
         if (event.key === 'F2') {
             const item = this.focusedItem();
             if (item && this.menu.canRename(item)) {

@@ -32,11 +32,18 @@ public enum FileOperationStatus
 
     /// <summary>The disk refused: in use, or the server's account may not write there.</summary>
     Failed,
+
+    /// <summary>The caller may not do it there (refused by the routes).</summary>
+    Forbidden,
+
+    /// <summary>It can't go to the trash (a folder holding links, on another drive than the trash): delete it permanently instead?</summary>
+    TrashUnavailable,
 }
 
 /// <param name="Item">The new or renamed file or folder.</param>
 /// <param name="Message">Why it was not done, for the person (never a server path).</param>
-public sealed record FileOperationResult(FileOperationStatus Status, LibraryItem? Item = null, string? Message = null)
+/// <param name="TrashId">The trash entry of what was deleted to the trash (for an Undo).</param>
+public sealed record FileOperationResult(FileOperationStatus Status, LibraryItem? Item = null, string? Message = null, int? TrashId = null)
 {
     public static FileOperationResult Fail(FileOperationStatus status, string message) => new(status, Message: message);
 }
@@ -57,6 +64,7 @@ public sealed class FileOperations(
     DirectoryIndexer indexer,
     ScanCoordinator scans,
     PathMoves moves,
+    Trash trash,
     TenantBinding tenant,
     IOptionsMonitor<SfeOptions> options,
     ILogger<FileOperations> logger,
@@ -179,6 +187,45 @@ public sealed class FileOperations(
         return new FileOperationResult(FileOperationStatus.Done, Item(target, isFolder));
     }
 
+    /// <summary>
+    /// Deletes the file or folder <paramref name="path"/>: to the trash, or for good with <paramref name="permanent"/>
+    /// (the routes decide it from the request and <see cref="FileManagementOptions.DeletePermanently"/>). A link is
+    /// deleted as a link.
+    /// </summary>
+    public async Task<FileOperationResult> DeleteAsync(string? path, bool permanent, FileActor actor, CancellationToken cancellationToken = default)
+    {
+        if (LibraryPaths.NormalizeRelative(path) is not { Length: > 0 } relative || !paths.TryResolve(relative, out var full)
+            || paths.ToRelative(full) is not { Length: > 0 } canonical)
+            return FileOperationResult.Fail(FileOperationStatus.NotFound, "The file or folder was not found.");
+        var isFolder = Directory.Exists(full);
+        if (!isFolder && !File.Exists(full))
+            return FileOperationResult.Fail(FileOperationStatus.NotFound, "The file or folder was not found.");
+
+        using var operation = scans.TryBeginOperation(full);
+        if (operation is null)
+            return ScanRunning();
+        var name = Path.GetFileName(full);
+        try
+        {
+            if (permanent)
+            {
+                await trash.DeleteForGoodAsync(full, canonical, isFolder, actor, cancellationToken);
+                return new FileOperationResult(FileOperationStatus.Done);
+            }
+            return new FileOperationResult(FileOperationStatus.Done, TrashId: await trash.MoveInAsync(full, canonical, isFolder, actor, cancellationToken));
+        }
+        catch (LinksInsideException)
+        {
+            return FileOperationResult.Fail(FileOperationStatus.TrashUnavailable,
+                $"“{name}” can't go to the trash: it is on another drive and holds links. Delete it permanently instead?");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(ex, "{Account} could not delete {Path}", actor.Name, canonical);
+            return DiskFailure(ex, $"“{name}” could not be deleted");
+        }
+    }
+
     /// <summary>Why <paramref name="name"/> can't be a new name in the folder <paramref name="parent"/>; null when it can.</summary>
     private (FileOperationResult? Error, string? Path) Target(string parent, string? name)
     {
@@ -263,7 +310,7 @@ public sealed class FileOperations(
         FileOperationResult.Fail(FileOperationStatus.ScanRunning, "A scan is running over this folder: try again when it has finished.");
 
     /// <summary>The disk refused: said without the server's paths (the exception's message has them).</summary>
-    private static FileOperationResult DiskFailure(Exception ex, string what) => FileOperationResult.Fail(FileOperationStatus.Failed, ex switch
+    internal static FileOperationResult DiskFailure(Exception ex, string what) => FileOperationResult.Fail(FileOperationStatus.Failed, ex switch
     {
         UnauthorizedAccessException => $"{what}: the server's account may not change files there (it needs write access to the library's folder).",
         IOException io when IsInUse(io) => $"{what}: it is in use, by another program or a video playing. Close it and try again.",

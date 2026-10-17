@@ -86,7 +86,7 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Thumbnails:Enabled`, `Width`, `VideoSeekSeconds`, `LargeImageKilobytes`, `SingleViewOriginals`, `AnimatedHover`, `MaxConcurrency`, `TimeoutSeconds` | [Thumbnails](administration/thumbnails.md) |
 | `Sfe:Trickplay:…` | [Trickplay › Settings](administration/trickplay.md#settings) |
 | `Sfe:Editor:OutputFolder`, `Quality` | [Picture editor](administration/picture-editor.md) |
-| `Sfe:Files:PortableNames`, `WorkFolder` (`Library`, `Server`) | [File management](administration/file-management.md) |
+| `Sfe:Files:PortableNames`, `WorkFolder` (`Library`, `Server`), `DeletePermanently`, `Trash:RetentionDays` | [File management](administration/file-management.md) |
 | `Sfe:Tasks:LogRetentionDays` | [Background tasks › Settings](administration/background-tasks.md#settings) |
 | `Sfe:Logs:RetentionDays`, `WriteFiles` | [Logs › Settings](administration/logs.md#settings) |
 

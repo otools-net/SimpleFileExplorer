@@ -6,10 +6,11 @@ import { IconComponent } from '../shared/icon.component';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { ItemActions } from '../library/items/item-actions.service';
+import { FileActions } from './file-actions';
 
 /** One entry of an item's menu. */
 export interface MenuEntry {
-    id: 'rename' | 'tags' | 'copyPath';
+    id: 'rename' | 'delete' | 'tags' | 'copyPath';
     label: string;
     icon: string;
     /** Its key, shown at the end of the line. */
@@ -29,24 +30,34 @@ export class ItemMenu {
     private readonly dialogs = inject(Dialogs);
     private readonly actions = inject(ItemActions);
     private readonly copyPaths = inject(CopyPathService);
+    private readonly files = inject(FileActions);
 
     /** The item whose menu is open, and where. */
     readonly open = signal<{ item: LibraryItem; x: number; y: number; trigger: HTMLElement | null } | null>(null);
 
     /** What the session may do with `item` that file management adds: the menu is worth showing. */
     hasActions(item: LibraryItem): boolean {
-        return this.canRename(item);
+        return this.canRename(item) || this.files.canDelete(item);
     }
 
     /** May rename `item`: in the folder listed (its list of names changes) and on the item itself. */
     canRename(item: LibraryItem): boolean {
-        return this.store.can(Rights.renameFiles) && this.store.can(Rights.renameFiles, item);
+        return this.files.canRename(item);
     }
 
     entries(item: LibraryItem): MenuEntry[] {
         const entries: MenuEntry[] = [];
         if (this.canRename(item))
             entries.push({ id: 'rename', label: 'Rename…', icon: 'edit', shortcut: 'F2', title: `Give ${item.name} another name (F2)`, run: () => this.dialogs.name()?.rename(item) });
+        if (this.files.canDelete(item))
+            entries.push({
+                id: 'delete',
+                label: this.files.alwaysPermanent ? 'Delete permanently…' : 'Delete…',
+                icon: 'trash',
+                shortcut: 'Del',
+                title: this.files.alwaysPermanent ? `Delete ${item.name} for good (Delete)` : `Move ${item.name} to the trash (Delete; Shift+Delete: for good)`,
+                run: () => this.files.delete(this.targets(item)),
+            });
         if (item.kind === 'directory' ? this.store.can(Rights.assignTags, item) : this.store.can(Rights.viewTags, item))
             entries.push({
                 id: 'tags',
@@ -60,6 +71,11 @@ export class ItemMenu {
         if (this.copyPaths.enabled())
             entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => void this.copyPaths.copy(item.path) });
         return entries;
+    }
+
+    /** The selection when `item` is part of it (the menu acts on all of it, as in a file browser), else `item`. */
+    private targets(item: LibraryItem): LibraryItem[] {
+        return this.store.isSelected(item.path) ? this.store.selectedItems() : [item];
     }
 
     /** A right click (or long press) on `item`: its menu, at the pointer; the browser's own with Shift, or when there's none. */

@@ -8,12 +8,18 @@ import { ToastService } from '../core/toast.service';
     host: { class: 'toasts', role: 'status', popover: 'manual' },
     template: `
         @for (toast of toasts(); track toast.id) {
-            <div class="toast" [class.error]="toast.error">{{ toast.message }}</div>
+            <div class="toast" [class.error]="toast.error">
+                <span>{{ toast.message }}</span>
+                @if (toast.action; as action) {
+                    <button type="button" class="button small toast-action" [title]="action.title" (click)="service.act(toast)">{{ action.label }}</button>
+                }
+            </div>
         }
     `,
 })
 export class ToastsComponent {
-    protected readonly toasts = inject(ToastService).toasts;
+    protected readonly service = inject(ToastService);
+    protected readonly toasts = this.service.toasts;
 
     constructor() {
         const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;

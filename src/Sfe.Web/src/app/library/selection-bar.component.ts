@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { ConfigService } from '../core/config.service';
 import { joinParts, plural } from '../core/format';
+import { FileActions } from '../files/file-actions';
 import { ItemMenu } from '../files/item-menu';
 import { LibraryItem } from '../core/models';
 import { IconComponent } from '../shared/icon.component';
@@ -35,6 +36,12 @@ import { ListingStore } from './listing.store';
                 <span>Rename</span>
             </button>
         }
+        @if (deletable()) {
+            <button type="button" class="button small selection-delete" [title]="deleteTitle()" (click)="deleteSelection()">
+                <svg sfeIcon="trash"></svg>
+                <span>Delete</span>
+            </button>
+        }
         @if (store.can('tags.assign') && files()) {
             <button type="button" class="button small primary" [title]="tagsTitle()" (click)="tagSelection()">
                 <svg sfeIcon="tag"></svg>
@@ -50,6 +57,7 @@ export class SelectionBarComponent {
     protected readonly quickLinks = inject(QuickLinksService);
 
     private readonly menu = inject(ItemMenu);
+    private readonly fileActions = inject(FileActions);
 
     protected readonly count = computed(() => this.store.selection().size);
     private readonly selected = computed(() => this.store.selectedItems());
@@ -71,6 +79,16 @@ export class SelectionBarComponent {
         const selected = this.selected();
         return selected.length === 1 && this.menu.canRename(selected[0]) ? selected[0] : null;
     });
+
+    /** Some of the selection may be deleted (only those are, the confirmation names them). */
+    protected readonly deletable = computed(() => this.selected().some(item => this.fileActions.canDelete(item)));
+    protected readonly deleteTitle = computed(() => this.fileActions.alwaysPermanent
+        ? 'Delete the selected items for good (Delete)'
+        : 'Move the selected items to the trash (Delete; Shift+Delete: for good)');
+
+    protected deleteSelection(): void {
+        this.fileActions.delete(this.store.selectedItems());
+    }
 
     protected pinSelection(): void {
         void this.quickLinks.add(this.store.selectedItems().map(item => item.path));

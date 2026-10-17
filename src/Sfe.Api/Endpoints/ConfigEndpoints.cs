@@ -35,6 +35,10 @@ public sealed record EditorConfig(string OutputFolder, int Quality);
 /// <param name="Always">Every video plays converted (<c>Streaming:Mode</c> = <c>Always</c>), not only those the browser can't play.</param>
 public sealed record StreamingConfig(bool Always);
 
+/// <param name="DeletePermanently">Every delete skips the trash (<c>Files:DeletePermanently</c>).</param>
+/// <param name="TrashRetentionDays">Days in the trash before the purge; 0 = until emptied.</param>
+public sealed record FilesConfig(bool DeletePermanently, int TrashRetentionDays);
+
 /// <param name="DataServer">When set, the client links files to this server instead of <c>/api/files/raw</c>: a base the path is appended to, or a template with <c>{url}</c> / <c>{encodedUrl}</c> (<see cref="DataServerUrl"/>).</param>
 /// <param name="PageSize">Items the client loads at a time while browsing a folder.</param>
 /// <param name="SearchPageSize">Results the client loads at a time while searching.</param>
@@ -71,7 +75,8 @@ public sealed record StreamingConfig(bool Always);
 /// ffmpeg is missing, or without the right <c>files.stream</c>.
 /// </param>
 public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool AnimatedHover, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
-    IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor, StreamingConfig? Streaming);
+    IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor, StreamingConfig? Streaming,
+    FilesConfig? Files = null);
 
 public static class ConfigEndpoints
 {
@@ -138,6 +143,9 @@ public static class ConfigEndpoints
                 : null,
             streamer.IsAvailable && state.Has(Rights.Stream) && state.Has(Rights.ViewFiles)
                 ? new StreamingConfig(streamer.Mode == StreamingMode.Always)
+                : null,
+            state.Has(Rights.DeleteFiles) || state.Has(Rights.DeletePermanently)
+                ? new FilesConfig(settings.Files.DeletePermanently, Math.Max(0, settings.Files.Trash.RetentionDays))
                 : null));
     }
 }

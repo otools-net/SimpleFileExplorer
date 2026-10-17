@@ -10,6 +10,7 @@ export const TASK_NAMES: Record<TaskKind, string> = {
     trickplay: 'Trickplay',
     similarVideos: 'Similar videos',
     thumbnails: 'Thumbnails',
+    trashPurge: 'Trash purge',
 };
 
 export const TASK_PURPOSES: Record<TaskKind, string> = {
@@ -17,6 +18,7 @@ export const TASK_PURPOSES: Record<TaskKind, string> = {
     trickplay: 'Looks for videos without trickplay (the frames shown above the seek bar) and creates it.',
     similarVideos: 'Compares the indexed videos to find copies in other files.',
     thumbnails: 'Rendered as the listings show photos and videos; they can be stopped, not scheduled.',
+    trashPurge: 'Deletes for good what has been in the trash longer than its settings say. Also runs by itself when the trash is used.',
 };
 
 export const TASK_ICONS: Record<TaskKind, string> = {
@@ -24,10 +26,11 @@ export const TASK_ICONS: Record<TaskKind, string> = {
     trickplay: 'trickplay',
     similarVideos: 'copy',
     thumbnails: 'image',
+    trashPurge: 'trash',
 };
 
 /** The tasks a schedule can start, in the order of the form's list. */
-export const SCHEDULABLE: TaskKind[] = ['scan', 'trickplay', 'similarVideos'];
+export const SCHEDULABLE: TaskKind[] = ['scan', 'trickplay', 'similarVideos', 'trashPurge'];
 
 export const OUTCOMES: Record<TaskOutcome, string> = {
     running: 'Running',

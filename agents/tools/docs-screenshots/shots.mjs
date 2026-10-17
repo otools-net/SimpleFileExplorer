@@ -374,9 +374,21 @@ const scenes = {
         await b.realClick('input[aria-label="Select Sunrise.jpg"]');
         await sleep(600);
         await b.shot(OUT + 'selection-folders.png');
+        // Deleted to the trash (the selection), then put back below so that the other scenes find them.
+        await b.clickTitle('Move the selected items to the trash');
+        await sleep(600);
+        await b.shot(OUT + 'delete-dialog.png');
+        await b.eval(`[...document.querySelectorAll('sfe-delete-dialog button')].find(x => x.textContent.trim() === 'Delete').click(); 1`);
+        await sleep(1500);
         await b.close();
         const a = await session({ height: 900 });
-        await a.open(admin('files'), 3000);
+        await a.open(admin('files', 'trash'), 3000);
+        await a.shot(OUT + 'admin-files-trash.png');
+        for (let i = 0; i < 2; i++) {
+            await a.eval(`document.querySelector('.trash-section button[title^="Put it back"]')?.click(); 1`);
+            await sleep(1500);
+        }
+        await a.open(admin('files', 'settings'), 3000);
         await a.shot(OUT + 'admin-files.png');
         await a.close();
     },

@@ -158,6 +158,45 @@ export function isFileConflict(result: FileOperationResult): result is FileConfl
     return !('path' in result);
 }
 
+export type DeleteStatus = 'done' | 'notFound' | 'forbidden' | 'scanRunning' | 'trashUnavailable' | 'failed' | string;
+
+/** What became of one path of a delete; `trashId` when it went to the trash (for an Undo). */
+export interface DeletedItem {
+    path: string;
+    status: DeleteStatus;
+    message?: string | null;
+    trashId?: number | null;
+}
+
+export interface DeleteResults {
+    items: DeletedItem[];
+    /** It skipped the trash (asked, or the space always does). */
+    permanent: boolean;
+}
+
+/** A file or folder in the trash. `path`: where it was. */
+export interface TrashItem {
+    id: number;
+    path: string;
+    name: string;
+    isFolder: boolean;
+    size: number | null;
+    files: number | null;
+    deletedAt: string;
+    deletedBy: string | null;
+    deletedById: number | null;
+    hasRules?: boolean;
+}
+
+export interface TrashPage {
+    items: TrashItem[];
+    hasMore: boolean;
+    /** The `before` of the next page. */
+    next: number | null;
+    /** Days in the trash before the purge; 0 = until emptied. */
+    retentionDays: number;
+}
+
 export interface DirectoryListing {
     path: string;
     name: string;
@@ -256,6 +295,8 @@ export interface ClientConfig {
      * ffmpeg is missing or without the right `files.stream` (and from older servers).
      */
     streaming?: { always: boolean } | null;
+    /** How deleting works in the space; null without a right to delete (and from older servers). */
+    files?: { deletePermanently: boolean; trashRetentionDays: number } | null;
 }
 
 /** `api/streaming/probe`: a video the server can convert. */
@@ -486,7 +527,7 @@ export interface CommandResult {
 }
 
 /** The background jobs of the "Background tasks" dialog. */
-export type TaskKind = 'scan' | 'trickplay' | 'similarVideos' | 'thumbnails';
+export type TaskKind = 'scan' | 'trickplay' | 'similarVideos' | 'thumbnails' | 'trashPurge';
 export type TaskState = 'idle' | 'running' | 'disabled' | 'unavailable';
 export type TaskOutcome = 'running' | 'completed' | 'cancelled' | 'failed' | 'interrupted' | 'skipped';
 export type TaskTrigger = 'manual' | 'schedule' | 'automatic';

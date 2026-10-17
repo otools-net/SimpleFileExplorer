@@ -31,6 +31,8 @@
 }
 
 .toast.error { border-left-color: var(--danger); }
+.toast:has(.toast-action) { display: flex; align-items: center; gap: 12px; }
+.toast-action { flex: none; margin-left: auto; }
 
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
 

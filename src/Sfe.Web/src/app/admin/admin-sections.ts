@@ -88,8 +88,11 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         group: 'Library',
         title: 'File management',
         icon: 'folder',
-        description: 'The names new files and folders may have, and where SFE keeps its work files.',
-        subpages: [settingsPage('files')],
+        description: 'The trash, the names new files and folders may have, and where SFE keeps its work files.',
+        subpages: [
+            page('trash', 'Trash', 'What was deleted to the trash: restore it, or delete it for good.', Rights.deleteFiles, Rights.deletePermanently),
+            settingsPage('files', 'How deleting works, how long the trash keeps things, names, and where SFE keeps its work files.'),
+        ],
     },
     {
         id: 'tags',

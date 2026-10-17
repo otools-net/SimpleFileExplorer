@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    BackupLink, ClientConfig, FileOperationResult, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    BackupLink, ClientConfig, DeleteResults, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -204,6 +204,14 @@ export class Api {
     createFolder = (path: string, name: string) => this.post<FileOperationResult>('api/files/folders', { path, name });
     /** Renames the file or folder `path` to `name`, in its folder. Resolves with the conflict (409) as `createFolder`. */
     renameItem = (path: string, name: string) => this.post<FileOperationResult>('api/files/rename', { path, name });
+    /** Deletes `paths`, to the trash or for good; a result per path. */
+    deleteItems = (paths: string[], permanent: boolean) => this.post<DeleteResults>('api/files/delete', { paths, permanent });
+    /** The trash, newest first; `before`: the `next` of the previous page. */
+    trash = (before: number | null = null) => this.get<TrashPage>('api/files/trash', { before });
+    /** Puts an item of the trash back. Resolves with the conflict (409: a scan runs there...). */
+    restoreFromTrash = (id: number) => this.post<FileOperationResult>(`api/files/trash/${id}/restore`);
+    purgeFromTrash = (id: number) => this.delete<void>(`api/files/trash/${id}`);
+    emptyTrash = () => this.delete<{ purged: number }>('api/files/trash');
 
     /** Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original stays. */
     saveEditedImage = (path: string, image: Blob) => this.post<EditedImage>(withQuery('api/editor/images', { path }), image);

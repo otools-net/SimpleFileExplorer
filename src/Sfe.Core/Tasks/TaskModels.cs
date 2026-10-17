@@ -14,6 +14,9 @@ public enum BackgroundTaskKind
 
     /// <summary>Thumbnails requested by the listings: shown and cancelled, but neither started nor scheduled.</summary>
     Thumbnails,
+
+    /// <summary>Deletes for good what has been in the trash too long (<see cref="Files.Trash"/>).</summary>
+    TrashPurge,
 }
 
 public enum TaskState

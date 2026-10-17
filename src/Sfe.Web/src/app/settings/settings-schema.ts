@@ -78,6 +78,8 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'editor.outputFolder',
     'files.portableNames',
     'files.workFolder',
+    'files.deletePermanently',
+    'files.trash.retentionDays',
     'openBrowser',
     'fastSignIn',
 ]);
@@ -502,8 +504,17 @@ export const TABS: SettingTab[] = [
     {
         id: 'files',
         title: 'File management',
-        intro: 'Creating folders and renaming files and folders from the listing, for the groups given those rights (Spaces & accounts).',
+        intro: 'Creating folders, renaming and deleting files and folders from the listing, for the groups given those rights (Spaces & accounts).',
         groups: [
+            {
+                title: 'Deleting',
+                fields: [
+                    { key: 'files.deletePermanently', label: 'Always delete permanently', type: 'checkbox',
+                        hint: 'Every delete skips the trash: files are gone at once, and only those who may delete permanently can delete. What is already in the trash stays there.' },
+                    { key: 'files.trash.retentionDays', label: 'Days in the trash', type: 'number', min: 0, max: 3650,
+                        hint: 'What was deleted is deleted for good after this many days in the trash (a background task, Background tasks › Trash purge); 0 keeps it until the trash is emptied.' },
+                ],
+            },
             {
                 title: 'Names',
                 fields: [

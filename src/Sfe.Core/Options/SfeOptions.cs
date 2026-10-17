@@ -273,6 +273,20 @@ public sealed class FileManagementOptions
 
     /// <summary>Where the work files of file management go (<see cref="WorkFolderLocation"/>).</summary>
     public WorkFolderLocation WorkFolder { get; set; } = WorkFolderLocation.Library;
+
+    /// <summary>
+    /// Every delete skips the trash: the files are gone at once, and deleting needs the right to delete permanently.
+    /// Off by default. What is already in the trash stays there (restore and purge still work).
+    /// </summary>
+    public bool DeletePermanently { get; set; }
+
+    public TrashOptions Trash { get; set; } = new();
+}
+
+public sealed class TrashOptions
+{
+    /// <summary>Days a deleted file or folder stays in the trash before it is deleted for good; 0 = until emptied.</summary>
+    public int RetentionDays { get; set; } = 30;
 }
 
 /// <summary>Duplicate files and files moved, renamed or deleted since they were indexed.</summary>

@@ -113,7 +113,12 @@
     animation: toast-in .2s ease-out;
 }
 
-.selection-bar .button { border-radius: 999px; }
+.selection-bar .button { flex: none; border-radius: 999px; white-space: nowrap; }
+
+/* Phones: the buttons with an icon show only it (their title still says what they do). */
+@media (max-width: 760px) {
+    .selection-bar .button > .icon + span { display: none; }
+}
 .selection-bar .button:disabled { cursor: default; }
 .selection-bar .icon-button { border-radius: 50%; }
 .selection-bar .button .icon { width: 16px; height: 16px; }

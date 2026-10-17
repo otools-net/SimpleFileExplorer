@@ -172,29 +172,23 @@ phase 4 (decided 2026-10-17: without moves and copies, Cut/Copy/Paste and drops 
       there. Delete/Shift+Delete come with phase 3, Ctrl+X/C/V with phase 4. Listed in the search help.
 - [x] (1.56.0) Tests: store, selection bar, folder item, `listing-keys.spec.ts`, page keys in `files.spec.ts`.
 
-### Phase 3 — Delete, trash and restore
+### Phase 3 — Delete, trash and restore (built in 1.57.0)
 
-- [ ] Decide open questions 1 and 7.
-- [ ] `Files:DeletePermanently` (off by default): when on, `DeleteAsync` always deletes permanently and needs
-      `files.deletePermanently`; `api/config` tells the client (wording of the confirmation, no Undo, the menu entry
-      shown only with that right); tests for both values, for a Replace, and for a library overriding the server's value.
-- [ ] Core `DeleteAsync(policy, paths, permanent)`: Write on each item, `AllowsThroughout` for folders; to the trash =
-      rename into `.sfe/trash/<id>/name` (same volume) else offer permanent delete; links deleted as links (never
-      `Directory.Delete(recursive)` through a link); folder rules of a deleted folder: delete them or keep them for a
-      restore (decide; keeping protects a restored folder); index rows: tagged files kept for restore (reuse
-      `MissingFileRecorder` or a trash table holding their tags — decide; the missing-files page must not list trashed
-      files as "moved").
-- [ ] Trash table (both providers, migration + SQLite path + upgrade test): id, original path, name, kind, size,
-      deleted by, when, trash location.
-- [ ] Trash page (Administration or a sidebar entry): list (paged), restore (to the original place, "keep both" on a
-      clash, Write needed there), delete permanently, empty; who sees what (own deletions, or folders one can Write).
-- [ ] Purge after retention as a background task (`BackgroundTasks` case, schedulable, `TaskRuns` log).
-- [ ] Client: Delete key / menu with a confirmation naming the count and size (and "permanently" when skipping the
-      trash: Shift+Delete, or `Files:DeletePermanently` on), toast with **Undo** (restore) for a while when trashed.
-- [ ] Tests: delete/restore round trip keeps tags and rules, a folder with a hidden sub-folder refused, links, locked
-      files, permanent delete right, purge task, cross-volume fallback, upgrade test of the new table.
-- Reference: filebrowser deletes with `RemoveAll` after a walk checking every descendant against its rules; ours is
-  `AllowsThroughout` (O(rules)), never a walk of the tree per request.
+Lasting facts: [trash.md](../features/trash.md).
+
+- [x] Decided questions 1 (SFE's own trash) and 7 (links acted on as links), plus: a trashed folder's rules and its
+      files' tags are kept in the trash entry for a restore (2026-10-17).
+- [x] (1.57.0) `Files:DeletePermanently` (off by default) forces permanent deletes, then needing
+      `files.deletePermanently`; `api/config` tells the client (`files`); tested on the route.
+- [x] (1.57.0) Core `FileOperations.DeleteAsync` + `Trash` (entry first, disk, tags/rows, rules); links deleted as
+      links; other drive: copy then delete, refused for folders holding links (`trashUnavailable`).
+- [x] (1.57.0) Tables `TrashEntries`, `TrashTags` (SQL Server migration `AddTrash`, SQLite created by the
+      initializer; upgrade test `AnIndexFromBeforeTheTrashGetsItsTables`).
+- [x] (1.57.0) Trash page: Administration › File management › Trash (restore, delete, empty, load more).
+- [x] (1.57.0) Purge task `TrashPurge` (schedulable, run history, also automatic when the trash is used).
+- [x] (1.57.0) Client: Delete key / menu / selection bar, confirmation with count and size, Shift+Delete, Undo toast.
+- [x] (1.57.0) Tests: `TrashTests`, `TrashRouteTests`, `delete.spec.ts`.
+- Not done: Replace (phase 4) must send what it replaces to the trash through `Trash.MoveInAsync`.
 
 ### Phase 4 — Move and copy
 

@@ -13,6 +13,8 @@ export const Rights = {
     stream: 'files.stream',
     createFolders: 'files.createFolders',
     renameFiles: 'files.rename',
+    deleteFiles: 'files.delete',
+    deletePermanently: 'files.deletePermanently',
     viewTags: 'tags.view',
     assignTags: 'tags.assign',
     manageTags: 'tags.manage',

@@ -95,7 +95,7 @@ export const SEARCH_SYNTAX: SyntaxSection[] = [
                     <li>Press <kbd>/</kbd> to go to the search box, <kbd>?</kbd> to open this help.</li>
                     <li>Once an item has the focus (<kbd>Tab</kbd>), the arrows move between items, <kbd>Space</kbd> selects, <kbd>Shift</kbd>+arrows select as they go.</li>
                     @if (managesFiles()) {
-                        <li>In a folder, <kbd>Shift</kbd>+<kbd>N</kbd> makes a new folder and <kbd>F2</kbd> renames the item selected; right-click an item (Shift for the browser's menu) or use its ⋮ button for more.</li>
+                        <li>In a folder, <kbd>Shift</kbd>+<kbd>N</kbd> makes a new folder and <kbd>F2</kbd> renames the item selected, <kbd>Delete</kbd> deletes the selection (<kbd>Shift</kbd>+<kbd>Delete</kbd>: for good); right-click an item (Shift for the browser's menu) or use its ⋮ button for more.</li>
                     }
                 </ul>
             </section>
@@ -111,7 +111,7 @@ export class SearchHelpDialog {
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
     protected readonly sections = SEARCH_SYNTAX;
     private readonly config = inject(ConfigService);
-    protected readonly managesFiles = computed(() => this.config.can(Rights.createFolders) || this.config.can(Rights.renameFiles));
+    protected readonly managesFiles = computed(() => this.config.can(Rights.createFolders) || this.config.can(Rights.renameFiles) || this.config.can(Rights.deleteFiles));
 
     constructor() {
         registerDialog(dialogs => dialogs.searchHelp, this);

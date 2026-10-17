@@ -26,6 +26,8 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
     public DbSet<MissingFileTag> MissingFileTags => Set<MissingFileTag>();
     public DbSet<TaskSchedule> TaskSchedules => Set<TaskSchedule>();
     public DbSet<TaskRun> TaskRuns => Set<TaskRun>();
+    public DbSet<TrashEntry> TrashEntries => Set<TrashEntry>();
+    public DbSet<TrashTag> TrashTags => Set<TrashTag>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -75,6 +77,7 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
 
         ConfigureTagging(modelBuilder, isSqlServer);
         ConfigureMissingFiles(modelBuilder, isSqlServer);
+        ConfigureTrash(modelBuilder);
         ConfigureTasks(modelBuilder);
     }
 
@@ -100,6 +103,33 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             // The history filtered by task, newest first; the purge of old runs.
             entity.HasIndex(r => new { r.Task, r.Id });
             entity.HasIndex(r => r.Started);
+        });
+    }
+
+    /// <summary>Files and folders deleted to the trash, with the tags of their files (see <see cref="TrashEntry"/>).</summary>
+    private static void ConfigureTrash(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TrashEntry>(entity =>
+        {
+            entity.ToTable("TrashEntries");
+            // Not indexed: no length limit (a folder that was never indexed can have a longer path).
+            entity.Property(t => t.Path).IsRequired();
+            entity.Property(t => t.Name).HasMaxLength(MaxPathLength).IsRequired();
+            entity.Property(t => t.DeletedBy).HasMaxLength(200);
+            entity.Property(t => t.Location).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
+            entity.Property(t => t.Folder).HasMaxLength(32).IsUnicode(false).IsRequired();
+            // Newest first, and the purge of the oldest.
+            entity.HasIndex(t => t.DeletedAt);
+        });
+
+        modelBuilder.Entity<TrashTag>(entity =>
+        {
+            entity.ToTable("TrashTags");
+            entity.Property(t => t.Path).IsRequired();
+            entity.HasIndex(t => t.TrashEntryId);
+            entity.HasIndex(t => t.TagId);
+            entity.HasOne(t => t.Entry).WithMany(e => e.Tags).HasForeignKey(t => t.TrashEntryId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(t => t.Tag).WithMany().HasForeignKey(t => t.TagId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 

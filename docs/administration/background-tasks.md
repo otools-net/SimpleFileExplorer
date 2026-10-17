@@ -8,7 +8,7 @@ line says what runs now and what runs next. Rights: `tasks.view` (Tasks, History
 
 ![Background tasks › Tasks](../images/admin-tasks-tasks.png)
 
-The index scan, trickplay, similar videos and thumbnails, each with its state, progress, last run and **next run**: the
+The index scan, trickplay, similar videos, the trash purge and thumbnails, each with its state, progress, last run and **next run**: the
 exact time, how long until then, and why (which schedule, or trickplay's own periodic check).
 
 - **Run now** starts a task (a scan covers the folder browsed last and asks first).
@@ -17,12 +17,14 @@ exact time, how long until then, and why (which schedule, or trickplay's own per
   again by the listings.
 - **Schedule** opens a new schedule for that task.
 - Thumbnails can't be started or scheduled: listings ask for them.
+- **Trash purge** deletes for good what has been in the [trash](file-management.md#trash) longer than the space's
+  **Days in the trash**. It also runs by itself when the trash is used (at most twice a day).
 
 ## Schedules
 
 ![Background tasks › Schedules](../images/schedule-form.png)
 
-Start a scan (of a folder or the whole library), a trickplay check or a similar-video comparison:
+Start a scan (of a folder or the whole library), a trickplay check, a similar-video comparison or a trash purge:
 
 | Runs | |
 |---|---|

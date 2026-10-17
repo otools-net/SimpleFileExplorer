@@ -140,7 +140,13 @@ public sealed class EditableSettings
         Tasks = new() { LogRetentionDays = options.Tasks.LogRetentionDays },
         Logs = new() { RetentionDays = options.Logs.RetentionDays, WriteFiles = options.Logs.WriteFiles },
         Editor = new() { OutputFolder = options.Editor.OutputFolder, Quality = options.Editor.Quality },
-        Files = new() { PortableNames = options.Files.PortableNames, WorkFolder = options.Files.WorkFolder },
+        Files = new()
+        {
+            PortableNames = options.Files.PortableNames,
+            WorkFolder = options.Files.WorkFolder,
+            DeletePermanently = options.Files.DeletePermanently,
+            Trash = new() { RetentionDays = options.Files.Trash.RetentionDays },
+        },
     };
 
     public void ApplyTo(SfeOptions options)
@@ -217,6 +223,8 @@ public sealed class EditableSettings
         options.Editor.Quality = Editor.Quality;
         options.Files.PortableNames = Files.PortableNames;
         options.Files.WorkFolder = Files.WorkFolder;
+        options.Files.DeletePermanently = Files.DeletePermanently;
+        options.Files.Trash.RetentionDays = Files.Trash.RetentionDays;
     }
 }
 
@@ -375,4 +383,11 @@ public sealed class FileSettings
 {
     public bool PortableNames { get; set; }
     public WorkFolderLocation WorkFolder { get; set; }
+    public bool DeletePermanently { get; set; }
+    public TrashSettings Trash { get; set; } = new();
+}
+
+public sealed class TrashSettings
+{
+    public int RetentionDays { get; set; }
 }

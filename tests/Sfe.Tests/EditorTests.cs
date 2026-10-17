@@ -248,6 +248,8 @@ public sealed class EditorTests
         {
             CollectionAssert.DoesNotContain(group.Rights.ToList(), Rights.CreateFolders);
             CollectionAssert.DoesNotContain(group.Rights.ToList(), Rights.RenameFiles);
+            CollectionAssert.DoesNotContain(group.Rights.ToList(), Rights.DeleteFiles);
+            CollectionAssert.DoesNotContain(group.Rights.ToList(), Rights.DeletePermanently);
         }
         CollectionAssert.DoesNotContain(guests.Rights.ToList(), Rights.EditImages);
         CollectionAssert.Contains(users.Rights.ToList(), Rights.Stream, "Added in revision 2");

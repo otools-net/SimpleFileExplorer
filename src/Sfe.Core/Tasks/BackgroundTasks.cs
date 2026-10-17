@@ -1,3 +1,4 @@
+using Sfe.Core.Files;
 using Sfe.Core.FileTracking;
 using Sfe.Core.Indexing;
 using Sfe.Core.Paths;
@@ -8,13 +9,14 @@ namespace Sfe.Core.Tasks;
 
 /// <summary>
 /// One place to see, start and stop the background jobs, each of which keeps running its own way: index scans,
-/// trickplay passes, similar-video comparisons, and the thumbnails asked for by the listings.
+/// trickplay passes, similar-video comparisons, the trash's purge, and the thumbnails asked for by the listings.
 /// </summary>
 public sealed class BackgroundTasks(
     ScanCoordinator scan,
     TrickplayService trickplay,
     SimilarVideoFinder similarVideos,
     ThumbnailService thumbnails,
+    Trash trash,
     TaskHistory history)
 {
     /// <summary>The tasks schedules can start.</summary>
@@ -31,8 +33,22 @@ public sealed class BackgroundTasks(
         BackgroundTaskKind.Scan => DescribeScan(last),
         BackgroundTaskKind.Trickplay => DescribeTrickplay(last),
         BackgroundTaskKind.SimilarVideos => DescribeSimilarVideos(last),
+        BackgroundTaskKind.TrashPurge => DescribeTrashPurge(last),
         _ => DescribeThumbnails(last),
     };
+
+    private TaskInfo DescribeTrashPurge(TaskRunSummary? last)
+    {
+        var status = trash.PurgeStatus;
+        var running = status.State == TrashPurgeState.Running;
+        var days = trash.RetentionDays;
+        var detail = running ? $"{status.Purged:N0} deleted for good so far"
+            : last is null ? days == 0 ? "The trash keeps everything until it is emptied." : $"Deletes for good what has been in the trash more than {days} days."
+            : LastResult(last);
+        return new TaskInfo(
+            BackgroundTaskKind.TrashPurge, running ? TaskState.Running : TaskState.Idle, null, running ? status.Started : null, null, detail,
+            CanStart: !running, CanCancel: running, CanSchedule: true, null, null, last);
+    }
 
     private TaskInfo DescribeScan(TaskRunSummary? last)
     {
@@ -134,6 +150,8 @@ public sealed class BackgroundTasks(
                     : TaskStartResult.Started;
             case BackgroundTaskKind.SimilarVideos:
                 return similarVideos.TryStart(trigger, scheduleId) ? TaskStartResult.Started : TaskStartResult.AlreadyRunning;
+            case BackgroundTaskKind.TrashPurge:
+                return trash.TryStartPurge(trigger, scheduleId) ? TaskStartResult.Started : TaskStartResult.AlreadyRunning;
             default:
                 return TaskStartResult.Unavailable;
         }
@@ -145,6 +163,7 @@ public sealed class BackgroundTasks(
         BackgroundTaskKind.Scan => scan.Cancel(),
         BackgroundTaskKind.Trickplay => trickplay.Cancel(),
         BackgroundTaskKind.SimilarVideos => similarVideos.Cancel(),
+        BackgroundTaskKind.TrashPurge => trash.CancelPurge(),
         _ => thumbnails.CancelAll(),
     };
 }

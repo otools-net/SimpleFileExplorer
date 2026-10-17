@@ -188,7 +188,7 @@ describe('ItemMenu', () => {
         const element: HTMLElement = fixture.nativeElement;
 
         expect(event.defaultPrevented).toBe(true);
-        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'tags']);
+        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'delete', 'tags']);
         expect(document.activeElement?.getAttribute('data-entry')).toBe('rename');
         (element.querySelector('[data-entry="rename"]') as HTMLButtonElement).click();
         await settle();
@@ -273,6 +273,21 @@ describe('the listing page\'s keys', () => {
         press('Home', { shiftKey: true }, document.activeElement!);
         expect(document.activeElement).toBe(link('Media/Holidays'));
         expect(store.selectedItems().map(i => i.path)).toEqual(['Media/Holidays', 'Media/beach.jpg']);
+    });
+
+    it('Delete deletes the selection, Shift+Delete for good', async () => {
+        await page();
+        store.route.set({ path: 'Media', q: '', sort: '', desc: false });
+        await store.load();
+        const open = vi.spyOn(TestBed.inject(Dialogs).delete()!, 'open').mockImplementation(() => { });
+        store.select(folder, true);
+        store.select(photo, true);
+
+        const plain = press('Delete');
+        press('Delete', { shiftKey: true });
+
+        expect(plain.defaultPrevented).toBe(true);
+        expect(open.mock.calls).toEqual([[[folder, photo], false], [[folder, photo], true]]);
     });
 
     it('does nothing without the rights', async () => {

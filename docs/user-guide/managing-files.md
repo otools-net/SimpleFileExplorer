@@ -1,11 +1,11 @@
 # Managing files
 
-You can create folders and rename files and folders from the listing, if your groups have the rights
-`files.createFolders` and `files.rename` ([Rights](../reference/rights.md)). No group has them until an administrator
-gives them. Folder access rules also apply: in a read-only folder these actions are not offered, and in a folder you
+You can create folders, rename and delete files and folders from the listing, if your groups have the rights
+`files.createFolders`, `files.rename`, `files.delete` (to the trash) and `files.deletePermanently`
+([Rights](../reference/rights.md)). No group has them until an administrator gives them. Folder access rules also apply: in a read-only folder these actions are not offered, and in a folder you
 can't see they don't exist.
 
-Moving, copying, deleting (with a trash), uploading and downloading several files at once will come in later versions.
+Moving, copying, uploading and downloading several files at once will come in later versions.
 
 ## The item menu
 
@@ -16,6 +16,7 @@ may do with that item:
 | Entry | Key | |
 |---|---|---|
 | **Rename…** | F2 | Gives it another name (below) |
+| **Delete…** | Delete | Moves it to the trash ([below](#delete)); with items selected, all of them |
 | **Tags…** / **Tag its files…** | | The tags of a file; adding tags to every file of a folder ([Tags](tags.md)) |
 | **Copy full path** | | Where it is on the server, when [copying paths](browsing.md) is on |
 
@@ -45,6 +46,36 @@ folder, its folder access rules, quick links, scheduled scans and the settings t
 folders, the folder for edited pictures).
 
 On Windows servers you can change only the case of a name (`photo.jpg` to `Photo.jpg`).
+
+## Delete
+
+**Delete…** in the item menu, **Delete** in the selection bar, or the <kbd>Delete</kbd> key (for the selection, or the
+item with the focus) asks first, naming what goes and its size, then moves it to the space's **trash**. A message in
+the corner offers **Undo** for a few seconds, which puts everything back.
+
+![Deleting a folder and a file](../images/delete-dialog.png)
+
+<kbd>Shift</kbd>+<kbd>Delete</kbd> deletes for good, skipping the trash, for those with the right
+`files.deletePermanently`. A space can also **always delete permanently**
+([File management](../administration/file-management.md)): then every delete is for good, and only those with that
+right can delete.
+
+- A folder goes with everything in it; you can delete a folder only if you may delete everywhere inside it.
+- A link (a shortcut or junction to another folder) is deleted as a link: what it leads to stays.
+- A folder holding links that sits on another drive than the trash can't go to the trash: SFE says so and offers to
+  delete it permanently instead.
+
+## The trash
+
+**Administration › File management › Trash** lists what was deleted to the trash: what you deleted, and what was deleted
+in folders where you may delete. **Restore** puts an item back where it was, with the tags of its files and a folder's
+access rules (its folder is made again if it is gone; a number is added to its name if that is taken there); a restored
+folder is scanned again. **Delete** and **Empty the trash** delete for good (right `files.deletePermanently`).
+
+![The trash](../images/admin-files-trash.png)
+
+What stays in the trash longer than the space's **Days in the trash** (30 by default) is deleted for good by the
+**Trash purge** task ([Background tasks](../administration/background-tasks.md)).
 
 ## Names that can't be used
 

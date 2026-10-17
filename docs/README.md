@@ -23,7 +23,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | [Viewer](user-guide/viewer.md) | Opening pictures, videos and audio full screen |
 | [Video player](user-guide/video-player.md) | The player's controls and keys, its own window, external players |
 | [Picture editor](user-guide/picture-editor.md) | Cropping a picture and saving it as a new file |
-| [Managing files](user-guide/managing-files.md) | New folders, renaming files and folders, the item menu |
+| [Managing files](user-guide/managing-files.md) | New folders, renaming and deleting, the trash, the item menu |
 | [Search](user-guide/search.md) | The search box, the query language, explanations, history |
 | [Tags](user-guide/tags.md) | Tagging files, selections, folders and searches; the tag sidebar |
 | [Scanning](user-guide/scanning.md) | Keeping the index current, removing folders from it |
@@ -36,7 +36,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | [Interface](administration/interface.md) | Theme, listings, search box |
 | [Playback](administration/playback.md) | Video player, external player, data server |
 | [Scanning](administration/scanning.md) | What scans skip, file types, what scans read |
-| [File management](administration/file-management.md) | Which names are accepted, where SFE keeps its work files |
+| [File management](administration/file-management.md) | The trash, deleting, which names are accepted, the work folder |
 | [Tags](administration/tags.md) | The tag list and editor, the sidebar's history |
 | [Duplicates & moves](administration/duplicates-and-moves.md) | Duplicates, similar videos, moved files |
 | [Thumbnails](administration/thumbnails.md) | Previews in listings and the viewer |

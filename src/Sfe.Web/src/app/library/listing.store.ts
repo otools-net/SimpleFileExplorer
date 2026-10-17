@@ -84,6 +84,8 @@ export class ListingStore {
     /** Path of the file last (de)selected: shift-click extends from it. */
     private anchor: string | null = null;
     private loading: Promise<boolean> | null = null;
+    /** Loaded items deleted since the last page came: the server's next page starts that much earlier. */
+    private removedLoaded = 0;
     /** The current listing's requests: navigating cancels them, on the server too. */
     private requests = new AbortController();
 
@@ -128,6 +130,7 @@ export class ListingStore {
         this.loading = null;
         this.selection.set(new Set());
         this.anchor = null;
+        this.removedLoaded = 0;
         this.status.set('loading');
         this.error.set(null);
 
@@ -408,6 +411,25 @@ export class ListingStore {
         this.highlight(item.path);
     }
 
+    /** Listed items just deleted: taken out of the listing, its counts and the selection, without loading it again. */
+    applyRemoved(paths: readonly string[]): void {
+        const gone = new Set(paths);
+        const removed = this.items().filter(item => gone.has(item.path));
+        if (!removed.length)
+            return;
+        const folders = removed.filter(item => item.kind === 'directory').length;
+        this.items.update(items => items.filter(item => !gone.has(item.path)));
+        this.listing.update(page => page && 'directoryCount' in page
+            ? { ...page, total: page.total - removed.length, directoryCount: page.directoryCount - folders, fileCount: page.fileCount - (removed.length - folders) }
+            : page);
+        this.total.update(total => total && { ...total, count: Math.max(0, total.count - removed.length) });
+        this.removedLoaded += removed.length;
+        if ([...this.selection()].some(path => gone.has(path)))
+            this.selection.set(new Set([...this.selection()].filter(path => !gone.has(path))));
+        if (this.anchor && gone.has(this.anchor))
+            this.anchor = null;
+    }
+
     /* ---------- Pages ---------- */
 
     /** Items loaded at a time: the search and browse page sizes are separate settings. */
@@ -423,7 +445,8 @@ export class ListingStore {
         const signal = this.requests.signal;
         if (q)
             return this.api.search({ q, path, after: previous && 'next' in previous ? previous.next : null, limit, sort, desc }, signal);
-        const offset = previous && 'offset' in previous ? previous.offset + previous.items.length : 0;
+        const offset = previous && 'offset' in previous ? Math.max(0, previous.offset + previous.items.length - this.removedLoaded) : 0;
+        this.removedLoaded = 0;
         return this.api.browse({ path, offset, limit, sort, desc }, signal);
     }
 

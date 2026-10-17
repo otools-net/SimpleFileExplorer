@@ -3,6 +3,17 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.57.0
+
+### Added
+
+- **Delete and the trash:** **Delete** (key, item menu, selection bar) moves files and folders to the space's trash,
+  with an **Undo**; **Shift+Delete** deletes for good. **Administration › File management › Trash** lists what was
+  deleted, to **Restore** it where it was (with its tags and folder access) or delete it for good; **Empty the trash**.
+  New rights `files.delete` and `files.deletePermanently` (no group has them until an administrator ticks them).
+- What stays in the trash longer than **Days in the trash** (30 by default) is deleted by the new **Trash purge**
+  task; **Always delete permanently** makes a space skip the trash.
+
 ## 1.56.0
 
 ### Added

@@ -1,5 +1,6 @@
 import { DestroyRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import type { ImageEditorDialog } from '../editor/image-editor.dialog';
+import type { DeleteDialog } from '../files/delete.dialog';
 import type { NameDialog } from '../files/name.dialog';
 import type { FileTagsDialog } from '../tags/file-tags.dialog';
 import type { FilesTagsDialog } from '../tags/files-tags.dialog';
@@ -27,6 +28,7 @@ export class Dialogs {
     readonly searchHelp = signal<SearchHelpDialog | null>(null);
     /** New folder and Rename. */
     readonly name = signal<NameDialog | null>(null);
+    readonly delete = signal<DeleteDialog | null>(null);
 
     /** Closes the open dialogs, e.g. before searching for a tag picked in one. */
     closeAll(): void {

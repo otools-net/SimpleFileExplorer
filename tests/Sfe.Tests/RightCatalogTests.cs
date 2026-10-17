@@ -36,7 +36,7 @@ public sealed class RightCatalogTests
     {
         var changesFiles = RightCatalog.All.Where(r => r.ChangesFiles).Select(r => r.Id).ToList();
 
-        CollectionAssert.AreEquivalent(new[] { Rights.EditImages, Rights.RemoveDuplicates, Rights.CreateFolders, Rights.RenameFiles }, changesFiles);
+        CollectionAssert.AreEquivalent(new[] { Rights.EditImages, Rights.RemoveDuplicates, Rights.CreateFolders, Rights.RenameFiles, Rights.DeleteFiles, Rights.DeletePermanently }, changesFiles);
     }
 
     [TestMethod]

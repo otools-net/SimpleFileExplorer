@@ -27,6 +27,7 @@ import { AccessSectionComponent } from '../access/access-section.component';
 import { ADMIN_SEARCH_LIMIT, AdminSearchResult, markWords, searchAdmin, searchWords } from './admin-search';
 import { ADMIN_SECTIONS, AdminSubpage, findSection, findSubpage, groupId, groupsOf, locateSettings, movedPage, visibleSections } from './admin-sections';
 import { SystemSectionComponent } from './system-section.component';
+import { TrashSectionComponent } from '../files/trash-section.component';
 import { VideoStreamsComponent } from './video-streams.component';
 
 /** History state of the entries of this page opened from the listing page: "back" returns there. */
@@ -53,7 +54,7 @@ export { leaveAdminPage } from './leave-admin-page';
     selector: 'sfe-admin-page',
     imports: [RouterLink, NgTemplateOutlet, IconComponent, EmptyStateComponent, SettingsPanelComponent, TagListComponent, TagEditorDialog,
         TrackingSectionComponent, TasksSectionComponent, TrickplayActivityComponent, SystemSectionComponent, AccessSectionComponent,
-        AccountSectionComponent, LogsSectionComponent, VideoStreamsComponent],
+        AccountSectionComponent, LogsSectionComponent, VideoStreamsComponent, TrashSectionComponent],
     providers: [SettingsForm],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'admin-page', '(window:beforeunload)': 'onBeforeUnload($event)' },
@@ -288,6 +289,9 @@ export { leaveAdminPage } from './leave-admin-page';
                                     }
                                     @case ('account') {
                                         <sfe-account-section [tab]="subpage().id" />
+                                    }
+                                    @case ('files') {
+                                        <sfe-trash-section />
                                     }
                                 }
                             }

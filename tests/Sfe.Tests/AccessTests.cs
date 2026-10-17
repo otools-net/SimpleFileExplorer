@@ -578,7 +578,7 @@ public sealed class AccessTests
         var config = await GetAsync<ClientConfig>(admin, "/api/config");
         var catalog = await GetAsync<RightsCatalogInfo>(admin, "/api/access/rights");
 
-        CollectionAssert.AreEquivalent(new[] { Rights.EditImages, Rights.RemoveDuplicates, Rights.CreateFolders, Rights.RenameFiles }, catalog.DisabledByServer.ToList());
+        CollectionAssert.AreEquivalent(new[] { Rights.EditImages, Rights.RemoveDuplicates, Rights.CreateFolders, Rights.RenameFiles, Rights.DeleteFiles, Rights.DeletePermanently }, catalog.DisabledByServer.ToList());
         CollectionAssert.DoesNotContain(config.Rights.ToList(), Rights.EditImages);
         CollectionAssert.Contains(config.Rights.ToList(), Rights.AssignTags);
         Assert.AreEqual(FolderLevel.Write, catalog.Rights.Single(r => r.Id == Rights.EditImages).AtFolder);
