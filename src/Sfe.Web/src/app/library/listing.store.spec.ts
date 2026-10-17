@@ -296,11 +296,19 @@ describe('ListingStore', () => {
             expect(store.selectedFiles()).toEqual([c]);
         });
 
-        it('selects all the files, never the folders', () => {
+        it('selects all the files and folders; the selected files leave the folders out', () => {
             store.selectAll();
 
+            expect(store.selectedItems()).toEqual([folder, a, b, c, d]);
             expect(store.selectedFiles()).toEqual([a, b, c, d]);
-            expect(store.isSelected(folder.path)).toBe(false);
+        });
+
+        it('extends a range from a folder to the files after it', () => {
+            store.select(folder, true);
+            store.select(b, true, true);
+
+            expect(store.selectedItems()).toEqual([folder, a, b]);
+            expect(store.selectedFiles()).toEqual([a, b]);
         });
 
         it('is cleared by a new listing, the anchor too', async () => {

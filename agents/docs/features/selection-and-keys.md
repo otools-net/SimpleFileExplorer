@@ -1,0 +1,17 @@
+# Selection and listing keys
+
+Code: `ListingStore` (`selection`, `select`, `selectAll`, `selectedItems`, `selectedFiles`), `selection-bar.component.ts`,
+`items/item-parts.ts` (`SelectBoxComponent`), `items/item-actions.service.ts` (`selectInstead`),
+`items/folder-item.component.ts`, `items/listing-keys.ts`, `library-page.component.ts` (`onListingKey`),
+`styles/selection.css`. Tests: `listing.store.spec.ts`, `items.spec.ts`, `listing-keys.spec.ts`, `files.spec.ts`.
+
+- The selection holds paths of files **and folders** (1.56.0). `selectedFiles()` is what tagging acts on;
+  `selectedItems()` the rest (quick links, Rename, later delete/move). Ranges use `items()` order (folders first).
+- A click on a folder while something is selected toggles it: a **capture** listener on the folder host, because
+  `RouterLink` navigates whatever `preventDefault` says; files go through `ItemActions.openFile` → `selectInstead`.
+- Folder select boxes: over a card's pictures like a tile's; over a line's icon (hidden while the box shows).
+- Keys work only once an item (`sfe-listing [data-path]`) has the focus, so arrows still scroll the page otherwise;
+  never inside inputs or dialogs (the viewer and player are dialogs). Up/down pick the nearest item of the next row
+  by `getBoundingClientRect`; with no layout (jsdom) they step like left/right.
+- Shift+arrows select the item left and the one reached (the anchor moves, as with shift-clicks): going back doesn't
+  deselect.

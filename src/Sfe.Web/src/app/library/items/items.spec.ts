@@ -1,5 +1,6 @@
 import { Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { ApiError } from '../../core/api.service';
 import { ClientConfig, DirectoryListing, FolderCover, LibraryItem } from '../../core/models';
 import { TrickplayMarksService } from '../../trickplay/trickplay-marks.service';
@@ -72,7 +73,7 @@ describe('SelectionBarComponent', () => {
         expect(fixture.nativeElement.hidden).toBe(true);
     });
 
-    it('counts the selection, and disables "Select all" once everything is', async () => {
+    it('counts the selection, folders and files, and disables "Select all" once everything is', async () => {
         await list([item('Folder', { kind: 'directory' }), a, b]);
         const fixture = await bar();
         store.select(a, true);
@@ -81,21 +82,42 @@ describe('SelectionBarComponent', () => {
         const element: HTMLElement = fixture.nativeElement;
         expect(element.hidden).toBe(false);
         expect(element.querySelector('.selection-count')!.textContent).toBe('1 file selected');
-        expect(button(element, 'Select all').title).toBe('Select every file listed (Ctrl+A)');
+        expect(button(element, 'Select all').title).toBe('Select every file and folder listed (Ctrl+A)');
 
         button(element, 'Select all').click();
         await settle();
-        expect(element.querySelector('.selection-count')!.textContent).toBe('2 files selected');
+        expect(element.querySelector('.selection-count')!.textContent).toBe('1 folder and 2 files selected');
         expect(button(element, 'Select all').disabled).toBe(true);
+        expect(button(element, 'Tags').title).toContain('folders selected are left out');
     });
 
-    it('says "Select all" only takes the files loaded so far', async () => {
+    it('says "Select all" only takes the items loaded so far', async () => {
         await list([a, b], true);
         const fixture = await bar();
         store.select(a, true);
         await settle();
 
-        expect(button(fixture.nativeElement, 'Select all').title).toContain('the 2 files loaded so far');
+        expect(button(fixture.nativeElement, 'Select all').title).toContain('the 2 items loaded so far');
+    });
+
+    it('offers Rename for one item, and Tags only with files selected', async () => {
+        const folder = item('Folder', { kind: 'directory' });
+        await list([folder, a, b]);
+        const rename = vi.fn();
+        TestBed.inject(Dialogs).name.set({ rename } as never);
+        const fixture = await bar();
+        const element: HTMLElement = fixture.nativeElement;
+        store.select(folder, true);
+        await settle();
+
+        expect(button(element, 'Tags')).toBeUndefined();
+        button(element, 'Rename').click();
+        expect(rename).toHaveBeenCalledWith(folder);
+
+        store.select(a, true);
+        await settle();
+        expect(button(element, 'Rename')).toBeUndefined();
+        expect(button(element, 'Tags')).toBeDefined();
     });
 
     it('tags one file in its own dialog and several in the shared one', async () => {
@@ -451,6 +473,32 @@ describe('FileRowComponent', () => {
 
 describe('FolderItemComponent', () => {
     beforeEach(() => setUp());
+
+    it('is selected by its box, and by a click while something is selected (instead of opening)', async () => {
+        const films = item('Films', { kind: 'directory' });
+        const doc = item('notes.txt');
+        await list([films, doc]);
+        const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl');
+        const fixture = TestBed.createComponent(FolderItemComponent);
+        fixture.componentRef.setInput('item', films);
+        await fixture.whenStable();
+        const element: HTMLElement = fixture.nativeElement;
+
+        element.querySelector<HTMLInputElement>('.select-box input')!.click();
+        await settle();
+        expect(store.isSelected('Films')).toBe(true);
+        expect(element.classList.contains('selected')).toBe(true);
+
+        element.querySelector<HTMLElement>('a.folder')!.click();
+        await settle();
+        expect(store.isSelected('Films')).toBe(false);
+        expect(navigate).not.toHaveBeenCalled();
+
+        store.clearSelection();
+        element.querySelector<HTMLElement>('a.folder')!.click();
+        await settle();
+        expect(navigate).toHaveBeenCalled();
+    });
 
     it('opens the tags of the files of the folder', async () => {
         const open = vi.fn();

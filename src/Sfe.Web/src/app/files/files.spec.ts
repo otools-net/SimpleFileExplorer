@@ -254,6 +254,27 @@ describe('the listing page\'s keys', () => {
         expect(newFolder).toHaveBeenCalled();
     });
 
+    it('moves through the items with the arrows once one has the focus, and selects with Space and Shift', async () => {
+        await page();
+        store.route.set({ path: 'Media', q: '', sort: '', desc: false });
+        await store.load();
+        await settle();
+        const link = (path: string) => document.querySelector<HTMLElement>(`sfe-listing [data-path="${path}"] a`)!;
+
+        const ignored = press('ArrowDown');
+        expect(ignored.defaultPrevented).toBe(false);
+
+        link('Media/Holidays').focus();
+        press('ArrowRight', {}, document.activeElement!);
+        expect(document.activeElement).toBe(link('Media/beach.jpg'));
+        press(' ', {}, document.activeElement!);
+        expect([...store.selection()]).toEqual(['Media/beach.jpg']);
+
+        press('Home', { shiftKey: true }, document.activeElement!);
+        expect(document.activeElement).toBe(link('Media/Holidays'));
+        expect(store.selectedItems().map(i => i.path)).toEqual(['Media/Holidays', 'Media/beach.jpg']);
+    });
+
     it('does nothing without the rights', async () => {
         const { newFolder, rename } = await page([Rights.browse, Rights.viewFiles]);
         store.route.set({ path: 'Media', q: '', sort: '', desc: false });

@@ -3,6 +3,16 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.56.0
+
+### Added
+
+- **Selecting folders:** folders have a checkbox too, and **Select all** (Ctrl+A) takes the folders with the files.
+  The selection bar counts both, adds both to the quick links, and offers **Rename** when one item is selected;
+  **Tags** still acts on the selected files.
+- **Keyboard:** once an item has the focus, the arrow keys move to the item beside, above or below it, Home and End to
+  the first and last, Space selects, Shift+arrows select as they go.
+
 ## 1.55.0
 
 ### Added

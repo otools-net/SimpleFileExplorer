@@ -136,6 +136,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
 | [file-names](agents/docs/features/file-names.md) | names refused, keep-both names, portable names | `Core/Files/FileNames` |
 | [work-folder](agents/docs/features/work-folder.md) | `.sfe` at the root or the server's data folder; the reserved name | `WorkFolder`, `LibraryPaths.TryResolve` |
+| [selection-and-keys](agents/docs/features/selection-and-keys.md) | selecting files and folders, the selection bar, arrow keys | `ListingStore`, `listing-keys.ts` |
 | [path-moves](agents/docs/features/path-moves.md) | index rows, settings, schedules, quick links, caches following a rename | `PathMoves` |
 | [background-tasks](agents/docs/features/background-tasks.md) | jobs, run history, run logs | `Core/Tasks/`, `app/tasks/` |
 | [schedules](agents/docs/features/schedules.md) | task schedules | `TaskScheduleService`, `ScheduleCalculator` |

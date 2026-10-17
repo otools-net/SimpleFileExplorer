@@ -57,6 +57,34 @@
 .row .select-box { opacity: .55; }
 .row:hover .select-box, .row .select-box:has(input:focus-visible, input:checked), .selecting .row .select-box { opacity: 1; }
 
+/* Folders: over a card's pictures like a tile's; over a line's folder icon, which it hides while it shows. */
+.folder-item .select-box {
+    position: absolute;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity .15s;
+}
+.folders.covers .folder-item .select-box {
+    top: 10px;
+    left: 10px;
+    width: 24px;
+    height: 24px;
+    border-color: #fff;
+    background: rgb(0 0 0 / .45);
+    box-shadow: 0 1px 4px rgb(0 0 0 / .4);
+}
+.folders.covers .folder-item .select-box:has(input:checked) { border-color: var(--accent); background: var(--accent); }
+.folder-item:not(:has(.card)) .select-box { top: 50%; left: 14px; translate: 0 -50%; }
+.folder-item:hover .select-box, .folder-item:focus-within .select-box, .selecting .folder-item .select-box, .folder-item.selected .select-box { opacity: 1; }
+.folder-item:not(:has(.card)):is(:hover, :focus-within, .selected) .folder > .icon,
+.selecting .folder-item:not(:has(.card)) .folder > .icon { visibility: hidden; }
+.folder-item.selected .folder { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+
+/* Phones: always on cards, as on tiles (lines keep their icon until something is selected). */
+@media (hover: none) {
+    .folders.covers .folder-item .select-box { opacity: 1; }
+}
+
 .tile.selected {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px var(--accent);

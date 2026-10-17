@@ -69,14 +69,14 @@ export class QuickLinksService {
 
     /**
      * What a drag started on `target` carries to the quick links: the folder or file under it (a listed item, a
-     * breadcrumb), or every selected file when it is one of them; null for anything else.
+     * breadcrumb), or every selected item when it is one of them; null for anything else.
      */
     dragPaths(target: EventTarget | null): string[] | null {
         const element = target instanceof Element ? target.closest<HTMLElement>('[data-path]') : null;
         if (!element || element.closest('.quick-links'))
             return null;
         const path = element.getAttribute('data-path')!;
-        return this.store.isSelected(path) ? this.store.selectedFiles().map(item => item.path) : [path];
+        return this.store.isSelected(path) ? this.store.selectedItems().map(item => item.path) : [path];
     }
 
     /** The name shown for `path`: the link's, else the last segment (the library's name for the root). */

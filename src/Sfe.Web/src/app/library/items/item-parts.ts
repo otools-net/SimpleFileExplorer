@@ -31,7 +31,7 @@ export class ItemTagsComponent {
     protected readonly actions = inject(ItemActions);
 }
 
-/** The check box selecting a file. The input covers the box (see styles): a click forwarded by a label might not carry the shift key. */
+/** The check box selecting a file or folder. The input covers the box (see styles): a click forwarded by a label might not carry the shift key. */
 @Component({
     selector: 'label[sfeSelectBox]',
     changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { plural } from '../../core/format';
 import { CopyPathService } from '../../core/copy-path.service';
@@ -10,7 +10,8 @@ import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { PinButtonComponent } from '../quick-links/pin-button.component';
 import { FolderCoverComponent } from './folder-cover.component';
-import { CopyPathButtonComponent, NOT_INDEXED } from './item-parts';
+import { ItemActions } from './item-actions.service';
+import { CopyPathButtonComponent, NOT_INDEXED, SelectBoxComponent } from './item-parts';
 
 /**
  * A listed folder: a card with its first pictures (`cards`), or a line with its name. Buttons can't sit inside
@@ -18,13 +19,14 @@ import { CopyPathButtonComponent, NOT_INDEXED } from './item-parts';
  */
 @Component({
     selector: 'sfe-folder-item',
-    imports: [IconComponent, RouterLink, FolderCoverComponent, CopyPathButtonComponent, PinButtonComponent, ItemMenuButtonComponent],
+    imports: [IconComponent, RouterLink, FolderCoverComponent, CopyPathButtonComponent, PinButtonComponent, ItemMenuButtonComponent, SelectBoxComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'folder-item',
         '[class.copied]': 'copied()',
         '[class.unindexed]': 'unindexed()',
         '[class.revealed]': 'store.revealed() === item().path',
+        '[class.selected]': 'store.selection().has(item().path)',
         '[attr.data-path]': 'item().path',
         '(contextmenu)': 'menu.fromEvent($event, item())',
     },
@@ -44,6 +46,7 @@ import { CopyPathButtonComponent, NOT_INDEXED } from './item-parts';
                 }
             }
         </a>
+        <label sfeSelectBox [item]="item()"></label>
         <span class="folder-actions">
             <button [sfePin]="item().path" [name]="item().name" class="small"></button>
             @if (canTag()) {
@@ -76,6 +79,18 @@ export class FolderItemComponent {
     protected readonly countTitle = computed(() =>
         `${plural(this.indexedItems() ?? 0, 'indexed item')} directly in this folder (files and sub-folders, as of the last scan)`);
     private readonly dialogs = inject(Dialogs);
+
+    constructor() {
+        // While items are selected, a click on the folder selects it: caught before the link's own handler navigates.
+        const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+        const actions = inject(ItemActions);
+        const capture = (event: MouseEvent) => {
+            if ((event.target as Element).closest('a.folder') && actions.selectInstead(event, this.item()))
+                event.stopPropagation();
+        };
+        host.addEventListener('click', capture, { capture: true });
+        inject(DestroyRef).onDestroy(() => host.removeEventListener('click', capture, { capture: true }));
+    }
 
     /** The tags of the files of this folder (the dialog offers its sub-folders too). */
     protected openTags(): void {

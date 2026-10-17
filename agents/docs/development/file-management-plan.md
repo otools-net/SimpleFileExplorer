@@ -159,17 +159,18 @@ Lasting facts: [new-folder-and-rename.md](../features/new-folder-and-rename.md).
 - Reference: filebrowser renames through a `PATCH` with `action=rename`; we keep one route per operation with a JSON
   body ([api-routes.md](api-routes.md)).
 
-### Phase 2 — Selecting folders, keys and the clipboard (client groundwork)
+### Phase 2 — Selecting folders and keys (built in 1.56.0)
 
-- [ ] The selection holds folders too (today `ListingStore.selection` is files only): tagging still acts on the
-      files; the selection bar gains the file actions; shift/ctrl click, Ctrl+A, Esc as now.
-- [ ] Keys like an OS browser: arrows move the focus, Space/Ctrl+Space select, Enter opens, Backspace/Alt+↑ up, F2,
-      Delete, Shift+Delete, Ctrl+X/C/V, Ctrl+Shift+N; no clash with the viewer's and player's keys; listed in help.
-- [ ] Clipboard store (cut/copy, source space and paths, survives navigation, cleared on paste after cut), "Paste" in
-      the folder's menu and the location bar; cut items look faded.
-- [ ] Drag and drop inside the app: items onto a folder, a breadcrumb, a quick link (moves; Ctrl = copy, as in
-      Explorer); the drop target highlights; the existing drag to the quick-links sidebar keeps working.
-- [ ] Tests: store specs (selection with folders, clipboard), keyboard specs.
+Lasting facts: [selection-and-keys.md](../features/selection-and-keys.md). Clipboard and drag and drop moved to
+phase 4 (decided 2026-10-17: without moves and copies, Cut/Copy/Paste and drops would have nothing to do).
+
+- [x] (1.56.0) The selection holds folders too (`selectedItems`; `selectedFiles` for tagging); ranges span folders and
+      files; Ctrl+A takes both; a click on a folder while selecting toggles it; the bar counts both and offers Rename
+      for one item; quick links take both.
+- [x] (1.56.0) Keys: arrows (geometric up/down in grids), Home/End, Space/Ctrl+Space, Shift+arrows, once an item has
+      the focus (else the page scrolls as before); Enter opens (the link's own); Backspace/Alt+↑, F2, Shift+N were
+      there. Delete/Shift+Delete come with phase 3, Ctrl+X/C/V with phase 4. Listed in the search help.
+- [x] (1.56.0) Tests: store, selection bar, folder item, `listing-keys.spec.ts`, page keys in `files.spec.ts`.
 
 ### Phase 3 — Delete, trash and restore
 
@@ -198,6 +199,11 @@ Lasting facts: [new-folder-and-rename.md](../features/new-folder-and-rename.md).
 ### Phase 4 — Move and copy
 
 - [ ] Decide open questions 5 and 6.
+- [ ] (from phase 2) Clipboard store (cut/copy, source space and paths, survives navigation, cleared on paste after
+      cut), Ctrl+X/C/V, "Paste" in the folder's menu and the location bar; cut items look faded.
+- [ ] (from phase 2) Drag and drop inside the app: items onto a folder, a breadcrumb, a quick link (moves; Ctrl =
+      copy, as in Explorer); the drop target highlights; the existing drag to the quick-links sidebar keeps working
+      (`QuickLinksService.dragPaths` already carries every selected item).
 - [ ] Core `MoveAsync`/`CopyAsync(policy, paths, targetFolder, conflicts)` as a background job carrying the subject
       (`AccessSubject`), re-evaluating the policy per item when it runs; moves: Write at source and target,
       `AllowsThroughout` for folders, `CompareMoveAsync` → confirmation naming who gains access, `keepAccess`; copies:
@@ -291,7 +297,7 @@ Lasting facts: [new-folder-and-rename.md](../features/new-folder-and-rename.md).
 
 Add here, dated, what the phases didn't foresee (then move it into the phase it changes).
 
-- 2026-10-17: today the selection is files only (`ListingStore.selection`, `selectedFiles()`): phase 2 extends it.
+- 2026-10-17: the selection was files only (`ListingStore.selection`, `selectedFiles()`): extended in 1.56.0.
 - 2026-10-17: the Windows installation docs grant the service account read-only access (`RX`) to the media folder,
   and the systemd example keeps `ReadWritePaths` commented: file management needs write access (docs in phase 1,
   and an answer that says so when the disk refuses).

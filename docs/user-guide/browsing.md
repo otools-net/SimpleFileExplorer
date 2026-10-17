@@ -55,6 +55,10 @@ layout. Hover the number for its meaning.
   says where you are: the page, how many items you have scrolled to out of the total, and a bar for the same.
 - Reloading the page, or coming back to it (from the viewer, the administration page or the browser's back button),
   brings you back to the item you were looking at.
+- With the keyboard: <kbd>Tab</kbd> to an item (or click one), then the arrow keys move to the item beside, above or
+  below it, <kbd>Home</kbd> and <kbd>End</kbd> to the first and last loaded, <kbd>Enter</kbd> opens it,
+  <kbd>Space</kbd> selects it and <kbd>Shift</kbd>+arrows select the items passed. Until an item has the focus, the
+  arrows scroll the page as usual.
 
 ## Quick links
 

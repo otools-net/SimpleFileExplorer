@@ -31,10 +31,15 @@ for it. Tagging a file that isn't indexed yet indexes it first.
 
 ![Three files selected](../images/selection-bar.png)
 
-Tick their checkboxes (top-left of a tile, first column of the list). Shift-click selects a range,
-<kbd>Ctrl</kbd>+<kbd>A</kbd> everything loaded, <kbd>Esc</kbd> clears. While files are selected, clicking a file
-selects it. The bar at the bottom says how many are selected, with **Select all**, **Quick links** (adds them to your
-[quick links](browsing.md#quick-links)) and **Tags**.
+Tick their checkboxes (top-left of a tile or folder card, first column of the list, over a folder's icon in a line).
+Shift-click selects a range, <kbd>Ctrl</kbd>+<kbd>A</kbd> every file and folder loaded, <kbd>Esc</kbd> clears; the
+keyboard selects too ([Moving around](browsing.md#moving-around)). While something is selected, clicking a file or
+folder selects it instead of opening it. The bar at the bottom says how many folders and files are selected, with
+**Select all**, **Quick links** (adds them to your [quick links](browsing.md#quick-links)), **Rename** when one item is
+selected and you [may rename](managing-files.md#rename), and **Tags** (for the files: selected folders are left out;
+to tag a whole folder, use its tag button).
+
+![A folder and a file selected](../images/selection-folders.png)
 
 ![Tags of several files](../images/files-tags-dialog.png)
 

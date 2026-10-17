@@ -19,6 +19,7 @@ import { TagManagerDialog } from '../tags/tag-manager.dialog';
 import { RemoveFromIndexDialog } from './scan/remove-from-index.dialog';
 import { ListingComponent } from './items/listing.component';
 import { currentPosition } from './items/listing-position';
+import { focusedListItem, focusItem, listedItems, MOVE_KEYS, neighbour } from './items/listing-keys';
 import { initialHistoryState, readRestoreState, readRoute, RestoreState } from './library-route';
 import { ListingStore } from './listing.store';
 import { LocationComponent } from './location/location.component';
@@ -182,25 +183,63 @@ export class LibraryPageComponent implements OnInit {
         return !this.store.route().q && this.store.status() === 'ready' && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFolders);
     }
 
-    /** The item that has the keyboard focus, else the only file selected. */
+    /** The item that has the keyboard focus, else the only item selected. */
     private focusedItem(): LibraryItem | null {
         const path = (document.activeElement as Element | null)?.closest?.('sfe-listing [data-path]')?.getAttribute('data-path');
         const focused = path !== null && path !== undefined ? this.store.items().find(item => item.path === path) : undefined;
         if (focused)
             return focused;
-        const selected = this.store.selectedFiles();
+        const selected = this.store.selectedItems();
         return selected.length === 1 ? selected[0] : null;
+    }
+
+    /**
+     * Keys moving through the listed items once one has the focus (Tab, or a click, puts it there; until then the
+     * arrows scroll the page as usual): arrows, Home, End; with Shift the items passed are selected; Space (or
+     * Ctrl+Space) selects or deselects the item. Enter opens it (the link's own behaviour). True when handled.
+     */
+    private onListingKey(event: KeyboardEvent): boolean {
+        const current = focusedListItem();
+        if (!current || event.altKey || (event.target as Element).matches?.('input'))
+            return false;
+        const item = this.itemAt(current);
+        if (event.key === ' ' && !event.metaKey && item) {
+            event.preventDefault();
+            this.store.select(item, !this.store.isSelected(item.path));
+            return true;
+        }
+        if (!MOVE_KEYS.has(event.key) || event.ctrlKey || event.metaKey)
+            return false;
+        event.preventDefault();
+        const next = neighbour(listedItems(), current, event.key);
+        if (!next)
+            return true;
+        focusItem(next);
+        const target = this.itemAt(next);
+        if (event.shiftKey && item && target) {
+            if (!this.store.isSelected(item.path))
+                this.store.select(item, true);
+            this.store.select(target, true, true);
+        }
+        return true;
+    }
+
+    private itemAt(element: HTMLElement): LibraryItem | undefined {
+        const path = element.getAttribute('data-path');
+        return this.store.items().find(item => item.path === path);
     }
 
     protected onKeydown(event: KeyboardEvent): void {
         const target = event.target as Element;
         // A selection checkbox is an input, but not one being typed in.
         const typing = target.closest?.('input:not([type="checkbox"]), select, textarea, dialog');
-        if (!typing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a' && this.store.files().length) {
+        if (!typing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a' && this.store.items().length) {
             event.preventDefault();
             this.store.selectAll();
             return;
         }
+        if (!typing && this.onListingKey(event))
+            return;
         // New folder: Ctrl+Shift+N as in Explorer where the browser leaves it to the page (Chrome keeps it), Shift+N.
         if (!typing && event.shiftKey && !event.altKey && event.key.toLowerCase() === 'n' && this.canCreateFolder()) {
             event.preventDefault();

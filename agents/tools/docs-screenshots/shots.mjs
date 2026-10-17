@@ -367,6 +367,13 @@ const scenes = {
         await b.clickTitle('New folder in this folder');
         await sleep(600);
         await b.shot(OUT + 'new-folder-dialog.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(400);
+        // A folder and a file selected: the bar counts both and offers what applies.
+        await b.realClick('.folder-item[data-path="Photos/2025 Mountains"] .select-box input');
+        await b.realClick('input[aria-label="Select Sunrise.jpg"]');
+        await sleep(600);
+        await b.shot(OUT + 'selection-folders.png');
         await b.close();
         const a = await session({ height: 900 });
         await a.open(admin('files'), 3000);

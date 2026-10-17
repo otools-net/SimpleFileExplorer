@@ -48,7 +48,7 @@ export class ListingStore {
     readonly error = signal<ApiError | null>(null);
     /** Bumped on navigation so stale responses are dropped; components reset their per-listing state on it. */
     readonly generation = signal(0);
-    /** Paths of the selected files (tagged together); cleared on navigation. */
+    /** Paths of the selected files and folders (tagged, renamed... together); cleared on navigation. */
     readonly selection = signal<ReadonlySet<string>>(new Set());
     /** The file `reveal` just showed, highlighted for a moment. */
     readonly revealed = signal<string | null>(null);
@@ -245,15 +245,18 @@ export class ListingStore {
         return this.selection().has(path);
     }
 
-    /** Selects or deselects a file; with `range`, every file between the last one clicked and this one too. */
+    /**
+     * Selects or deselects a file or folder; with `range`, every item listed between the last one clicked and this one
+     * too (folders come first in a listing: a range can span both).
+     */
     select(item: LibraryItem, selected: boolean, range = false): void {
         let items = [item];
         if (range && this.anchor && this.anchor !== item.path) {
-            const files = this.files();
-            const from = files.findIndex(file => file.path === this.anchor);
-            const to = files.findIndex(file => file.path === item.path);
+            const listed = this.items();
+            const from = listed.findIndex(entry => entry.path === this.anchor);
+            const to = listed.findIndex(entry => entry.path === item.path);
             if (from >= 0 && to >= 0)
-                items = files.slice(Math.min(from, to), Math.max(from, to) + 1);
+                items = listed.slice(Math.min(from, to), Math.max(from, to) + 1);
         }
         const selection = new Set(this.selection());
         for (const file of items) {
@@ -266,8 +269,9 @@ export class ListingStore {
         this.selection.set(selection);
     }
 
+    /** Every file and folder loaded. */
     selectAll(): void {
-        this.selection.set(new Set(this.files().map(file => file.path)));
+        this.selection.set(new Set(this.items().map(item => item.path)));
     }
 
     clearSelection(): void {
@@ -277,9 +281,16 @@ export class ListingStore {
         this.selection.set(new Set());
     }
 
+    /** The selected files, without the folders (what tagging a selection acts on). */
     selectedFiles(): LibraryItem[] {
         const selection = this.selection();
         return this.files().filter(item => selection.has(item.path));
+    }
+
+    /** The selected files and folders, in listing order. */
+    selectedItems(): LibraryItem[] {
+        const selection = this.selection();
+        return this.items().filter(item => selection.has(item.path));
     }
 
     /* ---------- Tags of the listed files, kept in step with the tag dialogs ---------- */

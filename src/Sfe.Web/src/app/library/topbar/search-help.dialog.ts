@@ -93,6 +93,7 @@ export const SEARCH_SYNTAX: SyntaxSection[] = [
                     <li>Files with a hidden tag, like <strong>Archived</strong>, only show up when the search names that tag.</li>
                     <li>The speech-bubble button in the box explains a search in plain words.</li>
                     <li>Press <kbd>/</kbd> to go to the search box, <kbd>?</kbd> to open this help.</li>
+                    <li>Once an item has the focus (<kbd>Tab</kbd>), the arrows move between items, <kbd>Space</kbd> selects, <kbd>Shift</kbd>+arrows select as they go.</li>
                     @if (managesFiles()) {
                         <li>In a folder, <kbd>Shift</kbd>+<kbd>N</kbd> makes a new folder and <kbd>F2</kbd> renames the item selected; right-click an item (Shift for the browser's menu) or use its ⋮ button for more.</li>
                     }
