@@ -29,6 +29,7 @@ public static class SecurityServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<CurrentAccess>();
         services.AddSingleton<FileLinks>();
+        services.AddSingleton<ArchiveLinks>();
         services.AddSingleton<ServerFiles>();
 
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

@@ -1,6 +1,6 @@
 # File management: plan and progress (epic)
 
-Code: `src/Sfe.Core/Files/` (built: `FileNames`, `WorkFolder`, `PathMoves`, `FileOperations`; planned: trash, uploads), `src/Sfe.Api/Endpoints/
+Code: `src/Sfe.Core/Files/` (`FileNames`, `WorkFolder`, `PathMoves`, `FileOperations`, `Trash`, `FileJobs`, `Uploads`, `Archives`), `src/Sfe.Api/Endpoints/
 FileEndpoints.cs`, client `src/app/files/` (dialogs, clipboard, operations panel) and `src/app/library/` (selection,
 menus). Rules every operation must keep: [file-operations.md](file-operations.md). Folder rules:
 [folder-access.md](../features/folder-access.md). Rights: [right-kinds.md](../features/right-kinds.md).
@@ -237,20 +237,29 @@ one), names taken asked before sending with "for all", resume also after a reloa
 - [x] (1.59.0) Tests: `UploadsTests` (chunks, offsets, refused chunk leaves nothing, restart, conflicts, folder uploads,
       escapes, work folder, hidden, limits, cancel, abandoned), `UploadRouteTests` (HTTP, rights, rules, check,
       owners/admin, chunk limit), `uploads.spec.ts`.
+- [ ] Scheduled maintenance task removing abandoned uploads (asked 2026-10-17): a `BackgroundTaskKind` like
+      `TrashPurge` calling `Uploads.RemoveAbandoned`, with a default schedule, so they go even when nobody uploads
+      (today they are only swept when someone starts or lists uploads).
 - Not done: no `fsync` of the folder after the move (the file is flushed before); uploads into a folder picked in a
   dialog.
 - Reference: filebrowser uses tus (`POST` create, `PATCH` chunks, `HEAD` offset), drains rejected chunk bodies so the
   browser sees the status instead of a reset, and removes abandoned uploads on cache eviction.
 
-### Phase 6 — Download several files or a folder
+### Phase 6 — Download several files or a folder (built in 1.60.0)
 
-- [ ] `GET api/files/archive?paths=…` (or a POST returning a one-time link, as backups do): a zip streamed while it
-      is written (`ZipArchive` on the response, no temp file, store-only for media), right `files.download`, Read at
-      each item, hidden sub-folders left out, links not followed outside the root, `ServerFiles` excluded, entry names
-      checked (no `..`, no absolute paths); per-caller limit; name `<folder>.zip` with a safe `Content-Disposition`.
-- [ ] Client: **Download** on a selection of several items or a folder.
-- [ ] Tests: content of the zip, hidden folder absent, a link to the data folder absent, cancel by the client stops
-      the work.
+Lasting facts: [archives.md](../features/archives.md). Decided 2026-10-17: the existing `files.download`, hidden files
+always included, two zips at once per person and a size setting (none by default) checked from the index.
+
+- [x] (1.60.0) `POST api/files/archive` → one-time link, `GET` streams the zip while it is written (`ZipArchive` on the
+      response, no temp file, stored for media, Zip64), `files.view` + `files.download` at each item and folder, hidden
+      folders left out silently, links never followed, `ServerFiles` and the work folder excluded, `\` in names made
+      `_`; two at once per caller; `Files:MaxArchiveMegabytes`; `Content-Disposition` with `filename*`.
+- [x] (1.60.0) Client: **Download** in the selection bar, **Download** / **Download as zip** in the item menu (one
+      file as it is).
+- [x] (1.60.0) Tests: `ArchivesTests` (tree, empty folders, compression, names, hidden/refused, work folder, server
+      files, links, checks, cancel, limit), `ArchiveRouteTests` (link once, owner only, rights, hidden, data folder
+      link, limit), `downloads.spec.ts`.
+- Not done: a **Download folder** button for the folder listed (select it from its parent, or use the menu).
 - Reference: filebrowser offers zip and several tar formats; zip alone is enough here.
 
 ### Phase 7 — Properties

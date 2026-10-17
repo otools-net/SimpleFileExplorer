@@ -55,6 +55,6 @@ public static class RequestLimits
     }
 
     /// <summary>The account when signed in (wherever it connects from), else the address.</summary>
-    private static string Caller(HttpContext context) =>
+    internal static string Caller(HttpContext context) =>
         context.User.UserId() is { } user ? $"user:{user}" : $"address:{context.Connection.RemoteIpAddress}";
 }

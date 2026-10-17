@@ -148,6 +148,7 @@ public sealed class EditableSettings
             Trash = new() { RetentionDays = options.Files.Trash.RetentionDays },
             MinimumFreeSpaceMegabytes = options.Files.MinimumFreeSpaceMegabytes,
             Uploads = new() { MaxFileSizeMegabytes = options.Files.Uploads.MaxFileSizeMegabytes, KeepUnfinishedHours = options.Files.Uploads.KeepUnfinishedHours },
+            MaxArchiveMegabytes = options.Files.MaxArchiveMegabytes,
         },
     };
 
@@ -230,6 +231,7 @@ public sealed class EditableSettings
         options.Files.MinimumFreeSpaceMegabytes = Files.MinimumFreeSpaceMegabytes;
         options.Files.Uploads.MaxFileSizeMegabytes = Files.Uploads.MaxFileSizeMegabytes;
         options.Files.Uploads.KeepUnfinishedHours = Files.Uploads.KeepUnfinishedHours;
+        options.Files.MaxArchiveMegabytes = Files.MaxArchiveMegabytes;
     }
 }
 
@@ -392,6 +394,7 @@ public sealed class FileSettings
     public TrashSettings Trash { get; set; } = new();
     public int MinimumFreeSpaceMegabytes { get; set; }
     public UploadSettings Uploads { get; set; } = new();
+    public int MaxArchiveMegabytes { get; set; }
 }
 
 public sealed class UploadSettings

@@ -6,12 +6,13 @@ import { IconComponent } from '../shared/icon.component';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { ItemActions } from '../library/items/item-actions.service';
+import { FileDownloads } from './downloads';
 import { FileActions } from './file-actions';
 import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu. */
 export interface MenuEntry {
-    id: 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'tags' | 'copyPath';
+    id: 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'copyPath';
     label: string;
     icon: string;
     /** Its key, shown at the end of the line. */
@@ -33,6 +34,7 @@ export class ItemMenu {
     private readonly copyPaths = inject(CopyPathService);
     private readonly files = inject(FileActions);
     private readonly transfers = inject(FileTransfers);
+    private readonly downloads = inject(FileDownloads);
 
     /** The item whose menu is open, and where. */
     readonly open = signal<{ item: LibraryItem; x: number; y: number; trigger: HTMLElement | null } | null>(null);
@@ -79,6 +81,17 @@ export class ItemMenu {
             entries.push({ id: 'moveTo', label: 'Move to…', icon: 'move', title: 'Move it to another folder, picked next', run: () => this.transfers.pick('move', this.targets(item)) });
         if (canCopy)
             entries.push({ id: 'copyTo', label: 'Copy to…', icon: 'copy', title: 'Copy it into another folder, picked next', run: () => this.transfers.pick('copy', this.targets(item)) });
+        if (this.downloads.canDownload(item)) {
+            const targets = this.targets(item);
+            const zip = this.downloads.isZip(targets);
+            entries.push({
+                id: 'download',
+                label: zip ? 'Download as zip' : 'Download',
+                icon: 'download',
+                title: zip ? (targets.length > 1 ? 'Save the selected items to this device, in one zip file' : 'Save this folder, with everything in it, to this device as a zip file') : 'Save this file to this device',
+                run: () => void this.downloads.download(targets),
+            });
+        }
         if (item.kind === 'directory' ? this.store.can(Rights.assignTags, item) : this.store.can(Rights.viewTags, item))
             entries.push({
                 id: 'tags',

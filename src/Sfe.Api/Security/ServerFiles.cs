@@ -22,9 +22,11 @@ public sealed class ServerFiles
     }
 
     /// <summary><paramref name="fullPath"/> is one of the server's files, or in one of its folders, wherever links lead.</summary>
-    public bool Contains(string fullPath)
+    public bool Contains(string fullPath) => ContainsReal(LibraryPaths.RealPath(fullPath));
+
+    /// <summary>As <see cref="Contains"/>, for a path already resolved (<see cref="LibraryPaths.RealPath"/>): no disk access.</summary>
+    public bool ContainsReal(string real)
     {
-        var real = LibraryPaths.RealPath(fullPath);
         var (folders, files) = _protected.Value;
         return folders.Any(folder => LibraryPaths.IsSameOrInside(real, folder))
             || files.Any(file => string.Equals(real, file, LibraryPaths.PathComparison));

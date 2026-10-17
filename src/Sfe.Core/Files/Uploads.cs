@@ -97,7 +97,8 @@ public sealed class Uploads(
             return new UploadChunkResult(FileOperationStatus.Conflict, null, $"You have {MaxPerOwner} unfinished uploads: finish or cancel some first.");
 
         var now = DateTimeOffset.UtcNow;
-        paths.TryResolve(start.Target, out var targetFull);
+        if (!paths.TryResolve(start.Target, out var targetFull))
+            return new UploadChunkResult(FileOperationStatus.NotFound, null, "The folder was not found.");
         var upload = new UploadInfo(Guid.NewGuid().ToString("N"), paths.ToRelative(targetFull)!, Clean(start.Name!), start.Size, 0,
             start.Modified, actor.AccountId, actor.Name, now, now);
         await using (File.Create(PartPath(upload.Id))) { }
@@ -196,7 +197,8 @@ public sealed class Uploads(
                 return error;
 
             var segments = upload.Name.Split('/');
-            paths.TryResolve(upload.Target, out var folder);
+            if (!paths.TryResolve(upload.Target, out var folder))
+                return FileOperationResult.Fail(FileOperationStatus.NotFound, "The folder was not found.");
             var folderPath = paths.ToRelative(folder)!;
             var created = new List<string>();
             foreach (var segment in segments[..^1])

@@ -15,7 +15,7 @@ Each right is of one of two kinds (column **Kind**):
 |---|---|---|---|---|
 | `library.browse` | browse, search, see the scan's progress | Read | yes | all |
 | `files.view` | open pictures, play videos and audio, thumbnails, trickplay | Read | yes | all |
-| `files.download` | download files | Read | yes | Administrators, Users |
+| `files.download` | download files, and [several files or a folder as a zip](../user-guide/managing-files.md#download-several-files-or-a-folder) | Read | yes | Administrators, Users |
 | `files.external` | open files in an external player (a link of its own) | Read | yes | Administrators, Users |
 | `files.copyPaths` | copy full paths (shows the server's folders) | Read | no | Administrators |
 | `files.edit` | edit pictures (crop) and save the result as a new file | Write (files) | no | Administrators, Users |

@@ -92,7 +92,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         subpages: [
             page('trash', 'Trash', 'What was deleted to the trash: restore it, or delete it for good.', Rights.deleteFiles, Rights.deletePermanently),
             page('uploads', 'Uploads', 'Uploads not finished yet, by everyone: how far they got, and cancelling them.', Rights.fileSettings),
-            settingsPage('files', 'How deleting works, how long the trash keeps things, upload limits, names, and where SFE keeps its work files.'),
+            settingsPage('files', 'How deleting works, how long the trash keeps things, limits of copies, uploads and zips, names, and where SFE keeps its work files.'),
         ],
     },
     {

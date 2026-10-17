@@ -842,6 +842,12 @@ export interface MigrationInfo {
     codeFile?: string | null;
 }
 
+/** A zip of several files or folders: the browser downloads it once from `url`, soon. */
+export interface ArchiveLink {
+    url: string;
+    fileName: string;
+}
+
 /** A backup made on the update page: downloaded once from `url`. */
 export interface BackupLink {
     url: string;

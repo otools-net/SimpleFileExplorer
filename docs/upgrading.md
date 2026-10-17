@@ -30,6 +30,13 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.60
+
+- Whoever may download files (`files.download`, members by default) may now download several files or a folder as a
+  zip. To keep a group from downloading whole folders, take that right away (they can then download no file at all),
+  or set **Largest zip to download** ([File management](administration/file-management.md#settings)). Nothing changes
+  in the databases.
+
 ## To 1.59
 
 - New right `files.upload`, given to **no group**, as for 1.55. Unfinished uploads are kept in the work folder

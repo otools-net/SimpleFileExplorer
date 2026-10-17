@@ -13,6 +13,8 @@ node agents/tools/docs-screenshots/run.mjs --ffmpeg <path to ffmpeg>
 
 # again after a UI change, reusing the library and database of the last run
 node agents/tools/docs-screenshots/run.mjs --ffmpeg <path to ffmpeg> --skip-build --shots-only viewer search
+# a step stuck for 3 minutes (no new screenshot, no output) fails the run; screenshots are printed as `  + name.png`
+node agents/tools/docs-screenshots/run.mjs --ffmpeg <path to ffmpeg> --stall 3 tags
 
 # links, images and #anchors of README.md, AGENTS.md, agents/docs/ and docs/ (also lists unused images)
 node agents/tools/docs-screenshots/check-links.mjs
@@ -20,7 +22,7 @@ node agents/tools/docs-screenshots/check-links.mjs
 
 | File | |
 |---|---|
-| `run.mjs` | The whole run (see its header for the options). Work folder: `<tmp>/sfe-docs` by default (build, library, database, caches, `app.log`). Its own scene `update-page` shoots the update page on a copy of the database marked as 1.35.0, served by a second app on the next port (`node:sqlite`) |
+| `run.mjs` | The whole run (see its header for the options), watched: each screenshot is printed as it is written, and a step that writes and prints nothing for `--stall` minutes (default 5) is stopped and fails the run; `--shots-only` on a database of an earlier version is refused at once. Work folder: `<tmp>/sfe-docs` by default (build, library, database, caches, `app.log`). Its own scene `update-page` shoots the update page on a copy of the database marked as 1.35.0, served by a second app on the next port (`node:sqlite`) |
 | `cdp.mjs` | Minimal Chrome DevTools Protocol driver for headless Edge (env `EDGE` = any Chromium browser, else Edge or Chrome in their usual folders or on the `PATH`): `launch({ width, height, mobile, colorScheme, scrollbars })` (scrollbars hidden unless `scrollbars: true`, which layout bugs need), then `goto`, `eval`, `waitFor`, `click`, `realClick`, `hover`, `drag(from, x, y, { drop })` (a real drag and drop), `type`, `key`, `mouse`, `rect`, `shot(file, clip?)` |
 | `make-media.mjs` | The sample library: landscape photos drawn on a canvas (various sizes, for HR/LR), WebM clips, audio, duplicates in `Inbox/`, documents. With ffmpeg: 40 s clips, two re-encoded copies for similar videos, an MP3 |
 | `seed.mjs` | On an empty database: setup page shot (no code step: the browser is on the server's computer), the administrator (`admin` / `admin-password-1`), trickplay on every 2 s, scan, tags, accounts (`sam`, guest `kids`), a group, schedules; then deletes a tagged file, scans again (a moved file, task history), waits for trickplay and compares similar videos |

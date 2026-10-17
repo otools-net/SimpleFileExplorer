@@ -111,6 +111,7 @@ api.MapFileTrackingEndpoints();
 api.MapEditorEndpoints();
 api.MapFileEndpoints();
 api.MapUploadEndpoints();
+api.MapArchiveEndpoints();
 api.MapSettingsEndpoints();
 api.MapQuickLinkEndpoints();
 api.MapSystemEndpoints();

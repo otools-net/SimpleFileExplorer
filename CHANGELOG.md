@@ -3,6 +3,21 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.60.0
+
+### Added
+
+- **Download several files or a folder as one zip:** **Download** in the selection bar, **Download as zip** in the item
+  menu. The zip is written while it downloads (no waiting, no temporary file); media is stored as it is, text
+  compressed; hidden files included, folders one can't see left out, links and unreadable files listed in a note inside
+  the zip. Two zips at once per person; new setting **Largest zip to download** (no limit by default). Needs the right
+  `files.download` only.
+
+### Changed
+
+- **Administration › File management:** the settings of copies, uploads and downloads are grouped apart from those of
+  deleting.
+
 ## 1.59.0
 
 ### Added

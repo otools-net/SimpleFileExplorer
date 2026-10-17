@@ -504,7 +504,7 @@ export const TABS: SettingTab[] = [
     {
         id: 'files',
         title: 'File management',
-        intro: 'Creating folders, renaming and deleting files and folders from the listing, for the groups given those rights (Spaces & accounts).',
+        intro: 'Creating folders, renaming, moving, copying, uploading and deleting files and folders from the listing, for the groups given those rights (Spaces & accounts).',
         groups: [
             {
                 title: 'Deleting',
@@ -513,12 +513,19 @@ export const TABS: SettingTab[] = [
                         hint: 'Every delete skips the trash: files are gone at once, and only those who may delete permanently can delete. What is already in the trash stays there.' },
                     { key: 'files.trash.retentionDays', label: 'Days in the trash', type: 'number', min: 0, max: 3650,
                         hint: 'What was deleted is deleted for good after this many days in the trash (a background task, Background tasks › Trash purge); 0 keeps it until the trash is emptied.' },
+                ],
+            },
+            {
+                title: 'Copies, uploads and downloads',
+                fields: [
                     { key: 'files.minimumFreeSpaceMegabytes', label: 'Free space kept by copies and uploads (MB)', type: 'number', min: 0, max: 1048576,
                         hint: 'A copy or an upload is refused when it would leave less free space than this on the drive it goes to. 0: they may fill the drive.' },
                     { key: 'files.uploads.maxFileSizeMegabytes', label: 'Largest file to upload (MB)', type: 'number', min: 0, max: 1073741823,
                         hint: 'Larger files are refused before they are sent. 0: no limit (only the free space kept counts).' },
                     { key: 'files.uploads.keepUnfinishedHours', label: 'Keep unfinished uploads for (hours)', type: 'number', min: 1, max: 8760,
                         hint: 'An upload that receives nothing for this long is removed with what it received. Until then, picking the same file again goes on where it stopped.' },
+                    { key: 'files.maxArchiveMegabytes', label: 'Largest zip to download (MB)', type: 'number', min: 0, max: 1073741823,
+                        hint: 'Downloading several files or a folder makes one zip. A larger one is refused before it starts, as far as the index knows the files (folders not indexed count nothing). 0: no limit.' },
                 ],
             },
             {
@@ -533,7 +540,7 @@ export const TABS: SettingTab[] = [
                 fields: [
                     { key: 'files.workFolder', label: 'Where SFE keeps its work files', type: 'select',
                         options: [['library', 'In the library'], ['server', 'On the server']],
-                        hint: 'For the trash and unfinished uploads (coming in later versions). In the library (a hidden .sfe folder at its root), they stay on its own drive, so moving a file there is instant; in the server\'s data folder, the library holds nothing of SFE\'s, but large files are copied from one drive to the other. The name .sfe at the library\'s root stays reserved either way.' },
+                        hint: 'For the trash and unfinished uploads. In the library (a hidden .sfe folder at its root), they stay on its own drive, so moving a file there is instant; in the server\'s data folder, the library holds nothing of SFE\'s, but large files are copied from one drive to the other. The name .sfe at the library\'s root stays reserved either way.' },
                 ],
             },
         ],

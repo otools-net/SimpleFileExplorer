@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { ConfigService } from '../core/config.service';
 import { joinParts, plural } from '../core/format';
+import { FileDownloads } from '../files/downloads';
 import { FileActions } from '../files/file-actions';
 import { FileTransfers } from '../files/file-transfers';
 import { ItemMenu } from '../files/item-menu';
@@ -12,7 +13,7 @@ import { ListingStore } from './listing.store';
 
 /**
  * The bar at the bottom while files or folders are selected: their count, select all, adding them to the quick links,
- * renaming the one selected, moving, copying and deleting them, the tags of the files selected.
+ * renaming the one selected, moving, copying, downloading and deleting them, the tags of the files selected.
  */
 @Component({
     selector: 'sfe-selection-bar',
@@ -55,6 +56,12 @@ import { ListingStore } from './listing.store';
                 <span>Copy</span>
             </button>
         }
+        @if (downloadable()) {
+            <button type="button" class="button small selection-download" [title]="downloadTitle()" (click)="downloadSelection()">
+                <svg sfeIcon="download"></svg>
+                <span>Download</span>
+            </button>
+        }
         @if (store.can('tags.assign') && files()) {
             <button type="button" class="button small primary" [title]="tagsTitle()" (click)="tagSelection()">
                 <svg sfeIcon="tag"></svg>
@@ -72,6 +79,7 @@ export class SelectionBarComponent {
     private readonly menu = inject(ItemMenu);
     private readonly fileActions = inject(FileActions);
     protected readonly transfers = inject(FileTransfers);
+    private readonly downloads = inject(FileDownloads);
 
     protected readonly count = computed(() => this.store.selection().size);
     private readonly selected = computed(() => this.store.selectedItems());
@@ -102,6 +110,16 @@ export class SelectionBarComponent {
     protected readonly deleteTitle = computed(() => this.fileActions.alwaysPermanent
         ? 'Delete the selected items for good (Delete)'
         : 'Move the selected items to the trash (Delete; Shift+Delete: for good)');
+
+    /** Some of the selection may be downloaded (only those are). */
+    protected readonly downloadable = computed(() => this.selected().some(item => this.downloads.canDownload(item)));
+    protected readonly downloadTitle = computed(() => this.downloads.isZip(this.selected())
+        ? 'Save the selected items to this device, in one zip file (folders with everything in them)'
+        : 'Save the selected file to this device');
+
+    protected downloadSelection(): void {
+        void this.downloads.download(this.store.selectedItems());
+    }
 
     protected deleteSelection(): void {
         this.fileActions.delete(this.store.selectedItems());

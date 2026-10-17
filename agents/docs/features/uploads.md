@@ -32,7 +32,7 @@ Code: `src/Sfe.Core/Files/Uploads.cs` (`IUploadAccess`), `Api/Endpoints/UploadEn
 - Finish: folders made on the way, `File.Move` from the part (same drive when the work folder is in the library), the
   file's date set, `IndexFilesAsync`, listing invalidated. Scan gate per destination.
 - Abandoned: removed when idle more than `Files:Uploads:KeepUnfinishedHours` (48), checked at most every 10 minutes
-  when uploads are started or listed (no background task).
+  when uploads are started or listed (no background task yet: planned in the plan's phase 5).
 
 ## Client
 

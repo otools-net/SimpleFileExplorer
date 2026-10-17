@@ -286,6 +286,9 @@ public sealed class FileManagementOptions
     public int MinimumFreeSpaceMegabytes { get; set; } = 1024;
 
     public UploadOptions Uploads { get; set; } = new();
+
+    /// <summary>The largest zip of several files or a folder one may download (megabytes, as the index counts it); 0 = no limit.</summary>
+    public int MaxArchiveMegabytes { get; set; }
 }
 
 public sealed class UploadOptions

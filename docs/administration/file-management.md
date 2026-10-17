@@ -34,6 +34,7 @@ Right: `settings.files`.
 | **Free space kept by copies and uploads** (`Sfe:Files:MinimumFreeSpaceMegabytes`) | 1024 | A [copy](../user-guide/managing-files.md#move-and-copy) or an [upload](../user-guide/managing-files.md#upload) is refused when it would leave less free space than this (in MB) on the drive it goes to; 0 lets them fill the drive |
 | **Largest file to upload** (`Sfe:Files:Uploads:MaxFileSizeMegabytes`) | 0 | In MB; 0: no limit |
 | **Keep unfinished uploads for** (`Sfe:Files:Uploads:KeepUnfinishedHours`) | 48 | Hours without a piece arriving before an unfinished upload is removed with what it received |
+| **Largest zip to download** (`Sfe:Files:MaxArchiveMegabytes`) | 0 | In MB; a [zip of several files or a folder](../user-guide/managing-files.md#download-several-files-or-a-folder) larger than this, as the index counts it, is refused before it starts (folders not indexed count nothing); 0: no limit |
 | **Only names Windows accepts** (`Sfe:Files:PortableNames`) | on | New names must also work on Windows: no `< > : " \ \| ? *`, no name ending with a dot or a space, no device names (`CON`, `NUL`, `COM1`…). Keep it on when the library is shared with Windows computers or may move to one. A Windows server always refuses them |
 | **Where SFE keeps its work files** (`Sfe:Files:WorkFolder`) | In the library | **In the library** (`Library`): a hidden folder `.sfe` at the library's root. **On the server** (`Server`): the server's data folder, beside the thumbnails (`work`) |
 

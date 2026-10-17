@@ -648,6 +648,7 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Range(s.Files.MinimumFreeSpaceMegabytes, 0, 1_048_576, "files.minimumFreeSpaceMegabytes", "The free space kept");
         Range(s.Files.Uploads.MaxFileSizeMegabytes, 0, 1_073_741_823, "files.uploads.maxFileSizeMegabytes", "The largest upload");
         Range(s.Files.Uploads.KeepUnfinishedHours, 1, 8760, "files.uploads.keepUnfinishedHours", "The hours unfinished uploads are kept");
+        Range(s.Files.MaxArchiveMegabytes, 0, 1_073_741_823, "files.maxArchiveMegabytes", "The largest zip");
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
         return errors;
 

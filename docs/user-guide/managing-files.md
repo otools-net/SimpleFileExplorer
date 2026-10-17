@@ -6,7 +6,8 @@ trash) and `files.deletePermanently` ([Rights](../reference/rights.md)). No grou
 Folder access rules also apply: in a read-only folder these actions are not offered, and in a folder you can't see
 they don't exist.
 
-Downloading several files at once will come in a later version.
+Downloading several files or a whole folder as one zip file needs only the right to download (`files.download`),
+which members have ([below](#download-several-files-or-a-folder)).
 
 ## The item menu
 
@@ -21,6 +22,7 @@ may do with that item:
 | **Cut**, **Copy** | Ctrl+X, Ctrl+C | Keeps it (or the selection) to move or copy with **Paste** ([below](#move-and-copy)) |
 | **Paste into …** | | On a folder, after Cut or Copy: puts what was kept into it |
 | **Move to…**, **Copy to…** | | Moves or copies it (or the selection) into a folder you pick |
+| **Download** / **Download as zip** | | Saves the file to your device; a folder, or several items selected, as one zip ([below](#download-several-files-or-a-folder)) |
 | **Tags…** / **Tag its files…** | | The tags of a file; adding tags to every file of a folder ([Tags](tags.md)) |
 | **Copy full path** | | Where it is on the server, when [copying paths](browsing.md) is on |
 
@@ -157,6 +159,24 @@ An uploaded file keeps its date from your computer and is added to the index at 
   and uploads** (1 GB by default).
 - Behind a reverse proxy, SFE sends smaller pieces by itself when the proxy refuses large requests
   ([Installation](../installation.md#reaching-it-from-outside-https-and-a-reverse-proxy)).
+
+## Download several files or a folder
+
+Select the files and folders, then **Download** in the selection bar (or **Download as zip** in the menu of one of
+them): your browser downloads one zip file holding them, folders with everything in them. One file alone is
+downloaded as it is.
+
+- The zip is made while it downloads: it starts at once whatever its size, and the browser shows how much has come
+  (not how much is left: the size isn't known in advance). Stopping the download in the browser stops it on the server.
+- It is named after the folder downloaded, or the folder the items are in.
+- Photos, videos, music and other files already compressed are put in the zip as they are (compressing them would only
+  take time); text files are compressed.
+- Hidden files are included. Folders you can't see are left out without a word; links (shortcuts to other folders),
+  files that couldn't be read and folders you may not download are left out too, and listed in a file
+  **SFE - left out.txt** inside the zip.
+- Each person downloads at most two zips at once.
+- A space can set the **largest zip** ([File management](../administration/file-management.md#settings)): a larger
+  one is refused before it starts.
 
 ## Names that can't be used
 

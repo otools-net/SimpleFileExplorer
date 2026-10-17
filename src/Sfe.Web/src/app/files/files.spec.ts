@@ -188,7 +188,7 @@ describe('ItemMenu', () => {
         const element: HTMLElement = fixture.nativeElement;
 
         expect(event.defaultPrevented).toBe(true);
-        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'tags']);
+        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags']);
         expect(document.activeElement?.getAttribute('data-entry')).toBe('rename');
         (element.querySelector('[data-entry="rename"]') as HTMLButtonElement).click();
         await settle();
