@@ -1,5 +1,5 @@
 import { item } from '../../testing/fakes';
-import { CSV_FORMAT, extensionOf, formatOf, FORMATS, isViewable, JSON_FORMAT, PDF_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
+import { CSV_FORMAT, EPUB_FORMAT, extensionOf, formatOf, FORMATS, isViewable, JSON_FORMAT, PDF_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -63,6 +63,14 @@ describe('formats', () => {
         expect(PDF_FORMAT.page).toBe(true);
         expect(PDF_FORMAT.edits).toBeFalsy();
         expect(PDF_FORMAT.profile).toBeUndefined();
+    });
+
+    it('reads EPUB books in a reader of their own, as prose, without editing them', () => {
+        for (const name of ['Hut stories.epub', 'NOVEL.EPUB'])
+            expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(EPUB_FORMAT);
+        expect(EPUB_FORMAT.profile).toBe('prose');
+        expect(EPUB_FORMAT.page).toBe(true);
+        expect(EPUB_FORMAT.edits).toBeFalsy();
     });
 
     it('has no viewer for folders and other files, unless opened as text', () => {

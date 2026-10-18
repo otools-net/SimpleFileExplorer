@@ -3,6 +3,17 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.74.0
+
+### Added
+
+- **EPUB books** open in a reader: **one page** at a time, **two pages** side by side as an open book (one when the
+  window is narrow), or **scrolled** as one long page. ← → (or a swipe) turn the pages; the **contents** list the
+  chapters; the bar tells the chapter and how far through the book; a book opens where it was last read in this
+  browser. The **reading settings** (font, size, line spacing, light, sepia or dark) apply to its pages.
+- `GET api/files/epub/{book}/{entry}`: the files inside a book, served by the app so that its styles, pictures and
+  fonts load under the app's own policy; nothing of a book runs.
+
 ## 1.73.0
 
 ### Added

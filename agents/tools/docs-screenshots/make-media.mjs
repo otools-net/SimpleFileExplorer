@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { launch } from './cdp.mjs';
+import { makeEpub } from './make-epub.mjs';
 import { makePdf } from './make-pdf.mjs';
 
 const root = process.argv[2];
@@ -223,6 +224,19 @@ fs.writeFileSync(path.join(root, 'Documents/Trip plan.json'), JSON.stringify({
     ],
     checklist: { boots: true, headlamp: true, map: false },
 }, null, 2) + '\n');
+// A book for the EPUB reader: three chapters, enough text for two pages side by side.
+const story = [
+    'The path left the last pines behind and climbed into a world of stone. Ana stopped to catch her breath and looked back: the valley was already blue with evening, and the village lights were coming on one by one.',
+    'Leo was a few switchbacks above, a small figure against the snowfield, his red pack the only colour on the slope. He waved without turning round, the way he always did when he did not want to be asked how far there was still to go.',
+    'They had left later than planned. The bus had been slow, the bakery closed, and the warden had said on the telephone that dinner would not wait for anyone. Now the light was going, and the hut was still somewhere above the ridge.',
+    'Marta caught up with her, breathing hard, and laughed. "If we run, we might get dessert," she said. Nobody ran. But nobody stopped again either, and the last hour went by in a steady rhythm of boots on rock and the clink of poles.',
+    'The hut appeared all at once, as huts do: a stone wall, a lit window, a flag snapping in the wind. Somebody opened the door before they reached it, and the smell of soup and wood smoke poured out into the cold.',
+];
+fs.writeFileSync(path.join(root, 'Documents/Hut stories.epub'), makeEpub('Hut stories', 'Ana Ruiz', [
+    { title: 'The climb', paragraphs: story },
+    { title: 'Night at the hut', paragraphs: [...story].reverse() },
+    { title: 'Storm', paragraphs: story.slice(1).concat(story[0]) },
+]));
 // A PDF for the PDF view: three pages, an outline, a title.
 fs.writeFileSync(path.join(root, 'Documents/Hut handbook.pdf'), makePdf('Mountain hut handbook', [
     { heading: 'Before you go', lines: [

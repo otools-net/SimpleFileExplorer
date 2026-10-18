@@ -161,6 +161,25 @@ nothing is fetched from elsewhere.
 - A document protected by a password asks for it. Forms are shown, not filled; scripts in documents never run.
 - A file that isn't a PDF it can show offers **Download** instead.
 
+## EPUB books
+
+EPUB books open in a reader, with three ways to lay them out, in the bar:
+
+- **Page**: one page at a time, turned with **‹ ›**, **←** / **→**, Page Up / Page Down, Space, or a swipe.
+- **Two pages**: two pages side by side, as an open book (one page when the window is too narrow).
+- **Scroll**: the whole book as one long page, scrolled with the mouse, ↑ ↓, Page Up / Page Down or Space.
+
+![A book with two pages side by side and its contents](../images/epub-reader.png)
+
+- **Contents** (the list button) shows the book's chapters; click one to go to it. The bar at the bottom tells the
+  chapter and how far through the book you are (counted once the book is opened: `…` until then).
+- A book opens where it was last read in this browser; the layout chosen is kept for the next books.
+- The **reading settings** (**Aa**) apply to its pages: font, size (also Ctrl+= / Ctrl+−), line spacing and colours.
+  With the sepia and dark colours, the book's own colours give way to them.
+- Nothing in a book runs: its pages are shown, never their scripts.
+
+![The same book scrolled](../images/epub-scroll.png)
+
 ## Reading settings
 
 **Aa** at the end of the text's bar opens the reading settings. They apply at once, and this browser keeps them: one

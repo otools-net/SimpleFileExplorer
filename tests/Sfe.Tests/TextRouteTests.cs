@@ -347,6 +347,64 @@ public sealed class TextRouteTests
             Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode, "hidden from Alice");
     }
 
+    [TestMethod]
+    public async Task TheFilesOfABookAreServedAsTheRightsAllow()
+    {
+        WriteBook("Media/Trip.epub");
+        WriteBook("SpecialDir/Hidden.epub");
+        var token = EpubEntries.Token("Media/Trip.epub");
+
+        using (var container = await _alice.GetAsync($"/api/files/epub/{token}/META-INF/container.xml", Token))
+        {
+            Assert.AreEqual(HttpStatusCode.OK, container.StatusCode);
+            StringAssert.Contains(await container.Content.ReadAsStringAsync(Token), "OEBPS/content.opf");
+        }
+        using (var chapter = await _alice.GetAsync($"/api/files/epub/{token}/OEBPS/Chapter%201.xhtml", Token))
+        {
+            Assert.AreEqual(HttpStatusCode.OK, chapter.StatusCode);
+            Assert.AreEqual("application/xhtml+xml", chapter.Content.Headers.ContentType?.MediaType);
+            StringAssert.Contains(chapter.Headers.GetValues("Content-Security-Policy").Single(), "sandbox");
+            var etag = chapter.Headers.ETag;
+            Assert.IsNotNull(etag);
+            using var again = new HttpRequestMessage(HttpMethod.Get, $"/api/files/epub/{token}/OEBPS/Chapter%201.xhtml");
+            again.Headers.IfNoneMatch.Add(etag);
+            using var notModified = await _alice.SendAsync(again, Token);
+            Assert.AreEqual(HttpStatusCode.NotModified, notModified.StatusCode, "the same book: from the browser's cache");
+        }
+        using (var style = await _alice.GetAsync($"/api/files/epub/{token}/oebps/STYLE.css", Token))
+        {
+            Assert.AreEqual(HttpStatusCode.OK, style.StatusCode, "any case when not found as written");
+            Assert.AreEqual("text/css", style.Content.Headers.ContentType?.MediaType);
+        }
+        foreach (var missing in new[] { $"{token}/OEBPS/none.xhtml", $"{token}/OEBPS/", "not-a-token!/x", $"{EpubEntries.Token("RFile1.txt")}/x", $"{EpubEntries.Token("Media/None.epub")}/x" })
+        {
+            using var response = await _alice.GetAsync($"/api/files/epub/{missing}", Token);
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, missing);
+        }
+        using (var forbidden = await _bob.GetAsync($"/api/files/epub/{token}/META-INF/container.xml", Token))
+            Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode, "Bob may not open files");
+        using (var hidden = await _alice.GetAsync($"/api/files/epub/{EpubEntries.Token("SpecialDir/Hidden.epub")}/META-INF/container.xml", Token))
+            Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode, "hidden from Alice");
+    }
+
+    /// <summary>A small EPUB: its container, package, a chapter and a style.</summary>
+    private void WriteBook(string relative)
+    {
+        var full = _library.FullPath(relative);
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        using var zip = System.IO.Compression.ZipFile.Open(full, System.IO.Compression.ZipArchiveMode.Create);
+        void Add(string name, string content)
+        {
+            using var writer = new StreamWriter(zip.CreateEntry(name).Open());
+            writer.Write(content);
+        }
+        Add("mimetype", "application/epub+zip");
+        Add("META-INF/container.xml", "<container><rootfiles><rootfile full-path=\"OEBPS/content.opf\"/></rootfiles></container>");
+        Add("OEBPS/content.opf", "<package/>");
+        Add("OEBPS/Chapter 1.xhtml", "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body><p>Up the ridge.</p></body></html>");
+        Add("OEBPS/style.css", "body { margin: 0; }");
+    }
+
     private async Task<SubtitleVideo> VideoAsync(HttpClient client, string path)
     {
         using var response = await client.GetAsync($"/api/files/text/video?path={Uri.EscapeDataString(path)}", Token);

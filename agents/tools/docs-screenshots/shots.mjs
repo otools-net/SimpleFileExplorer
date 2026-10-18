@@ -257,6 +257,26 @@ const scenes = {
             throw new Error('pdf.js drew no page');
         await handbook.shot(OUT + 'pdf-viewer.png');
         await handbook.close();
+        // EPUB: two pages side by side with the contents, then the same book scrolled.
+        const book = await session();
+        await book.open('?path=Documents');
+        await book.click('a.item-link[title^="Hut stories.epub"]');
+        await sleep(3500);
+        await book.click('.viewer [data-toc]');
+        await book.click('.viewer .markdown-mode[data-mode="spread"]');
+        await sleep(2500);
+        const frames = await book.eval(`document.querySelectorAll('.epub-stage iframe').length`);
+        console.log(`epub frames: ${frames}`);
+        if (!frames)
+            throw new Error('epub.js showed no page');
+        await book.shot(OUT + 'epub-reader.png');
+        await book.click('.viewer .markdown-mode[data-mode="scroll"]');
+        await sleep(2500);
+        await book.shot(OUT + 'epub-scroll.png');
+        // Back as the docs' other shots expect (one page, no contents).
+        await book.click('.viewer .markdown-mode[data-mode="pages"]');
+        await book.click('.viewer [data-toc]');
+        await book.close();
         // A page of its own (a text file opened in a new tab).
         const page = await session();
         await page.open('view?path=Documents%2FRename%20photos.ps1');

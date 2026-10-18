@@ -114,6 +114,7 @@ api.MapUploadEndpoints();
 api.MapArchiveEndpoints();
 api.MapPropertyEndpoints();
 api.MapTextEndpoints();
+api.MapEpubEndpoints();
 api.MapChangeEndpoints();
 api.MapSettingsEndpoints();
 api.MapQuickLinkEndpoints();

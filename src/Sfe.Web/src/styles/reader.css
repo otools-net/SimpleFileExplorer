@@ -622,6 +622,14 @@
     .pdf-find .json-filter { width: 120px; }
 }
 
+/* ---------- EPUB (formats/epub/): epub.js' pages (frames) in the stage, the contents beside ---------- */
+
+.epub-frame { background: var(--reader-bg); }
+/* epub.js sizes its pages to the stage: room around them from the reading preferences' padding. */
+.epub-stage { position: absolute; inset: calc(var(--reader-padding) / 2) var(--reader-padding); }
+.epub-view[data-mode="scroll"] .epub-stage { inset: 0; }
+.epub-toc a.current { color: var(--reader-text); font-weight: 600; }
+
 /* Highlighting (classHighlighter of @lezer/highlight): one set of colours for every language. */
 .tok-keyword, .tok-bool, .tok-modifier, .tok-controlKeyword, .tok-definitionKeyword, .tok-moduleKeyword { color: var(--tok-keyword); }
 .tok-string, .tok-string2, .tok-character, .tok-inserted { color: var(--tok-string); }

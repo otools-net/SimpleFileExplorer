@@ -280,7 +280,9 @@ Tests
 - [x] (1.73.0) PDF (pdf.js, bundled): worker, character maps and standard fonts served by the app, its CSS a style
       bundle linked when shown, no WebAssembly (the CSP); pages, zoom, find, outline, dark pages, the page read last,
       passwords ([pdf-viewer](../features/pdf-viewer.md)).
-- [ ] EPUB.
+- [x] (1.74.0) EPUB (`@likecoin/epub-ts`): one page, two pages side by side or scrolled; contents, progress, the
+      place read last, the prose reading preferences on its pages; the book's files served by the app
+      (`GET api/files/epub/{book}/{entry}`) so that it runs under the app's CSP ([epub-reader](../features/epub-reader.md)).
 - [ ] The picture editor saving in place through `FileContent`.
 
 ## Open questions
@@ -328,6 +330,8 @@ Tests
 - (1.69.0) A part starting right after a line break keeps its first line: the byte (UTF-16: unit) before it is read.
 - (1.69.0) The change feed tells only changes made through SFE: changes by other programs need the periodic version
   check, made cheap by trusting an unchanged size and time.
+- (1.74.0) A reader that would show a file's parts from `blob:` URLs needs the CSP loosened: serve the parts from
+  the app instead (a route reading the container as asked), and they load as `'self'`.
 - (1.73.0) A view whose library needs canvas (pdf.js) takes it through an injection token (`PDF_LOADER`): the spec
   gives a fake; the real one is checked by the docs screenshots (they fail when pdf.js draws no page).
 - (1.73.0) Check a third-party stylesheet's global selectors against the app's: pdf.js' `.page` is the app's main

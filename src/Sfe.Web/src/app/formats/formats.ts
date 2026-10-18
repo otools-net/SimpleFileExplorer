@@ -190,8 +190,19 @@ export const PDF_FORMAT: FileFormat = {
     page: true,
 };
 
+/** EPUB books: read page by page, two pages side by side or scrolled (epub.js), not edited. */
+export const EPUB_FORMAT: FileFormat = {
+    id: 'epub',
+    label: 'Book',
+    priority: 20,
+    matches: item => item.kind === 'file' && extensionOf(item) === 'epub',
+    view: { load: () => import('./epub/epub-view.component').then(m => m.EpubViewComponent) },
+    profile: 'prose',
+    page: true,
+};
+
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT, PDF_FORMAT];
+export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT, PDF_FORMAT, EPUB_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text
