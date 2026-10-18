@@ -9,7 +9,7 @@ silently: [production-upgrades.md](../development/production-upgrades.md).
   `SettingsService.Validate` and a field in `settings/settings-schema.ts`.
 - `settings-schema.ts`: `TABS` → groups → fields; a new tab also needs a sub-page `{ settings: id }` in
   `admin/admin-sections.ts`. Field types `number`, `checkbox`, `text`, `list`, `extensions`, `select` with
-  `options: [[value, label]]`, `preset` = an unsaved choice filling the `fills` fields from `presets`, e.g.
+  `options: [[value, label]]` (`numeric: true` on the same line: its values are sent as numbers, and the API test expects a number), `preset` = an unsaved choice filling the `fills` fields from `presets`, e.g.
   `EXTERNAL_PLAYERS`.
 - Add its key to `SIMPLE_SETTINGS` (same file) to show it in the default simple view, whose groups without a listed
   key are hidden (a tab with none shows a "Show all settings" note; an error on a hidden field shows all).

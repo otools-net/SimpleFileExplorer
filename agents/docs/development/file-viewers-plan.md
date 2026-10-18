@@ -236,15 +236,19 @@ Tests
 - [x] (1.67.0) Feature note [text-editor.md](../features/text-editor.md); user doc
       [editing-text.md](../../../docs/user-guide/editing-text.md); rights and upgrading pages.
 
-### Phase 5 — Reading preferences per account (1.68.0)
+### Phase 5 — Reading preferences per account (built in 1.68.0)
 
-- [ ] Server: `SfeOptions.Reading` (about 13 keys: `reading.theme`, `reading.customFont`, and per profile `font`,
-      `size`, `lineHeight`, `width`, `padding`, `wrap`, `lineNumbers`); `EditableSettings`; `SettingCatalog`
-      (UserKeys, `reading.` → `InterfaceSettings`); `SettingsService.Validate`; `ClientConfig.Reading` (optional, last).
-- [ ] Client: a **Reading** group in `settings-schema.ts` (key, label and type first, on one line); `ReadingService`
-      merging account defaults and the browser's override; **Save as my default** in the "Aa" panel.
-- [ ] Tests: `SettingsTests`, `EverySettingOfTheClientsSettingsDialogExists`, `reading.service.spec.ts`.
-- [ ] `docs/configuration.md`, the preferences user doc.
+- [x] (1.68.0) Server: `SfeOptions.Reading` (16 keys: `reading.theme`, `reading.customFont`, and per profile `font`,
+      `size`, `lineHeight`, `width`, `padding`, `wrap`, `lineNumbers`), the same classes in `EditableSettings`;
+      `SettingCatalog` (UserKeys, `reading.` → `InterfaceSettings`); `SettingsService.Validate`; `ClientConfig.Reading`
+      (optional, last).
+- [x] (1.68.0) Client: **Reading text files** groups in the Appearance tab of `settings-schema.ts` (a `select` of
+      numbers: `numeric: true`); `ReadingService.defaults` follows the config; **Save as my default** in the "Aa" panel;
+      **Reset** goes back to the account's defaults.
+- [x] (1.68.0) Tests: `LayeredSettingsTests` (library default, account's own, refusals), `ApiTests`
+      (`EverySettingOfTheClientsSettingsDialogExists` knows numeric selects), `reading-defaults.spec.ts`,
+      `settings.spec.ts`.
+- [x] (1.68.0) `docs/configuration.md`, Interface › Appearance, My account, text files' reading settings, upgrading.
 
 ### Phase 6 (optional) — Comfort (1.69.0)
 
@@ -301,6 +305,10 @@ Tests
   so the route's question after the viewer's doesn't ask twice; a new change clears it.
 - (1.67.0) A read-only CodeMirror still has `contenteditable`: E to edit can't skip "typing" targets by that
   attribute, only inputs.
+- (1.68.0) A settings `select` sends strings: numbers chosen from a list need `numeric: true` (the server's `double`
+  / `int` refuse a string).
+- (1.68.0) `ReadingOptions` serves as both the option and the editable settings section (`Copy()` both ways): the
+  allowed lists sit next to the values, for the validation and the docs.
 - (1.64.0) npm 11 skips install scripts it hasn't been told to run (esbuild, lmdb, msgpackr-extract warn): the build
   works without them.
 

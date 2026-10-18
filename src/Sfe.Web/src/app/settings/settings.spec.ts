@@ -264,6 +264,21 @@ describe('settings on the administration page', () => {
         expect(bar('Save')!.disabled).toBe(true);
     });
 
+    it('shows and sends the choices of a list of numbers as numbers (reading settings)', async () => {
+        api.saveSettingChanges.mockImplementation(answer);
+        await open(view({ 'reading.code.lineHeight': 1.5, 'reading.prose.width': 72 }), 'appearance');
+        showAll().click();
+        await settle();
+        expect(control<HTMLSelectElement>('reading.code.lineHeight').value).toBe('1.5');
+        expect(control<HTMLSelectElement>('reading.prose.width').value).toBe('72');
+
+        await select('reading.code.lineHeight', '1.8');
+        await select('reading.prose.width', '0');
+        await save();
+
+        expect(sent()).toEqual({ 'reading.code.lineHeight': 1.8, 'reading.prose.width': 0 });
+    });
+
     it('saves on Enter in a field', async () => {
         api.saveSettingChanges.mockImplementation(answer);
         await open();

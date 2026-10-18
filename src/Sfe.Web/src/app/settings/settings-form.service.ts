@@ -508,7 +508,7 @@ export class SettingsForm {
     private toValue(field: SettingField, control: ControlValue): unknown {
         if (field.type === 'checkbox')
             return Boolean(control);
-        if (field.type === 'number')
+        if (field.type === 'number' || field.type === 'select' && field.numeric)
             return String(control).trim() === '' ? NaN : Number(control);
         if (field.type === 'list')
             return String(control).split('\n').map(v => v.trim()).filter(Boolean);

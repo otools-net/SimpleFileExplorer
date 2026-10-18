@@ -385,6 +385,11 @@ export interface ClientConfig {
     streaming?: { always: boolean } | null;
     /** How deleting works in the space; null without a right to delete (and from older servers). */
     files?: { deletePermanently: boolean; trashRetentionDays: number; maxUploadMegabytes?: number; keepUnfinishedUploadsHours?: number } | null;
+    /**
+     * The reading settings of text files: the library's, with the account's own over them (`ReadingPreferences` of
+     * `formats/reading/reading.ts`, checked there); absent from older servers.
+     */
+    reading?: unknown;
 }
 
 /** `api/streaming/probe`: a video the server can convert. */

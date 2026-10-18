@@ -47,6 +47,10 @@ public static class SettingCatalog
         "appearance.theme", "browse.defaultPageSize", "search.defaultPageSize", "browse.folderPictures", "browse.showResolution",
         "browse.showDuration", "browse.resolutionMark", "thumbnails.singleViewOriginals", "thumbnails.animatedHover", "player.seekSeconds", "player.loop",
         "trickplay.hoverPreview", "search.historySize", "tags.sidebarCount",
+        // How text reads in the viewer: a library default, each account's own.
+        "reading.theme", "reading.customFont",
+        "reading.code.font", "reading.code.size", "reading.code.lineHeight", "reading.code.width", "reading.code.padding", "reading.code.wrap", "reading.code.lineNumbers",
+        "reading.prose.font", "reading.prose.size", "reading.prose.lineHeight", "reading.prose.width", "reading.prose.padding", "reading.prose.wrap", "reading.prose.lineNumbers",
     ];
 
     private static readonly HashSet<string> PerLibraryKeys = ["scan.excludedFolders", "trickplay.folders", "editor.outputFolder"];
@@ -54,7 +58,7 @@ public static class SettingCatalog
     /// <summary>The right of a key, by its first part (the settings page's sections).</summary>
     private static readonly (string Prefix, string Right)[] RightsByPrefix =
     [
-        ("appearance.", Rights.InterfaceSettings), ("browse.", Rights.InterfaceSettings), ("search.", Rights.InterfaceSettings),
+        ("appearance.", Rights.InterfaceSettings), ("reading.", Rights.InterfaceSettings), ("browse.", Rights.InterfaceSettings), ("search.", Rights.InterfaceSettings),
         ("player.", Rights.PlaybackSettings), ("dataServer", Rights.PlaybackSettings), ("streaming.", Rights.PlaybackSettings),
         ("showHiddenItems", Rights.ScanningSettings), ("scan.", Rights.ScanningSettings), ("fileTypes.", Rights.ScanningSettings),
         ("thumbnails.", Rights.ThumbnailSettings), ("trickplay.", Rights.TrickplaySettings), ("fileTracking.", Rights.TrackingSettings),

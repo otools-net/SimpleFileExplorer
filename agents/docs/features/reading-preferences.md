@@ -14,15 +14,30 @@ Code: client `app/formats/reading/` (`reading.ts` model and limits, `reading.ser
 - Per profile: `font` (id of `READER_FONTS`), `size` (10–32), `lineHeight`, `width` (characters, 0 = whole width),
   `padding`, `wrap`, `lineNumbers`; shared: `theme` (`app`/`light`/`sepia`/`dark`) and `customFont` (a font installed
   on the device, font `custom`). Lists of allowed values in `reading.ts` (selects only: no free numbers).
-- `sanitizeReading` takes anything (stored JSON, later the account's defaults) and keeps only valid values.
+- `sanitizeReading` takes anything (stored JSON, the account's defaults from the config) and keeps only valid values.
 
 ## Storage
 
-- `ReadingService`: `defaults` (a signal: `DEFAULT_READING` now, the account's own in phase 5) + this browser's
+- `ReadingService`: `defaults` (a `linkedSignal` of `config.reading`, sanitized: the library's `reading.*` settings with the
+  account's own over them, `DEFAULT_READING` from older servers) + this browser's
   **overrides** in `localStorage` `sfe.reading` = `{ version: 1, theme?, customFont?, code?, prose? }`: only what was
   changed, a changed profile as a whole. Effective = defaults with overrides over them; **Reset** drops the profile's
   override and the theme's.
 - Read once per page load (no `storage` event: another tab's change shows after a reload).
+
+## Account defaults (1.68.0)
+
+- Server: `SfeOptions.Reading` (`ReadingOptions` / `ReadingProfileOptions`, with the allowed lists), reused as is in
+  `EditableSettings.Reading` (`Copy()` both ways). 16 keys (`reading.theme`, `reading.customFont`,
+  `reading.{code,prose}.{font,size,lineHeight,width,padding,wrap,lineNumbers}`), all in `SettingCatalog.UserKeys`,
+  prefix `reading.` → `settings.interface`; checked in `SettingsService.Validate` (lists, size 10–32, custom font
+  ≤ 100 characters without CSS punctuation); `ClientConfig.Reading` (last, optional) = the effective values.
+- Client: the **Reading text files** groups of the Appearance settings tab (`settings-schema.ts`; line height, width
+  and margins are `select` with `numeric: true`). The panel's **Save as my default** (a signed-in account with
+  `account.preferences`, enabled when `changed`) sends all 16 keys with `savePreferenceChanges`, reloads the config
+  and clears this browser's overrides. **Reset** goes back to the defaults (the account's).
+- Tests: `LayeredSettingsTests.ReadingSettingsAreTheLibrarysDefaultsWithEachAccountsOwnOverThem`,
+  `reading-defaults.spec.ts`, `settings.spec.ts` (numeric selects), `ApiTests.EverySettingOfTheClientsSettingsDialogExists`.
 
 ## Applying
 

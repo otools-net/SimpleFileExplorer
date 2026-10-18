@@ -366,6 +366,39 @@ public sealed class LayeredSettingsTests
     }
 
     [TestMethod]
+    public async Task ReadingSettingsAreTheLibrarysDefaultsWithEachAccountsOwnOverThem()
+    {
+        var factory = Factory();
+        var admin = await AdminAsync(factory);
+        var users = await GroupAsync(admin, BuiltInGroup.Users);
+        await CreateUserAsync(admin, new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]));
+        var alice = await ApiClients.SignInAsync(factory, "alice", "alice-password", TestContext.CancellationToken);
+        var defaults = (await ConfigAsync(alice)).Reading!;
+
+        await PatchOkAsync(admin, "tenant", new() { ["reading.theme"] = "sepia", ["reading.prose.size"] = 20 });
+        using (var saved = await PatchPreferencesAsync(alice, new()
+        {
+            ["reading.prose.size"] = 22, ["reading.code.lineHeight"] = 1.8, ["reading.code.font"] = "custom", ["reading.customFont"] = " Fira Code ",
+        }))
+            Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        using var height = await PatchPreferencesAsync(alice, new() { ["reading.code.lineHeight"] = 1.7 });
+        using var font = await PatchPreferencesAsync(alice, new() { ["reading.prose.font"] = "comic-sans" });
+        using var name = await PatchPreferencesAsync(alice, new() { ["reading.customFont"] = "x\"; } body { color: red" });
+        using var width = await PatchPreferencesAsync(alice, new() { ["reading.prose.width"] = 75 });
+        var alices = (await ConfigAsync(alice)).Reading!;
+        var admins = (await ConfigAsync(admin)).Reading!;
+        var preferences = await GetAsync<SettingsView>(alice, "/api/me/preferences");
+
+        Assert.AreEqual(("app", 17, "literata", 1.5, true), (defaults.Theme, defaults.Prose.Size, defaults.Prose.Font, defaults.Code.LineHeight, defaults.Code.LineNumbers));
+        Assert.AreEqual(("sepia", 22, 1.8, "custom", "Fira Code"), (alices.Theme, alices.Prose.Size, alices.Code.LineHeight, alices.Code.Font, alices.CustomFont));
+        Assert.AreEqual(("sepia", 20, 1.5), (admins.Theme, admins.Prose.Size, admins.Code.LineHeight), "The library's, without alice's own");
+        foreach (var refused in new[] { height, font, name, width })
+            Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.IsTrue(preferences.Keys!["reading.prose.size"].Editable);
+        Assert.AreEqual(SettingLevel.Tenant, preferences.Keys["reading.theme"].Source);
+    }
+
+    [TestMethod]
     public async Task LibraryAdministratorsChangeOnlyTheirSectionsThroughChanges()
     {
         var factory = Factory();

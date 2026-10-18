@@ -78,7 +78,7 @@ public sealed record FilesConfig(bool DeletePermanently, int TrashRetentionDays,
 /// </param>
 public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool AnimatedHover, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
     IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor, StreamingConfig? Streaming,
-    FilesConfig? Files = null);
+    FilesConfig? Files = null, ReadingOptions? Reading = null);
 
 public static class ConfigEndpoints
 {
@@ -149,6 +149,7 @@ public static class ConfigEndpoints
             state.Has(Rights.DeleteFiles) || state.Has(Rights.DeletePermanently) || state.Has(Rights.UploadFiles) || state.Has(Rights.FileSettings)
                 ? new FilesConfig(settings.Files.DeletePermanently, Math.Max(0, settings.Files.Trash.RetentionDays),
                     Math.Max(0, settings.Files.Uploads.MaxFileSizeMegabytes), Math.Max(1, settings.Files.Uploads.KeepUnfinishedHours))
-                : null));
+                : null,
+            settings.Reading));
     }
 }

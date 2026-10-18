@@ -59,6 +59,7 @@ public sealed class SfeOptions
     public StreamingOptions Streaming { get; set; } = new();
     public FileTrackingOptions FileTracking { get; set; } = new();
     public AppearanceOptions Appearance { get; set; } = new();
+    public ReadingOptions Reading { get; set; } = new();
     public TaskOptions Tasks { get; set; } = new();
     public LogOptions Logs { get; set; } = new();
     public EditorOptions Editor { get; set; } = new();
@@ -198,6 +199,70 @@ public sealed class AppearanceOptions
     /// Theme of the browsers that have not picked one in Administration › Interface › Appearance (that choice is kept per browser and wins).
     /// </summary>
     public Theme Theme { get; set; } = Theme.System;
+}
+
+/// <summary>
+/// How text files read in the viewer (the reading settings, "Aa"): the library's defaults, each account's own over them,
+/// each browser's changes over those. Values outside the lists of the client fall back to its defaults.
+/// </summary>
+public sealed class ReadingOptions
+{
+    /// <summary>Allowed values of <see cref="Theme"/>: as the app (light or dark), or always light, sepia or dark.</summary>
+    public static readonly IReadOnlyList<string> Themes = ["app", "light", "sepia", "dark"];
+
+    /// <summary>Colours of the text: <c>app</c>, <c>light</c>, <c>sepia</c> or <c>dark</c>.</summary>
+    public string Theme { get; set; } = "app";
+
+    /// <summary>A font installed on the reader's device, for the font <c>custom</c> (e.g. <c>Fira Code</c>).</summary>
+    public string CustomFont { get; set; } = string.Empty;
+
+    /// <summary>Code, logs and settings files: monospace, line numbers, long lines kept whole.</summary>
+    public ReadingProfileOptions Code { get; set; } = new()
+    {
+        Font = "system-mono", Size = 14, LineHeight = 1.5, Width = 0, Padding = 8, Wrap = false, LineNumbers = true,
+    };
+
+    /// <summary>Notes and documents (<c>.txt</c>, <c>.md</c>, <c>README</c>...): wrapped, in a reading font.</summary>
+    public ReadingProfileOptions Prose { get; set; } = new()
+    {
+        Font = "literata", Size = 17, LineHeight = 1.65, Width = 72, Padding = 32, Wrap = true, LineNumbers = false,
+    };
+
+    public ReadingOptions Copy() => new() { Theme = Theme, CustomFont = CustomFont, Code = Code.Copy(), Prose = Prose.Copy() };
+}
+
+/// <summary>The reading settings of one kind of text (<see cref="ReadingOptions"/>).</summary>
+public sealed class ReadingProfileOptions
+{
+    public static readonly IReadOnlyList<string> Fonts = ["literata", "atkinson", "jetbrains-mono", "system-serif", "system-sans", "system-mono", "custom"];
+    public static readonly IReadOnlyList<double> LineHeights = [1.2, 1.35, 1.5, 1.65, 1.8, 2];
+    public static readonly IReadOnlyList<int> Widths = [0, 60, 72, 80, 100, 120];
+    public static readonly IReadOnlyList<int> Paddings = [0, 8, 16, 24, 32, 48, 64];
+    public const int MinSize = 10;
+    public const int MaxSize = 32;
+
+    /// <summary>
+    /// <c>literata</c>, <c>atkinson</c>, <c>jetbrains-mono</c> (bundled), <c>system-serif</c>, <c>system-sans</c>,
+    /// <c>system-mono</c> (the device's) or <c>custom</c> (<see cref="ReadingOptions.CustomFont"/>).
+    /// </summary>
+    public string Font { get; set; } = "system-mono";
+
+    /// <summary>Text size in CSS pixels, 10 to 32.</summary>
+    public int Size { get; set; } = 14;
+
+    /// <summary>1.2, 1.35, 1.5, 1.65, 1.8 or 2.</summary>
+    public double LineHeight { get; set; } = 1.5;
+
+    /// <summary>Longest line in characters when lines wrap: 0 (the whole width), 60, 72, 80, 100 or 120.</summary>
+    public int Width { get; set; }
+
+    /// <summary>Room around the text in CSS pixels: 0, 8, 16, 24, 32, 48 or 64.</summary>
+    public int Padding { get; set; } = 8;
+
+    public bool Wrap { get; set; }
+    public bool LineNumbers { get; set; } = true;
+
+    public ReadingProfileOptions Copy() => (ReadingProfileOptions)MemberwiseClone();
 }
 
 /// <summary>The background tasks (scans, trickplay, similar videos): their run history.</summary>

@@ -43,6 +43,8 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
 
     /// <summary>Leaves room under SQL Server's 260 characters for the originals' folders and names.</summary>
     public const int MaxEditorFolderLength = 100;
+    /// <summary>Longest name of a font of the reader's device (<c>reading.customFont</c>).</summary>
+    public const int MaxCustomFontLength = 100;
 
     /// <summary>Videos converted at once (<c>Streaming:MaxStreams</c>).</summary>
     public const int MaxStreams = 32;
@@ -535,6 +537,7 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     private static void Normalize(EditableSettings settings)
     {
         settings.DataServer = DataServerUrl.Normalize(settings.DataServer);
+        settings.Reading.CustomFont = settings.Reading.CustomFont?.Trim() ?? string.Empty;
         settings.Player.ExternalName = string.IsNullOrWhiteSpace(settings.Player.ExternalName) ? null : settings.Player.ExternalName.Trim();
         settings.Player.ExternalUrl = string.IsNullOrWhiteSpace(settings.Player.ExternalUrl) ? null : settings.Player.ExternalUrl.Trim();
         settings.Scan.IgnoredDirectories = Names(settings.Scan.IgnoredDirectories);
@@ -650,6 +653,17 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Range(s.Files.Uploads.KeepUnfinishedHours, 1, 8760, "files.uploads.keepUnfinishedHours", "The hours unfinished uploads are kept");
         Range(s.Files.MaxArchiveMegabytes, 0, 1_073_741_823, "files.maxArchiveMegabytes", "The largest zip");
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
+        Check(s.Reading.Theme is { } readerTheme && ReadingOptions.Themes.Contains(readerTheme), "reading.theme", "Choose colours from the list.");
+        Check(s.Reading.CustomFont.Length <= MaxCustomFontLength && s.Reading.CustomFont.IndexOfAny(['"', '\\', ';', '{', '}', '<', '>']) < 0,
+            "reading.customFont", $"Enter a font's name (at most {MaxCustomFontLength} characters, without quotes or brackets).");
+        foreach (var (profile, key) in new[] { (s.Reading.Code, "reading.code"), (s.Reading.Prose, "reading.prose") })
+        {
+            Check(profile.Font is { } font && ReadingProfileOptions.Fonts.Contains(font), $"{key}.font", "Choose a font from the list.");
+            Range(profile.Size, ReadingProfileOptions.MinSize, ReadingProfileOptions.MaxSize, $"{key}.size", "The text size");
+            Check(ReadingProfileOptions.LineHeights.Any(height => Math.Abs(height - profile.LineHeight) < 0.001), $"{key}.lineHeight", "Choose a line height from the list.");
+            Check(ReadingProfileOptions.Widths.Contains(profile.Width), $"{key}.width", "Choose a width from the list.");
+            Check(ReadingProfileOptions.Paddings.Contains(profile.Padding), $"{key}.padding", "Choose margins from the list.");
+        }
         return errors;
 
         static bool IsName(string name) => name.IndexOfAny(['/', '\\']) < 0;

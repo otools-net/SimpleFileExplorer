@@ -1,5 +1,7 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, linkedSignal, signal } from '@angular/core';
+import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
+import { Rights } from '../../core/rights';
 import { readPreference, writePreference } from '../../core/preferences';
 import {
     DEFAULT_READING, fontFamily, fontOf, FONT_SIZES, ProfilePreferences, ReaderTheme, ReadingPreferences, ReadingProfile, sanitizeReading,
@@ -27,17 +29,25 @@ function readOverrides(): ReadingOverrides {
 }
 
 /**
- * The reading preferences of the text views: the defaults (later the account's own, phase 5 of
- * agents/docs/development/file-viewers-plan.md) with this browser's changes over them, saved as they are made.
+ * The reading preferences of the text views (agents/docs/features/reading-preferences.md): the account's defaults
+ * (`reading.*` settings: the library's, with the account's own over them, from `api/config`) with this browser's
+ * changes over them, saved as they are made. **Save as my default** makes this browser's the account's.
  */
 @Injectable({ providedIn: 'root' })
 export class ReadingService {
     private readonly config = inject(ConfigService);
+    private readonly api = inject(Api);
     private readonly overrides = signal<ReadingOverrides>(readOverrides());
     private fontsLinked = false;
 
-    /** The defaults this browser's changes go over. */
-    readonly defaults = signal<ReadingPreferences>(DEFAULT_READING);
+    /** The defaults this browser's changes go over: the account's (following the config as it loads). */
+    readonly defaults = linkedSignal<ReadingPreferences>(() => sanitizeReading(this.config.config()?.reading ?? DEFAULT_READING));
+
+    /** This browser changed something the account's defaults don't have. */
+    readonly changed = computed(() => JSON.stringify(this.preferences()) !== JSON.stringify(this.defaults()));
+
+    /** A signed-in account that may keep its own preferences. */
+    readonly canSaveDefaults = computed(() => Boolean(this.config.config()?.user) && this.config.can(Rights.ownPreferences));
 
     /** The preferences in effect. */
     readonly preferences = computed((): ReadingPreferences => {
@@ -98,6 +108,22 @@ export class ReadingService {
         link.href = `reader-fonts.css?v=${encodeURIComponent(this.config.config()?.version ?? '')}`;
         link.dataset['readerFonts'] = '';
         document.head.appendChild(link);
+    }
+
+    /**
+     * The preferences in effect become the account's own (every browser it signs in from starts from them); this
+     * browser's changes are then nothing more.
+     */
+    async saveAsDefaults(): Promise<void> {
+        const preferences = this.preferences();
+        const values: Record<string, unknown> = { 'reading.theme': preferences.theme, 'reading.customFont': preferences.customFont };
+        for (const profile of ['code', 'prose'] as const) {
+            for (const [key, value] of Object.entries(preferences[profile]))
+                values[`reading.${profile}.${key}`] = value;
+        }
+        await this.api.savePreferenceChanges({ values });
+        await this.config.load();
+        this.save({ version: 1 });
     }
 
     private save(overrides: ReadingOverrides): void {

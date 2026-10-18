@@ -1,16 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, output, signal } from '@angular/core';
+import { ToastService } from '../../core/toast.service';
+import { BusyDirective, whileBusy } from '../../shared/busy.directive';
 import { IconComponent } from '../../shared/icon.component';
 import { FONT_SIZES, LINE_HEIGHTS, PADDINGS, READER_FONTS, READER_THEMES, ReaderTheme, ReadingProfile, WIDTHS } from './reading';
 import { ReadingService } from './reading.service';
 
 /**
  * The "Aa" panel of a text view: font, size, line height, width, margins, wrapping, line numbers and the reader's
- * colours, for the profile of the file shown (code or prose); applied as they change, kept by this browser.
+ * colours, for the profile of the file shown (code or prose); applied as they change, kept by this browser; **Save as
+ * my default** makes them the account's.
  * A popover under the button; a sheet at the bottom on phones.
  */
 @Component({
     selector: 'sfe-reading-panel',
-    imports: [IconComponent],
+    imports: [BusyDirective, IconComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'reading-panel',
@@ -83,7 +86,11 @@ import { ReadingService } from './reading.service';
             </div>
         </div>
         <footer class="reading-panel-foot">
-            <button type="button" class="button small" title="These settings and the colours back as they first were" (click)="reading.reset(profile())">Reset</button>
+            <button type="button" class="button small" title="These settings and the colours back to your defaults" (click)="reading.reset(profile())">Reset</button>
+            @if (reading.canSaveDefaults()) {
+                <button type="button" class="button small" data-save-defaults [sfeBusy]="saving()" [disabled]="saving() || !reading.changed()"
+                        title="Start from these settings (both kinds of text, and the colours) in every browser you sign in from" (click)="saveDefaults()">Save as my default</button>
+            }
         </footer>
     `,
 })
@@ -94,6 +101,8 @@ export class ReadingPanelComponent {
 
     protected readonly reading = inject(ReadingService);
     private readonly element: HTMLElement = inject(ElementRef).nativeElement;
+    private readonly toasts = inject(ToastService);
+    protected readonly saving = signal(false);
 
     protected readonly fonts = READER_FONTS;
     protected readonly sizes = FONT_SIZES;
@@ -105,6 +114,15 @@ export class ReadingPanelComponent {
 
     protected set<K extends 'font' | 'lineHeight' | 'width' | 'padding' | 'wrap' | 'lineNumbers'>(key: K, value: unknown): void {
         this.reading.update(this.profile(), { [key]: value });
+    }
+
+    protected async saveDefaults(): Promise<void> {
+        try {
+            await whileBusy(this.saving, () => this.reading.saveAsDefaults());
+            this.toasts.show('Saved as your default: every browser you sign in from starts from these settings.');
+        } catch (error) {
+            this.toasts.error(`Could not save them: ${(error as Error).message}`);
+        }
     }
 
     protected setTheme(theme: ReaderTheme): void {

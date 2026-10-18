@@ -54,7 +54,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         icon: 'theme',
         description: 'Colors, listings and the search box: the defaults of the library and of the server.',
         subpages: [
-            settingsPage('appearance', 'The default theme, and this browser\'s own.', 'Appearance', 'appearance'),
+            settingsPage('appearance', 'The default theme, and this browser\'s own; how text files read.', 'Appearance', 'appearance'),
             settingsPage('browsing', 'How many items a listing loads, the pictures on folders, and the resolutions and durations shown.', 'Browsing', 'browsing'),
             settingsPage('search', 'How many results a search loads, its wording as you type, and the searches remembered.', 'Search', 'search'),
         ],

@@ -3,6 +3,16 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.68.0
+
+### Added
+
+- **Reading settings per account**: **Save as my default** in the reading settings (**Aa**) makes them yours, in
+  every browser you sign in from; a browser's own changes still go over them, and **Reset** goes back to them.
+- Administrators set the **library's defaults** for reading text files (colours, and for notes and for code: font,
+  size, line height, width, margins, wrapping, line numbers) in **Interface › Appearance**; accounts change theirs in
+  **My account › Preferences**.
+
 ## 1.67.0
 
 ### Added

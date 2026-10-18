@@ -849,8 +849,9 @@ public sealed class ApiTests
         var schema = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(SourceFile())!, "..", "..", "src", "Sfe.Web", "src", "app", "settings", "settings-schema.ts"));
         if (!File.Exists(schema))
             Assert.Inconclusive($"Sources not found at {schema}.");
-        var fields = System.Text.RegularExpressions.Regex.Matches(await File.ReadAllTextAsync(schema, TestContext.CancellationToken), @"\{ key: '(?<key>[\w.]+)', label: '[^']*', type: '(?<type>\w+)'")
-            .Select(m => (Key: m.Groups["key"].Value, Type: m.Groups["type"].Value))
+        var fields = System.Text.RegularExpressions.Regex.Matches(await File.ReadAllTextAsync(schema, TestContext.CancellationToken), @"\{ key: '(?<key>[\w.]+)', label: '[^']*', type: '(?<type>\w+)'(?<numeric>, numeric: true)?")
+            // A select of numbers (`numeric: true`) holds numbers.
+            .Select(m => (Key: m.Groups["key"].Value, Type: m.Groups["numeric"].Success ? "number" : m.Groups["type"].Value))
             .Where(f => f.Type != "preset")
             .ToList();
         using var settings = JsonDocument.Parse(await _client.GetStringAsync("/api/settings", TestContext.CancellationToken));

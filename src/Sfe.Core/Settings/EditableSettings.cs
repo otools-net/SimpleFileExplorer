@@ -33,6 +33,7 @@ public sealed class EditableSettings
     public StreamingSettings Streaming { get; set; } = new();
     public FileTrackingSettings FileTracking { get; set; } = new();
     public AppearanceSettings Appearance { get; set; } = new();
+    public ReadingOptions Reading { get; set; } = new();
     public TaskSettings Tasks { get; set; } = new();
     public LogSettings Logs { get; set; } = new();
     public EditorSettings Editor { get; set; } = new();
@@ -137,6 +138,7 @@ public sealed class EditableSettings
             SimilarVideos = new() { MinimumPercent = options.FileTracking.SimilarVideos.MinimumPercent },
         },
         Appearance = new() { Theme = options.Appearance.Theme },
+        Reading = options.Reading.Copy(),
         Tasks = new() { LogRetentionDays = options.Tasks.LogRetentionDays },
         Logs = new() { RetentionDays = options.Logs.RetentionDays, WriteFiles = options.Logs.WriteFiles },
         Editor = new() { OutputFolder = options.Editor.OutputFolder, Quality = options.Editor.Quality },
@@ -219,6 +221,7 @@ public sealed class EditableSettings
         options.FileTracking.Relink.RetentionDays = FileTracking.Relink.RetentionDays;
         options.FileTracking.SimilarVideos.MinimumPercent = FileTracking.SimilarVideos.MinimumPercent;
         options.Appearance.Theme = Appearance.Theme;
+        options.Reading = Reading.Copy();
         options.Tasks.LogRetentionDays = Tasks.LogRetentionDays;
         options.Logs.RetentionDays = Logs.RetentionDays;
         options.Logs.WriteFiles = Logs.WriteFiles;

@@ -15,6 +15,17 @@ of these settings can also be changed by each user for themselves in [My account
 
 The separate video player window always stays dark.
 
+### Reading text files
+
+How [text files](../user-guide/text-files.md#reading-settings) read in the viewer, for the accounts and browsers that
+haven't changed them: **Colours** (as the app, light, sepia or dark) and **Font of the device** (the name of a font
+installed on the reader's device, used where a font is "The font named below"); then, for **notes and documents**
+(`.txt`, `.md`, `README`…) and for **code, logs and settings**: the font, text size, line height, width, margins,
+wrapping and line numbers (`Sfe:Reading:…`, see [Configuration](../configuration.md)).
+
+Each account can make its own (**My account › Preferences**, or **Save as my default** in the reading settings), and
+each browser keeps its own changes over them.
+
 ## Browsing
 
 ![Interface › Browsing](../images/admin-interface-browsing.png)

@@ -74,6 +74,7 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | Setting | Page |
 |---|---|
 | `Sfe:Appearance:Theme` (`System`, `Dark`, `Light`) | [Interface › Appearance](administration/interface.md#appearance) |
+| `Sfe:Reading:Theme` (`app`, `light`, `sepia`, `dark`), `CustomFont`; `Sfe:Reading:Prose:…` and `Sfe:Reading:Code:…`: `Font` (`literata`, `atkinson`, `jetbrains-mono`, `system-serif`, `system-sans`, `system-mono`, `custom`), `Size` (10–32), `LineHeight` (1.2, 1.35, 1.5, 1.65, 1.8, 2), `Width` (0, 60, 72, 80, 100, 120), `Padding` (0, 8, 16, 24, 32, 48, 64), `Wrap`, `LineNumbers` | [Interface › Appearance](administration/interface.md#reading-text-files) |
 | `Sfe:Browse:DefaultPageSize`, `MaxPageSize`, `FolderPictures`, `CopyPaths`, `ShowResolution`, `ShowDuration`, `ResolutionMark`, `ImageHighResolutionPixels`, `VideoHighResolutionPixels` | [Interface › Browsing](administration/interface.md#browsing) |
 | `Sfe:Search:DefaultPageSize`, `MaxPageSize`, `Explain`, `HistorySize` | [Interface › Search](administration/interface.md#search) |
 | `Sfe:Player:SeekSeconds`, `Loop`, `ExternalUrl`, `ExternalName`, `LinkLifetimeMinutes` | [Playback](administration/playback.md) |

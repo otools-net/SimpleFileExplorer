@@ -30,6 +30,11 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.68
+
+- New settings `Sfe:Reading:…` (how text files read: the library's defaults, each account's own over them), with the
+  defaults text files had so far: nothing to do. Changes made in a browser's reading settings stay in that browser.
+
 ## To 1.67
 
 - The update adds a column to the trash's table (which entries are previous versions of files saved over). Nothing

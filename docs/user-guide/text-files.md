@@ -59,7 +59,7 @@ pictures, with code blocks highlighted. The **outline** button lists the heading
 ## Reading settings
 
 **Aa** at the end of the text's bar opens the reading settings. They apply at once, and this browser keeps them: one
-set for text to read, one for code.
+set for text to read, one for code. They start from your account's defaults (the library's, until you save your own).
 
 ![The reading settings over a diary, in sepia](../images/text-reading-settings.png)
 
@@ -72,7 +72,8 @@ set for text to read, one for code.
 | Margins | The room around the text |
 | Wrap long lines, Line numbers | As the buttons of the bar |
 | Colours | **App** (light or dark, with the app's [theme](browsing.md#light-and-dark)), **Light**, **Sepia** (warm paper) or **Dark** |
-| Reset | Back to the first settings (for this kind of text), and the colours as the app |
+| Reset | Back to your defaults (for this kind of text), and the colours |
+| Save as my default | These settings (both kinds of text, and the colours) become your account's: every browser you sign in from starts from them. Also in **My account › Preferences** ([Administration](../administration/my-account.md)) |
 
 The three bundled fonts are downloaded from the server the first time one of them is used, and only the letters a
 page needs. On a phone the settings open as a sheet at the bottom of the screen:
