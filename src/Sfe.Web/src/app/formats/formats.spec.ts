@@ -1,5 +1,5 @@
 import { item } from '../../testing/fakes';
-import { extensionOf, formatOf, isViewable, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
+import { extensionOf, formatOf, FORMATS, isViewable, JSON_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -11,7 +11,7 @@ describe('formats', () => {
     });
 
     it('shows text files by extension or by their whole name, whatever the case', () => {
-        for (const name of ['server.log', 'Program.cs', 'app.JS', 'Dockerfile', '.gitignore', 'settings.json', 'film.srt', 'build.ps1'])
+        for (const name of ['server.log', 'Program.cs', 'app.JS', 'Dockerfile', '.gitignore', 'settings.yaml', 'film.srt', 'build.ps1'])
             expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(TEXT_FORMAT);
         // The server's extensions have no dot; the name decides anyway.
         expect(formatOf({ ...item('a/server.log', { kind: 'file' }), extension: 'log' })).toBe(TEXT_FORMAT);
@@ -34,6 +34,15 @@ describe('formats', () => {
         expect(MARKDOWN_FORMAT.profile).toBe('prose');
         expect(extensionOf(item('a/.gitignore', { kind: 'file' }))).toBe('gitignore');
         expect(extensionOf(item('a/Makefile', { kind: 'file' }))).toBe('');
+    });
+
+    it('shows JSON as a tree, above plain text; JSON Lines and JSON5 stay text', () => {
+        for (const name of ['data.json', 'Settings.JSONC', 'map.geojson', 'site.webmanifest', 'trace.har'])
+            expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(JSON_FORMAT);
+        for (const name of ['events.jsonl', 'events.ndjson', 'config.json5'])
+            expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(TEXT_FORMAT);
+        expect(JSON_FORMAT.profile).toBe('code');
+        expect(FORMATS.filter(format => format.edits).map(format => format.id)).toEqual(['text', 'prose', 'markdown', 'json']);
     });
 
     it('has no viewer for folders and other files, unless opened as text', () => {

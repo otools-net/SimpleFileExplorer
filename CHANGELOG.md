@@ -3,6 +3,17 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.70.0
+
+### Added
+
+- **JSON files** (`.json`, `.jsonc`, `.geojson`, `.webmanifest`, `.har`) open as a **tree** of their members: open
+  and close them with the mouse or the arrows, **filter** on keys and values, **copy the path** (`$.days[1].town`) or
+  the value of the one selected. Keys stay in the order written and numbers as written (long ids are not rounded);
+  comments and trailing commas (`appsettings.json`, `tsconfig.json`) are allowed. **Tree** / **Source** / **Split**
+  show its text beside it; a file that isn't valid JSON says where. **Edit** changes the source, the tree following as
+  you type; **Format** lays it out again, indented, comments kept.
+
 ## 1.69.1
 
 ### Fixed

@@ -82,7 +82,7 @@ export class ItemMenu {
      */
     canEditText(item: LibraryItem): boolean {
         const format = formatOf(item);
-        return Boolean(format && 'load' in format.view && this.dialogs.viewer() && this.store.can(Rights.viewFiles, item)
+        return Boolean(format?.edits && this.dialogs.viewer() && this.store.can(Rights.viewFiles, item)
             && (this.store.can(Rights.createFiles, item) || this.store.can(Rights.download, item)));
     }
 

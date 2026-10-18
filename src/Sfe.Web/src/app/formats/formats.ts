@@ -20,6 +20,8 @@ export interface FileFormat {
     readonly profile?: 'code' | 'prose';
     /** It has a page of its own (`view?path=`): what "open in a new tab" opens, rather than the raw file. */
     readonly page?: boolean;
+    /** Its view edits the file (Edit in the item menu, `edit` input); others only show it. */
+    readonly edits?: boolean;
 }
 
 /**
@@ -53,7 +55,7 @@ export const TEXT_EXTENSIONS: ReadonlySet<string> = new Set([
     'txt', 'text', 'log', 'err', 'nfo', 'diz', 'asc', 'me', '1st',
     'md', 'markdown', 'mdown', 'mkd', 'rst', 'adoc', 'asciidoc', 'org', 'tex', 'bib',
     // Data and configuration
-    'json', 'jsonc', 'json5', 'jsonl', 'ndjson', 'geojson', 'webmanifest', 'xml', 'xsd', 'xsl', 'xslt', 'plist', 'svg',
+    'json', 'jsonc', 'json5', 'jsonl', 'ndjson', 'geojson', 'topojson', 'har', 'webmanifest', 'xml', 'xsd', 'xsl', 'xslt', 'plist', 'svg',
     'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'config', 'properties', 'env', 'editorconfig', 'reg', 'inf',
     'csv', 'tsv', 'psv', 'sql', 'graphql', 'gql', 'proto', 'prisma',
     // Subtitles and playlists
@@ -107,7 +109,7 @@ export const AUDIO_FORMAT: FileFormat = { id: 'audio', label: 'Audio', priority:
 
 const textView = { load: () => import('./text/text-view.component').then(m => m.TextViewComponent) };
 
-export const TEXT_FORMAT: FileFormat = { id: 'text', label: 'Text', priority: 10, matches: isTextFile, view: textView, profile: 'code', page: true };
+export const TEXT_FORMAT: FileFormat = { id: 'text', label: 'Text', priority: 10, matches: isTextFile, view: textView, profile: 'code', page: true, edits: true };
 
 /** Text files meant to be read rather than run: wrapped, in a reading font (the prose profile). */
 export const PROSE_EXTENSIONS: ReadonlySet<string> = new Set(['txt', 'text', 'md', 'markdown', 'mdown', 'mkd', 'rst', 'adoc', 'asciidoc', 'org']);
@@ -117,7 +119,7 @@ export function isProseFile(item: LibraryItem): boolean {
     return item.kind === 'file' && (PROSE_NAMES.has(item.name.toLowerCase()) || PROSE_EXTENSIONS.has(extensionOf(item)));
 }
 
-export const PROSE_FORMAT: FileFormat = { id: 'prose', label: 'Text', priority: 11, matches: isProseFile, view: textView, profile: 'prose', page: true };
+export const PROSE_FORMAT: FileFormat = { id: 'prose', label: 'Text', priority: 11, matches: isProseFile, view: textView, profile: 'prose', page: true, edits: true };
 
 /** Markdown: read rendered (with its source a click away). */
 export const MARKDOWN_EXTENSIONS: ReadonlySet<string> = new Set(['md', 'markdown', 'mdown', 'mkd', 'mkdn']);
@@ -130,10 +132,28 @@ export const MARKDOWN_FORMAT: FileFormat = {
     view: { load: () => import('./markdown/markdown-view.component').then(m => m.MarkdownViewComponent) },
     profile: 'prose',
     page: true,
+    edits: true,
+};
+
+/**
+ * JSON: a tree of its members (with its source a click away). Not JSON5 (unquoted keys) nor JSON Lines (logs, read and
+ * followed as text).
+ */
+export const JSON_EXTENSIONS: ReadonlySet<string> = new Set(['json', 'jsonc', 'geojson', 'topojson', 'webmanifest', 'har']);
+
+export const JSON_FORMAT: FileFormat = {
+    id: 'json',
+    label: 'JSON',
+    priority: 20,
+    matches: item => item.kind === 'file' && JSON_EXTENSIONS.has(extensionOf(item)),
+    view: { load: () => import('./json/json-view.component').then(m => m.JsonViewComponent) },
+    profile: 'code',
+    page: true,
+    edits: true,
 };
 
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT];
+export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text

@@ -25,6 +25,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
             <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></symbol>
             <symbol id="i-rows" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/></symbol>
             <symbol id="i-wrap" viewBox="0 0 24 24"><path d="M4 6h16M4 12h13a3 3 0 0 1 0 6h-4"/><path d="m15 16-2 2 2 2M4 18h5"/></symbol>
+            <symbol id="i-unfold" viewBox="0 0 24 24"><path d="M7 9l5-5 5 5M7 15l5 5 5-5"/></symbol>
+            <symbol id="i-fold" viewBox="0 0 24 24"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></symbol>
+            <symbol id="i-format" viewBox="0 0 24 24"><path d="M4 6h16M10 12h10M10 18h10M4 10l3 2-3 2"/></symbol>
             <symbol id="i-line-numbers" viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10M4 5l1.5-1v4M3.5 11.5a1.2 1.2 0 0 1 2.3.4L3.5 14h2.5M3.5 17h2l-1 1.5a1 1 0 1 1-1 1.5"/></symbol>
             <symbol id="i-goto-line" viewBox="0 0 24 24"><path d="M4 6h16M4 12h9M4 18h16"/><path d="m16 9 3 3-3 3"/></symbol>
             <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></symbol>

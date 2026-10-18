@@ -70,6 +70,35 @@ pictures, with code blocks highlighted. The **outline** button lists the heading
 
 ![A Markdown document beside its source](../images/markdown-split.png)
 
+## JSON
+
+JSON files (`.json`, `.jsonc`, `.geojson`, `.webmanifest`, `.har`) open as a **tree** of their members. A small file
+opens whole; a large one shows its first levels. A closed member shows what it holds in a line
+(`{ "day": 2, "town": "Chamonix", … }`) and how many keys or items.
+
+![A JSON file as a tree, a member selected](../images/json-viewer.png)
+
+- **Open and close** a member with the arrow at its left, or with the keys: ↑ ↓ move, → opens (then goes in), ←
+  closes (then goes up), Space opens or closes, `*` opens all under the member selected. **Open all** and **Close
+  all** are in the bar.
+- Large lists show their first 200 items; **Show 200 more** at the end shows the next ones.
+- The bar at the bottom tells the **path** of the member selected, as code writes it (`$.days[1].route`); **Copy path**
+  and **Copy value** copy it, or its value exactly as written in the file.
+- **Filter** (Ctrl+F) shows only the members whose key or value holds what you type, with the members they are in.
+  Esc clears it.
+- Keys stay **in the order written** and numbers **as written**: a long id (`12345678901234567890`) is not rounded as a
+  browser would.
+- Comments and trailing commas (`appsettings.json`, `tsconfig.json`) are allowed: the bar says **JSON with comments**.
+  A file that isn't valid JSON says where (line and column) above the tree; **Show in the source** goes there.
+- **Tree** / **Source** / **Split**, as for Markdown: its text, or both side by side. Enter or a double click on a
+  member selects it in the source.
+- **Edit** changes the source beside the tree, which follows as you type. **Format** lays the source out again,
+  indented as it is (two spaces when it isn't), comments kept; Ctrl+Z undoes it.
+
+![A JSON file beside its source, filtered](../images/json-split.png)
+
+JSON Lines (`.jsonl`, `.ndjson`), which are mostly logs, open as text, where they can be read in parts and followed.
+
 ## Reading settings
 
 **Aa** at the end of the text's bar opens the reading settings. They apply at once, and this browser keeps them: one

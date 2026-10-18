@@ -181,6 +181,24 @@ export class TextEditor {
         this.view.dispatch({ selection: { anchor: at }, effects: EditorView.scrollIntoView(at, { y: 'start' }) });
     }
 
+    /** Selects `from`–`to` (offsets in `text()`) and shows it in the middle. */
+    select(from: number, to = from): void {
+        const length = this.view.state.doc.length;
+        const anchor = Math.min(Math.max(0, from), length);
+        const head = Math.min(Math.max(anchor, to), length);
+        this.view.dispatch({ selection: { anchor, head }, effects: EditorView.scrollIntoView(anchor, { y: 'center' }) });
+    }
+
+    /** Changes the text as typing would (undone at once, and dirty): `{ offset, length, content }` of the text now. */
+    edit(changes: readonly { offset: number; length: number; content: string }[]): void {
+        if (!changes.length)
+            return;
+        this.view.dispatch({
+            changes: changes.map(change => ({ from: change.offset, to: change.offset + change.length, insert: change.content })),
+            userEvent: 'input',
+        });
+    }
+
     /** Loads the language of `name` and highlights with it; resolves its name, or null for plain text. */
     async setLanguage(name: string): Promise<string | null> {
         const description = languageFor(name);

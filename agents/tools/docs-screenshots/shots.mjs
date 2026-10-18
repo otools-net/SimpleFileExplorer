@@ -211,6 +211,19 @@ const scenes = {
         await sleep(1500);
         await guide.shot(OUT + 'markdown-split.png');
         await guide.close();
+        // JSON: the tree with a member selected, then side by side with its source, filtered.
+        const plan = await session();
+        await plan.open('?path=Documents');
+        await plan.click('a.item-link[title^="Trip plan.json"]');
+        await sleep(2500);
+        await plan.click('.json-row[data-path="/days/1/route"]');
+        await sleep(400);
+        await plan.shot(OUT + 'json-viewer.png');
+        await plan.clickText('.markdown-mode', 'Split');
+        await plan.eval(`(() => { const box = document.querySelector('.json-filter'); box.value = 'chamonix'; box.dispatchEvent(new Event('input')); return 1; })()`);
+        await sleep(1500);
+        await plan.shot(OUT + 'json-split.png');
+        await plan.close();
         // A page of its own (a text file opened in a new tab).
         const page = await session();
         await page.open('view?path=Documents%2FRename%20photos.ps1');

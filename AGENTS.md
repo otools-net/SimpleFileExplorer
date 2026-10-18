@@ -138,6 +138,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [text-editor](agents/docs/features/text-editor.md) | editing and saving text files: rights (Replace rule), versions (412), previous version in the trash, encodings, unsaved-changes guards | `text-session.ts`, `FileContent.OverwriteAsync`, `TextEndpoints` |
 | [reading-preferences](agents/docs/features/reading-preferences.md) | reading settings of text (profiles, "Aa" panel, bundled fonts, reader themes), the `view?path=` page | `app/formats/reading/`, `view-page.component.ts`, `reader.css` |
 | [markdown-viewer](agents/docs/features/markdown-viewer.md) | Markdown rendered safely (markdown-it + DOMPurify), links and images rewritten, outline, source / split | `app/formats/markdown/` |
+| [json-viewer](agents/docs/features/json-viewer.md) | JSON as a tree (jsonc-parser: order and numbers as written, comments), filter, paths, source / split, Format | `app/formats/json/` |
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
 | [trash](agents/docs/features/trash.md) | delete, trash, restore, purge task, links as links | `Trash`, `FileTree`, `app/files/delete.dialog.ts` |
 | [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, conflicts, clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |

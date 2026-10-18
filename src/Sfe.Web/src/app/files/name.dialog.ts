@@ -151,7 +151,7 @@ export class NameDialog {
             this.store.applyAdded(result);
             const format = mode.kind === 'file' ? formatOf(result) : null;
             // Text (a format of its own, not a picture or video, which an empty file can't be).
-            if (format && 'load' in format.view && this.store.can(Rights.viewFiles, result))
+            if (format?.edits && this.store.can(Rights.viewFiles, result))
                 this.dialogs.viewer()?.open(result, { edit: true });
         }
     }

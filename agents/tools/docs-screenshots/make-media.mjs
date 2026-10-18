@@ -184,6 +184,20 @@ fs.writeFileSync(path.join(root, 'Documents/Photo backup.log'), [
     '2025-07-14 21:07:58.130 INFO  Backup finished in 7 min 56 s, 1 photo left for next time',
     '',
 ].join('\n'));
+// JSON for the tree view.
+fs.writeFileSync(path.join(root, 'Documents/Trip plan.json'), JSON.stringify({
+    trip: 'Alps, summer 2025',
+    start: '2025-07-12',
+    travellers: ['Ana', 'Leo', 'Marta'],
+    budget: { currency: 'EUR', total: 1850, spent: 1243.5 },
+    days: [
+        { day: 1, town: 'Annecy', route: 'Lake shore walk', km: 12, hut: null, done: true },
+        { day: 2, town: 'Chamonix', route: 'Lac Blanc', km: 18, hut: 'Refuge du Lac Blanc', done: true },
+        { day: 3, town: 'Chamonix', route: 'Mer de Glace', km: 14, hut: null, done: false },
+        { day: 4, town: 'Zermatt', route: 'Five lakes walk', km: 10, hut: null, done: false },
+    ],
+    checklist: { boots: true, headlamp: true, map: false },
+}, null, 2) + '\n');
 fs.writeFileSync(path.join(root, 'Documents/Hiking guide.md'), [
     '# Hiking guide',
     '',

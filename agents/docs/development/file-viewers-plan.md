@@ -123,7 +123,8 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 
 ### Adding a format
 
-1. A `FileFormat` entry in `formats.ts` (match, priority, profile, `load: () => import(...)`).
+1. A `FileFormat` entry in `formats.ts` (match, priority, profile, `load: () => import(...)`, `edits` when its view
+   edits). Look for a maintained npm package for the hard part first (parser, renderer), bundled and lazy.
 2. `formats/<id>/<id>-view.component.ts`: inputs `item` and `format`, `data-owns-keys` on its root, inject
    `FILE_VIEW_HOST`; a guard when it edits.
 3. Read through `api/files/raw` or a format route; to write, a thin route checking the bytes and calling
@@ -266,7 +267,10 @@ Tests
 
 ### Later formats (each follows [Adding a format](#adding-a-format); one session each)
 
-- [ ] JSON tree view.
+- [x] (1.70.0) JSON tree view: `jsonc-parser` (order and numbers as written, comments, problems with positions),
+      the tree by rows of open containers (200 at a time), filter, path and value copied, Tree / Source / Split,
+      Format while editing; `FileFormat.edits` for the formats that edit
+      ([json-viewer](../features/json-viewer.md)).
 - [ ] CSV / TSV table.
 - [ ] Subtitles (`.srt`, `.vtt`).
 - [ ] PDF (pdf.js, bundled).
@@ -318,6 +322,9 @@ Tests
 - (1.69.0) A part starting right after a line break keeps its first line: the byte (UTF-16: unit) before it is read.
 - (1.69.0) The change feed tells only changes made through SFE: changes by other programs need the periodic version
   check, made cheap by trusting an unchanged size and time.
+- (1.70.0) Look for a package first (the user asked): `jsonc-parser` gave parsing, positions and formatting; the ready-made
+  JSON viewers were too heavy or built on `JSON.parse`. The JSON view added ~2.5 kB of global CSS and the registry
+  entry to the initial bundle (750 kB); its chunk is 36 kB (11 kB over the wire).
 - (1.64.0) npm 11 skips install scripts it hasn't been told to run (esbuild, lmdb, msgpackr-extract warn): the build
   works without them.
 

@@ -411,6 +411,83 @@
     .markdown-view[data-mode="split"] .markdown-source { border-top: 1px solid var(--reader-border); border-left: 0; }
 }
 
+/* ---------- JSON (formats/json/): a tree of its members, source or both ---------- */
+
+.json-filter {
+    width: 200px;
+    min-width: 0;
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid var(--reader-border);
+    border-radius: 6px;
+    background: var(--reader-bg);
+    color: var(--reader-text);
+    font: inherit;
+    font-size: 13px;
+}
+.json-panes { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; }
+.json-panes[hidden] { display: none; }
+.json-view[data-mode="split"] .json-panes { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.json-view[data-mode="split"] .json-source { border-left: 1px solid var(--reader-border); }
+.json-pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.json-pane[hidden] { display: none; }
+.json-problem, .json-filter-count { margin: 0; padding: 6px 12px; border-bottom: 1px solid var(--reader-border); font-size: 13px; }
+.json-problem { background: var(--mark-bg); color: var(--reader-text); }
+.json-filter-count { color: var(--reader-muted); }
+.json-tree {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: calc(var(--reader-padding) / 2) 0;
+    color: var(--reader-text);
+    font-family: var(--reader-font);
+    font-size: var(--reader-size);
+    line-height: var(--reader-line-height);
+    outline: none;
+}
+.json-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+    padding: 0 12px 0 calc(8px + var(--depth, 0) * 1.4em);
+    white-space: nowrap;
+    cursor: default;
+}
+.json-row:hover { background: var(--reader-active-line); }
+.json-row.selected { background: var(--reader-selection-match); }
+.json-tree:focus-visible .json-row.selected { outline: 2px solid var(--accent); outline-offset: -2px; }
+.json-toggle {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 1.2em;
+    height: 1.2em;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--reader-muted);
+    cursor: pointer;
+    align-self: center;
+}
+.json-toggle svg { width: .9em; height: .9em; transition: transform .1s; }
+.json-toggle.open svg { transform: rotate(90deg); }
+.json-key { flex: none; }
+.json-index { color: var(--reader-muted); }
+.json-colon { margin-left: -6px; color: var(--reader-muted); }
+.json-value, .json-preview { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.json-preview { color: var(--reader-muted); }
+.json-size { flex: none; color: var(--reader-muted); font-family: var(--font); font-size: .8em; }
+.json-more .link-button { font-size: .9em; }
+.json-selection { display: flex; align-items: center; gap: 12px; min-width: 0; margin-left: auto; }
+.json-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--reader-font); }
+
+@media (max-width: 900px) {
+    .json-view[data-mode="split"] .json-panes { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); }
+    .json-view[data-mode="split"] .json-source { border-top: 1px solid var(--reader-border); border-left: 0; }
+    .json-filter { width: 130px; }
+}
+
 /* Highlighting (classHighlighter of @lezer/highlight): one set of colours for every language. */
 .tok-keyword, .tok-bool, .tok-modifier, .tok-controlKeyword, .tok-definitionKeyword, .tok-moduleKeyword { color: var(--tok-keyword); }
 .tok-string, .tok-string2, .tok-character, .tok-inserted { color: var(--tok-string); }
