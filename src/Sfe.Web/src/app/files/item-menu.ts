@@ -3,6 +3,7 @@ import { ConfigService } from '../core/config.service';
 import { CopyPathService } from '../core/copy-path.service';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
+import { formatOf } from '../formats/formats';
 import { IconComponent } from '../shared/icon.component';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
@@ -14,7 +15,7 @@ import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu. */
 export interface MenuEntry {
-    id: 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'properties';
+    id: 'openAsText' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'properties';
     label: string;
     icon: string;
     /** Its key, shown at the end of the line. */
@@ -48,7 +49,7 @@ export class ItemMenu {
      * only has its tags and ⋮ buttons: quick links and copying the path are here too.
      */
     hasActions(item: LibraryItem): boolean {
-        return this.canSeeProperties() || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
+        return this.canSeeProperties() || this.canOpenAsText(item) || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
     }
 
     /** Properties of what is listed: whoever browses. */
@@ -70,8 +71,15 @@ export class ItemMenu {
         return this.files.canRename(item);
     }
 
+    /** A file without a viewer of its own may be opened as text (the server refuses what isn't). */
+    canOpenAsText(item: LibraryItem): boolean {
+        return item.kind === 'file' && !formatOf(item) && this.store.can(Rights.viewFiles, item) && Boolean(this.dialogs.viewer());
+    }
+
     entries(item: LibraryItem): MenuEntry[] {
         const entries: MenuEntry[] = [];
+        if (this.canOpenAsText(item))
+            entries.push({ id: 'openAsText', label: 'Open as text', icon: 'file', title: 'Show its content as text, in the viewer', run: () => this.dialogs.viewer()?.open(item, { asText: true }) });
         if (this.canRename(item)) {
             const several = this.targets(item).filter(target => this.canRename(target)).length > 1 && !this.store.searching();
             entries.push({

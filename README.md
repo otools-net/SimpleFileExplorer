@@ -9,8 +9,8 @@ one machine or a private network, with accounts, groups and several libraries ("
 ## Features
 
 - **Browse** folders in grid, list or large-preview layouts, with folder pictures, resolutions and durations.
-- **View** photos, videos and audio full screen; a video player with trickplay previews; open files in VLC and other
-  players.
+- **View** photos, videos, audio and text files full screen (text and code highlighted, with find); a video player
+  with trickplay previews; open files in VLC and other players.
 - **Search** the index with a small query language (size, type, resolution, duration, tags, paths), explained as you
   type.
 - **Tag** files, selections, whole folders or every search result; tags with parents, aliases and colors.

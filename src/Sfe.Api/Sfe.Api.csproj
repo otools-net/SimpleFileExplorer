@@ -60,7 +60,9 @@
     <SfeWebSource Include="$(SfeWebRoot)src\**\*;$(SfeWebRoot)public\**\*;$(SfeWebRoot)*.json" />
   </ItemGroup>
 
-  <Target Name="SfeWebInstall" Condition="'$(SfeSkipWebClient)' != 'true' And !Exists('$(SfeWebRoot)node_modules\.package-lock.json')">
+  <!-- Also when package-lock.json changed since the last install (a pull adding packages): npm ci rewrites the copy. -->
+  <Target Name="SfeWebInstall" Condition="'$(SfeSkipWebClient)' != 'true'"
+          Inputs="$(SfeWebRoot)package-lock.json" Outputs="$(SfeWebRoot)node_modules\.package-lock.json">
     <Exec Command="npm ci --no-audit --no-fund" WorkingDirectory="$(SfeWebRoot)" />
   </Target>
 

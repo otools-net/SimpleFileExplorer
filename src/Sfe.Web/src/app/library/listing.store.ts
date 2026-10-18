@@ -2,7 +2,7 @@ import { afterNextRender, computed, inject, Injectable, Injector, signal } from 
 import { Router } from '@angular/router';
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { MEDIA_KINDS } from '../core/format';
+import { isViewable } from '../formats/formats';
 import { FileTags, FolderSiblings, LibraryItem, ListingPage, TagDetails, TagScope, TagSummary } from '../core/models';
 import { baseName, parentPath } from '../core/paths';
 import { readPreference, writePreference } from '../core/preferences';
@@ -53,8 +53,8 @@ export class ListingStore {
     /** The file `reveal` just showed, highlighted for a moment. */
     readonly revealed = signal<string | null>(null);
 
-    /** The media among the loaded items, in order: what the viewer steps through. */
-    readonly media = computed(() => this.items().filter(item => MEDIA_KINDS.has(item.kind)));
+    /** The loaded files that have a viewer (media, text...), in order: what the viewer steps through. */
+    readonly viewable = computed(() => this.items().filter(isViewable));
     readonly folders = computed(() => this.items().filter(item => item.kind === 'directory'));
     /** The loaded files (not folders), in listing order. */
     readonly files = computed(() => this.items().filter(item => item.kind !== 'directory'));
@@ -168,7 +168,7 @@ export class ListingStore {
     }
 
     /**
-     * Lists the folder of the file `path` and shows the file there (a quick link): media opens in the viewer, other
+     * Lists the folder of the file `path` and shows the file there (a quick link): what has a viewer opens there, other
      * files are scrolled to and highlighted. Pages of a big folder are loaded until the file is found (`REVEAL_LIMIT`).
      */
     reveal(path: string): void {
@@ -196,7 +196,7 @@ export class ListingStore {
             return;
         }
         this.highlight(path, () => {
-            if (MEDIA_KINDS.has(item.kind))
+            if (isViewable(item))
                 this.dialogs.viewer()?.open(item);
         });
     }

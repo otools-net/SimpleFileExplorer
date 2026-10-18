@@ -12,6 +12,7 @@
 @import "./styles/states.css";
 @import "./styles/viewer.css";
 @import "./styles/video-player.css";
+@import "./styles/reader.css";
 @import "./styles/editor.css";
 @import "./styles/tags.css";
 @import "./styles/copy-full-paths.css";

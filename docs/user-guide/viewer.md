@@ -1,7 +1,8 @@
 # Viewer
 
 Clicking a file in a listing opens it full screen over the page: pictures as they are, videos and audio in SFE's own
-[player](video-player.md).
+[player](video-player.md), and [text files](text-files.md) with their lines numbered and their code highlighted. Other
+files (a PDF, an archive) open in a new tab or download, as the browser chooses.
 
 ![A picture in the viewer](../images/viewer.png)
 
@@ -12,7 +13,7 @@ tags. Hidden tags such as **Archived** are shown here too.
 
 | Button | Key | |
 |---|---|---|
-| ‹ / › at the sides | ← / →, mouse wheel down / up, a swipe | Previous / next file of the listing (the wheel works anywhere but over the video controls) |
+| ‹ / › at the sides | ← / →, mouse wheel down / up, a swipe | Previous / next file of the listing that the viewer shows, skipping the others (the wheel works anywhere but over the video controls and in a text) |
 | Pin | | Adds the file to your [quick links](browsing.md#quick-links), or removes it (filled pin) |
 | Actual size / Fit to the screen (magnifier) | Z | Pictures larger than the screen: [100%](#actual-size) or whole again |
 | Tags | T | The file's [tags](tags.md) |

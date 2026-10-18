@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, ArchiveLink, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, ArchiveLink, TextFile, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -246,6 +246,8 @@ export class Api {
     folderTotals = (path: string, signal?: AbortSignal) => this.get<FolderTotals>('api/files/properties/totals', { path }, signal);
     countFolder = (path: string) => this.post<PropertyJob>('api/files/properties/count', { path });
     startChecksum = (path: string, algorithm: ChecksumAlgorithm) => this.post<PropertyJob>('api/files/properties/checksum', { path, algorithm });
+    /** A text file's content (413 `too-large`, 415 `not-text`). */
+    textFile = (path: string, signal?: AbortSignal) => this.get<TextFile>('api/files/text', { path }, signal);
     propertyJob = (id: string) => this.get<PropertyJob>(`api/files/properties/jobs/${id}`);
     cancelPropertyJob = (id: string) => this.delete<void>(`api/files/properties/jobs/${id}`);
 

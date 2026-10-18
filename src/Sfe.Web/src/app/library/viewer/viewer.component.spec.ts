@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
+import { item, loadConfig, mockApi, settle, tag, testProviders } from '../../../testing/fakes';
 import { ListingStore } from '../listing.store';
 import { ViewerComponent } from './viewer.component';
 
@@ -166,5 +166,114 @@ describe('ViewerComponent › Actual size', () => {
         expect(element.querySelector('.viewer-title strong')!.textContent).toBe('other.jpg');
         expect(picture().classList).not.toContain('actual-size');
         expect(picture().classList).not.toContain('zoomable');
+    });
+});
+
+describe('ViewerComponent › Documents', () => {
+    let fixture: ComponentFixture<ViewerComponent>;
+    let element: HTMLElement;
+    let store: ListingStore;
+
+    const photo = item('Media/photo.jpg', { kind: 'image' });
+    const notes = item('Media/notes.txt', { kind: 'file' });
+    const archive = item('Media/backup.zip', { kind: 'file' });
+    const clip = item('Media/clip.mp4', { kind: 'video' });
+    const dialog = () => element.querySelector('dialog')!;
+    const title = () => element.querySelector('.viewer-title strong')!.textContent;
+    const meta = () => element.querySelector('.viewer-title span')!.textContent ?? '';
+    const content = () => element.querySelector('.cm-content');
+
+    async function key(name: string, target: Element = dialog()): Promise<KeyboardEvent> {
+        const event = new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true });
+        target.dispatchEvent(event);
+        await settle();
+        return event;
+    }
+
+    async function open(shown: typeof photo, options?: { asText?: boolean }): Promise<void> {
+        fixture.componentInstance.open(shown, options);
+        await settle();
+        await vi.waitFor(() => expect(shown.kind === 'file' ? content() : true).toBeTruthy());
+    }
+
+    beforeEach(async () => {
+        const api = mockApi();
+        api.textFile.mockImplementation(async (path: string) => ({ text: `Text of ${path}\nline 2`, encoding: 'utf-8', lineEnding: 'lf', version: 'v', size: 20, modified: '2026-10-18T10:00:00Z' }));
+        TestBed.configureTestingModule({ providers: testProviders(api) });
+        await loadConfig(api);
+        store = TestBed.inject(ListingStore);
+        store.items.set([photo, notes, archive, clip]);
+        fixture = TestBed.createComponent(ViewerComponent);
+        element = fixture.nativeElement;
+        await fixture.whenStable();
+    });
+
+    afterEach(() => TestBed.resetTestingModule());
+
+    it('steps from a picture to a text file and on, past files without a viewer', async () => {
+        await open(photo);
+        expect(meta()).toContain('1 / 3');
+
+        await key('ArrowRight');
+        await vi.waitFor(() => expect(content()?.textContent).toContain('Text of Media/notes.txt'));
+        expect(title()).toBe('notes.txt');
+        expect(meta()).toContain('2 / 3');
+        expect(element.querySelector('.viewer-stage')!.classList).toContain('document');
+
+        await key('ArrowRight');
+        expect(title()).toBe('clip.mp4');
+        await key('ArrowLeft');
+        await key('ArrowLeft');
+        expect(title()).toBe('photo.jpg');
+    });
+
+    it('leaves the keys, the wheel and swipes in the text to the text', async () => {
+        await open(notes);
+
+        await key('ArrowRight', content()!);    // the text's cursor moves (CodeMirror takes it)
+        const wheel = new WheelEvent('wheel', { deltaY: 200, bubbles: true, cancelable: true });
+        content()!.dispatchEvent(wheel);
+        await settle();
+
+        expect(wheel.defaultPrevented).toBe(false);
+        expect(title()).toBe('notes.txt');
+    });
+
+    it('takes Esc in the text as leaving it, and the next Esc closes', async () => {
+        await open(notes);
+
+        const first = await key('Escape', content()!);
+
+        expect(first.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(dialog());
+        expect(dialog().open).toBe(true);
+        expect((await key('Escape')).defaultPrevented).toBe(false);
+    });
+
+    it('keeps the file shown when the listing is refreshed in place', async () => {
+        await open(notes);
+        const tagged = { ...notes, tags: [tag('todo')] };
+
+        store.items.set([item('Media/new.txt', { kind: 'file' }), photo, tagged, clip]);
+        await settle();
+
+        expect(title()).toBe('notes.txt');
+        expect(meta()).toContain('3 / 4');
+        expect(element.querySelector('.viewer-tags')!.textContent).toContain('todo');
+        expect(content()!.textContent).toContain('Text of Media/notes.txt');
+    });
+
+    it('opens any file as text when asked, and nothing otherwise', async () => {
+        fixture.componentInstance.open(archive);
+        await settle();
+        expect(dialog().open).toBe(false);
+
+        await open(archive, { asText: true });
+
+        expect(title()).toBe('backup.zip');
+        expect(content()!.textContent).toContain('Text of Media/backup.zip');
+        expect(meta()).not.toContain(' / ');
+        await key('ArrowRight');
+        expect(title()).toBe('clip.mp4');
     });
 });

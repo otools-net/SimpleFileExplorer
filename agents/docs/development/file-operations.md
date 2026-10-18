@@ -1,14 +1,14 @@
-# File operations: rules for changing the library's files (planned)
+# File operations: rules for changing the library's files
 
-Status: **requirements for the file-management feature** (create, rename, move, copy, delete), to build after folder
-access ([folder-access.md](../features/folder-access.md)). Today only `files.edit` (a new file) and
-`tracking.duplicatesRemove` (deletes a copy) write to the library. Rights: [right-kinds.md](../features/right-kinds.md).
-The plan and progress of the epic: [file-management-plan.md](file-management-plan.md).
+The rules every change to the library's files keeps: new folders and files, rename, move, copy, delete, uploads
+(built, [file-management-plan.md](file-management-plan.md)), the picture editor's saves, duplicate removal, and the
+editors of [file-viewers-plan.md](file-viewers-plan.md) (overwriting a file in place: phase 4). Folder access:
+[folder-access.md](../features/folder-access.md); rights: [right-kinds.md](../features/right-kinds.md).
 
 ## Rights and checks
 
-- Rights (`files.createFolders`, `files.rename` built in 1.55.0; `files.move`, `files.delete`, … to come), each added
-  in the phase that uses it: `Kind = Write`, `AtFolder = Write`,
+- Rights (`files.createFolders`, `files.rename`, `files.move`, `files.delete`, `files.createFiles`… one per operation),
+  each added in the phase that used it: `Kind = Write`, `AtFolder = Write`,
   `GuestAllowed = false`, `DefaultGroups = []`, `since` (nobody gets them by upgrade). `folder:write` in
   `Sfe:Rights:Disabled` or the space's **Files read-only** switches them off with the others.
 - Move: Write at the source and at the destination parent. Copy: Read at the source, Write at the destination.

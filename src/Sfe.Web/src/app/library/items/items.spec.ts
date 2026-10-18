@@ -155,7 +155,7 @@ describe('SelectionBarComponent', () => {
 
 describe('ItemActions', () => {
     const photo = item('photo.jpg', { tags: [summary(tag('Sun'))] });
-    const doc = item('notes.txt');
+    const doc = item('report.pdf');
     let viewer: { open: ReturnType<typeof vi.fn> };
     const click = (init: MouseEventInit = {}) => new MouseEvent('click', { button: 0, cancelable: true, ...init });
 
@@ -175,6 +175,16 @@ describe('ItemActions', () => {
         expect(event.defaultPrevented).toBe(true);
         expect(viewer.open).toHaveBeenCalledWith(photo);
         expect(api.fileViewed).not.toHaveBeenCalled();
+    });
+
+    it('opens text files in the viewer too', () => {
+        const event = click();
+        const notes = item('notes.txt');
+
+        TestBed.inject(ItemActions).openFile(event, notes);
+
+        expect(event.defaultPrevented).toBe(true);
+        expect(viewer.open).toHaveBeenCalledWith(notes);
     });
 
     it('lets the browser open other files, and modified clicks, recording the view', () => {

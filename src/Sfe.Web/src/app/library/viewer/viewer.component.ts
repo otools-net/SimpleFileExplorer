@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, untracked, viewChild } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, Injector, signal, Type, untracked, viewChild } from '@angular/core';
 import { ConfigService } from '../../core/config.service';
 import { CopyPathService } from '../../core/copy-path.service';
 import { ToastService } from '../../core/toast.service';
 import { formatDate, formatSize, joinParts } from '../../core/format';
 import { LibraryItem, TagSummary } from '../../core/models';
+import { FILE_VIEW_HOST, FileViewHost, formatOf } from '../../formats/formats';
 import { IconComponent } from '../../shared/icon.component';
 import { TagChipComponent } from '../../tags/tag-chip.component';
 import { tagQuery } from '../../tags/tags';
@@ -13,7 +15,7 @@ import { Dialogs, registerDialog } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { PinButtonComponent } from '../quick-links/pin-button.component';
 
-// Mouse wheel: down = next, up = previous. A touchpad sends a long burst of small deltas (with inertia), so they add
+// Mouse wheel (not over a view that scrolls itself, such as text): down = next, up = previous. A touchpad sends a long burst of small deltas (with inertia), so they add
 // up to a step and the rest of the gesture is ignored until it pauses, otherwise one flick would skip several files.
 // Wheel notches are large: they only wait a short fixed time, so each one still moves.
 const WHEEL_STEP = 50;
@@ -26,19 +28,23 @@ function clampAxis(position: number, room: number, size: number): number {
     return size <= room ? (room - size) / 2 : Math.min(0, Math.max(room - size, position));
 }
 
+/** Where keys, the wheel and swipes belong to what is shown (a text view's own scrolling, cursor and shortcuts). */
+const OWNS_KEYS = '[data-owns-keys]';
+
 /**
- * Full-screen preview for the images, videos and audio of the listing, with keyboard, swipe and wheel navigation;
+ * Full-screen preview for the files of the listing that have a viewer (images, videos, audio, and the formats of
+ * `formats/formats.ts`, whose components it shows), with keyboard, swipe and wheel navigation;
  * reaching the end loads the next page. Large images show their thumbnail while the original downloads. A video can
  * move to a window of its own (W), where it goes on from the same position. A picture shown smaller than it is can
  * be seen at its actual size (click it, or Z) and dragged around, as browsers do with a big picture on its own.
  */
 @Component({
     selector: 'sfe-viewer',
-    imports: [IconComponent, TagChipComponent, VideoPlayerComponent, PinButtonComponent],
+    imports: [NgComponentOutlet, IconComponent, TagChipComponent, VideoPlayerComponent, PinButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { '(window:resize)': 'onResize()' },
     template: `
-        <dialog #dialog class="viewer" aria-label="Preview" [class.has-video]="item()?.kind === 'video'" (close)="onClose()" (keydown)="onKeydown($event)">
+        <dialog #dialog class="viewer" aria-label="Preview" tabindex="-1" [class.has-video]="item()?.kind === 'video'" (close)="onClose()" (keydown)="onKeydown($event)">
             <header class="viewer-bar">
                 <div class="viewer-title">
                     <strong>{{ item()?.name }}</strong>
@@ -80,7 +86,7 @@ function clampAxis(position: number, room: number, size: number): number {
                     <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
                 </div>
             </header>
-            <div #stage class="viewer-stage" [class.zoomed]="zoomed()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
+            <div #stage class="viewer-stage" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
                 @for (shown of shownItem(); track shown.path) {
                     @if (unsupported()) {
                         <div class="viewer-message">
@@ -88,7 +94,7 @@ function clampAxis(position: number, room: number, size: number): number {
                             <p>{{ urls()?.externalName ? 'Use “Open in ' + urls()?.externalName + '” or download it.' : 'Download it to play it in another app.' }}</p>
                         </div>
                     } @else {
-                        @switch (shown.kind) {
+                        @switch (builtin()) {
                             @case ('image') {
                                 @if (progressive() && !originalReady()) {
                                     <img class="preview" [src]="urls()!.thumbnail(shown.path)" [alt]="shown.name" [style.visibility]="thumbnailFailed() ? 'hidden' : null" (error)="thumbnailFailed.set(true)">
@@ -106,14 +112,21 @@ function clampAxis(position: number, room: number, size: number): number {
                                                   [seekStep]="config.config()?.seekSeconds ?? 10" [loop]="config.config()?.loop ?? false" [stream]="videoStream()" [cinemaButton]="true"
                                                   (unsupported)="unsupported.set(true); converted.set($event)" />
                             }
-                            @default {
+                            @case ('audio') {
                                 <audio [src]="urls()!.file(shown.path)" controls autoplay preload="metadata" (error)="unsupported.set(true)"></audio>
+                            }
+                            @default {
+                                @if (viewComponent(); as component) {
+                                    <ng-container *ngComponentOutlet="component; inputs: { item: shown, format: format() }; injector: viewInjector" />
+                                } @else if (viewFailed()) {
+                                    <div class="viewer-message"><p>This viewer could not be loaded: reload the page to try again.</p></div>
+                                }
                             }
                         }
                     }
                 }
             </div>
-            <button type="button" class="viewer-nav prev" aria-label="Previous (←)" title="Previous (← or wheel up)" [disabled]="index() <= 0" (click)="go(-1)"><svg sfeIcon="left"></svg></button>
+            <button type="button" class="viewer-nav prev" aria-label="Previous (←)" title="Previous (← or wheel up)" [disabled]="!neighbours().previous" (click)="go(-1)"><svg sfeIcon="left"></svg></button>
             <button type="button" class="viewer-nav next" aria-label="Next (→)" title="Next (→ or wheel down)" [disabled]="nextDisabled()" (click)="go(1)"><svg sfeIcon="right"></svg></button>
         </dialog>
     `,
@@ -131,8 +144,47 @@ export class ViewerComponent {
     private readonly player = viewChild(VideoPlayerComponent);
     private readonly picture = viewChild<ElementRef<HTMLImageElement>>('picture');
 
-    protected readonly index = signal(-1);
-    protected readonly item = computed((): LibraryItem | null => this.store.media()[this.index()] ?? null);
+    private readonly injector = inject(Injector);
+
+    /**
+     * The file shown, by path: a refresh of the listing in place keeps it (with its new tags...), even when the files
+     * around it change. `asText`: opened with "Open as text".
+     */
+    private readonly opened = signal<{ item: LibraryItem; asText: boolean } | null>(null);
+    protected readonly item = computed((): LibraryItem | null => {
+        const opened = this.opened();
+        return opened ? this.store.items().find(item => item.path === opened.item.path) ?? opened.item : null;
+    });
+    /** Its place among the files the viewer steps through; -1 when it isn't one of them (opened as text). */
+    protected readonly index = computed(() => {
+        const path = this.item()?.path;
+        return path === undefined ? -1 : this.store.viewable().findIndex(item => item.path === path);
+    });
+    /** The viewable files loaded before and after the one shown, in listing order. */
+    protected readonly neighbours = computed(() => {
+        const items = this.store.items();
+        const path = this.item()?.path;
+        const at = items.findIndex(item => item.path === path);
+        const find = (step: number): LibraryItem | null => {
+            for (let i = at + step; at >= 0 && i >= 0 && i < items.length; i += step) {
+                if (formatOf(items[i]))
+                    return items[i];
+            }
+            return null;
+        };
+        return { previous: find(-1), next: find(1) };
+    });
+    protected readonly format = computed(() => formatOf(this.item(), { asText: this.opened()?.asText }));
+    /** The viewer's own markup for media; null for a format with a component. */
+    protected readonly builtin = computed(() => {
+        const view = this.format()?.view;
+        return view && 'builtin' in view ? view.builtin : null;
+    });
+    /** The component of the format shown, once loaded. */
+    protected readonly viewComponent = signal<Type<unknown> | null>(null);
+    protected readonly viewFailed = signal(false);
+    private readonly host: FileViewHost = { place: 'viewer', can: right => this.can(right) };
+    protected readonly viewInjector = Injector.create({ providers: [{ provide: FILE_VIEW_HOST, useValue: this.host }], parent: this.injector });
     /** The item on the stage, as a list of one (or none) so that each item gets elements of its own. */
     protected readonly shownItem = computed(() => {
         const item = this.item();
@@ -147,19 +199,19 @@ export class ViewerComponent {
         return item?.kind === 'video' ? this.config.videoStream(item.path) : null;
     });
     private readonly loadingMore = signal(false);
-    protected readonly nextDisabled = computed(() =>
-        this.loadingMore() || (this.index() >= this.store.media().length - 1 && !this.store.hasMore()));
+    protected readonly nextDisabled = computed(() => this.loadingMore() || (!this.neighbours().next && !this.store.hasMore()));
     protected readonly meta = computed(() => {
         const item = this.item();
         if (!item)
             return '';
-        const position = `${this.index() + 1} / ${this.store.media().length}${this.store.hasMore() ? '+' : ''}`;
+        const index = this.index();
+        const position = index < 0 ? null : `${index + 1} / ${this.store.viewable().length}${this.store.hasMore() ? '+' : ''}`;
         return joinParts([position, this.config.resolution(item), this.config.duration(item), formatSize(item.size), formatDate(item.modified), item.directory], '  ·  ');
     });
     protected readonly fileUrl = computed(() => this.item() ? this.urls()!.file(this.item()!.path) : null);
     protected readonly downloadUrl = computed(() => this.item() ? this.urls()!.download(this.item()!.path) : null);
     /** The item can be opened in the external player (videos and audio, when the server has one for this session). */
-    protected readonly external = computed(() => Boolean(this.item() && this.item()!.kind !== 'image' && this.urls()?.externalName));
+    protected readonly external = computed(() => Boolean((this.item()?.kind === 'video' || this.item()?.kind === 'audio') && this.urls()?.externalName));
 
     /** The picture can be edited (the right, and a server with the editor). */
     protected readonly editable = computed(() => this.item()?.kind === 'image' && this.can('files.edit') && Boolean(this.config.config()?.editor));
@@ -192,6 +244,25 @@ export class ViewerComponent {
 
     constructor() {
         registerDialog(dialogs => dialogs.viewer, this);
+        // The component of a format, loaded the first time one of its files is shown.
+        effect(() => {
+            const format = this.format();
+            const view = format?.view;
+            untracked(() => {
+                this.viewFailed.set(false);
+                if (!view || !('load' in view)) {
+                    this.viewComponent.set(null);
+                    return;
+                }
+                void view.load().then(component => {
+                    if (this.format() === format)
+                        this.viewComponent.set(component);
+                }, () => {
+                    if (this.format() === format)
+                        this.viewFailed.set(true);
+                });
+            });
+        });
         // Scrub previews once the trickplay is there, if the player is still showing this video.
         effect(() => {
             const player = this.player();
@@ -207,28 +278,24 @@ export class ViewerComponent {
         });
     }
 
-    open(item: LibraryItem): void {
-        const position = this.store.media().findIndex(media => media.path === item.path);
-        if (position < 0)
+    /** Shows `item` (`asText`: any file, as text). Nothing happens for a file without a viewer. */
+    open(item: LibraryItem, options?: { asText?: boolean }): void {
+        if (!formatOf(item, options))
             return;
         const dialog = this.dialog().nativeElement;
         if (!dialog.open)
             dialog.showModal();
-        this.show(position);
+        this.show(item, options?.asText ?? false);
     }
 
     close(): void {
         this.dialog().nativeElement.close();
     }
 
-    private show(index: number): void {
-        const list = this.store.media();
-        if (index < 0 || index >= list.length)
-            return;
+    private show(item: LibraryItem, asText = false): void {
         this.stopPending();
         this.resetZoom();
-        this.index.set(index);
-        const item = list[index];
+        this.opened.set({ item, asText });
         this.unsupported.set(false);
         this.converted.set(false);
         this.thumbnailFailed.set(false);
@@ -263,22 +330,29 @@ export class ViewerComponent {
     }
 
     protected async go(step: number): Promise<void> {
-        const target = this.index() + step;
-        if (target >= this.store.media().length && this.store.hasMore()) {
+        const from = this.item()?.path;
+        let target = step < 0 ? this.neighbours().previous : this.neighbours().next;
+        // Past the last one loaded: the next pages, until one of them has a file with a viewer.
+        while (!target && step > 0 && this.store.hasMore()) {
             this.loadingMore.set(true);
+            let loaded: boolean;
             try {
-                await this.store.loadMore();
+                loaded = await this.store.loadMore();
             } finally {
                 this.loadingMore.set(false);
             }
+            if (!loaded || this.item()?.path !== from)
+                return;
+            target = this.neighbours().next;
         }
-        this.show(target);
+        if (target)
+            this.show(target);
     }
 
     protected onClose(): void {
         this.stopPending();
         this.resetZoom();
-        this.index.set(-1);
+        this.opened.set(null);
     }
 
     /* ---------- Actual size (zoom) and drag ---------- */
@@ -425,6 +499,14 @@ export class ViewerComponent {
 
     protected onKeydown(event: KeyboardEvent): void {
         const target = event.target as Element;
+        if (target.closest?.(OWNS_KEYS)) {
+            // The view's keys are its own (arrows move its cursor); Esc leaves it first (unless it used it), then closes.
+            if (event.key === 'Escape' && !event.defaultPrevented) {
+                event.preventDefault();
+                this.dialog().nativeElement.focus();
+            }
+            return;
+        }
         if (target instanceof HTMLMediaElement && event.key === ' ')
             return;
         // A focused button or link handles Space/Enter itself; the seek bar handles the arrows itself.
@@ -470,7 +552,7 @@ export class ViewerComponent {
 
     protected onTouchStart(event: TouchEvent): void {
         // Dragging the video seek bar is not a swipe, nor is moving a picture shown at its actual size.
-        const onControls = (event.target as Element).closest?.('.player-controls');
+        const onControls = (event.target as Element).closest?.(`.player-controls, ${OWNS_KEYS}`);
         this.touchStart = event.touches.length === 1 && !onControls && !this.zoomed() ? event.touches[0] : null;
     }
 
@@ -493,7 +575,7 @@ export class ViewerComponent {
 
     protected onWheel(event: WheelEvent): void {
         // Ctrl+wheel is the browser zoom; the player's controls (seek bar) keep the wheel to themselves.
-        if (event.ctrlKey || (event.target as Element).closest?.('.player-controls'))
+        if (event.ctrlKey || (event.target as Element).closest?.(`.player-controls, ${OWNS_KEYS}`))
             return;
         event.preventDefault();
         if (this.zoomed()) {

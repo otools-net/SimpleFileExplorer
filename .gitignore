@@ -34,6 +34,8 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+# ...but not the log feature's source folders (Core/Logs, Data/Entities/Logs, the client's app/logs).
+!src/**/[Ll]ogs/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

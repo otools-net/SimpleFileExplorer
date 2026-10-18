@@ -69,6 +69,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
 | [file-operations](agents/docs/development/file-operations.md) | rules for changing library files (planned), moving folder rules with folders | `FolderRuleService.BeginMoveAsync` |
 | [file-management-plan](agents/docs/development/file-management-plan.md) | **file management epic: phases, todo list, open questions** (update as it is built) | `Core/Files/` (planned) |
+| [file-viewers-plan](agents/docs/development/file-viewers-plan.md) | **viewing and editing files epic: formats registry, phases, todo lists** (update as it is built) | `app/formats/`, `Core/Files/FileContent` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
@@ -133,6 +134,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [copy-paths](agents/docs/features/copy-paths.md) | copying full server paths | `CopyPathService` |
 | [theme](agents/docs/features/theme.md) | light/dark before first paint | `theme-boot.ts`, `ThemeService` |
 | [picture-editor](agents/docs/features/picture-editor.md) | browser edits, server saves | `app/editor/`, `Core/Editing/` |
+| [text-viewer](agents/docs/features/text-viewer.md) | format registry, text files in the viewer (CodeMirror), Open as text, `api/files/text` | `app/formats/`, `TextCodec`, `TextEndpoints` |
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
 | [trash](agents/docs/features/trash.md) | delete, trash, restore, purge task, links as links | `Trash`, `FileTree`, `app/files/delete.dialog.ts` |
 | [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, conflicts, clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |

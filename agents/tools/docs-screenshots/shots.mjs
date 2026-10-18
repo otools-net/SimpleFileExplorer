@@ -154,6 +154,26 @@ const scenes = {
         await b.shot(OUT + 'image-editor-crop.png');
         await b.close();
     },
+    /** Text files in the viewer: a script highlighted, then a log with the find bar. */
+    async textViewer() {
+        const b = await session();
+        await b.open('?path=Documents');
+        await b.click('a.item-link[href*="Rename%20photos.ps1"]');
+        await sleep(2500);
+        await b.shot(OUT + 'text-viewer.png');
+        await b.close();
+        const log = await session();
+        await log.open('?path=Documents');
+        await log.click('a.item-link[href*="Photo%20backup.log"]');
+        await sleep(2500);
+        await log.click('.viewer .text-toolbar button[aria-label="Find"]');
+        await sleep(300);
+        await log.type('IMG_2231');     // the find bar's field has the focus
+        await log.key('Enter', 'Enter', 13);
+        await sleep(600);
+        await log.shot(OUT + 'text-viewer-find.png');
+        await log.close();
+    },
     async video() {
         const b = await session();
         await b.open('?path=Videos%2FHolidays');

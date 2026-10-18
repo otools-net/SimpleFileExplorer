@@ -88,3 +88,9 @@
 }
 .viewer-stage > img.actual-size.dragging { cursor: grabbing; }
 
+
+/* The dialog takes the focus back from a view (Esc in a text view): no ring around the whole screen. */
+.viewer:focus { outline: none; }
+
+/* A document (text...) fills the stage, between the arrows, rather than being centred at its own size. */
+.viewer-stage.document { place-items: stretch; padding-bottom: 12px; }

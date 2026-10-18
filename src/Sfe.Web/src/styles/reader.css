@@ -1,0 +1,123 @@
+/* ---------- Reader: text views of formats/ (CodeMirror's parts take these variables: formats/text/codemirror.ts) ---------- */
+
+.text-view {
+    --reader-bg: var(--surface);
+    --reader-text: var(--text);
+    --reader-muted: var(--text-muted);
+    --reader-border: var(--border);
+    --reader-gutter: var(--surface-2);
+    --reader-active-line: rgb(255 255 255 / .05);
+    --reader-selection: rgb(122 167 255 / .32);
+    --reader-selection-match: rgb(122 167 255 / .16);
+    --reader-font: var(--mono);
+    --reader-size: 14px;
+    --reader-line-height: 1.55;
+    --tok-keyword: #c792ea;
+    --tok-string: #c3e88d;
+    --tok-number: #f78c6c;
+    --tok-comment: #7f8796;
+    --tok-type: #ffcb6b;
+    --tok-property: #82aaff;
+    --tok-function: #82aaff;
+    --tok-operator: #89ddff;
+    --tok-meta: #a0a8b6;
+    --tok-invalid: #ff6b6b;
+    --tok-heading: #f5b544;
+    --tok-link: #5ec8e5;
+
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--reader-border);
+    border-radius: var(--radius-sm);
+    background: var(--reader-bg);
+    color: var(--reader-text);
+    font-family: var(--font);
+}
+
+:root[data-theme="light"] .text-view {
+    --reader-active-line: rgb(0 0 0 / .04);
+    --reader-selection: rgb(47 111 224 / .22);
+    --reader-selection-match: rgb(47 111 224 / .1);
+    --tok-keyword: #8b3fb8;
+    --tok-string: #2d7a1f;
+    --tok-number: #b5520c;
+    --tok-comment: #6b7380;
+    --tok-type: #8a6100;
+    --tok-property: #1f5fc4;
+    --tok-function: #1f5fc4;
+    --tok-operator: #0d7389;
+    --tok-meta: #5f6774;
+    --tok-invalid: #c62828;
+    --tok-heading: #a8650a;
+    --tok-link: #0e7fa0;
+}
+
+.text-toolbar {
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--reader-border);
+    background: var(--reader-gutter);
+}
+
+/* Inside the (always dark) viewer the bar's buttons are the viewer's; here they follow the reader's colours. */
+.viewer .text-toolbar .icon-button { width: 32px; height: 32px; background: transparent; color: var(--reader-text); }
+.viewer .text-toolbar .icon-button:hover { background: var(--reader-active-line); }
+.viewer .text-toolbar .icon-button.active { background: var(--reader-selection-match); color: var(--accent); }
+
+.text-editor { min-height: 0; }
+.text-editor[hidden] { display: none; }
+.text-editor .cm-editor { height: 100%; }
+.text-editor .cm-editor.cm-focused { outline: none; }
+
+.text-message {
+    align-self: center;
+    justify-self: center;
+    max-width: 520px;
+    padding: 24px;
+    color: var(--reader-muted);
+    text-align: center;
+}
+
+.text-message .button { color: var(--reader-text); }
+
+.text-status {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 4px 12px;
+    border-top: 1px solid var(--reader-border);
+    background: var(--reader-gutter);
+    color: var(--reader-muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.text-status span:first-child { overflow: hidden; text-overflow: ellipsis; }
+
+/* Highlighting (classHighlighter of @lezer/highlight): one set of colours for every language. */
+.tok-keyword, .tok-bool, .tok-modifier, .tok-controlKeyword, .tok-definitionKeyword, .tok-moduleKeyword { color: var(--tok-keyword); }
+.tok-string, .tok-string2, .tok-character, .tok-inserted { color: var(--tok-string); }
+.tok-number, .tok-atom, .tok-literal { color: var(--tok-number); }
+.tok-comment, .tok-lineComment, .tok-blockComment, .tok-docComment { color: var(--tok-comment); font-style: italic; }
+.tok-typeName, .tok-className, .tok-namespace, .tok-tagName { color: var(--tok-type); }
+.tok-propertyName, .tok-attributeName, .tok-labelName { color: var(--tok-property); }
+.tok-variableName.tok-definition, .tok-function { color: var(--tok-function); }
+.tok-operator, .tok-punctuation.tok-operator { color: var(--tok-operator); }
+.tok-meta, .tok-macroName, .tok-processingInstruction { color: var(--tok-meta); }
+.tok-invalid, .tok-deleted { color: var(--tok-invalid); }
+.tok-heading { color: var(--tok-heading); font-weight: 700; }
+.tok-link, .tok-url { color: var(--tok-link); text-decoration: underline; }
+.tok-emphasis { font-style: italic; }
+.tok-strong { font-weight: 700; }
+.tok-strikethrough { text-decoration: line-through; }
+
+/* Phones: the text takes the whole width of the stage. */
+@media (max-width: 640px) {
+    .viewer-stage.document { padding: 0 0 8px; }
+    .text-view { border-radius: 0; border-left: 0; border-right: 0; }
+    .text-view { --reader-size: 13px; }
+}

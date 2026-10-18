@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { MEDIA_KINDS } from '../../core/format';
+import { isViewable } from '../../formats/formats';
 import { LibraryItem, TagSummary } from '../../core/models';
 import { tagQuery } from '../../tags/tags';
 import { Dialogs } from '../dialogs.service';
@@ -24,13 +24,13 @@ export class ItemActions {
     }
 
     /**
-     * A click on a file's link. While items are selected it selects (`selectInstead`); a plain click on media opens
+     * A click on a file's link. While items are selected it selects (`selectInstead`); a plain click on a file with a viewer opens
      * the viewer; other clicks open the link (new tab...).
      */
     openFile(event: MouseEvent, item: LibraryItem): void {
         if (this.selectInstead(event, item))
             return;
-        if (MEDIA_KINDS.has(item.kind) && event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+        if (isViewable(item) && event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
             const viewer = this.dialogs.viewer();
             if (viewer) {
                 event.preventDefault();

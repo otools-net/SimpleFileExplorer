@@ -80,7 +80,7 @@ describe('ListingStore', () => {
             expect(store.items()).toEqual([folder, a, b]);
             expect(store.folders()).toEqual([folder]);
             expect(store.files()).toEqual([a, b]);
-            expect(store.media()).toEqual([a, b]);
+            expect(store.viewable()).toEqual([a, b]);
             expect(store.hasMore()).toBe(true);
         });
 
@@ -470,12 +470,12 @@ describe('ListingStore', () => {
         });
 
         it('only highlights other files', async () => {
-            api.browse.mockResolvedValue(listing([item('Docs/notes.txt')], { path: 'Docs' }));
-            store.reveal('Docs/notes.txt');
+            api.browse.mockResolvedValue(listing([item('Docs/report.pdf')], { path: 'Docs' }));
+            store.reveal('Docs/report.pdf');
             await arrive('Docs');
 
             expect(viewer.open).not.toHaveBeenCalled();
-            expect(store.revealed()).toBe('Docs/notes.txt');
+            expect(store.revealed()).toBe('Docs/report.pdf');
         });
 
         it('shows a file of the folder already listed without listing it again', async () => {

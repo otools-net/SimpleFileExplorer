@@ -113,6 +113,7 @@ api.MapFileEndpoints();
 api.MapUploadEndpoints();
 api.MapArchiveEndpoints();
 api.MapPropertyEndpoints();
+api.MapTextEndpoints();
 api.MapChangeEndpoints();
 api.MapSettingsEndpoints();
 api.MapQuickLinkEndpoints();

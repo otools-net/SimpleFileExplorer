@@ -173,4 +173,34 @@ if (ffmpeg) {
 fs.mkdirSync(path.join(root, 'Documents'), { recursive: true });
 fs.writeFileSync(path.join(root, 'Documents/Packing list.txt'), 'Towels\nSun cream\nCamera\n');
 fs.writeFileSync(path.join(root, 'Documents/Notes.md'), '# Trip notes\n');
+// Text files for the text viewer: a log, and a script (highlighted).
+fs.writeFileSync(path.join(root, 'Documents/Photo backup.log'), [
+    '2025-07-14 21:00:02.118 INFO  Backup started: 1,284 photos to copy',
+    '2025-07-14 21:00:02.240 DEBUG Destination "Backup drive" has 412 GB free',
+    '2025-07-14 21:03:41.906 INFO  Copied 600 of 1,284 photos',
+    '2025-07-14 21:04:15.377 WARN  Skipped "IMG_2231.jpg": in use by another program',
+    '2025-07-14 21:07:58.051 INFO  Copied 1,283 of 1,284 photos',
+    '2025-07-14 21:07:58.122 ERROR Could not copy "IMG_2231.jpg" after 3 tries',
+    '2025-07-14 21:07:58.130 INFO  Backup finished in 7 min 56 s, 1 photo left for next time',
+    '',
+].join('\n'));
+fs.writeFileSync(path.join(root, 'Documents/Rename photos.ps1'), [
+    '# Renames the photos of a folder after the day they were taken: 2025-07-14 001.jpg, 2025-07-14 002.jpg...',
+    'param(',
+    '    [Parameter(Mandatory)] [string] $Folder,',
+    '    [switch] $WhatIf',
+    ')',
+    '',
+    '$count = @{}',
+    'Get-ChildItem -Path $Folder -Filter *.jpg | Sort-Object LastWriteTime | ForEach-Object {',
+    "    $day = $_.LastWriteTime.ToString('yyyy-MM-dd')",
+    '    $count[$day] = 1 + $count[$day]',
+    "    $name = '{0} {1:000}{2}' -f $day, $count[$day], $_.Extension.ToLower()",
+    '    if ($_.Name -ne $name) {',
+    '        Rename-Item -LiteralPath $_.FullName -NewName $name -WhatIf:$WhatIf',
+    '    }',
+    '}',
+    'Write-Host "Renamed $($count.Values | Measure-Object -Sum | Select-Object -ExpandProperty Sum) photos"',
+    '',
+].join('\r\n'));
 console.log('done');

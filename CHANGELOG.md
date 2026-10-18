@@ -3,6 +3,24 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.64.0
+
+### Added
+
+- **Text files open in the viewer**: `.txt`, `.log`, `.md`, `.json`, `.cs`, `.js`, scripts, configuration files and
+  many more, with syntax highlighting, line numbers, wrapping of long lines, **Find** (Ctrl+F) and **Go to line**
+  (Ctrl+Alt+G). The status bar tells the language, the encoding (UTF-8, UTF-16 or Windows-1252, as Notepad reads
+  them), the line endings and the size. Read only for now; files over 10 MB, and files that aren't text, offer a
+  download instead.
+- **Open as text** in the item menu shows any other file as text.
+- The viewer's previous and next steps through text files too, with the photos, videos and music of the folder; in a
+  text file the arrow keys, the wheel and swipes move in the text (Esc leaves it, a second Esc closes).
+
+### Fixed
+
+- The source of the log page and of the server's log store was missing from the repository (a `logs/` rule of
+  `.gitignore`).
+
 ## 1.63.0
 
 ### Changed

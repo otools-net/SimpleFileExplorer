@@ -66,7 +66,6 @@ export const kindIcon: Record<ItemKind, string> = {
     file: 'file',
 };
 
-export const MEDIA_KINDS: ReadonlySet<ItemKind> = new Set<ItemKind>(['image', 'video', 'audio']);
 
 /**
  * Regex matching the plain terms of a search query: "," (OR) and " " (AND) separate terms,

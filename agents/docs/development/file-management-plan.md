@@ -294,7 +294,7 @@ moves. Lasting facts: [batch-rename.md](../features/batch-rename.md), [change-fe
 
 ### Later / optional (not planned yet)
 
-- [ ] Text file editor (filebrowser has one), with its own right.
+- [-] Text file editor: moved to its own epic, [file-viewers-plan.md](file-viewers-plan.md) (viewer in 1.64.0, editing in its phase 4).
 - [ ] Compress to zip / extract archives into a folder (zip-slip checks, size bomb limits).
 - [ ] Shared links that accept uploads (a drop box), expiring.
 - [ ] Schedules that change files (needs `TaskSchedule.CreatedById`, [file-operations.md](file-operations.md#background-jobs)).

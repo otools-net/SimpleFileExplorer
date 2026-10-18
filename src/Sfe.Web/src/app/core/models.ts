@@ -869,6 +869,18 @@ export interface ItemProperties {
     canChecksum: boolean;
 }
 
+/** A text file as the viewer reads it (`api/files/text`). */
+export interface TextFile {
+    /** Line endings as they are in the file. */
+    text: string;
+    encoding: 'utf-8' | 'utf-8-bom' | 'utf-16le' | 'utf-16be' | 'windows-1252' | string;
+    lineEnding: 'lf' | 'crlf' | 'cr' | 'mixed' | string;
+    /** The content's version, which a save will name. */
+    version: string;
+    size: number;
+    modified: string;
+}
+
 /** What the index knows below a folder, among what the session sees. */
 export interface FolderTotals {
     indexed: boolean;

@@ -172,6 +172,24 @@ describe('ItemMenu', () => {
         expect(entry().label).toBe('Remove from quick links');
     });
 
+    it('opens files without a viewer as text, for those who may open files', async () => {
+        await setUp([Rights.browse, Rights.viewFiles]);
+        const menu = TestBed.inject(ItemMenu);
+        const open = vi.fn();
+        TestBed.inject(Dialogs).viewer.set({ open } as never);
+        const archive = item('Media/backup.zip', { kind: 'file' });
+
+        menu.entries(archive).find(e => e.id === 'openAsText')!.run();
+
+        expect(open).toHaveBeenCalledWith(archive, { asText: true });
+        expect(menu.entries(item('Media/notes.txt', { kind: 'file' })).map(e => e.id)).not.toContain('openAsText');
+        expect(menu.entries(photo).map(e => e.id)).not.toContain('openAsText');
+        TestBed.resetTestingModule();
+        await setUp([Rights.browse]);
+        TestBed.inject(Dialogs).viewer.set({ open } as never);
+        expect(TestBed.inject(ItemMenu).entries(archive).map(e => e.id)).not.toContain('openAsText');
+    });
+
     it('has no quick links entry without the right', async () => {
         await setUp([Rights.browse]);
         expect(TestBed.inject(ItemMenu).entries(photo).map(e => e.id)).toEqual(['properties']);
