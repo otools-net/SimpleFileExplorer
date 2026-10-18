@@ -98,7 +98,7 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
   variables; `classHighlighter`; search; go to line), `languages.ts` (`language-data` + log and subtitle modes +
   aliases), `text-view.component.ts`.
 - `formats/reading/` (1.65.0): `reading.ts`, `reading.service.ts`, the "Aa" panel; `formats/view-page.component.ts`
-  (lazy route `view?path=`, like `player`). Later: `formats/markdown/`.
+  (lazy route `view?path=`, like `player`). `formats/markdown/` (1.66.0): `markdown.ts`, `markdown-view.component.ts`.
 - CSS: `styles/reader.css` (global, as the frontend rules want): `--reader-*` and `--tok-*` variables, layout, `tok-*`
   classes.
 
@@ -175,18 +175,21 @@ docs in `docs/` with screenshots, `check-links.mjs` passes; this file ticked; a 
       `view-page.component.spec.ts`, `config.service.spec.ts` (`view` link).
 - [x] (1.65.0) Feature note [reading-preferences.md](../features/reading-preferences.md); user docs with screenshots.
 
-### Phase 3 — Markdown (1.66.0)
+### Phase 3 — Markdown (built in 1.66.0)
 
-- [ ] npm `markdown-it`, `dompurify`.
-- [ ] `formats/markdown/markdown.ts`: render with `html: false`, then sanitise (`RETURN_DOM_FRAGMENT`, inserted with
-      `replaceChildren`); relative images → `api/files/raw/…`, external images blocked with a "show" button; relative
-      `.md` links open in the viewer, external links `noopener noreferrer`; fences highlighted (`highlightCode`,
-      `classHighlighter`).
-- [ ] `markdown-view.component.ts`: Rendered / Source / Split, an outline from the headings, the *prose* profile.
-- [ ] A `markdown` entry in `formats.ts` (priority above `text`).
-- [ ] Tests: `markdown.spec.ts` (raw HTML, `javascript:` / `data:` links, SVG, relative paths, external images,
-      dotless host names).
-- [ ] Feature note `markdown-viewer.md`; user docs.
+- [x] (1.66.0) npm `markdown-it` (15, own types), `dompurify`.
+- [x] (1.66.0) `formats/markdown/markdown.ts`: `html: false`, `fuzzyLink` off, DOMPurify fragment inserted with
+      `replaceChildren`; library images through `urls.file`, other sites' images held back ("Show", no referrer);
+      links: documents → viewer (`data-path`, `FILE_VIEW_HOST.open`) or `view?path=`, other files → raw, folders →
+      listing, sites → new tab `noopener noreferrer nofollow`, other schemes and paths out of the library → no link;
+      heading ids `md-<slug>`; fences highlighted with `highlightCode` + `classHighlighter` (`languageForName`).
+- [x] (1.66.0) `markdown-view.component.ts`: Read / Source / Split (kept per browser), outline (h1–h3), prose
+      profile and "Aa"; shared helpers `text-document.ts` with the text view.
+- [x] (1.66.0) `MARKDOWN_FORMAT` (priority 20; `extensionOf` shared by the text formats); `FileViewHost.open`.
+- [x] (1.66.0) Tests: `markdown.spec.ts` (raw HTML, `on*` attributes, `javascript:`/`data:`/`file:` links, paths
+      out of the library, relative paths, file names not linked, external images, dotless hosts, headings, fences),
+      `markdown-view.component.spec.ts`, `formats.spec.ts`.
+- [x] (1.66.0) Feature note [markdown-viewer.md](../features/markdown-viewer.md); user docs with screenshots.
 
 ### Phase 4 — Editing and saving (1.67.0)
 
@@ -270,6 +273,12 @@ Tests
 - (1.65.0) CodeMirror doesn't notice a change of CSS variables (font, size, padding): `requestMeasure` after one.
 - (1.65.0) Width in `ch` with padding: `max-width: calc(var(--reader-width) + 2 * var(--reader-padding))`; `none`
   makes the calc invalid, which means no maximum: no special case needed.
+- (1.66.0) `WebClientHasNoExternalResources` reads the specs too: test URLs use dotless hosts (`https://tracker/…`),
+  and a regex like `/\/\//` reads as an address (`\/{2}` doesn't).
+- (1.66.0) A width in `ch` on each block of a document counts in that block's characters (headings wider): put it
+  on one inner element (`.markdown-content`).
+- (1.66.0) Phase 3 added +4.6 kB CSS to the initial bundle (740 kB); markdown-it + DOMPurify are one lazy chunk
+  (~144 kB, ~51 kB over the wire).
 - (1.64.0) npm 11 skips install scripts it hasn't been told to run (esbuild, lmdb, msgpackr-extract warn): the build
   works without them.
 

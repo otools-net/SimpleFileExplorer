@@ -3,6 +3,18 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.66.0
+
+### Added
+
+- **Markdown files** (`.md`) open **rendered**: headings, lists, tables, quotes, links and pictures, with code blocks
+  highlighted, in the reading settings of documents. **Source** shows the text as written, **Split** both side by
+  side; an **outline** of the headings jumps to each.
+- Links of a document to other documents of the library open them in the viewer; links to other files open the file,
+  links to folders their listing, links to other sites a new tab.
+- Pictures of other sites are not loaded until you ask (**Show**, at the bottom): reading a document doesn't tell them.
+  A document's own HTML is never run (shown as text).
+
 ## 1.65.0
 
 ### Added

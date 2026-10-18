@@ -184,6 +184,16 @@ const scenes = {
         await sleep(1200);
         await diary.shot(OUT + 'text-reading-settings.png');
         await diary.close();
+        // Markdown: rendered with its outline, then side by side with its source.
+        const guide = await session();
+        await guide.open('?path=Documents');
+        await guide.click('a.item-link[title^="Hiking guide.md"]');
+        await sleep(3000);
+        await guide.shot(OUT + 'markdown-viewer.png');
+        await guide.clickText('.markdown-mode', 'Split');
+        await sleep(1500);
+        await guide.shot(OUT + 'markdown-split.png');
+        await guide.close();
         // A page of its own (a text file opened in a new tab).
         const page = await session();
         await page.open('view?path=Documents%2FRename%20photos.ps1');

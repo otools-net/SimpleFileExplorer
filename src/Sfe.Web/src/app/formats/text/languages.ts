@@ -62,6 +62,16 @@ const ALIASES: Readonly<Record<string, string>> = {
     editorconfig: 'Properties files', gitattributes: 'Properties files',
 };
 
+/** The language a Markdown code fence names (` ```js `, ` ```powershell `, ` ```log `), or null. */
+export function languageForName(name: string): LanguageDescription | null {
+    const lower = name.trim().toLowerCase();
+    if (!lower)
+        return null;
+    return LanguageDescription.matchLanguageName(EXTRA_LANGUAGES, lower, false)
+        ?? LanguageDescription.matchLanguageName(languages, lower, true)
+        ?? (ALIASES[lower] ? languages.find(language => language.name === ALIASES[lower]) ?? null : null);
+}
+
 /** The language of the file `name` (its highlighting), or null for plain text. Loaded on demand. */
 export function languageFor(name: string): LanguageDescription | null {
     const lower = name.toLowerCase();

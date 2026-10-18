@@ -27,6 +27,8 @@ export interface FileViewHost {
     readonly place: 'viewer' | 'page';
     /** The session may use `right` on the file shown. */
     can(right: string): boolean;
+    /** Shows another file in its place (a link of a document); absent: the link is followed. */
+    open?(item: LibraryItem): void;
 }
 
 export const FILE_VIEW_HOST = new InjectionToken<FileViewHost>('FILE_VIEW_HOST');
@@ -65,12 +67,17 @@ export const TEXT_NAMES: ReadonlySet<string> = new Set([
 ]);
 
 /** The file's name and extension say it is text: only files the server doesn't call media. */
+/**
+ * The extension of the item's name, lower case without the dot ('' without one; `.gitignore` → `gitignore`). From
+ * the name: the server's `extension` and the test fakes' differ (with or without the dot).
+ */
+export function extensionOf(item: LibraryItem): string {
+    const dot = item.name.lastIndexOf('.');
+    return dot >= 0 ? item.name.slice(dot + 1).toLowerCase() : '';
+}
+
 export function isTextFile(item: LibraryItem): boolean {
-    if (item.kind !== 'file')
-        return false;
-    const name = item.name.toLowerCase();
-    const dot = name.lastIndexOf('.');
-    return TEXT_NAMES.has(name) || (dot >= 0 && TEXT_EXTENSIONS.has(name.slice(dot + 1)));
+    return item.kind === 'file' && (TEXT_NAMES.has(item.name.toLowerCase()) || TEXT_EXTENSIONS.has(extensionOf(item)));
 }
 
 export const IMAGE_FORMAT: FileFormat = { id: 'image', label: 'Picture', priority: 0, matches: item => item.kind === 'image', view: { builtin: 'image' } };
@@ -86,17 +93,26 @@ export const PROSE_EXTENSIONS: ReadonlySet<string> = new Set(['txt', 'text', 'md
 export const PROSE_NAMES: ReadonlySet<string> = new Set(['readme', 'license', 'licence', 'copying', 'authors', 'contributors', 'changelog', 'changes', 'news', 'todo', 'notice', 'install']);
 
 export function isProseFile(item: LibraryItem): boolean {
-    if (item.kind !== 'file')
-        return false;
-    const name = item.name.toLowerCase();
-    const dot = name.lastIndexOf('.');
-    return PROSE_NAMES.has(name) || (dot >= 0 && PROSE_EXTENSIONS.has(name.slice(dot + 1)));
+    return item.kind === 'file' && (PROSE_NAMES.has(item.name.toLowerCase()) || PROSE_EXTENSIONS.has(extensionOf(item)));
 }
 
 export const PROSE_FORMAT: FileFormat = { id: 'prose', label: 'Text', priority: 11, matches: isProseFile, view: textView, profile: 'prose', page: true };
 
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT];
+/** Markdown: read rendered (with its source a click away). */
+export const MARKDOWN_EXTENSIONS: ReadonlySet<string> = new Set(['md', 'markdown', 'mdown', 'mkd', 'mkdn']);
+
+export const MARKDOWN_FORMAT: FileFormat = {
+    id: 'markdown',
+    label: 'Markdown',
+    priority: 20,
+    matches: item => item.kind === 'file' && MARKDOWN_EXTENSIONS.has(extensionOf(item)),
+    view: { load: () => import('./markdown/markdown-view.component').then(m => m.MarkdownViewComponent) },
+    profile: 'prose',
+    page: true,
+};
+
+export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text

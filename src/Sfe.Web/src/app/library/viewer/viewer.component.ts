@@ -183,7 +183,7 @@ export class ViewerComponent {
     /** The component of the format shown, once loaded. */
     protected readonly viewComponent = signal<Type<unknown> | null>(null);
     protected readonly viewFailed = signal(false);
-    private readonly host: FileViewHost = { place: 'viewer', can: right => this.can(right) };
+    private readonly host: FileViewHost = { place: 'viewer', can: right => this.can(right), open: item => this.open(item) };
     protected readonly viewInjector = Injector.create({ providers: [{ provide: FILE_VIEW_HOST, useValue: this.host }], parent: this.injector });
     /** The item on the stage, as a list of one (or none) so that each item gets elements of its own. */
     protected readonly shownItem = computed(() => {

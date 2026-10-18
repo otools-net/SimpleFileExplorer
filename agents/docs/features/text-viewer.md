@@ -22,7 +22,8 @@ Code: client `app/formats/formats.ts` (registry), `app/formats/text/` (`text-vie
   keeps it. `index` (for `n / m`) is derived; −1 for a file opened as text (no position shown).
 - ‹ / › (`neighbours`) step to the nearest viewable item in listing order, loading more pages past the last one.
 - A format with a component: `NgComponentOutlet` with inputs `item`, `format` and an injector holding
-  `FILE_VIEW_HOST` (`place`, `can(right)`); the stage gets `.document` (fills the stage).
+  `FILE_VIEW_HOST` (`place`, `can(right)`, `open(item)` for links between documents); the stage gets `.document`
+  (fills the stage).
 - `[data-owns-keys]` on a view's root: the viewer ignores keys, wheel and swipes from inside it; Esc inside it (unless
   the view used it, e.g. to close its find bar) focuses the dialog (`tabindex="-1"`), the next Esc closes.
 

@@ -37,6 +37,25 @@ Click in the text to move around in it with the keys: the arrows, Page Up / Page
 the mouse wheel and swipes scroll it. **Esc** leaves the text (then ← / → go to other files again), a second **Esc**
 closes the viewer.
 
+## Markdown
+
+Markdown files (`.md`) open **rendered**, as they are meant to be read: headings, lists, tables, quotes, links and
+pictures, with code blocks highlighted. The **outline** button lists the headings at the left; click one to jump to it.
+
+![A Markdown guide with its outline](../images/markdown-viewer.png)
+
+- **Read** / **Source** / **Split** at the left of the bar: the document, its text as written (with line numbers and
+  Find, as other text files), or both side by side (one above the other on narrow screens). The choice is kept for the
+  next documents.
+- **Links** to other documents of the library (`[packing list](Packing list.txt)`) open them in the viewer; links to
+  other files open the file in a new tab, links to folders their listing, links to web sites a new tab.
+- **Pictures** of the library show; pictures of other web sites are not loaded until you click **Show** in the bar
+  at the bottom, so that reading a document doesn't tell those sites. HTML written in a document is shown as text,
+  never run.
+- In the document, Ctrl+F is the browser's own find; with the source shown, it finds in the source.
+
+![A Markdown document beside its source](../images/markdown-split.png)
+
 ## Reading settings
 
 **Aa** at the end of the text's bar opens the reading settings. They apply at once, and this browser keeps them: one

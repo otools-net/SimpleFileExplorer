@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, untracked, viewChild } from '@angular/core';
-import { Api, ApiError } from '../../core/api.service';
+import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
-import { formatSize, joinParts } from '../../core/format';
 import { LibraryItem, TextFile } from '../../core/models';
 import { Rights } from '../../core/rights';
 import { IconComponent } from '../../shared/icon.component';
@@ -9,11 +8,7 @@ import { FILE_VIEW_HOST, FileFormat } from '../formats';
 import { ReadingPanelComponent } from '../reading/reading-panel.component';
 import { ReadingService } from '../reading/reading.service';
 import { TextEditor } from './codemirror';
-
-const ENCODINGS: Readonly<Record<string, string>> = {
-    'utf-8': 'UTF-8', 'utf-8-bom': 'UTF-8 with BOM', 'utf-16le': 'UTF-16 LE', 'utf-16be': 'UTF-16 BE', 'windows-1252': 'Windows-1252',
-};
-const LINE_ENDINGS: Readonly<Record<string, string>> = { lf: 'LF', crlf: 'CRLF', cr: 'CR', mixed: 'Mixed line endings' };
+import { textDetails, textFailure } from './text-document';
 
 /**
  * A text file in the viewer or on a page of its own (agents/docs/features/text-viewer.md), read only: highlighting by
@@ -97,7 +92,7 @@ export class TextViewComponent {
         this.offerDownload() && this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
     protected readonly details = computed(() => {
         const file = this.file();
-        return file ? joinParts([this.language() ?? 'Plain text', ENCODINGS[file.encoding] ?? file.encoding, LINE_ENDINGS[file.lineEnding] ?? file.lineEnding, formatSize(file.size)], '  ·  ') : '';
+        return file ? textDetails(file, this.language()) : '';
     });
 
     constructor() {
@@ -160,14 +155,9 @@ export class TextViewComponent {
     }
 
     private fail(error: unknown): void {
-        const status = error instanceof ApiError ? error.status : 0;
-        this.offerDownload.set(status === 413 || status === 415 || status === 500);
-        this.message.set(
-            status === 413 ? 'This file is too large to be shown as text (more than 10 MB).'
-                : status === 415 ? 'This file is not text: it can only be downloaded.'
-                    : status === 404 ? 'This file is not there any more.'
-                        : status === 403 ? 'You may not open this file.'
-                            : `It could not be read: ${error instanceof Error ? error.message : String(error)}`);
+        const failure = textFailure(error);
+        this.offerDownload.set(failure.offerDownload);
+        this.message.set(failure.message);
         this.state.set('failed');
     }
 

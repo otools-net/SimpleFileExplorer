@@ -236,6 +236,129 @@
 .view-page-stage > .text-view { border: 0; border-radius: 0; }
 .view-page-stage > .viewer-message { place-self: center; padding: 24px; color: var(--text-muted); text-align: center; }
 
+/* ---------- Markdown (formats/markdown/): read, source or both ---------- */
+
+.markdown-modes { display: flex; gap: 2px; margin-right: 6px; padding: 2px; border: 1px solid var(--reader-border); border-radius: 8px; }
+.markdown-mode {
+    height: 28px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--reader-muted);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+.markdown-mode:hover { color: var(--reader-text); }
+.markdown-mode.active { background: var(--reader-selection-match); color: var(--reader-text); font-weight: 600; }
+
+.markdown-panes { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; }
+.markdown-panes[hidden] { display: none; }
+.markdown-panes.with-outline { grid-template-columns: 220px minmax(0, 1fr); }
+.markdown-view[data-mode="split"] .markdown-panes { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.markdown-view[data-mode="split"] .markdown-panes.with-outline { grid-template-columns: 200px minmax(0, 1fr) minmax(0, 1fr); }
+.markdown-view[data-mode="split"] .markdown-source { border-left: 1px solid var(--reader-border); }
+
+.markdown-outline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: auto;
+    padding: 14px 8px;
+    border-right: 1px solid var(--reader-border);
+    background: var(--reader-gutter);
+    font-size: 13px;
+}
+.markdown-outline a {
+    overflow: hidden;
+    padding: 3px 6px;
+    border-radius: 4px;
+    color: var(--reader-muted);
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.markdown-outline a:hover { background: var(--reader-active-line); color: var(--reader-text); }
+.markdown-outline a.level-2 { padding-left: 18px; }
+.markdown-outline a.level-3 { padding-left: 30px; }
+
+/*
+ * The document: the reading preferences' font, size and line height; the content no wider than their width, centred
+ * (on an inner element: in ch, a width set on a heading would be counted in its own, larger characters).
+ */
+.markdown-body {
+    min-height: 0;
+    overflow: auto;
+    padding: var(--reader-padding);
+    color: var(--reader-text);
+    font-family: var(--reader-font);
+    font-size: var(--reader-size);
+    line-height: var(--reader-line-height);
+    overflow-wrap: break-word;
+    outline: none;
+}
+.markdown-body[hidden] { display: none; }
+.markdown-content { max-width: var(--reader-width); margin: 0 auto; }
+.markdown-content > :first-child { margin-top: 0; }
+.markdown-body :is(p, ul, ol, blockquote, pre, table, dl) { margin-top: 0; margin-bottom: 1em; }
+.markdown-body :is(h1, h2, h3, h4, h5, h6) { margin-top: 1.4em; margin-bottom: .5em; line-height: 1.25; scroll-margin-top: 12px; }
+.markdown-body h1 { padding-bottom: .25em; border-bottom: 1px solid var(--reader-border); font-size: 1.9em; }
+.markdown-body h2 { padding-bottom: .2em; border-bottom: 1px solid var(--reader-border); font-size: 1.45em; }
+.markdown-body h3 { font-size: 1.2em; }
+.markdown-body :is(h4, h5, h6) { font-size: 1em; }
+.markdown-body :is(ul, ol) { padding-left: 1.6em; }
+.markdown-body li + li { margin-top: .25em; }
+.markdown-body a { color: var(--tok-link); }
+.markdown-body a.external::after { content: " ↗"; font-size: .8em; }
+.markdown-body a:not([href]) { color: inherit; text-decoration: underline dotted; }
+.markdown-body blockquote { margin-right: 0; margin-left: 0; padding: 0 1em; border-left: 4px solid var(--reader-border); color: var(--reader-muted); }
+.markdown-body code {
+    padding: .1em .35em;
+    border: 1px solid var(--reader-border);
+    border-radius: 4px;
+    background: var(--reader-gutter);
+    font-family: var(--mono);
+    font-size: .86em;
+}
+.markdown-body pre {
+    overflow: auto;
+    padding: .8em 1em;
+    border: 1px solid var(--reader-border);
+    border-radius: 8px;
+    background: var(--reader-gutter);
+    font-size: .86em;
+    line-height: 1.45;
+}
+.markdown-body pre code { padding: 0; border: 0; background: none; font-size: inherit; }
+.markdown-body img { max-width: 100%; height: auto; border-radius: 4px; }
+.markdown-body table { display: block; overflow: auto; border-collapse: collapse; }
+.markdown-body :is(th, td) { padding: .35em .7em; border: 1px solid var(--reader-border); }
+.markdown-body th { background: var(--reader-gutter); }
+.markdown-body hr { height: 0; margin-top: 1.5em; margin-bottom: 1.5em; border: 0; border-top: 1px solid var(--reader-border); }
+.md-blocked-image {
+    display: inline-block;
+    padding: .3em .6em;
+    border: 1px dashed var(--reader-border);
+    border-radius: 6px;
+    color: var(--reader-muted);
+    font-size: .85em;
+}
+
+.markdown-external { display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; }
+.markdown-external .link-button { color: var(--accent); }
+
+@media (max-width: 900px) {
+    .markdown-view[data-mode="split"] .markdown-panes, .markdown-view[data-mode="split"] .markdown-panes.with-outline {
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .markdown-panes.with-outline { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+    .markdown-panes.with-outline .markdown-outline { max-height: 30vh; border-right: 0; border-bottom: 1px solid var(--reader-border); }
+    .markdown-view[data-mode="split"] .markdown-outline { display: none; }
+    .markdown-view[data-mode="split"] .markdown-source { border-top: 1px solid var(--reader-border); border-left: 0; }
+}
+
 /* Highlighting (classHighlighter of @lezer/highlight): one set of colours for every language. */
 .tok-keyword, .tok-bool, .tok-modifier, .tok-controlKeyword, .tok-definitionKeyword, .tok-moduleKeyword { color: var(--tok-keyword); }
 .tok-string, .tok-string2, .tok-character, .tok-inserted { color: var(--tok-string); }

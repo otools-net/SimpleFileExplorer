@@ -1,5 +1,5 @@
 import { item } from '../../testing/fakes';
-import { formatOf, isViewable, PROSE_FORMAT, TEXT_FORMAT } from './formats';
+import { extensionOf, formatOf, isViewable, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -25,6 +25,15 @@ describe('formats', () => {
         expect(PROSE_FORMAT.view).toBe(TEXT_FORMAT.view);
         expect(TEXT_FORMAT.page && PROSE_FORMAT.page).toBe(true);
         expect(formatOf(item('a/photo.jpg', { kind: 'image' }))?.page).toBeFalsy();
+    });
+
+    it('shows Markdown rendered, above plain text', () => {
+        for (const name of ['README.md', 'Trip.MD', 'notes.markdown'])
+            expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(MARKDOWN_FORMAT);
+        expect(formatOf(item('a/md', { kind: 'file' }))).toBeNull();
+        expect(MARKDOWN_FORMAT.profile).toBe('prose');
+        expect(extensionOf(item('a/.gitignore', { kind: 'file' }))).toBe('gitignore');
+        expect(extensionOf(item('a/Makefile', { kind: 'file' }))).toBe('');
     });
 
     it('has no viewer for folders and other files, unless opened as text', () => {
