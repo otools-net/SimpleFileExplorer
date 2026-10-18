@@ -32,11 +32,27 @@
               {
                 "glob": "theme-boot.js",
                 "input": "out-tsc/boot"
+              },
+              {
+                "glob": "pdf.worker.min.mjs",
+                "input": "node_modules/pdfjs-dist/build",
+                "output": "pdfjs"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/pdfjs-dist/cmaps",
+                "output": "pdfjs/cmaps"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/pdfjs-dist/standard_fonts",
+                "output": "pdfjs/standard_fonts"
               }
             ],
             "styles": [
               "src/styles.css",
-              { "input": "src/reader-fonts.css", "bundleName": "reader-fonts", "inject": false }
+              { "input": "src/reader-fonts.css", "bundleName": "reader-fonts", "inject": false },
+              { "input": "node_modules/pdfjs-dist/web/pdf_viewer.css", "bundleName": "pdf-viewer", "inject": false }
             ]
           },
           "configurations": {

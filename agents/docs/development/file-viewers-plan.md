@@ -277,7 +277,9 @@ Tests
 - [x] (1.72.0) Subtitles (`.srt`, `.vtt`): media-captions, the cues with their times and marks, overlaps, filter,
       a cue shown in the source, Play in the video next to them (`GET api/files/text/video`), Shift times while
       editing ([subtitles-viewer](../features/subtitles-viewer.md)).
-- [ ] PDF (pdf.js, bundled).
+- [x] (1.73.0) PDF (pdf.js, bundled): worker, character maps and standard fonts served by the app, its CSS a style
+      bundle linked when shown, no WebAssembly (the CSP); pages, zoom, find, outline, dark pages, the page read last,
+      passwords ([pdf-viewer](../features/pdf-viewer.md)).
 - [ ] EPUB.
 - [ ] The picture editor saving in place through `FileContent`.
 
@@ -326,6 +328,10 @@ Tests
 - (1.69.0) A part starting right after a line break keeps its first line: the byte (UTF-16: unit) before it is read.
 - (1.69.0) The change feed tells only changes made through SFE: changes by other programs need the periodic version
   check, made cheap by trusting an unchanged size and time.
+- (1.73.0) A view whose library needs canvas (pdf.js) takes it through an injection token (`PDF_LOADER`): the spec
+  gives a fake; the real one is checked by the docs screenshots (they fail when pdf.js draws no page).
+- (1.73.0) Check a third-party stylesheet's global selectors against the app's: pdf.js' `.page` is the app's main
+  column class.
 - (1.72.0) A package's prod build may need browser classes when it loads (media-captions extends `window.VTTCue`):
   stub them in `src/testing/setup.ts`.
 - (1.72.0) Bump the version before starting `dotnet test`: `TheShippedChangelogHasTheRunningVersion` fails when the

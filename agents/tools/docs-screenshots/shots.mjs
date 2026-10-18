@@ -246,6 +246,17 @@ const scenes = {
         await sleep(400);
         await subtitles.shot(OUT + 'subtitles-viewer.png');
         await subtitles.close();
+        // PDF: drawn by pdf.js (worker, standard fonts and styles served by the app), its outline beside it.
+        const handbook = await session();
+        await handbook.open('?path=Documents');
+        await handbook.click('a.item-link[title^="Hut handbook.pdf"]');
+        await sleep(4000);
+        const drawn = await handbook.eval(`document.querySelectorAll('.pdfViewer .page canvas').length`);
+        console.log(`pdf pages drawn: ${drawn}`);
+        if (!drawn)
+            throw new Error('pdf.js drew no page');
+        await handbook.shot(OUT + 'pdf-viewer.png');
+        await handbook.close();
         // A page of its own (a text file opened in a new tab).
         const page = await session();
         await page.open('view?path=Documents%2FRename%20photos.ps1');

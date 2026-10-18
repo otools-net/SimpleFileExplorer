@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { launch } from './cdp.mjs';
+import { makePdf } from './make-pdf.mjs';
 
 const root = process.argv[2];
 if (!root) throw new Error('usage: node make-media.mjs <empty folder for the sample library> [ffmpeg]');
@@ -222,6 +223,26 @@ fs.writeFileSync(path.join(root, 'Documents/Trip plan.json'), JSON.stringify({
     ],
     checklist: { boots: true, headlamp: true, map: false },
 }, null, 2) + '\n');
+// A PDF for the PDF view: three pages, an outline, a title.
+fs.writeFileSync(path.join(root, 'Documents/Hut handbook.pdf'), makePdf('Mountain hut handbook', [
+    { heading: 'Before you go', lines: [
+        'Book your bed at least two weeks ahead in July and August.',
+        'Bring a sleeping-bag liner: blankets are provided, sheets are not.',
+        'Most huts take cash only. Check the opening dates: high huts close in September.',
+        'Tell the warden if you will arrive after 18:00, or if you change your plans.',
+    ] },
+    { heading: 'At the hut', lines: [
+        'Leave boots, poles and ice axes in the boot room by the entrance.',
+        'Dinner is served at 18:30, breakfast from 4:30 for early starts.',
+        'Quiet hours run from 22:00 to 5:00. Lights out in the dormitories.',
+        'Water may not be drinkable: ask the warden before filling your bottle.',
+    ] },
+    { heading: 'Safety', lines: [
+        'Check the weather forecast at the hut in the evening, and again at dawn.',
+        'Write your route and expected return time in the hut book.',
+        'Emergency number in the Alps: 112. Helicopter rescue sign: both arms raised.',
+    ] },
+]));
 fs.writeFileSync(path.join(root, 'Documents/Hiking guide.md'), [
     '# Hiking guide',
     '',

@@ -141,6 +141,26 @@ the one before it has ended shows its time in red, and the bar at the bottom cou
 
 SubStation subtitles (`.ass`, `.ssa`) open as text.
 
+## PDF documents
+
+PDF documents open in the viewer too, drawn as they are scrolled to; everything needed to show them comes with SFE,
+nothing is fetched from elsewhere.
+
+![A PDF document with its outline](../images/pdf-viewer.png)
+
+- **‹ / ›** in the bar, or **←** / **→**, turn the pages; type a page number to go to it. The bar at the bottom tells
+  the page shown, how many there are, the size and the document's title.
+- **Zoom**: **−** / **+** (Ctrl+− / Ctrl+=), or the list: Automatic, Page width, Whole page, 50 % to 300 %; Ctrl+0
+  back to automatic.
+- **Find** (Ctrl+F) marks every match; Enter goes to the next one, Shift+Enter to the previous one.
+- The **outline** (the document's own table of contents, when it has one) is at the left; click a heading to go to it.
+- Text can be selected and copied; links to other pages of the document go there, links to web sites open in a new
+  tab.
+- **Dark pages**, in the bar, turns the pages dark, for reading at night; the choice is kept.
+- A document opens at the page it was last read at in this browser.
+- A document protected by a password asks for it. Forms are shown, not filled; scripts in documents never run.
+- A file that isn't a PDF it can show offers **Download** instead.
+
 ## Reading settings
 
 **Aa** at the end of the text's bar opens the reading settings. They apply at once, and this browser keeps them: one

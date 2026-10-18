@@ -141,6 +141,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [json-viewer](agents/docs/features/json-viewer.md) | JSON as a tree (jsonc-parser: order and numbers as written, comments), filter, paths, source / split, Format | `app/formats/json/` |
 | [csv-viewer](agents/docs/features/csv-viewer.md) | CSV / TSV as a table (papaparse), sort, filter, header, separator; virtual rows (`VirtualRows`) | `app/formats/csv/`, `formats/virtual-rows.ts` |
 | [subtitles-viewer](agents/docs/features/subtitles-viewer.md) | SRT / VTT cues (media-captions), Play in the video next to them, Shift times, `api/files/text/video` | `app/formats/subtitles/`, `Core/Files/Subtitles` |
+| [pdf-viewer](agents/docs/features/pdf-viewer.md) | PDF with pdf.js bundled (worker, cmaps, fonts served by the app; CSP: no wasm), find, zoom, outline, dark pages | `app/formats/pdf/`, `angular.json` |
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
 | [trash](agents/docs/features/trash.md) | delete, trash, restore, purge task, links as links | `Trash`, `FileTree`, `app/files/delete.dialog.ts` |
 | [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, conflicts, clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |

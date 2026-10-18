@@ -470,12 +470,12 @@ describe('ListingStore', () => {
         });
 
         it('only highlights other files', async () => {
-            api.browse.mockResolvedValue(listing([item('Docs/report.pdf')], { path: 'Docs' }));
-            store.reveal('Docs/report.pdf');
+            api.browse.mockResolvedValue(listing([item('Docs/report.zip')], { path: 'Docs' }));
+            store.reveal('Docs/report.zip');
             await arrive('Docs');
 
             expect(viewer.open).not.toHaveBeenCalled();
-            expect(store.revealed()).toBe('Docs/report.pdf');
+            expect(store.revealed()).toBe('Docs/report.zip');
         });
 
         it('shows a file of the folder already listed without listing it again', async () => {

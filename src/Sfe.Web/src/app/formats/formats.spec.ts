@@ -1,5 +1,5 @@
 import { item } from '../../testing/fakes';
-import { CSV_FORMAT, extensionOf, formatOf, FORMATS, isViewable, JSON_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
+import { CSV_FORMAT, extensionOf, formatOf, FORMATS, isViewable, JSON_FORMAT, PDF_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -55,6 +55,14 @@ describe('formats', () => {
         for (const name of ['Film.en.srt', 'clip.VTT'])
             expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(SUBTITLES_FORMAT);
         expect(formatOf(item('a/Film.ass', { kind: 'file' }))).toBe(TEXT_FORMAT);
+    });
+
+    it('reads PDF documents in a viewer of their own, without editing them', () => {
+        for (const name of ['Guide.pdf', 'SCAN.PDF'])
+            expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(PDF_FORMAT);
+        expect(PDF_FORMAT.page).toBe(true);
+        expect(PDF_FORMAT.edits).toBeFalsy();
+        expect(PDF_FORMAT.profile).toBeUndefined();
     });
 
     it('has no viewer for folders and other files, unless opened as text', () => {

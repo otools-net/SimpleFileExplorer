@@ -180,8 +180,18 @@ export const SUBTITLES_FORMAT: FileFormat = {
     edits: true,
 };
 
+/** PDF documents: read (pdf.js, bundled), not edited. */
+export const PDF_FORMAT: FileFormat = {
+    id: 'pdf',
+    label: 'PDF',
+    priority: 20,
+    matches: item => item.kind === 'file' && extensionOf(item) === 'pdf',
+    view: { load: () => import('./pdf/pdf-view.component').then(m => m.PdfViewComponent) },
+    page: true,
+};
+
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT];
+export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT, PDF_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text

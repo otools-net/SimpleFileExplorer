@@ -155,7 +155,7 @@ describe('SelectionBarComponent', () => {
 
 describe('ItemActions', () => {
     const photo = item('photo.jpg', { tags: [summary(tag('Sun'))] });
-    const doc = item('report.pdf');
+    const doc = item('report.zip');
     let viewer: { open: ReturnType<typeof vi.fn> };
     const click = (init: MouseEventInit = {}) => new MouseEvent('click', { button: 0, cancelable: true, ...init });
 

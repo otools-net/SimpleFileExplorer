@@ -3,6 +3,15 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.73.0
+
+### Added
+
+- **PDF documents** open in the viewer (pdf.js, bundled: nothing is fetched from elsewhere): pages drawn as you scroll,
+  text to select and **find** (Ctrl+F), links, the document's **outline**, **zoom** (automatic, page width, whole
+  page, 50–300 %), previous / next page (← →), **dark pages** for reading at night. A document opens at the page it
+  was last read at in this browser; a document with a password asks for it. Scripts in documents never run.
+
 ## 1.72.0
 
 ### Added

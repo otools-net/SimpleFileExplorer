@@ -30,6 +30,11 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.73
+
+- The web client carries pdf.js' worker, character maps and standard fonts (`pdfjs/`, about 2.5 MB more in the
+  install). Nothing changes in the databases, the settings or the rights.
+
 ## To 1.69
 
 - New setting `Sfe:FileTypes:Text` (empty: the viewer's own list of text files, as before). Nothing changes in the

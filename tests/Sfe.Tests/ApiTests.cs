@@ -999,10 +999,14 @@ public sealed class ApiTests
             Assert.Inconclusive($"Sources not found at {web}.");
 
         // The client's own sources, then the built client: the framework's bundled error messages name its
-        // documentation site (text shown to developers, never requested).
+        // documentation site (text shown to developers, never requested). pdf.js parses links against the dummy bases
+        // example.com and foo.bar (never fetched), names the XUL namespace (www.mozilla.org), and its pictures carry the
+        // MPL's address (mozilla.org) in a comment. Hosts are matched whole (the pattern doesn't take paths).
         var offenders = ExternalUrls(Path.Combine(web, "src"), [".ts", ".html", ".css"], [])
             .Concat(ExternalUrls(Path.Combine(web, "public"), [".html", ".js", ".css", ".svg"], []))
-            .Concat(Directory.Exists(wwwroot) ? ExternalUrls(wwwroot, [".html", ".js", ".css", ".svg"], ["angular.dev/"]) : [])
+            .Concat(Directory.Exists(wwwroot)
+                ? ExternalUrls(wwwroot, [".html", ".js", ".css", ".svg"], ["angular.dev/", "example.com", "foo.bar", "www.mozilla.org", "mozilla.org"])
+                : [])
             .ToList();
 
         Assert.IsEmpty(offenders, "External resources found:\n" + string.Join('\n', offenders));
@@ -1020,8 +1024,13 @@ public sealed class ApiTests
             .SelectMany(f => File.ReadLines(f).SelectMany((line, i) => external.Matches(line)
                 .Select(m => m.Value)
                 .Where(url => !url.Contains("www.w3.org", StringComparison.OrdinalIgnoreCase)
-                    && !allowed.Any(prefix => System.Text.RegularExpressions.Regex.Replace(url, "^(https?:)?//", "").StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                    && !allowed.Any(prefix => Allowed(System.Text.RegularExpressions.Regex.Replace(url, "^(https?:)?//", ""), prefix)))
                 .Select(url => $"{Path.GetRelativePath(root, f)}:{i + 1}: {url}")));
+
+        // `host/path/` allows what starts with it; a bare `host` that host only (not `host.evil.net`).
+        static bool Allowed(string url, string prefix) => prefix.Contains('/')
+            ? url.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            : url.TrimEnd('/').Equals(prefix, StringComparison.OrdinalIgnoreCase);
     }
 
     [TestMethod]
