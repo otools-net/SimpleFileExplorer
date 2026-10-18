@@ -45,6 +45,8 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 - **Reading preferences: account defaults + per-browser overrides**, as the theme. Two profiles: *code* (monospace,
   no wrap, line numbers) and *prose* (txt/md: wrapped, width-limited).
 - **The viewer's previous / next steps through all viewable files** (media and documents), in listing order.
+- **Bundled fonts** (1.65.0): Literata (serif), Atkinson Hyperlegible (sans-serif), JetBrains Mono (monospace), all
+  OFL; regular, italic (not the mono) and bold. Prose defaults to Literata, code to the device's monospace.
 - **Go to line is Ctrl+Alt+G** (1.64.0): Ctrl+G stays "find next", as in CodeMirror and browsers.
 
 ## Verified constraints
@@ -95,8 +97,8 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 - `formats/text/`: `codemirror.ts` (adapter: compartments for wrap, line numbers, language; `readerTheme` of CSS
   variables; `classHighlighter`; search; go to line), `languages.ts` (`language-data` + log and subtitle modes +
   aliases), `text-view.component.ts`.
-- Later: `formats/markdown/`, `formats/reading/` (`reading.service.ts`, the "Aa" panel), `formats/view-page.component.ts`
-  (lazy route `view?path=`, like `player`).
+- `formats/reading/` (1.65.0): `reading.ts`, `reading.service.ts`, the "Aa" panel; `formats/view-page.component.ts`
+  (lazy route `view?path=`, like `player`). Later: `formats/markdown/`.
 - CSS: `styles/reader.css` (global, as the frontend rules want): `--reader-*` and `--tok-*` variables, layout, `tok-*`
   classes.
 
@@ -155,22 +157,23 @@ docs in `docs/` with screenshots, `check-links.mjs` passes; this file ticked; a 
 - [x] (1.64.0) Feature note [text-viewer.md](../features/text-viewer.md); user doc
       [text-files.md](../../../docs/user-guide/text-files.md).
 
-### Phase 2 — Reading comfort (1.65.0)
+### Phase 2 — Reading comfort (built in 1.65.0)
 
-- [ ] npm `@fontsource/*` (OFL, woff2): a reading serif, a legible sans, a code mono; `reader-fonts.css` as an
-      `inject: false` bundle in `angular.json`, linked only when a bundled font is picked.
-- [ ] `formats/reading/reading.service.ts`: profiles *code* and *prose*; per browser in `sfe.reading` (versioned JSON,
-      `core/preferences.ts`); built to take account defaults later (phase 5). Replaces the text view's module-level
-      `wrapLines` / `showLineNumbers` signals.
-- [ ] `reading-panel.component.ts` ("Aa" popover): font (bundled, system stacks, a custom local name), size, line
-      height, content width, padding; wrap, line numbers, reader theme (follow app / light / sepia / dark); reset. The
-      `--reader-*` variables of `reader.css` are where they apply.
-- [ ] Ctrl+= / Ctrl+- / Ctrl+0 for the font size, inside the view.
-- [ ] `formats/view-page.component.ts`: lazy route `view?path=` with `canDeactivate`; listing links and the viewer's
-      "Open in new tab" point there for formats with a page (`page: true` in `FileFormat`).
-- [ ] Phone width: the panel as a bottom sheet.
-- [ ] Tests: `reading.service.spec.ts`, `reading-panel.spec.ts`, `view-page.spec.ts`.
-- [ ] Feature note `reading-preferences.md`; user docs with screenshots.
+- [x] (1.65.0) npm `@fontsource/literata`, `@fontsource/atkinson-hyperlegible`, `@fontsource/jetbrains-mono` (OFL);
+      `src/reader-fonts.css` as an `inject: false` bundle (`reader-fonts.css`, not hashed: linked with `?v=<version>`),
+      linked only when a profile shown uses a bundled font.
+- [x] (1.65.0) `formats/reading/`: `reading.ts` (model, allowed values, `sanitizeReading`), `reading.service.ts`
+      (defaults signal + this browser's overrides in `sfe.reading`, versioned; ready for account defaults in phase 5).
+- [x] (1.65.0) Profiles: `PROSE_FORMAT` (priority 11: `.txt`, `.md`, `README`…) beside `TEXT_FORMAT` (code), same view.
+- [x] (1.65.0) "Aa" panel: font (bundled, the device's serif / sans / mono, a custom local name), size, line height,
+      width, margins, wrap, line numbers, colours (as the app / light / sepia / dark), Reset.
+- [x] (1.65.0) Ctrl+= / Ctrl+− / Ctrl+0 inside the view.
+- [x] (1.65.0) `view?path=` page (lazy); `Urls.view`; listing links (modified clicks) and the viewer's "Open in new
+      tab" use it for formats with `page`. Its `canDeactivate` comes with editing (phase 4): nothing to lose before.
+- [x] (1.65.0) Phones: the panel as a sheet at the bottom.
+- [x] (1.65.0) Tests: `reading.service.spec.ts` (model, service, panel), `text-view.component.spec.ts`,
+      `view-page.component.spec.ts`, `config.service.spec.ts` (`view` link).
+- [x] (1.65.0) Feature note [reading-preferences.md](../features/reading-preferences.md); user docs with screenshots.
 
 ### Phase 3 — Markdown (1.66.0)
 
@@ -244,8 +247,6 @@ Tests
 
 ## Open questions
 
-- Phase 2: which three fonts to bundle (licence OFL, woff2 size), and whether the "Aa" panel also shows in the
-  picture viewer (no: reading only).
 - Phase 4: does the editor get a right of its own, or only the Replace rule (decided: the Replace rule, like Notepad;
   revisit if spaces ask for "may edit but not delete")?
 
@@ -262,6 +263,13 @@ Tests
   the name, not `extension`.
 - (1.64.0) `.gitignore`'s `[Ll]ogs/` had kept the log feature's source folders (`Core/Logs`, `Data/Entities/Logs`,
   client `app/logs`) out of git: `!src/**/[Ll]ogs/` lets them in.
+- (1.65.0) Phase 2 added +2.9 kB JS and +3.8 kB CSS to the initial bundle (735 kB): the themes, panel and page styles
+  are global CSS, as the frontend rules want (about 0.6 kB over the wire).
+- (1.65.0) A non-injected style bundle keeps its plain name (`reader-fonts.css`) while its fonts are hashed in
+  `media/`: link it with the app's version as a query, or a browser may keep an old copy.
+- (1.65.0) CodeMirror doesn't notice a change of CSS variables (font, size, padding): `requestMeasure` after one.
+- (1.65.0) Width in `ch` with padding: `max-width: calc(var(--reader-width) + 2 * var(--reader-padding))`; `none`
+  makes the calc invalid, which means no maximum: no special case needed.
 - (1.64.0) npm 11 skips install scripts it hasn't been told to run (esbuild, lmdb, msgpackr-extract warn): the build
   works without them.
 

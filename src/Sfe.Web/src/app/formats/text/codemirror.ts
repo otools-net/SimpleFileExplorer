@@ -15,11 +15,17 @@ import { languageFor } from './languages';
 const readerTheme = EditorView.theme({
     '&': { height: '100%', color: 'var(--reader-text)', backgroundColor: 'var(--reader-bg)' },
     '.cm-scroller': { fontFamily: 'var(--reader-font)', fontSize: 'var(--reader-size)', lineHeight: 'var(--reader-line-height)' },
-    '.cm-content': { caretColor: 'var(--reader-text)' },
+    // Margins all around; a longest line (when lines wrap), centred. With no width the calc() is invalid: no maximum.
+    '.cm-content': {
+        caretColor: 'var(--reader-text)',
+        padding: 'var(--reader-padding)',
+        maxWidth: 'calc(var(--reader-width) + 2 * var(--reader-padding))',
+        marginInline: 'auto',
+    },
     '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--reader-text)' },
     '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': { backgroundColor: 'var(--reader-selection)' },
     '.cm-gutters': { backgroundColor: 'var(--reader-gutter)', color: 'var(--reader-muted)', borderRight: '1px solid var(--reader-border)' },
-    '.cm-activeLine': { backgroundColor: 'var(--reader-active-line)' },
+    '.cm-activeLine': { backgroundColor: 'var(--reader-current-line, var(--reader-active-line))' },
     '.cm-activeLineGutter': { backgroundColor: 'var(--reader-active-line)', color: 'var(--reader-text)' },
     '.cm-selectionMatch': { backgroundColor: 'var(--reader-selection-match)' },
     '.cm-searchMatch': { backgroundColor: 'var(--mark-bg)', outline: '1px solid var(--accent)' },
@@ -54,8 +60,12 @@ export class TextEditor {
     private readonly numbers = new Compartment();
     private readonly language = new Compartment();
     private destroyed = false;
+    private wrap: boolean;
+    private lineNumbers: boolean;
 
     constructor(parent: HTMLElement, options: TextEditorOptions) {
+        this.wrap = options.wrap;
+        this.lineNumbers = options.lineNumbers;
         const onCursor = options.onCursor;
         const extensions: Extension[] = [
             this.numbers.of(options.lineNumbers ? [lineNumbers(), highlightActiveLineGutter()] : []),
@@ -96,12 +106,22 @@ export class TextEditor {
         return description.name;
     }
 
-    setWrap(wrap: boolean): void {
-        this.view.dispatch({ effects: this.wrapping.reconfigure(wrap ? EditorView.lineWrapping : []) });
+    /** Wrapping and line numbers as they are now wanted (only what changed is reconfigured). */
+    configure(options: { wrap: boolean; lineNumbers: boolean }): void {
+        const effects = [];
+        if (options.wrap !== this.wrap)
+            effects.push(this.wrapping.reconfigure(options.wrap ? EditorView.lineWrapping : []));
+        if (options.lineNumbers !== this.lineNumbers)
+            effects.push(this.numbers.reconfigure(options.lineNumbers ? [lineNumbers(), highlightActiveLineGutter()] : []));
+        this.wrap = options.wrap;
+        this.lineNumbers = options.lineNumbers;
+        if (effects.length)
+            this.view.dispatch({ effects });
     }
 
-    setLineNumbers(show: boolean): void {
-        this.view.dispatch({ effects: this.numbers.reconfigure(show ? [lineNumbers(), highlightActiveLineGutter()] : []) });
+    /** The font, size or spacing changed (CSS variables): the editor measures its lines again. */
+    remeasure(): void {
+        this.view.requestMeasure();
     }
 
     find(): void {

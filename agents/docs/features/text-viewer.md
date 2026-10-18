@@ -37,8 +37,8 @@ Code: client `app/formats/formats.ts` (registry), `app/formats/text/` (`text-vie
   files), then our `Log` and `Subtitles` stream modes, then `@codemirror/language-data` (each language its own chunk).
 - Colours: `readerTheme` (`EditorView.theme`) uses `--reader-*` variables; highlighting uses `classHighlighter`
   (`tok-*` classes) coloured by `--tok-*` in `reader.css`; both follow the app's light/dark theme.
-- Wrap and line numbers are module-level signals (kept between files, not between visits) until the reading
-  preferences (phase 2) replace them.
+- Font, size, spacing, wrap, line numbers and colours are the reading preferences of the format's profile (code or
+  prose): [reading-preferences.md](reading-preferences.md), also for the page of its own (`view?path=`).
 - Keys: CodeMirror's `searchKeymap` + `defaultKeymap` (Ctrl+F, F3/Ctrl+G, Ctrl+Alt+G go to line); the component also
   takes Ctrl+F and Ctrl+Alt+G from the window, so they work when the focus is on the viewer rather than in the text.
 - Failures: 413/415/500 offer **Download** when `files.download`; 404/403 say so.

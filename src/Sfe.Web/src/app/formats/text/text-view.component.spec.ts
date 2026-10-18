@@ -2,7 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../../core/api.service';
 import { TextFile } from '../../core/models';
 import { ApiMock, item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
-import { FILE_VIEW_HOST, TEXT_FORMAT } from '../formats';
+import { FILE_VIEW_HOST, FileFormat, PROSE_FORMAT, TEXT_FORMAT } from '../formats';
+import { DEFAULT_READING } from '../reading/reading';
+import { READING_KEY, ReadingService } from '../reading/reading.service';
 import { TextViewComponent } from './text-view.component';
 
 describe('TextViewComponent', () => {
@@ -17,16 +19,25 @@ describe('TextViewComponent', () => {
     const button = (label: string) => element.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!;
     const status = () => element.querySelector('.text-status')?.textContent ?? '';
 
-    async function show(name: string): Promise<void> {
+    async function show(name: string, format: FileFormat = TEXT_FORMAT): Promise<void> {
         fixture = TestBed.createComponent(TextViewComponent);
         element = fixture.nativeElement;
         fixture.componentRef.setInput('item', item(`Code/${name}`, { kind: 'file' }));
-        fixture.componentRef.setInput('format', TEXT_FORMAT);
+        fixture.componentRef.setInput('format', format);
         await settle();
         await fixture.whenStable();
     }
 
+    async function press(key: string, target: Element): Promise<KeyboardEvent> {
+        const event = new KeyboardEvent('keydown', { key, ctrlKey: true, bubbles: true, cancelable: true });
+        target.dispatchEvent(event);
+        await settle();
+        await fixture.whenStable();
+        return event;
+    }
+
     beforeEach(async () => {
+        localStorage.removeItem(READING_KEY);
         api = mockApi();
         rights = new Set(['files.view', 'files.download']);
         TestBed.configureTestingModule({
@@ -36,6 +47,8 @@ describe('TextViewComponent', () => {
     });
 
     afterEach(() => {
+        localStorage.removeItem(READING_KEY);
+        document.head.querySelectorAll('link[data-reader-fonts]').forEach(link => link.remove());
         fixture?.destroy();
         TestBed.resetTestingModule();
     });
@@ -70,9 +83,55 @@ describe('TextViewComponent', () => {
         await show('other.txt');
         expect(element.querySelector('.cm-content')!.classList).toContain('cm-lineWrapping');
         expect(button('Wrap long lines').getAttribute('aria-pressed')).toBe('true');
-        // Back as it was, for the other tests.
-        button('Wrap long lines').click();
-        button('Line numbers').click();
+        expect(TestBed.inject(ReadingService).profile('code')).toMatchObject({ wrap: true, lineNumbers: false });
+    });
+
+    it('reads notes with the prose preferences: wrapped, in a reading font, without line numbers', async () => {
+        api.textFile.mockResolvedValue(text({ text: 'Dear diary', encoding: 'utf-8', lineEnding: 'lf' }));
+        await show('notes.txt', PROSE_FORMAT);
+
+        expect(element.classList).toContain('prose');
+        expect(element.style.getPropertyValue('--reader-font')).toContain('Literata');
+        expect(element.style.getPropertyValue('--reader-width')).toBe('72ch');
+        expect(element.querySelector('.cm-content')!.classList).toContain('cm-lineWrapping');
+        expect(element.querySelector('.cm-lineNumbers')).toBeNull();
+        expect(document.head.querySelector('link[data-reader-fonts]')).not.toBeNull();
+    });
+
+    it('changes the size of the text with Ctrl+= / Ctrl+− / Ctrl+0 in it, not the page', async () => {
+        api.textFile.mockResolvedValue(text());
+        await show('Program.cs');
+        const content = element.querySelector('.cm-content')!;
+
+        const larger = await press('=', content);
+        await press('+', content);
+        expect(larger.defaultPrevented).toBe(true);
+        expect(element.style.getPropertyValue('--reader-size')).toBe(`${DEFAULT_READING.code.size + 2}px`);
+        await press('-', content);
+        expect(element.style.getPropertyValue('--reader-size')).toBe(`${DEFAULT_READING.code.size + 1}px`);
+        await press('0', content);
+        expect(element.style.getPropertyValue('--reader-size')).toBe(`${DEFAULT_READING.code.size}px`);
+    });
+
+    it('opens the reading settings with Aa, and takes their colours', async () => {
+        api.textFile.mockResolvedValue(text());
+        await show('Program.cs');
+        expect(element.getAttribute('data-reader-theme')).toBe('app');
+
+        button('Reading settings').click();
+        await settle();
+        await fixture.whenStable();
+        expect(element.querySelector('sfe-reading-panel')).not.toBeNull();
+        expect(button('Reading settings').getAttribute('aria-expanded')).toBe('true');
+        element.querySelector<HTMLButtonElement>('.reading-theme[data-reader-theme="dark"]')!.click();
+        await settle();
+        await fixture.whenStable();
+
+        expect(element.getAttribute('data-reader-theme')).toBe('dark');
+        button('Reading settings').click();
+        await settle();
+        await fixture.whenStable();
+        expect(element.querySelector('sfe-reading-panel')).toBeNull();
     });
 
     it('finds in the text with Ctrl+F, even when the focus is elsewhere in the viewer', async () => {

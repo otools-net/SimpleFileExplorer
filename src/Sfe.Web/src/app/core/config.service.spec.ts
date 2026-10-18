@@ -11,6 +11,7 @@ describe('createUrls', () => {
         expect(urls.file('a b/c#1%.jpg')).toBe('api/files/raw/a%20b/c%231%25.jpg');
         expect(urls.download('x/y.mp4')).toBe('api/files/raw/x/y.mp4?download=true');
         expect(urls.thumbnail('x/y.mp4')).toBe('api/thumbnails/x/y.mp4');
+        expect(urls.view('a b/c&d.txt')).toBe('view?path=a+b%2Fc%26d.txt');
         expect(urls.trickplaySheet('x/y.mp4', 2, 99)).toBe('api/trickplay/files/x/y.mp4?sheet=2&v=99');
     });
 

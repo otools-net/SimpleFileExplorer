@@ -18,6 +18,8 @@ export interface FileFormat {
     readonly view: { readonly builtin: BuiltinView } | { readonly load: () => Promise<Type<unknown>> };
     /** The reading preferences it uses: code (monospace, no wrap) or prose (wrapped, width-limited). */
     readonly profile?: 'code' | 'prose';
+    /** It has a page of its own (`view?path=`): what "open in a new tab" opens, rather than the raw file. */
+    readonly page?: boolean;
 }
 
 /** What a format component may ask of the place showing it (the viewer, or a page of its own). */
@@ -75,17 +77,26 @@ export const IMAGE_FORMAT: FileFormat = { id: 'image', label: 'Picture', priorit
 export const VIDEO_FORMAT: FileFormat = { id: 'video', label: 'Video', priority: 0, matches: item => item.kind === 'video', view: { builtin: 'video' } };
 export const AUDIO_FORMAT: FileFormat = { id: 'audio', label: 'Audio', priority: 0, matches: item => item.kind === 'audio', view: { builtin: 'audio' } };
 
-export const TEXT_FORMAT: FileFormat = {
-    id: 'text',
-    label: 'Text',
-    priority: 10,
-    matches: isTextFile,
-    view: { load: () => import('./text/text-view.component').then(m => m.TextViewComponent) },
-    profile: 'code',
-};
+const textView = { load: () => import('./text/text-view.component').then(m => m.TextViewComponent) };
+
+export const TEXT_FORMAT: FileFormat = { id: 'text', label: 'Text', priority: 10, matches: isTextFile, view: textView, profile: 'code', page: true };
+
+/** Text files meant to be read rather than run: wrapped, in a reading font (the prose profile). */
+export const PROSE_EXTENSIONS: ReadonlySet<string> = new Set(['txt', 'text', 'md', 'markdown', 'mdown', 'mkd', 'rst', 'adoc', 'asciidoc', 'org']);
+export const PROSE_NAMES: ReadonlySet<string> = new Set(['readme', 'license', 'licence', 'copying', 'authors', 'contributors', 'changelog', 'changes', 'news', 'todo', 'notice', 'install']);
+
+export function isProseFile(item: LibraryItem): boolean {
+    if (item.kind !== 'file')
+        return false;
+    const name = item.name.toLowerCase();
+    const dot = name.lastIndexOf('.');
+    return PROSE_NAMES.has(name) || (dot >= 0 && PROSE_EXTENSIONS.has(name.slice(dot + 1)));
+}
+
+export const PROSE_FORMAT: FileFormat = { id: 'prose', label: 'Text', priority: 11, matches: isProseFile, view: textView, profile: 'prose', page: true };
 
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT];
+export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text

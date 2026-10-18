@@ -208,7 +208,11 @@ export class ViewerComponent {
         const position = index < 0 ? null : `${index + 1} / ${this.store.viewable().length}${this.store.hasMore() ? '+' : ''}`;
         return joinParts([position, this.config.resolution(item), this.config.duration(item), formatSize(item.size), formatDate(item.modified), item.directory], '  ·  ');
     });
-    protected readonly fileUrl = computed(() => this.item() ? this.urls()!.file(this.item()!.path) : null);
+    /** "Open in new tab": the file itself, or its viewer's page for formats that have one. */
+    protected readonly fileUrl = computed(() => {
+        const item = this.item();
+        return item ? (this.format()?.page ? this.urls()!.view(item.path) : this.urls()!.file(item.path)) : null;
+    });
     protected readonly downloadUrl = computed(() => this.item() ? this.urls()!.download(this.item()!.path) : null);
     /** The item can be opened in the external player (videos and audio, when the server has one for this session). */
     protected readonly external = computed(() => Boolean((this.item()?.kind === 'video' || this.item()?.kind === 'audio') && this.urls()?.externalName));

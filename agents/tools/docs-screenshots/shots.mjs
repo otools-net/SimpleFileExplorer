@@ -158,13 +158,13 @@ const scenes = {
     async textViewer() {
         const b = await session();
         await b.open('?path=Documents');
-        await b.click('a.item-link[href*="Rename%20photos.ps1"]');
+        await b.click('a.item-link[title^="Rename photos.ps1"]');
         await sleep(2500);
         await b.shot(OUT + 'text-viewer.png');
         await b.close();
         const log = await session();
         await log.open('?path=Documents');
-        await log.click('a.item-link[href*="Photo%20backup.log"]');
+        await log.click('a.item-link[title^="Photo backup.log"]');
         await sleep(2500);
         await log.click('.viewer .text-toolbar button[aria-label="Find"]');
         await sleep(300);
@@ -173,6 +173,32 @@ const scenes = {
         await sleep(600);
         await log.shot(OUT + 'text-viewer-find.png');
         await log.close();
+        // Prose: the reading settings, in sepia.
+        const diary = await session();
+        await diary.open('?path=Documents');
+        await diary.click('a.item-link[title^="Trip diary.txt"]');
+        await sleep(2500);
+        await diary.click('.viewer .text-toolbar button[aria-label="Reading settings"]');
+        await sleep(300);
+        await diary.click('.reading-theme[data-reader-theme="sepia"]');
+        await sleep(1200);
+        await diary.shot(OUT + 'text-reading-settings.png');
+        await diary.close();
+        // A page of its own (a text file opened in a new tab).
+        const page = await session();
+        await page.open('view?path=Documents%2FRename%20photos.ps1');
+        await sleep(1500);
+        await page.shot(OUT + 'text-view-page.png');
+        await page.close();
+        // Phones: the settings as a sheet at the bottom.
+        const phone = await session({ width: 390, height: 844, mobile: true });
+        await phone.open('?path=Documents');
+        await phone.click('a.item-link[title^="Trip diary.txt"]');
+        await sleep(2500);
+        await phone.click('.viewer .text-toolbar button[aria-label="Reading settings"]');
+        await sleep(800);
+        await phone.shot(OUT + 'text-reading-phone.png');
+        await phone.close();
     },
     async video() {
         const b = await session();

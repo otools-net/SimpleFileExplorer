@@ -28,6 +28,8 @@ export interface Urls {
     trickplaySheet(path: string, index: number, version: number): string;
     /** The video player alone, in a page of its own; `start`: position in seconds. */
     player(path: string, start?: number): string;
+    /** A file in its viewer, in a page of its own (formats with `page`: text...). */
+    view(path: string): string;
     /**
      * Link opening a file in the external player app (`config.externalPlayer`, e.g. `vlc://{url}`), with `fileUrl` (the
      * file's full address) in place of `{url}` (`{encodedUrl}`: percent-encoded); null when there is none. The address
@@ -80,6 +82,7 @@ export function createUrls(config: ClientConfig): Urls {
                 query.set('t', String(Math.floor(start)));
             return `player?${query}`;
         },
+        view: path => `view?${new URLSearchParams({ path })}`,
         external: url => {
             const template = config.externalPlayer?.url;
             if (!template)

@@ -1,5 +1,5 @@
 import { item } from '../../testing/fakes';
-import { formatOf, isViewable, TEXT_FORMAT } from './formats';
+import { formatOf, isViewable, PROSE_FORMAT, TEXT_FORMAT } from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -11,10 +11,20 @@ describe('formats', () => {
     });
 
     it('shows text files by extension or by their whole name, whatever the case', () => {
-        for (const name of ['notes.txt', 'server.log', 'Program.cs', 'app.JS', 'README', 'Dockerfile', '.gitignore', 'settings.json', 'film.srt', 'build.ps1'])
+        for (const name of ['server.log', 'Program.cs', 'app.JS', 'Dockerfile', '.gitignore', 'settings.json', 'film.srt', 'build.ps1'])
             expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(TEXT_FORMAT);
         // The server's extensions have no dot; the name decides anyway.
-        expect(formatOf({ ...item('a/notes.txt', { kind: 'file' }), extension: 'txt' })).toBe(TEXT_FORMAT);
+        expect(formatOf({ ...item('a/server.log', { kind: 'file' }), extension: 'log' })).toBe(TEXT_FORMAT);
+    });
+
+    it('reads notes and documents as prose, code as code, both with a page of their own', () => {
+        for (const name of ['notes.txt', 'Trip.MD', 'README', 'license', 'guide.rst'])
+            expect(formatOf(item(`a/${name}`, { kind: 'file' }))?.profile, name).toBe('prose');
+        expect(formatOf(item('a/notes.txt', { kind: 'file' }))).toBe(PROSE_FORMAT);
+        expect(TEXT_FORMAT.profile).toBe('code');
+        expect(PROSE_FORMAT.view).toBe(TEXT_FORMAT.view);
+        expect(TEXT_FORMAT.page && PROSE_FORMAT.page).toBe(true);
+        expect(formatOf(item('a/photo.jpg', { kind: 'image' }))?.page).toBeFalsy();
     });
 
     it('has no viewer for folders and other files, unless opened as text', () => {

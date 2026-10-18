@@ -3,6 +3,20 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.65.0
+
+### Added
+
+- **Reading settings** for text files (**Aa** in the text's bar): the font (three bundled fonts made for reading —
+  Literata, Atkinson Hyperlegible, JetBrains Mono — the device's own, or any font installed on it), the size
+  (also Ctrl+= / Ctrl+− / Ctrl+0 in the text), the line height, the longest line, the margins, wrapping, line numbers,
+  and the colours (as the app, light, sepia or dark). Notes and documents (`.txt`, `.md`, `README`…) and code have
+  settings of their own; this browser keeps them.
+- Notes and documents open **wrapped, in a reading font, with margins**; code and logs keep a monospace font and line
+  numbers.
+- **A text file on a page of its own**: "Open in new tab" in the viewer, and a middle click or Ctrl+click on a text
+  file in a listing, open it in its viewer in a new tab (`view?path=…`) rather than as raw text.
+
 ## 1.64.0
 
 ### Added

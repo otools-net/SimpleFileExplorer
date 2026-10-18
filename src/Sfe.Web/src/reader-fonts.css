@@ -1,0 +1,13 @@
+/*
+ * The fonts bundled for reading (OFL, from @fontsource): a style bundle that is not injected into the page
+ * (angular.json, `inject: false`). The text views link it (formats/reading/reading-fonts.ts) only when one of these
+ * fonts is picked, so nobody else downloads them; each face loads only for the characters a page shows.
+ */
+@import "@fontsource/literata/400.css";
+@import "@fontsource/literata/400-italic.css";
+@import "@fontsource/literata/700.css";
+@import "@fontsource/atkinson-hyperlegible/400.css";
+@import "@fontsource/atkinson-hyperlegible/400-italic.css";
+@import "@fontsource/atkinson-hyperlegible/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/700.css";

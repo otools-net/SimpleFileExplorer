@@ -6,6 +6,8 @@ import { LibraryItem, TextFile } from '../../core/models';
 import { Rights } from '../../core/rights';
 import { IconComponent } from '../../shared/icon.component';
 import { FILE_VIEW_HOST, FileFormat } from '../formats';
+import { ReadingPanelComponent } from '../reading/reading-panel.component';
+import { ReadingService } from '../reading/reading.service';
 import { TextEditor } from './codemirror';
 
 const ENCODINGS: Readonly<Record<string, string>> = {
@@ -13,26 +15,37 @@ const ENCODINGS: Readonly<Record<string, string>> = {
 };
 const LINE_ENDINGS: Readonly<Record<string, string>> = { lf: 'LF', crlf: 'CRLF', cr: 'CR', mixed: 'Mixed line endings' };
 
-/** The view's toggles, kept while the viewer steps from file to file (the reading preferences come in a later phase). */
-const wrapLines = signal(false);
-const showLineNumbers = signal(true);
-
 /**
- * A text file in the viewer (agents/docs/features/text-viewer.md), read only: highlighting by its name, line numbers,
- * wrapping, find (Ctrl+F) and go to line (Ctrl+Alt+G). Its keys, wheel and swipes are its own (`data-owns-keys`).
+ * A text file in the viewer or on a page of its own (agents/docs/features/text-viewer.md), read only: highlighting by
+ * its name, find (Ctrl+F), go to line (Ctrl+Alt+G), and the reading preferences of its format's profile ("Aa": font,
+ * size with Ctrl+= / Ctrl+− / Ctrl+0, line height, width, margins, wrapping, line numbers, colours). Its keys, wheel and
+ * swipes are its own (`data-owns-keys`).
  */
 @Component({
     selector: 'sfe-text-view',
-    imports: [IconComponent],
+    imports: [IconComponent, ReadingPanelComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'text-view', 'data-owns-keys': '', '(window:keydown)': 'onWindowKeydown($event)' },
+    host: {
+        class: 'text-view',
+        'data-owns-keys': '',
+        '[class.prose]': "profile() === 'prose'",
+        '[attr.data-reader-theme]': 'reading.preferences().theme',
+        '[style]': 'style()',
+        '(keydown)': 'onKeydown($event)',
+        '(window:keydown)': 'onWindowKeydown($event)',
+    },
     template: `
         <div class="text-toolbar" role="toolbar" aria-label="Text">
-            <button type="button" class="icon-button" [class.active]="wrap()" [attr.aria-pressed]="wrap()" title="Wrap long lines" aria-label="Wrap long lines" (click)="toggleWrap()"><svg sfeIcon="wrap"></svg></button>
-            <button type="button" class="icon-button" [class.active]="lineNumbers()" [attr.aria-pressed]="lineNumbers()" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
+            <button type="button" class="icon-button" [class.active]="own().wrap" [attr.aria-pressed]="own().wrap" title="Wrap long lines" aria-label="Wrap long lines" (click)="toggle('wrap')"><svg sfeIcon="wrap"></svg></button>
+            <button type="button" class="icon-button" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggle('lineNumbers')"><svg sfeIcon="line-numbers"></svg></button>
             <button type="button" class="icon-button" title="Find (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="editor?.find()"><svg sfeIcon="search"></svg></button>
             <button type="button" class="icon-button" title="Go to line (Ctrl+Alt+G)" aria-label="Go to line" [disabled]="state() !== 'ready'" (click)="editor?.goToLine()"><svg sfeIcon="goto-line"></svg></button>
+            <button type="button" class="icon-button reading-toggle" data-reading-toggle [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
+                    title="Reading settings: font, size, width, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
         </div>
+        @if (panelOpen()) {
+            <sfe-reading-panel [profile]="profile()" (closed)="panelOpen.set(false)" />
+        }
         @switch (state()) {
             @case ('loading') {
                 <p class="text-message">Loading…</p>
@@ -62,6 +75,7 @@ export class TextViewComponent {
     private readonly api = inject(Api);
     private readonly config = inject(ConfigService);
     private readonly fileHost = inject(FILE_VIEW_HOST);
+    protected readonly reading = inject(ReadingService);
     private readonly hostElement = viewChild.required<ElementRef<HTMLElement>>('host');
 
     protected readonly state = signal<'loading' | 'ready' | 'failed'>('loading');
@@ -71,9 +85,13 @@ export class TextViewComponent {
     protected readonly file = signal<TextFile | null>(null);
     protected readonly language = signal<string | null>(null);
     protected readonly cursor = signal({ line: 1, column: 1 });
-    protected readonly wrap = wrapLines.asReadonly();
-    protected readonly lineNumbers = showLineNumbers.asReadonly();
+    protected readonly panelOpen = signal(false);
     protected editor: TextEditor | null = null;
+
+    /** The reading preferences that apply: those of its format's profile. */
+    protected readonly profile = computed(() => this.format()?.profile ?? 'code');
+    protected readonly own = computed(() => this.reading.preferences()[this.profile()]);
+    protected readonly style = computed(() => this.reading.style(this.profile()));
 
     protected readonly downloadUrl = computed(() =>
         this.offerDownload() && this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
@@ -94,6 +112,20 @@ export class TextViewComponent {
             const item = this.item();
             untracked(() => void this.load(item, abort.signal));
         });
+        // The preferences as they change (here, from the "Aa" panel, or in another view).
+        effect(() => {
+            const { wrap, lineNumbers } = this.own();
+            this.reading.linkFonts(this.profile());
+            const editor = this.editor;
+            if (this.state() === 'ready' && editor)
+                untracked(() => editor.configure({ wrap, lineNumbers }));
+        });
+        // A new font, size or spacing changes the height of the lines: the editor measures them again.
+        effect(() => {
+            this.style();
+            if (this.state() === 'ready')
+                untracked(() => this.editor?.remeasure());
+        });
     }
 
     private async load(item: LibraryItem, cancel: AbortSignal): Promise<void> {
@@ -111,11 +143,12 @@ export class TextViewComponent {
         if (cancel.aborted)
             return;
         this.file.set(file);
+        const own = this.own();
         this.editor = new TextEditor(this.hostElement().nativeElement, {
             text: file.text,
             name: item.name,
-            wrap: this.wrap(),
-            lineNumbers: this.lineNumbers(),
+            wrap: own.wrap,
+            lineNumbers: own.lineNumbers,
             onCursor: (line, column) => this.cursor.set({ line, column }),
         });
         this.state.set('ready');
@@ -138,14 +171,19 @@ export class TextViewComponent {
         this.state.set('failed');
     }
 
-    protected toggleWrap(): void {
-        wrapLines.update(wrap => !wrap);
-        this.editor?.setWrap(wrapLines());
+    protected toggle(key: 'wrap' | 'lineNumbers'): void {
+        this.reading.update(this.profile(), { [key]: !this.own()[key] });
     }
 
-    protected toggleLineNumbers(): void {
-        showLineNumbers.update(show => !show);
-        this.editor?.setLineNumbers(showLineNumbers());
+    /** Ctrl+= / Ctrl+− / Ctrl+0 inside the view: the text's size, rather than the whole page's zoom. */
+    protected onKeydown(event: KeyboardEvent): void {
+        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented)
+            return;
+        const step = event.key === '=' || event.key === '+' ? 1 : event.key === '-' || event.key === '_' ? -1 : event.key === '0' ? 0 : null;
+        if (step === null)
+            return;
+        event.preventDefault();
+        this.reading.changeSize(this.profile(), step);
     }
 
     /** Ctrl+F and Ctrl+Alt+G anywhere in the viewer find in the text, rather than in the page behind it. */

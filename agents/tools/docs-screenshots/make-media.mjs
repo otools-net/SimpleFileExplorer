@@ -184,6 +184,19 @@ fs.writeFileSync(path.join(root, 'Documents/Photo backup.log'), [
     '2025-07-14 21:07:58.130 INFO  Backup finished in 7 min 56 s, 1 photo left for next time',
     '',
 ].join('\n'));
+fs.writeFileSync(path.join(root, 'Documents/Trip diary.txt'), [
+    'Mountains, day three',
+    '',
+    'We left the hut before sunrise. The path climbed through the last larches, then over loose stones, and the valley ' +
+    'below slowly filled with light. By nine we were on the ridge, with the lake far down on one side and the glacier on the other.',
+    '',
+    'Lunch at the pass: bread, cheese, the last of the apricots. A family of marmots watched us from a rock and whistled ' +
+    'every time someone stood up. The wind turned cold after noon, so we did not wait for the clouds to lift from the summit.',
+    '',
+    'The way down was longer than it looked from above. Our knees will remember it. Dinner in the village, then early to bed: ' +
+    'tomorrow the train back, and three hundred photos to sort.',
+    '',
+].join('\n'));
 fs.writeFileSync(path.join(root, 'Documents/Rename photos.ps1'), [
     '# Renames the photos of a folder after the day they were taken: 2025-07-14 001.jpg, 2025-07-14 002.jpg...',
     'param(',
