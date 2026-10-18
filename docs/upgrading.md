@@ -30,6 +30,13 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.69
+
+- New setting `Sfe:FileTypes:Text` (empty: the viewer's own list of text files, as before). Nothing changes in the
+  databases or the rights.
+- An open text file asks the server for its version every 30 seconds while it is shown (`GET api/files/text/version`),
+  reading the file again only when its size or date changed.
+
 ## To 1.68
 
 - New settings `Sfe:Reading:…` (how text files read: the library's defaults, each account's own over them), with the

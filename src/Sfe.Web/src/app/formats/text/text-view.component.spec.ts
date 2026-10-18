@@ -146,20 +146,18 @@ describe('TextViewComponent', () => {
         expect(element.querySelector('.cm-search')).not.toBeNull();
     });
 
-    it('offers to download a file too large to be shown or that is not text', async () => {
-        api.textFile.mockRejectedValue(new ApiError(413, 'too large', null, 'too-large'));
-        await show('huge.log');
+    it('offers to download a file that is not text, to those who may', async () => {
+        api.textFile.mockRejectedValue(new ApiError(415, 'not text', null, 'not-text'));
+        await show('data.bin');
 
-        expect(element.querySelector('.text-message')!.textContent).toContain('too large');
+        expect(element.querySelector('.text-message')!.textContent).toContain('not text');
         expect(element.querySelector<HTMLAnchorElement>('.text-message a')!.getAttribute('href')).toContain('download=true');
         expect(element.querySelector('.cm-editor')).toBeNull();
 
         fixture.destroy();
         rights.delete('files.download');
-        api.textFile.mockRejectedValue(new ApiError(415, 'not text', null, 'not-text'));
         await show('data.bin');
 
-        expect(element.querySelector('.text-message')!.textContent).toContain('not text');
         expect(element.querySelector('.text-message a')).toBeNull();
     });
 });

@@ -268,6 +268,81 @@ public sealed class TextRouteTests
     }
 
     /// <summary>Another server, on a library of its own (the first one's database is set up already).</summary>
+
+    [TestMethod]
+    public async Task AFileIsReadAgainInTheEncodingAsked()
+    {
+        await File.WriteAllBytesAsync(_library.FullPath("Media/notes.txt"), [0x63, 0x61, 0x66, 0xC3, 0xA9], Token);
+
+        var asIs = await ReadAsync(_alice, "Media/notes.txt");
+        using var ansi = await _alice.GetAsync("/api/files/text?path=Media/notes.txt&encoding=windows-1252", Token);
+        var asAnsi = (await ansi.Content.ReadFromJsonAsync<TextFile>(Json, Token))!;
+        using var unknown = await _alice.GetAsync("/api/files/text?path=Media/notes.txt&encoding=latin-9", Token);
+
+        Assert.AreEqual(("café", TextCodec.Utf8), (asIs.Text, asIs.Encoding));
+        Assert.AreEqual(("cafÃ©", TextCodec.Windows1252, asIs.Version), (asAnsi.Text, asAnsi.Encoding, asAnsi.Version));
+        Assert.AreEqual(HttpStatusCode.BadRequest, unknown.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task LargeFilesAreReadInPartsWithTheSameRules()
+    {
+        _library.AddFile(".sfe/trash/x.log", 10);
+        WriteText("big.log", string.Concat(Enumerable.Range(1, 1000).Select(i => $"line {i:0000}\n")));
+        await File.WriteAllBytesAsync(_library.FullPath("RFile2"), [0x89, 0x50, 0x4E, 0x47, 0x00, 0x00], Token);
+
+        var start = await PartAsync(_alice, "big.log&offset=0&length=100");
+        var end = await PartAsync(_alice, "big.log&length=100");
+        using var binary = await _alice.GetAsync("/api/files/text/part?path=RFile2", Token);
+        using var tooLong = await _alice.GetAsync($"/api/files/text/part?path=big.log&length={TextEndpoints.MaxPartBytes + 1}", Token);
+        using var forbidden = await _bob.GetAsync("/api/files/text/part?path=big.log", Token);
+        using var work = await _alice.GetAsync("/api/files/text/part?path=.sfe/trash/x.log", Token);
+        using var hidden = await _alice.GetAsync($"/api/files/text/part?path={Uri.EscapeDataString("SpecialDir/SDРусский.txt")}", Token);
+
+        Assert.AreEqual((0L, 100L, 10_000L), (start.Offset, start.End, start.Size));
+        StringAssert.StartsWith(start.Text, "line 0001\n");
+        Assert.AreEqual((9_900L, 10_000L), (end.Offset, end.End));
+        StringAssert.EndsWith(end.Text, "line 1000\n");
+        Assert.AreEqual(HttpStatusCode.UnsupportedMediaType, binary.StatusCode);
+        Assert.AreEqual(HttpStatusCode.BadRequest, tooLong.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, work.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task TheVersionTellsWhetherTheFileChangedSinceItWasOpened()
+    {
+        WriteText("Media/notes.txt", "first");
+        _library.AddFile("big.log", TextEndpoints.MaxBytes + 1);
+        var opened = await ReadAsync(_alice, "Media/notes.txt");
+
+        var same = await VersionAsync(_alice, $"Media/notes.txt&known={Uri.EscapeDataString(opened.Version)}");
+        WriteText("Media/notes.txt", "second!");
+        var changed = await VersionAsync(_alice, $"Media/notes.txt&known={Uri.EscapeDataString(opened.Version)}");
+        var big = await VersionAsync(_alice, "big.log");
+        using var forbidden = await _bob.GetAsync("/api/files/text/version?path=Media/notes.txt", Token);
+
+        Assert.AreEqual(opened.Version, same.Version);
+        Assert.AreNotEqual(opened.Version, changed.Version);
+        Assert.AreEqual(7L, changed.Size);
+        Assert.AreEqual((null, TextEndpoints.MaxBytes + 1), (big.Version, big.Size));
+        Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode);
+    }
+
+    private async Task<TextPart> PartAsync(HttpClient client, string query)
+    {
+        using var response = await client.GetAsync($"/api/files/text/part?path={query}", Token);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+        return (await response.Content.ReadFromJsonAsync<TextPart>(Json, Token))!;
+    }
+
+    private async Task<TextVersion> VersionAsync(HttpClient client, string query)
+    {
+        using var response = await client.GetAsync($"/api/files/text/version?path={query}", Token);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+        return (await response.Content.ReadFromJsonAsync<TextVersion>(Json, Token))!;
+    }
     private Task RestartAsync(Action<IDictionary<string, string?>> configure, params string[] editorRights)
     {
         Stop();

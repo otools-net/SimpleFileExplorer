@@ -243,6 +243,59 @@ public sealed class FileContentTests
     private Task<OverwriteResult> SaveAsync(string path, string text, string ifMatch, string session = "s", bool keepPrevious = true) =>
         Content.OverwriteAsync(path, Encoding.UTF8.GetBytes(text), ifMatch, session, keepPrevious, Me, Token);
 
+
+    [TestMethod]
+    public async Task AnyPartOfALargeFileIsReadAtWholeLines()
+    {
+        var lines = string.Concat(Enumerable.Range(1, 2000).Select(i => $"line {i:0000}\n"));    // 10 bytes a line
+        var full = WriteText("big.log", lines);
+
+        var start = (await Content.ReadPartAsync(full, 0, 95, null, Token))!;
+        var middle = (await Content.ReadPartAsync(full, start.End + 5, 100, null, Token))!;
+        var end = (await Content.ReadPartAsync(full, -1, 95, null, Token))!;
+        var past = (await Content.ReadPartAsync(full, 1_000_000, 100, null, Token))!;
+
+        Assert.AreEqual(("line 0001\n", 0L, 90L, 20_000L, TextCodec.Utf8), (start.Text![..10], start.Offset, start.End, start.Size, start.Encoding));
+        Assert.AreEqual((100L, "line 0011\n"), (middle.Offset, middle.Text![..10]), "from the line after the offset");
+        Assert.IsTrue(middle.Text.EndsWith('\n'));
+        Assert.AreEqual((19_910L, 20_000L, "line 1992\n"), (end.Offset, end.End, end.Text![..10]));
+        Assert.AreEqual((20_000L, ""), (past.Offset, past.Text));
+        Assert.IsNull(await Content.ReadPartAsync(Path.Combine(_library.Root, "nothing.log"), 0, 10, null, Token));
+    }
+
+    [TestMethod]
+    public async Task PartsOfUtf16AndOfBinaryFiles()
+    {
+        var wide = _library.FullPath("wide.txt");
+        await File.WriteAllBytesAsync(wide, [0xFF, 0xFE, .. Encoding.Unicode.GetBytes("one\ntwo\nthree\n")], Token);
+        var binary = _library.FullPath("data.bin");
+        await File.WriteAllBytesAsync(binary, [0x89, 0x50, 0x00, 0x0A, 0x41], Token);
+
+        var start = (await Content.ReadPartAsync(wide, 0, 10, null, Token))!;
+        var next = (await Content.ReadPartAsync(wide, start.End, 100, null, Token))!;
+        var refused = (await Content.ReadPartAsync(binary, 0, 100, null, Token))!;
+
+        Assert.AreEqual(("one\n", TextCodec.Utf16Le, 2L), (start.Text, start.Encoding, start.Offset), "the mark is skipped");
+        Assert.AreEqual("two\nthree\n", next.Text);
+        Assert.IsNull(refused.Text);
+    }
+
+    [TestMethod]
+    public async Task TheVersionIsReadAgainOnlyWhenTheSizeOrTimeChanged()
+    {
+        var full = WriteText("notes.txt", "first");
+        var version = (await Content.VersionAsync(full, null, Token))!;
+        var same = (await Content.VersionAsync(full, version.Token, Token))!;
+        var forged = (await Content.VersionAsync(full, version.Token[..version.Token.LastIndexOf('-')] + "-0000", Token))!;
+        await File.WriteAllTextAsync(full, "second!", Token);
+        var changed = (await Content.VersionAsync(full, version.Token, Token))!;
+
+        Assert.AreEqual(version, same);
+        Assert.AreEqual(version.Token[..version.Token.LastIndexOf('-')] + "-0000", forged.Token, "Same size and time: not read again");
+        Assert.AreNotEqual(version.Token, changed.Token);
+        Assert.AreEqual((await FileVersion.OfFileAsync(full, Token)).Token, changed.Token);
+        Assert.IsNull(await Content.VersionAsync(Path.Combine(_library.Root, "nothing.txt"), null, Token));
+    }
     private string WriteText(string relative, string text)
     {
         var full = _library.FullPath(relative);

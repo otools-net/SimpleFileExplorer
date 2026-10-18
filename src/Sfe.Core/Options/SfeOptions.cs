@@ -556,6 +556,12 @@ public sealed class FileTypeOptions
     public List<string> Videos { get; set; } = [];
     public List<string> Audio { get; set; } = [];
 
+    /// <summary>
+    /// More extensions the web client shows as text, besides the ones it knows (<c>.txt</c>, <c>.log</c>, <c>.json</c>,
+    /// code...): not media, so not in the other lists. Without a dot, lower case.
+    /// </summary>
+    public List<string> Text { get; set; } = [];
+
     /// <param name="isConfigured">Whether the configuration has a value for the named list.</param>
     public void ApplyDefaults(Func<string, bool> isConfigured)
     {

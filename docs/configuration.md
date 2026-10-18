@@ -80,7 +80,7 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Player:SeekSeconds`, `Loop`, `ExternalUrl`, `ExternalName`, `LinkLifetimeMinutes` | [Playback](administration/playback.md) |
 | `Sfe:Streaming:Mode` (`Fallback`, `Always`, `Off`), `MaxStreams`, `Quality`, `MaxHeight`, `CopyVideo` | [Playback › Videos converted by the server](administration/playback.md#videos-converted-by-the-server) |
 | `Sfe:Scan:IgnoredDirectories`, `IgnoredFiles`, `ExcludedFolders`, `Sfe:ShowHiddenItems` | [Scanning › What to scan](administration/scanning.md#what-to-scan) |
-| `Sfe:FileTypes:Images`, `Videos`, `Audio` | [Scanning › File types](administration/scanning.md#file-types) |
+| `Sfe:FileTypes:Images`, `Videos`, `Audio`, `Text` | [Scanning › File types](administration/scanning.md#file-types) |
 | `Sfe:Scan:ComputeHashes`, `ReadResolution`, `Parallelism` | [Scanning › Indexing](administration/scanning.md#indexing) |
 | `Sfe:Tags:SidebarCount`, `RecordHistory` | [Tags › Settings](administration/tags.md#settings) |
 | `Sfe:FileTracking:…` | [Duplicates & moves › Settings](administration/duplicates-and-moves.md#settings) |

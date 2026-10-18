@@ -48,6 +48,30 @@ Code: client `app/formats/formats.ts` (registry), `app/formats/text/` (`text-vie
   takes Ctrl+F and Ctrl+Alt+G from the window, so they work when the focus is on the viewer rather than in the text.
 - Failures: 413/415/500 offer **Download** when `files.download`; 404/403 say so.
 
+## Large files, Follow, encodings, positions (1.69.0)
+
+- `GET api/files/text?encoding=` (`utf-8`, `windows-1252`, `utf-16le`, `utf-16be`): `TextCodec.Decode(bytes, encoding)`
+  (mark skipped, invalid bytes replaced; a UTF-8 mark reported as `utf-8-bom` so a save keeps it). The status bar's
+  encoding is a `select` (`data-read-encoding`) calling `TextSession.reopen`.
+- `GET api/files/text/part?path=&offset=&length=&encoding=` (`files.view`): `FileContent.ReadPartAsync` → `TextPart`
+  (`text, offset, end, size, encoding, modified`); offset −1 = the last `length` bytes; length 1 B–1 MB (default 256 KB).
+  `TextParts.Cut`: after the first line break unless the part starts a line (the byte before is one) and up to after
+  the last unless at the end; without a break, whole UTF-8 characters only; UTF-16 by 2-byte units at even offsets.
+  Encoding: the given one, the file's mark, else UTF-8 when the part is valid UTF-8, else windows-1252. A NUL in the
+  first 8 KB without a UTF-16 mark → 415.
+- Text view: a 413 from the whole read opens **parts** (`part` signal: offset, end, size, encoding; `.log` from the
+  end): Start / Earlier (`offset − 256 KB` up to the shown offset) / Later (`end`) / End; read only, no
+  `TextSession.attach` (no edit, no checks); the status bar shows the byte range.
+- **Follow** (`following`; `TextSession.following` blocks editing and the disk checks): every `FOLLOW_MS` (2 s) a part
+  from `followFrom` (the whole file's `size`, or the part's `end`) is appended (`TextEditor.append`, kept at the end
+  when it was there; parts mode keeps at most 4 M characters); `size < followFrom` = rotated: read again. Stopping in
+  whole mode reloads the file (text and version for a save).
+- Positions: `positions.ts`, `localStorage` `sfe.text.positions` = `{ path: first line shown }`, the latest 100; saved
+  500 ms after scrolling stops and on destroy (whole files, not followed); restored after the load unless `edit`.
+- `Sfe:FileTypes:Text` (library setting, `fileTypes.` → `settings.scanning`, never a media extension) →
+  `ClientConfig.TextExtensions` → `setTextExtensions` (a signal in `formats.ts`, set by `ConfigService.load`), read by
+  `isTextFile`.
+
 ## Gotchas
 
 - CodeMirror's base theme beats global CSS: style its parts through `readerTheme`, not `reader.css` selectors.

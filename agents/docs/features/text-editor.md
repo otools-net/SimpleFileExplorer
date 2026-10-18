@@ -69,6 +69,17 @@ the first MB when hashes are on) → `browser.Invalidate(parent)` (change feed) 
   opens the viewer with `{ edit: true }`; the server's `access` then decides what saving offers. Pictures get
   **Crop…** (`editPicture`) there too.
 
+## Changed elsewhere, encodings on save (1.69.0)
+
+- `GET api/files/text/version?path=&known=` (`files.view`): `FileContent.VersionAsync` returns `known` as is when the
+  size and time in it (`size-ticks-` prefix) are the file's, else hashes it again; over `MaxBytes`, `version` null.
+- `TextSession.checkDisk`: on a change-feed event for the file's folder (`ChangeFeed.listen`, other tabs only), on
+  `visibilitychange` to visible and every `DISK_CHECK_MS` (30 s, only while visible); not while saving, following or a
+  bar is shown. A new version → the `disk` bar (Reload / Keep); a kept version is not asked about again (`ignored`).
+- `encoding` and `lineEnding` signals are what a save writes (the status bar's selects while editing); `readEncoding`
+  is what `reload` reads with (Reopen with encoding).
+- Markdown re-renders on `revision` from the source editor, or from `session.file().text` without it (a reload).
+
 ## Guards
 
 - `FileViewHost.guard(canLeave)` registers; `TextSession` releases it on destroy. `canLeave` asks `confirm` once and

@@ -545,6 +545,7 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         settings.FileTypes.Images = Extensions(settings.FileTypes.Images);
         settings.FileTypes.Videos = Extensions(settings.FileTypes.Videos);
         settings.FileTypes.Audio = Extensions(settings.FileTypes.Audio);
+        settings.FileTypes.Text = Extensions(settings.FileTypes.Text);
         settings.Scan.ExcludedFolders = Folders(settings.Scan.ExcludedFolders);
         settings.Trickplay.Folders = Folders(settings.Trickplay.Folders);
         settings.Editor.OutputFolder = string.IsNullOrWhiteSpace(settings.Editor.OutputFolder)
@@ -601,13 +602,15 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         var excluded = s.Scan.ExcludedFolders.FirstOrDefault(f => LibraryPaths.NormalizeRelative(f) is null);
         Check(excluded is null, "scan.excludedFolders", $"“{excluded}” is not a folder of the library: enter paths relative to the library, like Movies/Old.");
 
-        foreach (var (list, key) in new[] { (s.FileTypes.Images, "fileTypes.images"), (s.FileTypes.Videos, "fileTypes.videos"), (s.FileTypes.Audio, "fileTypes.audio") })
+        foreach (var (list, key) in new[] { (s.FileTypes.Images, "fileTypes.images"), (s.FileTypes.Videos, "fileTypes.videos"), (s.FileTypes.Audio, "fileTypes.audio"), (s.FileTypes.Text, "fileTypes.text") })
             Check(list.All(e => e.All(c => char.IsLetterOrDigit(c) || c is '_' or '-')), key, "Extensions can only contain letters, digits, '-' and '_'.");
         var shared = s.FileTypes.Images.Intersect(s.FileTypes.Videos)
             .Concat(s.FileTypes.Images.Intersect(s.FileTypes.Audio))
             .Concat(s.FileTypes.Videos.Intersect(s.FileTypes.Audio))
             .FirstOrDefault();
         Check(shared is null, "fileTypes", $"“{shared}” is in two lists: an extension can only be one kind of media.");
+        var media = s.FileTypes.Text.FirstOrDefault(e => s.FileTypes.Images.Contains(e) || s.FileTypes.Videos.Contains(e) || s.FileTypes.Audio.Contains(e));
+        Check(media is null, "fileTypes.text", $"“{media}” is a kind of media: take it out of its media list first to show it as text.");
 
         Range(s.Thumbnails.Width, 32, 4096, "thumbnails.width", "The thumbnail width");
         Range(s.Thumbnails.LargeImageKilobytes, 0, MaxLargeImageKilobytes, "thumbnails.largeImageKilobytes", "The large image size");

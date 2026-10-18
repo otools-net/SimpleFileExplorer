@@ -18,7 +18,8 @@ save a copy next to it, or download them.
 
 - **Edited** in the bar at the bottom tells that the text has changes not saved yet. Undoing them all takes it away.
 - A file is saved as it was: in the same **encoding** (UTF-8, UTF-16 or Windows-1252) and with the same **line endings**
-  (Windows CRLF or Unix LF; a file that mixes them gets the one it uses most).
+  (Windows CRLF or Unix LF; a file that mixes them gets the one it uses most). While editing, the encoding and the line
+  endings in the bar at the bottom choose others for the next save (UTF-8 with a BOM, for a program that wants one).
 - **Markdown** files are edited beside the document: the source on one side, the document as it reads on the other,
   which follows what you type.
 - **New file** (in a folder's [bar](managing-files.md#new-file)) opens the new text file here, ready to be written.
@@ -49,6 +50,10 @@ want. In a space that deletes for good, no previous version is kept.
 The file itself keeps its tags, and the index (size, date, duplicates) follows its new content.
 
 ## Changed elsewhere
+
+While a file is open, SFE checks whether it was changed elsewhere: at once for a change made through SFE (another
+tab, another person), every 30 seconds for the rest. The bar then offers **Reload** (your changes are lost) or **Keep
+editing**.
 
 A file changed by someone else (or another program) since you opened it is not saved over without asking:
 

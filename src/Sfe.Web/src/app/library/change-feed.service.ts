@@ -7,7 +7,7 @@ import { ListingStore } from './listing.store';
 /** Changes close together (a move touches two folders, a folder upload many) make one reload. */
 const SETTLE = 400;
 
-interface FolderChange {
+export interface FolderChange {
     path: string;
     origin: string | null;
 }
@@ -23,6 +23,7 @@ export class ChangeFeed {
     private readonly store = inject(ListingStore);
     private source: EventSource | null = null;
     private timer: ReturnType<typeof setTimeout> | undefined;
+    private readonly listeners = new Set<(change: FolderChange) => void>();
 
     constructor() {
         inject(DestroyRef).onDestroy(() => this.stop());
@@ -42,8 +43,19 @@ export class ChangeFeed {
         this.source = null;
     }
 
+    /**
+     * Tells `listener` of the folders changed elsewhere (not by this tab): an open file in the viewer checks whether it
+     * is one of them. Returns the way to stop.
+     */
+    listen(listener: (change: FolderChange) => void): () => void {
+        this.listeners.add(listener);
+        return () => this.listeners.delete(listener);
+    }
+
     /** A change of the folder listed, made elsewhere: refreshed once the changes settle. */
     changed(change: FolderChange): void {
+        if (change.origin !== TAB_ID)
+            this.listeners.forEach(listener => listener(change));
         const route = this.store.route();
         if (change.origin === TAB_ID || route.q || change.path !== route.path)
             return;

@@ -67,6 +67,49 @@ public static class TextCodec
         return new DecodedText(text, encoding, LineEndingOf(text));
     }
 
+    /// <summary>The encodings a file can be read with on request (Reopen with encoding); a byte order mark is skipped.</summary>
+    public static readonly IReadOnlySet<string> ReadEncodings = new HashSet<string> { Utf8, Windows1252, Utf16Le, Utf16Be };
+
+    /// <summary>
+    /// The text of <paramref name="bytes"/> read with <paramref name="encoding"/> (one of <see cref="ReadEncodings"/>)
+    /// rather than the one they seem to have; what isn't valid in it is replaced (�). Null for bytes that are binary
+    /// for an 8-bit encoding (a NUL near the start). Without an encoding, as <see cref="Decode(ReadOnlySpan{byte})"/>.
+    /// </summary>
+    public static DecodedText? Decode(ReadOnlySpan<byte> bytes, string? encoding)
+    {
+        if (encoding is null)
+            return Decode(bytes);
+        if (!ReadEncodings.Contains(encoding))
+            throw new ArgumentException($"Unknown encoding {encoding}.", nameof(encoding));
+        var (mark, length) = ByteOrderMark(bytes);
+        var content = bytes[length..];
+        if (encoding is Utf8 or Windows1252 && content[..Math.Min(content.Length, BinaryProbe)].Contains((byte)0))
+            return null;
+        var text = Read(content, encoding);
+        // Read as UTF-8, a file with the UTF-8 mark keeps it when saved.
+        return new DecodedText(text, encoding == Utf8 && mark == Utf8Bom ? Utf8Bom : encoding, LineEndingOf(text));
+    }
+
+    /// <summary>The encoding a byte order mark at the start of <paramref name="bytes"/> gives, and the mark's length (null and 0 without one).</summary>
+    public static (string? Encoding, int Length) ByteOrderMark(ReadOnlySpan<byte> bytes) =>
+        bytes.StartsWith((ReadOnlySpan<byte>)[0xEF, 0xBB, 0xBF]) ? (Utf8Bom, 3)
+        : bytes.StartsWith((ReadOnlySpan<byte>)[0xFF, 0xFE]) ? (Utf16Le, 2)
+        : bytes.StartsWith((ReadOnlySpan<byte>)[0xFE, 0xFF]) ? (Utf16Be, 2)
+        : (null, 0);
+
+    /// <summary>Bytes without a mark as text in <paramref name="encoding"/>, what isn't valid replaced (a part of a file cut anywhere).</summary>
+    public static string Read(ReadOnlySpan<byte> bytes, string encoding) => encoding switch
+    {
+        Utf8 or Utf8Bom => Encoding.UTF8.GetString(bytes),
+        Utf16Le => Encoding.Unicode.GetString(bytes),
+        Utf16Be => Encoding.BigEndianUnicode.GetString(bytes),
+        Windows1252 => Ansi.GetString(bytes),
+        _ => throw new ArgumentException($"Unknown encoding {encoding}.", nameof(encoding)),
+    };
+
+    /// <summary>Valid UTF-8 (what a file without a mark is read as; else windows-1252).</summary>
+    public static bool IsUtf8(ReadOnlySpan<byte> bytes) => System.Text.Unicode.Utf8.IsValid(bytes);
+
     /// <summary>The encodings <see cref="Encode"/> writes.</summary>
     public static readonly IReadOnlySet<string> Encodings = new HashSet<string> { Utf8, Utf8Bom, Utf16Le, Utf16Be, Windows1252 };
 

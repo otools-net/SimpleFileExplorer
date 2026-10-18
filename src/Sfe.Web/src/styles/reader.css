@@ -97,6 +97,7 @@
 
 .text-toolbar {
     display: flex;
+    flex-wrap: wrap;
     gap: 4px;
     padding: 6px 8px;
     border-bottom: 1px solid var(--reader-border);
@@ -139,6 +140,9 @@
 .text-view .text-action svg { width: 16px; height: 16px; }
 .text-view .text-action:hover:not(:disabled) { background: var(--reader-active-line); }
 .text-view .text-action.primary { border-color: var(--accent); color: var(--accent); }
+.text-view .text-action.active { background: var(--reader-selection-match); color: var(--accent); }
+/* A file too large to be read whole: its parts. */
+.text-parts { display: flex; gap: 4px; margin-right: 8px; }
 .text-view .text-action:disabled { opacity: .5; cursor: default; }
 
 .text-bar {
@@ -189,7 +193,13 @@
     white-space: nowrap;
 }
 
-.text-status span:first-child { overflow: hidden; text-overflow: ellipsis; }
+.text-status > span:first-child { overflow: hidden; text-overflow: ellipsis; }
+/* Language · encoding · line endings · size; the encoding and line endings as choices (reopen, or what a save writes). */
+.text-status-details { display: flex; align-items: center; gap: 4px 12px; min-width: 0; white-space: nowrap; }
+.text-status-select { max-width: 160px; padding: 0 4px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.text-status-select:is(:hover, :focus-visible) { border-color: var(--reader-border); }
+.text-status-select:disabled { cursor: default; }
+.text-status-select option { background: var(--reader-bg); color: var(--reader-text); }
 
 /* ---------- The reading settings ("Aa" panel) ---------- */
 

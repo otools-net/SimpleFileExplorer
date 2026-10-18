@@ -168,6 +168,26 @@ public sealed class SettingsTests
     }
 
     [TestMethod]
+    public async Task MoreTextExtensionsAreCleanedAndNeverMedia()
+    {
+        var settings = Settings.Get().Values;
+        Assert.IsEmpty(settings.FileTypes.Text);
+
+        settings.FileTypes.Text = [" .DAT", "out", "dat"];
+        var (saved, errors) = await Settings.SaveAsync(settings, TestContext.CancellationToken);
+        Assert.IsNull(errors);
+        CollectionAssert.AreEqual(new[] { "dat", "out" }, saved!.Values.FileTypes.Text);
+
+        settings.FileTypes.Text = ["mp4"];
+        (_, errors) = await Settings.SaveAsync(settings, TestContext.CancellationToken);
+        CollectionAssert.AreEqual(new[] { "fileTypes.text" }, errors!.Keys.ToArray());
+
+        settings.FileTypes.Text = ["a b"];
+        (_, errors) = await Settings.SaveAsync(settings, TestContext.CancellationToken);
+        CollectionAssert.AreEqual(new[] { "fileTypes.text" }, errors!.Keys.ToArray());
+    }
+
+    [TestMethod]
     public async Task InvalidSettingsAreRejectedPerField()
     {
         var settings = Settings.Get().Values;

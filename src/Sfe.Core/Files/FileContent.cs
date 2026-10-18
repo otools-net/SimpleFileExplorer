@@ -34,6 +34,80 @@ public sealed record FileRead(byte[]? Bytes, FileVersion? Version, long Size, Da
     public bool TooLarge => Bytes is null;
 }
 
+/// <summary>A part of a text file (<see cref="FileContent.ReadPartAsync"/>).</summary>
+/// <param name="Text">The part as text; null when the file is binary.</param>
+/// <param name="Offset">Where the part starts in the file, in bytes (after a cut to a whole line).</param>
+/// <param name="End">Where it ends: the offset of the next part.</param>
+/// <param name="Size">The file's size when it was read.</param>
+/// <param name="Encoding">How it was read (as <see cref="TextCodec"/> names them; a UTF-8 mark is plain <c>utf-8</c>).</param>
+public sealed record TextPart(string? Text, long Offset, long End, long Size, string Encoding, DateTime Modified);
+
+/// <summary>Where a part of a text file read from anywhere is cut, so that it holds whole lines and whole characters.</summary>
+public static class TextParts
+{
+    /// <summary>
+    /// The bytes of <paramref name="bytes"/> to keep: from after the first line break (unless <paramref name="atStart"/>)
+    /// to after the last one (unless <paramref name="atEnd"/>). Without a line break, at whole characters only (a
+    /// UTF-8 sequence is never cut). <paramref name="encoding"/> null or 8-bit: one byte a character unit.
+    /// </summary>
+    public static (int From, int To) Cut(ReadOnlySpan<byte> bytes, bool atStart, bool atEnd, string? encoding)
+    {
+        ReadOnlySpan<byte> lineBreak = encoding switch
+        {
+            TextCodec.Utf16Le => [(byte)'\n', 0],
+            TextCodec.Utf16Be => [0, (byte)'\n'],
+            _ => [(byte)'\n'],
+        };
+        var unit = lineBreak.Length;
+        var from = 0;
+        var to = bytes.Length;
+        if (!atStart && IndexOf(bytes, lineBreak, unit) is var first and >= 0 && first + unit < to)
+            from = first + unit;
+        else if (!atStart && unit == 1 && encoding != TextCodec.Windows1252)
+            while (from < to && from < 3 && (bytes[from] & 0xC0) == 0x80)
+                from++;
+        if (!atEnd && LastIndexOf(bytes[from..], lineBreak, unit) is var last and >= 0)
+            to = from + last + unit;
+        else if (!atEnd && unit == 1 && encoding != TextCodec.Windows1252)
+            to = from + WholeUtf8(bytes[from..to]);
+        return (from, to);
+    }
+
+    /// <summary>The first line break at a character boundary (UTF-16: an even offset).</summary>
+    private static int IndexOf(ReadOnlySpan<byte> bytes, ReadOnlySpan<byte> lineBreak, int unit)
+    {
+        for (var i = 0; i + unit <= bytes.Length; i += unit)
+            if (bytes.Slice(i, unit).SequenceEqual(lineBreak))
+                return i;
+        return -1;
+    }
+
+    private static int LastIndexOf(ReadOnlySpan<byte> bytes, ReadOnlySpan<byte> lineBreak, int unit)
+    {
+        for (var i = (bytes.Length - unit) / unit * unit; i >= 0; i -= unit)
+            if (bytes.Slice(i, unit).SequenceEqual(lineBreak))
+                return i;
+        return -1;
+    }
+
+    /// <summary>How many bytes of <paramref name="bytes"/> end at a whole UTF-8 character (an 8-bit text: all of them).</summary>
+    private static int WholeUtf8(ReadOnlySpan<byte> bytes)
+    {
+        // Back over at most three continuation bytes to the start of the last sequence; keep it only when complete.
+        var i = bytes.Length - 1;
+        var back = 0;
+        while (i >= 0 && back < 3 && (bytes[i] & 0xC0) == 0x80)
+        {
+            i--;
+            back++;
+        }
+        if (i < 0 || bytes[i] < 0xC0)
+            return bytes.Length;
+        var needed = bytes[i] >= 0xF0 ? 4 : bytes[i] >= 0xE0 ? 3 : 2;
+        return back + 1 >= needed ? bytes.Length : i;
+    }
+}
+
 public enum OverwriteStatus
 {
     Done,
@@ -117,6 +191,90 @@ public sealed class FileContent(
                 return new FileRead(null, null, read, modified);
             var bytes = read == buffer.Length ? buffer : buffer[..read];
             return new FileRead(bytes, FileVersion.Of(bytes, modified), read, modified);
+        }
+    }
+
+    /// <summary>
+    /// A part of a text file of any size (agents/docs/features/text-viewer.md, large files and logs): about
+    /// <paramref name="length"/> bytes from <paramref name="offset"/>, or the last ones when it is negative, cut at whole
+    /// lines (unless a line is longer than the part) and decoded in <paramref name="encoding"/>, or as the file's mark
+    /// says, or as UTF-8 when the part is valid UTF-8 and else windows-1252. Null when the file is not there; a part
+    /// with null text when it is binary.
+    /// </summary>
+    public async Task<TextPart?> ReadPartAsync(string full, long offset, int length, string? encoding, CancellationToken cancellationToken)
+    {
+        FileStream stream;
+        try
+        {
+            stream = new FileStream(full, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 64 * 1024, useAsync: true);
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return null;
+        }
+        await using (stream)
+        {
+            var modified = File.GetLastWriteTimeUtc(full);
+            var size = stream.Length;
+            var head = new byte[(int)Math.Min(size, TextCodec.BinaryProbe)];
+            await stream.ReadExactlyAsync(head, cancellationToken);
+            var (mark, markLength) = TextCodec.ByteOrderMark(head);
+            var wide = (encoding ?? mark) is TextCodec.Utf16Le or TextCodec.Utf16Be;
+            if (!wide && head.AsSpan(markLength).Contains((byte)0))
+                return new TextPart(null, 0, 0, size, encoding ?? mark ?? TextCodec.Utf8, modified);
+
+            var start = offset < 0 ? Math.Max(markLength, size - length) : Math.Clamp(offset, markLength, size);
+            var end = Math.Min(size, start + length);
+            if (wide && (start - markLength) % 2 == 1)
+                start++;
+            if (wide && (end - markLength) % 2 == 1)
+                end--;
+            // Right after a line break (the end of the part before): it starts with a whole line already.
+            var unit = wide ? 2 : 1;
+            var lineStart = start <= markLength;
+            if (!lineStart)
+            {
+                var before = new byte[unit];
+                stream.Position = start - unit;
+                await stream.ReadExactlyAsync(before, cancellationToken);
+                lineStart = (encoding ?? mark) switch
+                {
+                    TextCodec.Utf16Le => before is [(byte)'\n', 0],
+                    TextCodec.Utf16Be => before is [0, (byte)'\n'],
+                    _ => before is [(byte)'\n'],
+                };
+            }
+            var buffer = new byte[Math.Max(0, end - start)];
+            stream.Position = start;
+            var read = 0;
+            int count;
+            while (read < buffer.Length && (count = await stream.ReadAsync(buffer.AsMemory(read), cancellationToken)) > 0)
+                read += count;
+            var (from, to) = TextParts.Cut(buffer.AsSpan(0, read), atStart: lineStart, atEnd: start + read >= size, encoding ?? mark);
+            var bytes = buffer.AsSpan(from, to - from);
+            var name = encoding ?? (mark is TextCodec.Utf8Bom ? TextCodec.Utf8 : mark) ?? (TextCodec.IsUtf8(bytes) ? TextCodec.Utf8 : TextCodec.Windows1252);
+            return new TextPart(TextCodec.Read(bytes, name), start + from, start + to, size, name, modified);
+        }
+    }
+
+    /// <summary>
+    /// The version of <paramref name="full"/> now, without reading it when its size and time are those of
+    /// <paramref name="known"/> (a check that it was not changed elsewhere, every few seconds). Null when it is not there.
+    /// </summary>
+    public async Task<FileVersion?> VersionAsync(string full, string? known, CancellationToken cancellationToken)
+    {
+        var info = new FileInfo(full);
+        if (!info.Exists)
+            return null;
+        if (known is not null && known.StartsWith($"{info.Length:x}-{info.LastWriteTimeUtc.Ticks:x}-", StringComparison.Ordinal))
+            return new FileVersion(known, info.Length, info.LastWriteTimeUtc);
+        try
+        {
+            return await FileVersion.OfFileAsync(full, cancellationToken);
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return null;
         }
     }
 

@@ -11,7 +11,10 @@ them runs. **Edit** changes them: see [Editing text files](editing-text.md).
   dates, times and levels (errors in red, warnings in purple).
 - The bar at the bottom tells the type, the **encoding** (UTF-8, UTF-16, or Windows-1252 for older files, as Notepad
   reads them), the **line endings** (Windows CRLF or Unix LF) and the size; at the right, the line and column of the
-  cursor.
+  cursor. Letters shown wrong (`cafÃ©` for `café`)? Pick another encoding there: the file is read again with it.
+- A file opens **where you last read it** in this browser (the last hundred files are remembered).
+- A file changed elsewhere while it is open (by another person, another tab or a program) says so at the top:
+  **Reload** reads it as it is now, **Keep this one** keeps what is shown.
 - **‹ / ›** at the sides go to the previous and next file of the folder that the viewer shows, pictures and videos
   included.
 - Notes and documents (`.txt`, `.md`, `README`…) open as **text to read**: long lines wrapped, a reading font, wide
@@ -27,6 +30,7 @@ them runs. **Edit** changes them: see [Editing text files](editing-text.md).
 | Find (magnifier) | Ctrl+F | Finds a word in the text: **next**, **previous**, **all**, match case, regular expression, whole word |
 | Go to line | Ctrl+Alt+G | Jumps to a line number (`42`), or a line and column (`42:7`) |
 | | F3, Ctrl+G / Shift+F3, Shift+Ctrl+G | Next / previous match of the word found |
+| Follow | | Shows what is added to the end of the file as it grows, every two seconds (a log being written); click again to stop |
 | Aa | | The [reading settings](#reading-settings) |
 | | Ctrl+= / Ctrl+− / Ctrl+0 | Larger / smaller text, back to its usual size (with the cursor in the text) |
 | | Ctrl+A, Ctrl+C | Selects all the text, copies the selection |
@@ -36,6 +40,16 @@ them runs. **Edit** changes them: see [Editing text files](editing-text.md).
 Click in the text to move around in it with the keys: the arrows, Page Up / Page Down, Home / End, Ctrl+Home / Ctrl+End;
 the mouse wheel and swipes scroll it. **Esc** leaves the text (then ← / → go to other files again), a second **Esc**
 closes the viewer.
+
+## Large files and logs
+
+A text file larger than 10 MB opens **in parts** of about 256 KB, cut at whole lines: **Start**, **‹ Earlier**,
+**Later ›** and **End** move through it, and the bar at the bottom tells which bytes are shown (`1.2 MB – 1.5 MB of
+480 MB`). A `.log` opens at its end, where the latest lines are. Find works in the part shown; large files can't be
+edited here.
+
+**Follow** works in both: the view keeps to the end of the file and shows each line added to it, as `tail -f` does.
+A log that starts again (rotated, emptied) is read again from its new end.
 
 ## Markdown
 
@@ -94,7 +108,8 @@ Files the viewer doesn't show (a `.dat`, a file without an extension) can still 
 their [item menu](managing-files.md) (right click, or **⋮**). Files that aren't text (a picture saved under another name,
 an archive) say so and offer **Download** instead.
 
-Files larger than 10 MB are not shown: download them to open them in an editor of your computer.
+The administrators of the library can add more extensions to open as text (**More text files**, in
+[Scanning › File types](../administration/scanning.md#file-types)).
 
 Opening a text file needs the right to open files (`files.view`, see [Rights](../reference/rights.md)); Download
 needs `files.download`.

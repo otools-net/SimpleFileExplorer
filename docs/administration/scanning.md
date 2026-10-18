@@ -24,6 +24,10 @@ Excluded folders are a setting of each space only.
 decide the previews, the viewer, what gets thumbnails and trickplay, and what `r:hr` / `r:lr` consider. Other files
 are listed and searched as plain files.
 
+**More text files** (`Sfe:FileTypes:Text`): extensions opened as [text](../user-guide/text-files.md) in the viewer,
+besides those it knows already (`.txt`, `.log`, `.md`, `.json`, code and scripts…), e.g. `out` or `dat` files your
+programs write. A media extension can't be one of them.
+
 ## Indexing
 
 ![Scanning › Indexing](../images/admin-scanning-indexing.png)

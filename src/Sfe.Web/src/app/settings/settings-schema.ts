@@ -72,6 +72,7 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'fileTypes.images',
     'fileTypes.videos',
     'fileTypes.audio',
+    'fileTypes.text',
     'scan.computeHashes',
     'scan.readResolution',
     'thumbnails.enabled',
@@ -331,7 +332,7 @@ export const TABS: SettingTab[] = [
             {
                 title: 'File types',
                 key: 'fileTypes',
-                hint: 'Which files are photos, videos and audio, by their extension.',
+                hint: 'Which files are photos, videos, audio and text, by their extension.',
                 fields: [
                     { key: 'fileTypes.images', label: 'Photos', type: 'extensions',
                         hint: 'Extensions opened in the photo viewer and given thumbnails, separated by commas.' },
@@ -339,6 +340,8 @@ export const TABS: SettingTab[] = [
                         hint: 'Extensions played in the video player and given thumbnails and trickplay.' },
                     { key: 'fileTypes.audio', label: 'Audio', type: 'extensions',
                         hint: 'Extensions played in the audio player. Other extensions open in a new tab.' },
+                    { key: 'fileTypes.text', label: 'More text files', type: 'extensions',
+                        hint: 'Extensions opened in the text viewer besides the ones it knows (.txt, .log, .md, .json, .xml, code and scripts…), e.g. dat, out, sub. Not media extensions.' },
                 ],
             },
         ],

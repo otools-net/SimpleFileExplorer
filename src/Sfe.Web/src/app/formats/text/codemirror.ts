@@ -141,6 +141,46 @@ export class TextEditor {
         this.markSaved();
     }
 
+    /**
+     * Adds `text` at the end (a file followed as it grows), as saved; keeps the view at the end when it was there.
+     * `limit`: the most characters kept, the oldest lines dropped beyond it.
+     */
+    append(text: string, limit = Infinity): void {
+        const atEnd = this.atEnd();
+        const doc = this.view.state.doc;
+        const changes: { from: number; to?: number; insert: string }[] = [{ from: doc.length, insert: text }];
+        const over = doc.length + text.length - limit;
+        if (over > 0)
+            changes.unshift({ from: 0, to: Math.min(doc.length, doc.lineAt(Math.min(over, doc.length)).to + 1), insert: '' });
+        this.view.dispatch({ changes });
+        this.markSaved();
+        if (atEnd)
+            this.scrollToEnd();
+    }
+
+    /** The view shows the last line (within a line's height). */
+    atEnd(): boolean {
+        const scroller = this.view.scrollDOM;
+        return scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 24;
+    }
+
+    scrollToEnd(): void {
+        this.view.dispatch({ effects: EditorView.scrollIntoView(this.view.state.doc.length, { y: 'end' }) });
+    }
+
+    /** The first line shown (1-based). */
+    topLine(): number {
+        const block = this.view.lineBlockAtHeight(this.view.scrollDOM.scrollTop);
+        return this.view.state.doc.lineAt(block.from).number;
+    }
+
+    /** Shows `line` (1-based) at the top, the cursor on it. */
+    scrollToLine(line: number): void {
+        const doc = this.view.state.doc;
+        const at = doc.line(Math.min(Math.max(1, line), doc.lines)).from;
+        this.view.dispatch({ selection: { anchor: at }, effects: EditorView.scrollIntoView(at, { y: 'start' }) });
+    }
+
     /** Loads the language of `name` and highlights with it; resolves its name, or null for plain text. */
     async setLanguage(name: string): Promise<string | null> {
         const description = languageFor(name);

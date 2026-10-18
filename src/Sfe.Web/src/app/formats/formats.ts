@@ -1,4 +1,4 @@
-import { InjectionToken, Type } from '@angular/core';
+import { InjectionToken, signal, Type } from '@angular/core';
 import { LibraryItem } from '../core/models';
 
 /** The viewer's own markup for media: those formats keep it. */
@@ -87,8 +87,18 @@ export function extensionOf(item: LibraryItem): string {
 }
 
 /** The file's name and extension say it is text: only files the server doesn't call media. */
+/** The library's own extensions shown as text (`Sfe:FileTypes:Text`, from the config): a signal, so that listings follow. */
+const libraryTextExtensions = signal<ReadonlySet<string>>(new Set());
+
+export function setTextExtensions(extensions: readonly string[] | null | undefined): void {
+    libraryTextExtensions.set(new Set((extensions ?? []).map(extension => extension.toLowerCase().replace(/^\./, ''))));
+}
+
 export function isTextFile(item: LibraryItem): boolean {
-    return item.kind === 'file' && (TEXT_NAMES.has(item.name.toLowerCase()) || TEXT_EXTENSIONS.has(extensionOf(item)));
+    if (item.kind !== 'file')
+        return false;
+    const extension = extensionOf(item);
+    return TEXT_NAMES.has(item.name.toLowerCase()) || TEXT_EXTENSIONS.has(extension) || libraryTextExtensions().has(extension);
 }
 
 export const IMAGE_FORMAT: FileFormat = { id: 'image', label: 'Picture', priority: 0, matches: item => item.kind === 'image', view: { builtin: 'image' } };

@@ -154,7 +154,7 @@ export class MarkdownViewComponent {
     protected readonly downloadUrl = computed(() =>
         this.offerDownload() && this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
     protected readonly details = computed(() => {
-        const file = this.file();
+        const file = this.session.file() ?? this.file();
         return file ? textDetails(file, 'Markdown') : '';
     });
 
@@ -206,9 +206,10 @@ export class MarkdownViewComponent {
                 return;
             clearTimeout(this.renderLater);
             this.renderLater = setTimeout(() => {
-                const editor = this.sourceEditor();
-                if (editor)
-                    void this.render(editor.text(), this.item().path);
+                // The source as typed; read again (changed elsewhere) without the source shown: the file's.
+                const text = this.sourceEditor()?.text() ?? this.session.file()?.text;
+                if (text !== undefined)
+                    void this.render(text, this.item().path);
             }, RENDER_DELAY_MS);
         });
         effect(() => {

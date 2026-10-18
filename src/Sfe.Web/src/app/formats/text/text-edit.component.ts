@@ -59,6 +59,13 @@ export class TextEditActionsComponent {
                         <button type="button" class="link-button" (click)="session.problem.set(null)">Keep editing</button>
                     </div>
                 }
+                @case ('disk') {
+                    <div class="text-bar warning" role="alert" data-bar="disk">
+                        <span>{{ session.dirty() ? 'This file was changed elsewhere: reloading it loses your changes.' : 'This file was changed elsewhere since it was opened.' }}</span>
+                        <button type="button" class="button" title="Read it as it is now" (click)="session.reload()">Reload</button>
+                        <button type="button" class="link-button" title="Keep the text shown (a save asks again)" (click)="session.ignoreDisk()">{{ session.editing() ? 'Keep editing' : 'Keep this one' }}</button>
+                    </div>
+                }
                 @case ('not-encodable') {
                     <div class="text-bar warning" role="alert" data-bar="not-encodable">
                         <span>{{ problem.message }}</span>

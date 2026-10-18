@@ -19,4 +19,6 @@ Code: `LibraryBrowser.FolderChanged` (raised by `Invalidate`, after the cache is
 - Client: `EventSource('api/files/changes')` opened by the library page (closed when leaving it); a change of the folder
   listed (not a search) refreshes it 400 ms later: `refresh()` fetches the loaded count again and replaces the items in
   place (status stays `ready`, scroll stays, the selection keeps what is still there).
+- `ChangeFeed.listen(listener)` (1.69.0): other parts hear the changes made by other tabs, whatever is listed (an open
+  text file checks its version when its folder changed).
 - Proxies must not buffer it (`X-Accel-Buffering: no` for nginx); documented in `docs/installation.md`.

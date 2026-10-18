@@ -26,6 +26,9 @@ public sealed record TextAccess(bool Overwrite, bool SaveCopy, bool Download, bo
 public sealed record TextFile(string Text, string Encoding, string LineEnding, string Version, long Size, DateTime Modified,
     TextAccess? Access = null, string? SaveLineEnding = null);
 
+/// <param name="Version">Null for a file larger than can be read whole (it is read in parts).</param>
+public sealed record TextVersion(string? Version, long Size, DateTime Modified);
+
 /// <param name="Session">The editing session (letters, digits, dashes; made by the client when the editor opens): the
 /// previous version is kept in the trash at its first save only.</param>
 public sealed record SaveTextRequest(string? Text, string? Encoding, string? LineEnding, string? Session);
@@ -55,6 +58,10 @@ public static partial class TextEndpoints
     public const string IsLinkType = "file-is-link";
     public const string ReadOnlyType = "read-only";
 
+    /// <summary>The usual and the largest part of a file read in parts (large files, logs followed).</summary>
+    public const int PartBytes = 256 * 1024;
+    public const int MaxPartBytes = 1024 * 1024;
+
     [GeneratedRegex("^[A-Za-z0-9-]{1,64}$")]
     private static partial Regex SessionPattern();
 
@@ -70,7 +77,27 @@ public static partial class TextEndpoints
             .WithDescription($"""
                 At most {MaxBytes / (1024 * 1024)} MB: larger files answer 413 (`{TooLargeType}`), files that aren't text 415
                 (`{NotTextType}`). A byte order mark gives the encoding; otherwise valid UTF-8 is UTF-8 and anything else
-                windows-1252. `access` says whether the caller may save over it, save a copy or download it.
+                windows-1252; `encoding` (`utf-8`, `windows-1252`, `utf-16le`, `utf-16be`) reads it otherwise (Reopen with
+                encoding). `access` says whether the caller may save over it, save a copy or download it.
+                """);
+        text.MapGet("/part", GetPart)
+            .RequireRight(Rights.ViewFiles)
+            .FolderScoped("files.view at the file")
+            .WithName("GetTextPart")
+            .WithSummary("A part of a text file of any size, at whole lines: large files and logs.")
+            .WithDescription($"""
+                About `length` bytes (default {PartBytes / 1024} KB, at most {MaxPartBytes / 1024} KB) from `offset`, or the last ones
+                without an offset (`offset=-1`): cut after the first and the last line break, so that `end` is where the
+                next part starts. Decoded as the whole file would be, or in `encoding`. 415 (`{NotTextType}`) for a binary file.
+                """);
+        text.MapGet("/version", GetVersion)
+            .RequireRight(Rights.ViewFiles)
+            .FolderScoped("files.view at the file")
+            .WithName("GetTextVersion")
+            .WithSummary("The version of a text file now: has it changed since it was opened?")
+            .WithDescription($"""
+                Read only when its size or time differ from those of `known` (the version the viewer has). Files over
+                {MaxBytes / (1024 * 1024)} MB have no version (null): only their size and time.
                 """);
         text.MapPut("", Save)
             .RequireRight(Rights.DeleteFiles, Rights.DeletePermanently)
@@ -101,14 +128,13 @@ public static partial class TextEndpoints
 
     private static async Task<Results<Ok<TextFile>, NotFound, ForbidHttpResult, ProblemHttpResult>> Get(
         FileContent content, Trash trash, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current, HttpContext context,
-        string? path, CancellationToken cancellationToken)
+        string? path, string? encoding, CancellationToken cancellationToken)
     {
-        if (!paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { Length: > 0 } canonical
-            || !File.Exists(full) || FileEndpoints.Protected(full, serverFiles, work))
-            return TypedResults.NotFound();
-        var state = await current.GetAsync();
-        if (state.Check(paths, canonical, Rights.ViewFiles) is var verdict and not PathVerdict.Allowed)
-            return verdict == PathVerdict.NotFound ? TypedResults.NotFound() : TypedResults.Forbid();
+        if (encoding is not null && !TextCodec.ReadEncodings.Contains(encoding))
+            return UnknownEncoding();
+        var (full, canonical, state, refused) = await ResolveAsync(paths, serverFiles, work, current, path);
+        if (refused is { } forbidden)
+            return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
 
         FileRead? read;
         try
@@ -125,7 +151,7 @@ public static partial class TextEndpoints
         if (read.TooLarge)
             return TypedResults.Problem($"It is too large to be shown as text (more than {MaxBytes / (1024 * 1024)} MB): download it instead.",
                 statusCode: StatusCodes.Status413PayloadTooLarge, type: TooLargeType);
-        if (TextCodec.Decode(read.Bytes) is not { } decoded)
+        if (TextCodec.Decode(read.Bytes, encoding) is not { } decoded)
             return TypedResults.Problem("It is not a text file.", statusCode: StatusCodes.Status415UnsupportedMediaType, type: NotTextType);
 
         var version = read.Version!;
@@ -135,6 +161,76 @@ public static partial class TextEndpoints
             AccessTo(state, paths, trash, canonical),
             decoded.LineEnding == "mixed" ? TextCodec.DominantLineEnding(decoded.Text) : decoded.LineEnding));
     }
+
+    private static async Task<Results<Ok<TextPart>, NotFound, ForbidHttpResult, ProblemHttpResult>> GetPart(
+        FileContent content, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current, HttpContext context,
+        string? path, long? offset, int? length, string? encoding, CancellationToken cancellationToken)
+    {
+        if (encoding is not null && !TextCodec.ReadEncodings.Contains(encoding))
+            return UnknownEncoding();
+        if (length is < 1 or > MaxPartBytes)
+            return TypedResults.Problem($"A part is 1 to {MaxPartBytes} bytes long.", statusCode: StatusCodes.Status400BadRequest);
+        var (full, _, _, refused) = await ResolveAsync(paths, serverFiles, work, current, path);
+        if (refused is { } forbidden)
+            return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
+        TextPart? part;
+        try
+        {
+            part = await content.ReadPartAsync(full, offset ?? -1, length ?? PartBytes, encoding, cancellationToken);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return TypedResults.Problem("The file can't be read now (in use, or the server may not read it).", statusCode: StatusCodes.Status500InternalServerError);
+        }
+        if (part is null)
+            return TypedResults.NotFound();
+        if (part.Text is null)
+            return TypedResults.Problem("It is not a text file.", statusCode: StatusCodes.Status415UnsupportedMediaType, type: NotTextType);
+        context.Response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(part);
+    }
+
+    private static async Task<Results<Ok<TextVersion>, NotFound, ForbidHttpResult, ProblemHttpResult>> GetVersion(
+        FileContent content, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current, HttpContext context,
+        string? path, string? known, CancellationToken cancellationToken)
+    {
+        var (full, _, _, refused) = await ResolveAsync(paths, serverFiles, work, current, path);
+        if (refused is { } forbidden)
+            return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
+        context.Response.Headers.CacheControl = "no-store";
+        var info = new FileInfo(full);
+        if (info.Length > MaxBytes)
+            return TypedResults.Ok(new TextVersion(null, info.Length, info.LastWriteTimeUtc));
+        try
+        {
+            return await content.VersionAsync(full, known, cancellationToken) is { } version
+                ? TypedResults.Ok(new TextVersion(version.Token, version.Size, version.Modified))
+                : TypedResults.NotFound();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return TypedResults.Problem("The file can't be read now (in use, or the server may not read it).", statusCode: StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// The file <paramref name="path"/> that the caller may open (<c>files.view</c>): its full and canonical paths, or
+    /// why not (<c>Refused</c>: false for 404, what isn't there or a protected or hidden place; true for 403, no right).
+    /// </summary>
+    private static async Task<(string Full, string Canonical, AccessState State, bool? Refused)> ResolveAsync(
+        LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current, string? path)
+    {
+        var state = await current.GetAsync();
+        if (!paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { Length: > 0 } canonical
+            || !File.Exists(full) || FileEndpoints.Protected(full, serverFiles, work))
+            return (string.Empty, string.Empty, state, false);
+        if (state.Check(paths, canonical, Rights.ViewFiles) is var verdict and not PathVerdict.Allowed)
+            return (full, canonical, state, verdict != PathVerdict.NotFound);
+        return (full, canonical, state, null);
+    }
+
+    private static ProblemHttpResult UnknownEncoding() =>
+        TypedResults.Problem($"Read it as one of: {string.Join(", ", TextCodec.ReadEncodings)}.", statusCode: StatusCodes.Status400BadRequest);
 
     private static async Task<Results<Ok<SavedText>, NotFound, ForbidHttpResult, ValidationProblem, ProblemHttpResult>> Save(
         FileContent content, Trash trash, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current, HttpContext context,

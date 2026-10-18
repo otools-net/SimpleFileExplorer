@@ -100,4 +100,44 @@ public sealed class TextCodecTests
         Assert.ThrowsExactly<ArgumentException>(() => TextCodec.Encode("x", "latin-9", "lf"));
         Assert.ThrowsExactly<ArgumentException>(() => TextCodec.Encode("x", TextCodec.Utf8, "mixed"));
     }
+
+    [TestMethod]
+    public void AFileCanBeReadInAnotherEncoding()
+    {
+        byte[] latin = [0x63, 0x61, 0x66, 0xC3, 0xA9];      // "café" in UTF-8, read as windows-1252: "cafÃ©"
+        byte[] marked = [0xEF, 0xBB, 0xBF, 0x63, 0x61, 0x66, 0xC3, 0xA9];
+
+        Assert.AreEqual(("cafÃ©", TextCodec.Windows1252), (TextCodec.Decode(latin, TextCodec.Windows1252)!.Text, TextCodec.Decode(latin, TextCodec.Windows1252)!.Encoding));
+        Assert.AreEqual(("café", TextCodec.Utf8Bom), (TextCodec.Decode(marked, TextCodec.Utf8)!.Text, TextCodec.Decode(marked, TextCodec.Utf8)!.Encoding),
+            "Read as UTF-8, its mark is kept for a save");
+        Assert.AreEqual("\uFFFD", TextCodec.Decode([0xE9], TextCodec.Utf8)!.Text, "What isn't valid is replaced");
+        Assert.AreEqual("ab", TextCodec.Decode([0x61, 0x00, 0x62, 0x00], TextCodec.Utf16Le)!.Text, "UTF-16 without a mark");
+        Assert.IsNull(TextCodec.Decode([0x61, 0x00, 0x62, 0x00], TextCodec.Utf8), "binary for an 8-bit encoding");
+        Assert.ThrowsExactly<ArgumentException>(() => TextCodec.Decode(latin, TextCodec.Utf8Bom));
+    }
+
+    [TestMethod]
+    [DataRow("aaa\nbbb\nccc\nddd", false, false, "bbb\nccc\n")]
+    [DataRow("aaa\nbbb\nccc\nddd", true, false, "aaa\nbbb\nccc\n")]
+    [DataRow("aaa\nbbb\nccc\nddd", false, true, "bbb\nccc\nddd")]
+    [DataRow("aaa\nbbb", true, true, "aaa\nbbb")]
+    public void APartIsCutAtWholeLines(string text, bool atStart, bool atEnd, string kept)
+    {
+        var bytes = Encoding.UTF8.GetBytes(text);
+        var (from, to) = TextParts.Cut(bytes, atStart, atEnd, null);
+        Assert.AreEqual(kept, Encoding.UTF8.GetString(bytes, from, to - from));
+    }
+
+    [TestMethod]
+    public void APartWithoutLineBreaksIsCutAtWholeCharacters()
+    {
+        // "é€" cut inside both: the continuation byte at the start and the half "€" at the end go.
+        byte[] bytes = [0xA9, 0x61, 0xC3, 0xA9, 0xE2, 0x82];
+        var (from, to) = TextParts.Cut(bytes, atStart: false, atEnd: false, TextCodec.Utf8);
+        Assert.AreEqual("aé", Encoding.UTF8.GetString(bytes, from, to - from));
+
+        var wide = Encoding.Unicode.GetBytes("ab\ncd\nef");
+        var (wideFrom, wideTo) = TextParts.Cut(wide, atStart: false, atEnd: false, TextCodec.Utf16Le);
+        Assert.AreEqual("cd\n", Encoding.Unicode.GetString(wide, wideFrom, wideTo - wideFrom));
+    }
 }

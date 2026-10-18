@@ -390,6 +390,8 @@ export interface ClientConfig {
      * `formats/reading/reading.ts`, checked there); absent from older servers.
      */
     reading?: unknown;
+    /** The library's own extensions shown as text (`Sfe:FileTypes:Text`); absent from older servers. */
+    textExtensions?: string[] | null;
 }
 
 /** `api/streaming/probe`: a video the server can convert. */
@@ -890,6 +892,23 @@ export interface TextFile {
     access?: TextAccess | null;
     /** The line ending a save writes: the file's, or the most used one of a file that mixes them. */
     saveLineEnding?: 'lf' | 'crlf' | 'cr' | string | null;
+}
+
+/** A part of a text file (`api/files/text/part`): from `offset` to `end` bytes of `size`. */
+export interface TextPart {
+    text: string;
+    offset: number;
+    end: number;
+    size: number;
+    encoding: string;
+    modified: string;
+}
+
+/** A text file's version now (`api/files/text/version`); `version` null for one too large to be read whole. */
+export interface TextVersion {
+    version: string | null;
+    size: number;
+    modified: string;
 }
 
 /** What saving a text file may do (`api/files/text`). */

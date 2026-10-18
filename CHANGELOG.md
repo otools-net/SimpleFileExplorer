@@ -3,6 +3,22 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.69.0
+
+### Added
+
+- **Large text files** (over 10 MB) open in parts, at whole lines: **Start**, **Earlier**, **Later**, **End**; a
+  `.log` opens at its end.
+- **Follow**: a text file being written (a log) shows what is added to its end every two seconds, as `tail -f` does.
+- **Reopen with encoding**: the encoding in the text's status bar reads the file again as UTF-8, Windows-1252 or
+  UTF-16, when its letters show wrong. While editing, the status bar chooses the encoding and the line endings a save
+  writes.
+- A file **changed elsewhere** while it is open (another person, another tab, another program) says so: **Reload** or
+  keep the text shown.
+- Text files open **where they were last read** in this browser.
+- **More text files** (`Sfe:FileTypes:Text`, Scanning › File types): extensions of the library opened as text in the
+  viewer, besides those it knows.
+
 ## 1.68.0
 
 ### Added

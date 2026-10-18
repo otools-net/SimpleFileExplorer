@@ -78,6 +78,7 @@ public sealed class EditableSettings
             Images = [.. options.FileTypes.Images],
             Videos = [.. options.FileTypes.Videos],
             Audio = [.. options.FileTypes.Audio],
+            Text = [.. options.FileTypes.Text],
         },
         Thumbnails = new()
         {
@@ -182,6 +183,7 @@ public sealed class EditableSettings
         options.FileTypes.Images = [.. FileTypes.Images];
         options.FileTypes.Videos = [.. FileTypes.Videos];
         options.FileTypes.Audio = [.. FileTypes.Audio];
+        options.FileTypes.Text = [.. FileTypes.Text];
         options.Thumbnails.Enabled = Thumbnails.Enabled;
         options.Thumbnails.VideoSeekSeconds = Thumbnails.VideoSeekSeconds;
         options.Thumbnails.Width = Thumbnails.Width;
@@ -278,6 +280,7 @@ public sealed class FileTypeSettings
     public List<string> Images { get; set; } = [];
     public List<string> Videos { get; set; } = [];
     public List<string> Audio { get; set; } = [];
+    public List<string> Text { get; set; } = [];
 }
 
 public sealed class ThumbnailSettings

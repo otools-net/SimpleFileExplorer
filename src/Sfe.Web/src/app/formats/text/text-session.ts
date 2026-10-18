@@ -4,13 +4,24 @@ import { ConfigService } from '../../core/config.service';
 import { isFileConflict, isSaved, LibraryItem, TextFile, TextToSave } from '../../core/models';
 import { parentPath } from '../../core/paths';
 import { ToastService } from '../../core/toast.service';
+import { ChangeFeed } from '../../library/change-feed.service';
 import { FILE_VIEW_HOST } from '../formats';
 import { TextEditor } from './codemirror';
 
 /** What stops a save, shown as a bar over the text: the file changed elsewhere, its encoding can't hold the text, or the copy's name asked for. */
-export type TextProblem = { kind: 'changed' } | { kind: 'not-encodable'; message: string } | { kind: 'copy'; error: string | null };
+export type TextProblem = { kind: 'changed' } | { kind: 'not-encodable'; message: string } | { kind: 'copy'; error: string | null }
+    /** Changed elsewhere since it was read (another program, another person): seen without saving. */
+    | { kind: 'disk'; version: string };
+
+/** How often an open file is checked for changes made elsewhere (only while the page is shown). */
+export const DISK_CHECK_MS = 30_000;
 
 export const UNSAVED_QUESTION = 'Your changes to this file are not saved. Leave without saving them?';
+
+/** The line ending a save writes for `file`: as told by the server, else its own (CRLF for a mixed file of an older server). */
+export function lineEndingOf(file: TextFile): string {
+    return file.saveLineEnding ?? (file.lineEnding === 'mixed' ? 'crlf' : file.lineEnding);
+}
 
 /** "notes.txt" → "notes (copy).txt": the name a copy is first offered. */
 export function copyName(name: string): string {
@@ -56,14 +67,23 @@ export class TextSession {
     readonly copyName = signal('');
     /** Each change of the text (for a view that shows it otherwise, as Markdown's). */
     readonly revision = signal(0);
-    /** The encoding a save writes: the file's, until "Save as UTF-8". */
-    private readonly encoding = signal<string | null>(null);
+    /** The encoding a save writes: the file's, until "Save as UTF-8" or another one is chosen. */
+    readonly encoding = signal<string | null>(null);
+    /** The line ending a save writes: the file's (its most used), until another one is chosen. */
+    readonly lineEnding = signal<string | null>(null);
+    /** The encoding the file is read with: null as it seems to be, else as chosen (Reopen with encoding). */
+    readonly readEncoding = signal<string | null>(null);
+    /** The view follows the file's end as it grows: read only meanwhile, and no checks for changes made elsewhere. */
+    readonly following = signal(false);
+    /** A version changed elsewhere that the person chose to ignore: not asked about again. */
+    private ignored: string | null = null;
+    private readonly feed = inject(ChangeFeed);
 
     readonly access = computed(() => this.file()?.access ?? null);
     /** Something can be done with changes: save over it, save a copy or download them. */
     readonly canEdit = computed(() => {
         const access = this.access();
-        return Boolean(access && (access.overwrite || access.saveCopy || access.download));
+        return Boolean(access && (access.overwrite || access.saveCopy || access.download)) && !this.following();
     });
     readonly canSave = computed(() => this.access()?.overwrite ?? false);
 
@@ -73,8 +93,22 @@ export class TextSession {
                 event.preventDefault();
         };
         window.addEventListener('beforeunload', onUnload);
+        // Changed elsewhere: told by the change feed for changes through SFE (its folder), checked now and then for the rest.
+        const onVisible = () => {
+            if (document.visibilityState === 'visible')
+                void this.checkDisk();
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        const timer = setInterval(onVisible, DISK_CHECK_MS);
+        const stopListening = this.feed.listen(change => {
+            if (this.item && change.path === parentPath(this.item.path))
+                void this.checkDisk();
+        });
         inject(DestroyRef).onDestroy(() => {
             window.removeEventListener('beforeunload', onUnload);
+            document.removeEventListener('visibilitychange', onVisible);
+            clearInterval(timer);
+            stopListening();
             this.releaseGuard?.();
         });
     }
@@ -84,6 +118,7 @@ export class TextSession {
         this.item = item;
         this.file.set(file);
         this.encoding.set(file.encoding);
+        this.lineEnding.set(lineEndingOf(file));
         this.releaseGuard ??= this.host.guard?.(() => this.canLeave()) ?? null;
     }
 
@@ -136,8 +171,7 @@ export class TextSession {
 
     private toSave(): TextToSave {
         const file = this.file()!;
-        const lineEnding = file.saveLineEnding ?? (file.lineEnding === 'mixed' ? 'crlf' : file.lineEnding);
-        return { text: this.editor!.text(), encoding: this.encoding() ?? file.encoding, lineEnding };
+        return { text: this.editor!.text(), encoding: this.encoding() ?? file.encoding, lineEnding: this.lineEnding() ?? lineEndingOf(file) };
     }
 
     /** Ctrl+S: over the file when the rights allow it, else a copy. `force`: over whatever is there now. */
@@ -160,7 +194,7 @@ export class TextSession {
                 this.toasts.error(result.detail ?? 'It could not be saved.');
                 return;
             }
-            this.file.set({ ...file, text: text.text, encoding: text.encoding, version: result.version, size: result.size, modified: result.modified, lineEnding: text.lineEnding });
+            this.file.set({ ...file, text: text.text, encoding: text.encoding, version: result.version, size: result.size, modified: result.modified, lineEnding: text.lineEnding, saveLineEnding: text.lineEnding });
             this.editor.markSaved();
             this.dirty.set(this.editor.dirty);
             this.problem.set(null);
@@ -183,20 +217,61 @@ export class TextSession {
         await this.save();
     }
 
-    /** The file as it is now on disk, in place of the changes. */
-    async reload(): Promise<void> {
+    /** The file as it is now on disk, in place of the changes (read as chosen: `readEncoding`). False when it couldn't be. */
+    async reload(): Promise<boolean> {
         if (!this.item)
-            return;
+            return false;
         try {
-            const file = await this.api.textFile(this.item.path);
+            const file = await this.api.textFile(this.item.path, undefined, this.readEncoding());
             this.file.set(file);
             this.encoding.set(file.encoding);
+            this.lineEnding.set(lineEndingOf(file));
             this.editor?.replace(file.text);
             this.dirty.set(false);
             this.problem.set(null);
+            this.revision.update(value => value + 1);
+            return true;
         } catch (error) {
             this.toasts.error(`It could not be read again: ${(error as Error).message}`);
+            return false;
         }
+    }
+
+    /**
+     * Reads the file again in `encoding` (null: as it seems to be), its letters shown as that encoding reads them; a
+     * save then writes it back in that encoding. Changes not saved are given up (asked first).
+     */
+    async reopen(encoding: string | null): Promise<void> {
+        if (this.dirty() && !confirm('Read the file again in another encoding? Your changes are given up.'))
+            return;
+        const previous = this.readEncoding();
+        this.readEncoding.set(encoding);
+        if (!await this.reload())
+            this.readEncoding.set(previous);
+    }
+
+    /** Has the file changed elsewhere? Asked when not busy with something else; a version the person ignored stays ignored. */
+    async checkDisk(): Promise<void> {
+        const file = this.file();
+        if (!file || !this.item || this.following() || this.saving() || this.problem())
+            return;
+        let now: string | null;
+        try {
+            now = (await this.api.textVersion(this.item.path, file.version)).version;
+        } catch {
+            // Gone, or the server not reachable: nothing to tell here (opening it again tells).
+            return;
+        }
+        if (now && now !== file.version && now !== this.ignored && this.file() === file && !this.problem() && !this.saving())
+            this.problem.set({ kind: 'disk', version: now });
+    }
+
+    /** Keep the text as it is (the next save asks again, as the file changed). */
+    ignoreDisk(): void {
+        const problem = this.problem();
+        if (problem?.kind === 'disk')
+            this.ignored = problem.version;
+        this.problem.set(null);
     }
 
     openCopy(): void {

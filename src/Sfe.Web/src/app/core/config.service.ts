@@ -3,6 +3,7 @@ import { Api } from './api.service';
 import { formatDuration, formatResolution } from './format';
 import { ClientConfig, LibraryItem, StreamProbe } from './models';
 import { encodePath } from './paths';
+import { setTextExtensions } from '../formats/formats';
 
 /** The links of the files, built from the configuration (data server, external player). */
 /** The mark on the preview of an image or video saying whether it is high resolution. */
@@ -128,6 +129,7 @@ export class ConfigService {
     async load(): Promise<ClientConfig> {
         const config = await this.api.config();
         this.current.set(config);
+        setTextExtensions(config.textExtensions);
         this.api.tenantId = config.tenant?.id ?? null;
         return config;
     }

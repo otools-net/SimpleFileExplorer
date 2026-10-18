@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, ArchiveLink, TextFile, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, ArchiveLink, TextFile, TextPart, TextVersion, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -247,7 +247,13 @@ export class Api {
     countFolder = (path: string) => this.post<PropertyJob>('api/files/properties/count', { path });
     startChecksum = (path: string, algorithm: ChecksumAlgorithm) => this.post<PropertyJob>('api/files/properties/checksum', { path, algorithm });
     /** A text file's content (413 `too-large`, 415 `not-text`). */
-    textFile = (path: string, signal?: AbortSignal) => this.get<TextFile>('api/files/text', { path }, signal);
+    /** `encoding`: read it in that encoding rather than the one it seems to have (Reopen with encoding). */
+    textFile = (path: string, signal?: AbortSignal, encoding?: string | null) => this.get<TextFile>('api/files/text', { path, encoding }, signal);
+    /** About `length` bytes of a text file of any size from `offset` (-1: its end), cut at whole lines. */
+    textPart = (path: string, offset: number, length?: number | null, encoding?: string | null, signal?: AbortSignal) =>
+        this.get<TextPart>('api/files/text/part', { path, offset, length, encoding }, signal);
+    /** Its version now (read again only when its size or time are not those of `known`); null over 10 MB. */
+    textVersion = (path: string, known: string | null) => this.get<TextVersion>('api/files/text/version', { path, known });
     /**
      * Saves text over the file `path`, if it is still `version` (`*`: whatever it is): 412 `file-changed` when it
      * changed meanwhile, 422 `not-encodable`; a 409 (link, read-only, scan) answers its problem.

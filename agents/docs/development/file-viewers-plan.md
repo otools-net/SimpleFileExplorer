@@ -250,13 +250,19 @@ Tests
       `settings.spec.ts`.
 - [x] (1.68.0) `docs/configuration.md`, Interface › Appearance, My account, text files' reading settings, upgrading.
 
-### Phase 6 (optional) — Comfort (1.69.0)
+### Phase 6 — Comfort (built in 1.69.0)
 
-- [ ] `fileTypes.text`: a library setting for more text extensions.
-- [ ] Large files and logs: paged reading by byte offset, jump to the end, follow / tail.
-- [ ] Reopen with another encoding; choose the encoding and line ending on save.
-- [ ] "Changed on disk, reload?" from the change feed.
-- [ ] Remembered scroll position per file.
+- [x] (1.69.0) `fileTypes.text` (`Sfe:FileTypes:Text`): a library setting for more text extensions (never media ones),
+      sent as `ClientConfig.TextExtensions`, read by `isTextFile`.
+- [x] (1.69.0) Large files and logs: `GET api/files/text/part` (byte offset, whole lines, the end with -1); the text
+      view reads a file over 10 MB in parts (Start / Earlier / Later / End, a `.log` from its end); **Follow** appends
+      what the file gains every 2 s, in both modes.
+- [x] (1.69.0) Reopen with another encoding (`?encoding=`, the status bar's select); choose the encoding and line ending
+      a save writes (the status bar while editing).
+- [x] (1.69.0) "Changed elsewhere, reload?": the change feed for the file's folder, plus `GET api/files/text/version`
+      every 30 s while shown (cheap when size and time are unchanged).
+- [x] (1.69.0) Remembered position per file (first line shown, the latest 100, this browser).
+- [x] (1.69.0) Tests: `TextCodecTests`, `FileContentTests`, `TextRouteTests`, `SettingsTests`, `text-comfort.spec.ts`.
 
 ### Later formats (each follows [Adding a format](#adding-a-format); one session each)
 
@@ -309,6 +315,9 @@ Tests
   / `int` refuse a string).
 - (1.68.0) `ReadingOptions` serves as both the option and the editable settings section (`Copy()` both ways): the
   allowed lists sit next to the values, for the validation and the docs.
+- (1.69.0) A part starting right after a line break keeps its first line: the byte (UTF-16: unit) before it is read.
+- (1.69.0) The change feed tells only changes made through SFE: changes by other programs need the periodic version
+  check, made cheap by trusting an unchanged size and time.
 - (1.64.0) npm 11 skips install scripts it hasn't been told to run (esbuild, lmdb, msgpackr-extract warn): the build
   works without them.
 

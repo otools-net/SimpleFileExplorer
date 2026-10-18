@@ -134,7 +134,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [copy-paths](agents/docs/features/copy-paths.md) | copying full server paths | `CopyPathService` |
 | [theme](agents/docs/features/theme.md) | light/dark before first paint | `theme-boot.ts`, `ThemeService` |
 | [picture-editor](agents/docs/features/picture-editor.md) | browser edits, server saves | `app/editor/`, `Core/Editing/` |
-| [text-viewer](agents/docs/features/text-viewer.md) | format registry, text files in the viewer (CodeMirror), Open as text, `api/files/text` | `app/formats/`, `TextCodec`, `TextEndpoints` |
+| [text-viewer](agents/docs/features/text-viewer.md) | format registry, text files in the viewer (CodeMirror), Open as text, large files in parts, Follow, encodings, positions, `api/files/text` | `app/formats/`, `TextCodec`, `TextEndpoints` |
 | [text-editor](agents/docs/features/text-editor.md) | editing and saving text files: rights (Replace rule), versions (412), previous version in the trash, encodings, unsaved-changes guards | `text-session.ts`, `FileContent.OverwriteAsync`, `TextEndpoints` |
 | [reading-preferences](agents/docs/features/reading-preferences.md) | reading settings of text (profiles, "Aa" panel, bundled fonts, reader themes), the `view?path=` page | `app/formats/reading/`, `view-page.component.ts`, `reader.css` |
 | [markdown-viewer](agents/docs/features/markdown-viewer.md) | Markdown rendered safely (markdown-it + DOMPurify), links and images rewritten, outline, source / split | `app/formats/markdown/` |
