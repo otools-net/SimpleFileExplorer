@@ -3,6 +3,23 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.67.0
+
+### Added
+
+- **Text files can be changed in the viewer**: **Edit** (or E), then **Save** (Ctrl+S) over the file, in the encoding
+  and with the line endings it had. Saving over a file needs the rights that replacing it would (delete it, create
+  files in its folder); otherwise **Save a copy** next to it, or **Download** the text as it is.
+- The first save over a file keeps **its previous version in the trash** (shown there as "previous version", to
+  restore next to it), unless the space deletes for good; the file keeps its tags, and the index follows its new
+  content.
+- A file changed elsewhere since it was opened is not saved over without asking: **Reload**, **Overwrite** or **Save
+  a copy**. Text that a Windows-1252 file can't hold is offered to be saved as UTF-8.
+- Unsaved changes are asked about before the file is left: another file, closing the viewer, another folder or
+  search, closing the tab.
+- Markdown is edited beside the document, which follows the text as it is typed.
+- **New file** opens the new text file in the viewer, ready to be written.
+
 ## 1.66.0
 
 ### Added

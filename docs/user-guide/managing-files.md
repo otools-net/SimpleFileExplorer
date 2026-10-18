@@ -44,8 +44,8 @@ folder you are viewing. In a search there is no New folder button.
 ## New file
 
 The **New file** button next to it asks for the name of an **empty** file to create there (`New file.txt` to start
-with; the name is selected up to its extension). It needs the right `files.createFiles`. SFE has no text editor:
-open the file with a program of your computer to fill it.
+with; the name is selected up to its extension). It needs the right `files.createFiles`. A text file (`.txt`, `.md`,
+`.json`…) then opens in the viewer, ready to be written: see [Editing text files](editing-text.md).
 
 ## Rename
 

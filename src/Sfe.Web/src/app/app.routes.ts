@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { leaveAdminPage } from './admin/leave-admin-page';
 import { LibraryPageComponent } from './library/library-page.component';
+import { leaveViewer, leaveViewPage } from './library/viewer/leave-viewer';
 import { PlayerPageComponent } from './player/player-page.component';
 
 /**
@@ -11,7 +12,8 @@ import { PlayerPageComponent } from './player/player-page.component';
  * need them.
  */
 export const routes: Routes = [
-    { path: '', component: LibraryPageComponent },
+    // Its query changes ask too, as the viewer may hold unsaved changes.
+    { path: '', component: LibraryPageComponent, canDeactivate: [leaveViewer], runGuardsAndResolvers: 'paramsOrQueryParamsChange' },
     {
         path: 'admin',
         loadComponent: () => import('./admin/admin-page.component').then(m => m.AdminPageComponent),
@@ -21,7 +23,7 @@ export const routes: Routes = [
     { path: 'config', redirectTo: 'admin' },
     { path: 'player', component: PlayerPageComponent },
     // A file in its viewer, on a page of its own (text...): loaded when first opened.
-    { path: 'view', loadComponent: () => import('./formats/view-page.component').then(m => m.ViewPageComponent) },
+    { path: 'view', loadComponent: () => import('./formats/view-page.component').then(m => m.ViewPageComponent), canDeactivate: [leaveViewPage] },
     { path: 'login', loadComponent: () => import('./account/login-page.component').then(m => m.LoginPageComponent) },
     { path: 'setup', loadComponent: () => import('./account/setup-page.component').then(m => m.SetupPageComponent) },
     // The update of an install to this version: the only page working until it is done.

@@ -55,6 +55,11 @@ window.matchMedia = (query: string): MediaQueryList => {
 Element.prototype.scrollIntoView ??= function () { /* nothing to scroll in jsdom */ };
 window.scrollTo = () => { /* nothing to scroll in jsdom */ };
 
+// CodeMirror measures its text through ranges, a frame after a change: jsdom has no layout, so nothing to measure.
+const noRect = { x: 0, y: 0, width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0, toJSON: () => ({}) } as DOMRect;
+Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
+Range.prototype.getBoundingClientRect = () => noRect;
+
 /** IntersectionObserver that tests drive: `intersect(element)` reports it in view to the observers watching it. */
 class TestIntersectionObserver {
     static readonly instances = new Set<TestIntersectionObserver>();

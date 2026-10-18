@@ -2,10 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signa
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { FileOperationResult, isFileConflict, LibraryItem } from '../core/models';
+import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
+import { formatOf } from '../formats/formats';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { SheetComponent } from '../shared/sheet.component';
-import { registerDialog } from '../library/dialogs.service';
+import { Dialogs, registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
 
@@ -16,7 +18,8 @@ const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
 /**
  * Asks for a name: of a new folder (New folder, Ctrl+Shift+N) or empty file (New file) in the folder listed, or the new name of a file or
  * folder (Rename, F2), with the name selected up to its extension as in Explorer. The server checks the name; its
- * answer shows under the field. Done, the listing takes the item in place, without loading again.
+ * answer shows under the field. Done, the listing takes the item in place, without loading again; a new text file opens
+ * in the viewer, ready to be written.
  */
 @Component({
     selector: 'sfe-name-dialog',
@@ -50,6 +53,7 @@ export class NameDialog {
     private readonly store = inject(ListingStore);
     private readonly quickLinks = inject(QuickLinksService);
     private readonly toasts = inject(ToastService);
+    private readonly dialogs = inject(Dialogs);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
     private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
 
@@ -143,8 +147,13 @@ export class NameDialog {
                 timeout: 8000,
                 action: { label: 'Undo', title: `Give it back its name “${mode.item.name}”`, run: () => void this.undoRename(renamed, mode.item.name) },
             });
-        } else
+        } else {
             this.store.applyAdded(result);
+            const format = mode.kind === 'file' ? formatOf(result) : null;
+            // Text (a format of its own, not a picture or video, which an empty file can't be).
+            if (format && 'load' in format.view && this.store.can(Rights.viewFiles, result))
+                this.dialogs.viewer()?.open(result, { edit: true });
+        }
     }
 
     /** The listing (and the quick links, which the server moved too) take the new name. */

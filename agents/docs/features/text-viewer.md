@@ -33,7 +33,8 @@ Code: client `app/formats/formats.ts` (registry), `app/formats/text/` (`text-vie
   no right → 403): whole file up to 10 MB (`MaxBytes`; 413 `too-large`), `TextCodec.Decode` (BOM → UTF-8/16; else
   strict UTF-8, else windows-1252; a NUL in the first 8 KB without a BOM → 415 `not-text`); ETag = `FileVersion.Token`
   (`size-ticks-sha256/16`), `no-store`. Read with `FileShare.ReadWrite | Delete` (logs being written).
-- CodeMirror 6, read only (`EditorState.readOnly`: cursor and selection work). Compartments: wrap, line numbers,
+- CodeMirror 6, read only until **Edit** (`EditorState.readOnly`: cursor and selection work; editing and saving:
+  [text-editor.md](text-editor.md)). Compartments: wrap, line numbers,
   language. Language: `languageFor(name)` — aliases (MSBuild files → XML, `.conf`/`.cfg`/`.env`… → Properties
   files), then our `Log` and `Subtitles` stream modes, then `@codemirror/language-data` (each language its own chunk).
 - Colours: `readerTheme` (`EditorView.theme`) uses `--reader-*` variables; highlighting uses `classHighlighter`

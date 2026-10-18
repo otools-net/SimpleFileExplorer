@@ -11,11 +11,15 @@ import { ReadingPanelComponent } from '../reading/reading-panel.component';
 import { ReadingService } from '../reading/reading.service';
 import { TextEditor } from '../text/codemirror';
 import { textDetails, textFailure } from '../text/text-document';
+import { TextEditActionsComponent, TextEditBarComponent } from '../text/text-edit.component';
+import { TextSession } from '../text/text-session';
 import { highlightFences, MarkdownHeading, MarkdownLinks, renderMarkdown, showExternalImages } from './markdown';
 
 export type MarkdownMode = 'rendered' | 'source' | 'split';
 export const MARKDOWN_MODE_KEY = 'sfe.markdown.mode';
 export const MARKDOWN_OUTLINE_KEY = 'sfe.markdown.outline';
+/** How long typing pauses before the document shows the source again. */
+const RENDER_DELAY_MS = 300;
 const MODES: readonly { id: MarkdownMode; label: string; title: string }[] = [
     { id: 'rendered', label: 'Read', title: 'The document as it is meant to be read' },
     { id: 'source', label: 'Source', title: 'Its text, as written' },
@@ -32,11 +36,13 @@ function itemAt(path: string): LibraryItem {
 /**
  * A Markdown file (agents/docs/features/markdown-viewer.md): read (rendered safely, with an outline of its headings),
  * its source (CodeMirror, as the text view), or both side by side; the prose reading preferences. Links to other
- * documents open them in the viewer; images of other sites wait until asked for.
+ * documents open them in the viewer; images of other sites wait until asked for. Edit changes the source, shown side
+ * by side with the document as it reads (agents/docs/features/text-editor.md).
  */
 @Component({
     selector: 'sfe-markdown-view',
-    imports: [IconComponent, ReadingPanelComponent],
+    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent],
+    providers: [TextSession],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'text-view markdown-view prose',
@@ -49,6 +55,9 @@ function itemAt(path: string): LibraryItem {
     },
     template: `
         <div class="text-toolbar" role="toolbar" aria-label="Document">
+            @if (state() === 'ready') {
+                <sfe-text-edit-actions />
+            }
             <div class="markdown-modes" role="radiogroup" aria-label="Show">
                 @for (choice of modes; track choice.id) {
                     <button type="button" role="radio" class="markdown-mode" [class.active]="mode() === choice.id" [attr.aria-checked]="mode() === choice.id"
@@ -69,6 +78,7 @@ function itemAt(path: string): LibraryItem {
         @if (panelOpen()) {
             <sfe-reading-panel profile="prose" (closed)="panelOpen.set(false)" />
         }
+        <sfe-text-edit-bar />
         @switch (state()) {
             @case ('loading') {
                 <p class="text-message">Loading…</p>
@@ -98,6 +108,9 @@ function itemAt(path: string): LibraryItem {
         @if (state() === 'ready') {
             <footer class="text-status" aria-live="polite">
                 <span>{{ details() }}</span>
+                @if (session.dirty()) {
+                    <span class="text-edited" data-edited>Edited</span>
+                }
                 @if (externalImages()) {
                     <span class="markdown-external">{{ externalImages() }} {{ externalImages() === 1 ? 'image' : 'images' }} of other sites not shown
                         <button type="button" class="link-button" title="Load them from the sites they are on (those sites see that this document is read)" (click)="showImages()">Show</button></span>
@@ -109,8 +122,11 @@ function itemAt(path: string): LibraryItem {
 export class MarkdownViewComponent {
     readonly item = input.required<LibraryItem>();
     readonly format = input<FileFormat | null>(null);
+    /** Opened ready to be changed (a new file, a copy just saved). */
+    readonly edit = input(false);
 
     private readonly api = inject(Api);
+    protected readonly session = inject(TextSession);
     private readonly config = inject(ConfigService);
     private readonly fileHost = inject(FILE_VIEW_HOST);
     protected readonly reading = inject(ReadingService);
@@ -131,6 +147,7 @@ export class MarkdownViewComponent {
     protected readonly panelOpen = signal(false);
     /** The source's editor, made the first time the source is shown. */
     protected readonly sourceEditor = signal<TextEditor | null>(null);
+    private renderLater: ReturnType<typeof setTimeout> | undefined;
 
     protected readonly own = computed(() => this.reading.preferences().prose);
     protected readonly style = computed(() => this.reading.style('prose'));
@@ -152,6 +169,7 @@ export class MarkdownViewComponent {
         const abort = new AbortController();
         inject(DestroyRef).onDestroy(() => {
             abort.abort();
+            clearTimeout(this.renderLater);
             this.sourceEditor()?.destroy();
         });
         effect(() => {
@@ -170,11 +188,28 @@ export class MarkdownViewComponent {
                 if (editor)
                     editor.configure({ wrap, lineNumbers });
                 else {
-                    const created = new TextEditor(this.source().nativeElement, { text: file.text, name: 'source.md', wrap, lineNumbers });
+                    const created = new TextEditor(this.source().nativeElement, { text: file.text, name: 'source.md', wrap, lineNumbers, ...this.session.editorOptions() });
+                    this.session.setEditor(created);
                     this.sourceEditor.set(created);
                     void created.setLanguage('source.md').catch(() => undefined);
                 }
             });
+        });
+        // Editing needs the source: beside the document, when only the document was shown.
+        effect(() => {
+            if (this.session.editing() && untracked(this.mode) === 'rendered')
+                untracked(() => this.mode.set('split'));
+        });
+        // The document follows the source as it is typed, once typing pauses.
+        effect(() => {
+            if (!this.session.revision())
+                return;
+            clearTimeout(this.renderLater);
+            this.renderLater = setTimeout(() => {
+                const editor = this.sourceEditor();
+                if (editor)
+                    void this.render(editor.text(), this.item().path);
+            }, RENDER_DELAY_MS);
         });
         effect(() => {
             this.style();
@@ -200,13 +235,22 @@ export class MarkdownViewComponent {
         }
         if (cancel.aborted)
             return;
-        const rendered = renderMarkdown(file.text, item.path, this.links);
+        this.session.attach(item, file);
+        const rendered = this.render(file.text, item.path);
+        this.file.set(file);
+        this.state.set('ready');
+        await rendered;
+        if (untracked(this.edit))
+            this.session.startEdit();
+    }
+
+    /** The document from its source (as loaded, or as typed). */
+    private async render(text: string, path: string): Promise<void> {
+        const rendered = renderMarkdown(text, path, this.links);
         const article = this.content().nativeElement;
         article.replaceChildren(rendered.fragment);
         this.headings.set(rendered.headings);
         this.externalImages.set(rendered.externalImages);
-        this.file.set(file);
-        this.state.set('ready');
         await highlightFences(article);
     }
 
@@ -265,6 +309,8 @@ export class MarkdownViewComponent {
 
     /** Ctrl+F finds in the source when it is shown; in the document alone, the browser's own find does. */
     protected onWindowKeydown(event: KeyboardEvent): void {
+        if (this.session.handleKey(event))
+            return;
         const editor = this.sourceEditor();
         if (event.defaultPrevented || !editor || this.mode() === 'rendered' || !(event.ctrlKey || event.metaKey) || event.shiftKey)
             return;

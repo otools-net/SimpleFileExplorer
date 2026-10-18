@@ -1,7 +1,7 @@
-import { defaultKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { bracketMatching, syntaxHighlighting } from '@codemirror/language';
 import { gotoLine, highlightSelectionMatches, openSearchPanel, search, searchKeymap } from '@codemirror/search';
-import { Compartment, EditorState, Extension } from '@codemirror/state';
+import { Compartment, EditorState, Extension, Text } from '@codemirror/state';
 import {
     drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers,
 } from '@codemirror/view';
@@ -47,10 +47,15 @@ export interface TextEditorOptions {
     lineNumbers: boolean;
     /** Where the cursor is, each time it moves (1-based). */
     onCursor?: (line: number, column: number) => void;
+    /** The text was changed (typing, undo...): `dirty` says whether it differs from what was last saved. */
+    onChange?: (dirty: boolean) => void;
+    /** Editable from the start (a new file). */
+    editable?: boolean;
 }
 
 /**
- * CodeMirror 6 for the text views of `formats/` (agents/docs/features/text-viewer.md): read only for now. Colours
+ * CodeMirror 6 for the text views of `formats/` (agents/docs/features/text-viewer.md, text-editor.md): read only
+ * until `setEditable` (then with undo, and Tab indenting), knowing whether its text differs from the last saved. Colours
  * come from the app's CSS (`styles/reader.css`, `tok-*` classes of `classHighlighter`), not from a CodeMirror theme,
  * so they follow the app's theme as everything else does.
  */
@@ -59,7 +64,10 @@ export class TextEditor {
     private readonly wrapping = new Compartment();
     private readonly numbers = new Compartment();
     private readonly language = new Compartment();
+    private readonly editing = new Compartment();
     private destroyed = false;
+    /** The document as last loaded or saved: `dirty` compares with it (undoing back to it is clean again). */
+    private saved: Text;
     private wrap: boolean;
     private lineNumbers: boolean;
 
@@ -79,20 +87,58 @@ export class TextEditor {
             readerTheme,
             highlightSelectionMatches(),
             search({ top: true }),
-            EditorState.readOnly.of(true),
+            this.editing.of(TextEditor.editingExtensions(options.editable ?? false)),
+            history(),
             EditorState.tabSize.of(4),
-            keymap.of([...searchKeymap, ...defaultKeymap]),
+            keymap.of([...searchKeymap, ...historyKeymap, ...defaultKeymap]),
             EditorView.contentAttributes.of({ 'aria-label': `Content of ${options.name}` }),
         ];
-        if (onCursor)
-            extensions.push(EditorView.updateListener.of(update => {
-                if (update.selectionSet || update.docChanged) {
-                    const head = update.state.selection.main.head;
-                    const line = update.state.doc.lineAt(head);
-                    onCursor(line.number, head - line.from + 1);
-                }
-            }));
-        this.view = new EditorView({ parent, state: EditorState.create({ doc: options.text, extensions }) });
+        const onChange = options.onChange;
+        extensions.push(EditorView.updateListener.of(update => {
+            if (onCursor && (update.selectionSet || update.docChanged)) {
+                const head = update.state.selection.main.head;
+                const line = update.state.doc.lineAt(head);
+                onCursor(line.number, head - line.from + 1);
+            }
+            if (onChange && update.docChanged)
+                onChange(!update.state.doc.eq(this.saved));
+        }));
+        const state = EditorState.create({ doc: options.text, extensions });
+        this.saved = state.doc;
+        this.view = new EditorView({ parent, state });
+    }
+
+    private static editingExtensions(editable: boolean): Extension {
+        return editable ? [EditorState.readOnly.of(false), keymap.of([indentWithTab])] : EditorState.readOnly.of(true);
+    }
+
+    /** Lets the text be changed, or not. */
+    setEditable(editable: boolean): void {
+        this.view.dispatch({ effects: this.editing.reconfigure(TextEditor.editingExtensions(editable)) });
+    }
+
+    get editable(): boolean {
+        return !this.view.state.readOnly;
+    }
+
+    /** The text as it is now (lines joined with \n, whatever the file had). */
+    text(): string {
+        return this.view.state.doc.toString();
+    }
+
+    get dirty(): boolean {
+        return !this.view.state.doc.eq(this.saved);
+    }
+
+    /** The text as it is now is what the file holds (saved). */
+    markSaved(): void {
+        this.saved = this.view.state.doc;
+    }
+
+    /** Puts `text` in place of everything (the file read again), as saved. */
+    replace(text: string): void {
+        this.view.dispatch({ changes: { from: 0, to: this.view.state.doc.length, insert: text } });
+        this.markSaved();
     }
 
     /** Loads the language of `name` and highlights with it; resolves its name, or null for plain text. */

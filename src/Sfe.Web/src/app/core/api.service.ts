@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, ArchiveLink, TextFile, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, ArchiveLink, TextFile, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -248,6 +248,15 @@ export class Api {
     startChecksum = (path: string, algorithm: ChecksumAlgorithm) => this.post<PropertyJob>('api/files/properties/checksum', { path, algorithm });
     /** A text file's content (413 `too-large`, 415 `not-text`). */
     textFile = (path: string, signal?: AbortSignal) => this.get<TextFile>('api/files/text', { path }, signal);
+    /**
+     * Saves text over the file `path`, if it is still `version` (`*`: whatever it is): 412 `file-changed` when it
+     * changed meanwhile, 422 `not-encodable`; a 409 (link, read-only, scan) answers its problem.
+     */
+    saveText = (path: string, text: TextToSave, session: string, version: string) =>
+        this.send(this.http.put<SaveTextResult>(withQuery('api/files/text', { path }), { ...text, session },
+            { headers: this.headers(true).set('If-Match', version === '*' ? '*' : `"${version}"`) }));
+    /** Saves text as the new file `name` in the folder `path` (409 `file-exists` when the name is taken). */
+    saveTextCopy = (path: string, name: string, text: TextToSave) => this.post<FileOperationResult>('api/files/text', { path, name, ...text });
     propertyJob = (id: string) => this.get<PropertyJob>(`api/files/properties/jobs/${id}`);
     cancelPropertyJob = (id: string) => this.delete<void>(`api/files/properties/jobs/${id}`);
 

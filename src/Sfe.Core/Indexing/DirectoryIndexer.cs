@@ -166,6 +166,25 @@ public sealed class DirectoryIndexer(
         return await FileIdsAsync(db, fullPaths, cancellationToken);
     }
 
+    /// <summary>
+    /// Reads again what the index keeps of a file whose content changed in place (an editor saved it): size, times, and
+    /// its fingerprint when the scans compute them (duplicates are found by size and fingerprint). Its id, tags and
+    /// everything else stay; a file the index doesn't have stays out of it.
+    /// </summary>
+    public async Task RefreshFileAsync(string fullPath, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var entry = await db.Files.FirstOrDefaultAsync(f => f.FullName == fullPath, cancellationToken);
+        var file = new FileInfo(fullPath);
+        if (entry is null || !file.Exists)
+            return;
+        await CopyAsync(file, entry, fingerprint: Scan.ComputeHashes, resolution: ReadsResolution(file), cancellationToken);
+        // The old content's fingerprint would group it with its former duplicates.
+        if (!Scan.ComputeHashes)
+            entry.Sha1 = null;
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task AddFilesAsync(SfeDbContext db, DirectoryInfo folder, List<string> files, CancellationToken cancellationToken)
     {
         var maxPathLength = db.PathLengthLimit;

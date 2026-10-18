@@ -227,7 +227,8 @@ export class TagEditorDialog {
 
     protected find(): void {
         const tag = this.tag()!;
-        this.dialogs.closeAll();
+        if (!this.dialogs.closeAll())
+            return;
         this.store.navigate({ q: tagQuery(tag) });
     }
 

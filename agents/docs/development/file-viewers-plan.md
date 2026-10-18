@@ -106,19 +106,20 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 
 - `Core/Files/TextCodec` (pure): `Decode(bytes)` → text, encoding (`utf-8`, `utf-8-bom`, `utf-16le/be`,
   `windows-1252`), line ending (`lf`/`crlf`/`cr`/`mixed`), or null for binary (a NUL in the first 8 KB without a BOM).
-  Phase 4: `Encode(text, encoding, lineEnding)` reporting what windows-1252 can't hold.
+  `Encode(text, encoding, lineEnding)` (1.67.0) → bytes, or what windows-1252 can't hold; `DominantLineEnding`.
 - `Core/Files/FileContent`: the generic reader/writer for every editor, binary included. `ReadAsync(full, maxBytes)`
-  → bytes + `FileVersion`. Phase 4: `OverwriteAsync(path, write, ifMatch, session, actor)` — resolve and refuse
-  links; per-path lock; `scans.TryBeginOperation`; compare versions (`FileOperationStatus.Changed`, added last); trash
-  copy once per session unless permanent; temp file `.{name}.{guid}.sfe-tmp` in the folder (`CreateNew`, flushed, Unix
-  mode); `File.Replace` with in-use retries (on failure: delete the temp, forget that call's trash entry);
-  `indexer.RefreshFileAsync`, `browser.Invalidate`, log with the actor. `CreateAsync(folder, name, write, actor)`
-  (`CreateNew`, `Exists` on a clash).
+  → bytes + `FileVersion`. `OverwriteAsync(relative, bytes, ifMatch, session, keepPrevious, actor)` (1.67.0) —
+  resolve, refuse links and read-only files; one lock; `scans.TryBeginOperation`; compare versions; trash copy once
+  per session unless permanent; temp file `.{name}.{guid}.sfe-tmp` in the folder (`CreateNew`, flushed, Unix mode);
+  `File.Replace` with in-use retries (on failure: delete the temp, purge that call's trash entry);
+  `indexer.RefreshFileAsync`, `browser.Invalidate`, log with the actor. Answers an `OverwriteStatus` of its own. A new
+  file with content is `FileOperations.CreateFileAsync(..., content)` (`CreateNew`, `Exists` on a clash).
 - `Endpoints/TextEndpoints`: `GET api/files/text?path=` (`files.view`): `{ text, encoding, lineEnding, version, size,
   modified }`, ETag, `no-store`; 413 `too-large` (10 MB), 415 `not-text`; hidden or protected → 404, no right → 403.
-  Phase 4: `access: { overwrite, saveCopy, download, permanent }` (from the server: `store.can` is optimistic in
-  searches, the `view` page has no listing), `PUT` (`If-Match`, `*` = anyway; 412/428/409 `scan-running`,
-  `file-is-link`), `POST` (a copy; 409 `file-exists`).
+  1.67.0: `access: { overwrite, saveCopy, download, permanent }` and `saveLineEnding` (from the server: `store.can`
+  is optimistic in searches, the `view` page has no listing); `PUT` (`If-Match`, `*` = anyway; 412 `file-changed`,
+  428, 422 `not-encodable`, 409 `scan-running` / `file-is-link` / `read-only`); `POST` `{ path, name, text, encoding,
+  lineEnding }` (a copy; 409 `file-exists`). Details: [text-editor.md](../features/text-editor.md).
 
 ### Adding a format
 
@@ -191,35 +192,49 @@ docs in `docs/` with screenshots, `check-links.mjs` passes; this file ticked; a 
       `markdown-view.component.spec.ts`, `formats.spec.ts`.
 - [x] (1.66.0) Feature note [markdown-viewer.md](../features/markdown-viewer.md); user docs with screenshots.
 
-### Phase 4 — Editing and saving (1.67.0)
+### Phase 4 — Editing and saving (built in 1.67.0)
 
 Server
-- [ ] `TextCodec.Encode` (reports what windows-1252 can't hold).
-- [ ] `FileContent.OverwriteAsync` and `CreateAsync`, in the order under [Architecture](#server);
-      `FileOperationStatus.Changed` added last.
-- [ ] `Trash.CopyInAsync`; nullable `TrashEntry.Kind` (`PreviousVersion`) + SQL Server migration `AddTrashEntryKind`
-      (LF); the purge keeps the live file's caches for those entries.
-- [ ] `DirectoryIndexer.RefreshFileAsync`.
-- [ ] `access` in the GET answer; `PUT api/files/text` (412 `file-changed`, 428, 409 `scan-running` /
-      `file-is-link`), `POST api/files/text` (409 `file-exists`); Replace's rule for overwrite, `files.createFiles` for
-      a copy.
+- [x] (1.67.0) `TextCodec.Encode` (reports what windows-1252 can't hold) and `DominantLineEnding` (a mixed file
+      is saved with its most used ending).
+- [x] (1.67.0) `FileContent.OverwriteAsync` in the order under [Architecture](#server), with an `OverwriteStatus` of
+      its own rather than `FileOperationStatus.Changed`; a copy is `FileOperations.CreateFileAsync` with content
+      (no `FileContent.CreateAsync`: the same checks as New file).
+- [x] (1.67.0) `Trash.CopyInAsync`; nullable `TrashEntry.Kind` (`PreviousVersion`) + SQL Server migration
+      `AddTrashEntryKind` (LF); the purge keeps the live file's caches for those entries.
+- [x] (1.67.0) `DirectoryIndexer.RefreshFileAsync`.
+- [x] (1.67.0) `access` and `saveLineEnding` in the GET answer; `PUT api/files/text` (412 `file-changed`, 428, 422
+      `not-encodable`, 409 `scan-running` / `file-is-link` / `read-only`), `POST api/files/text` (409 `file-exists`);
+      Replace's rule for overwrite, `files.createFiles` for a copy.
 
 Client
-- [ ] Edit mode (E / button); **Save** (Ctrl+S) when `access.overwrite`, **Save a copy** (name prompt), **Download**.
-- [ ] The 412 prompt: Reload / Overwrite (`If-Match: *`) / Save a copy; 409 answers keep the edits.
-- [ ] Unsaved-changes guards (see [Verified constraints](#verified-constraints)); an in-memory draft per path.
-- [ ] **New file** opens in the editor; the trash page shows "previous version".
+- [x] (1.67.0) `formats/text/text-session.ts` (one per view) + `text-edit.component.ts` (buttons, bars), in the text
+      and Markdown views: Edit (E / button); **Save** (Ctrl+S) when `access.overwrite`, **Save a copy** (name bar,
+      Ctrl+Shift+S), **Download** the text as it is; Done gives up changes (asks).
+- [x] (1.67.0) The 412 bar: Reload / Overwrite (`If-Match: *`) / Save a copy; 422: Save as UTF-8; 409 answers keep
+      the edits.
+- [x] (1.67.0) Unsaved-changes guards: `FileViewHost.guard`; the viewer's `close`, `cancel`, `go`, `open` of
+      another file, `searchTag`; `Dialogs.closeAll` (false when refused); the listing route's `leaveViewer`
+      (`runGuardsAndResolvers: 'paramsOrQueryParamsChange'`); the `view` page's `leaveViewPage`; `beforeunload`.
+- [-] An in-memory draft per path: dropped. Every way out of a file with changes asks first, and a draft kept in
+      memory dies with the tab, which is the one way out that already asks (`beforeunload`); restoring a draft over
+      a file changed since would need its own conflict handling.
+- [x] (1.67.0) **New file** opens in the viewer, ready to be written (text formats only); the trash page shows
+      "previous version".
+- [x] (1.67.0) Markdown: editing shows the source beside the document (Split, not remembered), which follows the
+      source as typed (300 ms after the last change).
 
 Tests
-- [ ] `FileContentTests`: round trips of encodings and line endings, the 1252 refusal; version mismatch and `*`; link
-      refused; scan gate; one trash copy per session, none in a permanent space, tags kept; Size / LWT / Sha1
-      refreshed; a locked file on Windows; no temp file left after a failure.
-- [ ] `TrashTests`: a restored version comes back as "(2)"; the purge keeps the live caches.
-- [ ] `TextRouteTests`: read only → copy only; delete + create → overwrite; a permanent space; the space's read-only
-      switch; 412, 428, 409.
-- [ ] SQLite upgrade test for the new column, the migration on SQL Server.
-- [ ] `text-editor.spec.ts`, the guard specs.
-- [ ] Feature note `text-editor.md`; user doc `docs/user-guide/editing-files.md`; rights and upgrading pages.
+- [x] (1.67.0) `FileContentTests`: versions and `*`; one trash copy per session, the restore as "(2)"; index row,
+      tags and Sha1 kept / refreshed; the purge keeps the live previews; read-only, links (inconclusive without the
+      symlink privilege), the scan gate; a file in use left as it was with no temp file; a copy never over another;
+      the SQLite column added to an existing trash.
+- [x] (1.67.0) `TextCodecTests`: encode round trips per encoding, line endings, the 1252 refusal.
+- [x] (1.67.0) `TextRouteTests`: the access matrix (read only → copy only; delete + create → overwrite; a permanent
+      space), 428, 412, `*`, 403s, a bad session, 422, copies (409, 403, the work folder).
+- [x] (1.67.0) `text-editing.spec.ts`; viewer guard specs; `Dialogs.closeAll`; New file; trash page.
+- [x] (1.67.0) Feature note [text-editor.md](../features/text-editor.md); user doc
+      [editing-text.md](../../../docs/user-guide/editing-text.md); rights and upgrading pages.
 
 ### Phase 5 — Reading preferences per account (1.68.0)
 
@@ -279,6 +294,13 @@ Tests
   on one inner element (`.markdown-content`).
 - (1.66.0) Phase 3 added +4.6 kB CSS to the initial bundle (740 kB); markdown-it + DOMPurify are one lazy chunk
   (~144 kB, ~51 kB over the wire).
+- (1.67.0) Phase 4 added +3.2 kB to the initial bundle (743 kB): the editing CSS and the viewer's guards; the
+  session and its bars are in the lazy text chunk.
+- (1.67.0) jsdom has no `Range.getClientRects`: CodeMirror calls it a frame after a change, so `setup.ts` stubs it.
+- (1.67.0) `window.confirm` answers every guard: once the person agrees to lose the changes the session remembers it,
+  so the route's question after the viewer's doesn't ask twice; a new change clears it.
+- (1.67.0) A read-only CodeMirror still has `contenteditable`: E to edit can't skip "typing" targets by that
+  attribute, only inputs.
 - (1.64.0) npm 11 skips install scripts it hasn't been told to run (esbuild, lmdb, msgpackr-extract warn): the build
   works without them.
 

@@ -410,7 +410,7 @@ public static class FileEndpoints
         return await ResultAsync(await operations.RenameAsync(request.Path, request.Name, Actor(state), cancellationToken), tags, cancellationToken);
     }
 
-    private static async Task<Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult>> ResultAsync(
+    internal static async Task<Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult>> ResultAsync(
         FileOperationResult result, TagService tags, CancellationToken cancellationToken) => result.Status switch
         {
             // With its tags and whether the index has it, as listings show it.
@@ -429,7 +429,7 @@ public static class FileEndpoints
     /// that is there but hidden from the caller (the page never offers it), or on the server's own files through a
     /// link, is logged as a security warning.
     /// </summary>
-    private static Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult> Refused(
+    internal static Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult> Refused(
         PathVerdict verdict, AccessState state, LibraryPaths paths, string? path, string action, ILoggerFactory loggers, bool protectedPlace = false)
     {
         if (verdict == PathVerdict.Forbidden)

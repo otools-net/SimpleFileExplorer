@@ -30,6 +30,15 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.67
+
+- The update adds a column to the trash's table (which entries are previous versions of files saved over). Nothing
+  changes in the rights: saving over a text file needs `files.delete` and `files.createFiles` where the file is
+  (`files.deletePermanently` instead when the space deletes for good), saving a copy `files.createFiles`; see
+  [Editing text files](user-guide/editing-text.md).
+- Previous versions kept in the trash take disk space until it is emptied or purged (**Days in the trash**,
+  [File management](administration/file-management.md#settings)).
+
 ## To 1.63
 
 - Duplicates removed now go to the trash, where they keep taking disk space until it is emptied or purged

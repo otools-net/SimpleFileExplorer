@@ -121,8 +121,12 @@ public sealed class FileOperations(
         return new FileOperationResult(FileOperationStatus.Done, item);
     }
 
-    /// <summary>Creates the empty file <paramref name="name"/> in the folder <paramref name="parent"/>, indexed at once.</summary>
-    public async Task<FileOperationResult> CreateFileAsync(string? parent, string? name, FileActor actor, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Creates the file <paramref name="name"/> in the folder <paramref name="parent"/>, empty or with
+    /// <paramref name="content"/> (an editor's "Save a copy"), indexed at once.
+    /// </summary>
+    public async Task<FileOperationResult> CreateFileAsync(string? parent, string? name, FileActor actor, CancellationToken cancellationToken = default,
+        byte[]? content = null)
     {
         if (LibraryPaths.NormalizeRelative(parent) is not { } parentPath || !paths.TryResolve(parentPath, out var parentFull) || !Directory.Exists(parentFull))
             return FileOperationResult.Fail(FileOperationStatus.NotFound, "The folder was not found.");
@@ -135,10 +139,11 @@ public sealed class FileOperations(
         using var operation = scans.TryBeginOperation(target);
         if (operation is null)
             return ScanRunning();
+        FileStream stream;
         try
         {
             // Never over something that appeared since the check.
-            await using (new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { }
+            stream = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 64 * 1024, useAsync: true);
         }
         catch (IOException) when (File.Exists(target) || Directory.Exists(target))
         {
@@ -148,6 +153,30 @@ public sealed class FileOperations(
         {
             logger.LogWarning(ex, "{Account} could not create the file {Name} in {Folder}", actor.Name, name, Display(parentPath));
             return DiskFailure(ex, $"The file “{name}” could not be created");
+        }
+        try
+        {
+            await using (stream)
+            {
+                if (content is { Length: > 0 })
+                    await stream.WriteAsync(content, cancellationToken);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or OperationCanceledException)
+        {
+            // Half a file is no copy: what was made goes.
+            try
+            {
+                File.Delete(target);
+            }
+            catch (Exception cleanup) when (cleanup is IOException or UnauthorizedAccessException)
+            {
+                logger.LogWarning(cleanup, "Could not delete the half-written file {Name}", target);
+            }
+            if (ex is OperationCanceledException)
+                throw;
+            logger.LogWarning(ex, "{Account} could not write the file {Name} in {Folder}", actor.Name, name, Display(parentPath));
+            return DiskFailure(ex, $"The file “{name}” could not be written");
         }
 
         try

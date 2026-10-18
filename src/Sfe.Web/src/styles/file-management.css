@@ -204,3 +204,6 @@ main.page.drop-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
 .batch-rename-preview :is(th, td) { padding: 5px 8px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
 .batch-rename-preview tr.unchanged td { color: var(--text-muted); }
 .batch-rename-preview tr.problem td:first-child { color: var(--text-muted); text-decoration: line-through; }
+
+/* The trash: a file's content before a save over it (text editor). */
+.trash-version { align-self: flex-start; padding: 0 6px; border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted); font-size: 11px; }

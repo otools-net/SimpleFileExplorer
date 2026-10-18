@@ -34,7 +34,8 @@
 
     position: relative;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    /* The toolbar, the editing bar (empty but for a problem), the text, the status bar. */
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
     min-width: 0;
     min-height: 0;
     overflow: hidden;
@@ -117,6 +118,47 @@
     background: var(--reader-gutter);
     color: var(--reader-text);
 }
+
+/* ---------- Editing (text-editor.md) ---------- */
+
+.text-edit-actions { display: flex; align-items: center; gap: 4px; margin-right: 8px; }
+.text-view .text-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid var(--reader-border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--reader-text);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+.text-view .text-action svg { width: 16px; height: 16px; }
+.text-view .text-action:hover:not(:disabled) { background: var(--reader-active-line); }
+.text-view .text-action.primary { border-color: var(--accent); color: var(--accent); }
+.text-view .text-action:disabled { opacity: .5; cursor: default; }
+
+.text-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--reader-border);
+    background: var(--reader-gutter);
+    font-size: 13px;
+}
+.text-bar.warning { box-shadow: inset 3px 0 0 var(--danger); }
+.text-bar label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.text-bar input { min-width: 0; width: min(320px, 60vw); padding: 4px 8px; border: 1px solid var(--reader-border); border-radius: var(--radius-sm); background: var(--reader-bg); color: var(--reader-text); font: inherit; }
+.text-view .text-bar .button { border-color: var(--reader-border); background: var(--reader-bg); color: var(--reader-text); }
+.text-view .text-bar .button.primary { border-color: var(--accent); color: var(--accent); }
+.text-view .text-bar .link-button { color: var(--reader-muted); }
+.text-bar-error { flex-basis: 100%; color: var(--danger); }
+.text-edited { color: var(--accent); }
 
 /* "Aa": the reading settings, at the end of the bar. */
 .text-toolbar .reading-toggle { margin-left: auto; font-family: Georgia, serif; font-size: 15px; font-weight: 700; }

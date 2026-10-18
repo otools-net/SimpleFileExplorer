@@ -42,4 +42,16 @@ public sealed class TrashEntry
     public string? Rules { get; set; }
 
     public List<TrashTag> Tags { get; set; } = [];
+
+    /// <summary>
+    /// Null: something deleted. <see cref="TrashEntryKind.PreviousVersion"/>: a copy of a file's content before it was
+    /// saved over (the file itself stays where it is, with its tags and previews).
+    /// </summary>
+    public TrashEntryKind? Kind { get; set; }
+}
+
+public enum TrashEntryKind
+{
+    /// <summary>A file's content before an editor saved over it (agents/docs/features/text-editor.md).</summary>
+    PreviousVersion,
 }

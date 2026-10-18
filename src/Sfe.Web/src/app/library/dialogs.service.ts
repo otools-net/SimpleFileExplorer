@@ -38,10 +38,16 @@ export class Dialogs {
     /** Several items renamed at once. */
     readonly batchRename = signal<BatchRenameDialog | null>(null);
 
-    /** Closes the open dialogs, e.g. before searching for a tag picked in one. */
-    closeAll(): void {
+    /**
+     * Closes the open dialogs, e.g. before searching for a tag picked in one; none when the viewer shows a file with
+     * changes the person keeps (false then).
+     */
+    closeAll(): boolean {
+        if (this.viewer()?.confirmLeave() === false)
+            return false;
         for (const dialog of document.querySelectorAll('dialog[open]'))
             (dialog as HTMLDialogElement).close();
+        return true;
     }
 }
 

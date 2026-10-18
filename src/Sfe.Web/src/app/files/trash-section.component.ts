@@ -39,6 +39,9 @@ import { IconComponent } from '../shared/icon.component';
                         <span class="tracking-thumb"><svg [sfeIcon]="item.isFolder ? 'folder' : 'file'"></svg></span>
                         <span class="tracking-file">
                             <strong class="tracking-name" [title]="item.path">{{ item.name }}</strong>
+                            @if (item.previousVersion) {
+                                <span class="trash-version" title="The file as it was before it was saved over in the text editor: restored, it comes back next to it">previous version</span>
+                            }
                             <span class="tracking-was">{{ describe(item) }}</span>
                             <span class="tracking-was">From
                                 <a routerLink="/" [queryParams]="{ path: folderOf(item) || null }" [title]="'Open ' + (folderOf(item) || 'the library')">{{ folderOf(item) || rootName() }}</a>
@@ -124,7 +127,7 @@ export class TrashSectionComponent implements OnInit {
         return joinParts([
             item.isFolder && item.files !== null ? plural(item.files, 'file') : null,
             item.size !== null ? formatSize(item.size) : null,
-            `deleted ${formatDate(item.deletedAt)}`,
+            item.previousVersion ? `saved over ${formatDate(item.deletedAt)}` : `deleted ${formatDate(item.deletedAt)}`,
             item.deletedBy ? `by ${item.deletedBy}` : null,
         ]);
     }

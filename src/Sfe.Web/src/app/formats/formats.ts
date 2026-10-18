@@ -22,13 +22,24 @@ export interface FileFormat {
     readonly page?: boolean;
 }
 
-/** What a format component may ask of the place showing it (the viewer, or a page of its own). */
+/**
+ * What a format component may ask of the place showing it (the viewer, or a page of its own). The component takes the
+ * inputs `item`, `format` and `edit` (opened ready to be changed: a format that doesn't edit ignores it).
+ */
 export interface FileViewHost {
     readonly place: 'viewer' | 'page';
     /** The session may use `right` on the file shown. */
     can(right: string): boolean;
-    /** Shows another file in its place (a link of a document); absent: the link is followed. */
-    open?(item: LibraryItem): void;
+    /**
+     * Shows another file in its place (a link of a document, a copy just saved; `edit`: ready to be changed); absent:
+     * the link is followed.
+     */
+    open?(item: LibraryItem, options?: { edit?: boolean }): void;
+    /**
+     * Registers what to ask before the file shown is left (unsaved changes): `canLeave` answers whether it may be,
+     * asking the person when needed. Returns the way to take it back.
+     */
+    guard?(canLeave: () => boolean): () => void;
 }
 
 export const FILE_VIEW_HOST = new InjectionToken<FileViewHost>('FILE_VIEW_HOST');
@@ -66,7 +77,6 @@ export const TEXT_NAMES: ReadonlySet<string> = new Set([
     'cmakelists.txt', '.gitignore', '.gitattributes', '.editorconfig', '.env', '.bashrc', '.zshrc', '.profile', '.npmrc', 'hosts',
 ]);
 
-/** The file's name and extension say it is text: only files the server doesn't call media. */
 /**
  * The extension of the item's name, lower case without the dot ('' without one; `.gitignore` → `gitignore`). From
  * the name: the server's `extension` and the test fakes' differ (with or without the dot).
@@ -76,6 +86,7 @@ export function extensionOf(item: LibraryItem): string {
     return dot >= 0 ? item.name.slice(dot + 1).toLowerCase() : '';
 }
 
+/** The file's name and extension say it is text: only files the server doesn't call media. */
 export function isTextFile(item: LibraryItem): boolean {
     return item.kind === 'file' && (TEXT_NAMES.has(item.name.toLowerCase()) || TEXT_EXTENSIONS.has(extensionOf(item)));
 }
@@ -98,7 +109,6 @@ export function isProseFile(item: LibraryItem): boolean {
 
 export const PROSE_FORMAT: FileFormat = { id: 'prose', label: 'Text', priority: 11, matches: isProseFile, view: textView, profile: 'prose', page: true };
 
-/** Every format, any order (the priority decides). */
 /** Markdown: read rendered (with its source a click away). */
 export const MARKDOWN_EXTENSIONS: ReadonlySet<string> = new Set(['md', 'markdown', 'mdown', 'mkd', 'mkdn']);
 
@@ -112,6 +122,7 @@ export const MARKDOWN_FORMAT: FileFormat = {
     page: true,
 };
 
+/** Every format, any order (the priority decides). */
 export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT];
 
 /**

@@ -272,6 +272,8 @@ export interface TrashItem {
     deletedBy: string | null;
     deletedById: number | null;
     hasRules?: boolean;
+    /** The content of a file before a save over it (text editor); the file itself is still there. */
+    previousVersion?: boolean;
 }
 
 export interface TrashPage {
@@ -879,6 +881,43 @@ export interface TextFile {
     version: string;
     size: number;
     modified: string;
+    /** What the session may do with it (from the server). */
+    access?: TextAccess | null;
+    /** The line ending a save writes: the file's, or the most used one of a file that mixes them. */
+    saveLineEnding?: 'lf' | 'crlf' | 'cr' | string | null;
+}
+
+/** What saving a text file may do (`api/files/text`). */
+export interface TextAccess {
+    /** Save over it: may delete it and create files in its folder (as move/copy's Replace). */
+    overwrite: boolean;
+    /** Save a copy in its folder. */
+    saveCopy: boolean;
+    download: boolean;
+    /** The space deletes for good: no previous version is kept in the trash. */
+    permanent: boolean;
+}
+
+/** A text saved over its file: its new version; `trashId` when this save kept the previous version in the trash. */
+export interface SavedText {
+    version: string;
+    size: number;
+    modified: string;
+    trashId?: number | null;
+}
+
+/** Why a save over a file was not done although the request was fine (409): `file-is-link`, `read-only`, `scan-running`. */
+export type SaveTextResult = SavedText | FileConflict;
+
+export function isSaved(result: SaveTextResult): result is SavedText {
+    return 'version' in result;
+}
+
+/** A text to save: in `encoding`, its lines ending with `lineEnding`. */
+export interface TextToSave {
+    text: string;
+    encoding: string;
+    lineEnding: string;
 }
 
 /** What the index knows below a folder, among what the session sees. */

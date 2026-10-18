@@ -118,6 +118,7 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.Property(t => t.DeletedBy).HasMaxLength(200);
             entity.Property(t => t.Location).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
             entity.Property(t => t.Folder).HasMaxLength(32).IsUnicode(false).IsRequired();
+            entity.Property(t => t.Kind).HasConversion<string>().HasMaxLength(24).IsUnicode(false);
             // Newest first, and the purge of the oldest.
             entity.HasIndex(t => t.DeletedAt);
         });

@@ -24,9 +24,9 @@ Each right is of one of two kinds (column **Kind**):
 | `files.rename` | [rename files and folders](../user-guide/managing-files.md#rename) | Write (files) | no | none |
 | `files.move` | [move files and folders](../user-guide/managing-files.md#move-and-copy) (at the place they leave, the folder they go to, and everywhere inside a folder) | Write (files) | no | none |
 | `files.copy` | [copy files and folders](../user-guide/managing-files.md#move-and-copy) into folders one may change (from folders one may only look at, too) | Write (files) | no | none |
-| `files.createFiles` | [create empty files](../user-guide/managing-files.md#new-file) | Write (files) | no | none |
+| `files.createFiles` | [create empty files](../user-guide/managing-files.md#new-file), [save a copy of a text file](../user-guide/editing-text.md) | Write (files) | no | none |
 | `files.upload` | [upload files and folders](../user-guide/managing-files.md#upload) from one's computer into folders one may change | Write (files) | no | none |
-| `files.delete` | [delete to the trash](../user-guide/managing-files.md#delete), restore from it | Write (files) | no | none |
+| `files.delete` | [delete to the trash](../user-guide/managing-files.md#delete), restore from it; with `files.createFiles`, [save over a text file](../user-guide/editing-text.md#who-may-save) | Write (files) | no | none |
 | `files.deletePermanently` | delete for good (Shift+Delete), empty the [trash](../administration/file-management.md#trash) | Write (files) | no | none |
 | `tags.view` | see tags, the tag sidebar | Read | yes | all |
 | `tags.assign` | tag files, folders and searches | Write | no | Administrators, Users |

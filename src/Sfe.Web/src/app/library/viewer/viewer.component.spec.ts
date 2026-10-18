@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { item, loadConfig, mockApi, settle, tag, testProviders } from '../../../testing/fakes';
+import { EditorView } from '@codemirror/view';
+import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
+import { leaveViewer } from './leave-viewer';
 import { ViewerComponent } from './viewer.component';
 
 /** A screen box (jsdom lays nothing out). */
@@ -198,7 +201,8 @@ describe('ViewerComponent › Documents', () => {
 
     beforeEach(async () => {
         const api = mockApi();
-        api.textFile.mockImplementation(async (path: string) => ({ text: `Text of ${path}\nline 2`, encoding: 'utf-8', lineEnding: 'lf', version: 'v', size: 20, modified: '2026-10-18T10:00:00Z' }));
+        api.textFile.mockImplementation(async (path: string) => ({ text: `Text of ${path}\nline 2`, encoding: 'utf-8', lineEnding: 'lf', version: 'v', size: 20, modified: '2026-10-18T10:00:00Z',
+            access: { overwrite: true, saveCopy: true, download: true, permanent: false } }));
         TestBed.configureTestingModule({ providers: testProviders(api) });
         await loadConfig(api);
         store = TestBed.inject(ListingStore);
@@ -208,7 +212,10 @@ describe('ViewerComponent › Documents', () => {
         await fixture.whenStable();
     });
 
-    afterEach(() => TestBed.resetTestingModule());
+    afterEach(() => {
+        TestBed.resetTestingModule();
+        vi.restoreAllMocks();
+    });
 
     it('steps from a picture to a text file and on, past files without a viewer', async () => {
         await open(photo);
@@ -275,5 +282,61 @@ describe('ViewerComponent › Documents', () => {
         expect(meta()).not.toContain(' / ');
         await key('ArrowRight');
         expect(title()).toBe('clip.mp4');
+    });
+
+    async function edit(): Promise<void> {
+        await key('e', content()!);
+        const view = EditorView.findFromDOM(element.querySelector<HTMLElement>('.cm-editor')!)!;
+        view.dispatch({ changes: { from: 0, insert: 'draft ' } });
+        await settle();
+    }
+
+    const leaveListing = () => TestBed.runInInjectionContext(() => leaveViewer(null, null!, null!, null!));
+
+    it('asks before a file with unsaved changes is left, and stays on it when told to', async () => {
+        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+        await open(notes);
+        await edit();
+        const viewer = fixture.componentInstance;
+
+        await key('ArrowRight');
+        expect(title()).toBe('notes.txt');
+        expect(viewer.close()).toBe(false);
+        const cancel = new Event('cancel', { cancelable: true });
+        dialog().dispatchEvent(cancel);
+        expect(cancel.defaultPrevented).toBe(true);
+        viewer.open(photo);
+        await settle();
+        expect(title()).toBe('notes.txt');
+        expect(TestBed.inject(Dialogs).closeAll()).toBe(false);
+        expect(leaveListing()).toBe(false);
+        expect(dialog().open).toBe(true);
+        expect(confirm).toHaveBeenCalledTimes(6);
+
+        // Agreed once: the questions after it (the route's, after the viewer's) pass.
+        confirm.mockReturnValue(true);
+        await key('ArrowRight');
+        await vi.waitFor(() => expect(title()).toBe('clip.mp4'));
+        expect(viewer.close()).toBe(true);
+        expect(confirm).toHaveBeenCalledTimes(7);
+    });
+
+    it('leaves a file without unsaved changes without asking', async () => {
+        const confirm = vi.spyOn(window, 'confirm');
+        await open(notes);
+        await key('e', content()!);
+
+        await key('ArrowRight');
+
+        expect(title()).toBe('clip.mp4');
+        expect(confirm).not.toHaveBeenCalled();
+        expect(leaveListing()).toBe(true);
+    });
+
+    it('opens a file ready to be changed when asked (a new file)', async () => {
+        fixture.componentInstance.open(notes, { edit: true });
+        await settle();
+        await vi.waitFor(() => expect(content()?.getAttribute('aria-readonly')).not.toBe('true'));
+        expect(element.querySelector('[data-save]')).not.toBeNull();
     });
 });

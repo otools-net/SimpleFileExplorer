@@ -532,6 +532,11 @@ namespace Sfe.Core.Data.Migrations
                     b.Property<bool>("IsFolder")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Kind")
+                        .HasMaxLength(24)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(24)");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(16)

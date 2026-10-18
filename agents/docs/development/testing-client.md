@@ -21,3 +21,6 @@ Rules and helpers: [testing.md](testing.md). Code: `src/Sfe.Web/src/testing/setu
   build: `history is not defined`).
 - Use dotless host names in specs ([fully-local.md](fully-local.md)).
 - Settings schema field order is read by a backend test: see [settings-new-key.md](../features/settings-new-key.md).
+- CodeMirror runs in jsdom with the real editor; `setup.ts` stubs `Range.getClientRects`/`getBoundingClientRect`,
+  which it calls a frame after a change (else an unhandled "getClientRects is not a function" fails the run).
+- `confirm` (unsaved changes) is jsdom's "not implemented" stub returning nothing: spy on `window.confirm` in specs.

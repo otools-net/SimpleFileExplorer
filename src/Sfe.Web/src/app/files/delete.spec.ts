@@ -213,4 +213,14 @@ describe('TrashSectionComponent', () => {
         expect(buttonNamed(element, 'Delete')).toBeUndefined();
         expect(buttonNamed(element, 'Empty the trash')).toBeUndefined();
     });
+
+    it('tells a previous version of a file saved over from what was deleted', async () => {
+        await setUp();
+        api.trash.mockResolvedValue(page([{ ...entry(2, 'Docs/notes.txt'), previousVersion: true }, entry(1, 'a.txt')]));
+        const element = await section();
+
+        expect(element.querySelector('[data-id="2"] .trash-version')!.textContent).toBe('previous version');
+        expect(element.querySelector('[data-id="2"]')!.textContent).toContain('saved over');
+        expect(element.querySelector('[data-id="1"] .trash-version')).toBeNull();
+    });
 });

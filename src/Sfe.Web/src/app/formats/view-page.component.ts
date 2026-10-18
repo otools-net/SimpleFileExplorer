@@ -13,7 +13,8 @@ import { FILE_VIEW_HOST, FileFormat, FileViewHost, formatOf } from './formats';
 
 /**
  * `view?path=…`: one file in its format's viewer, filling a page of its own (a text file opened in a new tab, from a
- * listing or from the viewer). `asText=1` shows any file as text. Formats without a page (media) go to the file itself.
+ * listing or from the viewer). `asText=1` shows any file as text, `edit=1` opens it ready to be changed (a copy just
+ * saved). Formats without a page (media) go to the file itself. Unsaved changes are asked about before leaving.
  */
 @Component({
     selector: 'sfe-view-page',
@@ -35,7 +36,7 @@ import { FILE_VIEW_HOST, FileFormat, FileViewHost, formatOf } from './formats';
             @switch (state()) {
                 @case ('ready') {
                     @if (component(); as shown) {
-                        <ng-container *ngComponentOutlet="shown; inputs: { item: item(), format: format() }; injector: viewInjector" />
+                        <ng-container *ngComponentOutlet="shown; inputs: { item: item(), format: format(), edit: edit }; injector: viewInjector" />
                     }
                 }
                 @case ('missing') {
@@ -59,6 +60,7 @@ export class ViewPageComponent implements OnInit {
 
     protected readonly path = this.params.get('path') || '';
     private readonly asText = this.params.get('asText') === '1';
+    protected readonly edit = this.params.get('edit') === '1';
     protected readonly name = baseName(this.path);
     protected readonly state = signal<'loading' | 'ready' | 'missing' | 'unviewable' | 'unreachable'>('loading');
     protected readonly error = signal('');
@@ -72,8 +74,25 @@ export class ViewPageComponent implements OnInit {
         return item ? joinParts([formatSize(item.size), formatDate(item.modified), parentPath(this.path)], '  ·  ') : '';
     });
 
-    private readonly host: FileViewHost = { place: 'page', can: right => this.config.can(right) };
+    private readonly guards = new Set<() => boolean>();
+    private readonly host: FileViewHost = {
+        place: 'page',
+        can: right => this.config.can(right),
+        guard: canLeave => {
+            this.guards.add(canLeave);
+            return () => this.guards.delete(canLeave);
+        },
+    };
     protected readonly viewInjector = Injector.create({ providers: [{ provide: FILE_VIEW_HOST, useValue: this.host }], parent: inject(Injector) });
+
+    /** The route's question: the file shown may be left (nothing unsaved, or the person agrees). */
+    canLeave(): boolean {
+        for (const canLeave of this.guards) {
+            if (!canLeave())
+                return false;
+        }
+        return true;
+    }
 
     async ngOnInit(): Promise<void> {
         if (!this.name) {

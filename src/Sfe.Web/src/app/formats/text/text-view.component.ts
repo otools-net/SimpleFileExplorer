@@ -9,16 +9,20 @@ import { ReadingPanelComponent } from '../reading/reading-panel.component';
 import { ReadingService } from '../reading/reading.service';
 import { TextEditor } from './codemirror';
 import { textDetails, textFailure } from './text-document';
+import { TextEditActionsComponent, TextEditBarComponent } from './text-edit.component';
+import { TextSession } from './text-session';
 
 /**
- * A text file in the viewer or on a page of its own (agents/docs/features/text-viewer.md), read only: highlighting by
- * its name, find (Ctrl+F), go to line (Ctrl+Alt+G), and the reading preferences of its format's profile ("Aa": font,
- * size with Ctrl+= / Ctrl+− / Ctrl+0, line height, width, margins, wrapping, line numbers, colours). Its keys, wheel and
- * swipes are its own (`data-owns-keys`).
+ * A text file in the viewer or on a page of its own (agents/docs/features/text-viewer.md): highlighting by its name,
+ * find (Ctrl+F), go to line (Ctrl+Alt+G), and the reading preferences of its format's profile ("Aa": font, size with
+ * Ctrl+= / Ctrl+− / Ctrl+0, line height, width, margins, wrapping, line numbers, colours). Edit (E) changes it and Ctrl+S
+ * saves it, as the rights allow (agents/docs/features/text-editor.md); `edit` opens it ready to be changed. Its keys,
+ * wheel and swipes are its own (`data-owns-keys`).
  */
 @Component({
     selector: 'sfe-text-view',
-    imports: [IconComponent, ReadingPanelComponent],
+    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent],
+    providers: [TextSession],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'text-view',
@@ -31,6 +35,9 @@ import { textDetails, textFailure } from './text-document';
     },
     template: `
         <div class="text-toolbar" role="toolbar" aria-label="Text">
+            @if (state() === 'ready') {
+                <sfe-text-edit-actions />
+            }
             <button type="button" class="icon-button" [class.active]="own().wrap" [attr.aria-pressed]="own().wrap" title="Wrap long lines" aria-label="Wrap long lines" (click)="toggle('wrap')"><svg sfeIcon="wrap"></svg></button>
             <button type="button" class="icon-button" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggle('lineNumbers')"><svg sfeIcon="line-numbers"></svg></button>
             <button type="button" class="icon-button" title="Find (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="editor?.find()"><svg sfeIcon="search"></svg></button>
@@ -41,6 +48,7 @@ import { textDetails, textFailure } from './text-document';
         @if (panelOpen()) {
             <sfe-reading-panel [profile]="profile()" (closed)="panelOpen.set(false)" />
         }
+        <sfe-text-edit-bar />
         @switch (state()) {
             @case ('loading') {
                 <p class="text-message">Loading…</p>
@@ -58,6 +66,9 @@ import { textDetails, textFailure } from './text-document';
         @if (state() === 'ready') {
             <footer class="text-status" aria-live="polite">
                 <span>{{ details() }}</span>
+                @if (session.dirty()) {
+                    <span class="text-edited" data-edited>Edited</span>
+                }
                 <span>Ln {{ cursor().line }}, Col {{ cursor().column }}</span>
             </footer>
         }
@@ -66,8 +77,11 @@ import { textDetails, textFailure } from './text-document';
 export class TextViewComponent {
     readonly item = input.required<LibraryItem>();
     readonly format = input<FileFormat | null>(null);
+    /** Opened ready to be changed (a new file, a copy just saved). */
+    readonly edit = input(false);
 
     private readonly api = inject(Api);
+    protected readonly session = inject(TextSession);
     private readonly config = inject(ConfigService);
     private readonly fileHost = inject(FILE_VIEW_HOST);
     protected readonly reading = inject(ReadingService);
@@ -138,6 +152,7 @@ export class TextViewComponent {
         if (cancel.aborted)
             return;
         this.file.set(file);
+        this.session.attach(item, file);
         const own = this.own();
         this.editor = new TextEditor(this.hostElement().nativeElement, {
             text: file.text,
@@ -145,8 +160,12 @@ export class TextViewComponent {
             wrap: own.wrap,
             lineNumbers: own.lineNumbers,
             onCursor: (line, column) => this.cursor.set({ line, column }),
+            ...this.session.editorOptions(),
         });
+        this.session.setEditor(this.editor);
         this.state.set('ready');
+        if (untracked(this.edit))
+            this.session.startEdit();
         try {
             this.language.set(await this.editor.setLanguage(item.name));
         } catch {
@@ -176,8 +195,13 @@ export class TextViewComponent {
         this.reading.changeSize(this.profile(), step);
     }
 
-    /** Ctrl+F and Ctrl+Alt+G anywhere in the viewer find in the text, rather than in the page behind it. */
+    /**
+     * Ctrl+F and Ctrl+Alt+G anywhere in the viewer find in the text, rather than in the page behind it; Ctrl+S saves,
+     * E edits.
+     */
     protected onWindowKeydown(event: KeyboardEvent): void {
+        if (this.session.handleKey(event))
+            return;
         if (event.defaultPrevented || !this.editor || !(event.ctrlKey || event.metaKey) || event.shiftKey)
             return;
         const key = event.key.toLowerCase();

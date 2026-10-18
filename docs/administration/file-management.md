@@ -8,7 +8,8 @@
 What was deleted to the trash, newest first, with its size, when and by whom: **Restore** puts an item back where it
 was, **Delete** deletes it for good, **Empty the trash** deletes everything you may for good. Rights: `files.delete`
 (see and restore what you deleted, and what was deleted where you may delete), `files.deletePermanently` (delete for
-good). A folder that had folder access rules of its own shows only to whoever deleted it and to those who manage the
+good). A file saved over in the [text editor](../user-guide/editing-text.md) leaves its previous version here, marked
+**previous version**: restored, it comes back next to the file, with a number added to its name. A folder that had folder access rules of its own shows only to whoever deleted it and to those who manage the
 space's access. Server administrators see everything.
 
 ![Administration › File management › Trash](../images/admin-files-trash.png)

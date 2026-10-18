@@ -2,8 +2,8 @@
 
 Text files open in the [viewer](viewer.md), like pictures and videos: notes (`.txt`, `.md`), logs (`.log`), settings
 (`.json`, `.yaml`, `.ini`, `.xml`), subtitles (`.srt`, `.vtt`), scripts and code (`.ps1`, `.sh`, `.py`, `.cs`, `.js`,
-`.html`, `.css`, `.sql`…), and files such as `README`, `LICENSE` or `Dockerfile`. They are shown as they are, read only:
-nothing in them runs.
+`.html`, `.css`, `.sql`…), and files such as `README`, `LICENSE` or `Dockerfile`. They are shown as they are: nothing in
+them runs. **Edit** changes them: see [Editing text files](editing-text.md).
 
 ![A PowerShell script in the viewer, highlighted](../images/text-viewer.png)
 

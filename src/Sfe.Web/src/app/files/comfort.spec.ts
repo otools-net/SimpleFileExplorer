@@ -8,6 +8,7 @@ import { ChangeFeed } from '../library/change-feed.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { SidebarService } from '../library/sidebar/sidebar.service';
+import type { ViewerComponent } from '../library/viewer/viewer.component';
 import { BatchRenameDialog, BatchRenameRule, planRenames } from './batch-rename.dialog';
 import { FileTransfers } from './file-transfers';
 import { fromTouch, ItemMenu } from './item-menu';
@@ -175,6 +176,29 @@ describe('New file', () => {
 
         expect(api.createFile).toHaveBeenCalledWith('Media', 'todo.txt');
         expect(store.items().map(i => i.name)).toContain('todo.txt');
+    });
+
+    it('opens a new text file in the viewer, ready to be written; not a picture', async () => {
+        await setUp();
+        const fixture = TestBed.createComponent(NameDialog);
+        await fixture.whenStable();
+        const open = vi.fn();
+        TestBed.inject(Dialogs).viewer.set({ open } as unknown as ViewerComponent);
+        const element = fixture.nativeElement as HTMLElement;
+        const create = async (name: string, created: LibraryItem) => {
+            api.createFile.mockResolvedValue(created);
+            fixture.componentInstance.newFile();
+            type(element.querySelector<HTMLInputElement>('input')!, name);
+            element.querySelector('form')!.dispatchEvent(new Event('submit'));
+            await settle();
+        };
+
+        await create('todo.txt', item('Media/todo.txt', { kind: 'file', size: 0 }));
+        expect(open).toHaveBeenCalledWith(expect.objectContaining({ path: 'Media/todo.txt' }), { edit: true });
+
+        await create('empty.jpg', item('Media/empty.jpg', { kind: 'image', size: 0 }));
+        expect(open).toHaveBeenCalledTimes(1);
+        TestBed.inject(Dialogs).viewer.set(null);
     });
 });
 

@@ -184,6 +184,21 @@ const scenes = {
         await sleep(1200);
         await diary.shot(OUT + 'text-reading-settings.png');
         await diary.close();
+        // Editing (nothing saved: the sample stays as it is for the other shots).
+        const notes = await session();
+        await notes.open('?path=Documents');
+        await notes.click('a.item-link[title^="Trip diary.txt"]');
+        await sleep(2500);
+        await notes.click('.viewer [data-edit]');
+        await sleep(400);
+        await notes.key('End', 'End', 35, 2);     // Ctrl+End: after the last line
+        await notes.type('\n\nDay 6 — back home. Unpack, wash the boots, print the best photos.');
+        await sleep(600);
+        await notes.shot(OUT + 'text-editor.png');
+        await notes.click('.viewer [data-save-copy]');
+        await sleep(600);
+        await notes.shot(OUT + 'text-editor-copy.png');
+        await notes.close();
         // Markdown: rendered with its outline, then side by side with its source.
         const guide = await session();
         await guide.open('?path=Documents');

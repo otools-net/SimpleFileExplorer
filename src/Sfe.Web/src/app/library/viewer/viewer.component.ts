@@ -44,7 +44,7 @@ const OWNS_KEYS = '[data-owns-keys]';
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { '(window:resize)': 'onResize()' },
     template: `
-        <dialog #dialog class="viewer" aria-label="Preview" tabindex="-1" [class.has-video]="item()?.kind === 'video'" (close)="onClose()" (keydown)="onKeydown($event)">
+        <dialog #dialog class="viewer" aria-label="Preview" tabindex="-1" [class.has-video]="item()?.kind === 'video'" (close)="onClose()" (cancel)="onCancel($event)" (keydown)="onKeydown($event)">
             <header class="viewer-bar">
                 <div class="viewer-title">
                     <strong>{{ item()?.name }}</strong>
@@ -117,7 +117,7 @@ const OWNS_KEYS = '[data-owns-keys]';
                             }
                             @default {
                                 @if (viewComponent(); as component) {
-                                    <ng-container *ngComponentOutlet="component; inputs: { item: shown, format: format() }; injector: viewInjector" />
+                                    <ng-container *ngComponentOutlet="component; inputs: { item: shown, format: format(), edit: editRequested() }; injector: viewInjector" />
                                 } @else if (viewFailed()) {
                                     <div class="viewer-message"><p>This viewer could not be loaded: reload the page to try again.</p></div>
                                 }
@@ -148,9 +148,10 @@ export class ViewerComponent {
 
     /**
      * The file shown, by path: a refresh of the listing in place keeps it (with its new tags...), even when the files
-     * around it change. `asText`: opened with "Open as text".
+     * around it change. `asText`: opened with "Open as text"; `edit`: ready to be changed (a new file).
      */
-    private readonly opened = signal<{ item: LibraryItem; asText: boolean } | null>(null);
+    private readonly opened = signal<{ item: LibraryItem; asText: boolean; edit: boolean } | null>(null);
+    protected readonly editRequested = computed(() => this.opened()?.edit ?? false);
     protected readonly item = computed((): LibraryItem | null => {
         const opened = this.opened();
         return opened ? this.store.items().find(item => item.path === opened.item.path) ?? opened.item : null;
@@ -183,7 +184,17 @@ export class ViewerComponent {
     /** The component of the format shown, once loaded. */
     protected readonly viewComponent = signal<Type<unknown> | null>(null);
     protected readonly viewFailed = signal(false);
-    private readonly host: FileViewHost = { place: 'viewer', can: right => this.can(right), open: item => this.open(item) };
+    /** What the view shown asks before it is left (unsaved changes). */
+    private readonly guards = new Set<() => boolean>();
+    private readonly host: FileViewHost = {
+        place: 'viewer',
+        can: right => this.can(right),
+        open: (item, options) => this.open(item, { edit: options?.edit }),
+        guard: canLeave => {
+            this.guards.add(canLeave);
+            return () => this.guards.delete(canLeave);
+        },
+    };
     protected readonly viewInjector = Injector.create({ providers: [{ provide: FILE_VIEW_HOST, useValue: this.host }], parent: this.injector });
     /** The item on the stage, as a list of one (or none) so that each item gets elements of its own. */
     protected readonly shownItem = computed(() => {
@@ -282,24 +293,49 @@ export class ViewerComponent {
         });
     }
 
-    /** Shows `item` (`asText`: any file, as text). Nothing happens for a file without a viewer. */
-    open(item: LibraryItem, options?: { asText?: boolean }): void {
+    /**
+     * Shows `item` (`asText`: any file, as text; `edit`: ready to be changed). Nothing happens for a file without a
+     * viewer, nor when the file shown has changes the person keeps.
+     */
+    open(item: LibraryItem, options?: { asText?: boolean; edit?: boolean }): void {
         if (!formatOf(item, options))
             return;
         const dialog = this.dialog().nativeElement;
+        if (dialog.open && this.item()?.path !== item.path && !this.confirmLeave())
+            return;
         if (!dialog.open)
             dialog.showModal();
-        this.show(item, options?.asText ?? false);
+        this.show(item, options?.asText ?? false, options?.edit ?? false);
     }
 
-    close(): void {
-        this.dialog().nativeElement.close();
+    /** Closes the viewer, unless the file shown has changes the person keeps; false then. */
+    close(): boolean {
+        const dialog = this.dialog().nativeElement;
+        if (dialog.open && !this.confirmLeave())
+            return false;
+        dialog.close();
+        return true;
     }
 
-    private show(item: LibraryItem, asText = false): void {
+    /** The file shown may be left: nothing unsaved in it, or the person agrees to lose it. */
+    confirmLeave(): boolean {
+        for (const canLeave of this.guards) {
+            if (!canLeave())
+                return false;
+        }
+        return true;
+    }
+
+    /** Esc closes the dialog by itself: not over unsaved changes the person keeps. */
+    protected onCancel(event: Event): void {
+        if (!this.confirmLeave())
+            event.preventDefault();
+    }
+
+    private show(item: LibraryItem, asText = false, edit = false): void {
         this.stopPending();
         this.resetZoom();
-        this.opened.set({ item, asText });
+        this.opened.set({ item, asText, edit });
         this.unsupported.set(false);
         this.converted.set(false);
         this.thumbnailFailed.set(false);
@@ -349,7 +385,7 @@ export class ViewerComponent {
                 return;
             target = this.neighbours().next;
         }
-        if (target)
+        if (target && this.confirmLeave())
             this.show(target);
     }
 
@@ -484,7 +520,8 @@ export class ViewerComponent {
     }
 
     protected searchTag(tag: TagSummary): void {
-        this.close();
+        if (!this.close())
+            return;
         this.store.navigate({ q: tagQuery(tag) });
     }
 

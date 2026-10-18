@@ -3,7 +3,7 @@ using Sfe.Core.Files;
 
 namespace Sfe.Tests;
 
-/// <summary>Bytes read as text the way an OS text editor does (<see cref="TextCodec"/>), and versions of content.</summary>
+/// <summary>Bytes read and written as text the way an OS text editor does (<see cref="TextCodec"/>), and versions of content.</summary>
 [TestClass]
 public sealed class TextCodecTests
 {
@@ -65,27 +65,39 @@ public sealed class TextCodecTests
     }
 
     [TestMethod]
-    public async Task ReadsUpToTheLimit()
+    [DataRow(TextCodec.Utf8)]
+    [DataRow(TextCodec.Utf8Bom)]
+    [DataRow(TextCodec.Utf16Le)]
+    [DataRow(TextCodec.Utf16Be)]
+    [DataRow(TextCodec.Windows1252)]
+    public void EncodedTextReadsBackTheSame(string encoding)
     {
-        var file = Path.Combine(Path.GetTempPath(), $"sfe-text-{Guid.NewGuid():N}.txt");
-        await File.WriteAllTextAsync(file, "0123456789", TestContext.CancellationToken);
-        try
-        {
-            var content = new FileContent();
-            var whole = (await content.ReadAsync(file, 10, TestContext.CancellationToken))!;
-            var tooLarge = (await content.ReadAsync(file, 9, TestContext.CancellationToken))!;
+        const string text = "Café — “quoted” €5\nsecond line\n";
 
-            Assert.AreEqual("0123456789", Encoding.ASCII.GetString(whole.Bytes!));
-            Assert.AreEqual(10, whole.Version!.Size);
-            Assert.IsTrue(tooLarge.TooLarge);
-            Assert.AreEqual(10, tooLarge.Size);
-            Assert.IsNull(await content.ReadAsync(file + ".missing", 10, TestContext.CancellationToken));
-        }
-        finally
-        {
-            File.Delete(file);
-        }
+        var encoded = TextCodec.Encode(text, encoding, "crlf");
+        var decoded = TextCodec.Decode(encoded.Bytes)!;
+
+        Assert.AreEqual((text.Replace("\n", "\r\n"), encoding, "crlf"), (decoded.Text, decoded.Encoding, decoded.LineEnding));
     }
 
-    public TestContext TestContext { get; set; } = null!;
+    [TestMethod]
+    public void EveryLineEndsAsAsked()
+    {
+        Assert.AreEqual("a\nb\nc\n", Encoding.UTF8.GetString(TextCodec.Encode("a\r\nb\rc\n", TextCodec.Utf8, "lf").Bytes!));
+        Assert.AreEqual("a\rb", Encoding.UTF8.GetString(TextCodec.Encode("a\nb", TextCodec.Utf8, "cr").Bytes!));
+        Assert.AreEqual("crlf", TextCodec.DominantLineEnding("a\r\nb\r\nc\nd"));
+        Assert.AreEqual("lf", TextCodec.DominantLineEnding("a\nb\nc\r\n"));
+        Assert.AreEqual("lf", TextCodec.DominantLineEnding("no line"));
+    }
+
+    [TestMethod]
+    public void Windows1252RefusesWhatItCantHoldAndSaysWhat()
+    {
+        var encoded = TextCodec.Encode("Tokyo 東京, Moscow Москва, 東京 again", TextCodec.Windows1252, "lf");
+
+        Assert.IsNull(encoded.Bytes);
+        CollectionAssert.AreEqual(new[] { "東", "京", "М", "о", "с", "к", "в", "а" }, encoded.Unrepresentable.ToArray());
+        Assert.ThrowsExactly<ArgumentException>(() => TextCodec.Encode("x", "latin-9", "lf"));
+        Assert.ThrowsExactly<ArgumentException>(() => TextCodec.Encode("x", TextCodec.Utf8, "mixed"));
+    }
 }

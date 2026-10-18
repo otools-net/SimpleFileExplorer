@@ -20,8 +20,9 @@ namespace Sfe.Core.Files;
 /// <param name="Path">Where it was, relative to the library root.</param>
 /// <param name="Size">Bytes as the index knew them; null when it was not indexed.</param>
 /// <param name="HasRules">A folder that had folder access rules (kept in the entry): its access isn't the parent's.</param>
+/// <param name="PreviousVersion">A copy of a file's content before it was saved over (the file is still where it was).</param>
 public sealed record TrashItem(int Id, string Path, string Name, bool IsFolder, long? Size, int? Files, DateTimeOffset DeletedAt, string? DeletedBy, int? DeletedById,
-    bool HasRules = false);
+    bool HasRules = false, bool PreviousVersion = false);
 
 /// <param name="Next">The <c>before</c> of the next page; null on the last.</param>
 /// <param name="RetentionDays">Days things stay in the trash (<see cref="TrashOptions.RetentionDays"/>); 0 = until emptied.</param>
@@ -155,6 +156,42 @@ public sealed class Trash(
 
         Changed(full);
         logger.LogInformation("{Account} deleted {Path} to the trash", actor.Name, relative);
+        PurgeWhenDue();
+        return entry.Id;
+    }
+
+    /// <summary>
+    /// Keeps a copy of the file <paramref name="full"/> in the trash as its previous version, before an editor saves over
+    /// it (agents/docs/features/text-editor.md): the file stays where it is, with its tags, index row and previews.
+    /// Restored, the copy comes back next to it (" (2)").
+    /// </summary>
+    /// <exception cref="IOException">The disk refused.</exception>
+    /// <exception cref="UnauthorizedAccessException">The server's account may not read it or write to the trash.</exception>
+    internal async Task<int> CopyInAsync(string full, string relative, FileActor actor, CancellationToken cancellationToken)
+    {
+        var entry = new TrashEntry
+        {
+            Path = relative, Name = Path.GetFileName(full), IsFolder = false, Size = new FileInfo(full).Length, DeletedAt = DateTime.UtcNow,
+            DeletedById = actor.AccountId, DeletedBy = actor.Name, Location = work.Location, Folder = Guid.NewGuid().ToString("N"),
+            Kind = TrashEntryKind.PreviousVersion,
+        };
+        await using (var db = await dbFactory.CreateDbContextAsync(cancellationToken))
+        {
+            db.TrashEntries.Add(entry);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        var holder = Path.Combine(work.Get(FolderName), entry.Folder);
+        try
+        {
+            Directory.CreateDirectory(holder);
+            File.Copy(full, Path.Combine(holder, entry.Name));
+        }
+        catch
+        {
+            await ForgetAsync(entry.Id, holder);
+            throw;
+        }
+        logger.LogInformation("{Account} kept the previous version of {Path} in the trash", actor.Name, relative);
         PurgeWhenDue();
         return entry.Id;
     }
@@ -316,8 +353,8 @@ public sealed class Trash(
             return false;
 
         var stored = StoragePath(entry);
-        // The previews were kept by the original paths.
-        if (paths.TryResolve(entry.Path, out var original))
+        // The previews were kept by the original paths (a previous version's are the live file's: they stay).
+        if (entry.Kind != TrashEntryKind.PreviousVersion && paths.TryResolve(entry.Path, out var original))
             DeleteCachesLater(entry.IsFolder
                 ? [.. FileTree.Files(stored).Select(file => original + file[stored.Length..])]
                 : [original]);
@@ -581,7 +618,8 @@ public sealed class Trash(
 
     private static TrashItem ToItem(TrashEntry entry) => new(
         entry.Id, entry.Path, entry.Name, entry.IsFolder, entry.Size, entry.Files,
-        new DateTimeOffset(DateTime.SpecifyKind(entry.DeletedAt, DateTimeKind.Utc)), entry.DeletedBy, entry.DeletedById, entry.Rules is not null);
+        new DateTimeOffset(DateTime.SpecifyKind(entry.DeletedAt, DateTimeKind.Utc)), entry.DeletedBy, entry.DeletedById, entry.Rules is not null,
+        entry.Kind == TrashEntryKind.PreviousVersion);
 
     private static string ParentOf(string path) => path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
 
