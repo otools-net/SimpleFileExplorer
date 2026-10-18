@@ -28,7 +28,13 @@
 .viewer-title { display: flex; flex-direction: column; min-width: 0; }
 .viewer-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .viewer-title span { color: #a9afba; font-size: 12px; }
-.viewer-actions { display: flex; flex-shrink: 0; gap: 6px; }
+.viewer-actions { position: relative; display: flex; flex-shrink: 0; gap: 6px; }
+
+/* The bar's ⋮ menu (quick link, links, crop...): under its button; on phones the item menu's sheet at the bottom. */
+@media (min-width: 641px) {
+    .item-menu.viewer-menu { position: absolute; top: calc(100% + 6px); right: 0; left: auto; }
+}
+.viewer-menu a.item-menu-entry { text-decoration: none; }
 
 .viewer .icon-button {
     border-color: transparent;

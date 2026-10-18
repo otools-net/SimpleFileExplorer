@@ -1,5 +1,5 @@
 import { NgComponentOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, Injector, signal, Type, untracked, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, Injector, signal, Type, untracked, viewChild } from '@angular/core';
 import { ConfigService } from '../../core/config.service';
 import { CopyPathService } from '../../core/copy-path.service';
 import { ToastService } from '../../core/toast.service';
@@ -13,7 +13,7 @@ import { TrickplayMarksService } from '../../trickplay/trickplay-marks.service';
 import { VideoPlayerComponent } from '../../player/video-player.component';
 import { Dialogs, registerDialog } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
-import { PinButtonComponent } from '../quick-links/pin-button.component';
+import { QuickLinksService } from '../quick-links/quick-links.service';
 
 // Mouse wheel (not over a view that scrolls itself, such as text): down = next, up = previous. A touchpad sends a long burst of small deltas (with inertia), so they add
 // up to a step and the rest of the gesture is ignored until it pauses, otherwise one flick would skip several files.
@@ -31,6 +31,18 @@ function clampAxis(position: number, room: number, size: number): number {
 /** Where keys, the wheel and swipes belong to what is shown (a text view's own scrolling, cursor and shortcuts). */
 const OWNS_KEYS = '[data-owns-keys]';
 
+/** An entry of the viewer's ⋮ menu: an action, or a link (a new tab, a download). */
+interface ViewerMenuEntry {
+    id: string;
+    label: string;
+    icon: string;
+    shortcut?: string;
+    title: string;
+    run?: () => void;
+    href?: string | null;
+    newTab?: boolean;
+}
+
 /**
  * Full-screen preview for the files of the listing that have a viewer (images, videos, audio, and the formats of
  * `formats/formats.ts`, whose components it shows), with keyboard, swipe and wheel navigation;
@@ -40,11 +52,11 @@ const OWNS_KEYS = '[data-owns-keys]';
  */
 @Component({
     selector: 'sfe-viewer',
-    imports: [NgComponentOutlet, IconComponent, TagChipComponent, VideoPlayerComponent, PinButtonComponent],
+    imports: [NgComponentOutlet, IconComponent, TagChipComponent, VideoPlayerComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { '(window:resize)': 'onResize()' },
     template: `
-        <dialog #dialog class="viewer" aria-label="Preview" tabindex="-1" [class.has-video]="item()?.kind === 'video'" (close)="onClose()" (cancel)="onCancel($event)" (keydown)="onKeydown($event)">
+        <dialog #dialog class="viewer" aria-label="Preview" tabindex="-1" [class.has-video]="item()?.kind === 'video'" (close)="onClose()" (cancel)="onCancel($event)" (pointerdown)="onPointerDown($event)" (keydown)="onKeydown($event)">
             <header class="viewer-bar">
                 <div class="viewer-title">
                     <strong>{{ item()?.name }}</strong>
@@ -59,31 +71,32 @@ const OWNS_KEYS = '[data-owns-keys]';
                     @if (can('tags.view')) {
                         <button type="button" class="icon-button" title="Tags (T)" aria-label="Tags" (click)="openTags()"><svg sfeIcon="tag"></svg></button>
                     }
-                    @if (item(); as shown) {
-                        <button [sfePin]="shown.path" [name]="shown.name"></button>
-                    }
-                    @if (zoomed()) {
-                        <button type="button" class="icon-button" title="Fit to the screen (Z, or click the picture)" aria-label="Fit to the screen" (click)="zoomOut()"><svg sfeIcon="zoom-out"></svg></button>
-                    } @else if (zoomable()) {
-                        <button type="button" class="icon-button" title="Actual size, 100% (Z, or click the picture)" aria-label="Actual size" (click)="zoomIn()"><svg sfeIcon="zoom-in"></svg></button>
-                    }
-                    @if (editable()) {
-                        <button type="button" class="icon-button" title="Edit: crop, then save a copy (E)" aria-label="Edit" (click)="edit()"><svg sfeIcon="crop"></svg></button>
-                    }
-                    @if (copyPaths.enabled()) {
-                        <button type="button" class="icon-button" title="Copy the full path" aria-label="Copy the full path" (click)="copyPath()"><svg sfeIcon="copy"></svg></button>
-                    }
-                    @if (item()?.kind === 'video') {
-                        <button type="button" class="icon-button" title="Open in a new window (W)" aria-label="Open in a new window" (click)="popOut()"><svg sfeIcon="window"></svg></button>
-                    }
-                    @if (external()) {
-                        <button type="button" class="icon-button" [title]="'Open in ' + urls()?.externalName + ' (a link working without signing in, for a while)'" [attr.aria-label]="'Open in ' + urls()?.externalName" (click)="openExternal()"><svg sfeIcon="play"></svg></button>
-                    }
-                    <a class="icon-button" [href]="fileUrl()" target="_blank" rel="noopener" title="Open in new tab" aria-label="Open in new tab"><svg sfeIcon="external"></svg></a>
-                    @if (can('files.download')) {
-                        <a class="icon-button" [href]="downloadUrl()" title="Download" aria-label="Download"><svg sfeIcon="download"></svg></a>
+                    @if (menuEntries().length) {
+                        <button #menuButton type="button" class="icon-button viewer-menu-button" title="More actions" aria-label="More actions" aria-haspopup="menu"
+                                [attr.aria-expanded]="menuOpen()" [class.active]="menuOpen()" (click)="toggleMenu()"><svg sfeIcon="more"></svg></button>
                     }
                     <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
+                    @if (menuOpen()) {
+                        <div class="item-menu-backdrop" aria-hidden="true" (click)="menuOpen.set(false)"></div>
+                        <div #menu class="item-menu viewer-menu" role="menu" [attr.aria-label]="'Actions for ' + item()?.name" (keydown)="onMenuKeydown($event)">
+                            <div class="item-menu-title">{{ item()?.name }}</div>
+                            @for (entry of menuEntries(); track entry.id) {
+                                @if (entry.href) {
+                                    <a role="menuitem" class="item-menu-entry" [attr.data-entry]="entry.id" [href]="entry.href" [title]="entry.title"
+                                       [attr.target]="entry.newTab ? '_blank' : null" [attr.rel]="entry.newTab ? 'noopener' : null" (click)="menuOpen.set(false)">
+                                        <svg [sfeIcon]="entry.icon"></svg><span>{{ entry.label }}</span>
+                                    </a>
+                                } @else {
+                                    <button type="button" role="menuitem" class="item-menu-entry" [attr.data-entry]="entry.id" [title]="entry.title" (click)="runEntry(entry)">
+                                        <svg [sfeIcon]="entry.icon"></svg><span>{{ entry.label }}</span>
+                                        @if (entry.shortcut) {
+                                            <kbd>{{ entry.shortcut }}</kbd>
+                                        }
+                                    </button>
+                                }
+                            }
+                        </div>
+                    }
                 </div>
             </header>
             <div #stage class="viewer-stage" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
@@ -138,11 +151,14 @@ export class ViewerComponent {
     protected readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
     protected readonly copyPaths = inject(CopyPathService);
+    private readonly quickLinks = inject(QuickLinksService);
     protected readonly urls = this.config.urls;
     private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
     private readonly stage = viewChild.required<ElementRef<HTMLElement>>('stage');
     private readonly player = viewChild(VideoPlayerComponent);
     private readonly picture = viewChild<ElementRef<HTMLImageElement>>('picture');
+    private readonly menu = viewChild<ElementRef<HTMLElement>>('menu');
+    private readonly menuButton = viewChild<ElementRef<HTMLElement>>('menuButton');
 
     private readonly injector = inject(Injector);
 
@@ -230,6 +246,74 @@ export class ViewerComponent {
 
     /** The picture can be edited (the right, and a server with the editor). */
     protected readonly editable = computed(() => this.item()?.kind === 'image' && this.can('files.edit') && Boolean(this.config.config()?.editor));
+
+    /** The ⋮ menu of the bar: what the file shown allows besides its tags (zoom, edit, quick link, links...). */
+    protected readonly menuOpen = signal(false);
+    protected readonly menuEntries = computed((): ViewerMenuEntry[] => {
+        const item = this.item();
+        if (!item)
+            return [];
+        const entries: ViewerMenuEntry[] = [];
+        if (this.zoomed())
+            entries.push({ id: 'fit', label: 'Fit to the screen', icon: 'zoom-out', shortcut: 'Z', title: 'Fit to the screen (Z, or click the picture)', run: () => this.zoomOut() });
+        else if (this.zoomable())
+            entries.push({ id: 'actualSize', label: 'Actual size', icon: 'zoom-in', shortcut: 'Z', title: 'Actual size, 100% (Z, or click the picture)', run: () => this.zoomIn() });
+        if (this.editable())
+            entries.push({ id: 'crop', label: 'Crop…', icon: 'crop', shortcut: 'E', title: 'Edit: crop, then save a copy (E)', run: () => this.edit() });
+        if (this.quickLinks.enabled()) {
+            const pinned = this.quickLinks.paths().has(item.path);
+            entries.push({
+                id: 'quickLink', label: pinned ? 'Remove from quick links' : 'Add to quick links', icon: 'pin',
+                title: pinned ? `Take ${item.name} out of your quick links` : `Show ${item.name} in your quick links, in the sidebar`,
+                run: () => void this.quickLinks.toggle(item.path),
+            });
+        }
+        if (this.copyPaths.enabled())
+            entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => this.copyPath() });
+        if (item.kind === 'video')
+            entries.push({ id: 'popOut', label: 'Open in a new window', icon: 'window', shortcut: 'W', title: 'Play it in a window of its own, from here (W)', run: () => this.popOut() });
+        if (this.external())
+            entries.push({ id: 'external', label: `Open in ${this.urls()?.externalName}`, icon: 'play', title: 'A link working without signing in, for a while', run: () => this.openExternal() });
+        entries.push({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Open it in a tab of its own', href: this.fileUrl(), newTab: true });
+        if (this.can('files.download'))
+            entries.push({ id: 'download', label: 'Download', icon: 'download', title: 'Save this file to this device', href: this.downloadUrl() });
+        return entries;
+    });
+
+    protected toggleMenu(): void {
+        this.menuOpen.update(open => !open);
+        if (this.menuOpen())
+            afterNextRender(() => this.menu()?.nativeElement.querySelector<HTMLElement>('.item-menu-entry')?.focus({ preventScroll: true }), { injector: this.injector });
+    }
+
+    protected runEntry(entry: ViewerMenuEntry): void {
+        this.menuOpen.set(false);
+        entry.run?.();
+    }
+
+    /** Arrows move between the entries; Esc closes the menu only (not the viewer), back on its button. */
+    protected onMenuKeydown(event: KeyboardEvent): void {
+        const entries = [...this.menu()?.nativeElement.querySelectorAll<HTMLElement>('.item-menu-entry') ?? []];
+        const index = entries.indexOf(document.activeElement as HTMLElement);
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            event.stopPropagation();
+            const step = event.key === 'ArrowDown' ? 1 : -1;
+            entries[(index + step + entries.length) % entries.length]?.focus();
+        } else if (event.key === 'Escape' || event.key === 'Tab') {
+            event.preventDefault();
+            event.stopPropagation();
+            this.menuOpen.set(false);
+            this.menuButton()?.nativeElement.focus();
+        }
+    }
+
+    /** A click outside the open menu closes it. */
+    protected onPointerDown(event: PointerEvent): void {
+        const target = event.target as Node;
+        if (this.menuOpen() && !this.menu()?.nativeElement.contains(target) && !this.menuButton()?.nativeElement.contains(target))
+            this.menuOpen.set(false);
+    }
 
     /** The session may use `right` on the item shown (a right of the space that the folder rules let through there). */
     protected can(right: string): boolean {
@@ -333,6 +417,7 @@ export class ViewerComponent {
     }
 
     private show(item: LibraryItem, asText = false, edit = false): void {
+        this.menuOpen.set(false);
         this.stopPending();
         this.resetZoom();
         this.opened.set({ item, asText, edit });
@@ -390,6 +475,7 @@ export class ViewerComponent {
     }
 
     protected onClose(): void {
+        this.menuOpen.set(false);
         this.stopPending();
         this.resetZoom();
         this.opened.set(null);
@@ -540,6 +626,12 @@ export class ViewerComponent {
 
     protected onKeydown(event: KeyboardEvent): void {
         const target = event.target as Element;
+        // Esc with the menu open closes the menu, not the viewer.
+        if (event.key === 'Escape' && this.menuOpen()) {
+            event.preventDefault();
+            this.menuOpen.set(false);
+            return;
+        }
         if (target.closest?.(OWNS_KEYS)) {
             // The view's keys are its own (arrows move its cursor); Esc leaves it first (unless it used it), then closes.
             if (event.key === 'Escape' && !event.defaultPrevented) {

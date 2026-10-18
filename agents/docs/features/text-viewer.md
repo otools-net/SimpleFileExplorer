@@ -26,6 +26,9 @@ Code: client `app/formats/formats.ts` (registry), `app/formats/text/` (`text-vie
   (fills the stage).
 - `[data-owns-keys]` on a view's root: the viewer ignores keys, wheel and swipes from inside it; Esc inside it (unless
   the view used it, e.g. to close its find bar) focuses the dialog (`tabindex="-1"`), the next Esc closes.
+- The bar holds only Tags, ⋮ and ×: the rest (zoom, crop, quick link, copy path, new window, external player, new tab,
+  download) is `menuEntries` in the viewer's own ⋮ menu (`.item-menu.viewer-menu`, inside the modal dialog: the page's
+  item menu would sit under its top layer). Esc with it open closes only the menu.
 
 ## Text view
 

@@ -1,7 +1,7 @@
 # Picture editor
 
-The viewer's **Edit** button (crop icon, or the E key) opens a picture in the editor, for accounts with the right
-`files.edit`. The original is never changed: the result is saved as a new file.
+**Crop…** in the viewer's **⋮** menu (or the E key), or in a picture's [item menu](managing-files.md#the-item-menu) (right
+click), opens a picture in the editor, for accounts with the right `files.edit`. The original is never changed: the result is saved as a new file.
 
 ![The picture editor](../images/image-editor.png)
 

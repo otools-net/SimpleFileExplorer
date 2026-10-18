@@ -19,6 +19,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   search, closing the tab.
 - Markdown is edited beside the document, which follows the text as it is typed.
 - **New file** opens the new text file in the viewer, ready to be written.
+- The item menu (right click) offers **Edit** on text files and **Crop…** on pictures.
+
+### Changed
+
+- The viewer's top bar keeps only **Tags**, **⋮** and **×**: zoom, crop, quick links, copy path, new window, external
+  player, open in new tab and download are in its **⋮** menu.
 
 ## 1.66.0
 

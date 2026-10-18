@@ -18,6 +18,8 @@ that item:
 
 | Entry | Key | |
 |---|---|---|
+| **Edit** | | Text files: opens it in the viewer, ready to be changed ([Editing text files](editing-text.md)) |
+| **Crop…** | | Pictures: opens it in the [picture editor](picture-editor.md) (right `files.edit`) |
 | **Rename…** | F2 | Gives it another name; several selected: [renamed together](#rename-several-at-once) |
 | **Delete…** | Delete | Moves it to the trash ([below](#delete)); with items selected, all of them |
 | **Cut**, **Copy** | Ctrl+X, Ctrl+C | Keeps it (or the selection) to move or copy with **Paste** ([below](#move-and-copy)) |

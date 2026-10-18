@@ -28,6 +28,14 @@ describe('ViewerComponent › Actual size', () => {
     const picture = () => element.querySelector<HTMLImageElement>('.viewer-stage > img')!;
     const button = (label: string) => element.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`);
     const transform = () => picture().style.transform;
+    /** An entry of the viewer's ⋮ menu (opened for it). */
+    async function entry(id: string): Promise<HTMLElement | null> {
+        if (!element.querySelector('.viewer-menu')) {
+            button('More actions')?.click();
+            await settle();
+        }
+        return element.querySelector<HTMLElement>(`.viewer-menu [data-entry="${id}"]`);
+    }
 
     async function press(type: string, x: number, y: number): Promise<void> {
         picture().dispatchEvent(pointer(type, x, y));
@@ -74,7 +82,7 @@ describe('ViewerComponent › Actual size', () => {
     it('shows a picture drawn smaller than it is at its actual size where it is clicked', async () => {
         await view();
         expect(picture().classList).toContain('zoomable');
-        expect(button('Actual size')).not.toBeNull();
+        expect(await entry('actualSize')).not.toBeNull();
 
         // The centre of the picture stays under the pointer.
         await click(500, 350);
@@ -83,8 +91,8 @@ describe('ViewerComponent › Actual size', () => {
         expect(picture().style.width).toBe('4000px');
         expect(picture().style.height).toBe('3000px');
         expect(transform()).toBe('translate(-1500px, -1200px)');
-        expect(button('Fit to the screen')).not.toBeNull();
-        expect(button('Actual size')).toBeNull();
+        expect(await entry('fit')).not.toBeNull();
+        expect(await entry('actualSize')).toBeNull();
     });
 
     it('never leaves a gap at the edges when zooming near a corner', async () => {
@@ -127,7 +135,7 @@ describe('ViewerComponent › Actual size', () => {
         await view(photo, { width: 800, height: 600 });
 
         expect(picture().classList).not.toContain('zoomable');
-        expect(button('Actual size')).toBeNull();
+        expect(await entry('actualSize')).toBeNull();
         await click(500, 350);
         expect(picture().classList).not.toContain('actual-size');
         expect((await key('z')).defaultPrevented).toBe(false);
@@ -331,6 +339,22 @@ describe('ViewerComponent › Documents', () => {
         expect(title()).toBe('clip.mp4');
         expect(confirm).not.toHaveBeenCalled();
         expect(leaveListing()).toBe(true);
+    });
+
+    it('keeps only tags, a menu and close in its bar; the rest is in the menu, which Esc closes first', async () => {
+        await open(clip);
+        const bar = [...element.querySelectorAll('.viewer-actions > :is(button, a)')].map(control => control.getAttribute('aria-label'));
+        expect(bar).toEqual(['Tags', 'More actions', 'Close']);
+
+        element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]')!.click();
+        await settle();
+        const entries = [...element.querySelectorAll<HTMLElement>('.viewer-menu .item-menu-entry')];
+        expect(entries.map(entry => entry.dataset['entry'])).toEqual(expect.arrayContaining(['popOut', 'newTab', 'download']));
+        expect(element.querySelector<HTMLAnchorElement>('.viewer-menu [data-entry="newTab"]')!.target).toBe('_blank');
+
+        expect((await key('Escape')).defaultPrevented).toBe(true);
+        expect(element.querySelector('.viewer-menu')).toBeNull();
+        expect(dialog().open).toBe(true);
     });
 
     it('opens a file ready to be changed when asked (a new file)', async () => {

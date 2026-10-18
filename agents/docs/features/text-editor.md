@@ -65,6 +65,9 @@ the first MB when hashes are on) → `browser.Invalidate(parent)` (change feed) 
 - Markdown: editing switches the mode to Split (not written to the preference) and re-renders the document 300 ms after
   the last change (`revision`).
 - Download: a Blob of the text (UTF-8, the file's line endings), named as the file.
+- The item menu's **Edit** (`editText`: a text format, `files.view`, and `files.createFiles` or `files.download`)
+  opens the viewer with `{ edit: true }`; the server's `access` then decides what saving offers. Pictures get
+  **Crop…** (`editPicture`) there too.
 
 ## Guards
 

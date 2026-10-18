@@ -15,7 +15,7 @@ import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu. */
 export interface MenuEntry {
-    id: 'openAsText' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'properties';
+    id: 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'properties';
     label: string;
     icon: string;
     /** Its key, shown at the end of the line. */
@@ -49,7 +49,7 @@ export class ItemMenu {
      * only has its tags and ⋮ buttons: quick links and copying the path are here too.
      */
     hasActions(item: LibraryItem): boolean {
-        return this.canSeeProperties() || this.canOpenAsText(item) || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
+        return this.canSeeProperties() || this.canOpenAsText(item) || this.canEditText(item) || this.canEditPicture(item) || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
     }
 
     /** Properties of what is listed: whoever browses. */
@@ -76,10 +76,29 @@ export class ItemMenu {
         return item.kind === 'file' && !formatOf(item) && this.store.can(Rights.viewFiles, item) && Boolean(this.dialogs.viewer());
     }
 
+    /**
+     * A text file that something could be done with once changed (save over it, a copy, a download): the server tells
+     * exactly when it is opened (`access`), the viewer then offers what applies.
+     */
+    canEditText(item: LibraryItem): boolean {
+        const format = formatOf(item);
+        return Boolean(format && 'load' in format.view && this.dialogs.viewer() && this.store.can(Rights.viewFiles, item)
+            && (this.store.can(Rights.createFiles, item) || this.store.can(Rights.download, item)));
+    }
+
+    /** A picture the editor can crop (the right, and a server with the editor). */
+    canEditPicture(item: LibraryItem): boolean {
+        return item.kind === 'image' && this.store.can(Rights.editImages, item) && Boolean(this.config.config()?.editor) && Boolean(this.dialogs.imageEditor());
+    }
+
     entries(item: LibraryItem): MenuEntry[] {
         const entries: MenuEntry[] = [];
         if (this.canOpenAsText(item))
             entries.push({ id: 'openAsText', label: 'Open as text', icon: 'file', title: 'Show its content as text, in the viewer', run: () => this.dialogs.viewer()?.open(item, { asText: true }) });
+        if (this.canEditText(item))
+            entries.push({ id: 'editText', label: 'Edit', icon: 'edit', title: 'Open it in the viewer, ready to be changed', run: () => this.dialogs.viewer()?.open(item, { edit: true }) });
+        if (this.canEditPicture(item))
+            entries.push({ id: 'editPicture', label: 'Crop…', icon: 'crop', title: 'Crop the picture, then save it as a new file', run: () => void this.dialogs.imageEditor()?.open(item) });
         if (this.canRename(item)) {
             const several = this.targets(item).filter(target => this.canRename(target)).length > 1 && !this.store.searching();
             entries.push({

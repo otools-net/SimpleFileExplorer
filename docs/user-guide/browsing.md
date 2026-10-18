@@ -83,7 +83,7 @@ line shows the place. Dragging one of several selected files adds all of them. W
 | The pin after the path, at the top of the listing | the folder you are in |
 | **Add to quick links** in the [menu](managing-files.md#the-item-menu) of a folder or file (right click or **⋮**) | that folder or file |
 | In the [selection bar](tags.md#several-files-at-once), **Quick links** | the selected files |
-| The pin in the [viewer](viewer.md)'s top bar | the file shown |
+| **Add to quick links** in the [viewer](viewer.md)'s **⋮** menu | the file shown |
 
 A filled pin means the folder or file is a quick link already: click it again to remove it; in the item menu, the entry
 reads **Remove from quick links**.

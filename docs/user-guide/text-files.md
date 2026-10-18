@@ -81,7 +81,7 @@ page needs. On a phone the settings open as a sheet at the bottom of the screen:
 
 ## A page of its own
 
-**Open in new tab** (at the top right of the viewer) opens the text file in its viewer, in a tab of its own, with the
+**Open in new tab** (in the viewer's **⋮** menu, at the top right) opens the text file in its viewer, in a tab of its own, with the
 same buttons and settings; so does a middle click or Ctrl+click on a text file in a listing. The arrow at the top left
 of that page opens its folder.
 

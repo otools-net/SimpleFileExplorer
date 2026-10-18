@@ -9,8 +9,7 @@ Code: `src/Sfe.Core/Access/QuickLinkService.cs`, entity in `Data/Entities/Access
 - `api/me/quick-links` (`account.quickLinks`, never guests): GET, POST `{ paths, position }` (adds, or moves those
   already there, before the link now at `position`; null = new ones at the end), DELETE `?path=`; all answer the whole
   list with `exists`/`kind` read from the disk.
-- Client: `QuickLinksService` (root), `section[sfeQuickLinks]` first in the sidebar, `button[sfePin]` (location head,
-  viewer), the item menu's **Add to / Remove from quick links** (`ItemMenu`, id `quickLink`, folders and files), the
+- Client: `QuickLinksService` (root), `section[sfeQuickLinks]` first in the sidebar, `button[sfePin]` (location head), the viewer's ⋮ menu (id `quickLink`), the item menu's **Add to / Remove from quick links** (`ItemMenu`, id `quickLink`, folders and files), the
   selection bar's **Quick links**.
 - Drags: `QuickLinksComponent` listens to `document:dragstart` and takes the nearest `[data-path]` (tiles, rows,
   folders, breadcrumbs; the selection when a selected file is dragged) as `DRAG_ITEMS`; links move with `DRAG_LINK`.

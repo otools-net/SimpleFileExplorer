@@ -285,7 +285,15 @@ describe('ViewerComponent › Edit', () => {
         return { fixture, element: fixture.nativeElement as HTMLElement, editorDialog };
     }
 
-    const editButton = (element: HTMLElement) => element.querySelector<HTMLButtonElement>('button[aria-label="Edit"]');
+    /** Crop, in the viewer's ⋮ menu (opened for it). */
+    const editButton = async (element: HTMLElement) => {
+        const more = element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]');
+        if (more && !element.querySelector('.viewer-menu')) {
+            more.click();
+            await settle();
+        }
+        return element.querySelector<HTMLButtonElement>('[data-entry="crop"]');
+    };
 
     afterEach(() => TestBed.resetTestingModule());
 
@@ -294,25 +302,25 @@ describe('ViewerComponent › Edit', () => {
         fixture.componentInstance.open(item('Media/photo.jpg', { kind: 'image' }));
         await settle();
 
-        expect(editButton(element)).not.toBeNull();
+        expect(await editButton(element)).not.toBeNull();
         element.querySelector('dialog')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', bubbles: true }));
         expect(editorDialog.open).toHaveBeenCalledWith(expect.objectContaining({ path: 'Media/photo.jpg' }));
 
         fixture.componentInstance.open(item('Media/clip.mp4', { kind: 'video' }));
         await settle();
-        expect(editButton(element)).toBeNull();
+        expect(await editButton(element)).toBeNull();
     });
 
     it('hides it without the right, or from a server without the editor', async () => {
         const without = await viewer(ALL_RIGHTS.filter(r => r !== 'files.edit'));
         without.fixture.componentInstance.open(item('Media/photo.jpg', { kind: 'image' }));
         await settle();
-        expect(editButton(without.element)).toBeNull();
+        expect(await editButton(without.element)).toBeNull();
 
         TestBed.resetTestingModule();
         const older = await viewer(ALL_RIGHTS, false);
         older.fixture.componentInstance.open(item('Media/photo.jpg', { kind: 'image' }));
         await settle();
-        expect(editButton(older.element)).toBeNull();
+        expect(await editButton(older.element)).toBeNull();
     });
 });

@@ -146,7 +146,9 @@ const scenes = {
         await b.mouse('mouseReleased', x - 120, y - 60);
         await b.key('z', 'KeyZ', 90);
         await sleep(500);
-        await b.clickTitle('Edit');
+        await b.click('.viewer button[aria-label="More actions"]');
+        await sleep(300);
+        await b.click('.viewer-menu [data-entry="crop"]');
         await sleep(2000);
         await b.shot(OUT + 'image-editor.png');
         await b.clickText('button', '16:9');

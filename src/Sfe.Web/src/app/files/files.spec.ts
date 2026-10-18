@@ -190,6 +190,32 @@ describe('ItemMenu', () => {
         expect(TestBed.inject(ItemMenu).entries(archive).map(e => e.id)).not.toContain('openAsText');
     });
 
+    it('edits text files in the viewer and crops pictures, for those who may', async () => {
+        await setUp([Rights.browse, Rights.viewFiles, Rights.createFiles, Rights.editImages]);
+        const menu = TestBed.inject(ItemMenu);
+        const open = vi.fn();
+        const crop = vi.fn();
+        TestBed.inject(Dialogs).viewer.set({ open } as never);
+        TestBed.inject(Dialogs).imageEditor.set({ open: crop } as never);
+        const notes = item('Media/notes.txt', { kind: 'file' });
+
+        menu.entries(notes).find(e => e.id === 'editText')!.run();
+        menu.entries(photo).find(e => e.id === 'editPicture')!.run();
+
+        expect(open).toHaveBeenCalledWith(notes, { edit: true });
+        expect(crop).toHaveBeenCalledWith(photo);
+        expect(menu.entries(photo).map(e => e.id)).not.toContain('editText');
+        expect(menu.entries(notes).map(e => e.id)).not.toContain('editPicture');
+        expect(menu.entries(item('Media/backup.zip', { kind: 'file' })).map(e => e.id)).not.toContain('editText');
+
+        TestBed.resetTestingModule();
+        await setUp([Rights.browse, Rights.viewFiles]);
+        TestBed.inject(Dialogs).viewer.set({ open } as never);
+        TestBed.inject(Dialogs).imageEditor.set({ open: crop } as never);
+        expect(TestBed.inject(ItemMenu).entries(notes).map(e => e.id)).not.toContain('editText');
+        expect(TestBed.inject(ItemMenu).entries(photo).map(e => e.id)).not.toContain('editPicture');
+    });
+
     it('has no quick links entry without the right', async () => {
         await setUp([Rights.browse]);
         expect(TestBed.inject(ItemMenu).entries(photo).map(e => e.id)).toEqual(['properties']);
