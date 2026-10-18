@@ -911,6 +911,11 @@ export interface TextVersion {
     modified: string;
 }
 
+/** The video a subtitle file belongs to (`api/files/text/video`): null when none the session sees. */
+export interface SubtitleVideo {
+    path: string | null;
+}
+
 /** What saving a text file may do (`api/files/text`). */
 export interface TextAccess {
     /** Save over it: may delete it and create files in its folder (as move/copy's Replace). */

@@ -184,6 +184,15 @@ fs.writeFileSync(path.join(root, 'Documents/Photo backup.log'), [
     '2025-07-14 21:07:58.130 INFO  Backup finished in 7 min 56 s, 1 photo left for next time',
     '',
 ].join('\n'));
+// Subtitles next to their video (Play opens it at a cue); the fourth cue overlaps the third.
+fs.writeFileSync(path.join(root, 'Videos/Holidays/Campfire.en.srt'), [
+    '1', '00:00:00,200 --> 00:00:01,000', 'Is the fire <i>still</i> going?', '',
+    '2', '00:00:01,100 --> 00:00:01,900', '<b>Ana:</b> Just about.', '',
+    '3', '00:00:02,000 --> 00:00:03,000', 'Pass me the marshmallows.', '',
+    '4', '00:00:02,800 --> 00:00:03,600', 'Careful, they burn fast!', '',
+    '5', '00:00:03,700 --> 00:00:04,400', 'Look at the stars up there.', '',
+    '6', '00:00:04,500 --> 00:00:05,000', '<i>(crackling)</i>', '',
+].join('\r\n'));
 // A table for the CSV view: semicolons, as spreadsheets write them in many countries.
 fs.writeFileSync(path.join(root, 'Documents/Huts.csv'), [
     'Hut;Massif;Altitude (m);Beds;Open from;Price per night',

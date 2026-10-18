@@ -565,6 +565,38 @@
 .csv-sort-mark.descending { transform: rotate(180deg); }
 .csv-empty { margin: 0; padding: 16px; color: var(--reader-muted); font-family: var(--font); }
 
+/* ---------- Subtitles (formats/subtitles/): the cues (only those shown drawn), source or both ---------- */
+
+.subtitle-shift { display: inline-flex; gap: 4px; }
+.subtitle-shift .json-filter { width: 90px; }
+.subtitle-list { font-family: var(--reader-font); }
+.subtitle-cue {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: 6ch auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 0 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--reader-border) 50%, transparent);
+    line-height: calc(var(--reader-size) * 1.9);
+    white-space: nowrap;
+    cursor: default;
+}
+.subtitle-cue:hover { background: var(--reader-active-line); }
+.subtitle-cue.selected { background: var(--reader-selection-match); box-shadow: inset 3px 0 var(--accent); }
+.subtitle-cue.overlaps .subtitle-start { color: var(--tok-invalid); text-decoration: underline wavy; text-underline-offset: 3px; }
+.subtitle-number { overflow: hidden; color: var(--reader-muted); text-align: right; text-overflow: ellipsis; font-size: .85em; }
+.subtitle-time { color: var(--reader-text); font-variant-numeric: tabular-nums; font-size: .9em; }
+.subtitle-end { color: var(--reader-muted); }
+.subtitle-text { overflow: hidden; text-overflow: ellipsis; }
+.subtitle-text .italic { font-style: italic; }
+.subtitle-text .bold { font-weight: 700; }
+.subtitle-text .underline { text-decoration: underline; }
+.subtitle-voice { color: var(--tok-property); }
+
 /* Highlighting (classHighlighter of @lezer/highlight): one set of colours for every language. */
 .tok-keyword, .tok-bool, .tok-modifier, .tok-controlKeyword, .tok-definitionKeyword, .tok-moduleKeyword { color: var(--tok-keyword); }
 .tok-string, .tok-string2, .tok-character, .tok-inserted { color: var(--tok-string); }

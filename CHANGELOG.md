@@ -3,6 +3,17 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.72.0
+
+### Added
+
+- **Subtitles** (`.srt`, `.vtt`) open as a list of their **cues**: when each starts and ends, what is said (italic,
+  bold, who speaks), cues that overlap marked. **Filter** the cues; double-click one to see it in the source. **Play**
+  opens the video next to the subtitles (`Film.en.srt` → `Film.mkv`) at the cue selected, in a new tab.
+- **Shift times** (while editing subtitles): moves every cue by the seconds typed, earlier or later, for subtitles out
+  of sync with their video; only the times change, Ctrl+Z undoes it.
+- `GET api/files/text/video`: the video a subtitle file belongs to.
+
 ## 1.71.0
 
 ### Added

@@ -330,6 +330,30 @@ public sealed class TextRouteTests
         Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode);
     }
 
+    [TestMethod]
+    public async Task ASubtitleFileFindsItsVideoAsTheRightsAllow()
+    {
+        WriteText("Media/Film.en.forced.srt", "1\n00:00:01,000 --> 00:00:02,000\nHi\n");
+        WriteText("Media/Notes.srt", "1\n00:00:01,000 --> 00:00:02,000\nHi\n");
+        _library.AddFile("Media/Film.mkv", 100);
+        _library.AddFile("Media/Film.txt", 10);
+
+        Assert.AreEqual("Media/Film.mkv", (await VideoAsync(_alice, "Media/Film.en.forced.srt")).Path);
+        Assert.IsNull((await VideoAsync(_alice, "Media/Notes.srt")).Path, "no video named so");
+        using (var forbidden = await _bob.GetAsync("/api/files/text/video?path=Media/Film.en.forced.srt", Token))
+            Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode, "Bob may not open files");
+        WriteText("SpecialDir/Clip.srt", "");
+        using (var hidden = await _alice.GetAsync("/api/files/text/video?path=SpecialDir/Clip.srt", Token))
+            Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode, "hidden from Alice");
+    }
+
+    private async Task<SubtitleVideo> VideoAsync(HttpClient client, string path)
+    {
+        using var response = await client.GetAsync($"/api/files/text/video?path={Uri.EscapeDataString(path)}", Token);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+        return (await response.Content.ReadFromJsonAsync<SubtitleVideo>(Json, Token))!;
+    }
+
     private async Task<TextPart> PartAsync(HttpClient client, string query)
     {
         using var response = await client.GetAsync($"/api/files/text/part?path={query}", Token);

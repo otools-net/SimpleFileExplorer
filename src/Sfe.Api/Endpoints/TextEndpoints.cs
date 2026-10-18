@@ -6,6 +6,7 @@ using Sfe.Core.Access;
 using Sfe.Core.Files;
 using Sfe.Core.Library;
 using Sfe.Core.Paths;
+using Sfe.Core.Settings;
 using Sfe.Core.Tagging;
 
 namespace Sfe.Api.Endpoints;
@@ -35,6 +36,9 @@ public sealed record SaveTextRequest(string? Text, string? Encoding, string? Lin
 
 /// <param name="TrashId">The previous version's trash entry, when this save kept one.</param>
 public sealed record SavedText(string Version, long Size, DateTime Modified, int? TrashId);
+
+/// <param name="Path">The video a subtitle file belongs to (root-relative), or null when there is none the caller sees.</param>
+public sealed record SubtitleVideo(string? Path);
 
 /// <param name="Path">The folder the copy goes in.</param>
 public sealed record CopyTextRequest(string? Path, string? Name, string? Text, string? Encoding, string? LineEnding);
@@ -98,6 +102,16 @@ public static partial class TextEndpoints
             .WithDescription($"""
                 Read only when its size or time differ from those of `known` (the version the viewer has). Files over
                 {MaxBytes / (1024 * 1024)} MB have no version (null): only their size and time.
+                """);
+        text.MapGet("/video", GetVideo)
+            .RequireRight(Rights.ViewFiles)
+            .FolderScoped("files.view at the subtitle file and at the video")
+            .WithName("GetSubtitleVideo")
+            .WithSummary("The video a subtitle file belongs to: next to it, named as it is without its language marks.")
+            .WithDescription("""
+                `Film.en.forced.srt` belongs to `Film.en.forced`, `Film.en` or `Film` with one of the library's video
+                extensions, in that order. `path` is null when there is none, or none the caller may see. A few file
+                checks, not a listing of the folder.
                 """);
         text.MapPut("", Save)
             .RequireRight(Rights.DeleteFiles, Rights.DeletePermanently)
@@ -211,6 +225,22 @@ public static partial class TextEndpoints
         {
             return TypedResults.Problem("The file can't be read now (in use, or the server may not read it).", statusCode: StatusCodes.Status500InternalServerError);
         }
+    }
+
+    private static async Task<Results<Ok<SubtitleVideo>, NotFound, ForbidHttpResult>> GetVideo(
+        LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current, SettingsService settings, HttpContext context,
+        string? path, CancellationToken cancellationToken)
+    {
+        var (full, _, state, refused) = await ResolveAsync(paths, serverFiles, work, current, path);
+        if (refused is { } forbidden)
+            return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
+        context.Response.Headers.CacheControl = "no-store";
+        var effective = await settings.GetEffectiveAsync(state.Tenant?.Id, state.User?.Id, cancellationToken);
+        var video = Subtitles.FindVideo(full, effective.FileTypes.Videos);
+        var relative = video is null || FileEndpoints.Protected(video, serverFiles, work) ? null : paths.ToRelative(video);
+        if (relative is null || state.Check(paths, relative, Rights.ViewFiles) != PathVerdict.Allowed)
+            return TypedResults.Ok(new SubtitleVideo(null));
+        return TypedResults.Ok(new SubtitleVideo(relative));
     }
 
     /// <summary>

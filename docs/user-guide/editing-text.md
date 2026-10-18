@@ -24,6 +24,7 @@ save a copy next to it, or download them.
   which follows what you type.
 - **JSON** files are edited the same way, beside their [tree](text-files.md#json); **Format** lays the source out
   again, indented. **CSV** and TSV files too, beside their [table](text-files.md#csv-and-tsv).
+- **Subtitles** too, beside their [cues](text-files.md#subtitles); **Shift times** moves every cue at once.
 - **New file** (in a folder's [bar](managing-files.md#new-file)) opens the new text file here, ready to be written.
 
 Ctrl+S never saves the web page itself while a text file is shown, even when there is nothing to save.

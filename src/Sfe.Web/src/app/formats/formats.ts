@@ -166,8 +166,22 @@ export const CSV_FORMAT: FileFormat = {
     edits: true,
 };
 
+/** Subtitles: SubRip and WebVTT (SSA / ASS stay text). */
+export const SUBTITLE_EXTENSIONS: ReadonlySet<string> = new Set(['srt', 'vtt']);
+
+export const SUBTITLES_FORMAT: FileFormat = {
+    id: 'subtitles',
+    label: 'Subtitles',
+    priority: 20,
+    matches: item => item.kind === 'file' && SUBTITLE_EXTENSIONS.has(extensionOf(item)),
+    view: { load: () => import('./subtitles/subtitles-view.component').then(m => m.SubtitlesViewComponent) },
+    profile: 'code',
+    page: true,
+    edits: true,
+};
+
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT];
+export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text

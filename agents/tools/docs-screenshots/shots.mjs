@@ -237,6 +237,15 @@ const scenes = {
         await sleep(400);
         await huts.shot(OUT + 'csv-viewer.png');
         await huts.close();
+        // Subtitles: the cues, one selected (Play: the video next to them).
+        const subtitles = await session();
+        await subtitles.open('?path=Videos%2FHolidays');
+        await subtitles.click('a.item-link[title^="Campfire.en.srt"]');
+        await sleep(2500);
+        await subtitles.click('.subtitle-cue[data-cue="2"]');
+        await sleep(400);
+        await subtitles.shot(OUT + 'subtitles-viewer.png');
+        await subtitles.close();
         // A page of its own (a text file opened in a new tab).
         const page = await session();
         await page.open('view?path=Documents%2FRename%20photos.ps1');

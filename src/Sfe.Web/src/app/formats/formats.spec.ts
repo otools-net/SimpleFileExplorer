@@ -1,5 +1,5 @@
 import { item } from '../../testing/fakes';
-import { CSV_FORMAT, extensionOf, formatOf, FORMATS, isViewable, JSON_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
+import { CSV_FORMAT, extensionOf, formatOf, FORMATS, isViewable, JSON_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -11,7 +11,7 @@ describe('formats', () => {
     });
 
     it('shows text files by extension or by their whole name, whatever the case', () => {
-        for (const name of ['server.log', 'Program.cs', 'app.JS', 'Dockerfile', '.gitignore', 'settings.yaml', 'film.srt', 'build.ps1'])
+        for (const name of ['server.log', 'Program.cs', 'app.JS', 'Dockerfile', '.gitignore', 'settings.yaml', 'film.ass', 'build.ps1'])
             expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(TEXT_FORMAT);
         // The server's extensions have no dot; the name decides anyway.
         expect(formatOf({ ...item('a/server.log', { kind: 'file' }), extension: 'log' })).toBe(TEXT_FORMAT);
@@ -42,13 +42,19 @@ describe('formats', () => {
         for (const name of ['events.jsonl', 'events.ndjson', 'config.json5'])
             expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(TEXT_FORMAT);
         expect(JSON_FORMAT.profile).toBe('code');
-        expect(FORMATS.filter(format => format.edits).map(format => format.id)).toEqual(['text', 'prose', 'markdown', 'json', 'csv']);
+        expect(FORMATS.filter(format => format.edits).map(format => format.id)).toEqual(['text', 'prose', 'markdown', 'json', 'csv', 'subtitles']);
     });
 
     it('shows comma, tab and pipe separated files as a table', () => {
         for (const name of ['people.csv', 'Export.CSV', 'data.tsv', 'log.psv'])
             expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(CSV_FORMAT);
         expect(CSV_FORMAT.page && CSV_FORMAT.edits).toBe(true);
+    });
+
+    it('shows SubRip and WebVTT files as cues; SSA stays text', () => {
+        for (const name of ['Film.en.srt', 'clip.VTT'])
+            expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(SUBTITLES_FORMAT);
+        expect(formatOf(item('a/Film.ass', { kind: 'file' }))).toBe(TEXT_FORMAT);
     });
 
     it('has no viewer for folders and other files, unless opened as text', () => {

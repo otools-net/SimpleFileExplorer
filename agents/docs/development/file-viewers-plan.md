@@ -274,7 +274,9 @@ Tests
 - [x] (1.71.0) CSV / TSV table: papaparse (separator guessed or chosen, header or not), sort by a column, filter,
       cells selected and copied, only the rows shown drawn (`VirtualRows` over `@tanstack/virtual-core`), Table /
       Source / Split, editing in the source ([csv-viewer](../features/csv-viewer.md)).
-- [ ] Subtitles (`.srt`, `.vtt`).
+- [x] (1.72.0) Subtitles (`.srt`, `.vtt`): media-captions, the cues with their times and marks, overlaps, filter,
+      a cue shown in the source, Play in the video next to them (`GET api/files/text/video`), Shift times while
+      editing ([subtitles-viewer](../features/subtitles-viewer.md)).
 - [ ] PDF (pdf.js, bundled).
 - [ ] EPUB.
 - [ ] The picture editor saving in place through `FileContent`.
@@ -324,6 +326,10 @@ Tests
 - (1.69.0) A part starting right after a line break keeps its first line: the byte (UTF-16: unit) before it is read.
 - (1.69.0) The change feed tells only changes made through SFE: changes by other programs need the periodic version
   check, made cheap by trusting an unchanged size and time.
+- (1.72.0) A package's prod build may need browser classes when it loads (media-captions extends `window.VTTCue`):
+  stub them in `src/testing/setup.ts`.
+- (1.72.0) Bump the version before starting `dotnet test`: `TheShippedChangelogHasTheRunningVersion` fails when the
+  changelog changes under a running build (the "flaky" failure of 1.70.0).
 - (1.71.0) `@types/papaparse` brings `@types/node` into the app's compilation (every `setTimeout` then returns
   `Timeout`): declare the few types used locally instead (`csv/papaparse.d.ts`). Check a `@types` package's
   `/// <reference types="node" />` before installing it.

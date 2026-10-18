@@ -122,6 +122,25 @@ scroll as smoothly as short ones: only the rows on screen are drawn.
 - **Table** / **Source** / **Split**, as for Markdown and JSON. **Edit** changes the source beside the table, which
   follows as you type.
 
+## Subtitles
+
+SubRip (`.srt`) and WebVTT (`.vtt`) subtitles open as the list of their **cues**: the number, when each starts and
+ends, and what is said, in italic or bold as written, with who speaks (`<v Ann>`) in colour. A cue that starts before
+the one before it has ended shows its time in red, and the bar at the bottom counts them.
+
+![Subtitles as a list of cues](../images/subtitles-viewer.png)
+
+- **Filter** (Ctrl+F) shows the cues holding what you type.
+- Click a cue, or move with ↑ ↓: the bar at the bottom shows its time and length. **Play** opens the video the
+  subtitles belong to at that cue, in a new tab: the video next to them with the same name, without the language and
+  other marks (`Film.en.forced.srt` → `Film.en.forced`, `Film.en`, then `Film`, with any video extension).
+- Double-click a cue (or Enter) to see it in the source. A file that isn't valid says on which line.
+- **Cues** / **Source** / **Split**, as for Markdown.
+- While editing, **Shift times** moves every cue by the seconds typed (`2.5` later, `-2.5` earlier), for subtitles
+  out of sync with their video. Only the times change, written as they were; Ctrl+Z undoes it.
+
+SubStation subtitles (`.ass`, `.ssa`) open as text.
+
 ## Reading settings
 
 **Aa** at the end of the text's bar opens the reading settings. They apply at once, and this browser keeps them: one

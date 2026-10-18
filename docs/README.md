@@ -21,7 +21,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | [Signing in](user-guide/signing-in.md) | The sign-in page, visitors, switching spaces, the ⋮ menu |
 | [Browsing](user-guide/browsing.md) | Folders, layouts, sorting, quick links, folder pictures, resolutions and durations, copying paths, themes, phones |
 | [Viewer](user-guide/viewer.md) | Opening pictures, videos, audio and text files full screen |
-| [Text files](user-guide/text-files.md) | Reading text files, Markdown, JSON (a tree) and CSV (a table): highlighting, find, go to line, reading settings (fonts, size, width, colours), a page of their own, Open as text |
+| [Text files](user-guide/text-files.md) | Reading text files, Markdown, JSON (a tree), CSV (a table) and subtitles: highlighting, find, go to line, reading settings (fonts, size, width, colours), a page of their own, Open as text |
 | [Editing text files](user-guide/editing-text.md) | Changing and saving text files, who may save over them, copies, changes made elsewhere, previous versions |
 | [Video player](user-guide/video-player.md) | The player's controls and keys, its own window, external players |
 | [Picture editor](user-guide/picture-editor.md) | Cropping a picture and saving it as a new file |
