@@ -224,6 +224,19 @@ const scenes = {
         await sleep(1500);
         await plan.shot(OUT + 'json-split.png');
         await plan.close();
+        // CSV: a table sorted by a column, a cell selected.
+        const huts = await session();
+        await huts.open('?path=Documents');
+        await huts.click('a.item-link[title^="Huts.csv"]');
+        await sleep(2500);
+        await huts.click('.csv-sort[data-column="2"]');
+        await sleep(300);
+        await huts.click('.csv-sort[data-column="2"]');
+        await sleep(300);
+        await huts.click('.csv-body [data-record="4"] [data-column="0"]');
+        await sleep(400);
+        await huts.shot(OUT + 'csv-viewer.png');
+        await huts.close();
         // A page of its own (a text file opened in a new tab).
         const page = await session();
         await page.open('view?path=Documents%2FRename%20photos.ps1');

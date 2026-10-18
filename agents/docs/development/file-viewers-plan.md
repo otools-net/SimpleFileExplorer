@@ -271,7 +271,9 @@ Tests
       the tree by rows of open containers (200 at a time), filter, path and value copied, Tree / Source / Split,
       Format while editing; `FileFormat.edits` for the formats that edit
       ([json-viewer](../features/json-viewer.md)).
-- [ ] CSV / TSV table.
+- [x] (1.71.0) CSV / TSV table: papaparse (separator guessed or chosen, header or not), sort by a column, filter,
+      cells selected and copied, only the rows shown drawn (`VirtualRows` over `@tanstack/virtual-core`), Table /
+      Source / Split, editing in the source ([csv-viewer](../features/csv-viewer.md)).
 - [ ] Subtitles (`.srt`, `.vtt`).
 - [ ] PDF (pdf.js, bundled).
 - [ ] EPUB.
@@ -322,6 +324,10 @@ Tests
 - (1.69.0) A part starting right after a line break keeps its first line: the byte (UTF-16: unit) before it is read.
 - (1.69.0) The change feed tells only changes made through SFE: changes by other programs need the periodic version
   check, made cheap by trusting an unchanged size and time.
+- (1.71.0) `@types/papaparse` brings `@types/node` into the app's compilation (every `setTimeout` then returns
+  `Timeout`): declare the few types used locally instead (`csv/papaparse.d.ts`). Check a `@types` package's
+  `/// <reference types="node" />` before installing it.
+- (1.71.0) `VirtualRows` (`formats/virtual-rows.ts`) is there for the next long lists (subtitles): equal rows only.
 - (1.70.0) Look for a package first (the user asked): `jsonc-parser` gave parsing, positions and formatting; the ready-made
   JSON viewers were too heavy or built on `JSON.parse`. The JSON view added ~2.5 kB of global CSS and the registry
   entry to the initial bundle (750 kB); its chunk is 36 kB (11 kB over the wire).

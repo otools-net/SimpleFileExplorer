@@ -3,6 +3,16 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.71.0
+
+### Added
+
+- **CSV and TSV files** (`.csv`, `.tsv`, `.psv`) open as a **table**: the first row naming the columns (or not),
+  the separator guessed (comma, semicolon, tab, pipe) or chosen, numbers to the right. Click a column's name to
+  **sort** by it (numbers as numbers), **filter** the rows on any cell, move between cells with the arrows and copy one
+  (Ctrl+C). Tables of any length scroll smoothly: only the rows on screen are drawn. **Table** / **Source** /
+  **Split** show its text beside it; **Edit** changes the source, the table following as you type.
+
 ## 1.70.0
 
 ### Added

@@ -23,7 +23,7 @@ save a copy next to it, or download them.
 - **Markdown** files are edited beside the document: the source on one side, the document as it reads on the other,
   which follows what you type.
 - **JSON** files are edited the same way, beside their [tree](text-files.md#json); **Format** lays the source out
-  again, indented.
+  again, indented. **CSV** and TSV files too, beside their [table](text-files.md#csv-and-tsv).
 - **New file** (in a folder's [bar](managing-files.md#new-file)) opens the new text file here, ready to be written.
 
 Ctrl+S never saves the web page itself while a text file is shown, even when there is nothing to save.

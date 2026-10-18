@@ -99,6 +99,29 @@ opens whole; a large one shows its first levels. A closed member shows what it h
 
 JSON Lines (`.jsonl`, `.ndjson`), which are mostly logs, open as text, where they can be read in parts and followed.
 
+## CSV and TSV
+
+Comma separated (`.csv`), tab separated (`.tsv`) and pipe separated (`.psv`) files open as a **table**. Long tables
+scroll as smoothly as short ones: only the rows on screen are drawn.
+
+![A CSV file as a table, sorted by a column](../images/csv-viewer.png)
+
+- **Header**: the first row names the columns (on by default; the choice is kept). Off, the columns are named A, B,
+  C… as in a spreadsheet, and the first row is a row.
+- **Separator**: guessed from the file (commas, semicolons as spreadsheets write them in many countries, tabs or
+  pipes); the list in the bar chooses another when the guess is wrong.
+- Columns of **numbers** are aligned to the right. Click a column's name to **sort** by it: smallest first, then
+  largest first, then as in the file. Numbers sort as numbers (`1,014` after `18`), text as in a dictionary, empty
+  cells last.
+- **Filter** (Ctrl+F) shows only the rows with a cell holding what you type; the bar at the bottom says how many of
+  all. Esc clears it.
+- Click a cell, or move with the arrows (Page Up / Down, Home / End; with Ctrl, the first and last rows): the bar at
+  the bottom shows its row, column and value; **Copy cell** or Ctrl+C copies it. Long cells are cut in the table;
+  line breaks inside a cell show as ↵.
+- A row with a quote left open says where (**Record** 12) above the table.
+- **Table** / **Source** / **Split**, as for Markdown and JSON. **Edit** changes the source beside the table, which
+  follows as you type.
+
 ## Reading settings
 
 **Aa** at the end of the text's bar opens the reading settings. They apply at once, and this browser keeps them: one

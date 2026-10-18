@@ -184,6 +184,21 @@ fs.writeFileSync(path.join(root, 'Documents/Photo backup.log'), [
     '2025-07-14 21:07:58.130 INFO  Backup finished in 7 min 56 s, 1 photo left for next time',
     '',
 ].join('\n'));
+// A table for the CSV view: semicolons, as spreadsheets write them in many countries.
+fs.writeFileSync(path.join(root, 'Documents/Huts.csv'), [
+    'Hut;Massif;Altitude (m);Beds;Open from;Price per night',
+    'Refuge du Lac Blanc;Mont Blanc;2352;38;June;62.50',
+    'Refuge du Goûter;Mont Blanc;3835;120;May;98.00',
+    'Monte Rosa Hut;Monte Rosa;2883;120;March;95.00',
+    'Hörnlihütte;Matterhorn;3260;130;July;150.00',
+    'Refuge de la Charpoua;Mont Blanc;2841;14;June;45.00',
+    'Cabane du Trient;Mont Blanc;3170;130;June;72.00',
+    'Rifugio Torino;Mont Blanc;3375;80;May;85.00',
+    'Britanniahütte;Saas;3030;134;February;80.00',
+    'Cabane de Moiry;Val d\'Anniviers;2825;100;March;76.00',
+    'Refuge des Cosmiques;Mont Blanc;3613;148;February;84.00',
+    '',
+].join('\r\n'));
 // JSON for the tree view.
 fs.writeFileSync(path.join(root, 'Documents/Trip plan.json'), JSON.stringify({
     trip: 'Alps, summer 2025',

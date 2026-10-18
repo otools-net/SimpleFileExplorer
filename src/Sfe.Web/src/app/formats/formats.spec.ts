@@ -1,5 +1,5 @@
 import { item } from '../../testing/fakes';
-import { extensionOf, formatOf, FORMATS, isViewable, JSON_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
+import { CSV_FORMAT, extensionOf, formatOf, FORMATS, isViewable, JSON_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -42,7 +42,13 @@ describe('formats', () => {
         for (const name of ['events.jsonl', 'events.ndjson', 'config.json5'])
             expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(TEXT_FORMAT);
         expect(JSON_FORMAT.profile).toBe('code');
-        expect(FORMATS.filter(format => format.edits).map(format => format.id)).toEqual(['text', 'prose', 'markdown', 'json']);
+        expect(FORMATS.filter(format => format.edits).map(format => format.id)).toEqual(['text', 'prose', 'markdown', 'json', 'csv']);
+    });
+
+    it('shows comma, tab and pipe separated files as a table', () => {
+        for (const name of ['people.csv', 'Export.CSV', 'data.tsv', 'log.psv'])
+            expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(CSV_FORMAT);
+        expect(CSV_FORMAT.page && CSV_FORMAT.edits).toBe(true);
     });
 
     it('has no viewer for folders and other files, unless opened as text', () => {

@@ -152,8 +152,22 @@ export const JSON_FORMAT: FileFormat = {
     edits: true,
 };
 
+/** Tables: comma (or semicolon) separated, tab separated, pipe separated. */
+export const CSV_EXTENSIONS: ReadonlySet<string> = new Set(['csv', 'tsv', 'psv']);
+
+export const CSV_FORMAT: FileFormat = {
+    id: 'csv',
+    label: 'Table',
+    priority: 20,
+    matches: item => item.kind === 'file' && CSV_EXTENSIONS.has(extensionOf(item)),
+    view: { load: () => import('./csv/csv-view.component').then(m => m.CsvViewComponent) },
+    profile: 'code',
+    page: true,
+    edits: true,
+};
+
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT];
+export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text
