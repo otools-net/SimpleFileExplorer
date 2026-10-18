@@ -14,6 +14,8 @@ Rules and infrastructure: [testing.md](testing.md). Search expectations: [search
 - ffmpeg tests (`TrickplayTests`, `SimilarVideoTests`) are inconclusive without `SFE_TEST_FFMPEG`/PATH. Tiny clips
   finish in milliseconds: assert "waiting" states before starting `RunAsync`. Moving test pictures: lavfi
   `mandelbrot`, `life`.
+- A stream test that checks a stream *while it runs* (`StreamingTests`) needs output bigger than the test server's
+  response pipe (~64 KB): a copied 4 s clip (~50 KB) ends before the next request. Add `-vf noise=alls=60:allf=t`.
 - With ffmpeg on PATH, the default `FfmpegPath` (`ffmpeg`) finds it, so scans in tests run it on the fixture's fake
   media too (assert either way).
 - File-tracking tests make junctions/hard links with `cmd /c mklink /J|/H` (no admin); `TestLibrary` can't delete

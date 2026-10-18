@@ -670,8 +670,14 @@ public sealed class TrickplayService : IDisposable
             // A failure only costs the fingerprint: the trickplay is fine for the player.
             await FingerprintAsync(temp, manifest, settings, cancellationToken);
             WriteInfo(temp, new StoredInfo(video.Length, video.LastWriteTimeUtc.Ticks, ImageKey(settings), manifest));
-            DeleteFolder(folder);
-            Directory.Move(temp, folder);
+            if (await ReplaceAsync(temp, folder, cancellationToken) is { } cacheError)
+            {
+                // The cache's fault, not the video's: not remembered, the next request or pass tries again.
+                _logger.LogWarning(cacheError, "Cannot replace the trickplay of {File}", video.FullName);
+                TryDeleteFolder(temp);
+                return cacheError.Message;
+            }
+
             _logger.LogDebug("Trickplay of {File}: {Count} frames on {Sheets} sheets", video.FullName, pictures.Length, sheets);
             return null;
         }
@@ -704,6 +710,35 @@ public sealed class TrickplayService : IDisposable
             }
 
             return reason;
+        }
+    }
+
+    /// <summary>Waits between attempts to put new trickplay in place of the old one; the last one gives up.</summary>
+    private static readonly TimeSpan[] ReplaceDelays =
+        [TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)];
+
+    /// <summary>
+    /// Puts <paramref name="temp"/> in place of <paramref name="folder"/>. On Windows a file of either one held open a
+    /// moment (a sheet being served, an antivirus scanning the new pictures) makes the delete or the move fail: tried
+    /// again a few times.
+    /// </summary>
+    /// <returns>null when done, otherwise the last error.</returns>
+    private static async Task<Exception?> ReplaceAsync(string temp, string folder, CancellationToken cancellationToken)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                DeleteFolder(folder);
+                Directory.Move(temp, folder);
+                return null;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                if (attempt == ReplaceDelays.Length)
+                    return ex;
+                await Task.Delay(ReplaceDelays[attempt], cancellationToken);
+            }
         }
     }
 
@@ -765,7 +800,8 @@ public sealed class TrickplayService : IDisposable
     {
         try
         {
-            using var stream = File.OpenRead(Path.Combine(folder, InfoFile));
+            // Shared for deletes: a reader doesn't stop new trickplay from replacing this one.
+            using var stream = new FileStream(Path.Combine(folder, InfoFile), FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             return JsonSerializer.Deserialize<StoredInfo>(stream, Json);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)

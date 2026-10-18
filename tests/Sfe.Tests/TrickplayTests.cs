@@ -137,6 +137,32 @@ public sealed class TrickplayTests
         await WaitAsync(_ => Trickplay.Get("Media/later.mp4")?.Count == 5);
     }
 
+    [TestMethod]
+    public async Task OldSheetHeldOpenDelaysTheNewTrickplayButDoesNotFailIt()
+    {
+        _worker = Trickplay.RunAsync(_stop.Token);
+        await WaitAsync(s => s.LastPassFinished is not null);
+        await RenderVideoAsync("Media/later.mp4", seconds: 3);
+        await WaitAsync(_ => Trickplay.Get("Media/later.mp4") is not null);
+        var failed = Trickplay.Status.Failed;
+
+        // A sheet being served (or scanned by an antivirus) while the new trickplay replaces the old one: on Windows
+        // the old folder can't be deleted until it is closed.
+        var cache = Trickplay.GetCacheFolder(_library.FullPath("Media/later.mp4"));
+        await using (var held = new FileStream(Path.Combine(cache, "0.jpg"), FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            await RenderVideoAsync("Media/later.mp4", seconds: 5);
+            File.SetLastWriteTimeUtc(_library.FullPath("Media/later.mp4"), DateTime.UtcNow.AddMinutes(1));
+            Trickplay.Get("Media/later.mp4");
+            // The new trickplay is complete and waits for the old one to go.
+            await WaitAsync(_ => File.Exists(Path.Combine(cache + ".tmp", "info.json")));
+            await Task.Delay(300, TestContext.CancellationToken);
+        }
+
+        await WaitAsync(_ => Trickplay.Get("Media/later.mp4")?.Count == 5);
+        Assert.AreEqual(failed, Trickplay.Status.Failed);
+    }
+
     private async Task<TrickplayStatus> WaitAsync(Func<TrickplayStatus, bool> condition)
     {
         var watch = Stopwatch.StartNew();

@@ -6,7 +6,9 @@ Hover preview: [hover-preview.md](hover-preview.md). Fingerprints: [similar-vide
 - Core's `TrickplayService` run by the Api's `TrickplayWorker`.
 - Per video `{CacheDirectory}/trickplay/{k[0..2]}/{k[2..4]}/{k[4..]}/` (same key as the thumbnail): `info.json`,
   `{n}.jpg`, `fingerprint.bin`.
-- Fresh = size + mtime + `ImageKey`; failures recorded.
+- Fresh = size + mtime + `ImageKey`; failures recorded (until the file or settings change), but not a failure to
+  swap the new folder in: on Windows any open file (a sheet served, antivirus) blocks it, so `ReplaceAsync` retries
+  and a last failure is only logged. `ReadInfo` opens with `FileShare.Delete` for the same reason.
 - `PassSettings` changes cancel and restart the pass.
 - ffmpeg `fps=1/N:round=up` (default rounding is half an interval early), then a second run tiles.
 - A pass = one discovery task filling `_pending` (`PendingVideos`) + `Parallelism` workers; player requests go to

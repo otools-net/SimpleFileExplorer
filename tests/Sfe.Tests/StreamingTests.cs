@@ -248,7 +248,9 @@ public sealed class StreamingTests
     [TestMethod]
     public async Task BrowserPicturesAreCopiedAndALeavingViewerStopsFfmpeg()
     {
-        await RenderAsync("Films/clip.mp4", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac");
+        // Noise makes the copy (~1.4 MB) larger than the response pipe holds: ffmpeg waits for the reader instead of
+        // finishing the stream before the list is asked for (a plain 4 s clip is ~50 KB, copied in milliseconds).
+        await RenderAsync("Films/clip.mp4", "-vf", "noise=alls=60:allf=t", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac");
         var admin = await ApiClients.SetUpAsync(Factory(s => s["Sfe:Thumbnails:FfmpegPath"] = FfmpegPath), TestContext.CancellationToken);
 
         using (var probe = await GetJsonAsync(admin, "/api/streaming/probe?path=Films/clip.mp4"))

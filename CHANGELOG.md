@@ -3,6 +3,13 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.69.1
+
+### Fixed
+
+- A video whose trickplay was made again while its old sheets were being shown (or scanned by an antivirus) could
+  be left without trickplay until the file changed; replacing it now waits a moment and tries again.
+
 ## 1.69.0
 
 ### Added
