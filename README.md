@@ -4,6 +4,10 @@ A self-hosted web file explorer for a home media library: browse folders, previe
 index of the whole library, tag files, and find duplicates and similar videos. It runs on Windows, Linux or macOS, on
 one machine or a private network, with accounts, groups and several libraries ("spaces").
 
+> [!WARNING]
+> **Alpha version.** SFE is still being tested and hasn't been proven in production yet. Keep a backup of your files
+> and of SFE's data, and expect changes between versions.
+
 ![SFE showing a folder of photos](docs/images/library-grid.png)
 
 ## Features
