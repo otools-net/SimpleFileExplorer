@@ -61,11 +61,13 @@ public static class InstallationEndpoints
         installation.MapPut("/", Save)
             .AllowAnonymous()
             .WithName("SaveInstallation")
-            .WithSummary("Saves the library folder, listening address or ffmpeg into the installation file (data/installation.json).")
+            .WithSummary("Saves the library folder, listening address, ffmpeg or the server's mode into the installation file (data/installation.json).")
             .WithDescription("""
                 Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. A new folder or ffmpeg starts
                 the libraries again at once; a new address applies after a restart (`restartRequired`). Values set by the
-                server's environment variables or command line cannot be changed here.
+                server's environment variables or command line cannot be changed here. The mode (`Sfe:Mode`) goes from Local
+                to External here, never back once the server has its administrator; Local is only chosen from a browser on
+                the server's own computer.
                 """);
 
         installation.MapGet("/folders", Folders)
@@ -97,7 +99,7 @@ public static class InstallationEndpoints
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["This is not the server's setup code."] });
         }
 
-        return TypedResults.Ok(new InstallationGrant(token, await settings.DescribeAsync(cancellationToken)));
+        return TypedResults.Ok(new InstallationGrant(token, await DescribeAsync(context, settings, cancellationToken)));
     }
 
     private static async Task<Results<Ok<InstallationView>, UnauthorizedHttpResult, ForbidHttpResult>> Get(
@@ -106,12 +108,12 @@ public static class InstallationEndpoints
         {
             InstallationVisitor.NotSignedIn => TypedResults.Unauthorized(),
             InstallationVisitor.NotServerAdmin => TypedResults.Forbid(),
-            _ => TypedResults.Ok(await settings.DescribeAsync(cancellationToken)),
+            _ => TypedResults.Ok(await DescribeAsync(context, settings, cancellationToken)),
         };
 
     private static async Task<Results<Ok<InstallationSaved>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>> Save(
         HttpContext context, InstallationAccess access, InstallationSettings settings, TenantRegistry libraries, AccessService accounts,
-        IConfiguration configuration, ILoggerFactory loggers, InstallationInput input, CancellationToken cancellationToken)
+        SetupService setup, IConfiguration configuration, ILoggerFactory loggers, InstallationInput input, CancellationToken cancellationToken)
     {
         switch (await CheckAsync(context, access))
         {
@@ -121,19 +123,24 @@ public static class InstallationEndpoints
                 return TypedResults.Forbid();
         }
 
-        var (errors, changed) = settings.Save(input, await LibraryRootsAsync(accounts, configuration, cancellationToken));
+        var visitor = new InstallationVisitorInfo(!await setup.IsRequiredAsync(cancellationToken), LocalVisitor.IsOnThisComputer(context));
+        var (errors, changed) = settings.Save(input, await LibraryRootsAsync(accounts, configuration, cancellationToken), visitor);
         if (errors is not null)
             return TypedResults.ValidationProblem(errors);
 
         if (changed.Count > 0)
             loggers.CreateLogger(typeof(InstallationEndpoints)).LogSecurityWarning("Installation page: {Keys} saved in {File}", string.Join(", ", changed), settings.FilePath);
         // The libraries' services read the folder and ffmpeg once: start them again over the new values.
-        if (changed.Any(key => key != InstallationSettings.UrlsKey))
+        if (changed.Any(key => key is InstallationSettings.RootKey or InstallationSettings.FfmpegKey))
             await libraries.RestartAsync(cancellationToken);
 
-        var view = await settings.DescribeAsync(cancellationToken);
+        var view = await DescribeAsync(context, settings, cancellationToken);
         return TypedResults.Ok(new InstallationSaved(view, view.RestartRequired));
     }
+
+    /// <summary>The settings, with whether this visitor is on the server's own computer.</summary>
+    private static async Task<InstallationView> DescribeAsync(HttpContext context, InstallationSettings settings, CancellationToken cancellationToken) =>
+        await settings.DescribeAsync(cancellationToken) with { OnThisComputer = LocalVisitor.IsOnThisComputer(context) };
 
     private static async Task<Results<Ok<ServerFolders>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>> Folders(
         HttpContext context, InstallationAccess access, IConfiguration configuration, string? path = null)

@@ -15,7 +15,7 @@ type SetupStep = 'code' | 'library' | 'account' | 'restart';
 /**
  * The first administrator (`setup`). Nothing else works until one exists. The page needs the setup code: the one the
  * server made itself (shown in its console) or one set in its environment; without either, it says how to set one for
- * the way the server runs. Then it asks for the library folder, who may open SFE and ffmpeg (the installation page,
+ * the way the server runs. Then it asks for the mode (Local or External), the library folder, who may open SFE and ffmpeg (the installation page,
  * saved before the administrator exists), then for the administrator. A new install opened in a browser on the
  * server's own computer skips the code (`codeRequired` false). With `Sfe:Setup:Recover`, the same page resets the
  * password of a local administrator (or adds one), without the library step.
@@ -100,8 +100,11 @@ type SetupStep = 'code' | 'library' | 'account' | 'restart';
                             @if (codeFree()) {
                                 <p>Welcome. SFE needs two things: the folder of your library, and an administrator account.</p>
                             }
-                            <p>Where are your photos, videos and music, and who may open SFE? All of it can be changed later in Administration › System › Installation.</p>
-                            <sfe-installation-form [token]="token()!" [initial]="installation()!" />
+                            <p>
+                                How will SFE be used, where are your photos, videos and music, and who may open SFE? All of it can be changed later in
+                                Administration › System › Installation, except going back from External to Local.
+                            </p>
+                            <sfe-installation-form [token]="token()!" [initial]="installation()!" [setup]="true" />
                             <div class="setup-actions">
                                 @if (!codeFree()) {
                                     <button type="button" class="button" title="Back to the setup code" (click)="step.set('code')">Back</button>

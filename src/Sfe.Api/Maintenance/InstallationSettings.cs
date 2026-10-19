@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration.CommandLine;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.Configuration.Json;
+using Sfe.Api.Security;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Thumbnails;
@@ -23,17 +24,26 @@ public sealed record InstallationField(string? Value, bool Locked, string? Locke
 /// <param name="FfmpegFound">The executable found for it; null when there is none.</param>
 /// <param name="FfmpegVersion">The version it reports.</param>
 /// <param name="RestartRequired">The addresses saved differ from those the server listens on since it started.</param>
+/// <param name="Mode"><c>Sfe:Mode</c> as configured; a null value = not chosen yet (the server then works as Local).</param>
+/// <param name="ModeInEffect">The mode the server works in (<see cref="ServerModes.InEffect"/>).</param>
+/// <param name="OnThisComputer">The visitor is on the server's own computer (<see cref="LocalVisitor"/>): only they may choose Local.</param>
 public sealed record InstallationView(
     InstallationField Root, bool RootExists,
     InstallationField Urls, int Port, bool Network,
     InstallationField FfmpegPath, string? FfmpegFound, string? FfmpegVersion,
-    bool RestartRequired);
+    bool RestartRequired,
+    InstallationField Mode, ServerMode ModeInEffect, bool OnThisComputer = false);
 
 /// <param name="Root">The first library's folder; null keeps it.</param>
 /// <param name="Network">Listen on every network interface (true) or on this computer only (false); null keeps it.</param>
 /// <param name="Port">The port; null keeps it.</param>
 /// <param name="FfmpegPath">ffmpeg's executable or folder; empty = look for it on PATH; null keeps it.</param>
-public sealed record InstallationInput(string? Root = null, bool? Network = null, int? Port = null, string? FfmpegPath = null);
+/// <param name="Mode">How the server is used; null keeps it.</param>
+public sealed record InstallationInput(string? Root = null, bool? Network = null, int? Port = null, string? FfmpegPath = null, ServerMode? Mode = null);
+
+/// <param name="SetupDone">The server has its administrator: the mode no longer goes back from External to Local here.</param>
+/// <param name="OnThisComputer">The visitor is on the server's own computer (<see cref="LocalVisitor"/>).</param>
+public sealed record InstallationVisitorInfo(bool SetupDone, bool OnThisComputer);
 
 /// <summary>
 /// The few settings of the installation that a person setting SFE up needs, written from the web (with the setup code)
@@ -50,9 +60,10 @@ public sealed class InstallationSettings
     public const string RootKey = $"{SfeOptions.SectionName}:{nameof(SfeOptions.Root)}";
     public const string UrlsKey = "Urls";
     public const string FfmpegKey = $"{SfeOptions.SectionName}:{nameof(SfeOptions.Thumbnails)}:{nameof(ThumbnailOptions.FfmpegPath)}";
+    public const string ModeKey = ServerModes.Key;
 
     /// <summary>The keys the file may hold.</summary>
-    public static readonly IReadOnlyList<string> Keys = [RootKey, UrlsKey, FfmpegKey];
+    public static readonly IReadOnlyList<string> Keys = [RootKey, UrlsKey, FfmpegKey, ModeKey];
 
     /// <summary>Kestrel's default when nothing sets <c>Urls</c>.</summary>
     private const string DefaultUrls = "http://localhost:5000";
@@ -114,15 +125,18 @@ public sealed class InstallationSettings
             root with { Value = rootPath ?? root.Value }, rootPath is not null && Directory.Exists(rootPath),
             urls, port, network,
             ffmpeg, found, version,
-            !string.Equals(urls.Value, _startUrls, StringComparison.OrdinalIgnoreCase));
+            !string.Equals(urls.Value, _startUrls, StringComparison.OrdinalIgnoreCase),
+            Field(ModeKey), ServerModes.InEffect(_configuration));
     }
 
     /// <summary>Checks and writes the changed values.</summary>
     /// <param name="libraryRoots">
     /// The libraries' folders: ffmpeg is never taken from one, where whoever can add files would choose the program SFE runs.
     /// </param>
-    /// <returns>The errors by field (<c>root</c>, <c>port</c>, <c>ffmpegPath</c>), or the keys that changed.</returns>
-    public (Dictionary<string, string[]>? Errors, IReadOnlyList<string> Changed) Save(InstallationInput input, IReadOnlyList<string> libraryRoots)
+    /// <param name="visitor">Who saves: the mode's rules depend on it.</param>
+    /// <returns>The errors by field (<c>root</c>, <c>port</c>, <c>ffmpegPath</c>, <c>mode</c>), or the keys that changed.</returns>
+    public (Dictionary<string, string[]>? Errors, IReadOnlyList<string> Changed) Save(InstallationInput input, IReadOnlyList<string> libraryRoots,
+        InstallationVisitorInfo visitor)
     {
         var errors = new Dictionary<string, string[]>();
         var values = new Dictionary<string, string?>();
@@ -170,6 +184,21 @@ public sealed class InstallationSettings
             {
                 errors["ffmpegPath"] = ["No ffmpeg there: pick its program, or the folder it is in."];
             }
+        }
+
+        if (input.Mode is { } mode)
+        {
+            var configured = ServerModes.Configured(_configuration);
+            if (!Enum.IsDefined(mode))
+                errors["mode"] = ["Choose Local or External."];
+            // An External server's administrator must not re-open, from the web, what External closes.
+            else if (mode == ServerMode.Local && visitor.SetupDone && configured == ServerMode.External)
+                errors["mode"] = [$"SFE is in External mode: it goes back to Local only in the server's configuration ({ModeKey} in {Path.GetFileName(FilePath)}, or the environment)."];
+            // Local lets only this computer in: chosen from elsewhere, it would shut out whoever chose it.
+            else if (mode == ServerMode.Local && configured != ServerMode.Local && !visitor.OnThisComputer)
+                errors["mode"] = ["Local only lets this computer in: choose it from a browser on the server itself, at http://localhost."];
+            else
+                values[ModeKey] = mode.ToString();
         }
 
         foreach (var key in values.Keys)
@@ -221,6 +250,7 @@ public sealed class InstallationSettings
     {
         RootKey => "root",
         UrlsKey => "port",
+        ModeKey => "mode",
         _ => "ffmpegPath",
     };
 

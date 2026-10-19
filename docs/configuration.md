@@ -13,8 +13,8 @@ order, each one overriding the ones before:
 3. `appsettings.{Environment}.json` (e.g. `appsettings.Development.json` with `dotnet run`);
 4. `data/installation.json` (`Sfe:InstallationFile`): what the [setup page](first-start.md#the-setup-page) and
    [Administration › System › Installation](administration/system.md#installation) saved: the library folder
-   (`Sfe:Root`), the listening address (`Urls`) and ffmpeg (`Sfe:Thumbnails:FfmpegPath`). Written by SFE, not meant to
-   be edited;
+   (`Sfe:Root`), the listening address (`Urls`), ffmpeg (`Sfe:Thumbnails:FfmpegPath`) and the mode (`Sfe:Mode`).
+   Written by SFE, not meant to be edited (except `Sfe:Mode`, to go back from External to Local);
 5. environment variables (`Sfe__Root=D:\Media`, `ConnectionStrings__Sfe=...`), then the command line
    (`--Sfe:Root=D:\Media`). A value set here can't be changed from the web: the installation page shows it locked.
 
@@ -33,6 +33,7 @@ for the setup code first (only whoever runs the server knows it).
 
 | Setting | Notes |
 |---|---|
+| `Sfe:Mode` | `Local` (SFE on this computer, for its administrators) or `External` (opened by other people); chosen at the setup, see [Installation](administration/system.md#installation). None set = `Local`; an unknown word counts as `External` |
 | `Sfe:Root` | The library folder of the first space. `V:` is treated as `V:\`; `/srv/media` or `~/Videos` on Linux |
 | `ConnectionStrings:Sfe` | The first space's index. Add `TrustServerCertificate=True` for SQL Express |
 | `Sfe:Database:Provider` | `SqlServer` or `Sqlite` (see [Database](#database)) |

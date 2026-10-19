@@ -58,6 +58,9 @@ has three steps (two on the server's own computer, which skips the code):
 
 1. **Setup code**: the code above.
 2. **Your library** (the [installation settings](administration/system.md#installation)):
+   - **How SFE is used**: **Local** (SFE on your own computer, only for its administrators) or **External** (other
+     people open it from their devices). Local is preselected on the server's own computer, and can only be chosen
+     there; External elsewhere. Later, a Local server can still become External, but not the other way round.
    - **Library folder**: click through the server's drives and folders to the folder of your photos, videos and music
      (**Home**, **Pictures**, **Videos** and **Music** are listed first). It becomes the first space's library.
    - **Who can open SFE**: **Only this computer**, or **Also the other devices of my network** (phones, TVs, other

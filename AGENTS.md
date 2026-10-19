@@ -70,6 +70,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [file-operations](agents/docs/development/file-operations.md) | rules for changing library files (planned), moving folder rules with folders | `FolderRuleService.BeginMoveAsync` |
 | [file-management-plan](agents/docs/development/file-management-plan.md) | **file management epic: phases, todo list, open questions** (update as it is built) | `Core/Files/` (planned) |
 | [file-viewers-plan](agents/docs/development/file-viewers-plan.md) | **viewing and editing files epic: formats registry, phases, todo lists** (update as it is built) | `app/formats/`, `Core/Files/FileContent` |
+| [server-modes-plan](agents/docs/development/server-modes-plan.md) | **server modes epic: Local / External, Docker image; phases, todo list, open questions** (update as it is built) | `ServerModes`, `Dockerfile` (planned) |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
@@ -99,6 +100,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [setup](agents/docs/features/setup.md) | setup code (configured / generated), first administrator | `SetupService`, `GeneratedSetupCode`, `app/account/` |
 | [local-start](agents/docs/features/local-start.md) | browser at start, `--no-browser`, setup without code locally, fast sign-in | `BrowserLauncher`, `LocalVisitor`, `FastSignIn` |
 | [installation-page](agents/docs/features/installation-page.md) | root, Urls, ffmpeg from the web | `Maintenance/InstallationSettings` |
+| [server-modes](agents/docs/features/server-modes.md) | Local / External mode: `Sfe:Mode`, locks, switch rules | `ServerModes`, `InstallationSettings`, `installation-form.component.ts` |
 | [update-migration](agents/docs/features/update-migration.md) | version check and update page after an upgrade | `MigrationCoordinator`, `app/migration/` |
 | [backups](agents/docs/features/backups.md) | backup zip, download links | `BackupSources`, `Core/Backup/` |
 | [settings-new-key](agents/docs/features/settings-new-key.md) | adding a setting (options, schema, level, right) | `SfeOptions`, `EditableSettings`, `settings-schema.ts` |

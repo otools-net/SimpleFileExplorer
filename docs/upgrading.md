@@ -30,6 +30,14 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.76
+
+- SFE now has two **modes**, Local and External ([Installation](administration/system.md#installation)). An install
+  upgraded from an earlier version has none chosen, and counts as **Local**. If people open it from other devices,
+  choose **External** in Administration › System › Installation, or set `Sfe__Mode=External` in the server's
+  environment. In 1.76 the mode is only recorded: each mode's limits come in the next versions. Nothing changes in the
+  databases or the rights.
+
 ## To 1.73
 
 - The web client carries pdf.js' worker, character maps and standard fonts (`pdfjs/`, about 2.5 MB more in the

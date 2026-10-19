@@ -1036,7 +1036,16 @@ export interface InstallationView {
     ffmpegVersion: string | null;
     /** The address saved applies once SFE starts again. */
     restartRequired: boolean;
+    /** `Sfe:Mode` as configured; a null value = not chosen yet (missing from older servers). */
+    mode?: InstallationField;
+    /** The mode the server works in: without one configured, Local. */
+    modeInEffect?: ServerMode;
+    /** The visitor is on the server's own computer: only they may choose Local. */
+    onThisComputer?: boolean;
 }
+
+/** How the server is used: on this computer by its administrators, or by other people over the network. */
+export type ServerMode = 'local' | 'external';
 
 /** What the installation page changes; a field left out stays. `ffmpegPath` empty = look for it on PATH. */
 export interface InstallationInput {
@@ -1044,6 +1053,7 @@ export interface InstallationInput {
     network?: boolean | null;
     port?: number | null;
     ffmpegPath?: string | null;
+    mode?: ServerMode | null;
 }
 
 export interface InstallationGrant {

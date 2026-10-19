@@ -3,6 +3,21 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.76.0
+
+### Added
+
+- **How SFE is used**, chosen at the setup and in Administration › System › Installation: **Local** (SFE on your own
+  computer, for its administrators) or **External** (opened by other people from their devices). Local is only
+  chosen from the server's own computer. An External server goes back to Local only in its configuration. The
+  environment can set it too (`Sfe__Mode`). For now the mode is only recorded: each mode's limits come in the next
+  versions.
+
+### Changed
+
+- An install upgraded from an earlier version has no mode chosen yet and counts as **Local**. If other devices
+  open it, choose **External** in Administration › System › Installation.
+
 ## 1.75.0
 
 ### Added

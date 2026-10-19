@@ -138,7 +138,7 @@ async function startApp(appUrl, folder, log) {
     const installation = path.join(folder, 'installation.json');
     fs.writeFileSync(installation, JSON.stringify({
         Urls: appUrl.replace(/\/$/, ''),
-        Sfe: { Root: library, ...(ffmpeg ? { Thumbnails: { FfmpegPath: ffmpeg } } : {}) },
+        Sfe: { Mode: 'Local', Root: library, ...(ffmpeg ? { Thumbnails: { FfmpegPath: ffmpeg } } : {}) },
     }, null, 2));
     const app = spawn('dotnet', [dll, '--contentRoot', path.join(repo, 'src/Sfe.Api')], {
         cwd: work,

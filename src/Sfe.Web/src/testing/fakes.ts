@@ -230,6 +230,7 @@ export function installationView(overrides: Partial<InstallationView> = {}): Ins
         urls: free('http://localhost:5080'), port: 5080, network: false,
         ffmpegPath: free('ffmpeg'), ffmpegFound: 'C:\\ffmpeg\\bin\\ffmpeg.exe', ffmpegVersion: '7.1',
         restartRequired: false,
+        mode: free('Local'), modeInEffect: 'local', onThisComputer: true,
         ...overrides,
     };
 }

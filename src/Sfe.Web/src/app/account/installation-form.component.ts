@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
-import { FolderPicker, InstallationInput, InstallationSaved, InstallationView } from '../core/models';
+import { FolderPicker, InstallationInput, InstallationSaved, InstallationView, ServerMode } from '../core/models';
 import { valueOf } from '../shared/events';
 import { FolderPickerComponent } from '../shared/folder-picker.component';
 import { IconComponent } from '../shared/icon.component';
 
 /**
- * The installation's settings a person setting SFE up needs, without editing a file: the first space's library folder,
- * who can open SFE (this computer, or the network) and ffmpeg. Shown by the setup page and by Administration › System ›
+ * The installation's settings a person setting SFE up needs, without editing a file: how SFE is used (Local or
+ * External), the first space's library folder, who can open SFE (this computer, or the network) and ffmpeg. Shown by the setup page and by Administration › System ›
  * Installation, both after the setup code was checked (`token`); the page calls `save()`. A value the server's
  * environment sets (variable, command line) is shown, not editable.
  */
@@ -18,6 +18,38 @@ import { IconComponent } from '../shared/icon.component';
     host: { class: 'installation-form' },
     template: `
         @let view = settings();
+        @if (view.mode; as mode) {
+            <fieldset class="field installation-mode">
+                <legend class="field-label">How SFE is used</legend>
+                @if (mode.locked) {
+                    <p class="installation-locked"><code>{{ mode.value }}</code><span class="field-hint">Set by {{ mode.lockedBy }}.</span></p>
+                } @else {
+                    <label class="check">
+                        <input type="radio" name="installation-mode" value="local" [checked]="chosenMode() === 'local'" [disabled]="!localAllowed()"
+                               (change)="chosenMode.set('local')">
+                        <span>Local
+                            <span class="field-hint">SFE on your own computer: only this computer opens it, and only administrators sign in.</span>
+                        </span>
+                    </label>
+                    <label class="check">
+                        <input type="radio" name="installation-mode" value="external" [checked]="chosenMode() === 'external'" (change)="chosenMode.set('external')">
+                        <span>External
+                            <span class="field-hint">
+                                Other people open SFE from their devices, over the network or the internet. The library folders and ffmpeg are then set in
+                                the server's configuration (environment variables or a settings file), not on this page.
+                            </span>
+                        </span>
+                    </label>
+                    @if (localNote(); as note) {
+                        <span class="field-hint installation-mode-note">{{ note }}</span>
+                    }
+                }
+                @if (errors()['mode']; as error) {
+                    <span class="field-error">{{ error }}</span>
+                }
+            </fieldset>
+        }
+
         <div class="field">
             <span class="field-label">Library folder</span>
             @if (view.root.locked) {
@@ -109,9 +141,26 @@ export class InstallationFormComponent implements OnInit {
     readonly token = input.required<string>();
     /** The settings as the server has them (answered by the check, then by each save). */
     readonly initial = input.required<InstallationView>();
+    /** Shown by the setup page: the mode may still go back from External to Local. */
+    readonly setup = input(false);
 
     protected readonly saved = signal<InstallationView | null>(null);
     protected readonly settings = computed(() => this.saved() ?? this.initial());
+
+    protected readonly chosenMode = signal<ServerMode>('local');
+    /** Local is chosen on the server's own computer only, and an External server goes back to it only in its configuration. */
+    protected readonly localAllowed = computed(() => {
+        const view = this.settings();
+        return !!view.onThisComputer && (this.setup() || view.modeInEffect !== 'external' || view.mode?.value == null);
+    });
+    protected readonly localNote = computed(() => {
+        const view = this.settings();
+        if (this.localAllowed())
+            return view.mode?.value == null && !this.setup() ? 'Not chosen yet: until it is, SFE works as Local.' : null;
+        return view.onThisComputer
+            ? 'SFE is External: it goes back to Local only in the server\'s configuration (Sfe:Mode).'
+            : 'Local is chosen from a browser on the server itself, at http://localhost.';
+    });
 
     protected readonly root = signal<string | null>(null);
     protected readonly network = signal(false);
@@ -142,6 +191,9 @@ export class InstallationFormComponent implements OnInit {
         }
         if (!view.ffmpegPath.locked && this.ffmpeg().trim() !== (view.ffmpegPath.value ?? ''))
             input.ffmpegPath = this.ffmpeg().trim();
+        // A mode not chosen yet is written as shown, so that the install says which one it is.
+        if (view.mode && !view.mode.locked && (view.mode.value == null || this.chosenMode() !== view.modeInEffect))
+            input.mode = this.chosenMode();
         return input;
     });
 
@@ -175,5 +227,7 @@ export class InstallationFormComponent implements OnInit {
         this.port.set(view.port);
         this.ffmpeg.set(view.ffmpegPath.value ?? '');
         this.pickFfmpeg.set(false);
+        // Not chosen yet: Local for whoever is on the server's own computer, External for the others.
+        this.chosenMode.set(view.mode?.value == null ? (view.onThisComputer ? 'local' : 'external') : view.modeInEffect ?? 'local');
     }
 }

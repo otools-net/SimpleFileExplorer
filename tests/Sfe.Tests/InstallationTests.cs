@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Sfe.Api;
 using Sfe.Api.Endpoints;
 using Sfe.Api.Maintenance;
@@ -346,6 +347,82 @@ public sealed class InstallationTests
         Assert.AreNotEqual(old, renewed);
         Assert.IsTrue(Sfe.Core.Upgrades.Steps.UpgradeSteps.Due(new(1, 46, 0), new(1, 47, 0)).Any(s => s is Sfe.Core.Upgrades.Steps.V1_47_0.RenewSetupCode),
             "Runs for installs of 1.46.0");
+    }
+
+    [TestMethod]
+    public async Task TheModeIsChosenAtTheSetupAndLocalOnlyFromThisComputer()
+    {
+        var factory = Factory();
+        var remote = ApiClients.Create(factory);
+        var local = ApiClients.CreateFrom(factory, "127.0.0.1");
+        var grant = await GrantAsync(remote);
+        var localGrant = await GrantAsync(local);
+
+        using var remoteLocal = await remote.PutAsJsonAsync("/api/installation", new InstallationInput(Mode: ServerMode.Local), Json, TestContext.CancellationToken);
+        using var external = await remote.PutAsJsonAsync("/api/installation", new InstallationInput(Mode: ServerMode.External), Json, TestContext.CancellationToken);
+        var afterExternal = (await external.Content.ReadFromJsonAsync<InstallationSaved>(Json, TestContext.CancellationToken))!;
+        // Before the setup is done, whoever sets it up may still change their mind.
+        using var back = await local.PutAsJsonAsync("/api/installation", new InstallationInput(Mode: ServerMode.Local), Json, TestContext.CancellationToken);
+        var file = JsonNode.Parse(await File.ReadAllTextAsync(InstallationFile, TestContext.CancellationToken))!;
+
+        Assert.IsNull(grant.Settings.Mode.Value, "Not chosen yet");
+        Assert.IsFalse(grant.Settings.Mode.Locked);
+        Assert.AreEqual(ServerMode.Local, grant.Settings.ModeInEffect, "No mode configured = Local, as installs older than the modes");
+        Assert.IsFalse(grant.Settings.OnThisComputer);
+        Assert.IsTrue(localGrant.Settings.OnThisComputer);
+        Assert.AreEqual(HttpStatusCode.BadRequest, remoteLocal.StatusCode);
+        StringAssert.Contains(await remoteLocal.Content.ReadAsStringAsync(TestContext.CancellationToken), "mode");
+        Assert.AreEqual(HttpStatusCode.OK, external.StatusCode, await external.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(ServerMode.External, afterExternal.Settings.ModeInEffect);
+        Assert.AreEqual(HttpStatusCode.OK, back.StatusCode, await back.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual("Local", file["Sfe"]!["Mode"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public async Task OnceSetUpExternalNeverGoesBackToLocalFromTheWeb()
+    {
+        var factory = Factory();
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        admin.DefaultRequestHeaders.Add(ApiClients.AddressHeader, "127.0.0.1");
+        await GrantAsync(admin);
+
+        using var external = await admin.PutAsJsonAsync("/api/installation", new InstallationInput(Mode: ServerMode.External), Json, TestContext.CancellationToken);
+        using var local = await admin.PutAsJsonAsync("/api/installation", new InstallationInput(Mode: ServerMode.Local), Json, TestContext.CancellationToken);
+        var file = JsonNode.Parse(await File.ReadAllTextAsync(InstallationFile, TestContext.CancellationToken))!;
+
+        Assert.AreEqual(HttpStatusCode.OK, external.StatusCode, await external.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(HttpStatusCode.BadRequest, local.StatusCode, "Even from this computer");
+        StringAssert.Contains(await local.Content.ReadAsStringAsync(TestContext.CancellationToken), "External mode");
+        Assert.AreEqual("External", file["Sfe"]!["Mode"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public async Task AModeSetByTheEnvironmentIsLocked()
+    {
+        var visitor = ApiClients.CreateFrom(Factory(settings => settings["Sfe:Mode"] = "external"), "127.0.0.1");
+        var grant = await GrantAsync(visitor);
+
+        using var refused = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(Mode: ServerMode.Local), Json, TestContext.CancellationToken);
+
+        Assert.IsTrue(grant.Settings.Mode.Locked);
+        Assert.AreEqual(ServerMode.External, grant.Settings.ModeInEffect);
+        Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.IsFalse(File.Exists(InstallationFile));
+    }
+
+    [TestMethod]
+    [DataRow(null, null)]
+    [DataRow("", null)]
+    [DataRow("local", ServerMode.Local)]
+    [DataRow(" External ", ServerMode.External)]
+    [DataRow("Externl", ServerMode.External)]
+    [DataRow("0", ServerMode.External)]
+    public void AnUnknownModeCountsAsExternal(string? configured, ServerMode? mode)
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { [ServerModes.Key] = configured }).Build();
+
+        Assert.AreEqual(mode, ServerModes.Configured(configuration));
+        Assert.AreEqual(mode ?? ServerMode.Local, ServerModes.InEffect(configuration));
     }
 
     private async Task<InstallationGrant> GrantAsync(HttpClient client)

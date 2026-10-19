@@ -453,4 +453,55 @@ describe('InstallationFormComponent', () => {
         expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { network: false, port: 7000 });
         expect(element.querySelector('.installation-network .field-error')!.textContent).toContain('1 to 65535');
     });
+
+    const notChosen = { value: null, locked: false, lockedBy: null };
+    const modeRadio = (element: HTMLElement, mode: string) => element.querySelector<HTMLInputElement>(`input[name=installation-mode][value=${mode}]`)!;
+
+    it('writes a mode not chosen yet: Local on the server\'s own computer', async () => {
+        const { element, form } = await create(installationView({ mode: notChosen }));
+        api.saveInstallation.mockResolvedValue({ settings: installationView(), restartRequired: false });
+
+        await form.save();
+
+        expect(modeRadio(element, 'local').checked).toBe(true);
+        expect(element.querySelector('.installation-mode-note')!.textContent).toContain('Not chosen yet');
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { mode: 'local' });
+    });
+
+    it('offers only External to a visitor on another computer', async () => {
+        const { element, form } = await create(installationView({ mode: notChosen, onThisComputer: false }));
+        api.saveInstallation.mockResolvedValue({ settings: installationView(), restartRequired: false });
+
+        await form.save();
+
+        expect(modeRadio(element, 'local').disabled).toBe(true);
+        expect(modeRadio(element, 'external').checked).toBe(true);
+        expect(element.querySelector('.installation-mode-note')!.textContent).toContain('on the server itself');
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { mode: 'external' });
+    });
+
+    it('switches from Local to External, and not back', async () => {
+        const local = await create();
+        api.saveInstallation.mockResolvedValue({ settings: installationView(), restartRequired: false });
+        modeRadio(local.element, 'external').click();
+        await settle();
+        await local.form.save();
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { mode: 'external' });
+
+        TestBed.resetTestingModule();
+        const external = await create(installationView({ mode: { value: 'External', locked: false, lockedBy: null }, modeInEffect: 'external' }));
+        expect(modeRadio(external.element, 'local').disabled).toBe(true);
+        expect(external.element.querySelector('.installation-mode-note')!.textContent).toContain('only in the server\'s configuration');
+    });
+
+    it('shows a mode set by the server\'s environment, without a way to change it', async () => {
+        const { element, form } = await create(installationView({
+            mode: { value: 'External', locked: true, lockedBy: 'an environment variable of the server' }, modeInEffect: 'external',
+        }));
+
+        expect(element.querySelector('input[name=installation-mode]')).toBeNull();
+        expect(element.querySelector('.installation-mode')!.textContent).toContain('Set by an environment variable of the server.');
+        await form.save();
+        expect(api.saveInstallation).not.toHaveBeenCalled();
+    });
 });
