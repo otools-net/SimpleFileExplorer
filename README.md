@@ -31,8 +31,9 @@ one machine or a private network, with accounts, groups and several libraries ("
 2. Start it: `SFE\Sfe.Api.exe` on Windows (it opens your browser), the AppImage on Linux, or the command above.
 3. Open `http://localhost:5080`. On the computer SFE runs on, no code is asked; from another device, enter the
    **setup code** shown in SFE's window (also kept in `data/setup-code.txt`).
-4. Pick the folder of your library, who may open SFE (this computer or your whole network), then create the
-   administrator. No file to edit; services and containers can still set everything in the configuration.
+4. Choose how SFE is used (**Local**: on this computer, for its administrators; **External**: opened by others), pick
+   the folder of your library, then create the administrator. No file to edit; services and containers can still set
+   everything in the configuration (a [Docker image](docs/docker.md) is External).
 5. ⋮ menu › **Scan this folder** to index the library.
 
 Optional: [ffmpeg](https://ffmpeg.org/) (on the `PATH`, or its folder picked on the setup page) for video thumbnails, trickplay, similar videos and durations;
@@ -43,6 +44,7 @@ SQL Server instead of the built-in SQLite database.
 | | |
 |---|---|
 | [Installation](docs/installation.md) | Portable packages, from source, IIS, Windows service, systemd |
+| [Docker](docs/docker.md) | The container image |
 | [First start](docs/first-start.md) | The setup code, the first administrator, a lost password |
 | [Configuration](docs/configuration.md) | `appsettings.json`, environment variables, the database |
 | [Upgrading](docs/upgrading.md) | What each version changes on an existing install |

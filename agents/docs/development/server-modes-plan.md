@@ -126,30 +126,30 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 
 ### Phase 4 — Docker image
 
-- [ ] `Dockerfile`, multi-stage:
-  1. Node LTS slim: `npm ci`, `npm run build` in `src/Sfe.Web`;
-  2. `mcr.microsoft.com/dotnet/sdk:10.0`: restore with the project files copied first, then
-     `dotnet publish src/Sfe.Api -c Release -r linux-<x64|arm64 from TARGETARCH> -p:SfePortable=true
-     -p:SfeSkipWebClient=true -o /app`;
-  3. `mcr.microsoft.com/dotnet/runtime-deps:10.0` + `apt-get install ffmpeg`, non-root `app` user.
-- [ ] Environment: `Sfe__Mode=External`, `Urls=http://+:8080`, `Sfe__Root=/library`,
-      `Sfe__Thumbnails__FfmpegPath=/usr/bin/ffmpeg`, `Sfe__OpenBrowser=false`; volumes `/data`, `/library`; entry point
-      `/app/Sfe.Api --contentRoot /data`; check that SQLite `data/sfe.db` lands under `/data`.
-- [ ] `.dockerignore` (bin, obj, node_modules, artifacts, data, .git); `docker-compose.yml` example (library mount,
-      `Sfe__Tenants__AllowedRoots__0`, `Sfe__Security__TrustedProxies`, `Sfe__Setup__Code`).
-- [ ] Agent note `agents/docs/environment/docker.md` (build and run commands, what was verified).
+- [x] (1.79.0) `Dockerfile`: node 24 → SDK (portable build, RID from `TARGETARCH`) → `runtime-deps:10.0` + ffmpeg,
+      user `$APP_UID` ([docker.md](../environment/docker.md)).
+- [x] (1.79.0) Entry point `build/docker/entrypoint.sh`: copies `appsettings.json` to `/data` on the first start (the
+      configuration is read from the content root), then `--contentRoot /data`. Index at `/data/data/sfe.db`.
+- [x] (1.79.0) `.dockerignore`, `docker-compose.yml` example, `docs/docker.md`.
+- [x] (1.79.0) Asked during the phase: the database, caches and logs placed by environment variables
+      (`SFE_DATABASE_DIR`, `SFE_CACHE_DIR`, `SFE_LOGS_DIR`, mapped by the entry point).
+- [x] (1.79.0) Built and smoke-tested with Docker Desktop (amd64); arm64 built under emulation.
+- [x] (1.79.0) Fixed on the way: the console box offered a code-free setup on a server configured External.
 
 ### Phase 5 — user docs and wrap-up
 
-- [ ] `docs/first-start.md` (mode choice), new `docs/docker.md`, `docs/upgrading.md` (upgraded installs become Local:
-      other computers and non-administrators are refused; `Sfe__Mode=External` keeps them), README, screenshots.
-- [ ] Feature note `agents/docs/features/server-modes.md` (lasting facts) with its `AGENTS.md` line; update
-      [local-start](../features/local-start.md) and [installation-page](../features/installation-page.md).
+- [x] Done along each phase (1.76.0–1.79.0): `docs/first-start.md`, `docs/administration/system.md`,
+      `docs/upgrading.md`, `docs/configuration.md`, `docs/docker.md`, README, screenshots (`setup-page`,
+      `admin-system-installation`, `local-only`), feature note [server-modes](../features/server-modes.md), notes
+      [local-start](../features/local-start.md), [installation-page](../features/installation-page.md),
+      [security](security.md).
+
+**The epic is done (1.79.0).** Left for later, if wanted: publishing the image to a registry (tags per version), a
+`docker` target in `build/build.sh`/`build.ps1`, a health check route.
 
 ## Open questions
 
-- Phase 4: publish the image (registry, tags) or build only for now; a `docker` target in `build/build.sh`?
-- Phase 4: Node LTS version pinned in the image (Angular 22's requirement).
+- None open. Decided: the image is built, not published (publishing is outward-facing: ask first); Node 24 (LTS).
 
 ## Found while building
 

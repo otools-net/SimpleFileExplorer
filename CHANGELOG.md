@@ -3,6 +3,20 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.79.0
+
+### Added
+
+- A **Docker image** (`Dockerfile`, example `docker-compose.yml`): an External server with ffmpeg, its data in
+  `/data`, its library in `/library`, for `linux/amd64` and `linux/arm64`. The database, the caches (thumbnails,
+  trickplay) and the logs can each get a folder of their own: `SFE_DATABASE_DIR`, `SFE_CACHE_DIR`, `SFE_LOGS_DIR`.
+  See `docs/docker.md`.
+
+### Fixed
+
+- On a server whose configuration makes it External, the console no longer says the setup needs no code on its own
+  computer.
+
 ## 1.78.0
 
 ### Changed

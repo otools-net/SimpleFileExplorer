@@ -46,7 +46,7 @@ public static class LocalVisitor
     }
 
     /// <summary>The mode is External and set by the configuration (appsettings, environment, command line), not the setup page.</summary>
-    private static bool ExternalByConfiguration(IServiceProvider services)
+    public static bool ExternalByConfiguration(IServiceProvider services)
     {
         var configuration = services.GetRequiredService<IConfiguration>();
         if (ServerModes.InEffect(configuration) != ServerMode.External)

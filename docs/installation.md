@@ -6,6 +6,7 @@ administrator.
 - [Portable packages](#portable-packages): nothing else to install.
 - [From source](#from-source): needs the .NET SDK and Node.js.
 - As a service: [IIS](#iis), [Windows service](#windows-service), [Linux (systemd)](#linux-systemd).
+- As a container: [Docker](docker.md) (ffmpeg included).
 
 Optional, for every way:
 

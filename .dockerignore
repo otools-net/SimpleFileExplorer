@@ -1,0 +1,17 @@
+# What the image build doesn't need: builds, packages, local data and the repository's history.
+**/bin/
+**/obj/
+**/node_modules/
+**/.angular/
+src/Sfe.Api/wwwroot/
+src/Sfe.Api/data/
+src/Sfe.Api/appsettings.Local.json
+artifacts/
+tests/
+docs/
+agents/
+.git/
+.vs/
+.vscode/
+.idea/
+*.user

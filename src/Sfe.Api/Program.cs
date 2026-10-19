@@ -223,12 +223,14 @@ async Task<bool> SetupStillRequiredAsync()
     }
 }
 
-// No account yet: a browser on this computer may set it up without the code (Sfe:Setup:LocalWithoutCode).
+// No account yet: a browser on this computer may set it up without the code (Sfe:Setup:LocalWithoutCode), unless the
+// configuration makes the server External (LocalVisitor.SetupCodeWaivedAsync).
 async Task<bool> NewInstallAsync()
 {
     try
     {
-        return setupOptions.CurrentValue.LocalWithoutCode && await app.Services.GetRequiredService<SetupService>().IsFreshAsync();
+        return setupOptions.CurrentValue.LocalWithoutCode && !LocalVisitor.ExternalByConfiguration(app.Services)
+               && await app.Services.GetRequiredService<SetupService>().IsFreshAsync();
     }
     catch (Exception)
     {

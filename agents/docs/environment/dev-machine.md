@@ -6,7 +6,8 @@
 - Python 3.12 is installed (no `websockets`).
 - ffmpeg is at `C:/Portables/ffmpeg/bin/ffmpeg.exe` (2026-10-12 full build, not on PATH; checked 2026-10-13): set
   `SFE_TEST_FFMPEG` for the ffmpeg tests, else they are skipped.
-- `docker` points at an unreachable remote context. WSL Ubuntu exists but has no .NET SDK.
+- Docker Desktop is installed but not running by default (`docker` then fails on `docker_engine`): start it, see
+  [docker.md](docker.md). WSL Ubuntu exists but has no .NET SDK nor docker integration.
 - PowerShell 5.1 turns native stderr into errors under `ErrorActionPreference=Stop`, and a function's native output
   becomes its return value: `Invoke-Native` in `build.ps1` handles both.
 - Line endings and git noise: [line-endings.md](line-endings.md).

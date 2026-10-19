@@ -1,0 +1,41 @@
+# An example: SFE on port 8080, its data in a named volume, a media folder of the host as its library.
+#   docker compose up -d --build
+#   docker compose logs sfe      # the setup code, the first time
+# See docs/docker.md.
+services:
+  sfe:
+    build: .
+    image: sfe
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - sfe-data:/data
+      # The first space's library. Drop ":ro" to rename, move, upload and delete files from SFE.
+      - /srv/media:/library:ro
+      # More folders for other spaces (Administration › Spaces), allowed below:
+      # - /srv/family:/libraries/family
+      # The database, the caches and the logs on volumes of their own (with the variables below):
+      # - sfe-database:/database
+      # - /mnt/fast-disk/sfe-cache:/cache
+      # - sfe-logs:/logs
+    environment:
+      # Where the database, the caches (thumbnails, trickplay) and the logs go; default: inside /data.
+      # SFE_DATABASE_DIR: /database
+      # SFE_CACHE_DIR: /cache
+      # SFE_LOGS_DIR: /logs
+      # A setup code of your own (at least 12 characters), instead of the one SFE prints in its log.
+      # Sfe__Setup__Code: "choose-a-long-code"
+      # Spaces may use folders below these (by default only the library).
+      # Sfe__Tenants__AllowedRoots__0: /library
+      # Sfe__Tenants__AllowedRoots__1: /libraries
+      # Behind a reverse proxy on another address: trust it, so that sign-ins see the visitors' addresses.
+      # Sfe__Security__TrustedProxies__0: 172.16.0.0/12
+      # Sfe__Security__RequireHttps: "true"
+      # The time zone of schedules and logs (default UTC).
+      # TZ: Europe/London
+
+volumes:
+  sfe-data:
+  # sfe-database:
+  # sfe-logs:

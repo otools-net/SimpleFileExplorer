@@ -83,6 +83,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [commands](agents/docs/environment/commands.md) | build, test, run, migrations, packages |
 | [build](agents/docs/environment/build.md) | client build inside MSBuild, theme-boot, build errors, locked DLLs |
 | [portable-build](agents/docs/environment/portable-build.md) | portable zip, AppImage, smoke tests |
+| [docker](agents/docs/environment/docker.md) | the Docker image: stages, `/data` content root, environment, smoke test |
 | [running-the-app](agents/docs/environment/running-the-app.md) | the app on a scratch library |
 | [visual-check](agents/docs/environment/visual-check.md) | headless Edge screenshots and clicks |
 | [docs-screenshots](agents/docs/environment/docs-screenshots.md) | regenerating `docs/images/` |
