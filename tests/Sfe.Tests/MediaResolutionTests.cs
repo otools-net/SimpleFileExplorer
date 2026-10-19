@@ -358,10 +358,9 @@ public sealed class MediaResolutionTests
 
         var clip = _library.FullPath("Clips/clip.mp4");
         Directory.CreateDirectory(Path.GetDirectoryName(clip)!);
-        var (exitCode, errors) = await ffmpeg.RunAsync(
+        await SlowWork.RunFfmpegAsync(ffmpeg,
             ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc=duration=1:size=320x180:rate=10", "-pix_fmt", "yuv420p", clip],
-            TimeSpan.FromSeconds(30), cancellationToken: TestContext.CancellationToken);
-        Assert.AreEqual(0, exitCode, errors);
+            30, TestContext.CancellationToken);
 
         await services.Get<DirectoryIndexer>().IndexAsync(_library.FullPath("Clips"), true, new ScanProgress(), TestContext.CancellationToken);
 
@@ -392,10 +391,9 @@ public sealed class MediaResolutionTests
 
         var song = _library.FullPath("Music/song.wav");
         Directory.CreateDirectory(Path.GetDirectoryName(song)!);
-        var (exitCode, errors) = await ffmpeg.RunAsync(
+        await SlowWork.RunFfmpegAsync(ffmpeg,
             ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", song],
-            TimeSpan.FromSeconds(30), cancellationToken: TestContext.CancellationToken);
-        Assert.AreEqual(0, exitCode, errors);
+            30, TestContext.CancellationToken);
 
         async Task ScanMusicAsync() =>
             await services.Get<DirectoryIndexer>().IndexAsync(_library.FullPath("Music"), true, new ScanProgress(), TestContext.CancellationToken);

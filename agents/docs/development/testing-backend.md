@@ -13,6 +13,11 @@ Rules and infrastructure: [testing.md](testing.md). Search expectations: [search
   a Local server would refuse them. Local tests remove the key ([server-modes.md](../features/server-modes.md)).
 - A scan's `progress.Errors` is only logged: pass a `WarningLog` (`Infrastructure/`) to `CoreServices.CreateAsync` and
   use it as the assert message to see why.
+- **Waits on the machine's speed** (ffmpeg making test media, workers rendering trickplay or fingerprints) go through
+  `Infrastructure/SlowWork` (`UntilAsync`, `RunFfmpegAsync`, `Limit`): past the limit the test is inconclusive, not
+  failed; `SFE_TEST_TIME_FACTOR` multiplies the limits (the GitHub workflow sets 3). A wait checking SFE's own
+  behaviour (a stream that must end) keeps failing, with `SlowWork.Limit` for its deadline. A test relying on Windows
+  file locking is inconclusive elsewhere (it would just wait: `OldSheetHeldOpenDelaysTheNewTrickplayButDoesNotFailIt`).
 - ffmpeg tests (`TrickplayTests`, `SimilarVideoTests`) are inconclusive without `SFE_TEST_FFMPEG`/PATH. Tiny clips
   finish in milliseconds: assert "waiting" states before starting `RunAsync`. Moving test pictures: lavfi
   `mandelbrot`, `life`.

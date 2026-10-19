@@ -140,6 +140,9 @@ public sealed class TrickplayTests
     [TestMethod]
     public async Task OldSheetHeldOpenDelaysTheNewTrickplayButDoesNotFailIt()
     {
+        // Elsewhere an open file doesn't keep its folder from being replaced: the new trickplay never waits.
+        if (!OperatingSystem.IsWindows())
+            Assert.Inconclusive("Only Windows keeps a folder holding an open file from being deleted.");
         _worker = Trickplay.RunAsync(_stop.Token);
         await WaitAsync(s => s.LastPassFinished is not null);
         await RenderVideoAsync("Media/later.mp4", seconds: 3);
@@ -163,30 +166,18 @@ public sealed class TrickplayTests
         Assert.AreEqual(failed, Trickplay.Status.Failed);
     }
 
-    private async Task<TrickplayStatus> WaitAsync(Func<TrickplayStatus, bool> condition)
-    {
-        var watch = Stopwatch.StartNew();
-        while (true)
-        {
-            var status = Trickplay.Status;
-            if (condition(status))
-                return status;
-            if (watch.Elapsed > TimeSpan.FromSeconds(60))
-                Assert.Fail($"Timed out waiting for trickplay: {status}");
-            await Task.Delay(100, TestContext.CancellationToken);
-        }
-    }
+    private Task<TrickplayStatus> WaitAsync(Func<TrickplayStatus, bool> condition) =>
+        SlowWork.UntilAsync(() => Trickplay.Status, condition, 60, "trickplay", TestContext.CancellationToken);
 
     /// <summary>A small test pattern video with a key frame every second.</summary>
-    private async Task RenderVideoAsync(string relativePath, double seconds)
+    private Task RenderVideoAsync(string relativePath, double seconds)
     {
         var path = _library.FullPath(relativePath);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        var (exitCode, errors) = await _services.Get<Ffmpeg>().RunAsync(
+        return SlowWork.RunFfmpegAsync(_services.Get<Ffmpeg>(),
             ["-hide_banner", "-loglevel", "error", "-nostdin", "-y",
              "-f", "lavfi", "-i", $"testsrc=duration={seconds}:size=320x180:rate=10",
              "-g", "10", "-pix_fmt", "yuv420p", path],
-            TimeSpan.FromSeconds(30), cancellationToken: TestContext.CancellationToken);
-        Assert.AreEqual(0, exitCode, errors);
+            30, TestContext.CancellationToken);
     }
 }

@@ -234,7 +234,7 @@ public sealed class StreamingTests
         StringAssert.Contains(errors, "Audio: aac");
         Assert.AreEqual(3, Duration(errors), 0.3, "Converted from 1 s on, until the end: " + errors);
 
-        var deadline = DateTime.UtcNow.AddSeconds(10);
+        var deadline = DateTime.UtcNow + SlowWork.Limit(10);
         while (true)
         {
             using var sessions = await GetJsonAsync(admin, "/api/streaming/sessions");
@@ -264,7 +264,7 @@ public sealed class StreamingTests
         }
 
         // Left after the first bytes: the stream ends and leaves the list.
-        var deadline = DateTime.UtcNow.AddSeconds(10);
+        var deadline = DateTime.UtcNow + SlowWork.Limit(10);
         while (true)
         {
             using var sessions = await GetJsonAsync(admin, "/api/streaming/sessions");

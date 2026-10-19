@@ -97,19 +97,8 @@ public sealed class SimilarVideoTests
         Assert.IsNull(await Finder.FindAsync("", "0:0", null, TestContext.CancellationToken));
     }
 
-    private async Task<TrickplayStatus> WaitAsync(Func<TrickplayStatus, bool> condition)
-    {
-        var watch = Stopwatch.StartNew();
-        while (true)
-        {
-            var status = Trickplay.Status;
-            if (condition(status))
-                return status;
-            if (watch.Elapsed > TimeSpan.FromSeconds(60))
-                Assert.Fail($"Timed out waiting for trickplay: {status}");
-            await Task.Delay(100, TestContext.CancellationToken);
-        }
-    }
+    private Task<TrickplayStatus> WaitAsync(Func<TrickplayStatus, bool> condition) =>
+        SlowWork.UntilAsync(() => Trickplay.Status, condition, 60, "trickplay", TestContext.CancellationToken);
 
     /// <summary>20 seconds of a moving test picture, a key frame every second.</summary>
     private Task RenderAsync(string source, string relativePath) =>
@@ -122,11 +111,7 @@ public sealed class SimilarVideoTests
         return path;
     }
 
-    private async Task RunFfmpegAsync(params string[] arguments)
-    {
-        var (exitCode, errors) = await _services.Get<Ffmpeg>().RunAsync(
-            ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", .. arguments],
-            TimeSpan.FromSeconds(60), cancellationToken: TestContext.CancellationToken);
-        Assert.AreEqual(0, exitCode, errors);
-    }
+    private Task RunFfmpegAsync(params string[] arguments) =>
+        SlowWork.RunFfmpegAsync(_services.Get<Ffmpeg>(), ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", .. arguments],
+            60, TestContext.CancellationToken);
 }

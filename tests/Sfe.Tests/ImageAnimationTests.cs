@@ -77,8 +77,8 @@ public sealed class ImageAnimationTests
         async Task<bool> Make(string name, params string[] options)
         {
             var path = Path.Combine(library.Root, name);
-            await ffmpeg.RunAsync(["-hide_banner", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc=size=64x48:rate=5", .. options, path],
-                TimeSpan.FromSeconds(60), cancellationToken: TestContext.CancellationToken);
+            await SlowWork.RunFfmpegAsync(ffmpeg, ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc=size=64x48:rate=5", .. options, path],
+                60, TestContext.CancellationToken);
             await using var stream = File.OpenRead(path);
             return ImageAnimation.IsAnimated(stream);
         }

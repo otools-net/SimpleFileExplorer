@@ -64,6 +64,9 @@ jobs:
         run: dotnet test Sfe.slnx -c Release --nologo
         env:
           SFE_TEST_FFMPEG: /usr/bin/ffmpeg
+          # The runners are slower than a desktop: more time for ffmpeg and the background workers (SlowWork); still
+          # too slow = inconclusive (skipped, with the reason), never a failed run.
+          SFE_TEST_TIME_FACTOR: '3'
 
   image:
     needs: test
