@@ -1,11 +1,13 @@
 # An example: SFE on port 8080, its data in a named volume, a media folder of the host as its library.
-#   docker compose up -d --build
+#   docker compose up -d
 #   docker compose logs sfe      # the setup code, the first time
+#   docker compose pull && docker compose up -d      # an update
 # See docs/docker.md.
 services:
   sfe:
-    build: .
-    image: sfe
+    image: ghcr.io/otools-net/sfe:latest
+    # Or built from this checkout: drop the image line above, and `docker compose up -d --build`.
+    # build: .
     restart: unless-stopped
     ports:
       - "8080:8080"

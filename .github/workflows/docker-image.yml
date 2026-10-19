@@ -1,0 +1,119 @@
+# The Docker image of SFE on ghcr.io (docs/docker.md, agents/docs/development/docker-publishing-plan.md):
+# - a version tag (v1.80.0) publishes ghcr.io/otools-net/sfe:1.80.0, :1.80 and :latest (a pre-release only its own tag);
+# - a push to main publishes :edge, the work not released yet;
+# - "Run workflow" (Actions tab) builds the branch chosen, and publishes it under the tag typed there, if any.
+# The tests run first; nothing is published when they fail.
+name: Docker image
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Publish under this image tag too (e.g. "test"); empty = only what the branch gets (main: edge)'
+        required: false
+        default: ''
+
+# A newer push to main replaces a run still going; releases always finish.
+concurrency:
+  group: docker-image-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref == 'refs/heads/main' }}
+
+env:
+  IMAGE: ghcr.io/otools-net/sfe
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: The tag is the version of Directory.Build.props
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props | tr -d '[:space:]')"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::The tag is $GITHUB_REF_NAME but Directory.Build.props says $version: tag the commit that bumps the version."
+            exit 1
+          fi
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/Sfe.Web/package-lock.json
+
+      - name: ffmpeg (for the tests of thumbnails, trickplay and similar videos)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Client tests
+        working-directory: src/Sfe.Web
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+
+      - name: Server tests
+        run: dotnet test Sfe.slnx -c Release --nologo
+        env:
+          SFE_TEST_FFMPEG: /usr/bin/ffmpeg
+
+  image:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+
+      # arm64: the Dockerfile builds on the runner's platform, only the last stage's apt-get is emulated.
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          # latest only for a release (semver tag without a pre-release part).
+          flavor: latest=auto
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=edge,branch=main
+            type=raw,value=${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' && inputs.tag != '' }}
+          labels: |
+            org.opencontainers.image.title=SFE (Simple File Explorer)
+            org.opencontainers.image.description=Self-hosted web file explorer for a home media library
+          annotations: |
+            org.opencontainers.image.description=Self-hosted web file explorer for a home media library
+        env:
+          # The description shows on the package's page for a multi-platform image too.
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          # A manual run of another branch without a tag only builds.
+          push: ${{ steps.meta.outputs.tags != '' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          build-args: |
+            SFE_COMMIT=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

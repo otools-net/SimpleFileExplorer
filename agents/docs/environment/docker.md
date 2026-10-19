@@ -23,6 +23,12 @@ Files: `Dockerfile`, `build/docker/entrypoint.sh`, `.dockerignore`, `docker-comp
   volume mounted on a path the image lacks is root's (not writable).
 - The console box offers no code-free setup there (`LocalVisitor.ExternalByConfiguration`, also used by
   `Program.NewInstallAsync`).
+- Never built by `build/build.sh` / `build.ps1` (decided 2026-10-19); published by GitHub Actions
+  (`.github/workflows/docker-image.yml`: tests, then `ghcr.io/otools-net/sfe` for both platforms; tags `vX.Y.Z` →
+  version, `X.Y`, `latest`; `main` → `edge`; a manual run may add a tag of its own):
+  [docker-publishing-plan.md](../development/docker-publishing-plan.md).
+- `SFE_COMMIT` (build argument) → `-p:SourceRevisionId`: the commit shown next to the version, as `.git` isn't in the
+  build context.
 - **This machine:** Docker Desktop is installed but not started by default ("failed to connect … docker_engine"):
   start `C:\Program Files\Docker\Docker\Docker Desktop.exe` and wait for `docker version` to show a server. The machine
   is short of RAM: when done, `docker desktop stop` then `wsl --shutdown`.

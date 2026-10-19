@@ -14,6 +14,13 @@ requests before the commit keep it (a minor bump covers fixes too). Otherwise, i
 - major only when the user asks; no bump for changes to docs, tests or build scripts alone (this includes
   `AGENTS.md` and `agents/`).
 
+## Releasing (the Docker image)
+
+- A pushed tag `v<Version>` publishes `ghcr.io/otools-net/sfe:<Version>`, `:<major>.<minor>` and `:latest`
+  (`.github/workflows/docker-image.yml`; it refuses a tag differing from `Directory.Build.props`). Tag the commit that
+  bumps the version: `git tag v1.80.0`, `git push origin v1.80.0`, only when the user asks (it publishes).
+- Each push to `main` publishes `:edge`. Details: [docker-publishing-plan.md](docker-publishing-plan.md).
+
 ## Changelog
 
 - Every version bump adds (or extends, when the version was already bumped) its section at the top of `CHANGELOG.md`:

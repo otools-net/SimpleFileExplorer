@@ -1,4 +1,5 @@
 # SFE as a container: an External server (opened by other people), its data in /data, its library in /library.
+# Published as ghcr.io/otools-net/sfe by .github/workflows/docker-image.yml; to build it yourself:
 #
 #   docker build -t sfe .
 #   docker run -d --name sfe -p 8080:8080 -v sfe-data:/data -v /path/to/media:/library sfe
@@ -21,6 +22,8 @@ RUN npm run build
 # ---- The server: the portable build (one self-contained executable) for the target platform ----
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS server
 ARG TARGETARCH
+# The commit, shown next to the version (.git isn't in the build context): the publishing workflow passes it.
+ARG SFE_COMMIT=
 WORKDIR /src
 COPY Directory.Build.props Sfe.slnx CHANGELOG.md ./
 COPY src/Sfe.Core/Sfe.Core.csproj src/Sfe.Core/
@@ -33,7 +36,7 @@ COPY src/Sfe.Api/ src/Sfe.Api/
 COPY --from=web /src/src/Sfe.Api/wwwroot/ src/Sfe.Api/wwwroot/
 RUN rid="linux-$( [ "$TARGETARCH" = arm64 ] && echo arm64 || echo x64 )" \
     && dotnet publish src/Sfe.Api/Sfe.Api.csproj -c Release -r "$rid" --no-restore \
-        -p:SfePortable=true -p:SfeSkipWebClient=true -o /app
+        -p:SfePortable=true -p:SfeSkipWebClient=true ${SFE_COMMIT:+-p:SourceRevisionId=$SFE_COMMIT} -o /app
 
 # ---- The image: the program, ffmpeg, and nothing of the build ----
 FROM mcr.microsoft.com/dotnet/runtime-deps:10.0

@@ -1,26 +1,38 @@
 # Docker
 
-The repository's `Dockerfile` makes an image of SFE as an **External** server ([modes](administration/system.md#installation)):
-other people open it from their devices; the library folder and ffmpeg come from the container's environment, never
-from the web page. ffmpeg is in the image.
+SFE's image runs it as an **External** server ([modes](administration/system.md#installation)): other people open it
+from their devices; the library folder and ffmpeg come from the container's environment, never from the web page.
+ffmpeg is in the image. It is published at `ghcr.io/otools-net/sfe` for `linux/amd64` and `linux/arm64` (a PC or
+server, a NAS, a Raspberry Pi 4/5).
 
-## Build and run
+## Run it
 
 ```sh
-docker build -t sfe .
 docker run -d --name sfe -p 8080:8080 \
   -v sfe-data:/data \
   -v /srv/media:/library \
-  sfe
+  ghcr.io/otools-net/sfe:latest
 docker logs sfe        # the setup code, the first time
 ```
 
 Then open `http://<the host>:8080`, enter the setup code, and create the administrator ([First start](first-start.md)).
-The image builds for `linux/amd64` and `linux/arm64` (`docker buildx build --platform linux/arm64 …`, e.g. for a NAS
-or a Raspberry Pi 4/5).
 
-The repository's `docker-compose.yml` does the same with `docker compose up -d --build`; its comments show the
-optional settings below.
+The repository's `docker-compose.yml` does the same with `docker compose up -d`; its comments show the optional
+settings below.
+
+### Image tags
+
+| Tag | What |
+|---|---|
+| `latest` | The last release |
+| `1.80.0` | That release, never changed: pin it to update only when you choose |
+| `1.80` | The last fix of 1.80 |
+| `edge` | The work not released yet (each change to the main branch): to try, not for your library |
+
+### Building it yourself
+
+From a checkout of the repository: `docker build -t sfe .`, then `sfe` instead of `ghcr.io/otools-net/sfe:latest`
+in the commands (`build: .` in the compose file). For another platform: `docker buildx build --platform linux/arm64 …`.
 
 ## Folders
 
@@ -94,10 +106,10 @@ server being External.
 ## Updating
 
 ```sh
-git pull
-docker build -t sfe .
+docker pull ghcr.io/otools-net/sfe:latest
 docker rm -f sfe && docker run … (as above)
 ```
 
-The data volume keeps everything; the first page after an update asks for the setup code to confirm it
-([Upgrading](upgrading.md)).
+With the compose file: `docker compose pull && docker compose up -d`. A built image: `git pull`, `docker build -t sfe .`,
+then the same. The data volume keeps everything; the first page after an update asks for the setup code to confirm it
+([Upgrading](upgrading.md)), and [CHANGELOG.md](../CHANGELOG.md) says what changed.
