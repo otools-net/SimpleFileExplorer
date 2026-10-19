@@ -228,8 +228,9 @@ export class SetupPageComponent implements OnInit {
     protected readonly codeWhere = computed(() => this.info() ? generatedCodeWhere(this.info()!.hosting, this.info()!.codeFile ?? null) : '');
     /** A new install opened on the server's own computer: no code step. */
     protected readonly codeFree = computed(() => this.info()?.codeRequired === false && !this.info()!.recover);
-    /** The server opens a browser when it starts (portable packages): it can sign the administrator in there. */
-    protected readonly offerFastSignIn = computed(() => !this.info()?.recover && (this.info()?.hosting === 'portable' || this.info()?.hosting === 'appImage'));
+    /** The server opens a browser when it starts (portable packages): it can sign the administrator in there, when Local. */
+    protected readonly offerFastSignIn = computed(() => !this.info()?.recover && (this.info()?.hosting === 'portable' || this.info()?.hosting === 'appImage')
+        && this.installation()?.modeInEffect !== 'external');
     protected readonly stepCount = computed(() => this.info()?.recover || this.codeFree() ? 2 : 3);
     protected readonly stepNumber = computed(() => {
         if (!this.info()?.codeConfigured && !this.codeFree())

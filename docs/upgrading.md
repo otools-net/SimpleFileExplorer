@@ -30,6 +30,14 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.78
+
+- An **External** server no longer changes its library folder or ffmpeg from the web: what
+  Administration › System › Installation saved before stays in `data/installation.json` and keeps working. To change
+  it, set `Sfe__Root` / `Sfe__Thumbnails__FfmpegPath` in the server's environment, or `Sfe:Root` /
+  `Sfe:Thumbnails:FfmpegPath` in `appsettings.json`.
+- Fast sign-in stops on External servers (the setting stays, and works again if the server becomes Local).
+
 ## To 1.77
 
 - **Local mode applies.** An install with no mode chosen is Local: only the computer it runs on opens it, and only

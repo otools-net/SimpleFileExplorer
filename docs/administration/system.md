@@ -81,13 +81,17 @@ signed-in server administrator without the code can't use it, nor can anyone wit
     in and switch to External with the setup code:
 
     ![The page other devices get from a Local server](../images/local-only.png)
-  - **External**: other people open SFE from their devices, over the network or the internet. The library folders and
-    ffmpeg are then set in the server's configuration (environment variables or a settings file), not on this page.
+  - **External**: other people open SFE from their devices, over the network or the internet. The first space's
+    library folder and ffmpeg are then set in the server's configuration only (`Sfe__Root` and
+    `Sfe__Thumbnails__FfmpegPath` in its environment, or `Sfe:Root` and `Sfe:Thumbnails:FfmpegPath` in
+    `appsettings.json`): the page shows them without a way to change them, whoever signs in. New spaces still get
+    their folders inside `Sfe:Tenants:AllowedRoots`, which only the configuration sets. Fast sign-in is off.
 
   Local can only be chosen from a browser on the server itself (`http://localhost:<port>`). The page switches from Local
   to External, but never back: an External server returns to Local only in its configuration (`Sfe:Mode` in
   `data/installation.json`, or the environment). An install from before 1.76 has no mode chosen yet and counts as
-  Local. The limits of External (the paths only in the configuration) come in a next version.
+  Local. Switching to External keeps the folder and ffmpeg saved so far; a new folder or ffmpeg can't be saved together
+  with the switch.
 - **Library folder**: the first space's folder (`Sfe:Root`), picked by clicking through the server's drives and folders.
   Saving starts the libraries again on it at once. Another folder makes the space show other files: the next scan
   treats the files of the old folder as gone (tagged ones are kept as [moved files](duplicates-and-moves.md) for a while,

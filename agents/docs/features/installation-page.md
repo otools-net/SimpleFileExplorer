@@ -16,7 +16,8 @@ Code: `src/Sfe.Api/Maintenance/InstallationSettings.cs`, `Security/InstallationA
   (`InstallationAccess.CheckVisitorAsync`: 401 / 403); a bad token stays 401. The code alone must never run programs.
 - `Ffmpeg.Find` also accepts ffmpeg's folder (or its `bin`); `Save` then refuses a file not named `ffmpeg[.exe]`
   (`Ffmpeg.IsFfmpegName`) or inside a library root (the configured root and every tenant's).
-- The mode (`Sfe:Mode`) is a key of the file too, with its own rules: [server-modes.md](server-modes.md).
+- The mode (`Sfe:Mode`) is a key of the file too, with its own rules: [server-modes.md](server-modes.md). On an
+  External server `Field` also reports the root and ffmpeg locked (configuration only).
 - Only the allow-list `InstallationSettings.Keys` (library root, `Urls`, ffmpeg path, mode) is writable here, into
   `data/installation.json`, behind the setup code: never as `EditableSettings`
   ([settings-new-key.md](settings-new-key.md)).

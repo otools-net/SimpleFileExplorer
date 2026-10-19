@@ -54,7 +54,8 @@ runs.
 ![The setup page](images/setup-page.png)
 
 Open the app (`http://localhost:5080`; the portable package on Windows opens it in your browser by itself). The page
-has three steps (two on the server's own computer, which skips the code):
+has three steps (two on the server's own computer, which skips the code, unless the server's configuration makes it
+External):
 
 1. **Setup code**: the code above.
 2. **Your library** (the [installation settings](administration/system.md#installation)):
@@ -62,14 +63,17 @@ has three steps (two on the server's own computer, which skips the code):
      people open it from their devices). Local is preselected on the server's own computer, and can only be chosen
      there; External elsewhere. Later, a Local server can still become External, but not the other way round.
    - **Library folder**: click through the server's drives and folders to the folder of your photos, videos and music
-     (**Home**, **Pictures**, **Videos** and **Music** are listed first). It becomes the first space's library.
+     (**Home**, **Pictures**, **Videos** and **Music** are listed first). It becomes the first space's library. With
+     **External**, the folder (and ffmpeg) come from the server's configuration instead (`Sfe__Root`,
+     `Sfe__Thumbnails__FfmpegPath`): the page only shows them. To pick them here, choose them before External, while
+     the server is still Local.
    - **Who can open SFE** (External only): **Only this computer**, or **Also the other devices of my network** (phones,
      TVs, other computers; everyone still signs in), and the port. This one applies once SFE is started again.
    - **ffmpeg** (optional): whether it was found; to add it, download it from [ffmpeg.org](https://ffmpeg.org/), unzip
      it and pick its folder. Without it there are no video thumbnails, trickplay, video durations or converted videos.
 3. **Administrator**: name, display name, password, and the name of the first **space** (your library, its index, tags
    and settings; more spaces come later in [Spaces & accounts](administration/spaces-and-accounts.md)). For the
-   portable package and the AppImage, **Sign me in when SFE starts on this computer** turns on
+   portable package and the AppImage set up as Local, **Sign me in when SFE starts on this computer** turns on
    [fast sign-in](#fast-sign-in).
 
 The administrator is signed in at once and is a **server administrator**: every right in every space. If the network
@@ -85,7 +89,7 @@ password. Turn it on at the setup page's last step, or later in
 [Administration › System › Start-up](administration/system.md#start-up).
 
 - Only for the portable package and the AppImage started by hand (a service opens no browser), with the browser opening
-  at start (not with `--no-browser`).
+  at start (not with `--no-browser`), on a **Local** server.
 - The link the browser opens works once, for a minute, and only from that computer. Other browsers and devices still
   sign in with the password.
 - Only while the server has a **single** server administrator: with a second one, nobody is signed in that way.

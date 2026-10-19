@@ -35,6 +35,24 @@ tests), `ServerModeTests`, `account.spec.ts`. Epic and what is still to build:
 - **No visitors:** `ServerModes.ApplyTo` post-configures `SecurityOptions.AnonymousGuests = false`; it follows a mode
   change because options recompute on configuration reloads. The existing `anonymousGuestsAllowed` greys the guest
   switch; the note names Local mode from `api/config`'s `mode`.
+## External mode limits (1.78.0)
+
+- **Paths from the configuration only:** `InstallationSettings.Field` reports `Sfe:Root` and the ffmpeg path locked on
+  an External server ("the server's configuration (External mode: Sfe__Root …)"), so `Save` refuses them with the
+  existing lock check, and the form shows them read-only. A root or ffmpeg sent with `Mode: External` in the same save is
+  refused too (the client never sends them once External is chosen). What the file already holds stays in effect.
+- New spaces stay creatable inside `Sfe:Tenants:AllowedRoots` (configuration only, `TenantEndpoints.Create`); no route
+  changes a space's root.
+- **Setup without a code** (`LocalVisitor.SetupCodeWaivedAsync`) ends when External comes from the configuration
+  (`InstallationSettings.SetByConfiguration`, or not held by the installation file: appsettings): External chosen on the
+  setup page by the local visitor keeps the waiver, which the rest of that setup needs (else `POST api/setup` would ask
+  for a code nobody has).
+- **Fast sign-in** (`FastSignIn.IssueAsync`/`RedeemAsync`) is Local only; the setup page offers it only while the
+  installation is not External. The browser still opens at start on an External portable server (harmless).
+
+## Tests
+
 - Tests: the test servers set `Sfe:Mode=External` (`TestLibrary.Settings`), because their clients have no remote
   address, so they aren't on this computer; Local tests remove the key and use `ApiClients.CreateFrom(factory,
-  "127.0.0.1")` or the `AddressHeader` on a signed-in client.
+  "127.0.0.1")` or the `AddressHeader` on a signed-in client. `LocalStartTests.Factory` is Local by default; installation
+  tests that pick a folder or ffmpeg remove the key.

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Sfe.Api;
 using Sfe.Api.Endpoints;
+using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Settings;
@@ -180,6 +181,7 @@ public sealed class LocalStartTests
         await ApiClients.SetUpAsync(off, TestContext.CancellationToken);
         var on = Factory(settings => settings["Sfe:FastSignIn"] = "true");
         var admin = await ApiClients.SetUpAsync(on, TestContext.CancellationToken);
+        admin.DefaultRequestHeaders.Add(ApiClients.AddressHeader, ThisComputer);
         var links = on.Services.GetRequiredService<FastSignIn>();
         var pending = await links.IssueAsync(TestContext.CancellationToken);
         using (var created = await admin.PostAsJsonAsync("/api/access/users",
@@ -194,9 +196,42 @@ public sealed class LocalStartTests
     }
 
     [TestMethod]
+    public async Task AnExternalServerSetByItsConfigurationNeedsTheCodeAndHasNoStartLink()
+    {
+        var factory = Factory(settings => { settings[ServerModes.Key] = "External"; settings["Sfe:FastSignIn"] = "true"; });
+        var local = ApiClients.CreateFrom(factory, ThisComputer);
+
+        var info = await GetAsync<SetupInfo>(local, "/api/setup");
+        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var links = factory.Services.GetRequiredService<FastSignIn>();
+
+        Assert.IsTrue(info.CodeRequired, "A server for others: whoever runs it gives the code");
+        Assert.IsNull(await links.IssueAsync(TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    public async Task ExternalChosenDuringASetupWithoutCodeKeepsItWithoutCode()
+    {
+        var factory = Factory();
+        var local = ApiClients.CreateFrom(factory, ThisComputer);
+        using var check = await local.PostAsJsonAsync("/api/installation/check", new InstallationCheck(null), TestContext.CancellationToken);
+        var grant = (await check.Content.ReadFromJsonAsync<InstallationGrant>(Json, TestContext.CancellationToken))!;
+        local.DefaultRequestHeaders.Add(InstallationAccess.Header, grant.Token);
+
+        using var external = await local.PutAsJsonAsync("/api/installation", new InstallationInput(Mode: ServerMode.External), Json, TestContext.CancellationToken);
+        using var done = await local.PostAsJsonAsync("/api/setup", new SetupInput(null, "admin", "admin-password", FastSignIn: true), TestContext.CancellationToken);
+        var token = await factory.Services.GetRequiredService<FastSignIn>().IssueAsync(TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, external.StatusCode, await external.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(HttpStatusCode.OK, done.StatusCode, await done.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.IsNull(token, "No start link on an External server, whatever the setting says");
+    }
+
+    [TestMethod]
     public async Task TheStartSettingsAreServerSettings()
     {
         var admin = await ApiClients.SetUpAsync(Factory(), TestContext.CancellationToken);
+        admin.DefaultRequestHeaders.Add(ApiClients.AddressHeader, ThisComputer);
 
         using var saved = await admin.PatchAsJsonAsync("/api/settings?level=server",
             new SettingChanges(new Dictionary<string, JsonNode?> { ["openBrowser"] = false, ["fastSignIn"] = true }), Json, TestContext.CancellationToken);
@@ -254,9 +289,14 @@ public sealed class LocalStartTests
         return library;
     }
 
+    /// <summary>A Local server (what these conveniences are for), unless <paramref name="configure"/> sets another mode.</summary>
     private WebApplicationFactory<Program> Factory(Action<IDictionary<string, string?>>? configure = null, TimeProvider? time = null, TestLibrary? library = null)
     {
-        var factory = ApiClients.CreateFactory(library ?? _library, configure);
+        var factory = ApiClients.CreateFactory(library ?? _library, settings =>
+        {
+            settings.Remove(ServerModes.Key);
+            configure?.Invoke(settings);
+        });
         if (time is not null)
             factory = factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddSingleton(time)));
         _disposables.Add(factory);

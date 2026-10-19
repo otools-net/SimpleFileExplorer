@@ -11,6 +11,8 @@ the `startup` tab of `settings/settings-schema.ts` (System › Start-up). Tests:
 - **"On this computer"** (`LocalVisitor.IsOnThisComputer`): loopback connection, no `X-Forwarded-For`/`X-Original-For`/
   `Forwarded` (a local proxy brings other computers' visitors), and a loopback `Host` (DNS rebinding: a foreign site
   pointing its name at 127.0.0.1 would otherwise reach the setup through the visitor's browser).
+- **Modes** ([server-modes.md](server-modes.md)): fast sign-in is Local only; the waiver ends when the configuration
+  (not the setup page) makes the server External.
 - **Setup without code:** `LocalVisitor.SetupCodeWaivedAsync` = `Sfe:Setup:LocalWithoutCode` (default on) + on this
   computer + `SetupService.IsFreshAsync` (no `Users` row at all, not Recover). An install whose admins were deleted or
   disabled still needs the code. `GET api/setup` answers `codeRequired`; `installation/check` then gives a token holding

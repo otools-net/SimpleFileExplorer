@@ -49,6 +49,8 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
   sign-in, no browser at start.
 - **A non-administrator on a Local server** gets the sign-in page (its session ends), which refuses it with "only its
   administrators sign in" (1.77.0).
+- **External locks the paths also during the setup** (1.78.0), as asked ("never from the UI"): whoever wants to pick
+  them on the page does it while the server is still Local, then switches.
 - **Phase 1 ships alone** (1.76.0): the switch to External exists before any Local limit applies; the UI and docs say
   the mode is only recorded until the next phases.
 - **Docker:** reuses the portable build (`-p:SfePortable=true`: web root from the exe folder, content root from
@@ -110,15 +112,17 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 
 ### Phase 3 — External mode restrictions
 
-- [ ] `InstallationSettings.Save` refuses `root` and `ffmpegPath`; `DescribeAsync` reports them locked by "External
-      mode" with the variables to set (`Sfe__Root`, `Sfe__Thumbnails__FfmpegPath`).
-- [ ] Local mode only: `LocalVisitor.SetupCodeWaivedAsync`, `FastSignIn.IssueAsync` / `RedeemAsync`,
-      `BrowserLauncher`.
-- [ ] Setup page and installation form show root and ffmpeg read-only in External mode.
-- [ ] Tests: refused saves, no waiver, no fast sign-in, spaces still limited to `AllowedRoots`.
-- [ ] [security](security.md): attack vectors for External (changing a path from the web). Local mode's are in
-      (1.77.0).
-- [ ] Local start tests (`LocalStartTests`) then need `settings.Remove(ServerModes.Key)`: test servers are External.
+- [x] (1.78.0) `InstallationSettings.Field` reports root and ffmpeg locked on External (so `Save` refuses them, with
+      the variables to set); also refused together with `Mode: External`.
+- [x] (1.78.0) `FastSignIn` Local only. The setup waiver ends only when the **configuration** makes the server External
+      (External chosen on the setup page keeps it: the rest of that setup needs it).
+- [-] `BrowserLauncher` stays on for External: opening a browser is harmless, only the fast sign-in link is Local.
+- [x] (1.78.0) Setup page and installation form show root and ffmpeg read-only once External is chosen (saved or not);
+      fast sign-in offered only for Local.
+- [x] (1.78.0) Tests: `InstallationTests` (External locks, switch with a folder), `LocalStartTests` (Local by default;
+      External by configuration: code, no link; External chosen during a code-free setup). `AllowedRoots` unchanged
+      (`TenantTests`).
+- [x] (1.78.0) [security](security.md): External attack vectors.
 
 ### Phase 4 — Docker image
 

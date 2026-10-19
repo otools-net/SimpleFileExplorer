@@ -69,6 +69,9 @@ input, LIKE escaped, no `innerHTML` in the client.
   the configuration; switching External → Local from the web. Known gaps: an external player's file link made before
   the switch works until it expires (`LibraryEndpoints` checks its claims, not the session), and a file job started
   before keeps running (`FileJobAccess`).
+- **External mode:** `PUT api/installation` with a root or ffmpeg (alone, with `Mode: External`, with a forged lock
+  state), a space created outside `AllowedRoots`, the setup without a code on a server configured External, a fast
+  sign-in link on External.
 - **Setup/installation/migration:** every route after setup with and without code and session; ffmpeg path to a
   non-ffmpeg program or a file of a library; root at `C:\` or `/` or around the data folder; old-code tokens; Recover left on.
 - **Authorization:** each route × anonymous/guest/user/space admin/server admin; `X-SFE-Tenant` and cookie mismatches;

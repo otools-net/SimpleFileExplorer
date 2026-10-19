@@ -500,6 +500,23 @@ describe('InstallationFormComponent', () => {
         expect(external.element.querySelector('.installation-mode-note')!.textContent).toContain('only in the server\'s configuration');
     });
 
+    it('leaves the folder and ffmpeg to the configuration once External is chosen', async () => {
+        const { element, form } = await create();
+        api.saveInstallation.mockResolvedValue({ settings: installationView(), restartRequired: false });
+        type(element, '#installation-ffmpeg', 'C:\\Tools\\ffmpeg');
+        await settle();
+
+        modeRadio(element, 'external').click();
+        await settle();
+        await form.save();
+
+        expect(element.querySelector('#installation-ffmpeg')).toBeNull();
+        expect(element.querySelector('sfe-folder-picker')).toBeNull();
+        expect(element.textContent).toContain('Sfe__Root');
+        expect(element.textContent).toContain('Sfe__Thumbnails__FfmpegPath');
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { mode: 'external' });
+    });
+
     it('shows a mode set by the server\'s environment, without a way to change it', async () => {
         const { element, form } = await create(installationView({
             mode: { value: 'External', locked: true, lockedBy: 'an environment variable of the server' }, modeInEffect: 'external',

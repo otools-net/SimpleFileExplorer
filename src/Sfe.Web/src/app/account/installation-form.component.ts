@@ -53,7 +53,10 @@ import { IconComponent } from '../shared/icon.component';
         <div class="field">
             <span class="field-label">Library folder</span>
             @if (view.root.locked) {
-                <p class="installation-locked"><code>{{ view.root.value }}</code><span class="field-hint">Set by {{ view.root.lockedBy }}.</span></p>
+                <p class="installation-locked"><code>{{ view.root.value || 'not set' }}</code><span class="field-hint">Set by {{ view.root.lockedBy }}.</span></p>
+            } @else if (external()) {
+                <p class="installation-locked"><code>{{ view.root.value || 'not set' }}</code>
+                    <span class="field-hint">An External server takes it from its configuration (Sfe__Root in its environment, or appsettings.json).</span></p>
             } @else {
                 <sfe-folder-picker [source]="folders" [initial]="root()" placeholder="Pick the folder of your photos, videos and music"
                                    (picked)="root.set($event)" (failed)="problem.set('Could not list the folders: ' + $event)" />
@@ -114,7 +117,10 @@ import { IconComponent } from '../shared/icon.component';
                 download it from ffmpeg.org, unzip it, then pick its folder here.
             </span>
             @if (view.ffmpegPath.locked) {
-                <p class="installation-locked"><code>{{ view.ffmpegPath.value }}</code><span class="field-hint">Set by {{ view.ffmpegPath.lockedBy }}.</span></p>
+                <p class="installation-locked"><code>{{ view.ffmpegPath.value || 'ffmpeg' }}</code><span class="field-hint">Set by {{ view.ffmpegPath.lockedBy }}.</span></p>
+            } @else if (external()) {
+                <p class="installation-locked"><code>{{ view.ffmpegPath.value || 'ffmpeg' }}</code>
+                    <span class="field-hint">An External server takes it from its configuration (Sfe__Thumbnails__FfmpegPath in its environment, or appsettings.json).</span></p>
             } @else {
                 <div class="installation-ffmpeg-path">
                     <input id="installation-ffmpeg" type="text" spellcheck="false" placeholder="ffmpeg (looked for on the PATH)" aria-label="ffmpeg's program or folder"
@@ -152,6 +158,8 @@ export class InstallationFormComponent implements OnInit {
     protected readonly settings = computed(() => this.saved() ?? this.initial());
 
     protected readonly chosenMode = signal<ServerMode>('local');
+    /** External is chosen (saved or not yet): the library folder and ffmpeg come from the server's configuration only. */
+    protected readonly external = computed(() => !!this.settings().mode && this.chosenMode() === 'external');
     /** Local is chosen on the server's own computer only, and an External server goes back to it only in its configuration. */
     protected readonly localAllowed = computed(() => {
         const view = this.settings();
@@ -187,13 +195,13 @@ export class InstallationFormComponent implements OnInit {
     readonly changes = computed<InstallationInput>(() => {
         const view = this.settings();
         const input: InstallationInput = {};
-        if (!view.root.locked && this.root() && this.root() !== view.root.value)
+        if (!view.root.locked && !this.external() && this.root() && this.root() !== view.root.value)
             input.root = this.root();
         if (!view.urls.locked && (this.network() !== view.network || this.port() !== view.port)) {
             input.network = this.network();
             input.port = this.port();
         }
-        if (!view.ffmpegPath.locked && this.ffmpeg().trim() !== (view.ffmpegPath.value ?? ''))
+        if (!view.ffmpegPath.locked && !this.external() && this.ffmpeg().trim() !== (view.ffmpegPath.value ?? ''))
             input.ffmpegPath = this.ffmpeg().trim();
         // A mode not chosen yet is written as shown, so that the install says which one it is.
         if (view.mode && !view.mode.locked && (view.mode.value == null || this.chosenMode() !== view.modeInEffect))

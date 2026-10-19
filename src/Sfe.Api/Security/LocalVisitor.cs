@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.Options;
+using Sfe.Api.Maintenance;
 using Sfe.Core.Access;
 using Sfe.Core.Options;
 
@@ -31,13 +32,27 @@ public static class LocalVisitor
 
     /// <summary>
     /// The setup may skip the code for this visitor: a new install (<see cref="SetupService.IsFreshAsync"/>) set up
-    /// from this computer, unless <see cref="SetupOptions.LocalWithoutCode"/> is off.
+    /// from this computer, unless <see cref="SetupOptions.LocalWithoutCode"/> is off or the server's configuration makes
+    /// it External (a server for others: whoever runs it gives the code). External chosen on the setup page by this
+    /// very visitor keeps the waiver, which the rest of that setup needs.
     /// </summary>
     public static async Task<bool> SetupCodeWaivedAsync(HttpContext context)
     {
         var services = context.RequestServices;
         return services.GetRequiredService<IOptionsMonitor<SetupOptions>>().CurrentValue.LocalWithoutCode
                && IsOnThisComputer(context)
+               && !ExternalByConfiguration(services)
                && await services.GetRequiredService<SetupService>().IsFreshAsync(context.RequestAborted);
+    }
+
+    /// <summary>The mode is External and set by the configuration (appsettings, environment, command line), not the setup page.</summary>
+    private static bool ExternalByConfiguration(IServiceProvider services)
+    {
+        var configuration = services.GetRequiredService<IConfiguration>();
+        if (ServerModes.InEffect(configuration) != ServerMode.External)
+            return false;
+        var installation = services.GetRequiredService<InstallationSettings>();
+        // Not in the installation file (which only the setup page writes) = from the configuration.
+        return installation.SetByConfiguration(ServerModes.Key) is not null || !installation.FileHolds(ServerModes.Key);
     }
 }

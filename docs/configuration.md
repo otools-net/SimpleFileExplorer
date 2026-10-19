@@ -27,7 +27,8 @@ see [Settings by level](reference/settings-levels.md).
 **Only in the configuration**, because they decide which programs run or where data lives: the thumbnail cache folder,
 the database, shutdown/dismount, and everything about the setup, sign-in and spaces' storage. The library folder, the
 listening address and the ffmpeg path are the exception: they can also be changed on the installation page, which asks
-for the setup code first (only whoever runs the server knows it).
+for the setup code first (only whoever runs the server knows it). On an **External** server (`Sfe:Mode`) the library
+folder and ffmpeg are set here only.
 
 ## Main settings
 

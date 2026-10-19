@@ -151,7 +151,8 @@ public sealed class InstallationTests
     [TestMethod]
     public async Task ThePageWorksBeforeTheSetupAndPicksTheLibraryFolder()
     {
-        var factory = Factory(settings => settings.Remove("Sfe:Root"));
+        // Local: an External server takes its folder from its configuration only.
+        var factory = Factory(settings => { settings.Remove("Sfe:Root"); settings.Remove(ServerModes.Key); });
         var visitor = ApiClients.Create(factory);
         var grant = await GrantAsync(visitor);
         var top = await GetAsync<ServerFolders>(visitor, "/api/installation/folders");
@@ -162,6 +163,7 @@ public sealed class InstallationTests
         using var saved = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(Root: _library.FullPath("Media")), TestContext.CancellationToken);
         var result = (await saved.Content.ReadFromJsonAsync<InstallationSaved>(Json, TestContext.CancellationToken))!;
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        admin.DefaultRequestHeaders.Add(ApiClients.AddressHeader, "127.0.0.1");
         var listing = await GetAsync<JsonObject>(admin, "/api/browse");
         var file = JsonNode.Parse(await File.ReadAllTextAsync(InstallationFile, TestContext.CancellationToken))!;
 
@@ -199,7 +201,7 @@ public sealed class InstallationTests
     [TestMethod]
     public async Task TheAddressAppliesAfterARestartAndFfmpegIsChecked()
     {
-        var visitor = ApiClients.Create(Factory());
+        var visitor = ApiClients.Create(Factory(settings => settings.Remove(ServerModes.Key)));
         await GrantAsync(visitor);
 
         using var badPort = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(Port: 70000), TestContext.CancellationToken);
@@ -288,7 +290,7 @@ public sealed class InstallationTests
     [TestMethod]
     public async Task FfmpegMustBeFfmpegAndNotInALibrary()
     {
-        var visitor = ApiClients.Create(Factory());
+        var visitor = ApiClients.Create(Factory(settings => settings.Remove(ServerModes.Key)));
         await GrantAsync(visitor);
         var name = OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg";
         // Anyone who can add files to the library would choose the program SFE runs.
@@ -408,6 +410,42 @@ public sealed class InstallationTests
         Assert.AreEqual(ServerMode.External, grant.Settings.ModeInEffect);
         Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
         Assert.IsFalse(File.Exists(InstallationFile));
+    }
+
+    [TestMethod]
+    public async Task AnExternalServerTakesItsFolderAndFfmpegFromItsConfigurationOnly()
+    {
+        // External (the tests' default), the folder not set by the environment: only External locks it.
+        var visitor = ApiClients.Create(Factory(settings => settings.Remove("Sfe:Root")));
+        var grant = await GrantAsync(visitor);
+
+        using var root = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(Root: _library.FullPath("Media")), Json, TestContext.CancellationToken);
+        using var ffmpeg = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(FfmpegPath: ""), Json, TestContext.CancellationToken);
+        using var port = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(Network: true, Port: 5182), Json, TestContext.CancellationToken);
+
+        Assert.IsTrue(grant.Settings.Root.Locked);
+        StringAssert.Contains(grant.Settings.Root.LockedBy, "Sfe__Root");
+        Assert.IsTrue(grant.Settings.FfmpegPath.Locked);
+        StringAssert.Contains(grant.Settings.FfmpegPath.LockedBy, "Sfe__Thumbnails__FfmpegPath");
+        Assert.AreEqual(HttpStatusCode.BadRequest, root.StatusCode);
+        StringAssert.Contains(await root.Content.ReadAsStringAsync(TestContext.CancellationToken), "External mode");
+        Assert.AreEqual(HttpStatusCode.BadRequest, ffmpeg.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, port.StatusCode, "The address stays the page's");
+        Assert.IsNull(JsonNode.Parse(await File.ReadAllTextAsync(InstallationFile, TestContext.CancellationToken))!["Sfe"]);
+    }
+
+    [TestMethod]
+    public async Task AFolderSavedWithTheSwitchToExternalIsRefused()
+    {
+        var visitor = ApiClients.Create(Factory(settings => { settings.Remove("Sfe:Root"); settings.Remove(ServerModes.Key); }));
+        await GrantAsync(visitor);
+
+        using var both = await visitor.PutAsJsonAsync("/api/installation", new InstallationInput(Root: _library.FullPath("Media"), Mode: ServerMode.External), Json,
+            TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, both.StatusCode);
+        StringAssert.Contains(await both.Content.ReadAsStringAsync(TestContext.CancellationToken), "root");
+        Assert.IsFalse(File.Exists(InstallationFile), "All or nothing");
     }
 
     [TestMethod]

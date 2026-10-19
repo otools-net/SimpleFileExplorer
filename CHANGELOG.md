@@ -3,6 +3,18 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.78.0
+
+### Changed
+
+- **External mode applies**: an External server takes the first space's library folder and ffmpeg from its
+  configuration only (`Sfe__Root`, `Sfe__Thumbnails__FfmpegPath` in its environment, or `appsettings.json`). The setup
+  page and Administration › System › Installation show them, without a way to change them. The listening address stays
+  on the page; new spaces are still created inside `Sfe:Tenants:AllowedRoots`.
+- Fast sign-in only works on a Local server.
+- A new install whose configuration makes it External always asks for the setup code, also on the server's own
+  computer.
+
 ## 1.77.0
 
 ### Changed

@@ -205,6 +205,9 @@ public sealed class InstallationSettings
         {
             if (Field(key) is { Locked: true, LockedBy: var by })
                 errors[FieldName(key)] = [$"Set by {by}: change it there."];
+            // Local → External with a new folder or ffmpeg in the same save: External decides, as it would a moment later.
+            else if (key is RootKey or FfmpegKey && input.Mode == ServerMode.External)
+                errors[FieldName(key)] = ["An External server takes its library folder and ffmpeg from its configuration only: save them while Local, or set them there."];
         }
 
         if (errors.Count > 0)
@@ -216,22 +219,40 @@ public sealed class InstallationSettings
         return (null, changed);
     }
 
-    /// <summary>The value of a key and whether a source after the file decides it.</summary>
+    /// <summary>
+    /// The value of a key and whether something else decides it: a source after the file, or, on an External server,
+    /// the configuration alone for the library folder and ffmpeg (what runs and where data lives is not chosen from the web).
+    /// </summary>
     private InstallationField Field(string key)
     {
         var value = _configuration[key];
+        if (SetByConfiguration(key) is { } source)
+            return new InstallationField(value, true, source);
+        if (key is RootKey or FfmpegKey && ServerModes.InEffect(_configuration) == ServerMode.External)
+            return new InstallationField(value, true,
+                $"the server's configuration (External mode: {(key == RootKey ? "Sfe__Root" : "Sfe__Thumbnails__FfmpegPath")} in its environment, or appsettings.json)");
+        return new InstallationField(value, false, null);
+    }
+
+    /// <summary>The installation file itself gives <paramref name="key"/> (whatever comes after it).</summary>
+    public bool FileHolds(string key) =>
+        _configuration is IConfigurationRoot root && root.Providers.Any(provider => IsOurs(provider) && provider.TryGet(key, out _));
+
+    /// <summary>A source after the file that gives <paramref name="key"/>, in words (an environment variable, the command line...); null when none does.</summary>
+    public string? SetByConfiguration(string key)
+    {
         if (_configuration is not IConfigurationRoot root)
-            return new InstallationField(value, false, null);
+            return null;
 
         var providers = root.Providers.ToList();
         var ours = providers.FindIndex(IsOurs);
         for (var i = providers.Count - 1; i > ours && ours >= 0; i--)
         {
             if (providers[i].TryGet(key, out _))
-                return new InstallationField(value, true, Describe(providers[i]));
+                return Describe(providers[i]);
         }
 
-        return new InstallationField(value, false, null);
+        return null;
     }
 
     private bool IsOurs(IConfigurationProvider provider) =>
