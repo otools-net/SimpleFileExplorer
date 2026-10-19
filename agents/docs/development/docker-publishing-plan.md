@@ -99,4 +99,5 @@ repository is public: no organization settings, Actions and storage free.
 
 ## Found while building
 
-(nothing yet)
+- Work moved to an `edge` branch (2026-10-19): it builds nothing (the workflow has no trigger for it); the image tag
+  `edge` still comes from pushes to `main`, i.e. merges not released yet. A manual run can still build the branch.

@@ -26,8 +26,9 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 - **Production:** a change to the database, stored files, caches or settings ships with its tested migration path
   ([production-upgrades](agents/docs/development/production-upgrades.md)); both DB providers must work
   ([database](agents/docs/development/database.md)).
-- **Version + changelog** once per commit: patch for a fix, minor for a feature, a `CHANGELOG.md` section with it;
-  none for docs/tests/build only ([versioning-and-changelog](agents/docs/development/versioning-and-changelog.md)).
+- **Version + changelog:** each commit on `edge` adds its lines under `## Unreleased` in `CHANGELOG.md`; the version
+  is bumped only when `edge` is merged into `main` (patch for fixes only, minor for a feature); none for
+  docs/tests/build only ([versioning-and-changelog](agents/docs/development/versioning-and-changelog.md)).
 - **Tests** come with every feature and fix; not done until `dotnet test` and `npm test` pass
   ([testing](agents/docs/development/testing.md)).
 - **User docs:** user-visible changes go in `docs/` with screenshots ([user-docs](agents/docs/development/user-docs.md)).
@@ -35,7 +36,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 - **Scale:** millions of files; nothing proportional to a folder or the index per request
   ([scale](agents/docs/development/scale.md)).
 - **Fully local:** no external URL in the client ([fully-local](agents/docs/development/fully-local.md)).
-- **Git:** work is committed on `master` (PR branch `main`), messages `claude: <short summary>`; commit only when asked.
+- **Git:** work is committed on the `edge` branch, merged into `main` when ready; messages `claude: <short summary>`;
+  commit only when asked ([versioning-and-changelog](agents/docs/development/versioning-and-changelog.md)).
 - **Agent tools:** put any reusable helper (scripts, drivers, generators) in `agents/tools/<job>/` with a `README.md`,
   never only in the scratchpad; work output goes to a temp folder, not the repo.
 

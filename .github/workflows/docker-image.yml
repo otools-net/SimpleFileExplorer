@@ -1,6 +1,7 @@
 # The Docker image of SFE on ghcr.io (docs/docker.md, agents/docs/development/docker-publishing-plan.md):
 # - a version tag (v1.80.0) publishes ghcr.io/otools-net/sfe:1.80.0, :1.80 and :latest (a pre-release only its own tag);
 # - a push to main publishes :edge, the work not released yet;
+# - a push to the edge branch (where the work is done until it is ready) builds nothing: it is not in "on: push";
 # - "Run workflow" (Actions tab) builds the branch chosen, and publishes it under the tag typed there, if any.
 # The tests run first; nothing is published when they fail.
 name: Docker image
