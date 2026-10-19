@@ -1,5 +1,5 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
-import { Api, ApiError } from '../../core/api.service';
+import { Api, ApiError, editingSession } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { isFileConflict, isSaved, LibraryItem, TextFile, TextToSave } from '../../core/models';
 import { parentPath } from '../../core/paths';
@@ -29,12 +29,6 @@ export function copyName(name: string): string {
     return dot > 0 ? `${name.slice(0, dot)} (copy)${name.slice(dot)}` : `${name} (copy)`;
 }
 
-/** An editing session id, as the server wants it (letters, digits): crypto.randomUUID needs a secure context. */
-function sessionId(): string {
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
-    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
-}
-
 const LINE_BREAKS: Readonly<Record<string, string>> = { lf: '\n', crlf: '\r\n', cr: '\r' };
 
 /**
@@ -51,7 +45,7 @@ export class TextSession {
     private readonly host = inject(FILE_VIEW_HOST);
 
     /** One per view: the server keeps the previous version once per session. */
-    private readonly session = sessionId();
+    private readonly session = editingSession();
     private item: LibraryItem | null = null;
     private editor: TextEditor | null = null;
     /** The person agreed to lose the changes: further questions (the route's, after the viewer's) pass. */

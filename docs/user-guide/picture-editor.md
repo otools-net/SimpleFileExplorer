@@ -1,7 +1,8 @@
 # Picture editor
 
 **Crop…** in the viewer's **⋮** menu (or the E key), or in a picture's [item menu](managing-files.md#the-item-menu) (right
-click), opens a picture in the editor, for accounts with the right `files.edit`. The original is never changed: the result is saved as a new file.
+click), opens a picture in the editor, for accounts with the right `files.edit`. The result is saved over the
+original (**Save**), or as a new file, the original left as it is (**Save a copy**).
 
 ![The picture editor](../images/image-editor.png)
 
@@ -22,10 +23,23 @@ click), opens a picture in the editor, for accounts with the right `files.edit`.
 |---|---|---|
 | **Apply** | Enter | Crops and lets you go on |
 | **Undo** | Ctrl+Z | Takes the last edit back |
-| **Save a copy** | Ctrl+S | Saves the result as a new file |
+| **Save** | Ctrl+S | Saves the result over the original (when you may: see below) |
+| **Save a copy** | Ctrl+S, or Ctrl+Shift+S beside **Save** | Saves the result as a new file |
 | × | Esc | Closes the editor |
 
 The heading shows the picture's size before and after (`2400 × 1600 → 2400 × 1350`).
+
+## Saving over the original
+
+**Save** is there for those who may replace the picture: as for [text files](editing-text.md), the rights to delete it
+and to create files in its folder (`files.delete`, or `files.deletePermanently` in a space that always deletes for
+good, and `files.createFiles`), with `files.edit` there too. Otherwise **Save a copy** is all there is.
+
+- The version before goes to the [trash](managing-files.md), once per opening of the editor, so it can be restored
+  (not in a space that always deletes for good). The picture keeps its tags.
+- Only JPEG, PNG and WebP pictures, the formats the editor writes; others (GIF, BMP...) are saved as copies.
+- If the picture was changed elsewhere since the editor opened it, you are asked before it is saved over.
+- The listing and the viewer show the new picture at once, and the index has its new size.
 
 ## Where the copy goes
 

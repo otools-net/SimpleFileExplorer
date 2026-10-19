@@ -205,6 +205,62 @@ describe('ImageEditorDialog', () => {
         expect(TestBed.inject(ToastService).toasts().map(t => t.message)).toEqual(['Saved as “Edited/Media/photo.jpg” (1000 × 800, 2 KB).']);
     });
 
+    it('saves over the original when the server allows it, from the version opened', async () => {
+        await setUp();
+        api.editedImageAccess.mockResolvedValue({ version: 'v1', overwrite: true, permanent: false });
+        api.saveEditedImageOver.mockResolvedValue({ path: 'Media/photo.jpg', width: 1000, height: 3000, size: 2048, version: 'v2', modified: '2026-10-19T10:00:00Z', trashId: 7 });
+        const store = TestBed.inject(ListingStore);
+        const applied = vi.spyOn(store, 'applySaved');
+        await open();
+        await setField('width', '1000');
+
+        expect(button('Save a copy').disabled).toBe(false);
+        expect(element.querySelector('.editor-panel')!.textContent).toContain('Save writes over the original (the version before goes to the trash)');
+        button('Save').click();
+        await settle(10);
+
+        expect(api.editedImageAccess).toHaveBeenCalledWith('Media/photo.jpg');
+        expect(api.saveEditedImageOver).toHaveBeenCalledWith('Media/photo.jpg', expect.any(Blob), expect.stringMatching(/^[0-9a-f]{32}$/), 'v1');
+        expect(api.saveEditedImage).not.toHaveBeenCalled();
+        expect(applied).toHaveBeenCalledWith('Media/photo.jpg', { size: 2048, modified: '2026-10-19T10:00:00Z', width: 1000, height: 3000 });
+        expect(dialog().open).toBe(false);
+        expect(TestBed.inject(ToastService).toasts().map(t => t.message)).toEqual(['Saved (1000 × 3000, 2 KB). The version before is in the trash.']);
+    });
+
+    it('asks before saving over a picture changed meanwhile; Ctrl+Shift+S saves a copy', async () => {
+        await setUp();
+        api.editedImageAccess.mockResolvedValue({ version: 'v1', overwrite: true, permanent: false });
+        api.saveEditedImageOver.mockRejectedValueOnce(new ApiError(412, 'Changed'))
+            .mockResolvedValueOnce({ path: 'Media/photo.jpg', width: 1000, height: 3000, size: 2048, version: 'v3', modified: '2026-10-19T10:00:00Z', trashId: null });
+        const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+        await open();
+        await setField('width', '1000');
+
+        dialog().dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true }));
+        await settle(10);
+
+        expect(confirm).toHaveBeenCalledWith('The picture was changed elsewhere since the editor opened it. Save over it anyway?');
+        expect(api.saveEditedImageOver.mock.calls.map(call => call[3])).toEqual(['v1', '*']);
+        expect(dialog().open).toBe(false);
+
+        await open();
+        await setField('width', '1000');
+        dialog().dispatchEvent(new KeyboardEvent('keydown', { key: 'S', ctrlKey: true, shiftKey: true, bubbles: true }));
+        await settle(10);
+        expect(api.saveEditedImage).toHaveBeenCalledTimes(1);
+    });
+
+    it('offers only a copy when the picture may not be saved over', async () => {
+        await setUp();
+        api.editedImageAccess.mockResolvedValue({ version: 'v1', overwrite: false, permanent: false });
+        await open();
+        await setField('width', '1000');
+
+        expect(button('Save')).toBeUndefined();
+        expect(button('Save a copy').classList).toContain('primary');
+        expect(element.querySelector('.editor-panel')!.textContent).toContain('Saved as a new file in “Edited”');
+    });
+
     it('stays open with the edits when the save fails', async () => {
         await setUp();
         api.saveEditedImage.mockRejectedValue(new ApiError(500, 'Disk full'));

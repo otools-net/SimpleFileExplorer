@@ -283,7 +283,9 @@ Tests
 - [x] (1.74.0) EPUB (`@likecoin/epub-ts`): one page, two pages side by side or scrolled; contents, progress, the
       place read last, the prose reading preferences on its pages; the book's files served by the app
       (`GET api/files/epub/{book}/{entry}`) so that it runs under the app's CSP ([epub-reader](../features/epub-reader.md)).
-- [ ] The picture editor saving in place through `FileContent`.
+- [x] (1.75.0) The picture editor saving in place through `FileContent`: **Save** for those who may replace the
+      picture (Replace's rule + `files.edit`), JPEG/PNG/WebP only, `If-Match`, previous version in the trash;
+      `PUT api/editor/images`, `GET api/editor/images/access` ([picture-editor](../features/picture-editor.md)).
 
 ## Open questions
 
@@ -330,6 +332,9 @@ Tests
 - (1.69.0) A part starting right after a line break keeps its first line: the byte (UTF-16: unit) before it is read.
 - (1.69.0) The change feed tells only changes made through SFE: changes by other programs need the periodic version
   check, made cheap by trusting an unchanged size and time.
+- (1.75.0) A save in place reaches the other tabs through the change feed, never the tab that saved (`X-SFE-Tab`):
+  that tab updates its listing itself (`ListingStore.applySaved`), and a picture needs a new address to be fetched
+  again (`withVersion`), its answers being `no-store` doesn't help an `<img>` whose `src` stays the same.
 - (1.74.0) A reader that would show a file's parts from `blob:` URLs needs the CSP loosened: serve the parts from
   the app instead (a route reading the container as asked), and they load as `'self'`.
 - (1.73.0) A view whose library needs canvas (pdf.js) takes it through an injection token (`PDF_LOADER`): the spec

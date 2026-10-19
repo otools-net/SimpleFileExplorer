@@ -98,7 +98,7 @@ export class ItemMenu {
         if (this.canEditText(item))
             entries.push({ id: 'editText', label: 'Edit', icon: 'edit', title: 'Open it in the viewer, ready to be changed', run: () => this.dialogs.viewer()?.open(item, { edit: true }) });
         if (this.canEditPicture(item))
-            entries.push({ id: 'editPicture', label: 'Crop…', icon: 'crop', title: 'Crop the picture, then save it as a new file', run: () => void this.dialogs.imageEditor()?.open(item) });
+            entries.push({ id: 'editPicture', label: 'Crop…', icon: 'crop', title: 'Crop the picture, then save it over the original or as a new file', run: () => void this.dialogs.imageEditor()?.open(item) });
         if (this.canRename(item)) {
             const several = this.targets(item).filter(target => this.canRename(target)).length > 1 && !this.store.searching();
             entries.push({

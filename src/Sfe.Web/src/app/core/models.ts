@@ -450,6 +450,29 @@ export interface EditedImage {
     size: number;
 }
 
+/** Saving an edited picture over its original: its version, and whether this account may (`api/editor/images/access`). */
+export interface EditedImageAccess {
+    version: string;
+    /** files.edit at its folder and the rule of Replace, and a JPEG, PNG or WebP file. */
+    overwrite: boolean;
+    /** The space deletes for good: no previous version is kept in the trash. */
+    permanent: boolean;
+}
+
+/** A picture saved over: its new size, version and time; `trashId`: the version before, kept in the trash. */
+export interface SavedImage extends EditedImage {
+    version: string;
+    modified: string;
+    trashId: number | null;
+}
+
+/** The picture saved over, or why not (a 409: a link, a read-only file, a scan). */
+export type SaveImageResult = SavedImage | FileConflict;
+
+export function isSavedImage(result: SaveImageResult): result is SavedImage {
+    return 'width' in result;
+}
+
 export type ScanState = 'idle' | 'running' | 'completed' | 'cancelled' | 'failed';
 
 export interface ScanStatus {

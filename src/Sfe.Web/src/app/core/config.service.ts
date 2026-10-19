@@ -68,6 +68,24 @@ export function dataServerUrl(dataServer: string, path: string): string {
         : `${dataServer}/${encodePath(path)}`;
 }
 
+/** The files saved over in this tab, and when (a number for their addresses). */
+const savedTimes = new Map<string, number>();
+
+/** The file `path` was saved over in this tab (the picture editor): its addresses change, so it is fetched again. */
+export function markSaved(path: string, modified: string): void {
+    savedTimes.set(path, Date.parse(modified) || Date.now());
+}
+
+/**
+ * The app's own address of a file, marked (`?v=`) once it was saved over in this tab: the answers for pictures are
+ * not kept, but an `<img>` whose address doesn't change isn't fetched again, so a picture saved over would keep
+ * showing as it was. Other addresses, and a data server's, stay as they are.
+ */
+export function withVersion(url: string, item: { path: string }): string {
+    const time = savedTimes.get(item.path);
+    return time === undefined || !url.startsWith('api/') ? url : `${url}${url.includes('?') ? '&' : '?'}v=${time}`;
+}
+
 export function createUrls(config: ClientConfig): Urls {
     const dataServer = config.dataServer;
     const file = (path: string) => dataServer ? dataServerUrl(dataServer, path) : `api/files/raw/${encodePath(path)}`;

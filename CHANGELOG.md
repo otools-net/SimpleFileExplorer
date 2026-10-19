@@ -3,6 +3,22 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.75.0
+
+### Added
+
+- The **picture editor saves over the original** with **Save** (Ctrl+S), for accounts that may replace the picture
+  (the same rule as for text files: delete it and create files in its folder, and `files.edit`): the version before
+  goes to the trash, the picture keeps its tags, and the index has its new size at once. **Save a copy** (Ctrl+Shift+S
+  then) still makes a new file. A picture changed elsewhere since the editor opened it is only saved over after
+  asking. JPEG, PNG and WebP pictures only (the formats the editor writes); others are saved as copies.
+- `GET api/editor/images/access` (the picture's version and whether the caller may save over it) and
+  `PUT api/editor/images` (the edited picture over the original, `If-Match` with that version).
+
+### Changed
+
+- A picture saved over shows again at once in the listing and the viewer of the tab that saved it.
+
 ## 1.74.0
 
 ### Added

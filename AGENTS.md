@@ -133,7 +133,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [data-server](agents/docs/features/data-server.md) | serving files from another server | `DataServerUrl` |
 | [copy-paths](agents/docs/features/copy-paths.md) | copying full server paths | `CopyPathService` |
 | [theme](agents/docs/features/theme.md) | light/dark before first paint | `theme-boot.ts`, `ThemeService` |
-| [picture-editor](agents/docs/features/picture-editor.md) | browser edits, server saves | `app/editor/`, `Core/Editing/` |
+| [picture-editor](agents/docs/features/picture-editor.md) | browser edits, server saves (a new file, or over the original through `FileContent`), picture addresses re-fetched after a save | `app/editor/`, `Core/Editing/`, `EditorEndpoints` |
 | [text-viewer](agents/docs/features/text-viewer.md) | format registry, text files in the viewer (CodeMirror), Open as text, large files in parts, Follow, encodings, positions, `api/files/text` | `app/formats/`, `TextCodec`, `TextEndpoints` |
 | [text-editor](agents/docs/features/text-editor.md) | editing and saving text files: rights (Replace rule), versions (412), previous version in the trash, encodings, unsaved-changes guards | `text-session.ts`, `FileContent.OverwriteAsync`, `TextEndpoints` |
 | [reading-preferences](agents/docs/features/reading-preferences.md) | reading settings of text (profiles, "Aa" panel, bundled fonts, reader themes), the `view?path=` page | `app/formats/reading/`, `view-page.component.ts`, `reader.css` |

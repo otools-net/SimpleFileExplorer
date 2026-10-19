@@ -193,6 +193,87 @@ public sealed class EditorTests
     }
 
     [TestMethod]
+    public async Task SavingOverThePictureRefreshesItsSizeInTheIndex()
+    {
+        await using var core = await CoreServices.CreateAsync(_library);
+        var file = _library.FullPath("Media/beach.jpg");
+        await File.WriteAllBytesAsync(file, Jpeg(40, 30), TestContext.CancellationToken);
+        await core.Get<Sfe.Core.Indexing.DirectoryIndexer>().IndexFilesAsync([file], TestContext.CancellationToken);
+        var editor = core.Get<EditedImages>();
+        var actor = new Sfe.Core.Files.FileActor(null, "test");
+
+        var saved = await editor.SaveOverAsync("Media/beach.jpg", new MemoryStream(Jpeg(20, 10)), "*", "s1", keepPrevious: true, actor, TestContext.CancellationToken);
+        var png = await editor.SaveOverAsync("Media/beach.jpg", new MemoryStream(Png(20, 10)), "*", "s1", keepPrevious: true, actor, TestContext.CancellationToken);
+        var search = await core.Get<FileSearchService>().SearchAsync("beach", null, null, 10, SortField.Path, false, TestContext.CancellationToken);
+
+        Assert.AreEqual(EditedImageOutcome.Saved, saved.Outcome, saved.Message);
+        Assert.IsNotNull(saved.Written!.TrashId, "The previous version is in the trash");
+        Assert.AreEqual(EditedImageOutcome.OtherFormat, png.Outcome);
+        var row = search!.Items.Single(i => i.Path == "Media/beach.jpg");
+        Assert.AreEqual((20, 10), (row.Width, row.Height), "The index has the new size at once");
+    }
+
+    [TestMethod]
+    public async Task SavesOverThePictureFromTheVersionItStartedFrom()
+    {
+        var factory = Factory();
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var file = _library.FullPath("Media/beach.jpg");
+        await File.WriteAllBytesAsync(file, Jpeg(40, 30), TestContext.CancellationToken);
+        var trash = _library.FullPath(".sfe/trash");
+        int TrashedFiles() => Directory.Exists(trash) ? Directory.GetFiles(trash, "*", SearchOption.AllDirectories).Length : 0;
+
+        var opened = await GetAsync<EditedImageAccess>(admin, "/api/editor/images/access?path=Media/beach.jpg");
+        using var noVersion = await PutImageAsync(admin, "Media/beach.jpg", Jpeg(20, 30), null, "s1");
+        using var otherFormat = await PutImageAsync(admin, "Media/beach.jpg", Png(20, 30), opened.Version, "s1");
+        using var saved = await PutImageAsync(admin, "Media/beach.jpg", Jpeg(20, 30), opened.Version, "s1");
+        var image = await saved.Content.ReadFromJsonAsync<SavedImage>(Json, TestContext.CancellationToken);
+        var trashedOnce = TrashedFiles();
+        using var stale = await PutImageAsync(admin, "Media/beach.jpg", Jpeg(10, 10), opened.Version, "s1");
+        using var again = await PutImageAsync(admin, "Media/beach.jpg", Jpeg(10, 10), saved.Headers.ETag!.Tag.Trim('"'), "s1");
+
+        Assert.IsTrue(opened.Overwrite);
+        Assert.IsFalse(opened.Permanent);
+        Assert.AreEqual(HttpStatusCode.PreconditionRequired, noVersion.StatusCode);
+        Assert.AreEqual(HttpStatusCode.BadRequest, otherFormat.StatusCode, "A JPEG file takes a JPEG picture only");
+        Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(("Media/beach.jpg", 20, 30, (long)Jpeg(20, 30).Length), (image!.Path, image.Width, image.Height, image.Size));
+        Assert.AreEqual($"\"{image.Version}\"", saved.Headers.ETag?.ToString());
+        Assert.IsNotNull(image.TrashId);
+        Assert.AreEqual(1, trashedOnce, "The previous version is in the trash");
+        Assert.AreEqual(HttpStatusCode.PreconditionFailed, stale.StatusCode);
+        StringAssert.Contains(await stale.Content.ReadAsStringAsync(TestContext.CancellationToken), TextEndpoints.ChangedType);
+        Assert.AreEqual(HttpStatusCode.OK, again.StatusCode);
+        Assert.AreEqual(1, TrashedFiles(), "Once per editing session");
+        CollectionAssert.AreEqual(Jpeg(10, 10), await File.ReadAllBytesAsync(file, TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    public async Task OnlyThoseWhoMayReplaceThePictureSaveOverIt()
+    {
+        var factory = Factory();
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var users = await GroupAsync(admin, BuiltInGroup.Users);
+        using (var create = await admin.PostAsJsonAsync("/api/access/users", new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]), Json, TestContext.CancellationToken))
+            Assert.AreEqual(HttpStatusCode.Created, create.StatusCode);
+        var alice = await ApiClients.SignInAsync(factory, "alice", "alice-password", TestContext.CancellationToken);
+        _disposables.Add(alice);
+        await File.WriteAllBytesAsync(_library.FullPath("Media/beach.jpg"), Jpeg(40, 30), TestContext.CancellationToken);
+        await File.WriteAllBytesAsync(_library.FullPath("Media/moving.gif"), "GIF89a"u8.ToArray(), TestContext.CancellationToken);
+
+        var byAlice = await GetAsync<EditedImageAccess>(alice, "/api/editor/images/access?path=Media/beach.jpg");
+        using var aliceSaves = await PutImageAsync(alice, "Media/beach.jpg", Jpeg(20, 30), "*", "s1");
+        var gif = await GetAsync<EditedImageAccess>(admin, "/api/editor/images/access?path=Media/moving.gif");
+        using var hidden = await admin.GetAsync("/api/editor/images/access?path=.sfe/trash", TestContext.CancellationToken);
+
+        Assert.IsFalse(byAlice.Overwrite, "Users may not delete files by default: copies only");
+        Assert.AreEqual(HttpStatusCode.Forbidden, aliceSaves.StatusCode);
+        CollectionAssert.AreEqual(Jpeg(40, 30), await File.ReadAllBytesAsync(_library.FullPath("Media/beach.jpg"), TestContext.CancellationToken));
+        Assert.IsFalse(gif.Overwrite, "The editor writes JPEG, PNG and WebP only");
+        Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
+    }
+
+    [TestMethod]
     public async Task TheOutputFolderIsASettingOfEachLibrary()
     {
         var factory = Factory();
@@ -276,6 +357,14 @@ public sealed class EditorTests
         var body = new ByteArrayContent(content);
         body.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         return client.PostAsync($"/api/editor/images?path={Uri.EscapeDataString(path)}", body, TestContext.CancellationToken);
+    }
+
+    private Task<HttpResponseMessage> PutImageAsync(HttpClient client, string path, byte[] content, string? version, string session)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Put, $"/api/editor/images?path={Uri.EscapeDataString(path)}&session={session}") { Content = new ByteArrayContent(content) };
+        if (version is not null)
+            request.Headers.TryAddWithoutValidation("If-Match", version == "*" ? "*" : $"\"{version}\"");
+        return client.SendAsync(request, TestContext.CancellationToken);
     }
 
     private async Task<GroupInfo> GroupAsync(HttpClient admin, BuiltInGroup builtIn) =>

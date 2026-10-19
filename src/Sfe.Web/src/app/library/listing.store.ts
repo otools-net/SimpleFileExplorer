@@ -1,7 +1,7 @@
 import { afterNextRender, computed, inject, Injectable, Injector, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Api, ApiError } from '../core/api.service';
-import { ConfigService } from '../core/config.service';
+import { ConfigService, markSaved } from '../core/config.service';
 import { isViewable } from '../formats/formats';
 import { FileTags, FolderSiblings, LibraryItem, ListingPage, TagDetails, TagScope, TagSummary } from '../core/models';
 import { baseName, parentPath } from '../core/paths';
@@ -414,6 +414,16 @@ export class ListingStore {
     }
 
     /* ---------- Files and folders changed through file management ---------- */
+
+    /**
+     * A listed file saved over in this tab (the change feed tells only the others): its new size, time and picture
+     * size, so that its preview and the viewer show it as it is now (their addresses carry the time).
+     */
+    applySaved(path: string, change: Pick<LibraryItem, 'size' | 'modified'> & Partial<Pick<LibraryItem, 'width' | 'height'>>): void {
+        if (change.modified)
+            markSaved(path, change.modified);
+        this.updateItems(item => item.path === path ? { ...item, ...change } : item);
+    }
 
     /**
      * A file or folder just made in the folder listed: added where the sort puts it among those loaded (at the start

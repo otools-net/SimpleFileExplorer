@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { Api } from '../core/api.service';
+import { Api, ApiError, editingSession } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { formatSize } from '../core/format';
-import { LibraryItem } from '../core/models';
+import { EditedImageAccess, isSavedImage, LibraryItem } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
 import { registerDialog } from '../library/dialogs.service';
+import { ListingStore } from '../library/listing.store';
 import { ASPECTS, aspectRatio, clampRect, flipAspect, largestAround, dragRect, fitAspect, fullRect, Handle, HANDLES, rectFromPoints, sameRect } from './crop';
 import {
     describeEdit, EDITOR_TOOLS, EditKindName, editedSize, EditOperation, encode, outputType, PICTURE_LOADER, Rect, renderEdits, Size,
@@ -30,9 +31,10 @@ type CropField = keyof Rect;
 /**
  * The picture editor, over the viewer: the edits (EDIT_KINDS, one tool each) apply in turn to the original, each one
  * on the result of the ones before; Undo takes the last one back. "Save a copy" encodes the result in the browser and
- * sends it to the server, which saves it as a new file (Administration › Media › Picture editor): the original is
- * never changed. The crop tool shows the picture with a frame to drag (sides, corners, inside to move it, outside to
- * draw a new one), its size and position as numbers, and aspect ratios.
+ * sends it to the server, which saves it as a new file (Administration › Media › Picture editor). "Save" writes it
+ * over the original instead, for those who may replace it (as text files: the version opened, the version before in
+ * the trash; `api/editor/images/access` says whether). The crop tool shows the picture with a frame to drag (sides,
+ * corners, inside to move it, outside to draw a new one), its size and position as numbers, and aspect ratios.
  */
 @Component({
     selector: 'sfe-image-editor',
@@ -57,8 +59,15 @@ type CropField = keyof Rect;
                     </button>
                 </div>
                 <div class="viewer-actions">
-                    <button type="button" class="button primary" title="Save the edited picture as a new file; the original stays as it is (Ctrl+S)"
-                            [sfeBusy]="saving()" [disabled]="!dirty() || saving()" (click)="save()">Save a copy</button>
+                    @if (canOverwrite()) {
+                        <button type="button" class="button" title="Save the edited picture as a new file; the original stays as it is (Ctrl+Shift+S)"
+                                data-save="copy" [disabled]="!dirty() || saving()" (click)="save()">Save a copy</button>
+                        <button type="button" class="button primary" [title]="overwriteHint()"
+                                data-save="over" [sfeBusy]="saving()" [disabled]="!dirty() || saving()" (click)="saveOver()">Save</button>
+                    } @else {
+                        <button type="button" class="button primary" title="Save the edited picture as a new file; the original stays as it is (Ctrl+S)"
+                                data-save="copy" [sfeBusy]="saving()" [disabled]="!dirty() || saving()" (click)="save()">Save a copy</button>
+                    }
                     <button type="button" class="icon-button" title="Close without saving (Esc)" aria-label="Close" (click)="requestClose()"><svg sfeIcon="close"></svg></button>
                 </div>
             </header>
@@ -137,6 +146,7 @@ type CropField = keyof Rect;
 })
 export class ImageEditorDialog {
     private readonly api = inject(Api);
+    private readonly store = inject(ListingStore);
     private readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
     private readonly loadPicture = inject(PICTURE_LOADER);
@@ -180,16 +190,27 @@ export class ImageEditorDialog {
         const edited = this.pendingCrop() ? this.crop() : this.size();
         return this.dirty() ? `${original} → ${edited.width} × ${edited.height}` : original;
     });
+    /** The version opened and whether this account may save over it (null: not known, or not allowed). */
+    protected readonly access = signal<EditedImageAccess | null>(null);
+    protected readonly canOverwrite = computed(() => this.access()?.overwrite === true);
+    protected readonly overwriteHint = computed(() => this.access()?.permanent
+        ? 'Save over the original picture; this space keeps no previous version (Ctrl+S)'
+        : 'Save over the original picture; the version before goes to the trash (Ctrl+S)');
     protected readonly destination = computed(() => {
         const folder = this.config.config()?.editor?.outputFolder;
-        return folder
-            ? `Saved as a new file in “${folder}”, in the same folders as the original.`
-            : 'Saved as a new file next to the original, with “(edited)” in its name.';
+        const copy = folder
+            ? `in “${folder}”, in the same folders as the original`
+            : 'next to the original, with “(edited)” in its name';
+        return this.canOverwrite()
+            ? `Save writes over the original${this.access()?.permanent ? '' : ' (the version before goes to the trash)'}; Save a copy makes a new file ${copy}.`
+            : `Saved as a new file ${copy}.`;
     });
 
     /** The picture with the edits applied, shown on the stage. */
     private result: HTMLCanvasElement | null = null;
     private drag: CropDrag | null = null;
+    /** The editing session of the picture opened: its first save over it keeps the version before in the trash. */
+    private session = '';
     /** Loads of pictures opened before the current one are dropped. */
     private generation = 0;
 
@@ -208,10 +229,17 @@ export class ImageEditorDialog {
         this.activeTool.set('crop');
         this.aspect.set('free');
         this.result = null;
+        this.access.set(null);
+        this.session = editingSession();
         this.canvasHost().nativeElement.replaceChildren();
         const dialog = this.dialog().nativeElement;
         if (!dialog.open)
             dialog.showModal();
+        // Without an answer (no right, an older server), Save a copy is all there is.
+        this.api.editedImageAccess(item.path).then(access => {
+            if (generation === this.generation)
+                this.access.set(access);
+        }, () => undefined);
         try {
             const picture = await this.loadPicture(this.config.urls()!.original(item.path));
             if (generation !== this.generation)
@@ -299,25 +327,62 @@ export class ImageEditorDialog {
         this.crop.set(ratio ? fitAspect(clampRect(next, this.size()), ratio, this.size()) : clampRect(next, this.size()));
     }
 
+    /** Saves the edited picture as a new file. */
     protected async save(): Promise<void> {
         const item = this.item();
-        if (!item || !this.result || this.saving())
-            return;
-        this.applyCrop();
-        if (!this.operations().length)
+        const result = this.edited();
+        if (!item || !result)
             return;
         try {
-            const result = this.result;
-            const saved = await whileBusy(this.saving, async () => {
-                const image = await encode(result, outputType(item.name), this.config.config()?.editor?.quality ?? 92);
-                return this.api.saveEditedImage(item.path, image);
-            });
+            const saved = await whileBusy(this.saving, async () => this.api.saveEditedImage(item.path, await this.encode(item, result)));
             this.operations.set([]);
             this.close();
             this.toasts.show(`Saved as “${saved.path}” (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).`, { timeout: 8000 });
         } catch (error) {
             this.toasts.error(`Could not save the picture: ${(error as Error).message}`);
         }
+    }
+
+    /**
+     * Saves the edited picture over the original, if it is still the version opened; when it changed meanwhile,
+     * asks before saving over it anyway (`force`).
+     */
+    protected async saveOver(force = false): Promise<void> {
+        const item = this.item();
+        const access = this.access();
+        const result = this.edited();
+        if (!item || !access?.overwrite || !result)
+            return;
+        try {
+            const saved = await whileBusy(this.saving, async () =>
+                this.api.saveEditedImageOver(item.path, await this.encode(item, result), this.session, force ? '*' : access.version));
+            if (!isSavedImage(saved)) {
+                this.toasts.error(saved.detail ?? 'The picture could not be saved.');
+                return;
+            }
+            this.store.applySaved(item.path, { size: saved.size, modified: saved.modified, width: saved.width, height: saved.height });
+            this.operations.set([]);
+            this.close();
+            this.toasts.show(`Saved (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).${access.permanent ? '' : ' The version before is in the trash.'}`, { timeout: 8000 });
+        } catch (error) {
+            if (error instanceof ApiError && error.status === 412) {
+                if (confirm('The picture was changed elsewhere since the editor opened it. Save over it anyway?'))
+                    await this.saveOver(true);
+            } else
+                this.toasts.error(`Could not save the picture: ${(error as Error).message}`);
+        }
+    }
+
+    /** The picture to save (a frame left on the stage is applied first); null when there is nothing to save. */
+    private edited(): HTMLCanvasElement | null {
+        if (!this.item() || !this.result || this.saving())
+            return null;
+        this.applyCrop();
+        return this.operations().length ? this.result : null;
+    }
+
+    private encode(item: LibraryItem, result: HTMLCanvasElement): Promise<Blob> {
+        return encode(result, outputType(item.name), this.config.config()?.editor?.quality ?? 92);
     }
 
     /* ---------- Crop frame drags (in picture pixels: the stage shows the picture smaller or larger) ---------- */
@@ -370,7 +435,7 @@ export class ImageEditorDialog {
         const key = event.key.toLowerCase();
         if (command && key === 's') {
             event.preventDefault();
-            void this.save();
+            void (this.canOverwrite() && !event.shiftKey ? this.saveOver() : this.save());
         } else if (command && key === 'z' && !typing) {
             event.preventDefault();
             this.undo();

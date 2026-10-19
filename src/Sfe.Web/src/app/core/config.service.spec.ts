@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ApiMock, fakeConfig, item, limitedConfig, loadConfig, mockApi, testProviders } from '../../testing/fakes';
 import { Api } from './api.service';
-import { ConfigService, createUrls } from './config.service';
+import { ConfigService, createUrls, markSaved, withVersion } from './config.service';
 import { Rights } from './rights';
 
 describe('createUrls', () => {
@@ -61,6 +61,20 @@ describe('createUrls', () => {
         const urls = createUrls(fakeConfig({ externalPlayer: { name: 'Player', url: 'player://open?u=' } }));
 
         expect(urls.external('http://nas/x.mkv')).toBe('player://open?u=http://nas/x.mkv');
+    });
+});
+
+describe('withVersion', () => {
+    it('marks the addresses of a file saved over in this tab only, not those of a data server', () => {
+        expect(withVersion('api/files/raw/a.jpg', { path: 'a.jpg' })).toBe('api/files/raw/a.jpg');
+
+        markSaved('b.jpg', '2026-10-19T10:00:00Z');
+
+        const time = Date.parse('2026-10-19T10:00:00Z');
+        expect(withVersion('api/files/raw/b.jpg', { path: 'b.jpg' })).toBe(`api/files/raw/b.jpg?v=${time}`);
+        expect(withVersion('api/thumbnails/b.jpg?x=1', { path: 'b.jpg' })).toBe(`api/thumbnails/b.jpg?x=1&v=${time}`);
+        expect(withVersion('http://nas/files/b.jpg', { path: 'b.jpg' })).toBe('http://nas/files/b.jpg');
+        expect(withVersion('api/files/raw/a.jpg', { path: 'a.jpg' })).toBe('api/files/raw/a.jpg');
     });
 });
 

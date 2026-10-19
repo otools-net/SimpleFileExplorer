@@ -1,6 +1,6 @@
 import { NgComponentOutlet } from '@angular/common';
 import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, Injector, signal, Type, untracked, viewChild } from '@angular/core';
-import { ConfigService } from '../../core/config.service';
+import { ConfigService, withVersion } from '../../core/config.service';
 import { CopyPathService } from '../../core/copy-path.service';
 import { ToastService } from '../../core/toast.service';
 import { formatDate, formatSize, joinParts } from '../../core/format';
@@ -110,9 +110,9 @@ interface ViewerMenuEntry {
                         @switch (builtin()) {
                             @case ('image') {
                                 @if (progressive() && !originalReady()) {
-                                    <img class="preview" [src]="urls()!.thumbnail(shown.path)" [alt]="shown.name" [style.visibility]="thumbnailFailed() ? 'hidden' : null" (error)="thumbnailFailed.set(true)">
+                                    <img class="preview" [src]="pictureUrls().thumbnail" [alt]="shown.name" [style.visibility]="thumbnailFailed() ? 'hidden' : null" (error)="thumbnailFailed.set(true)">
                                 } @else {
-                                    <img #picture [src]="urls()!.file(shown.path)" [alt]="shown.name" decoding="async"
+                                    <img #picture [src]="pictureUrls().file" [alt]="shown.name" decoding="async"
                                          [class.zoomable]="zoomable()" [class.actual-size]="zoomed()" [class.dragging]="dragging()"
                                          [style.width.px]="zoomed() ? actualSize().width : null" [style.height.px]="zoomed() ? actualSize().height : null"
                                          [style.transform]="zoomed() ? 'translate(' + pan().x + 'px, ' + pan().y + 'px)' : null"
@@ -239,6 +239,14 @@ export class ViewerComponent {
     protected readonly fileUrl = computed(() => {
         const item = this.item();
         return item ? (this.format()?.page ? this.urls()!.view(item.path) : this.urls()!.file(item.path)) : null;
+    });
+    /** The picture shown and its thumbnail, marked with its time: one saved over (the picture editor) shows again. */
+    protected readonly pictureUrls = computed(() => {
+        const item = this.item();
+        const urls = this.urls();
+        return item && urls
+            ? { file: withVersion(urls.file(item.path), item), thumbnail: withVersion(urls.thumbnail(item.path), item) }
+            : { file: null, thumbnail: null };
     });
     protected readonly downloadUrl = computed(() => this.item() ? this.urls()!.download(this.item()!.path) : null);
     /** The item can be opened in the external player (videos and audio, when the server has one for this session). */

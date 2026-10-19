@@ -67,7 +67,7 @@ public static partial class TextEndpoints
     public const int MaxPartBytes = 1024 * 1024;
 
     [GeneratedRegex("^[A-Za-z0-9-]{1,64}$")]
-    private static partial Regex SessionPattern();
+    internal static partial Regex SessionPattern();
 
     public static RouteGroupBuilder MapTextEndpoints(this RouteGroupBuilder api)
     {
@@ -351,7 +351,7 @@ public static partial class TextEndpoints
     }
 
     /// <summary>The version named by <c>If-Match</c> (quotes and a weak mark taken off); <c>*</c>; null without one.</summary>
-    private static string? IfMatch(HttpRequest request)
+    internal static string? IfMatch(HttpRequest request)
     {
         var value = request.Headers.IfMatch.ToString().Trim();
         if (value.Length == 0)
@@ -363,7 +363,7 @@ public static partial class TextEndpoints
         return value.Trim('"');
     }
 
-    private static TextAccess AccessTo(AccessState state, LibraryPaths paths, Trash trash, string canonical)
+    internal static TextAccess AccessTo(AccessState state, LibraryPaths paths, Trash trash, string canonical)
     {
         var parent = canonical.LastIndexOf('/') is var slash and >= 0 ? canonical[..slash] : string.Empty;
         var replace = trash.AlwaysPermanent ? Rights.DeletePermanently : Rights.DeleteFiles;

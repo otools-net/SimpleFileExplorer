@@ -12,6 +12,8 @@
 - Git Bash also rewrites arguments that look like paths (`printf '>nul'` came out `>/dev/null`) and heredocs swallow
   `\\`: write batch files and scripts with backslashes with the Write tool too. (A `'\\r\\n'` in a node script
   written through `cat <<'EOF'` came out as a real line break inside the string.)
+- `node -e "…"` in Git Bash: backticks inside the double quotes are command substitution (template literals and
+  Markdown code vanish, "No such file or directory"): put such edits in a script written with the Write tool.
 - `warning: in the working copy of '…', LF will be replaced by CRLF` on every git command touching a changed LF file is
   harmless noise from the system gitconfig's `core.autocrlf=true` (commits stay LF): don't convert files to "fix" it;
   run git as `git -c core.safecrlf=false …` (e.g. `diff`, `status`, `add`) to keep the output clean.

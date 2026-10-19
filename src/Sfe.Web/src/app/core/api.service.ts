@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, ArchiveLink, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, ArchiveLink, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -16,6 +16,15 @@ import { encodePath } from './paths';
 /** A failed request: the message of the problem response, and its validation messages by field. */
 /** This tab, for the change feed: its own changes are not told back to it. */
 export const TAB_ID = Math.random().toString(36).slice(2, 12);
+
+/**
+ * An editing session id, as the server wants it (letters, digits): the previous version of a file saved over goes to
+ * the trash at the first save of a session. crypto.randomUUID needs a secure context.
+ */
+export function editingSession(): string {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
 
 export class ApiError extends Error {
     /** @param type The problem's `type` (`setup-required`, `tenant-changed`...), when it has one. */
@@ -270,6 +279,15 @@ export class Api {
 
     /** Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original stays. */
     saveEditedImage = (path: string, image: Blob) => this.post<EditedImage>(withQuery('api/editor/images', { path }), image);
+    /** The picture's version, and whether this account may save over it. */
+    editedImageAccess = (path: string) => this.get<EditedImageAccess>('api/editor/images/access', { path });
+    /**
+     * Saves `image` over the picture `path`, if it is still `version` (`*`: whatever it is): 412 `file-changed`
+     * when it changed meanwhile; a 409 (link, read-only, scan) answers its problem.
+     */
+    saveEditedImageOver = (path: string, image: Blob, session: string, version: string) =>
+        this.send(this.http.put<SaveImageResult>(withQuery('api/editor/images', { path, session }), image,
+            { headers: this.headers(true).set('If-Match', version === '*' ? '*' : `"${version}"`) }));
 
     /*
      * Accounts, groups and rights. `tenant` names another space than the session's (server administrators manage every

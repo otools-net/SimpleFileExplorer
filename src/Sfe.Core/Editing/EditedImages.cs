@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sfe.Core.Files;
 using Sfe.Core.Indexing;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
@@ -30,22 +31,30 @@ public enum EditedImageOutcome
 
     /// <summary><see cref="EditorOptions.OutputFolder"/> is not a folder of the library, or the file cannot be written there.</summary>
     CannotWrite,
+
+    /// <summary>Saved over the original: the edited picture is not in the original's format (a GIF made a PNG...).</summary>
+    OtherFormat,
+
+    /// <summary>Saved over the original: <see cref="FileContent.OverwriteAsync"/> did not (see <see cref="EditedImageResult.Written"/>).</summary>
+    NotWritten,
 }
 
 /// <param name="Path">The new file, relative to the library root.</param>
 public sealed record EditedImage(string Path, int Width, int Height, long Size);
 
-public sealed record EditedImageResult(EditedImageOutcome Outcome, EditedImage? Image = null, string? Message = null);
+/// <param name="Written">Saved over the original: what <see cref="FileContent.OverwriteAsync"/> answered.</param>
+public sealed record EditedImageResult(EditedImageOutcome Outcome, EditedImage? Image = null, string? Message = null, OverwriteResult? Written = null);
 
 /// <summary>
 /// Saves the pictures made by the web client's editor. The browser applies the edits (crop...) itself and sends the
 /// encoded result: the server needs no image library, and a new kind of edit needs no change here. The result is
 /// always a new file, in <see cref="EditorOptions.OutputFolder"/> under the original's own folders (or next to the
 /// original when the setting is empty), never written over an existing file; it is indexed at once, so that searches
-/// find it before the next scan.
+/// find it before the next scan. Or it is saved over the original (<see cref="SaveOverAsync"/>), through
+/// <see cref="FileContent"/> as text files are: same version check, previous version in the trash.
 /// </summary>
 public sealed class EditedImages(
-    LibraryPaths paths, MediaClassifier classifier, DirectoryIndexer indexer, IOptionsMonitor<SfeOptions> options, ILogger<EditedImages> logger)
+    LibraryPaths paths, MediaClassifier classifier, DirectoryIndexer indexer, FileContent files, IOptionsMonitor<SfeOptions> options, ILogger<EditedImages> logger)
 {
     /// <summary>200 MB: a lossless PNG of a 50-megapixel photo.</summary>
     public const long MaxBytes = 200L * 1024 * 1024;
@@ -63,18 +72,15 @@ public sealed class EditedImages(
     /// <param name="sourcePath">The original, relative to the library root.</param>
     public async Task<EditedImageResult> SaveAsync(string? sourcePath, Stream content, CancellationToken cancellationToken = default)
     {
-        var source = LibraryPaths.NormalizeRelative(sourcePath);
-        if (string.IsNullOrEmpty(source) || !paths.TryResolve(source, out var sourceFull) || !File.Exists(sourceFull)
-            || classifier.Classify(Path.GetExtension(sourceFull)) != ItemKind.Image)
+        if (Source(sourcePath) is not { } found)
             return new(EditedImageOutcome.SourceNotFound, Message: "The original picture was not found.");
+        var (source, sourceFull) = found;
 
         // Read whole before anything is written: the format decides the name, and a broken upload leaves no file.
         using var buffer = new MemoryStream();
-        if (!await CopyLimitedAsync(content, buffer, cancellationToken))
-            return new(EditedImageOutcome.TooLarge, Message: $"The edited picture is larger than {MaxBytes / 1024 / 1024} MB.");
-
-        if (Detect(buffer) is not { } format || ReadSize(buffer) is not { IsKnown: true } size)
-            return new(EditedImageOutcome.InvalidImage, Message: "The edited picture is not a JPEG, PNG or WebP image.");
+        if (await ReadAsync(content, buffer, cancellationToken) is { } problem)
+            return problem;
+        var (format, size) = (Detect(buffer)!.Value, ReadSize(buffer)!.Value);
 
         var folder = TargetFolder(source);
         if (folder is null || !paths.TryResolve(folder, out var folderFull))
@@ -108,6 +114,55 @@ public sealed class EditedImages(
     }
 
     /// <summary>
+    /// Saves <paramref name="content"/> over the picture <paramref name="path"/> itself, in its own format only, if it
+    /// is still the version <paramref name="ifMatch"/>; the previous version goes to the trash at the first save of an
+    /// editing <paramref name="session"/> (<see cref="FileContent.OverwriteAsync"/>). The routes check the rights.
+    /// </summary>
+    public async Task<EditedImageResult> SaveOverAsync(
+        string? path, Stream content, string ifMatch, string session, bool keepPrevious, FileActor actor, CancellationToken cancellationToken = default)
+    {
+        if (Source(path) is not { } found)
+            return new(EditedImageOutcome.SourceNotFound, Message: "The picture was not found.");
+        var (source, full) = found;
+        using var buffer = new MemoryStream();
+        if (await ReadAsync(content, buffer, cancellationToken) is { } problem)
+            return problem;
+        var (format, size) = (Detect(buffer)!.Value, ReadSize(buffer)!.Value);
+        if (!KeepsExtension(Path.GetExtension(full), format))
+            return new(EditedImageOutcome.OtherFormat, Message: "The edited picture is not in the original's format: save a copy instead.");
+
+        var written = await files.OverwriteAsync(source, buffer.ToArray(), ifMatch, session, keepPrevious, actor, cancellationToken);
+        if (written.Status != OverwriteStatus.Done)
+            return new(EditedImageOutcome.NotWritten, Message: written.Message, Written: written);
+        logger.LogInformation("Saved the edited picture over {Path}", source);
+        return new(EditedImageOutcome.Saved, new EditedImage(source, size.Width, size.Height, buffer.Length), Written: written);
+    }
+
+    /// <summary>The picture can be saved over with what the editor makes: JPEG, PNG and WebP files.</summary>
+    public static bool SavesInPlace(string name) =>
+        Path.GetExtension(name).TrimStart('.').ToLowerInvariant() is "jpg" or "jpeg" or "jpe" or "png" or "webp";
+
+    /// <summary>The picture <paramref name="path"/> of the library: its canonical path and where it is; null when it isn't one.</summary>
+    private (string Path, string Full)? Source(string? path)
+    {
+        var source = LibraryPaths.NormalizeRelative(path);
+        if (string.IsNullOrEmpty(source) || !paths.TryResolve(source, out var full) || !File.Exists(full)
+            || classifier.Classify(Path.GetExtension(full)) != ItemKind.Image)
+            return null;
+        return (paths.ToRelative(full) ?? source, full);
+    }
+
+    /// <summary>Reads what was sent into <paramref name="buffer"/>: the problem when it is too large or not a picture of a known size.</summary>
+    private static async Task<EditedImageResult?> ReadAsync(Stream content, MemoryStream buffer, CancellationToken cancellationToken)
+    {
+        if (!await CopyLimitedAsync(content, buffer, cancellationToken))
+            return new(EditedImageOutcome.TooLarge, Message: $"The edited picture is larger than {MaxBytes / 1024 / 1024} MB.");
+        if (Detect(buffer) is null || ReadSize(buffer) is not { IsKnown: true })
+            return new(EditedImageOutcome.InvalidImage, Message: "The edited picture is not a JPEG, PNG or WebP image.");
+        return null;
+    }
+
+    /// <summary>
     /// The folder the edited version of <paramref name="source"/> goes to: the original's folders under the output
     /// folder; the original's own folder when the setting is empty or the original is already in the output folder
     /// (editing an edited picture again).
@@ -138,20 +193,22 @@ public sealed class EditedImages(
     private static string Extension(string sourceFull, EditedImageFormat format)
     {
         var original = Path.GetExtension(sourceFull);
-        var same = original.TrimStart('.').ToLowerInvariant() switch
-        {
-            "jpg" or "jpeg" or "jpe" => format == EditedImageFormat.Jpeg,
-            "png" => format == EditedImageFormat.Png,
-            "webp" => format == EditedImageFormat.WebP,
-            _ => false,
-        };
-        return same ? original : format switch
+        return KeepsExtension(original, format) ? original : format switch
         {
             EditedImageFormat.Jpeg => ".jpg",
             EditedImageFormat.Png => ".png",
             _ => ".webp",
         };
     }
+
+    /// <summary>The extension names the format.</summary>
+    private static bool KeepsExtension(string extension, EditedImageFormat format) => extension.TrimStart('.').ToLowerInvariant() switch
+    {
+        "jpg" or "jpeg" or "jpe" => format == EditedImageFormat.Jpeg,
+        "png" => format == EditedImageFormat.Png,
+        "webp" => format == EditedImageFormat.WebP,
+        _ => false,
+    };
 
     /// <summary>Writes to the first free name; <see cref="FileMode.CreateNew"/> keeps two saves at once from sharing one.</summary>
     private static async Task<string> WriteNewAsync(string folder, string baseName, string extension, MemoryStream content, CancellationToken cancellationToken)

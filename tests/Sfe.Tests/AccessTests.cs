@@ -188,11 +188,13 @@ public sealed class AccessTests
         var factory = Factory();
         Client(factory);
 
-        var endpoint = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
-            .SingleOrDefault(e => e.RoutePattern.RawText == route);
+        // Every method of the route (the editor saves a copy with POST, over the picture with PUT).
+        var endpoints = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
+            .Where(e => e.RoutePattern.RawText == route).ToList();
 
-        Assert.IsNotNull(endpoint, route);
-        Assert.AreEqual(policy, endpoint.Metadata.GetMetadata<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>()?.PolicyName, route);
+        Assert.IsNotEmpty(endpoints, route);
+        foreach (var endpoint in endpoints)
+            Assert.AreEqual(policy, endpoint.Metadata.GetMetadata<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>()?.PolicyName, route);
     }
 
     [TestMethod]

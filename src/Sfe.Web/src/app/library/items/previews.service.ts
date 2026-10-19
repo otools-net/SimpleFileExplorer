@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { ConfigService } from '../../core/config.service';
+import { ConfigService, withVersion } from '../../core/config.service';
 import { LibraryItem } from '../../core/models';
 
 /**
@@ -32,7 +32,7 @@ export class PreviewsService {
         const sources = item.kind === 'image'
             ? (this.config.isLargeImage(item) && !original ? [thumbnail] : [urls.file(item.path), thumbnail])
             : item.kind === 'video' ? [thumbnail] : [];
-        return sources.filter((source): source is string => Boolean(source));
+        return sources.filter((source): source is string => Boolean(source)).map(source => withVersion(source, item));
     }
 
     /** Known from an earlier render (other layout, back navigation): sized right away instead of on load. */
