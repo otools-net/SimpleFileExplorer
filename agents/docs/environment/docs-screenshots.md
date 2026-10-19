@@ -24,4 +24,6 @@ Tool: `agents/tools/docs-screenshots/` (how to add a scene: its `README.md`).
   more by itself. A single-scene run without `--shots-only` still reseeds everything (and re-saves
   `setup-page.png`).
 - A full run re-saves every image with tiny pixel changes: `git checkout` the ones whose screen didn't change.
+- `local-only.png` is not made by the tool (its app is set up for this computer): taken by hand by opening a Local
+  server through this machine's LAN address (any non-loopback IPv4) in headless Edge.
 - `check-links.mjs` checks the links of `README.md`, `AGENTS.md`, `agents/docs/` and `docs/`.

@@ -78,7 +78,10 @@ public static class SfeSession
 
         var accounts = context.HttpContext.RequestServices.GetRequiredService<AccessService>();
         var user = await accounts.GetSessionUserAsync(userId, context.HttpContext.RequestAborted);
-        if (user is null || user.Disabled || user.SecurityStamp != principal.FindFirstValue(StampClaim))
+        if (user is null || user.Disabled || user.SecurityStamp != principal.FindFirstValue(StampClaim)
+            // A Local server lets only administrators in (ServerModes): another account's session ends.
+            || ServerModes.IsLocal(context.HttpContext.RequestServices.GetRequiredService<IConfiguration>())
+            && !await accounts.IsAdministratorAsync(userId, context.HttpContext.RequestAborted))
         {
             context.RejectPrincipal();
             await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

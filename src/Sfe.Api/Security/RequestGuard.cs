@@ -11,6 +11,8 @@ namespace Sfe.Api.Security;
 /// page's routes answer (503 <c>migration-required</c>): nothing may read or change what the update hasn't brought up yet;</item>
 /// <item>until the first administrator exists, only the setup, the installation page (its own code check) and the
 /// session answer (503 <c>setup-required</c>);</item>
+/// <item>once set up, a Local server (<see cref="ServerModes"/>) answers other computers only on the setup, session,
+/// installation and update routes (403 <see cref="ServerModes.LocalOnlyType"/>);</item>
 /// <item>a request changing something must carry <see cref="Header"/>: a page of another site cannot add it without the
 /// browser asking this server first (CORS), which never agrees, so it can't act with a visitor's cookie;</item>
 /// <item>the API's documentation pages (served by Swagger UI, not routes) need <see cref="Rights.ApiDocs"/>.</item>
@@ -22,7 +24,7 @@ public sealed class RequestGuard(RequestDelegate next)
     public const string SetupRequiredType = "setup-required";
     public const string MigrationRequiredType = "migration-required";
 
-    public async Task InvokeAsync(HttpContext context, SetupService setup, CurrentAccess current, MigrationCoordinator migration)
+    public async Task InvokeAsync(HttpContext context, SetupService setup, CurrentAccess current, MigrationCoordinator migration, IConfiguration configuration)
     {
         var path = context.Request.Path;
         var api = path.StartsWithSegments("/api");
@@ -59,6 +61,21 @@ public sealed class RequestGuard(RequestDelegate next)
                     "The server has no administrator yet: open the app to set it up.",
                     statusCode: StatusCodes.Status503ServiceUnavailable,
                     type: SetupRequiredType)
+                .ExecuteAsync(context);
+            return;
+        }
+
+        // A Local server answers its own computer only. The setup, the session (to sign in as the server's
+        // administrator), the installation page (with the setup code, to switch to External) and the update page stay
+        // open: an install upgraded to Local while used from elsewhere is set to External from there.
+        if (ServerModes.IsLocal(configuration) && !LocalVisitor.IsOnThisComputer(context)
+            && !path.StartsWithSegments("/api/setup") && !path.StartsWithSegments("/api/installation") && !path.StartsWithSegments("/api/session")
+            && !path.StartsWithSegments("/api/migration"))
+        {
+            await TypedResults.Problem(
+                    "SFE is in Local mode: it only answers its own computer (http://localhost).",
+                    statusCode: StatusCodes.Status403Forbidden,
+                    type: ServerModes.LocalOnlyType)
                 .ExecuteAsync(context);
             return;
         }

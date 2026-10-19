@@ -3,6 +3,23 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.77.0
+
+### Changed
+
+- **Local mode now applies**: a Local server answers only the computer it runs on (`http://localhost`), lets only
+  administrators sign in (server administrators and members of a space's Administrators group), and has no visitors
+  without an account. Other accounts' sessions end.
+- **An install upgraded without a mode chosen is Local.** If people open it from other devices or with accounts that
+  are not administrators, set it to **External**: from another computer, the page SFE now shows there lets the server
+  administrator sign in and switch it with the setup code; or set `Sfe__Mode=External` in the server's environment.
+
+### Added
+
+- A page for visitors of a Local server from another computer: where to open SFE instead, and the switch to External
+  for its administrator.
+- `GET api/config` gives the server's `mode`.
+
 ## 1.76.0
 
 ### Added

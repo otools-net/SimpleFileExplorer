@@ -19,6 +19,7 @@ public sealed partial class AccessService(
     public const int MaxNameLength = 200;
 
     private readonly ConcurrentDictionary<int, (long Version, SessionUser? User)> _sessions = new();
+    private readonly ConcurrentDictionary<int, (long Version, bool Administrator)> _administrators = new();
     private (long Version, IReadOnlyList<TenantInfo> Tenants)? _tenants;
 
     // ---- Libraries ----
@@ -239,6 +240,23 @@ public sealed partial class AccessService(
             .FirstOrDefaultAsync(cancellationToken);
         _sessions[id] = (version, user);
         return user;
+    }
+
+    /// <summary>
+    /// The account is a server administrator or in a space's built-in Administrators group: the accounts a Local server
+    /// lets in (cached until the next change of any account or group, as <see cref="GetSessionUserAsync"/>).
+    /// </summary>
+    public async Task<bool> IsAdministratorAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var version = changes.Version;
+        if (_administrators.TryGetValue(id, out var cached) && cached.Version == version)
+            return cached.Administrator;
+
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var administrator = await db.Users.AsNoTracking().AnyAsync(u => u.Id == id && u.IsServerAdmin, cancellationToken)
+                            || await db.GroupMembers.AsNoTracking().AnyAsync(m => m.UserId == id && m.Group!.BuiltIn == BuiltInGroup.Administrators, cancellationToken);
+        _administrators[id] = (version, administrator);
+        return administrator;
     }
 
     /// <summary>Notes when the account last signed in (shown on the accounts page).</summary>

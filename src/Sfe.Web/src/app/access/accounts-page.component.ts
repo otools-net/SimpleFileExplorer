@@ -54,6 +54,12 @@ interface SpaceLine {
                 }
             </sfe-help>
         </div>
+        @if (config.config()?.mode === 'local') {
+            <p class="field-hint access-local-mode">
+                SFE is in Local mode: only the server's administrators and the members of a space's Administrators group sign in, on this computer.
+                Switch it to External in Administration › System › Installation to let the others in.
+            </p>
+        }
         <div class="access-actions">
             <button type="button" class="button primary" [title]="serverWide() ? 'Create an account, and choose its spaces and groups' : 'Create an account in this space'"
                     (click)="editor().open(null, serverWide() ? null : config.tenant()?.id ?? null)">

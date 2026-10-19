@@ -352,7 +352,7 @@ public sealed class InstallationTests
     [TestMethod]
     public async Task TheModeIsChosenAtTheSetupAndLocalOnlyFromThisComputer()
     {
-        var factory = Factory();
+        var factory = Factory(settings => settings.Remove(ServerModes.Key));
         var remote = ApiClients.Create(factory);
         var local = ApiClients.CreateFrom(factory, "127.0.0.1");
         var grant = await GrantAsync(remote);
@@ -381,7 +381,7 @@ public sealed class InstallationTests
     [TestMethod]
     public async Task OnceSetUpExternalNeverGoesBackToLocalFromTheWeb()
     {
-        var factory = Factory();
+        var factory = Factory(settings => settings.Remove(ServerModes.Key));
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         admin.DefaultRequestHeaders.Add(ApiClients.AddressHeader, "127.0.0.1");
         await GrantAsync(admin);

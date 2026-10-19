@@ -221,6 +221,17 @@ describe('Api', () => {
         expect(navigate).toHaveBeenCalledWith(['/migration']);
     });
 
+    it('opens the Local mode page when a Local server refuses another computer', async () => {
+        const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+        const config = api.config();
+        http.expectOne('api/config').flush({ type: 'local-only', status: 403 }, { status: 403, statusText: 'Forbidden' });
+
+        await expect(config).rejects.toMatchObject({ status: 403, type: 'local-only' });
+        expect(redirected(await config.catch((error: unknown) => error))).toBe(true);
+        expect(navigate).toHaveBeenCalledWith(['/local-only']);
+    });
+
     it('sends the setup code to start the update and to make a backup', () => {
         void api.startMigration('the-setup-code');
         void api.migrationBackup('the-setup-code');

@@ -56,7 +56,7 @@ for the setup code first (only whoever runs the server knows it).
 | `Sfe:Setup:CodeFile` | Where SFE keeps the code it made when `Sfe:Setup:Code` is empty (default `data/setup-code.txt`) |
 | `Sfe:Setup:LocalWithoutCode` | A new install (no account yet) is set up without the code from a browser on the server's own computer (default `true`). `false` asks for it there too |
 | `Sfe:Setup:Recover` | `true` opens the setup page again to reset a lost administrator password (with the code); turn it off afterwards |
-| `Sfe:Security:AnonymousGuests` | Default `true`: spaces may let visitors in without an account; `false` forbids it everywhere |
+| `Sfe:Security:AnonymousGuests` | Default `true`: spaces may let visitors in without an account; `false` forbids it everywhere. Always off while `Sfe:Mode` is `Local` |
 | `Sfe:Security:SessionDays`, `MinimumPasswordLength`, `MaxFailedSignIns`, `LockoutMinutes`, `SignInsPerMinute` | Sign-in: 30 days, 8 characters, after 5 failures to an account from one address that address waits 15 minutes before trying it again (others still sign in), 10 attempts per minute and address |
 | `Sfe:Security:AccountLockoutFailures` | Default `50`: failures to a local account from all addresses together, after which the account itself is locked for `LockoutMinutes`; `0` never |
 | `Sfe:Security:TrustedProxies` | Reverse proxies on other computers (addresses or networks like `10.0.0.0/8`) whose `X-Forwarded-For`/`X-Forwarded-Proto` are believed; one on this computer always is. See [https and a reverse proxy](installation.md#reaching-it-from-outside-https-and-a-reverse-proxy) |

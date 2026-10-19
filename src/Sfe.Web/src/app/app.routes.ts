@@ -28,5 +28,7 @@ export const routes: Routes = [
     { path: 'setup', loadComponent: () => import('./account/setup-page.component').then(m => m.SetupPageComponent) },
     // The update of an install to this version: the only page working until it is done.
     { path: 'migration', loadComponent: () => import('./migration/migration-page.component').then(m => m.MigrationPageComponent) },
+    // A Local server opened from another computer: where to open it, and the way to External for its administrator.
+    { path: 'local-only', loadComponent: () => import('./account/local-only-page.component').then(m => m.LocalOnlyPageComponent) },
     { path: '**', redirectTo: '' },
 ];

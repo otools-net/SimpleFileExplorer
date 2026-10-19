@@ -78,7 +78,7 @@ public sealed record FilesConfig(bool DeletePermanently, int TrashRetentionDays,
 /// </param>
 public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool AnimatedHover, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
     IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor, StreamingConfig? Streaming,
-    FilesConfig? Files = null, ReadingOptions? Reading = null, IReadOnlyList<string>? TextExtensions = null);
+    FilesConfig? Files = null, ReadingOptions? Reading = null, IReadOnlyList<string>? TextExtensions = null, ServerMode Mode = ServerMode.Local);
 
 public static class ConfigEndpoints
 {
@@ -95,7 +95,7 @@ public static class ConfigEndpoints
 
     private static async Task<Ok<ClientConfig>> GetConfig(
         LibraryPaths paths, ThumbnailService thumbnails, TrickplayService trickplay, VideoStreamer streamer, SystemCommandService system, IOptionsMonitor<SfeOptions> options,
-        CurrentAccess current, SettingsService preferences, AccessService accounts, RightsEvaluator rights, CancellationToken cancellationToken)
+        CurrentAccess current, SettingsService preferences, AccessService accounts, RightsEvaluator rights, IConfiguration configuration, CancellationToken cancellationToken)
     {
         var state = await current.GetAsync();
         var server = options.CurrentValue;
@@ -151,6 +151,7 @@ public static class ConfigEndpoints
                     Math.Max(0, settings.Files.Uploads.MaxFileSizeMegabytes), Math.Max(1, settings.Files.Uploads.KeepUnfinishedHours))
                 : null,
             settings.Reading,
-            settings.FileTypes.Text));
+            settings.FileTypes.Text,
+            ServerModes.InEffect(configuration)));
     }
 }

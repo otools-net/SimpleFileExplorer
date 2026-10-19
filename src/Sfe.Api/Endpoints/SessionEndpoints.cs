@@ -43,6 +43,10 @@ public static class SessionEndpoints
 {
     public const string SignInRateLimit = "sign-in";
 
+    /// <summary>The problem type of a sign-in refused because a Local server lets only administrators in.</summary>
+    public const string LocalAdministratorsOnlyType = "local-administrators-only";
+    private const string LocalAdministratorsOnly = "SFE is in Local mode: only its administrators sign in. Ask one to set it to External to let others in.";
+
     public static RouteGroupBuilder MapSessionEndpoints(this RouteGroupBuilder api)
     {
         var session = api.MapGroup("/session").WithTags("Session");
@@ -57,7 +61,11 @@ public static class SessionEndpoints
             .RequireRateLimiting(SignInRateLimit)
             .WithName("SignIn")
             .WithSummary("Signs in with a name and password.")
-            .WithDescription("`remember` keeps the session after the browser closes (for `Sfe:Security:SessionDays` without use).");
+            .WithDescription("""
+                `remember` keeps the session after the browser closes (for `Sfe:Security:SessionDays` without use). A Local
+                server (`Sfe:Mode`) lets only administrators in (server administrators, members of a space's Administrators
+                group): others get 400 `local-administrators-only`.
+                """);
 
         session.MapPost("/logout", SignOut)
             .AllowAnonymous()
@@ -140,7 +148,8 @@ public static class SessionEndpoints
     private static SessionTenant ToSession(TenantInfo tenant) => new(tenant.Id, tenant.Slug, tenant.Name);
 
     private static async Task<Results<Ok<SessionInfo>, ProblemHttpResult>> SignIn(
-        HttpContext context, SignInService signIn, SignInThrottle throttle, ILoggerFactory loggers, SignInRequest request, CancellationToken cancellationToken)
+        HttpContext context, SignInService signIn, SignInThrottle throttle, AccessService accounts, IConfiguration configuration, ILoggerFactory loggers,
+        SignInRequest request, CancellationToken cancellationToken)
     {
         // Counted per name and address (SignInThrottle): a stranger's failures don't lock the account's owner out.
         var address = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
@@ -174,6 +183,12 @@ public static class SessionEndpoints
         }
 
         throttle.Succeeded(request.UserName, address);
+        if (ServerModes.IsLocal(configuration) && !await accounts.IsAdministratorAsync(result.User!.Id, cancellationToken))
+        {
+            logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: SFE is in Local mode, only administrators sign in", name, address);
+            return TypedResults.Problem(LocalAdministratorsOnly, statusCode: StatusCodes.Status400BadRequest, type: LocalAdministratorsOnlyType);
+        }
+
         await SfeSession.SignInAsync(context, result.User!, context.User.TenantId(), request.Remember);
         context.Response.Cookies.Delete(SfeSession.GuestTenantCookie);
         return TypedResults.Ok(await DescribeAsync(context));

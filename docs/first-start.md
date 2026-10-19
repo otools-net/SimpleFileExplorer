@@ -63,8 +63,8 @@ has three steps (two on the server's own computer, which skips the code):
      there; External elsewhere. Later, a Local server can still become External, but not the other way round.
    - **Library folder**: click through the server's drives and folders to the folder of your photos, videos and music
      (**Home**, **Pictures**, **Videos** and **Music** are listed first). It becomes the first space's library.
-   - **Who can open SFE**: **Only this computer**, or **Also the other devices of my network** (phones, TVs, other
-     computers; everyone still signs in), and the port. This one applies once SFE is started again.
+   - **Who can open SFE** (External only): **Only this computer**, or **Also the other devices of my network** (phones,
+     TVs, other computers; everyone still signs in), and the port. This one applies once SFE is started again.
    - **ffmpeg** (optional): whether it was found; to add it, download it from [ffmpeg.org](https://ffmpeg.org/), unzip
      it and pick its folder. Without it there are no video thumbnails, trickplay, video durations or converted videos.
 3. **Administrator**: name, display name, password, and the name of the first **space** (your library, its index, tags

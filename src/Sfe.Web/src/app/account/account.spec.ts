@@ -5,6 +5,7 @@ import { ApiMock, buttonNamed, installationView, mockApi, settle, testProviders 
 import { ApiError } from '../core/api.service';
 import { SessionInfo, SetupInfo } from '../core/models';
 import { InstallationFormComponent } from './installation-form.component';
+import { LocalOnlyPageComponent, localAddress } from './local-only-page.component';
 import { LoginPageComponent } from './login-page.component';
 import { SETUP_CODE_STEPS } from './setup-code.component';
 import { SetupPageComponent } from './setup-page.component';
@@ -349,6 +350,11 @@ describe('SetupPageComponent', () => {
         api.completeSetup.mockResolvedValue({} as SessionInfo);
 
         await enterCode();
+        expect(element.querySelector('input[name=installation-network]')).toBeNull();
+        expect(element.querySelector('.installation-local')!.textContent).toContain('as SFE is Local');
+        // Who else may open SFE is asked of an External server only.
+        element.querySelector<HTMLInputElement>('input[name=installation-mode][value=external]')!.click();
+        await settle();
         element.querySelectorAll<HTMLInputElement>('input[name=installation-network]')[1].click();
         await settle();
         buttonNamed(element, 'Next')!.click();
@@ -357,7 +363,7 @@ describe('SetupPageComponent', () => {
         buttonNamed(element, 'Create the administrator')!.click();
         await settle();
 
-        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { network: true, port: 5080 });
+        expect(api.saveInstallation).toHaveBeenCalledWith('the-token', { network: true, port: 5080, mode: 'external' });
         expect(element.textContent).toContain('applies once SFE starts again');
         expect(navigate).not.toHaveBeenCalled();
         buttonNamed(element, 'Open the library')!.click();
@@ -503,5 +509,43 @@ describe('InstallationFormComponent', () => {
         expect(element.querySelector('.installation-mode')!.textContent).toContain('Set by an environment variable of the server.');
         await form.save();
         expect(api.saveInstallation).not.toHaveBeenCalled();
+    });
+});
+
+describe('LocalOnlyPageComponent', () => {
+    let api: ApiMock;
+    let navigate: ReturnType<typeof vi.fn>;
+
+    async function create(session: Partial<SessionInfo>): Promise<HTMLElement> {
+        api = mockApi();
+        api.session.mockResolvedValue(session as SessionInfo);
+        TestBed.configureTestingModule({ providers: testProviders(api) });
+        navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true) as unknown as ReturnType<typeof vi.fn>;
+        const fixture = TestBed.createComponent(LocalOnlyPageComponent);
+        await settle();
+        fixture.detectChanges();
+        return fixture.nativeElement;
+    }
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it('says where to open SFE and offers its administrator to sign in', async () => {
+        const element = await create({ user: null });
+
+        expect(element.querySelector('.local-only-address')!.textContent).toContain('://localhost');
+        expect(element.querySelector('sfe-installation-section')).toBeNull();
+        buttonNamed(element, 'Sign in')!.click();
+        expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { return: '/local-only' } });
+    });
+
+    it('lets the server administrator switch to External', async () => {
+        const element = await create({ user: { id: 1, userName: 'admin', displayName: null, kind: 'user', isServerAdmin: true, local: true } });
+
+        expect(element.querySelector('sfe-installation-section')).not.toBeNull();
+        expect(buttonNamed(element, 'Sign in')).toBeFalsy();
+    });
+
+    it('puts this computer\'s name in the address', () => {
+        expect(localAddress('http://nas:5080/sfe/?x=1#y')).toBe('http://localhost:5080/sfe/');
     });
 });

@@ -30,6 +30,18 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.77
+
+- **Local mode applies.** An install with no mode chosen is Local: only the computer it runs on opens it, and only
+  administrators sign in (server administrators, members of a space's Administrators group). If people open it from
+  other devices, or with accounts that are not administrators, switch it to **External**:
+  - from another computer, SFE shows a page saying it is Local: **Sign in** as the server administrator, enter the
+    setup code, choose **External** and save; or
+  - on the server's own computer, in Administration › System › Installation; or
+  - set `Sfe__Mode=External` in the server's environment (or `Sfe:Mode` in `appsettings.json`).
+- Spaces open to visitors without an account are closed while the server is Local; they open again once it is
+  External. Nothing changes in the databases.
+
 ## To 1.76
 
 - SFE now has two **modes**, Local and External ([Installation](administration/system.md#installation)). An install

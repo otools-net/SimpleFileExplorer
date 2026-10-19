@@ -336,6 +336,8 @@ export interface FolderCover {
 }
 
 export interface ClientConfig {
+    /** How the server is used (Sfe:Mode); missing from older servers. */
+    mode?: ServerMode;
     rootName: string;
     dataServer: string | null;
     pageSize: number;

@@ -56,6 +56,10 @@ signing in: the sign-in page offers a button for each such space. They get the r
 a right that changes something. For someone who should sign in but only look, make a *guest account* instead. The
 configuration can forbid visitors everywhere (`Sfe:Security:AnonymousGuests=false`).
 
+A **Local** server ([Installation](system.md#installation)) has no visitors, and only its administrators sign in:
+server administrators and the members of a space's **Administrators** group. Other accounts are kept, and sign in
+again once the server is External; the accounts page says so while it is Local.
+
 ### Folder access
 
 ![Folder access](../images/folder-access.png)

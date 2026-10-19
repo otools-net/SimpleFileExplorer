@@ -47,6 +47,8 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
   spaces may still be created from the UI, but only inside `Sfe:Tenants:AllowedRoots` (configuration only, already
   enforced by `TenantEndpoints.Create`); no route changes an existing space's root. No setup without a code, no fast
   sign-in, no browser at start.
+- **A non-administrator on a Local server** gets the sign-in page (its session ends), which refuses it with "only its
+  administrators sign in" (1.77.0).
 - **Phase 1 ships alone** (1.76.0): the switch to External exists before any Local limit applies; the UI and docs say
   the mode is only recorded until the next phases.
 - **Docker:** reuses the portable build (`-p:SfePortable=true`: web root from the exe folder, content root from
@@ -91,19 +93,20 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 
 ### Phase 2 — Local mode restrictions
 
-- [ ] `RequestGuard`: 403 `local-only` to visitors not on this computer once the setup is done; a plain page for static
-      files saying to open `http://localhost:<port>`; `core/api.service.ts` handles it.
-- [ ] Administrators only: `AccessService` "administrator anywhere" (cached per `AccessChanges.Version`), checked by
-      `SignInService` and by `RequestGuard`'s session check (existing sessions of other accounts end).
-- [ ] Guest access ignored by `CurrentAccess`; the GuestAccess switch disabled with a note; the people list marks other
-      accounts "can't sign in in Local mode".
-- [ ] Installation page: network switch hidden, `Network = true` refused.
-- [ ] `api/config` gives `mode` (`core/models.ts`); `ServerModes` gets the "nothing restricted before the setup" rule
-      (`SetupService.IsRequiredAsync`).
-- [ ] Tests: 403 for a remote visitor (setup still possible before), non-administrator sign-in and session refused,
-      guests ignored, an existing install without the key behaves as Local.
-- [ ] `CHANGELOG.md`: warn clearly that upgraded installs are Local, and how to keep them open
-      (`Sfe__Mode=External`).
+- [x] (1.77.0) `RequestGuard`: 403 `local-only` to other computers after the setup check, except setup, session,
+      installation and migration; the client opens a `local-only` page (where to open SFE, and the switch to External
+      for the server administrator: the way out of an install upgraded to Local while used over the network). No
+      static page: the SPA itself loads.
+- [x] (1.77.0) Administrators only: `AccessService.IsAdministratorAsync`, checked by `SignIn` (400
+      `local-administrators-only`) and `SfeSession.ValidateAsync` (sessions end).
+- [x] (1.77.0) No visitors: `AnonymousGuests` post-configured off (no change to `CurrentAccess`); notes on the space's
+      guest switch and on the accounts page (a note above the list, not a mark per account).
+- [x] (1.77.0) Installation form: network radios hidden while Local is chosen (the port stays). `Network = true` not
+      refused: harmless, as the guard refuses other computers anyway.
+- [x] (1.77.0) `api/config` gives `mode`. The "nothing before the setup" rule needs no code: the guard checks after the
+      setup check, and nobody signs in before the setup.
+- [x] (1.77.0) Tests: `ServerModeTests`; test servers default to External (`TestLibrary.Settings`).
+- [x] (1.77.0) `CHANGELOG.md` and `docs/upgrading.md`: upgraded installs are Local, and the three ways to External.
 
 ### Phase 3 — External mode restrictions
 
@@ -113,8 +116,9 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
       `BrowserLauncher`.
 - [ ] Setup page and installation form show root and ffmpeg read-only in External mode.
 - [ ] Tests: refused saves, no waiver, no fast sign-in, spaces still limited to `AllowedRoots`.
-- [ ] [security](security.md): attack vectors (flipping the mode from the web, changing a path in External, reaching a
-      Local server from another computer).
+- [ ] [security](security.md): attack vectors for External (changing a path from the web). Local mode's are in
+      (1.77.0).
+- [ ] Local start tests (`LocalStartTests`) then need `settings.Remove(ServerModes.Key)`: test servers are External.
 
 ### Phase 4 — Docker image
 
@@ -140,8 +144,6 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 
 ## Open questions
 
-- Phase 2: what an already signed-in non-administrator sees: the login page with "Local mode: administrators only", or
-  a page of its own?
 - Phase 4: publish the image (registry, tags) or build only for now; a `docker` target in `build/build.sh`?
 - Phase 4: Node LTS version pinned in the image (Angular 22's requirement).
 

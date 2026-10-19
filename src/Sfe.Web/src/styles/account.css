@@ -61,7 +61,7 @@
 .installation-network, .installation-mode { display: flex; flex-direction: column; gap: 8px; }
 .installation-mode .check:has(input:disabled) { opacity: .6; }
 .installation-port { max-width: 160px; }
-.installation-locked { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+.installation-locked, .installation-local { display: flex; flex-direction: column; gap: 2px; margin: 0; }
 .installation-ffmpeg { display: flex; flex-direction: column; gap: 6px; }
 .installation-ffmpeg .system-ffmpeg { margin: 0; font-size: 13px; }
 .installation-ffmpeg-path { display: flex; gap: 8px; }

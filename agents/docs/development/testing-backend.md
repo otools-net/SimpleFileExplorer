@@ -9,6 +9,8 @@ Rules and infrastructure: [testing.md](testing.md). Search expectations: [search
   reclaim races `Activate`): "database is locked" from `SqliteConnection.Open()`, or a deadlocked pool.
   `SqliteOpenGate` (added by `SfeDatabase.Configure`) serialises EF's opens; open raw pooled `SqliteConnection`s in
   parallel only for a test of it (`ParallelContextsNeverShareAPooledConnection`).
+- HTTP test servers are **External** (`Sfe:Mode` in `TestLibrary.Settings`): their clients have no remote address, so
+  a Local server would refuse them. Local tests remove the key ([server-modes.md](../features/server-modes.md)).
 - A scan's `progress.Errors` is only logged: pass a `WarningLog` (`Infrastructure/`) to `CoreServices.CreateAsync` and
   use it as the assert message to see why.
 - ffmpeg tests (`TrickplayTests`, `SimilarVideoTests`) are inconclusive without `SFE_TEST_FFMPEG`/PATH. Tiny clips

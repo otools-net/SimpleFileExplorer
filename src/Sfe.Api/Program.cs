@@ -47,6 +47,8 @@ builder.Services.AddSfeAccess(builder.Configuration, builder.Environment.Content
 // Each library (tenant) has its own index, caches and workers (TenantRegistry); requests use their library's.
 builder.Services.AddSfeTenancy(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddSfeSecurity(builder.Configuration, builder.Environment.ContentRootPath);
+// A Local server (Sfe:Mode) has no visitors without an account.
+ServerModes.ApplyTo(builder.Services, builder.Configuration);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));

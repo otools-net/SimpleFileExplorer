@@ -72,16 +72,20 @@ import { IconComponent } from '../shared/icon.component';
             @if (view.urls.locked) {
                 <p class="installation-locked"><code>{{ view.urls.value }}</code><span class="field-hint">Set by {{ view.urls.lockedBy }}.</span></p>
             } @else {
-                <label class="check">
-                    <input type="radio" name="installation-network" [checked]="!network()" (change)="network.set(false)">
-                    <span>Only this computer<span class="field-hint">Open it at http://localhost:{{ port() }}.</span></span>
-                </label>
-                <label class="check">
-                    <input type="radio" name="installation-network" [checked]="network()" (change)="network.set(true)">
-                    <span>Also the other devices of my network
-                        <span class="field-hint">Phones, TVs and other computers at home open http://<em>this computer's name or address</em>:{{ port() }}. Everyone still signs in.</span>
-                    </span>
-                </label>
+                @if (view.mode && chosenMode() === 'local') {
+                    <p class="installation-local">Only this computer, as SFE is Local<span class="field-hint">Open it at http://localhost:{{ port() }}.</span></p>
+                } @else {
+                    <label class="check">
+                        <input type="radio" name="installation-network" [checked]="!network()" (change)="network.set(false)">
+                        <span>Only this computer<span class="field-hint">Open it at http://localhost:{{ port() }}.</span></span>
+                    </label>
+                    <label class="check">
+                        <input type="radio" name="installation-network" [checked]="network()" (change)="network.set(true)">
+                        <span>Also the other devices of my network
+                            <span class="field-hint">Phones, TVs and other computers at home open http://<em>this computer's name or address</em>:{{ port() }}. Everyone still signs in.</span>
+                        </span>
+                    </label>
+                }
                 <div class="field installation-port">
                     <label class="field-label" for="installation-port">Port</label>
                     <input id="installation-port" type="number" min="1" max="65535" [value]="port()" (input)="port.set(+valueOf($event))">

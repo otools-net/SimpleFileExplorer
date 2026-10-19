@@ -100,7 +100,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [setup](agents/docs/features/setup.md) | setup code (configured / generated), first administrator | `SetupService`, `GeneratedSetupCode`, `app/account/` |
 | [local-start](agents/docs/features/local-start.md) | browser at start, `--no-browser`, setup without code locally, fast sign-in | `BrowserLauncher`, `LocalVisitor`, `FastSignIn` |
 | [installation-page](agents/docs/features/installation-page.md) | root, Urls, ffmpeg from the web | `Maintenance/InstallationSettings` |
-| [server-modes](agents/docs/features/server-modes.md) | Local / External mode: `Sfe:Mode`, locks, switch rules | `ServerModes`, `InstallationSettings`, `installation-form.component.ts` |
+| [server-modes](agents/docs/features/server-modes.md) | Local / External mode: `Sfe:Mode`, locks, switch rules; Local limits (this computer, administrators, no visitors), `local-only` page | `ServerModes`, `InstallationSettings`, `RequestGuard`, `SfeSession`, `local-only-page.component.ts` |
 | [update-migration](agents/docs/features/update-migration.md) | version check and update page after an upgrade | `MigrationCoordinator`, `app/migration/` |
 | [backups](agents/docs/features/backups.md) | backup zip, download links | `BackupSources`, `Core/Backup/` |
 | [settings-new-key](agents/docs/features/settings-new-key.md) | adding a setting (options, schema, level, right) | `SfeOptions`, `EditableSettings`, `settings-schema.ts` |

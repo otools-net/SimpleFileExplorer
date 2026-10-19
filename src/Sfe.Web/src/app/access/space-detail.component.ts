@@ -202,7 +202,11 @@ export interface SpaceView {
                     </span>
                 </label>
                 @if (!anonymousAllowed()) {
-                    <p class="field-hint">The server's configuration forbids visitors without an account (Sfe:Security:AnonymousGuests).</p>
+                    @if (config.config()?.mode === 'local') {
+                        <p class="field-hint">SFE is in Local mode: only its administrators open it (Administration › System › Installation).</p>
+                    } @else {
+                        <p class="field-hint">The server's configuration forbids visitors without an account (Sfe:Security:AnonymousGuests).</p>
+                    }
                 }
             </section>
 

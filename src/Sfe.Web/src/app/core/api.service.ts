@@ -375,7 +375,8 @@ export class Api {
      * The response as a promise; aborting `signal` unsubscribes, which cancels the request. Unless `redirect` is
      * off, a request refused for want of a session (401) opens the sign-in page, one refused before the server is
      * set up (503 `setup-required`) the setup page. One refused while the install waits for its update (503
-     * `migration-required`) always opens the update page: no other page works then.
+     * `migration-required`) always opens the update page: no other page works then; one refused because a Local server
+     * answers its own computer only (403 `local-only`) always opens the page saying so.
      */
     private send<T>(request: Observable<T>, signal?: AbortSignal, redirect = true): Promise<T> {
         return new Promise<T>((resolve, reject) => {
@@ -394,7 +395,7 @@ export class Api {
                     } else if (error instanceof HttpErrorResponse && error.status === 409)
                         resolve(error.error as T);
                     else {
-                        if (error instanceof HttpErrorResponse && (redirect || type === 'migration-required'))
+                        if (error instanceof HttpErrorResponse && (redirect || type === 'migration-required' || type === 'local-only'))
                             this.redirect(error.status, type);
                         reject(toApiError(error));
                     }
@@ -408,11 +409,14 @@ export class Api {
     }
 
     private redirect(status: number, type: string | null): void {
-        if (status !== 401 && !(status === 503 && (type === 'setup-required' || type === 'migration-required')))
+        if (status !== 401 && !(status === 503 && (type === 'setup-required' || type === 'migration-required')) && !(status === 403 && type === 'local-only'))
             return;
         const router = this.injector.get(Router);
         const page = router.url.split('?')[0];
-        if (status === 503 && type === 'migration-required') {
+        if (status === 403 && type === 'local-only') {
+            if (page !== '/local-only' && page !== '/login')
+                void router.navigate(['/local-only']);
+        } else if (status === 503 && type === 'migration-required') {
             if (page !== '/migration')
                 void router.navigate(['/migration']);
         } else if (status === 503 && type === 'setup-required' && page !== '/setup')
@@ -445,7 +449,11 @@ function toApiError(error: unknown): ApiError {
     return new ApiError(error.status, message, body?.errors ?? null, problemType(error));
 }
 
-/** The request was refused for want of a session, of the setup or of the update: the Api has opened the sign-in, setup or update page. */
+/**
+ * The request was refused for want of a session, of the setup or of the update, or by a Local server to another
+ * computer: the Api has opened the sign-in, setup, update or Local mode page.
+ */
 export function redirected(error: unknown): boolean {
-    return error instanceof ApiError && (error.status === 401 || error.status === 503 && (error.type === 'setup-required' || error.type === 'migration-required'));
+    return error instanceof ApiError && (error.status === 401 || error.status === 503 && (error.type === 'setup-required' || error.type === 'migration-required')
+        || error.status === 403 && error.type === 'local-only');
 }

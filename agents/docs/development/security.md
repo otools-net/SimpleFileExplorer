@@ -63,6 +63,12 @@ input, LIKE escaped, no `innerHTML` in the client.
 - **Local only:** setup without code and `api/session/start` from another address, through a local proxy
   (`X-Forwarded-For`), with a foreign `Host` (DNS rebinding), after an account exists; a start link reused, late, or
   after a second server administrator.
+- **Local mode** ([server-modes.md](../features/server-modes.md)): any route but setup/session/installation/migration
+  from another computer (also via a local proxy or a foreign `Host`); a non-administrator signing in, or keeping a
+  session made before the switch or before losing the Administrators group; guest access with `AnonymousGuests` on in
+  the configuration; switching External → Local from the web. Known gaps: an external player's file link made before
+  the switch works until it expires (`LibraryEndpoints` checks its claims, not the session), and a file job started
+  before keeps running (`FileJobAccess`).
 - **Setup/installation/migration:** every route after setup with and without code and session; ffmpeg path to a
   non-ffmpeg program or a file of a library; root at `C:\` or `/` or around the data folder; old-code tokens; Recover left on.
 - **Authorization:** each route × anonymous/guest/user/space admin/server admin; `X-SFE-Tenant` and cookie mismatches;

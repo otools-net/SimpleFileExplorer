@@ -75,20 +75,26 @@ The settings of the [setup page](../first-start.md#the-setup-page)'s second step
 signed-in server administrator without the code can't use it, nor can anyone with the code alone.
 
 - **How SFE is used** (`Sfe:Mode`):
-  - **Local**: SFE on your own computer. Only that computer opens it, and only administrators sign in.
+  - **Local**: SFE on your own computer. Only that computer opens it (at `http://localhost:<port>`), only
+    administrators sign in (server administrators and members of a space's Administrators group), and no space is
+    open to visitors without an account. Other devices get a page saying so, where the server administrator can sign
+    in and switch to External with the setup code:
+
+    ![The page other devices get from a Local server](../images/local-only.png)
   - **External**: other people open SFE from their devices, over the network or the internet. The library folders and
     ffmpeg are then set in the server's configuration (environment variables or a settings file), not on this page.
 
   Local can only be chosen from a browser on the server itself (`http://localhost:<port>`). The page switches from Local
   to External, but never back: an External server returns to Local only in its configuration (`Sfe:Mode` in
   `data/installation.json`, or the environment). An install from before 1.76 has no mode chosen yet and counts as
-  Local. In 1.76 the mode is only recorded: the limits of each mode come in the next versions.
+  Local. The limits of External (the paths only in the configuration) come in a next version.
 - **Library folder**: the first space's folder (`Sfe:Root`), picked by clicking through the server's drives and folders.
   Saving starts the libraries again on it at once. Another folder makes the space show other files: the next scan
   treats the files of the old folder as gone (tagged ones are kept as [moved files](duplicates-and-moves.md) for a while,
   and found again if the new folder holds them). Other spaces keep their own folder.
 - **Who can open SFE**: **Only this computer** (`http://localhost:<port>`) or **Also the other devices of my network**
-  (`http://*:<port>`), and the port. It applies once SFE starts again (the page says so).
+  (`http://*:<port>`), and the port. It applies once SFE starts again (the page says so). A Local server only shows
+  the port: it answers this computer only.
 - **ffmpeg**: **Found** with its path and version, or **Not found**. Type its program or folder, or **Browse** to the
   folder it was unzipped to (its `bin` folder is found too); empty = look for `ffmpeg` on the `PATH`. Saving checks it
   and starts the libraries again with it. The program must be named `ffmpeg` (`ffmpeg.exe` on Windows) and be outside
