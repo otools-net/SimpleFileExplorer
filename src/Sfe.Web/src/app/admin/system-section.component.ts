@@ -1,17 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { CommandResult, SystemInfo } from '../core/models';
+import { SystemInfo } from '../core/models';
 import { Rights } from '../core/rights';
-import { ToastService } from '../core/toast.service';
 import { IconComponent } from '../shared/icon.component';
 import { InstallationSectionComponent } from './installation-section.component';
 
 /**
  * "System" on the administration page. About (`tab` = `about`): the server's version, the library's folder and ffmpeg
  * (`server.settings`) and the API reference. Installation (`installation`): the library folder, network and ffmpeg,
- * behind the setup code (`server.settings`). Maintenance (`maintenance`): backups (`server.backup`) and the server
- * commands when they are configured. (The videos the server converts are in Playback › Video streams.)
+ * behind the setup code (`server.settings`). Maintenance (`maintenance`): backups (`server.backup`). (The videos the
+ * server converts are in Playback › Video streams.)
  */
 @Component({
     selector: 'sfe-system-section',
@@ -37,25 +36,6 @@ import { InstallationSectionComponent } from './installation-section.component';
                     </div>
                 </section>
             }
-
-            <section class="settings-group">
-                <header class="settings-group-head">
-                    <h3>Server commands</h3>
-                    <p class="field-hint">Commands of the server's computer, set in its configuration file. Each asks first.</p>
-                </header>
-                @if (hasCommands()) {
-                    <div class="settings-action inline">
-                        @if (config()?.features?.dismount) {
-                            <button type="button" class="button small" title="Run the server command that dismounts the drives (asks first)" (click)="dismount()"><svg sfeIcon="eject"></svg>Dismount drives</button>
-                        }
-                        @if (config()?.features?.shutdown) {
-                            <button type="button" class="button small danger" title="Run the server command that shuts it down (asks first)" (click)="shutdown()"><svg sfeIcon="power"></svg>Shut down server</button>
-                        }
-                    </div>
-                } @else {
-                    <p class="muted">None configured.</p>
-                }
-            </section>
         } @else {
             <section class="settings-group">
                 <header class="settings-group-head"><h3>Server</h3></header>
@@ -99,7 +79,6 @@ import { InstallationSectionComponent } from './installation-section.component';
 })
 export class SystemSectionComponent {
     private readonly api = inject(Api);
-    private readonly toasts = inject(ToastService);
     private readonly configService = inject(ConfigService);
     protected readonly config = this.configService.config;
     protected readonly canBackup = computed(() => this.configService.can(Rights.backup));
@@ -111,32 +90,11 @@ export class SystemSectionComponent {
     protected readonly info = signal<SystemInfo | null>(null);
     protected readonly infoError = signal<string | null>(null);
 
-    protected readonly hasCommands = computed(() => Boolean(this.config()?.features.shutdown || this.config()?.features.dismount));
-
     constructor() {
         if (this.configService.can(Rights.serverSettings)) {
             this.api.systemInfo().then(
                 info => this.info.set(info),
                 (error: Error) => this.infoError.set(error.message));
-        }
-    }
-
-    protected shutdown(): void {
-        if (confirm('Shut down the server?'))
-            void this.runCommand(this.api.shutdown, 'Shutdown');
-    }
-
-    protected dismount(): void {
-        if (confirm('Dismount the drives?'))
-            void this.runCommand(this.api.dismount, 'Dismount');
-    }
-
-    private async runCommand(command: () => Promise<CommandResult>, label: string): Promise<void> {
-        try {
-            const result = await command();
-            this.toasts.show(result?.output ? `${label}: ${result.output}` : `${label} requested.`);
-        } catch (error) {
-            this.toasts.error(`${label} failed: ${(error as Error).message}`);
         }
     }
 }

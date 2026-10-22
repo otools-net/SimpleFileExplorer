@@ -28,6 +28,7 @@ public static class Rights
     public const string ManageTags = "tags.manage";
     public const string Scan = "index.scan";
     public const string RemoveFromIndex = "index.remove";
+    public const string ExcludeFolders = "index.exclude";
     public const string Duplicates = "tracking.duplicates";
     public const string RemoveDuplicates = "tracking.duplicatesRemove";
     public const string SimilarVideos = "tracking.similar";
@@ -48,6 +49,7 @@ public static class Rights
     public const string LogSettings = "settings.logs";
     public const string EditorSettings = "settings.editor";
     public const string FileSettings = "settings.files";
+    public const string KeepAliveSettings = "settings.keepAlive";
     public const string ManageMembers = "tenant.members";
     public const string OwnPreferences = "account.preferences";
     public const string OwnPassword = "account.password";
@@ -56,8 +58,6 @@ public static class Rights
     public const string ServerSettings = "server.settings";
     public const string ManageTenants = "server.tenants";
     public const string ManageUsers = "server.users";
-    public const string Shutdown = "server.shutdown";
-    public const string Dismount = "server.dismount";
     public const string Backup = "server.backup";
     public const string ViewStreams = "server.streams";
 }
@@ -149,6 +149,7 @@ public static class RightCatalog
         Tenant(Rights.ManageTags, false, Administrators, W, null, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),
         Tenant(Rights.Scan, false, Administrators, W, Readable, "Index", "Scan", "Start and stop scans of the space's library."),
         Tenant(Rights.RemoveFromIndex, false, Administrators, W, Readable, "Index", "Remove folders from the index", "Forget a folder's files and tags, and keep scans out of it."),
+        Tenant(Rights.ExcludeFolders, false, Administrators, W, Readable, "Index", "Exclude folders", "Keep folders out of scans, trickplay or thumbnails, for the whole space (what is already indexed or made stays).", since: 10),
         Tenant(Rights.Duplicates, false, Administrators, R, Readable, "Duplicates & moves", "See duplicates", "List identical files."),
         Tenant(Rights.RemoveDuplicates, false, Administrators, W, Writable, "Duplicates & moves", "Delete duplicates", "Delete a copy of a file from the disk (its tags go to the copy kept)."),
         Tenant(Rights.SimilarVideos, false, Administrators, R, Readable, "Duplicates & moves", "Similar videos", "Compare videos and list the similar ones."),
@@ -168,6 +169,7 @@ public static class RightCatalog
         Tenant(Rights.TaskSettings, false, Administrators, W, null, "Settings", "Background task settings", "How long task logs are kept."),
         Tenant(Rights.EditorSettings, false, Administrators, W, null, "Settings", "Picture editor settings", "Where edited pictures are saved, and their quality.", since: 1),
         Tenant(Rights.FileSettings, false, Administrators, W, null, "Settings", "File management settings", "Which names new files and folders may have, and where the work files go.", since: 5),
+        Tenant(Rights.KeepAliveSettings, false, Administrators, W, null, "Settings", "Keep alive settings", "Whether the library's folder is kept alive on its file server, how often, and what the last pings found.", since: 11),
         Tenant(Rights.LogSettings, false, Administrators, W, null, "Settings", "Log settings", "How long the logs are kept, and whether they are also written to files (both set for the whole server).", since: 4),
         Tenant(Rights.ManageMembers, false, Administrators, W, null, "Access", "Manage the space's accounts and groups", "Create accounts in the space, put them in its groups, choose what each group may do, open the space to visitors."),
         Tenant(Rights.OwnPreferences, false, Members, W, null, "Account", "Own preferences", "Keep one's own theme, page sizes and player preferences on the server."),
@@ -177,8 +179,6 @@ public static class RightCatalog
         Server(Rights.ServerSettings, W, "Server settings", "Settings of the whole server and the defaults of every space."),
         Server(Rights.ManageTenants, W, "Spaces", "Create, change and delete spaces, and manage the accounts and groups of every space."),
         Server(Rights.ManageUsers, W, "All accounts", "Create, change and delete every account, put it in any space, make server administrators."),
-        Server(Rights.Shutdown, W, "Shut down", "Shut the server's computer down (when the server allows it)."),
-        Server(Rights.Dismount, W, "Dismount", "Run the server's dismount command (when one is set)."),
         Server(Rights.ViewStreams, R, "Video streams", "See the videos the server converts while they play, in every space, and who watches them."),
         Server(Rights.Backup, R, "Back up", "Download a backup of the databases and configuration files (it holds password hashes and connection strings)."),
     ];

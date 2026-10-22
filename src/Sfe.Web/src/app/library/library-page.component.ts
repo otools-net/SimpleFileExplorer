@@ -25,6 +25,7 @@ import { ScopeTagsDialog } from '../tags/scope-tags.dialog';
 import { TagEditorDialog } from '../tags/tag-editor.dialog';
 import { TagManagerDialog } from '../tags/tag-manager.dialog';
 import { RemoveFromIndexDialog } from './scan/remove-from-index.dialog';
+import { FolderExclusionsDialog } from './scan/folder-exclusions.dialog';
 import { ListingComponent } from './items/listing.component';
 import { currentPosition } from './items/listing-position';
 import { focusedListItem, focusItem, listedItems, MOVE_KEYS, neighbour } from './items/listing-keys';
@@ -55,7 +56,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent, ItemMenuComponent],
+        RemoveFromIndexDialog, FolderExclusionsDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent, ItemMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -86,6 +87,7 @@ let created = false;
             <sfe-tag-editor />
             <sfe-tag-manager />
             <sfe-remove-from-index />
+            <sfe-folder-exclusions />
             <sfe-name-dialog />
             <sfe-delete-dialog />
             <sfe-transfer-dialog />

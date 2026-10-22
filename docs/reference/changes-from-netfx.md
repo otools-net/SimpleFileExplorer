@@ -16,7 +16,7 @@ web client. The old app's database and thumbnail cache are not reused: scan the 
   - Hidden and system files (`Thumbs.db`, `desktop.ini`) are skipped unless `ShowHiddenItems` is set.
   - New thumbnails are scaled to `Thumbnails:Width`; old full-size ones are still served. Browsers don't cache images,
     so a replaced photo shows up right away.
-  - Scans only accept paths inside the root; shutdown and dismount are opt-in and use POST.
+  - Scans only accept paths inside the root; shutdown and dismount are opt-in and use POST (both removed in 1.80).
   - Search results are ordered by full path (folder by folder, then by name) by default and can be sorted like a
     folder; either way they page quickly in a library of millions of files.
   - Tagging a file that isn't indexed yet indexes only that file, not the whole folder.

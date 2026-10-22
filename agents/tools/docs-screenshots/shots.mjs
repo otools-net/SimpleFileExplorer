@@ -126,6 +126,22 @@ const scenes = {
         await b.shot(OUT + 'main-menu.png');
         await b.close();
     },
+    /**
+     * The keep alive indicator of the ⋮ menu: keep alive turned on with a more folder that doesn't exist, so that its
+     * ping fails (the yellow !); then turned off again for the other scenes.
+     */
+    async keepAliveMenu() {
+        const b = await session();
+        const settings = values => `fetch('api/settings?level=tenant', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ values: ${JSON.stringify(values)} }) }).then(r => r.status)`;
+        await b.open('?path=Photos');
+        await b.eval(settings({ 'keepAlive.mode': 'always', 'keepAlive.folders': ['Gone'] }));
+        await sleep(2000);
+        await b.open('?path=Photos', 3000);
+        await b.clickTitle('Scan this folder, administration');
+        await b.shot(OUT + 'main-menu-keep-alive.png', { x: 960, y: 0, width: 320, height: 200 });
+        await b.eval(settings({ 'keepAlive.mode': 'off', 'keepAlive.folders': [] }));
+        await b.close();
+    },
     async viewer() {
         const b = await session();
         await b.open('?path=Photos%2F2025%20Mountains');
@@ -400,6 +416,26 @@ const scenes = {
         await b.shot(OUT + 'remove-from-index.png');
         await b.close();
     },
+    /** Folders kept out of scans and previews: the chips in the listing, then the dialog; put back after. */
+    async exclusions() {
+        const b = await session();
+        await b.goto(BASE, 1500);
+        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Inbox', scan: true }));
+        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Music', trickplay: true, thumbnails: true }));
+        await b.open('');
+        await b.shot(OUT + 'excluded-folders.png');
+        await b.open('?path=Inbox');
+        await b.clickTitle('Kept out of scans');
+        await sleep(800);
+        await b.shot(OUT + 'folder-exclusions.png');
+        const page = await session({ height: 900 });
+        await page.open(admin('scanning', 'exclusions'), 3000);
+        await page.shot(OUT + 'admin-scanning-exclusions.png');
+        await page.close();
+        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Inbox', scan: false }));
+        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Music', trickplay: false, thumbnails: false }));
+        await b.close();
+    },
     async history() {
         const b = await session();
         await b.eval(`localStorage.setItem('sfe.searchHistory', JSON.stringify(['t:beach -t:sea', 'd:>5s e:webm', 'sunset', 'r:hr', '*2024 lighthouse'])); 1`);
@@ -654,7 +690,7 @@ const scenes = {
             ['interface', 'appearance'], ['interface', 'browsing'], ['interface', 'search'], ['playback', 'player'], ['playback', 'streaming'],
             ['scanning', 'skipped'], ['scanning', 'fileTypes'], ['scanning', 'indexing'],
             ['tags', 'list'], ['tags', 'settings'],
-            ['tracking', 'duplicates'], ['tracking', 'similar'], ['tracking', 'missing'], ['tracking', 'settings'],
+            ['tracking', 'duplicates'], ['tracking', 'similar'], ['tracking', 'missing'], ['tracking', 'settings'], ['keepAlive', 'settings'],
             ['thumbnails'], ['trickplay', 'activity'], ['trickplay', 'settings'], ['editor'],
             ['access', 'spaces'], ['access', 'accounts'],
             ['tasks', 'tasks'], ['tasks', 'settings'],
@@ -665,6 +701,11 @@ const scenes = {
             await mask(b);
             await b.shot(OUT + `admin-${section}${page ? '-' + page : ''}.png`);
         }
+        // Keep alive's status after a ping (the sample library is local: "Not on a network share").
+        await b.open(admin('keepAlive', 'status'), 3000);
+        await b.clickTitle('Ping the library folder now');
+        await sleep(1000);
+        await b.shot(OUT + 'admin-keepAlive-status.png');
         // The overview of the sections, which /admin opens on.
         await b.open('admin', 3000);
         await b.shot(OUT + 'admin-overview.png');

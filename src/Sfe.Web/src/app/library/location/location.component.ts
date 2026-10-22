@@ -8,6 +8,7 @@ import { Rights } from '../../core/rights';
 import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
 import { defaultSort, SEARCH_SORTS } from '../library-route';
+import { exclusionChip, exclusionTitle } from '../items/exclusions';
 import { ListingStore } from '../listing.store';
 import { SearchBoxState, SearchExplainComponent } from '../search-explain/search-explain.component';
 import { PinButtonComponent } from '../quick-links/pin-button.component';
@@ -97,7 +98,14 @@ const SORT_OPTIONS: [SortField, string][] = [
             <sfe-search-explain id="search-explain" />
         }
         <div class="location-bar">
-            <p class="summary">{{ summary() }}</p>
+            <p class="summary">{{ summary() }}@if (exclusion(); as exclusion) {
+                    @if (canExclude()) {
+                        <button type="button" class="exclusion-chip" [title]="exclusionTitle() + ' Click to change it.'" (click)="openExclusions()">{{ exclusion }}</button>
+                    } @else {
+                        <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
+                    }
+                }
+            </p>
             <div class="sort">
                 <label for="sort-select" class="visually-hidden">Sort by</label>
                 <select id="sort-select" (change)="changeSort($event)">
@@ -136,6 +144,21 @@ export class LocationComponent {
         !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFolders));
     protected readonly canCreateFile = computed(() =>
         !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFiles));
+    /** What the folder browsed is kept out of (scans, trickplay, thumbnails): a small note for everyone. */
+    private readonly exclusions = computed(() => {
+        const page = this.store.listing();
+        return page && !this.store.searching() && 'exclusions' in page ? page.exclusions ?? null : null;
+    });
+    protected readonly exclusion = computed(() => exclusionChip(this.exclusions()));
+    protected readonly exclusionTitle = computed(() => exclusionTitle(this.exclusions(), this.store.listing()?.path ?? ''));
+    protected readonly canExclude = computed(() => this.store.can(Rights.excludeFolders) && Boolean(this.dialogs.folderExclusions()));
+
+    protected openExclusions(): void {
+        const page = this.store.listing();
+        if (page)
+            this.dialogs.folderExclusions()?.open(page.path, this.exclusions());
+    }
+
     protected readonly sortOptions = SORT_OPTIONS;
     protected readonly searchSorts = SEARCH_SORTS;
     private readonly head = viewChild.required<ElementRef<HTMLElement>>('head');

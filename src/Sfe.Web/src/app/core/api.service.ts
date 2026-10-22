@@ -3,8 +3,8 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, ArchiveLink, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
-    FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
+    AccessGain, ArchiveLink, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, KeepAliveView, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    ExcludedFolder, ExclusionKind, FolderAccessReport, FolderCover, FolderExclusions, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
@@ -83,6 +83,12 @@ export class Api {
     /** Removes a folder from the index (not from the disk); `exclude` also keeps future scans out of it. Resolves with the scan status (409) while a scan runs. */
     removeFromIndex = (path: string, exclude: boolean) =>
         this.delete<RemovedFromIndex | ScanStatus>(`api/index/folder?${params({ path, exclude }).toString()}`);
+
+    /** Every folder kept out of scans, trickplay or thumbnails in the space (those the session sees). */
+    folderExclusions = () => this.get<ExcludedFolder[]>('api/index/exclusions');
+    /** Keeps a folder out of scans, trickplay or thumbnails (true) or lets it in again (false); absent kinds stay as they are. */
+    setFolderExclusions = (path: string, changes: Partial<Record<ExclusionKind, boolean>>) =>
+        this.put<FolderExclusions>('api/index/exclusions', { path, ...changes });
 
     /** The background tasks, their schedules and the server's clock. */
     tasks = () => this.get<TaskOverview>('api/tasks');
@@ -176,8 +182,11 @@ export class Api {
 
     /** Where the library is on the server's disk, and the ffmpeg found. */
     systemInfo = () => this.get<SystemInfo>('api/system/info');
-    shutdown = () => this.post<CommandResult>('api/system/shutdown');
-    dismount = () => this.post<CommandResult>('api/system/dismount');
+
+    /** Whether the space's library folder is kept alive on its file server, and what the last pings found. */
+    keepAlive = () => this.get<KeepAliveView>('api/keep-alive');
+    /** Pings the space's folders now (also while keep alive is off). */
+    pingKeepAlive = () => this.post<KeepAliveView>('api/keep-alive/ping');
 
     /** Who is signed in; works before signing in and before the setup (never redirects). */
     session = () => this.get<SessionInfo>('api/session', {}, undefined, false);

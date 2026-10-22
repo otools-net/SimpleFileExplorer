@@ -38,6 +38,7 @@ public sealed class EditableSettings
     public LogSettings Logs { get; set; } = new();
     public EditorSettings Editor { get; set; } = new();
     public FileSettings Files { get; set; } = new();
+    public KeepAliveSettings KeepAlive { get; set; } = new();
 
     public static EditableSettings From(SfeOptions options) => new()
     {
@@ -88,6 +89,7 @@ public sealed class EditableSettings
             LargeImageKilobytes = options.Thumbnails.LargeImageKilobytes,
             SingleViewOriginals = options.Thumbnails.SingleViewOriginals,
             AnimatedHover = options.Thumbnails.AnimatedHover,
+            ExcludedFolders = [.. options.Thumbnails.ExcludedFolders],
             MaxConcurrency = options.Thumbnails.MaxConcurrency,
             TimeoutSeconds = options.Thumbnails.TimeoutSeconds,
         },
@@ -95,6 +97,7 @@ public sealed class EditableSettings
         {
             Enabled = options.Trickplay.Enabled,
             Folders = [.. options.Trickplay.Folders],
+            ExcludedFolders = [.. options.Trickplay.ExcludedFolders],
             IntervalSeconds = options.Trickplay.IntervalSeconds,
             Width = options.Trickplay.Width,
             Columns = options.Trickplay.Columns,
@@ -153,6 +156,14 @@ public sealed class EditableSettings
             Uploads = new() { MaxFileSizeMegabytes = options.Files.Uploads.MaxFileSizeMegabytes, KeepUnfinishedHours = options.Files.Uploads.KeepUnfinishedHours },
             MaxArchiveMegabytes = options.Files.MaxArchiveMegabytes,
         },
+        KeepAlive = new()
+        {
+            Mode = options.KeepAlive.Mode,
+            IntervalSeconds = options.KeepAlive.IntervalSeconds,
+            TimeoutSeconds = options.KeepAlive.TimeoutSeconds,
+            Folders = [.. options.KeepAlive.Folders],
+            Method = options.KeepAlive.Method,
+        },
     };
 
     public void ApplyTo(SfeOptions options)
@@ -190,10 +201,12 @@ public sealed class EditableSettings
         options.Thumbnails.LargeImageKilobytes = Thumbnails.LargeImageKilobytes;
         options.Thumbnails.SingleViewOriginals = Thumbnails.SingleViewOriginals;
         options.Thumbnails.AnimatedHover = Thumbnails.AnimatedHover;
+        options.Thumbnails.ExcludedFolders = [.. Thumbnails.ExcludedFolders];
         options.Thumbnails.MaxConcurrency = Thumbnails.MaxConcurrency;
         options.Thumbnails.TimeoutSeconds = Thumbnails.TimeoutSeconds;
         options.Trickplay.Enabled = Trickplay.Enabled;
         options.Trickplay.Folders = [.. Trickplay.Folders];
+        options.Trickplay.ExcludedFolders = [.. Trickplay.ExcludedFolders];
         options.Trickplay.IntervalSeconds = Trickplay.IntervalSeconds;
         options.Trickplay.Width = Trickplay.Width;
         options.Trickplay.Columns = Trickplay.Columns;
@@ -237,6 +250,11 @@ public sealed class EditableSettings
         options.Files.Uploads.MaxFileSizeMegabytes = Files.Uploads.MaxFileSizeMegabytes;
         options.Files.Uploads.KeepUnfinishedHours = Files.Uploads.KeepUnfinishedHours;
         options.Files.MaxArchiveMegabytes = Files.MaxArchiveMegabytes;
+        options.KeepAlive.Mode = KeepAlive.Mode;
+        options.KeepAlive.IntervalSeconds = KeepAlive.IntervalSeconds;
+        options.KeepAlive.TimeoutSeconds = KeepAlive.TimeoutSeconds;
+        options.KeepAlive.Folders = [.. KeepAlive.Folders];
+        options.KeepAlive.Method = KeepAlive.Method;
     }
 }
 
@@ -291,6 +309,9 @@ public sealed class ThumbnailSettings
     public int LargeImageKilobytes { get; set; }
     public bool SingleViewOriginals { get; set; }
     public bool AnimatedHover { get; set; }
+
+    /// <summary>Library folders, relative to the root and separated by <c>/</c>.</summary>
+    public List<string> ExcludedFolders { get; set; } = [];
     public int MaxConcurrency { get; set; }
     public int TimeoutSeconds { get; set; }
 }
@@ -301,6 +322,9 @@ public sealed class TrickplaySettings
 
     /// <summary>Library folders, relative to the root and separated by <c>/</c>.</summary>
     public List<string> Folders { get; set; } = [];
+
+    /// <summary>Library folders, relative to the root and separated by <c>/</c>.</summary>
+    public List<string> ExcludedFolders { get; set; } = [];
     public int IntervalSeconds { get; set; }
     public int Width { get; set; }
     public int Columns { get; set; }
@@ -412,4 +436,15 @@ public sealed class UploadSettings
 public sealed class TrashSettings
 {
     public int RetentionDays { get; set; }
+}
+
+public sealed class KeepAliveSettings
+{
+    public KeepAliveMode Mode { get; set; }
+    public int IntervalSeconds { get; set; }
+    public int TimeoutSeconds { get; set; }
+
+    /// <summary>Library folders, relative to the root and separated by <c>/</c>.</summary>
+    public List<string> Folders { get; set; } = [];
+    public KeepAliveMethod Method { get; set; }
 }

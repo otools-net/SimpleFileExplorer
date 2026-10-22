@@ -30,6 +30,7 @@ public sealed class TrickplayTests
             s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG") is { Length: > 0 } path ? path : "ffmpeg";
             s["Sfe:Trickplay:Enabled"] = "true";
             s["Sfe:Trickplay:Folders:0"] = "Media";
+            s["Sfe:Trickplay:ExcludedFolders:0"] = "Media/Skipped";
             s["Sfe:Trickplay:IntervalSeconds"] = "1";
             s["Sfe:Trickplay:Width"] = "64";
             s["Sfe:Trickplay:Columns"] = "3";
@@ -92,6 +93,23 @@ public sealed class TrickplayTests
         Assert.IsTrue(activity.Recent.Single(r => r.Path == "Media/clip.mp4").Succeeded);
         Assert.IsTrue(activity.Recent.Where(r => !r.Succeeded).All(r => !string.IsNullOrEmpty(r.Error)));
         Assert.IsEmpty(Trickplay.GetStates(["Media/clip.mp4", "Media/Episode 2.mkv"]));
+    }
+
+    [TestMethod]
+    public async Task ExcludedFoldersGetNoTrickplay()
+    {
+        await RenderVideoAsync("Media/clip.mp4", seconds: 2);
+        await RenderVideoAsync("Media/Skipped/Deeper/skipped.mp4", seconds: 2);
+
+        _worker = Trickplay.RunAsync(_stop.Token);
+        await WaitAsync(s => s.LastPassFinished is not null);
+
+        Assert.IsNotNull(Trickplay.Get("Media/clip.mp4"));
+        // Neither by the pass nor when the player asks for it.
+        Assert.IsNull(Trickplay.Get("Media/Skipped/Deeper/skipped.mp4"));
+        Assert.AreEqual(0, Trickplay.Status.Queued);
+        Assert.IsFalse(Directory.Exists(Trickplay.GetCacheFolder(_library.FullPath("Media/Skipped/Deeper/skipped.mp4"))));
+        Assert.IsFalse(Trickplay.GetActivity(10).Recent.Any(r => r.Path.StartsWith("Media/Skipped", StringComparison.Ordinal)));
     }
 
     [TestMethod]

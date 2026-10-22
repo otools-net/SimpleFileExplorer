@@ -251,6 +251,12 @@ public sealed class MigrationTests
 
             Intro text.
 
+            ## Unreleased
+
+            ### Added
+
+            - Not in a version yet (the edge branch).
+
             ## 1.2.0
 
             ### Added

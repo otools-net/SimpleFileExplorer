@@ -11,10 +11,23 @@ audio, and what scans read from them. Right: `settings.scanning`.
 |---|---|
 | **Ignored folders** | Folder names skipped wherever they are, one per line (e.g. `$RECYCLE.BIN`) (`Sfe:Scan:IgnoredDirectories`) |
 | **Ignored files** | File names skipped, one per line (e.g. `Thumbs.db`) (`Sfe:Scan:IgnoredFiles`) |
-| **Excluded folders** | Folders of this space, as paths from the library root (e.g. `Downloads`, `Movies/Old`), left out of scans (`Sfe:Scan:ExcludedFolders`). **Remove from index…** with **Skip this folder in future scans** adds to it. A folder added by hand is removed from the index by the next scan of its parent |
+| **Excluded folders** | Folders of this space, as paths from the library root (e.g. `Downloads`, `Movies/Old`), left out of scans with their sub-folders (`Sfe:Scan:ExcludedFolders`). What the index already has of them stays as it is, never refreshed. **Scans and previews…** in a folder's menu adds and removes them ([Excluded folders](../user-guide/scanning.md#excluded-folders)); **Remove from index…** with **Skip this folder in future scans** forgets a folder and adds it |
 | **Show hidden files and folders** | Off by default: hidden and system files (`Thumbs.db`, `desktop.ini`) are neither listed nor indexed. On Linux, hidden means a name starting with `.` (`Sfe:ShowHiddenItems`) |
 
 Excluded folders are a setting of each space only.
+
+## Excluded folders
+
+![Scanning › Excluded folders](../images/admin-scanning-exclusions.png)
+
+Every folder kept out of scans, trickplay or thumbnails in the space, in one table (right `index.exclude`): the same
+lists as **Scans and previews…** in a folder's menu ([Excluded folders](../user-guide/scanning.md#excluded-folders))
+and the **Excluded folders** settings of Scanning, [Thumbnails](thumbnails.md) and [Trickplay](trickplay.md#settings).
+
+- A box per list, saved as soon as it is ticked or cleared; **Remove** takes the folder off every list.
+- **Add folder…** picks a folder of the library by clicking through it, then what to keep it out of.
+- A folder renamed or deleted outside SFE shows **folder not found**: it can only be removed.
+- Folders hidden from you by [folder access](spaces-and-accounts.md#folder-access) are not listed.
 
 ## File types
 

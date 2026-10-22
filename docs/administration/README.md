@@ -71,7 +71,7 @@ used ones. The **✕** in the box, or **Esc**, empties it and brings the section
   or not your section.
 
 Some settings are never on this page, because they decide which programs run or where data lives: the library root,
-the thumbnail cache folder, the database, the ffmpeg path, shutdown/dismount, and everything about the setup and
+the thumbnail cache folder, the database, the ffmpeg path, and everything about the setup and
 sign-in. Set them in the [configuration](../configuration.md).
 
 ## On a phone

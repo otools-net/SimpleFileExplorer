@@ -100,3 +100,17 @@
 /* Which level the settings pages edit (server administrators): the library's or the server's. */
 .settings-level { padding: 0; margin: 0 0 12px; }
 .settings-level .settings-tab { padding-inline: 14px; }
+
+/* Keep alive › Status: the folders kept alive and their last ping. */
+.keep-alive-status { display: flex; flex-direction: column; gap: 14px; }
+.keep-alive-status .settings-status-text { white-space: normal; }
+.keep-alive-list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.keep-alive-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; padding: 6px 2px; border-bottom: 1px solid var(--border); }
+.keep-alive-row:last-child { border-bottom: 0; }
+.keep-alive-row > .icon { flex: none; width: 16px; height: 16px; color: #4caf7d; stroke-width: 2.4; }
+.keep-alive-row.failed > .icon { color: var(--danger); }
+.keep-alive-folder { display: flex; flex: 1 1 220px; flex-direction: column; min-width: 0; }
+.keep-alive-name { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.keep-alive-network { color: var(--text-muted); font-size: 12px; }
+.keep-alive-error { color: var(--danger); font-size: 12px; overflow-wrap: anywhere; }
+.keep-alive-detail { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }

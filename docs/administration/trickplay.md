@@ -32,6 +32,7 @@ clock, one being processed a spinner.
 |---|---|---|
 | **Create trickplay** (`Enabled`) | off | Turns on the background job. The first pass over a large library keeps ffmpeg busy for a long time; the following ones only handle new and changed videos |
 | **Folders** (`Folders`) | empty | Library folders whose videos get trickplay, with their sub-folders, one per line; empty = the whole library. Folders skipped by scans and hidden items are skipped too. A setting of each space only |
+| **Excluded folders** (`ExcludedFolders`) | empty | Folders whose videos get no trickplay, with their sub-folders, even inside **Folders**; those already made are still shown. **Scans and previews…** in a folder's menu adds and removes them ([Excluded folders](../user-guide/scanning.md#excluded-folders)). A setting of each space only |
 | **Look for new videos every (hours)** (`RecheckHours`) | 6 | Periodic pass; 0 = never (all settings view) |
 
 The job goes over the folders at start-up, when the trickplay settings change, every `RecheckHours` and on **Look for

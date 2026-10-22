@@ -12,7 +12,7 @@ Code: `src/Sfe.Core/Files/PathMoves.cs`, `DirectoryIndexer.ForgetAsync`/`FolderI
   `to + FullName.Substring(from.Length, 32767)` (the two-argument `Substring`: SQL Server's `LEN` drops trailing
   spaces), the folder row's `Name`/`ParentId`; a file's `Name` (stem), `Extension`, `DirectoryId` (folder row made
   when missing, else the file row is dropped). Ids stay, so tags, fingerprints and resolutions stay.
-- Folders only: `Scan:ExcludedFolders`, `Trickplay:Folders`, `Editor:OutputFolder` at or below the folder (saved as
+- Folders only: `Scan:ExcludedFolders`, `Trickplay:Folders`, `Trickplay:ExcludedFolders`, `Thumbnails:ExcludedFolders`, `Editor:OutputFolder` at or below the folder (saved as
   library rows, or in the server store without levels), `TaskSchedules.Path`. Quick links of every user (needs
   `QuickLinkService`, handed to each library by `TenantHost`; null in Core tests).
 - Caches: a file's thumbnail and trickplay folder (with its fingerprint) at once; a folder's in the background

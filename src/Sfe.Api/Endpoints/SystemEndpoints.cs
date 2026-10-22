@@ -3,12 +3,9 @@ using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Paths;
-using Sfe.Core.SystemCommands;
 using Sfe.Core.Thumbnails;
 
 namespace Sfe.Api.Endpoints;
-
-public sealed record CommandResult(string Output);
 
 /// <param name="Configured">The executable as set in <c>Thumbnails:FfmpegPath</c> (a path, or a name looked up on PATH).</param>
 /// <param name="Path">Where it was found; null when it wasn't (thumbnails of videos, trickplay and streaming are off).</param>
@@ -30,18 +27,6 @@ public static class SystemEndpoints
             .RequireRight(Rights.ServerSettings)
             .WithName("GetSystemInfo")
             .WithSummary("Where the library browsed is on the server's disk, and the ffmpeg executable found.");
-
-        system.MapPost("/shutdown", async Task<Results<Ok<CommandResult>, NotFound>> (SystemCommandService commands, CancellationToken cancellationToken) =>
-                commands.CanShutdown ? TypedResults.Ok(new CommandResult(await commands.ShutdownAsync(cancellationToken))) : TypedResults.NotFound())
-            .RequireRight(Rights.Shutdown)
-            .WithName("Shutdown")
-            .WithSummary("Shuts the host down (when enabled in settings).");
-
-        system.MapPost("/dismount", async Task<Results<Ok<CommandResult>, NotFound>> (SystemCommandService commands, CancellationToken cancellationToken) =>
-                commands.CanDismount ? TypedResults.Ok(new CommandResult(await commands.DismountAsync(cancellationToken))) : TypedResults.NotFound())
-            .RequireRight(Rights.Dismount)
-            .WithName("Dismount")
-            .WithSummary("Runs the configured dismount command (when enabled in settings).");
 
         system.MapGet("/backup", async (BackupSources backups, MigrationCoordinator migration, CancellationToken cancellationToken) =>
                 MigrationEndpoints.BackupFile(await backups.WriteAsync(migration.DatabaseVersion, cancellationToken)))

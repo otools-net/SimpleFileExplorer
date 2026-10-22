@@ -79,6 +79,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         description: 'What scans leave out, which files are photos, videos and audio, and what scans read from them.',
         subpages: [
             settingsPage('skipped', 'The folders and files scans leave out, and hidden items.', 'What to scan', 'skipped'),
+            page('exclusions', 'Excluded folders', 'The folders kept out of scans, trickplay or thumbnails: add, change and remove them.', Rights.excludeFolders),
             settingsPage('fileTypes', 'Which extensions are photos, videos and audio.', 'File types', 'types'),
             settingsPage('indexing', 'What scans read from files (fingerprints, resolutions, durations), and how many folders at once.', 'Indexing', 'indexing'),
         ],
@@ -93,6 +94,17 @@ export const ADMIN_SECTIONS: AdminSection[] = [
             page('trash', 'Trash', 'What was deleted to the trash: restore it, or delete it for good.', Rights.deleteFiles, Rights.deletePermanently),
             page('uploads', 'Uploads', 'Uploads not finished yet, by everyone: how far they got, and cancelling them.', Rights.fileSettings),
             settingsPage('files', 'How deleting works, how long the trash keeps things, limits of copies, uploads and zips, names, and where SFE keeps its work files.'),
+        ],
+    },
+    {
+        id: 'keepAlive',
+        group: 'Library',
+        title: 'Keep alive',
+        icon: 'refresh',
+        description: 'Keeping the library folder\'s connection to its file server from being dropped while nobody uses it.',
+        subpages: [
+            page('status', 'Status', 'Whether the library folder is on a network share, and what the last pings found; ping it now.', Rights.keepAliveSettings),
+            settingsPage('keepAlive', 'Whether the library folder is kept alive, how often, and the time limit of a ping.'),
         ],
     },
     {
@@ -186,13 +198,12 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         group: 'Server',
         title: 'System',
         icon: 'power',
-        description: 'The server\'s version, library folder and ffmpeg, what it does at start, its API, backups and the server commands.',
+        description: 'The server\'s version, library folder and ffmpeg, what it does at start, its API and backups.',
         subpages: [
             page('about', 'About', 'The server\'s version, its library folder, the ffmpeg it found, and its API reference.', Rights.serverSettings, Rights.apiDocs),
             page('installation', 'Installation', 'The first space\'s library folder, who can open SFE, and ffmpeg, behind the setup code.', Rights.serverSettings),
             settingsPage('startup', 'What SFE does when it starts on this computer.', 'Start-up', 'startup'),
-            page('maintenance', 'Maintenance', 'A backup of the databases and configuration files, and the commands of the server\'s computer.',
-                Rights.backup, Rights.shutdown, Rights.dismount),
+            page('maintenance', 'Maintenance', 'A backup of the databases and configuration files.', Rights.backup),
         ],
     },
 ];

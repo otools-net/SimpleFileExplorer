@@ -26,8 +26,9 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 - **Production:** a change to the database, stored files, caches or settings ships with its tested migration path
   ([production-upgrades](agents/docs/development/production-upgrades.md)); both DB providers must work
   ([database](agents/docs/development/database.md)).
-- **Version + changelog** once per commit: patch for a fix, minor for a feature, a `CHANGELOG.md` section with it;
-  none for docs/tests/build only ([versioning-and-changelog](agents/docs/development/versioning-and-changelog.md)).
+- **Version + changelog:** each commit on `edge` adds its lines under `## Unreleased` in `CHANGELOG.md`; the version
+  is bumped only when `edge` is merged into `main` (patch for fixes only, minor for a feature); none for
+  docs/tests/build only ([versioning-and-changelog](agents/docs/development/versioning-and-changelog.md)).
 - **Tests** come with every feature and fix; not done until `dotnet test` and `npm test` pass
   ([testing](agents/docs/development/testing.md)).
 - **User docs:** user-visible changes go in `docs/` with screenshots ([user-docs](agents/docs/development/user-docs.md)).
@@ -35,7 +36,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 - **Scale:** millions of files; nothing proportional to a folder or the index per request
   ([scale](agents/docs/development/scale.md)).
 - **Fully local:** no external URL in the client ([fully-local](agents/docs/development/fully-local.md)).
-- **Git:** work is committed on `master` (PR branch `main`), messages `claude: <short summary>`; commit only when asked.
+- **Git:** work is committed on the `edge` branch, merged into `main` when ready; messages `claude: <short summary>`;
+  commit only when asked ([versioning-and-changelog](agents/docs/development/versioning-and-changelog.md)).
 - **Agent tools:** put any reusable helper (scripts, drivers, generators) in `agents/tools/<job>/` with a `README.md`,
   never only in the scratchpad; work output goes to a temp folder, not the repo.
 
@@ -72,6 +74,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [file-viewers-plan](agents/docs/development/file-viewers-plan.md) | **viewing and editing files epic: formats registry, phases, todo lists** (update as it is built) | `app/formats/`, `Core/Files/FileContent` |
 | [server-modes-plan](agents/docs/development/server-modes-plan.md) | **server modes epic: Local / External, Docker image; phases, todo list, open questions** (update as it is built) | `ServerModes`, `Dockerfile` (planned) |
 | [docker-publishing-plan](agents/docs/development/docker-publishing-plan.md) | **publishing the image on ghcr.io: GitHub Actions workflow, settings, release steps** (update as it is built) | `.github/workflows/` (planned) |
+| [keep-alive-plan](agents/docs/development/keep-alive-plan.md) | **keep alive epic: pinging network folders so file servers don't drop idle sessions; design, phases, open questions** (update as it is built) | `Core/KeepAlive/`, `KeepAliveEndpoints` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
@@ -126,6 +129,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [indexing](agents/docs/features/indexing.md) | scans, removing folders from the index | `Core/Indexing/` |
 | [resolution](agents/docs/features/resolution.md) | width/height, HR/LR marks, `w:`/`h:`/`r:` | `MediaDimensions`, `Core/Search/` |
 | [duration](agents/docs/features/duration.md) | durations, badges, `d:` | `MediaDimensions`, `DirectoryIndexer` |
+| [folder-exclusions](agents/docs/features/folder-exclusions.md) | folders kept out of scans (index frozen), trickplay, thumbnails: lists, right `index.exclude`, chip, dialog | `FolderExclusions`, `ScanEndpoints`, `folder-exclusions.dialog.ts` |
 | [not-indexed-marks](agents/docs/features/not-indexed-marks.md) | fading files not in the index | `AttachIndexDataAsync`, `styles/items.css` |
 | [thumbnails](agents/docs/features/thumbnails.md) | thumbnail cache, previews, caching headers | `Core/Thumbnails/`, `PreviewsService` |
 | [trickplay](agents/docs/features/trickplay.md) | timeline sheets, passes | `Core/Trickplay/`, `TrickplayWorker` |
@@ -159,6 +163,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [work-folder](agents/docs/features/work-folder.md) | `.sfe` at the root or the server's data folder; the reserved name | `WorkFolder`, `LibraryPaths.TryResolve` |
 | [selection-and-keys](agents/docs/features/selection-and-keys.md) | selecting files and folders, the selection bar, arrow keys | `ListingStore`, `listing-keys.ts` |
 | [path-moves](agents/docs/features/path-moves.md) | index rows, settings, schedules, quick links, caches following a rename | `PathMoves` |
+| [keep-alive](agents/docs/features/keep-alive.md) | network library folders pinged so file servers keep the session: modes, detection, timeouts, logs, status page, Ping now | `Core/KeepAlive/`, `KeepAliveWorker`, `KeepAliveEndpoints`, `keep-alive-status.component.ts` |
 | [background-tasks](agents/docs/features/background-tasks.md) | jobs, run history, run logs | `Core/Tasks/`, `app/tasks/` |
 | [schedules](agents/docs/features/schedules.md) | task schedules | `TaskScheduleService`, `ScheduleCalculator` |
 | [logs](agents/docs/features/logs.md) | server log: capture, files, search, rights | `Core/Logs/`, `AuditLogWorker`, `app/logs/` |

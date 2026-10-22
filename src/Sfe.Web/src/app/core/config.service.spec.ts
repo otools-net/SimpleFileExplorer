@@ -117,7 +117,7 @@ describe('ConfigService', () => {
         expect(config.isLargeImage(item('a.jpg', { size: null }))).toBe(false);
         expect(config.isLargeImage(item('a.mp4', { size: 5000 }))).toBe(false);
 
-        await loadConfig(api, fakeConfig({ largeImageSize: 1000, features: { thumbnails: false, trickplay: false, shutdown: false, dismount: false } }));
+        await loadConfig(api, fakeConfig({ largeImageSize: 1000, features: { thumbnails: false, trickplay: false } }));
         expect(config.isLargeImage(item('a.jpg', { size: 5000 }))).toBe(false);
     });
 

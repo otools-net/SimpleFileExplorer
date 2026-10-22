@@ -154,7 +154,6 @@ async function startApp(appUrl, folder, log) {
             Sfe__Thumbnails__CacheDirectory: path.join(folder, 'cache'),
             Sfe__Security__KeysDirectory: path.join(folder, 'keys'),
             Sfe__Setup__Code: setupCode,
-            Sfe__System__EnableShutdown: 'true',
         },
     });
     for (let i = 0; i < 120; i++) {

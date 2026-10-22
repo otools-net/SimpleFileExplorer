@@ -184,7 +184,10 @@ public sealed class FileOperationsTests
             settings["Sfe:Scan:ExcludedFolders:0"] = "RepeatedDir/RepeatedDir";
             settings["Sfe:Scan:ExcludedFolders:1"] = "SpecialDir";
             settings["Sfe:Trickplay:Folders:0"] = "RepeatedDir";
+            settings["Sfe:Trickplay:ExcludedFolders:0"] = "RepeatedDir/ChildDir";
+            settings["Sfe:Thumbnails:ExcludedFolders:0"] = "RepeatedDir";
             settings["Sfe:Editor:OutputFolder"] = "RepeatedDir/Edited";
+            settings["Sfe:KeepAlive:Folders:0"] = "RepeatedDir/ChildDir";
         });
         await ScanAsync();
         var tag = (await Tags.CreateAsync(new TagInput("Kept"), Token)).Tag!.Id;
@@ -222,7 +225,10 @@ public sealed class FileOperationsTests
         var options = _services.Get<IOptionsMonitor<SfeOptions>>().CurrentValue;
         CollectionAssert.AreEqual(new[] { "Renamed/RepeatedDir", "SpecialDir" }, options.Scan.ExcludedFolders);
         CollectionAssert.AreEqual(new[] { "Renamed" }, options.Trickplay.Folders);
+        CollectionAssert.AreEqual(new[] { "Renamed/ChildDir" }, options.Trickplay.ExcludedFolders);
+        CollectionAssert.AreEqual(new[] { "Renamed" }, options.Thumbnails.ExcludedFolders);
         Assert.AreEqual("Renamed/Edited", options.Editor.OutputFolder);
+        CollectionAssert.AreEqual(new[] { "Renamed/ChildDir" }, options.KeepAlive.Folders);
         CollectionAssert.AreEquivalent(new[] { "Renamed/ChildDir", "RepeatedDirectory" }, await db.TaskSchedules.Select(s => s.Path).ToListAsync(Token),
             "RepeatedDirectory is not inside RepeatedDir");
         Assert.IsFalse(Directory.Exists(oldTrickplay));

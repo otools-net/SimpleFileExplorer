@@ -3,13 +3,13 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { ApiError } from '../core/api.service';
-import { ClientConfig, SettingLevel, SettingState, SettingsValues, SettingsView, TaskInfo } from '../core/models';
+import { ClientConfig, KeepAliveFolder, KeepAliveView, SettingLevel, SettingState, SettingsValues, SettingsView, TaskInfo } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { ListingStore } from '../library/listing.store';
 import { ApiMock, buttonNamed, adminPageProviders, deferred, fakeConfig, loadConfig, mockApi, setMediaQuery, settingsValues, settle, tag, type } from '../../testing/fakes';
 import { setValue } from '../settings/settings-schema';
-import { ADMIN_GROUPS, ADMIN_SECTIONS, groupId } from './admin-sections';
+import { ADMIN_GROUPS, ADMIN_SECTIONS, groupId, visibleSections } from './admin-sections';
 
 let api: ApiMock;
 let harness: RouterTestingHarness;
@@ -457,8 +457,6 @@ describe('Interface › Appearance', () => {
 });
 
 describe('SystemSectionComponent', () => {
-    const commands = (features: Partial<ClientConfig['features']>) => setUp({ features: { thumbnails: true, trickplay: false, shutdown: false, dismount: false, ...features } });
-
     it('shows the version, with the commit when known', async () => {
         await setUp({ version: '1.2.3', commit: 'abc1234' });
         await open('/admin?section=system');
@@ -466,9 +464,8 @@ describe('SystemSectionComponent', () => {
         expect(element.querySelector('.system-facts')!.textContent).toContain('SFE 1.2.3');
         expect(element.querySelector('.system-facts code')!.textContent).toBe('abc1234');
         expect(element.querySelector<HTMLAnchorElement>('a[href="api/docs"]')).not.toBeNull();
-        // Backups and the server commands are on Maintenance.
+        // Backups are on Maintenance.
         expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
-        expect(element.textContent).not.toContain('Server commands');
     });
 
     it('offers a backup of the databases and configuration files to those with the right', async () => {
@@ -483,50 +480,83 @@ describe('SystemSectionComponent', () => {
         await open('/admin?section=system&page=maintenance');
         expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
     });
+});
 
-    it('shows the server commands only when they are on', async () => {
-        await commands({});
-        await open('/admin?section=system&page=maintenance');
-        expect(buttonNamed(element, 'Shut down server')).toBeUndefined();
-        expect(element.textContent).toContain('None configured.');
+describe('KeepAliveStatusComponent', () => {
+    const view = (overrides: Partial<KeepAliveView> = {}): KeepAliveView => ({ mode: 'auto', intervalSeconds: 240, method: 'list', folders: [], ...overrides });
+    const folder = (overrides: Partial<KeepAliveFolder> = {}): KeepAliveFolder => ({
+        path: '', isRoot: true, isNetwork: true, lastPing: '2026-10-22T10:00:00Z', durationMilliseconds: 14.4, error: null, failingSince: null, waiting: false,
+        method: 'list', ...overrides,
+    });
+    const text = () => element.querySelector('.keep-alive-status')!.textContent!;
+
+    it('says it is off, and pings the library folder now on request', async () => {
+        await setUp();
+        api.keepAlive.mockResolvedValue(view({ mode: 'off' }));
+        api.pingKeepAlive.mockResolvedValue(view({ mode: 'off', folders: [folder({ isNetwork: false })] }));
+        await open('/admin?section=keepAlive');
+
+        expect(eyebrow()).toBe('Keep alive');
+        expect(text()).toContain('Off: the library folder is not pinged.');
+        expect(text()).toContain('Ping now tries the library folder once.');
+
+        buttonNamed(element, 'Ping now')!.click();
+        await settle();
+
+        expect(api.pingKeepAlive).toHaveBeenCalled();
+        expect(element.querySelector('.keep-alive-name')!.textContent).toBe('Library folder');
+        expect(element.querySelector('.keep-alive-network')!.textContent).toBe('Not on a network share');
+        expect(element.querySelector('.keep-alive-detail')!.textContent).toContain('14 ms');
+    });
+
+    it('shows the folders pinged, and those failing with why and since when', async () => {
+        await setUp();
+        api.keepAlive.mockResolvedValue(view({ folders: [folder({ error: 'The network name cannot be found.', failingSince: '2026-10-22T09:00:00Z', durationMilliseconds: null })] }));
+        await open('/admin?section=keepAlive&page=status');
+
+        expect(element.querySelector('.settings-status')!.getAttribute('data-state')).toBe('unavailable');
+        expect(text()).toContain('1 folder not answering');
+        expect(element.querySelector('.keep-alive-row')!.classList).toContain('failed');
+        expect(element.querySelector('.keep-alive-error')!.textContent).toContain('The network name cannot be found.');
+        expect(element.querySelector('.keep-alive-error')!.textContent).toContain('Failing since');
 
         TestBed.resetTestingModule();
-        await commands({ shutdown: true, dismount: true });
-        await open('/admin?section=system&page=maintenance');
-        expect(buttonNamed(element, 'Shut down server')).toBeDefined();
-        expect(buttonNamed(element, 'Dismount drives')).toBeDefined();
+        await setUp();
+        api.keepAlive.mockResolvedValue(view({ folders: [folder()] }));
+        await open('/admin?section=keepAlive');
+        expect(element.querySelector('.settings-status')!.getAttribute('data-state')).toBe('idle');
+        expect(text()).toContain('On for folders on a network share, every 240 seconds.');
     });
 
-    it('runs a server command after asking, with what it answered', async () => {
-        await commands({ shutdown: true, dismount: true });
-        await open('/admin?section=system&page=maintenance');
-        const show = vi.spyOn(TestBed.inject(ToastService), 'show');
-        vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValue(true);
-        api.shutdown.mockResolvedValue({ output: 'Bye' });
-        api.dismount.mockResolvedValue({ output: '' });
+    it('lists more folders after the library folder, and says when a file was written', async () => {
+        await setUp();
+        api.keepAlive.mockResolvedValue(view({ method: 'touch', folders: [folder({ method: 'touch' }), folder({ path: 'NAS/Photos', isRoot: false })] }));
+        await open('/admin?section=keepAlive');
 
-        buttonNamed(element, 'Shut down server')!.click();
-        await settle();
-        expect(api.shutdown).not.toHaveBeenCalled();
-
-        buttonNamed(element, 'Shut down server')!.click();
-        buttonNamed(element, 'Dismount drives')!.click();
-        await settle();
-        expect(show).toHaveBeenCalledWith('Shutdown: Bye');
-        expect(show).toHaveBeenCalledWith('Dismount requested.');
+        expect([...element.querySelectorAll('.keep-alive-name')].map(n => n.textContent)).toEqual(['Library folder', 'NAS/Photos']);
+        const details = [...element.querySelectorAll('.keep-alive-detail')].map(d => d.textContent!);
+        expect(details[0]).toContain('file written');
+        expect(details[1]).not.toContain('file written');
     });
 
-    it('reports a command that failed', async () => {
-        await commands({ shutdown: true });
-        await open('/admin?section=system&page=maintenance');
-        const error = vi.spyOn(TestBed.inject(ToastService), 'error');
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
-        api.shutdown.mockRejectedValue(new ApiError(409, 'Shutdown is disabled.'));
+    it('opens its settings from the status', async () => {
+        await setUp();
+        api.keepAlive.mockResolvedValue(view());
+        await open('/admin?section=keepAlive');
 
-        buttonNamed(element, 'Shut down server')!.click();
+        buttonNamed(element, 'Settings')!.click();
         await settle();
 
-        expect(error).toHaveBeenCalledWith('Shutdown failed: Shutdown is disabled.');
+        expect(url()).toBe('/admin?section=keepAlive&page=settings');
+        expect(element.textContent).toContain('Keep the library folder alive');
+    });
+
+    it('is only for those with its right', () => {
+        const pages = (rights: string[]) =>
+            visibleSections(wanted => wanted.some(r => rights.includes(r))).find(s => s.id === 'keepAlive')?.subpages.map(p => p.id) ?? [];
+        expect(pages([Rights.keepAliveSettings])).toEqual(['status', 'settings']);
+        expect(pages([Rights.serverSettings])).toEqual(['settings']);
+        expect(pages([Rights.scanningSettings])).toEqual([]);
     });
 });
 

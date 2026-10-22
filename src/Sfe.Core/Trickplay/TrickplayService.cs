@@ -525,11 +525,15 @@ public sealed class TrickplayService : IDisposable
         }
     }
 
-    /// <summary>Videos of the configured folders, skipping the folders and hidden items that scans skip.</summary>
+    /// <summary>
+    /// Videos of the configured folders, skipping the folders and hidden items that scans skip and the folders
+    /// excluded from trickplay.
+    /// </summary>
     private IEnumerable<FileInfo> EnumerateVideos(TrickplayOptions settings, CancellationToken cancellationToken)
     {
         var ignored = new HashSet<string>(_options.CurrentValue.Scan.IgnoredDirectories, StringComparer.OrdinalIgnoreCase);
-        var roots = RootFolders(settings);
+        var exclusions = FolderExclusions.Of(_options.CurrentValue);
+        var roots = RootFolders(settings).Where(f => !exclusions.IsExcluded(ExclusionKind.Trickplay, _paths, f)).ToList();
         roots.Reverse();
         var pending = new Stack<string>(roots);
         while (pending.TryPop(out var folder))
@@ -547,7 +551,9 @@ public sealed class TrickplayService : IDisposable
             }
 
             // Sub-folders pushed in reverse so they are visited in name order, after this folder's videos.
-            foreach (var child in entries.OfType<DirectoryInfo>().Where(d => !ignored.Contains(d.Name)).OrderByDescending(d => d.Name, NaturalComparer.Instance))
+            foreach (var child in entries.OfType<DirectoryInfo>()
+                         .Where(d => !ignored.Contains(d.Name) && !exclusions.IsExcluded(ExclusionKind.Trickplay, _paths, d.FullName))
+                         .OrderByDescending(d => d.Name, NaturalComparer.Instance))
                 pending.Push(child.FullName);
             foreach (var file in entries.OfType<FileInfo>().OrderBy(f => f.Name, NaturalComparer.Instance))
             {
@@ -573,8 +579,8 @@ public sealed class TrickplayService : IDisposable
     }
 
     private bool IsInFolders(string source, TrickplayOptions settings) =>
-        settings.Folders.Count == 0
-        || settings.Folders.Any(f => _paths.TryResolve(f, out var folder) && IsWithin(source, folder));
+        (settings.Folders.Count == 0 || settings.Folders.Any(f => _paths.TryResolve(f, out var folder) && IsWithin(source, folder)))
+        && !FolderExclusions.Of(_options.CurrentValue).IsExcluded(ExclusionKind.Trickplay, _paths, Path.GetDirectoryName(source)!);
 
     private static bool IsWithin(string path, string folder)
     {

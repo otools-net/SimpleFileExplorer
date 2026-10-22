@@ -41,6 +41,10 @@ public enum SortField
 /// <param name="IndexedItems">
 /// Browsing only, for an indexed folder: how many files and sub-folders directly inside it the index has.
 /// </param>
+/// <param name="Excluded">
+/// Browsing only, for a folder kept out of scans, trickplay or thumbnails (<see cref="FolderExclusions"/>): through
+/// which listed folder; null when it is in none.
+/// </param>
 public sealed record LibraryItem(
     string Name,
     string Path,
@@ -54,11 +58,13 @@ public sealed record LibraryItem(
     int? Height = null,
     double? Duration = null,
     bool? Indexed = null,
-    int? IndexedItems = null);
+    int? IndexedItems = null,
+    FolderExclusionState? Excluded = null);
 
 public sealed record Breadcrumb(string Name, string Path);
 
 /// <param name="Access">What folder rules let the asker do here; null when none apply to it (every right of the space).</param>
+/// <param name="Exclusions">What the folder is kept out of (scans, trickplay, thumbnails); null when nothing.</param>
 public sealed record DirectoryListing(
     string Path,
     string Name,
@@ -70,7 +76,8 @@ public sealed record DirectoryListing(
     int Total,
     int DirectoryCount,
     int FileCount,
-    FolderAccessView? Access = null);
+    FolderAccessView? Access = null,
+    FolderExclusionState? Exclusions = null);
 
 /// <summary>What folder rules let the asker do in a folder (agents/docs/features/folder-access.md).</summary>
 /// <param name="Rights">The rights it has here.</param>

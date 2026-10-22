@@ -24,6 +24,7 @@ export const Rights = {
     manageTags: 'tags.manage',
     scan: 'index.scan',
     removeFromIndex: 'index.remove',
+    excludeFolders: 'index.exclude',
     duplicates: 'tracking.duplicates',
     removeDuplicates: 'tracking.duplicatesRemove',
     similarVideos: 'tracking.similar',
@@ -44,6 +45,7 @@ export const Rights = {
     logSettings: 'settings.logs',
     editorSettings: 'settings.editor',
     fileSettings: 'settings.files',
+    keepAliveSettings: 'settings.keepAlive',
     manageMembers: 'tenant.members',
     ownPreferences: 'account.preferences',
     ownPassword: 'account.password',
@@ -52,8 +54,6 @@ export const Rights = {
     serverSettings: 'server.settings',
     manageTenants: 'server.tenants',
     manageUsers: 'server.users',
-    shutdown: 'server.shutdown',
-    dismount: 'server.dismount',
     backup: 'server.backup',
     viewStreams: 'server.streams',
 } as const;
@@ -78,6 +78,7 @@ export const SETTINGS_RIGHTS: Record<string, Right> = {
     tags: Rights.tagSettings,
     editor: Rights.editorSettings,
     files: Rights.fileSettings,
+    keepAlive: Rights.keepAliveSettings,
     // How the server starts: its administrators only.
     startup: Rights.serverSettings,
 };

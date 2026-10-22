@@ -53,7 +53,8 @@ public static class SettingCatalog
         "reading.prose.font", "reading.prose.size", "reading.prose.lineHeight", "reading.prose.width", "reading.prose.padding", "reading.prose.wrap", "reading.prose.lineNumbers",
     ];
 
-    private static readonly HashSet<string> PerLibraryKeys = ["scan.excludedFolders", "trickplay.folders", "editor.outputFolder"];
+    private static readonly HashSet<string> PerLibraryKeys =
+        ["scan.excludedFolders", "trickplay.folders", "trickplay.excludedFolders", "thumbnails.excludedFolders", "editor.outputFolder", "keepAlive.folders"];
 
     /// <summary>The right of a key, by its first part (the settings page's sections).</summary>
     private static readonly (string Prefix, string Right)[] RightsByPrefix =
@@ -63,7 +64,7 @@ public static class SettingCatalog
         ("showHiddenItems", Rights.ScanningSettings), ("scan.", Rights.ScanningSettings), ("fileTypes.", Rights.ScanningSettings),
         ("thumbnails.", Rights.ThumbnailSettings), ("trickplay.", Rights.TrickplaySettings), ("fileTracking.", Rights.TrackingSettings),
         ("tags.", Rights.TagSettings), ("tasks.", Rights.TaskSettings), ("logs.", Rights.LogSettings), ("editor.", Rights.EditorSettings),
-        ("files.", Rights.FileSettings),
+        ("files.", Rights.FileSettings), ("keepAlive.", Rights.KeepAliveSettings),
         // How the server starts: only its administrators (System › Start-up).
         ("openBrowser", Rights.ServerSettings), ("fastSignIn", Rights.ServerSettings),
     ];

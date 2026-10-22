@@ -328,32 +328,63 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     }
 
     /// <summary>Adds a library folder to <see cref="ScanOptions.ExcludedFolders"/> (saved like the other settings, for the library).</summary>
-    public async Task ExcludeFolderAsync(string relativePath, int? tenantId = null, CancellationToken cancellationToken = default)
+    public Task ExcludeFolderAsync(string relativePath, int? tenantId = null, CancellationToken cancellationToken = default) =>
+        SetExclusionsAsync(relativePath, new Dictionary<ExclusionKind, bool> { [ExclusionKind.Scan] = true }, tenantId, cancellationToken);
+
+    /// <summary>
+    /// Puts a library folder (root-relative, canonical) on the folder lists of <paramref name="changes"/> (true) or
+    /// takes it off (false): <see cref="FolderExclusions"/>. Saved for the library, keeping each row's lock; the
+    /// lists not named are left alone.
+    /// </summary>
+    /// <returns>The keys changed.</returns>
+    public async Task<IReadOnlyList<string>> SetExclusionsAsync(
+        string relativePath, IReadOnlyDictionary<ExclusionKind, bool> changes, int? tenantId = null, CancellationToken cancellationToken = default)
     {
         if (layers is null)
         {
             var settings = EditableSettings.From(options.CurrentValue);
-            if (settings.Scan.ExcludedFolders.Contains(relativePath, LibraryPaths.PathComparer))
-                return;
-            settings.Scan.ExcludedFolders.Add(relativePath);
-            Normalize(settings);
-            await store.SaveAsync(settings, cancellationToken);
-            return;
+            var changed = SetExclusions(settings, relativePath, changes);
+            if (changed.Count > 0)
+            {
+                Normalize(settings);
+                await store.SaveAsync(settings, cancellationToken);
+            }
+            return changed;
         }
 
-        var sources = await layers.LoadAsync(Tenant(tenantId), null, cancellationToken);
-        var resolved = SettingLayers.Resolve(sources, SettingLevel.Tenant);
-        var current = SettingLayers.ToSettings(resolved);
-        if (current.Scan.ExcludedFolders.Contains(relativePath, LibraryPaths.PathComparer))
-            return;
-
-        current.Scan.ExcludedFolders.Add(relativePath);
-        Normalize(current);
         var tenant = Tenant(tenantId) ?? throw new InvalidOperationException("No library yet.");
+        var sources = await layers.LoadAsync(tenant, null, cancellationToken);
+        var current = SettingLayers.ToSettings(SettingLayers.Resolve(sources, SettingLevel.Tenant));
+        var keys = SetExclusions(current, relativePath, changes);
+        if (keys.Count == 0)
+            return keys;
+
+        Normalize(current);
+        var values = SettingKeys.Flatten(SettingKeys.ToJson(current));
         var rows = sources.Tenant.ToDictionary(r => r.Key, r => r.Value, StringComparer.Ordinal);
-        const string key = "scan.excludedFolders";
-        rows[key] = new StoredSetting(SettingKeys.Flatten(SettingKeys.ToJson(current))[key], rows.GetValueOrDefault(key)?.Locked ?? false);
+        foreach (var key in keys)
+            rows[key] = new StoredSetting(values[key], rows.GetValueOrDefault(key)?.Locked ?? false);
         await layers.Rows.SaveTenantAsync(tenant, rows, cancellationToken);
+        return keys;
+    }
+
+    /// <returns>The keys of the settings changed.</returns>
+    private static List<string> SetExclusions(EditableSettings settings, string relativePath, IReadOnlyDictionary<ExclusionKind, bool> changes)
+    {
+        var changed = new List<string>();
+        foreach (var (kind, excluded) in changes)
+        {
+            var list = FolderExclusions.List(settings, kind);
+            var present = list.Contains(relativePath, LibraryPaths.PathComparer);
+            if (present == excluded)
+                continue;
+            if (excluded)
+                list.Add(relativePath);
+            else
+                list.RemoveAll(f => LibraryPaths.PathComparer.Equals(LibraryPaths.NormalizeRelative(f) ?? f, relativePath));
+            changed.Add(FolderExclusions.Key(kind));
+        }
+        return changed;
     }
 
     /// <summary>
@@ -408,6 +439,21 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         {
             settings.Trickplay.Folders = trickplay;
             changed.Add("trickplay.folders");
+        }
+        if (Moved(settings.Trickplay.ExcludedFolders) is { } noTrickplay)
+        {
+            settings.Trickplay.ExcludedFolders = noTrickplay;
+            changed.Add("trickplay.excludedFolders");
+        }
+        if (Moved(settings.Thumbnails.ExcludedFolders) is { } noThumbnails)
+        {
+            settings.Thumbnails.ExcludedFolders = noThumbnails;
+            changed.Add("thumbnails.excludedFolders");
+        }
+        if (Moved(settings.KeepAlive.Folders) is { } keepAlive)
+        {
+            settings.KeepAlive.Folders = keepAlive;
+            changed.Add("keepAlive.folders");
         }
         if (settings.Editor.OutputFolder is { } output && Move(output) is { } moved)
         {
@@ -548,6 +594,9 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         settings.FileTypes.Text = Extensions(settings.FileTypes.Text);
         settings.Scan.ExcludedFolders = Folders(settings.Scan.ExcludedFolders);
         settings.Trickplay.Folders = Folders(settings.Trickplay.Folders);
+        settings.Trickplay.ExcludedFolders = Folders(settings.Trickplay.ExcludedFolders);
+        settings.Thumbnails.ExcludedFolders = Folders(settings.Thumbnails.ExcludedFolders);
+        settings.KeepAlive.Folders = Folders(settings.KeepAlive.Folders);
         settings.Editor.OutputFolder = string.IsNullOrWhiteSpace(settings.Editor.OutputFolder)
             ? null
             : LibraryPaths.NormalizeRelative(settings.Editor.OutputFolder.Trim()) ?? settings.Editor.OutputFolder.Trim();
@@ -599,8 +648,11 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Range(s.Scan.Parallelism, 1, 64, "scan.parallelism", "Folders scanned at once");
         Check(s.Scan.IgnoredDirectories.All(IsName), "scan.ignoredDirectories", "Enter folder names, not paths.");
         Check(s.Scan.IgnoredFiles.All(IsName), "scan.ignoredFiles", "Enter file names, not paths.");
-        var excluded = s.Scan.ExcludedFolders.FirstOrDefault(f => LibraryPaths.NormalizeRelative(f) is null);
-        Check(excluded is null, "scan.excludedFolders", $"“{excluded}” is not a folder of the library: enter paths relative to the library, like Movies/Old.");
+        foreach (var kind in Enum.GetValues<ExclusionKind>())
+        {
+            var excluded = FolderExclusions.List(s, kind).FirstOrDefault(f => LibraryPaths.NormalizeRelative(f) is null);
+            Check(excluded is null, FolderExclusions.Key(kind), $"“{excluded}” is not a folder of the library: enter paths relative to the library, like Movies/Old.");
+        }
 
         foreach (var (list, key) in new[] { (s.FileTypes.Images, "fileTypes.images"), (s.FileTypes.Videos, "fileTypes.videos"), (s.FileTypes.Audio, "fileTypes.audio"), (s.FileTypes.Text, "fileTypes.text") })
             Check(list.All(e => e.All(c => char.IsLetterOrDigit(c) || c is '_' or '-')), key, "Extensions can only contain letters, digits, '-' and '_'.");
@@ -655,6 +707,12 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Range(s.Files.Uploads.MaxFileSizeMegabytes, 0, 1_073_741_823, "files.uploads.maxFileSizeMegabytes", "The largest upload");
         Range(s.Files.Uploads.KeepUnfinishedHours, 1, 8760, "files.uploads.keepUnfinishedHours", "The hours unfinished uploads are kept");
         Range(s.Files.MaxArchiveMegabytes, 0, 1_073_741_823, "files.maxArchiveMegabytes", "The largest zip");
+        Check(Enum.IsDefined(s.KeepAlive.Mode), "keepAlive.mode", "Choose which folders are kept alive from the list.");
+        Range(s.KeepAlive.IntervalSeconds, KeepAliveOptions.MinIntervalSeconds, KeepAliveOptions.MaxIntervalSeconds, "keepAlive.intervalSeconds", "The time between pings");
+        Range(s.KeepAlive.TimeoutSeconds, KeepAliveOptions.MinTimeoutSeconds, KeepAliveOptions.MaxTimeoutSeconds, "keepAlive.timeoutSeconds", "The time limit");
+        Check(Enum.IsDefined(s.KeepAlive.Method), "keepAlive.method", "Choose how the library folder is pinged from the list.");
+        var notKept = s.KeepAlive.Folders.FirstOrDefault(f => LibraryPaths.NormalizeRelative(f) is not { Length: > 0 } path || LibraryPaths.IsWorkFolderRelative(path));
+        Check(notKept is null, "keepAlive.folders", $"“{notKept}” is not a folder of the library: enter paths relative to the library, like NAS/Photos.");
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
         Check(s.Reading.Theme is { } readerTheme && ReadingOptions.Themes.Contains(readerTheme), "reading.theme", "Choose colours from the list.");
         Check(s.Reading.CustomFont.Length <= MaxCustomFontLength && s.Reading.CustomFont.IndexOfAny(['"', '\\', ';', '{', '}', '<', '>']) < 0,

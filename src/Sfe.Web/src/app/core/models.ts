@@ -139,6 +139,29 @@ export interface LibraryItem {
     indexed?: boolean | null;
     /** Browsing only, for an indexed folder: how many files and sub-folders directly inside it the index has. */
     indexedItems?: number | null;
+    /** Browsing only, for a folder kept out of scans, trickplay or thumbnails; absent when it is in none. */
+    excluded?: FolderExclusions | null;
+}
+
+/**
+ * What a folder is kept out of, for the whole space (`index.exclude`): for each, the listed folder it is excluded
+ * through (itself, or the nearest listed parent), null when it isn't.
+ */
+export interface FolderExclusions {
+    scan: string | null;
+    trickplay: string | null;
+    thumbnails: string | null;
+}
+
+export type ExclusionKind = keyof FolderExclusions;
+
+/** A folder on the exclusion lists (Administration › Scanning › Excluded folders): which lists, and whether it is still on the disk. */
+export interface ExcludedFolder {
+    path: string;
+    scan: boolean;
+    trickplay: boolean;
+    thumbnails: boolean;
+    exists: boolean;
 }
 
 /**
@@ -297,6 +320,8 @@ export interface DirectoryListing {
     fileCount: number;
     /** What folder rules let the session do here; absent or null when none apply (every right of the space). */
     access?: FolderAccessView | null;
+    /** What the folder is kept out of; absent or null when nothing. */
+    exclusions?: FolderExclusions | null;
 }
 
 /** What folder rules let the session do in a folder. */
@@ -342,7 +367,7 @@ export interface ClientConfig {
     dataServer: string | null;
     pageSize: number;
     searchPageSize: number;
-    features: { thumbnails: boolean; trickplay: boolean; shutdown: boolean; dismount: boolean };
+    features: { thumbnails: boolean; trickplay: boolean };
     tagColors: TagColor[];
     maxFilesPerTagChange: number;
     largeImageSize: number;
@@ -402,6 +427,39 @@ export interface StreamProbe {
     duration: number | null;
     /** Its pictures are encoded again (false: copied, lighter, but seeking lands on key frames). */
     transcoded: boolean;
+}
+
+export type KeepAliveMode = 'off' | 'auto' | 'always';
+/** How keep alive goes in the space, as the change feed tells it: `none` when off or nothing pinged. */
+export type KeepAliveState = 'none' | 'ok' | 'failing';
+/** `list`: the folder is read; `touch`: a small file is written and deleted in the work folder. */
+export type KeepAliveMethod = 'list' | 'touch';
+
+/** A folder kept alive (api/keep-alive). */
+export interface KeepAliveFolder {
+    /** Relative to the library root; empty for the root itself. */
+    path: string;
+    /** The library folder itself; the others are the more folders of the settings. */
+    isRoot: boolean;
+    /** Null until the first ping looked. */
+    isNetwork: boolean | null;
+    lastPing: string | null;
+    durationMilliseconds: number | null;
+    /** Why the last ping failed; null when it worked. */
+    error: string | null;
+    failingSince: string | null;
+    /** A ping is still blocked on the folder. */
+    waiting: boolean;
+    /** How the last ping was made; null: none yet. */
+    method: KeepAliveMethod | null;
+}
+
+export interface KeepAliveView {
+    mode: KeepAliveMode;
+    intervalSeconds: number;
+    /** How the library folder is to be pinged (more folders are always read). */
+    method: KeepAliveMethod;
+    folders: KeepAliveFolder[];
 }
 
 export type StreamingMode = 'off' | 'fallback' | 'always';
@@ -644,10 +702,6 @@ export interface SettingsView {
     level?: SettingLevel;
     /** Per setting key; absent from older servers. */
     keys?: Record<string, SettingState> | null;
-}
-
-export interface CommandResult {
-    output: string;
 }
 
 /** The background jobs of the "Background tasks" dialog. */

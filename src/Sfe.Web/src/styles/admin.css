@@ -269,3 +269,22 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     }
     .admin-savebar { margin: 0 -12px; padding-inline: 12px; }
 }
+
+/* ---------- Scanning › Excluded folders (exclusions-section.component.ts) ---------- */
+
+.exclusions-head { display: flex; align-items: flex-start; gap: 16px; }
+.exclusions-head .settings-intro { flex: 1; margin-top: 0; }
+.exclusions-head .button { flex: none; }
+.exclusions-form { display: grid; gap: 12px; margin-bottom: 16px; }
+.exclusions-kinds { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; padding: 0; border: 0; }
+.exclusions-kinds legend { margin-bottom: 6px; }
+.exclusions-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.exclusions-table { overflow-x: auto; }
+.exclusions-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.exclusions-table th, .exclusions-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+.exclusions-table th { color: var(--text-muted); font-size: 12px; font-weight: 600; }
+.exclusions-table td:not(:first-child), .exclusions-table th:not(:first-child) { width: 1%; text-align: center; white-space: nowrap; }
+.exclusions-table td:first-child { overflow-wrap: anywhere; }
+.exclusions-table tr.missing td:first-child > span:first-child { color: var(--text-muted); }
+.exclusions-table .exclusion-chip { margin-left: 8px; }
+.exclusions-empty { margin: 8px 0; }

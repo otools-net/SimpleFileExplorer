@@ -15,7 +15,7 @@ import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu. */
 export interface MenuEntry {
-    id: 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'properties';
+    id: 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
     label: string;
     icon: string;
     /** Its key, shown at the end of the line. */
@@ -49,7 +49,7 @@ export class ItemMenu {
      * only has its tags and ⋮ buttons: quick links and copying the path are here too.
      */
     hasActions(item: LibraryItem): boolean {
-        return this.canSeeProperties() || this.canOpenAsText(item) || this.canEditText(item) || this.canEditPicture(item) || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item);
+        return this.canSeeProperties() || this.canOpenAsText(item) || this.canEditText(item) || this.canEditPicture(item) || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item) || this.canExclude(item);
     }
 
     /** Properties of what is listed: whoever browses. */
@@ -89,6 +89,14 @@ export class ItemMenu {
     /** A picture the editor can crop (the right, and a server with the editor). */
     canEditPicture(item: LibraryItem): boolean {
         return item.kind === 'image' && this.store.can(Rights.editImages, item) && Boolean(this.config.config()?.editor) && Boolean(this.dialogs.imageEditor());
+    }
+
+    /**
+     * May keep a listed folder out of scans, trickplay or thumbnails (for the whole space): while browsing, where the
+     * listing tells what it is kept out of now.
+     */
+    canExclude(item: LibraryItem): boolean {
+        return item.kind === 'directory' && !this.store.searching() && this.store.can(Rights.excludeFolders, item) && Boolean(this.dialogs.folderExclusions());
     }
 
     entries(item: LibraryItem): MenuEntry[] {
@@ -168,6 +176,12 @@ export class ItemMenu {
         }
         if (this.copyPaths.enabled())
             entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => void this.copyPaths.copy(item.path) });
+        if (this.canExclude(item))
+            entries.push({
+                id: 'exclusions', label: 'Scans and previews…', icon: 'scan',
+                title: 'Keep this folder out of scans, trickplay or thumbnails, for the whole space',
+                run: () => this.dialogs.folderExclusions()?.open(item.path, item.excluded),
+            });
         if (this.canSeeProperties())
             entries.push({
                 id: 'properties', label: 'Properties', icon: 'info', shortcut: 'Alt+Enter',

@@ -84,7 +84,7 @@ export function fakeConfig(overrides: Partial<ClientConfig> = {}): ClientConfig 
         dataServer: null,
         pageSize: 100,
         searchPageSize: 50,
-        features: { thumbnails: true, trickplay: false, shutdown: false, dismount: false },
+        features: { thumbnails: true, trickplay: false },
         tagColors: TAG_COLORS,
         maxFilesPerTagChange: 1000,
         largeImageSize: 1024 * 1024,

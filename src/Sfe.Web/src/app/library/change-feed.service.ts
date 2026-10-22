@@ -1,6 +1,7 @@
-import { DestroyRef, inject, Injectable } from '@angular/core';
+import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { TAB_ID } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
+import { KeepAliveState } from '../core/models';
 import { Rights } from '../core/rights';
 import { ListingStore } from './listing.store';
 
@@ -15,7 +16,8 @@ export interface FolderChange {
 /**
  * The change feed (agents/docs/features/change-feed.md): the server tells each open listing that a folder was changed
  * through SFE elsewhere (another tab, another person, a move or copy job); the folder listed is then refreshed in
- * place. The browser opens the feed again by itself when it ends or drops.
+ * place. The browser opens the feed again by itself when it ends or drops. It also tells how keep alive goes
+ * (`keepAlive`), for the indicator of the ⋮ menu.
  */
 @Injectable({ providedIn: 'root' })
 export class ChangeFeed {
@@ -24,6 +26,9 @@ export class ChangeFeed {
     private source: EventSource | null = null;
     private timer: ReturnType<typeof setTimeout> | undefined;
     private readonly listeners = new Set<(change: FolderChange) => void>();
+
+    /** How keep alive goes in the space: sent first when the feed opens, then each time it changes. */
+    readonly keepAlive = signal<KeepAliveState>('none');
 
     constructor() {
         inject(DestroyRef).onDestroy(() => this.stop());
@@ -35,6 +40,7 @@ export class ChangeFeed {
             return;
         this.source = new EventSource('api/files/changes');
         this.source.addEventListener('changed', event => this.changed(JSON.parse((event as MessageEvent<string>).data) as FolderChange));
+        this.source.addEventListener('keepAlive', event => this.keepAlive.set((JSON.parse((event as MessageEvent<string>).data) as { state: KeepAliveState }).state));
     }
 
     stop(): void {

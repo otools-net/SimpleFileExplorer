@@ -32,6 +32,7 @@ Each right is of one of two kinds (column **Kind**):
 | `tags.assign` | tag files, folders and searches | Write | no | Administrators, Users |
 | `tags.manage` | create, edit, delete tags; clear the tag history | Write | no | Administrators |
 | `index.scan`, `index.remove` | scan; remove folders from the index | Write | no | Administrators |
+| `index.exclude` | [keep folders out of scans, trickplay or thumbnails](../user-guide/scanning.md#excluded-folders), for the whole space | Write | no | Administrators |
 | `tracking.duplicates`, `tracking.similar` | duplicates, similar videos | Read | no | Administrators |
 | `tracking.duplicatesRemove` | remove a copy of a duplicate (to the trash) | Write (files) | no | Administrators |
 | `tracking.missing` | moved files: list, relink, forget | Write | no | Administrators |
@@ -39,12 +40,12 @@ Each right is of one of two kinds (column **Kind**):
 | `tasks.view` | background tasks and their history | Read | no | Administrators |
 | `tasks.run`, `tasks.schedule` | running background tasks, schedules | Write | no | Administrators |
 | `logs.view` | the [log](../administration/logs.md) of the space (server administrators: of the whole server) | Read | no | Administrators |
-| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.logs`, `.editor`, `.files` | the space's settings, by section | Write | no | Administrators |
+| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.logs`, `.editor`, `.files`, `.keepAlive` | the space's settings, by section ([keep alive](../administration/keep-alive.md): also its status and Ping now) | Write | no | Administrators |
 | `tenant.members` | the space's accounts, groups and visitors | Write | no | Administrators |
 | `account.preferences`, `account.password` | own preferences and password | Write | no | Administrators, Users |
 | `account.quickLinks` | own [quick links](../user-guide/browsing.md#quick-links) in the sidebar | Write | no | Administrators, Users |
 | `system.apiDocs` | the API documentation (`/api/docs`) | Read | no | Administrators |
-| `server.settings`, `server.tenants`, `server.users`, `server.shutdown`, `server.dismount` | the server's settings, spaces, every account, system commands | Write | no | server administrators only |
+| `server.settings`, `server.tenants`, `server.users` | the server's settings, spaces, every account | Write | no | server administrators only |
 | `server.backup`, `server.streams` | backups, the list of video streams | Read | no | server administrators only |
 
 **Server administrators** have every right in every space, plus the server's own. The file management rights

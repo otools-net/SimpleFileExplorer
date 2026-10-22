@@ -11,13 +11,13 @@ using Sfe.Core.Editing;
 using Sfe.Core.Files;
 using Sfe.Core.FileTracking;
 using Sfe.Core.Indexing;
+using Sfe.Core.KeepAlive;
 using Sfe.Core.Library;
 using Sfe.Core.Logs;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Search;
 using Sfe.Core.Settings;
-using Sfe.Core.SystemCommands;
 using Sfe.Core.Tagging;
 using Sfe.Core.Tasks;
 using Sfe.Core.Streaming;
@@ -92,7 +92,7 @@ public static class ServiceCollectionExtensions
         // Shared by every library (the application's instance, handed to each one), like FfmpegLimits.
         services.TryAddSingleton<VideoStreams>();
         services.AddSingleton<VideoStreamer>();
-        services.AddSingleton<SystemCommandService>();
+        services.AddSingleton<KeepAliveService>();
         services.AddSingleton<TagService>();
         services.AddSingleton<ScopeTagger>();
         services.AddSingleton<EditedImages>();

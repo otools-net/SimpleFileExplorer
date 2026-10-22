@@ -3,6 +3,35 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.80.0
+
+### Added
+
+- **Excluded folders**: **Scans and previews…** in a folder's menu keeps it, with its sub-folders, out of scans,
+  trickplay or thumbnails, each on its own, for the whole space (new right `index.exclude`, given to Administrators).
+  Excluded folders show a small note in the listing and next to the folder's counts. New settings
+  `Trickplay:ExcludedFolders` and `Thumbnails:ExcludedFolders`.
+- **Administration › Scanning › Excluded folders**: every excluded folder in one table, to add, change and remove them
+  (folders gone from the disk too).
+- **Keep alive** for libraries on a network share: `Sfe:KeepAlive:Mode` (`Off` by default, `Auto`, `Always`) makes
+  SFE look at each space's library folder every `IntervalSeconds` (240), so the file server never drops the idle
+  connection. **Administration › Keep alive** shows each folder's last ping (and **Ping now**) and holds the settings,
+  per space (new right `settings.keepAlive`, given to Administrators). **More folders** keeps folders reached through
+  links to other shares alive too, and the library folder can be pinged by writing and deleting a small file in
+  SFE's work folder instead of reading it (`Method: Touch`). While keep alive is on, the **⋮** button shows a green
+  dot, or a yellow **!** when the network folder doesn't answer, updated live. See `docs/administration/keep-alive.md`.
+
+### Changed
+
+- Scans keep what the index has of an excluded folder (files, tags) instead of removing it: **Remove from index…**
+  forgets a folder. Scanning an excluded folder, or one inside it, is refused.
+
+### Removed
+
+- The **server commands** (**Shut down server**, **Dismount drives** in Administration › System › Maintenance), their
+  routes `POST api/system/shutdown` and `api/system/dismount`, the rights `server.shutdown` and `server.dismount`, and
+  the settings `Sfe:System:EnableShutdown`, `ShutdownCommand` and `DismountCommand` (ignored if still set).
+
 ## 1.79.0
 
 ### Added
