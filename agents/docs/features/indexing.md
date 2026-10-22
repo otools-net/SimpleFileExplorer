@@ -11,5 +11,6 @@ SHA1), `MediaDimensions`); client `src/app/library/scan/` (`ScanPanelComponent`)
   while a scan runs) → `DirectoryIndexer.RemoveTreeAsync` (the scan's `DeleteTreeAsync`, so tagged files become
   missing files); `exclude` adds to `Scan:ExcludedFolders` (`SettingsService.ExcludeFolderAsync`), which
   `IsIgnoredDirectory` checks by full path next to the ignored names.
+- Excluded folders are skipped but **keep their rows** (since 1.80): [folder-exclusions.md](folder-exclusions.md).
 - A scan's errors are only logged: tests pass a `WarningLog` ([testing-backend.md](../development/testing-backend.md)).
 - Not-indexed marks in listings: [not-indexed-marks.md](not-indexed-marks.md).

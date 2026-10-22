@@ -13,6 +13,8 @@
     build/build.ps1
 .EXAMPLE
     build/build.ps1 -Target windows -SkipTests
+.EXAMPLE
+    build/build.ps1 -NoTests
 #>
 param(
     [ValidateSet('all', 'windows', 'linux')] [string] $Target = 'all',
@@ -22,11 +24,14 @@ param(
     [switch] $SkipTests,
     # Skip starting the packages to check them.
     [switch] $SkipSmokeTest,
+    # No tests at all: both -SkipTests and -SkipSmokeTest.
+    [switch] $NoTests,
     # WSL distribution for the Linux steps; the default one when empty.
     [string] $WslDistro
 )
 
 $ErrorActionPreference = 'Stop'
+if ($NoTests) { $SkipTests = $true; $SkipSmokeTest = $true }
 if (-not (Get-Command npm -ErrorAction SilentlyContinue)) { throw 'npm not found: building the web client (src/Sfe.Web) needs Node.js on the PATH' }
 $repo = Split-Path -Parent $PSScriptRoot
 $artifacts = Join-Path $repo 'artifacts'

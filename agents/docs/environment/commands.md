@@ -9,8 +9,8 @@ dotnet run --project src/Sfe.Api                                      # :5080, D
 dotnet tool restore                                                   # once, for dotnet-ef 10.0.12
 dotnet ef migrations add <Name> --context SfeDbContext --project src/Sfe.Core --output-dir Data/Migrations
 dotnet ef migrations add <Name> --context AccessDbContext --project src/Sfe.Core --output-dir Data/AccessMigrations
-build/build.ps1 [-Target windows|linux] [-Version 1.2.0] [-SkipTests] [-SkipSmokeTest]  # -> artifacts/
-build/build.sh  [--target linux|windows|all] [--version V] [--skip-tests] [--skip-smoke-test]
+build/build.ps1 [-Target windows|linux] [-Version 1.2.0] [-SkipTests] [-SkipSmokeTest] [-NoTests]  # -> artifacts/
+build/build.sh  [--target linux|windows|all] [--version V] [--skip-tests] [--skip-smoke-test] [--no-tests]
 dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current version
 ```
 

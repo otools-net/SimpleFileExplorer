@@ -3,6 +3,22 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## Unreleased
+
+### Added
+
+- **Excluded folders**: **Scans and previews…** in a folder's menu keeps it, with its sub-folders, out of scans,
+  trickplay or thumbnails, each on its own, for the whole space (new right `index.exclude`, given to Administrators).
+  Excluded folders show a small note in the listing and next to the folder's counts. New settings
+  `Trickplay:ExcludedFolders` and `Thumbnails:ExcludedFolders`.
+- **Administration › Scanning › Excluded folders**: every excluded folder in one table, to add, change and remove them
+  (folders gone from the disk too).
+
+### Changed
+
+- Scans keep what the index has of an excluded folder (files, tags) instead of removing it: **Remove from index…**
+  forgets a folder. Scanning an excluded folder, or one inside it, is refused.
+
 ## 1.79.0
 
 ### Added

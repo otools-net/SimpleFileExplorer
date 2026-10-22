@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Builds the portable packages of SFE locally on Linux and smoke-tests them (on Windows, use build/build.ps1).
 #
-#   build/build.sh [--target linux|windows|all] [--version V] [--skip-tests] [--skip-smoke-test]
+#   build/build.sh [--target linux|windows|all] [--version V] [--skip-tests] [--skip-smoke-test] [--no-tests]
+#
+#   --no-tests  no tests at all: both --skip-tests and --skip-smoke-test
 #
 #   linux    artifacts/SFE-<version>-x86_64.AppImage (default target)
 #   windows  artifacts/SFE-<version>-win-x64.zip (cross-published; needs `zip`; not smoke-tested here)
@@ -23,7 +25,8 @@ while [ $# -gt 0 ]; do
         --version) VERSION="$2"; shift 2 ;;
         --skip-tests) SKIP_TESTS=1; shift ;;
         --skip-smoke-test) SKIP_SMOKE=1; shift ;;
-        -h|--help) sed -n '2,9p' "$0"; exit 0 ;;
+        --no-tests) SKIP_TESTS=1; SKIP_SMOKE=1; shift ;;
+        -h|--help) sed -n '2,11p' "$0"; exit 0 ;;
         *) echo "unknown argument: $1" >&2; exit 2 ;;
     esac
 done

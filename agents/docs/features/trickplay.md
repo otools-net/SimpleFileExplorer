@@ -10,6 +10,7 @@ Hover preview: [hover-preview.md](hover-preview.md). Fingerprints: [similar-vide
   swap the new folder in: on Windows any open file (a sheet served, antivirus) blocks it, so `ReplaceAsync` retries
   and a last failure is only logged. `ReadInfo` opens with `FileShare.Delete` for the same reason.
 - `PassSettings` changes cancel and restart the pass.
+- `Trickplay:ExcludedFolders` beats `Folders`: [folder-exclusions.md](folder-exclusions.md).
 - ffmpeg `fps=1/N:round=up` (default rounding is half an interval early), then a second run tiles.
 - A pass = one discovery task filling `_pending` (`PendingVideos`) + `Parallelism` workers; player requests go to
   `_requested` first.

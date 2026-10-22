@@ -12,6 +12,7 @@ import type { TagEditorDialog } from '../tags/tag-editor.dialog';
 import type { TagManagerDialog } from '../tags/tag-manager.dialog';
 import type { ViewerComponent } from './viewer/viewer.component';
 import type { RemoveFromIndexDialog } from './scan/remove-from-index.dialog';
+import type { FolderExclusionsDialog } from './scan/folder-exclusions.dialog';
 import type { SearchHelpDialog } from './topbar/search-help.dialog';
 
 /**
@@ -27,6 +28,8 @@ export class Dialogs {
     readonly tagEditor = signal<TagEditorDialog | null>(null);
     readonly tagManager = signal<TagManagerDialog | null>(null);
     readonly removeFromIndex = signal<RemoveFromIndexDialog | null>(null);
+    /** Scans and previews… of a folder. */
+    readonly folderExclusions = signal<FolderExclusionsDialog | null>(null);
     readonly imageEditor = signal<ImageEditorDialog | null>(null);
     readonly searchHelp = signal<SearchHelpDialog | null>(null);
     /** New folder and Rename. */

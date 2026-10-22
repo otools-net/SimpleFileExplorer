@@ -522,8 +522,9 @@ public sealed class ScanOptions
     public List<string> IgnoredFiles { get; set; } = [];
 
     /// <summary>
-    /// Library folders (relative to the root, with their sub-folders) that scans skip: removed from the index by
-    /// the next scan of their parent, and never indexed again until taken off the list.
+    /// Library folders (relative to the root, with their sub-folders) that scans skip: what is already indexed there
+    /// (files, tags) stays as it is, never refreshed, until taken off the list. Removing a folder from the index
+    /// (<c>DELETE api/index/folder</c>) forgets it.
     /// </summary>
     public List<string> ExcludedFolders { get; set; } = [];
 
@@ -617,6 +618,12 @@ public sealed class ThumbnailOptions
     /// </summary>
     public bool AnimatedHover { get; set; } = true;
 
+    /// <summary>
+    /// Library folders (relative to the root, with their sub-folders) whose files get no new thumbnails; ones
+    /// already made are still shown.
+    /// </summary>
+    public List<string> ExcludedFolders { get; set; } = [];
+
     /// <summary>Thumbnails generated concurrently.</summary>
     public int MaxConcurrency { get; set; } = 2;
 
@@ -634,6 +641,12 @@ public sealed class TrickplayOptions
 
     /// <summary>Library folders (relative to the root, with their sub-folders) whose videos get trickplay; empty = the whole library.</summary>
     public List<string> Folders { get; set; } = [];
+
+    /// <summary>
+    /// Library folders (relative to the root, with their sub-folders) whose videos get no trickplay, even inside
+    /// <see cref="Folders"/>; sheets already made are still shown.
+    /// </summary>
+    public List<string> ExcludedFolders { get; set; } = [];
 
     /// <summary>Seconds between two frames.</summary>
     public int IntervalSeconds { get; set; } = 10;

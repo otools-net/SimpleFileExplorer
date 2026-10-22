@@ -53,7 +53,8 @@ public static class SettingCatalog
         "reading.prose.font", "reading.prose.size", "reading.prose.lineHeight", "reading.prose.width", "reading.prose.padding", "reading.prose.wrap", "reading.prose.lineNumbers",
     ];
 
-    private static readonly HashSet<string> PerLibraryKeys = ["scan.excludedFolders", "trickplay.folders", "editor.outputFolder"];
+    private static readonly HashSet<string> PerLibraryKeys =
+        ["scan.excludedFolders", "trickplay.folders", "trickplay.excludedFolders", "thumbnails.excludedFolders", "editor.outputFolder"];
 
     /// <summary>The right of a key, by its first part (the settings page's sections).</summary>
     private static readonly (string Prefix, string Right)[] RightsByPrefix =

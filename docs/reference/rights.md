@@ -32,6 +32,7 @@ Each right is of one of two kinds (column **Kind**):
 | `tags.assign` | tag files, folders and searches | Write | no | Administrators, Users |
 | `tags.manage` | create, edit, delete tags; clear the tag history | Write | no | Administrators |
 | `index.scan`, `index.remove` | scan; remove folders from the index | Write | no | Administrators |
+| `index.exclude` | [keep folders out of scans, trickplay or thumbnails](../user-guide/scanning.md#excluded-folders), for the whole space | Write | no | Administrators |
 | `tracking.duplicates`, `tracking.similar` | duplicates, similar videos | Read | no | Administrators |
 | `tracking.duplicatesRemove` | remove a copy of a duplicate (to the trash) | Write (files) | no | Administrators |
 | `tracking.missing` | moved files: list, relink, forget | Write | no | Administrators |

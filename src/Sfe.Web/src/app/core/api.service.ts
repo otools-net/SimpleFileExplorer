@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
     AccessGain, ArchiveLink, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, CommandResult, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
-    FolderAccessReport, FolderCover, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
+    ExcludedFolder, ExclusionKind, FolderAccessReport, FolderCover, FolderExclusions, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
@@ -83,6 +83,12 @@ export class Api {
     /** Removes a folder from the index (not from the disk); `exclude` also keeps future scans out of it. Resolves with the scan status (409) while a scan runs. */
     removeFromIndex = (path: string, exclude: boolean) =>
         this.delete<RemovedFromIndex | ScanStatus>(`api/index/folder?${params({ path, exclude }).toString()}`);
+
+    /** Every folder kept out of scans, trickplay or thumbnails in the space (those the session sees). */
+    folderExclusions = () => this.get<ExcludedFolder[]>('api/index/exclusions');
+    /** Keeps a folder out of scans, trickplay or thumbnails (true) or lets it in again (false); absent kinds stay as they are. */
+    setFolderExclusions = (path: string, changes: Partial<Record<ExclusionKind, boolean>>) =>
+        this.put<FolderExclusions>('api/index/exclusions', { path, ...changes });
 
     /** The background tasks, their schedules and the server's clock. */
     tasks = () => this.get<TaskOverview>('api/tasks');

@@ -7,6 +7,7 @@ Code: `src/Sfe.Core/Thumbnails/` (`ThumbnailService` (disk cache, concurrency ga
 - Cache layout: `{k[0..2]}/{k[2..4]}/{k[4..]}.bin`, `k` = `ThumbnailService.CacheKey` = lower hex SHA1 of
   `{SHA1(folder)}/{SHA1(file)}` (the pre-1.40 folder/file names, so the update renames without the sources); empty
   file = no thumbnail. Trickplay uses the same key ([trickplay.md](trickplay.md)).
+- `Thumbnails:ExcludedFolders`: cached ones served, none made ([folder-exclusions.md](folder-exclusions.md)).
 - Unwanted thumbnail jobs are dropped before ffmpeg ([scale.md](../development/scale.md)).
 - Images/thumbnails are sent `no-store`; trickplay sheets are cacheable (URL carries its `version`).
 - `ConfigService.isLargeImage` (size > `config.largeImageSize`, thumbnails on) picks thumbnail-only vs original in

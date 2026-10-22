@@ -128,6 +128,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [indexing](agents/docs/features/indexing.md) | scans, removing folders from the index | `Core/Indexing/` |
 | [resolution](agents/docs/features/resolution.md) | width/height, HR/LR marks, `w:`/`h:`/`r:` | `MediaDimensions`, `Core/Search/` |
 | [duration](agents/docs/features/duration.md) | durations, badges, `d:` | `MediaDimensions`, `DirectoryIndexer` |
+| [folder-exclusions](agents/docs/features/folder-exclusions.md) | folders kept out of scans (index frozen), trickplay, thumbnails: lists, right `index.exclude`, chip, dialog | `FolderExclusions`, `ScanEndpoints`, `folder-exclusions.dialog.ts` |
 | [not-indexed-marks](agents/docs/features/not-indexed-marks.md) | fading files not in the index | `AttachIndexDataAsync`, `styles/items.css` |
 | [thumbnails](agents/docs/features/thumbnails.md) | thumbnail cache, previews, caching headers | `Core/Thumbnails/`, `PreviewsService` |
 | [trickplay](agents/docs/features/trickplay.md) | timeline sheets, passes | `Core/Trickplay/`, `TrickplayWorker` |

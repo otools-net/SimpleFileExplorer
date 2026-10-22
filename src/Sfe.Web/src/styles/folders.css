@@ -101,6 +101,24 @@
     font-variant-numeric: tabular-nums;
 }
 
+/*
+ * A folder kept out of scans, trickplay or thumbnails (an administrator's choice, for the whole space): a small muted
+ * chip after its name. Discreet on purpose: the folder works as any other, only what is made of it in the background
+ * differs. The full wording is in its hint.
+ */
+.exclusion-chip {
+    flex: none;
+    padding: 1px 6px;
+    border: 1px dashed var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 16px;
+    white-space: nowrap;
+}
+.folder > .exclusion-chip { margin-left: 4px; }
+.folder-caption .exclusion-chip { margin-left: auto; }
+
 
 /* ---------- A folder's buttons (tags, ⋮) ---------- */
 

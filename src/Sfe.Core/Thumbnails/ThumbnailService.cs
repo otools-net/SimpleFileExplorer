@@ -63,7 +63,8 @@ public sealed class ThumbnailService
         if (IsFresh(cacheFile, sourceInfo))
             return new FileInfo(cacheFile).Length > 0 ? cacheFile : null;
 
-        if (!IsAvailable)
+        // Folders excluded from thumbnails keep the ones already made, and get no new ones.
+        if (!IsAvailable || FolderExclusions.Of(_options.CurrentValue).IsExcluded(ExclusionKind.Thumbnails, _paths, sourceInfo.DirectoryName!))
             return null;
 
         // Concurrent requests for the same file share a single ffmpeg run.

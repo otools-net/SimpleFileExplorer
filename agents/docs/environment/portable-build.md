@@ -14,4 +14,5 @@ Code: `build/build.ps1`, `build/build.sh`, `build/portable/appsettings.json`, `b
   tests pass `--Sfe:OpenBrowser=false`.
 - `build/windows/*.cmd` (install-service / uninstall-service) are published in the win-x64 package; `.cmd` files are
   CRLF ([line-endings.md](line-endings.md)).
+- `--no-tests` / `-NoTests`: no tests at all (= skip tests + skip smoke test), for a quick package.
 - Version in package names: [app-version.md](../architecture/app-version.md).

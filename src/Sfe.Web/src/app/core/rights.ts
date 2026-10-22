@@ -24,6 +24,7 @@ export const Rights = {
     manageTags: 'tags.manage',
     scan: 'index.scan',
     removeFromIndex: 'index.remove',
+    excludeFolders: 'index.exclude',
     duplicates: 'tracking.duplicates',
     removeDuplicates: 'tracking.duplicatesRemove',
     similarVideos: 'tracking.similar',

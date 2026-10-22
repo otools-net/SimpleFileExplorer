@@ -7,6 +7,7 @@ import { Rights } from '../../core/rights';
 import { ToastService } from '../../core/toast.service';
 import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
+import { ListingStore } from '../listing.store';
 import { ScanService } from '../scan/scan.service';
 import { Popovers } from './popovers.service';
 
@@ -44,7 +45,7 @@ import { Popovers } from './popovers.service';
                     </span>
                 </p>
             }
-            @if (canScan() || canRemove()) {
+            @if (canScan() || canRemove() || canExclude()) {
                 <hr>
             }
             @if (canScan()) {
@@ -55,6 +56,11 @@ import { Popovers } from './popovers.service';
             @if (canRemove()) {
                 <button type="button" role="menuitem" [disabled]="scan.running()" [title]="scan.running() ? 'A scan is in progress' : 'Take this folder and its sub-folders out of the search index; the files stay on the disk (asks first)'" (click)="run(removeFromIndex)">
                     <svg sfeIcon="close"></svg>Remove from index…
+                </button>
+            }
+            @if (canExclude()) {
+                <button type="button" role="menuitem" title="Keep this folder out of scans, trickplay or thumbnails, for the whole space" (click)="run(excludeFolder)">
+                    <svg sfeIcon="scan"></svg>Scans and previews…
                 </button>
             }
             @if (otherTenants().length) {
@@ -96,6 +102,12 @@ export class MainMenuComponent {
     protected readonly user = this.configService.user;
     protected readonly canScan = computed(() => this.configService.rights().has(Rights.scan));
     protected readonly canRemove = computed(() => this.configService.rights().has(Rights.removeFromIndex));
+    /** The folder browsed (not the library itself, nor a search) may be kept out of scans and previews. */
+    private readonly store = inject(ListingStore);
+    protected readonly canExclude = computed(() => {
+        const listing = this.store.listing();
+        return !!listing && !this.store.searching() && !!this.store.route().path && this.store.can(Rights.excludeFolders);
+    });
     protected readonly adminVisible = computed(() => {
         const rights = this.configService.rights();
         return visibleSections(any => any.some(right => rights.has(right))).length > 0;
@@ -116,6 +128,13 @@ export class MainMenuComponent {
 
     protected readonly startScan = () => this.scan.start();
     protected readonly removeFromIndex = () => this.dialogs.removeFromIndex()?.open();
+    protected readonly excludeFolder = () => {
+        const listing = this.store.listing();
+        if (listing && 'exclusions' in listing)
+            this.dialogs.folderExclusions()?.open(listing.path, listing.exclusions);
+        else
+            this.dialogs.folderExclusions()?.open(this.store.route().path, null);
+    };
     protected readonly toggleFullscreen = () => {
         if (document.fullscreenElement)
             void document.exitFullscreen();

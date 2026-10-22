@@ -11,6 +11,7 @@ import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { FolderCoverComponent } from './folder-cover.component';
 import { ItemActions } from './item-actions.service';
+import { exclusionChip, exclusionTitle } from './exclusions';
 import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
 
 /**
@@ -41,9 +42,16 @@ import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
                         <span class="badge folder-count" [title]="countTitle()">{{ indexedItems()!.toLocaleString() }}</span>
                     }
                 </sfe-folder-cover>
-                <span class="folder-caption"><svg sfeIcon="folder"></svg><span class="item-name">{{ item().name }}</span></span>
+                <span class="folder-caption"><svg sfeIcon="folder"></svg><span class="item-name">{{ item().name }}</span>
+                    @if (exclusion(); as exclusion) {
+                        <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
+                    }
+                </span>
             } @else {
                 <svg sfeIcon="folder"></svg><span class="item-name">{{ item().name }}</span>
+                @if (exclusion(); as exclusion) {
+                    <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
+                }
                 @if (indexedItems() !== null) {
                     <span class="folder-count" [title]="countTitle()">{{ indexedItems()!.toLocaleString() }}</span>
                 }
@@ -73,7 +81,11 @@ export class FolderItemComponent {
     protected readonly transfers = inject(FileTransfers);
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));
     protected readonly unindexed = computed(() => this.item().indexed === false);
-    protected readonly linkTitle = computed(() => this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''));
+    /** Kept out of scans, trickplay or thumbnails (for everyone: it tells why). */
+    protected readonly exclusion = computed(() => exclusionChip(this.item().excluded));
+    protected readonly exclusionTitle = computed(() => exclusionTitle(this.item().excluded, this.item().path));
+    protected readonly linkTitle = computed(() => [this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''), this.exclusionTitle()]
+        .filter(Boolean).join('\n'));
     /** Indexed files and sub-folders directly inside; null when unknown (not indexed, older server). */
     protected readonly indexedItems = computed(() => this.item().indexedItems ?? null);
     protected readonly countTitle = computed(() =>

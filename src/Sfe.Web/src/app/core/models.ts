@@ -139,6 +139,29 @@ export interface LibraryItem {
     indexed?: boolean | null;
     /** Browsing only, for an indexed folder: how many files and sub-folders directly inside it the index has. */
     indexedItems?: number | null;
+    /** Browsing only, for a folder kept out of scans, trickplay or thumbnails; absent when it is in none. */
+    excluded?: FolderExclusions | null;
+}
+
+/**
+ * What a folder is kept out of, for the whole space (`index.exclude`): for each, the listed folder it is excluded
+ * through (itself, or the nearest listed parent), null when it isn't.
+ */
+export interface FolderExclusions {
+    scan: string | null;
+    trickplay: string | null;
+    thumbnails: string | null;
+}
+
+export type ExclusionKind = keyof FolderExclusions;
+
+/** A folder on the exclusion lists (Administration › Scanning › Excluded folders): which lists, and whether it is still on the disk. */
+export interface ExcludedFolder {
+    path: string;
+    scan: boolean;
+    trickplay: boolean;
+    thumbnails: boolean;
+    exists: boolean;
 }
 
 /**
@@ -297,6 +320,8 @@ export interface DirectoryListing {
     fileCount: number;
     /** What folder rules let the session do here; absent or null when none apply (every right of the space). */
     access?: FolderAccessView | null;
+    /** What the folder is kept out of; absent or null when nothing. */
+    exclusions?: FolderExclusions | null;
 }
 
 /** What folder rules let the session do in a folder. */

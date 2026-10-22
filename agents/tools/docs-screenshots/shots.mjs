@@ -400,6 +400,26 @@ const scenes = {
         await b.shot(OUT + 'remove-from-index.png');
         await b.close();
     },
+    /** Folders kept out of scans and previews: the chips in the listing, then the dialog; put back after. */
+    async exclusions() {
+        const b = await session();
+        await b.goto(BASE, 1500);
+        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Inbox', scan: true }));
+        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Music', trickplay: true, thumbnails: true }));
+        await b.open('');
+        await b.shot(OUT + 'excluded-folders.png');
+        await b.open('?path=Inbox');
+        await b.clickTitle('Kept out of scans');
+        await sleep(800);
+        await b.shot(OUT + 'folder-exclusions.png');
+        const page = await session({ height: 900 });
+        await page.open(admin('scanning', 'exclusions'), 3000);
+        await page.shot(OUT + 'admin-scanning-exclusions.png');
+        await page.close();
+        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Inbox', scan: false }));
+        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Music', trickplay: false, thumbnails: false }));
+        await b.close();
+    },
     async history() {
         const b = await session();
         await b.eval(`localStorage.setItem('sfe.searchHistory', JSON.stringify(['t:beach -t:sea', 'd:>5s e:webm', 'sunset', 'r:hr', '*2024 lighthouse'])); 1`);

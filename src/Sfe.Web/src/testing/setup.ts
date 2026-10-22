@@ -60,6 +60,12 @@ const noRect = { x: 0, y: 0, width: 0, height: 0, top: 0, left: 0, right: 0, bot
 Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
 Range.prototype.getBoundingClientRect = () => noRect;
 
+// jsdom doesn't play media: its play() logs "Not implemented" and returns no promise, which broke the player's
+// `play().catch` in every spec that opens a video (viewer, picture editor). Specs can still spy on these.
+HTMLMediaElement.prototype.play = () => Promise.resolve();
+HTMLMediaElement.prototype.pause = () => { /* nothing playing in jsdom */ };
+HTMLMediaElement.prototype.load = () => { /* nothing to load in jsdom */ };
+
 // media-captions (the subtitles view) extends the browser's VTTCue when it loads: jsdom has none.
 class TestVTTCue extends EventTarget {
     id = '';

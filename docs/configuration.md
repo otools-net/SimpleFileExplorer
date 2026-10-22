@@ -86,7 +86,7 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Scan:ComputeHashes`, `ReadResolution`, `Parallelism` | [Scanning › Indexing](administration/scanning.md#indexing) |
 | `Sfe:Tags:SidebarCount`, `RecordHistory` | [Tags › Settings](administration/tags.md#settings) |
 | `Sfe:FileTracking:…` | [Duplicates & moves › Settings](administration/duplicates-and-moves.md#settings) |
-| `Sfe:Thumbnails:Enabled`, `Width`, `VideoSeekSeconds`, `LargeImageKilobytes`, `SingleViewOriginals`, `AnimatedHover`, `MaxConcurrency`, `TimeoutSeconds` | [Thumbnails](administration/thumbnails.md) |
+| `Sfe:Thumbnails:Enabled`, `Width`, `VideoSeekSeconds`, `LargeImageKilobytes`, `SingleViewOriginals`, `AnimatedHover`, `ExcludedFolders`, `MaxConcurrency`, `TimeoutSeconds` | [Thumbnails](administration/thumbnails.md) |
 | `Sfe:Trickplay:…` | [Trickplay › Settings](administration/trickplay.md#settings) |
 | `Sfe:Editor:OutputFolder`, `Quality` | [Picture editor](administration/picture-editor.md) |
 | `Sfe:Files:PortableNames`, `WorkFolder` (`Library`, `Server`), `DeletePermanently`, `Trash:RetentionDays`, `MinimumFreeSpaceMegabytes`, `Uploads:MaxFileSizeMegabytes`, `Uploads:KeepUnfinishedHours`, `MaxArchiveMegabytes` | [File management](administration/file-management.md) |

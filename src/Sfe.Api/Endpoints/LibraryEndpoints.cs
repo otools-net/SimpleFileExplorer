@@ -180,6 +180,9 @@ public static class LibraryEndpoints
                 : TypedResults.NotFound();
         }
 
+        // Shown to everyone: it tells why a folder has no thumbnails or isn't found by searches.
+        listing = FolderExclusions.Of(options.CurrentValue).Mark(listing);
+
         try
         {
             listing = listing with { Items = await tags.AttachIndexDataAsync(listing.Items, cancellationToken) };

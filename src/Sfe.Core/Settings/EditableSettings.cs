@@ -88,6 +88,7 @@ public sealed class EditableSettings
             LargeImageKilobytes = options.Thumbnails.LargeImageKilobytes,
             SingleViewOriginals = options.Thumbnails.SingleViewOriginals,
             AnimatedHover = options.Thumbnails.AnimatedHover,
+            ExcludedFolders = [.. options.Thumbnails.ExcludedFolders],
             MaxConcurrency = options.Thumbnails.MaxConcurrency,
             TimeoutSeconds = options.Thumbnails.TimeoutSeconds,
         },
@@ -95,6 +96,7 @@ public sealed class EditableSettings
         {
             Enabled = options.Trickplay.Enabled,
             Folders = [.. options.Trickplay.Folders],
+            ExcludedFolders = [.. options.Trickplay.ExcludedFolders],
             IntervalSeconds = options.Trickplay.IntervalSeconds,
             Width = options.Trickplay.Width,
             Columns = options.Trickplay.Columns,
@@ -190,10 +192,12 @@ public sealed class EditableSettings
         options.Thumbnails.LargeImageKilobytes = Thumbnails.LargeImageKilobytes;
         options.Thumbnails.SingleViewOriginals = Thumbnails.SingleViewOriginals;
         options.Thumbnails.AnimatedHover = Thumbnails.AnimatedHover;
+        options.Thumbnails.ExcludedFolders = [.. Thumbnails.ExcludedFolders];
         options.Thumbnails.MaxConcurrency = Thumbnails.MaxConcurrency;
         options.Thumbnails.TimeoutSeconds = Thumbnails.TimeoutSeconds;
         options.Trickplay.Enabled = Trickplay.Enabled;
         options.Trickplay.Folders = [.. Trickplay.Folders];
+        options.Trickplay.ExcludedFolders = [.. Trickplay.ExcludedFolders];
         options.Trickplay.IntervalSeconds = Trickplay.IntervalSeconds;
         options.Trickplay.Width = Trickplay.Width;
         options.Trickplay.Columns = Trickplay.Columns;
@@ -291,6 +295,9 @@ public sealed class ThumbnailSettings
     public int LargeImageKilobytes { get; set; }
     public bool SingleViewOriginals { get; set; }
     public bool AnimatedHover { get; set; }
+
+    /// <summary>Library folders, relative to the root and separated by <c>/</c>.</summary>
+    public List<string> ExcludedFolders { get; set; } = [];
     public int MaxConcurrency { get; set; }
     public int TimeoutSeconds { get; set; }
 }
@@ -301,6 +308,9 @@ public sealed class TrickplaySettings
 
     /// <summary>Library folders, relative to the root and separated by <c>/</c>.</summary>
     public List<string> Folders { get; set; } = [];
+
+    /// <summary>Library folders, relative to the root and separated by <c>/</c>.</summary>
+    public List<string> ExcludedFolders { get; set; } = [];
     public int IntervalSeconds { get; set; }
     public int Width { get; set; }
     public int Columns { get; set; }

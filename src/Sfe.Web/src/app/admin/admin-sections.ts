@@ -79,6 +79,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         description: 'What scans leave out, which files are photos, videos and audio, and what scans read from them.',
         subpages: [
             settingsPage('skipped', 'The folders and files scans leave out, and hidden items.', 'What to scan', 'skipped'),
+            page('exclusions', 'Excluded folders', 'The folders kept out of scans, trickplay or thumbnails: add, change and remove them.', Rights.excludeFolders),
             settingsPage('fileTypes', 'Which extensions are photos, videos and audio.', 'File types', 'types'),
             settingsPage('indexing', 'What scans read from files (fingerprints, resolutions, durations), and how many folders at once.', 'Indexing', 'indexing'),
         ],

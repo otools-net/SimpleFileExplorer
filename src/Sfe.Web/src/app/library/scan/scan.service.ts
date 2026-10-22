@@ -70,7 +70,16 @@ export class ScanService {
             return;
         const path = this.store.route().path;
         const name = path ? `“${path}”` : `the whole library (${this.config.value.rootName})`;
-        if (!confirm(`Scan ${name} and all its sub-folders?\n\nThe search index is updated in the background. This can take a while on large folders.`))
+        // A folder kept out of scans: nothing to do there (the server refuses it too).
+        const listing = this.store.listing();
+        const through = listing && !this.store.searching() && 'exclusions' in listing ? listing.exclusions?.scan : null;
+        if (through) {
+            this.toasts.show(through === listing!.path
+                ? `${name} is excluded from scans: what the index has of it stays as it is.`
+                : `${name} is inside “${through}”, which is excluded from scans.`);
+            return;
+        }
+        if (!confirm(`Scan ${name} and all its sub-folders?\n\nThe search index is updated in the background. This can take a while on large folders.${this.skippedNote()}`))
             return;
 
         this.starting.set(true);
@@ -85,6 +94,15 @@ export class ScanService {
         } finally {
             this.starting.set(false);
         }
+    }
+
+    /** The folders listed here that scans skip, for the confirmation: '' when none. */
+    private skippedNote(): string {
+        const skipped = this.store.searching() ? [] : this.store.items().filter(item => item.kind === 'directory' && item.excluded?.scan).map(item => `“${item.name}”`);
+        if (!skipped.length)
+            return '';
+        const names = skipped.length > 3 ? `${skipped.slice(0, 3).join(', ')} and ${skipped.length - 3} more` : skipped.join(', ');
+        return `\n\nExcluded from scans: ${names}. ${skipped.length === 1 ? 'It is' : 'They are'} skipped, and what the index has of ${skipped.length === 1 ? 'it' : 'them'} stays as it is.`;
     }
 
     async cancel(): Promise<void> {

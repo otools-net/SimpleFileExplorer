@@ -47,6 +47,9 @@ public sealed class DirectoryIndexer(
         // "D:\Media\" and "D:\Media" are the same folder: store it the way enumeration reports it (no trailing
         // separator), otherwise its sub-folders cannot find their parent. Drive roots keep theirs.
         var start = Path.TrimEndingDirectorySeparator(Path.GetFullPath(fullPath));
+        // A folder excluded from scans (or inside one) keeps what is indexed there as it is.
+        if (FolderExclusions.Of(options.CurrentValue).IsExcluded(ExclusionKind.Scan, paths, start))
+            return;
         var level = new List<PendingDirectory> { new(start, start, []) };
         var parallel = new ParallelOptions
         {
@@ -110,15 +113,22 @@ public sealed class DirectoryIndexer(
         await SynchronizeFilesAsync(db, directory.Id, directoryInfo, maxPathLength, progress, cancellationToken);
 
         var subDirectories = new List<PendingDirectory>();
+        // Folders excluded from scans: not visited, and what the index has of them stays.
+        var kept = new List<string>();
         foreach (var child in directoryInfo.EnumerateDirectories("*", browser.EnumerationOptions))
         {
+            if (IsExcludedFolder(child))
+            {
+                kept.Add(Path.TrimEndingDirectorySeparator(child.FullName));
+                continue;
+            }
             if (IsIgnoredDirectory(child) || !IsStorable(child.FullName, maxPathLength))
                 continue;
             if (ToPending(pending, child) is { } next)
                 subDirectories.Add(next);
         }
 
-        var onDisk = subDirectories.Select(d => d.Path).ToHashSet(LibraryPaths.PathComparer);
+        var onDisk = subDirectories.Select(d => d.Path).Concat(kept).ToHashSet(LibraryPaths.PathComparer);
         var obsolete = await db.Directories
             .Where(d => d.ParentId == directory.Id)
             .Select(d => d.FullName)
@@ -478,10 +488,13 @@ public sealed class DirectoryIndexer(
 
     private bool IsIgnoredDirectory(DirectoryInfo directory) =>
         NameSet(ref _ignoredDirectories, Scan.IgnoredDirectories).Contains(directory.Name)
-        || ExcludedSet().Contains(Path.TrimEndingDirectorySeparator(directory.FullName))
+        || IsExcludedFolder(directory)
         // SFE's work folder (the trash...) is never indexed.
         || (directory.Name.Length == LibraryPaths.WorkFolderName.Length && paths.ToRelative(directory.FullName) is { } relative
             && LibraryPaths.IsWorkFolderRelative(relative));
+
+    /// <summary>The folder itself is on <see cref="ScanOptions.ExcludedFolders"/>.</summary>
+    private bool IsExcludedFolder(DirectoryInfo directory) => ExcludedSet().Contains(Path.TrimEndingDirectorySeparator(directory.FullName));
 
     /// <summary>Full paths of <see cref="ScanOptions.ExcludedFolders"/>, without trailing separator.</summary>
     private HashSet<string> ExcludedSet()

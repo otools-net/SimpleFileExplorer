@@ -28,6 +28,7 @@ public static class Rights
     public const string ManageTags = "tags.manage";
     public const string Scan = "index.scan";
     public const string RemoveFromIndex = "index.remove";
+    public const string ExcludeFolders = "index.exclude";
     public const string Duplicates = "tracking.duplicates";
     public const string RemoveDuplicates = "tracking.duplicatesRemove";
     public const string SimilarVideos = "tracking.similar";
@@ -149,6 +150,7 @@ public static class RightCatalog
         Tenant(Rights.ManageTags, false, Administrators, W, null, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),
         Tenant(Rights.Scan, false, Administrators, W, Readable, "Index", "Scan", "Start and stop scans of the space's library."),
         Tenant(Rights.RemoveFromIndex, false, Administrators, W, Readable, "Index", "Remove folders from the index", "Forget a folder's files and tags, and keep scans out of it."),
+        Tenant(Rights.ExcludeFolders, false, Administrators, W, Readable, "Index", "Exclude folders", "Keep folders out of scans, trickplay or thumbnails, for the whole space (what is already indexed or made stays).", since: 10),
         Tenant(Rights.Duplicates, false, Administrators, R, Readable, "Duplicates & moves", "See duplicates", "List identical files."),
         Tenant(Rights.RemoveDuplicates, false, Administrators, W, Writable, "Duplicates & moves", "Delete duplicates", "Delete a copy of a file from the disk (its tags go to the copy kept)."),
         Tenant(Rights.SimilarVideos, false, Administrators, R, Readable, "Duplicates & moves", "Similar videos", "Compare videos and list the similar ones."),

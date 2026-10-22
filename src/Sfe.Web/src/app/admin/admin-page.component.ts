@@ -30,6 +30,7 @@ import { SystemSectionComponent } from './system-section.component';
 import { TrashSectionComponent } from '../files/trash-section.component';
 import { UploadsSectionComponent } from '../files/uploads-section.component';
 import { VideoStreamsComponent } from './video-streams.component';
+import { ExclusionsSectionComponent } from '../library/scan/exclusions-section.component';
 
 /** History state of the entries of this page opened from the listing page: "back" returns there. */
 const FROM_LIBRARY = 'sfeFromLibrary';
@@ -55,7 +56,7 @@ export { leaveAdminPage } from './leave-admin-page';
     selector: 'sfe-admin-page',
     imports: [RouterLink, NgTemplateOutlet, IconComponent, EmptyStateComponent, SettingsPanelComponent, TagListComponent, TagEditorDialog,
         TrackingSectionComponent, TasksSectionComponent, TrickplayActivityComponent, SystemSectionComponent, AccessSectionComponent,
-        AccountSectionComponent, LogsSectionComponent, VideoStreamsComponent, TrashSectionComponent, UploadsSectionComponent],
+        AccountSectionComponent, LogsSectionComponent, VideoStreamsComponent, TrashSectionComponent, UploadsSectionComponent, ExclusionsSectionComponent],
     providers: [SettingsForm],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'admin-page', '(window:beforeunload)': 'onBeforeUnload($event)' },
@@ -290,6 +291,9 @@ export { leaveAdminPage } from './leave-admin-page';
                                     }
                                     @case ('account') {
                                         <sfe-account-section [tab]="subpage().id" />
+                                    }
+                                    @case ('scanning') {
+                                        <sfe-exclusions-section />
                                     }
                                     @case ('files') {
                                         @if (subpage().id === 'uploads') {
