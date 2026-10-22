@@ -45,6 +45,7 @@ export const Rights = {
     logSettings: 'settings.logs',
     editorSettings: 'settings.editor',
     fileSettings: 'settings.files',
+    keepAliveSettings: 'settings.keepAlive',
     manageMembers: 'tenant.members',
     ownPreferences: 'account.preferences',
     ownPassword: 'account.password',
@@ -77,6 +78,7 @@ export const SETTINGS_RIGHTS: Record<string, Right> = {
     tags: Rights.tagSettings,
     editor: Rights.editorSettings,
     files: Rights.fileSettings,
+    keepAlive: Rights.keepAliveSettings,
     // How the server starts: its administrators only.
     startup: Rights.serverSettings,
 };

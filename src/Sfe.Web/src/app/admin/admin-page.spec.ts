@@ -3,13 +3,13 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { ApiError } from '../core/api.service';
-import { ClientConfig, SettingLevel, SettingState, SettingsValues, SettingsView, TaskInfo } from '../core/models';
+import { ClientConfig, KeepAliveFolder, KeepAliveView, SettingLevel, SettingState, SettingsValues, SettingsView, TaskInfo } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { ListingStore } from '../library/listing.store';
 import { ApiMock, buttonNamed, adminPageProviders, deferred, fakeConfig, loadConfig, mockApi, setMediaQuery, settingsValues, settle, tag, type } from '../../testing/fakes';
 import { setValue } from '../settings/settings-schema';
-import { ADMIN_GROUPS, ADMIN_SECTIONS, groupId } from './admin-sections';
+import { ADMIN_GROUPS, ADMIN_SECTIONS, groupId, visibleSections } from './admin-sections';
 
 let api: ApiMock;
 let harness: RouterTestingHarness;
@@ -479,6 +479,72 @@ describe('SystemSectionComponent', () => {
         await setUp({ rights: [Rights.apiDocs] });
         await open('/admin?section=system&page=maintenance');
         expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
+    });
+});
+
+describe('KeepAliveStatusComponent', () => {
+    const view = (overrides: Partial<KeepAliveView> = {}): KeepAliveView => ({ mode: 'auto', intervalSeconds: 240, folders: [], ...overrides });
+    const folder = (overrides: Partial<KeepAliveFolder> = {}): KeepAliveFolder => ({
+        path: '', isNetwork: true, lastPing: '2026-10-22T10:00:00Z', durationMilliseconds: 14.4, error: null, failingSince: null, waiting: false, ...overrides,
+    });
+    const text = () => element.querySelector('.keep-alive-status')!.textContent!;
+
+    it('says it is off, and pings the library folder now on request', async () => {
+        await setUp();
+        api.keepAlive.mockResolvedValue(view({ mode: 'off' }));
+        api.pingKeepAlive.mockResolvedValue(view({ mode: 'off', folders: [folder({ isNetwork: false })] }));
+        await open('/admin?section=keepAlive');
+
+        expect(eyebrow()).toBe('Keep alive');
+        expect(text()).toContain('Off: the library folder is not pinged.');
+        expect(text()).toContain('Ping now tries the library folder once.');
+
+        buttonNamed(element, 'Ping now')!.click();
+        await settle();
+
+        expect(api.pingKeepAlive).toHaveBeenCalled();
+        expect(element.querySelector('.keep-alive-name')!.textContent).toBe('Library folder');
+        expect(element.querySelector('.keep-alive-network')!.textContent).toBe('Not on a network share');
+        expect(element.querySelector('.keep-alive-detail')!.textContent).toContain('14 ms');
+    });
+
+    it('shows the folders pinged, and those failing with why and since when', async () => {
+        await setUp();
+        api.keepAlive.mockResolvedValue(view({ folders: [folder({ error: 'The network name cannot be found.', failingSince: '2026-10-22T09:00:00Z', durationMilliseconds: null })] }));
+        await open('/admin?section=keepAlive&page=status');
+
+        expect(element.querySelector('.settings-status')!.getAttribute('data-state')).toBe('unavailable');
+        expect(text()).toContain('1 folder not answering');
+        expect(element.querySelector('.keep-alive-row')!.classList).toContain('failed');
+        expect(element.querySelector('.keep-alive-error')!.textContent).toContain('The network name cannot be found.');
+        expect(element.querySelector('.keep-alive-error')!.textContent).toContain('Failing since');
+
+        TestBed.resetTestingModule();
+        await setUp();
+        api.keepAlive.mockResolvedValue(view({ folders: [folder()] }));
+        await open('/admin?section=keepAlive');
+        expect(element.querySelector('.settings-status')!.getAttribute('data-state')).toBe('idle');
+        expect(text()).toContain('On for folders on a network share, every 240 seconds.');
+    });
+
+    it('opens its settings from the status', async () => {
+        await setUp();
+        api.keepAlive.mockResolvedValue(view());
+        await open('/admin?section=keepAlive');
+
+        buttonNamed(element, 'Settings')!.click();
+        await settle();
+
+        expect(url()).toBe('/admin?section=keepAlive&page=settings');
+        expect(element.textContent).toContain('Keep the library folder alive');
+    });
+
+    it('is only for those with its right', () => {
+        const pages = (rights: string[]) =>
+            visibleSections(wanted => wanted.some(r => rights.includes(r))).find(s => s.id === 'keepAlive')?.subpages.map(p => p.id) ?? [];
+        expect(pages([Rights.keepAliveSettings])).toEqual(['status', 'settings']);
+        expect(pages([Rights.serverSettings])).toEqual(['settings']);
+        expect(pages([Rights.scanningSettings])).toEqual([]);
     });
 });
 

@@ -40,6 +40,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | [Playback](administration/playback.md) | Video player, external player, data server |
 | [Scanning](administration/scanning.md) | What scans skip, file types, what scans read |
 | [File management](administration/file-management.md) | The trash, deleting, which names are accepted, the work folder |
+| [Keep alive](administration/keep-alive.md) | Keeping a library folder on a network share from being dropped |
 | [Tags](administration/tags.md) | The tag list and editor, the sidebar's history |
 | [Duplicates & moves](administration/duplicates-and-moves.md) | Duplicates, similar videos, moved files |
 | [Thumbnails](administration/thumbnails.md) | Previews in listings and the viewer |

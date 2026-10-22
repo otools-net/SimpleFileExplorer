@@ -38,6 +38,7 @@ public sealed class EditableSettings
     public LogSettings Logs { get; set; } = new();
     public EditorSettings Editor { get; set; } = new();
     public FileSettings Files { get; set; } = new();
+    public KeepAliveSettings KeepAlive { get; set; } = new();
 
     public static EditableSettings From(SfeOptions options) => new()
     {
@@ -155,6 +156,7 @@ public sealed class EditableSettings
             Uploads = new() { MaxFileSizeMegabytes = options.Files.Uploads.MaxFileSizeMegabytes, KeepUnfinishedHours = options.Files.Uploads.KeepUnfinishedHours },
             MaxArchiveMegabytes = options.Files.MaxArchiveMegabytes,
         },
+        KeepAlive = new() { Mode = options.KeepAlive.Mode, IntervalSeconds = options.KeepAlive.IntervalSeconds, TimeoutSeconds = options.KeepAlive.TimeoutSeconds },
     };
 
     public void ApplyTo(SfeOptions options)
@@ -241,6 +243,9 @@ public sealed class EditableSettings
         options.Files.Uploads.MaxFileSizeMegabytes = Files.Uploads.MaxFileSizeMegabytes;
         options.Files.Uploads.KeepUnfinishedHours = Files.Uploads.KeepUnfinishedHours;
         options.Files.MaxArchiveMegabytes = Files.MaxArchiveMegabytes;
+        options.KeepAlive.Mode = KeepAlive.Mode;
+        options.KeepAlive.IntervalSeconds = KeepAlive.IntervalSeconds;
+        options.KeepAlive.TimeoutSeconds = KeepAlive.TimeoutSeconds;
     }
 }
 
@@ -422,4 +427,11 @@ public sealed class UploadSettings
 public sealed class TrashSettings
 {
     public int RetentionDays { get; set; }
+}
+
+public sealed class KeepAliveSettings
+{
+    public KeepAliveMode Mode { get; set; }
+    public int IntervalSeconds { get; set; }
+    public int TimeoutSeconds { get; set; }
 }

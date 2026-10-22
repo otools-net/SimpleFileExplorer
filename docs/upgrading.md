@@ -36,7 +36,8 @@ to the earlier version by installing it again.
   no longer removed from the index by the next scan of its parent; what the index has of it stays as it is. A folder
   added there by hand and not scanned since keeps its files and tags in search. To forget one, use **Remove from
   index…** in the ⋮ menu while browsing it.
-- The Administrators group of every space gets the new right `index.exclude` (**Scans and previews…** of a folder).
+- The Administrators group of every space gets the new rights `index.exclude` (**Scans and previews…** of a folder) and
+  `settings.keepAlive` ([Keep alive](administration/keep-alive.md), off until turned on).
 - The **server commands** are gone: **Shut down server** and **Dismount drives** no longer show, and
   `Sfe:System:EnableShutdown`, `ShutdownCommand` and `DismountCommand` do nothing (they may stay in `appsettings.json`;
   remove them at will). Run such commands on the server's computer itself.

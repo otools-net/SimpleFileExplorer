@@ -64,7 +64,7 @@ public static class SettingCatalog
         ("showHiddenItems", Rights.ScanningSettings), ("scan.", Rights.ScanningSettings), ("fileTypes.", Rights.ScanningSettings),
         ("thumbnails.", Rights.ThumbnailSettings), ("trickplay.", Rights.TrickplaySettings), ("fileTracking.", Rights.TrackingSettings),
         ("tags.", Rights.TagSettings), ("tasks.", Rights.TaskSettings), ("logs.", Rights.LogSettings), ("editor.", Rights.EditorSettings),
-        ("files.", Rights.FileSettings),
+        ("files.", Rights.FileSettings), ("keepAlive.", Rights.KeepAliveSettings),
         // How the server starts: only its administrators (System › Start-up).
         ("openBrowser", Rights.ServerSettings), ("fastSignIn", Rights.ServerSettings),
     ];

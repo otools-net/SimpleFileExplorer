@@ -113,15 +113,19 @@ Asked 2026-10-22:
 
 ### Phase 2 — settings and status in the UI
 
-- [ ] Right `settings.keepAlive` in `RightCatalog` (`Tenant`, Administrators, Write, `since: Revision + 1`), the same
-      id in `core/rights.ts` and `SETTINGS_RIGHTS`; `SettingCatalog.RightsByPrefix` maps `keepAlive.` to it.
-- [ ] `EditableSettings` keys (library level), `SettingsService.Validate` ranges, a `keepAlive` tab in
-      `settings-schema.ts`, its sub-page in `admin/admin-sections.ts`, `SIMPLE_SETTINGS`.
-- [ ] `GET api/keep-alive` (each target: path shown root-relative, network or not, last ping, duration, error) and
-      `POST api/keep-alive/ping`, with `RequireRight`; `AccessTests.EveryRouteNamesARight` passes.
-- [ ] Status and **Ping now** on the Keep alive tab; client specs; `docs/reference/rights.md`.
-- [ ] User docs with a screenshot (`agents/tools/docs-screenshots`; the sample library is local, so the status shows
-      "not on the network" unless the mode is `Always`).
+- [x] (unreleased, edge) Right `settings.keepAlive` (`Tenant`, Administrators, Write, `since: 11`), in
+      `core/rights.ts` and `SETTINGS_RIGHTS`; `RightsByPrefix` maps `keepAlive.` to it.
+- [x] (unreleased, edge) `EditableSettings.KeepAlive` (library level), `Validate` ranges and mode; a `keepAlive` tab in
+      `settings-schema.ts`; section **Keep alive** (group Library, icon `refresh`) with sub-pages `status` and
+      `settings`; `keepAlive.mode` and `.intervalSeconds` in `SIMPLE_SETTINGS`.
+- [x] (unreleased, edge) `GET api/keep-alive` (`KeepAliveView`: mode, interval, folders root-relative, the root's full
+      path replaced in errors) and `POST api/keep-alive/ping` (`PingNowAsync`: also while Off, as `Always`); one round
+      at a time (`_round` semaphore). `KeepAliveRouteTests` (4).
+- [x] (unreleased, edge) `KeepAliveStatusComponent` (admin › Keep alive › Status, refreshed every 10 s): state line,
+      folders, **Ping now**, **Settings**; 4 specs in `admin-page.spec.ts`; `docs/reference/rights.md`.
+- [x] (unreleased, edge) `docs/administration/keep-alive.md` with `admin-keepAlive-status.png` (taken after **Ping
+      now**: the sample library is local) and `admin-keepAlive-settings.png`; `docs/configuration.md`,
+      `docs/upgrading.md` (the new right).
 
 ### Phase 3 — more folders and the write ping
 

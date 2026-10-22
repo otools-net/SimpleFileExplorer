@@ -49,6 +49,7 @@ public static class Rights
     public const string LogSettings = "settings.logs";
     public const string EditorSettings = "settings.editor";
     public const string FileSettings = "settings.files";
+    public const string KeepAliveSettings = "settings.keepAlive";
     public const string ManageMembers = "tenant.members";
     public const string OwnPreferences = "account.preferences";
     public const string OwnPassword = "account.password";
@@ -168,6 +169,7 @@ public static class RightCatalog
         Tenant(Rights.TaskSettings, false, Administrators, W, null, "Settings", "Background task settings", "How long task logs are kept."),
         Tenant(Rights.EditorSettings, false, Administrators, W, null, "Settings", "Picture editor settings", "Where edited pictures are saved, and their quality.", since: 1),
         Tenant(Rights.FileSettings, false, Administrators, W, null, "Settings", "File management settings", "Which names new files and folders may have, and where the work files go.", since: 5),
+        Tenant(Rights.KeepAliveSettings, false, Administrators, W, null, "Settings", "Keep alive settings", "Whether the library's folder is kept alive on its file server, how often, and what the last pings found.", since: 11),
         Tenant(Rights.LogSettings, false, Administrators, W, null, "Settings", "Log settings", "How long the logs are kept, and whether they are also written to files (both set for the whole server).", since: 4),
         Tenant(Rights.ManageMembers, false, Administrators, W, null, "Access", "Manage the space's accounts and groups", "Create accounts in the space, put them in its groups, choose what each group may do, open the space to visitors."),
         Tenant(Rights.OwnPreferences, false, Members, W, null, "Account", "Own preferences", "Keep one's own theme, page sizes and player preferences on the server."),

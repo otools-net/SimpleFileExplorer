@@ -40,7 +40,7 @@ Each right is of one of two kinds (column **Kind**):
 | `tasks.view` | background tasks and their history | Read | no | Administrators |
 | `tasks.run`, `tasks.schedule` | running background tasks, schedules | Write | no | Administrators |
 | `logs.view` | the [log](../administration/logs.md) of the space (server administrators: of the whole server) | Read | no | Administrators |
-| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.logs`, `.editor`, `.files` | the space's settings, by section | Write | no | Administrators |
+| `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.logs`, `.editor`, `.files`, `.keepAlive` | the space's settings, by section ([keep alive](../administration/keep-alive.md): also its status and Ping now) | Write | no | Administrators |
 | `tenant.members` | the space's accounts, groups and visitors | Write | no | Administrators |
 | `account.preferences`, `account.password` | own preferences and password | Write | no | Administrators, Users |
 | `account.quickLinks` | own [quick links](../user-guide/browsing.md#quick-links) in the sidebar | Write | no | Administrators, Users |

@@ -74,7 +74,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [file-viewers-plan](agents/docs/development/file-viewers-plan.md) | **viewing and editing files epic: formats registry, phases, todo lists** (update as it is built) | `app/formats/`, `Core/Files/FileContent` |
 | [server-modes-plan](agents/docs/development/server-modes-plan.md) | **server modes epic: Local / External, Docker image; phases, todo list, open questions** (update as it is built) | `ServerModes`, `Dockerfile` (planned) |
 | [docker-publishing-plan](agents/docs/development/docker-publishing-plan.md) | **publishing the image on ghcr.io: GitHub Actions workflow, settings, release steps** (update as it is built) | `.github/workflows/` (planned) |
-| [keep-alive-plan](agents/docs/development/keep-alive-plan.md) | **keep alive epic: pinging network folders so file servers don't drop idle sessions; design, phases, open questions** (update as it is built) | `Core/KeepAlive/` (planned) |
+| [keep-alive-plan](agents/docs/development/keep-alive-plan.md) | **keep alive epic: pinging network folders so file servers don't drop idle sessions; design, phases, open questions** (update as it is built) | `Core/KeepAlive/`, `KeepAliveEndpoints` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
@@ -163,7 +163,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [work-folder](agents/docs/features/work-folder.md) | `.sfe` at the root or the server's data folder; the reserved name | `WorkFolder`, `LibraryPaths.TryResolve` |
 | [selection-and-keys](agents/docs/features/selection-and-keys.md) | selecting files and folders, the selection bar, arrow keys | `ListingStore`, `listing-keys.ts` |
 | [path-moves](agents/docs/features/path-moves.md) | index rows, settings, schedules, quick links, caches following a rename | `PathMoves` |
-| [keep-alive](agents/docs/features/keep-alive.md) | network library folders pinged so file servers keep the session: modes, detection, timeouts, logs | `Core/KeepAlive/`, `KeepAliveWorker` |
+| [keep-alive](agents/docs/features/keep-alive.md) | network library folders pinged so file servers keep the session: modes, detection, timeouts, logs, status page, Ping now | `Core/KeepAlive/`, `KeepAliveWorker`, `KeepAliveEndpoints`, `keep-alive-status.component.ts` |
 | [background-tasks](agents/docs/features/background-tasks.md) | jobs, run history, run logs | `Core/Tasks/`, `app/tasks/` |
 | [schedules](agents/docs/features/schedules.md) | task schedules | `TaskScheduleService`, `ScheduleCalculator` |
 | [logs](agents/docs/features/logs.md) | server log: capture, files, search, rights | `Core/Logs/`, `AuditLogWorker`, `app/logs/` |

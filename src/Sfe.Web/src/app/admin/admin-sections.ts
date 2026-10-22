@@ -97,6 +97,17 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         ],
     },
     {
+        id: 'keepAlive',
+        group: 'Library',
+        title: 'Keep alive',
+        icon: 'refresh',
+        description: 'Keeping the library folder\'s connection to its file server from being dropped while nobody uses it.',
+        subpages: [
+            page('status', 'Status', 'Whether the library folder is on a network share, and what the last pings found; ping it now.', Rights.keepAliveSettings),
+            settingsPage('keepAlive', 'Whether the library folder is kept alive, how often, and the time limit of a ping.'),
+        ],
+    },
+    {
         id: 'tags',
         group: 'Library',
         title: 'Tags',

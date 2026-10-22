@@ -22,6 +22,7 @@ import { TagListComponent } from '../tags/tag-list.component';
 import { TasksSectionComponent } from '../tasks/tasks-section.component';
 import { TrackingSectionComponent } from '../tracking/tracking-section.component';
 import { TrickplayActivityComponent } from '../trickplay/trickplay-activity.component';
+import { KeepAliveStatusComponent } from './keep-alive-status.component';
 import { AccountSectionComponent } from '../account/account-section.component';
 import { AccessSectionComponent } from '../access/access-section.component';
 import { ADMIN_SEARCH_LIMIT, AdminSearchResult, markWords, searchAdmin, searchWords } from './admin-search';
@@ -55,7 +56,7 @@ export { leaveAdminPage } from './leave-admin-page';
 @Component({
     selector: 'sfe-admin-page',
     imports: [RouterLink, NgTemplateOutlet, IconComponent, EmptyStateComponent, SettingsPanelComponent, TagListComponent, TagEditorDialog,
-        TrackingSectionComponent, TasksSectionComponent, TrickplayActivityComponent, SystemSectionComponent, AccessSectionComponent,
+        TrackingSectionComponent, TasksSectionComponent, TrickplayActivityComponent, KeepAliveStatusComponent, SystemSectionComponent, AccessSectionComponent,
         AccountSectionComponent, LogsSectionComponent, VideoStreamsComponent, TrashSectionComponent, UploadsSectionComponent, ExclusionsSectionComponent],
     providers: [SettingsForm],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -291,6 +292,9 @@ export { leaveAdminPage } from './leave-admin-page';
                                     }
                                     @case ('account') {
                                         <sfe-account-section [tab]="subpage().id" />
+                                    }
+                                    @case ('keepAlive') {
+                                        <sfe-keep-alive-status (openSettings)="select('settings')" />
                                     }
                                     @case ('scanning') {
                                         <sfe-exclusions-section />

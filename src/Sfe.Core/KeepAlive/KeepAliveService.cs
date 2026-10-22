@@ -31,6 +31,7 @@ public sealed class KeepAliveService : IDisposable
     private readonly ILogger<KeepAliveService> _logger;
     private readonly ConcurrentDictionary<string, Folder> _folders = new(LibraryPaths.PathComparer);
     private readonly SemaphoreSlim _changed = new(0);
+    private readonly SemaphoreSlim _round = new(1, 1);
     private readonly IDisposable? _subscription;
 
     public KeepAliveService(LibraryPaths paths, IOptionsMonitor<SfeOptions> options, ILogger<KeepAliveService> logger)
@@ -90,18 +91,39 @@ public sealed class KeepAliveService : IDisposable
     }
 
     /// <summary>One round: pings every folder kept alive, each under the timeout.</summary>
-    public async Task PingAllAsync(CancellationToken cancellationToken = default)
+    public Task PingAllAsync(CancellationToken cancellationToken = default) => RoundAsync(Settings.Mode, cancellationToken);
+
+    /// <summary>
+    /// A round asked for by hand (Ping now): also while keep alive is off, as <see cref="KeepAliveMode.Always"/> would,
+    /// to try a share before turning it on.
+    /// </summary>
+    public async Task<IReadOnlyList<KeepAliveFolder>> PingNowAsync(CancellationToken cancellationToken = default)
     {
-        var settings = Settings;
-        if (settings.Mode == KeepAliveMode.Off)
+        var mode = Settings.Mode;
+        await RoundAsync(mode == KeepAliveMode.Off ? KeepAliveMode.Always : mode, cancellationToken);
+        return Status();
+    }
+
+    private async Task RoundAsync(KeepAliveMode mode, CancellationToken cancellationToken)
+    {
+        if (mode == KeepAliveMode.Off)
             return;
 
-        var timeout = TimeSpan.FromSeconds(Math.Clamp(settings.TimeoutSeconds, KeepAliveOptions.MinTimeoutSeconds, KeepAliveOptions.MaxTimeoutSeconds));
-        var rounds = Targets()
-            .Select(path => _folders.GetOrAdd(path, p => new Folder(p)))
-            .Select(folder => PingAsync(folder, settings.Mode, timeout, cancellationToken))
-            .ToList();
-        await Task.WhenAll(rounds);
+        // One round at a time (the loop and Ping now): a round lasts the timeout at most.
+        await _round.WaitAsync(cancellationToken);
+        try
+        {
+            var timeout = TimeSpan.FromSeconds(Math.Clamp(Settings.TimeoutSeconds, KeepAliveOptions.MinTimeoutSeconds, KeepAliveOptions.MaxTimeoutSeconds));
+            var pings = Targets()
+                .Select(path => _folders.GetOrAdd(path, p => new Folder(p)))
+                .Select(folder => PingAsync(folder, mode, timeout, cancellationToken))
+                .ToList();
+            await Task.WhenAll(pings);
+        }
+        finally
+        {
+            _round.Release();
+        }
     }
 
     /// <summary>The folders kept alive: the library's root (more folders come in a later version).</summary>
@@ -177,6 +199,7 @@ public sealed class KeepAliveService : IDisposable
     {
         _subscription?.Dispose();
         _changed.Dispose();
+        _round.Dispose();
     }
 
     private sealed class Folder(string path)

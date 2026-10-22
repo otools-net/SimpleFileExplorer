@@ -674,7 +674,7 @@ const scenes = {
             ['interface', 'appearance'], ['interface', 'browsing'], ['interface', 'search'], ['playback', 'player'], ['playback', 'streaming'],
             ['scanning', 'skipped'], ['scanning', 'fileTypes'], ['scanning', 'indexing'],
             ['tags', 'list'], ['tags', 'settings'],
-            ['tracking', 'duplicates'], ['tracking', 'similar'], ['tracking', 'missing'], ['tracking', 'settings'],
+            ['tracking', 'duplicates'], ['tracking', 'similar'], ['tracking', 'missing'], ['tracking', 'settings'], ['keepAlive', 'settings'],
             ['thumbnails'], ['trickplay', 'activity'], ['trickplay', 'settings'], ['editor'],
             ['access', 'spaces'], ['access', 'accounts'],
             ['tasks', 'tasks'], ['tasks', 'settings'],
@@ -685,6 +685,11 @@ const scenes = {
             await mask(b);
             await b.shot(OUT + `admin-${section}${page ? '-' + page : ''}.png`);
         }
+        // Keep alive's status after a ping (the sample library is local: "Not on a network share").
+        await b.open(admin('keepAlive', 'status'), 3000);
+        await b.clickTitle('Ping the library folder now');
+        await sleep(1000);
+        await b.shot(OUT + 'admin-keepAlive-status.png');
         // The overview of the sections, which /admin opens on.
         await b.open('admin', 3000);
         await b.shot(OUT + 'admin-overview.png');

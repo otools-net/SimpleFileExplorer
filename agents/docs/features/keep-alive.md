@@ -1,9 +1,11 @@
 # Keep alive (network folders)
 
 Code: `src/Sfe.Core/KeepAlive/` (`KeepAliveService`, `NetworkFolders`), `KeepAliveOptions` in `Options/SfeOptions.cs`,
-`src/Sfe.Api/KeepAliveWorker.cs` (registered in `Tenancy/TenantHost.cs`). Tests: `KeepAliveTests`. Plan and what is
-still to do: [keep-alive-plan](../development/keep-alive-plan.md). User docs: `docs/configuration.md` (Libraries on a
-network share).
+`src/Sfe.Api/KeepAliveWorker.cs` (registered in `Tenancy/TenantHost.cs`), `Endpoints/KeepAliveEndpoints.cs`; client
+`app/admin/keep-alive-status.component.ts`, tab `keepAlive` of `settings/settings-schema.ts`. Tests: `KeepAliveTests`,
+`KeepAliveRouteTests`, `admin-page.spec.ts`. Plan and what is still to do:
+[keep-alive-plan](../development/keep-alive-plan.md). User docs: `docs/administration/keep-alive.md`,
+`docs/configuration.md` (Libraries on a network share).
 
 - One `KeepAliveService` per library (its container), looped by `KeepAliveWorker`: each round pings the library's root
   (`LibraryPaths.Root`) with one directory query (`EnumerateFileSystemEntries(...).FirstOrDefault()`), then waits
@@ -18,6 +20,12 @@ network share).
   observed by a continuation.
 - Logs: information at the first success, a warning at the first failure of a run, information when it answers
   again, information once when `Auto` finds a folder local; never one line per ping.
+- Settings `keepAlive.*` are library level (`EditableSettings.KeepAlive`), right `settings.keepAlive` (also the right
+  of both routes); a library's change reaches its service through `IOptionsMonitor.OnChange` (pings at once).
+- `PingNowAsync` (route `POST api/keep-alive/ping`) pings also while `Off`, as `Always`, to try a share first. Rounds
+  never overlap (`_round` semaphore; a round lasts the timeout at most).
+- The routes give paths root-relative and replace the root's full path in error messages: space administrators
+  without `server.settings` never see where the library is on the server.
 - State in memory only (`Status()`, `KeepAliveFolder`): no database, no stored file, nothing to migrate.
 - Tests replace `Ping` and `IsNetwork` (internal properties) and call `PingAllAsync` directly, with an
   `IOptionsMonitor` of their own whose `Change` fires `OnChange`.

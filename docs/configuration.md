@@ -88,6 +88,7 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Thumbnails:Enabled`, `Width`, `VideoSeekSeconds`, `LargeImageKilobytes`, `SingleViewOriginals`, `AnimatedHover`, `ExcludedFolders`, `MaxConcurrency`, `TimeoutSeconds` | [Thumbnails](administration/thumbnails.md) |
 | `Sfe:Trickplay:…` | [Trickplay › Settings](administration/trickplay.md#settings) |
 | `Sfe:Editor:OutputFolder`, `Quality` | [Picture editor](administration/picture-editor.md) |
+| `Sfe:KeepAlive:Mode`, `IntervalSeconds`, `TimeoutSeconds` | [Keep alive](administration/keep-alive.md#settings) |
 | `Sfe:Files:PortableNames`, `WorkFolder` (`Library`, `Server`), `DeletePermanently`, `Trash:RetentionDays`, `MinimumFreeSpaceMegabytes`, `Uploads:MaxFileSizeMegabytes`, `Uploads:KeepUnfinishedHours`, `MaxArchiveMegabytes` | [File management](administration/file-management.md) |
 | `Sfe:Tasks:LogRetentionDays` | [Background tasks › Settings](administration/background-tasks.md#settings) |
 | `Sfe:Logs:RetentionDays`, `WriteFiles` | [Logs › Settings](administration/logs.md#settings) |
@@ -97,7 +98,8 @@ These have a default in `appsettings.json` and can be changed on the page named;
 A file server drops the connection to a share nobody used for a while (Windows file servers after 15 minutes, many
 NAS sooner), and the drive or mount may be lost with it. **Keep alive** makes SFE look at each space's library folder
 every few minutes, a single read of the folder's first entry however large it is, so the connection never goes idle.
-It is off until you turn it on, and applies to every space.
+It is off until you turn it on. Each space can also have its own values on the administration page
+([Keep alive](administration/keep-alive.md)), which also shows how the pings go.
 
 | Setting | Notes |
 |---|---|

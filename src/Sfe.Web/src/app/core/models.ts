@@ -429,6 +429,29 @@ export interface StreamProbe {
     transcoded: boolean;
 }
 
+export type KeepAliveMode = 'off' | 'auto' | 'always';
+
+/** A folder kept alive (api/keep-alive). */
+export interface KeepAliveFolder {
+    /** Relative to the library root; empty for the root itself. */
+    path: string;
+    /** Null until the first ping looked. */
+    isNetwork: boolean | null;
+    lastPing: string | null;
+    durationMilliseconds: number | null;
+    /** Why the last ping failed; null when it worked. */
+    error: string | null;
+    failingSince: string | null;
+    /** A ping is still blocked on the folder. */
+    waiting: boolean;
+}
+
+export interface KeepAliveView {
+    mode: KeepAliveMode;
+    intervalSeconds: number;
+    folders: KeepAliveFolder[];
+}
+
 export type StreamingMode = 'off' | 'fallback' | 'always';
 
 /** A video being converted for a viewer. */

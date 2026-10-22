@@ -15,7 +15,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   (folders gone from the disk too).
 - **Keep alive** for libraries on a network share: `Sfe:KeepAlive:Mode` (`Off` by default, `Auto`, `Always`) makes
   SFE look at each space's library folder every `IntervalSeconds` (240), so the file server never drops the idle
-  connection. Configuration only for now; see `docs/configuration.md`.
+  connection. **Administration › Keep alive** shows each folder's last ping (and **Ping now**) and holds the settings,
+  per space (new right `settings.keepAlive`, given to Administrators). See `docs/administration/keep-alive.md`.
 
 ### Changed
 

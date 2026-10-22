@@ -92,6 +92,8 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'files.workFolder',
     'files.deletePermanently',
     'files.trash.retentionDays',
+    'keepAlive.mode',
+    'keepAlive.intervalSeconds',
     'openBrowser',
     'fastSignIn',
 ]);
@@ -618,6 +620,25 @@ export const TABS: SettingTab[] = [
                     { key: 'files.workFolder', label: 'Where SFE keeps its work files', type: 'select',
                         options: [['library', 'In the library'], ['server', 'On the server']],
                         hint: 'For the trash and unfinished uploads. In the library (a hidden .sfe folder at its root), they stay on its own drive, so moving a file there is instant; in the server\'s data folder, the library holds nothing of SFE\'s, but large files are copied from one drive to the other. The name .sfe at the library\'s root stays reserved either way.' },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'keepAlive',
+        title: 'Keep alive',
+        intro: 'A file server drops the connection to a share nobody used for a while (Windows file servers after 15 minutes, many NAS sooner), and the drive may be lost with it. Keep alive looks at the library folder every few minutes, a single read of its first entry, so the connection never goes idle. It can\'t reconnect a drive already lost.',
+        groups: [
+            {
+                title: 'Pings',
+                fields: [
+                    { key: 'keepAlive.mode', label: 'Keep the library folder alive', type: 'select',
+                        options: [['off', 'Off'], ['auto', 'When it is on a network share'], ['always', 'Always']],
+                        hint: '“When it is on a network share”: a \\\\server\\share folder, a mapped network drive, or a CIFS, NFS or SSHFS mount, also through a link. “Always”: also a folder SFE can\'t tell is on the network.' },
+                    { key: 'keepAlive.intervalSeconds', label: 'Seconds between pings', type: 'number', min: 10, max: 3600,
+                        hint: 'Shorter than the time the file server waits before dropping an idle connection (240: every 4 minutes).' },
+                    { key: 'keepAlive.timeoutSeconds', label: 'Time limit (seconds)', type: 'number', min: 1, max: 300,
+                        hint: 'A ping taking longer counts as failed; the next one waits until it ends.' },
                 ],
             },
         ],

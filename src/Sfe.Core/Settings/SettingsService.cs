@@ -701,6 +701,9 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Range(s.Files.Uploads.MaxFileSizeMegabytes, 0, 1_073_741_823, "files.uploads.maxFileSizeMegabytes", "The largest upload");
         Range(s.Files.Uploads.KeepUnfinishedHours, 1, 8760, "files.uploads.keepUnfinishedHours", "The hours unfinished uploads are kept");
         Range(s.Files.MaxArchiveMegabytes, 0, 1_073_741_823, "files.maxArchiveMegabytes", "The largest zip");
+        Check(Enum.IsDefined(s.KeepAlive.Mode), "keepAlive.mode", "Choose which folders are kept alive from the list.");
+        Range(s.KeepAlive.IntervalSeconds, KeepAliveOptions.MinIntervalSeconds, KeepAliveOptions.MaxIntervalSeconds, "keepAlive.intervalSeconds", "The time between pings");
+        Range(s.KeepAlive.TimeoutSeconds, KeepAliveOptions.MinTimeoutSeconds, KeepAliveOptions.MaxTimeoutSeconds, "keepAlive.timeoutSeconds", "The time limit");
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
         Check(s.Reading.Theme is { } readerTheme && ReadingOptions.Themes.Contains(readerTheme), "reading.theme", "Choose colours from the list.");
         Check(s.Reading.CustomFont.Length <= MaxCustomFontLength && s.Reading.CustomFont.IndexOfAny(['"', '\\', ';', '{', '}', '<', '>']) < 0,
