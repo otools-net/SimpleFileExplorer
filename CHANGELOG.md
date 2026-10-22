@@ -11,6 +11,15 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   shown for a service or when the output goes to a file or a log).
 - `--help` (or `-h`, `-?`) on the command line lists SFE's options, grouped: start-up, Windows service, main settings,
   database, setup and sign-in.
+- **Default tags of folders**: in a folder's tags dialog, tags that every file put into the folder or its sub-folders
+  gets (scanned, created, uploaded, copied or moved there), optionally added to the files already there too; taking
+  one off asks whether the files keep it. Folders with default tags show a tag-and-sparkle icon listing them when clicked (new
+  right `tags.folderDefaults`, given to Administrators and Users).
+
+### Changed
+
+- On phones, the video player's speed list opens as a sheet across the bottom of the screen, like the item menu, with
+  large buttons.
 
 ## 1.80.0
 

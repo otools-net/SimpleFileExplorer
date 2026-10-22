@@ -16,7 +16,7 @@ namespace Sfe.Core.Files;
 /// <summary>
 /// The one place where what SFE keeps by path follows a file or folder renamed or moved on the disk
 /// (agents/docs/features/path-moves.md): the index rows (so tags stay on their files), the library's settings naming
-/// folders, task schedules, quick links, the thumbnail and trickplay caches (with the video fingerprints), the listings
+/// folders, task schedules, default tags (and those of the new place given to the files), quick links, the thumbnail and trickplay caches (with the video fingerprints), the listings
 /// kept, the tag counts. Folder rules are moved around the disk step by <see cref="FolderRuleService.BeginMoveAsync"/>.
 /// </summary>
 /// <remarks>
@@ -30,6 +30,7 @@ public sealed class PathMoves(
     DirectoryIndexer indexer,
     LibraryBrowser browser,
     TagService tags,
+    FolderDefaultTags defaultTags,
     ThumbnailService thumbnails,
     TrickplayService trickplay,
     SettingsService settings,
@@ -76,7 +77,10 @@ public sealed class PathMoves(
                     logger.LogInformation("Settings {Keys} follow {From} to {To}", string.Join(", ", keys), fromRelative, toRelative);
             });
             await Step("task schedules", () => MoveSchedulesAsync(fromRelative, toRelative, cancellationToken));
+            await Step("default tags", () => defaultTags.MoveAsync(fromRelative, toRelative, cancellationToken));
         }
+        // Moved into another folder: its files get the default tags of their new place.
+        await Step("default tags of the new place", () => defaultTags.ApplyAfterMoveAsync(from, to, isFolder, cancellationToken));
         if (quickLinks is not null && tenant.TenantId is { } tenantId)
             await Step("quick links", () => quickLinks.MovePathsAsync(tenantId, fromRelative, toRelative, cancellationToken));
 

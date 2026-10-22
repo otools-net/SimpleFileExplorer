@@ -71,7 +71,7 @@ public sealed class KeepAliveRouteTests
         var right = RightCatalog.Find(Rights.KeepAliveSettings)!;
         Assert.AreEqual(RightScope.Tenant, right.Scope);
         CollectionAssert.AreEqual(new[] { BuiltInGroup.Administrators }, right.DefaultGroups.ToArray());
-        Assert.AreEqual(RightCatalog.Revision, right.Since, "a right added after 1.34 is given to existing spaces");
+        Assert.AreEqual(11, right.Since, "a right added after 1.34 is given to existing spaces");
     }
 
     [TestMethod]

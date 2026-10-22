@@ -95,6 +95,37 @@ export interface ScopeTagChangeResult {
     removed: number;
 }
 
+/** A default tag a folder gets from one of its parents (`path`, '' = the root). */
+export interface InheritedDefaultTag {
+    path: string;
+    tag: TagSummary;
+}
+
+/**
+ * The default tags of a folder: every file entering it or one of its sub-folders (scanned, created, uploaded, copied
+ * or moved there) gets them once. Its own, and those of its parents.
+ */
+export interface FolderDefaults {
+    path: string;
+    own: TagSummary[];
+    inherited: InheritedDefaultTag[];
+}
+
+/** Default tags to add to a folder or remove from it; `addToFiles`/`removeFromFiles` change the files already there too. */
+export interface FolderDefaultTagsChange {
+    path: string;
+    add?: number[];
+    remove?: number[];
+    addToFiles?: boolean;
+    removeFromFiles?: boolean;
+}
+
+/** `files`: what changed on the files already there, null when that wasn't asked. */
+export interface FolderDefaultTagsResult {
+    defaults: FolderDefaults;
+    files: ScopeTagChangeResult | null;
+}
+
 export interface TagSidebar {
     popular: TagUsage[];
     searched: TagUsage[];
@@ -141,6 +172,8 @@ export interface LibraryItem {
     indexedItems?: number | null;
     /** Browsing only, for a folder kept out of scans, trickplay or thumbnails; absent when it is in none. */
     excluded?: FolderExclusions | null;
+    /** Browsing only, for a folder: the default tags set on it (not inherited ones); absent when it has none. */
+    defaultTags?: TagSummary[] | null;
 }
 
 /**
@@ -322,6 +355,8 @@ export interface DirectoryListing {
     access?: FolderAccessView | null;
     /** What the folder is kept out of; absent or null when nothing. */
     exclusions?: FolderExclusions | null;
+    /** The default tags of the folder, its own and its parents'; absent or null when none. */
+    defaultTags?: FolderDefaults | null;
 }
 
 /** What folder rules let the session do in a folder. */

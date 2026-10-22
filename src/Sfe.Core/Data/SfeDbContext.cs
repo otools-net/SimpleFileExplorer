@@ -22,6 +22,7 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
     public DbSet<TagAlias> TagAliases => Set<TagAlias>();
     public DbSet<TagParent> TagParents => Set<TagParent>();
     public DbSet<FileTag> FileTags => Set<FileTag>();
+    public DbSet<FolderDefaultTag> FolderDefaultTags => Set<FolderDefaultTag>();
     public DbSet<MissingFile> MissingFiles => Set<MissingFile>();
     public DbSet<MissingFileTag> MissingFileTags => Set<MissingFileTag>();
     public DbSet<TaskSchedule> TaskSchedules => Set<TaskSchedule>();
@@ -243,6 +244,22 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
                 .WithMany(t => t.FileLinks)
                 .HasForeignKey(l => l.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // A few rows per library, read whole into memory (FolderDefaultTags). New since 1.81: an existing SQLite index
+        // gets the table from DatabaseInitializer.
+        modelBuilder.Entity<FolderDefaultTag>(entity =>
+        {
+            entity.ToTable("FolderDefaultTags");
+            entity.Property(d => d.Path).HasMaxLength(MaxPathLength).IsRequired();
+            entity.HasIndex(d => new { d.Path, d.TagId }).IsUnique();
+            entity.HasIndex(d => d.TagId);
+            entity.HasOne(d => d.Tag)
+                .WithMany()
+                .HasForeignKey(d => d.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
+            if (!isSqlServer && LibraryPaths.IsCaseInsensitiveFileSystem)
+                entity.Property(d => d.Path).UseCollation("NOCASE");
         });
 
         // A table of its own rather than columns on TagDefinitions: an existing SQLite index can be given missing

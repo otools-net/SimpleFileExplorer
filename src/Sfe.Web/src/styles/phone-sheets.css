@@ -1,0 +1,44 @@
+/* ---------- Phone sheets ---------- */
+
+/*
+ * The rule for every menu or popup that opens at the bottom of a phone's screen (agents/docs/development/frontend.md):
+ * it is a sheet across the whole width, against the bottom edge, rounded at its top corners only, over a backdrop.
+ * While one is open the page behind doesn't scroll, so its scrollbar goes and the sheet and its backdrop cover that
+ * room too (the page keeps the scrollbar's width as padding: `--scrollbar-w`, scrollbar-width.ts).
+ *
+ * Mark the popup `phone-sheet` and put a `sheet-backdrop` next to it (shown only on phones; a click on it closes the
+ * popup). Its position on larger screens is its own; under 641 px these rules win (this file comes last). A popup
+ * that must escape a transformed or clipping ancestor goes in the top layer (popover="manual") with its backdrop
+ * inside it (DefaultTagsBadgeComponent). Modal dialogs (`dialog.sheet`) do the same below 761 px (trickplay.css).
+ */
+.sheet-backdrop { display: none; }
+
+@media (max-width: 640px) {
+    .sheet-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 59;
+        display: block;
+        background: rgb(0 0 0 / .45);
+        pointer-events: auto;
+    }
+
+    .phone-sheet {
+        position: fixed !important;
+        inset: auto 0 0 0 !important;
+        z-index: 60;
+        width: auto !important;
+        max-width: none !important;
+        max-height: 75dvh !important;
+        margin: 0 !important;
+        overflow-y: auto;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+        border-right: 0 !important;
+        border-bottom: 0 !important;
+        border-left: 0 !important;
+        border-radius: var(--radius) var(--radius) 0 0 !important;
+        pointer-events: auto;
+    }
+
+    html:has(.sheet-backdrop) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
+}

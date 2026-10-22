@@ -20,3 +20,13 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   (Angular sets it before the options exist, so it shows the first option; a spec checks the shown value).
 - The client hides what a right forbids: `config.can(...)`, or `ListingStore.can(right, item)` for what depends on the
   folder (folder rules) ([rights.md](../features/rights.md)).
+- **Phone sheets (rule, 2026-10-23):** on a phone (≤ 640 px) every menu or popup that opens in the lower part of the
+  screen is a sheet like the item menu: full width with no side margins, against the bottom edge (safe area padded),
+  top corners rounded, over a dimming backdrop that closes it, and the page behind locked so the sheet and backdrop
+  cover the scrollbar's room. Use the shared classes of `styles/phone-sheets.css`: `phone-sheet` on the popup,
+  a `sheet-backdrop` next to it (a click on it closes; it is what locks the page). Applied to the item menu, the
+  viewer's ⋮ menu, the default tags panel, the player's speed menu. A popup under a transformed or clipping ancestor
+  goes in the top layer (`popover="manual"`, `showPopover()`) with the backdrop inside it, else `position: fixed` is
+  relative to that ancestor (`DefaultTagsBadgeComponent`). Modal dialogs (`dialog.sheet`) already do this below
+  761 px (`trickplay.css`, `base.css`). Not sheets: toasts, the operations panel and the selection bar (status that
+  stays while the page is used), and the top bar's popovers (they open from the top).

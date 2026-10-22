@@ -248,8 +248,8 @@ export function fromTouch(event: MouseEvent): boolean {
     template: `
         @if (menu.open(); as open) {
             <!-- On phones: an action sheet at the bottom, under its item's name, over a backdrop that closes it. -->
-            <div class="item-menu-backdrop" aria-hidden="true"></div>
-            <div #box class="item-menu" role="menu" [attr.aria-label]="'Actions for ' + open.item.name"
+            <div class="item-menu-backdrop sheet-backdrop" aria-hidden="true"></div>
+            <div #box class="item-menu phone-sheet" role="menu" [attr.aria-label]="'Actions for ' + open.item.name"
                  [style.left.px]="position().x" [style.top.px]="position().y" (keydown)="keydown($event)">
                 <div class="item-menu-title">{{ open.item.name }}</div>
                 @for (entry of entries(); track entry.id) {

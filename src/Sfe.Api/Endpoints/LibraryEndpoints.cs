@@ -146,6 +146,7 @@ public static class LibraryEndpoints
         LibraryBrowser browser,
         LibraryPaths paths,
         TagService tags,
+        FolderDefaultTags defaultTags,
         CurrentAccess current,
         IOptionsMonitor<SfeOptions> options,
         ILoggerFactory loggerFactory,
@@ -186,6 +187,8 @@ public static class LibraryEndpoints
         try
         {
             listing = listing with { Items = await tags.AttachIndexDataAsync(listing.Items, cancellationToken) };
+            // As the files' tags: the tags the files put here get.
+            listing = await defaultTags.MarkAsync(listing, cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

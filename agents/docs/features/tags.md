@@ -15,3 +15,4 @@ search: [scope-tagging.md](scope-tagging.md).
 - `TagPickerComponent` keeps a module-level "pointer pressed" flag: a test sending `pointerdown` must send `pointerup`
   too. A dialog that focuses its picker on open needs `blur()` + `focus()` to load suggestions again.
 - Tagged files that disappear become missing files: [missing-files.md](missing-files.md).
+- Folders can give tags to the files put into them: [default-tags.md](default-tags.md).

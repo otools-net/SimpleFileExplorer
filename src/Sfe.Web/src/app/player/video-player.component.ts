@@ -102,7 +102,9 @@ interface Playback {
                 <div class="player-speed-wrap">
                     <button type="button" class="player-button player-speed" title="Playback speed" aria-haspopup="true" [attr.aria-expanded]="speedMenu()" (click)="toggleSpeedMenu()">{{ speed() }}×</button>
                     @if (speedMenu()) {
-                        <div class="player-speed-menu" role="menu" aria-label="Playback speed" [class.wide]="speedMenuHeight < 200" [style.max-height.px]="speedMenuHeight">
+                        <!-- On phones a sheet at the bottom of the screen (phone-sheets.css). -->
+                        <div class="sheet-backdrop" aria-hidden="true" (click)="speedMenu.set(false)"></div>
+                        <div class="player-speed-menu phone-sheet" role="menu" aria-label="Playback speed" [class.wide]="speedMenuHeight < 200" [style.max-height.px]="speedMenuHeight">
                             @for (rate of speeds; track rate) {
                                 <button type="button" role="menuitemradio" [class.on]="rate === speed()" [attr.aria-checked]="rate === speed()" [title]="'Play at ' + rate + '×'" (click)="setSpeed(rate)">{{ rate }}×</button>
                             }

@@ -58,12 +58,10 @@
 html { scroll-padding-top: calc(var(--topbar-h) + var(--location-strip-h) + 8px); scrollbar-gutter: stable; }
 
 /* A fixed box (an open modal dialog too) stops short of the scrollbar and of that room: while a phone's sheet at the
-   bottom is open (the item menu, a dialog: trickplay.css), the page behind it doesn't scroll, so both go and the sheet
-   and its backdrop cover the whole width. The page keeps the scrollbar's width as padding (`--scrollbar-w`,
-   scrollbar-width.ts): wider, its names would wrap less and its end come closer, and that scroll closes the item menu. */
-@media (max-width: 640px) {
-    html:has(.item-menu-backdrop) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
-}
+   bottom is open (a menu or popup: phone-sheets.css, a dialog: trickplay.css), the page behind it doesn't scroll, so
+   both go and the sheet and its backdrop cover the whole width. The page keeps the scrollbar's width as padding
+   (`--scrollbar-w`, scrollbar-width.ts): wider, its names would wrap less and its end come closer, and that scroll
+   closes the item menu. */
 
 @media (max-width: 760px) {
     html:has(dialog.sheet[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }

@@ -269,6 +269,9 @@ describe('ItemMenu', () => {
 
         menu.fromEvent(menuEvent(), photo);
         await settle();
+        // On phones, the standard sheet at the bottom over its backdrop (phone-sheets.css).
+        expect(element.querySelector('.item-menu')!.classList).toContain('phone-sheet');
+        expect(element.querySelector('.sheet-backdrop')).not.toBeNull();
         element.querySelector('.item-menu')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
         expect(menu.open()).toBeNull();
 

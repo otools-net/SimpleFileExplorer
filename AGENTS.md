@@ -66,7 +66,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [paths](agents/docs/development/paths.md) | root-relative paths, case | `Core/Paths/LibraryPaths` |
 | [api-routes](agents/docs/development/api-routes.md) | minimal API conventions and gotchas | `Sfe.Api/Endpoints/` |
 | [code-style](agents/docs/development/code-style.md) | C# style | |
-| [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons | `src/Sfe.Web/src/` |
+| [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
 | [file-operations](agents/docs/development/file-operations.md) | rules for changing library files (planned), moving folder rules with folders | `FolderRuleService.BeginMoveAsync` |
@@ -122,6 +122,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [quick-links](agents/docs/features/quick-links.md) | each user's quick links | `QuickLinkService`, `app/library/quick-links/` |
 | [tags](agents/docs/features/tags.md) | tag model, tag dialogs, picker | `Core/Tagging/`, `app/tags/` |
 | [scope-tagging](agents/docs/features/scope-tagging.md) | tagging a whole folder or search | `ScopeTagger`, `ScopeTagsDialog` |
+| [default-tags](agents/docs/features/default-tags.md) | default tags of folders: given to files entering the tree (scan, new, upload, copy, move), trash, chips | `FolderDefaultTags`, `DirectoryIndexer.NewEntry`, `ScopeTagsDialog` |
 | [search-terms](agents/docs/features/search-terms.md) | query language, negation rule, quirks | `Core/Search/` |
 | [search-sort](agents/docs/features/search-sort.md) | sorts, keyset cursors, match count | `FileSearchService` |
 | [search-explain](agents/docs/features/search-explain.md) | live wording of the query | `library/search-explain/` |

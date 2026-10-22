@@ -26,6 +26,7 @@ public static class Rights
     public const string ViewTags = "tags.view";
     public const string AssignTags = "tags.assign";
     public const string ManageTags = "tags.manage";
+    public const string FolderDefaultTags = "tags.folderDefaults";
     public const string Scan = "index.scan";
     public const string RemoveFromIndex = "index.remove";
     public const string ExcludeFolders = "index.exclude";
@@ -147,6 +148,7 @@ public static class RightCatalog
         Tenant(Rights.ViewTags, true, Everyone, R, Readable, "Tags", "See tags", "See the tags of files, the tag list and the tag sidebar."),
         Tenant(Rights.AssignTags, false, Members, W, Readable, "Tags", "Tag files", "Add tags to files and remove them, also to whole folders and searches."),
         Tenant(Rights.ManageTags, false, Administrators, W, null, "Tags", "Manage tags", "Create, rename, color and delete tags; clear the tag history."),
+        Tenant(Rights.FolderDefaultTags, false, Members, W, Readable, "Tags", "Set default tags of folders", "Give folders tags that every file put into them (or into their sub-folders) gets: scanned, created, uploaded, copied or moved there.", since: 12),
         Tenant(Rights.Scan, false, Administrators, W, Readable, "Index", "Scan", "Start and stop scans of the space's library."),
         Tenant(Rights.RemoveFromIndex, false, Administrators, W, Readable, "Index", "Remove folders from the index", "Forget a folder's files and tags, and keep scans out of it."),
         Tenant(Rights.ExcludeFolders, false, Administrators, W, Readable, "Index", "Exclude folders", "Keep folders out of scans, trickplay or thumbnails, for the whole space (what is already indexed or made stays).", since: 10),

@@ -8,6 +8,7 @@ import { Rights } from '../../core/rights';
 import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
 import { defaultSort, SEARCH_SORTS } from '../library-route';
+import { DefaultTagsBadgeComponent } from '../../tags/default-tags-badge.component';
 import { exclusionChip, exclusionTitle } from '../items/exclusions';
 import { ListingStore } from '../listing.store';
 import { SearchBoxState, SearchExplainComponent } from '../search-explain/search-explain.component';
@@ -28,7 +29,7 @@ const SORT_OPTIONS: [SortField, string][] = [
 /** Where the listing is: folder navigation, breadcrumbs, the search in words, the counts and the sort. */
 @Component({
     selector: 'section[sfeLocation]',
-    imports: [IconComponent, RouterLink, SearchExplainComponent, FolderNavComponent, PinButtonComponent],
+    imports: [IconComponent, RouterLink, SearchExplainComponent, FolderNavComponent, PinButtonComponent, DefaultTagsBadgeComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'location' },
     template: `
@@ -98,7 +99,11 @@ const SORT_OPTIONS: [SortField, string][] = [
             <sfe-search-explain id="search-explain" />
         }
         <div class="location-bar">
-            <p class="summary">{{ summary() }}@if (exclusion(); as exclusion) {
+            <p class="summary">{{ summary() }}@if (defaultTags(); as defaults) {
+                    <!-- The tags the files put here get, listed in its panel; Change… opens the folder's tags for those who may. -->
+                    <sfe-default-tags-badge [own]="defaults.own" [inherited]="defaults.inherited" [folder]="folderLabel()"
+                                            [editable]="canTag()" (edit)="openScopeTags()" />
+                }@if (exclusion(); as exclusion) {
                     @if (canExclude()) {
                         <button type="button" class="exclusion-chip" [title]="exclusionTitle() + ' Click to change it.'" (click)="openExclusions()">{{ exclusion }}</button>
                     } @else {
@@ -132,7 +137,8 @@ export class LocationComponent {
     private readonly dialogs = inject(Dialogs);
     protected readonly uploads = inject(UploadQueue);
     /** Tagging every file of the folder or search changes tags: hidden without the right (here, with folder rules). */
-    protected readonly canTag = computed(() => this.store.can(Rights.assignTags));
+    /** Tagging the files, or (browsing) setting the folder's default tags: both in the same dialog. */
+    protected readonly canTag = computed(() => this.store.can(Rights.assignTags) || !this.store.searching() && this.store.can(Rights.folderDefaultTags));
     /** Folders are made in the folder browsed (not in a search, nor in a folder shown only on the way to another). */
     /** Uploads the files picked into the folder listed. */
     protected upload(input: HTMLInputElement): void {
@@ -151,6 +157,13 @@ export class LocationComponent {
     });
     protected readonly exclusion = computed(() => exclusionChip(this.exclusions()));
     protected readonly exclusionTitle = computed(() => exclusionTitle(this.exclusions(), this.store.listing()?.path ?? ''));
+    /** The default tags of the folder browsed, its own and its parents': for everyone. */
+    protected readonly defaultTags = computed(() => {
+        const page = this.store.listing();
+        const defaults = page && !this.store.searching() && 'defaultTags' in page ? page.defaultTags ?? null : null;
+        return defaults && (defaults.own.length || defaults.inherited.length) ? defaults : null;
+    });
+    protected readonly folderLabel = computed(() => this.store.route().path ? `“${this.folderName()}”` : 'the top folder');
     protected readonly canExclude = computed(() => this.store.can(Rights.excludeFolders) && Boolean(this.dialogs.folderExclusions()));
 
     protected openExclusions(): void {

@@ -562,9 +562,10 @@ describe('Items not indexed yet', () => {
         const line = await make(item('Films', { kind: 'directory', indexed: true, indexedItems: 0 }), false);
         const unknown = await make(item('Films', { kind: 'directory', indexed: false }), true);
 
-        const badge = card.querySelector('.folder-cover .folder-count')!;
+        // Over the pictures, outside the link but letting clicks through to it: the link holds its hint.
+        const badge = card.querySelector('.folder-cover-marks .folder-count')!;
         expect(badge.textContent!.trim()).toBe((1234).toLocaleString());
-        expect(badge.getAttribute('title')).toContain('indexed items directly in this folder');
+        expect(card.querySelector('.folder')!.getAttribute('title')).toContain('indexed items directly in this folder');
         expect(line.querySelector('.folder > .folder-count')!.textContent!.trim()).toBe('0');
         expect(unknown.querySelector('.folder-count')).toBeNull();
     });

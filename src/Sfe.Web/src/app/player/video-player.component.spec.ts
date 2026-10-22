@@ -112,6 +112,17 @@ describe('VideoPlayerComponent', () => {
             expect(menu()!.querySelector('.on')!.textContent).toBe('1.5×');
         });
 
+        it('is a phone sheet over a backdrop that closes it', async () => {
+            await create(false);
+            speedButton().click();
+            await settle();
+
+            expect(menu()!.classList).toContain('phone-sheet');
+            fixture.nativeElement.querySelector('.player-speed-wrap .sheet-backdrop').click();
+            await settle();
+            expect(menu()).toBeNull();
+        });
+
         it('closes on a press elsewhere, on Escape and on its button', async () => {
             await create(false);
             speedButton().click();

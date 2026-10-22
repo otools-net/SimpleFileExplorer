@@ -15,7 +15,8 @@ namespace Sfe.Core.Tagging;
 /// <c>update_tag</c>, <c>remove_tag</c>, <c>add_tags_to_entries</c>...). Tags are attached to indexed files: tagging a
 /// file that is not indexed yet indexes its folder first.
 /// </summary>
-public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, LibraryPaths paths, DirectoryIndexer indexer, IOptionsMonitor<SfeOptions> options)
+public sealed class TagService(
+    IDbContextFactory<SfeDbContext> dbFactory, LibraryPaths paths, DirectoryIndexer indexer, FolderDefaultTags defaultTags, IOptionsMonitor<SfeOptions> options)
 {
     public const int MaxFilesPerChange = 1000;
 
@@ -128,7 +129,7 @@ public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, Librar
         return new TagEditResult(TagEditStatus.Ok, await GetAsync(id, cancellationToken));
     }
 
-    /// <summary>Deletes a tag, its aliases, its links to other tags and to files. Built-in tags cannot be deleted.</summary>
+    /// <summary>Deletes a tag, its aliases, its links to other tags and to files, and where it is a folder's default. Built-in tags cannot be deleted.</summary>
     public async Task<TagDeleteStatus> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         if (BuiltInTags.IsBuiltIn(id))
@@ -150,11 +151,13 @@ public sealed class TagService(IDbContextFactory<SfeDbContext> dbFactory, Librar
             await db.TagAliases.Where(a => a.TagId == id).ExecuteDeleteAsync(cancellationToken);
             await db.FileTags.Where(l => l.TagId == id).ExecuteDeleteAsync(cancellationToken);
             await db.MissingFileTags.Where(l => l.TagId == id).ExecuteDeleteAsync(cancellationToken);
+            await db.FolderDefaultTags.Where(d => d.TagId == id).ExecuteDeleteAsync(cancellationToken);
             await db.Tags.Where(t => t.Id == id).ExecuteDeleteAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         });
 
         InvalidateFileCounts();
+        defaultTags.Invalidate();
         return TagDeleteStatus.Deleted;
     }
 

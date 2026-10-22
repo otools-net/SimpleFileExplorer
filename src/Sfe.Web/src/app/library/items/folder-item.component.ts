@@ -11,6 +11,7 @@ import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { FolderCoverComponent } from './folder-cover.component';
 import { ItemActions } from './item-actions.service';
+import { DefaultTagsBadgeComponent } from '../../tags/default-tags-badge.component';
 import { exclusionChip, exclusionTitle } from './exclusions';
 import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
 
@@ -20,7 +21,7 @@ import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
  */
 @Component({
     selector: 'sfe-folder-item',
-    imports: [IconComponent, RouterLink, FolderCoverComponent, ItemMenuButtonComponent, SelectBoxComponent],
+    imports: [IconComponent, RouterLink, FolderCoverComponent, ItemMenuButtonComponent, SelectBoxComponent, DefaultTagsBadgeComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'folder-item',
@@ -37,11 +38,7 @@ import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
     template: `
         <a class="folder item kind-directory" [class.card]="cards()" routerLink="/" [queryParams]="store.browseParams(item().path)" [title]="linkTitle()">
             @if (cards()) {
-                <sfe-folder-cover [path]="item().path">
-                    @if (indexedItems() !== null) {
-                        <span class="badge folder-count" [title]="countTitle()">{{ indexedItems()!.toLocaleString() }}</span>
-                    }
-                </sfe-folder-cover>
+                <sfe-folder-cover [path]="item().path" />
                 <span class="folder-caption"><svg sfeIcon="folder"></svg><span class="item-name">{{ item().name }}</span>
                     @if (exclusion(); as exclusion) {
                         <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
@@ -58,10 +55,25 @@ import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
             }
         </a>
         <label sfeSelectBox [item]="item()"></label>
+        @if (cards()) {
+            <!-- Over the card's pictures, outside the link (a button can't be in it): its default tags, then its count. -->
+            <span class="folder-cover-marks">
+                @if (item().defaultTags?.length) {
+                    <sfe-default-tags-badge [own]="item().defaultTags!" [folder]="'“' + item().name + '”'" [editable]="canTag()" (edit)="openTags()" />
+                }
+                @if (indexedItems() !== null) {
+                    <span class="badge folder-count">{{ indexedItems()!.toLocaleString() }}</span>
+                }
+            </span>
+        }
         <span class="folder-actions">
+            <!-- Lines: always shown (the other buttons on hover), the folder gives tags to the files put into it. -->
+            @if (!cards() && item().defaultTags?.length) {
+                <sfe-default-tags-badge [own]="item().defaultTags!" [folder]="'“' + item().name + '”'" [editable]="canTag()" (edit)="openTags()" />
+            }
             @if (canTag()) {
                 <button type="button" class="icon-button small folder-tags-button" [attr.aria-label]="'Tags of the files in ' + item().name"
-                        title="Add or remove tags on all the files of this folder, or of its sub-folders too (asks first)" (click)="openTags()">
+                        title="Add or remove tags on all the files of this folder, or of its sub-folders too (asks first), and its default tags" (click)="openTags()">
                     <svg sfeIcon="tag"></svg>
                 </button>
             }
@@ -74,7 +86,7 @@ export class FolderItemComponent {
     /** Folders are cards with pictures (`config.folderPictures`), except in the list view. */
     readonly cards = input(false);
     /** Tagging a whole folder changes tags: hidden without the right (there, with folder rules). */
-    protected readonly canTag = computed(() => this.store.can(Rights.assignTags, this.item()));
+    protected readonly canTag = computed(() => this.store.can(Rights.assignTags, this.item()) || this.store.can(Rights.folderDefaultTags, this.item()));
     protected readonly store = inject(ListingStore);
     private readonly copyPaths = inject(CopyPathService);
     protected readonly menu = inject(ItemMenu);
@@ -84,7 +96,9 @@ export class FolderItemComponent {
     /** Kept out of scans, trickplay or thumbnails (for everyone: it tells why). */
     protected readonly exclusion = computed(() => exclusionChip(this.item().excluded));
     protected readonly exclusionTitle = computed(() => exclusionTitle(this.item().excluded, this.item().path));
-    protected readonly linkTitle = computed(() => [this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''), this.exclusionTitle()]
+    /** The card's count lets clicks through to the link: its hint is the link's. */
+    protected readonly linkTitle = computed(() => [this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''),
+        this.cards() && this.indexedItems() !== null ? this.countTitle() : null, this.exclusionTitle()]
         .filter(Boolean).join('\n'));
     /** Indexed files and sub-folders directly inside; null when unknown (not indexed, older server). */
     protected readonly indexedItems = computed(() => this.item().indexedItems ?? null);

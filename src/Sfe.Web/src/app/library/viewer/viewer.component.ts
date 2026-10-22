@@ -77,8 +77,8 @@ interface ViewerMenuEntry {
                     }
                     <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
                     @if (menuOpen()) {
-                        <div class="item-menu-backdrop" aria-hidden="true" (click)="menuOpen.set(false)"></div>
-                        <div #menu class="item-menu viewer-menu" role="menu" [attr.aria-label]="'Actions for ' + item()?.name" (keydown)="onMenuKeydown($event)">
+                        <div class="item-menu-backdrop sheet-backdrop" aria-hidden="true" (click)="menuOpen.set(false)"></div>
+                        <div #menu class="item-menu viewer-menu phone-sheet" role="menu" [attr.aria-label]="'Actions for ' + item()?.name" (keydown)="onMenuKeydown($event)">
                             <div class="item-menu-title">{{ item()?.name }}</div>
                             @for (entry of menuEntries(); track entry.id) {
                                 @if (entry.href) {

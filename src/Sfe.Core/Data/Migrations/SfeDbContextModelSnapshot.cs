@@ -167,6 +167,35 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("FileTags", "SFE");
                 });
 
+            modelBuilder.Entity("Sfe.Core.Data.FolderDefaultTag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TagId");
+
+                    b.HasIndex("Path", "TagId")
+                        .IsUnique();
+
+                    b.ToTable("FolderDefaultTags", "SFE");
+                });
+
             modelBuilder.Entity("Sfe.Core.Data.MissingFile", b =>
                 {
                     b.Property<int>("Id")
@@ -510,6 +539,9 @@ namespace Sfe.Core.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("DefaultTags")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DeletedAt")
                         .HasColumnType("datetime2");
 
@@ -628,6 +660,17 @@ namespace Sfe.Core.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("File");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("Sfe.Core.Data.FolderDefaultTag", b =>
+                {
+                    b.HasOne("Sfe.Core.Data.Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Tag");
                 });

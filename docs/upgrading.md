@@ -30,6 +30,13 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.81
+
+- The index gets a new table for the **default tags** of folders (and a column of the trash); nothing changes for the
+  files already tagged.
+- The Administrators and Users groups of every space get the new right `tags.folderDefaults`
+  ([default tags](user-guide/tags.md#default-tags-of-a-folder)).
+
 ## To 1.80
 
 - **Excluded folders keep their index**: a folder in Administration › Scanning › What to scan › **Excluded folders** is

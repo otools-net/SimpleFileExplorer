@@ -60,6 +60,32 @@ hover; always on touch screens) does the same for that folder.
 - A folder is indexed first, so its files not indexed yet are tagged too (this can take a while for a large tree, and
   is refused while a scan runs); search results are the indexed files the search finds.
 
+## Default tags of a folder
+
+A folder can have **default tags**: every file put into it or into one of its sub-folders gets them, whether it is
+found by a scan, created, uploaded, copied or moved there. Open the folder's tags (its tag button, or the one next to
+the location) and use **Default tags** at the bottom of the dialog.
+
+![A default tag being added to a folder](../images/default-tags-dialog.png)
+
+- **Add a default tag…** asks whether the files already in the folder and its sub-folders get it now too
+  (**Existing files too**), or only the files put there from now on (**New files only**).
+- **×** on a default tag asks whether the files already there keep it (**Keep it on the files**) or lose it
+  (**Remove it from the files too**).
+- A folder's default tags apply to its sub-folders: the dialog of a sub-folder shows them after its own ones, with the
+  name of the folder they are set on (change them there).
+- A file gets a default tag once, when it arrives: if you take the tag off a file, a rescan doesn't give it back. A
+  file moved inside the folder (or renamed) gets nothing again; one moved out keeps its tags.
+- A folder with default tags shows a tag with a sparkle next to its item count (with their number when there are
+  several; the plain tag button is the one that tags its files), and the folder you are in shows one next to its
+  counts. Click it (tap on a touch screen) to see them all; on a phone they show along the bottom of the screen.
+  **Change…** there opens the folder's tags.
+
+  ![The default tags of a folder](../images/default-tags-popover.png)
+  ![The same on a phone](../images/phone-default-tags.png)
+- They follow a folder when it is renamed or moved, go to the trash with it and come back when it is restored.
+- Setting them needs the right `tags.folderDefaults`; changing the files already there also needs `tags.assign`.
+
 ## The tag sidebar
 
 The sidebar at the left of the library page (a drawer on phones; the button at the top left shows or hides it) shows a

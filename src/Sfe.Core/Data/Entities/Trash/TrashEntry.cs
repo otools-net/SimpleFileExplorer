@@ -41,6 +41,12 @@ public sealed class TrashEntry
     /// <summary>The folder rules of a folder and below it, as JSON, given back by a restore (<see cref="Access.FolderRuleService"/>).</summary>
     public string? Rules { get; set; }
 
+    /// <summary>
+    /// The default tags of a folder and of the folders below it, as JSON, given back by a restore
+    /// (<see cref="Tagging.FolderDefaultTags"/>); null when it had none.
+    /// </summary>
+    public string? DefaultTags { get; set; }
+
     public List<TrashTag> Tags { get; set; } = [];
 
     /// <summary>

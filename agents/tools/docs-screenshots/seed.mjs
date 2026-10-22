@@ -71,6 +71,8 @@ console.log(await b.eval(js(`
     await set(['Photos/2025 Mountains/Summit.jpg', 'Photos/2025 Mountains/Valley at noon.jpg', 'Photos/2025 Mountains/Forest trail.jpg', 'Photos/2025 Mountains/Autumn lake.jpg', 'Videos/Holidays/Mountain drive.webm'], [mountains]);
     await set(['Photos/Family/Garden party.jpg', 'Photos/Family/Picnic.jpg', 'Photos/Family/Winter walk.jpg', 'Photos/Family/Birthday evening.jpg'], [family]);
     await set(['Photos/2025 Mountains/Summit.jpg'], [1]);
+    // A folder whose new photos get tags (its icon in the Photos listing, default-tags-*.png).
+    await call('PUT', 'api/folder-default-tags', { path: 'Photos/Family', add: [family, people] });
     // The administrator's quick links, shown in the sidebar of every library shot.
     await call('POST', 'api/me/quick-links', { paths: ['Photos/2025 Mountains', 'Videos/Holidays', 'Documents/Packing list.txt'] });
     const groups = await call('GET', 'api/access/groups');

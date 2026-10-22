@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
     AccessGain, ArchiveLink, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, KeepAliveView, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
-    ExcludedFolder, ExclusionKind, FolderAccessReport, FolderCover, FolderExclusions, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
+    ExcludedFolder, ExclusionKind, FolderAccessReport, FolderDefaults, FolderDefaultTagsChange, FolderDefaultTagsResult, FolderCover, FolderExclusions, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
     SettingsValues, SettingsView, SetupInfo, SetupInput, SimilarVideoResults, SortField, TagDetails, TagInput, TagScope, TagSearchResults, TagSidebar,
@@ -122,6 +122,11 @@ export class Api {
     /** Tags every file of a folder or every match of a search. Resolves with the problem (409) while a scan runs. */
     changeScopeTags = (change: ScopeTagChange) => this.post<ScopeTagChangeResult | { detail?: string }>('api/file-tags/scope', change);
     fileViewed = (path: string) => this.post<void>('api/file-tags/viewed', { path });
+    /** The default tags of a folder, its own and its parents'. */
+    folderDefaultTags = (path: string, signal?: AbortSignal) => this.get<FolderDefaults>('api/folder-default-tags', { path }, signal);
+    /** Changes a folder's default tags (and the files already there when asked). Resolves with the problem (409) while a scan runs. */
+    changeFolderDefaultTags = (change: FolderDefaultTagsChange) =>
+        this.put<FolderDefaultTagsResult | { detail?: string }>('api/folder-default-tags', change);
     tagSidebar = () => this.get<TagSidebar>('api/tags/sidebar');
     clearTagHistory = () => this.delete<void>('api/tags/history');
 
