@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sfe.Core.Files;
 using Sfe.Core.KeepAlive;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
@@ -77,8 +78,7 @@ public sealed class KeepAliveTests
         await service.PingAllAsync(TestContext.CancellationToken);
         await service.PingAllAsync(TestContext.CancellationToken);
 
-        var root = new LibraryPaths(_root).Root;
-        CollectionAssert.AreEqual(new[] { root, root }, pings.ToList());
+        CollectionAssert.AreEqual(new[] { Root, Root }, pings.ToList());
         var status = service.Status().Single();
         Assert.IsNotNull(status.LastPing);
         Assert.IsNull(status.Error);
@@ -181,28 +181,108 @@ public sealed class KeepAliveTests
     public async Task TheRealPingListsTheFolder()
     {
         _settings.Value.KeepAlive.Mode = KeepAliveMode.Always;
-        using var service = new KeepAliveService(new LibraryPaths(_root), _settings, _log);
+        using var service = New();
 
         await service.PingAllAsync(TestContext.CancellationToken);
 
         Assert.IsNull(service.Status().Single().Error, _log.ToString());
     }
 
+    [TestMethod]
+    public async Task MoreFoldersArePingedAndLeaveTheStatusWhenTakenOff()
+    {
+        Directory.CreateDirectory(Path.Combine(_root, "Linked"));
+        _settings.Value.KeepAlive.Folders = ["Linked", "../Outside", ".sfe", "", "/"];
+        var (service, pings) = Create(KeepAliveMode.Always);
+
+        await service.PingAllAsync(TestContext.CancellationToken);
+        await service.PingAllAsync(TestContext.CancellationToken);
+
+        var linked = Path.Combine(Root, "Linked");
+        CollectionAssert.AreEquivalent(new[] { Root, linked, Root, linked }, pings.ToList(), string.Join(", ", pings));
+        CollectionAssert.AreEqual(new[] { (Root, true), (linked, false) }, service.Status().Select(f => (f.Path, f.IsRoot)).ToList());
+        Assert.AreEqual(1, _log.Count("“../Outside” is not a folder of the library"), _log.ToString());
+        Assert.AreEqual(1, _log.Count("“.sfe” is not a folder of the library"), _log.ToString());
+
+        _settings.Change(o => o.KeepAlive.Folders = []);
+        await service.PingAllAsync(TestContext.CancellationToken);
+        Assert.AreEqual(Root, service.Status().Single().Path);
+    }
+
+    [TestMethod]
+    public async Task AutoLooksAtEachFolderOnItsOwn()
+    {
+        Directory.CreateDirectory(Path.Combine(_root, "Linked"));
+        _settings.Value.KeepAlive.Folders = ["Linked"];
+        var (service, pings) = Create(KeepAliveMode.Auto);
+        service.IsNetwork = path => path.EndsWith("Linked", StringComparison.Ordinal);
+
+        await service.PingAllAsync(TestContext.CancellationToken);
+
+        CollectionAssert.AreEqual(new[] { Path.Combine(Root, "Linked") }, pings.ToList());
+        CollectionAssert.AreEqual(new bool?[] { false, true }, service.Status().Select(f => f.IsNetwork).ToList());
+    }
+
+    [TestMethod]
+    public async Task TheWritePingWritesAndDeletesAFileInTheWorkFolder()
+    {
+        Directory.CreateDirectory(Path.Combine(_root, "Linked"));
+        _settings.Value.KeepAlive.Folders = ["Linked"];
+        _settings.Value.KeepAlive.Method = KeepAliveMethod.Touch;
+        var (service, pings) = Create(KeepAliveMode.Always);
+
+        await service.PingAllAsync(TestContext.CancellationToken);
+
+        // The library folder is written (not read); more folders are still read.
+        var work = Path.Combine(_root, WorkFolder.Name, KeepAliveService.WorkPart);
+        Assert.IsTrue(Directory.Exists(work), _log.ToString());
+        Assert.IsEmpty(Directory.GetFileSystemEntries(work));
+        CollectionAssert.AreEqual(new[] { Path.Combine(Root, "Linked") }, pings.ToList());
+        CollectionAssert.AreEqual(new KeepAliveMethod?[] { KeepAliveMethod.Touch, KeepAliveMethod.List }, service.Status().Select(f => f.Method).ToList());
+        Assert.IsTrue(service.Status().All(f => f.Error is null), _log.ToString());
+    }
+
+    [TestMethod]
+    public async Task TheWritePingReadsWhenTheWorkFolderIsOnTheServer()
+    {
+        var cache = Path.Combine(_root, "..", Path.GetFileName(_root) + "-cache");
+        _settings.Value.Thumbnails.CacheDirectory = cache;
+        _settings.Value.Files.WorkFolder = WorkFolderLocation.Server;
+        _settings.Value.KeepAlive.Method = KeepAliveMethod.Touch;
+        var (service, pings) = Create(KeepAliveMode.Always);
+
+        await service.PingAllAsync(TestContext.CancellationToken);
+        await service.PingAllAsync(TestContext.CancellationToken);
+
+        CollectionAssert.AreEqual(new[] { Root, Root }, pings.ToList());
+        Assert.AreEqual(KeepAliveMethod.List, service.Status().Single().Method);
+        Assert.IsFalse(Directory.Exists(Path.Combine(_root, WorkFolder.Name)));
+        Assert.IsFalse(Directory.Exists(cache));
+        Assert.AreEqual(1, _log.Count("is read instead of written"), _log.ToString());
+    }
+
+    /// <summary>A service whose read pings are recorded (and answered by <paramref name="ping"/>); the write ping is real.</summary>
     private (KeepAliveService Service, ConcurrentQueue<string> Pings) Create(KeepAliveMode mode, bool network = true, Func<string, Task>? ping = null)
     {
         _settings.Value.KeepAlive.Mode = mode;
         var pings = new ConcurrentQueue<string>();
-        var service = new KeepAliveService(new LibraryPaths(_root), _settings, _log)
+        var service = New();
+        service.IsNetwork = _ => network;
+        service.Ping = path =>
         {
-            IsNetwork = _ => network,
-            Ping = path =>
-            {
-                pings.Enqueue(path);
-                return ping?.Invoke(path) ?? Task.CompletedTask;
-            },
+            pings.Enqueue(path);
+            return ping?.Invoke(path) ?? Task.CompletedTask;
         };
         return (service, pings);
     }
+
+    private KeepAliveService New()
+    {
+        var paths = new LibraryPaths(_root);
+        return new KeepAliveService(paths, new WorkFolder(paths, _settings), _settings, _log);
+    }
+
+    private string Root => Path.TrimEndingDirectorySeparator(new LibraryPaths(_root).Root);
 
     private sealed class Settings : IOptionsMonitor<SfeOptions>
     {

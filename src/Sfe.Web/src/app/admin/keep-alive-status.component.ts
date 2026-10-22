@@ -12,8 +12,9 @@ const REFRESH_MS = 10_000;
 type State = 'idle' | 'unavailable' | null;
 
 /**
- * Keep alive › Status on the administration page (right `settings.keepAlive`): the mode in effect, each folder kept
- * alive with its last ping, and Ping now (also while it is off, to try a share). Refreshed while shown.
+ * Keep alive › Status on the administration page (right `settings.keepAlive`): the mode in effect, the library folder
+ * then the more folders of the settings with their last ping (and whether a file was written), and Ping now (also
+ * while it is off, to try a share). Refreshed while shown.
  */
 @Component({
     selector: 'sfe-keep-alive-status',
@@ -35,7 +36,7 @@ type State = 'idle' | 'unavailable' | null;
                 <li class="keep-alive-row" [class.failed]="folder.error" [attr.data-path]="folder.path">
                     <svg [sfeIcon]="folder.error ? 'close' : folder.lastPing ? 'check' : 'clock'"></svg>
                     <span class="keep-alive-folder">
-                        <span class="keep-alive-name">{{ folder.path || 'Library folder' }}</span>
+                        <span class="keep-alive-name">{{ folder.isRoot ? 'Library folder' : folder.path }}</span>
                         <span class="keep-alive-network">{{ network(folder) }}</span>
                         @if (folder.error) {
                             <span class="keep-alive-error">{{ failure(folder) }}</span>
@@ -109,7 +110,8 @@ export class KeepAliveStatusComponent {
         if (!folder.lastPing)
             return '';
         const took = folder.durationMilliseconds !== null ? ` · ${Math.round(folder.durationMilliseconds).toLocaleString()} ms` : '';
-        return `last ping ${formatDate(folder.lastPing)}${took}`;
+        const how = folder.method === 'touch' ? ' · file written' : '';
+        return `last ping ${formatDate(folder.lastPing)}${took}${how}`;
     }
 
     protected async ping(): Promise<void> {

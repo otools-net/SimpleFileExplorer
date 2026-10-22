@@ -88,7 +88,7 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Thumbnails:Enabled`, `Width`, `VideoSeekSeconds`, `LargeImageKilobytes`, `SingleViewOriginals`, `AnimatedHover`, `ExcludedFolders`, `MaxConcurrency`, `TimeoutSeconds` | [Thumbnails](administration/thumbnails.md) |
 | `Sfe:Trickplay:…` | [Trickplay › Settings](administration/trickplay.md#settings) |
 | `Sfe:Editor:OutputFolder`, `Quality` | [Picture editor](administration/picture-editor.md) |
-| `Sfe:KeepAlive:Mode`, `IntervalSeconds`, `TimeoutSeconds` | [Keep alive](administration/keep-alive.md#settings) |
+| `Sfe:KeepAlive:Mode`, `IntervalSeconds`, `TimeoutSeconds`, `Method` (`List`, `Touch`), `Folders` | [Keep alive](administration/keep-alive.md#settings) |
 | `Sfe:Files:PortableNames`, `WorkFolder` (`Library`, `Server`), `DeletePermanently`, `Trash:RetentionDays`, `MinimumFreeSpaceMegabytes`, `Uploads:MaxFileSizeMegabytes`, `Uploads:KeepUnfinishedHours`, `MaxArchiveMegabytes` | [File management](administration/file-management.md) |
 | `Sfe:Tasks:LogRetentionDays` | [Background tasks › Settings](administration/background-tasks.md#settings) |
 | `Sfe:Logs:RetentionDays`, `WriteFiles` | [Logs › Settings](administration/logs.md#settings) |
@@ -106,6 +106,8 @@ It is off until you turn it on. Each space can also have its own values on the a
 | `Sfe:KeepAlive:Mode` | `Off` (default), `Auto`: only folders on a network share (a `\\server\share` path, a mapped network drive, a CIFS, NFS or SSHFS mount, also through a link), or `Always`: every library folder, for a network drive SFE can't recognise |
 | `Sfe:KeepAlive:IntervalSeconds` | Seconds between two looks (default 240, 10 to 3600): shorter than the file server's idle limit |
 | `Sfe:KeepAlive:TimeoutSeconds` | A look taking longer counts as failed (default 30, 1 to 300) |
+| `Sfe:KeepAlive:Method` | `List` (default): read the folder; `Touch`: write and delete a small file in SFE's work folder (`.sfe/keep-alive`), which always reaches the file server |
+| `Sfe:KeepAlive:Folders` | More library folders to keep alive (paths from the library root), for folders reached through a link to another share |
 
 The [log](administration/logs.md) says when keep alive starts on a folder, when a folder stops answering (once, not
 at every look) and when it answers again; with `Auto` it also says when a folder is not on the network. Keep alive

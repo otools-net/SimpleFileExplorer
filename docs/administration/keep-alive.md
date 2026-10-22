@@ -35,3 +35,9 @@ Settings of each space (and their default for every space at the **Whole server*
 | **Keep the library folder alive** (`Sfe:KeepAlive:Mode`) | Off | **When it is on a network share** (`Auto`): a `\\server\share` folder, a mapped network drive, or a CIFS, NFS or SSHFS mount, also through a link. **Always**: also a folder SFE can't tell is on the network |
 | **Seconds between pings** (`Sfe:KeepAlive:IntervalSeconds`) | 240 | 10–3600; shorter than the time the file server waits before dropping an idle connection |
 | **Time limit (seconds)** (`Sfe:KeepAlive:TimeoutSeconds`) | 30 | 1–300; a ping taking longer counts as failed |
+| **How the library folder is pinged** (`Sfe:KeepAlive:Method`) | Read the folder | **Read the folder** (`List`) is enough for most file servers, but the computer may answer it from its own cache without asking the server. **Write and delete a small file** (`Touch`) always reaches the server: SFE creates and deletes `ping.tmp` in its work folder, `.sfe/keep-alive` at the library's root. When the work folder is on the server ([File management](file-management.md)), the folder is read instead, and the log says so once |
+| **More folders** (`Sfe:KeepAlive:Folders`) | none | Library folders kept alive too, paths from the library root, one per line: for folders reached through a link to another share. **When it is on a network share** looks at each one on its own; they are always read. A setting of each space only; it follows the folder when it is renamed or moved in SFE |
+
+**How the library folder is pinged** and **More folders** show with **Show all settings**. On the status page the
+library folder comes first, then the more folders; **file written** says the last ping of the library folder wrote its
+file.

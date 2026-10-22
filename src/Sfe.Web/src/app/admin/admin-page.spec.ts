@@ -483,9 +483,10 @@ describe('SystemSectionComponent', () => {
 });
 
 describe('KeepAliveStatusComponent', () => {
-    const view = (overrides: Partial<KeepAliveView> = {}): KeepAliveView => ({ mode: 'auto', intervalSeconds: 240, folders: [], ...overrides });
+    const view = (overrides: Partial<KeepAliveView> = {}): KeepAliveView => ({ mode: 'auto', intervalSeconds: 240, method: 'list', folders: [], ...overrides });
     const folder = (overrides: Partial<KeepAliveFolder> = {}): KeepAliveFolder => ({
-        path: '', isNetwork: true, lastPing: '2026-10-22T10:00:00Z', durationMilliseconds: 14.4, error: null, failingSince: null, waiting: false, ...overrides,
+        path: '', isRoot: true, isNetwork: true, lastPing: '2026-10-22T10:00:00Z', durationMilliseconds: 14.4, error: null, failingSince: null, waiting: false,
+        method: 'list', ...overrides,
     });
     const text = () => element.querySelector('.keep-alive-status')!.textContent!;
 
@@ -525,6 +526,17 @@ describe('KeepAliveStatusComponent', () => {
         await open('/admin?section=keepAlive');
         expect(element.querySelector('.settings-status')!.getAttribute('data-state')).toBe('idle');
         expect(text()).toContain('On for folders on a network share, every 240 seconds.');
+    });
+
+    it('lists more folders after the library folder, and says when a file was written', async () => {
+        await setUp();
+        api.keepAlive.mockResolvedValue(view({ method: 'touch', folders: [folder({ method: 'touch' }), folder({ path: 'NAS/Photos', isRoot: false })] }));
+        await open('/admin?section=keepAlive');
+
+        expect([...element.querySelectorAll('.keep-alive-name')].map(n => n.textContent)).toEqual(['Library folder', 'NAS/Photos']);
+        const details = [...element.querySelectorAll('.keep-alive-detail')].map(d => d.textContent!);
+        expect(details[0]).toContain('file written');
+        expect(details[1]).not.toContain('file written');
     });
 
     it('opens its settings from the status', async () => {

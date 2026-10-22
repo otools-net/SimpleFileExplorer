@@ -2,21 +2,28 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sfe.Core.Files;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 
 namespace Sfe.Core.KeepAlive;
 
 /// <summary>What keep alive knows of one folder.</summary>
+/// <param name="IsRoot">The library's folder itself (the others come from <see cref="KeepAliveOptions.Folders"/>).</param>
 /// <param name="IsNetwork">Null until the first ping looked.</param>
 /// <param name="LastPing">When the last ping ended (null: none yet).</param>
 /// <param name="Error">Why the last ping failed; null when it worked.</param>
 /// <param name="FailingSince">The first failed ping of the current run of failures.</param>
-public sealed record KeepAliveFolder(string Path, bool? IsNetwork, DateTimeOffset? LastPing, TimeSpan? Duration, string? Error, DateTimeOffset? FailingSince, bool Waiting);
+/// <param name="Method">How the last ping was made; null: none yet.</param>
+public sealed record KeepAliveFolder(
+    string Path, bool IsRoot, bool? IsNetwork, DateTimeOffset? LastPing, TimeSpan? Duration, string? Error, DateTimeOffset? FailingSince, bool Waiting,
+    KeepAliveMethod? Method);
 
 /// <summary>
-/// Keeps the library's folder alive (<see cref="KeepAliveOptions"/>): every interval, one directory query on it, so the
-/// file server never sees the session idle. Run by the API's hosted service (<see cref="RunAsync"/>), one per library.
+/// Keeps the library's folder alive (<see cref="KeepAliveOptions"/>): every interval, one directory query on it and on
+/// the more folders set, or a small file written and deleted in the work folder (<see cref="KeepAliveMethod.Touch"/>),
+/// so the file server never sees the session idle. Run by the API's hosted service (<see cref="RunAsync"/>), one per
+/// library.
 /// </summary>
 /// <remarks>
 /// Every file system call (finding whether the folder is on the network, the ping) runs on the thread pool under the
@@ -26,7 +33,11 @@ public sealed record KeepAliveFolder(string Path, bool? IsNetwork, DateTimeOffse
 /// </remarks>
 public sealed class KeepAliveService : IDisposable
 {
+    /// <summary>The sub-folder of the work folder the write ping uses.</summary>
+    public const string WorkPart = "keep-alive";
+
     private readonly LibraryPaths _paths;
+    private readonly WorkFolder _workFolder;
     private readonly IOptionsMonitor<SfeOptions> _options;
     private readonly ILogger<KeepAliveService> _logger;
     private readonly ConcurrentDictionary<string, Folder> _folders = new(LibraryPaths.PathComparer);
@@ -34,9 +45,13 @@ public sealed class KeepAliveService : IDisposable
     private readonly SemaphoreSlim _round = new(1, 1);
     private readonly IDisposable? _subscription;
 
-    public KeepAliveService(LibraryPaths paths, IOptionsMonitor<SfeOptions> options, ILogger<KeepAliveService> logger)
+    /// <summary>What was already said since the settings last changed (refused folders, the write ping read instead).</summary>
+    private readonly ConcurrentDictionary<string, bool> _told = new(StringComparer.Ordinal);
+
+    public KeepAliveService(LibraryPaths paths, WorkFolder workFolder, IOptionsMonitor<SfeOptions> options, ILogger<KeepAliveService> logger)
     {
         _paths = paths;
+        _workFolder = workFolder;
         _options = options;
         _logger = logger;
         _subscription = options.OnChange(_ =>
@@ -44,21 +59,37 @@ public sealed class KeepAliveService : IDisposable
             // A mapped drive may have appeared, a mode changed: look again, and ping now rather than after the old interval.
             foreach (var folder in _folders.Values)
                 folder.IsNetwork = null;
+            _told.Clear();
             if (_changed.CurrentCount == 0)
                 _changed.Release();
+        });
+        Touch = () => Task.Run(() =>
+        {
+            var file = Path.Combine(_workFolder.Get(WorkPart), "ping.tmp");
+            File.WriteAllText(file, DateTimeOffset.UtcNow.ToString("O"));
+            File.Delete(file);
         });
     }
 
     /// <summary>The ping: one directory query, whatever the folder holds. Replaced by tests.</summary>
     internal Func<string, Task> Ping { get; set; } = path => Task.Run(() => Directory.EnumerateFileSystemEntries(path).FirstOrDefault());
 
+    /// <summary>The write ping: a small file created and deleted in the work folder. Replaced by tests.</summary>
+    internal Func<Task> Touch { get; set; }
+
     /// <summary>Replaced by tests.</summary>
     internal Func<string, bool> IsNetwork { get; set; } = NetworkFolders.IsNetwork;
 
     private KeepAliveOptions Settings => _options.CurrentValue.KeepAlive;
 
+    /// <summary>
+    /// The root as <see cref="LibraryPaths.TryResolve"/> gives folders (no ending separator, except a drive's root), so
+    /// that a folder of the settings naming the root is the root.
+    /// </summary>
+    private string RootPath => Path.TrimEndingDirectorySeparator(_paths.Root);
+
     public IReadOnlyList<KeepAliveFolder> Status() =>
-        _folders.Values.Select(f => f.ToView()).OrderBy(f => f.Path, LibraryPaths.PathComparer).ToList();
+        _folders.Values.Select(f => f.ToView()).OrderBy(f => !f.IsRoot).ThenBy(f => f.Path, LibraryPaths.PathComparer).ToList();
 
     public async Task RunAsync(CancellationToken stoppingToken)
     {
@@ -113,10 +144,15 @@ public sealed class KeepAliveService : IDisposable
         await _round.WaitAsync(cancellationToken);
         try
         {
-            var timeout = TimeSpan.FromSeconds(Math.Clamp(Settings.TimeoutSeconds, KeepAliveOptions.MinTimeoutSeconds, KeepAliveOptions.MaxTimeoutSeconds));
-            var pings = Targets()
-                .Select(path => _folders.GetOrAdd(path, p => new Folder(p)))
-                .Select(folder => PingAsync(folder, mode, timeout, cancellationToken))
+            var settings = Settings;
+            var timeout = TimeSpan.FromSeconds(Math.Clamp(settings.TimeoutSeconds, KeepAliveOptions.MinTimeoutSeconds, KeepAliveOptions.MaxTimeoutSeconds));
+            var targets = Targets(settings);
+            // Folders taken off the settings leave the status.
+            foreach (var gone in _folders.Keys.Where(k => !targets.Contains(k)).ToList())
+                _folders.TryRemove(gone, out _);
+            var pings = targets
+                .Select(path => _folders.GetOrAdd(path, p => new Folder(p, LibraryPaths.PathComparer.Equals(p, RootPath))))
+                .Select(folder => PingAsync(folder, mode, MethodFor(folder, settings), timeout, cancellationToken))
                 .ToList();
             await Task.WhenAll(pings);
         }
@@ -126,10 +162,34 @@ public sealed class KeepAliveService : IDisposable
         }
     }
 
-    /// <summary>The folders kept alive: the library's root (more folders come in a later version).</summary>
-    private IEnumerable<string> Targets() => [_paths.Root];
+    /// <summary>The library's root, then the more folders set that resolve inside the library (each once).</summary>
+    private HashSet<string> Targets(KeepAliveOptions settings)
+    {
+        var targets = new HashSet<string>(LibraryPaths.PathComparer) { RootPath };
+        foreach (var folder in settings.Folders)
+        {
+            if (_paths.TryResolve(folder, out var full))
+                targets.Add(full);
+            else if (_told.TryAdd("refused:" + folder, true))
+                _logger.LogWarning("Keep alive: “{Folder}” is not a folder of the library, left out", folder);
+        }
 
-    private async Task PingAsync(Folder folder, KeepAliveMode mode, TimeSpan timeout, CancellationToken cancellationToken)
+        return targets;
+    }
+
+    /// <summary>The write ping only for the root, and only when the work folder is in the library (on its share).</summary>
+    private KeepAliveMethod MethodFor(Folder folder, KeepAliveOptions settings)
+    {
+        if (!folder.IsRoot || settings.Method != KeepAliveMethod.Touch)
+            return KeepAliveMethod.List;
+        if (_workFolder.Location == WorkFolderLocation.Library)
+            return KeepAliveMethod.Touch;
+        if (_told.TryAdd("touch-on-server", true))
+            _logger.LogWarning("Keep alive: the work folder is on the server, not in the library: {Folder} is read instead of written", folder.Path);
+        return KeepAliveMethod.List;
+    }
+
+    private async Task PingAsync(Folder folder, KeepAliveMode mode, KeepAliveMethod method, TimeSpan timeout, CancellationToken cancellationToken)
     {
         if (folder.Running is { IsCompleted: false })
         {
@@ -144,7 +204,7 @@ public sealed class KeepAliveService : IDisposable
             folder.IsNetwork ??= IsNetwork(folder.Path);
             if (mode == KeepAliveMode.Auto && folder.IsNetwork == false)
                 return false;
-            await Ping(folder.Path);
+            await (method == KeepAliveMethod.Touch ? Touch() : Ping(folder.Path));
             return true;
         }, cancellationToken);
         folder.Running = running;
@@ -154,7 +214,7 @@ public sealed class KeepAliveService : IDisposable
         try
         {
             if (await running.WaitAsync(timeout, cancellationToken))
-                Succeeded(folder, watch.Elapsed);
+                Succeeded(folder, method, watch.Elapsed);
             else
                 Skipped(folder);
         }
@@ -164,28 +224,28 @@ public sealed class KeepAliveService : IDisposable
         }
         catch (TimeoutException)
         {
-            Failed(folder, $"no answer within {timeout.TotalSeconds:0} s");
+            Failed(folder, method, $"no answer within {timeout.TotalSeconds:0} s");
         }
         catch (Exception ex)
         {
-            Failed(folder, ex.Message);
+            Failed(folder, method, ex.Message);
         }
     }
 
-    private void Succeeded(Folder folder, TimeSpan duration)
+    private void Succeeded(Folder folder, KeepAliveMethod method, TimeSpan duration)
     {
         if (folder.FailingSince is { } since)
             _logger.LogInformation("Keep alive: {Folder} answers again (failing since {Since:u})", folder.Path, since);
         else if (folder.LastPing is null)
             _logger.LogInformation("Keep alive: pinging {Folder} every {Interval} s", folder.Path, Settings.IntervalSeconds);
-        folder.Record(duration, null);
+        folder.Record(method, duration, null);
     }
 
-    private void Failed(Folder folder, string error)
+    private void Failed(Folder folder, KeepAliveMethod method, string error)
     {
         if (folder.FailingSince is null)
             _logger.LogWarning("Keep alive: {Folder} does not answer: {Error}", folder.Path, error);
-        folder.Record(null, error);
+        folder.Record(method, null, error);
     }
 
     private void Skipped(Folder folder)
@@ -202,15 +262,17 @@ public sealed class KeepAliveService : IDisposable
         _round.Dispose();
     }
 
-    private sealed class Folder(string path)
+    private sealed class Folder(string path, bool isRoot)
     {
         private readonly Lock _gate = new();
         private DateTimeOffset? _lastPing;
         private TimeSpan? _duration;
         private string? _error;
         private DateTimeOffset? _failingSince;
+        private KeepAliveMethod? _method;
 
         public string Path { get; } = path;
+        public bool IsRoot { get; } = isRoot;
         public volatile Task<bool>? Running;
         public bool? IsNetwork;
         public bool ToldNotNetwork;
@@ -218,11 +280,12 @@ public sealed class KeepAliveService : IDisposable
         public DateTimeOffset? LastPing { get { lock (_gate) return _lastPing; } }
         public DateTimeOffset? FailingSince { get { lock (_gate) return _failingSince; } }
 
-        public void Record(TimeSpan? duration, string? error)
+        public void Record(KeepAliveMethod method, TimeSpan? duration, string? error)
         {
             lock (_gate)
             {
                 _lastPing = DateTimeOffset.UtcNow;
+                _method = method;
                 _duration = duration;
                 _error = error;
                 _failingSince = error is null ? null : _failingSince ?? _lastPing;
@@ -232,7 +295,7 @@ public sealed class KeepAliveService : IDisposable
         public KeepAliveFolder ToView()
         {
             lock (_gate)
-                return new KeepAliveFolder(Path, IsNetwork, _lastPing, _duration, _error, _failingSince, Running is { IsCompleted: false });
+                return new KeepAliveFolder(Path, IsRoot, IsNetwork, _lastPing, _duration, _error, _failingSince, Running is { IsCompleted: false }, _method);
         }
     }
 }

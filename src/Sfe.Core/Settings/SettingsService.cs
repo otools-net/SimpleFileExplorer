@@ -450,6 +450,11 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
             settings.Thumbnails.ExcludedFolders = noThumbnails;
             changed.Add("thumbnails.excludedFolders");
         }
+        if (Moved(settings.KeepAlive.Folders) is { } keepAlive)
+        {
+            settings.KeepAlive.Folders = keepAlive;
+            changed.Add("keepAlive.folders");
+        }
         if (settings.Editor.OutputFolder is { } output && Move(output) is { } moved)
         {
             settings.Editor.OutputFolder = moved;
@@ -591,6 +596,7 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         settings.Trickplay.Folders = Folders(settings.Trickplay.Folders);
         settings.Trickplay.ExcludedFolders = Folders(settings.Trickplay.ExcludedFolders);
         settings.Thumbnails.ExcludedFolders = Folders(settings.Thumbnails.ExcludedFolders);
+        settings.KeepAlive.Folders = Folders(settings.KeepAlive.Folders);
         settings.Editor.OutputFolder = string.IsNullOrWhiteSpace(settings.Editor.OutputFolder)
             ? null
             : LibraryPaths.NormalizeRelative(settings.Editor.OutputFolder.Trim()) ?? settings.Editor.OutputFolder.Trim();
@@ -704,6 +710,9 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Check(Enum.IsDefined(s.KeepAlive.Mode), "keepAlive.mode", "Choose which folders are kept alive from the list.");
         Range(s.KeepAlive.IntervalSeconds, KeepAliveOptions.MinIntervalSeconds, KeepAliveOptions.MaxIntervalSeconds, "keepAlive.intervalSeconds", "The time between pings");
         Range(s.KeepAlive.TimeoutSeconds, KeepAliveOptions.MinTimeoutSeconds, KeepAliveOptions.MaxTimeoutSeconds, "keepAlive.timeoutSeconds", "The time limit");
+        Check(Enum.IsDefined(s.KeepAlive.Method), "keepAlive.method", "Choose how the library folder is pinged from the list.");
+        var notKept = s.KeepAlive.Folders.FirstOrDefault(f => LibraryPaths.NormalizeRelative(f) is not { Length: > 0 } path || LibraryPaths.IsWorkFolderRelative(path));
+        Check(notKept is null, "keepAlive.folders", $"“{notKept}” is not a folder of the library: enter paths relative to the library, like NAS/Photos.");
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
         Check(s.Reading.Theme is { } readerTheme && ReadingOptions.Themes.Contains(readerTheme), "reading.theme", "Choose colours from the list.");
         Check(s.Reading.CustomFont.Length <= MaxCustomFontLength && s.Reading.CustomFont.IndexOfAny(['"', '\\', ';', '{', '}', '<', '>']) < 0,

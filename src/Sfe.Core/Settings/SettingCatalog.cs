@@ -54,7 +54,7 @@ public static class SettingCatalog
     ];
 
     private static readonly HashSet<string> PerLibraryKeys =
-        ["scan.excludedFolders", "trickplay.folders", "trickplay.excludedFolders", "thumbnails.excludedFolders", "editor.outputFolder"];
+        ["scan.excludedFolders", "trickplay.folders", "trickplay.excludedFolders", "thumbnails.excludedFolders", "editor.outputFolder", "keepAlive.folders"];
 
     /// <summary>The right of a key, by its first part (the settings page's sections).</summary>
     private static readonly (string Prefix, string Right)[] RightsByPrefix =

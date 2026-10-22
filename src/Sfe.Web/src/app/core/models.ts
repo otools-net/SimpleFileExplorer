@@ -430,11 +430,15 @@ export interface StreamProbe {
 }
 
 export type KeepAliveMode = 'off' | 'auto' | 'always';
+/** `list`: the folder is read; `touch`: a small file is written and deleted in the work folder. */
+export type KeepAliveMethod = 'list' | 'touch';
 
 /** A folder kept alive (api/keep-alive). */
 export interface KeepAliveFolder {
     /** Relative to the library root; empty for the root itself. */
     path: string;
+    /** The library folder itself; the others are the more folders of the settings. */
+    isRoot: boolean;
     /** Null until the first ping looked. */
     isNetwork: boolean | null;
     lastPing: string | null;
@@ -444,11 +448,15 @@ export interface KeepAliveFolder {
     failingSince: string | null;
     /** A ping is still blocked on the folder. */
     waiting: boolean;
+    /** How the last ping was made; null: none yet. */
+    method: KeepAliveMethod | null;
 }
 
 export interface KeepAliveView {
     mode: KeepAliveMode;
     intervalSeconds: number;
+    /** How the library folder is to be pinged (more folders are always read). */
+    method: KeepAliveMethod;
     folders: KeepAliveFolder[];
 }
 

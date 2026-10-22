@@ -123,6 +123,32 @@ public sealed class KeepAliveRouteTests
         Assert.AreEqual(60, view.IntervalSeconds);
     }
 
+    [TestMethod]
+    public async Task MoreFoldersAndTheWritePingAreSetPerSpace()
+    {
+        Assert.IsTrue(SettingCatalog.Find("keepAlive.folders")!.PerLibrary, "library paths have no server-wide value");
+        Assert.AreEqual(SettingLevel.Tenant, SettingCatalog.Find("keepAlive.method")!.Scope);
+
+        foreach (var refused in new[] { ".sfe", "../Elsewhere" })
+        {
+            using var invalid = await PatchAsync(new() { ["keepAlive.folders"] = new JsonArray(refused) });
+            Assert.AreEqual(HttpStatusCode.BadRequest, invalid.StatusCode, refused);
+            StringAssert.Contains(await invalid.Content.ReadAsStringAsync(Token), "keepAlive.folders", refused);
+        }
+
+        using (var saved = await PatchAsync(new() { ["keepAlive.folders"] = new JsonArray("ChildDir/"), ["keepAlive.method"] = "touch" }))
+            Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
+
+        using var pinged = await _ada.PostAsync("/api/keep-alive/ping", null, Token);
+        var view = (await pinged.Content.ReadFromJsonAsync<KeepAliveView>(Json, Token))!;
+        Assert.AreEqual(KeepAliveMethod.Touch, view.Method);
+        CollectionAssert.AreEqual(
+            new[] { ("", true, (KeepAliveMethod?)KeepAliveMethod.Touch), ("ChildDir", false, KeepAliveMethod.List) },
+            view.Folders.Select(f => (f.Path, f.IsRoot, f.Method)).ToList());
+        Assert.IsTrue(view.Folders.All(f => f.Error is null), string.Join(", ", view.Folders.Select(f => f.Error)));
+        Assert.IsTrue(Directory.Exists(_library.FullPath(".sfe/keep-alive")));
+    }
+
     private Task<HttpResponseMessage> PatchAsync(Dictionary<string, JsonNode?> values) =>
         _ada.PatchAsJsonAsync("/api/settings?level=tenant", new SettingChanges(values), Json, Token);
 }

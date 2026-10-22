@@ -156,7 +156,14 @@ public sealed class EditableSettings
             Uploads = new() { MaxFileSizeMegabytes = options.Files.Uploads.MaxFileSizeMegabytes, KeepUnfinishedHours = options.Files.Uploads.KeepUnfinishedHours },
             MaxArchiveMegabytes = options.Files.MaxArchiveMegabytes,
         },
-        KeepAlive = new() { Mode = options.KeepAlive.Mode, IntervalSeconds = options.KeepAlive.IntervalSeconds, TimeoutSeconds = options.KeepAlive.TimeoutSeconds },
+        KeepAlive = new()
+        {
+            Mode = options.KeepAlive.Mode,
+            IntervalSeconds = options.KeepAlive.IntervalSeconds,
+            TimeoutSeconds = options.KeepAlive.TimeoutSeconds,
+            Folders = [.. options.KeepAlive.Folders],
+            Method = options.KeepAlive.Method,
+        },
     };
 
     public void ApplyTo(SfeOptions options)
@@ -246,6 +253,8 @@ public sealed class EditableSettings
         options.KeepAlive.Mode = KeepAlive.Mode;
         options.KeepAlive.IntervalSeconds = KeepAlive.IntervalSeconds;
         options.KeepAlive.TimeoutSeconds = KeepAlive.TimeoutSeconds;
+        options.KeepAlive.Folders = [.. KeepAlive.Folders];
+        options.KeepAlive.Method = KeepAlive.Method;
     }
 }
 
@@ -434,4 +443,8 @@ public sealed class KeepAliveSettings
     public KeepAliveMode Mode { get; set; }
     public int IntervalSeconds { get; set; }
     public int TimeoutSeconds { get; set; }
+
+    /// <summary>Library folders, relative to the root and separated by <c>/</c>.</summary>
+    public List<string> Folders { get; set; } = [];
+    public KeepAliveMethod Method { get; set; }
 }

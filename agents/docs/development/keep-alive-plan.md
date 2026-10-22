@@ -129,10 +129,16 @@ Asked 2026-10-22:
 
 ### Phase 3 — more folders and the write ping
 
-- [ ] `Folders` (root-relative list, `PerLibraryKeys`, followed by `PathMoves` on rename), with the folder picker.
-- [ ] `Method: Touch`: create, write and delete `keep-alive.tmp` in `WorkFolder.Get("keep-alive")` (only when the
-      work folder is in the library, else it falls back to `List` with a warning); never in the library's own folders.
-- [ ] Tests and docs as above.
+- [x] (unreleased, edge) `Folders` (root-relative list, `PerLibraryKeys`, moved by `SettingsService.MoveFolderPaths`
+      on renames; `.sfe` and paths leaving the library refused). Removed from the status when taken off.
+- [-] Folder picker: settings lists have none (trickplay's folders are a text list too); a text list it is.
+- [x] (unreleased, edge) `Method: Touch`: writes and deletes `ping.tmp` in `WorkFolder.Get("keep-alive")`, root only,
+      only when the work folder is in the library; else reads with one warning. Never in the library's own folders.
+- [x] (unreleased, edge) Tests (`KeepAliveTests` +4, `KeepAliveRouteTests` +1, the rename test of
+      `FileOperationsTests`, a spec), `docs/administration/keep-alive.md`, `docs/configuration.md`, changelog.
+
+All three phases are built. Left: the user's checks on real shares (below); their findings go in
+[Found while building](#found-while-building), and may change the default `Method`.
 
 ## Checking on a real share
 
@@ -161,5 +167,7 @@ scans, trickplay or schedules running) during the test.
 ## Found while building
 
 - Phase 1's facts are in [keep-alive](../features/keep-alive.md).
+- `LibraryPaths.Root` keeps its ending separator and `TryResolve` doesn't: folders are keyed without it (phase 3), or
+  a folder of the settings naming the root is pinged twice.
 - The two `Directory`/`DriveInfo` calls of detection touch the share too (`RealPath` reads links on it): detection
   runs inside the pinged task, under the same timeout, never on the loop.

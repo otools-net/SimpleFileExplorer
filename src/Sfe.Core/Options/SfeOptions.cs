@@ -704,6 +704,28 @@ public sealed class KeepAliveOptions
 
     /// <summary>A ping taking longer counts as failed (1–300 s); the next one waits until it ends.</summary>
     public int TimeoutSeconds { get; set; } = 30;
+
+    /// <summary>
+    /// More library folders to keep alive besides the root (relative to it, separated by <c>/</c>): folders reached
+    /// through a link to another share. Each one is looked at on its own by <see cref="KeepAliveMode.Auto"/>.
+    /// </summary>
+    public List<string> Folders { get; set; } = [];
+
+    /// <summary>How the library folder is pinged (more folders are always read).</summary>
+    public KeepAliveMethod Method { get; set; } = KeepAliveMethod.List;
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<KeepAliveMethod>))]
+public enum KeepAliveMethod
+{
+    /// <summary>One directory query: reads only, but a client cache may answer it without asking the server.</summary>
+    List,
+
+    /// <summary>
+    /// Writes and deletes a small file in the work folder at the library's root (<c>.sfe/keep-alive</c>), which always
+    /// reaches the server. Reads instead when the work folder is on the server's side.
+    /// </summary>
+    Touch,
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<KeepAliveMode>))]

@@ -8,7 +8,8 @@ Code: `src/Sfe.Core/KeepAlive/` (`KeepAliveService`, `NetworkFolders`), `KeepAli
 `docs/configuration.md` (Libraries on a network share).
 
 - One `KeepAliveService` per library (its container), looped by `KeepAliveWorker`: each round pings the library's root
-  (`LibraryPaths.Root`) with one directory query (`EnumerateFileSystemEntries(...).FirstOrDefault()`), then waits
+  and the `Folders` of the settings (resolved by `LibraryPaths.TryResolve`; refused ones warned once) with one
+  directory query each (`EnumerateFileSystemEntries(...).FirstOrDefault()`), then waits
   `IntervalSeconds` or until the options change (`IOptionsMonitor.OnChange` releases a semaphore: turning it on pings
   at once).
 - `Mode` `Off` is the default (the user chose it: upgraded installs change nothing). `Auto` asks
@@ -26,6 +27,12 @@ Code: `src/Sfe.Core/KeepAlive/` (`KeepAliveService`, `NetworkFolders`), `KeepAli
   never overlap (`_round` semaphore; a round lasts the timeout at most).
 - The routes give paths root-relative and replace the root's full path in error messages: space administrators
   without `server.settings` never see where the library is on the server.
+- Folders are keyed by `Path.TrimEndingDirectorySeparator`: `LibraryPaths.Root` keeps its ending separator, `TryResolve`
+  doesn't, so a folder of the settings naming the root would otherwise be pinged twice. Folders taken off the settings
+  leave the status at the next round.
+- `Method: Touch` writes and deletes `ping.tmp` in `WorkFolder.Get("keep-alive")` (`.sfe/keep-alive`), only for the
+  root and only when the work folder is in the library (`WorkFolderLocation.Library`); otherwise it reads, with one
+  warning. `keepAlive.folders` is a `PerLibraryKeys` setting moved by `SettingsService.MoveFolderPaths` on renames.
 - State in memory only (`Status()`, `KeepAliveFolder`): no database, no stored file, nothing to migrate.
 - Tests replace `Ping` and `IsNetwork` (internal properties) and call `PingAllAsync` directly, with an
   `IOptionsMonitor` of their own whose `Change` fires `OnChange`.
