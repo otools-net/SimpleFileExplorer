@@ -19,6 +19,19 @@ public sealed record KeepAliveFolder(
     string Path, bool IsRoot, bool? IsNetwork, DateTimeOffset? LastPing, TimeSpan? Duration, string? Error, DateTimeOffset? FailingSince, bool Waiting,
     KeepAliveMethod? Method);
 
+/// <summary>How keep alive goes, as a whole: what the indicator of the top bar shows.</summary>
+public enum KeepAliveState
+{
+    /// <summary>Off, or nothing pinged yet (with <see cref="KeepAliveMode.Auto"/>: no folder on the network).</summary>
+    None,
+
+    /// <summary>Every folder pinged answered its last ping.</summary>
+    Ok,
+
+    /// <summary>A folder did not answer its last ping.</summary>
+    Failing,
+}
+
 /// <summary>
 /// Keeps the library's folder alive (<see cref="KeepAliveOptions"/>): every interval, one directory query on it and on
 /// the more folders set, or a small file written and deleted in the work folder (<see cref="KeepAliveMethod.Touch"/>),
@@ -60,6 +73,8 @@ public sealed class KeepAliveService : IDisposable
             foreach (var folder in _folders.Values)
                 folder.IsNetwork = null;
             _told.Clear();
+            // Turned off: the indicator goes at once, not at the next round.
+            UpdateState();
             if (_changed.CurrentCount == 0)
                 _changed.Release();
         });
@@ -87,6 +102,15 @@ public sealed class KeepAliveService : IDisposable
     /// that a folder of the settings naming the root is the root.
     /// </summary>
     private string RootPath => Path.TrimEndingDirectorySeparator(_paths.Root);
+
+    /// <summary>Raised when <see cref="State"/> changes (after a round, or when the settings turn it off), on that thread.</summary>
+    public event Action<KeepAliveState>? StateChanged;
+
+    private readonly Lock _stateGate = new();
+    private volatile KeepAliveState _state;
+
+    /// <summary>How keep alive goes as a whole; only folders pinged count (not those <see cref="KeepAliveMode.Auto"/> leaves alone).</summary>
+    public KeepAliveState State => _state;
 
     public IReadOnlyList<KeepAliveFolder> Status() =>
         _folders.Values.Select(f => f.ToView()).OrderBy(f => !f.IsRoot).ThenBy(f => f.Path, LibraryPaths.PathComparer).ToList();
@@ -159,7 +183,23 @@ public sealed class KeepAliveService : IDisposable
         finally
         {
             _round.Release();
+            UpdateState();
         }
+    }
+
+    private void UpdateState()
+    {
+        var pinged = Settings.Mode == KeepAliveMode.Off ? [] : _folders.Values.Select(f => f.ToView()).Where(f => f.LastPing is not null).ToList();
+        var state = pinged.Count == 0 ? KeepAliveState.None
+            : pinged.Any(f => f.Error is not null) ? KeepAliveState.Failing
+            : KeepAliveState.Ok;
+        lock (_stateGate)
+        {
+            if (state == _state)
+                return;
+            _state = state;
+        }
+        StateChanged?.Invoke(state);
     }
 
     /// <summary>The library's root, then the more folders set that resolve inside the library (each once).</summary>

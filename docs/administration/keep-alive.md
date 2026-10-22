@@ -21,6 +21,10 @@ usual (a mapped drive, as the account SFE runs as).
   or to check it answers again.
 - **Settings** opens the settings below.
 
+Everyone browsing the space also sees how it goes on the ⋮ button at the top right: a green dot, or a yellow **!**
+when a folder doesn't answer ([the network folder indicator](../user-guide/signing-in.md#the-network-folder-indicator));
+no folder nor error is named there.
+
 The [log](logs.md) also says when keep alive starts on a folder, when a folder stops answering (once, not at every
 ping) and when it answers again.
 

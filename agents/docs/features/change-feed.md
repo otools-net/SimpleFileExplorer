@@ -21,4 +21,7 @@ Code: `LibraryBrowser.FolderChanged` (raised by `Invalidate`, after the cache is
   place (status stays `ready`, scroll stays, the selection keeps what is still there).
 - `ChangeFeed.listen(listener)` (1.69.0): other parts hear the changes made by other tabs, whatever is listed (an open
   text file checks its version when its folder changed).
+- It also carries `event: keepAlive` (`{ state }`, sent first and on each change) for the ⋮ indicator:
+  [keep-alive.md](keep-alive.md). Its channel holds `object` items (`FolderChange` or `KeepAliveSignal`); tests read
+  events by name (`NextEventAsync`).
 - Proxies must not buffer it (`X-Accel-Buffering: no` for nginx); documented in `docs/installation.md`.

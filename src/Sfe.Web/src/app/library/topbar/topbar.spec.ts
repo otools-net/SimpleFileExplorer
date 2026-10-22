@@ -4,6 +4,7 @@ import { ConfigService } from '../../core/config.service';
 import { ClientConfig, DirectoryListing, LibraryItem, SessionInfo } from '../../core/models';
 import { Rights } from '../../core/rights';
 import { ApiMock, fakeConfig, item, LIBRARY, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
+import { ChangeFeed } from '../change-feed.service';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { LocationComponent } from '../location/location.component';
@@ -303,5 +304,60 @@ describe('MainMenuComponent', () => {
 
         expect(entry('Scan this folder')!.disabled).toBe(true);
         expect(entry('Scan this folder')!.title).toBe('A scan is in progress');
+    });
+});
+
+describe('MainMenuComponent keep alive', () => {
+    let fixture: ComponentFixture<MainMenuComponent>;
+    let element: HTMLElement;
+
+    async function create(state: 'none' | 'ok' | 'failing', config: Partial<ClientConfig> = {}): Promise<void> {
+        await setUp(config);
+        TestBed.inject(ChangeFeed).keepAlive.set(state);
+        fixture = TestBed.createComponent(MainMenuComponent);
+        element = fixture.nativeElement;
+        await settle();
+    }
+
+    const button = () => element.querySelector<HTMLButtonElement>('button[aria-haspopup=menu]')!;
+    const badge = () => button().querySelector('.menu-keep-alive');
+    const line = () => element.querySelector('.menu-keep-alive-line');
+
+    it('shows nothing while keep alive is off', async () => {
+        await create('none');
+
+        expect(badge()).toBeNull();
+        expect(line()).toBeNull();
+        expect(button().title).toBe('Scan this folder, administration, your account and more');
+    });
+
+    it('shows a green dot while the library folder answers', async () => {
+        await create('ok');
+
+        expect(badge()!.classList).not.toContain('failing');
+        expect(badge()!.textContent).toBe('');
+        expect(button().title).toContain('Network folder answering');
+        expect(button().getAttribute('aria-label')).toBe('More');
+        expect(line()!.textContent).toContain('Network folder answering');
+    });
+
+    it('shows a yellow ! when it does not, linking to its status for those with the right', async () => {
+        await create('failing');
+
+        expect(badge()!.classList).toContain('failing');
+        expect(badge()!.textContent).toBe('!');
+        expect(button().getAttribute('aria-label')).toBe('More (network folder not answering)');
+        expect(line()!.tagName).toBe('A');
+        expect(line()!.getAttribute('href')).toBe('/admin?section=keepAlive');
+        expect(line()!.textContent).toContain('Network folder not answering');
+    });
+
+    it('follows the feed, and is a plain line without the right', async () => {
+        await create('ok', { rights: [Rights.browse] });
+        expect(line()!.tagName).toBe('P');
+
+        TestBed.inject(ChangeFeed).keepAlive.set('failing');
+        await settle();
+        expect(badge()!.textContent).toBe('!');
     });
 });

@@ -261,6 +261,35 @@ public sealed class KeepAliveTests
         Assert.AreEqual(1, _log.Count("is read instead of written"), _log.ToString());
     }
 
+    [TestMethod]
+    public async Task TheStateIsToldWhenItChanges()
+    {
+        var failing = false;
+        var (service, _) = Create(KeepAliveMode.Always, ping: _ => failing ? throw new IOException("gone") : Task.CompletedTask);
+        var told = new List<KeepAliveState>();
+        service.StateChanged += told.Add;
+        Assert.AreEqual(KeepAliveState.None, service.State);
+
+        await service.PingAllAsync(TestContext.CancellationToken);
+        await service.PingAllAsync(TestContext.CancellationToken);
+        failing = true;
+        await service.PingAllAsync(TestContext.CancellationToken);
+        _settings.Change(o => o.KeepAlive.Mode = KeepAliveMode.Off);
+
+        CollectionAssert.AreEqual(new[] { KeepAliveState.Ok, KeepAliveState.Failing, KeepAliveState.None }, told);
+        Assert.AreEqual(KeepAliveState.None, service.State);
+    }
+
+    [TestMethod]
+    public async Task AutoWithNothingOnTheNetworkHasNoState()
+    {
+        var (service, _) = Create(KeepAliveMode.Auto, network: false);
+
+        await service.PingAllAsync(TestContext.CancellationToken);
+
+        Assert.AreEqual(KeepAliveState.None, service.State);
+    }
+
     /// <summary>A service whose read pings are recorded (and answered by <paramref name="ping"/>); the write ping is real.</summary>
     private (KeepAliveService Service, ConcurrentQueue<string> Pings) Create(KeepAliveMode mode, bool network = true, Func<string, Task>? ping = null)
     {

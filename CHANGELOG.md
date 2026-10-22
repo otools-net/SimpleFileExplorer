@@ -18,7 +18,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   connection. **Administration › Keep alive** shows each folder's last ping (and **Ping now**) and holds the settings,
   per space (new right `settings.keepAlive`, given to Administrators). **More folders** keeps folders reached through
   links to other shares alive too, and the library folder can be pinged by writing and deleting a small file in
-  SFE's work folder instead of reading it (`Method: Touch`). See `docs/administration/keep-alive.md`.
+  SFE's work folder instead of reading it (`Method: Touch`). While keep alive is on, the **⋮** button shows a green
+  dot, or a yellow **!** when the network folder doesn't answer, updated live. See `docs/administration/keep-alive.md`.
 
 ### Changed
 

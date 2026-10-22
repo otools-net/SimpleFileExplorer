@@ -42,3 +42,17 @@ The ⋮ button at the top right holds:
 - the version of SFE, at the bottom.
 
 Each entry shows only with its right.
+
+### The network folder indicator
+
+![The ⋮ button and menu while the network folder doesn't answer](../images/main-menu-keep-alive.png)
+
+While [keep alive](../administration/keep-alive.md) pings the library folder of the space, a mark on the ⋮ button
+says how it goes, and a line at the top of the menu says it in words:
+
+- a small **green dot**: the network folder answers (**Network folder answering**);
+- a yellow **!**: it didn't answer the last ping (**Network folder not answering**); files may not open until the
+  connection comes back.
+
+There is no mark while keep alive is off. With the right `settings.keepAlive`, the line opens
+**Administration › Keep alive**, which says which folder and why. The mark changes by itself, without reloading.

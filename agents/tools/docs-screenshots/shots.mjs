@@ -126,6 +126,22 @@ const scenes = {
         await b.shot(OUT + 'main-menu.png');
         await b.close();
     },
+    /**
+     * The keep alive indicator of the ⋮ menu: keep alive turned on with a more folder that doesn't exist, so that its
+     * ping fails (the yellow !); then turned off again for the other scenes.
+     */
+    async keepAliveMenu() {
+        const b = await session();
+        const settings = values => `fetch('api/settings?level=tenant', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ values: ${JSON.stringify(values)} }) }).then(r => r.status)`;
+        await b.open('?path=Photos');
+        await b.eval(settings({ 'keepAlive.mode': 'always', 'keepAlive.folders': ['Gone'] }));
+        await sleep(2000);
+        await b.open('?path=Photos', 3000);
+        await b.clickTitle('Scan this folder, administration');
+        await b.shot(OUT + 'main-menu-keep-alive.png', { x: 960, y: 0, width: 320, height: 200 });
+        await b.eval(settings({ 'keepAlive.mode': 'off', 'keepAlive.folders': [] }));
+        await b.close();
+    },
     async viewer() {
         const b = await session();
         await b.open('?path=Photos%2F2025%20Mountains');

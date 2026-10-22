@@ -217,3 +217,27 @@
 .q-op { color: var(--text-muted); font-size: .78em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .q-op.q-not { color: var(--danger); }
 
+
+/* Keep alive on the ⋮ button and in its menu: green when the library folder answers, a yellow ! when it doesn't. */
+.menu > .icon-button { position: relative; }
+.menu-keep-alive {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4caf7d;
+    color: #1b1d22;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+}
+.menu-keep-alive.failing { width: 14px; height: 14px; background: #ffd43b; }
+.menu > .icon-button > .menu-keep-alive { position: absolute; top: 3px; right: 3px; box-shadow: 0 0 0 2px var(--bg); pointer-events: none; }
+.menu > .icon-button > .menu-keep-alive.failing { top: 0; right: 0; }
+.menu-keep-alive-line { display: flex; align-items: center; gap: 10px; margin: 0; padding: 6px 10px; color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+/* Centred under the account's 20px icon. */
+.menu-keep-alive-line .menu-keep-alive { margin: 0 6px; }
+.menu-keep-alive-line .menu-keep-alive.failing { margin: 0 3px; }
+.menu-keep-alive-line.failing { color: var(--text); }

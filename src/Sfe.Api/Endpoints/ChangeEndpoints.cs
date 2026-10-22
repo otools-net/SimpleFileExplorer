@@ -1,9 +1,11 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.KeepAlive;
 using Sfe.Core.Library;
 using Sfe.Core.Paths;
 
@@ -13,9 +15,13 @@ namespace Sfe.Api.Endpoints;
 /// <param name="Origin">The tab whose request changed it (`X-SFE-Tab`), which needs no notice; null from a background job.</param>
 public sealed record FolderChange(string Path, string? Origin);
 
+/// <param name="State">How keep alive goes in the space: `none` (off, or nothing pinged), `ok`, `failing`.</param>
+public sealed record KeepAliveSignal(KeepAliveState State);
+
 /// <summary>
 /// The change feed (agents/docs/features/change-feed.md): server-sent events telling each open listing that a folder
-/// it may see was changed through SFE (by another tab, another person, a move or copy job), so that it lists it again.
+/// it may see was changed through SFE (by another tab, another person, a move or copy job), so that it lists it again;
+/// and how keep alive goes (agents/docs/features/keep-alive.md), for the indicator of the top bar.
 /// </summary>
 public static class ChangeEndpoints
 {
@@ -33,7 +39,10 @@ public static class ChangeEndpoints
 
     private static readonly ConcurrentDictionary<string, int> Streams = new();
     private static readonly Lock Gate = new();
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+    };
 
     public static RouteGroupBuilder MapChangeEndpoints(this RouteGroupBuilder api)
     {
@@ -42,16 +51,18 @@ public static class ChangeEndpoints
             .RequireRight(Rights.Browse)
             .FolderScoped("only folders the caller sees (files.browse) are told")
             .WithName("FolderChanges")
-            .WithSummary("Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE.")
+            .WithSummary("Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; `keepAlive` with `{ state }`.")
             .WithDescription($"""
                 Open with `EventSource`; `origin` is the `{TabHeader}` header of the request that changed it (a tab skips
-                its own). A comment every {KeepAlive.TotalSeconds:N0} s keeps it open; it ends after
+                its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or nothing
+                pinged), `ok`, `failing`; no folder nor error is named. A comment every {KeepAlive.TotalSeconds:N0} s keeps it open; it ends after
                 {Lifetime.TotalMinutes:N0} minutes and the browser opens it again. {MaxStreamsPerCaller} at once per caller (429).
                 """);
         return api;
     }
 
-    private static async Task StreamAsync(HttpContext context, LibraryBrowser browser, LibraryPaths paths, CurrentAccess current, IHttpContextAccessor accessor)
+    private static async Task StreamAsync(
+        HttpContext context, LibraryBrowser browser, KeepAliveService keepAlive, LibraryPaths paths, CurrentAccess current, IHttpContextAccessor accessor)
     {
         var state = await current.GetAsync();
         var caller = RequestLimits.Caller(context);
@@ -61,15 +72,19 @@ public static class ChangeEndpoints
             return;
         }
 
-        // Read by the request (or job) that changed a folder: only queued here, written by this request's own loop.
-        var changes = Channel.CreateBounded<FolderChange>(new BoundedChannelOptions(256) { FullMode = BoundedChannelFullMode.DropOldest, SingleReader = true });
+        // Read by the request (or job) that changed a folder, or by keep alive's loop: only queued here (a FolderChange
+        // or a KeepAliveSignal), written by this request's own loop.
+        var changes = Channel.CreateBounded<object>(new BoundedChannelOptions(256) { FullMode = BoundedChannelFullMode.DropOldest, SingleReader = true });
         void OnChanged(string path)
         {
             var origin = accessor.HttpContext?.Request.Headers[TabHeader].ToString();
             changes.Writer.TryWrite(new FolderChange(path, string.IsNullOrEmpty(origin) ? null : origin));
         }
 
+        void OnKeepAlive(KeepAliveState keepAliveState) => changes.Writer.TryWrite(new KeepAliveSignal(keepAliveState));
+
         browser.FolderChanged += OnChanged;
+        keepAlive.StateChanged += OnKeepAlive;
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
         lifetime.CancelAfter(Lifetime);
         var token = lifetime.Token;
@@ -81,7 +96,7 @@ public static class ChangeEndpoints
             response.Headers.CacheControl = "no-store";
             // nginx would otherwise hold the events back.
             response.Headers["X-Accel-Buffering"] = "no";
-            await response.WriteAsync("retry: 5000\n\n", token);
+            await response.WriteAsync("retry: 5000\n\n" + KeepAliveEvent(new KeepAliveSignal(keepAlive.State)), token);
             await response.Body.FlushAsync(token);
             while (!token.IsCancellationRequested)
             {
@@ -102,9 +117,11 @@ public static class ChangeEndpoints
                     break;
                 // Several at once (a move touches both folders): one write.
                 var text = new System.Text.StringBuilder();
-                while (changes.Reader.TryRead(out var change))
+                while (changes.Reader.TryRead(out var item))
                 {
-                    if (state.Check(paths, change.Path, Rights.Browse) == PathVerdict.Allowed)
+                    if (item is KeepAliveSignal signal)
+                        text.Append(KeepAliveEvent(signal));
+                    else if (item is FolderChange change && state.Check(paths, change.Path, Rights.Browse) == PathVerdict.Allowed)
                         text.Append("event: changed\ndata: ").Append(JsonSerializer.Serialize(change, Json)).Append("\n\n");
                 }
                 if (text.Length == 0)
@@ -124,9 +141,12 @@ public static class ChangeEndpoints
         finally
         {
             browser.FolderChanged -= OnChanged;
+            keepAlive.StateChanged -= OnKeepAlive;
             Leave(caller);
         }
     }
+
+    private static string KeepAliveEvent(KeepAliveSignal signal) => $"event: keepAlive\ndata: {JsonSerializer.Serialize(signal, Json)}\n\n";
 
     private static bool Enter(string caller)
     {

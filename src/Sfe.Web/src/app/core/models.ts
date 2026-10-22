@@ -430,6 +430,8 @@ export interface StreamProbe {
 }
 
 export type KeepAliveMode = 'off' | 'auto' | 'always';
+/** How keep alive goes in the space, as the change feed tells it: `none` when off or nothing pinged. */
+export type KeepAliveState = 'none' | 'ok' | 'failing';
 /** `list`: the folder is read; `touch`: a small file is written and deleted in the work folder. */
 export type KeepAliveMethod = 'list' | 'touch';
 

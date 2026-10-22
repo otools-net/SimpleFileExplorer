@@ -1,11 +1,15 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Sfe.Api.Endpoints;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
+using Sfe.Core.KeepAlive;
+using Sfe.Core.Settings;
 using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
@@ -17,7 +21,10 @@ namespace Sfe.Tests;
 [TestClass]
 public sealed class ChangeFeedRouteTests
 {
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+    };
 
     private TestLibrary _library = null!;
     private WebApplicationFactory<Program> _factory = null!;
@@ -71,6 +78,21 @@ public sealed class ChangeFeedRouteTests
     }
 
     [TestMethod]
+    public async Task KeepAliveIsToldFirstThenWhenItChanges()
+    {
+        using var feed = await _alice.GetAsync("/api/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
+        using var reader = new StreamReader(await feed.Content.ReadAsStreamAsync(Token));
+        Assert.AreEqual(KeepAliveState.None, (await NextEventAsync<KeepAliveSignal>(reader, "keepAlive")).State);
+
+        // Turned on for the space: the settings change pings at once, and the feed tells it (no folder named).
+        using (var saved = await _admin.PatchAsJsonAsync("/api/settings?level=tenant",
+                   new SettingChanges(new Dictionary<string, JsonNode?> { ["keepAlive.mode"] = "always" }), Json, Token))
+            Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
+
+        Assert.AreEqual(KeepAliveState.Ok, (await NextEventAsync<KeepAliveSignal>(reader, "keepAlive")).State);
+    }
+
+    [TestMethod]
     public async Task NewFilesNeedTheirRight()
     {
         using var refused = await _alice.PostAsJsonAsync("/api/files/new-file", new CreateFileRequest("ChildDir", "notes.txt"), Json, Token);
@@ -92,15 +114,21 @@ public sealed class ChangeFeedRouteTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
     }
 
-    private async Task<FolderChange> NextChangeAsync(StreamReader reader)
+    private Task<FolderChange> NextChangeAsync(StreamReader reader) => NextEventAsync<FolderChange>(reader, "changed");
+
+    /// <summary>The data of the next event named <paramref name="name"/>, the others skipped.</summary>
+    private async Task<T> NextEventAsync<T>(StreamReader reader, string name)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Token);
         timeout.CancelAfter(TimeSpan.FromSeconds(10));
+        string? current = null;
         while (await reader.ReadLineAsync(timeout.Token) is { } line)
         {
-            if (line.StartsWith("data: ", StringComparison.Ordinal))
-                return JsonSerializer.Deserialize<FolderChange>(line["data: ".Length..], Json)!;
+            if (line.StartsWith("event: ", StringComparison.Ordinal))
+                current = line["event: ".Length..];
+            else if (line.StartsWith("data: ", StringComparison.Ordinal) && current == name)
+                return JsonSerializer.Deserialize<T>(line["data: ".Length..], Json)!;
         }
-        throw new AssertFailedException("The feed ended without a change.");
+        throw new AssertFailedException($"The feed ended without a {name} event.");
     }
 }

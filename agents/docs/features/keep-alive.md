@@ -33,6 +33,11 @@ Code: `src/Sfe.Core/KeepAlive/` (`KeepAliveService`, `NetworkFolders`), `KeepAli
 - `Method: Touch` writes and deletes `ping.tmp` in `WorkFolder.Get("keep-alive")` (`.sfe/keep-alive`), only for the
   root and only when the work folder is in the library (`WorkFolderLocation.Library`); otherwise it reads, with one
   warning. `keepAlive.folders` is a `PerLibraryKeys` setting moved by `SettingsService.MoveFolderPaths` on renames.
+- `KeepAliveService.State` (`None` off or nothing pinged, `Ok`, `Failing`; only folders pinged count) and
+  `StateChanged`, raised after a round or when the settings change (turned off: at once), outside its lock. The change
+  feed (`ChangeEndpoints`) sends `event: keepAlive` `{ state }` first, then on each change, to everyone who browses (no
+  folder or error named); client `ChangeFeed.keepAlive` signal, shown by `MainMenuComponent` (dot on ⋮, a line in the
+  menu, a link to Keep alive › Status with `settings.keepAlive`). The feed is opened by the library page only.
 - State in memory only (`Status()`, `KeepAliveFolder`): no database, no stored file, nothing to migrate.
 - Tests replace `Ping` and `IsNetwork` (internal properties) and call `PingAllAsync` directly, with an
   `IOptionsMonitor` of their own whose `Change` fires `OnChange`.

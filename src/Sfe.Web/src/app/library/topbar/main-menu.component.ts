@@ -6,6 +6,7 @@ import { ConfigService } from '../../core/config.service';
 import { Rights } from '../../core/rights';
 import { ToastService } from '../../core/toast.service';
 import { IconComponent } from '../../shared/icon.component';
+import { ChangeFeed } from '../change-feed.service';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { ScanService } from '../scan/scan.service';
@@ -14,7 +15,8 @@ import { Popovers } from './popovers.service';
 /**
  * The ⋮ menu: who is signed in, scanning the folder browsed or taking it out of the index, the other spaces of the
  * account, full screen, the administration page (settings, tags, duplicates, background tasks, people...), signing
- * out. Each entry shows only with its right.
+ * out. Each entry shows only with its right. While keep alive pings the library folder, a dot on the button says how it
+ * goes: green, or a yellow ! when the folder doesn't answer (and a line in the menu, a link for `settings.keepAlive`).
  */
 @Component({
     selector: 'sfe-main-menu',
@@ -22,9 +24,12 @@ import { Popovers } from './popovers.service';
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'menu' },
     template: `
-        <button type="button" class="icon-button" aria-haspopup="menu" title="Scan this folder, administration, your account and more" aria-controls="menu" aria-label="More"
+        <button type="button" class="icon-button" aria-haspopup="menu" [title]="buttonTitle()" aria-controls="menu" [attr.aria-label]="buttonLabel()"
                 [attr.aria-expanded]="isOpen()" (click)="popovers.toggle('menu')">
             <svg sfeIcon="more"></svg>
+            @if (keepAlive() !== 'none') {
+                <span class="menu-keep-alive" [class.failing]="keepAlive() === 'failing'" aria-hidden="true">{{ keepAlive() === 'failing' ? '!' : '' }}</span>
+            }
         </button>
         <div class="popover menu-list" id="menu" role="menu" [hidden]="!isOpen()">
             @if (accountVisible()) {
@@ -44,6 +49,18 @@ import { Popovers } from './popovers.service';
                         <small>{{ config()?.tenant?.name }}</small>
                     </span>
                 </p>
+            }
+            @if (keepAlive() !== 'none') {
+                @if (canSeeKeepAlive()) {
+                    <a class="menu-keep-alive-line" role="menuitem" routerLink="/admin" [queryParams]="{ section: 'keepAlive' }" [state]="{ sfeFromLibrary: true }"
+                       [class.failing]="keepAlive() === 'failing'" title="Keep alive: what the last pings of the library folder found" (click)="popovers.close()">
+                        <span class="menu-keep-alive" [class.failing]="keepAlive() === 'failing'" aria-hidden="true">{{ keepAlive() === 'failing' ? '!' : '' }}</span>{{ keepAliveText() }}
+                    </a>
+                } @else {
+                    <p class="menu-keep-alive-line" role="none" [class.failing]="keepAlive() === 'failing'">
+                        <span class="menu-keep-alive" [class.failing]="keepAlive() === 'failing'" aria-hidden="true">{{ keepAlive() === 'failing' ? '!' : '' }}</span>{{ keepAliveText() }}
+                    </p>
+                }
             }
             @if (canScan() || canRemove() || canExclude()) {
                 <hr>
@@ -121,6 +138,15 @@ export class MainMenuComponent {
         const config = this.config();
         return config?.tenants.filter(tenant => tenant.id !== config.tenant?.id) ?? [];
     });
+    /** How keep alive goes (the change feed): a dot on the button, a line in the menu; nothing when it is off. */
+    protected readonly keepAlive = inject(ChangeFeed).keepAlive;
+    protected readonly keepAliveText = computed(() => this.keepAlive() === 'failing' ? 'Network folder not answering' : 'Network folder answering');
+    protected readonly canSeeKeepAlive = computed(() => this.configService.rights().has(Rights.keepAliveSettings));
+    protected readonly buttonTitle = computed(() => {
+        const title = 'Scan this folder, administration, your account and more';
+        return this.keepAlive() === 'none' ? title : `${title} · ${this.keepAliveText()}`;
+    });
+    protected readonly buttonLabel = computed(() => this.keepAlive() === 'failing' ? 'More (network folder not answering)' : 'More');
     protected readonly versionTitle = computed(() => {
         const config = this.config();
         return config?.commit ? `Version ${config.version}, commit ${config.commit}` : `Version ${config?.version}`;
