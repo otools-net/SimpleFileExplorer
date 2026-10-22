@@ -52,10 +52,9 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
   A target whose last ping is still running is skipped (never more than one blocked thread per target).
 - **State and logs:** per target last ping time, duration, result, failures in a row, kept in memory (nothing stored:
   no database change). The log gets a warning when a target **starts** failing and an information line when it
-  works again, never one line per tick (the log would fill up). A ping much slower than usual is logged at debug: it
-  means the session had to be made again.
-- **UI (phase 2):** a "Keep alive" group in the library's settings (right and tab: see Open questions) with the fields
-  above and the status of each target ("Last ping 2 min ago, 14 ms" / "Failing since 10:42: <message>"), and
+  works again, never one line per tick (the log would fill up).
+- **UI (phase 2):** a **Keep alive** tab of its own in the library's settings (right `settings.keepAlive`) with the
+  fields above and the status of each target ("Last ping 2 min ago, 14 ms" / "Failing since 10:42: <message>"), and
   **Ping now**. Routes `GET api/keep-alive` (status) and `POST api/keep-alive/ping`, each with its right.
 
 ## Decisions
@@ -70,24 +69,27 @@ Asked 2026-10-22:
   mapping back, and docs say so. A reconnect command stays out of scope.
 - **The write ping only when turned on** (open question 3's fallback): `List` stays the default everywhere, even if a
   listing turns out not to reset the server's idle timer; `Touch` is a per-library option (phase 3).
+- **A tab and a right of its own** (open question 5): Administration › **Keep alive**, library-level settings under a
+  new right `settings.keepAlive` (`since: RightCatalog.Revision + 1`, given to the built-in Administrators group of
+  existing spaces by `GrantNewRightsAsync`).
+- **Library folders only** (open question 6): no paths outside the libraries for now.
+- **Always ping** (open question 7): no skipping when the folder was just used.
+- **The user checks real shares themselves** (open question 3): the steps are in
+  [Checking on a real share](#checking-on-a-real-share); their findings go in [Found while building](#found-while-building).
 
 ## Open questions
 
 1. (Decided: `Off`.)
-2. (Decided: all of them.) **A test share** is still needed for the checks by hand.
+2. (Decided: all of them.)
 3. **Does a directory listing really reset the server's idle timer?** SMB clients cache: Windows keeps directory
    information ~10 s (`DirectoryCacheLifetime`) and SMB 3 directory leases can serve listings without asking the
    server; Linux CIFS sends its own echo every 60 s (`echo_interval`), which keeps the TCP connection but may not count
    as activity for the server. To verify on a real share (on the file server: `Get-SmbSession` / `net session` idle
-   time; or Wireshark). Decided: even if not, `Touch` stays opt-in.
+   time; or Wireshark). Decided: even if not, `Touch` stays opt-in. The user checks it on their servers.
 4. (Decided: the mapping is lost; no reconnect.)
-5. **Where the settings live:** library level under the Scanning tab (right `settings.scanning`), or a new tab and
-   right (`settings.keepAlive`, `since: Revision + 1`)? Proposed: Scanning tab, no new right.
-6. **Folders outside the libraries** (e.g. a cache folder on a share): configuration-only absolute paths
-   (`Sfe:KeepAlive:ExtraPaths`, never editable from the UI: it would let an administrator probe the server's disks)?
-   Proposed: not now.
-7. **Skip a ping when the folder was just used** (browsing, a scan, streaming): it saves nothing that matters (one
-   query per interval) and needs a hook in every file access: proposed not to.
+5. (Decided: own tab, right `settings.keepAlive`.)
+6. (Decided: not now.)
+7. (Decided: always ping.)
 
 ## Phases
 
@@ -105,18 +107,19 @@ Asked 2026-10-22:
 - [x] (unreleased, edge) `KeepAliveTests` (24): mountinfo samples (nested, prefix, `\040`, stacked), UNC forms, Off,
       Always, Auto local/network, failure and recovery logged once, a blocked ping (timeout, never stacked, recovery),
       turning it on wakes the loop, the real ping.
-- [ ] Verified by hand on a real share (open question 3), on Windows SMB, a NAS, Linux CIFS/NFS and Docker: the
-      server's idle time stays low while SFE is idle. Needs a test share (note how to reach it in
-      [dev-machine](../environment/dev-machine.md)).
+- [ ] Verified by the user on real shares (open question 3), on Windows SMB, a NAS, Linux CIFS/NFS and Docker:
+      [Checking on a real share](#checking-on-a-real-share).
 - [x] (unreleased, edge) `CHANGELOG.md`; no `docs/upgrading.md` note (default `Off`).
 
 ### Phase 2 — settings and status in the UI
 
-- [ ] `EditableSettings` keys (library level, right per open question 5), `SettingsService.Validate` ranges,
-      `settings-schema.ts` group, `SIMPLE_SETTINGS`.
+- [ ] Right `settings.keepAlive` in `RightCatalog` (`Tenant`, Administrators, Write, `since: Revision + 1`), the same
+      id in `core/rights.ts` and `SETTINGS_RIGHTS`; `SettingCatalog.RightsByPrefix` maps `keepAlive.` to it.
+- [ ] `EditableSettings` keys (library level), `SettingsService.Validate` ranges, a `keepAlive` tab in
+      `settings-schema.ts`, its sub-page in `admin/admin-sections.ts`, `SIMPLE_SETTINGS`.
 - [ ] `GET api/keep-alive` (each target: path shown root-relative, network or not, last ping, duration, error) and
       `POST api/keep-alive/ping`, with `RequireRight`; `AccessTests.EveryRouteNamesARight` passes.
-- [ ] Status and **Ping now** in the settings group; client specs.
+- [ ] Status and **Ping now** on the Keep alive tab; client specs; `docs/reference/rights.md`.
 - [ ] User docs with a screenshot (`agents/tools/docs-screenshots`; the sample library is local, so the status shows
       "not on the network" unless the mode is `Always`).
 
@@ -126,6 +129,30 @@ Asked 2026-10-22:
 - [ ] `Method: Touch`: create, write and delete `keep-alive.tmp` in `WorkFolder.Get("keep-alive")` (only when the
       work folder is in the library, else it falls back to `List` with a warning); never in the library's own folders.
 - [ ] Tests and docs as above.
+
+## Checking on a real share
+
+The user runs this on their servers (open question 3) and reports what they see. For each setup: SFE with
+`Sfe:KeepAlive:Mode` = `Auto` and `IntervalSeconds` = `60`, the library on the share, nobody using SFE (no browsing,
+scans, trickplay or schedules running) during the test.
+
+1. **SFE's log** (Administration › Logs, or the console): `Keep alive: pinging <folder> every 60 s` must appear
+   within a minute of the start. `is not on the network` means detection missed it: note the folder and, on Linux or
+   Docker, its line of `cat /proc/self/mountinfo`; then retry with `Mode` = `Always`.
+2. **Windows file server**: shorten the idle limit for the test (admin PowerShell on the file server:
+   `Set-SmbServerConfiguration -AutoDisconnectTimeout 2 -Force`, note the old value of
+   `(Get-SmbServerConfiguration).AutoDisconnectTimeout` first, 15 by default). Then for 10 minutes watch
+   `Get-SmbSession | Where-Object ClientComputerName -match '<SFE host>' | Select-Object ClientUserName, SecondsIdle, NumOpens`:
+   with keep alive, `SecondsIdle` keeps falling back under ~60 and the session stays; set `Mode` = `Off`, restart SFE,
+   and the session should disappear after about 2 minutes (the control). Restore the old timeout.
+3. **NAS (Samba: Synology, QNAP…)**: over SSH on the NAS, `sudo smbstatus -b` lists the sessions; check the SFE host's
+   session is still there after more than the NAS's idle limit (Samba `deadtime`, in minutes; DSM has no direct
+   setting) with keep alive on, and gone with it off.
+4. **Linux CIFS / NFS client and Docker**: as 2 or 3 on the server side; on the SFE host, `cat /proc/fs/cifs/DebugData`
+   (CIFS) shows the session. In Docker, step 1's log tells whether the mount was recognised.
+5. **Report**: per setup, the log lines of keep alive, whether the session stayed, and any `does not answer` warning
+   with its message. If the session is dropped despite the pings, the listing is answered from the client's cache:
+   say so (then `Touch`, phase 3, is the way, opt-in).
 
 ## Found while building
 
