@@ -1,6 +1,6 @@
 # Local start: browser at start, setup without code, fast sign-in
 
-Code: `src/Sfe.Api/BrowserLauncher.cs`, `Security/LocalVisitor.cs`, `Security/FastSignIn.cs`, `Program.cs`,
+Code: `src/Sfe.Api/BrowserLauncher.cs`, `StartupLogo.cs`, `CommandLine.cs`, `Security/LocalVisitor.cs`, `Security/FastSignIn.cs`, `Program.cs`,
 `Endpoints/SessionEndpoints.cs` (`api/session/start`), `SetupService.IsFreshAsync`; client `account/setup-page.component.ts`,
 the `startup` tab of `settings/settings-schema.ts` (System › Start-up). Tests: `LocalStartTests`.
 
@@ -8,6 +8,13 @@ the `startup` tab of `settings/settings-schema.ts` (System › Start-up). Tests:
   `--no-browser` (taken out of `args` before the builder: the command-line provider would eat the next argument as its
   value) or the server-level setting `openBrowser` (`SettingLayers.ServerLevel()`, so settings.json counts, not only
   `Sfe:OpenBrowser`).
+- **Program switches** (`--no-browser`, `--no-logo`, also `/name`, any case) go through `CommandLine.TakeSwitch`, which
+  removes them from `args` before the builder. A new switch uses it too, and gets a line in `CommandLine.HelpText`.
+- **`--help`** (`-h`, `-?`, `/?`): checked first in `Program.cs` (before the service commands), prints
+  `CommandLine.HelpText` and exits 0. Grouped, ASCII, within 80 columns (a test checks it); the settings shown are the
+  usual ones, `docs/configuration.md` has them all.
+- **Logo at start** (`StartupLogo`): ASCII only, printed before the builder; not with `--no-logo`, for a service
+  (`!Environment.UserInteractive`) or when stdout is redirected (journal, `docker logs`, test host).
 - **"On this computer"** (`LocalVisitor.IsOnThisComputer`): loopback connection, no `X-Forwarded-For`/`X-Original-For`/
   `Forwarded` (a local proxy brings other computers' visitors), and a loopback `Host` (DNS rebinding: a foreign site
   pointing its name at 127.0.0.1 would otherwise reach the setup through the visitor's browser).

@@ -3,6 +3,15 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## Unreleased
+
+### Added
+
+- A **logo** with the version in the console window at start; `--no-logo` on the command line leaves it out (never
+  shown for a service or when the output goes to a file or a log).
+- `--help` (or `-h`, `-?`) on the command line lists SFE's options, grouped: start-up, Windows service, main settings,
+  database, setup and sign-in.
+
 ## 1.80.0
 
 ### Added
