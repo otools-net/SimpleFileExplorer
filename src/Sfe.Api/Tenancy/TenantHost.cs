@@ -55,6 +55,7 @@ public sealed class TenantHost : IAsyncDisposable
         services.AddSfeCore(tenantConfiguration, contentRootPath, tenant.Id);
         services.AddSingleton<IHostedService, TrickplayWorker>();
         services.AddSingleton<IHostedService, TaskScheduleWorker>();
+        services.AddSingleton<IHostedService, KeepAliveWorker>();
         var provider = services.BuildServiceProvider();
 
         try

@@ -57,8 +57,6 @@ public static class Rights
     public const string ServerSettings = "server.settings";
     public const string ManageTenants = "server.tenants";
     public const string ManageUsers = "server.users";
-    public const string Shutdown = "server.shutdown";
-    public const string Dismount = "server.dismount";
     public const string Backup = "server.backup";
     public const string ViewStreams = "server.streams";
 }
@@ -179,8 +177,6 @@ public static class RightCatalog
         Server(Rights.ServerSettings, W, "Server settings", "Settings of the whole server and the defaults of every space."),
         Server(Rights.ManageTenants, W, "Spaces", "Create, change and delete spaces, and manage the accounts and groups of every space."),
         Server(Rights.ManageUsers, W, "All accounts", "Create, change and delete every account, put it in any space, make server administrators."),
-        Server(Rights.Shutdown, W, "Shut down", "Shut the server's computer down (when the server allows it)."),
-        Server(Rights.Dismount, W, "Dismount", "Run the server's dismount command (when one is set)."),
         Server(Rights.ViewStreams, R, "Video streams", "See the videos the server converts while they play, in every space, and who watches them."),
         Server(Rights.Backup, R, "Back up", "Download a backup of the databases and configuration files (it holds password hashes and connection strings)."),
     ];

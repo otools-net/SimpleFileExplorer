@@ -457,8 +457,6 @@ describe('Interface › Appearance', () => {
 });
 
 describe('SystemSectionComponent', () => {
-    const commands = (features: Partial<ClientConfig['features']>) => setUp({ features: { thumbnails: true, trickplay: false, shutdown: false, dismount: false, ...features } });
-
     it('shows the version, with the commit when known', async () => {
         await setUp({ version: '1.2.3', commit: 'abc1234' });
         await open('/admin?section=system');
@@ -466,9 +464,8 @@ describe('SystemSectionComponent', () => {
         expect(element.querySelector('.system-facts')!.textContent).toContain('SFE 1.2.3');
         expect(element.querySelector('.system-facts code')!.textContent).toBe('abc1234');
         expect(element.querySelector<HTMLAnchorElement>('a[href="api/docs"]')).not.toBeNull();
-        // Backups and the server commands are on Maintenance.
+        // Backups are on Maintenance.
         expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
-        expect(element.textContent).not.toContain('Server commands');
     });
 
     it('offers a backup of the databases and configuration files to those with the right', async () => {
@@ -482,51 +479,6 @@ describe('SystemSectionComponent', () => {
         await setUp({ rights: [Rights.apiDocs] });
         await open('/admin?section=system&page=maintenance');
         expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
-    });
-
-    it('shows the server commands only when they are on', async () => {
-        await commands({});
-        await open('/admin?section=system&page=maintenance');
-        expect(buttonNamed(element, 'Shut down server')).toBeUndefined();
-        expect(element.textContent).toContain('None configured.');
-
-        TestBed.resetTestingModule();
-        await commands({ shutdown: true, dismount: true });
-        await open('/admin?section=system&page=maintenance');
-        expect(buttonNamed(element, 'Shut down server')).toBeDefined();
-        expect(buttonNamed(element, 'Dismount drives')).toBeDefined();
-    });
-
-    it('runs a server command after asking, with what it answered', async () => {
-        await commands({ shutdown: true, dismount: true });
-        await open('/admin?section=system&page=maintenance');
-        const show = vi.spyOn(TestBed.inject(ToastService), 'show');
-        vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValue(true);
-        api.shutdown.mockResolvedValue({ output: 'Bye' });
-        api.dismount.mockResolvedValue({ output: '' });
-
-        buttonNamed(element, 'Shut down server')!.click();
-        await settle();
-        expect(api.shutdown).not.toHaveBeenCalled();
-
-        buttonNamed(element, 'Shut down server')!.click();
-        buttonNamed(element, 'Dismount drives')!.click();
-        await settle();
-        expect(show).toHaveBeenCalledWith('Shutdown: Bye');
-        expect(show).toHaveBeenCalledWith('Dismount requested.');
-    });
-
-    it('reports a command that failed', async () => {
-        await commands({ shutdown: true });
-        await open('/admin?section=system&page=maintenance');
-        const error = vi.spyOn(TestBed.inject(ToastService), 'error');
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
-        api.shutdown.mockRejectedValue(new ApiError(409, 'Shutdown is disabled.'));
-
-        buttonNamed(element, 'Shut down server')!.click();
-        await settle();
-
-        expect(error).toHaveBeenCalledWith('Shutdown failed: Shutdown is disabled.');
     });
 });
 

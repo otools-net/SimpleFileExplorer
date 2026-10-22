@@ -22,7 +22,7 @@ silently: [production-upgrades.md](../development/production-upgrades.md).
   `SETTINGS_RIGHTS`).
 - User-level values never reach `SfeOptions`: the server reads them through `SettingsService.GetEffectiveAsync`
   (`/api/config`), or takes them as request parameters.
-- **Never editable from the UI:** DB, system commands, cache dir, setup, security or tenant storage options: they run
+- **Never editable from the UI:** DB, cache dir, setup, security or tenant storage options: they run
   programs or decide where data lives, which only whoever runs the server may decide. The library root, `Urls` and the
   ffmpeg path are the only exceptions, and only through `InstallationSettings`
   ([installation-page.md](installation-page.md)), never as `EditableSettings`. `openBrowser`/`fastSignIn` are

@@ -50,10 +50,10 @@ public sealed class SfeOptions
     public BrowseOptions Browse { get; set; } = new();
     public SearchOptions Search { get; set; } = new();
     public ScanOptions Scan { get; set; } = new();
+    public KeepAliveOptions KeepAlive { get; set; } = new();
     public FileTypeOptions FileTypes { get; set; } = new();
     public ThumbnailOptions Thumbnails { get; set; } = new();
     public TrickplayOptions Trickplay { get; set; } = new();
-    public SystemCommandOptions System { get; set; } = new();
     public TagOptions Tags { get; set; } = new();
     public PlayerOptions Player { get; set; } = new();
     public StreamingOptions Streaming { get; set; } = new();
@@ -685,20 +685,35 @@ public sealed class TrickplayOptions
     public bool HoverPreview { get; set; } = true;
 }
 
-public sealed class SystemCommandOptions
+/// <summary>
+/// Keep alive: touches the library's folder every <see cref="IntervalSeconds"/>, so that a file server never sees the
+/// session to its share go idle and drops it (Windows' <c>autodisconnect</c>, a NAS's idle limit).
+/// </summary>
+public sealed class KeepAliveOptions
 {
-    /// <summary>Expose <c>POST /api/system/shutdown</c>.</summary>
-    public bool EnableShutdown { get; set; }
+    public const int MinIntervalSeconds = 10;
+    public const int MaxIntervalSeconds = 3600;
+    public const int MinTimeoutSeconds = 1;
+    public const int MaxTimeoutSeconds = 300;
 
-    /// <summary>
-    /// Shell command run by <c>POST /api/system/shutdown</c>. When empty: <c>shutdown /s /f /t 5</c> on Windows,
-    /// <c>shutdown -h +1</c> elsewhere (the service account needs the right to shut down, e.g. through sudo or polkit).
-    /// </summary>
-    public string? ShutdownCommand { get; set; }
+    /// <summary>Off by default: an install upgraded on a share changes nothing until it is turned on.</summary>
+    public KeepAliveMode Mode { get; set; } = KeepAliveMode.Off;
 
-    /// <summary>
-    /// Shell command run by <c>POST /api/system/dismount</c> (<c>cmd.exe /c</c> on Windows, <c>/bin/sh -c</c>
-    /// elsewhere); disabled when empty.
-    /// </summary>
-    public string? DismountCommand { get; set; }
+    /// <summary>Seconds between two pings of a folder (10–3600); shorter than the file server's idle limit.</summary>
+    public int IntervalSeconds { get; set; } = 240;
+
+    /// <summary>A ping taking longer counts as failed (1–300 s); the next one waits until it ends.</summary>
+    public int TimeoutSeconds { get; set; } = 30;
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<KeepAliveMode>))]
+public enum KeepAliveMode
+{
+    Off,
+
+    /// <summary>Only folders on a network share (a UNC path, a mapped drive, a CIFS/NFS/SSHFS mount), links followed.</summary>
+    Auto,
+
+    /// <summary>Every folder, also one SFE can't tell is on the network.</summary>
+    Always,
 }

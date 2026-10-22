@@ -50,7 +50,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
             <symbol id="i-exit-cinema" viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="10" rx="2"/></symbol>
             <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.3l1.5-2h5.4l1.5 2h2.3A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/></symbol>
             <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.3 7.3a8 8 0 1 0 11.4 0"/></symbol>
-            <symbol id="i-eject" viewBox="0 0 24 24"><path d="M12 5 4 15h16z"/><path d="M4 19h16"/></symbol>
             <symbol id="i-docs" viewBox="0 0 24 24"><path d="M8 4h8l4 4v12H8z"/><path d="M4 8v12h4M12 12h4M12 16h4"/></symbol>
             <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3.5 12.6V5a1.5 1.5 0 0 1 1.5-1.5h7.6a1.5 1.5 0 0 1 1.06.44l7 7a1.5 1.5 0 0 1 0 2.12l-7.6 7.6a1.5 1.5 0 0 1-2.12 0l-7-7a1.5 1.5 0 0 1-.44-1.06z"/><circle cx="8.5" cy="8.5" r="1.6"/></symbol>
             <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>

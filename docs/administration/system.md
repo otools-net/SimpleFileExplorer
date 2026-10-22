@@ -2,7 +2,7 @@
 
 **Administration › System**: the server's version, library folder, ffmpeg and API (**About**), the library folder,
 network address and ffmpeg of the installation (**Installation**), what SFE does when it starts (**Start-up**), and
-backups and the server commands (**Maintenance**). The videos the server converts are in
+backups (**Maintenance**). The videos the server converts are in
 [Playback › Video streams](playback.md#video-streams).
 
 ## About
@@ -49,20 +49,6 @@ README says where the backup was left on the database server.
 To restore: stop SFE, put the files back where `manifest.json` says (SQLite: replace the `.db` file and delete the
 `-wal` and `-shm` files next to it; SQL Server: `RESTORE DATABASE` from the `.bak`), then start the version the
 databases belong to.
-
-### Server commands
-
-**Shut down server** and **Dismount drives** run commands on the server's computer (rights `server.shutdown`,
-`server.dismount`); each asks first. They are opt-in and set only in the configuration:
-
-| Setting | |
-|---|---|
-| `Sfe:System:EnableShutdown` | `true` shows **Shut down server** |
-| `Sfe:System:ShutdownCommand` | Empty: `shutdown /s /f /t 5` on Windows, `shutdown -h +1` elsewhere |
-| `Sfe:System:DismountCommand` | The command that dismounts the drives; empty = no **Dismount drives** button |
-
-Commands run through `cmd.exe /c` on Windows, `/bin/sh -c` elsewhere. On Linux the service account usually may not shut
-down: use e.g. `sudo -n /usr/sbin/shutdown -h +1` and allow that command in sudoers (or polkit).
 
 ## Installation
 

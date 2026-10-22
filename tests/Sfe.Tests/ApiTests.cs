@@ -61,8 +61,6 @@ public sealed class ApiTests
 
         Assert.AreEqual("Root", config.RootName);
         Assert.IsNull(config.DataServer);
-        Assert.IsFalse(config.Features.Shutdown);
-        Assert.IsFalse(config.Features.Dismount);
         Assert.IsFalse(config.Features.Trickplay);
         Assert.AreEqual(TagService.MaxFilesPerChange, config.MaxFilesPerTagChange);
         Assert.AreEqual(10, config.SeekSeconds);
@@ -893,16 +891,6 @@ public sealed class ApiTests
         using var response = await _client.PostAsJsonAsync("/api/scan", new ScanRequest("../.."), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [TestMethod]
-    public async Task SystemCommandsAreDisabledByDefault()
-    {
-        using var shutdown = await _client.PostAsync("/api/system/shutdown", null, TestContext.CancellationToken);
-        using var dismount = await _client.PostAsync("/api/system/dismount", null, TestContext.CancellationToken);
-
-        Assert.AreEqual(HttpStatusCode.NotFound, shutdown.StatusCode);
-        Assert.AreEqual(HttpStatusCode.NotFound, dismount.StatusCode);
     }
 
     [TestMethod]

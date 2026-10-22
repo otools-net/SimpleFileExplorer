@@ -32,7 +32,6 @@ src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceColl
   Settings/ Options/    SettingsStore (server level, settings.json)/Service, EditableSettings, SettingCatalog (scope and
                         right of each key), SettingLayers (resolution by level), SettingRows (library/user rows) /
                         SfeOptions ("Sfe" section), AccessOptions (Setup, Security, Rights, Tenants)
-  SystemCommands/       shutdown / dismount through the shell
 src/Sfe.Api/            Program.cs, Endpoints/*Endpoints.cs (one class per area), TrickplayWorker, TaskScheduleWorker, AuditLogWorker, PortableBuild,
                         AppVersion, StartupErrors (bad JSON, port in use), BrowserLauncher (portable: open the browser),
                         WindowsServiceSetup (--install-service); wwwroot/ = the built client (generated, git-ignored)

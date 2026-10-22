@@ -45,7 +45,7 @@ Each right is of one of two kinds (column **Kind**):
 | `account.preferences`, `account.password` | own preferences and password | Write | no | Administrators, Users |
 | `account.quickLinks` | own [quick links](../user-guide/browsing.md#quick-links) in the sidebar | Write | no | Administrators, Users |
 | `system.apiDocs` | the API documentation (`/api/docs`) | Read | no | Administrators |
-| `server.settings`, `server.tenants`, `server.users`, `server.shutdown`, `server.dismount` | the server's settings, spaces, every account, system commands | Write | no | server administrators only |
+| `server.settings`, `server.tenants`, `server.users` | the server's settings, spaces, every account | Write | no | server administrators only |
 | `server.backup`, `server.streams` | backups, the list of video streams | Read | no | server administrators only |
 
 **Server administrators** have every right in every space, plus the server's own. The file management rights

@@ -187,13 +187,12 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         group: 'Server',
         title: 'System',
         icon: 'power',
-        description: 'The server\'s version, library folder and ffmpeg, what it does at start, its API, backups and the server commands.',
+        description: 'The server\'s version, library folder and ffmpeg, what it does at start, its API and backups.',
         subpages: [
             page('about', 'About', 'The server\'s version, its library folder, the ffmpeg it found, and its API reference.', Rights.serverSettings, Rights.apiDocs),
             page('installation', 'Installation', 'The first space\'s library folder, who can open SFE, and ffmpeg, behind the setup code.', Rights.serverSettings),
             settingsPage('startup', 'What SFE does when it starts on this computer.', 'Start-up', 'startup'),
-            page('maintenance', 'Maintenance', 'A backup of the databases and configuration files, and the commands of the server\'s computer.',
-                Rights.backup, Rights.shutdown, Rights.dismount),
+            page('maintenance', 'Maintenance', 'A backup of the databases and configuration files.', Rights.backup),
         ],
     },
 ];

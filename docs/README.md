@@ -48,7 +48,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | [Spaces & accounts](administration/spaces-and-accounts.md) | Spaces (libraries), groups, accounts, visitors |
 | [Background tasks](administration/background-tasks.md) | Tasks, schedules, history and logs |
 | [Logs](administration/logs.md) | The server's messages, warnings and errors, searched by text, date and severity |
-| [System](administration/system.md) | Version, API reference, shutdown and dismount |
+| [System](administration/system.md) | Version, API reference, installation, backups |
 | [My account](administration/my-account.md) | Personal preferences, password |
 
 ## Reference

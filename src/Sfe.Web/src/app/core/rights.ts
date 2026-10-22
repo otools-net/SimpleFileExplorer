@@ -53,8 +53,6 @@ export const Rights = {
     serverSettings: 'server.settings',
     manageTenants: 'server.tenants',
     manageUsers: 'server.users',
-    shutdown: 'server.shutdown',
-    dismount: 'server.dismount',
     backup: 'server.backup',
     viewStreams: 'server.streams',
 } as const;

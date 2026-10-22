@@ -99,7 +99,7 @@ describe('System section', () => {
         expect(pages('system', [Rights.serverSettings])).toEqual(['about', 'installation', 'startup']);
         expect(pages('system', [Rights.serverSettings, Rights.backup])).toEqual(['about', 'installation', 'startup', 'maintenance']);
         expect(pages('system', [Rights.backup])).toEqual(['maintenance']);
-        expect(pages('system', [Rights.apiDocs, Rights.shutdown])).toEqual(['about', 'maintenance']);
+        expect(pages('system', [Rights.apiDocs])).toEqual(['about']);
         expect(pages('playback', [Rights.viewStreams])).toEqual(['streams']);
     });
 });

@@ -25,7 +25,7 @@ Values saved on the administration page take precedence over these files, at sev
 see [Settings by level](reference/settings-levels.md).
 
 **Only in the configuration**, because they decide which programs run or where data lives: the thumbnail cache folder,
-the database, shutdown/dismount, and everything about the setup, sign-in and spaces' storage. The library folder, the
+the database, and everything about the setup, sign-in and spaces' storage. The library folder, the
 listening address and the ffmpeg path are the exception: they can also be changed on the installation page, which asks
 for the setup code first (only whoever runs the server knows it). On an **External** server (`Sfe:Mode`) the library
 folder and ffmpeg are set here only.
@@ -42,7 +42,6 @@ folder and ffmpeg are set here only.
 | `Sfe:Thumbnails:FfmpegPath` | Default `ffmpeg` (found on the `PATH`) |
 | `Sfe:DataServer` | Optional web server already publishing the library ([Playback › Streaming](administration/playback.md#data-server)) |
 | `Sfe:SettingsFile` | Where the administration page saves (see [below](#the-settings-file)) |
-| `Sfe:System:EnableShutdown`, `ShutdownCommand`, `DismountCommand` | Server commands, opt-in (see [System](administration/system.md)) |
 | `Sfe:Backup:SqlServerFolder` | SQL Server only: where the database server writes the [backups](administration/system.md#backup) (as it sees it); empty = its default backup folder |
 | `Urls` | Listening address, default `http://*:5080` (portable packages: `http://localhost:5080`) |
 | `Sfe:InstallationFile` | Where the installation page saves (default `data/installation.json`); see [above](#where-settings-come-from) |
@@ -92,6 +91,24 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Files:PortableNames`, `WorkFolder` (`Library`, `Server`), `DeletePermanently`, `Trash:RetentionDays`, `MinimumFreeSpaceMegabytes`, `Uploads:MaxFileSizeMegabytes`, `Uploads:KeepUnfinishedHours`, `MaxArchiveMegabytes` | [File management](administration/file-management.md) |
 | `Sfe:Tasks:LogRetentionDays` | [Background tasks › Settings](administration/background-tasks.md#settings) |
 | `Sfe:Logs:RetentionDays`, `WriteFiles` | [Logs › Settings](administration/logs.md#settings) |
+
+## Libraries on a network share (keep alive)
+
+A file server drops the connection to a share nobody used for a while (Windows file servers after 15 minutes, many
+NAS sooner), and the drive or mount may be lost with it. **Keep alive** makes SFE look at each space's library folder
+every few minutes, a single read of the folder's first entry however large it is, so the connection never goes idle.
+It is off until you turn it on, and applies to every space.
+
+| Setting | Notes |
+|---|---|
+| `Sfe:KeepAlive:Mode` | `Off` (default), `Auto`: only folders on a network share (a `\\server\share` path, a mapped network drive, a CIFS, NFS or SSHFS mount, also through a link), or `Always`: every library folder, for a network drive SFE can't recognise |
+| `Sfe:KeepAlive:IntervalSeconds` | Seconds between two looks (default 240, 10 to 3600): shorter than the file server's idle limit |
+| `Sfe:KeepAlive:TimeoutSeconds` | A look taking longer counts as failed (default 30, 1 to 300) |
+
+The [log](administration/logs.md) says when keep alive starts on a folder, when a folder stops answering (once, not
+at every look) and when it answers again; with `Auto` it also says when a folder is not on the network. Keep alive
+keeps a connection from being dropped; it can't reconnect a drive that is already lost: reconnect it as usual
+(and, for a mapped drive, as the account SFE runs as).
 
 ## Logs
 

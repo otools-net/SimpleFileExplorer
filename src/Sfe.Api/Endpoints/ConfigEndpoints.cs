@@ -8,7 +8,6 @@ using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Settings;
 using Sfe.Core.Streaming;
-using Sfe.Core.SystemCommands;
 using Sfe.Core.Tagging;
 using Sfe.Core.Thumbnails;
 using Sfe.Core.Trickplay;
@@ -16,7 +15,7 @@ using Sfe.Core.Trickplay;
 namespace Sfe.Api.Endpoints;
 
 /// <param name="Trickplay">Videos may have trickplay (see <c>/api/trickplay/files/{path}</c>).</param>
-public sealed record ClientFeatures(bool Thumbnails, bool Trickplay, bool Shutdown, bool Dismount);
+public sealed record ClientFeatures(bool Thumbnails, bool Trickplay);
 
 /// <param name="Name">Shown on its button, e.g. "Open in VLC".</param>
 /// <param name="Url">
@@ -94,7 +93,7 @@ public static class ConfigEndpoints
     }
 
     private static async Task<Ok<ClientConfig>> GetConfig(
-        LibraryPaths paths, ThumbnailService thumbnails, TrickplayService trickplay, VideoStreamer streamer, SystemCommandService system, IOptionsMonitor<SfeOptions> options,
+        LibraryPaths paths, ThumbnailService thumbnails, TrickplayService trickplay, VideoStreamer streamer, IOptionsMonitor<SfeOptions> options,
         CurrentAccess current, SettingsService preferences, AccessService accounts, RightsEvaluator rights, IConfiguration configuration, CancellationToken cancellationToken)
     {
         var state = await current.GetAsync();
@@ -108,7 +107,7 @@ public static class ConfigEndpoints
             DataServerUrl.Normalize(server.DataServer),
             settings.Browse.DefaultPageSize,
             settings.Search.DefaultPageSize,
-            new ClientFeatures(thumbnails.IsAvailable, trickplay.IsAvailable, system.CanShutdown && state.Has(Rights.Shutdown), system.CanDismount && state.Has(Rights.Dismount)),
+            new ClientFeatures(thumbnails.IsAvailable, trickplay.IsAvailable),
             TagColors.All,
             TagService.MaxFilesPerChange,
             server.Thumbnails.LargeImageKilobytes * 1024L,

@@ -254,7 +254,7 @@ describe('PreviewsService', () => {
     });
 
     it('shows images as they are without thumbnails, and videos without a preview', async () => {
-        await setUp(fakeConfig({ largeImageSize: 1000, features: { thumbnails: false, trickplay: false, shutdown: false, dismount: false } }));
+        await setUp(fakeConfig({ largeImageSize: 1000, features: { thumbnails: false, trickplay: false } }));
         const previews = TestBed.inject(PreviewsService);
 
         expect(previews.sources(item('big.jpg', { size: 5000 }))).toEqual(['api/files/raw/big.jpg']);
@@ -348,7 +348,7 @@ describe('FileTileComponent', () => {
     });
 
     it('keeps the duration of a video in its details when its preview cannot be shown', async () => {
-        const tile = await videoTile({ duration: 65 }, fakeConfig({ features: { thumbnails: false, trickplay: false, shutdown: false, dismount: false } }));
+        const tile = await videoTile({ duration: 65 }, fakeConfig({ features: { thumbnails: false, trickplay: false } }));
         expect(tile.querySelector('.duration')).toBeNull();
         expect(tile.querySelector('.meta')!.textContent).toMatch(/^1:05 · 2 KB · /);
     });
@@ -724,7 +724,7 @@ describe('TrickplayMarksService', () => {
     });
 
     it('asks for the states of the listed videos only, and shows them', async () => {
-        await setUp(fakeConfig({ features: { thumbnails: true, trickplay: true, shutdown: false, dismount: false } }));
+        await setUp(fakeConfig({ features: { thumbnails: true, trickplay: true } }));
         api.trickplayStates.mockResolvedValue({ running: true, files: { 'v.mp4': 'running' } });
         await list([item('a.jpg'), video, other]);
         const marks = TestBed.inject(TrickplayMarksService);
@@ -736,7 +736,7 @@ describe('TrickplayMarksService', () => {
     });
 
     it('keeps the marks through a failed request', async () => {
-        await setUp(fakeConfig({ features: { thumbnails: true, trickplay: true, shutdown: false, dismount: false } }));
+        await setUp(fakeConfig({ features: { thumbnails: true, trickplay: true } }));
         api.trickplayStates.mockResolvedValueOnce({ running: true, files: { 'v.mp4': 'pending' } }).mockRejectedValue(new ApiError(0, 'offline'));
         await list([video]);
         const marks = TestBed.inject(TrickplayMarksService);

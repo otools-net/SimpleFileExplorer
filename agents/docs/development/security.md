@@ -12,7 +12,7 @@ library by others). Keep these rules when changing it.
 - A file of the library is **content of strangers**: never serve it so that the browser runs it on the app's origin
   (HTML, SVG, XML). `LibraryEndpoints.ServeFile` sandboxes every file and forces a download for types outside the
   media allow-list.
-- Everything that runs a program or decides where data lives (ffmpeg, root, system commands, database) is set by
+- Everything that runs a program or decides where data lives (ffmpeg, root, database) is set by
   whoever runs the server, never by a right alone.
 - Secrets (setup code, Data Protection keys, link tokens, passwords) never go to the log store, error messages, or a
   folder served by the app.

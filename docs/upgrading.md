@@ -37,6 +37,9 @@ to the earlier version by installing it again.
   added there by hand and not scanned since keeps its files and tags in search. To forget one, use **Remove from
   index…** in the ⋮ menu while browsing it.
 - The Administrators group of every space gets the new right `index.exclude` (**Scans and previews…** of a folder).
+- The **server commands** are gone: **Shut down server** and **Dismount drives** no longer show, and
+  `Sfe:System:EnableShutdown`, `ShutdownCommand` and `DismountCommand` do nothing (they may stay in `appsettings.json`;
+  remove them at will). Run such commands on the server's computer itself.
 
 ## To 1.78
 

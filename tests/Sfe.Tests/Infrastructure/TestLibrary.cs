@@ -82,8 +82,6 @@ public sealed class TestLibrary : IDisposable
         ["Sfe:DataServer"] = "",
         ["Sfe:Database:Provider"] = "Sqlite",
         ["Sfe:Thumbnails:CacheDirectory"] = ThumbnailPath,
-        ["Sfe:System:EnableShutdown"] = "false",
-        ["Sfe:System:DismountCommand"] = "",
         ["Sfe:SettingsFile"] = SettingsPath,
         ["Sfe:Setup:Code"] = SetupCode,
         // The test clients aren't on the server's own computer (no remote address): a Local server would refuse them.

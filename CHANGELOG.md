@@ -13,11 +13,20 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   `Trickplay:ExcludedFolders` and `Thumbnails:ExcludedFolders`.
 - **Administration › Scanning › Excluded folders**: every excluded folder in one table, to add, change and remove them
   (folders gone from the disk too).
+- **Keep alive** for libraries on a network share: `Sfe:KeepAlive:Mode` (`Off` by default, `Auto`, `Always`) makes
+  SFE look at each space's library folder every `IntervalSeconds` (240), so the file server never drops the idle
+  connection. Configuration only for now; see `docs/configuration.md`.
 
 ### Changed
 
 - Scans keep what the index has of an excluded folder (files, tags) instead of removing it: **Remove from index…**
   forgets a folder. Scanning an excluded folder, or one inside it, is refused.
+
+### Removed
+
+- The **server commands** (**Shut down server**, **Dismount drives** in Administration › System › Maintenance), their
+  routes `POST api/system/shutdown` and `api/system/dismount`, the rights `server.shutdown` and `server.dismount`, and
+  the settings `Sfe:System:EnableShutdown`, `ShutdownCommand` and `DismountCommand` (ignored if still set).
 
 ## 1.79.0
 

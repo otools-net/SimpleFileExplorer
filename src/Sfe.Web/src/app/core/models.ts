@@ -367,7 +367,7 @@ export interface ClientConfig {
     dataServer: string | null;
     pageSize: number;
     searchPageSize: number;
-    features: { thumbnails: boolean; trickplay: boolean; shutdown: boolean; dismount: boolean };
+    features: { thumbnails: boolean; trickplay: boolean };
     tagColors: TagColor[];
     maxFilesPerTagChange: number;
     largeImageSize: number;
@@ -669,10 +669,6 @@ export interface SettingsView {
     level?: SettingLevel;
     /** Per setting key; absent from older servers. */
     keys?: Record<string, SettingState> | null;
-}
-
-export interface CommandResult {
-    output: string;
 }
 
 /** The background jobs of the "Background tasks" dialog. */
