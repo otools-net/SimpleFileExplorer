@@ -95,46 +95,46 @@ Asked 2026-10-22:
 
 ### Phase 1 — the worker, configuration only
 
-- [x] (unreleased, edge) Open questions 1, 2, 4 and the write ping decided with the user.
-- [x] (unreleased, edge) `KeepAliveOptions` (`Mode`, `IntervalSeconds`, `TimeoutSeconds`) in `SfeOptions`; defaults
+- [x] (1.80.0) Open questions 1, 2, 4 and the write ping decided with the user.
+- [x] (1.80.0) `KeepAliveOptions` (`Mode`, `IntervalSeconds`, `TimeoutSeconds`) in `SfeOptions`; defaults
       in both `appsettings.json`; `docs/configuration.md` (Libraries on a network share).
-- [x] (unreleased, edge) `NetworkFolders.IsNetwork` (links through `LibraryPaths.RealPath`; Windows: UNC,
+- [x] (1.80.0) `NetworkFolders.IsNetwork` (links through `LibraryPaths.RealPath`; Windows: UNC,
       `DriveType.Network`; Linux: `FileSystemTypeAt(mountinfo text, path)`).
-- [x] (unreleased, edge) One class, `KeepAliveService` (targets, ping, state; `Ping` and `IsNetwork` replaceable by
+- [x] (1.80.0) One class, `KeepAliveService` (targets, ping, state; `Ping` and `IsNetwork` replaceable by
       tests), instead of the three planned; `RunAsync` waits on a semaphore released by `OnChange` (no `TimeProvider`:
       tests call `PingAllAsync`); `KeepAliveWorker` in `TenantHost`.
-- [x] (unreleased, edge) Logs: first success, first failure, recovery, "not on the network" once.
-- [x] (unreleased, edge) `KeepAliveTests` (24): mountinfo samples (nested, prefix, `\040`, stacked), UNC forms, Off,
+- [x] (1.80.0) Logs: first success, first failure, recovery, "not on the network" once.
+- [x] (1.80.0) `KeepAliveTests` (24): mountinfo samples (nested, prefix, `\040`, stacked), UNC forms, Off,
       Always, Auto local/network, failure and recovery logged once, a blocked ping (timeout, never stacked, recovery),
       turning it on wakes the loop, the real ping.
 - [ ] Verified by the user on real shares (open question 3), on Windows SMB, a NAS, Linux CIFS/NFS and Docker:
       [Checking on a real share](#checking-on-a-real-share).
-- [x] (unreleased, edge) `CHANGELOG.md`; no `docs/upgrading.md` note (default `Off`).
+- [x] (1.80.0) `CHANGELOG.md`; no `docs/upgrading.md` note (default `Off`).
 
 ### Phase 2 — settings and status in the UI
 
-- [x] (unreleased, edge) Right `settings.keepAlive` (`Tenant`, Administrators, Write, `since: 11`), in
+- [x] (1.80.0) Right `settings.keepAlive` (`Tenant`, Administrators, Write, `since: 11`), in
       `core/rights.ts` and `SETTINGS_RIGHTS`; `RightsByPrefix` maps `keepAlive.` to it.
-- [x] (unreleased, edge) `EditableSettings.KeepAlive` (library level), `Validate` ranges and mode; a `keepAlive` tab in
+- [x] (1.80.0) `EditableSettings.KeepAlive` (library level), `Validate` ranges and mode; a `keepAlive` tab in
       `settings-schema.ts`; section **Keep alive** (group Library, icon `refresh`) with sub-pages `status` and
       `settings`; `keepAlive.mode` and `.intervalSeconds` in `SIMPLE_SETTINGS`.
-- [x] (unreleased, edge) `GET api/keep-alive` (`KeepAliveView`: mode, interval, folders root-relative, the root's full
+- [x] (1.80.0) `GET api/keep-alive` (`KeepAliveView`: mode, interval, folders root-relative, the root's full
       path replaced in errors) and `POST api/keep-alive/ping` (`PingNowAsync`: also while Off, as `Always`); one round
       at a time (`_round` semaphore). `KeepAliveRouteTests` (4).
-- [x] (unreleased, edge) `KeepAliveStatusComponent` (admin › Keep alive › Status, refreshed every 10 s): state line,
+- [x] (1.80.0) `KeepAliveStatusComponent` (admin › Keep alive › Status, refreshed every 10 s): state line,
       folders, **Ping now**, **Settings**; 4 specs in `admin-page.spec.ts`; `docs/reference/rights.md`.
-- [x] (unreleased, edge) `docs/administration/keep-alive.md` with `admin-keepAlive-status.png` (taken after **Ping
+- [x] (1.80.0) `docs/administration/keep-alive.md` with `admin-keepAlive-status.png` (taken after **Ping
       now**: the sample library is local) and `admin-keepAlive-settings.png`; `docs/configuration.md`,
       `docs/upgrading.md` (the new right).
 
 ### Phase 3 — more folders and the write ping
 
-- [x] (unreleased, edge) `Folders` (root-relative list, `PerLibraryKeys`, moved by `SettingsService.MoveFolderPaths`
+- [x] (1.80.0) `Folders` (root-relative list, `PerLibraryKeys`, moved by `SettingsService.MoveFolderPaths`
       on renames; `.sfe` and paths leaving the library refused). Removed from the status when taken off.
 - [-] Folder picker: settings lists have none (trickplay's folders are a text list too); a text list it is.
-- [x] (unreleased, edge) `Method: Touch`: writes and deletes `ping.tmp` in `WorkFolder.Get("keep-alive")`, root only,
+- [x] (1.80.0) `Method: Touch`: writes and deletes `ping.tmp` in `WorkFolder.Get("keep-alive")`, root only,
       only when the work folder is in the library; else reads with one warning. Never in the library's own folders.
-- [x] (unreleased, edge) Tests (`KeepAliveTests` +4, `KeepAliveRouteTests` +1, the rename test of
+- [x] (1.80.0) Tests (`KeepAliveTests` +4, `KeepAliveRouteTests` +1, the rename test of
       `FileOperationsTests`, a spec), `docs/administration/keep-alive.md`, `docs/configuration.md`, changelog.
 
 All three phases are built. Left: the user's checks on real shares (below); their findings go in
