@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 25/33 done. Next: Phase 3, uploads and operations panel rows.**
+**Progress: 26/33 done. Next: Phase 3, app links (check what the link menu leaves) and the admin page menu.**
 
 ## How to use this file
 
@@ -173,7 +173,7 @@ new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
 - [x] Tag chips menu (`tags/tag-menu.ts`), on the chips that search; chips in dialogs come with the dialogs item
 - [x] Duplicates / Similar / Missing rows: the files (`TrackingFileComponent`); a missing file itself has none
 - [x] Trash rows
-- [ ] Uploads and operations panel rows (job menu)
+- [x] Uploads and operations panel rows (job menu)
 - [ ] App links: main menu, admin navigation, admin system links, brand
 - [ ] Page menu on admin, logs, tasks, settings pages
 - [ ] No menu in modal dialogs, folder picker, picture editor canvas

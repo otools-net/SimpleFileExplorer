@@ -33,6 +33,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   menu: open in a new tab, open the folder (also in a new tab), download, copy full path.
 - The **trash**'s items have a right-click menu: restore, delete for good, open the folder they were deleted from
   (also in a new tab).
+- **Moves, copies and uploads** in progress (the panel at the bottom right, and Administration › Uploads) have a
+  right-click menu: their buttons (cancel, pause, resume, close) and the folder they go into, also in a new tab.
 - A right click on the app's other links (the ⋮ menu's, the administration's) opens a small menu: **Open**, **Open in
   new tab**, **Copy link address**.
 

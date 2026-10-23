@@ -7,6 +7,7 @@ import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mock
 import { ListingStore } from '../library/listing.store';
 import { SidebarService } from '../library/sidebar/sidebar.service';
 import { OperationsPanelComponent } from './operations-panel.component';
+import { ContextMenu } from '../menus/context-menu';
 import { UploadsPanelComponent } from './uploads-panel.component';
 import { UploadsSectionComponent } from './uploads-section.component';
 import { UploadQueue } from './uploads';
@@ -169,9 +170,17 @@ describe('UploadsPanelComponent', () => {
         fixture.detectChanges();
         expect(element.textContent).toContain('Uploading 1 file to “Media”');
 
+        // Its menu: its buttons, then the folder it goes into.
+        const rightClick = () => {
+            element.querySelector('.operation-title')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+            return TestBed.inject(ContextMenu).open()!.target.entries().map(entry => entry.id);
+        };
+        expect(rightClick()).toEqual(['pause', 'cancel', 'openTarget', 'targetNewTab']);
+
         buttonNamed(element.querySelector('.operation-head')!, 'Pause')!.click();
         fixture.detectChanges();
         expect(element.textContent).toContain('paused at 0%');
+        expect(rightClick()).toEqual(['resume', 'cancel', 'openTarget', 'targetNewTab']);
         buttonNamed(element, 'Cancel')!.click();
         await settle();
         fixture.detectChanges();
@@ -195,6 +204,8 @@ describe('UploadsSectionComponent', () => {
         expect(api.uploads).toHaveBeenCalledWith(true);
         expect(element.textContent).toContain('clip.mp4');
         expect(element.textContent).toContain('(50%) · by alice');
+        element.querySelector('[data-id] .tracking-name')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        expect(TestBed.inject(ContextMenu).open()!.target.entries().map(entry => entry.id)).toEqual(['cancel', 'openTarget', 'targetNewTab']);
         buttonNamed(element, 'Cancel')!.click();
         await settle();
         fixture.detectChanges();

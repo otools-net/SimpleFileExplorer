@@ -149,7 +149,8 @@ There are several ways to move or copy files and folders, as in a file browser o
 
 Moves and copies run on the server in the background: you can go on browsing. A panel at the bottom right shows each
 one with its progress; **Cancel** stops it (what is done stays, nothing half copied does). When it is over, the panel
-says what was done and what was not, and why; close it with ×. After a move, a message offers **Undo** for a few
+says what was done and what was not, and why; close it with ×. A right click on it gives the same (Cancel, or Close)
+and opens the folder it puts things into, also in a new tab. After a move, a message offers **Undo** for a few
 seconds: the items go back into the folders they came from.
 
 When the folder already holds an item with the same name, the panel asks, showing the size and date of both:
@@ -194,7 +195,8 @@ number is added to the new name); tick **The same for the other names taken** to
 
 The panel at the bottom right shows each upload with its progress and speed. Files are sent in pieces, two files at a
 time: **Pause** and **Resume** stop and go on, a piece that fails is sent again by itself, **Retry** goes on with a
-file that failed, and **Cancel** stops (what was sent of an unfinished file is removed). The browser warns you before
+file that failed, and **Cancel** stops (what was sent of an unfinished file is removed); a right click on an upload
+has them too, and the folder it goes into (also in a new tab). The browser warns you before
 you leave the page while files are being sent.
 
 **Interrupted uploads go on:** if the page is reloaded or closed, or the connection drops, the panel lists the

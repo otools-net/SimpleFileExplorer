@@ -3,6 +3,8 @@ import { formatSize, joinParts, plural } from '../core/format';
 import { baseName } from '../core/paths';
 import { checkedOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
+import { FolderMenu } from '../library/folder-menu';
+import { ContextMenuDirective, MenuEntry, MenuTarget } from '../menus/context-menu';
 import { ConfigService } from '../core/config.service';
 import { UploadBatch, UploadItem, UploadQueue } from './uploads';
 
@@ -16,12 +18,12 @@ const FILES_SHOWN = 6;
  */
 @Component({
     selector: 'sfe-uploads-panel',
-    imports: [IconComponent],
+    imports: [IconComponent, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'uploads-panel', '[hidden]': '!queue.batches().length' },
     template: `
         @for (batch of queue.batches(); track batch.key) {
-            <section class="operation upload" [class.done]="!active(batch)" [attr.data-upload]="batch.key" aria-live="polite">
+            <section class="operation upload" [class.done]="!active(batch)" [attr.data-upload]="batch.key" aria-live="polite" [sfeContextMenu]="batchMenu(batch)">
                 <header class="operation-head">
                     <svg sfeIcon="upload"></svg>
                     <span class="operation-title">{{ title(batch) }}</span>
@@ -97,11 +99,31 @@ const FILES_SHOWN = 6;
 export class UploadsPanelComponent {
     protected readonly queue = inject(UploadQueue);
     private readonly config = inject(ConfigService);
+    private readonly folders = inject(FolderMenu);
 
     protected readonly forAll = signal(false);
     protected readonly baseName = baseName;
     protected readonly plural = plural;
     protected readonly Math = Math;
+
+    /** An upload's menu (a right click): its buttons (Pause / Resume, Cancel, or Close once done), then the folder it goes into. */
+    protected batchMenu(batch: UploadBatch): MenuTarget {
+        return {
+            kind: 'job', key: `upload:${batch.key}`, name: this.title(batch),
+            entries: () => {
+                const entries: MenuEntry[] = [];
+                if (this.active(batch)) {
+                    if (this.paused(batch))
+                        entries.push({ id: 'resume', label: 'Resume', icon: 'play', title: 'Go on sending them', run: () => this.queue.resumeAll(batch) });
+                    else if (this.sending(batch))
+                        entries.push({ id: 'pause', label: 'Pause', icon: 'pause', title: 'Stop sending for now: they go on where they stopped', run: () => this.queue.pauseAll(batch) });
+                    entries.push({ id: 'cancel', label: 'Cancel', icon: 'close', title: 'Stop: what was not finished is removed from the server', run: () => void this.queue.cancelAll(batch) });
+                } else
+                    entries.push({ id: 'close', label: 'Close', icon: 'close', title: 'Take it off the list', run: () => this.queue.dismiss(batch) });
+                return [...entries, ...this.folders.targetEntries(batch.target)];
+            },
+        };
+    }
 
     protected active(batch: UploadBatch): boolean {
         return batch.items.some(item => !['done', 'skipped', 'cancelled', 'failed'].includes(item.state));

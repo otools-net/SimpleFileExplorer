@@ -106,6 +106,12 @@ export class FolderMenu {
         return { kind: 'folderLink', key: `folderLink:${path}`, name: this.folderItem(path).name, entries: () => this.linkEntries(path) };
     }
 
+    /** Opening the folder a job puts things into (an upload, a move or copy): here, or in a new tab. */
+    targetEntries(path: string): MenuEntry[] {
+        return this.linkEntries(path).filter(entry => entry.id === 'open' || entry.id === 'newTab')
+            .map(entry => ({ ...entry, id: entry.id === 'open' ? 'openTarget' : 'targetNewTab', label: entry.id === 'open' ? 'Open the folder' : 'Open the folder in new tab' }));
+    }
+
     linkEntries(path: string): MenuEntry[] {
         const name = this.folderItem(path).name;
         const params = this.store.browseParams(path);
