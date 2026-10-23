@@ -86,13 +86,23 @@ export class ContextMenu {
     }
 
     /**
-     * A right click nothing handled: a link's menu (open it, in a new tab, copy its address), else the page's. Not in
-     * dialogs (sheets): they keep the browser's menu until they have menus of their own (phase 3 of the plan).
+     * A right click nothing handled: a link's menu (open it, in a new tab, copy its address), else the page's. Where
+     * no page menu fits (a dialog, an area marked `data-context-menu="none"`: the folder picker), no menu at all; the
+     * browser's still comes with Shift and in text fields. An area marked `data-context-menu="own"` (the viewer's
+     * readers and editors) keeps its own right click, or the browser's.
      */
     fromPage(event: MouseEvent): void {
-        if (event.target instanceof Element && event.target.closest('dialog'))
+        if (event.defaultPrevented)
+            return;
+        const area = event.target instanceof Element ? event.target.closest('[data-context-menu], dialog') : null;
+        if (area?.getAttribute('data-context-menu') === 'own')
             return;
         const link = linkAt(event.target, 'a[href]');
+        if (!link && area) {
+            if (this.keyboardEcho() || !keepsBrowserMenu(event))
+                event.preventDefault();
+            return;
+        }
         this.fromEvent(event, link ? this.linkTarget(link) : this.page(), link);
     }
 

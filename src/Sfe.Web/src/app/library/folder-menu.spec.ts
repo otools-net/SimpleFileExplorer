@@ -131,12 +131,14 @@ describe('FolderMenu', () => {
 
         expect(event.defaultPrevented).toBe(true);
         expect(contextMenu.open()?.target.kind).toBe('background');
-        // Not inside a dialog (the viewer, sheets): the browser's menu there, for now.
+        // Not inside a dialog (the viewer, sheets): no menu there.
+        contextMenu.close();
         const dialog = document.body.appendChild(document.createElement('dialog'));
         const inDialog = new MouseEvent('contextmenu', { cancelable: true });
         Object.defineProperty(inDialog, 'target', { value: dialog });
         contextMenu.fromPage(inDialog);
-        expect(inDialog.defaultPrevented).toBe(false);
+        expect(inDialog.defaultPrevented).toBe(true);
+        expect(contextMenu.open()).toBeNull();
         dialog.remove();
     });
 });

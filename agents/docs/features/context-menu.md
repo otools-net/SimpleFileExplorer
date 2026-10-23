@@ -15,7 +15,12 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
   `useContextMenu(() => target)` in a component's constructor for its host. The innermost element wins (the outer
   ones see `defaultPrevented`).
 - A right click on nothing with a menu: the page's menu, `ContextMenu.page`, set by `usePageMenu(target)` in a page's
-  constructor (cleared when it is destroyed): the listing page (`FolderMenu.target()`), the player page. Inside a `<dialog>` (sheets, editor) without a target of its own the browser's menu stays for now.
+  constructor (cleared when it is destroyed): the listing page (`FolderMenu.target()`), the player page.
+- No menu at all (the browser's prevented too) where nothing has a menu inside a `<dialog>` (sheets, the viewer's bar,
+  the picture editor and its canvas) or an area marked `data-context-menu="none"` (the folder picker); Shift and text
+  fields still give the browser's. An area marked `data-context-menu="own"` is left alone, links included: the
+  viewer's stage when it shows a reader or editor (anything but a picture or a video), which handle right clicks
+  themselves. A new viewer or editor with its own right click goes in such an area.
 - Modal dialogs: while one is open the rest of the page is inert and below the top layer, so `sfe-context-menu` moves
   its host element into the dialog the trigger is in (else the last `dialog[open]` matching `:modal`), and back home
   when closed; its layer (`.context-menu-layer`) is a `popover="manual"` shown after render (top layer, above the
@@ -57,7 +62,7 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
   virtual directory).
 - A link with no menu of its own (an `a[href]` leading elsewhere: not `#…`, not a download) reached by the page
   fallback gets a link menu (`ContextMenu.linkTarget`: Open, as a click on it; Open in new tab; Copy link address),
-  also from the keyboard. Inside a dialog: not yet (phase 3).
-- File readers and editors (text, Markdown, JSON, CSV, PDF, EPUB) are left as they are: no menu of their own, the
-  browser's on their text (decided 2026-10-23).
+  also from the keyboard, also inside a dialog.
+- File readers and editors (text, Markdown, JSON, CSV, PDF, EPUB, audio) are left as they are: their own right
+  click, else the browser's (decided 2026-10-23; the viewer's stage is `data-context-menu="own"` for them).
 - A folder link knows only its path: no entry needing the folder's own rules (Paste into is checked by the server).

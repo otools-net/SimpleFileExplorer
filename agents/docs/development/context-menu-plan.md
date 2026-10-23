@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 28/33 done. Next: Phase 3, no menu in modal dialogs, folder picker, picture editor canvas.**
+**Progress: 29/33 done. Next: Phase 3, tests, user docs + screenshots, CHANGELOG (a last look over the phase).**
 
 ## How to use this file
 
@@ -31,7 +31,10 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (commit), `[-]` dropped (w
 - **Only pictures and videos in the viewer (2026-10-23):** file readers and editors (text, Markdown, JSON, CSV, PDF,
   EPUB, the `view?path=` page) are not changed: their stage and page keep the browser's menu. The viewer's ⋮ menu
   (the shared one) stays for every file.
-
+- **Viewing and editing tools keep their own right click:** the custom viewers and editors (EPUB, CSV, PDF, JSON,
+  Markdown, text, and any new one) usually handle right clicks themselves; their right click is not changed, and no
+  app menu or suppression is added over them. Only the **video player** and the **image viewer** get the app's menu.
+  A new format added to `app/formats/` follows the same rule.
 - Editable fields and selected text keep the browser's menu (spellcheck, paste, copy selection).
 - Shift+right-click stays the escape hatch to the browser's menu.
 - Every surface is covered, in three phases (library page, viewers and player, the rest).
@@ -77,7 +80,7 @@ One resolver decides for each `contextmenu` event, in this order:
 | Exclusions list, uploads' target folder link | folder link | Folder link menu |
 | Main menu links, admin navigation, admin system links, brand | app link | Open · Open in new tab · Copy link address |
 | Admin, logs, tasks, settings pages (non-link areas) | page | Page menu |
-| Modal dialogs, folder picker, picture editor canvas | none | Nothing |
+| Modal dialogs, folder picker, picture editor canvas | none | Nothing (links still get the link menu; the viewer's readers and editors keep their own) |
 
 ### Menu contents
 
@@ -176,7 +179,9 @@ new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
 - [x] Uploads and operations panel rows (job menu)
 - [x] App links: main menu, admin navigation, admin system links, brand (the generic link menu, outside dialogs)
 - [x] Page menu on admin, logs, tasks, settings pages (all sections of the administration page: `pageTarget`)
-- [ ] No menu in modal dialogs, folder picker, picture editor canvas
+- [x] No menu in modal dialogs, folder picker, picture editor canvas (not over the viewer's readers and editors, which
+  keep their own right click: see Decisions). `data-context-menu="none"` / `"own"` areas; links in dialogs get the link
+  menu
 - [ ] Tests; user docs + screenshots; CHANGELOG
 
 ### Closing

@@ -22,6 +22,13 @@ function target(key: string, entries: MenuEntry[] = [{ id: 'act', label: 'Act', 
         <a id="appLink" href="admin?section=logs">Logs</a>
         <span id="empty" tabindex="0" [sfeContextMenu]="empty">Nothing</span>
         <span id="plain" tabindex="0">Plain</span>
+        <dialog id="dialog" open>
+            <p id="inDialog">Words</p>
+            <input id="dialogText">
+            <a id="dialogLink" href="?path=Photos">Photos</a>
+            <div data-context-menu="own"><p id="reader">A book</p><a id="readerLink" href="?path=Books">Books</a></div>
+        </dialog>
+        <div data-context-menu="none"><button id="picker" type="button">Folder</button></div>
         <sfe-context-menu />
     `,
 })
@@ -90,6 +97,26 @@ describe('ContextMenu', () => {
         expect(menu.open()?.target.key).toBe('page');
         expect(menu.open()?.trigger).toBeNull();
         expect(rightClick(at('#plain'), { shiftKey: true }).defaultPrevented).toBe(false);
+    });
+
+    it('shows no menu in dialogs and the folder picker, and leaves readers marked as having their own alone', () => {
+        menu.page.set(target('page'));
+
+        // A dialog, the folder picker: neither the page's menu nor the browser's.
+        expect(rightClick(at('#inDialog')).defaultPrevented).toBe(true);
+        expect(rightClick(at('#picker')).defaultPrevented).toBe(true);
+        expect(menu.open()).toBeNull();
+        // Still the browser's with Shift and in text fields; a link still has its menu.
+        expect(rightClick(at('#inDialog'), { shiftKey: true }).defaultPrevented).toBe(false);
+        expect(rightClick(at('#dialogText')).defaultPrevented).toBe(false);
+        rightClick(at('#dialogLink'));
+        expect(menu.open()?.target).toMatchObject({ kind: 'appLink', name: 'Photos' });
+        menu.close();
+
+        // A reader or editor (the viewer's documents): its own right click, links included.
+        expect(rightClick(at('#reader')).defaultPrevented).toBe(false);
+        expect(rightClick(at('#readerLink')).defaultPrevented).toBe(false);
+        expect(menu.open()).toBeNull();
     });
 
     it('has a page\'s menu while the page is shown (usePageMenu)', () => {

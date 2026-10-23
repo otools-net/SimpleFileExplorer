@@ -13,7 +13,7 @@ export type FolderSource = (path: string | null) => Promise<FolderPicker>;
     selector: 'sfe-folder-picker',
     imports: [IconComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'folder-picker' },
+    host: { class: 'folder-picker', 'data-context-menu': 'none' },
     template: `
         <p class="folder-picker-path">
             <svg sfeIcon="folder"></svg><span>{{ chosen() || placeholder() }}</span>

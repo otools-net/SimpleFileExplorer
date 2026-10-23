@@ -38,6 +38,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - A right click on the app's other links (the ⋮ menu's, the administration's) opens a small menu: **Open**, **Open in
   new tab**, **Copy link address**; elsewhere on the administration page: **Back**, **Reload**, **Open in new tab**,
   **Copy page link**.
+- In windows over the page (properties and other sheets, the picture editor, the viewer's bar) a right click opens no
+  menu, except a link's; documents shown in the viewer keep their own right click.
 
 ### Changed
 

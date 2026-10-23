@@ -58,6 +58,9 @@ Right-clicking elsewhere on the page also opens SFE's menu, for what is under th
 In text boxes, and on text you have selected, a right click still gives the browser's own menu (to paste, or copy
 the text). Hold **Shift** while you right-click to get the browser's own menu anywhere.
 
+In windows over the page (properties, the picture editor, the viewer's bar) a right click opens no menu, except on a
+link. Documents in the viewer (text, PDF, books, tables…) keep their own right click.
+
 ## New folder
 
 The **New folder** button next to the folder's name (or **Shift+N**) asks for the name of a folder to create in the

@@ -140,8 +140,25 @@ try {
     await b.realClick('.item-menu [data-entry="properties"]');
     await sleep(1200);
     check('viewer: an entry works (Properties over the viewer)', await b.eval(`Boolean(document.querySelector('dialog.sheet[open]'))`));
+    // Inside dialogs, where nothing has a menu: none at all (not the browser's either).
+    state = await rightClick(b, 'dialog.sheet[open] h2');
+    check('sheet: no menu', state.kind === null && state.events[0]?.prevented === true, JSON.stringify(state.events));
     await b.key('Escape', 'Escape', 27);
     await sleep(400);
+    state = await rightClick(b, 'dialog.viewer .viewer-bar');
+    check('viewer bar: no menu', state.kind === null && state.events[0]?.prevented === true, JSON.stringify(state.events));
+    await b.key('Escape', 'Escape', 27);
+    await sleep(600);
+
+    // A reader in the viewer (Markdown): its own right click, the browser's here.
+    await b.goto(url + '?path=Documents', 3000);
+    await b.waitFor('.tile a.item-link, .row a.item-link');
+    await b.eval(recorder);
+    await b.eval(`[...document.querySelectorAll('a.item-link')].find(a => a.textContent.includes('Hiking guide')).click(); 1`);
+    await b.waitFor('dialog.viewer[open] .viewer-stage.document');
+    await sleep(1500);
+    state = await rightClick(b, 'dialog.viewer .viewer-stage.document');
+    check('reader: keeps its own (browser) menu', state.kind === null && state.events[0]?.prevented === false, JSON.stringify(state.events));
     await b.key('Escape', 'Escape', 27);
     await sleep(600);
 

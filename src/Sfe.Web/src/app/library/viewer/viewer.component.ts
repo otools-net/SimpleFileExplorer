@@ -70,7 +70,7 @@ const OWNS_KEYS = '[data-owns-keys]';
                     <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
                 </div>
             </header>
-            <div #stage class="viewer-stage" [sfeContextMenu]="stageMenu()" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
+            <div #stage class="viewer-stage" [sfeContextMenu]="stageMenu()" [attr.data-context-menu]="stageMenu() ? null : 'own'" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
                 @for (shown of shownItem(); track shown.path) {
                     @if (unsupported()) {
                         <div class="viewer-message">

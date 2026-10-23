@@ -395,6 +395,11 @@ describe('ViewerComponent › Documents', () => {
         element.querySelector('.viewer-stage')!.dispatchEvent(onText);
         expect(onText.defaultPrevented).toBe(false);
         expect(menu.open()).toBeNull();
+        // Elsewhere in the viewer (its bar): no menu, not even the browser's.
+        const onBar = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+        element.querySelector('.viewer-bar')!.dispatchEvent(onBar);
+        expect(onBar.defaultPrevented).toBe(true);
+        expect(menu.open()).toBeNull();
     });
 
     it('opens a file ready to be changed when asked (a new file)', async () => {
