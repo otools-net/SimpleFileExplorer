@@ -30,6 +30,19 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.82
+
+- SFE's **work files** (the trash, unfinished uploads) now go to the server's data folder by default, no longer to a
+  hidden `.sfe` folder in the library. The spaces of your install keep theirs in the library: the update gives each
+  space that used the default its own **Where SFE keeps its work files** = **In the library**, so nothing moves and
+  deleting stays as fast. Only spaces created after the update, and new installs, start on the server
+  ([file management](administration/file-management.md#the-work-folder)). A value set in the configuration or on the
+  server's settings page is left as it is.
+- With `Sfe:Database:MigrateOnStartup` set to `false`, the same happens at the first start of 1.82;
+  `work-folder-kept.txt` beside the settings file then records it, so that later spaces get the new default.
+- `Sfe:KeepAlive:Method` `Touch` writes in the work folder only when it is in the library: on spaces using the server's,
+  it reads the folder instead ([keep alive](administration/keep-alive.md)).
+
 ## To 1.81
 
 - The index gets a new table for the **default tags** of folders (and a column of the trash); nothing changes for the

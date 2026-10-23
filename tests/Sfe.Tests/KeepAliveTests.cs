@@ -229,6 +229,7 @@ public sealed class KeepAliveTests
         Directory.CreateDirectory(Path.Combine(_root, "Linked"));
         _settings.Value.KeepAlive.Folders = ["Linked"];
         _settings.Value.KeepAlive.Method = KeepAliveMethod.Touch;
+        _settings.Value.Files.WorkFolder = WorkFolderLocation.Library;
         var (service, pings) = Create(KeepAliveMode.Always);
 
         await service.PingAllAsync(TestContext.CancellationToken);

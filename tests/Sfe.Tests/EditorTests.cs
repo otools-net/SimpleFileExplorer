@@ -220,7 +220,7 @@ public sealed class EditorTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var file = _library.FullPath("Media/beach.jpg");
         await File.WriteAllBytesAsync(file, Jpeg(40, 30), TestContext.CancellationToken);
-        var trash = _library.FullPath(".sfe/trash");
+        var trash = Path.Combine(_library.ThumbnailPath, Sfe.Core.Files.WorkFolder.ServerFolderName, Sfe.Core.Files.Trash.FolderName);
         int TrashedFiles() => Directory.Exists(trash) ? Directory.GetFiles(trash, "*", SearchOption.AllDirectories).Length : 0;
 
         var opened = await GetAsync<EditedImageAccess>(admin, "/api/editor/images/access?path=Media/beach.jpg");

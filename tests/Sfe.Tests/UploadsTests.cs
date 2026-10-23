@@ -26,8 +26,11 @@ public sealed class UploadsTests
     public async Task InitializeAsync()
     {
         _library = new TestLibrary();
-        _services = await CoreServices.CreateAsync(_library, logging: _log.AddTo);
+        _services = await CoreServices.CreateAsync(_library, InTheLibrary, _log.AddTo);
     }
+
+    /// <summary>The work folder at the library's root (the server's by default): the tests look into it.</summary>
+    private static void InTheLibrary(IDictionary<string, string?> settings) => settings["Sfe:Files:WorkFolder"] = "Library";
 
     [TestCleanup]
     public async Task CleanupAsync()
@@ -87,7 +90,7 @@ public sealed class UploadsTests
         await SendAsync(upload.Id, content, 0, 2000);
 
         await _services.DisposeAsync();
-        _services = await CoreServices.CreateAsync(_library, logging: _log.AddTo);
+        _services = await CoreServices.CreateAsync(_library, InTheLibrary, _log.AddTo);
         var listed = Uploads.List(Me.AccountId).Single();
         await SendAsync(upload.Id, content, 2000, 3000);
         var done = await Uploads.FinishAsync(upload.Id, ConflictChoice.Ask, Me, new FakeAccess(), Token);
@@ -175,6 +178,7 @@ public sealed class UploadsTests
         await _services.DisposeAsync();
         _services = await CoreServices.CreateAsync(_library, s =>
         {
+            InTheLibrary(s);
             s["Sfe:Files:Uploads:MaxFileSizeMegabytes"] = "1";
         }, _log.AddTo);
 

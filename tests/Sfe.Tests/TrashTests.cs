@@ -31,8 +31,11 @@ public sealed class TrashTests
     public async Task InitializeAsync()
     {
         _library = new TestLibrary();
-        _services = await CoreServices.CreateAsync(_library, logging: _log.AddTo);
+        _services = await CoreServices.CreateAsync(_library, InTheLibrary, _log.AddTo);
     }
+
+    /// <summary>The work folder at the library's root (the server's by default): the tests look into it.</summary>
+    private static void InTheLibrary(IDictionary<string, string?> settings) => settings["Sfe:Files:WorkFolder"] = "Library";
 
     [TestCleanup]
     public async Task CleanupAsync()
@@ -46,7 +49,11 @@ public sealed class TrashTests
     private async Task UseServicesAsync(Action<IDictionary<string, string?>> configure)
     {
         await _services.DisposeAsync();
-        _services = await CoreServices.CreateAsync(_library, configure, _log.AddTo);
+        _services = await CoreServices.CreateAsync(_library, settings =>
+        {
+            InTheLibrary(settings);
+            configure(settings);
+        }, _log.AddTo);
     }
 
     [TestMethod]

@@ -5,6 +5,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ## Unreleased
 
+### Changed
+
+- SFE's **work files** (the trash, unfinished uploads) go to the server's data folder by default, no longer to a
+  hidden `.sfe` folder in the library. The spaces of an install updated from an earlier version keep theirs in the
+  library; only new installs and spaces created later start on the server.
+
 ### Fixed
 
 - **Security:** `System.Security.Cryptography.Pkcs` (brought by the SQL Server driver) updated to 10.0.13 for the .NET

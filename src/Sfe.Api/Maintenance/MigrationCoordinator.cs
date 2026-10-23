@@ -269,7 +269,9 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
                 [.. tenants.Select(tenant => TenantHost.CacheDirectory(tenant, configuration, contentRoot))],
                 Note,
                 logger,
-                services.GetRequiredService<GeneratedSetupCode>());
+                services.GetRequiredService<GeneratedSetupCode>(),
+                services.GetRequiredService<SettingLayers>(),
+                [.. tenants.Select(tenant => tenant.Id)]);
             foreach (var step in steps)
             {
                 Note($"{step.Version}: {step.Description}…");

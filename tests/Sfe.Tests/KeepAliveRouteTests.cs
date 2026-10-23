@@ -36,7 +36,8 @@ public sealed class KeepAliveRouteTests
     public async Task InitializeAsync()
     {
         _library = new TestLibrary();
-        _factory = ApiClients.CreateFactory(_library);
+        // The write ping needs the work folder in the library.
+        _factory = ApiClients.CreateFactory(_library, s => s["Sfe:Files:WorkFolder"] = "Library");
         using var admin = await ApiClients.SetUpAsync(_factory, Token);
         var accounts = _factory.Services.GetRequiredService<AccessService>();
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;

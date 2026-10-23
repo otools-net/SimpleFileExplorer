@@ -336,8 +336,11 @@ public sealed class FileManagementOptions
     /// </summary>
     public bool PortableNames { get; set; } = true;
 
-    /// <summary>Where the work files of file management go (<see cref="WorkFolderLocation"/>).</summary>
-    public WorkFolderLocation WorkFolder { get; set; } = WorkFolderLocation.Library;
+    /// <summary>
+    /// Where the work files of file management go (<see cref="WorkFolderLocation"/>). The server's since 1.82.0; the
+    /// libraries of earlier installs kept the library's (<see cref="Upgrades.Steps.V1_82_0.KeepWorkFolderInLibraries"/>).
+    /// </summary>
+    public WorkFolderLocation WorkFolder { get; set; } = WorkFolderLocation.Server;
 
     /// <summary>
     /// Every delete skips the trash: the files are gone at once, and deleting needs the right to delete permanently.

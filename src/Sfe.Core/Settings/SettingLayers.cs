@@ -237,6 +237,41 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
     }
 
     /// <summary>
+    /// The default of <paramref name="key"/> changed from <paramref name="previous"/> (an update): the libraries that
+    /// took the default, with no value of their own nor one of the server's or the configuration's, keep the previous
+    /// one as their own. A server lock without a value (the default locked for every library) gets it as the server's.
+    /// Idempotent: once kept, the libraries have their value.
+    /// </summary>
+    /// <returns>How many libraries keep the previous value (all of them for a server lock); 0 when the configuration sets or locks it.</returns>
+    public async Task<int> KeepPreviousDefaultAsync(string key, JsonNode previous, IReadOnlyCollection<int> tenantIds, CancellationToken cancellationToken = default)
+    {
+        if (SettingCatalog.Find(key) is null)
+            throw new ArgumentException($"Unknown setting {key}", nameof(key));
+
+        var configured = _configuration.GetSection($"{SfeOptions.SectionName}:{key.Replace('.', ':')}").Exists();
+        if (configured || Configured().Locked.Any(pattern => SettingCatalog.Matches(pattern, key)) || _server.Values.ContainsKey(key))
+            return 0;
+
+        if (_server.Locked.Contains(key))
+        {
+            await SaveServerValueAsync(key, previous, cancellationToken);
+            return tenantIds.Count;
+        }
+
+        var kept = 0;
+        foreach (var tenantId in tenantIds)
+        {
+            var rows = _rows.ForTenant(tenantId);
+            if (rows.ContainsKey(key))
+                continue;
+            await _rows.SaveTenantAsync(tenantId, new Dictionary<string, StoredSetting>(rows, StringComparer.Ordinal) { [key] = new(previous.DeepClone(), false) }, cancellationToken);
+            kept++;
+        }
+
+        return kept;
+    }
+
+    /// <summary>
     /// Sets one setting at the server level, outside the settings page (the setup's choices): kept only when it
     /// differs from the configuration's value. Nothing changes when the configuration locks it.
     /// </summary>

@@ -1,5 +1,6 @@
 using Sfe.Core.Upgrades.Steps.V1_40_0;
 using Sfe.Core.Upgrades.Steps.V1_47_0;
+using Sfe.Core.Upgrades.Steps.V1_82_0;
 
 namespace Sfe.Core.Upgrades.Steps;
 
@@ -10,6 +11,7 @@ public static class UpgradeSteps
     [
         new ShardCacheLayout(),
         new RenewSetupCode(),
+        new KeepWorkFolderInLibraries(),
     ];
 
     /// <summary>

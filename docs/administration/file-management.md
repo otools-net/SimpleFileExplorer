@@ -39,16 +39,20 @@ Right: `settings.files`.
 | **Keep unfinished uploads for** (`Sfe:Files:Uploads:KeepUnfinishedHours`) | 48 | Hours without a piece arriving before an unfinished upload is removed with what it received |
 | **Largest zip to download** (`Sfe:Files:MaxArchiveMegabytes`) | 0 | In MB; a [zip of several files or a folder](../user-guide/managing-files.md#download-several-files-or-a-folder) larger than this, as the index counts it, is refused before it starts (folders not indexed count nothing); 0: no limit |
 | **Only names Windows accepts** (`Sfe:Files:PortableNames`) | on | New names must also work on Windows: no `< > : " \ \| ? *`, no name ending with a dot or a space, no device names (`CON`, `NUL`, `COM1`…). Keep it on when the library is shared with Windows computers or may move to one. A Windows server always refuses them |
-| **Where SFE keeps its work files** (`Sfe:Files:WorkFolder`) | In the library | **In the library** (`Library`): a hidden folder `.sfe` at the library's root. **On the server** (`Server`): the server's data folder, beside the thumbnails (`work`) |
+| **Where SFE keeps its work files** (`Sfe:Files:WorkFolder`) | On the server | **In the library** (`Library`): a hidden folder `.sfe` at the library's root. **On the server** (`Server`): the server's data folder, beside the thumbnails (`work`) |
 
 ## The work folder
 
 File management keeps work files of its own: the trash, and uploads not finished yet (`uploads`).
 
-- **In the library** (the default), they stay on the library's own drive, so putting a file in the trash is a rename,
-  however large the file. The folder is hidden (Windows' hidden attribute; on Linux its dot hides it).
-- **On the server** (in the server's data folder), the library holds nothing of SFE's, but large files are copied from one drive to
-  the other.
+- **On the server** (the default; in the server's data folder), the library holds nothing of SFE's, but when the data
+  folder is on another drive, large files are copied from one drive to the other.
+- **In the library**, they stay on the library's own drive, so putting a file in the trash is a rename, however large
+  the file. The folder is hidden (Windows' hidden attribute; on Linux its dot hides it). Choose it for a library of
+  large videos on a drive of its own.
+
+Spaces created before 1.82, when the library was the default, keep their work files in the library
+([upgrading](../upgrading.md#to-182)).
 
 Either way, the name `.sfe` at the library's root is reserved: it is never listed (not even with hidden items shown),
 scanned, searched or reachable from the web pages, and no file or folder can be given that name there.

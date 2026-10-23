@@ -310,7 +310,11 @@ public sealed class FileOperationsTests
     [TestMethod]
     public async Task TheWorkFolderIsNeverListedScannedOrReached()
     {
-        await UseServicesAsync(settings => settings["Sfe:ShowHiddenItems"] = "true");
+        await UseServicesAsync(settings =>
+        {
+            settings["Sfe:ShowHiddenItems"] = "true";
+            settings["Sfe:Files:WorkFolder"] = "Library";
+        });
         var work = _services.Get<WorkFolder>();
         var trash = work.Get("trash");
         await File.WriteAllTextAsync(Path.Combine(trash, "deleted.txt"), "x", Token);
@@ -338,13 +342,13 @@ public sealed class FileOperationsTests
     }
 
     [TestMethod]
-    public async Task TheWorkFolderCanBeInTheServersDataFolder()
+    public async Task TheWorkFolderIsInTheServersDataFolderByDefault()
     {
-        await UseServicesAsync(settings => settings["Sfe:Files:WorkFolder"] = "Server");
         var work = _services.Get<WorkFolder>();
 
         var uploads = work.Get("uploads");
 
+        Assert.AreEqual(WorkFolderLocation.Server, work.Location);
         Assert.AreEqual(Path.Combine(_library.ThumbnailPath, WorkFolder.ServerFolderName, "uploads"), uploads);
         Assert.IsFalse(Directory.Exists(work.LibraryPath));
         Assert.IsTrue(work.Contains(Path.Combine(uploads, "x.part")));
