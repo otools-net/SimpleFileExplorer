@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 30/33 done. Next: Closing, visual check of every row of the map (desktop and phone width).**
+**Progress: 31/34 done. Next: Closing, visual check of every row of the map (desktop and phone width).**
 
 ## How to use this file
 
@@ -188,6 +188,18 @@ new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
 
 - [ ] Visual check of every row of the map, desktop and phone width ([visual-check](../environment/visual-check.md))
 - [ ] Remove leftover Shift+right-click advice from titles and docs (keep the escape hatch mention)
+- [x] Bug check (reported 2026-10-23, not part of the menu work): two SFE instances running at once (different roots
+  and spaces, both with an account `admin`), open in two tabs of the same browser: signing in on one signs `admin` out
+  of the other. Likely cause, to confirm first: browsers keep cookies per host, not per port, so both instances on
+  `localhost` share the one cookie `sfe.session` (`SfeSession.CookieName`, set in
+  `SecurityServiceCollectionExtensions`); each sign-in replaces the other's, which its data protection keys can't read.
+  Reproduce it (two scratch apps, two ports), then fix: e.g. a cookie name per instance (from a stable instance id, or
+  the port / virtual directory path), keeping existing sessions working on upgrade (the old name still read, or a
+  one-time sign-in accepted and noted in the CHANGELOG). Same check for any other cookie or `localStorage` key shared
+  between instances. Tests (`dotnet test`), CHANGELOG line, note in
+  [sessions-and-pipeline](../architecture/sessions-and-pipeline.md).
+  Done: confirmed (reproduced in Edge with `two-instances.mjs`); cookie names per port (`InstanceCookieManager`), a
+  session under the shared name read once and renamed; the guest's space cookie too (asked again once)
 - [ ] Epic marked done here; `edge` merged into `main` with a minor version bump
 
 ## Verification

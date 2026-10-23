@@ -46,6 +46,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - On phones, the video player's speed list opens as a sheet across the bottom of the screen, like the item menu, with
   large buttons.
 
+### Fixed
+
+- Two SFE servers on the same computer (on different ports) opened in one browser no longer sign each other out: each
+  port gets a sign-in cookie of its own. Sessions signed in before stay signed in. A visitor's chosen space (without an
+  account) is asked again once.
+
 ## 1.80.0
 
 ### Added
