@@ -283,6 +283,20 @@ describe('ChangeFeed', () => {
             expect(api.browse.mock.calls.length).toBe(browses + 1);
         });
 
+        it('gives the connection up while the page is kept for Back, and opens it again when it shows', () => {
+            window.dispatchEvent(new Event('pagehide'));
+            expect(FakeSource.all[0].readyState).toBe(FakeSource.CLOSED);
+            vi.advanceTimersByTime(120_000);
+            expect(feed.serverLost()).toBe(false);
+            expect(FakeSource.all).toHaveLength(1);
+
+            window.dispatchEvent(new Event('pageshow'));
+            expect(FakeSource.all).toHaveLength(2);
+            // Shown again without having been left: nothing more.
+            window.dispatchEvent(new Event('pageshow'));
+            expect(FakeSource.all).toHaveLength(2);
+        });
+
         it('opens the feed again itself when the browser gives up (an error status)', () => {
             last().emit('error', FakeSource.CLOSED);
             vi.advanceTimersByTime(5_000);

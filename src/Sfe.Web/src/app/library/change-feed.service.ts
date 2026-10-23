@@ -46,8 +46,28 @@ export class ChangeFeed {
     readonly serverLost = signal(false);
 
     constructor() {
-        inject(DestroyRef).onDestroy(() => this.stop());
+        // A page left for another (kept by the browser for Back) gives its connection up: browsers allow 6 per server
+        // over HTTP/1.1, and kept pages holding theirs made the next pages wait. Opened again when the page is back.
+        const hidden = () => {
+            this.parked = this.source !== null;
+            this.stop();
+        };
+        const shown = () => {
+            if (this.parked)
+                this.start();
+            this.parked = false;
+        };
+        window.addEventListener('pagehide', hidden);
+        window.addEventListener('pageshow', shown);
+        inject(DestroyRef).onDestroy(() => {
+            window.removeEventListener('pagehide', hidden);
+            window.removeEventListener('pageshow', shown);
+            this.stop();
+        });
     }
+
+    /** The feed was open when the page was left (`pagehide`): opened again when it shows. */
+    private parked = false;
 
     /** Opens the feed (once), where the browser has EventSource and the session may browse. */
     start(): void {

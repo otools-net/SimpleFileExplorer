@@ -21,6 +21,9 @@ Code: `LibraryBrowser.FolderChanged` (raised by `Invalidate`, after the cache is
   error status the browser stops trying (`readyState` CLOSED): reopened every 5 s (`RETRY`). Back on `open`, and the
   folder listed is refreshed (changes made meanwhile weren't told). Checked in Edge by
   `agents/tools/visual-check/server-lost.mjs` (stops and restarts the app).
+- The feed is closed on `pagehide` and opened again on `pageshow` (when it was open): a page kept by the browser for
+  Back held its connection, and browsers allow 6 per server over HTTP/1.1, so after a few full page loads the next
+  page waited for minutes (found by the context menu check's many `goto`s).
 - `origin` is the `X-SFE-Tab` header of the request that changed it, read through `IHttpContextAccessor` in the handler
   (null for background jobs after their request ended): a tab ignores its own changes, which it already applied.
 - Client: `EventSource('api/files/changes')` opened by the library page (closed when leaving it); a change of the folder

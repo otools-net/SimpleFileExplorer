@@ -21,7 +21,7 @@ The top right of the viewer holds three buttons: **Tags**, **⋮** (more actions
 | × | Esc | Back to the listing, scrolled where you were |
 
 The **⋮** menu offers what applies to the file shown (Esc closes it). A right click on the picture or the video opens the same
-menu (documents keep the browser's own menu). For a video, the [player's controls](video-player.md#its-menu) come
+menu (documents keep their own right click, or the browser's menu). For a video, the [player's controls](video-player.md#its-menu) come
 first.
 
 | Entry | Key | |

@@ -212,6 +212,112 @@ try {
     check('main menu link: link menu', state.kind === 'appLink' && state.entries.join(' ') === 'open newTab copyLink', state.entries.join(' '));
     await closeMenu(b);
 
+    // A multi-selection: the selection's entries, without Open / Open in new tab (popup blockers).
+    await b.goto(url + '?path=Photos%2F2024%20Beach%20trip', 3000);
+    await b.waitFor('.tile');
+    await b.eval(recorder);
+    for (const name of ['Dunes', 'Harbour'])
+        await b.realClick(`input[aria-label="Select ${name}.jpg"], input[title="Select ${name}.jpg"]`);
+    await sleep(400);
+    state = await rightClick(b, '.tile.selected .item-name, [aria-selected="true"] .item-name, .tile:has(input:checked) .item-name');
+    check('selection: its entries, no Open / Open in new tab', state.kind !== null && !state.entries.includes('open') && !state.entries.includes('newTab') && state.entries.includes('delete'), state.entries.join(' '));
+    await closeMenu(b);
+    await b.key('Escape', 'Escape', 27);
+    await sleep(300);
+
+    // Folder navigation (up / previous / next) and quick links: link menus.
+    state = await rightClick(b, '.location nav a.icon-button[href]');
+    check('folder nav: folder link menu', state.kind === 'folderLink' && state.entries.includes('newTab'), state.entries.join(' '));
+    await closeMenu(b);
+    state = await rightClick(b, '.quick-link-target');
+    check('quick link: link menu and its own entries', state.entries.includes('newTab') && state.entries.includes('remove'), `${state.kind}: ${state.entries.join(' ')}`);
+    await closeMenu(b);
+
+    // A search result's folder: that folder's link menu, not the file's.
+    await b.goto(url + '?q=t%3A%22Beach%22', 3000);
+    await b.waitFor('.item-folder');
+    await b.eval(recorder);
+    state = await rightClick(b, '.item-folder');
+    check('search result folder: folder link menu', state.kind === 'folderLink', state.entries.join(' '));
+    await closeMenu(b);
+
+    // A recent search suggested by the search box.
+    await b.eval(`localStorage.setItem('sfe.searchHistory', JSON.stringify(['t:"Beach"', 'sunset'])); 1`);
+    await b.goto(url + '?path=Photos', 3000);
+    await b.send('Page.bringToFront');
+    await b.waitFor('form.search input');
+    await b.eval(recorder);
+    await b.realClick('form.search input');
+    await sleep(500);
+    if (await b.eval(`Boolean(document.querySelector('.search-history-option'))`)) {
+        state = await rightClick(b, '.search-history-option');
+        check('search history: entry menu', state.kind === 'historyEntry' && state.entries.includes('newTab'), state.entries.join(' '));
+        await closeMenu(b);
+    } else
+        check('search history: suggested on focus', false, 'no .search-history-option');
+    await b.eval(`document.activeElement.blur(); 1`);
+
+    // The picture editor: no menu on its canvas (a dialog), the browser's prevented too.
+    await b.click('.tile a.item-link');
+    await b.waitFor('dialog.viewer[open] .viewer-stage img');
+    await sleep(800);
+    await rightClick(b, 'dialog.viewer .viewer-stage img');
+    if (await b.eval(`Boolean(document.querySelector('.item-menu [data-entry="crop"]'))`)) {
+        await b.realClick('.item-menu [data-entry="crop"]');
+        await b.waitFor('dialog.image-editor[open] .editor-canvas');
+        await sleep(1500);
+        await b.eval(recorder);
+        state = await rightClick(b, 'dialog.image-editor .editor-canvas');
+        check('picture editor canvas: no menu', state.kind === null && state.events[0]?.prevented === true, JSON.stringify(state.events));
+        await b.key('Escape', 'Escape', 27);
+        await sleep(600);
+    } else
+        check('picture editor: Edit picture in the viewer\'s menu', false);
+    await b.key('Escape', 'Escape', 27);
+    await sleep(600);
+
+    // The /player page: the player's menu on the video, the page's elsewhere.
+    await b.goto(url + 'player?path=' + encodeURIComponent('Videos/Holidays/Campfire.webm'), 4000);
+    await b.waitFor('video');
+    await b.eval(recorder);
+    await sleep(1000);
+    state = await rightClick(b, 'video');
+    check('player page: the player\'s menu', state.entries[0] === 'play' && state.entries.includes('speed'), `${state.kind}: ${state.entries.join(' ')}`);
+    await closeMenu(b);
+
+    // Duplicates & moves: a listed file's menu.
+    await b.goto(url + 'admin?section=tracking&page=duplicates', 3000);
+    await sleep(1500);
+    await b.eval(recorder);
+    if (await b.eval(`Boolean(document.querySelector('.tracking-name'))`)) {
+        state = await rightClick(b, '.tracking-name');
+        check('duplicates: a file\'s menu', state.entries.includes('newTab') && state.entries.includes('openFolder'), `${state.kind}: ${state.entries.join(' ')}`);
+        await closeMenu(b);
+    } else
+        console.log('skip duplicates: none found in the docs data');
+
+    // The trash: a file made and deleted for the check, its row's menu, then deleted for good.
+    await b.eval(`fetch('api/files/new-file', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ path: 'Inbox', name: 'menu-check.txt' }) }).then(r => r.status)`);
+    await b.eval(`fetch('api/files/delete', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ paths: ['Inbox/menu-check.txt'], permanent: false }) }).then(r => r.status)`);
+    await b.goto(url + 'admin?section=files&page=trash', 3000);
+    await sleep(1000);
+    await b.eval(recorder);
+    if (await b.eval(`Boolean(document.querySelector('.tracking-missing'))`)) {
+        state = await rightClick(b, '.tracking-missing');
+        check('trash: an item\'s menu', state.kind === 'trash' && state.entries.includes('restore'), state.entries.join(' '));
+        await closeMenu(b);
+    } else
+        check('trash: the deleted file listed', false);
+    await b.eval(`fetch('api/files/trash', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(page => Promise.all(page.items.filter(i => i.path.endsWith('menu-check.txt')).map(i => fetch('api/files/trash/' + i.id, { method: 'DELETE', headers: { 'X-SFE-Request': '1' } })))).then(() => 1)`);
+
+    // The folder picker (adding an excluded folder): no menu.
+    await b.goto(url + 'admin?section=scanning&page=exclusions', 3000);
+    await b.eval(`[...document.querySelectorAll('button')].find(x => x.textContent.includes('Add folder'))?.click(); 1`);
+    await b.waitFor('.folder-picker button');
+    await b.eval(recorder);
+    state = await rightClick(b, '.folder-picker li button');
+    check('folder picker: no menu', state.kind === null && state.events[0]?.prevented === true, JSON.stringify(state.events));
+
     // The administration: links get the link menu, the rest the page's.
     await b.goto(url + 'admin', 3000);
     await b.waitFor('.admin-nav a');
@@ -234,6 +340,30 @@ try {
     check('phone: sheet across the bottom', state.kind === 'background' && state.left === 0 && state.right === state.width && Math.abs(state.bottom - state.height) < 1,
         `${state.left}-${state.right} of ${state.width}, bottom ${state.bottom} of ${state.height}`);
     await p.shot(out + '-phone.png');
+    // A sheet closes with a tap on its backdrop.
+    const tapAbove = async () => {
+        await p.mouse('mousePressed', 195, 40);
+        await p.mouse('mouseReleased', 195, 40);
+        await sleep(300);
+    };
+    await tapAbove();
+    await p.eval(`document.querySelector('.tile .item-name').scrollIntoView({ block: 'center' }); 1`);
+    await sleep(400);
+    const sheet = s => s.left === 0 && s.right === s.width && Math.abs(s.bottom - s.height) < 1;
+    state = await rightClick(p, '.tile .item-name');
+    check('phone: a file\'s menu, a sheet', state.kind === 'file' && sheet(state), state.entries.join(' '));
+    await tapAbove();
+    await p.eval(`scrollTo(0, 0); 1`);
+    await sleep(400);
+    state = await rightClick(p, '.crumbs a');
+    check('phone: a folder link\'s menu, a sheet', state.kind === 'folderLink' && sheet(state), state.entries.join(' '));
+    await closeMenu(p);
+    await p.click('.tile a.item-link');
+    await p.waitFor('dialog.viewer[open] .viewer-stage img');
+    await sleep(800);
+    state = await rightClick(p, 'dialog.viewer .viewer-stage img');
+    check('phone: the viewer\'s menu, a sheet in the dialog', state.kind === 'file' && sheet(state) && await p.eval(`Boolean(document.querySelector('dialog.viewer .item-menu'))`), state.entries.join(' '));
+    await closeMenu(p);
     await p.close();
 } finally {
     app.kill();

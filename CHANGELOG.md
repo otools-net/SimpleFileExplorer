@@ -52,6 +52,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- After going from page to page by full loads (typing addresses, Back and Forward), a page could take a long time to
+  load: the pages the browser keeps for Back held their connections to the server. They now give them up.
 - Two SFE servers on the same computer (on different ports) opened in one browser no longer sign each other out: each
   port gets a sign-in cookie of its own. Sessions signed in before stay signed in. A visitor's chosen space (without an
   account) is asked again once.
