@@ -36,13 +36,14 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 |---|---|---|
 | [0](#step-0--the-shared-piece) | The shared piece (`OverflowRow`) | `[x]` committed with step 1 (version at the merge into main) |
 | [1](#step-1--video-player-controls) | Video player controls (viewer and player page) | `[x]` committed (version at the merge into main) |
-| [2](#step-2--selection-bar) | Selection bar (several files selected) | `[ ]` |
+| [2](#step-2--selection-bar) | Selection bar (several files selected) | `[x]` committed (version at the merge into main) |
 | [3](#step-3--audit-of-the-other-screens) | Audit of the other screens (finds the next steps) | `[ ]` |
 | [4](#step-4--viewer-bar) | Viewer bar | `[ ]` |
 | [5](#step-5--document-viewers-toolbars) | Document viewers' toolbars (text, PDF, EPUB, Markdown, JSON, CSV, subtitles) | `[ ]` |
 | [6](#step-6--picture-editor) | Picture editor | `[ ]` |
 | [7](#step-7--top-bar-and-location-bar) | Top bar and location bar | `[ ]` |
 | [8](#step-8--administration-toolbars) | Administration toolbars (logs, tasks, scan panel) | `[ ]` |
+| [10](#step-10--file-names-in-the-list-view) | File names in the list view (found in step 2) | `[ ]` |
 | [9](#step-9--finishing) | Finishing (notes, rule, plan removed) | `[ ]` |
 
 ## Target sizes
@@ -80,8 +81,11 @@ The narrowest screen that must look right is a regular smartphone's, taken from 
   ```
 
   - **Every child of the row is an item** (`overflowStay` for those that never leave), but the "⋯": the measuring adds
-    up the items' widths only, so anything else in the row (a time text, a spacer, a count) goes outside it, next to
-    it. `overflowStay` and `overflowPriority` are read once, when the item is added.
+    up the items' widths only, so anything else in the row (a spacer) goes outside it. A text that shortens is two
+    items: the long part with a lower priority and a null entry (leaves first, no "⋯" for it). `overflowStay` and
+    `overflowPriority` are read once, when the item is added.
+  - `[overflowIn]="element"`: a row as wide as its content (the selection bar, centred) is measured in a full-width
+    element around it; the row's padding and border are then counted as room taken.
   - Measuring and choosing: `@fluentui/priority-overflow` (`createOverflowManager`): the row's `clientWidth` against
     the visible items' `offsetWidth` + the "⋯"'s; a hidden item gets `data-overflowed` (`display: none`); equal
     priorities leave from the right. A `ResizeObserver` on the row and on each item (a label changing width) asks it
@@ -165,15 +169,24 @@ Default (right to left) would hide Tags first, then Download, Copy, Move, Delete
 Ask the developer: which stay (e.g. Clear, Tags)? Keep right to left for the rest? Should the count shorten first
 (`3 folders and 12 files selected` → `15 selected`)?
 
-Decided: _(empty: ask first)_
+Decided (2026-10-23): **Clear, the count, Select all and Tags stay**; the others leave **right to left** (Download,
+Copy, Move, Delete, Rename, Quick links); the **count shortens first** (`15 selected`, no "⋯" for it).
 
-- [ ] Questions asked, Decided written.
-- [ ] Buttons through `OverflowRow`; labels still go first (760 px rule), then buttons.
-- [ ] Every action reachable at 360 px with every right (all buttons) and with few rights (no "⋯"); the bar stays
-      inside the screen.
-- [ ] Specs (its own `selection-bar.component.spec.ts` or `items.spec.ts`); visual check, screenshots.
-- [ ] `docs/` (selecting on a phone, screenshot), `CHANGELOG.md`, [selection-and-keys](../features/selection-and-keys.md).
-- [ ] `npm test` passes (`dotnet test` only if something on the server changed).
+- [x] Questions asked, Decided written.
+- [x] Buttons through `OverflowRow`; labels still go first (760 px rule), then buttons. The host is now a full-width
+      strip (`.selection-dock`, fixed, clicks pass through it) with the pill (`.selection-bar`) centred in it: a bar
+      as wide as its content can't measure its room, so it is measured in the strip (`overflowIn`, new). The count is
+      two spans (`.selection-count` priority -1, `.selection-count-short` shown in its place by CSS) and a
+      `.visually-hidden` live region with the full wording. Entries match the item menu's (Rename…, Delete…, Move to…).
+- [x] `overflow.mjs` scene `selection` (a folder and files, every button): one line, inside the screen at every size;
+      at 360 px everything but Clear, count, Select all, Tags in the "⋯"; 414 px keeps Quick links and Rename.
+      Few rights (no "⋯"): not shot; the specs cover the bar with every button only.
+- [x] Specs in `items.spec.ts` (SelectionBarComponent on a narrow screen: room, the count first, buttons from the right
+      with what stays, Download first, the menu's entries).
+- [x] `docs/user-guide/tags.md` + `docs/images/selection-bar-phone.png` (scene `tags`), `CHANGELOG.md`,
+      [selection-and-keys](../features/selection-and-keys.md).
+- [x] `npm test` passes; no server change.
+- [x] Committed on `edge`; the version comes with the merge into `main`.
 
 ## Step 3 — audit of the other screens
 
@@ -249,6 +262,25 @@ Decided: _(empty: ask first, per toolbar)_
 - [ ] Scan panel: asked, decided, done.
 - [ ] Specs, visual check, `CHANGELOG.md`, `docs/` screenshots.
 
+## Step 10 — file names in the list view
+
+Found in step 2 (2026-10-23, `overflow.mjs` scene `selection` at 360×800, list view of `Photos`): a file's name breaks
+mid-word over three lines ("Dese / rt road. / png", "Sunri / se.jp / g"): the name column of `.row` is squeezed by
+the type, size, tag and ⋮ columns (`responsive.css`: `grid-template-columns: 20px 44px minmax(0, 1fr) 44px 76px
+auto`). Not a row of buttons: maybe no "⋯" at all, but a layout change.
+
+Code: `items/file-tile.component.ts` (`FileRowComponent`), `styles/items.css`, `styles/responsive.css`.
+
+Ask the developer: on a phone, what should a list row show and what may go (the type badge, the size, the
+resolution, the tag button, the ⋮)? Names on two lines at most, ellipsis after, or whole names wrapped at spaces?
+
+Decided: _(empty: ask first)_
+
+- [ ] Questions asked, Decided written.
+- [ ] Fix; specs if the template changes; `overflow.mjs` scene for the list view at the target sizes; screenshots.
+- [ ] `docs/` if visible, `CHANGELOG.md`.
+- [ ] `npm test` passes.
+
 ## Step 9 — finishing
 
 - [ ] `agents/docs/features/overflow-menus.md` (how `OverflowRow` works, the default order, where it is used and what
@@ -260,9 +292,14 @@ Decided: _(empty: ask first, per toolbar)_
 ## Found while building
 
 - **Tests:** only `npm test` for client-only work (the developer, 2026-10-23); `dotnet test` when the server changes.
-- The library counts no gaps between items: `OverflowRow` passes `column-gap × (items − 1)` as its padding, so with
-  the "⋯" shown an item may leave a few pixels early (up to a gap per item gone). Margins aren't counted either: space
-  items with the row's `gap`, not margins.
+- The library counts no gaps between items (nor margins: space items with the row's `gap`). A fixed
+  `gap × (items − 1)` reserve wasted a gap per item gone (48 px at 360 px in the selection bar: a whole button), so
+  `fitGaps` reserves the gaps of the items shown: at a new width it starts from those always there, then grows to the
+  items shown, and within one width never shrinks (an item that fits without its gap leaves and stays out; shrinking it
+  back looped). Its second pass is a microtask: the library reports nothing when the row didn't change. Specs wait
+  with `setTimeout`, not one `Promise.resolve()`.
+- A row hidden elsewhere on the page (the selection bar behind the viewer) measures 0 and has its "⋯" `.shown`:
+  scripts click the "⋯" inside the row they check.
 - The library hides and shows items synchronously while it measures (`onUpdateItemVisibility`): the attribute is set
   on the element there, not through a signal, or it would measure the old layout.
 - The initial bundle was already over its 600 kB budget before this epic (816.9 kB at 6621c7a; a warning only).

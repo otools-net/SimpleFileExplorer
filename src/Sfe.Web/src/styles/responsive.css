@@ -10,7 +10,7 @@
     .search-scope { display: none; }
     .crumbs { font-size: 17px; }
     .row { grid-template-columns: 20px 44px minmax(0, 1fr) 44px 76px auto; gap: 8px; }
-    .selection-bar { bottom: max(10px, env(safe-area-inset-bottom)); }
+    .selection-dock { bottom: max(10px, env(safe-area-inset-bottom)); }
     .row .thumb { width: 44px; }
     .row .date { display: none; }
     .viewer[open] { --viewer-stage-bottom: 12px; }

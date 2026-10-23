@@ -1,5 +1,6 @@
 import { Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ApiError } from '../../core/api.service';
 import { ClientConfig, DirectoryListing, FolderCover, LibraryItem } from '../../core/models';
@@ -9,6 +10,7 @@ import { FilesTagsDialog } from '../../tags/files-tags.dialog';
 import type { ScopeTagsDialog } from '../../tags/scope-tags.dialog';
 import { ApiMock, deferred, fakeConfig, intersect, item, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../../testing/fakes';
 import { ContextMenu } from '../../menus/context-menu';
+import { OverflowRowDirective } from '../../menus/overflow-row';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { SelectionBarComponent } from '../selection-bar.component';
@@ -151,6 +153,101 @@ describe('SelectionBarComponent', () => {
 
         expect(store.selection().size).toBe(0);
         expect(fixture.nativeElement.hidden).toBe(true);
+    });
+});
+
+describe('SelectionBarComponent on a narrow screen', () => {
+    let dockWidth = 2000;
+    const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth')!;
+    const clientWidth = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth')!;
+
+    /** jsdom has no layout: the strip `dockWidth`, the long count 200, the short one 90, Select all 80, Tags 60, the others 50. */
+    function width(this: HTMLElement): number {
+        const has = (name: string) => this.classList.contains(name);
+        if (has('selection-dock'))
+            return dockWidth;
+        if (has('visually-hidden'))
+            return 0;
+        if (has('selection-count'))
+            return has('selection-count-short') ? 90 : 200;
+        if (this.textContent?.trim() === 'Select all')
+            return 80;
+        return has('primary') ? 60 : 50;
+    }
+
+    beforeEach(async () => {
+        await setUp();
+        Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, get: width });
+        Object.defineProperty(Element.prototype, 'clientWidth', { configurable: true, get: width });
+        (window as { ResizeObserver?: unknown }).ResizeObserver = class {
+            observe(): void { /* measured by update() */ }
+            unobserve(): void { /* nothing observed */ }
+            disconnect(): void { /* nothing observed */ }
+        };
+    });
+
+    afterEach(() => {
+        Object.defineProperty(HTMLElement.prototype, 'offsetWidth', offsetWidth);
+        Object.defineProperty(Element.prototype, 'clientWidth', clientWidth);
+        delete (window as { ResizeObserver?: unknown }).ResizeObserver;
+    });
+
+    /** A folder and two files selected (every button), the bar measured in a strip `px` wide. */
+    async function barAt(px: number) {
+        await list([item('Folder', { kind: 'directory' }), item('a.jpg'), item('b.mp4')]);
+        const fixture = TestBed.createComponent(SelectionBarComponent);
+        store.selectAll();
+        await settle();
+        dockWidth = px;
+        const row = fixture.debugElement.query(By.directive(OverflowRowDirective)).injector.get(OverflowRowDirective);
+        row.update();
+        await Promise.resolve();
+        await settle();
+        const element: HTMLElement = fixture.nativeElement;
+        const items = [...element.querySelectorAll<HTMLElement>('.selection-bar > :not(.visually-hidden):not(.overflow-more)')];
+        const name = (item: HTMLElement) => item.classList.contains('selection-count') ? item.className : item.textContent!.trim() || item.getAttribute('aria-label');
+        return {
+            row,
+            total: items.reduce((sum, item) => sum + width.call(item), 0),
+            gone: items.filter(item => item.hasAttribute('data-overflowed')).map(name),
+            kept: items.filter(item => !item.hasAttribute('data-overflowed')).map(name),
+            more: element.querySelector('.overflow-more')!.classList.contains('shown'),
+        };
+    }
+
+    it('shows every button when there is room', async () => {
+        const bar = await barAt(2000);
+        expect(bar.gone).toEqual([]);
+        expect(bar.more).toBe(false);
+    });
+
+    it('shortens the count first, with no "⋯" for it', async () => {
+        const total = (await barAt(2000)).total;
+        TestBed.resetTestingModule();
+        await setUp();
+        const bar = await barAt(total - 1);
+        expect(bar.gone).toEqual(['selection-count']);
+        expect(bar.more).toBe(false);
+    });
+
+    it('then moves the buttons into "⋯" from the right; Clear, the count, Select all and Tags stay', async () => {
+        const bar = await barAt(100);
+        expect(bar.kept).toEqual(['Clear the selection', 'selection-count selection-count-short', 'Select all', 'Tags']);
+        expect(bar.more).toBe(true);
+        expect(bar.row.target().entries().map(entry => entry.id)).toEqual(bar.gone.slice(1).map(label => ({
+            'Quick links': 'quickLinks', Rename: 'rename', Delete: 'delete', Move: 'move', Copy: 'copy', Download: 'download',
+        })[label as string]));
+        expect(bar.gone.slice(1)).toContain('Download');
+    });
+
+    it('takes Download out first', async () => {
+        const total = (await barAt(2000)).total;
+        TestBed.resetTestingModule();
+        await setUp();
+        // Without the long count (200) and with the "⋯" (50) it is still 1 px too wide: the rightmost button that may leave goes.
+        const bar = await barAt(total - 200 + 50 - 1);
+        expect(bar.gone).toEqual(['selection-count', 'Download']);
+        expect(bar.more).toBe(true);
     });
 });
 

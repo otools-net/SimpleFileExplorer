@@ -2,7 +2,7 @@
 
 /* One line, never wrapped; it may shrink below its buttons' width (that is when they leave). */
 .overflow-row { position: relative; display: flex; flex-wrap: nowrap; align-items: center; min-width: 0; }
-.overflow-row > [data-overflowed] { display: none !important; }
+.overflow-row [data-overflowed] { display: none !important; }
 /* An item never shrinks: its width is what is measured (a shrunk one would seem to fit). */
 .overflow-row > * { flex-shrink: 0; }
 

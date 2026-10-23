@@ -95,21 +95,30 @@
 .row.selected { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .row.selected:hover { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
 
-.selection-bar {
+/* The strip at the bottom (the component's host), as wide as the screen less 8 px a side: the room the bar has is
+   measured there (overflow rows). Clicks go through it, outside the bar. */
+.selection-dock {
     position: fixed;
-    left: 50%;
+    left: 8px;
+    right: 8px;
     bottom: max(20px, env(safe-area-inset-bottom));
     z-index: 22;
     display: flex;
-    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+.selection-dock[hidden] { display: none; }
+
+/* One line (overflow.css): the buttons that don't fit go into its "⋯" menu, from the right. */
+.selection-bar {
     gap: 8px;
-    max-width: calc(100vw - 16px);
+    max-width: 100%;
     padding: 8px 8px 8px 6px;
     border: 1px solid var(--border);
     border-radius: 999px;
     background: var(--surface);
     box-shadow: var(--shadow);
-    translate: -50% 0;      /* not `transform`, which the animation uses */
+    pointer-events: auto;
     animation: toast-in .2s ease-out;
 }
 
@@ -123,6 +132,8 @@
 .selection-bar .icon-button { border-radius: 50%; }
 .selection-bar .button .icon { width: 16px; height: 16px; }
 .selection-count { padding: 0 6px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* "15 selected": only once the long wording left the bar. */
+.selection-count:not([data-overflowed]) + .selection-count-short { display: none; }
 
 /* The bar must not cover the last items. */
 .selecting .page { padding-bottom: 96px; }

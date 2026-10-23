@@ -45,6 +45,12 @@ folder selects it instead of opening it. The bar at the bottom says how many fol
 selected and you [may rename](managing-files.md#rename), and **Tags** (for the files: selected folders are left out;
 to tag a whole folder, use its tag button).
 
+The bar stays on one line. On a phone or in a narrow window, the count gets shorter first (`5 selected`), then the
+buttons that don't fit leave from the right (Download first, Quick links last) into a **⋯ More actions** button at the
+end of the bar, which lists them. **Clear**, the count, **Select all** and **Tags** always stay.
+
+![On a phone: the buttons that don't fit, in the More actions menu](../images/selection-bar-phone.png)
+
 ![A folder and a file selected](../images/selection-folders.png)
 
 ![Tags of several files](../images/files-tags-dialog.png)

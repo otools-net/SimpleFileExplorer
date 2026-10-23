@@ -3,7 +3,7 @@
 // screen, and every `[sfeOverflowRow]` (or other row listed in the scene) must stay on one line, inside itself and the
 // screen; prints `ok`/`FAIL` per check with what left the row (exit code 1 on a failure), saves
 // `<prefix>-<scene>-<size>.png` and, where something left, `-menu.png` with the "⋯" menu open.
-// Usage: node overflow.mjs <out prefix> [scene...]   (scenes: viewer-video, viewer-fullscreen, player-page; all by default)
+// Usage: node overflow.mjs <out prefix> [scene...]   (scenes: viewer-video, viewer-fullscreen, selection, player-page; all by default)
 // Needs a docs-screenshots run first (its build and seeded data in <tmp>/sfe-docs); serves them on :5095.
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -44,6 +44,18 @@ const scenes = {
             await sleep(1200);
             await pauseVideo(b);
             console.log(`     fullscreen: ${await b.eval('Boolean(document.fullscreenElement)')}`);
+        },
+    },
+    selection: {
+        rows: ['.selection-bar'],
+        async open(b) {
+            // A folder and files selected (every button of the bar), list view.
+            await b.eval(`localStorage.setItem('sfe.view', 'list'); 1`);
+            await b.goto(url + '?path=' + enc('Photos'), 3000);
+            await b.eval(`document.querySelector('.select-box input').click(); 1`);
+            await sleep(400);
+            await b.eval(`[...document.querySelectorAll('.selection-bar button')].find(button => button.textContent.trim() === 'Select all').click(); 1`);
+            await sleep(800);
         },
     },
     'player-page': {
@@ -111,17 +123,18 @@ try {
             await b.eval(`fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
             await scene.open(b);
             const size = `${width}x${height}`;
-            let something = false;
+            let withMore = null;
             for (const selector of scene.rows) {
                 const result = JSON.parse(await b.eval(measure(selector)));
                 const ok = !result.missing && result.lines === 1 && result.inside && result.onScreen && result.pageFits;
                 failed ||= !ok;
-                something ||= result.more;
+                withMore ??= result.more ? selector : null;
                 console.log(`${ok ? 'ok  ' : 'FAIL'} ${name} ${size} ${selector} ${JSON.stringify(result)}`);
             }
             await b.shot(`${out}-${name}-${size}.png`);
-            if (something) {
-                await b.eval(`document.querySelector('.overflow-more.shown').click(); 1`);
+            if (withMore) {
+                // The "⋯" of that row (a row hidden elsewhere on the page may have one too).
+                await b.eval(`document.querySelector(${JSON.stringify(withMore + ' > .overflow-more.shown')}).click(); 1`);
                 await sleep(600);
                 const menu = await b.eval(`JSON.stringify([...document.querySelectorAll('.item-menu .item-menu-entry')].map(entry => entry.dataset.entry))`);
                 console.log(`     menu: ${menu}`);

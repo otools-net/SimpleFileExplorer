@@ -399,6 +399,16 @@ const scenes = {
         await b.key('Escape', 'Escape', 27);
         await b.eval(`localStorage.removeItem('sfe.view'); 1`);
         await b.close();
+        // A phone: the bar on one line, the count short, the buttons that don't fit in its "⋯" menu.
+        const phone = await session({ width: 390, height: 844, mobile: true });
+        await phone.open('?path=Photos');
+        await phone.eval(`document.querySelector('.select-box input').click(); 1`);
+        await sleep(400);
+        await phone.clickText('.selection-bar button', 'Select all');
+        await phone.click('.selection-bar > .overflow-more.shown');
+        await sleep(600);
+        await phone.shot(OUT + 'selection-bar-phone.png');
+        await phone.close();
     },
     async scopeTags() {
         const b = await session();

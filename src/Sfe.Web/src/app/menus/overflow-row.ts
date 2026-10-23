@@ -13,9 +13,14 @@ let nextId = 0;
  * choosing: `@fluentui/priority-overflow`, from the items' widths and the row's (agents/docs/development/overflow-menus-plan.md).
  */
 @Directive({ selector: '[sfeOverflowRow]', host: { class: 'overflow-row' } })
-export class OverflowRowDirective {
+export class OverflowRowDirective implements OnInit {
     /** What the row is ("Player controls"): the menu's title on phones (a sheet). */
     readonly sfeOverflowRow = input.required<string>();
+    /**
+     * The element whose width is the room the row has, when not the row itself: a row as wide as its content (a bar
+     * centred at the bottom) is measured in a full-width element around it. Read once.
+     */
+    readonly overflowIn = input<HTMLElement | null>(null);
     private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     private readonly contextMenu = inject(ContextMenu);
     private readonly items = new Map<string, OverflowItemDirective>();
@@ -27,6 +32,10 @@ export class OverflowRowDirective {
     private readonly manager: OverflowManager | null;
     /** An item whose width changes (a label) changes what fits, as the row's own width does. */
     private readonly resizes: ResizeObserver | null;
+    /** The room kept for the gaps (and the row's padding), given to the library as its padding (see `fitGaps`). */
+    private padding = 0;
+    /** The width `padding` was found for. */
+    private measuredWidth = -1;
 
     constructor() {
         // No ResizeObserver (jsdom): nothing leaves.
@@ -34,13 +43,15 @@ export class OverflowRowDirective {
         this.manager = supported ? createOverflowManager({
             padding: 0,
             onUpdateItemVisibility: ({ item, visible }) => item.element.toggleAttribute('data-overflowed', !visible),
-            onUpdateOverflow: ({ invisibleItems }) => this.hidden.set(invisibleItems
-                .map(item => item.element)
-                .sort((a, b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
-                .map(element => [...this.items.values()].find(item => item.element === element)!)
-                .filter(Boolean)),
+            onUpdateOverflow: ({ invisibleItems }) => {
+                this.hidden.set(invisibleItems
+                    .map(item => item.element)
+                    .sort((a, b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
+                    .map(element => [...this.items.values()].find(item => item.element === element)!)
+                    .filter(Boolean));
+                this.fitGaps();
+            },
         }) : null;
-        this.manager?.observe(this.element);
         this.resizes = supported ? new ResizeObserver(() => this.manager?.update()) : null;
         inject(DestroyRef).onDestroy(() => {
             this.resizes?.disconnect();
@@ -49,18 +60,25 @@ export class OverflowRowDirective {
         });
     }
 
+    ngOnInit(): void {
+        // After the inputs (`overflowIn`), before the items' own ngOnInit add them.
+        this.manager?.observe(this.overflowIn() ?? this.element);
+    }
+
     add(item: OverflowItemDirective): void {
         this.items.set(item.id, item);
         this.manager?.addItem({ id: item.id, element: item.element, priority: item.overflowPriority(), pinned: item.overflowStay() });
         this.resizes?.observe(item.element);
-        this.updateGaps();
+        this.measuredWidth = -1;
+        this.manager?.update();
     }
 
     remove(item: OverflowItemDirective): void {
         this.items.delete(item.id);
         this.resizes?.unobserve(item.element);
         this.manager?.removeItem(item.id);
-        this.updateGaps();
+        this.measuredWidth = -1;
+        this.manager?.update();
     }
 
     setMore(button: HTMLElement | null): void {
@@ -81,13 +99,45 @@ export class OverflowRowDirective {
     }
 
     /**
-     * The library adds up the items' widths, not the gaps between them: they are kept as padding (one per item but the
-     * first; with the "⋯" shown, up to a gap per item gone too many, so one may leave a few pixels early).
+     * The library adds up the items' widths, not the gaps between them (nor the row's padding and border, measured in
+     * `overflowIn`): they are its padding, for the items shown (with a width: a text shown in another's place takes
+     * none while hidden) and the "⋯". That number changes with what fits, so within one width the padding only grows: an
+     * item that fitted without its gap leaves again and stays out, never back and forth. A new width (or items added or
+     * removed) starts again from the gaps always there: the items that stay, and the "⋯" or an item that may leave.
      */
-    private updateGaps(): void {
-        const gap = parseFloat(getComputedStyle(this.element).columnGap) || 0;
-        this.manager?.setOptions({ padding: gap * Math.max(this.items.size - 1, 0) });
-        this.manager?.update();
+    private fitGaps(): void {
+        if (!this.manager)
+            return;
+        const style = getComputedStyle(this.element);
+        const px = (value: string) => parseFloat(value) || 0;
+        const gap = px(style.columnGap);
+        const chrome = this.overflowIn()
+            ? px(style.paddingLeft) + px(style.paddingRight) + px(style.borderLeftWidth) + px(style.borderRightWidth)
+            : 0;
+        const room = (count: number) => chrome + gap * Math.max(count - 1, 0);
+        const width = (this.overflowIn() ?? this.element).clientWidth;
+        if (width !== this.measuredWidth) {
+            this.measuredWidth = width;
+            const staying = [...this.items.values()].filter(item => item.overflowStay() && item.element.offsetWidth > 0).length;
+            const floor = room(staying + (this.items.size > staying ? 1 : 0));
+            if (floor !== this.padding) {
+                // Measured again with it first; then grown from what fits (the library may not report an unchanged row).
+                this.setPadding(floor);
+                queueMicrotask(() => this.fitGaps());
+                return;
+            }
+        }
+        const snapshot = this.manager.getSnapshot();
+        const shown = [...this.items.values()].filter(item => snapshot.itemVisibility[item.id] !== false && item.element.offsetWidth > 0).length;
+        const padding = Math.max(this.padding, room(shown + (snapshot.invisibleItemCount ? 1 : 0)));
+        if (padding !== this.padding)
+            this.setPadding(padding);
+    }
+
+    private setPadding(padding: number): void {
+        this.padding = padding;
+        this.manager?.setOptions({ padding });
+        this.manager?.update();     // setOptions doesn't for a padding of 0
     }
 }
 

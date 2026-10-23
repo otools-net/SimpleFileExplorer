@@ -55,7 +55,7 @@ describe('OverflowRow', () => {
         row = fixture.debugElement.query(By.directive(OverflowRowDirective)).injector.get(OverflowRowDirective);
     }
 
-    /** The row `px` wide, measured again (the debounce is a microtask). */
+    /** The row `px` wide, measured again (the debounce and the gaps' second pass are microtasks). */
     async function resize(px: number): Promise<void> {
         at('#row').setAttribute('data-width', String(px));
         row.update();
@@ -63,7 +63,7 @@ describe('OverflowRow', () => {
     }
 
     async function settle(): Promise<void> {
-        await Promise.resolve();
+        await new Promise(resolve => setTimeout(resolve));      // the measuring's microtasks
         await fixture.whenStable();
     }
 
@@ -129,6 +129,20 @@ describe('OverflowRow', () => {
         fixture.componentInstance.showD.set(false);
         await settle();
         await resize(150);
+        expect(shown()).toEqual(['a', 'b', 'c']);
+    });
+
+    it('keeps room for the gaps of the items shown only, and settles at a width where one fits without its gap', async () => {
+        await setUp();
+        at('#row').style.columnGap = '10px';
+        expect(getComputedStyle(at('#row')).columnGap).toBe('10px');
+        // a, b and the "⋯": 50 + 50 + 30 and two gaps = 150 (a gap for each of the 4 items would leave only a).
+        await resize(155);
+        expect(shown()).toEqual(['a', 'b']);
+        // a, b, c and the "⋯" need 210: c fits without its gap, not with it; it leaves and stays out.
+        await resize(205);
+        expect(shown()).toEqual(['a', 'b']);
+        await resize(210);
         expect(shown()).toEqual(['a', 'b', 'c']);
     });
 

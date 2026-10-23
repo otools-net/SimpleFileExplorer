@@ -11,6 +11,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   first, then the buttons that don't fit go, from the right, into a **More actions** (⋯) button at the end of the line
   (on/off ones with a check mark, Speed with its rates in place); Play, Mute and Fullscreen always stay. They used to
   wrap onto a second line.
+- The **selection bar** stays on one line and whole on a phone: the count gets shorter first (`5 selected`), then the
+  buttons that don't fit go, from the right (Download first), into its **More actions** (⋯) button; Clear, the count,
+  Select all and Tags always stay. Its buttons on the right used to be cut off.
 - SFE's **work files** (the trash, unfinished uploads) go to the server's data folder by default, no longer to a
   hidden `.sfe` folder in the library. The spaces of an install updated from an earlier version keep theirs in the
   library; only new installs and spaces created later start on the server.

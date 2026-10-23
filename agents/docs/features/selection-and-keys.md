@@ -19,3 +19,8 @@ Code: `ListingStore` (`selection`, `select`, `selectAll`, `selectedItems`, `sele
   item's selection instead of opening the menu (`fromTouch` in `menus/context-menu.ts`, the item target's `touch`); the item menu is a bottom sheet
   (`max-width: 640px`, `.item-menu-title`, `.item-menu-backdrop`); `quick-links.component.ts` cancels drags on
   touch-only screens (Move to… instead).
+- The bar (`selection-bar.component.ts`) is an overflow row ([overflow-menus-plan](../development/overflow-menus-plan.md)):
+  the host `.selection-dock` is a full-width fixed strip (clicks pass through) measured with `overflowIn`, the pill
+  `.selection-bar` centred in it; the long count (`.selection-count`) leaves first for the short one, then Download,
+  Copy, Move, Delete, Rename, Quick links go into its "⋯" (`more` entries); Clear, count, Select all, Tags stay. The
+  count is read out by a `.visually-hidden` live region (the two visible ones are `aria-hidden`).
