@@ -9,6 +9,7 @@ import { DRAG_ITEMS } from '../library/quick-links/quick-links.service';
 import { SidebarService } from '../library/sidebar/sidebar.service';
 import { FileTransfers } from './file-transfers';
 import { ItemMenu } from './item-menu';
+import { ContextMenu } from '../menus/context-menu';
 import { OperationsPanelComponent } from './operations-panel.component';
 import { TransferDialog } from './transfer.dialog';
 
@@ -173,7 +174,7 @@ describe('ItemMenu, moves and copies', () => {
     it('offers cut, copy, paste into a folder, move to and copy to by rights', async () => {
         await setUp();
         const menu = TestBed.inject(ItemMenu);
-        expect(menu.entries(photo).map(e => e.id)).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'quickLink', 'properties']);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['newTab', 'rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'quickLink', 'properties']);
 
         TestBed.inject(FileTransfers).keep('move', [photo]);
         const paste = menu.entries(folder).find(e => e.id === 'paste')!;
@@ -183,7 +184,7 @@ describe('ItemMenu, moves and copies', () => {
         expect(transfer).toHaveBeenCalledWith('move', [photo.path], folder.path);
 
         await loadConfig(api, limitedConfig([Rights.browse, Rights.viewFiles]));
-        expect(menu.entries(photo).map(e => e.id)).toEqual(['properties']);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['newTab', 'properties']);
     });
 
     it('opens the picker for the whole selection', async () => {
@@ -235,6 +236,22 @@ describe('OperationsPanelComponent', () => {
         (element.querySelector('[aria-label="Close"]') as HTMLButtonElement).click();
         fixture.detectChanges();
         expect(element.querySelector('[data-job]')).toBeNull();
+    });
+
+    it('has a menu on each job: Cancel (Close once done), then its folder', async () => {
+        await setUp();
+        api.fileJobs.mockResolvedValue([job()]);
+        const cancel = vi.spyOn(TestBed.inject(FileTransfers), 'cancel').mockResolvedValue();
+        const { element } = await panel();
+
+        element.querySelector('[data-job="1"] .operation-title')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        const target = TestBed.inject(ContextMenu).open()!.target;
+
+        expect(target.kind).toBe('job');
+        expect(target.entries().map(entry => entry.id)).toEqual(['cancel', 'openTarget', 'targetNewTab']);
+        expect(target.entries()[2]).toMatchObject({ newTab: true, href: expect.stringMatching(/\?path=Media%2FHolidays$/) });
+        target.entries()[0].run!();
+        expect(cancel).toHaveBeenCalled();
     });
 
     it('moves items dropped onto a folder, and copies them with Ctrl', async () => {

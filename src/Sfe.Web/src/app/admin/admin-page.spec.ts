@@ -7,6 +7,7 @@ import { ClientConfig, KeepAliveFolder, KeepAliveView, SettingLevel, SettingStat
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { ListingStore } from '../library/listing.store';
+import { ContextMenu } from '../menus/context-menu';
 import { ApiMock, buttonNamed, adminPageProviders, deferred, fakeConfig, loadConfig, mockApi, setMediaQuery, settingsValues, settle, tag, type } from '../../testing/fakes';
 import { setValue } from '../settings/settings-schema';
 import { ADMIN_GROUPS, ADMIN_SECTIONS, groupId, visibleSections } from './admin-sections';
@@ -77,6 +78,20 @@ describe('AdminPageComponent', () => {
         await settle();
         expect(url()).toBe('/admin?section=playback&page=streaming');
         expect(heading()).toBe('Streaming');
+    });
+
+    it('has a menu of its own (back, reload, its address), and link menus on its links', async () => {
+        await open('/admin');
+        const menu = TestBed.inject(ContextMenu);
+
+        expect(menu.page()).toMatchObject({ kind: 'page', name: 'Administration' });
+        expect(menu.page()!.entries().map(entry => entry.id)).toEqual(['back', 'reload', 'newTab', 'copyLink']);
+        // A section's link: the link's menu (the page's menu takes the right clicks nothing else handles).
+        const link = navItem(ADMIN_SECTIONS[0].title);
+        const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+        Object.defineProperty(event, 'target', { value: link.querySelector('span') });
+        menu.fromPage(event);
+        expect(menu.open()?.target).toMatchObject({ kind: 'appLink', name: ADMIN_SECTIONS[0].title });
     });
 
     it('opens on the first sub-page of a section', async () => {

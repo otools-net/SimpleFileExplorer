@@ -99,6 +99,23 @@ public static class TagEndpoints
                 + "that is refused (409) while a scan runs. A search changes the files it finds. The files are changed by batches: "
                 + "a request that is cancelled keeps the batches already written.");
 
+        var defaults = api.MapGroup("/folder-default-tags").WithTags("Tags");
+
+        defaults.MapGet("/", GetFolderDefaultTags)
+            .RequireRight(Rights.ViewTags)
+            .FolderScoped("404 for a folder the subject doesn't see")
+            .WithName("GetFolderDefaultTags")
+            .WithSummary("The default tags of a folder: its own, and those it gets from its parents.")
+            .WithDescription("Every file entering the folder or one of its sub-folders (scanned, created, uploaded, copied or moved there) gets them once.");
+
+        defaults.MapPut("/", ChangeFolderDefaultTags)
+            .RequireRight(Rights.FolderDefaultTags)
+            .FolderScoped("tags.folderDefaults at the folder; the files already there change only where the subject may tag")
+            .WithName("ChangeFolderDefaultTags")
+            .WithSummary("Adds and removes default tags of a folder, and optionally on the files already in it and its sub-folders.")
+            .WithDescription("With `addToFiles` / `removeFromFiles`, the files already in the folder tree get the added tags or lose the removed ones, "
+                + "as `POST api/file-tags/scope` with `recursive` does, before the folder's default tags change (refused with 409 while a scan runs: nothing changes).");
+
         files.MapPost("/viewed", Viewed)
             .RequireRight(Rights.ViewFiles)
             .FolderScoped("files.view at the file")
@@ -107,6 +124,62 @@ public static class TagEndpoints
             .WithSummary("Records that a file was viewed: its tags become the last viewed tags.");
 
         return api;
+    }
+
+    private static async Task<Results<Ok<FolderDefaults>, NotFound>> GetFolderDefaultTags(
+        FolderDefaultTags defaults, LibraryPaths paths, CurrentAccess current, CancellationToken cancellationToken, string? path = null)
+    {
+        var state = await current.GetAsync();
+        if (state.At(paths, path) is not { IsVisible: true } || !paths.TryResolve(path, out var full) || !Directory.Exists(full)
+            || paths.ToRelative(full) is not { } folder)
+            return TypedResults.NotFound();
+        return TypedResults.Ok(await defaults.GetAsync(folder, cancellationToken));
+    }
+
+    private static async Task<Results<Ok<FolderDefaultTagsResult>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult>> ChangeFolderDefaultTags(
+        FolderDefaultTags defaults, ScopeTagger tagger, LibraryPaths paths, CurrentAccess current, ILoggerFactory loggerFactory,
+        FolderDefaultTagsChange change, CancellationToken cancellationToken)
+    {
+        var state = await current.GetAsync();
+        var verdict = state.Check(paths, change.Path, Rights.FolderDefaultTags);
+        if (verdict == PathVerdict.Forbidden)
+            return TypedResults.Forbid();
+        if (verdict != PathVerdict.Allowed || !paths.TryResolve(change.Path, out var full) || !Directory.Exists(full) || paths.ToRelative(full) is not { } folder)
+            return TypedResults.NotFound();
+
+        var add = (change.Add ?? []).Distinct().ToList();
+        var remove = (change.Remove ?? []).Distinct().Where(id => !add.Contains(id)).ToList();
+        if (add.Count + remove.Count == 0)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["add"] = ["No tag to add or remove."] });
+        // The files first: indexed on the way, they would otherwise get the new default tags without being counted;
+        // a scan running refuses it before anything changed.
+        ScopeTagChangeResult? files = null;
+        var addToFiles = change.AddToFiles ? add : [];
+        var removeFromFiles = change.RemoveFromFiles ? remove : [];
+        if (addToFiles.Count + removeFromFiles.Count > 0)
+        {
+            var where = state.Access.FilterFor(Rights.AssignTags) is { IsEverything: false } filter ? filter : null;
+            var outcome = await tagger.ChangeAsync(new ScopeTagChange(folder, Recursive: true, Add: addToFiles, Remove: removeFromFiles), cancellationToken, where);
+            switch (outcome.Status)
+            {
+                case ScopeTagStatus.ScanRunning:
+                    return TypedResults.Problem("A scan is running: try again when it has finished.", statusCode: StatusCodes.Status409Conflict);
+                case ScopeTagStatus.Invalid:
+                    return TypedResults.ValidationProblem(outcome.Errors!);
+                case ScopeTagStatus.NotFound:
+                    return TypedResults.NotFound();
+            }
+            files = outcome.Result;
+        }
+
+        var (status, error) = await defaults.ChangeAsync(folder, add, remove, cancellationToken);
+        if (status == DefaultTagChangeStatus.NotFound)
+            return TypedResults.NotFound();
+        if (status == DefaultTagChangeStatus.Invalid)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { [add.Count > 0 ? "add" : "remove"] = [error!] });
+        loggerFactory.CreateLogger(typeof(TagEndpoints)).LogInformation("Default tags of {Folder} changed: added {Added}, removed {Removed}",
+            folder.Length == 0 ? "/" : folder, add, remove);
+        return TypedResults.Ok(new FolderDefaultTagsResult(await defaults.GetAsync(folder, cancellationToken), files));
     }
 
     private static async Task<Results<NoContent, NotFound>> Viewed(

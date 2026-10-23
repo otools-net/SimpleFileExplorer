@@ -13,12 +13,22 @@ using Sfe.Core.Access;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 
+// "--help": the command-line options, grouped, and nothing else.
+if (CommandLine.AsksForHelp(args))
+{
+    Console.Out.WriteLine(CommandLine.HelpText(AppVersion.Version));
+    return 0;
+}
+
 // "--install-service" / "--uninstall-service" (Windows): register the program as a service, then stop.
 if (WindowsServiceSetup.TryRun(args) is { } serviceExitCode)
     return serviceExitCode;
 
 // "--no-browser": the portable packages don't open the browser at start (BrowserLauncher), whatever the settings say.
 args = BrowserLauncher.TakeNoBrowser(args, out var noBrowser);
+// "--no-logo": no SFE logo in the console at start (StartupLogo).
+args = StartupLogo.TakeNoLogo(args, out var noLogo);
+StartupLogo.ShowIfWanted(noLogo);
 
 WebApplicationBuilder builder;
 try

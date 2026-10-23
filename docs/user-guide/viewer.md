@@ -20,7 +20,9 @@ The top right of the viewer holds three buttons: **Tags**, **⋮** (more actions
 | ⋮ | | The menu below |
 | × | Esc | Back to the listing, scrolled where you were |
 
-The **⋮** menu offers what applies to the file shown (Esc closes it):
+The **⋮** menu offers what applies to the file shown (Esc closes it). A right click on the picture or the video opens the same
+menu (documents keep their own right click, or the browser's menu). For a video, the [player's controls](video-player.md#its-menu) come
+first.
 
 | Entry | Key | |
 |---|---|---|
@@ -32,6 +34,12 @@ The **⋮** menu offers what applies to the file shown (Esc closes it):
 | Open in … | | Videos and audio: an [external player](video-player.md#external-player) such as VLC |
 | Open in new tab | | The file itself (a text file: its [page of its own](text-files.md#a-page-of-its-own)), in a new browser tab |
 | Download | | Saves the file (right `files.download`) |
+| Copy, Copy to… | | Keeps the file to paste into a folder of the listing, or copies it into a folder you pick ([Managing files](managing-files.md#move-and-copy)) |
+| Properties | | Its size, dates and what SFE knows of it ([Properties](managing-files.md#properties)) |
+
+Renaming, moving and deleting are done from the listing, where the file's own menu has them.
+
+![The viewer's menu, from a right click on the picture](../images/viewer-menu.png)
 
 Photos larger than **Large image size** ([Thumbnails](../administration/thumbnails.md)) are shown through their
 thumbnail, in the viewer as in the listings.

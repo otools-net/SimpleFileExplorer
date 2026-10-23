@@ -1,0 +1,373 @@
+// The app's context menu in the real page: real right clicks (CDP mouse events) on a file, a folder, a breadcrumb and
+// the listing's background, the ContextMenu key, the browser's menu kept (Shift, text field), Open in new tab opening
+// a tab, and the menu as a sheet at phone width. Usage: node context-menus.mjs <out prefix>
+// Needs a docs-screenshots run first (its build and seeded data in <tmp>/sfe-docs); serves them on :5097.
+import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { launch, sleep } from '../docs-screenshots/cdp.mjs';
+
+const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const work = path.join(os.tmpdir(), 'sfe-docs');
+const data = path.join(work, 'data');
+const out = process.argv[2] ?? path.join(os.tmpdir(), 'sfe-context-menus', 'menu');
+const url = 'http://localhost:5097/';
+
+const installation = path.join(data, 'installation-menus.json');
+fs.writeFileSync(installation, JSON.stringify({ Urls: url.replace(/\/$/, ''), Sfe: { Root: path.join(work, 'library') } }));
+const app = spawn('dotnet', [path.join(work, 'build/bin/Sfe.Api/debug/Sfe.Api.dll'), '--contentRoot', path.join(repo, 'src/Sfe.Api'), '--no-browser', '--no-logo'], {
+    cwd: work, stdio: 'ignore',
+    env: {
+        ...process.env, ASPNETCORE_ENVIRONMENT: 'Development', Sfe__InstallationFile: installation,
+        Sfe__Database__Provider: 'Sqlite', ConnectionStrings__Sfe: `Data Source=${path.join(data, 'sfe.db')}`,
+        Sfe__SettingsFile: path.join(data, 'settings.json'), Sfe__Thumbnails__CacheDirectory: path.join(data, 'cache'),
+        Sfe__Security__KeysDirectory: path.join(data, 'keys'), Sfe__Setup__Code: 'doc-screenshots-setup',
+    },
+});
+
+const results = [];
+const check = (name, ok, detail = '') => {
+    results.push({ name, ok });
+    console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}${detail ? ` (${detail})` : ''}`);
+};
+
+/** Every contextmenu event reaching the page, and whether something prevented the browser's menu. */
+const recorder = `window.__menus = []; document.addEventListener('contextmenu', e => setTimeout(() => __menus.push({ prevented: e.defaultPrevented, shift: e.shiftKey })), true); 1`;
+const menuState = `JSON.stringify((() => {
+    const menu = document.querySelector('.item-menu:not(.viewer-menu)');
+    const box = menu?.getBoundingClientRect();
+    return { kind: menu?.dataset.menu ?? null, entries: [...(menu?.querySelectorAll('[data-entry]') ?? [])].map(e => e.dataset.entry),
+             newTab: menu?.querySelector('[data-entry="newTab"]')?.getAttribute('target') ?? null,
+             left: box?.left, right: box?.right, bottom: box?.bottom, width: innerWidth, height: innerHeight, events: __menus.splice(0) };
+})())`;
+
+async function rightClick(b, selector, modifiers = 0) {
+    const r = await b.rect(selector);
+    const x = r.x + Math.min(r.width / 2, 20), y = r.y + r.height / 2;
+    await b.mouse('mouseMoved', x, y);
+    await b.mouse('mousePressed', x, y, { button: 'right', modifiers });
+    await b.mouse('mouseReleased', x, y, { button: 'right', modifiers });
+    await sleep(400);
+    return JSON.parse(await b.eval(menuState));
+}
+
+async function signIn(b) {
+    await b.goto(url + 'login', 1500);
+    await b.eval(`fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
+}
+
+async function closeMenu(b) {
+    await b.key('Escape', 'Escape', 27);
+    await sleep(200);
+}
+
+try {
+    for (let i = 0; i < 120; i++) {
+        try { await fetch(url + 'api/migration'); break; } catch { await sleep(500); }
+    }
+    const b = await launch({ width: 1280, height: 800 });
+    await signIn(b);
+    await b.eval(`localStorage.setItem('sfe.view', 'grid'); 1`);
+    await b.goto(url + '?path=Photos', 4000);
+    await b.waitFor('.folder-item, .tile');
+    await b.eval(recorder);
+
+    let state = await rightClick(b, '.tile .item-name');
+    check('file: app menu', state.kind === 'file' && state.events[0]?.prevented === true, state.entries.join(' '));
+    check('file: Open in new tab is a link to a new tab', state.newTab === '_blank');
+    await b.shot(out + '-file.png');
+    await closeMenu(b);
+
+    state = await rightClick(b, '.folder-item .folder');
+    check('folder: app menu', state.kind === 'folder' && state.entries[0] === 'open' && state.entries[1] === 'newTab', state.entries.join(' '));
+    // Open in new tab opens a tab.
+    const before = (await b.send('Target.getTargets')).targetInfos.filter(t => t.type === 'page').length;
+    await b.realClick('.item-menu [data-entry="newTab"]');
+    await sleep(1500);
+    const after = (await b.send('Target.getTargets')).targetInfos.filter(t => t.type === 'page');
+    check('folder: Open in new tab opens a tab', after.length === before + 1, after.map(t => t.url).join(' '));
+    // Close it and come back: a page left in a background tab isn't laid out again (stale hit-testing).
+    for (const tab of after.filter(t => t.url.includes('2024%20Beach%20trip')))
+        await b.send('Target.closeTarget', { targetId: tab.targetId });
+    await b.send('Page.bringToFront');
+    await sleep(300);
+
+    state = await rightClick(b, '.crumbs a');
+    check('breadcrumb: folder link menu', state.kind === 'folderLink', state.entries.join(' '));
+    await closeMenu(b);
+
+    state = await rightClick(b, '.location-bar .summary');
+    check('background: folder menu', state.kind === 'background', state.entries.join(' '));
+    await b.shot(out + '-background.png');
+    await closeMenu(b);
+
+    state = await rightClick(b, '.tile .item-name', 8 /* Shift */);
+    check('Shift: browser menu', state.kind === null && state.events[0]?.prevented === false);
+    state = await rightClick(b, 'form.search input');
+    check('text field: browser menu', state.kind === null && state.events[0]?.prevented === false);
+    await b.eval(`document.activeElement.blur(); 1`);
+
+    // The ContextMenu key on a focused tile: the app's menu, and the browser's own event that follows swallowed.
+    await b.eval(`document.querySelector('.tile a.item-link').focus(); __menus.length = 0; 1`);
+    await b.key('ContextMenu', 'ContextMenu', 93);
+    await sleep(600);
+    state = JSON.parse(await b.eval(menuState));
+    check('ContextMenu key: menu of the focused file', state.kind === 'file' && state.events.every(e => e.prevented), JSON.stringify(state.events));
+    await closeMenu(b);
+    await b.eval(`document.querySelector('.tile a.item-link').focus(); 1`);
+    await b.key('F10', 'F10', 121, 8);
+    await sleep(600);
+    state = JSON.parse(await b.eval(menuState));
+    check('Shift+F10: menu of the focused file', state.kind === 'file' && state.events.every(e => e.prevented), JSON.stringify(state.events));
+    await closeMenu(b);
+
+    // The viewer (a modal dialog): the menu goes into it, above it, and its entries take clicks.
+    await b.click('.tile a.item-link');
+    await b.waitFor('dialog.viewer[open] .viewer-stage img');
+    await sleep(600);
+    state = await rightClick(b, 'dialog.viewer .viewer-stage img');
+    const hit = JSON.parse(await b.eval(`JSON.stringify((() => {
+        const menu = document.querySelector('.item-menu');
+        const entry = menu?.querySelector('[data-entry="properties"]');
+        if (!entry) return { found: false };
+        const r = entry.getBoundingClientRect();
+        return { found: true, inDialog: Boolean(menu.closest('dialog.viewer')), onTop: entry.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) };
+    })())`));
+    check('viewer: menu of the picture, in the dialog and on top', state.kind === 'file' && hit.inDialog && hit.onTop, `${state.entries.join(' ')} ${JSON.stringify(hit)}`);
+    await b.shot(out + '-viewer.png');
+    await b.realClick('.item-menu [data-entry="properties"]');
+    await sleep(1200);
+    check('viewer: an entry works (Properties over the viewer)', await b.eval(`Boolean(document.querySelector('dialog.sheet[open]'))`));
+    // Inside dialogs, where nothing has a menu: none at all (not the browser's either).
+    state = await rightClick(b, 'dialog.sheet[open] h2');
+    check('sheet: no menu', state.kind === null && state.events[0]?.prevented === true, JSON.stringify(state.events));
+    await b.key('Escape', 'Escape', 27);
+    await sleep(400);
+    state = await rightClick(b, 'dialog.viewer .viewer-bar');
+    check('viewer bar: no menu', state.kind === null && state.events[0]?.prevented === true, JSON.stringify(state.events));
+    await b.key('Escape', 'Escape', 27);
+    await sleep(600);
+
+    // A reader in the viewer (Markdown): its own right click, the browser's here.
+    await b.goto(url + '?path=Documents', 3000);
+    await b.waitFor('.tile a.item-link, .row a.item-link');
+    await b.eval(recorder);
+    await b.eval(`[...document.querySelectorAll('a.item-link')].find(a => a.textContent.includes('Hiking guide')).click(); 1`);
+    await b.waitFor('dialog.viewer[open] .viewer-stage.document');
+    await sleep(1500);
+    state = await rightClick(b, 'dialog.viewer .viewer-stage.document');
+    check('reader: keeps its own (browser) menu', state.kind === null && state.events[0]?.prevented === false, JSON.stringify(state.events));
+    await b.key('Escape', 'Escape', 27);
+    await sleep(600);
+
+    // A video: the player's controls first; Speed opens its rates in the menu's place.
+    await b.goto(url + '?path=Videos%2FHolidays', 3000);
+    await b.waitFor('.tile a.item-link');
+    await b.eval(recorder);
+    await b.click('.tile a.item-link');
+    await b.waitFor('dialog.viewer[open] video');
+    await sleep(1000);
+    state = await rightClick(b, 'dialog.viewer video');
+    check('player: its controls in the menu', state.entries[0] === 'play' && state.entries.includes('speed') && state.entries.includes('copyTimeLink'), state.entries.join(' '));
+    await b.realClick('.item-menu [data-entry="speed"]');
+    await sleep(400);
+    state = JSON.parse(await b.eval(menuState));
+    check('player: Speed shows the rates', state.entries[0] === 'back' && state.entries.includes('speed-2'), state.entries.join(' '));
+    await b.realClick('.item-menu [data-entry="speed-2"]');
+    await sleep(400);
+    check('player: a rate picked plays at it', await b.eval(`document.querySelector('dialog.viewer video').playbackRate === 2`));
+    await b.key('Escape', 'Escape', 27);
+    await sleep(300);
+    await b.key('Escape', 'Escape', 27);
+    await sleep(500);
+
+    // A tag chip on a file (list view: the grid's tiles hide theirs under the caption): the tag's menu, not the file's.
+    await b.eval(`localStorage.setItem('sfe.view', 'list'); 1`);
+    await b.goto(url + '?path=Photos%2F2025%20Mountains', 3000);
+    await b.eval(recorder);
+    await sleep(1500);
+    // A chip the pointer can reach (a row's text box may clip its tags).
+    const reachable = await b.eval(`(() => {
+        const chip = [...document.querySelectorAll('.row sfe-tag-chip')].find(c => {
+            const r = c.getBoundingClientRect();
+            return c.contains(document.elementFromPoint(r.x + Math.min(r.width / 2, 20), r.y + r.height / 2));
+        });
+        chip?.setAttribute('data-check', '');
+        return Boolean(chip);
+    })()`);
+    if (reachable) {
+        state = await rightClick(b, '.row sfe-tag-chip[data-check]');
+        check('tag chip: the tag\'s menu', state.kind === 'tag', state.entries.join(' '));
+        await closeMenu(b);
+    } else
+        check('tag chip: a tag chip the pointer reaches', false, 'none in Photos/2025 Mountains');
+    await b.eval(`localStorage.setItem('sfe.view', 'grid'); 1`);
+
+    // The main menu's links: a link menu, over the open popover.
+    await b.click('button[aria-controls="menu"]');
+    await sleep(400);
+    state = await rightClick(b, '#menu a[href]');
+    check('main menu link: link menu', state.kind === 'appLink' && state.entries.join(' ') === 'open newTab copyLink', state.entries.join(' '));
+    await closeMenu(b);
+
+    // A multi-selection: the selection's entries, without Open / Open in new tab (popup blockers).
+    await b.goto(url + '?path=Photos%2F2024%20Beach%20trip', 3000);
+    await b.waitFor('.tile');
+    await b.eval(recorder);
+    for (const name of ['Dunes', 'Harbour'])
+        await b.realClick(`input[aria-label="Select ${name}.jpg"], input[title="Select ${name}.jpg"]`);
+    await sleep(400);
+    state = await rightClick(b, '.tile.selected .item-name, [aria-selected="true"] .item-name, .tile:has(input:checked) .item-name');
+    check('selection: its entries, no Open / Open in new tab', state.kind !== null && !state.entries.includes('open') && !state.entries.includes('newTab') && state.entries.includes('delete'), state.entries.join(' '));
+    await closeMenu(b);
+    await b.key('Escape', 'Escape', 27);
+    await sleep(300);
+
+    // Folder navigation (up / previous / next) and quick links: link menus.
+    state = await rightClick(b, '.location nav a.icon-button[href]');
+    check('folder nav: folder link menu', state.kind === 'folderLink' && state.entries.includes('newTab'), state.entries.join(' '));
+    await closeMenu(b);
+    state = await rightClick(b, '.quick-link-target');
+    check('quick link: link menu and its own entries', state.entries.includes('newTab') && state.entries.includes('remove'), `${state.kind}: ${state.entries.join(' ')}`);
+    await closeMenu(b);
+
+    // A search result's folder: that folder's link menu, not the file's.
+    await b.goto(url + '?q=t%3A%22Beach%22', 3000);
+    await b.waitFor('.item-folder');
+    await b.eval(recorder);
+    state = await rightClick(b, '.item-folder');
+    check('search result folder: folder link menu', state.kind === 'folderLink', state.entries.join(' '));
+    await closeMenu(b);
+
+    // A recent search suggested by the search box.
+    await b.eval(`localStorage.setItem('sfe.searchHistory', JSON.stringify(['t:"Beach"', 'sunset'])); 1`);
+    await b.goto(url + '?path=Photos', 3000);
+    await b.send('Page.bringToFront');
+    await b.waitFor('form.search input');
+    await b.eval(recorder);
+    await b.realClick('form.search input');
+    await sleep(500);
+    if (await b.eval(`Boolean(document.querySelector('.search-history-option'))`)) {
+        state = await rightClick(b, '.search-history-option');
+        check('search history: entry menu', state.kind === 'historyEntry' && state.entries.includes('newTab'), state.entries.join(' '));
+        await closeMenu(b);
+    } else
+        check('search history: suggested on focus', false, 'no .search-history-option');
+    await b.eval(`document.activeElement.blur(); 1`);
+
+    // The picture editor: no menu on its canvas (a dialog), the browser's prevented too.
+    await b.click('.tile a.item-link');
+    await b.waitFor('dialog.viewer[open] .viewer-stage img');
+    await sleep(800);
+    await rightClick(b, 'dialog.viewer .viewer-stage img');
+    if (await b.eval(`Boolean(document.querySelector('.item-menu [data-entry="crop"]'))`)) {
+        await b.realClick('.item-menu [data-entry="crop"]');
+        await b.waitFor('dialog.image-editor[open] .editor-canvas');
+        await sleep(1500);
+        await b.eval(recorder);
+        state = await rightClick(b, 'dialog.image-editor .editor-canvas');
+        check('picture editor canvas: no menu', state.kind === null && state.events[0]?.prevented === true, JSON.stringify(state.events));
+        await b.key('Escape', 'Escape', 27);
+        await sleep(600);
+    } else
+        check('picture editor: Edit picture in the viewer\'s menu', false);
+    await b.key('Escape', 'Escape', 27);
+    await sleep(600);
+
+    // The /player page: the player's menu on the video, the page's elsewhere.
+    await b.goto(url + 'player?path=' + encodeURIComponent('Videos/Holidays/Campfire.webm'), 4000);
+    await b.waitFor('video');
+    await b.eval(recorder);
+    await sleep(1000);
+    state = await rightClick(b, 'video');
+    check('player page: the player\'s menu', state.entries[0] === 'play' && state.entries.includes('speed'), `${state.kind}: ${state.entries.join(' ')}`);
+    await closeMenu(b);
+
+    // Duplicates & moves: a listed file's menu.
+    await b.goto(url + 'admin?section=tracking&page=duplicates', 3000);
+    await sleep(1500);
+    await b.eval(recorder);
+    if (await b.eval(`Boolean(document.querySelector('.tracking-name'))`)) {
+        state = await rightClick(b, '.tracking-name');
+        check('duplicates: a file\'s menu', state.entries.includes('newTab') && state.entries.includes('openFolder'), `${state.kind}: ${state.entries.join(' ')}`);
+        await closeMenu(b);
+    } else
+        console.log('skip duplicates: none found in the docs data');
+
+    // The trash: a file made and deleted for the check, its row's menu, then deleted for good.
+    await b.eval(`fetch('api/files/new-file', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ path: 'Inbox', name: 'menu-check.txt' }) }).then(r => r.status)`);
+    await b.eval(`fetch('api/files/delete', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ paths: ['Inbox/menu-check.txt'], permanent: false }) }).then(r => r.status)`);
+    await b.goto(url + 'admin?section=files&page=trash', 3000);
+    await sleep(1000);
+    await b.eval(recorder);
+    if (await b.eval(`Boolean(document.querySelector('.tracking-missing'))`)) {
+        state = await rightClick(b, '.tracking-missing');
+        check('trash: an item\'s menu', state.kind === 'trash' && state.entries.includes('restore'), state.entries.join(' '));
+        await closeMenu(b);
+    } else
+        check('trash: the deleted file listed', false);
+    await b.eval(`fetch('api/files/trash', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(page => Promise.all(page.items.filter(i => i.path.endsWith('menu-check.txt')).map(i => fetch('api/files/trash/' + i.id, { method: 'DELETE', headers: { 'X-SFE-Request': '1' } })))).then(() => 1)`);
+
+    // The folder picker (adding an excluded folder): no menu.
+    await b.goto(url + 'admin?section=scanning&page=exclusions', 3000);
+    await b.eval(`[...document.querySelectorAll('button')].find(x => x.textContent.includes('Add folder'))?.click(); 1`);
+    await b.waitFor('.folder-picker button');
+    await b.eval(recorder);
+    state = await rightClick(b, '.folder-picker li button');
+    check('folder picker: no menu', state.kind === null && state.events[0]?.prevented === true, JSON.stringify(state.events));
+
+    // The administration: links get the link menu, the rest the page's.
+    await b.goto(url + 'admin', 3000);
+    await b.waitFor('.admin-nav a');
+    await b.eval(recorder);
+    state = await rightClick(b, '.admin-nav a');
+    check('admin: a section link gets the link menu', state.kind === 'appLink', state.entries.join(' '));
+    await closeMenu(b);
+    state = await rightClick(b, '.admin-nav h2');
+    check('admin: elsewhere the page menu', state.kind === 'page' && state.entries.join(' ') === 'back reload newTab copyLink', state.entries.join(' '));
+    await closeMenu(b);
+    await b.close();
+
+    // Phone width: the background menu is a sheet across the bottom.
+    const p = await launch({ width: 390, height: 700, scrollbars: true });
+    await signIn(p);
+    await p.goto(url + '?path=Photos', 4000);
+    await p.waitFor('.folder-item, .tile');
+    await p.eval(recorder);
+    state = await rightClick(p, '.location-bar .summary');
+    check('phone: sheet across the bottom', state.kind === 'background' && state.left === 0 && state.right === state.width && Math.abs(state.bottom - state.height) < 1,
+        `${state.left}-${state.right} of ${state.width}, bottom ${state.bottom} of ${state.height}`);
+    await p.shot(out + '-phone.png');
+    // A sheet closes with a tap on its backdrop.
+    const tapAbove = async () => {
+        await p.mouse('mousePressed', 195, 40);
+        await p.mouse('mouseReleased', 195, 40);
+        await sleep(300);
+    };
+    await tapAbove();
+    await p.eval(`document.querySelector('.tile .item-name').scrollIntoView({ block: 'center' }); 1`);
+    await sleep(400);
+    const sheet = s => s.left === 0 && s.right === s.width && Math.abs(s.bottom - s.height) < 1;
+    state = await rightClick(p, '.tile .item-name');
+    check('phone: a file\'s menu, a sheet', state.kind === 'file' && sheet(state), state.entries.join(' '));
+    await tapAbove();
+    await p.eval(`scrollTo(0, 0); 1`);
+    await sleep(400);
+    state = await rightClick(p, '.crumbs a');
+    check('phone: a folder link\'s menu, a sheet', state.kind === 'folderLink' && sheet(state), state.entries.join(' '));
+    await closeMenu(p);
+    await p.click('.tile a.item-link');
+    await p.waitFor('dialog.viewer[open] .viewer-stage img');
+    await sleep(800);
+    state = await rightClick(p, 'dialog.viewer .viewer-stage img');
+    check('phone: the viewer\'s menu, a sheet in the dialog', state.kind === 'file' && sheet(state) && await p.eval(`Boolean(document.querySelector('dialog.viewer .item-menu'))`), state.entries.join(' '));
+    await closeMenu(p);
+    await p.close();
+} finally {
+    app.kill();
+}
+const failed = results.filter(r => !r.ok).length;
+console.log(failed ? `${failed} failed` : 'all ok');
+process.exitCode = failed ? 1 : 0;

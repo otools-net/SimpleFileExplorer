@@ -39,7 +39,7 @@ public sealed record TrashPurgeStatus(TrashPurgeState State, int Purged, DateTim
 /// <summary>
 /// The library's trash (agents/docs/features/trash.md): what is deleted goes to <c>trash/{guid}/{name}</c> in the work
 /// folder (<see cref="WorkFolder"/>), with a <see cref="TrashEntry"/> keeping where it was, who deleted it, the tags of
-/// its files and the folder rules of a folder, all given back by a restore. Purged after
+/// its files and the folder rules and default tags of a folder, all given back by a restore. Purged after
 /// <see cref="TrashOptions.RetentionDays"/> by a background task. The routes check rights and folder rules; the
 /// callers hold the scan gate (<see cref="ScanCoordinator.TryBeginOperation"/>).
 /// </summary>
@@ -50,6 +50,7 @@ public sealed class Trash(
     DirectoryIndexer indexer,
     LibraryBrowser browser,
     TagService tags,
+    FolderDefaultTags defaultTags,
     ThumbnailService thumbnails,
     TrickplayService trickplay,
     ScanCoordinator scans,
@@ -153,6 +154,22 @@ public sealed class Trash(
                 logger.LogWarning(ex, "The folder rules of {Path} could not be kept with it in the trash", relative);
             }
         }
+        if (isFolder)
+        {
+            try
+            {
+                var kept = await defaultTags.TakeTreeAsync(relative, CancellationToken.None);
+                if (kept.Count > 0)
+                {
+                    await using var db = await dbFactory.CreateDbContextAsync();
+                    await db.TrashEntries.Where(t => t.Id == entry.Id).ExecuteUpdateAsync(s => s.SetProperty(t => t.DefaultTags, JsonSerializer.Serialize(kept)));
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "The default tags of {Path} could not be kept with it in the trash", relative);
+            }
+        }
 
         Changed(full);
         logger.LogInformation("{Account} deleted {Path} to the trash", actor.Name, relative);
@@ -196,7 +213,7 @@ public sealed class Trash(
         return entry.Id;
     }
 
-    /// <summary>Deletes <paramref name="full"/> for good: the disk, then its index rows, folder rules and cached previews.</summary>
+    /// <summary>Deletes <paramref name="full"/> for good: the disk, then its index rows, folder rules, default tags and cached previews.</summary>
     internal async Task DeleteForGoodAsync(string full, string relative, bool isFolder, FileActor actor, CancellationToken cancellationToken)
     {
         // The files whose previews go with them, read before their rows go.
@@ -214,6 +231,8 @@ public sealed class Trash(
             await ForgetRowsAsync(db, full, CancellationToken.None);
             if (isFolder && rules is not null && tenant.TenantId is { } tenantId)
                 await rules.TakeTreeAsync(tenantId, relative, CancellationToken.None);
+            if (isFolder)
+                await defaultTags.TakeTreeAsync(relative, CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -317,6 +336,18 @@ public sealed class Trash(
                 catch (Exception ex)
                 {
                     logger.LogWarning(ex, "The folder rules of {Path} could not be given back", targetPath);
+                }
+            }
+            // Before indexing: the files restored get them, as they had.
+            if (entry.IsFolder && entry.DefaultTags is { } defaults)
+            {
+                try
+                {
+                    await defaultTags.PutBackAsync(targetPath, JsonSerializer.Deserialize<List<KeptDefaultTag>>(defaults) ?? [], CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "The default tags of {Path} could not be given back", targetPath);
                 }
             }
             try

@@ -437,10 +437,15 @@ public sealed class FileJobs(
             if (tagged.Count > 0)
             {
                 var copies = await indexer.IndexFilesAsync([.. tagged.Keys], token);
+                // Indexed, the copies may have the default tags of their folder already.
+                var copyIds = copies.Values.ToList();
+                var existing = (await db.FileTags.AsNoTracking().Where(l => copyIds.Contains(l.FileId)).Select(l => new { l.FileId, l.TagId }).ToListAsync(token))
+                    .Select(l => (l.FileId, l.TagId))
+                    .ToHashSet();
                 foreach (var (file, tagIds) in tagged)
                 {
                     if (copies.TryGetValue(file, out var fileId))
-                        foreach (var tagId in tagIds)
+                        foreach (var tagId in tagIds.Where(t => !existing.Contains((fileId, t))))
                             db.FileTags.Add(new FileTag { FileId = fileId, TagId = tagId });
                 }
                 await db.SaveChangesAsync(token);

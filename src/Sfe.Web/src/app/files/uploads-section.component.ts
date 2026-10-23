@@ -8,6 +8,8 @@ import { baseName } from '../core/paths';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
+import { FolderMenu } from '../library/folder-menu';
+import { ContextMenuDirective, MenuEntry, MenuTarget } from '../menus/context-menu';
 
 /**
  * Administration › File management › Uploads: everyone's unfinished uploads in the space (right `settings.files`),
@@ -15,7 +17,7 @@ import { IconComponent } from '../shared/icon.component';
  */
 @Component({
     selector: 'sfe-uploads-section',
-    imports: [BusyDirective, IconComponent, RouterLink],
+    imports: [BusyDirective, IconComponent, RouterLink, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'settings-panel uploads-section' },
     template: `
@@ -30,7 +32,7 @@ import { IconComponent } from '../shared/icon.component';
                 <li class="muted uploads-empty">No upload under way.</li>
             }
             @for (item of items(); track item.id) {
-                <li class="tracking-missing" [attr.data-id]="item.id">
+                <li class="tracking-missing" [attr.data-id]="item.id" [sfeContextMenu]="uploadMenu(item)">
                     <div class="tracking-missing-head">
                         <span class="tracking-thumb"><svg sfeIcon="upload"></svg></span>
                         <span class="tracking-file">
@@ -52,6 +54,7 @@ import { IconComponent } from '../shared/icon.component';
 })
 export class UploadsSectionComponent implements OnInit {
     private readonly api = inject(Api);
+    private readonly folders = inject(FolderMenu);
     private readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
 
@@ -81,6 +84,19 @@ export class UploadsSectionComponent implements OnInit {
     protected describe(item: UploadInfo): string {
         const percent = item.size ? Math.floor(item.received * 100 / item.size) : 100;
         return `${formatSize(item.received)} of ${formatSize(item.size)} (${percent}%) · by ${item.ownerName} · last received ${formatDate(item.lastActivity)}`;
+    }
+
+    /** An upload's menu (a right click): Cancel, then the folder it goes into. */
+    protected uploadMenu(item: UploadInfo): MenuTarget {
+        return {
+            kind: 'job', key: `upload-info:${item.id}`, name: baseName(item.name),
+            entries: () => {
+                const entries: MenuEntry[] = this.busy() === null
+                    ? [{ id: 'cancel', label: 'Cancel', icon: 'close', title: 'Stop it and remove what it received (asks first)', run: () => void this.cancel(item) }]
+                    : [];
+                return [...entries, ...this.folders.targetEntries(item.target)];
+            },
+        };
     }
 
     protected async cancel(item: UploadInfo): Promise<void> {

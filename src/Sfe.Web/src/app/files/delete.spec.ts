@@ -9,6 +9,7 @@ import { SidebarService } from '../library/sidebar/sidebar.service';
 import { DeleteDialog } from './delete.dialog';
 import { FileActions } from './file-actions';
 import { ItemMenu } from './item-menu';
+import { ContextMenu } from '../menus/context-menu';
 import { TrashSectionComponent } from './trash-section.component';
 
 let api: ApiMock;
@@ -202,6 +203,23 @@ describe('TrashSectionComponent', () => {
         await settle();
         expect(api.purgeFromTrash).toHaveBeenCalledWith(8);
         expect(element.querySelector('[data-id="8"]')).toBeNull();
+    });
+
+    it('has a menu on each entry: its buttons, and the folder it was deleted from', async () => {
+        await setUp();
+        api.trash.mockResolvedValueOnce(page([entry(9, 'Media/beach.jpg')]));
+        api.restoreFromTrash.mockResolvedValue(item('Media/beach.jpg'));
+        const element = await section();
+
+        element.querySelector('[data-id="9"] .tracking-name')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        const target = TestBed.inject(ContextMenu).open()!.target;
+
+        expect(target).toMatchObject({ kind: 'trash', name: 'beach.jpg' });
+        expect(target.entries().map(e => e.id)).toEqual(['restore', 'purge', 'openFolder', 'folderNewTab']);
+        expect(target.entries()[3].href).toMatch(/\?path=Media$/);
+        target.entries()[0].run!();
+        await settle();
+        expect(api.restoreFromTrash).toHaveBeenCalledWith(9);
     });
 
     it('offers neither delete nor empty without the right to delete for good', async () => {

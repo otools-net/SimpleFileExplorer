@@ -1,10 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
+import { CopyPathService } from '../../core/copy-path.service';
 import { kindIcon } from '../../core/format';
-import { QuickLink } from '../../core/models';
+import { LibraryItem, QuickLink } from '../../core/models';
+import { ContextMenuDirective, MenuEntry, MenuTarget } from '../../menus/context-menu';
 import { ToastService } from '../../core/toast.service';
 import { IconComponent } from '../../shared/icon.component';
+import { Dialogs } from '../dialogs.service';
+import { FolderMenu } from '../folder-menu';
+import { ItemActions } from '../items/item-actions.service';
 import { ListingStore } from '../listing.store';
 import { SidebarService } from '../sidebar/sidebar.service';
 import { DRAG_ITEMS, DRAG_LINK, QuickLinksService } from './quick-links.service';
@@ -16,7 +21,7 @@ import { DRAG_ITEMS, DRAG_LINK, QuickLinksService } from './quick-links.service'
  */
 @Component({
     selector: 'section[sfeQuickLinks]',
-    imports: [IconComponent, RouterLink],
+    imports: [IconComponent, RouterLink, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'sidebar-section quick-links',
@@ -47,7 +52,7 @@ import { DRAG_ITEMS, DRAG_LINK, QuickLinksService } from './quick-links.service'
             @for (link of links.links(); track link.path; let i = $index, first = $first, last = $last) {
                 <li class="quick-link" [class.missing]="!link.exists" [class.current]="isCurrent(link)" [class.dragged]="moving() === link.path"
                     [class.drop-before]="dropIndex() === i" [attr.data-quick-link]="link.path" [attr.data-kind]="link.kind" [attr.draggable]="!editing()"
-                    (dragstart)="startMove($event, link)" (dragend)="endDrag()">
+                    (dragstart)="startMove($event, link)" (dragend)="endDrag()" [sfeContextMenu]="menuTarget(link, i)">
                     @if (link.kind === 'directory') {
                         <a class="quick-link-target" routerLink="/" [queryParams]="store.browseParams(link.path)" draggable="false"
                            [attr.aria-current]="isCurrent(link) ? 'page' : null" [title]="hint(link)" (click)="openFolder($event, link)">
@@ -94,6 +99,10 @@ export class QuickLinksComponent implements OnInit {
     private readonly sidebar = inject(SidebarService);
     private readonly toasts = inject(ToastService);
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    private readonly folders = inject(FolderMenu);
+    private readonly actions = inject(ItemActions);
+    private readonly copyPaths = inject(CopyPathService);
+    private readonly dialogs = inject(Dialogs);
 
     protected readonly editing = signal(false);
     /** Where a drop would go: before the link at this index (the list's length: at the end); null while nothing is over it. */
@@ -147,6 +156,49 @@ export class QuickLinksComponent implements OnInit {
         }
         this.sidebar.closeIfOverlay();
         this.store.reveal(link.path);
+    }
+
+    /**
+     * The menu of a quick link: its folder's or file's entries (when it is still there), then moving it in the list
+     * and taking it out.
+     */
+    protected menuTarget(link: QuickLink, index: number): MenuTarget {
+        return {
+            kind: link.kind === 'directory' ? 'folderLink' : 'fileLink',
+            key: `quickLink:${link.path}`,
+            name: link.name,
+            entries: () => [...(link.exists ? this.targetEntries(link) : []), ...this.listEntries(link, index)],
+        };
+    }
+
+    private targetEntries(link: QuickLink): MenuEntry[] {
+        if (link.kind === 'directory')
+            return this.folders.linkEntries(link.path).filter(entry => entry.id !== 'quickLink').map(entry => entry.id === 'open'
+                ? { ...entry, run: () => { this.sidebar.closeIfOverlay(); entry.run?.(); } }
+                : entry);
+        const item: LibraryItem = { name: link.name, path: link.path, kind: link.kind, extension: link.extension, size: null, modified: null };
+        const entries: MenuEntry[] = [
+            { id: 'open', label: 'Show in its folder', icon: 'folder', title: `List the folder ${link.name} is in, and show it there`, run: () => { this.sidebar.closeIfOverlay(); this.store.reveal(link.path); } },
+            { id: 'newTab', label: 'Open in new tab', icon: 'external', title: `Open ${link.name} in a tab of its own`, href: this.actions.fileUrl(item), newTab: true },
+        ];
+        if (this.copyPaths.enabled())
+            entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => void this.copyPaths.copy(link.path) });
+        if (this.dialogs.properties())
+            entries.push({ id: 'properties', label: 'Properties', icon: 'info', title: 'Its size, dates and what the index knows of it', run: () => void this.dialogs.properties()?.open(item) });
+        return entries;
+    }
+
+    private listEntries(link: QuickLink, index: number): MenuEntry[] {
+        const entries: MenuEntry[] = [];
+        if (index > 0)
+            entries.push({ id: 'moveUp', label: 'Move up', icon: 'up', title: `Move “${link.name}” up in the quick links`, run: () => void this.links.move(link.path, index - 1) });
+        if (index < this.links.links().length - 1)
+            entries.push({ id: 'moveDown', label: 'Move down', icon: 'down', title: `Move “${link.name}” down in the quick links`, run: () => void this.links.move(link.path, index + 2) });
+        entries.push({
+            id: 'remove', label: 'Remove from quick links', icon: 'close',
+            title: `Take “${link.name}” out of the quick links (the ${this.kindWord(link)} stays)`, run: () => void this.links.remove(link.path),
+        });
+        return entries;
     }
 
     /* ---------- Drag and drop ---------- */

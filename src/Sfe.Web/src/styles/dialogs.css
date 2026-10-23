@@ -52,7 +52,7 @@
 .tag-loading { display: grid; place-items: center; padding: 18px; }
 
 .tag-groups { display: flex; flex-direction: column; gap: 12px; }
-.tag-group h3, .tag-table-heading {
+.tag-group h3, .tag-table-heading, .default-tags h3 {
     margin: 0 0 7px;
     color: var(--text-muted);
     font-size: 12px;
@@ -78,7 +78,13 @@
 }
 
 .scope-confirm p { margin: 0; overflow-wrap: anywhere; }
-.scope-confirm-buttons { display: flex; justify-content: flex-end; gap: 8px; }
+.scope-confirm-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+/* The folder's default tags, under its files' tags (ScopeTagsDialog). */
+.default-tags { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
+.default-tags h3 { margin: 0; }
+.default-tags .field-hint, .default-tags .muted { margin: 0; }
+.tag-chip.inherited { opacity: .75; }
 
 .tag-picker { display: flex; flex-direction: column; gap: 6px; }
 

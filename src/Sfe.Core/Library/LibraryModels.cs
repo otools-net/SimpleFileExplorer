@@ -45,6 +45,10 @@ public enum SortField
 /// Browsing only, for a folder kept out of scans, trickplay or thumbnails (<see cref="FolderExclusions"/>): through
 /// which listed folder; null when it is in none.
 /// </param>
+/// <param name="DefaultTags">
+/// Browsing only, for a folder: the default tags set on it (<see cref="FolderDefaultTags"/>, not the inherited ones);
+/// null when it has none.
+/// </param>
 public sealed record LibraryItem(
     string Name,
     string Path,
@@ -59,12 +63,14 @@ public sealed record LibraryItem(
     double? Duration = null,
     bool? Indexed = null,
     int? IndexedItems = null,
-    FolderExclusionState? Excluded = null);
+    FolderExclusionState? Excluded = null,
+    IReadOnlyList<TagSummary>? DefaultTags = null);
 
 public sealed record Breadcrumb(string Name, string Path);
 
 /// <param name="Access">What folder rules let the asker do here; null when none apply to it (every right of the space).</param>
 /// <param name="Exclusions">What the folder is kept out of (scans, trickplay, thumbnails); null when nothing.</param>
+/// <param name="DefaultTags">The default tags of the folder, its own and its parents'; null when none.</param>
 public sealed record DirectoryListing(
     string Path,
     string Name,
@@ -77,7 +83,8 @@ public sealed record DirectoryListing(
     int DirectoryCount,
     int FileCount,
     FolderAccessView? Access = null,
-    FolderExclusionState? Exclusions = null);
+    FolderExclusionState? Exclusions = null,
+    FolderDefaults? DefaultTags = null);
 
 /// <summary>What folder rules let the asker do in a folder (agents/docs/features/folder-access.md).</summary>
 /// <param name="Rights">The rights it has here.</param>

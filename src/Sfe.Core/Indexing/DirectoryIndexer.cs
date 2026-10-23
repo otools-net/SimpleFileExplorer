@@ -7,6 +7,7 @@ using Sfe.Core.Library;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Search;
+using Sfe.Core.Tagging;
 
 namespace Sfe.Core.Indexing;
 
@@ -21,6 +22,7 @@ public sealed class DirectoryIndexer(
     MediaDimensions dimensions,
     LibraryPaths paths,
     IOptionsMonitor<SfeOptions> options,
+    FolderDefaultTags defaultTags,
     ILogger<DirectoryIndexer> logger)
 {
     // Settings can change between (and during) scans: read them when used. The name sets are rebuilt only when the
@@ -110,7 +112,8 @@ public sealed class DirectoryIndexer(
         // Saved first: its id is needed by the file batches, which are saved (and untracked) as they fill up.
         await db.SaveChangesAsync(cancellationToken);
 
-        await SynchronizeFilesAsync(db, directory.Id, directoryInfo, maxPathLength, progress, cancellationToken);
+        var defaults = await defaultTags.ForFolderAsync(directoryInfo.FullName, cancellationToken);
+        await SynchronizeFilesAsync(db, directory.Id, directoryInfo, defaults, maxPathLength, progress, cancellationToken);
 
         var subDirectories = new List<PendingDirectory>();
         // Folders excluded from scans: not visited, and what the index has of them stays.
@@ -205,12 +208,13 @@ public sealed class DirectoryIndexer(
         await db.SaveChangesAsync(cancellationToken);
 
         var indexed = await FileIdsAsync(db, files, cancellationToken);
+        var defaults = await defaultTags.ForFolderAsync(folder.FullName, cancellationToken);
         foreach (var path in files.Where(f => !indexed.ContainsKey(f)))
         {
             var file = new FileInfo(path);
             if (!file.Exists || IsIgnoredFile(file) || !IsStorable(file.FullName, maxPathLength))
                 continue;
-            var entry = new FileEntry { FullName = file.FullName, DirectoryId = directory.Id };
+            var entry = NewEntry(file.FullName, directory.Id, defaults);
             await CopyAsync(file, entry, fingerprint: Scan.ComputeHashes, resolution: ReadsResolution(file), cancellationToken);
             db.Files.Add(entry);
         }
@@ -283,8 +287,16 @@ public sealed class DirectoryIndexer(
         return entity;
     }
 
+    /// <summary>A file entering the index: with the default tags of its folder (<see cref="FolderDefaultTags"/>).</summary>
+    private static FileEntry NewEntry(string fullName, int directoryId, int[] defaults) => new()
+    {
+        FullName = fullName,
+        DirectoryId = directoryId,
+        TagLinks = [.. defaults.Select(tagId => new FileTag { TagId = tagId })],
+    };
+
     private async Task SynchronizeFilesAsync(
-        SfeDbContext db, int directoryId, DirectoryInfo info, int? maxPathLength, ScanProgress progress, CancellationToken cancellationToken)
+        SfeDbContext db, int directoryId, DirectoryInfo info, int[] defaults, int? maxPathLength, ScanProgress progress, CancellationToken cancellationToken)
     {
         // Only what the comparison needs, untracked: a folder can hold a million files.
         var indexed = await db.Files
@@ -318,7 +330,7 @@ public sealed class DirectoryIndexer(
             FileEntry entry;
             if (known is null)
             {
-                entry = new FileEntry { FullName = file.FullName, DirectoryId = directoryId };
+                entry = NewEntry(file.FullName, directoryId, defaults);
                 db.Files.Add(entry);
             }
             else

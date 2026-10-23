@@ -1,3 +1,4 @@
+import { LocationStrategy } from '@angular/common';
 import { afterNextRender, computed, inject, Injectable, Injector, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Api, ApiError } from '../core/api.service';
@@ -29,6 +30,7 @@ export class ListingStore {
     private readonly api = inject(Api);
     private readonly config = inject(ConfigService);
     private readonly router = inject(Router);
+    private readonly locations = inject(LocationStrategy);
     private readonly toasts = inject(ToastService);
     private readonly sidebar = inject(SidebarService);
     private readonly injector = inject(Injector);
@@ -107,6 +109,14 @@ export class ListingStore {
     browseParams(path: string) {
         const { sort, desc } = this.route();
         return routeParams({ path, q: '', sort, desc });
+    }
+
+    /**
+     * The address of the listing page showing `changes` to the current route (a folder: `browseParams`), as a link's
+     * `href` (what RouterLink makes: under the app's base, so it holds under a virtual directory).
+     */
+    pageUrl(params: ReturnType<typeof routeParams>): string {
+        return this.locations.prepareExternalUrl(this.router.serializeUrl(this.router.createUrlTree(['/'], { queryParams: params })));
     }
 
     setView(view: View): void {

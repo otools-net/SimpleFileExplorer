@@ -4,6 +4,8 @@ import { ClashSide, FileJobView, LibraryItem } from '../core/models';
 import { baseName } from '../core/paths';
 import { checkedOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
+import { FolderMenu } from '../library/folder-menu';
+import { ContextMenuDirective, MenuEntry, MenuTarget } from '../menus/context-menu';
 import { ConfigService } from '../core/config.service';
 import { Rights } from '../core/rights';
 import { ListingStore } from '../library/listing.store';
@@ -23,7 +25,7 @@ const DROP_TARGET = '[data-drop]';
  */
 @Component({
     selector: 'sfe-operations-panel',
-    imports: [IconComponent, UploadsPanelComponent],
+    imports: [IconComponent, UploadsPanelComponent, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'operations-panel',
@@ -55,7 +57,7 @@ const DROP_TARGET = '[data-drop]';
             </section>
         }
         @for (job of transfers.jobs(); track job.id) {
-            <section class="operation" [class.done]="isDone(job)" [attr.data-job]="job.id" aria-live="polite">
+            <section class="operation" [class.done]="isDone(job)" [attr.data-job]="job.id" aria-live="polite" [sfeContextMenu]="jobMenu(job)">
                 <header class="operation-head">
                     <svg [sfeIcon]="job.kind === 'move' ? 'move' : 'copy'"></svg>
                     <span class="operation-title">{{ title(job) }}</span>
@@ -107,6 +109,7 @@ export class OperationsPanelComponent implements OnInit {
     protected readonly uploads = inject(UploadQueue);
     private readonly store = inject(ListingStore);
     private readonly config = inject(ConfigService);
+    private readonly folders = inject(FolderMenu);
 
     protected readonly forAll = signal(false);
     protected readonly baseName = baseName;
@@ -128,6 +131,19 @@ export class OperationsPanelComponent implements OnInit {
 
     protected paste(): void {
         this.transfers.paste(this.store.route().path);
+    }
+
+    /** A job's menu (a right click): its button (Cancel, or Close once done), then the folder it puts things into. */
+    protected jobMenu(job: FileJobView): MenuTarget {
+        return {
+            kind: 'job', key: `job:${job.id}`, name: this.title(job),
+            entries: () => {
+                const entries: MenuEntry[] = this.isDone(job)
+                    ? [{ id: 'close', label: 'Close', icon: 'close', title: 'Take it off the list', run: () => this.transfers.dismiss(job) }]
+                    : [{ id: 'cancel', label: 'Cancel', icon: 'close', title: 'Stop: what is done stays, nothing half copied does', run: () => void this.transfers.cancel(job) }];
+                return [...entries, ...this.folders.targetEntries(job.target)];
+            },
+        };
     }
 
     protected isDone(job: FileJobView): boolean {

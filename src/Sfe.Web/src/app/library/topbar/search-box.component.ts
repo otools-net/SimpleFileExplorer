@@ -2,9 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, injec
 import { Api } from '../../core/api.service';
 import { plural } from '../../core/format';
 import { TagDetails } from '../../core/models';
+import { ContextMenuDirective, MenuTarget } from '../../menus/context-menu';
 import { IconComponent } from '../../shared/icon.component';
 import { TagChipComponent } from '../../tags/tag-chip.component';
 import { describeTag, TAG_TERM, termAt, termValue } from '../../tags/tags';
+import { routeParams } from '../library-route';
 import { ListingStore } from '../listing.store';
 import { SearchBoxState } from '../search-explain/search-explain.component';
 import { matchedParts, SearchHistory } from '../search-history.service';
@@ -30,7 +32,7 @@ interface TagTerm {
  */
 @Component({
     selector: 'form[sfeSearchBox]',
-    imports: [IconComponent, SearchHelpDialog, TagChipComponent],
+    imports: [IconComponent, SearchHelpDialog, TagChipComponent, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'search', role: 'search', autocomplete: 'off', '(submit)': 'submit($event)' },
     template: `
@@ -59,7 +61,7 @@ interface TagTerm {
             [id]="listId" [hidden]="!suggesting()">
             @for (query of recent(); track query; let index = $index) {
                 <li role="option" class="search-history-option" [id]="listId + '-' + index" [attr.aria-selected]="index === active()"
-                    title="Search again" (pointerdown)="$event.preventDefault()" (click)="pickRecent(query)">
+                    title="Search again" (pointerdown)="$event.preventDefault()" (click)="pickRecent(query)" [sfeContextMenu]="recentTarget(query)">
                     <svg sfeIcon="clock"></svg>
                     <span class="search-history-text">@for (part of parts(query); track $index) {@if (part.mark) {<b>{{ part.text }}</b>} @else {<ng-container>{{ part.text }}</ng-container>}}</span>
                     <button type="button" class="icon-button ghost small" aria-label="Remove from the search history"
@@ -284,6 +286,23 @@ export class SearchBoxComponent {
         input.blur();
         this.searchFor(query);
         this.history.record(query);
+    }
+
+    /** The menu of a search of the history: search it again (here, or in a new tab), or forget it. */
+    protected recentTarget(query: string): MenuTarget {
+        return {
+            kind: 'historyEntry',
+            key: `history:${query}`,
+            name: query,
+            entries: () => [
+                { id: 'search', label: 'Search', icon: 'search', title: 'Search this again', run: () => this.pickRecent(query) },
+                {
+                    id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'This search in a tab of its own', newTab: true,
+                    href: this.store.pageUrl(routeParams({ ...this.store.route(), q: query })),
+                },
+                { id: 'remove', label: 'Remove from the history', icon: 'close', title: 'Forget this search', run: () => this.history.remove(query) },
+            ],
+        };
     }
 
     protected removeRecent(event: Event, query: string): void {

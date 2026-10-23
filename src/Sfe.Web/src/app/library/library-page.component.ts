@@ -6,7 +6,9 @@ import { ConfigService } from '../core/config.service';
 import { baseName, parentPath } from '../core/paths';
 import { ThemeService } from '../core/theme.service';
 import { ImageEditorDialog } from '../editor/image-editor.dialog';
-import { ItemMenu, ItemMenuComponent } from '../files/item-menu';
+import { ItemMenu } from '../files/item-menu';
+import { usePageMenu } from '../menus/context-menu';
+import { FolderMenu } from './folder-menu';
 import { NameDialog } from '../files/name.dialog';
 import { DeleteDialog } from '../files/delete.dialog';
 import { FileActions } from '../files/file-actions';
@@ -56,7 +58,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, FolderExclusionsDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent, ItemMenuComponent],
+        RemoveFromIndexDialog, FolderExclusionsDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -93,7 +95,6 @@ let created = false;
             <sfe-transfer-dialog />
             <sfe-properties-dialog />
             <sfe-batch-rename-dialog />
-            <sfe-item-menu />
             <!-- After the viewer: it opens over it. -->
             <sfe-image-editor />
         }
@@ -120,6 +121,8 @@ export class LibraryPageComponent implements OnInit {
 
     constructor() {
         const title = inject(Title);
+        // A right click on the background, or on what has no menu of its own: the folder listed, or the search.
+        usePageMenu(inject(FolderMenu).target());
         effect(() => {
             const { path, q } = this.store.route();
             const config = this.config.config();

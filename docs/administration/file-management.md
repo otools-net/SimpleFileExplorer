@@ -10,14 +10,16 @@ was, **Delete** deletes it for good, **Empty the trash** deletes everything you 
 (see and restore what you deleted, and what was deleted where you may delete), `files.deletePermanently` (delete for
 good). A file saved over in the [text editor](../user-guide/editing-text.md) leaves its previous version here, marked
 **previous version**: restored, it comes back next to the file, with a number added to its name. A folder that had folder access rules of its own shows only to whoever deleted it and to those who manage the
-space's access. Server administrators see everything.
+space's access. Server administrators see everything. A right click on an item opens its menu: Restore, Delete
+for good, and the folder it was deleted from (also in a new tab).
 
 ![Administration › File management › Trash](../images/admin-files-trash.png)
 
 ## Uploads
 
 Everyone's unfinished uploads in the space (right `settings.files`): the file, who sends it, how much arrived and when
-the last piece came. **Cancel** stops one and removes what it received. Each person sees their own in the page's
+the last piece came. **Cancel** stops one and removes what it received (also in its right-click menu, with the folder
+it goes into). Each person sees their own in the page's
 panel; uploads that receive nothing for **Keep unfinished uploads for** are removed by themselves.
 
 ![Administration › File management › Uploads](../images/admin-files-uploads.png)

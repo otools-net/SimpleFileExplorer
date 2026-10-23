@@ -197,6 +197,12 @@
 .player-speed-menu > button.on { color: var(--accent); font-weight: 700; }
 .player-speed-menu.wide { grid-template-columns: repeat(3, auto); }
 
+/* A phone: a sheet at the bottom (phone-sheets.css), the rates in three columns of large buttons. */
+@media (max-width: 640px) {
+    .player-speed-menu, .player-speed-menu.wide { grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 10px 10px 0; }
+    .player-speed-menu > button { min-height: 44px; font-size: 15px; text-align: center; }
+}
+
 /* A button that stays on (loop): in the accent colour, with a dot under the icon. */
 .player-toggle { position: relative; }
 .player-toggle.on { color: var(--accent); }

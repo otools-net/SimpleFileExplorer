@@ -3,6 +3,61 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.81.0
+
+### Added
+
+- A **logo** with the version in the console window at start; `--no-logo` on the command line leaves it out (never
+  shown for a service or when the output goes to a file or a log).
+- `--help` (or `-h`, `-?`) on the command line lists SFE's options, grouped: start-up, Windows service, main settings,
+  database, setup and sign-in.
+- **Default tags of folders**: in a folder's tags dialog, tags that every file put into the folder or its sub-folders
+  gets (scanned, created, uploaded, copied or moved there), optionally added to the files already there too; taking
+  one off asks whether the files keep it. Folders with default tags show a tag-and-sparkle icon listing them when clicked (new
+  right `tags.folderDefaults`, given to Administrators and Users).
+- **Open** and **Open in new tab** in the menu of files and folders (and **Open containing folder** in search
+  results): no need for the browser's own menu any more.
+- **Right-click menus all over the listing page**: the page itself (the folder listed: new folder or file, upload,
+  paste, select all, refresh, its tags, quick link, Open in new tab, Properties; a search: select all, tag the
+  results, search again, Open in new tab, copy link), the folders of the path at the top and the up / previous / next
+  buttons, a search result's folder, quick links (also move up, move down, remove) and recent searches. Text boxes and
+  selected text keep the browser's menu, as does Shift with the right click.
+- The **menu key** (or Shift+F10) opens the menu of what has the focus, like a right click.
+- In the **viewer**, a right click on the picture or video opens the viewer's menu (the ⋮ one), which now
+  also has **Copy**, **Copy to…** and **Properties**. On a **video**, the menu starts with the player's controls:
+  play / pause, speed, loop, mute, save this frame, full screen, picture in picture, and **Copy link at this time**.
+- The video's own window has a right-click menu too: the player's controls, copy link at this time, download.
+- A right click on a **tag chip** (on a file, in the sidebar, in the viewer) opens its menu: search it (also in a new
+  tab), add it to the search or leave it out, remove it from the file, edit the tag.
+- The files listed in **Duplicates**, **Similar videos** and the candidates of **Missing files** have a right-click
+  menu: open in a new tab, open the folder (also in a new tab), download, copy full path.
+- The **trash**'s items have a right-click menu: restore, delete for good, open the folder they were deleted from
+  (also in a new tab).
+- **Moves, copies and uploads** in progress (the panel at the bottom right, and Administration › Uploads) have a
+  right-click menu: their buttons (cancel, pause, resume, close) and the folder they go into, also in a new tab.
+- A right click on the app's other links (the ⋮ menu's, the administration's) opens a small menu: **Open**, **Open in
+  new tab**, **Copy link address**; elsewhere on the administration page: **Back**, **Reload**, **Open in new tab**,
+  **Copy page link**.
+- In windows over the page (properties and other sheets, the picture editor, the viewer's bar) a right click opens no
+  menu, except a link's; documents shown in the viewer keep their own right click.
+
+### Changed
+
+- On phones, the video player's speed list opens as a sheet across the bottom of the screen, like the item menu, with
+  large buttons.
+
+- When the server stops answering (stopped, or the network is down), the ⋮ button at the top right shows a yellow
+  **!** and its menu says **Server not answering**, until the connection comes back; the folder shown is then read
+  again.
+
+### Fixed
+
+- After going from page to page by full loads (typing addresses, Back and Forward), a page could take a long time to
+  load: the pages the browser keeps for Back held their connections to the server. They now give them up.
+- Two SFE servers on the same computer (on different ports) opened in one browser no longer sign each other out: each
+  port gets a sign-in cookie of its own. Sessions signed in before stay signed in. A visitor's chosen space (without an
+  account) is asked again once.
+
 ## 1.80.0
 
 ### Added

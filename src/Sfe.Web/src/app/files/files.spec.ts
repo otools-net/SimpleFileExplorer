@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { ApiError } from '../core/api.service';
+import { ConfigService } from '../core/config.service';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders, type } from '../../testing/fakes';
@@ -7,7 +9,8 @@ import { Dialogs } from '../library/dialogs.service';
 import { LibraryPageComponent } from '../library/library-page.component';
 import { ListingStore } from '../library/listing.store';
 import { SidebarService } from '../library/sidebar/sidebar.service';
-import { ItemMenu, ItemMenuComponent } from './item-menu';
+import { ContextMenu, ContextMenuComponent } from '../menus/context-menu';
+import { ItemMenu } from './item-menu';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
 import { NameDialog } from './name.dialog';
 
@@ -146,16 +149,71 @@ describe('ItemMenu', () => {
         return new MouseEvent('contextmenu', { cancelable: true, clientX: 30, clientY: 40, shiftKey });
     }
 
+    function rightClick(event: MouseEvent, value: LibraryItem): void {
+        TestBed.inject(ContextMenu).fromEvent(event, TestBed.inject(ItemMenu).target(value));
+    }
+
     it('offers renaming only to those who may rename here, and Properties to everyone who browses', async () => {
         await setUp([Rights.browse, Rights.viewTags]);
         const menu = TestBed.inject(ItemMenu);
         const event = menuEvent();
-        menu.fromEvent(event, photo);
+        rightClick(event, photo);
 
         expect(menu.hasActions(photo)).toBe(true);
-        expect(menu.entries(photo).map(e => e.id)).toEqual(['tags', 'properties']);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['newTab', 'tags', 'properties']);
         expect(event.defaultPrevented).toBe(true);
-        expect(menu.open()?.item).toBe(photo);
+        expect(TestBed.inject(ContextMenu).open()?.target.item).toBe(photo);
+    });
+
+    it('opens a file in the viewer or in a new tab, its viewer\'s page for formats that have one', async () => {
+        await setUp([Rights.browse]);
+        const menu = TestBed.inject(ItemMenu);
+        const links = TestBed.inject(ConfigService).links;
+        const open = vi.fn();
+        TestBed.inject(Dialogs).viewer.set({ open } as never);
+        const notes = item('Media/notes.txt', { kind: 'file' });
+        const archive = item('Media/backup.zip', { kind: 'file' });
+
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['open', 'newTab', 'properties']);
+        menu.entries(photo)[0].run();
+        expect(open).toHaveBeenCalledWith(photo);
+        const newTab = menu.entries(photo)[1];
+        expect(newTab).toMatchObject({ href: links.file(photo.path), newTab: true });
+        expect(menu.entries(notes).find(e => e.id === 'newTab')!.href).toBe(links.view(notes.path));
+        // Nothing to show it in: only its own tab.
+        expect(menu.entries(archive).map(e => e.id)).toEqual(['newTab', 'properties']);
+    });
+
+    it('lists a folder, or lists it in a new tab keeping the sort', async () => {
+        await setUp([Rights.browse]);
+        const menu = TestBed.inject(ItemMenu);
+        const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+        store.route.set({ path: 'Media', q: '', sort: 'size', desc: true });
+
+        const [open, newTab] = menu.entries(folder);
+        open.run();
+
+        expect(navigate).toHaveBeenCalledWith(['/'], { queryParams: { path: 'Media/Holidays', q: null, sort: 'size', desc: '1' } });
+        expect(newTab.id).toBe('newTab');
+        expect(newTab.newTab).toBe(true);
+        expect(newTab.href).toMatch(/\?path=Media%2FHolidays&sort=size&desc=1$/);
+    });
+
+    it('offers no opening for a selection of several items, and the containing folder in search results', async () => {
+        await setUp([Rights.browse]);
+        const menu = TestBed.inject(ItemMenu);
+        store.select(photo, true);
+        store.select(folder, true);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['properties']);
+        store.select(folder, false);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['newTab', 'properties']);
+
+        store.route.set({ path: '', q: 'beach', sort: '', desc: false });
+        const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => undefined);
+        const found = item('Media/beach.jpg', { directory: 'Media' });
+        const entry = menu.entries(found).find(e => e.id === 'openFolder')!;
+        entry.run();
+        expect(reveal).toHaveBeenCalledWith('Media/beach.jpg');
     });
 
     it('adds an item to the quick links, or takes it out when it is one', async () => {
@@ -218,7 +276,7 @@ describe('ItemMenu', () => {
 
     it('has no quick links entry without the right', async () => {
         await setUp([Rights.browse]);
-        expect(TestBed.inject(ItemMenu).entries(photo).map(e => e.id)).toEqual(['properties']);
+        expect(TestBed.inject(ItemMenu).entries(photo).map(e => e.id)).toEqual(['newTab', 'properties']);
     });
 
     it('follows the folder rules of the folder listed and of each folder in it', async () => {
@@ -235,53 +293,56 @@ describe('ItemMenu', () => {
 
     it('opens at the pointer on a right click, and the browser\'s own menu with Shift', async () => {
         await setUp();
-        const fixture = TestBed.createComponent(ItemMenuComponent);
+        const fixture = TestBed.createComponent(ContextMenuComponent);
         fixture.detectChanges();
         const menu = TestBed.inject(ItemMenu);
         const rename = vi.fn();
         TestBed.inject(Dialogs).name.set({ rename } as unknown as NameDialog);
 
         const shifted = menuEvent(true);
-        menu.fromEvent(shifted, photo);
+        rightClick(shifted, photo);
         expect(shifted.defaultPrevented).toBe(false);
         const event = menuEvent();
-        menu.fromEvent(event, photo);
+        rightClick(event, photo);
         await settle();
         fixture.detectChanges();
         const element: HTMLElement = fixture.nativeElement;
 
         expect(event.defaultPrevented).toBe(true);
-        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'quickLink', 'properties']);
-        expect(document.activeElement?.getAttribute('data-entry')).toBe('rename');
+        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['newTab', 'rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'quickLink', 'properties']);
+        expect(document.activeElement?.getAttribute('data-entry')).toBe('newTab');
         (element.querySelector('[data-entry="rename"]') as HTMLButtonElement).click();
         await settle();
 
         expect(rename).toHaveBeenCalledWith(photo);
-        expect(menu.open()).toBeNull();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
     });
 
     it('closes on Esc, on a click elsewhere and when the listing changes', async () => {
         await setUp();
-        const fixture = TestBed.createComponent(ItemMenuComponent);
+        const fixture = TestBed.createComponent(ContextMenuComponent);
         fixture.detectChanges();
         const menu = TestBed.inject(ItemMenu);
         const element: HTMLElement = fixture.nativeElement;
 
-        menu.fromEvent(menuEvent(), photo);
+        rightClick(menuEvent(), photo);
         await settle();
+        // On phones, the standard sheet at the bottom over its backdrop (phone-sheets.css).
+        expect(element.querySelector('.item-menu')!.classList).toContain('phone-sheet');
+        expect(element.querySelector('.sheet-backdrop')).not.toBeNull();
         element.querySelector('.item-menu')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-        expect(menu.open()).toBeNull();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
 
-        menu.fromEvent(menuEvent(), photo);
+        rightClick(menuEvent(), photo);
         await settle();
         document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-        expect(menu.open()).toBeNull();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
 
-        menu.fromEvent(menuEvent(), photo);
+        rightClick(menuEvent(), photo);
         await settle();
         await store.load();
         await settle();
-        expect(menu.open()).toBeNull();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
     });
 });
 

@@ -162,9 +162,19 @@ const scenes = {
         await b.mouse('mouseReleased', x - 120, y - 60);
         await b.key('z', 'KeyZ', 90);
         await sleep(500);
+        // The viewer's menu, from a right click on the picture.
+        const shown = await b.rect('.viewer-stage > img');
+        const mx = shown.x + shown.width * 0.3, my = shown.y + shown.height * 0.3;
+        await b.mouse('mouseMoved', mx, my);
+        await b.mouse('mousePressed', mx, my, { button: 'right' });
+        await b.mouse('mouseReleased', mx, my, { button: 'right' });
+        await sleep(500);
+        await b.shot(OUT + 'viewer-menu.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(300);
         await b.click('.viewer button[aria-label="More actions"]');
         await sleep(300);
-        await b.click('.viewer-menu [data-entry="crop"]');
+        await b.click('.item-menu [data-entry="crop"]');
         await sleep(2000);
         await b.shot(OUT + 'image-editor.png');
         await b.clickText('button', '16:9');
@@ -362,6 +372,22 @@ const scenes = {
         await b.clickText('.selection-bar button, [class*=selection] button', 'Tags');
         await sleep(1500);
         await b.shot(OUT + 'files-tags-dialog.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(600);
+        // A tag chip's menu (right click), in the list view where files show their tags.
+        await b.eval(`localStorage.setItem('sfe.view', 'list'); 1`);
+        await b.open('?path=Photos%2F2025%20Mountains');
+        const chip = await b.rect('.row sfe-tag-chip');
+        const cx = chip.x + Math.min(chip.width / 2, 20), cy = chip.y + chip.height / 2;
+        await b.mouse('mouseMoved', cx, cy);
+        await b.mouse('mousePressed', cx, cy, { button: 'right' });
+        await b.mouse('mouseReleased', cx, cy, { button: 'right' });
+        await sleep(500);
+        const menu = await b.rect('.item-menu');
+        const left = Math.max(0, Math.min(chip.x, menu.x) - 40), top = Math.max(0, Math.min(chip.y, menu.y) - 30);
+        await b.shot(OUT + 'tag-menu.png', { x: left, y: top, width: Math.max(chip.x + chip.width, menu.x + menu.width) + 40 - left, height: Math.max(chip.y + chip.height, menu.y + menu.height) + 30 - top });
+        await b.key('Escape', 'Escape', 27);
+        await b.eval(`localStorage.removeItem('sfe.view'); 1`);
         await b.close();
     },
     async scopeTags() {
@@ -371,6 +397,37 @@ const scenes = {
         await sleep(2000);
         await b.shot(OUT + 'scope-tags-dialog.png');
         await b.close();
+    },
+    async defaultTags() {
+        const b = await session();
+        await b.open('?path=Photos%2FFamily');
+        await b.click('button.scope-tags-button');
+        await sleep(2000);
+        await b.realClick('.default-picker input');
+        await b.type('Sunset');
+        await sleep(1200);
+        await b.click('.default-picker .tag-options li');
+        await sleep(800);
+        await b.shot(OUT + 'default-tags-dialog.png');
+        await b.close();
+        // The folder's icon, its panel opened by a click.
+        const h = await session();
+        await h.open('?path=Photos');
+        await h.realClick('.folder-item[data-path="Photos/Family"] .default-tags-button');
+        await sleep(800);
+        const card = await h.rect('.folder-item[data-path="Photos/Family"]');
+        const panel = await h.rect('.default-tags-popover');
+        const x = Math.max(0, Math.min(card.x, panel.x) - 16), y = Math.max(0, card.y - 16);
+        await h.shot(OUT + 'default-tags-popover.png', { x, y, width: Math.max(card.x + card.width, panel.x + panel.width) + 16 - x,
+            height: Math.max(card.y + card.height, panel.y + panel.height) + 16 - y });
+        await h.close();
+        // On a phone, a tap shows it along the bottom of the screen.
+        const phone = await session({ width: 390, height: 844, mobile: true });
+        await phone.open('?path=Photos');
+        await phone.realClick('.folder-item[data-path="Photos/Family"] .default-tags-button');
+        await sleep(800);
+        await phone.shot(OUT + 'phone-default-tags.png');
+        await phone.close();
     },
     async search() {
         const b = await session();
@@ -621,6 +678,15 @@ const scenes = {
         await b.clickTitle('New folder in this folder');
         await sleep(600);
         await b.shot(OUT + 'new-folder-dialog.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(400);
+        // The folder listed's menu: a right click on the listing's background (here, its counts).
+        const summary = await b.rect('.location-bar .summary');
+        await b.mouse('mouseMoved', summary.x + 10, summary.y + summary.height / 2);
+        await b.mouse('mousePressed', summary.x + 10, summary.y + summary.height / 2, { button: 'right' });
+        await b.mouse('mouseReleased', summary.x + 10, summary.y + summary.height / 2, { button: 'right' });
+        await sleep(600);
+        await b.shot(OUT + 'background-menu.png');
         await b.key('Escape', 'Escape', 27);
         await sleep(400);
         // A folder and a file selected: the bar counts both and offers what applies.

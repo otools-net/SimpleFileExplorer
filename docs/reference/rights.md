@@ -31,6 +31,7 @@ Each right is of one of two kinds (column **Kind**):
 | `tags.view` | see tags, the tag sidebar | Read | yes | all |
 | `tags.assign` | tag files, folders and searches | Write | no | Administrators, Users |
 | `tags.manage` | create, edit, delete tags; clear the tag history | Write | no | Administrators |
+| `tags.folderDefaults` | set the default tags of folders (files put there get them) | Write | no | Administrators, Users |
 | `index.scan`, `index.remove` | scan; remove folders from the index | Write | no | Administrators |
 | `index.exclude` | [keep folders out of scans, trickplay or thumbnails](../user-guide/scanning.md#excluded-folders), for the whole space | Write | no | Administrators |
 | `tracking.duplicates`, `tracking.similar` | duplicates, similar videos | Read | no | Administrators |

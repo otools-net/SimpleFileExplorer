@@ -127,3 +127,16 @@ public sealed record ScopeTagOutcome(ScopeTagStatus Status, ScopeTagChangeResult
     public static ScopeTagOutcome Invalid(string field, string message) =>
         new(ScopeTagStatus.Invalid, Errors: new Dictionary<string, string[]> { [field] = [message] });
 }
+
+/// <summary>Default tags to add to a folder and remove from it (<see cref="FolderDefaultTags"/>).</summary>
+/// <param name="AddToFiles">Also give the added tags to the files already in the folder and its sub-folders.</param>
+/// <param name="RemoveFromFiles">Also take the removed tags off the files already in the folder and its sub-folders.</param>
+public sealed record FolderDefaultTagsChange(
+    string? Path,
+    IReadOnlyList<int>? Add = null,
+    IReadOnlyList<int>? Remove = null,
+    bool AddToFiles = false,
+    bool RemoveFromFiles = false);
+
+/// <param name="Files">What changed on the files already there; null when that wasn't asked.</param>
+public sealed record FolderDefaultTagsResult(FolderDefaults Defaults, ScopeTagChangeResult? Files);

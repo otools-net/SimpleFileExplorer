@@ -465,6 +465,67 @@ public sealed class AccessTests
     }
 
     [TestMethod]
+    public async Task EachPortHasASessionCookieOfItsOwn()
+    {
+        // Browsers keep cookies per host, not per port: two instances on one host must not share the session's.
+        var factory = Factory();
+        var client = PortClient(factory, 5000);
+        using var setup = await client.PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"), TestContext.CancellationToken);
+        var cookie = SetCookie(setup, "sfe.session-5000");
+        Assert.IsNotNull(cookie, string.Join(" | ", setup.Headers.GetValues("Set-Cookie")));
+        Assert.IsNull(SetCookie(setup, SfeSession.CookieName), "Not under the shared name");
+
+        var same = PortClient(factory, 5000);
+        same.DefaultRequestHeaders.Add("Cookie", cookie);
+        var other = PortClient(factory, 5001);
+        other.DefaultRequestHeaders.Add("Cookie", cookie);
+
+        Assert.AreEqual("admin", (await GetAsync<SessionInfo>(same, "/api/session")).User?.UserName);
+        Assert.IsNull((await GetAsync<SessionInfo>(other, "/api/session")).User, "Another port's cookie isn't this one's");
+    }
+
+    [TestMethod]
+    public async Task ASessionUnderTheSharedNameIsKeptAndRenamed()
+    {
+        // A session signed in before the names had ports: read once, then written under this port's name.
+        var factory = Factory();
+        var client = PortClient(factory, 5000);
+        using var setup = await client.PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"), TestContext.CancellationToken);
+        var value = SetCookie(setup, "sfe.session-5000")!.Split('=', 2)[1];
+
+        var before = PortClient(factory, 5000);
+        before.DefaultRequestHeaders.Add("Cookie", $"{SfeSession.CookieName}={value}");
+        using var response = await before.GetAsync("/api/session", TestContext.CancellationToken);
+        var session = (await response.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!;
+
+        Assert.AreEqual("admin", session.User?.UserName);
+        Assert.IsNotNull(SetCookie(response, "sfe.session-5000"), "Written under the new name");
+        var removed = response.Headers.GetValues("Set-Cookie").SingleOrDefault(c => c.StartsWith(SfeSession.CookieName + "=;", StringComparison.Ordinal));
+        Assert.IsNotNull(removed, "The shared one is removed");
+        StringAssert.Contains(removed, "expires=Thu, 01 Jan 1970");
+
+        // One this instance can't read (another instance's) is left alone.
+        var foreign = PortClient(factory, 5000);
+        foreign.DefaultRequestHeaders.Add("Cookie", $"{SfeSession.CookieName}=another-instances-session");
+        using var left = await foreign.GetAsync("/api/session", TestContext.CancellationToken);
+        Assert.IsNull((await left.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!.User);
+        Assert.IsFalse(left.Headers.TryGetValues("Set-Cookie", out var set) && set.Any(c => c.StartsWith(SfeSession.CookieName + "=", StringComparison.Ordinal)));
+    }
+
+    private static HttpClient PortClient(WebApplicationFactory<Program> factory, int port)
+    {
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri($"http://localhost:{port}"), HandleCookies = false });
+        client.DefaultRequestHeaders.Add(RequestGuard.Header, "1");
+        return client;
+    }
+
+    /// <summary>The <c>name=value</c> of the cookie <paramref name="name"/> a response sets, if it sets it.</summary>
+    private static string? SetCookie(HttpResponseMessage response, string name) =>
+        response.Headers.TryGetValues("Set-Cookie", out var cookies)
+            ? cookies.FirstOrDefault(c => c.StartsWith(name + "=", StringComparison.Ordinal) && !c.StartsWith(name + "=;", StringComparison.Ordinal))?.Split(';')[0]
+            : null;
+
+    [TestMethod]
     public async Task UsersOnlyGetTheRightsOfTheirGroups()
     {
         var factory = Factory();

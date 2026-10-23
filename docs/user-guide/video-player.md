@@ -27,6 +27,14 @@ finger on the right of a playing video for 1.5 s to play it at 2× until you lif
 A video smaller than its controls is shown wider, so that every button stays visible; on a phone, the buttons that
 don't fit go to a second row.
 
+## Its menu
+
+A right click on the video (in the viewer, or in its own window) opens a menu with the player's controls: **Play** /
+**Pause**, **Speed** (its rates in the menu's place; **Back** returns), **Loop**, **Mute**, **Save this frame**,
+**Full screen** and, where the browser has it, **Picture in picture**. In the viewer the file's menu follows (Open in
+a new window, **Copy link at this time**, Open in new tab, Download…); in its own window, Copy link at this time,
+Download and Copy full path. Hold **Shift** for the browser's own video menu.
+
 ## Formats the browser can't play
 
 When the browser can't play a video (AVI, WMV, many MKV files, HEVC pictures), the player asks the server to convert it

@@ -1,9 +1,11 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injectable, Injector, input, signal, untracked, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, Injectable, input, untracked } from '@angular/core';
+import { Router } from '@angular/router';
 import { ConfigService } from '../core/config.service';
 import { CopyPathService } from '../core/copy-path.service';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
-import { formatOf } from '../formats/formats';
+import { formatOf, isViewable } from '../formats/formats';
+import { ContextMenu, MenuEntry, MenuTarget } from '../menus/context-menu';
 import { IconComponent } from '../shared/icon.component';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
@@ -13,21 +15,16 @@ import { FileDownloads } from './downloads';
 import { FileActions } from './file-actions';
 import { FileTransfers } from './file-transfers';
 
-/** One entry of an item's menu. */
-export interface MenuEntry {
-    id: 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
-    label: string;
-    icon: string;
-    /** Its key, shown at the end of the line. */
-    shortcut?: string;
-    title: string;
+/** One entry of an item's menu: always an action. */
+export interface ItemMenuEntry extends MenuEntry {
+    id: 'open' | 'newTab' | 'openFolder' | 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
     run: () => void;
 }
 
 /**
- * The menu of a listed file or folder, as in an OS file browser: opened by a right click (the browser's own menu
- * with Shift), the item's ⋮ button, or a long press on phones. Only items that something of file management applies
- * to have one, so that the browser's menu ("open in a new tab") stays for everyone else.
+ * The menu of a listed file or folder, as in an OS file browser (shown by `ContextMenu`): opened by a right click
+ * (the browser's own menu with Shift) or the item's ⋮ button; a long press on phones selects the item instead. When
+ * the item is part of the selection, its entries act on all of it.
  */
 @Injectable({ providedIn: 'root' })
 export class ItemMenu {
@@ -41,8 +38,35 @@ export class ItemMenu {
     private readonly config = inject(ConfigService);
     private readonly quickLinks = inject(QuickLinksService);
 
-    /** The item whose menu is open, and where. */
-    readonly open = signal<{ item: LibraryItem; x: number; y: number; trigger: HTMLElement | null } | null>(null);
+    private readonly menu = inject(ContextMenu);
+    private readonly router = inject(Router);
+
+    constructor() {
+        // Another listing: the item whose menu is open may not be there any more.
+        let generation = untracked(() => this.store.generation());
+        effect(() => {
+            const now = this.store.generation();
+            if (now === generation)
+                return;
+            generation = now;
+            untracked(() => {
+                if (this.menu.open()?.target.item)
+                    this.menu.close();
+            });
+        });
+    }
+
+    /** The menu of `item`, for `ContextMenu`. */
+    target(item: LibraryItem): MenuTarget {
+        return {
+            kind: item.kind === 'directory' ? 'folder' : 'file',
+            key: `item:${item.path}`,
+            name: item.name,
+            item,
+            entries: () => this.hasActions(item) ? this.entries(item) : [],
+            touch: () => this.store.select(item, !this.store.isSelected(item.path)),
+        };
+    }
 
     /**
      * Everyone who browses has the menu, for Properties at least (the browser's own menu with Shift). The item's card
@@ -99,8 +123,10 @@ export class ItemMenu {
         return item.kind === 'directory' && !this.store.searching() && this.store.can(Rights.excludeFolders, item) && Boolean(this.dialogs.folderExclusions());
     }
 
-    entries(item: LibraryItem): MenuEntry[] {
-        const entries: MenuEntry[] = [];
+    /** The entries of `item`'s menu; on the selection when `item` is part of it, unless `single` (the viewer). */
+    entries(item: LibraryItem, single = false): ItemMenuEntry[] {
+        const targets = () => single ? [item] : this.targets(item);
+        const entries: ItemMenuEntry[] = this.openings(item, targets());
         if (this.canOpenAsText(item))
             entries.push({ id: 'openAsText', label: 'Open as text', icon: 'file', title: 'Show its content as text, in the viewer', run: () => this.dialogs.viewer()?.open(item, { asText: true }) });
         if (this.canEditText(item))
@@ -108,7 +134,7 @@ export class ItemMenu {
         if (this.canEditPicture(item))
             entries.push({ id: 'editPicture', label: 'Crop…', icon: 'crop', title: 'Crop the picture, then save it over the original or as a new file', run: () => void this.dialogs.imageEditor()?.open(item) });
         if (this.canRename(item)) {
-            const several = this.targets(item).filter(target => this.canRename(target)).length > 1 && !this.store.searching();
+            const several = targets().filter(target => this.canRename(target)).length > 1 && !this.store.searching();
             entries.push({
                 id: 'rename', label: 'Rename…', icon: 'edit', shortcut: 'F2',
                 title: several ? 'Rename the selected items together: find and replace, or numbered names (F2)' : `Give ${item.name} another name (F2)`,
@@ -122,14 +148,14 @@ export class ItemMenu {
                 icon: 'trash',
                 shortcut: 'Del',
                 title: this.files.alwaysPermanent ? `Delete ${item.name} for good (Delete)` : `Move ${item.name} to the trash (Delete; Shift+Delete: for good)`,
-                run: () => this.files.delete(this.targets(item)),
+                run: () => this.files.delete(targets()),
             });
         const canMove = this.transfers.canMove(item);
         const canCopy = this.transfers.canCopy(item);
         if (canMove)
-            entries.push({ id: 'cut', label: 'Cut', icon: 'cut', shortcut: 'Ctrl+X', title: 'Keep it to move into a folder with Paste (Ctrl+X)', run: () => this.transfers.keep('move', this.targets(item)) });
+            entries.push({ id: 'cut', label: 'Cut', icon: 'cut', shortcut: 'Ctrl+X', title: 'Keep it to move into a folder with Paste (Ctrl+X)', run: () => this.transfers.keep('move', targets()) });
         if (canCopy)
-            entries.push({ id: 'copy', label: 'Copy', icon: 'copy', shortcut: 'Ctrl+C', title: 'Keep it to copy into a folder with Paste (Ctrl+C)', run: () => this.transfers.keep('copy', this.targets(item)) });
+            entries.push({ id: 'copy', label: 'Copy', icon: 'copy', shortcut: 'Ctrl+C', title: 'Keep it to copy into a folder with Paste (Ctrl+C)', run: () => this.transfers.keep('copy', targets()) });
         const clipboard = this.transfers.clipboard();
         if (clipboard && item.kind === 'directory' && this.transfers.canInto(clipboard.kind, item))
             entries.push({
@@ -140,18 +166,18 @@ export class ItemMenu {
                 run: () => this.transfers.paste(item.path),
             });
         if (canMove)
-            entries.push({ id: 'moveTo', label: 'Move to…', icon: 'move', title: 'Move it to another folder, picked next', run: () => this.transfers.pick('move', this.targets(item)) });
+            entries.push({ id: 'moveTo', label: 'Move to…', icon: 'move', title: 'Move it to another folder, picked next', run: () => this.transfers.pick('move', targets()) });
         if (canCopy)
-            entries.push({ id: 'copyTo', label: 'Copy to…', icon: 'copy', title: 'Copy it into another folder, picked next', run: () => this.transfers.pick('copy', this.targets(item)) });
+            entries.push({ id: 'copyTo', label: 'Copy to…', icon: 'copy', title: 'Copy it into another folder, picked next', run: () => this.transfers.pick('copy', targets()) });
         if (this.downloads.canDownload(item)) {
-            const targets = this.targets(item);
-            const zip = this.downloads.isZip(targets);
+            const selected = targets();
+            const zip = this.downloads.isZip(selected);
             entries.push({
                 id: 'download',
                 label: zip ? 'Download as zip' : 'Download',
                 icon: 'download',
-                title: zip ? (targets.length > 1 ? 'Save the selected items to this device, in one zip file' : 'Save this folder, with everything in it, to this device as a zip file') : 'Save this file to this device',
-                run: () => void this.downloads.download(targets),
+                title: zip ? (selected.length > 1 ? 'Save the selected items to this device, in one zip file' : 'Save this folder, with everything in it, to this device as a zip file') : 'Save this file to this device',
+                run: () => void this.downloads.download(selected),
             });
         }
         if (item.kind === 'directory' ? this.store.can(Rights.assignTags, item) : this.store.can(Rights.viewTags, item))
@@ -191,149 +217,37 @@ export class ItemMenu {
         return entries;
     }
 
+    /**
+     * Open, Open in new tab (a real link) and, in search results, Open containing folder: not for a selection of
+     * several items (one tab each would be stopped as popups).
+     */
+    private openings(item: LibraryItem, targets: LibraryItem[]): ItemMenuEntry[] {
+        if (targets.length > 1)
+            return [];
+        const entries: ItemMenuEntry[] = [];
+        if (item.kind === 'directory') {
+            const params = this.store.browseParams(item.path);
+            entries.push(
+                { id: 'open', label: 'Open', icon: 'folder', title: `List ${item.name}`, run: () => void this.router.navigate(['/'], { queryParams: params }) },
+                { id: 'newTab', label: 'Open in new tab', icon: 'external', title: `List ${item.name} in a tab of its own`, href: this.store.pageUrl(params), newTab: true, run: () => undefined },
+            );
+        } else {
+            if (isViewable(item) && this.dialogs.viewer())
+                entries.push({ id: 'open', label: 'Open', icon: 'file', title: `Show ${item.name} in the viewer`, run: () => this.actions.view(item) });
+            entries.push({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: `Open ${item.name} in a tab of its own`, href: this.actions.fileUrl(item), newTab: true, run: () => this.store.reportView(item) });
+        }
+        if (this.store.searching() && item.directory !== undefined && item.directory !== null)
+            entries.push({
+                id: 'openFolder', label: 'Open containing folder', icon: 'folder-up',
+                title: `List the folder ${item.name} is in, and show it there`,
+                run: () => this.store.reveal(item.path),
+            });
+        return entries;
+    }
+
     /** The selection when `item` is part of it (the menu acts on all of it, as in a file browser), else `item`. */
     private targets(item: LibraryItem): LibraryItem[] {
         return this.store.isSelected(item.path) ? this.store.selectedItems() : [item];
-    }
-
-    /**
-     * A right click on `item`: its menu, at the pointer; the browser's own with Shift, or when there's none. A long press
-     * on a touch screen selects it instead, as phone file managers do (its ⋮ button opens the menu there).
-     */
-    fromEvent(event: MouseEvent, item: LibraryItem): void {
-        if (event.shiftKey || !this.hasActions(item))
-            return;
-        event.preventDefault();
-        if (fromTouch(event)) {
-            this.store.select(item, !this.store.isSelected(item.path));
-            navigator.vibrate?.(15);
-            return;
-        }
-        this.show(item, event.clientX, event.clientY, event.currentTarget as HTMLElement | null);
-    }
-
-    /** Opens the menu of `item` under `trigger` (its ⋮ button). */
-    showAt(item: LibraryItem, trigger: HTMLElement): void {
-        const box = trigger.getBoundingClientRect();
-        this.show(item, box.left, box.bottom + 4, trigger);
-    }
-
-    close(): void {
-        this.open.set(null);
-    }
-
-    private show(item: LibraryItem, x: number, y: number, trigger: HTMLElement | null): void {
-        this.open.set({ item, x, y, trigger });
-    }
-}
-
-/** The menu event comes from a finger: a long press (Chrome tells it; others, by a screen without a mouse). */
-export function fromTouch(event: MouseEvent): boolean {
-    const pointer = (event as Partial<PointerEvent>).pointerType;
-    if (pointer)
-        return pointer === 'touch';
-    return typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches;
-}
-
-/** The open item menu (one for the page), kept inside the window, closed by a click elsewhere, Esc, scrolling or navigating. */
-@Component({
-    selector: 'sfe-item-menu',
-    imports: [IconComponent],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    host: {
-        '(document:pointerdown)': 'outside($event)',
-        '(window:scroll)': 'menu.close()',
-        '(window:resize)': 'menu.close()',
-    },
-    template: `
-        @if (menu.open(); as open) {
-            <!-- On phones: an action sheet at the bottom, under its item's name, over a backdrop that closes it. -->
-            <div class="item-menu-backdrop" aria-hidden="true"></div>
-            <div #box class="item-menu" role="menu" [attr.aria-label]="'Actions for ' + open.item.name"
-                 [style.left.px]="position().x" [style.top.px]="position().y" (keydown)="keydown($event)">
-                <div class="item-menu-title">{{ open.item.name }}</div>
-                @for (entry of entries(); track entry.id) {
-                    <button type="button" role="menuitem" class="item-menu-entry" [attr.data-entry]="entry.id" [title]="entry.title" (click)="run(entry)">
-                        <svg [sfeIcon]="entry.icon"></svg>
-                        <span>{{ entry.label }}</span>
-                        @if (entry.shortcut) {
-                            <kbd>{{ entry.shortcut }}</kbd>
-                        }
-                    </button>
-                }
-            </div>
-        }
-    `,
-})
-export class ItemMenuComponent {
-    protected readonly menu = inject(ItemMenu);
-    private readonly injector = inject(Injector);
-    private readonly box = viewChild<ElementRef<HTMLElement>>('box');
-    protected readonly entries = computed(() => {
-        const open = this.menu.open();
-        return open ? this.menu.entries(open.item) : [];
-    });
-    /** Where the menu shows: at the pointer, moved back inside the window once its size is known. */
-    protected readonly position = signal({ x: 0, y: 0 });
-
-    constructor() {
-        const store = inject(ListingStore);
-        // Another listing: the item may not be there any more.
-        effect(() => {
-            store.generation();
-            untracked(() => this.menu.close());
-        });
-        effect(() => {
-            const open = this.menu.open();
-            if (!open)
-                return;
-            untracked(() => this.position.set({ x: open.x, y: open.y }));
-            afterNextRender(() => this.place(open.x, open.y), { injector: this.injector });
-        });
-        inject(DestroyRef).onDestroy(() => this.menu.close());
-    }
-
-    private place(x: number, y: number): void {
-        const box = this.box()?.nativeElement;
-        if (!box)
-            return;
-        const width = box.offsetWidth;
-        const height = box.offsetHeight;
-        this.position.set({
-            x: Math.max(4, Math.min(x, window.innerWidth - width - 4)),
-            y: Math.max(4, y + height > window.innerHeight - 4 ? y - height : y),
-        });
-        box.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
-    }
-
-    protected run(entry: MenuEntry): void {
-        this.menu.close();
-        entry.run();
-    }
-
-    protected outside(event: PointerEvent): void {
-        const open = this.menu.open();
-        const target = event.target as Node;
-        // The ⋮ button that opened it closes it itself (a toggle).
-        if (open && !this.box()?.nativeElement.contains(target) && !open.trigger?.contains(target))
-            this.menu.close();
-    }
-
-    /** Arrows move between the entries; Esc closes and goes back to what opened the menu. */
-    protected keydown(event: KeyboardEvent): void {
-        const buttons = [...this.box()?.nativeElement.querySelectorAll<HTMLElement>('button') ?? []];
-        const index = buttons.indexOf(document.activeElement as HTMLElement);
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-            event.preventDefault();
-            const step = event.key === 'ArrowDown' ? 1 : -1;
-            buttons[(index + step + buttons.length) % buttons.length]?.focus();
-        } else if (event.key === 'Escape' || event.key === 'Tab') {
-            event.preventDefault();
-            event.stopPropagation();
-            const trigger = this.menu.open()?.trigger;
-            this.menu.close();
-            trigger?.focus();
-        }
     }
 }
 
@@ -356,14 +270,12 @@ export class ItemMenuComponent {
 export class ItemMenuButtonComponent {
     readonly sfeItemMenu = input.required<LibraryItem>();
     protected readonly menu = inject(ItemMenu);
+    private readonly contextMenu = inject(ContextMenu);
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
     protected toggle(event: MouseEvent): void {
         event.preventDefault();
         event.stopPropagation();
-        if (this.menu.open()?.item.path === this.sfeItemMenu().path)
-            this.menu.close();
-        else
-            this.menu.showAt(this.sfeItemMenu(), this.host);
+        this.contextMenu.toggle(this.menu.target(this.sfeItemMenu()), this.host);
     }
 }

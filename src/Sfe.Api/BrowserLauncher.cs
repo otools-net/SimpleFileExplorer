@@ -20,14 +20,7 @@ internal static class BrowserLauncher
     public const string NoBrowserArgument = "--no-browser";
 
     /// <summary>The arguments without <see cref="NoBrowserArgument"/>, which the configuration would read as a key taking the next argument as its value.</summary>
-    public static string[] TakeNoBrowser(string[] args, out bool noBrowser)
-    {
-        noBrowser = args.Any(IsNoBrowser);
-        return noBrowser ? args.Where(a => !IsNoBrowser(a)).ToArray() : args;
-
-        static bool IsNoBrowser(string arg) => string.Equals(arg, NoBrowserArgument, StringComparison.OrdinalIgnoreCase)
-                                               || string.Equals(arg, "/no-browser", StringComparison.OrdinalIgnoreCase);
-    }
+    public static string[] TakeNoBrowser(string[] args, out bool noBrowser) => CommandLine.TakeSwitch(args, "no-browser", out noBrowser);
 
     public static async Task OpenIfWantedAsync(WebApplication app, bool noBrowser, bool updateDue)
     {

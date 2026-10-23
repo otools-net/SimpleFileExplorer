@@ -82,6 +82,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<LibraryBrowser>();
         services.AddSingleton<FileSearchService>();
         services.AddSingleton<MediaDimensions>();
+        services.AddSingleton<FolderDefaultTags>();
         services.AddSingleton<DirectoryIndexer>();
         services.AddSingleton<ScanCoordinator>();
         services.AddSingleton<Ffmpeg>();

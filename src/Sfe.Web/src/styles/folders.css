@@ -90,9 +90,28 @@
 
 /*
  * How many files and sub-folders the index has directly in the folder: over the card's pictures (bottom right, like a
- * tile's media badge), at the end of a line otherwise. Neither changes the size of the folder.
+ * tile's media badge), after the default tags' button; at the end of a line otherwise. Neither changes the size of
+ * the folder. On a card both sit outside the link (FolderItemComponent), in a box laid over the pictures that lets
+ * the pointer through to the link but on the button.
  */
-.folder-cover .folder-count { z-index: 1; font-variant-numeric: tabular-nums; text-transform: none; }
+.folder-cover-marks {
+    position: absolute;
+    z-index: 2;
+    inset: 1px 1px auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 4px;
+    aspect-ratio: 4 / 3;
+    padding: 0 8px 8px;
+    box-sizing: border-box;
+    pointer-events: none;
+    transition: translate .15s;
+}
+.folders.covers .folder-item:hover .folder-cover-marks { translate: 0 -2px; }
+.folder-cover-marks .badge { position: static; }
+.folder-cover-marks .default-tags-badge { pointer-events: auto; }
+.folder-cover-marks .folder-count { font-variant-numeric: tabular-nums; text-transform: none; }
 .folder > .folder-count {
     flex: none;
     margin-left: auto;
@@ -129,11 +148,12 @@
     z-index: 2;
     display: flex;
     gap: 4px;
-    opacity: 0;
-    transition: opacity .15s, translate .15s;
+    transition: translate .15s;
 }
 
-.folder-item:hover .folder-actions, .folder-item:focus-within .folder-actions { opacity: 1; }
+/* Shown on hover, but for the default tags' icon, always there. */
+.folder-actions > :not(.default-tags-badge) { opacity: 0; transition: opacity .15s; }
+.folder-item:hover .folder-actions > *, .folder-item:focus-within .folder-actions > * { opacity: 1; }
 .folder-actions .icon-button { border-color: transparent; background: transparent; color: var(--text-muted); transition: background .15s; }
 .folder-actions .icon-button:hover { background: var(--surface-3); color: var(--text); }
 .folder-actions .icon { width: 16px; height: 16px; }
@@ -143,6 +163,8 @@
 /* Room for its buttons (tags, ⋮: those it has). */
 .folder-item:not(:has(.card)) .folder { padding-right: 44px; }
 .folder-item:not(:has(.card)):has(.folder-actions > :not([hidden]):nth-of-type(2)) .folder { padding-right: 80px; }
+.folder-item:not(:has(.card)):has(.default-tags-badge) .folder { padding-right: 80px; }
+.folder-item:not(:has(.card)):has(.default-tags-badge):has(.folder-actions > button:nth-of-type(2)) .folder { padding-right: 116px; }
 
 /* Over a card's pictures: dark like a file tile's buttons. */
 .folders.covers .folder-actions { top: 8px; right: 8px; }
@@ -153,5 +175,88 @@
 .folders.list .folder-item:not(:last-child) .folder { border-bottom: 1px solid var(--border); }
 
 @media (hover: none) {
-    .folder-actions { opacity: 1; }
+    .folder-actions > * { opacity: 1; }
 }
+
+
+/* ---------- Default tags (tags/default-tags-badge.component.ts) ---------- */
+
+.default-tags-badge { position: relative; display: inline-flex; }
+.default-tags-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--accent);
+    font: 600 11px/1 var(--mono);
+    cursor: pointer;
+}
+.default-tags-button .icon { width: 16px; height: 16px; }
+.default-tags-button:hover, .default-tags-button.open, .default-tags-button:focus-visible { border-color: var(--accent); background: var(--surface-2); }
+/* Over a card's pictures: dark like the other buttons there. */
+/* On a card, a pill like the count next to it (files.css › .badge), lit on hover. */
+.folder-cover-marks .default-tags-button {
+    min-width: 0;
+    height: auto;
+    gap: 3px;
+    padding: 2px 7px;
+    border: 0;
+    background: rgb(0 0 0 / .62);
+    color: #fff;
+    font: 700 11px var(--mono);
+}
+.folder-cover-marks .default-tags-button .icon { width: 15px; height: 15px; }
+.folder-cover-marks .default-tags-button:is(:hover, .open, :focus-visible) { background: var(--accent); color: #000; }
+
+/*
+ * The panel's layer is in the top layer (popover="manual"): never cut by a card's overflow nor moved by its transform.
+ * It covers the window but lets the pointer through to the page, except on its panel (and on phones its backdrop:
+ * phone-sheets.css). The panel is placed under the icon (or above it) by the component.
+ */
+.default-tags-layer {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    pointer-events: none;
+}
+.default-tags-popover {
+    position: fixed;
+    z-index: 60;
+    top: var(--pop-top, auto);
+    bottom: var(--pop-bottom, auto);
+    left: var(--pop-left, 8px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(320px, calc(100vw - 16px));
+    max-height: min(60vh, 420px);
+    overflow: auto;
+    padding: 10px 12px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    font: 13px/1.4 var(--font);
+    text-align: left;
+    white-space: normal;
+    cursor: auto;
+    pointer-events: auto;
+}
+.default-tags-popover-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.default-tags-popover .field-hint, .default-tags-from { margin: 0; }
+.default-tags-from { color: var(--text-muted); font-size: 12px; }
+.default-tags-edit { align-self: flex-end; }
+

@@ -4,8 +4,8 @@ import { CopyPathService } from '../../core/copy-path.service';
 import { formatDate, formatSize, joinParts, kindIcon } from '../../core/format';
 import { LibraryItem } from '../../core/models';
 import { FileTransfers } from '../../files/file-transfers';
-import { formatOf } from '../../formats/formats';
 import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
+import { useContextMenu } from '../../menus/context-menu';
 import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
 import { TrickplayHoverService } from '../../trickplay/trickplay-hover.service';
@@ -31,14 +31,14 @@ abstract class FileItemBase {
     protected readonly actions = inject(ItemActions);
     private readonly copyPaths = inject(CopyPathService);
     protected readonly config = inject(ConfigService);
-    protected readonly menu = inject(ItemMenu);
+    private readonly menu = inject(ItemMenu);
     private readonly previews = inject(PreviewsService);
     private readonly transfers = inject(FileTransfers);
     /** Cut (Ctrl+X): faded until pasted. */
     protected readonly cut = computed(() => this.transfers.cutPaths().has(this.item().path));
 
     /** Opened by a modified click (new tab...): the file, or its viewer's page for formats that have one. */
-    protected readonly url = computed(() => formatOf(this.item())?.page ? this.config.links.view(this.item().path) : this.config.links.file(this.item().path));
+    protected readonly url = computed(() => this.actions.fileUrl(this.item()));
     protected readonly icon = computed(() => kindIcon[this.item().kind]);
     protected readonly sources = computed(() => this.previews.sources(this.item(),
         this.store.view() === 'single' && Boolean(this.config.config()?.singleViewOriginals)), { equal: sameStrings });
@@ -58,6 +58,7 @@ abstract class FileItemBase {
     protected abstract previewContainer(): HTMLElement | undefined;
 
     constructor() {
+        useContextMenu(() => this.menu.target(this.item()));
         const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
         const hover = inject(TrickplayHoverService);
         const animated = inject(AnimatedHoverService);
@@ -92,7 +93,6 @@ function sameStrings(a: string[], b: string[]): boolean {
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
         '[style.--ratio]': 'ratio()',
-        '(contextmenu)': 'menu.fromEvent($event, item())',
     },
     template: `
         <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
@@ -181,7 +181,6 @@ export class FileTileComponent extends FileItemBase {
         '[class.revealed]': 'revealed()',
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
-        '(contextmenu)': 'menu.fromEvent($event, item())',
     },
     template: `
         <label sfeSelectBox [item]="item()"></label>

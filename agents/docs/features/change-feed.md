@@ -12,8 +12,18 @@ Code: `LibraryBrowser.FolderChanged` (raised by `Invalidate`, after the cache is
 - One connection per open listing tab: subscribes to its library's `LibraryBrowser` (the request's container), queues
   changes in a bounded channel (handlers run in the changing request; nothing is written from there), writes
   `event: changed` / `data: {"path","origin"}` for folders the caller sees (`library.browse`, access read when it
-  opened), a `: keep-alive` comment every 25 s, ends after 10 minutes (the browser reconnects, reading session and
+  opened), a `ping` event after 25 s without anything (`ChangeEndpoints.PingEvent`: an event the page sees, unlike a
+  comment, and with data, else it isn't dispatched), ends after 10 minutes (the browser reconnects, reading session and
   rights anew), 12 per caller (429). `retry: 5000`.
+- Server lost (`ChangeFeed.serverLost`, the ⋮ button's yellow ! and a "Server not answering" line for everyone): an
+  `error` not followed by `open` within 10 s (`LOST_AFTER`: the 10-minute reopen after `retry: 5000` isn't shown), or
+  nothing at all for 60 s (`SILENCE`: a hang that keeps the connection open; the feed is then reopened). After an
+  error status the browser stops trying (`readyState` CLOSED): reopened every 5 s (`RETRY`). Back on `open`, and the
+  folder listed is refreshed (changes made meanwhile weren't told). Checked in Edge by
+  `agents/tools/visual-check/server-lost.mjs` (stops and restarts the app).
+- The feed is closed on `pagehide` and opened again on `pageshow` (when it was open): a page kept by the browser for
+  Back held its connection, and browsers allow 6 per server over HTTP/1.1, so after a few full page loads the next
+  page waited for minutes (found by the context menu check's many `goto`s).
 - `origin` is the `X-SFE-Tab` header of the request that changed it, read through `IHttpContextAccessor` in the handler
   (null for background jobs after their request ended): a tab ignores its own changes, which it already applied.
 - Client: `EventSource('api/files/changes')` opened by the library page (closed when leaving it); a change of the folder

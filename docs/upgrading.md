@@ -30,6 +30,20 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.81
+
+- The index gets a new table for the **default tags** of folders (and a column of the trash); nothing changes for the
+  files already tagged.
+- The Administrators and Users groups of every space get the new right `tags.folderDefaults`
+  ([default tags](user-guide/tags.md#default-tags-of-a-folder)).
+- A **right click** anywhere in SFE opens SFE's menu (with **Open in new tab**); **Shift** with the right click still
+  opens the browser's own menu ([managing files](user-guide/managing-files.md#other-menus)).
+- The sign-in cookie is named after the server's port when the address has one (`sfe.session-5000`), so that two
+  servers on one computer don't sign each other out. Sessions of before keep working (renamed at the next visit);
+  visitors without an account choose their space again once.
+- The change feed sends a `ping` event instead of a comment when nothing happened for 25 s: nothing to change on a
+  reverse proxy that already passed the feed.
+
 ## To 1.80
 
 - **Excluded folders keep their index**: a folder in Administration › Scanning › What to scan › **Excluded folders** is

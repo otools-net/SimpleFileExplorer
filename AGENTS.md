@@ -66,7 +66,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [paths](agents/docs/development/paths.md) | root-relative paths, case | `Core/Paths/LibraryPaths` |
 | [api-routes](agents/docs/development/api-routes.md) | minimal API conventions and gotchas | `Sfe.Api/Endpoints/` |
 | [code-style](agents/docs/development/code-style.md) | C# style | |
-| [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons | `src/Sfe.Web/src/` |
+| [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
 | [file-operations](agents/docs/development/file-operations.md) | rules for changing library files (planned), moving folder rules with folders | `FolderRuleService.BeginMoveAsync` |
@@ -75,6 +75,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [server-modes-plan](agents/docs/development/server-modes-plan.md) | **server modes epic: Local / External, Docker image; phases, todo list, open questions** (update as it is built) | `ServerModes`, `Dockerfile` (planned) |
 | [docker-publishing-plan](agents/docs/development/docker-publishing-plan.md) | **publishing the image on ghcr.io: GitHub Actions workflow, settings, release steps** (update as it is built) | `.github/workflows/` (planned) |
 | [keep-alive-plan](agents/docs/development/keep-alive-plan.md) | **keep alive epic: pinging network folders so file servers don't drop idle sessions; design, phases, open questions** (update as it is built) | `Core/KeepAlive/`, `KeepAliveEndpoints` |
+| [context-menu-plan](agents/docs/development/context-menu-plan.md) | context menu epic (done, 1.81.0): one app menu for every right-click, Open in new tab; decisions, map of which menu where | `menus/context-menu.ts`, `ItemMenu`, `FolderMenu` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
@@ -103,7 +104,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [folder-access](agents/docs/features/folder-access.md) | per-folder permissions: model, policy, rules, enforcement, management card | `FolderPolicy`, `FolderRuleService`, `FolderChecks`, `folder-access.component.ts` |
 | [accounts](agents/docs/features/accounts.md) | sign-in directories, space administrators | `Core/Access/`, `app/access/`, `app/account/` |
 | [setup](agents/docs/features/setup.md) | setup code (configured / generated), first administrator | `SetupService`, `GeneratedSetupCode`, `app/account/` |
-| [local-start](agents/docs/features/local-start.md) | browser at start, `--no-browser`, setup without code locally, fast sign-in | `BrowserLauncher`, `LocalVisitor`, `FastSignIn` |
+| [local-start](agents/docs/features/local-start.md) | browser at start, `--no-browser`, startup logo and `--no-logo`, `--help`, setup without code locally, fast sign-in | `BrowserLauncher`, `StartupLogo`, `CommandLine`, `LocalVisitor`, `FastSignIn` |
 | [installation-page](agents/docs/features/installation-page.md) | root, Urls, ffmpeg from the web | `Maintenance/InstallationSettings` |
 | [server-modes](agents/docs/features/server-modes.md) | Local / External mode: `Sfe:Mode`, locks, switch rules; Local limits (this computer, administrators, no visitors), `local-only` page | `ServerModes`, `InstallationSettings`, `RequestGuard`, `SfeSession`, `local-only-page.component.ts` |
 | [update-migration](agents/docs/features/update-migration.md) | version check and update page after an upgrade | `MigrationCoordinator`, `app/migration/` |
@@ -122,6 +123,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [quick-links](agents/docs/features/quick-links.md) | each user's quick links | `QuickLinkService`, `app/library/quick-links/` |
 | [tags](agents/docs/features/tags.md) | tag model, tag dialogs, picker | `Core/Tagging/`, `app/tags/` |
 | [scope-tagging](agents/docs/features/scope-tagging.md) | tagging a whole folder or search | `ScopeTagger`, `ScopeTagsDialog` |
+| [default-tags](agents/docs/features/default-tags.md) | default tags of folders: given to files entering the tree (scan, new, upload, copy, move), trash, chips | `FolderDefaultTags`, `DirectoryIndexer.NewEntry`, `ScopeTagsDialog` |
 | [search-terms](agents/docs/features/search-terms.md) | query language, negation rule, quirks | `Core/Search/` |
 | [search-sort](agents/docs/features/search-sort.md) | sorts, keyset cursors, match count | `FileSearchService` |
 | [search-explain](agents/docs/features/search-explain.md) | live wording of the query | `library/search-explain/` |
@@ -151,6 +153,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [subtitles-viewer](agents/docs/features/subtitles-viewer.md) | SRT / VTT cues (media-captions), Play in the video next to them, Shift times, `api/files/text/video` | `app/formats/subtitles/`, `Core/Files/Subtitles` |
 | [pdf-viewer](agents/docs/features/pdf-viewer.md) | PDF with pdf.js bundled (worker, cmaps, fonts served by the app; CSP: no wasm), find, zoom, outline, dark pages | `app/formats/pdf/`, `angular.json` |
 | [epub-reader](agents/docs/features/epub-reader.md) | EPUB with epub.js: page, two pages or scroll; the book's files served by the app (`api/files/epub`), reading preferences on its pages | `app/formats/epub/`, `EpubEntries`, `EpubEndpoints` |
+| [context-menu](agents/docs/features/context-menu.md) | the app's one right-click menu: targets, which menu where, browser menu kept (Shift, text), keyboard, Open in new tab | `menus/context-menu.ts`, `ItemMenu`, `FolderMenu` |
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
 | [trash](agents/docs/features/trash.md) | delete, trash, restore, purge task, links as links | `Trash`, `FileTree`, `app/files/delete.dialog.ts` |
 | [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, conflicts, clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |

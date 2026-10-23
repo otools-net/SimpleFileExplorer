@@ -10,5 +10,6 @@ Code: `src/Sfe.Core/Tagging/ScopeTagger.cs`, route `api/file-tags/scope` in `src
 - A folder scope runs `DirectoryIndexer.IndexAsync` on it first (409 while a scan runs); a search scope reuses
   `FileSearchService.Matches` (hidden-tag rule included).
 - Every change is confirmed in the dialog's `.scope-confirm` box; a new tag is created only on confirming.
+- A folder's dialog also holds its default tags: [default-tags.md](default-tags.md).
 - The listing is patched with `ListingStore.applyScopeTags` (by path for folders; for a search, every listed file when
   the route is that search), not reloaded.

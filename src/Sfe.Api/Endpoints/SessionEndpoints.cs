@@ -190,7 +190,7 @@ public static class SessionEndpoints
         }
 
         await SfeSession.SignInAsync(context, result.User!, context.User.TenantId(), request.Remember);
-        context.Response.Cookies.Delete(SfeSession.GuestTenantCookie);
+        context.Response.Cookies.Delete(SfeSession.GuestTenantCookieName(context.Request));
         return TypedResults.Ok(await DescribeAsync(context));
     }
 
@@ -213,7 +213,7 @@ public static class SessionEndpoints
         }
 
         await SfeSession.SignInAsync(context, user, null, persistent: false);
-        context.Response.Cookies.Delete(SfeSession.GuestTenantCookie);
+        context.Response.Cookies.Delete(SfeSession.GuestTenantCookieName(context.Request));
         await accounts.RecordSignInAsync(user.Id, cancellationToken);
         logger.LogSecurityWarning("Fast sign-in: {User} signed in with the link of the browser SFE opened at start", user.UserName);
         return TypedResults.Redirect(home);
@@ -261,7 +261,7 @@ public static class SessionEndpoints
 
         throttle.Succeeded(input.UserName, context.Connection.RemoteIpAddress?.ToString() ?? string.Empty);
         await SfeSession.SignInAsync(context, result.Value!, context.User.TenantId(), input.Remember);
-        context.Response.Cookies.Delete(SfeSession.GuestTenantCookie);
+        context.Response.Cookies.Delete(SfeSession.GuestTenantCookieName(context.Request));
         return TypedResults.Ok(await DescribeAsync(context));
     }
 
@@ -288,7 +288,7 @@ public static class SessionEndpoints
 
         // As a visitor without an account: a signed-in account browsing as a guest signs out first.
         await SfeSession.SignOutAsync(context);
-        context.Response.Cookies.Append(SfeSession.GuestTenantCookie, tenant.Slug, new CookieOptions
+        context.Response.Cookies.Append(SfeSession.GuestTenantCookieName(context.Request), tenant.Slug, new CookieOptions
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Lax,

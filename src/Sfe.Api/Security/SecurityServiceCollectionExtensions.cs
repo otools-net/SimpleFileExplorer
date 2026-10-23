@@ -36,6 +36,8 @@ public static class SecurityServiceCollectionExtensions
             .AddCookie(options =>
             {
                 options.Cookie.Name = SfeSession.CookieName;
+                // Per port: two instances on one host don't share it.
+                options.CookieManager = new InstanceCookieManager();
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.Lax;
                 // Plain http on a home network has to work; behind https (or a trusted proxy's) the cookie is marked secure.

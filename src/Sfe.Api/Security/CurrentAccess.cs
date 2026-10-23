@@ -48,7 +48,7 @@ public sealed class CurrentAccess(IHttpContextAccessor accessor, AccessService a
         }
         else
         {
-            var slug = _guestTenant ?? context.Request.Cookies[SfeSession.GuestTenantCookie];
+            var slug = _guestTenant ?? context.Request.Cookies[SfeSession.GuestTenantCookieName(context.Request)];
             tenant = tenants.FirstOrDefault(t => slug is not null && t.Slug == slug && t.GuestAccess && !t.Disabled)
                 ?? tenants.FirstOrDefault(t => t.IsDefault);
         }

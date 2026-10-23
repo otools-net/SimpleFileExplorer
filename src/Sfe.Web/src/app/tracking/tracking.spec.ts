@@ -3,6 +3,7 @@ import { ApiError } from '../core/api.service';
 import { DuplicateGroup, DuplicateResults, MissingFileInfo, MissingFileResults, SimilarVideoResults } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { ApiMock, deferred, fileTags, item, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
+import { ContextMenu } from '../menus/context-menu';
 import { DuplicatesPanelComponent } from './duplicates-panel.component';
 import { MissingPanelComponent } from './missing-panel.component';
 import { SimilarPanelComponent } from './similar-panel.component';
@@ -59,6 +60,22 @@ describe('DuplicatesPanelComponent', () => {
         expect(groupElements().map(g => [...g.querySelectorAll('header > *')].map(part => part.textContent)))
             .toEqual([['3 copies', '2 MB each · 4 MB extra'], ['2 copies', '1 MB each · 1 MB extra']]);
         expect(fixture.componentInstance.badge()).toBe('2');
+    });
+
+    it('has a menu on each file: in a new tab, its folder, download', async () => {
+        await create(results([group(MB, 'a/x.jpg', 'b/x.jpg')]));
+        const folders: string[] = [];
+        fixture.componentInstance.openFolder.subscribe(path => folders.push(path));
+
+        element.querySelectorAll('li.tracking-row')[1].querySelector('.tracking-name')!
+            .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        const target = TestBed.inject(ContextMenu).open()!.target;
+
+        expect(target).toMatchObject({ kind: 'file', name: 'x.jpg' });
+        expect(target.entries().map(entry => entry.id)).toEqual(['newTab', 'openFolder', 'folderNewTab', 'download']);
+        expect(target.entries()[2].href).toMatch(/\?path=b$/);
+        target.entries()[1].run!();
+        expect(folders).toEqual(['b']);
     });
 
     it('says when there are none, and why some files were not compared', async () => {

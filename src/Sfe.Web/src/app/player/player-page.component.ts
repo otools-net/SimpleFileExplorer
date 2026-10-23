@@ -4,6 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 import { Api, redirected } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { ToastService } from '../core/toast.service';
+import { copyText, CopyPathService } from '../core/copy-path.service';
+import { MenuEntry, usePageMenu } from '../menus/context-menu';
 import { baseName } from '../core/paths';
 import { IconComponent } from '../shared/icon.component';
 import { waitForTrickplay } from '../trickplay/trickplay';
@@ -71,6 +73,22 @@ export class PlayerPageComponent implements OnInit {
     protected readonly poster = computed(() => this.config.config()?.features.thumbnails ? this.urls()!.thumbnail(this.path) : null);
 
     constructor() {
+        // A right click anywhere: the player's controls, then the video's links.
+        const copyPaths = inject(CopyPathService);
+        usePageMenu({
+            kind: 'page', key: 'player-page', name: this.name, entries: () => {
+                const entries: MenuEntry[] = [...this.player()?.menuEntries() ?? []];
+                if (this.player())
+                    entries.push({ id: 'copyTimeLink', label: 'Copy link at this time', icon: 'clock', title: 'Copy a link playing it from where it is now', run: () => void this.copyTimeLink() });
+                if (this.urls()?.externalName)
+                    entries.push({ id: 'external', label: `Open in ${this.urls()!.externalName}`, icon: 'play', title: 'A link working without signing in, for a while', run: () => this.openExternal() });
+                if (this.state() !== 'loading' && this.config.can('files.download'))
+                    entries.push({ id: 'download', label: 'Download', icon: 'download', title: 'Save the video to this device', href: this.urls()!.download(this.path) });
+                if (copyPaths.enabled())
+                    entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => void copyPaths.copy(this.path) });
+                return entries;
+            },
+        });
         // Scrub previews, waiting for them while the background job has the video queued.
         effect(() => {
             const player = this.player();
@@ -105,6 +123,16 @@ export class PlayerPageComponent implements OnInit {
             return;
         }
         this.state.set('playing');
+    }
+
+    /** This page's address, playing from where the video is now. */
+    private async copyTimeLink(): Promise<void> {
+        try {
+            await copyText(new URL(this.urls()!.player(this.path, Math.floor(this.player()?.currentTime() ?? 0)), document.baseURI).href);
+            this.toasts.show('Link copied.');
+        } catch {
+            this.toasts.show('The link could not be copied.', { error: true });
+        }
     }
 
     protected openExternal(): void {

@@ -3,7 +3,9 @@ import { ConfigService } from '../../core/config.service';
 import { plural } from '../../core/format';
 import { TagSummary, TagUsage } from '../../core/models';
 import { IconComponent } from '../../shared/icon.component';
+import { ContextMenuDirective } from '../../menus/context-menu';
 import { TagChipComponent } from '../../tags/tag-chip.component';
+import { TagMenu } from '../../tags/tag-menu';
 import { Dialogs } from '../dialogs.service';
 import { QuickLinksComponent } from '../quick-links/quick-links.component';
 import { ListingStore } from '../listing.store';
@@ -27,7 +29,7 @@ const SECTIONS: Section[] = [
 /** Collapsible sidebar: the user's quick links, then the tags: most used tags, last searched tags, tags of the last viewed files and random others. */
 @Component({
     selector: 'sfe-sidebar',
-    imports: [IconComponent, TagChipComponent, QuickLinksComponent],
+    imports: [IconComponent, TagChipComponent, QuickLinksComponent, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'sidebar',
@@ -53,7 +55,8 @@ const SECTIONS: Section[] = [
                 <ul class="sidebar-tags">
                     @for (usage of usages; track usage.tag.id) {
                         <li>
-                            <sfe-tag-chip [tag]="usage.tag" [title]="'Find files tagged ' + usage.tag.displayName" [clickable]="true" (pick)="search($event)" />
+                            <sfe-tag-chip [tag]="usage.tag" [title]="'Find files tagged ' + usage.tag.displayName" [clickable]="true" (pick)="search($event)"
+                                          [sfeContextMenu]="tagMenu.target(usage.tag)" />
                             <span class="tag-count" [title]="countTitle(usage)">{{ usage.fileCount.toLocaleString() }}</span>
                         </li>
                     } @empty {
@@ -76,6 +79,7 @@ export class SidebarComponent implements OnInit {
     private readonly store = inject(ListingStore);
     private readonly dialogs = inject(Dialogs);
     protected readonly config = inject(ConfigService);
+    protected readonly tagMenu = inject(TagMenu);
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     protected readonly sections = SECTIONS;
 

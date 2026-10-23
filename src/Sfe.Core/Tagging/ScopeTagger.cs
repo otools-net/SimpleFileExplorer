@@ -21,8 +21,7 @@ public sealed class ScopeTagger(
     TagService tags,
     FileSearchService search)
 {
-    /// <summary>Files changed per round trip.</summary>
-    private const int BatchSize = 1000;
+    private const int BatchSize = FileTagRows.BatchSize;
 
     /// <summary>The indexed files of the scope, and how many of them have each tag.</summary>
     /// <param name="visible">Where the asker may see files (folder rules); null = everywhere.</param>
@@ -109,26 +108,7 @@ public sealed class ScopeTagger(
                 lastId = ids[^1];
                 count += ids.Count;
 
-                if (add.Count > 0)
-                {
-                    var existing = (await db.FileTags
-                            .Where(l => ids.Contains(l.FileId) && add.Contains(l.TagId))
-                            .Select(l => new { l.FileId, l.TagId })
-                            .ToListAsync(cancellationToken))
-                        .Select(l => (l.FileId, l.TagId))
-                        .ToHashSet();
-                    foreach (var fileId in ids)
-                    {
-                        foreach (var tagId in add.Where(t => !existing.Contains((fileId, t))))
-                        {
-                            db.FileTags.Add(new FileTag { FileId = fileId, TagId = tagId });
-                            added++;
-                        }
-                    }
-
-                    await db.SaveChangesAsync(cancellationToken);
-                    db.ChangeTracker.Clear();
-                }
+                added += await FileTagRows.AddAsync(db, ids, add, cancellationToken);
 
                 if (remove.Count > 0)
                 {

@@ -8,6 +8,7 @@ import { FileTagsDialog } from '../../tags/file-tags.dialog';
 import { FilesTagsDialog } from '../../tags/files-tags.dialog';
 import type { ScopeTagsDialog } from '../../tags/scope-tags.dialog';
 import { ApiMock, deferred, fakeConfig, intersect, item, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../../testing/fakes';
+import { ContextMenu } from '../../menus/context-menu';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { SelectionBarComponent } from '../selection-bar.component';
@@ -562,11 +563,42 @@ describe('Items not indexed yet', () => {
         const line = await make(item('Films', { kind: 'directory', indexed: true, indexedItems: 0 }), false);
         const unknown = await make(item('Films', { kind: 'directory', indexed: false }), true);
 
-        const badge = card.querySelector('.folder-cover .folder-count')!;
+        // Over the pictures, outside the link but letting clicks through to it: the link holds its hint.
+        const badge = card.querySelector('.folder-cover-marks .folder-count')!;
         expect(badge.textContent!.trim()).toBe((1234).toLocaleString());
-        expect(badge.getAttribute('title')).toContain('indexed items directly in this folder');
+        expect(card.querySelector('.folder')!.getAttribute('title')).toContain('indexed items directly in this folder');
         expect(line.querySelector('.folder > .folder-count')!.textContent!.trim()).toBe('0');
         expect(unknown.querySelector('.folder-count')).toBeNull();
+    });
+});
+
+describe('Context menus of listed items', () => {
+    beforeEach(() => setUp());
+
+    it('opens the item\'s menu on the card, and the folder\'s menu on a search result\'s folder link', async () => {
+        const fixture = TestBed.createComponent(FileTileComponent);
+        fixture.componentRef.setInput('item', item('Media/Trips/a.jpg', { directory: 'Media/Trips' }));
+        await fixture.whenStable();
+        const element: HTMLElement = fixture.nativeElement;
+        const menu = TestBed.inject(ContextMenu);
+        const rightClick = (on: Element) => on.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+
+        rightClick(element.querySelector('.item-name')!);
+        expect(menu.open()?.target).toMatchObject({ kind: 'file', key: 'item:Media/Trips/a.jpg' });
+        rightClick(element.querySelector('.item-folder')!);
+        expect(menu.open()?.target).toMatchObject({ kind: 'folderLink', name: 'Trips' });
+        expect(menu.open()?.target.entries().map(entry => entry.id)).toEqual(['open', 'newTab', 'quickLink']);
+    });
+
+    it('opens a tag\'s menu on its chip, not the file\'s', async () => {
+        const fixture = TestBed.createComponent(FileTileComponent);
+        fixture.componentRef.setInput('item', item('Media/a.jpg', { tags: [tag('Beach')] }));
+        await fixture.whenStable();
+        const chip = (fixture.nativeElement as HTMLElement).querySelector('sfe-tag-chip')!;
+
+        chip.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+
+        expect(TestBed.inject(ContextMenu).open()?.target).toMatchObject({ kind: 'tag', name: 'Beach' });
     });
 });
 

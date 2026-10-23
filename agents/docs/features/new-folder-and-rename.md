@@ -30,11 +30,12 @@ Code: `src/Sfe.Core/Files/FileOperations.cs`, `src/Sfe.Api/Endpoints/FileEndpoin
 ## Client
 
 - Phones: the ⋮ is always shown (`hover: none`); Android's long press sends `contextmenu`, iOS Safari's doesn't.
-- `ItemMenu` (root service) + `sfe-item-menu` (one per page, `position: fixed`, moved back inside the window after
-  render) + `button[sfeItemMenu]` (⋮). A right click opens it only when `hasActions(item)` (today: may rename), so
-  people without file rights keep the browser's menu; Shift+right click always gives the browser's. Entries: Rename,
-  Tags, Copy full path. Closes on a pointerdown outside (not on its own trigger: the ⋮ toggles), Esc/Tab, scroll,
-  resize, `generation`.
+- `ItemMenu` (root service, `files/item-menu.ts`) builds the menu of a listed item (`target(item)`, `entries(item)`,
+  the `can…` checks) and `button[sfeItemMenu]` (⋮, hidden without `hasActions`); the menu itself is the app's one
+  context menu, `ContextMenu` + `sfe-context-menu` (`menus/context-menu.ts`, see
+  [context-menu-plan](../development/context-menu-plan.md)): `position: fixed`, moved back inside the window after
+  render, Shift+right click gives the browser's. Closes on a pointerdown outside (not on its own trigger: the ⋮
+  toggles), Esc/Tab, scroll, resize, navigation; item menus also on `generation`.
 - Tiles: the ⋮ takes the tag button's place and pushes the tag and copy buttons left only when it shows (`:has()`).
 - `NameDialog` (`dialogs.name`): `newFolder(parent)`, `rename(item)`; a file's name is selected up to its extension;
   400/409 messages show under the field; on success `store.applyAdded` (sorted by name among the loaded items of its

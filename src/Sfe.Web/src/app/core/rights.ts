@@ -22,6 +22,7 @@ export const Rights = {
     viewTags: 'tags.view',
     assignTags: 'tags.assign',
     manageTags: 'tags.manage',
+    folderDefaultTags: 'tags.folderDefaults',
     scan: 'index.scan',
     removeFromIndex: 'index.remove',
     excludeFolders: 'index.exclude',

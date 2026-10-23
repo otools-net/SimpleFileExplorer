@@ -59,6 +59,9 @@
 .summary .exclusion-chip { margin-left: 8px; vertical-align: 1px; }
 button.exclusion-chip { background: none; font-family: inherit; cursor: pointer; }
 button.exclusion-chip:hover, button.exclusion-chip:focus-visible { color: var(--text); border-style: solid; }
+.summary .default-tags-badge { margin-left: 8px; vertical-align: middle; }
+.summary .default-tags-button { height: 22px; min-width: 22px; }
+.summary .default-tags-button .icon { width: 15px; height: 15px; }
 
 .sort { display: flex; align-items: center; gap: 6px; }
 

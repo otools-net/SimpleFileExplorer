@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { CopyPathService } from '../../core/copy-path.service';
 import { joinParts, plural } from '../../core/format';
 import { SortField } from '../../core/models';
-import { Rights } from '../../core/rights';
 import { IconComponent } from '../../shared/icon.component';
-import { Dialogs } from '../dialogs.service';
 import { defaultSort, SEARCH_SORTS } from '../library-route';
+import { DefaultTagsBadgeComponent } from '../../tags/default-tags-badge.component';
 import { exclusionChip, exclusionTitle } from '../items/exclusions';
+import { FolderMenu } from '../folder-menu';
+import { ContextMenuDirective } from '../../menus/context-menu';
 import { ListingStore } from '../listing.store';
 import { SearchBoxState, SearchExplainComponent } from '../search-explain/search-explain.component';
 import { PinButtonComponent } from '../quick-links/pin-button.component';
@@ -28,7 +29,7 @@ const SORT_OPTIONS: [SortField, string][] = [
 /** Where the listing is: folder navigation, breadcrumbs, the search in words, the counts and the sort. */
 @Component({
     selector: 'section[sfeLocation]',
-    imports: [IconComponent, RouterLink, SearchExplainComponent, FolderNavComponent, PinButtonComponent],
+    imports: [IconComponent, RouterLink, ContextMenuDirective, SearchExplainComponent, FolderNavComponent, PinButtonComponent, DefaultTagsBadgeComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'location' },
     template: `
@@ -45,7 +46,8 @@ const SORT_OPTIONS: [SortField, string][] = [
                         <span class="current" aria-current="page">{{ crumb.name }}</span>
                     } @else {
                         <!-- data-path: dragged onto the quick links, it adds the folder; data-drop: items dropped on it move there. -->
-                        <a routerLink="/" [queryParams]="store.browseParams(crumb.path)" [attr.data-path]="crumb.path" [attr.data-drop]="crumb.path">{{ crumb.name }}</a>
+                        <a routerLink="/" [queryParams]="store.browseParams(crumb.path)" [attr.data-path]="crumb.path" [attr.data-drop]="crumb.path"
+                           [sfeContextMenu]="folder.linkTarget(crumb.path)">{{ crumb.name }}</a>
                     }
                 }
                 @if (store.route().q) {
@@ -98,7 +100,11 @@ const SORT_OPTIONS: [SortField, string][] = [
             <sfe-search-explain id="search-explain" />
         }
         <div class="location-bar">
-            <p class="summary">{{ summary() }}@if (exclusion(); as exclusion) {
+            <p class="summary">{{ summary() }}@if (defaultTags(); as defaults) {
+                    <!-- The tags the files put here get, listed in its panel; Change… opens the folder's tags for those who may. -->
+                    <sfe-default-tags-badge [own]="defaults.own" [inherited]="defaults.inherited" [folder]="folderLabel()"
+                                            [editable]="canTag()" (edit)="openScopeTags()" />
+                }@if (exclusion(); as exclusion) {
                     @if (canExclude()) {
                         <button type="button" class="exclusion-chip" [title]="exclusionTitle() + ' Click to change it.'" (click)="openExclusions()">{{ exclusion }}</button>
                     } @else {
@@ -129,34 +135,32 @@ export class LocationComponent {
     protected readonly copyPaths = inject(CopyPathService);
     protected readonly search = inject(SearchBoxState);
     protected readonly links = inject(LocationLinks);
-    private readonly dialogs = inject(Dialogs);
     protected readonly uploads = inject(UploadQueue);
-    /** Tagging every file of the folder or search changes tags: hidden without the right (here, with folder rules). */
-    protected readonly canTag = computed(() => this.store.can(Rights.assignTags));
-    /** Folders are made in the folder browsed (not in a search, nor in a folder shown only on the way to another). */
+    protected readonly folder = inject(FolderMenu);
+    protected readonly canTag = this.folder.canTag;
     /** Uploads the files picked into the folder listed. */
     protected upload(input: HTMLInputElement): void {
         void this.uploads.add(pickedFiles(input), this.store.route().path);
         input.value = '';
     }
 
-    protected readonly canCreateFolder = computed(() =>
-        !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFolders));
-    protected readonly canCreateFile = computed(() =>
-        !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFiles));
+    protected readonly canCreateFolder = this.folder.canCreateFolder;
+    protected readonly canCreateFile = this.folder.canCreateFile;
     /** What the folder browsed is kept out of (scans, trickplay, thumbnails): a small note for everyone. */
-    private readonly exclusions = computed(() => {
-        const page = this.store.listing();
-        return page && !this.store.searching() && 'exclusions' in page ? page.exclusions ?? null : null;
-    });
+    private readonly exclusions = computed(() => this.folder.exclusions());
     protected readonly exclusion = computed(() => exclusionChip(this.exclusions()));
     protected readonly exclusionTitle = computed(() => exclusionTitle(this.exclusions(), this.store.listing()?.path ?? ''));
-    protected readonly canExclude = computed(() => this.store.can(Rights.excludeFolders) && Boolean(this.dialogs.folderExclusions()));
+    /** The default tags of the folder browsed, its own and its parents': for everyone. */
+    protected readonly defaultTags = computed(() => {
+        const page = this.store.listing();
+        const defaults = page && !this.store.searching() && 'defaultTags' in page ? page.defaultTags ?? null : null;
+        return defaults && (defaults.own.length || defaults.inherited.length) ? defaults : null;
+    });
+    protected readonly folderLabel = computed(() => this.store.route().path ? `“${this.folderName()}”` : 'the top folder');
+    protected readonly canExclude = this.folder.canExclude;
 
     protected openExclusions(): void {
-        const page = this.store.listing();
-        if (page)
-            this.dialogs.folderExclusions()?.open(page.path, this.exclusions());
+        this.folder.openExclusions();
     }
 
     protected readonly sortOptions = SORT_OPTIONS;
@@ -205,17 +209,16 @@ export class LocationComponent {
         : 'Add or remove tags on all the files of this folder, or of its sub-folders too (asks first)');
 
     protected newFolder(): void {
-        this.dialogs.name()?.newFolder(this.store.route().path);
+        this.folder.newFolder();
     }
 
     protected newFile(): void {
-        this.dialogs.name()?.newFile(this.store.route().path);
+        this.folder.newFile();
     }
 
     /** The tags of every file of the folder browsed, or of every match of the search. */
     protected openScopeTags(): void {
-        const { path, q } = this.store.route();
-        this.dialogs.scopeTags()?.open({ path, recursive: false, query: q || null });
+        this.folder.openScopeTags();
     }
 
     protected changeSort(event: Event): void {

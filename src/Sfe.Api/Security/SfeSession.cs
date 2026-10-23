@@ -13,10 +13,17 @@ namespace Sfe.Api.Security;
 /// </summary>
 public static class SfeSession
 {
+    /// <summary>The cookie's name; the port is added to it (<see cref="InstanceCookies"/>).</summary>
     public const string CookieName = "sfe.session";
 
-    /// <summary>The library chosen by a visitor without an account (its slug); not a secret, rights are checked anyway.</summary>
+    /// <summary>
+    /// The library chosen by a visitor without an account (its slug); not a secret, rights are checked anyway. Read and
+    /// written as <see cref="GuestTenantCookieName"/>.
+    /// </summary>
     public const string GuestTenantCookie = "sfe.guest";
+
+    /// <summary>The guest's library cookie of this instance (its port added: <see cref="InstanceCookies"/>).</summary>
+    public static string GuestTenantCookieName(HttpRequest request) => InstanceCookies.Name(request, GuestTenantCookie);
 
     public const string StampClaim = "sfe:stamp";
     public const string TenantClaim = "sfe:tenant";
@@ -85,6 +92,8 @@ public static class SfeSession
         {
             context.RejectPrincipal();
             await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return;
         }
+        InstanceCookieManager.RenameShared(context);
     }
 }

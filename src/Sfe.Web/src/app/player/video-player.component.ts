@@ -3,6 +3,7 @@ import { formatDuration as formatTime } from '../core/format';
 import { VideoStream } from '../core/config.service';
 import { StreamProbe, TrickplayManifest } from '../core/models';
 import { readPreference, writePreference } from '../core/preferences';
+import { MenuEntry } from '../menus/context-menu';
 import { IconComponent } from '../shared/icon.component';
 
 const DOUBLE_TAP_MS = 300;      // max delay between the two taps of a double tap
@@ -102,7 +103,9 @@ interface Playback {
                 <div class="player-speed-wrap">
                     <button type="button" class="player-button player-speed" title="Playback speed" aria-haspopup="true" [attr.aria-expanded]="speedMenu()" (click)="toggleSpeedMenu()">{{ speed() }}×</button>
                     @if (speedMenu()) {
-                        <div class="player-speed-menu" role="menu" aria-label="Playback speed" [class.wide]="speedMenuHeight < 200" [style.max-height.px]="speedMenuHeight">
+                        <!-- On phones a sheet at the bottom of the screen (phone-sheets.css). -->
+                        <div class="sheet-backdrop" aria-hidden="true" (click)="speedMenu.set(false)"></div>
+                        <div class="player-speed-menu phone-sheet" role="menu" aria-label="Playback speed" [class.wide]="speedMenuHeight < 200" [style.max-height.px]="speedMenuHeight">
                             @for (rate of speeds; track rate) {
                                 <button type="button" role="menuitemradio" [class.on]="rate === speed()" [attr.aria-checked]="rate === speed()" [title]="'Play at ' + rate + '×'" (click)="setSpeed(rate)">{{ rate }}×</button>
                             }
@@ -265,6 +268,44 @@ export class VideoPlayerComponent {
         }
         this.showControls();
         return true;
+    }
+
+    /** The player's part of a context menu (a right click on the video): its controls, as entries, with their keys. */
+    menuEntries(): MenuEntry[] {
+        const fullscreen = this.fullscreen();
+        const entries: MenuEntry[] = [
+            { id: 'play', label: this.paused() ? 'Play' : 'Pause', icon: this.paused() ? 'play' : 'pause', shortcut: 'K', title: this.playLabel(), run: () => this.togglePlay() },
+            {
+                id: 'speed', label: `Speed: ${this.speed()}×`, icon: 'fast', title: 'How fast it plays',
+                submenu: () => this.speeds.map(rate => ({
+                    id: `speed-${rate}`, label: `${rate}×`, icon: rate === this.speed() ? 'check' : 'fast', title: `Play at ${rate}×`, run: () => this.setSpeed(rate),
+                })),
+            },
+            { id: 'loop', label: this.looping() ? 'Stop looping' : 'Loop', icon: 'loop', shortcut: 'R', title: this.loopLabel(), run: () => this.toggleLoop() },
+            { id: 'mute', label: this.muted() ? 'Unmute' : 'Mute', icon: this.muted() ? 'volume' : 'muted', shortcut: 'M', title: this.muteLabel(), run: () => this.toggleMute() },
+            { id: 'saveFrame', label: 'Save this frame', icon: 'camera', shortcut: 'S', title: 'Save this frame as a picture (S)', run: () => this.saveFrame() },
+            {
+                id: 'fullscreen', label: fullscreen ? 'Exit full screen' : 'Full screen', icon: fullscreen ? 'exit-fullscreen' : 'fullscreen', shortcut: 'F',
+                title: fullscreen ? 'Leave full screen (F)' : 'Full screen (F)', run: () => void this.toggleFullscreen(),
+            },
+        ];
+        if (typeof document !== 'undefined' && document.pictureInPictureEnabled)
+            entries.push({
+                id: 'pictureInPicture', label: 'Picture in picture', icon: 'window',
+                title: 'Keep it playing in a small window, above the other windows', run: () => void this.togglePictureInPicture(),
+            });
+        return entries;
+    }
+
+    private async togglePictureInPicture(): Promise<void> {
+        try {
+            if (document.pictureInPictureElement)
+                await document.exitPictureInPicture();
+            else
+                await this.video.requestPictureInPicture();
+        } catch {
+            // Refused (no video yet, or not allowed here): stay as is.
+        }
     }
 
     setTrickplay(info: TrickplayManifest | null, sheetUrl: (index: number) => string): void {

@@ -2,7 +2,8 @@
 
 **Administration › Duplicates & moves**: identical files, similar videos, and tagged files that were moved or renamed.
 All three work from the index, so [scan](../user-guide/scanning.md) folders to keep it current. Click a name to open
-the file, or its folder to browse there.
+the file, or its folder to browse there. A right click on a file opens its menu: **Open in new tab**, **Open
+containing folder** (also in a new tab), **Download** and **Copy full path**.
 
 ## Duplicates
 

@@ -1065,7 +1065,8 @@ public sealed class ApiTests
         using var preview = await _client.PostAsJsonAsync("/api/tasks/schedules/preview", input, Json, TestContext.CancellationToken);
         var runs = (await preview.Content.ReadFromJsonAsync<SchedulePreview>(Json, TestContext.CancellationToken))!.Runs;
         Assert.HasCount(TaskScheduleService.PreviewCount, runs);
-        Assert.AreEqual(TimeSpan.FromDays(1), runs[1] - runs[0]);
+        // A day apart on the server's clock (23 or 25 hours across a change to or from summer time).
+        Assert.AreEqual(TimeSpan.FromDays(1), TimeZoneInfo.ConvertTime(runs[1], TimeZoneInfo.Local).DateTime - TimeZoneInfo.ConvertTime(runs[0], TimeZoneInfo.Local).DateTime);
 
         using var created = await _client.PostAsJsonAsync("/api/tasks/schedules", input, Json, TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);

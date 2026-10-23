@@ -16,6 +16,6 @@ Code: `ListingStore` (`selection`, `select`, `selectAll`, `selectedItems`, `sele
 - Shift+arrows select the item left and the one reached (the anchor moves, as with shift-clicks): going back doesn't
   deselect.
 - Phones (1.62.0): a long press (`contextmenu` whose `pointerType` is `touch`, or on a touch-only screen) toggles the
-  item's selection instead of opening the menu (`fromTouch` in `item-menu.ts`); the item menu is a bottom sheet
+  item's selection instead of opening the menu (`fromTouch` in `menus/context-menu.ts`, the item target's `touch`); the item menu is a bottom sheet
   (`max-width: 640px`, `.item-menu-title`, `.item-menu-backdrop`); `quick-links.component.ts` cancels drags on
   touch-only screens (Move to… instead).

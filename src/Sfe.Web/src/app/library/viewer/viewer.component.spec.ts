@@ -4,6 +4,7 @@ import { EditorView } from '@codemirror/view';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { leaveViewer } from './leave-viewer';
+import { ContextMenu, ContextMenuComponent } from '../../menus/context-menu';
 import { ViewerComponent } from './viewer.component';
 
 /** A screen box (jsdom lays nothing out). */
@@ -30,11 +31,11 @@ describe('ViewerComponent › Actual size', () => {
     const transform = () => picture().style.transform;
     /** An entry of the viewer's ⋮ menu (opened for it). */
     async function entry(id: string): Promise<HTMLElement | null> {
-        if (!element.querySelector('.viewer-menu')) {
+        if (!document.querySelector('.item-menu')) {
             button('More actions')?.click();
             await settle();
         }
-        return element.querySelector<HTMLElement>(`.viewer-menu [data-entry="${id}"]`);
+        return document.querySelector<HTMLElement>(`.item-menu [data-entry="${id}"]`);
     }
 
     async function press(type: string, x: number, y: number): Promise<void> {
@@ -72,6 +73,8 @@ describe('ViewerComponent › Actual size', () => {
         TestBed.configureTestingModule({ providers: testProviders(api) });
         await loadConfig(api);
         TestBed.inject(ListingStore).items.set([photo, other]);
+        // The app's menu, as the root component has it (the ⋮ menu and a right click on the stage open it).
+        TestBed.createComponent(ContextMenuComponent);
         fixture = TestBed.createComponent(ViewerComponent);
         element = fixture.nativeElement;
         await fixture.whenStable();
@@ -215,6 +218,8 @@ describe('ViewerComponent › Documents', () => {
         await loadConfig(api);
         store = TestBed.inject(ListingStore);
         store.items.set([photo, notes, archive, clip]);
+        // The app's menu, as the root component has it (the ⋮ menu and a right click on the stage open it).
+        TestBed.createComponent(ContextMenuComponent);
         fixture = TestBed.createComponent(ViewerComponent);
         element = fixture.nativeElement;
         await fixture.whenStable();
@@ -348,13 +353,53 @@ describe('ViewerComponent › Documents', () => {
 
         element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]')!.click();
         await settle();
-        const entries = [...element.querySelectorAll<HTMLElement>('.viewer-menu .item-menu-entry')];
+        // In the dialog: the rest of the page is inert while it is open.
+        expect(dialog().querySelector('.item-menu')).not.toBeNull();
+        const entries = [...element.querySelectorAll<HTMLElement>('.item-menu .item-menu-entry')];
         expect(entries.map(entry => entry.dataset['entry'])).toEqual(expect.arrayContaining(['popOut', 'newTab', 'download']));
-        expect(element.querySelector<HTMLAnchorElement>('.viewer-menu [data-entry="newTab"]')!.target).toBe('_blank');
+        expect(element.querySelector<HTMLAnchorElement>('.item-menu [data-entry="newTab"]')!.target).toBe('_blank');
 
-        expect((await key('Escape')).defaultPrevented).toBe(true);
-        expect(element.querySelector('.viewer-menu')).toBeNull();
+        const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        element.querySelector('.item-menu')!.dispatchEvent(escape);
+        await settle();
+        expect(escape.defaultPrevented).toBe(true);
+        expect(document.querySelector('.item-menu')).toBeNull();
         expect(dialog().open).toBe(true);
+    });
+
+    it('has the same menu on its ⋮ and on a right click on the stage, without what would take the file away', async () => {
+        await open(photo);
+        const menu = TestBed.inject(ContextMenu);
+
+        element.querySelector('.viewer-stage')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 50, clientY: 60 }));
+        await settle();
+        const target = menu.open()!.target;
+        expect(target).toMatchObject({ kind: 'file', key: 'viewer:Media/photo.jpg', item: photo });
+        const ids = target.entries().map(entry => entry.id);
+        expect(ids).toEqual(expect.arrayContaining(['newTab', 'copy', 'copyTo', 'properties']));
+        expect(ids.filter(id => ['rename', 'delete', 'cut', 'moveTo', 'open'].includes(id))).toEqual([]);
+        expect(element.querySelector('button[aria-label="More actions"]')!.getAttribute('aria-expanded')).toBe('true');
+
+        // The ⋮ button closes it (a toggle), then opens the same menu.
+        element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]')!.click();
+        expect(menu.open()).toBeNull();
+        element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]')!.click();
+        expect(menu.open()!.target.key).toBe('viewer:Media/photo.jpg');
+
+        // Another file: the menu was for the one before.
+        await key('ArrowRight');
+        expect(menu.open()).toBeNull();
+        // A document (here a text) keeps the browser's menu on its stage; its ⋮ still has the menu.
+        await vi.waitFor(() => expect(content()).toBeTruthy());
+        const onText = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+        element.querySelector('.viewer-stage')!.dispatchEvent(onText);
+        expect(onText.defaultPrevented).toBe(false);
+        expect(menu.open()).toBeNull();
+        // Elsewhere in the viewer (its bar): no menu, not even the browser's.
+        const onBar = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+        element.querySelector('.viewer-bar')!.dispatchEvent(onBar);
+        expect(onBar.defaultPrevented).toBe(true);
+        expect(menu.open()).toBeNull();
     });
 
     it('opens a file ready to be changed when asked (a new file)', async () => {

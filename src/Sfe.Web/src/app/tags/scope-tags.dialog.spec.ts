@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ScopeTagChangeResult, ScopeTags, TagScope, TagSummary } from '../core/models';
+import { FolderDefaults, FolderDefaultTagsResult, ScopeTagChangeResult, ScopeTags, TagScope, TagSummary } from '../core/models';
+import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
-import { ApiMock, buttonNamed, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
+import { ApiMock, buttonNamed, limitedConfig, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
 import { ScopeTagsDialog } from './scope-tags.dialog';
 
 describe('ScopeTagsDialog', () => {
@@ -19,7 +20,12 @@ describe('ScopeTagsDialog', () => {
 
     const section = (heading: string) => [...element.querySelectorAll('.tag-group')].find(g => g.querySelector('h3')!.textContent === heading);
     const chips = (heading: string) => [...section(heading)?.querySelectorAll('.tag-name') ?? []].map(chip => chip.textContent!.trim());
-    const picker = () => element.querySelector<HTMLInputElement>('sfe-tag-picker input');
+    const picker = () => element.querySelector<HTMLInputElement>('sfe-tag-picker:not(.default-picker) input');
+    const defaultPicker = () => element.querySelector<HTMLInputElement>('sfe-tag-picker.default-picker input');
+    const defaultSection = () => element.querySelector<HTMLElement>('.default-tags');
+    const defaultConfirm = () => element.querySelector<HTMLElement>('.default-confirm');
+    const defaultChips = () => [...defaultSection()!.querySelectorAll('.tag-name')].map(chip => chip.textContent!.trim());
+    const noDefaults = (path = 'Media'): FolderDefaults => ({ path, own: [], inherited: [] });
     const options = () => [...element.querySelectorAll<HTMLLIElement>('.tag-options li')];
     const confirmBox = () => element.querySelector<HTMLElement>('.scope-confirm');
     const recursive = () => element.querySelector<HTMLInputElement>('.scope-recursive input');
@@ -39,6 +45,7 @@ describe('ScopeTagsDialog', () => {
         toasts = TestBed.inject(ToastService);
         store = TestBed.inject(ListingStore);
         api.tags.mockResolvedValue({ matches: [], descendants: [] });
+        api.folderDefaultTags.mockResolvedValue(noDefaults());
         fixture = TestBed.createComponent(ScopeTagsDialog);
         element = fixture.nativeElement;
         await fixture.whenStable();
@@ -188,5 +195,123 @@ describe('ScopeTagsDialog', () => {
 
         expect(error).toHaveBeenCalledWith('A scan is running: try again when it has finished.');
         expect(confirmBox()).not.toBeNull();
+    });
+
+    describe('default tags', () => {
+        /** Picks `picked` in the default tags' picker. */
+        async function pickDefault(picked: TagSummary): Promise<void> {
+            api.tags.mockResolvedValue({ matches: [tag(picked.name, { id: picked.id })], descendants: [] });
+            defaultPicker()!.focus();
+            await settle();
+            options()[0].click();
+            await settle();
+        }
+
+        function saved(defaults: FolderDefaults, files: ScopeTagChangeResult | null = null): FolderDefaultTagsResult {
+            return { defaults, files };
+        }
+
+        it('lists the own default tags of the folder and those of its parents', async () => {
+            api.folderDefaultTags.mockResolvedValue({ path: 'Media/Holidays', own: [beach], inherited: [{ path: 'Media', tag: sun }] });
+            await open({ ...folder, path: 'Media/Holidays' }, tags(folder, 0));
+
+            expect(api.folderDefaultTags).toHaveBeenCalledWith('Media/Holidays', expect.any(AbortSignal));
+            expect(defaultChips()).toEqual(['Beach', 'sun · Media']);
+            expect(defaultSection()!.querySelectorAll('.tag-remove')).toHaveLength(1);
+        });
+
+        it('adds a default tag for the new files only, or for the files already there too', async () => {
+            await open(folder, tags(folder, 3));
+            const refresh = vi.spyOn(store, 'refresh').mockResolvedValue();
+            const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => { });
+            const show = vi.spyOn(toasts, 'show');
+            api.changeFolderDefaultTags.mockResolvedValue(saved({ ...noDefaults(), own: [beach] }));
+
+            await pickDefault(beach);
+            expect(defaultConfirm()!.textContent).toContain('Give “Beach” to every file put into “Media” or its sub-folders from now on?');
+            expect(api.changeFolderDefaultTags).not.toHaveBeenCalled();
+            buttonNamed(defaultConfirm()!, 'New files only')!.click();
+            await settle();
+
+            expect(api.changeFolderDefaultTags).toHaveBeenCalledWith({ path: 'Media', add: [beach.id], addToFiles: false });
+            expect(show).toHaveBeenCalledWith('“Beach” is a default tag of “Media”: new files there get it.');
+            expect(applied).not.toHaveBeenCalled();
+            expect(refresh).toHaveBeenCalled();
+            expect(defaultConfirm()).toBeNull();
+            expect(defaultChips()).toEqual(['Beach']);
+
+            api.changeFolderDefaultTags.mockResolvedValue(saved({ ...noDefaults(), own: [beach, sun] }, changed({ ...folder, recursive: true }, 3, 3, 0)));
+            await pickDefault(sun);
+            buttonNamed(defaultConfirm()!, 'Existing files too')!.click();
+            await settle();
+
+            expect(api.changeFolderDefaultTags).toHaveBeenLastCalledWith({ path: 'Media', add: [sun.id], addToFiles: true });
+            expect(show).toHaveBeenLastCalledWith('“sun” is a default tag of “Media”: added to 3 files.');
+            expect(applied).toHaveBeenCalledWith({ path: 'Media', recursive: true, query: null }, { add: expect.objectContaining({ id: sun.id }) });
+        });
+
+        it('asks whether the files already there keep a default tag taken off the folder', async () => {
+            api.folderDefaultTags.mockResolvedValue({ ...noDefaults(), own: [beach] });
+            await open(folder, tags(folder, 3, [beach, 3]));
+            vi.spyOn(store, 'refresh').mockResolvedValue();
+            const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => { });
+            const show = vi.spyOn(toasts, 'show');
+            api.changeFolderDefaultTags.mockResolvedValue(saved(noDefaults(), changed({ ...folder, recursive: true }, 3, 0, 3)));
+
+            defaultSection()!.querySelector<HTMLButtonElement>('.tag-remove')!.click();
+            await settle();
+
+            expect(defaultConfirm()!.textContent).toContain('Stop giving “Beach” to the files put into “Media”?');
+            expect(buttonNamed(defaultConfirm()!, 'Keep it on the files')).toBeDefined();
+            buttonNamed(defaultConfirm()!, 'Remove it from the files too')!.click();
+            await settle();
+
+            expect(api.changeFolderDefaultTags).toHaveBeenCalledWith({ path: 'Media', remove: [beach.id], removeFromFiles: true });
+            expect(show).toHaveBeenCalledWith('“Beach” is no longer a default tag of “Media”: removed from 3 files.');
+            expect(applied).toHaveBeenCalledWith({ path: 'Media', recursive: true, query: null }, { remove: beach.id });
+            expect(defaultSection()!.textContent).toContain('This folder has no default tags.');
+        });
+
+        it('keeps the change waiting when a scan is running', async () => {
+            await open(folder, tags(folder, 1));
+            const error = vi.spyOn(toasts, 'error');
+            api.changeFolderDefaultTags.mockResolvedValue({ detail: 'A scan is running: try again when it has finished.' });
+
+            await pickDefault(sun);
+            buttonNamed(defaultConfirm()!, 'Existing files too')!.click();
+            await settle();
+
+            expect(error).toHaveBeenCalledWith('A scan is running: try again when it has finished.');
+            expect(defaultConfirm()).not.toBeNull();
+        });
+
+        it('is not offered for a search', async () => {
+            await open({ ...folder, query: 'cat' }, tags({ ...folder, query: 'cat' }, 2));
+
+            expect(defaultSection()).toBeNull();
+            expect(api.folderDefaultTags).not.toHaveBeenCalled();
+        });
+
+        it('shows the default tags without changing them, or nothing, without the right', async () => {
+            await loadConfig(api, limitedConfig([Rights.viewTags, Rights.assignTags]));
+            await open(folder, tags(folder, 1));
+            expect(defaultSection()).toBeNull();
+
+            api.folderDefaultTags.mockResolvedValue({ ...noDefaults(), own: [beach] });
+            await open(folder, tags(folder, 1));
+            expect(defaultChips()).toEqual(['Beach']);
+            expect(defaultSection()!.querySelector('.tag-remove')).toBeNull();
+            expect(defaultPicker()).toBeNull();
+        });
+
+        it('offers only to change the new files without the right to tag files', async () => {
+            await loadConfig(api, limitedConfig([Rights.viewTags, Rights.folderDefaultTags]));
+            await open(folder, tags(folder, 1));
+
+            await pickDefault(sun);
+
+            expect(buttonNamed(defaultConfirm()!, 'New files only')).toBeDefined();
+            expect(buttonNamed(defaultConfirm()!, 'Existing files too')).toBeUndefined();
+        });
     });
 });

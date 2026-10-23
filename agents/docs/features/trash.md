@@ -13,7 +13,7 @@ Code: `src/Sfe.Core/Files/Trash.cs`, `FileTree.cs`, `FileOperations.DeleteAsync`
 - Links are acted on as links (deleted, trashed, moved), never followed.
 - A trashed folder's **folder rules** leave `FolderRules` (`TakeTreeAsync`) into `TrashEntries.Rules` (JSON) and come
   back on restore (`PutBackAsync`, dropping principals gone meanwhile): no stale rule applies to a new folder of that
-  name meanwhile.
+  name meanwhile. Its **default tags** do the same through `TrashEntries.DefaultTags` ([default-tags.md](default-tags.md)).
 - **Tags** of trashed files go to `TrashTags` (path inside the item); index rows are deleted, **not** recorded as
   missing files.
 

@@ -257,6 +257,50 @@ public sealed class LocalStartTests
         CollectionAssert.AreEqual(rest, left);
     }
 
+    [TestMethod]
+    [DataRow(new[] { "--urls", "http://localhost:5080" }, false, new[] { "--urls", "http://localhost:5080" })]
+    [DataRow(new[] { "--no-logo", "--no-browser" }, true, new[] { "--no-browser" })]
+    [DataRow(new[] { "/NO-LOGO", "--Sfe:Root=D:\\Media" }, true, new[] { "--Sfe:Root=D:\\Media" })]
+    public void NoLogoIsTakenOutOfTheArguments(string[] args, bool expected, string[] rest)
+    {
+        var left = StartupLogo.TakeNoLogo(args, out var noLogo);
+
+        Assert.AreEqual(expected, noLogo);
+        CollectionAssert.AreEqual(rest, left);
+    }
+
+    [TestMethod]
+    public void TheLogoIsAsciiWithTheVersion()
+    {
+        var logo = StartupLogo.Text("1.2.3");
+
+        StringAssert.Contains(logo, "Simple File Explorer 1.2.3");
+        Assert.IsTrue(logo.All(c => c < 128), "Any console code page shows it");
+    }
+
+    [TestMethod]
+    [DataRow(new[] { "--help" }, true)]
+    [DataRow(new[] { "--urls", "http://localhost:5080", "-?" }, true)]
+    [DataRow(new[] { "/?" }, true)]
+    [DataRow(new[] { "-H" }, true)]
+    [DataRow(new[] { "--Sfe:Root=D:\\help" }, false)]
+    public void HelpIsAskedWithTheUsualSwitches(string[] args, bool expected) =>
+        Assert.AreEqual(expected, CommandLine.AsksForHelp(args));
+
+    [TestMethod]
+    public void TheHelpListsEverySwitchWithinEightyColumns()
+    {
+        var help = CommandLine.HelpText("1.2.3");
+
+        foreach (var option in new[] { BrowserLauncher.NoBrowserArgument, StartupLogo.NoLogoArgument, "--help",
+                                       WindowsServiceSetup.InstallArgument, WindowsServiceSetup.UninstallArgument, "--urls" })
+            StringAssert.Contains(help, option);
+        StringAssert.Contains(help, "Simple File Explorer 1.2.3");
+        foreach (var line in help.Split('\n'))
+            Assert.IsTrue(line.TrimEnd('\r').Length <= 80, $"Too long for a console: {line}");
+        Assert.IsTrue(help.All(c => c < 128), "Any console code page shows it");
+    }
+
     /// <summary>A browser on <paramref name="address"/>: keeps its cookie, doesn't follow redirects.</summary>
     private static HttpClient Browser(WebApplicationFactory<Program> factory, string address)
     {

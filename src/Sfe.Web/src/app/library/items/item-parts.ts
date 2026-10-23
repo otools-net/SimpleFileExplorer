@@ -5,7 +5,10 @@ import { LibraryItem } from '../../core/models';
 import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
 import { TagChipComponent } from '../../tags/tag-chip.component';
+import { TagMenu } from '../../tags/tag-menu';
 import { ListingStore } from '../listing.store';
+import { ContextMenuDirective } from '../../menus/context-menu';
+import { FolderMenu } from '../folder-menu';
 import { ItemActions } from './item-actions.service';
 
 /* The small parts shared by the tiles and rows of the listing. */
@@ -16,18 +19,20 @@ export const NOT_INDEXED = '(not indexed yet: search, tags and duplicates find i
 /** Chips of the tags set on a file; clicking one searches for it. */
 @Component({
     selector: 'sfe-item-tags',
-    imports: [TagChipComponent],
+    imports: [TagChipComponent, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'item-tags', '[hidden]': '!item().tags?.length' },
     template: `
         @for (tag of item().tags ?? []; track tag.id) {
-            <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="actions.searchTag($event)" />
+            <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="actions.searchTag($event)"
+                          [sfeContextMenu]="tagMenu.target(tag, item())" />
         }
     `,
 })
 export class ItemTagsComponent {
     readonly item = input.required<LibraryItem>();
     protected readonly actions = inject(ItemActions);
+    protected readonly tagMenu = inject(TagMenu);
 }
 
 /** The check box selecting a file or folder. The input covers the box (see styles): a click forwarded by a label might not carry the shift key. */
@@ -70,12 +75,13 @@ export class TagButtonComponent {
 /** The folder of a search result, linking to it. */
 @Component({
     selector: 'sfe-item-folder',
-    imports: [HighlightComponent, RouterLink],
+    imports: [HighlightComponent, RouterLink, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { style: 'display: contents' },
     template: `
         @if (item().directory !== undefined && item().directory !== null) {
-            <a class="item-folder" routerLink="/" [queryParams]="store.browseParams(item().directory!)" [title]="'Open ' + name()">
+            <a class="item-folder" routerLink="/" [queryParams]="store.browseParams(item().directory!)" [title]="'Open ' + name()"
+               [sfeContextMenu]="folder.linkTarget(item().directory!)">
                 <sfe-highlight [text]="name()" [pattern]="pattern()" />
             </a>
         }
@@ -85,6 +91,7 @@ export class ItemFolderComponent {
     readonly item = input.required<LibraryItem>();
     readonly pattern = input<RegExp | null>(null);
     protected readonly store = inject(ListingStore);
+    protected readonly folder = inject(FolderMenu);
     private readonly config = inject(ConfigService);
     protected readonly name = computed(() => this.item().directory || this.config.config()?.rootName || '');
 }

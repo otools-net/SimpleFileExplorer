@@ -360,4 +360,24 @@ describe('MainMenuComponent keep alive', () => {
         await settle();
         expect(badge()!.textContent).toBe('!');
     });
+
+    it('shows a yellow ! and a line of its own while the server does not answer, even with keep alive off', async () => {
+        await create('none');
+        const feed = TestBed.inject(ChangeFeed);
+        feed.serverLost.set(true);
+        await settle();
+
+        expect(badge()!.classList).toContain('failing');
+        expect(badge()!.textContent).toBe('!');
+        expect(button().getAttribute('aria-label')).toBe('More (server not answering)');
+        expect(button().title).toContain('Server not answering');
+        expect(line()!.textContent).toContain('Server not answering');
+        expect(element.querySelectorAll('.menu-keep-alive-line')).toHaveLength(1);
+
+        // Back: as before (nothing, keep alive being off).
+        feed.serverLost.set(false);
+        await settle();
+        expect(badge()).toBeNull();
+        expect(line()).toBeNull();
+    });
 });
