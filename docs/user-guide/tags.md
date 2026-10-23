@@ -31,6 +31,8 @@ A right click on a tag chip (on a file, in the sidebar, in the viewer) opens its
 in new tab**, **Add to the search** or **Leave out of the search** (while searching; else **Search without this
 tag**), **Remove from this file** (right `tags.assign`) and **Edit the tag…** (right `tags.manage`).
 
+![The menu of a tag chip](../images/tag-menu.png)
+
 ## Several files at once
 
 ![Three files selected](../images/selection-bar.png)

@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 29/33 done. Next: Phase 3, tests, user docs + screenshots, CHANGELOG (a last look over the phase).**
+**Progress: 30/33 done. Next: Closing, visual check of every row of the map (desktop and phone width).**
 
 ## How to use this file
 
@@ -182,7 +182,7 @@ new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
 - [x] No menu in modal dialogs, folder picker, picture editor canvas (not over the viewer's readers and editors, which
   keep their own right click: see Decisions). `data-context-menu="none"` / `"own"` areas; links in dialogs get the link
   menu
-- [ ] Tests; user docs + screenshots; CHANGELOG
+- [x] Tests; user docs + screenshots; CHANGELOG (each item came with its own; `tag-menu.png` in `tags.md`, the `tags` scene)
 
 ### Closing
 

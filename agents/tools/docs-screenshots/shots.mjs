@@ -372,6 +372,22 @@ const scenes = {
         await b.clickText('.selection-bar button, [class*=selection] button', 'Tags');
         await sleep(1500);
         await b.shot(OUT + 'files-tags-dialog.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(600);
+        // A tag chip's menu (right click), in the list view where files show their tags.
+        await b.eval(`localStorage.setItem('sfe.view', 'list'); 1`);
+        await b.open('?path=Photos%2F2025%20Mountains');
+        const chip = await b.rect('.row sfe-tag-chip');
+        const cx = chip.x + Math.min(chip.width / 2, 20), cy = chip.y + chip.height / 2;
+        await b.mouse('mouseMoved', cx, cy);
+        await b.mouse('mousePressed', cx, cy, { button: 'right' });
+        await b.mouse('mouseReleased', cx, cy, { button: 'right' });
+        await sleep(500);
+        const menu = await b.rect('.item-menu');
+        const left = Math.max(0, Math.min(chip.x, menu.x) - 40), top = Math.max(0, Math.min(chip.y, menu.y) - 30);
+        await b.shot(OUT + 'tag-menu.png', { x: left, y: top, width: Math.max(chip.x + chip.width, menu.x + menu.width) + 40 - left, height: Math.max(chip.y + chip.height, menu.y + menu.height) + 30 - top });
+        await b.key('Escape', 'Escape', 27);
+        await b.eval(`localStorage.removeItem('sfe.view'); 1`);
         await b.close();
     },
     async scopeTags() {
