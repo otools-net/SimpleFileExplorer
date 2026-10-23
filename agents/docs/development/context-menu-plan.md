@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 20/34 done. Next: Phase 2, the formats' own entries (Markdown links, JSON, CSV, PDF).**
+**Progress: 21/33 done. Next: Phase 2, screenshot of the viewer's menu; then Phase 3, tag chips.**
 
 ## How to use this file
 
@@ -27,6 +27,10 @@ migration; every entry reuses an action that already has its right.
 Status legend: `[ ]` to do, `[~]` started, `[x]` done (commit), `[-]` dropped (why).
 
 ## Decisions
+
+- **Only pictures and videos in the viewer (2026-10-23):** file readers and editors (text, Markdown, JSON, CSV, PDF,
+  EPUB, the `view?path=` page) are not changed: their stage and page keep the browser's menu. The viewer's ⋮ menu
+  (the shared one) stays for every file.
 
 - Editable fields and selected text keep the browser's menu (spellcheck, paste, copy selection).
 - Shift+right-click stays the escape hatch to the browser's menu.
@@ -65,9 +69,8 @@ One resolver decides for each `contextmenu` event, in this order:
 | Search history and suggestions (`topbar/search-box.component.ts`) | history entry | Search · Open in new tab (`?q=`) · Remove from history |
 | Viewer stage: image, audio (`viewer/viewer.component.ts`) | file shown | File menu + Fit / Actual size, Pop out, External player; the viewer's ⋮ shows the same menu (`menuEntries` goes) |
 | Video player surface, mouse (`player/video-player.component.ts`) | file + player | Play/Pause · Speed › · Loop · Picture-in-picture · Pop out · Copy link at this time, then the file menu |
-| Text, Markdown, JSON, CSV, PDF viewers (`app/formats/`) | file viewed; Markdown links → file / folder / external link | File menu; JSON node + Copy path / value; CSV cell + Copy cell |
-| EPUB (iframe, `formats/epub/epub-document.ts`) | file, hooked inside the rendition | File menu |
-| `/view` and `/player` pages | file (folder link → folder link menu) | File menu |
+| Text, Markdown, JSON, CSV, PDF, EPUB viewers and the `view` page | none (decided) | The browser's menu |
+| `/player` page | page | The player's entries, Copy link at this time, Download |
 | Duplicates / Similar / Missing rows (`tracking/tracking-parts.ts`) | file | File menu + Open containing folder; missing files: Relink / Forget / Copy path |
 | Trash rows (`files/trash-section.component.ts`) | trashed item | Restore · Delete permanently · Open original folder · Open in new tab |
 | Uploads and operations panel rows | job | Cancel / Retry · Open target folder · Open in new tab |
@@ -155,16 +158,16 @@ Done in the commit "context menus in the viewer and the player":
   Copy, Copy to…, Properties added
 - [x] Video player surface (mouse): `VideoPlayerComponent.menuEntries()` + Speed submenu + Copy link at this time,
   then the viewer's entries; touch fast play unchanged
-- [x] `/view` and `/player` pages (`usePageMenu`)
+- [x] `/player` page (`usePageMenu`); the `/view` page's menu was taken back out (decision above)
 
 Left:
 
-- [ ] The formats' own entries: Markdown (links in the text → file / folder / external link targets), JSON (Copy path
-  / value of a node), CSV (Copy cell), PDF (outline links). Their text already gets the viewer's menu (selected text:
-  the browser's)
-- [ ] EPUB: `contextmenu` hooked inside the rendition iframe
-- [~] Tests for each; user docs + screenshots; CHANGELOG (done for what is ticked: `viewer.md`, `video-player.md`,
-  `text-files.md`; a screenshot of the viewer's menu is left for the end of the phase)
+- [x] The viewer's stage menu only for pictures and videos (`stageMenu`); readers and editors untouched (decision)
+- [~] Tests for each; user docs + screenshots; CHANGELOG (done: `viewer.md`, `video-player.md`; left: a screenshot
+  of the viewer's menu)
+
+Also built in this phase (part of phase 3's App links): a link with no menu of its own gets a link menu (Open, Open in
+new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
 
 ### Phase 3: the rest
 

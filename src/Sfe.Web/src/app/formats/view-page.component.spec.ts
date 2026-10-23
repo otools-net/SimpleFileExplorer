@@ -5,7 +5,6 @@ import { ApiError } from '../core/api.service';
 import { ItemProperties } from '../core/models';
 import { ApiMock, item, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
 import { READING_KEY } from './reading/reading.service';
-import { ContextMenu } from '../menus/context-menu';
 import { ViewPageComponent } from './view-page.component';
 
 describe('ViewPageComponent', () => {
@@ -51,16 +50,6 @@ describe('ViewPageComponent', () => {
         expect(element.querySelector('a[aria-label="Open its folder"]')!.getAttribute('href')).toBe('./?path=Docs%2FTrip');
         expect(element.querySelector('a[aria-label="Download"]')).not.toBeNull();
         expect(TestBed.inject(Title).getTitle()).toBe('notes.txt – SFE');
-    });
-
-    it('has a menu of its own for a right click on the page: its folder (in a new tab too), download', async () => {
-        api.properties.mockResolvedValue(properties('Docs/Trip/notes.txt'));
-        await open({ path: 'Docs/Trip/notes.txt' });
-        const page = TestBed.inject(ContextMenu).page()!;
-
-        expect(page).toMatchObject({ kind: 'page', name: 'notes.txt' });
-        expect(page.entries().map(entry => entry.id)).toEqual(['openFolder', 'folderNewTab', 'download']);
-        expect(page.entries()[1]).toMatchObject({ href: './?path=Docs%2FTrip', newTab: true });
     });
 
     it('shows any file as text when asked, and none otherwise', async () => {

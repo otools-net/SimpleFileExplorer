@@ -23,11 +23,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   buttons, a search result's folder, quick links (also move up, move down, remove) and recent searches. Text boxes and
   selected text keep the browser's menu, as does Shift with the right click.
 - The **menu key** (or Shift+F10) opens the menu of what has the focus, like a right click.
-- In the **viewer**, a right click on the picture, video or document opens the viewer's menu (the ⋮ one), which now
+- In the **viewer**, a right click on the picture or video opens the viewer's menu (the ⋮ one), which now
   also has **Copy**, **Copy to…** and **Properties**. On a **video**, the menu starts with the player's controls:
   play / pause, speed, loop, mute, save this frame, full screen, picture in picture, and **Copy link at this time**.
-- The video's own window and a file's page of its own (`view`) have a right-click menu too (its folder, download,
-  copy full path).
+- The video's own window has a right-click menu too: the player's controls, copy link at this time, download.
+- A right click on the app's other links (the ⋮ menu's, the administration's) opens a small menu: **Open**, **Open in
+  new tab**, **Copy link address**.
 
 ### Changed
 

@@ -15,8 +15,7 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
   `useContextMenu(() => target)` in a component's constructor for its host. The innermost element wins (the outer
   ones see `defaultPrevented`).
 - A right click on nothing with a menu: the page's menu, `ContextMenu.page`, set by `usePageMenu(target)` in a page's
-  constructor (cleared when it is destroyed): the listing page (`FolderMenu.target()`), the player page, the view
-  page. Inside a `<dialog>` (sheets, editor) without a target of its own the browser's menu stays for now.
+  constructor (cleared when it is destroyed): the listing page (`FolderMenu.target()`), the player page. Inside a `<dialog>` (sheets, editor) without a target of its own the browser's menu stays for now.
 - Modal dialogs: while one is open the rest of the page is inert and below the top layer, so `sfe-context-menu` moves
   its host element into the dialog the trigger is in (else the last `dialog[open]` matching `:modal`), and back home
   when closed; its layer (`.context-menu-layer`) is a `popover="manual"` shown after render (top layer, above the
@@ -44,11 +43,15 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
 | Breadcrumbs, up / previous / next, a search result's folder | `folderLink` (`FolderMenu.linkTarget`) | Open, Open in new tab, Paste into, quick link, Copy full path, Properties |
 | Quick link | `folderLink` / `fileLink` | Its folder's entries (or Show in its folder, Open in new tab, Copy full path, Properties), then Move up / down, Remove; only those when it's not found any more |
 | Recent search | `historyEntry` | Search, Open in new tab, Remove from the history |
-| Viewer: its ⋮, a right click on the stage (picture, video, document) | `file` (`viewer:<path>`) | A video: the player's `menuEntries()` (Play, Speed › rates, Loop, Mute, Save this frame, Full screen, Picture in picture); then Actual size / Fit, Crop, quick link, Copy full path, Open in a new window, Copy link at this time, external player, Open in new tab, Download, and the item menu's Copy, Copy to…, Properties (`ItemMenu.entries(item, true)`: the file alone, not the listing's selection; their listing keys left out). Not rename / delete / move: the viewer doesn't follow a file that changes or goes |
+| Viewer: its ⋮ (every file), a right click on the stage (pictures and videos only: `stageMenu`; documents and audio keep the browser's menu) | `file` (`viewer:<path>`) | A video: the player's `menuEntries()` (Play, Speed › rates, Loop, Mute, Save this frame, Full screen, Picture in picture); then Actual size / Fit, Crop, quick link, Copy full path, Open in a new window, Copy link at this time, external player, Open in new tab, Download, and the item menu's Copy, Copy to…, Properties (`ItemMenu.entries(item, true)`: the file alone, not the listing's selection; their listing keys left out). Not rename / delete / move: the viewer doesn't follow a file that changes or goes |
 | Player page (`player?path=`) | `page` | The player's entries, Copy link at this time, external player, Download, Copy full path |
-| View page (`view?path=`) | `page` | Open its folder (also in a new tab), Download, Copy full path |
 
 - Links: a file's `ItemActions.fileUrl` (its `view?path=` page for formats with one, else the raw file); a listing's
   `ListingStore.pageUrl(params)` (what RouterLink makes: `LocationStrategy.prepareExternalUrl`, so it holds under a
   virtual directory).
+- A link with no menu of its own (an `a[href]` leading elsewhere: not `#…`, not a download) reached by the page
+  fallback gets a link menu (`ContextMenu.linkTarget`: Open, as a click on it; Open in new tab; Copy link address),
+  also from the keyboard. Inside a dialog: not yet (phase 3).
+- File readers and editors (text, Markdown, JSON, CSV, PDF, EPUB) are left as they are: no menu of their own, the
+  browser's on their text (decided 2026-10-23).
 - A folder link knows only its path: no entry needing the folder's own rules (Paste into is checked by the server).

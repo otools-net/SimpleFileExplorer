@@ -1,6 +1,8 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, Directive, effect, ElementRef, inject, Injectable, Injector, input, signal, untracked, viewChild } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
+import { copyText } from '../core/copy-path.service';
 import { LibraryItem } from '../core/models';
+import { ToastService } from '../core/toast.service';
 import { IconComponent } from '../shared/icon.component';
 
 /**
@@ -52,6 +54,7 @@ export class ContextMenu {
     /** The menu of the page shown, for a right click on nothing with a menu of its own; set by the page. */
     readonly page = signal<MenuTarget | null>(null);
     private readonly elements = new WeakMap<Element, () => MenuTarget | null>();
+    private readonly toasts = inject(ToastService);
     private keyboardAt = -Infinity;
 
     /** `element` has the menu of `target` (for the keyboard: the focused element's menu). */
@@ -83,13 +86,38 @@ export class ContextMenu {
     }
 
     /**
-     * A right click nothing handled: the page's menu. Not in dialogs (the viewer, sheets): they keep the browser's menu
-     * until they have menus of their own (phases 2 and 3 of the plan).
+     * A right click nothing handled: a link's menu (open it, in a new tab, copy its address), else the page's. Not in
+     * dialogs (sheets): they keep the browser's menu until they have menus of their own (phase 3 of the plan).
      */
     fromPage(event: MouseEvent): void {
         if (event.target instanceof Element && event.target.closest('dialog'))
             return;
-        this.fromEvent(event, this.page(), null);
+        const link = linkAt(event.target, 'a[href]');
+        this.fromEvent(event, link ? this.linkTarget(link) : this.page(), link);
+    }
+
+    /** The menu of a link: open it (as a click on it does), in a new tab, or copy its address. */
+    linkTarget(link: HTMLAnchorElement): MenuTarget {
+        const href = link.href;
+        return {
+            kind: 'appLink',
+            key: `link:${href}`,
+            name: link.textContent?.trim() || link.getAttribute('aria-label') || href,
+            entries: () => [
+                { id: 'open', label: 'Open', icon: 'right', title: 'Follow this link', run: () => link.click() },
+                { id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Follow this link in a tab of its own', href, newTab: true },
+                { id: 'copyLink', label: 'Copy link address', icon: 'copy', title: 'Copy where this link goes', run: () => void this.copyLink(href) },
+            ],
+        };
+    }
+
+    private async copyLink(href: string): Promise<void> {
+        try {
+            await copyText(href);
+            this.toasts.show('Link copied.');
+        } catch {
+            this.toasts.show('The link could not be copied.', { error: true });
+        }
     }
 
     /** The ContextMenu key or Shift+F10: the menu of the focused element (or of the page), under it. */
@@ -130,14 +158,15 @@ export class ContextMenu {
         this.open.set({ target, x, y, trigger });
     }
 
-    /** The nearest element around `element` with a menu, and that menu; else the page's. */
+    /** The nearest element around `element` with a menu, and that menu; else a link's menu, else the page's. */
     private targetOf(element: HTMLElement | null): [HTMLElement | null, MenuTarget | null] {
         for (let node: HTMLElement | null = element; node; node = node.parentElement) {
             const target = this.elements.get(node)?.();
             if (target)
                 return [node, target];
         }
-        return [null, this.page()];
+        const link = linkAt(element, 'a[href]');
+        return link ? [link, this.linkTarget(link)] : [null, this.page()];
     }
 
     /** The browser's own `contextmenu` event following the key that already opened the menu. */
@@ -162,6 +191,18 @@ export function keepsBrowserMenu(event: MouseEvent): boolean {
             if (selection.getRangeAt(i).intersectsNode(target))
                 return true;
     return false;
+}
+
+/**
+ * The link around `target` matching `selector` that leads somewhere else: not one to a place in the same page, nor a
+ * download, nor a script.
+ */
+function linkAt(target: EventTarget | null, selector: string): HTMLAnchorElement | null {
+    const link = target instanceof Element ? target.closest<HTMLAnchorElement>(selector) : null;
+    const href = link?.getAttribute('href') ?? '';
+    if (!link || !href || href.startsWith('#') || link.hasAttribute('download') || !/^https?:$/.test(link.protocol))
+        return null;
+    return link;
 }
 
 /** Inputs taking text (not check boxes or buttons), text areas and editable content (CodeMirror). */

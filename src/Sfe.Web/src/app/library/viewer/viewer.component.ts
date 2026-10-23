@@ -68,7 +68,7 @@ const OWNS_KEYS = '[data-owns-keys]';
                     <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
                 </div>
             </header>
-            <div #stage class="viewer-stage" [sfeContextMenu]="menuTarget()" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
+            <div #stage class="viewer-stage" [sfeContextMenu]="stageMenu()" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
                 @for (shown of shownItem(); track shown.path) {
                     @if (unsupported()) {
                         <div class="viewer-message">
@@ -233,6 +233,8 @@ export class ViewerComponent {
         const item = this.item();
         return item ? { kind: 'file', key: `viewer:${item.path}`, name: item.name, item, entries: () => this.menuEntries() } : null;
     });
+    /** A right click on a picture or a video: the same menu. Documents (text, PDF, EPUB...) keep the browser's. */
+    protected readonly stageMenu = computed(() => this.builtin() === 'image' || this.builtin() === 'video' ? this.menuTarget() : null);
     protected readonly menuOpen = computed(() => this.contextMenu.open()?.target.key === this.menuTarget()?.key);
     protected readonly menuEntries = computed((): MenuEntry[] => {
         const item = this.item();

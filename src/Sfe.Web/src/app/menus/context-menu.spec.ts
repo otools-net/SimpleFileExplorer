@@ -16,7 +16,10 @@ function target(key: string, entries: MenuEntry[] = [{ id: 'act', label: 'Act', 
             <input id="box" type="checkbox">
             <div id="editable" contenteditable="true">Notes</div>
             <p id="words">Some words</p>
+            <a id="itemLink" href="files/a.txt">An item's own link</a>
         </div>
+        <a id="anchor" href="#part-2">Part 2</a>
+        <a id="appLink" href="admin?section=logs">Logs</a>
         <span id="empty" tabindex="0" [sfeContextMenu]="empty">Nothing</span>
         <span id="plain" tabindex="0">Plain</span>
         <sfe-context-menu />
@@ -102,6 +105,32 @@ describe('ContextMenu', () => {
 
         page.destroy();
         expect(menu.page()).toBeNull();
+    });
+
+    it('gives a link with no menu of its own a link menu: open, in a new tab, copy its address', async () => {
+        // A link that is part of an element with a menu (an item's name): the element's.
+        rightClick(at('#itemLink'));
+        expect(menu.open()?.target.key).toBe('outer');
+        // A link to a place in the same page: no link menu (nor a page menu here: the browser's).
+        expect(rightClick(at('#anchor')).defaultPrevented).toBe(false);
+
+        // Anywhere else (an app link), even with no page menu.
+        const event = rightClick(at('#appLink'));
+        expect(event.defaultPrevented).toBe(true);
+        const link = menu.open()!.target;
+        expect(link).toMatchObject({ kind: 'appLink', name: 'Logs' });
+        expect(link.entries().map(e => e.id)).toEqual(['open', 'newTab', 'copyLink']);
+        expect(link.entries()[1]).toMatchObject({ newTab: true, href: expect.stringMatching(/\/admin\?section=logs$/) });
+        const click = vi.fn((e: Event) => e.preventDefault());
+        at('#appLink').addEventListener('click', click);
+        link.entries()[0].run!();
+        expect(click).toHaveBeenCalled();
+
+        // The keyboard on a focused link: the same.
+        menu.close();
+        at('#appLink').focus();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ContextMenu', bubbles: true, cancelable: true }));
+        expect(menu.open()).toMatchObject({ target: { kind: 'appLink', name: 'Logs' }, trigger: at('#appLink') });
     });
 
     it('does the target\'s touch action on a long press instead of opening the menu', () => {

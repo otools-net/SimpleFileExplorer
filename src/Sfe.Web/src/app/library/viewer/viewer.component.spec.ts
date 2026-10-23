@@ -389,6 +389,12 @@ describe('ViewerComponent › Documents', () => {
         // Another file: the menu was for the one before.
         await key('ArrowRight');
         expect(menu.open()).toBeNull();
+        // A document (here a text) keeps the browser's menu on its stage; its ⋮ still has the menu.
+        await vi.waitFor(() => expect(content()).toBeTruthy());
+        const onText = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+        element.querySelector('.viewer-stage')!.dispatchEvent(onText);
+        expect(onText.defaultPrevented).toBe(false);
+        expect(menu.open()).toBeNull();
     });
 
     it('opens a file ready to be changed when asked (a new file)', async () => {
