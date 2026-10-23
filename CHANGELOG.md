@@ -3,6 +3,13 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## Unreleased
+
+### Fixed
+
+- **Security:** `System.Security.Cryptography.Pkcs` (brought by the SQL Server driver) updated to 10.0.13 for the .NET
+  denial of service vulnerabilities CVE-2026-84008 and CVE-2026-70162.
+
 ## 1.81.0
 
 ### Added
