@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiMock, item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
+import { MenuEntry } from '../../menus/context-menu';
 import { FILE_VIEW_HOST, PDF_FORMAT } from '../formats';
 import { NotPdfError, PDF_LOADER, PdfEvents, PdfOutlineItem } from './pdf-document';
 import { PDF_DARK_KEY, PDF_OUTLINE_KEY, PDF_PAGES_KEY, PdfViewComponent } from './pdf-view.component';
@@ -150,8 +151,10 @@ describe('PdfViewComponent', () => {
         const find = new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true, cancelable: true });
         window.dispatchEvent(find);
         expect(find.defaultPrevented).toBe(true);
+        await stable();         // focused once shown (a phone's field shows under the bar first)
         const box = element.querySelector<HTMLInputElement>('[data-find]')!;
         expect(document.activeElement).toBe(box);
+        expect(element.querySelector('.pdf-find')!.classList).toContain('open');
 
         box.value = 'ridge';
         box.dispatchEvent(new Event('input'));
@@ -202,6 +205,30 @@ describe('PdfViewComponent', () => {
 
         expect(element.classList).toContain('dark-pages');
         expect(localStorage.getItem(PDF_DARK_KEY)).toBe('1');
+    });
+
+    it('on a phone, opens the find field under the bar with its magnifier; Esc hides it again', async () => {
+        await show();
+        element.querySelector<HTMLButtonElement>('[data-find-toggle]')!.click();
+        await stable();
+        const box = element.querySelector<HTMLInputElement>('[data-find]')!;
+        expect(element.querySelector('.pdf-find')!.classList).toContain('open');
+        expect(document.activeElement).toBe(box);
+
+        box.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+        await stable();
+        expect(element.querySelector('.pdf-find')!.classList).not.toContain('open');
+    });
+
+    it('gives the zoom list to the "⋯" menu as a submenu of sizes, the one used checked', async () => {
+        await show();
+        const more = (fixture.componentInstance as unknown as { more: { zoom: () => MenuEntry } }).more;
+        const sizes = more.zoom().submenu!();
+        expect(sizes.find(size => size.checked)?.label).toBe('Automatic');
+        sizes.find(size => size.label === '150 %')!.run!();
+        await stable();
+        expect(more.zoom().label).toBe('Zoom: 150 %');
+        expect(element.querySelector<HTMLSelectElement>('[data-scale]')!.value).toBe('1.5');
     });
 
     it('offers a download when the file isn\'t a PDF it can show', async () => {

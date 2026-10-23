@@ -3,7 +3,7 @@
 // screen, and every `[sfeOverflowRow]` (or other row listed in the scene) must stay on one line, inside itself and the
 // screen; prints `ok`/`FAIL` per check with what left the row (exit code 1 on a failure), saves
 // `<prefix>-<scene>-<size>.png` and, where something left, `-menu.png` with the "⋯" menu open.
-// Usage: node overflow.mjs <out prefix> [scene...]   (scenes: viewer-video, viewer-fullscreen, selection, player-page; all by default)
+// Usage: node overflow.mjs <out prefix> [scene...]   (scenes: see `scenes` below; all by default)
 // Needs a docs-screenshots run first (its build and seeded data in <tmp>/sfe-docs); serves them on :5095.
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -58,6 +58,22 @@ const scenes = {
             await sleep(800);
         },
     },
+    // The document viewers' toolbars (step 5).
+    'text-viewer': { rows: ['.text-toolbar'], open: b => openDocument(b, 'Documents', 'Photo backup.log') },
+    'text-editor': {
+        rows: ['.text-toolbar'],
+        async open(b) {
+            await openDocument(b, 'Documents', 'Trip diary.txt');
+            await b.eval(`document.querySelector('.viewer [data-edit]').click(); 1`);
+            await sleep(1500);
+        },
+    },
+    'json-viewer': { rows: ['.text-toolbar'], open: b => openDocument(b, 'Documents', 'Trip plan.json') },
+    'csv-viewer': { rows: ['.text-toolbar'], open: b => openDocument(b, 'Documents', 'Huts.csv') },
+    'subtitles-viewer': { rows: ['.text-toolbar'], open: b => openDocument(b, 'Videos/Holidays', 'Campfire.en.srt') },
+    'pdf-viewer': { rows: ['.text-toolbar'], open: b => openDocument(b, 'Documents', 'Hut handbook.pdf') },
+    'markdown-viewer': { rows: ['.text-toolbar'], open: b => openDocument(b, 'Documents', 'Hiking guide.md') },
+    'markdown-page': { rows: ['.text-toolbar'], open: b => b.goto(url + 'view?path=' + enc('Documents/Hiking guide.md'), 3500) },
     'player-page': {
         rows: ['.player-row'],
         async open(b) {
@@ -66,6 +82,13 @@ const scenes = {
         },
     },
 };
+
+/** A file of `folder` opened in the viewer, from the listing. */
+async function openDocument(b, folder, title) {
+    await b.goto(url + '?path=' + enc(folder), 3000);
+    await b.eval(`document.querySelector('a.item-link[title^=${JSON.stringify(title)}]').click(); 1`);
+    await sleep(3000);
+}
 
 /** Paused, so the controls stay shown. */
 async function pauseVideo(b) {

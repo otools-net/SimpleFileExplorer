@@ -99,7 +99,7 @@ export class OverflowRowDirective implements OnInit {
     }
 
     /**
-     * The library adds up the items' widths, not the gaps between them (nor the row's padding and border, measured in
+     * The library adds up the items' widths, not the gaps between them nor the row's padding (and border, measured in
      * `overflowIn`): they are its padding, for the items shown (with a width: a text shown in another's place takes
      * none while hidden) and the "⋯". That number changes with what fits, so within one width the padding only grows: an
      * item that fitted without its gap leaves again and stays out, never back and forth. A new width (or items added or
@@ -111,9 +111,9 @@ export class OverflowRowDirective implements OnInit {
         const style = getComputedStyle(this.element);
         const px = (value: string) => parseFloat(value) || 0;
         const gap = px(style.columnGap);
-        const chrome = this.overflowIn()
-            ? px(style.paddingLeft) + px(style.paddingRight) + px(style.borderLeftWidth) + px(style.borderRightWidth)
-            : 0;
+        // clientWidth holds the row's padding (not its border): room taken too; measured in `overflowIn`, its border as well.
+        const chrome = px(style.paddingLeft) + px(style.paddingRight)
+            + (this.overflowIn() ? px(style.borderLeftWidth) + px(style.borderRightWidth) : 0);
         const room = (count: number) => chrome + gap * Math.max(count - 1, 0);
         const width = (this.overflowIn() ?? this.element).clientWidth;
         if (width !== this.measuredWidth) {

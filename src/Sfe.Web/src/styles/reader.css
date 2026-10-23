@@ -36,6 +36,8 @@
     display: grid;
     /* The toolbar, the editing bar (empty but for a problem), the text, the status bar. */
     grid-template-rows: auto auto minmax(0, 1fr) auto;
+    /* As wide as the viewer, whatever the text: long lines scroll inside the editor (else the toolbar grew with them). */
+    grid-template-columns: minmax(0, 1fr);
     min-width: 0;
     min-height: 0;
     overflow: hidden;
@@ -122,7 +124,8 @@
 
 /* ---------- Editing (text-editor.md) ---------- */
 
-.text-edit-actions { display: flex; align-items: center; gap: 4px; margin-right: 8px; }
+/* Padding, not a margin, after the groups of a toolbar: an overflow row measures widths, not margins (overflow.css). */
+.text-edit-actions { display: flex; align-items: center; gap: 4px; padding-right: 8px; }
 .text-view .text-action {
     display: inline-flex;
     align-items: center;
@@ -142,7 +145,7 @@
 .text-view .text-action.primary { border-color: var(--accent); color: var(--accent); }
 .text-view .text-action.active { background: var(--reader-selection-match); color: var(--accent); }
 /* A file too large to be read whole: its parts. */
-.text-parts { display: flex; gap: 4px; margin-right: 8px; }
+.text-parts { display: flex; gap: 4px; padding-right: 8px; }
 .text-view .text-action:disabled { opacity: .5; cursor: default; }
 
 .text-bar {
@@ -163,6 +166,14 @@
 .text-view .text-bar .link-button { color: var(--reader-muted); }
 .text-bar-error { flex-basis: 100%; color: var(--danger); }
 .text-edited { color: var(--accent); }
+
+/* The toolbars are overflow rows (one line, the buttons that don't fit in their "⋯"); their fields stay, narrower on a phone. */
+@media (max-width: 640px) {
+    .text-toolbar .json-filter:not(.pdf-page, [data-shift-box]) { width: 110px; }
+    /* The editing actions stay: Save a copy and Done as icons (their title says what they do). */
+    .text-toolbar .text-action-label { display: none; }
+    .text-toolbar .text-action:has(.text-action-label) { padding: 0 8px; }
+}
 
 /* "Aa": the reading settings, at the end of the bar. */
 .text-toolbar .reading-toggle { margin-left: auto; font-family: Georgia, serif; font-size: 15px; font-weight: 700; }
@@ -290,7 +301,7 @@
 
 /* ---------- Markdown (formats/markdown/): read, source or both ---------- */
 
-.markdown-modes { display: flex; gap: 2px; margin-right: 6px; padding: 2px; border: 1px solid var(--reader-border); border-radius: 8px; }
+.markdown-modes { display: flex; gap: 2px; padding: 2px; border: 1px solid var(--reader-border); border-radius: 8px; }
 .markdown-mode {
     height: 28px;
     padding: 0 10px;
@@ -601,7 +612,24 @@
 
 .pdf-page { width: 56px; text-align: center; }
 .pdf-pages { color: var(--reader-muted); font-size: 13px; white-space: nowrap; }
-.pdf-zoom, .pdf-find { display: inline-flex; align-items: center; gap: 4px; }
+.pdf-find, .pdf-find-field { display: inline-flex; align-items: center; gap: 4px; }
+.pdf-find-toggle { display: none !important; }
+/* A phone: a magnifier in the bar; the field, once opened, on a line of its own under the bar (over the pages). */
+@media (max-width: 640px) {
+    .pdf-find-toggle { display: grid !important; }
+    .pdf-find:not(.open) .pdf-find-field { display: none; }
+    .pdf-find.open .pdf-find-field {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: 0;
+        z-index: 3;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--reader-border);
+        background: var(--reader-gutter);
+    }
+    .pdf-find.open .pdf-find-field .json-filter { flex: 1; width: auto; }
+}
 .pdf-find { margin-left: auto; }
 .pdf-find .json-filter { width: 180px; }
 .pdf-matches { color: var(--reader-muted); font-size: 12px; white-space: nowrap; }

@@ -14,12 +14,18 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - The **selection bar** stays on one line and whole on a phone: the count gets shorter first (`5 selected`), then the
   buttons that don't fit go, from the right (Download first), into its **More actions** (⋯) button; Clear, the count,
   Select all and Tags always stay. Its buttons on the right used to be cut off.
+- The **bars of the document viewers** (text, Markdown, JSON, CSV, subtitles, PDF) stay on one line: the buttons that
+  don't fit go, from the right (Aa first), into their **More actions** (⋯) button; the editing buttons and the fields
+  stay (Save a copy and Done as icons on a phone). On a phone the PDF's find is a magnifier opening the field under
+  the bar, and its zoom list goes into the menu.
 - SFE's **work files** (the trash, unfinished uploads) go to the server's data folder by default, no longer to a
   hidden `.sfe` folder in the library. The spaces of an install updated from an earlier version keep theirs in the
   library; only new installs and spaces created later start on the server.
 
 ### Fixed
 
+- In the **text viewer** on a phone, the reading settings button (Aa) was off the screen when the text had long lines
+  (the bar grew with them).
 - **Security:** `System.Security.Cryptography.Pkcs` (brought by the SQL Server driver) updated to 10.0.13 for the .NET
   denial of service vulnerabilities CVE-2026-84008 and CVE-2026-70162.
 

@@ -4,6 +4,8 @@ import { ConfigService } from '../../core/config.service';
 import { formatSize } from '../../core/format';
 import { LibraryItem, TextFile } from '../../core/models';
 import { Rights } from '../../core/rights';
+import { MenuEntry } from '../../menus/context-menu';
+import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../../menus/overflow-row';
 import { IconComponent } from '../../shared/icon.component';
 import { extensionOf, FILE_VIEW_HOST, FileFormat } from '../formats';
 import { ReadingPanelComponent } from '../reading/reading-panel.component';
@@ -13,6 +15,7 @@ import { readPosition, writePosition } from './positions';
 import { ENCODINGS, LINE_ENDINGS, textFailure } from './text-document';
 import { TextEditActionsComponent, TextEditBarComponent } from './text-edit.component';
 import { TextSession } from './text-session';
+import { findEntry, readingEntry } from '../toolbar-entries';
 
 /** The encodings a file can be read with (Reopen with encoding), and those it can be saved in. */
 const READ_ENCODINGS = ['utf-8', 'windows-1252', 'utf-16le', 'utf-16be'];
@@ -43,7 +46,7 @@ interface Part {
  */
 @Component({
     selector: 'sfe-text-view',
-    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent],
+    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
     providers: [TextSession],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -56,12 +59,12 @@ interface Part {
         '(window:keydown)': 'onWindowKeydown($event)',
     },
     template: `
-        <div class="text-toolbar" role="toolbar" aria-label="Text">
+        <div class="text-toolbar" role="toolbar" aria-label="Text" sfeOverflowRow="Text">
             @if (state() === 'ready' && !part()) {
-                <sfe-text-edit-actions />
+                <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
             }
             @if (part(); as shown) {
-                <div class="text-parts" role="group" aria-label="Parts of the file">
+                <div class="text-parts" role="group" aria-label="Parts of the file" [sfeOverflowItem]="more.parts">
                     <button type="button" class="text-action" data-part="start" title="The start of the file" [disabled]="shown.offset === 0 || loadingPart()" (click)="openPart(0)">Start</button>
                     <button type="button" class="text-action" data-part="previous" title="The part before" [disabled]="shown.offset === 0 || loadingPart()" (click)="previousPart()">‹ Earlier</button>
                     <button type="button" class="text-action" data-part="next" title="The part after" [disabled]="shown.end >= shown.size || loadingPart()" (click)="openPart(shown.end)">Later ›</button>
@@ -69,15 +72,16 @@ interface Part {
                 </div>
             }
             @if (state() === 'ready' && !session.editing()) {
-                <button type="button" class="text-action" data-follow [class.active]="following()" [attr.aria-pressed]="following()"
+                <button type="button" class="text-action" data-follow [sfeOverflowItem]="more.follow" [class.active]="following()" [attr.aria-pressed]="following()"
                         title="Show what is added to the end of the file as it grows (a log being written)" (click)="toggleFollow()"><svg sfeIcon="down"></svg> Follow</button>
             }
-            <button type="button" class="icon-button" [class.active]="own().wrap" [attr.aria-pressed]="own().wrap" title="Wrap long lines" aria-label="Wrap long lines" (click)="toggle('wrap')"><svg sfeIcon="wrap"></svg></button>
-            <button type="button" class="icon-button" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggle('lineNumbers')"><svg sfeIcon="line-numbers"></svg></button>
-            <button type="button" class="icon-button" title="Find (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="editor?.find()"><svg sfeIcon="search"></svg></button>
-            <button type="button" class="icon-button" title="Go to line (Ctrl+Alt+G)" aria-label="Go to line" [disabled]="state() !== 'ready'" (click)="editor?.goToLine()"><svg sfeIcon="goto-line"></svg></button>
-            <button type="button" class="icon-button reading-toggle" data-reading-toggle [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
+            <button type="button" class="icon-button" [sfeOverflowItem]="more.wrap" [class.active]="own().wrap" [attr.aria-pressed]="own().wrap" title="Wrap long lines" aria-label="Wrap long lines" (click)="toggle('wrap')"><svg sfeIcon="wrap"></svg></button>
+            <button type="button" class="icon-button" [sfeOverflowItem]="more.lineNumbers" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggle('lineNumbers')"><svg sfeIcon="line-numbers"></svg></button>
+            <button type="button" class="icon-button" [sfeOverflowItem]="more.find" title="Find (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="editor?.find()"><svg sfeIcon="search"></svg></button>
+            <button type="button" class="icon-button" [sfeOverflowItem]="more.goToLine" title="Go to line (Ctrl+Alt+G)" aria-label="Go to line" [disabled]="state() !== 'ready'" (click)="editor?.goToLine()"><svg sfeIcon="goto-line"></svg></button>
+            <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
                     title="Reading settings: font, size, width, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+            <button class="icon-button" sfeOverflowMore></button>
         </div>
         @if (panelOpen()) {
             <sfe-reading-panel [profile]="profile()" (closed)="panelOpen.set(false)" />
@@ -163,6 +167,29 @@ export class TextViewComponent {
     protected readonly loadingPart = signal(false);
     protected readonly following = signal(false);
     protected editor: TextEditor | null = null;
+    /** The toolbar's buttons in its "⋯" menu, when they don't fit (the editing actions stay). */
+    protected readonly more = {
+        parts: (): MenuEntry => {
+            const shown = this.part();
+            const first = !shown || shown.offset === 0 || this.loadingPart();
+            const last = !shown || shown.end >= shown.size || this.loadingPart();
+            return {
+                id: 'parts', label: 'Parts of the file', icon: 'rows', title: 'Another part of the file (too large to be read whole)',
+                submenu: () => [
+                    { id: 'part-start', label: 'Start', icon: 'up', title: 'The start of the file', disabled: first, run: () => void this.openPart(0) },
+                    { id: 'part-previous', label: 'Earlier', icon: 'left', title: 'The part before', disabled: first, run: () => this.previousPart() },
+                    { id: 'part-next', label: 'Later', icon: 'right', title: 'The part after', disabled: last, run: () => void this.openPart(shown!.end) },
+                    { id: 'part-end', label: 'End', icon: 'down', title: 'The end of the file', disabled: last, run: () => void this.openPart(-1) },
+                ],
+            };
+        },
+        follow: (): MenuEntry => ({ id: 'follow', label: 'Follow', icon: 'down', title: 'Show what is added to the end of the file as it grows (a log being written)', checked: this.following(), run: () => this.toggleFollow() }),
+        wrap: (): MenuEntry => ({ id: 'wrap', label: 'Wrap long lines', icon: 'wrap', title: 'Wrap long lines', checked: this.own().wrap, run: () => this.toggle('wrap') }),
+        lineNumbers: (): MenuEntry => ({ id: 'lineNumbers', label: 'Line numbers', icon: 'line-numbers', title: 'Line numbers', checked: this.own().lineNumbers, run: () => this.toggle('lineNumbers') }),
+        find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.editor?.find(), 'Find (Ctrl+F)'),
+        goToLine: (): MenuEntry => ({ id: 'goToLine', label: 'Go to line', icon: 'goto-line', shortcut: 'Ctrl+Alt+G', title: 'Go to line (Ctrl+Alt+G)', disabled: this.state() !== 'ready', run: () => this.editor?.goToLine() }),
+        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen()), 'Reading settings: font, size, width, colours'),
+    };
     private cancel: AbortSignal | null = null;
     private followTimer: ReturnType<typeof setTimeout> | undefined;
     /** Where the next part of a followed file starts (bytes). */

@@ -201,6 +201,15 @@ const scenes = {
         await sleep(600);
         await log.shot(OUT + 'text-viewer-find.png');
         await log.close();
+        // A phone: a JSON file's bar on one line, the buttons that don't fit in its "⋯" menu (a log's fits at 390 px).
+        const logPhone = await session({ width: 390, height: 844, mobile: true });
+        await logPhone.open('?path=Documents');
+        await logPhone.click('a.item-link[title^="Trip plan.json"]');
+        await sleep(2500);
+        await logPhone.click('.viewer .text-toolbar > .overflow-more.shown');
+        await sleep(600);
+        await logPhone.shot(OUT + 'text-viewer-phone-more.png');
+        await logPhone.close();
         // Prose: the reading settings, in sepia.
         const diary = await session();
         await diary.open('?path=Documents');

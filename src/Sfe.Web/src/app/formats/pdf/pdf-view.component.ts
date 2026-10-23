@@ -4,6 +4,8 @@ import { formatSize, joinParts } from '../../core/format';
 import { LibraryItem } from '../../core/models';
 import { readPreference, writePreference } from '../../core/preferences';
 import { Rights } from '../../core/rights';
+import { MenuEntry } from '../../menus/context-menu';
+import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../../menus/overflow-row';
 import { IconComponent } from '../../shared/icon.component';
 import { FILE_VIEW_HOST, FileFormat } from '../formats';
 import { readPosition, writePosition } from '../text/positions';
@@ -48,7 +50,7 @@ function linkViewerStyles(version: string): void {
  */
 @Component({
     selector: 'sfe-pdf-view',
-    imports: [IconComponent],
+    imports: [IconComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'text-view pdf-view',
@@ -58,15 +60,15 @@ function linkViewerStyles(version: string): void {
         '(window:keydown)': 'onWindowKeydown($event)',
     },
     template: `
-        <div class="text-toolbar" role="toolbar" aria-label="Document">
-            <button type="button" class="icon-button" title="Previous page (←)" aria-label="Previous page" data-previous-page [disabled]="state() !== 'ready' || page() <= 1" (click)="goTo(page() - 1)"><svg sfeIcon="left"></svg></button>
-            <input type="text" inputmode="numeric" class="json-filter pdf-page" data-page aria-label="Page" title="Go to page" [value]="page()" [disabled]="state() !== 'ready'"
+        <div class="text-toolbar" role="toolbar" aria-label="Document" sfeOverflowRow="Document">
+            <button type="button" class="icon-button" [sfeOverflowItem]="null" overflowStay title="Previous page (←)" aria-label="Previous page" data-previous-page [disabled]="state() !== 'ready' || page() <= 1" (click)="goTo(page() - 1)"><svg sfeIcon="left"></svg></button>
+            <input type="text" inputmode="numeric" class="json-filter pdf-page" [sfeOverflowItem]="null" overflowStay data-page aria-label="Page" title="Go to page" [value]="page()" [disabled]="state() !== 'ready'"
                    (keydown.enter)="goTo($any($event.target).value)" (blur)="$any($event.target).value = page()" />
-            <span class="pdf-pages">/ {{ pages() }}</span>
-            <button type="button" class="icon-button" title="Next page (→)" aria-label="Next page" data-next-page [disabled]="state() !== 'ready' || page() >= pages()" (click)="goTo(page() + 1)"><svg sfeIcon="right"></svg></button>
-            <span class="pdf-zoom">
-                <button type="button" class="icon-button" title="Smaller (Ctrl+−)" aria-label="Smaller" data-zoom-out [disabled]="state() !== 'ready'" (click)="zoom(-1)"><svg sfeIcon="zoom-out"></svg></button>
-                <select class="csv-delimiter" data-scale aria-label="Zoom" [disabled]="state() !== 'ready'" (change)="setScale($any($event.target).value)">
+            <span class="pdf-pages" [sfeOverflowItem]="null" overflowStay>/ {{ pages() }}</span>
+            <button type="button" class="icon-button" [sfeOverflowItem]="null" overflowStay title="Next page (→)" aria-label="Next page" data-next-page [disabled]="state() !== 'ready' || page() >= pages()" (click)="goTo(page() + 1)"><svg sfeIcon="right"></svg></button>
+            <!-- Smaller and Larger stay; the list of sizes may leave (a submenu in "⋯"). -->
+                <button type="button" class="icon-button" [sfeOverflowItem]="null" overflowStay title="Smaller (Ctrl+−)" aria-label="Smaller" data-zoom-out [disabled]="state() !== 'ready'" (click)="zoom(-1)"><svg sfeIcon="zoom-out"></svg></button>
+                <select class="csv-delimiter" data-scale [sfeOverflowItem]="more.zoom" aria-label="Zoom" [disabled]="state() !== 'ready'" (change)="setScale($any($event.target).value)">
                     @for (choice of scales; track choice.value) {
                         <option [value]="choice.value" [selected]="choice.value === scaleValue()">{{ choice.label }}</option>
                     }
@@ -74,21 +76,26 @@ function linkViewerStyles(version: string): void {
                         <option [value]="custom.value" selected>{{ custom.label }}</option>
                     }
                 </select>
-                <button type="button" class="icon-button" title="Larger (Ctrl+=)" aria-label="Larger" data-zoom-in [disabled]="state() !== 'ready'" (click)="zoom(1)"><svg sfeIcon="zoom-in"></svg></button>
-            </span>
+                <button type="button" class="icon-button" [sfeOverflowItem]="null" overflowStay title="Larger (Ctrl+=)" aria-label="Larger" data-zoom-in [disabled]="state() !== 'ready'" (click)="zoom(1)"><svg sfeIcon="zoom-in"></svg></button>
             @if (outline().length) {
-                <button type="button" class="icon-button" data-outline [class.active]="showOutline()" [attr.aria-pressed]="showOutline()" title="Outline: the document's headings" aria-label="Outline"
+                <button type="button" class="icon-button" data-outline [sfeOverflowItem]="more.outline" [class.active]="showOutline()" [attr.aria-pressed]="showOutline()" title="Outline: the document's headings" aria-label="Outline"
                         (click)="toggleOutline()"><svg sfeIcon="list"></svg></button>
             }
-            <span class="pdf-find">
+            <!-- On a phone a magnifier, which shows the field on a line under the bar (reader.css). -->
+            <span class="pdf-find" [class.open]="findOpen()" [sfeOverflowItem]="null" overflowStay>
+                <button type="button" class="icon-button pdf-find-toggle" data-find-toggle [class.active]="findOpen()" [attr.aria-expanded]="findOpen()"
+                        title="Find in the document (Ctrl+F)" aria-label="Find in the document" [disabled]="state() !== 'ready'" (click)="toggleFind()"><svg sfeIcon="search"></svg></button>
+                <span class="pdf-find-field">
                 <input #findBox type="search" class="json-filter" data-find placeholder="Find in the document" aria-label="Find in the document" title="Find (Ctrl+F); Enter: next, Shift+Enter: previous"
                        [disabled]="state() !== 'ready'" (input)="find($any($event.target).value)" (keydown)="onFindKeydown($event)" />
                 @if (query()) {
                     <span class="pdf-matches" data-matches>{{ matches().total ? matches().current + ' of ' + matches().total : 'Not found' }}</span>
                 }
+                </span>
             </span>
-            <button type="button" class="icon-button pdf-dark" data-dark [class.active]="dark()" [attr.aria-pressed]="dark()" title="Dark pages, for reading at night" aria-label="Dark pages"
+            <button type="button" class="icon-button pdf-dark" data-dark [sfeOverflowItem]="more.dark" [class.active]="dark()" [attr.aria-pressed]="dark()" title="Dark pages, for reading at night" aria-label="Dark pages"
                     (click)="toggleDark()"><svg sfeIcon="theme"></svg></button>
+            <button class="icon-button" sfeOverflowMore></button>
         </div>
         <!-- Always there: the grid's second row (the text views' editing bar), so that the pages take the third. -->
         <div class="pdf-messages">
@@ -148,6 +155,22 @@ export class PdfViewComponent {
     private readonly passwordBox = viewChild<ElementRef<HTMLInputElement>>('passwordBox');
 
     protected readonly scales = SCALES;
+    /** The toolbar's buttons in its "⋯" menu, when they don't fit (pages, zoom and find stay). */
+    /** On a phone: the find field shown, under the bar. */
+    protected readonly findOpen = signal(false);
+    protected readonly more = {
+        zoom: (): MenuEntry => {
+            const current = this.scaleValue();
+            const choices = [...SCALES, ...this.customScale() ? [this.customScale()!] : []];
+            return {
+                id: 'zoom', label: `Zoom: ${choices.find(choice => choice.value === current)?.label ?? current}`, icon: 'zoom-in', title: 'The size of the pages',
+                disabled: this.state() !== 'ready',
+                submenu: () => choices.map(choice => ({ id: 'zoom-' + choice.value, label: choice.label, icon: 'zoom-in', title: 'Pages at ' + choice.label, checked: choice.value === current, run: () => this.setScale(choice.value) })),
+            };
+        },
+        outline: (): MenuEntry => ({ id: 'outline', label: 'Outline', icon: 'list', title: "Outline: the document's headings", checked: this.showOutline(), run: () => this.toggleOutline() }),
+        dark: (): MenuEntry => ({ id: 'dark', label: 'Dark pages', icon: 'theme', title: 'Dark pages, for reading at night', checked: this.dark(), run: () => this.toggleDark() }),
+    };
     protected readonly state = signal<'loading' | 'locked' | 'ready' | 'failed'>('loading');
     protected readonly message = signal('');
     protected readonly wrongPassword = signal(false);
@@ -313,7 +336,26 @@ export class PdfViewComponent {
             event.stopPropagation();
             (event.target as HTMLInputElement).value = '';
             this.find('');
+        } else if (event.key === 'Escape' && this.findOpen()) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.findOpen.set(false);
         }
+    }
+
+    /** The magnifier of a phone: shows the find field under the bar (focused), or hides it. */
+    protected toggleFind(): void {
+        this.findOpen.set(!this.findOpen());
+        if (this.findOpen())
+            this.focusFind();
+    }
+
+    /** Once the field shows (a phone's is hidden until the magnifier opens it). */
+    private focusFind(): void {
+        setTimeout(() => {
+            this.findBox()?.nativeElement.focus();
+            this.findBox()?.nativeElement.select();
+        });
     }
 
     /** ← / → turn the pages (not while typing); Ctrl+= / Ctrl+− / Ctrl+0 zoom, rather than the whole page's. */
@@ -341,7 +383,7 @@ export class PdfViewComponent {
         if (event.defaultPrevented || this.state() !== 'ready' || !(event.ctrlKey || event.metaKey) || event.shiftKey || event.altKey || event.key.toLowerCase() !== 'f')
             return;
         event.preventDefault();
-        this.findBox()?.nativeElement.focus();
-        this.findBox()?.nativeElement.select();
+        this.findOpen.set(true);
+        this.focusFind();
     }
 }

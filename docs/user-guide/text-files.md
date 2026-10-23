@@ -37,6 +37,16 @@ them runs. **Edit** changes them: see [Editing text files](editing-text.md).
 
 ![Finding a word in a log](../images/text-viewer-find.png)
 
+The bar of buttons stays on one line in every kind of document (text, Markdown, JSON, CSV, subtitles, PDF). On a phone
+or in a narrow window, the buttons that don't fit leave from the right (**Aa** first) into a **⋯ More actions** button
+at the end of the bar: it lists them, with a check mark next to those that are on (Line numbers, Wrap long lines…), and
+the choice of view (Tree, Table, Source, Split), of separator or of zoom opens in place. **Edit** (or Save, Save a copy,
+Download, Done while editing: on a phone Save a copy and Done show only their icon) and the fields (filter, the PDF's
+page number) always stay, narrower on a phone, as do the PDF's page buttons and its Smaller / Larger. On a phone the
+PDF's find is a magnifier: it opens the find field on a line under the bar (Esc hides it).
+
+![On a phone: the buttons of a JSON file's bar that don't fit, in the More actions menu](../images/text-viewer-phone-more.png)
+
 Click in the text to move around in it with the keys: the arrows, Page Up / Page Down, Home / End, Ctrl+Home / Ctrl+End;
 the mouse wheel and swipes scroll it. **Esc** leaves the text (then ← / → go to other files again), a second **Esc**
 closes the viewer.

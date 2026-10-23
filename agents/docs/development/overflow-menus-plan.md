@@ -37,13 +37,13 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 | [0](#step-0--the-shared-piece) | The shared piece (`OverflowRow`) | `[x]` committed with step 1 (version at the merge into main) |
 | [1](#step-1--video-player-controls) | Video player controls (viewer and player page) | `[x]` committed (version at the merge into main) |
 | [2](#step-2--selection-bar) | Selection bar (several files selected) | `[x]` committed (version at the merge into main) |
-| [3](#step-3--audit-of-the-other-screens) | Audit of the other screens (finds the next steps) | `[ ]` |
-| [4](#step-4--viewer-bar) | Viewer bar | `[ ]` |
-| [5](#step-5--document-viewers-toolbars) | Document viewers' toolbars (text, PDF, EPUB, Markdown, JSON, CSV, subtitles) | `[ ]` |
-| [6](#step-6--picture-editor) | Picture editor | `[ ]` |
-| [7](#step-7--top-bar-and-location-bar) | Top bar and location bar | `[ ]` |
-| [8](#step-8--administration-toolbars) | Administration toolbars (logs, tasks, scan panel) | `[ ]` |
-| [10](#step-10--file-names-in-the-list-view) | File names in the list view (found in step 2) | `[ ]` |
+| [3](#step-3--audit-of-the-other-screens) | Audit of the other screens (finds the next steps) | `[x]` done (tools and plan only: no version) |
+| [4](#step-4--viewer-bar) | Viewer bar | `[-]` fine at every size (audit) |
+| [5](#step-5--document-viewers-toolbars) | Document viewers' toolbars (text, PDF, EPUB, Markdown, JSON, CSV, subtitles) | `[x]` committed (version at the merge into main) |
+| [6](#step-6--picture-editor) | Picture editor | `[-]` fine at every size (audit) |
+| [7](#step-7--top-bar-and-location-bar) | Location bar: the folder actions (the top bar is fine) | `[ ]` |
+| [8](#step-8--administration-toolbars) | Administration tabs (logs and tasks toolbars are fine) | `[ ]` |
+| [10](#step-10--file-names-in-the-list-view) | File names in the list view, buttons cut in landscape (found in step 2) | `[ ]` |
 | [9](#step-9--finishing) | Finishing (notes, rule, plan removed) | `[ ]` |
 
 ## Target sizes
@@ -190,15 +190,26 @@ Copy, Move, Delete, Rename, Quick links); the **count shortens first** (`15 sele
 
 ## Step 3 — audit of the other screens
 
-- [ ] `agents/tools/visual-check/overflow.mjs` (documented in the tools README): at the [target sizes](#target-sizes) it opens the
-      listing (list and grid), a selection, the viewer (picture, video, text, PDF, EPUB, Markdown, JSON, CSV,
-      subtitles), the text editor, the picture editor, the player page, the administration (logs, tasks, settings), and
-      reports every element whose content is wider than it (`scrollWidth > clientWidth`) or that sticks out of the
-      screen, and rows of buttons taller than one line; a screenshot of each.
-- [ ] Results written below, per screen: needs a step (steps 4–8 confirmed or dropped `[-]`, new steps added), or fine.
-- [ ] Developer asked whether they have seen other crooked places.
+- [x] `agents/tools/visual-check/narrow-audit.mjs` (documented in the tools README; a script of its own: `overflow.mjs`
+      checks the rows already done): 31 scenes (listing views, menus, dialogs, each viewer, the editors, the player and
+      view pages, administration pages) at the phone sizes; reports elements off the screen, buttons cut off by a box
+      that doesn't scroll, rows of 3+ buttons on several lines, the page wider than the screen. ~12 minutes.
+- [x] Results written below (2026-10-23, at ae2ce24): steps 4 and 6 dropped, 5, 7, 8 and 10 confirmed.
+- [x] Developer asked (2026-10-23): **every toolbar goes on one line** with the "⋯", also those that only wrap
+      (nothing cut); no other crooked places seen.
 
-Results: _(empty)_
+Results (360×800, 390×844, 414×896, 800×360):
+
+| Screen | Found | Step |
+|---|---|---|
+| Text viewer | "Aa" (reading settings) off the screen, every size | 5 |
+| Text editor | toolbar on 2 lines; "Aa" cut in half at 360 | 5 |
+| CSV | toolbar on 3 lines at 360 ("Aa" alone), 2 at 390 / 414. The table's columns off screen: it scrolls sideways, fine | 5 |
+| JSON, subtitles, PDF, Markdown on the `view?path=` page | toolbar on 2 lines, nothing cut | 5 |
+| Folder actions under the breadcrumbs (`.location-head`) | on 2 lines, nothing cut (portrait) | 7 |
+| Administration tabs (`.settings-tabs`: Duplicates, Tasks) | on 2 lines, nothing cut | 8 |
+| List view, landscape 800×360 | names one letter wide, tag and ⋮ cut off (the sidebar shows above 760 px) | 10 |
+| Viewer bar, picture editor, top bar, menus, dialogs (properties, folder tags), EPUB, Markdown in the viewer, logs, accounts, settings | nothing | 4, 6 dropped |
 
 ## Step 4 — viewer bar
 
@@ -208,8 +219,7 @@ audit; if it needs work, ask which stay (Close surely) and whether Tags may go i
 
 Decided: _(empty: ask first)_
 
-- [ ] Audit result checked; questions asked, Decided written (or `[-]` fine).
-- [ ] Fix, specs, visual check, `CHANGELOG.md`, `docs/` if visible.
+- [-] Audit: nothing wrong at any size (2026-10-23).
 
 ## Step 5 — document viewers' toolbars
 
@@ -218,26 +228,44 @@ Code: `app/formats/` (`text/text-view`, `text/text-edit`, `pdf/pdf-view`, `epub/
 Each toolbar is its own question: list its buttons left to right at the start, with what the default hides first.
 May be split into one step per viewer if the audit finds many.
 
-Decided: _(empty: ask first, per toolbar)_
+Decided (2026-10-23, one rule for the document toolbars): the **editing actions** (Edit; Save, Save a copy,
+Download, Done) and the **fields** (filters, the subtitles' shift with its button, PDF page number and find) **stay**,
+the fields narrower on phones; everything else leaves **right to left** (Aa first, then Find, Line numbers, the
+format's own buttons, the view switch). **PDF:** page navigation (Previous, page, Next) and **zoom** (Smaller, list,
+Larger) stay with the find field; Dark pages then Outline leave. EPUB had nothing wrong: unchanged.
+Then, as what stays didn't fit 360 px (asked again): in the **text editor** Save a copy and Done show **only their
+icon** on phones (`.text-action-label` hidden ≤ 640 px; 309 px of editing buttons otherwise); in the **PDF** the
+**find field becomes a magnifier** on phones (`.pdf-find-toggle`: the field on a line under the bar, absolute so the
+item's width is the button's; Ctrl+F opens it, Esc on an empty field hides it) and the **zoom list leaves** (a submenu
+of sizes; Smaller and Larger stay). An estimate given to the developer was wrong (find alone freed too little): measure
+with `overflow.mjs` before offering choices.
 
-- [ ] Text view / editor: asked, decided, done.
-- [ ] PDF: asked, decided, done.
-- [ ] EPUB: asked, decided, done.
-- [ ] Markdown: asked, decided, done.
-- [ ] JSON: asked, decided, done.
-- [ ] CSV: asked, decided, done.
-- [ ] Subtitles: asked, decided, done.
-- [ ] Specs, visual check, `CHANGELOG.md`, `docs/` screenshots.
+- [x] Text view / editor: `more` entries (parts of a large file as a submenu, Follow, Wrap, Line numbers, Find, Go to
+      line, Aa); `sfe-text-edit-actions` one staying item.
+- [x] PDF: pages and Smaller / Larger stay, find a magnifier on phones, zoom list / Outline / Dark pages leave.
+- [-] EPUB: nothing wrong (audit); unchanged.
+- [x] Markdown, JSON, CSV (Header checked, Separator a submenu), subtitles (the shift field and its button stay).
+- [x] Shared entries in `formats/toolbar-entries.ts` (view switch as a submenu, Line numbers, Find, Aa). Margins
+      after groups made padding (`.text-edit-actions`, `.text-parts`; the view switch's dropped): margins aren't
+      measured. Fields 110 px on phones.
+- [x] Found and fixed on the way: `.text-view` had no column size, so a long line (a log) made the whole viewer, its
+      toolbar too, wider than the screen ("Aa" off screen): `grid-template-columns: minmax(0, 1fr)`. And
+      `OverflowRow` ignored the row's own padding (in its `clientWidth`): now counted.
+- [x] Specs: `toolbar-entries.spec.ts`, CSV on a narrow screen (from the right, filter stays, Header / Separator /
+      Aa entries), PDF magnifier and zoom submenu; Ctrl+F test waits for the field to show.
+- [x] `overflow.mjs` scenes `text-viewer`, `text-editor`, `json-viewer`, `csv-viewer`, `subtitles-viewer`,
+      `pdf-viewer`, `markdown-viewer`, `markdown-page`: one line, inside the screen at every size.
+- [x] `docs/user-guide/text-files.md` + `text-viewer-phone-more.png` (a JSON file: a log's bar fits at 390 px),
+      the text viewer scene's shots again; `CHANGELOG.md` (Changed, and Fixed for the "Aa").
+- [x] `npm test` passes; no server change.
+- [x] Committed on `edge` with step 3; the version comes with the merge into `main`.
 
 ## Step 6 — picture editor
 
 Code: `app/editor/image-editor.dialog.ts`, `styles/editor.css`. List its toolbar's buttons at the start; ask which stay
 (Save and Cancel surely).
 
-Decided: _(empty: ask first)_
-
-- [ ] Audit result checked; asked, Decided written.
-- [ ] Fix, specs, visual check, `CHANGELOG.md`, `docs/` screenshots.
+- [-] Audit: nothing wrong at any size (2026-10-23; the file name in its bar is shortened, the buttons fit).
 
 ## Step 7 — top bar and location bar
 

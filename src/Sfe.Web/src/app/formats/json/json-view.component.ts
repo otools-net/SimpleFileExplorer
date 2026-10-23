@@ -13,6 +13,9 @@ import { ReadingService } from '../reading/reading.service';
 import { TextEditor } from '../text/codemirror';
 import { textDetails, textFailure } from '../text/text-document';
 import { TextEditActionsComponent, TextEditBarComponent } from '../text/text-edit.component';
+import { MenuEntry } from '../../menus/context-menu';
+import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../../menus/overflow-row';
+import { findEntry, lineNumbersEntry, modesEntry, readingEntry } from '../toolbar-entries';
 import { TextSession } from '../text/text-session';
 import {
     CHUNK, expandAll, filterTree, formatEdits, JsonDocument, JsonRow, parseJson, pathLabel, previewOf, rowsOf, sizeOf, sourceOf, valueClass,
@@ -41,7 +44,7 @@ let views = 0;
  */
 @Component({
     selector: 'sfe-json-view',
-    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent],
+    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
     providers: [TextSession],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -54,32 +57,33 @@ let views = 0;
         '(window:keydown)': 'onWindowKeydown($event)',
     },
     template: `
-        <div class="text-toolbar" role="toolbar" aria-label="Document">
+        <div class="text-toolbar" role="toolbar" aria-label="Document" sfeOverflowRow="Document">
             @if (state() === 'ready') {
-                <sfe-text-edit-actions />
+                <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
                 @if (session.editing()) {
-                    <button type="button" class="icon-button" data-format title="Format: lay the source out again, indented (comments kept)" aria-label="Format"
+                    <button type="button" class="icon-button" data-format [sfeOverflowItem]="more.format" title="Format: lay the source out again, indented (comments kept)" aria-label="Format"
                             [disabled]="!document()?.root || !!problems().length" (click)="formatSource()"><svg sfeIcon="format"></svg></button>
                 }
             }
-            <div class="markdown-modes" role="radiogroup" aria-label="Show">
+            <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
                 @for (choice of modes; track choice.id) {
                     <button type="button" role="radio" class="markdown-mode" [class.active]="mode() === choice.id" [attr.aria-checked]="mode() === choice.id"
                             [attr.data-mode]="choice.id" [title]="choice.title" (click)="setMode(choice.id)">{{ choice.label }}</button>
                 }
             </div>
             @if (mode() !== 'source') {
-                <input #filterBox type="search" class="json-filter" placeholder="Filter keys and values" aria-label="Filter keys and values" title="Shows the members whose key or value holds this (Ctrl+F)"
+                <input #filterBox type="search" class="json-filter" [sfeOverflowItem]="null" overflowStay placeholder="Filter keys and values" aria-label="Filter keys and values" title="Shows the members whose key or value holds this (Ctrl+F)"
                        [value]="query()" (input)="setQuery($any($event.target).value)" (keydown)="onFilterKeydown($event)" />
-                <button type="button" class="icon-button" title="Open all" aria-label="Open all" data-expand-all [disabled]="!document()?.root" (click)="openAll()"><svg sfeIcon="unfold"></svg></button>
-                <button type="button" class="icon-button" title="Close all" aria-label="Close all" data-collapse-all [disabled]="!document()?.root" (click)="closeAll()"><svg sfeIcon="fold"></svg></button>
+                <button type="button" class="icon-button" [sfeOverflowItem]="more.openAll" title="Open all" aria-label="Open all" data-expand-all [disabled]="!document()?.root" (click)="openAll()"><svg sfeIcon="unfold"></svg></button>
+                <button type="button" class="icon-button" [sfeOverflowItem]="more.closeAll" title="Close all" aria-label="Close all" data-collapse-all [disabled]="!document()?.root" (click)="closeAll()"><svg sfeIcon="fold"></svg></button>
             }
             @if (mode() !== 'tree') {
-                <button type="button" class="icon-button" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
-                <button type="button" class="icon-button" title="Find in the source (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="sourceEditor()?.find()"><svg sfeIcon="search"></svg></button>
+                <button type="button" class="icon-button" [sfeOverflowItem]="more.lineNumbers" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
+                <button type="button" class="icon-button" [sfeOverflowItem]="more.find" title="Find in the source (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="sourceEditor()?.find()"><svg sfeIcon="search"></svg></button>
             }
-            <button type="button" class="icon-button reading-toggle" data-reading-toggle [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
+            <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
                     title="Reading settings: font, size, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+            <button class="icon-button" sfeOverflowMore></button>
         </div>
         @if (panelOpen()) {
             <sfe-reading-panel profile="code" (closed)="panelOpen.set(false)" />
@@ -200,6 +204,16 @@ export class JsonViewComponent {
     private filterLater: ReturnType<typeof setTimeout> | undefined;
 
     protected readonly own = computed(() => this.reading.preferences().code);
+    /** The toolbar's buttons in its "⋯" menu, when they don't fit (the editing actions and the fields stay). */
+    protected readonly more = {
+        format: (): MenuEntry => ({ id: 'format', label: 'Format', icon: 'format', title: 'Format: lay the source out again, indented (comments kept)', disabled: !this.document()?.root || !!this.problems().length, run: () => this.formatSource() }),
+        mode: (): MenuEntry => modesEntry(this.modes, this.mode(), mode => this.setMode(mode)),
+        openAll: (): MenuEntry => ({ id: 'openAll', label: 'Open all', icon: 'unfold', title: 'Open all', disabled: !this.document()?.root, run: () => this.openAll() }),
+        closeAll: (): MenuEntry => ({ id: 'closeAll', label: 'Close all', icon: 'fold', title: 'Close all', disabled: !this.document()?.root, run: () => this.closeAll() }),
+        lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggleLineNumbers()),
+        find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.sourceEditor()?.find()),
+        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen()), "Reading settings: font, size, colours"),
+    };
     protected readonly style = computed(() => this.reading.style('code'));
     protected readonly problems = computed(() => this.document()?.problems ?? []);
     protected readonly rows = computed(() => {

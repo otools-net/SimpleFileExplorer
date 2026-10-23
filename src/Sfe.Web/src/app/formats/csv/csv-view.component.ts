@@ -13,6 +13,9 @@ import { ReadingService } from '../reading/reading.service';
 import { TextEditor } from '../text/codemirror';
 import { textDetails, textFailure } from '../text/text-document';
 import { TextEditActionsComponent, TextEditBarComponent } from '../text/text-edit.component';
+import { MenuEntry } from '../../menus/context-menu';
+import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../../menus/overflow-row';
+import { findEntry, lineNumbersEntry, modesEntry, readingEntry } from '../toolbar-entries';
 import { TextSession } from '../text/text-session';
 import { VirtualRows } from '../virtual-rows';
 import {
@@ -45,7 +48,7 @@ interface CellPosition {
  */
 @Component({
     selector: 'sfe-csv-view',
-    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent],
+    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
     providers: [TextSession],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -58,33 +61,34 @@ interface CellPosition {
         '(window:keydown)': 'onWindowKeydown($event)',
     },
     template: `
-        <div class="text-toolbar" role="toolbar" aria-label="Table">
+        <div class="text-toolbar" role="toolbar" aria-label="Table" sfeOverflowRow="Table">
             @if (state() === 'ready') {
-                <sfe-text-edit-actions />
+                <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
             }
-            <div class="markdown-modes" role="radiogroup" aria-label="Show">
+            <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
                 @for (choice of modes; track choice.id) {
                     <button type="button" role="radio" class="markdown-mode" [class.active]="mode() === choice.id" [attr.aria-checked]="mode() === choice.id"
                             [attr.data-mode]="choice.id" [title]="choice.title" (click)="setMode(choice.id)">{{ choice.label }}</button>
                 }
             </div>
             @if (mode() !== 'source') {
-                <input #filterBox type="search" class="json-filter" placeholder="Filter rows" aria-label="Filter rows" title="Shows the rows with a cell holding this (Ctrl+F)"
+                <input #filterBox type="search" class="json-filter" [sfeOverflowItem]="null" overflowStay placeholder="Filter rows" aria-label="Filter rows" title="Shows the rows with a cell holding this (Ctrl+F)"
                        [value]="query()" (input)="setQuery($any($event.target).value)" (keydown)="onFilterKeydown($event)" />
-                <button type="button" class="markdown-mode csv-header-toggle" data-header [class.active]="header()" [attr.aria-pressed]="header()"
+                <button type="button" class="markdown-mode csv-header-toggle" data-header [sfeOverflowItem]="more.header" [class.active]="header()" [attr.aria-pressed]="header()"
                         title="The first row names the columns" (click)="toggleHeader()">Header</button>
-                <select class="csv-delimiter" data-delimiter aria-label="Separator" title="What separates the cells" [value]="delimiter()" (change)="setDelimiter($any($event.target).value)">
+                <select class="csv-delimiter" data-delimiter [sfeOverflowItem]="more.separator" aria-label="Separator" title="What separates the cells" [value]="delimiter()" (change)="setDelimiter($any($event.target).value)">
                     @for (choice of delimiters; track choice.id) {
                         <option [value]="choice.id">{{ choice.id === 'auto' ? 'Separator: guess' : choice.label }}</option>
                     }
                 </select>
             }
             @if (mode() !== 'table') {
-                <button type="button" class="icon-button" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
-                <button type="button" class="icon-button" title="Find in the source (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="sourceEditor()?.find()"><svg sfeIcon="search"></svg></button>
+                <button type="button" class="icon-button" [sfeOverflowItem]="more.lineNumbers" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
+                <button type="button" class="icon-button" [sfeOverflowItem]="more.find" title="Find in the source (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="sourceEditor()?.find()"><svg sfeIcon="search"></svg></button>
             }
-            <button type="button" class="icon-button reading-toggle" data-reading-toggle [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
+            <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
                     title="Reading settings: font, size, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+            <button class="icon-button" sfeOverflowMore></button>
         </div>
         @if (panelOpen()) {
             <sfe-reading-panel profile="code" (closed)="panelOpen.set(false)" />
@@ -204,6 +208,21 @@ export class CsvViewComponent {
     private filterLater: ReturnType<typeof setTimeout> | undefined;
 
     protected readonly own = computed(() => this.reading.preferences().code);
+    /** The toolbar's buttons in its "⋯" menu, when they don't fit (the editing actions and the fields stay). */
+    protected readonly more = {
+        mode: (): MenuEntry => modesEntry(this.modes, this.mode(), mode => this.setMode(mode)),
+        header: (): MenuEntry => ({ id: 'header', label: 'Header', icon: 'rows', title: 'The first row names the columns', checked: this.header(), run: () => this.toggleHeader() }),
+        separator: (): MenuEntry => ({
+            id: 'separator', label: 'Separator', icon: 'rows', title: 'What separates the cells',
+            submenu: () => this.delimiters.map(choice => ({
+                id: 'separator-' + choice.label.toLowerCase(), label: choice.id === 'auto' ? 'Guess' : choice.label, icon: 'rows', title: 'Cells separated by: ' + choice.label,
+                checked: choice.id === this.delimiter(), run: () => this.setDelimiter(choice.id),
+            })),
+        }),
+        lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggleLineNumbers()),
+        find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.sourceEditor()?.find()),
+        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen()), "Reading settings: font, size, colours"),
+    };
     protected readonly style = computed(() => this.reading.style('code'));
     protected readonly table = computed<CsvTable | null>(() => {
         const text = this.text();

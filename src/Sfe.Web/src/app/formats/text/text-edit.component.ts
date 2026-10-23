@@ -22,12 +22,12 @@ import { TextSession } from './text-session';
                 }
                 @if (session.access()?.saveCopy) {
                     <button type="button" class="text-action" data-save-copy title="Save the text as a new file in this folder (Ctrl+Shift+S)" [disabled]="session.saving()" (click)="session.openCopy()">
-                        <svg sfeIcon="copy"></svg> Save a copy</button>
+                        <svg sfeIcon="copy"></svg> <span class="text-action-label">Save a copy</span></button>
                 }
                 @if (session.access()?.download) {
                     <button type="button" class="icon-button" data-download-text title="Download the text as it is now" aria-label="Download the text" (click)="session.download()"><svg sfeIcon="download"></svg></button>
                 }
-                <button type="button" class="text-action" data-done title="Stop editing" (click)="session.stopEdit()"><svg sfeIcon="check"></svg> Done</button>
+                <button type="button" class="text-action" data-done title="Stop editing" (click)="session.stopEdit()"><svg sfeIcon="check"></svg> <span class="text-action-label">Done</span></button>
             }
         }
     `,

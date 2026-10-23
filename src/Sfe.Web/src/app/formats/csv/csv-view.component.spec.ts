@@ -1,8 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { EditorView } from '@codemirror/view';
 import { ApiError } from '../../core/api.service';
 import { TextAccess, TextFile } from '../../core/models';
 import { ApiMock, item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
+import { OverflowRowDirective } from '../../menus/overflow-row';
 import { CSV_FORMAT, FILE_VIEW_HOST } from '../formats';
 import { READING_KEY } from '../reading/reading.service';
 import { CSV_HEADER_KEY, CSV_MODE_KEY, CsvViewComponent } from './csv-view.component';
@@ -208,6 +210,57 @@ describe('CsvViewComponent', () => {
         expect(element.querySelector<HTMLElement>('.json-pane')!.hidden).toBe(true);
         expect(element.querySelector('.cm-content')!.textContent).toContain('Zermatt');
         expect(localStorage.getItem(CSV_MODE_KEY)).toBe('source');
+    });
+
+    describe('on a narrow screen', () => {
+        let rowWidth = 1000;
+        const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth')!;
+        const clientWidth = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth')!;
+        /** jsdom has no layout: the toolbar `rowWidth`, its items as below, the rest 0. */
+        function width(this: HTMLElement): number {
+            const widths: [string, number][] = [['text-toolbar', rowWidth], ['text-edit-actions', 60], ['markdown-modes', 150], ['json-filter', 110],
+                ['csv-header-toggle', 70], ['csv-delimiter', 120], ['reading-toggle', 32], ['overflow-more', 32]];
+            return widths.find(([name]) => this.classList.contains(name))?.[1] ?? 0;
+        }
+        const row = () => fixture.debugElement.query(By.directive(OverflowRowDirective)).injector.get(OverflowRowDirective);
+
+        beforeEach(() => {
+            Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, get: width });
+            Object.defineProperty(Element.prototype, 'clientWidth', { configurable: true, get: width });
+            (window as { ResizeObserver?: unknown }).ResizeObserver = class {
+                observe(): void { /* measured by update() */ }
+                unobserve(): void { /* nothing observed */ }
+                disconnect(): void { /* nothing observed */ }
+            };
+        });
+
+        afterEach(() => {
+            Object.defineProperty(HTMLElement.prototype, 'offsetWidth', offsetWidth);
+            Object.defineProperty(Element.prototype, 'clientWidth', clientWidth);
+            delete (window as { ResizeObserver?: unknown }).ResizeObserver;
+        });
+
+        it('keeps the toolbar on one line: its buttons go into "⋯" from the right, the filter and the editing actions stay', async () => {
+            await show();
+            rowWidth = 400;
+            row().update();
+            await stable();
+
+            // 60 + 150 + 110 + 70 + 120 + 32 = 542: Aa, the separator, then Header leave (with the "⋯": 352).
+            const gone = [...element.querySelectorAll<HTMLElement>('.text-toolbar [data-overflowed]')].map(item => ['csv-header-toggle', 'csv-delimiter', 'reading-toggle', 'markdown-modes'].find(name => item.classList.contains(name)));
+            expect(gone).toEqual(['csv-header-toggle', 'csv-delimiter', 'reading-toggle']);
+            expect(element.querySelector('.json-filter')!.hasAttribute('data-overflowed')).toBe(false);
+            expect(element.querySelector('.overflow-more')!.classList).toContain('shown');
+
+            const entries = row().target().entries();
+            expect(entries.map(entry => entry.id)).toEqual(['header', 'separator', 'reading']);
+            expect(entries[0].checked).toBe(true);
+            const separators = entries[1].submenu!();
+            expect(separators.find(entry => entry.checked)?.id).toBe('separator-guess');
+            separators.find(entry => entry.id === 'separator-semicolon')!.run!();
+            await stable();
+            expect(status()).toContain('semicolon');
+        });
     });
 
     it('offers a download when the file cannot be shown', async () => {
