@@ -7,6 +7,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Changed
 
+- The **video player's controls** stay on one line on a phone or in a small window: the video's length leaves the time
+  first, then the buttons that don't fit go, from the right, into a **More actions** (⋯) button at the end of the line
+  (on/off ones with a check mark, Speed with its rates in place); Play, Mute and Fullscreen always stay. They used to
+  wrap onto a second line.
 - SFE's **work files** (the trash, unfinished uploads) go to the server's data folder by default, no longer to a
   hidden `.sfe` folder in the library. The spaces of an install updated from an earlier version keep theirs in the
   library; only new installs and spaces created later start on the server.

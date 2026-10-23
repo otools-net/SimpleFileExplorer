@@ -75,6 +75,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [file-operations](agents/docs/development/file-operations.md) | rules for changing library files (planned), moving folder rules with folders | `FolderRuleService.BeginMoveAsync` |
 | [server-modes-plan](agents/docs/development/server-modes-plan.md) | **server modes epic: Local / External, Docker image; phases, todo list, open questions** (update as it is built) | `ServerModes`, `Dockerfile` (planned) |
 | [keep-alive-plan](agents/docs/development/keep-alive-plan.md) | **keep alive epic: pinging network folders so file servers don't drop idle sessions; design, phases, open questions** (update as it is built) | `Core/KeepAlive/`, `KeepAliveEndpoints` |
+| [overflow-menus-plan](agents/docs/development/overflow-menus-plan.md) | **overflow menus epic: a "⋯" button for the buttons that don't fit a narrow screen (right to left by default); one step per screen, each starting by asking what stays; checklist** (update as it is built) | `OverflowRow` (planned), `video-player.component.ts`, `selection-bar.component.ts` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |

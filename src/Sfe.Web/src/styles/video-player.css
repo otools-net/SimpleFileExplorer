@@ -145,10 +145,13 @@
 
 .player:not(.controls-visible) .player-controls { opacity: 0; pointer-events: none; }
 
-/* Wraps where even the widest player is too narrow for every button (a phone): a second row rather than cut ones. */
-.player-row { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
-.player-spacer { flex: 1; }
-.player-time { margin-left: 8px; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* One line (overflow.css): the buttons that don't fit go into its "⋯" menu, from the right. */
+.player-row { gap: 2px; }
+.player-time, .player-time-length { font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.player-time { margin-left: 8px; }
+.player-time-length { padding-left: 2px; }
+/* The buttons after the time on the right: the free room after the last part of the time shown (margins aren't measured). */
+.player-time-length, .player-time:has(+ .player-time-length[data-overflowed]) { margin-right: auto; }
 
 .player-button {
     display: grid;

@@ -339,6 +339,16 @@ const scenes = {
         await sleep(400);
         await b.shot(OUT + 'player-page.png');
         await b.close();
+        // A phone: the controls on one line, those that don't fit in the "⋯" menu.
+        const phone = await session({ width: 390, height: 844, mobile: true });
+        await phone.open('?path=Videos%2FHolidays');
+        await phone.click('a.item-link[href*="Mountain"]');
+        await sleep(2500);
+        await phone.eval(`(async () => { const v = document.querySelector('video'); v.pause(); v.currentTime = 12.4; await new Promise(r => setTimeout(r, 800)); return 1; })()`);
+        await phone.click('.player-row .overflow-more.shown');
+        await sleep(600);
+        await phone.shot(OUT + 'player-phone-more.png');
+        await phone.close();
     },
     async videos() {
         const b = await session();

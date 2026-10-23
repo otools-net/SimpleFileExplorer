@@ -3,6 +3,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { settle } from '../../testing/fakes';
 import { VideoStream } from '../core/config.service';
 import { StreamProbe } from '../core/models';
+import { By } from '@angular/platform-browser';
+import { ContextMenuComponent } from '../menus/context-menu';
+import { OverflowRowDirective } from '../menus/overflow-row';
 import { VideoPlayerComponent } from './video-player.component';
 
 describe('VideoPlayerComponent', () => {
@@ -269,7 +272,7 @@ describe('VideoPlayerComponent', () => {
         const element = () => host.nativeElement.querySelector('video') as HTMLVideoElement;
         const component = () => host.debugElement.children[0].componentInstance as VideoPlayerComponent;
         const convertButton = () => host.nativeElement.querySelector('.player-convert') as HTMLButtonElement | null;
-        const timeText = () => (host.nativeElement.querySelector('.player-time') as HTMLElement).textContent;
+        const timeText = () => [...host.nativeElement.querySelectorAll('.player-time, .player-time-length')].map(part => (part as HTMLElement).textContent).join(' ');
 
         function fakeStream(always = false, probe: StreamProbe | null = { duration: 600, transcoded: true }) {
             return {
@@ -374,6 +377,94 @@ describe('VideoPlayerComponent', () => {
         });
     });
 
+    describe('a narrow control row', () => {
+        @Component({
+            imports: [VideoPlayerComponent, ContextMenuComponent],
+            template: `<sfe-video-player src="api/files/raw?path=clip.webm" /><sfe-context-menu />`,
+        })
+        class NarrowHost { }
+
+        let host: ComponentFixture<NarrowHost>;
+        let rowWidth = 1000;
+        const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth')!;
+        const clientWidth = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth')!;
+        const row = () => host.nativeElement.querySelector('.player-row') as HTMLElement;
+        const more = () => row().querySelector('.overflow-more') as HTMLButtonElement;
+
+        /** jsdom has no layout: every button and the position 40 px wide, the length 60, the row `rowWidth`. */
+        function width(this: HTMLElement): number {
+            if (this.classList.contains('player-row'))
+                return rowWidth;
+            return this.classList.contains('player-time-length') ? 60 : 40;
+        }
+
+        async function measure(px: number): Promise<void> {
+            rowWidth = px;
+            host.debugElement.query(By.directive(OverflowRowDirective)).injector.get(OverflowRowDirective).update();
+            await Promise.resolve();
+            await settle();
+        }
+
+        beforeEach(async () => {
+            Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, get: width });
+            Object.defineProperty(Element.prototype, 'clientWidth', { configurable: true, get: width });
+            (window as { ResizeObserver?: unknown }).ResizeObserver = class {
+                observe(): void { /* measured by update() */ }
+                unobserve(): void { /* nothing observed */ }
+                disconnect(): void { /* nothing observed */ }
+            };
+            host = TestBed.createComponent(NarrowHost);
+            await settle();
+        });
+
+        afterEach(() => {
+            Object.defineProperty(HTMLElement.prototype, 'offsetWidth', offsetWidth);
+            Object.defineProperty(Element.prototype, 'clientWidth', clientWidth);
+            delete (window as { ResizeObserver?: unknown }).ResizeObserver;
+        });
+
+        it('keeps every control on one line when there is room, without "⋯"', async () => {
+            await measure(1000);
+            expect(row().querySelectorAll('[data-overflowed]').length).toBe(0);
+            expect(more().classList).not.toContain('shown');
+        });
+
+        it('shortens the time first, with no "⋯" for it', async () => {
+            // 9 × 40 + 60 = 420 (no gaps: no styles in the tests); without the length, 360 + the "⋯" 40 fit.
+            await measure(410);
+            expect([...row().querySelectorAll('[data-overflowed]')].map(item => item.className)).toEqual(['player-time-length']);
+            expect(more().classList).not.toContain('shown');
+        });
+
+        it('then moves the buttons into "⋯" from the right; play, mute and fullscreen stay', async () => {
+            await measure(230);
+            const gone = [...row().querySelectorAll<HTMLElement>(':scope > [data-overflowed]')];
+            expect(gone.length).toBe(6);       // back, forward, length, speed, loop, frame
+            const stayed = [...row().querySelectorAll<HTMLElement>(':scope > :not([data-overflowed]):not(.overflow-more)')];
+            expect(stayed.map(item => item.getAttribute('title') ?? item.className)).toEqual(['Play (K)', 'player-time', 'Mute (M)', 'Fullscreen (F)']);
+            expect(more().classList).toContain('shown');
+
+            more().click();
+            await settle();
+            const entries = [...document.querySelectorAll<HTMLElement>('.item-menu-entry')];
+            expect(entries.map(entry => entry.dataset['entry'])).toEqual(['back', 'forward', 'speed', 'loop', 'saveFrame']);
+            expect(document.querySelector('[data-entry="loop"]')?.getAttribute('aria-checked')).toBe('false');
+            (document.querySelector('[data-entry="loop"]') as HTMLElement).click();
+            await settle();
+            expect((host.nativeElement.querySelector('video') as HTMLVideoElement).loop).toBe(true);
+        });
+
+        it('gives the speed as a submenu of rates in "⋯"', async () => {
+            await measure(230);
+            more().click();
+            await settle();
+            (document.querySelector('[data-entry="speed"]') as HTMLElement).click();
+            await settle();
+            const rates = [...document.querySelectorAll<HTMLElement>('.item-menu-entry')].map(entry => entry.dataset['entry']);
+            expect(rates).toEqual(['back', 'speed-0.5', 'speed-0.75', 'speed-1', 'speed-1.25', 'speed-1.5', 'speed-2']);
+        });
+    });
+
     describe('cinema mode and size', () => {
         @Component({
             imports: [VideoPlayerComponent],
@@ -395,16 +486,15 @@ describe('VideoPlayerComponent', () => {
             await settle();
         }
 
-        it('is at least as wide as its row of buttons, wider with more of them', async () => {
+        it('is at least as wide as the controls that stay (play, mute, fullscreen, "⋯", position), not wider with more buttons', async () => {
             await createWith(false);
-            const buttons = element().querySelectorAll('.player-row > .player-button, .player-speed-wrap > .player-button').length;
             const without = minWidth();
-            expect(without).toBeGreaterThanOrEqual(buttons * 40 + 80);
+            expect(without).toBeGreaterThanOrEqual(4 * 40 + 40);
 
             host.componentInstance.cinema.set(true);
             await settle();
             expect(cinemaButton()).not.toBeNull();
-            expect(minWidth()).toBeGreaterThan(without);
+            expect(minWidth()).toBe(without);     // the others go into the "⋯" menu when it is narrow
         });
 
         it('switches cinema mode with its button and remembers it in this browser', async () => {

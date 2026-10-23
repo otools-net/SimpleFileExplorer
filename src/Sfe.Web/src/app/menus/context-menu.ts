@@ -20,10 +20,14 @@ export interface MenuEntry {
     href?: string;
     newTab?: boolean;
     submenu?: () => MenuEntry[];
+    /** An on/off entry (loop, mute): a check mark while on. */
+    checked?: boolean;
+    /** Shown greyed out and not run (its title says why), as its button is disabled. */
+    disabled?: boolean;
 }
 
 /** What a menu is about (see agents/docs/development/context-menu-plan.md for which menu shows where). */
-export type MenuTargetKind = 'file' | 'folder' | 'folderLink' | 'fileLink' | 'tag' | 'background' | 'page' | 'job' | 'trash' | 'historyEntry' | 'appLink';
+export type MenuTargetKind = 'file' | 'folder' | 'folderLink' | 'fileLink' | 'tag' | 'background' | 'page' | 'job' | 'trash' | 'historyEntry' | 'appLink' | 'overflow';
 
 /** Something with a context menu: it brings its own entries, so the pages, the viewer or the administration add theirs. */
 export interface MenuTarget {
@@ -177,6 +181,12 @@ export class ContextMenu {
 
     close(): void {
         this.open.set(null);
+    }
+
+    /** Closes the menu if it is the one of `key` (what opened it is going away). */
+    closeIf(key: string): void {
+        if (this.open()?.target.key === key)
+            this.close();
     }
 
     private show(target: MenuTarget, x: number, y: number, trigger: HTMLElement | null): void {
@@ -349,12 +359,16 @@ export class ContextMenuDirective {
                             }
                         </a>
                     } @else {
-                        <button type="button" role="menuitem" class="item-menu-entry" [attr.data-entry]="entry.id" [title]="entry.title"
+                        <button type="button" [attr.role]="entry.checked === undefined ? 'menuitem' : 'menuitemcheckbox'" class="item-menu-entry" [attr.data-entry]="entry.id"
+                                [title]="entry.title" [attr.aria-checked]="entry.checked ?? null" [attr.aria-disabled]="entry.disabled || null"
                                 [attr.aria-haspopup]="entry.submenu ? 'menu' : null" (click)="run(entry)">
                             <svg [sfeIcon]="entry.icon"></svg>
                             <span>{{ entry.label }}</span>
                             @if (entry.shortcut) {
                                 <kbd>{{ entry.shortcut }}</kbd>
+                            }
+                            @if (entry.checked) {
+                                <svg sfeIcon="check" class="item-menu-check"></svg>
                             }
                             @if (entry.submenu) {
                                 <svg sfeIcon="right"></svg>
@@ -431,6 +445,9 @@ export class ContextMenuComponent {
     }
 
     protected run(entry: MenuEntry): void {
+        // Still focusable (the arrows go through it), but does nothing, as its disabled button.
+        if (entry.disabled)
+            return;
         if (entry.submenu) {
             this.submenu.set(entry.submenu());
             afterNextRender(() => this.focusFirst(), { injector: this.injector });

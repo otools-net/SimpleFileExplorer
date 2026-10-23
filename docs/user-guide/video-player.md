@@ -24,8 +24,13 @@ Videos and audio files play in SFE's own player, in the [viewer](viewer.md) or i
 On a touch screen, double-tap the left or right of the picture to jump (keep tapping to jump further), and hold a
 finger on the right of a playing video for 1.5 s to play it at 2× until you lift it.
 
-A video smaller than its controls is shown wider, so that every button stays visible; on a phone, the buttons that
-don't fit go to a second row.
+The controls stay on one line. When the player is too narrow for all of them (a phone, a small window), the length
+of the video leaves the time first (`0:12` instead of `0:12 / 1:05`), then the buttons leave from the right (Cinema
+mode first, Back last) into a **⋯ More actions** button at the end of the line: it lists them, with a check mark next
+to Loop or Cinema mode when they are on, and **Speed** opens its rates in place. **Play**, **Mute** and
+**Fullscreen** always stay. A very small video is shown wider, so that these stay visible.
+
+![On a phone: the buttons that don't fit, in the More actions menu](../images/player-phone-more.png)
 
 ## Its menu
 

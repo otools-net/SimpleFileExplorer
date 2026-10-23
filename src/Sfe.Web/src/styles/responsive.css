@@ -21,7 +21,8 @@
     .files.grid { --tile-side: 120px; gap: 10px; }
     .files.single { gap: 12px; }
     .player { border-radius: 0; }
-    .player-time { font-size: 12px; margin-left: 4px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .player-time, .player-time-length { font-size: 12px; }
+    .player-time { margin-left: 4px; }
     .player-button { min-width: 38px; padding: 0 4px; }
     /* No room for three buttons: show the active layout only; pressing it cycles (see TopbarComponent). */
     .segmented .icon-button[aria-pressed="false"] { display: none; }

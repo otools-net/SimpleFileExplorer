@@ -31,6 +31,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
             <symbol id="i-line-numbers" viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10M4 5l1.5-1v4M3.5 11.5a1.2 1.2 0 0 1 2.3.4L3.5 14h2.5M3.5 17h2l-1 1.5a1 1 0 1 1-1 1.5"/></symbol>
             <symbol id="i-goto-line" viewBox="0 0 24 24"><path d="M4 6h16M4 12h9M4 18h16"/><path d="m16 9 3 3-3 3"/></symbol>
             <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></symbol>
+            <symbol id="i-more-horizontal" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></symbol>
             <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
             <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
             <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>

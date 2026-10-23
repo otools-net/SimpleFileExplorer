@@ -4,6 +4,7 @@ import { VideoStream } from '../core/config.service';
 import { StreamProbe, TrickplayManifest } from '../core/models';
 import { readPreference, writePreference } from '../core/preferences';
 import { MenuEntry } from '../menus/context-menu';
+import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../menus/overflow-row';
 import { IconComponent } from '../shared/icon.component';
 
 const DOUBLE_TAP_MS = 300;      // max delay between the two taps of a double tap
@@ -15,7 +16,7 @@ const FAST_RATE = 2;
 const HOLD_SLOP_PX = 20;        // a finger moving further than this is not holding
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 const CINEMA_KEY = 'sfe.player.cinema';
-// Room the control row needs: each button with its gap, the time text, the controls' side padding.
+// Room the control row needs at least: each button that stays with its gap, the position, the controls' side padding.
 const BUTTON_WIDTH = 42;
 const TIME_CHAR_WIDTH = 7.5;
 const CONTROLS_PADDING = 28;
@@ -38,7 +39,8 @@ interface Playback {
  * Mouse: click plays/pauses, double-click toggles fullscreen.
  * `cinemaButton`: offers cinema mode (C), where the player spans the whole width, the video scaled up to it (as
  * YouTube's theater mode); the choice is remembered per browser (`sfe.player.cinema`).
- * A small video is shown at least as wide as its control row (`--player-min-width`), so no button is cut off.
+ * The control row stays on one line: what doesn't fit goes into its "⋯" menu (`sfeOverflowRow`), and a small video is
+ * shown at least as wide as the controls that stay (`--player-min-width`).
  * Hovering or dragging the seek bar shows the time there, and the frame once `setTrickplay` provided the trickplay.
  * `startAt`: position (seconds) to start from, e.g. where another player left off.
  * `stream`: the server's conversion of the video (`ConfigService.videoStream`), played when the browser can't play the
@@ -48,7 +50,7 @@ interface Playback {
  */
 @Component({
     selector: 'sfe-video-player',
-    imports: [IconComponent],
+    imports: [IconComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'player',
@@ -88,19 +90,21 @@ interface Playback {
                     <span #previewTime class="player-preview-time"></span>
                 </div>
             </div>
-            <div class="player-row">
-                <button type="button" class="player-button player-seek-button" [title]="'Back ' + seekStep() + ' s (J)'" [attr.aria-label]="'Back ' + seekStep() + ' s (J)'" (click)="stepSeek(-1); showControls()">
+            <!-- One line: what doesn't fit goes into the "⋯" menu, from the right; play, mute and fullscreen stay. -->
+            <div class="player-row" sfeOverflowRow="Player controls">
+                <button type="button" class="player-button player-seek-button" [sfeOverflowItem]="more.back" [title]="'Back ' + seekStep() + ' s (J)'" [attr.aria-label]="'Back ' + seekStep() + ' s (J)'" (click)="stepSeek(-1); showControls()">
                     <svg sfeIcon="rewind"></svg><span class="player-step" [class.long]="seekStep() >= 100" aria-hidden="true">{{ seekStep() }}</span>
                 </button>
-                <button type="button" class="player-button" [title]="playLabel()" [attr.aria-label]="playLabel()" (click)="togglePlay()">
+                <button type="button" class="player-button" [sfeOverflowItem]="null" overflowStay [title]="playLabel()" [attr.aria-label]="playLabel()" (click)="togglePlay()">
                     <svg [sfeIcon]="paused() ? 'play' : 'pause'"></svg>
                 </button>
-                <button type="button" class="player-button player-seek-button" [title]="'Forward ' + seekStep() + ' s (L)'" [attr.aria-label]="'Forward ' + seekStep() + ' s (L)'" (click)="stepSeek(1); showControls()">
+                <button type="button" class="player-button player-seek-button" [sfeOverflowItem]="more.forward" [title]="'Forward ' + seekStep() + ' s (L)'" [attr.aria-label]="'Forward ' + seekStep() + ' s (L)'" (click)="stepSeek(1); showControls()">
                     <svg sfeIcon="forward"></svg><span class="player-step" [class.long]="seekStep() >= 100" aria-hidden="true">{{ seekStep() }}</span>
                 </button>
-                <span class="player-time">{{ timeText() }}</span>
-                <span class="player-spacer"></span>
-                <div class="player-speed-wrap">
+                <!-- The length leaves first, alone: the time shortens before any button leaves. -->
+                <span class="player-time" [sfeOverflowItem]="null" overflowStay>{{ timeParts()[0] }}</span>
+                <span class="player-time-length" [sfeOverflowItem]="null" [overflowPriority]="-1">/ {{ timeParts()[1] }}</span>
+                <div class="player-speed-wrap" [sfeOverflowItem]="more.speed">
                     <button type="button" class="player-button player-speed" title="Playback speed" aria-haspopup="true" [attr.aria-expanded]="speedMenu()" (click)="toggleSpeedMenu()">{{ speed() }}×</button>
                     @if (speedMenu()) {
                         <!-- On phones a sheet at the bottom of the screen (phone-sheets.css). -->
@@ -113,28 +117,29 @@ interface Playback {
                     }
                 </div>
                 @if (stream() && !playback().streamed) {
-                    <button type="button" class="player-button player-convert" title="Play it converted by the server (for a video without picture or sound here)"
+                    <button type="button" class="player-button player-convert" [sfeOverflowItem]="more.convert" title="Play it converted by the server (for a video without picture or sound here)"
                             aria-label="Play it converted by the server" (click)="useStream(); showControls()">
                         <svg sfeIcon="refresh"></svg>
                     </button>
                 }
-                <button type="button" class="player-button player-toggle" [class.on]="looping()" [title]="loopLabel()" [attr.aria-label]="loopLabel()" [attr.aria-pressed]="looping()" (click)="toggleLoop(); showControls()">
+                <button type="button" class="player-button player-toggle" [sfeOverflowItem]="more.loop" [class.on]="looping()" [title]="loopLabel()" [attr.aria-label]="loopLabel()" [attr.aria-pressed]="looping()" (click)="toggleLoop(); showControls()">
                     <svg sfeIcon="loop"></svg>
                 </button>
-                <button type="button" class="player-button" title="Save this frame as a picture (S)" aria-label="Save this frame as a picture (S)" (click)="saveFrame(); showControls()">
+                <button type="button" class="player-button" [sfeOverflowItem]="more.saveFrame" title="Save this frame as a picture (S)" aria-label="Save this frame as a picture (S)" (click)="saveFrame(); showControls()">
                     <svg sfeIcon="camera"></svg>
                 </button>
-                <button type="button" class="player-button" [title]="muteLabel()" [attr.aria-label]="muteLabel()" (click)="toggleMute()">
+                <button type="button" class="player-button" [sfeOverflowItem]="null" overflowStay [title]="muteLabel()" [attr.aria-label]="muteLabel()" (click)="toggleMute()">
                     <svg [sfeIcon]="muted() ? 'muted' : 'volume'"></svg>
                 </button>
                 @if (cinemaButton() && !fullscreen()) {
-                    <button type="button" class="player-button player-cinema" [title]="cinemaLabel()" [attr.aria-label]="cinemaLabel()" [attr.aria-pressed]="cinema()" (click)="toggleCinema(); showControls()">
+                    <button type="button" class="player-button player-cinema" [sfeOverflowItem]="more.cinema" [title]="cinemaLabel()" [attr.aria-label]="cinemaLabel()" [attr.aria-pressed]="cinema()" (click)="toggleCinema(); showControls()">
                         <svg [sfeIcon]="cinema() ? 'exit-cinema' : 'cinema'"></svg>
                     </button>
                 }
-                <button type="button" class="player-button" [title]="fullscreen() ? 'Exit fullscreen (F)' : 'Fullscreen (F)'" [attr.aria-label]="fullscreen() ? 'Exit fullscreen (F)' : 'Fullscreen (F)'" (click)="toggleFullscreen()">
+                <button type="button" class="player-button" [sfeOverflowItem]="null" overflowStay [title]="fullscreen() ? 'Exit fullscreen (F)' : 'Fullscreen (F)'" [attr.aria-label]="fullscreen() ? 'Exit fullscreen (F)' : 'Fullscreen (F)'" (click)="toggleFullscreen()">
                     <svg [sfeIcon]="fullscreen() ? 'exit-fullscreen' : 'fullscreen'"></svg>
                 </button>
+                <button class="player-button" sfeOverflowMore></button>
             </div>
         </div>
     `,
@@ -189,20 +194,31 @@ export class VideoPlayerComponent {
             : { url: this.src(), offset: 0, streamed: false };
     });
     protected readonly timeText = signal('0:00 / 0:00');
+    /** The position and the length, apart: the length leaves the row first when it is narrow. */
+    protected readonly timeParts = computed(() => this.timeText().split(' / '));
     protected readonly playLabel = computed(() => this.paused() ? 'Play (K)' : 'Pause (K)');
     protected readonly muteLabel = computed(() => this.muted() ? 'Unmute (M)' : 'Mute (M)');
     protected readonly loopLabel = computed(() => this.looping() ? 'Stop looping (R)' : 'Loop (R)');
     /** Cinema mode: the player spans the whole width (when `cinemaButton`). */
     protected readonly cinema = signal(readPreference(CINEMA_KEY) === '1');
     protected readonly cinemaLabel = computed(() => this.cinema() ? 'Default view (C)' : 'Cinema mode (C)');
-    /** Narrowest player showing every control of the row: a video smaller than that is letterboxed to it. */
-    protected readonly minWidth = computed(() => {
-        // Back, play, forward, speed, loop, frame, mute, fullscreen; then the ones that come and go.
-        const buttons = 8
-            + (this.stream() && !this.playback().streamed ? 1 : 0)
-            + (this.cinemaButton() && !this.fullscreen() ? 1 : 0);
-        return Math.ceil(CONTROLS_PADDING + buttons * BUTTON_WIDTH + 8 + this.timeText().length * TIME_CHAR_WIDTH);
-    });
+    /**
+     * Narrowest player showing the controls that never leave the row (play, mute, fullscreen, the "⋯" and the
+     * position): a video smaller than that is letterboxed to it. The others go into the "⋯" menu when it is narrow.
+     */
+    protected readonly minWidth = computed(() =>
+        Math.ceil(CONTROLS_PADDING + 4 * BUTTON_WIDTH + 8 + this.timeParts()[0].length * TIME_CHAR_WIDTH));
+
+    /** What the buttons that may leave the row are in its "⋯" menu (on/off ones with a check mark). */
+    protected readonly more = {
+        back: (): MenuEntry => ({ id: 'back', label: `Back ${this.seekStep()} s`, icon: 'rewind', shortcut: 'J', title: `Back ${this.seekStep()} s (J)`, run: () => this.stepSeek(-1) }),
+        forward: (): MenuEntry => ({ id: 'forward', label: `Forward ${this.seekStep()} s`, icon: 'forward', shortcut: 'L', title: `Forward ${this.seekStep()} s (L)`, run: () => this.stepSeek(1) }),
+        speed: (): MenuEntry => this.speedEntry(),
+        convert: (): MenuEntry => ({ id: 'convert', label: 'Play converted', icon: 'refresh', title: 'Play it converted by the server (for a video without picture or sound here)', run: () => void this.useStream() }),
+        loop: (): MenuEntry => ({ id: 'loop', label: 'Loop', icon: 'loop', shortcut: 'R', title: this.loopLabel(), checked: this.looping(), run: () => this.toggleLoop() }),
+        saveFrame: (): MenuEntry => ({ id: 'saveFrame', label: 'Save this frame', icon: 'camera', shortcut: 'S', title: 'Save this frame as a picture (S)', run: () => this.saveFrame() }),
+        cinema: (): MenuEntry => ({ id: 'cinema', label: 'Cinema mode', icon: 'cinema', shortcut: 'C', title: this.cinemaLabel(), checked: this.cinema(), run: () => this.toggleCinema() }),
+    };
 
     protected pointerType = 'mouse';
     private hideTimer = 0;
@@ -275,12 +291,7 @@ export class VideoPlayerComponent {
         const fullscreen = this.fullscreen();
         const entries: MenuEntry[] = [
             { id: 'play', label: this.paused() ? 'Play' : 'Pause', icon: this.paused() ? 'play' : 'pause', shortcut: 'K', title: this.playLabel(), run: () => this.togglePlay() },
-            {
-                id: 'speed', label: `Speed: ${this.speed()}×`, icon: 'fast', title: 'How fast it plays',
-                submenu: () => this.speeds.map(rate => ({
-                    id: `speed-${rate}`, label: `${rate}×`, icon: rate === this.speed() ? 'check' : 'fast', title: `Play at ${rate}×`, run: () => this.setSpeed(rate),
-                })),
-            },
+            this.speedEntry(),
             { id: 'loop', label: this.looping() ? 'Stop looping' : 'Loop', icon: 'loop', shortcut: 'R', title: this.loopLabel(), run: () => this.toggleLoop() },
             { id: 'mute', label: this.muted() ? 'Unmute' : 'Mute', icon: this.muted() ? 'volume' : 'muted', shortcut: 'M', title: this.muteLabel(), run: () => this.toggleMute() },
             { id: 'saveFrame', label: 'Save this frame', icon: 'camera', shortcut: 'S', title: 'Save this frame as a picture (S)', run: () => this.saveFrame() },
@@ -295,6 +306,16 @@ export class VideoPlayerComponent {
                 title: 'Keep it playing in a small window, above the other windows', run: () => void this.togglePictureInPicture(),
             });
         return entries;
+    }
+
+    /** Speed › the rates, the one playing checked. */
+    private speedEntry(): MenuEntry {
+        return {
+            id: 'speed', label: `Speed: ${this.speed()}×`, icon: 'fast', title: 'How fast it plays',
+            submenu: () => this.speeds.map(rate => ({
+                id: `speed-${rate}`, label: `${rate}×`, icon: rate === this.speed() ? 'check' : 'fast', title: `Play at ${rate}×`, run: () => this.setSpeed(rate),
+            })),
+        };
     }
 
     private async togglePictureInPicture(): Promise<void> {

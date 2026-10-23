@@ -49,6 +49,9 @@ a.item-menu-entry { text-decoration: none; }
 .item-menu-entry .icon { flex: none; width: 17px; height: 17px; color: var(--text-muted); }
 .item-menu-entry span { flex: 1; }
 .item-menu-entry kbd { color: var(--text-muted); font-size: 11px; }
+.item-menu-entry .icon.item-menu-check { color: var(--accent); }
+.item-menu-entry[aria-disabled="true"] { opacity: .5; cursor: default; }
+.item-menu-entry[aria-disabled="true"]:hover { background: none; }
 
 /* Over a tile's picture, where the tag button was: the tag button moves one place left. */
 .tile .item-menu-button {
