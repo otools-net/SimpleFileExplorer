@@ -5,6 +5,7 @@ import { LibraryItem } from '../../core/models';
 import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
 import { TagChipComponent } from '../../tags/tag-chip.component';
+import { TagMenu } from '../../tags/tag-menu';
 import { ListingStore } from '../listing.store';
 import { ContextMenuDirective } from '../../menus/context-menu';
 import { FolderMenu } from '../folder-menu';
@@ -18,18 +19,20 @@ export const NOT_INDEXED = '(not indexed yet: search, tags and duplicates find i
 /** Chips of the tags set on a file; clicking one searches for it. */
 @Component({
     selector: 'sfe-item-tags',
-    imports: [TagChipComponent],
+    imports: [TagChipComponent, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'item-tags', '[hidden]': '!item().tags?.length' },
     template: `
         @for (tag of item().tags ?? []; track tag.id) {
-            <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="actions.searchTag($event)" />
+            <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="actions.searchTag($event)"
+                          [sfeContextMenu]="tagMenu.target(tag, item())" />
         }
     `,
 })
 export class ItemTagsComponent {
     readonly item = input.required<LibraryItem>();
     protected readonly actions = inject(ItemActions);
+    protected readonly tagMenu = inject(TagMenu);
 }
 
 /** The check box selecting a file or folder. The input covers the box (see styles): a click forwarded by a label might not carry the shift key. */

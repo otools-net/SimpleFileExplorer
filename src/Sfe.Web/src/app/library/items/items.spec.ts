@@ -589,6 +589,17 @@ describe('Context menus of listed items', () => {
         expect(menu.open()?.target).toMatchObject({ kind: 'folderLink', name: 'Trips' });
         expect(menu.open()?.target.entries().map(entry => entry.id)).toEqual(['open', 'newTab', 'quickLink']);
     });
+
+    it('opens a tag\'s menu on its chip, not the file\'s', async () => {
+        const fixture = TestBed.createComponent(FileTileComponent);
+        fixture.componentRef.setInput('item', item('Media/a.jpg', { tags: [tag('Beach')] }));
+        await fixture.whenStable();
+        const chip = (fixture.nativeElement as HTMLElement).querySelector('sfe-tag-chip')!;
+
+        chip.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+
+        expect(TestBed.inject(ContextMenu).open()?.target).toMatchObject({ kind: 'tag', name: 'Beach' });
+    });
 });
 
 describe('Copied paths', () => {

@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 22/33 done. Next: Phase 3, tag chips.**
+**Progress: 23/33 done. Next: Phase 3, duplicates / similar / missing rows.**
 
 ## How to use this file
 
@@ -170,7 +170,7 @@ new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
 
 ### Phase 3: the rest
 
-- [ ] Tag chips menu
+- [x] Tag chips menu (`tags/tag-menu.ts`), on the chips that search; chips in dialogs come with the dialogs item
 - [ ] Duplicates / Similar / Missing rows
 - [ ] Trash rows
 - [ ] Uploads and operations panel rows (job menu)

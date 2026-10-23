@@ -10,6 +10,7 @@ import { ItemMenu } from '../../files/item-menu';
 import { ContextMenu, ContextMenuDirective, MenuEntry, MenuTarget } from '../../menus/context-menu';
 import { IconComponent } from '../../shared/icon.component';
 import { TagChipComponent } from '../../tags/tag-chip.component';
+import { TagMenu } from '../../tags/tag-menu';
 import { tagQuery } from '../../tags/tags';
 import { TrickplayMarksService } from '../../trickplay/trickplay-marks.service';
 import { VideoPlayerComponent } from '../../player/video-player.component';
@@ -53,7 +54,8 @@ const OWNS_KEYS = '[data-owns-keys]';
                     <span>{{ meta() }}</span>
                     <div class="viewer-tags" [hidden]="!item()?.tags?.length">
                         @for (tag of item()?.tags ?? []; track tag.id) {
-                            <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="searchTag($event)" />
+                            <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="searchTag($event)"
+                                          [sfeContextMenu]="tagMenu.target(tag, item())" />
                         }
                     </div>
                 </div>
@@ -128,6 +130,7 @@ export class ViewerComponent {
     private readonly picture = viewChild<ElementRef<HTMLImageElement>>('picture');
     private readonly contextMenu = inject(ContextMenu);
     private readonly itemMenu = inject(ItemMenu);
+    protected readonly tagMenu = inject(TagMenu);
     private readonly menuButton = viewChild<ElementRef<HTMLElement>>('menuButton');
 
     private readonly injector = inject(Injector);

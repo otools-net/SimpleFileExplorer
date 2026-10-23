@@ -27,6 +27,10 @@ The tag button on a file (on hover with a mouse; or <kbd>T</kbd> in the [viewer]
 add an existing tag or create one, × removes one. Click a tag on a file to edit it, a tag chip in the listing to search
 for it. Tagging a file that isn't indexed yet indexes it first.
 
+A right click on a tag chip (on a file, in the sidebar, in the viewer) opens its menu: **Search this tag**, **Search
+in new tab**, **Add to the search** or **Leave out of the search** (while searching; else **Search without this
+tag**), **Remove from this file** (right `tags.assign`) and **Edit the tag…** (right `tags.manage`).
+
 ## Several files at once
 
 ![Three files selected](../images/selection-bar.png)
