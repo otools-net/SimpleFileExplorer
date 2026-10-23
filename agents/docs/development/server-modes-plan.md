@@ -144,8 +144,8 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
       [local-start](../features/local-start.md), [installation-page](../features/installation-page.md),
       [security](security.md).
 
-**The epic is done (1.79.0).** Left for later: publishing the image on ghcr.io
-([docker-publishing-plan.md](docker-publishing-plan.md)), a health check route. Dropped: a `docker` target in
+**The epic is done (1.79.0).** Left for later: a health check route. Publishing the image on ghcr.io
+is done ([docker.md](../environment/docker.md)). Dropped: a `docker` target in
 `build/build.sh`/`build.ps1` (decided 2026-10-19: those scripts don't build images).
 
 ## Open questions

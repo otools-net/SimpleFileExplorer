@@ -8,7 +8,7 @@ it); server `Core/Files/FileContent.cs` (`OverwriteAsync`), `TextCodec.Encode`, 
 `DirectoryIndexer.RefreshFileAsync`, `FileOperations.CreateFileAsync(..., content)`, `Api/Endpoints/TextEndpoints.cs`.
 Tests: `FileContentTests`, `TextCodecTests`, `TextRouteTests`, `text-editing.spec.ts`, `viewer.component.spec.ts`
 (guards), `comfort.spec.ts` (New file), `delete.spec.ts` (trash). User docs: `docs/user-guide/editing-text.md`. Reading
-side: [text-viewer.md](text-viewer.md); plan: [file-viewers-plan.md](../development/file-viewers-plan.md).
+side: [text-viewer.md](text-viewer.md).
 
 ## Rights (from the server)
 

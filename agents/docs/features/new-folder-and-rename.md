@@ -3,8 +3,7 @@
 Code: `src/Sfe.Core/Files/FileOperations.cs`, `src/Sfe.Api/Endpoints/FileEndpoints.cs`; client `app/files/`
 (`name.dialog.ts`, `item-menu.ts`), `ListingStore.applyAdded`/`applyRenamed`/`highlight`, the library page's keys,
 `location` (New folder button), `styles/file-management.css`. Tests: `FileOperationsTests`, `FileRouteTests`,
-`files.spec.ts`. User docs: `docs/user-guide/managing-files.md`. Plan:
-[file-management-plan.md](../development/file-management-plan.md).
+`files.spec.ts`. User docs: `docs/user-guide/managing-files.md`.
 
 ## Server
 
@@ -33,7 +32,7 @@ Code: `src/Sfe.Core/Files/FileOperations.cs`, `src/Sfe.Api/Endpoints/FileEndpoin
 - `ItemMenu` (root service, `files/item-menu.ts`) builds the menu of a listed item (`target(item)`, `entries(item)`,
   the `can…` checks) and `button[sfeItemMenu]` (⋮, hidden without `hasActions`); the menu itself is the app's one
   context menu, `ContextMenu` + `sfe-context-menu` (`menus/context-menu.ts`, see
-  [context-menu-plan](../development/context-menu-plan.md)): `position: fixed`, moved back inside the window after
+  [context-menu.md](context-menu.md)): `position: fixed`, moved back inside the window after
   render, Shift+right click gives the browser's. Closes on a pointerdown outside (not on its own trigger: the ⋮
   toggles), Esc/Tab, scroll, resize, navigation; item menus also on `generation`.
 - Tiles: the ⋮ takes the tag button's place and pushes the tag and copy buttons left only when it shows (`:has()`).

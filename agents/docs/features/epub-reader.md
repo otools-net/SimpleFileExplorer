@@ -6,7 +6,7 @@ Code: client `app/formats/epub/` (`epub-document.ts`: epub.js behind `EPUB_LOADE
 (a fake loader: jsdom lays nothing out), a row in `formats.spec.ts`, `EpubEntriesTests`,
 `TextRouteTests.TheFilesOfABookAreServedAsTheRightsAllow`; the real epub.js runs in the docs screenshots
 (`agents/tools/docs-screenshots/make-epub.mjs`, the `epub frames` check). User docs:
-`docs/user-guide/text-files.md#epub-books`. Plan: [file-viewers-plan.md](../development/file-viewers-plan.md).
+`docs/user-guide/text-files.md#epub-books`.
 
 ## Why the server serves the book's files
 

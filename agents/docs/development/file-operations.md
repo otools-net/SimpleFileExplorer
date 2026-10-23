@@ -1,8 +1,8 @@
 # File operations: rules for changing the library's files
 
 The rules every change to the library's files keeps: new folders and files, rename, move, copy, delete, uploads
-(built, [file-management-plan.md](file-management-plan.md)), the picture editor's saves, duplicate removal, and the
-editors of [file-viewers-plan.md](file-viewers-plan.md) (overwriting a file in place: phase 4). Folder access:
+(built), the picture editor's saves, duplicate removal, and the text editor
+([text-editor.md](../features/text-editor.md): overwriting a file in place). Folder access:
 [folder-access.md](../features/folder-access.md); rights: [right-kinds.md](../features/right-kinds.md).
 
 ## Rights and checks

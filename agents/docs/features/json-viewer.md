@@ -5,7 +5,7 @@ Code: client `app/formats/json/` (`json-tree.ts` model, `json-view.component.ts`
 view: `TextSession` (editing, saving, guards, changed elsewhere), `TextEditor` (source pane; `select`, `edit`),
 `text-document.ts`, the reading preferences (code profile). No server part: `GET`/`PUT api/files/text`. Tests:
 `json-tree.spec.ts`, `json-view.component.spec.ts`, a row in `formats.spec.ts`. User docs:
-`docs/user-guide/text-files.md#json`. Plan: [file-viewers-plan.md](../development/file-viewers-plan.md).
+`docs/user-guide/text-files.md#json`.
 
 ## Parsing (`parseJson`)
 

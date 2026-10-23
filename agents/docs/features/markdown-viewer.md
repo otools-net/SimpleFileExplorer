@@ -4,8 +4,7 @@ Code: client `app/formats/markdown/` (`markdown.ts` renderer, `markdown-view.com
 `formats/formats.ts`, `languageForName` in `formats/text/languages.ts`, the Markdown part of `styles/reader.css`.
 Shared with the text view: `formats/text/text-document.ts` (`textDetails`, `textFailure`), `TextEditor` (source pane),
 the reading preferences (prose profile). Tests: `markdown.spec.ts` (security, links, images, headings, fences),
-`markdown-view.component.spec.ts`. User docs: `docs/user-guide/text-files.md#markdown`. Plan:
-[file-viewers-plan.md](../development/file-viewers-plan.md).
+`markdown-view.component.spec.ts`. User docs: `docs/user-guide/text-files.md#markdown`.
 
 ## Rendering (`renderMarkdown`)
 

@@ -5,7 +5,7 @@ Code: client `app/formats/formats.ts` (registry), `app/formats/text/` (`text-vie
 `files/item-menu.ts`, `styles/reader.css`; server `Core/Files/TextCodec.cs`, `Core/Files/FileContent.cs`,
 `Api/Endpoints/TextEndpoints.cs`. Tests: `TextCodecTests`, `TextRouteTests`, `formats.spec.ts`,
 `text-view.component.spec.ts`, `viewer.component.spec.ts` (Documents), `files.spec.ts` (Open as text). User docs:
-`docs/user-guide/text-files.md`. Plan and later phases: [file-viewers-plan.md](../development/file-viewers-plan.md).
+`docs/user-guide/text-files.md`.
 
 ## Formats
 

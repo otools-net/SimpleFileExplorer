@@ -4,7 +4,7 @@ Code: client `app/formats/reading/` (`reading.ts` model and limits, `reading.ser
 `app/formats/text/text-view.component.ts` (applies them), `formats/text/codemirror.ts` (`readerTheme`),
 `app/formats/view-page.component.ts`, `styles/reader.css`, `src/reader-fonts.css` (+ `angular.json`). Tests:
 `reading.service.spec.ts` (also the panel), `text-view.component.spec.ts`, `view-page.component.spec.ts`. User docs:
-`docs/user-guide/text-files.md#reading-settings`. Plan: [file-viewers-plan.md](../development/file-viewers-plan.md).
+`docs/user-guide/text-files.md#reading-settings`.
 
 ## Model
 

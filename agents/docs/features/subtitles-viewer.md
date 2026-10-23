@@ -5,7 +5,7 @@ Code: client `app/formats/subtitles/` (`subtitles.ts` model, `subtitles-view.com
 the JSON and CSV views' `.json-pane`, `.json-filter`, `.csv-scroller`, `.csv-body`). Server: `Core/Files/Subtitles.cs`,
 `GET api/files/text/video` in `TextEndpoints`. Tests: `subtitles.spec.ts`, `subtitles-view.component.spec.ts`, a row
 in `formats.spec.ts`, `SubtitlesTests`, `TextRouteTests.ASubtitleFileFindsItsVideoAsTheRightsAllow`. User docs:
-`docs/user-guide/text-files.md#subtitles`. Plan: [file-viewers-plan.md](../development/file-viewers-plan.md).
+`docs/user-guide/text-files.md#subtitles`.
 
 ## Parsing (`parseSubtitles`)
 

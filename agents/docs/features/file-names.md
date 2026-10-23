@@ -1,7 +1,6 @@
 # File names (file management)
 
 Code: `src/Sfe.Core/Files/FileNames.cs`; setting `Files:PortableNames` (`FileManagementOptions`). Tests: `FileNamesTests`.
-Plan: [file-management-plan.md](../development/file-management-plan.md).
 
 - `FileNames.Check(name, portable)` gives the reason (a sentence for the person) or null. Everywhere: empty/blank,
   `.`, `..`, `/` (and `\` on Windows), control characters. Windows, or `portable`: `< > : " \ | ? *`, trailing dot or

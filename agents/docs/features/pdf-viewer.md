@@ -5,8 +5,7 @@ Code: client `app/formats/pdf/` (`pdf-document.ts`: pdf.js behind `PDF_LOADER`; 
 `styles/reader.css`, `formats/text/positions.ts` (pages remembered). No server part: the file comes from
 `api/files/raw` (Range requests). Tests: `pdf-view.component.spec.ts` (a fake loader: jsdom has no canvas), a row in
 `formats.spec.ts`; the real pdf.js runs in the docs screenshots (`agents/tools/docs-screenshots`: `make-pdf.mjs`, the
-`pdf pages drawn` check). User docs: `docs/user-guide/text-files.md#pdf-documents`. Plan:
-[file-viewers-plan.md](../development/file-viewers-plan.md).
+`pdf pages drawn` check). User docs: `docs/user-guide/text-files.md#pdf-documents`.
 
 ## pdf.js, bundled and local
 

@@ -5,7 +5,7 @@ Code: client `app/formats/csv/` (`csv-table.ts` model, `csv-view.component.ts`, 
 `styles/reader.css` (it reuses the JSON view's `.json-pane`, `.json-filter`, `.json-problem`, `.json-selection`).
 Shared with the text view: `TextSession`, `TextEditor` (source pane), `text-document.ts`, the code reading profile.
 No server part. Tests: `csv-table.spec.ts`, `csv-view.component.spec.ts`, a row in `formats.spec.ts`. User docs:
-`docs/user-guide/text-files.md#csv-and-tsv`. Plan: [file-viewers-plan.md](../development/file-viewers-plan.md).
+`docs/user-guide/text-files.md#csv-and-tsv`.
 
 ## Parsing (`parseCsv`)
 

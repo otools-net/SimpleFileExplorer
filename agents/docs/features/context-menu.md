@@ -4,8 +4,7 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
 `useContextMenu`, `sfe-context-menu` in `app.ts`), `files/item-menu.ts` (`ItemMenu`: listed files and folders),
 `library/folder-menu.ts` (`FolderMenu`: the folder listed or the search, folder links),
 `library/quick-links/quick-links.component.ts`, `library/topbar/search-box.component.ts` (recent searches). Styles:
-`styles/file-management.css` (`item-menu*`), `styles/phone-sheets.css`. Plan and what's left:
-[context-menu-plan](../development/context-menu-plan.md). Check in a real browser:
+`styles/file-management.css` (`item-menu*`), `styles/phone-sheets.css`. Check in a real browser:
 `agents/tools/visual-check/context-menus.mjs`.
 
 ## How it works

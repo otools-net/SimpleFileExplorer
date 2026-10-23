@@ -20,6 +20,9 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 - Areas: `architecture/` (how the app is put together), `development/` (rules for changing it), `environment/`
   (commands, build, this machine), `features/` (one file per function of the app).
 - Link between notes with relative links; `node agents/tools/docs-screenshots/check-links.mjs` checks them.
+- A plan (`agents/docs/development/*-plan.md`) is removed once its epic is finalized: move what stays true (decisions,
+  gotchas, how it works) into the feature notes, then delete the plan, its line in the index and every link to it
+  (`check-links.mjs` finds them). Git history keeps it; work still left becomes a new, smaller plan or a bullet.
 
 ## Basic rules (details in the linked notes)
 
@@ -70,12 +73,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
 | [file-operations](agents/docs/development/file-operations.md) | rules for changing library files (planned), moving folder rules with folders | `FolderRuleService.BeginMoveAsync` |
-| [file-management-plan](agents/docs/development/file-management-plan.md) | **file management epic: phases, todo list, open questions** (update as it is built) | `Core/Files/` (planned) |
-| [file-viewers-plan](agents/docs/development/file-viewers-plan.md) | **viewing and editing files epic: formats registry, phases, todo lists** (update as it is built) | `app/formats/`, `Core/Files/FileContent` |
 | [server-modes-plan](agents/docs/development/server-modes-plan.md) | **server modes epic: Local / External, Docker image; phases, todo list, open questions** (update as it is built) | `ServerModes`, `Dockerfile` (planned) |
-| [docker-publishing-plan](agents/docs/development/docker-publishing-plan.md) | **publishing the image on ghcr.io: GitHub Actions workflow, settings, release steps** (update as it is built) | `.github/workflows/` (planned) |
 | [keep-alive-plan](agents/docs/development/keep-alive-plan.md) | **keep alive epic: pinging network folders so file servers don't drop idle sessions; design, phases, open questions** (update as it is built) | `Core/KeepAlive/`, `KeepAliveEndpoints` |
-| [context-menu-plan](agents/docs/development/context-menu-plan.md) | context menu epic (done, 1.81.0): one app menu for every right-click, Open in new tab; decisions, map of which menu where | `menus/context-menu.ts`, `ItemMenu`, `FolderMenu` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |

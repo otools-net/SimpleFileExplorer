@@ -26,7 +26,7 @@ merged into `main`**, once for everything merged, from the `## Unreleased` secti
   (`.github/workflows/docker-image.yml`; it refuses a tag differing from `Directory.Build.props`). Tag the commit that
   bumps the version: `git tag v1.80.0`, `git push origin v1.80.0`, only when the user asks (it publishes).
 - Each push to `main` publishes the image `:edge` (the last merge, not released yet); the `edge` branch publishes
-  nothing. Details: [docker-publishing-plan.md](docker-publishing-plan.md).
+  nothing. Details: [docker.md](../environment/docker.md), `.github/workflows/docker-image.yml`.
 
 ## Changelog
 
