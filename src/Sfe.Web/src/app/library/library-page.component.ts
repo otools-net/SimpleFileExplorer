@@ -6,7 +6,7 @@ import { ConfigService } from '../core/config.service';
 import { baseName, parentPath } from '../core/paths';
 import { ThemeService } from '../core/theme.service';
 import { ImageEditorDialog } from '../editor/image-editor.dialog';
-import { ItemMenu, ItemMenuComponent } from '../files/item-menu';
+import { ItemMenu } from '../files/item-menu';
 import { NameDialog } from '../files/name.dialog';
 import { DeleteDialog } from '../files/delete.dialog';
 import { FileActions } from '../files/file-actions';
@@ -56,7 +56,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, FolderExclusionsDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent, ItemMenuComponent],
+        RemoveFromIndexDialog, FolderExclusionsDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -93,7 +93,6 @@ let created = false;
             <sfe-transfer-dialog />
             <sfe-properties-dialog />
             <sfe-batch-rename-dialog />
-            <sfe-item-menu />
             <!-- After the viewer: it opens over it. -->
             <sfe-image-editor />
         }

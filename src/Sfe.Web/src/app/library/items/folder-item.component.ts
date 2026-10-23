@@ -6,6 +6,7 @@ import { LibraryItem } from '../../core/models';
 import { Rights } from '../../core/rights';
 import { FileTransfers } from '../../files/file-transfers';
 import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
+import { useContextMenu } from '../../menus/context-menu';
 import { IconComponent } from '../../shared/icon.component';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
@@ -33,7 +34,6 @@ import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
         '[attr.data-path]': 'item().path',
         // Items dropped on it are moved (copied with Ctrl) into it: OperationsPanelComponent.
         '[attr.data-drop]': 'item().path',
-        '(contextmenu)': 'menu.fromEvent($event, item())',
     },
     template: `
         <a class="folder item kind-directory" [class.card]="cards()" routerLink="/" [queryParams]="store.browseParams(item().path)" [title]="linkTitle()">
@@ -89,7 +89,7 @@ export class FolderItemComponent {
     protected readonly canTag = computed(() => this.store.can(Rights.assignTags, this.item()) || this.store.can(Rights.folderDefaultTags, this.item()));
     protected readonly store = inject(ListingStore);
     private readonly copyPaths = inject(CopyPathService);
-    protected readonly menu = inject(ItemMenu);
+    private readonly menu = inject(ItemMenu);
     protected readonly transfers = inject(FileTransfers);
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));
     protected readonly unindexed = computed(() => this.item().indexed === false);
@@ -107,6 +107,7 @@ export class FolderItemComponent {
     private readonly dialogs = inject(Dialogs);
 
     constructor() {
+        useContextMenu(() => this.menu.target(this.item()));
         // While items are selected, a click on the folder selects it: caught before the link's own handler navigates.
         const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
         const actions = inject(ItemActions);

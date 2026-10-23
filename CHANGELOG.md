@@ -15,6 +15,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   gets (scanned, created, uploaded, copied or moved there), optionally added to the files already there too; taking
   one off asks whether the files keep it. Folders with default tags show a tag-and-sparkle icon listing them when clicked (new
   right `tags.folderDefaults`, given to Administrators and Users).
+- The **ContextMenu key** (or Shift+F10) opens the menu of the file or folder that has the focus, like a right
+  click.
 
 ### Changed
 

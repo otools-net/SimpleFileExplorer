@@ -11,7 +11,8 @@ import { SidebarService } from '../library/sidebar/sidebar.service';
 import type { ViewerComponent } from '../library/viewer/viewer.component';
 import { BatchRenameDialog, BatchRenameRule, planRenames } from './batch-rename.dialog';
 import { FileTransfers } from './file-transfers';
-import { fromTouch, ItemMenu } from './item-menu';
+import { ContextMenu, fromTouch } from '../menus/context-menu';
+import { ItemMenu } from './item-menu';
 import { NameDialog } from './name.dialog';
 
 let api: ApiMock;
@@ -232,11 +233,11 @@ describe('Phones', () => {
         const menu = TestBed.inject(ItemMenu);
         const press = Object.assign(new MouseEvent('contextmenu', { cancelable: true }), { pointerType: 'touch' });
 
-        menu.fromEvent(press, a);
+        TestBed.inject(ContextMenu).fromEvent(press, menu.target(a));
 
         expect(fromTouch(press)).toBe(true);
         expect(press.defaultPrevented).toBe(true);
         expect(store.isSelected(a.path)).toBe(true);
-        expect(menu.open()).toBeNull();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
     });
 });

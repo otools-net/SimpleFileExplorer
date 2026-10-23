@@ -6,6 +6,7 @@ import { LibraryItem } from '../../core/models';
 import { FileTransfers } from '../../files/file-transfers';
 import { formatOf } from '../../formats/formats';
 import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
+import { useContextMenu } from '../../menus/context-menu';
 import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
 import { TrickplayHoverService } from '../../trickplay/trickplay-hover.service';
@@ -31,7 +32,7 @@ abstract class FileItemBase {
     protected readonly actions = inject(ItemActions);
     private readonly copyPaths = inject(CopyPathService);
     protected readonly config = inject(ConfigService);
-    protected readonly menu = inject(ItemMenu);
+    private readonly menu = inject(ItemMenu);
     private readonly previews = inject(PreviewsService);
     private readonly transfers = inject(FileTransfers);
     /** Cut (Ctrl+X): faded until pasted. */
@@ -58,6 +59,7 @@ abstract class FileItemBase {
     protected abstract previewContainer(): HTMLElement | undefined;
 
     constructor() {
+        useContextMenu(() => this.menu.target(this.item()));
         const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
         const hover = inject(TrickplayHoverService);
         const animated = inject(AnimatedHoverService);
@@ -92,7 +94,6 @@ function sameStrings(a: string[], b: string[]): boolean {
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
         '[style.--ratio]': 'ratio()',
-        '(contextmenu)': 'menu.fromEvent($event, item())',
     },
     template: `
         <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
@@ -181,7 +182,6 @@ export class FileTileComponent extends FileItemBase {
         '[class.revealed]': 'revealed()',
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
-        '(contextmenu)': 'menu.fromEvent($event, item())',
     },
     template: `
         <label sfeSelectBox [item]="item()"></label>

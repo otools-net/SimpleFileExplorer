@@ -7,7 +7,8 @@ import { Dialogs } from '../library/dialogs.service';
 import { LibraryPageComponent } from '../library/library-page.component';
 import { ListingStore } from '../library/listing.store';
 import { SidebarService } from '../library/sidebar/sidebar.service';
-import { ItemMenu, ItemMenuComponent } from './item-menu';
+import { ContextMenu, ContextMenuComponent } from '../menus/context-menu';
+import { ItemMenu } from './item-menu';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
 import { NameDialog } from './name.dialog';
 
@@ -146,16 +147,20 @@ describe('ItemMenu', () => {
         return new MouseEvent('contextmenu', { cancelable: true, clientX: 30, clientY: 40, shiftKey });
     }
 
+    function rightClick(event: MouseEvent, value: LibraryItem): void {
+        TestBed.inject(ContextMenu).fromEvent(event, TestBed.inject(ItemMenu).target(value));
+    }
+
     it('offers renaming only to those who may rename here, and Properties to everyone who browses', async () => {
         await setUp([Rights.browse, Rights.viewTags]);
         const menu = TestBed.inject(ItemMenu);
         const event = menuEvent();
-        menu.fromEvent(event, photo);
+        rightClick(event, photo);
 
         expect(menu.hasActions(photo)).toBe(true);
         expect(menu.entries(photo).map(e => e.id)).toEqual(['tags', 'properties']);
         expect(event.defaultPrevented).toBe(true);
-        expect(menu.open()?.item).toBe(photo);
+        expect(TestBed.inject(ContextMenu).open()?.target.item).toBe(photo);
     });
 
     it('adds an item to the quick links, or takes it out when it is one', async () => {
@@ -235,17 +240,17 @@ describe('ItemMenu', () => {
 
     it('opens at the pointer on a right click, and the browser\'s own menu with Shift', async () => {
         await setUp();
-        const fixture = TestBed.createComponent(ItemMenuComponent);
+        const fixture = TestBed.createComponent(ContextMenuComponent);
         fixture.detectChanges();
         const menu = TestBed.inject(ItemMenu);
         const rename = vi.fn();
         TestBed.inject(Dialogs).name.set({ rename } as unknown as NameDialog);
 
         const shifted = menuEvent(true);
-        menu.fromEvent(shifted, photo);
+        rightClick(shifted, photo);
         expect(shifted.defaultPrevented).toBe(false);
         const event = menuEvent();
-        menu.fromEvent(event, photo);
+        rightClick(event, photo);
         await settle();
         fixture.detectChanges();
         const element: HTMLElement = fixture.nativeElement;
@@ -257,34 +262,34 @@ describe('ItemMenu', () => {
         await settle();
 
         expect(rename).toHaveBeenCalledWith(photo);
-        expect(menu.open()).toBeNull();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
     });
 
     it('closes on Esc, on a click elsewhere and when the listing changes', async () => {
         await setUp();
-        const fixture = TestBed.createComponent(ItemMenuComponent);
+        const fixture = TestBed.createComponent(ContextMenuComponent);
         fixture.detectChanges();
         const menu = TestBed.inject(ItemMenu);
         const element: HTMLElement = fixture.nativeElement;
 
-        menu.fromEvent(menuEvent(), photo);
+        rightClick(menuEvent(), photo);
         await settle();
         // On phones, the standard sheet at the bottom over its backdrop (phone-sheets.css).
         expect(element.querySelector('.item-menu')!.classList).toContain('phone-sheet');
         expect(element.querySelector('.sheet-backdrop')).not.toBeNull();
         element.querySelector('.item-menu')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-        expect(menu.open()).toBeNull();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
 
-        menu.fromEvent(menuEvent(), photo);
+        rightClick(menuEvent(), photo);
         await settle();
         document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-        expect(menu.open()).toBeNull();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
 
-        menu.fromEvent(menuEvent(), photo);
+        rightClick(menuEvent(), photo);
         await settle();
         await store.load();
         await settle();
-        expect(menu.open()).toBeNull();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
     });
 });
 
