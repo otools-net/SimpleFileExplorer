@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 16/34 done. Next: Phase 2, viewer stage (image, audio).**
+**Progress: 20/34 done. Next: Phase 2, the formats' own entries (Markdown links, JSON, CSV, PDF).**
 
 ## How to use this file
 
@@ -146,13 +146,25 @@ Done in the commit "context menus on the library page" (the one after 51cf2aa):
 
 ### Phase 2: viewers and player
 
-- [ ] Viewer stage (image, audio): file menu + viewer entries
-- [ ] Viewer ⋮ uses the shared menu; remove `menuEntries` / `ViewerMenuEntry`
-- [ ] Video player surface (mouse): player entries + Speed submenu + file menu; touch fast play unchanged
-- [ ] Text viewer (outside the editor), Markdown (link targets), JSON (Copy path / value), CSV (Copy cell), PDF
+Done in the commit "context menus in the viewer and the player":
+
+- [x] Viewer stage (every format: picture, video, audio, documents): the viewer's menu. The shared menu moves into the
+  modal dialog and shows in the top layer (see [context-menu](../features/context-menu.md))
+- [x] Viewer ⋮ uses the shared menu; `ViewerMenuEntry` and the viewer's own menu markup removed (`menuEntries` stays,
+  as the target's entries). Decided: no rename / delete / move from the viewer for now (it doesn't follow the file);
+  Copy, Copy to…, Properties added
+- [x] Video player surface (mouse): `VideoPlayerComponent.menuEntries()` + Speed submenu + Copy link at this time,
+  then the viewer's entries; touch fast play unchanged
+- [x] `/view` and `/player` pages (`usePageMenu`)
+
+Left:
+
+- [ ] The formats' own entries: Markdown (links in the text → file / folder / external link targets), JSON (Copy path
+  / value of a node), CSV (Copy cell), PDF (outline links). Their text already gets the viewer's menu (selected text:
+  the browser's)
 - [ ] EPUB: `contextmenu` hooked inside the rendition iframe
-- [ ] `/view` and `/player` pages
-- [ ] Tests for each; user docs + screenshots; CHANGELOG
+- [~] Tests for each; user docs + screenshots; CHANGELOG (done for what is ticked: `viewer.md`, `video-player.md`,
+  `text-files.md`; a screenshot of the viewer's menu is left for the end of the phase)
 
 ### Phase 3: the rest
 

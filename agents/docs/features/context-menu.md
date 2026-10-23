@@ -14,9 +14,15 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
   `MenuTarget` (`{kind, key, name, entries(), touch?(), item?}`): `[sfeContextMenu]="target"`, or
   `useContextMenu(() => target)` in a component's constructor for its host. The innermost element wins (the outer
   ones see `defaultPrevented`).
-- A right click on nothing with a menu: the page's menu, `ContextMenu.page` (the listing page sets
-  `FolderMenu.target()`, clears it when left). Inside a `<dialog>` (viewer, sheets, editor) the browser's menu stays
-  for now.
+- A right click on nothing with a menu: the page's menu, `ContextMenu.page`, set by `usePageMenu(target)` in a page's
+  constructor (cleared when it is destroyed): the listing page (`FolderMenu.target()`), the player page, the view
+  page. Inside a `<dialog>` (sheets, editor) without a target of its own the browser's menu stays for now.
+- Modal dialogs: while one is open the rest of the page is inert and below the top layer, so `sfe-context-menu` moves
+  its host element into the dialog the trigger is in (else the last `dialog[open]` matching `:modal`), and back home
+  when closed; its layer (`.context-menu-layer`) is a `popover="manual"` shown after render (top layer, above the
+  dialog). jsdom has no popovers and refuses focus inside an element with a `popover` attribute: the attribute is
+  only set when `showPopover` exists. The menu's keys (arrows, Esc) stop propagating: the viewer's arrows and Esc
+  stay out of it.
 - The browser's menu is kept (`keepsBrowserMenu`): Shift held, a text field (`isTextField`: text inputs, textarea,
   contenteditable; not check boxes), a right click on selected text; and when the target has no entries.
 - Touch: a target with `touch` (listed items) does it on a long press instead of the menu (select); other targets open
@@ -38,6 +44,9 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
 | Breadcrumbs, up / previous / next, a search result's folder | `folderLink` (`FolderMenu.linkTarget`) | Open, Open in new tab, Paste into, quick link, Copy full path, Properties |
 | Quick link | `folderLink` / `fileLink` | Its folder's entries (or Show in its folder, Open in new tab, Copy full path, Properties), then Move up / down, Remove; only those when it's not found any more |
 | Recent search | `historyEntry` | Search, Open in new tab, Remove from the history |
+| Viewer: its ⋮, a right click on the stage (picture, video, document) | `file` (`viewer:<path>`) | A video: the player's `menuEntries()` (Play, Speed › rates, Loop, Mute, Save this frame, Full screen, Picture in picture); then Actual size / Fit, Crop, quick link, Copy full path, Open in a new window, Copy link at this time, external player, Open in new tab, Download, and the item menu's Copy, Copy to…, Properties (`ItemMenu.entries(item, true)`: the file alone, not the listing's selection; their listing keys left out). Not rename / delete / move: the viewer doesn't follow a file that changes or goes |
+| Player page (`player?path=`) | `page` | The player's entries, Copy link at this time, external player, Download, Copy full path |
+| View page (`view?path=`) | `page` | Open its folder (also in a new tab), Download, Copy full path |
 
 - Links: a file's `ItemActions.fileUrl` (its `view?path=` page for formats with one, else the raw file); a listing's
   `ListingStore.pageUrl(params)` (what RouterLink makes: `LocationStrategy.prepareExternalUrl`, so it holds under a

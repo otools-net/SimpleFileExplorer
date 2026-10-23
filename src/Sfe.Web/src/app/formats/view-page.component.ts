@@ -8,6 +8,8 @@ import { formatDate, formatSize, joinParts } from '../core/format';
 import { LibraryItem } from '../core/models';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
+import { CopyPathService } from '../core/copy-path.service';
+import { MenuEntry, usePageMenu } from '../menus/context-menu';
 import { IconComponent } from '../shared/icon.component';
 import { FILE_VIEW_HOST, FileFormat, FileViewHost, formatOf } from './formats';
 
@@ -84,6 +86,26 @@ export class ViewPageComponent implements OnInit {
         },
     };
     protected readonly viewInjector = Injector.create({ providers: [{ provide: FILE_VIEW_HOST, useValue: this.host }], parent: inject(Injector) });
+
+    constructor() {
+        // A right click on the page (not on its text, which keeps the browser's menu when selected or edited).
+        const copyPaths = inject(CopyPathService);
+        usePageMenu({
+            kind: 'page', key: 'view-page', name: this.name, entries: () => {
+                if (!this.name)
+                    return [];
+                const entries: MenuEntry[] = [
+                    { id: 'openFolder', label: 'Open its folder', icon: 'folder-up', title: `List the folder ${this.folderName()}`, href: this.folderUrl() },
+                    { id: 'folderNewTab', label: 'Open its folder in new tab', icon: 'external', title: `List the folder ${this.folderName()} in a tab of its own`, href: this.folderUrl(), newTab: true },
+                ];
+                if (this.item() && this.config.can('files.download'))
+                    entries.push({ id: 'download', label: 'Download', icon: 'download', title: 'Save this file to this device', href: this.config.urls()!.download(this.path) });
+                if (copyPaths.enabled())
+                    entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => void copyPaths.copy(this.path) });
+                return entries;
+            },
+        });
+    }
 
     /** The route's question: the file shown may be left (nothing unsaved, or the person agrees). */
     canLeave(): boolean {

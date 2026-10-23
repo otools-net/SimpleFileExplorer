@@ -123,8 +123,10 @@ export class ItemMenu {
         return item.kind === 'directory' && !this.store.searching() && this.store.can(Rights.excludeFolders, item) && Boolean(this.dialogs.folderExclusions());
     }
 
-    entries(item: LibraryItem): ItemMenuEntry[] {
-        const entries: ItemMenuEntry[] = this.openings(item);
+    /** The entries of `item`'s menu; on the selection when `item` is part of it, unless `single` (the viewer). */
+    entries(item: LibraryItem, single = false): ItemMenuEntry[] {
+        const targets = () => single ? [item] : this.targets(item);
+        const entries: ItemMenuEntry[] = this.openings(item, targets());
         if (this.canOpenAsText(item))
             entries.push({ id: 'openAsText', label: 'Open as text', icon: 'file', title: 'Show its content as text, in the viewer', run: () => this.dialogs.viewer()?.open(item, { asText: true }) });
         if (this.canEditText(item))
@@ -132,7 +134,7 @@ export class ItemMenu {
         if (this.canEditPicture(item))
             entries.push({ id: 'editPicture', label: 'Crop…', icon: 'crop', title: 'Crop the picture, then save it over the original or as a new file', run: () => void this.dialogs.imageEditor()?.open(item) });
         if (this.canRename(item)) {
-            const several = this.targets(item).filter(target => this.canRename(target)).length > 1 && !this.store.searching();
+            const several = targets().filter(target => this.canRename(target)).length > 1 && !this.store.searching();
             entries.push({
                 id: 'rename', label: 'Rename…', icon: 'edit', shortcut: 'F2',
                 title: several ? 'Rename the selected items together: find and replace, or numbered names (F2)' : `Give ${item.name} another name (F2)`,
@@ -146,14 +148,14 @@ export class ItemMenu {
                 icon: 'trash',
                 shortcut: 'Del',
                 title: this.files.alwaysPermanent ? `Delete ${item.name} for good (Delete)` : `Move ${item.name} to the trash (Delete; Shift+Delete: for good)`,
-                run: () => this.files.delete(this.targets(item)),
+                run: () => this.files.delete(targets()),
             });
         const canMove = this.transfers.canMove(item);
         const canCopy = this.transfers.canCopy(item);
         if (canMove)
-            entries.push({ id: 'cut', label: 'Cut', icon: 'cut', shortcut: 'Ctrl+X', title: 'Keep it to move into a folder with Paste (Ctrl+X)', run: () => this.transfers.keep('move', this.targets(item)) });
+            entries.push({ id: 'cut', label: 'Cut', icon: 'cut', shortcut: 'Ctrl+X', title: 'Keep it to move into a folder with Paste (Ctrl+X)', run: () => this.transfers.keep('move', targets()) });
         if (canCopy)
-            entries.push({ id: 'copy', label: 'Copy', icon: 'copy', shortcut: 'Ctrl+C', title: 'Keep it to copy into a folder with Paste (Ctrl+C)', run: () => this.transfers.keep('copy', this.targets(item)) });
+            entries.push({ id: 'copy', label: 'Copy', icon: 'copy', shortcut: 'Ctrl+C', title: 'Keep it to copy into a folder with Paste (Ctrl+C)', run: () => this.transfers.keep('copy', targets()) });
         const clipboard = this.transfers.clipboard();
         if (clipboard && item.kind === 'directory' && this.transfers.canInto(clipboard.kind, item))
             entries.push({
@@ -164,18 +166,18 @@ export class ItemMenu {
                 run: () => this.transfers.paste(item.path),
             });
         if (canMove)
-            entries.push({ id: 'moveTo', label: 'Move to…', icon: 'move', title: 'Move it to another folder, picked next', run: () => this.transfers.pick('move', this.targets(item)) });
+            entries.push({ id: 'moveTo', label: 'Move to…', icon: 'move', title: 'Move it to another folder, picked next', run: () => this.transfers.pick('move', targets()) });
         if (canCopy)
-            entries.push({ id: 'copyTo', label: 'Copy to…', icon: 'copy', title: 'Copy it into another folder, picked next', run: () => this.transfers.pick('copy', this.targets(item)) });
+            entries.push({ id: 'copyTo', label: 'Copy to…', icon: 'copy', title: 'Copy it into another folder, picked next', run: () => this.transfers.pick('copy', targets()) });
         if (this.downloads.canDownload(item)) {
-            const targets = this.targets(item);
-            const zip = this.downloads.isZip(targets);
+            const selected = targets();
+            const zip = this.downloads.isZip(selected);
             entries.push({
                 id: 'download',
                 label: zip ? 'Download as zip' : 'Download',
                 icon: 'download',
-                title: zip ? (targets.length > 1 ? 'Save the selected items to this device, in one zip file' : 'Save this folder, with everything in it, to this device as a zip file') : 'Save this file to this device',
-                run: () => void this.downloads.download(targets),
+                title: zip ? (selected.length > 1 ? 'Save the selected items to this device, in one zip file' : 'Save this folder, with everything in it, to this device as a zip file') : 'Save this file to this device',
+                run: () => void this.downloads.download(selected),
             });
         }
         if (item.kind === 'directory' ? this.store.can(Rights.assignTags, item) : this.store.can(Rights.viewTags, item))
@@ -219,8 +221,8 @@ export class ItemMenu {
      * Open, Open in new tab (a real link) and, in search results, Open containing folder: not for a selection of
      * several items (one tab each would be stopped as popups).
      */
-    private openings(item: LibraryItem): ItemMenuEntry[] {
-        if (this.targets(item).length > 1)
+    private openings(item: LibraryItem, targets: LibraryItem[]): ItemMenuEntry[] {
+        if (targets.length > 1)
             return [];
         const entries: ItemMenuEntry[] = [];
         if (item.kind === 'directory') {

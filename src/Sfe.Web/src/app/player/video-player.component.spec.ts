@@ -64,6 +64,29 @@ describe('VideoPlayerComponent', () => {
         expect(loopButton().classList).not.toContain('on');
     });
 
+    it('gives its controls to a context menu: play, speed, loop, mute, frame, full screen', async () => {
+        await create(false);
+        const entries = () => player().menuEntries();
+        const entry = (id: string) => entries().find(e => e.id === id)!;
+
+        expect(entries().map(e => e.id)).toEqual(['play', 'speed', 'loop', 'mute', 'saveFrame', 'fullscreen']);
+        expect(entry('play')).toMatchObject({ label: 'Play', shortcut: 'K' });
+        entry('play').run!();
+        expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
+
+        entry('loop').run!();
+        await settle();
+        expect(video().loop).toBe(true);
+        expect(entry('loop').label).toBe('Stop looping');
+
+        const rates = entry('speed').submenu!();
+        expect(rates.map(rate => rate.label)).toEqual(['0.5×', '0.75×', '1×', '1.25×', '1.5×', '2×']);
+        expect(rates[2].icon).toBe('check');
+        rates[4].run!();
+        expect(video().playbackRate).toBe(1.5);
+        expect(entry('speed').label).toBe('Speed: 1.5×');
+    });
+
     describe('playback speed', () => {
         const speedButton = () => fixture.nativeElement.querySelector('.player-speed') as HTMLButtonElement;
         const menu = () => fixture.nativeElement.querySelector('.player-speed-menu') as HTMLElement | null;

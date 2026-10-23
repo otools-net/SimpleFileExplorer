@@ -116,6 +116,46 @@ try {
     await sleep(600);
     state = JSON.parse(await b.eval(menuState));
     check('Shift+F10: menu of the focused file', state.kind === 'file' && state.events.every(e => e.prevented), JSON.stringify(state.events));
+    await closeMenu(b);
+
+    // The viewer (a modal dialog): the menu goes into it, above it, and its entries take clicks.
+    await b.click('.tile a.item-link');
+    await b.waitFor('dialog.viewer[open] .viewer-stage img');
+    await sleep(600);
+    state = await rightClick(b, 'dialog.viewer .viewer-stage img');
+    const hit = JSON.parse(await b.eval(`JSON.stringify((() => {
+        const menu = document.querySelector('.item-menu');
+        const entry = menu?.querySelector('[data-entry="properties"]');
+        if (!entry) return { found: false };
+        const r = entry.getBoundingClientRect();
+        return { found: true, inDialog: Boolean(menu.closest('dialog.viewer')), onTop: entry.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) };
+    })())`));
+    check('viewer: menu of the picture, in the dialog and on top', state.kind === 'file' && hit.inDialog && hit.onTop, `${state.entries.join(' ')} ${JSON.stringify(hit)}`);
+    await b.shot(out + '-viewer.png');
+    await b.realClick('.item-menu [data-entry="properties"]');
+    await sleep(1200);
+    check('viewer: an entry works (Properties over the viewer)', await b.eval(`Boolean(document.querySelector('dialog.sheet[open]'))`));
+    await b.key('Escape', 'Escape', 27);
+    await sleep(400);
+    await b.key('Escape', 'Escape', 27);
+    await sleep(600);
+
+    // A video: the player's controls first; Speed opens its rates in the menu's place.
+    await b.goto(url + '?path=Videos%2FHolidays', 3000);
+    await b.waitFor('.tile a.item-link');
+    await b.eval(recorder);
+    await b.click('.tile a.item-link');
+    await b.waitFor('dialog.viewer[open] video');
+    await sleep(1000);
+    state = await rightClick(b, 'dialog.viewer video');
+    check('player: its controls in the menu', state.entries[0] === 'play' && state.entries.includes('speed') && state.entries.includes('copyTimeLink'), state.entries.join(' '));
+    await b.realClick('.item-menu [data-entry="speed"]');
+    await sleep(400);
+    state = JSON.parse(await b.eval(menuState));
+    check('player: Speed shows the rates', state.entries[0] === 'back' && state.entries.includes('speed-2'), state.entries.join(' '));
+    await b.realClick('.item-menu [data-entry="speed-2"]');
+    await sleep(400);
+    check('player: a rate picked plays at it', await b.eval(`document.querySelector('dialog.viewer video').playbackRate === 2`));
     await b.close();
 
     // Phone width: the background menu is a sheet across the bottom.

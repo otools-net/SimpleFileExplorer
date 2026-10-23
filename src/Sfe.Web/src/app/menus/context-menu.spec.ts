@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { settle } from '../../testing/fakes';
-import { ContextMenu, ContextMenuComponent, ContextMenuDirective, keepsBrowserMenu, MenuEntry, MenuTarget } from './context-menu';
+import { ContextMenu, ContextMenuComponent, ContextMenuDirective, keepsBrowserMenu, MenuEntry, MenuTarget, usePageMenu } from './context-menu';
 
 function target(key: string, entries: MenuEntry[] = [{ id: 'act', label: 'Act', icon: 'info', title: 'Act', run: vi.fn() }], touch?: () => void): MenuTarget {
     return { kind: 'folderLink', key, name: key, entries: () => entries, touch };
@@ -87,6 +87,21 @@ describe('ContextMenu', () => {
         expect(menu.open()?.target.key).toBe('page');
         expect(menu.open()?.trigger).toBeNull();
         expect(rightClick(at('#plain'), { shiftKey: true }).defaultPrevented).toBe(false);
+    });
+
+    it('has a page\'s menu while the page is shown (usePageMenu)', () => {
+        @Component({ template: '' })
+        class Page {
+            readonly target = target('page');
+            constructor() {
+                usePageMenu(this.target);
+            }
+        }
+        const page = TestBed.createComponent(Page);
+        expect(menu.page()).toBe(page.componentInstance.target);
+
+        page.destroy();
+        expect(menu.page()).toBeNull();
     });
 
     it('does the target\'s touch action on a long press instead of opening the menu', () => {

@@ -6,6 +6,7 @@ import { ListingStore } from '../library/listing.store';
 import { ViewerComponent } from '../library/viewer/viewer.component';
 import { ApiMock, fakeCanvases, fakeConfig, item, limitedConfig, ALL_RIGHTS, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
 import { PICTURE_LOADER } from './edits';
+import { ContextMenuComponent } from '../menus/context-menu';
 import { ImageEditorDialog } from './image-editor.dialog';
 
 /** A decoded picture of the given size (jsdom decodes nothing). */
@@ -336,6 +337,7 @@ describe('ViewerComponent › Edit', () => {
         TestBed.inject(ListingStore).items.set([item('Media/photo.jpg', { kind: 'image' }), item('Media/clip.mp4', { kind: 'video' })]);
         const editorDialog = { open: vi.fn(() => Promise.resolve()) };
         TestBed.inject(Dialogs).imageEditor.set(editorDialog as unknown as ImageEditorDialog);
+        TestBed.createComponent(ContextMenuComponent);
         const fixture = TestBed.createComponent(ViewerComponent);
         await fixture.whenStable();
         return { fixture, element: fixture.nativeElement as HTMLElement, editorDialog };
@@ -344,11 +346,11 @@ describe('ViewerComponent › Edit', () => {
     /** Crop, in the viewer's ⋮ menu (opened for it). */
     const editButton = async (element: HTMLElement) => {
         const more = element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]');
-        if (more && !element.querySelector('.viewer-menu')) {
+        if (more && !document.querySelector('.item-menu')) {
             more.click();
             await settle();
         }
-        return element.querySelector<HTMLButtonElement>('[data-entry="crop"]');
+        return document.querySelector<HTMLButtonElement>('.item-menu [data-entry="crop"]');
     };
 
     afterEach(() => TestBed.resetTestingModule());

@@ -178,6 +178,31 @@ export function isTextField(element: Element): boolean {
     return field.getAttribute('contenteditable') !== 'false';
 }
 
+/** Puts the menu's layer in the top layer; browsers without the popover API (and jsdom) keep it in place, above the page by its z-index. */
+function showLayer(layer: HTMLElement | undefined): void {
+    try {
+        if (layer && typeof layer.showPopover === 'function' && !layer.matches(':popover-open'))
+            layer.showPopover();
+    } catch {
+        // no popovers here
+    }
+}
+
+/** The open modal dialog `trigger` is in, else the last one opened (the viewer, a sheet, the picture editor); null when none. */
+function openDialog(trigger: HTMLElement | null): HTMLDialogElement | null {
+    const own = trigger?.closest<HTMLDialogElement>('dialog[open]');
+    if (own)
+        return own;
+    const modal = [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].filter(dialog => {
+        try {
+            return dialog.matches(':modal');
+        } catch {
+            return false;   // no :modal (jsdom)
+        }
+    });
+    return modal.at(-1) ?? null;
+}
+
 /** The menu event comes from a finger: a long press (Chrome tells it; others, by a screen without a mouse). */
 export function fromTouch(event: MouseEvent): boolean {
     const pointer = (event as Partial<PointerEvent>).pointerType;
@@ -194,6 +219,16 @@ export function useContextMenu(target: () => MenuTarget | null): void {
     const listener = (event: MouseEvent) => menu.fromEvent(event, target(), host);
     host.addEventListener('contextmenu', listener);
     inject(DestroyRef).onDestroy(() => host.removeEventListener('contextmenu', listener));
+}
+
+/** The page of the component calling it has the menu of `target` while it is shown (called while it is made). */
+export function usePageMenu(target: MenuTarget): void {
+    const menu = inject(ContextMenu);
+    menu.page.set(target);
+    inject(DestroyRef).onDestroy(() => {
+        if (menu.page() === target)
+            menu.page.set(null);
+    });
 }
 
 /** `[sfeContextMenu]="target"`: the element has the menu of `target` (none: null). */
@@ -224,6 +259,8 @@ export class ContextMenuDirective {
     },
     template: `
         @if (menu.open(); as open) {
+            <!-- The top layer (a manual popover): above the page and an open modal dialog, which it is moved into. -->
+            <div #layer class="context-menu-layer" [attr.popover]="popovers ? 'manual' : null">
             <!-- On phones: an action sheet at the bottom, under its target's name, over a backdrop that closes it. -->
             <div class="item-menu-backdrop sheet-backdrop" aria-hidden="true"></div>
             <div #box class="item-menu phone-sheet" role="menu" [attr.aria-label]="'Actions for ' + open.target.name" [attr.data-menu]="open.target.kind"
@@ -260,13 +297,20 @@ export class ContextMenuDirective {
                     }
                 }
             </div>
+            </div>
         }
     `,
 })
 export class ContextMenuComponent {
     protected readonly menu = inject(ContextMenu);
     private readonly injector = inject(Injector);
+    /** The browser has popovers (the top layer); without them (jsdom) the layer stays in the page, and focusable. */
+    protected readonly popovers = typeof HTMLElement.prototype.showPopover === 'function';
     private readonly box = viewChild<ElementRef<HTMLElement>>('box');
+    private readonly layer = viewChild<ElementRef<HTMLElement>>('layer');
+    private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    /** Where the menu lives when no modal dialog is open (the root component). */
+    private home: Node | null = null;
     /** The submenu shown in the menu's place, if any. */
     protected readonly submenu = signal<MenuEntry[] | null>(null);
     protected readonly entries = computed(() => {
@@ -280,10 +324,18 @@ export class ContextMenuComponent {
         effect(() => {
             const open = this.menu.open();
             untracked(() => this.submenu.set(null));
+            this.home ??= this.host.parentNode;
+            // Inside the modal dialog the menu belongs to (the rest of the page is inert while one is open), else home.
+            const parent = open ? openDialog(open.trigger) ?? this.home : this.home;
+            if (parent && this.host.parentNode !== parent)
+                parent.appendChild(this.host);
             if (!open)
                 return;
             untracked(() => this.position.set({ x: open.x, y: open.y }));
-            afterNextRender(() => this.place(open.x, open.y), { injector: this.injector });
+            afterNextRender(() => {
+                showLayer(this.layer()?.nativeElement);
+                this.place(open.x, open.y);
+            }, { injector: this.injector });
         });
         const navigations = inject(Router, { optional: true })?.events.subscribe(event => {
             if (event instanceof NavigationStart)
@@ -345,6 +397,9 @@ export class ContextMenuComponent {
     protected keydown(event: KeyboardEvent): void {
         const entries = [...this.box()?.nativeElement.querySelectorAll<HTMLElement>('.item-menu-entry') ?? []];
         const index = entries.indexOf(document.activeElement as HTMLElement);
+        // The menu's keys stay in it (a dialog it is in has keys of its own: the viewer's arrows, Esc).
+        if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Escape'].includes(event.key))
+            event.stopPropagation();
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault();
             const step = event.key === 'ArrowDown' ? 1 : -1;

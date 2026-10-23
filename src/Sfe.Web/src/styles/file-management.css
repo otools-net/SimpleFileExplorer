@@ -1,5 +1,24 @@
 /* ---------- File management: the item menu, the ⋮ buttons, the New folder button ---------- */
 
+/*
+ * The context menu's layer (ContextMenuComponent) is in the top layer (popover="manual"), inside the open modal dialog
+ * when there is one: it covers the window but lets the pointer through, except on the menu (and on phones its backdrop).
+ */
+.context-menu-layer {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    pointer-events: none;
+}
+.context-menu-layer .item-menu { pointer-events: auto; }
+
 .item-menu {
     position: fixed;
     z-index: 60;
@@ -25,6 +44,7 @@
     cursor: pointer;
 }
 
+a.item-menu-entry { text-decoration: none; }
 .item-menu-entry:is(:hover, :focus-visible) { background: var(--surface-2); outline: none; }
 .item-menu-entry .icon { flex: none; width: 17px; height: 17px; color: var(--text-muted); }
 .item-menu-entry span { flex: 1; }
