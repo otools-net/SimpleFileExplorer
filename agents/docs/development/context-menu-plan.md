@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 21/33 done. Next: Phase 2, screenshot of the viewer's menu; then Phase 3, tag chips.**
+**Progress: 22/33 done. Next: Phase 3, tag chips.**
 
 ## How to use this file
 
@@ -163,8 +163,7 @@ Done in the commit "context menus in the viewer and the player":
 Left:
 
 - [x] The viewer's stage menu only for pictures and videos (`stageMenu`); readers and editors untouched (decision)
-- [~] Tests for each; user docs + screenshots; CHANGELOG (done: `viewer.md`, `video-player.md`; left: a screenshot
-  of the viewer's menu)
+- [x] Tests for each; user docs (`viewer.md` + `viewer-menu.png`, `video-player.md`); CHANGELOG
 
 Also built in this phase (part of phase 3's App links): a link with no menu of its own gets a link menu (Open, Open in
 new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.

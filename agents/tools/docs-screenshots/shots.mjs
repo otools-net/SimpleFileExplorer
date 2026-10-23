@@ -162,9 +162,19 @@ const scenes = {
         await b.mouse('mouseReleased', x - 120, y - 60);
         await b.key('z', 'KeyZ', 90);
         await sleep(500);
+        // The viewer's menu, from a right click on the picture.
+        const shown = await b.rect('.viewer-stage > img');
+        const mx = shown.x + shown.width * 0.3, my = shown.y + shown.height * 0.3;
+        await b.mouse('mouseMoved', mx, my);
+        await b.mouse('mousePressed', mx, my, { button: 'right' });
+        await b.mouse('mouseReleased', mx, my, { button: 'right' });
+        await sleep(500);
+        await b.shot(OUT + 'viewer-menu.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(300);
         await b.click('.viewer button[aria-label="More actions"]');
         await sleep(300);
-        await b.click('.viewer-menu [data-entry="crop"]');
+        await b.click('.item-menu [data-entry="crop"]');
         await sleep(2000);
         await b.shot(OUT + 'image-editor.png');
         await b.clickText('button', '16:9');

@@ -39,6 +39,8 @@ first.
 
 Renaming, moving and deleting are done from the listing, where the file's own menu has them.
 
+![The viewer's menu, from a right click on the picture](../images/viewer-menu.png)
+
 Photos larger than **Large image size** ([Thumbnails](../administration/thumbnails.md)) are shown through their
 thumbnail, in the viewer as in the listings.
 
