@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { isViewable } from '../../formats/formats';
+import { ConfigService } from '../../core/config.service';
+import { formatOf, isViewable } from '../../formats/formats';
 import { LibraryItem, TagSummary } from '../../core/models';
 import { tagQuery } from '../../tags/tags';
 import { Dialogs } from '../dialogs.service';
@@ -10,6 +11,19 @@ import { ListingStore } from '../listing.store';
 export class ItemActions {
     private readonly store = inject(ListingStore);
     private readonly dialogs = inject(Dialogs);
+    private readonly config = inject(ConfigService);
+
+    /** A file's link (new tab...): the file itself, or its viewer's page for formats that have one. */
+    fileUrl(item: LibraryItem): string {
+        return formatOf(item)?.page ? this.config.links.view(item.path) : this.config.links.file(item.path);
+    }
+
+    /** Opens a file as a plain click on it does: in the viewer when it has one (true), else nothing (false). */
+    view(item: LibraryItem): boolean {
+        const viewer = isViewable(item) ? this.dialogs.viewer() : null;
+        viewer?.open(item);
+        return Boolean(viewer);
+    }
 
     /**
      * While items are selected, a plain click (or shift-click) on a file or folder adds it to the selection (or takes it
@@ -30,13 +44,9 @@ export class ItemActions {
     openFile(event: MouseEvent, item: LibraryItem): void {
         if (this.selectInstead(event, item))
             return;
-        if (isViewable(item) && event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
-            const viewer = this.dialogs.viewer();
-            if (viewer) {
-                event.preventDefault();
-                viewer.open(item);
-                return;     // the viewer reports the view itself
-            }
+        if (event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && this.view(item)) {
+            event.preventDefault();
+            return;     // the viewer reports the view itself
         }
         this.store.reportView(item);
     }

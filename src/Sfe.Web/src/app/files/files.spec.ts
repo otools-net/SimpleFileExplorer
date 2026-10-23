@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { ApiError } from '../core/api.service';
+import { ConfigService } from '../core/config.service';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders, type } from '../../testing/fakes';
@@ -158,9 +160,60 @@ describe('ItemMenu', () => {
         rightClick(event, photo);
 
         expect(menu.hasActions(photo)).toBe(true);
-        expect(menu.entries(photo).map(e => e.id)).toEqual(['tags', 'properties']);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['newTab', 'tags', 'properties']);
         expect(event.defaultPrevented).toBe(true);
         expect(TestBed.inject(ContextMenu).open()?.target.item).toBe(photo);
+    });
+
+    it('opens a file in the viewer or in a new tab, its viewer\'s page for formats that have one', async () => {
+        await setUp([Rights.browse]);
+        const menu = TestBed.inject(ItemMenu);
+        const links = TestBed.inject(ConfigService).links;
+        const open = vi.fn();
+        TestBed.inject(Dialogs).viewer.set({ open } as never);
+        const notes = item('Media/notes.txt', { kind: 'file' });
+        const archive = item('Media/backup.zip', { kind: 'file' });
+
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['open', 'newTab', 'properties']);
+        menu.entries(photo)[0].run();
+        expect(open).toHaveBeenCalledWith(photo);
+        const newTab = menu.entries(photo)[1];
+        expect(newTab).toMatchObject({ href: links.file(photo.path), newTab: true });
+        expect(menu.entries(notes).find(e => e.id === 'newTab')!.href).toBe(links.view(notes.path));
+        // Nothing to show it in: only its own tab.
+        expect(menu.entries(archive).map(e => e.id)).toEqual(['newTab', 'properties']);
+    });
+
+    it('lists a folder, or lists it in a new tab keeping the sort', async () => {
+        await setUp([Rights.browse]);
+        const menu = TestBed.inject(ItemMenu);
+        const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+        store.route.set({ path: 'Media', q: '', sort: 'size', desc: true });
+
+        const [open, newTab] = menu.entries(folder);
+        open.run();
+
+        expect(navigate).toHaveBeenCalledWith(['/'], { queryParams: { path: 'Media/Holidays', q: null, sort: 'size', desc: '1' } });
+        expect(newTab.id).toBe('newTab');
+        expect(newTab.newTab).toBe(true);
+        expect(newTab.href).toMatch(/\?path=Media%2FHolidays&sort=size&desc=1$/);
+    });
+
+    it('offers no opening for a selection of several items, and the containing folder in search results', async () => {
+        await setUp([Rights.browse]);
+        const menu = TestBed.inject(ItemMenu);
+        store.select(photo, true);
+        store.select(folder, true);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['properties']);
+        store.select(folder, false);
+        expect(menu.entries(photo).map(e => e.id)).toEqual(['newTab', 'properties']);
+
+        store.route.set({ path: '', q: 'beach', sort: '', desc: false });
+        const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => undefined);
+        const found = item('Media/beach.jpg', { directory: 'Media' });
+        const entry = menu.entries(found).find(e => e.id === 'openFolder')!;
+        entry.run();
+        expect(reveal).toHaveBeenCalledWith('Media/beach.jpg');
     });
 
     it('adds an item to the quick links, or takes it out when it is one', async () => {
@@ -223,7 +276,7 @@ describe('ItemMenu', () => {
 
     it('has no quick links entry without the right', async () => {
         await setUp([Rights.browse]);
-        expect(TestBed.inject(ItemMenu).entries(photo).map(e => e.id)).toEqual(['properties']);
+        expect(TestBed.inject(ItemMenu).entries(photo).map(e => e.id)).toEqual(['newTab', 'properties']);
     });
 
     it('follows the folder rules of the folder listed and of each folder in it', async () => {
@@ -256,8 +309,8 @@ describe('ItemMenu', () => {
         const element: HTMLElement = fixture.nativeElement;
 
         expect(event.defaultPrevented).toBe(true);
-        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'quickLink', 'properties']);
-        expect(document.activeElement?.getAttribute('data-entry')).toBe('rename');
+        expect([...element.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['newTab', 'rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'quickLink', 'properties']);
+        expect(document.activeElement?.getAttribute('data-entry')).toBe('newTab');
         (element.querySelector('[data-entry="rename"]') as HTMLButtonElement).click();
         await settle();
 

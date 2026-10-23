@@ -15,8 +15,14 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   gets (scanned, created, uploaded, copied or moved there), optionally added to the files already there too; taking
   one off asks whether the files keep it. Folders with default tags show a tag-and-sparkle icon listing them when clicked (new
   right `tags.folderDefaults`, given to Administrators and Users).
-- The **ContextMenu key** (or Shift+F10) opens the menu of the file or folder that has the focus, like a right
-  click.
+- **Open** and **Open in new tab** in the menu of files and folders (and **Open containing folder** in search
+  results): no need for the browser's own menu any more.
+- **Right-click menus all over the listing page**: the page itself (the folder listed: new folder or file, upload,
+  paste, select all, refresh, its tags, quick link, Open in new tab, Properties; a search: select all, tag the
+  results, search again, Open in new tab, copy link), the folders of the path at the top and the up / previous / next
+  buttons, a search result's folder, quick links (also move up, move down, remove) and recent searches. Text boxes and
+  selected text keep the browser's menu, as does Shift with the right click.
+- The **menu key** (or Shift+F10) opens the menu of what has the focus, like a right click.
 
 ### Changed
 

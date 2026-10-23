@@ -7,6 +7,8 @@ import { baseName, parentPath } from '../core/paths';
 import { ThemeService } from '../core/theme.service';
 import { ImageEditorDialog } from '../editor/image-editor.dialog';
 import { ItemMenu } from '../files/item-menu';
+import { ContextMenu } from '../menus/context-menu';
+import { FolderMenu } from './folder-menu';
 import { NameDialog } from '../files/name.dialog';
 import { DeleteDialog } from '../files/delete.dialog';
 import { FileActions } from '../files/file-actions';
@@ -119,6 +121,10 @@ export class LibraryPageComponent implements OnInit {
 
     constructor() {
         const title = inject(Title);
+        // A right click on the background, or on what has no menu of its own: the folder listed, or the search.
+        const contextMenu = inject(ContextMenu);
+        contextMenu.page.set(inject(FolderMenu).target());
+        inject(DestroyRef).onDestroy(() => contextMenu.page.set(null));
         effect(() => {
             const { path, q } = this.store.route();
             const config = this.config.config();

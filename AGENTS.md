@@ -153,6 +153,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [subtitles-viewer](agents/docs/features/subtitles-viewer.md) | SRT / VTT cues (media-captions), Play in the video next to them, Shift times, `api/files/text/video` | `app/formats/subtitles/`, `Core/Files/Subtitles` |
 | [pdf-viewer](agents/docs/features/pdf-viewer.md) | PDF with pdf.js bundled (worker, cmaps, fonts served by the app; CSP: no wasm), find, zoom, outline, dark pages | `app/formats/pdf/`, `angular.json` |
 | [epub-reader](agents/docs/features/epub-reader.md) | EPUB with epub.js: page, two pages or scroll; the book's files served by the app (`api/files/epub`), reading preferences on its pages | `app/formats/epub/`, `EpubEntries`, `EpubEndpoints` |
+| [context-menu](agents/docs/features/context-menu.md) | the app's one right-click menu: targets, which menu where, browser menu kept (Shift, text), keyboard, Open in new tab | `menus/context-menu.ts`, `ItemMenu`, `FolderMenu` |
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
 | [trash](agents/docs/features/trash.md) | delete, trash, restore, purge task, links as links | `Trash`, `FileTree`, `app/files/delete.dialog.ts` |
 | [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, conflicts, clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |

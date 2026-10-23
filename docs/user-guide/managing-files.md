@@ -12,12 +12,15 @@ which members have ([below](#download-several-files-or-a-folder)).
 ## The item menu
 
 Right-click a file or folder for its menu, or use its **⋮** button (it shows when the pointer is over the item, and
-always on phones and tablets). On a phone the menu opens at the bottom of the screen, under the item's name, and
-pressing and holding an item **selects** it instead ([On phones](#on-phones)). The menu offers what you may do with
-that item:
+always on phones and tablets). With the keyboard, press the **menu key** (or **Shift+F10**) on the item that has the
+focus. On a phone the menu opens at the bottom of the screen, under the item's name, and pressing and holding an item
+**selects** it instead ([On phones](#on-phones)). The menu offers what you may do with that item:
 
 | Entry | Key | |
 |---|---|---|
+| **Open** | | A folder: lists it; a file: shows it in the viewer |
+| **Open in new tab** | | The folder, or the file (its viewer page for text and documents), in a tab of its own |
+| **Open containing folder** | | In search results: lists the folder the item is in, and shows it there |
 | **Edit** | | Text files: opens it in the viewer, ready to be changed ([Editing text files](editing-text.md)) |
 | **Crop…** | | Pictures: opens it in the [picture editor](picture-editor.md) (right `files.edit`) |
 | **Rename…** | F2 | Gives it another name; several selected: [renamed together](#rename-several-at-once) |
@@ -33,8 +36,25 @@ that item:
 
 ![The menu of a folder](../images/item-menu.png)
 
-Arrow keys move through the menu and Esc closes it. To get the browser's own menu (to open a link in a new tab, for
-example), hold **Shift** while you right-click. Everyone who may browse has the menu, with **Properties** at least.
+Arrow keys move through the menu and Esc closes it. With several items selected, the menu of one of them acts on all
+of them (and has no Open entries). Everyone who may browse has the menu, with **Properties** at least.
+
+### Other menus
+
+Right-clicking elsewhere on the page also opens SFE's menu, for what is under the pointer:
+
+- **The page itself** (an empty part of the listing, the counts, the buttons): the folder you are viewing. New
+  folder, New file, Upload, Paste, Select all, Refresh, its tags, quick link, Open in new tab, Properties… In a search:
+  Select all, Tag the results, Search again, Open in new tab and Copy link.
+- **A folder's name in the path** at the top, the **up / previous / next** buttons, and the folder shown under a
+  search result: Open, Open in new tab, Paste into, quick link, Copy full path, Properties.
+- **A quick link** in the sidebar: the same for its folder or file, then Move up, Move down and Remove.
+- **A recent search** suggested by the search box: Search, Open in new tab, Remove from the history.
+
+![The menu of the folder listed](../images/background-menu.png)
+
+In text boxes, and on text you have selected, a right click still gives the browser's own menu (to paste, or copy
+the text). Hold **Shift** while you right-click to get the browser's own menu anywhere.
 
 ## New folder
 

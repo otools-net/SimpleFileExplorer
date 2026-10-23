@@ -8,4 +8,5 @@ a missing `chunk-….js`).
 
 | Script | Checks |
 |---|---|
+| `context-menus.mjs [<out prefix>]` | Real right clicks (CDP) on a file, a folder, a breadcrumb and the background, the ContextMenu key and Shift+F10 (the browser's echo swallowed), Shift and a text field keeping the browser's menu, Open in new tab opening a tab, the sheet at 390 px; prints `ok`/`FAIL` per check (exit code 1 on a failure), saves `<prefix>-file.png`, `-background.png`, `-phone.png` |
 | `phone-sheets.mjs <out prefix>` | 390 px, classic scrollbars, list view: the item menu and a dialog sheet span the whole width (left 0, right 390), the rows keep their width and the scroll position stays; prints the numbers and saves `<prefix>-menu.png`, `<prefix>-dialog.png` |

@@ -6,6 +6,8 @@ import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
 import { TagChipComponent } from '../../tags/tag-chip.component';
 import { ListingStore } from '../listing.store';
+import { ContextMenuDirective } from '../../menus/context-menu';
+import { FolderMenu } from '../folder-menu';
 import { ItemActions } from './item-actions.service';
 
 /* The small parts shared by the tiles and rows of the listing. */
@@ -70,12 +72,13 @@ export class TagButtonComponent {
 /** The folder of a search result, linking to it. */
 @Component({
     selector: 'sfe-item-folder',
-    imports: [HighlightComponent, RouterLink],
+    imports: [HighlightComponent, RouterLink, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { style: 'display: contents' },
     template: `
         @if (item().directory !== undefined && item().directory !== null) {
-            <a class="item-folder" routerLink="/" [queryParams]="store.browseParams(item().directory!)" [title]="'Open ' + name()">
+            <a class="item-folder" routerLink="/" [queryParams]="store.browseParams(item().directory!)" [title]="'Open ' + name()"
+               [sfeContextMenu]="folder.linkTarget(item().directory!)">
                 <sfe-highlight [text]="name()" [pattern]="pattern()" />
             </a>
         }
@@ -85,6 +88,7 @@ export class ItemFolderComponent {
     readonly item = input.required<LibraryItem>();
     readonly pattern = input<RegExp | null>(null);
     protected readonly store = inject(ListingStore);
+    protected readonly folder = inject(FolderMenu);
     private readonly config = inject(ConfigService);
     protected readonly name = computed(() => this.item().directory || this.config.config()?.rootName || '');
 }

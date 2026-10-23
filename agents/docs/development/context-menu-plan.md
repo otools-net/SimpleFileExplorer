@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 6/34 done. Next: Phase 1, file menu: Open, Open in new tab.**
+**Progress: 16/34 done. Next: Phase 2, viewer stage (image, audio).**
 
 ## How to use this file
 
@@ -116,30 +116,33 @@ Built in phase 0 (`app/menus/context-menu.ts`):
 
 ### Phase 0: groundwork
 
-- [x] This note + AGENTS.md index line
+- [x] This note + AGENTS.md index line (51cf2aa)
 - [x] Generic `ContextMenu` (`app/menus/context-menu.ts`) holding the open menu; `ItemMenu` stays as the provider of
-  listed items' targets (`ItemMenu.target(item)`), no behavior change
-- [x] Entry model: `href` / `newTab` entries and submenus
+  listed items' targets (`ItemMenu.target(item)`), no behavior change (51cf2aa)
+- [x] Entry model: `href` / `newTab` entries and submenus (51cf2aa)
 - [x] `[sfeContextMenu]` directive and `useContextMenu()` (item hosts) replacing the three host `(contextmenu)` bindings
+  (51cf2aa)
 - [x] `sfe-context-menu` in the app root: `document` listener, rules 1–4, page fallback (`ContextMenu.page`, unset
-  until a page sets it, so the browser's menu stays there); rule 5's "no menu" places are phase 3
-- [x] ContextMenu key / Shift+F10 open the focused element's menu; tests
+  until a page sets it, so the browser's menu stays there); rule 5's "no menu" places are phase 3 (51cf2aa)
+- [x] ContextMenu key / Shift+F10 open the focused element's menu; tests (51cf2aa)
 
 ### Phase 1: library page
 
-- [ ] File menu: Open, Open in new tab (view vs raw URL), Open containing folder in search results; href tests
-- [ ] Folder menu: Open, Open in new tab (router URL with sort, virtual directory); tests
-- [ ] No Open / Open in new tab on a multi-selection; test
-- [ ] Background menu (folder listed, search listed) with right checks; background, empty states, library chrome fall
-  back to it
-- [ ] Folder link menu: breadcrumbs, folder nav, location strip, search result folder link
-- [ ] Quick links: link menu + Edit / Move up / Move down / Remove
-- [ ] Search history and suggestions menu
-- [ ] Touch: long press still selects items; other targets open the sheet; tests
-- [ ] Phone sheet check at ≤ 640 px for every new menu
-- [ ] Docs: `new-folder-and-rename.md` (outdated entry list and `hasActions`), `selection-and-keys.md`, a rule in
-  `frontend.md` (every right-click goes through `ContextMenu`), new `features/context-menu.md`; user docs
-  `docs/user-guide/managing-files.md` + screenshots; CHANGELOG
+Done in the commit "context menus on the library page" (the one after 51cf2aa):
+
+- [x] File menu: Open, Open in new tab (view vs raw URL), Open containing folder in search results; href tests
+- [x] Folder menu: Open, Open in new tab (router URL with sort, virtual directory); tests
+- [x] No Open / Open in new tab on a multi-selection; test
+- [x] Background menu (folder listed, search listed) with right checks (`FolderMenu`, shared with the location
+  header's buttons); background, empty states, library chrome fall back to it
+- [x] Folder link menu: breadcrumbs, folder nav (also in the location strip), search result folder link
+- [x] Quick links: link menu + Move up / Move down / Remove (the Edit mode toggle stays a button)
+- [x] Search history menu. Tag suggestions have none (they are picked by a click; tag chips are phase 3)
+- [x] Touch: long press still selects items; other targets open the sheet; tests
+- [x] Phone sheet check at ≤ 640 px (`agents/tools/visual-check/context-menus.mjs`, all ok in Edge)
+- [x] Docs: `new-folder-and-rename.md`, `selection-and-keys.md`, a rule in `frontend.md`, new
+  `features/context-menu.md`; user docs `docs/user-guide/managing-files.md` + `background-menu.png`, `item-menu.png`
+  again; CHANGELOG
 
 ### Phase 2: viewers and player
 
@@ -182,3 +185,9 @@ Built in phase 0 (`app/menus/context-menu.ts`):
 - A root service's `effect` runs once when the service is first injected: `ItemMenu`'s "listing changed" effect
   closed the menu it had just opened until it skipped its first value.
 - The initial bundle is already over its 600 kB budget (a build warning, 793 kB before this epic).
+- Python edits sent through a Git Bash heredoc lose the backslash of `\'` in spec titles (and the build fails on the
+  quote): write such lines with the Edit tool.
+- The search box's suggestion list closes when the menu takes the focus (blur): the history entry's menu target keeps
+  only its query, so its entries still work.
+- In Edge, a CDP right click (`Input.dispatchMouseEvent` with `button: 'right'`) fires `contextmenu`; the
+  ContextMenu key fires one `contextmenu` after the keydown, Shift+F10 none (the menu opens from the keydown).

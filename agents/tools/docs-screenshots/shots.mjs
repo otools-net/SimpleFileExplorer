@@ -654,6 +654,15 @@ const scenes = {
         await b.shot(OUT + 'new-folder-dialog.png');
         await b.key('Escape', 'Escape', 27);
         await sleep(400);
+        // The folder listed's menu: a right click on the listing's background (here, its counts).
+        const summary = await b.rect('.location-bar .summary');
+        await b.mouse('mouseMoved', summary.x + 10, summary.y + summary.height / 2);
+        await b.mouse('mousePressed', summary.x + 10, summary.y + summary.height / 2, { button: 'right' });
+        await b.mouse('mouseReleased', summary.x + 10, summary.y + summary.height / 2, { button: 'right' });
+        await sleep(600);
+        await b.shot(OUT + 'background-menu.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(400);
         // A folder and a file selected: the bar counts both and offers what applies.
         await b.realClick('.folder-item[data-path="Photos/2025 Mountains"] .select-box input');
         await b.realClick('input[aria-label="Select Sunrise.jpg"]');

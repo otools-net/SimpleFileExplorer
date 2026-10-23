@@ -82,8 +82,13 @@ export class ContextMenu {
         this.show(target, event.clientX, event.clientY, element);
     }
 
-    /** A right click nothing handled: the page's menu. */
+    /**
+     * A right click nothing handled: the page's menu. Not in dialogs (the viewer, sheets): they keep the browser's menu
+     * until they have menus of their own (phases 2 and 3 of the plan).
+     */
     fromPage(event: MouseEvent): void {
+        if (event.target instanceof Element && event.target.closest('dialog'))
+            return;
         this.fromEvent(event, this.page(), null);
     }
 

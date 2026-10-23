@@ -8,7 +8,8 @@ import { ListingStore } from '../listing.store';
 import { SelectionBarComponent } from '../selection-bar.component';
 import { PinButtonComponent } from './pin-button.component';
 import { QuickLinksComponent } from './quick-links.component';
-import { DRAG_ITEMS, DRAG_LINK } from './quick-links.service';
+import { DRAG_ITEMS, DRAG_LINK, QuickLinksService } from './quick-links.service';
+import { ContextMenu } from '../../menus/context-menu';
 
 function link(path: string, overrides: Partial<QuickLink> = {}): QuickLink {
     const name = path.split('/').pop() || 'Root';
@@ -94,6 +95,37 @@ describe('Quick links', () => {
         expect(targets[0].getAttribute('href')).toContain('path=Media');
         expect(targets[1].getAttribute('href')).toContain('Media/photo.jpg');
         expect(rows()[1].dataset['kind']).toBe('image');
+    });
+
+    it('has a menu on each link: its folder\'s or file\'s entries, then moving and removing it', async () => {
+        await create([link('Media'), link('Media/photo.jpg'), link('Old', { exists: false })]);
+        const menu = TestBed.inject(ContextMenu);
+        const service = TestBed.inject(QuickLinksService);
+        const move = vi.spyOn(service, 'move').mockResolvedValue(true);
+        const remove = vi.spyOn(service, 'remove').mockResolvedValue(true);
+        const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => undefined);
+        const ids = () => menu.open()!.target.entries().map(entry => entry.id);
+        const entry = (id: string) => menu.open()!.target.entries().find(e => e.id === id)!;
+        const rightClick = (row: HTMLElement) => row.querySelector('.quick-link-name')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+
+        rightClick(rows()[0]);
+        expect(menu.open()!.target.kind).toBe('folderLink');
+        expect(ids()).toEqual(['open', 'newTab', 'moveDown', 'remove']);
+        entry('moveDown').run!();
+        expect(move).toHaveBeenCalledWith('Media', 2);
+
+        rightClick(rows()[1]);
+        expect(menu.open()!.target.kind).toBe('fileLink');
+        expect(ids()).toEqual(['open', 'newTab', 'moveUp', 'moveDown', 'remove']);
+        expect(entry('newTab').href).toContain('Media/photo.jpg');
+        entry('open').run!();
+        expect(reveal).toHaveBeenCalledWith('Media/photo.jpg');
+
+        // Not found any more: only its place in the list.
+        rightClick(rows()[2]);
+        expect(ids()).toEqual(['moveUp', 'remove']);
+        entry('remove').run!();
+        expect(remove).toHaveBeenCalledWith('Old');
     });
 
     it('explains how to add links while there are none', async () => {

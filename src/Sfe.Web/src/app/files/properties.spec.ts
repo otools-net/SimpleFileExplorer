@@ -120,7 +120,7 @@ describe('Properties in the item menu', () => {
         const menu = TestBed.inject(ItemMenu);
 
         expect(menu.hasActions(photo)).toBe(true);
-        expect(menu.entries(photo).map(entry => entry.id)).toEqual(['properties']);
-        expect(menu.entries(photo)[0].shortcut).toBe('Alt+Enter');
+        expect(menu.entries(photo).map(entry => entry.id)).toEqual(['newTab', 'properties']);
+        expect(menu.entries(photo)[1].shortcut).toBe('Alt+Enter');
     });
 });

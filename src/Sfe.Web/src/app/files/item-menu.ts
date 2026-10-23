@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, Injectable, input, untracked } from '@angular/core';
+import { Router } from '@angular/router';
 import { ConfigService } from '../core/config.service';
 import { CopyPathService } from '../core/copy-path.service';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
-import { formatOf } from '../formats/formats';
+import { formatOf, isViewable } from '../formats/formats';
 import { ContextMenu, MenuEntry, MenuTarget } from '../menus/context-menu';
 import { IconComponent } from '../shared/icon.component';
 import { Dialogs } from '../library/dialogs.service';
@@ -16,7 +17,7 @@ import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu: always an action. */
 export interface ItemMenuEntry extends MenuEntry {
-    id: 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
+    id: 'open' | 'newTab' | 'openFolder' | 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
     run: () => void;
 }
 
@@ -38,6 +39,7 @@ export class ItemMenu {
     private readonly quickLinks = inject(QuickLinksService);
 
     private readonly menu = inject(ContextMenu);
+    private readonly router = inject(Router);
 
     constructor() {
         // Another listing: the item whose menu is open may not be there any more.
@@ -122,7 +124,7 @@ export class ItemMenu {
     }
 
     entries(item: LibraryItem): ItemMenuEntry[] {
-        const entries: ItemMenuEntry[] = [];
+        const entries: ItemMenuEntry[] = this.openings(item);
         if (this.canOpenAsText(item))
             entries.push({ id: 'openAsText', label: 'Open as text', icon: 'file', title: 'Show its content as text, in the viewer', run: () => this.dialogs.viewer()?.open(item, { asText: true }) });
         if (this.canEditText(item))
@@ -209,6 +211,34 @@ export class ItemMenu {
                 id: 'properties', label: 'Properties', icon: 'info', shortcut: 'Alt+Enter',
                 title: item.kind === 'directory' ? 'Its dates, and what it holds (Alt+Enter)' : 'Its size, dates and what the index knows of it; its checksum (Alt+Enter)',
                 run: () => void this.dialogs.properties()?.open(item),
+            });
+        return entries;
+    }
+
+    /**
+     * Open, Open in new tab (a real link) and, in search results, Open containing folder: not for a selection of
+     * several items (one tab each would be stopped as popups).
+     */
+    private openings(item: LibraryItem): ItemMenuEntry[] {
+        if (this.targets(item).length > 1)
+            return [];
+        const entries: ItemMenuEntry[] = [];
+        if (item.kind === 'directory') {
+            const params = this.store.browseParams(item.path);
+            entries.push(
+                { id: 'open', label: 'Open', icon: 'folder', title: `List ${item.name}`, run: () => void this.router.navigate(['/'], { queryParams: params }) },
+                { id: 'newTab', label: 'Open in new tab', icon: 'external', title: `List ${item.name} in a tab of its own`, href: this.store.pageUrl(params), newTab: true, run: () => undefined },
+            );
+        } else {
+            if (isViewable(item) && this.dialogs.viewer())
+                entries.push({ id: 'open', label: 'Open', icon: 'file', title: `Show ${item.name} in the viewer`, run: () => this.actions.view(item) });
+            entries.push({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: `Open ${item.name} in a tab of its own`, href: this.actions.fileUrl(item), newTab: true, run: () => this.store.reportView(item) });
+        }
+        if (this.store.searching() && item.directory !== undefined && item.directory !== null)
+            entries.push({
+                id: 'openFolder', label: 'Open containing folder', icon: 'folder-up',
+                title: `List the folder ${item.name} is in, and show it there`,
+                run: () => this.store.reveal(item.path),
             });
         return entries;
     }

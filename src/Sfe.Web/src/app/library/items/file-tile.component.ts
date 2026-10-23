@@ -4,7 +4,6 @@ import { CopyPathService } from '../../core/copy-path.service';
 import { formatDate, formatSize, joinParts, kindIcon } from '../../core/format';
 import { LibraryItem } from '../../core/models';
 import { FileTransfers } from '../../files/file-transfers';
-import { formatOf } from '../../formats/formats';
 import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
 import { useContextMenu } from '../../menus/context-menu';
 import { HighlightComponent } from '../../shared/highlight.component';
@@ -39,7 +38,7 @@ abstract class FileItemBase {
     protected readonly cut = computed(() => this.transfers.cutPaths().has(this.item().path));
 
     /** Opened by a modified click (new tab...): the file, or its viewer's page for formats that have one. */
-    protected readonly url = computed(() => formatOf(this.item())?.page ? this.config.links.view(this.item().path) : this.config.links.file(this.item().path));
+    protected readonly url = computed(() => this.actions.fileUrl(this.item()));
     protected readonly icon = computed(() => kindIcon[this.item().kind]);
     protected readonly sources = computed(() => this.previews.sources(this.item(),
         this.store.view() === 'single' && Boolean(this.config.config()?.singleViewOriginals)), { equal: sameStrings });

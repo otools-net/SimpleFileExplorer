@@ -20,6 +20,12 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   (Angular sets it before the options exist, so it shows the first option; a spec checks the shown value).
 - The client hides what a right forbids: `config.can(...)`, or `ListingStore.can(right, item)` for what depends on the
   folder (folder rules) ([rights.md](../features/rights.md)).
+- **Right clicks (rule, 2026-10-23):** every right click goes through the app's one menu, `ContextMenu`
+  (`menus/context-menu.ts`, [context-menu](../features/context-menu.md)): an element with something to offer declares
+  a `MenuTarget` (`[sfeContextMenu]`, or `useContextMenu()` for a component's host) whose entries are what its click,
+  buttons or keys already do, with the same right checks, and **Open in new tab** (a `href` entry) wherever it leads
+  to a file, a folder or a page. Never `(contextmenu)` handlers of your own, nor `preventDefault` on `contextmenu`
+  (touch gestures excepted, as the player's).
 - **Phone sheets (rule, 2026-10-23):** on a phone (≤ 640 px) every menu or popup that opens in the lower part of the
   screen is a sheet like the item menu: full width with no side margins, against the bottom edge (safe area padded),
   top corners rounded, over a dimming backdrop that closes it, and the page behind locked so the sheet and backdrop

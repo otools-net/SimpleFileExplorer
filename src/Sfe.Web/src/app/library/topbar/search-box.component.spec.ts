@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../../core/api.service';
 import { TagSearchResults } from '../../core/models';
 import { ApiMock, deferred, fakeConfig, loadConfig, mockApi, settle, tag, testProviders } from '../../../testing/fakes';
+import { ContextMenu } from '../../menus/context-menu';
 import { ListingStore } from '../listing.store';
 import { SearchBoxState } from '../search-explain/search-explain.component';
 import { matchedParts, SearchHistory } from '../search-history.service';
@@ -412,6 +413,24 @@ describe('SearchBoxComponent', () => {
             expect(list().getAttribute('aria-label')).toBe('Recent searches');
             expect(texts()).toEqual(['cats', 'dogs']);
             expect(JSON.parse(localStorage.getItem('sfe.searchHistory')!)).toEqual(['cats', 'dogs']);
+        });
+
+        it('has a menu on each search: search it, in a new tab too, or remove it', async () => {
+            ['cats', 'dogs'].forEach(q => history.record(q));
+            await typeText('');
+            const menu = TestBed.inject(ContextMenu);
+
+            options()[0].dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+            const target = menu.open()!.target;
+            const entry = (id: string) => target.entries().find(e => e.id === id)!;
+
+            expect(target).toMatchObject({ kind: 'historyEntry', name: 'dogs' });
+            expect(target.entries().map(e => e.id)).toEqual(['search', 'newTab', 'remove']);
+            expect(entry('newTab').href).toMatch(/\?q=dogs$/);
+            entry('remove').run!();
+            expect(JSON.parse(localStorage.getItem('sfe.searchHistory')!)).toEqual(['cats']);
+            entry('search').run!();
+            expect(navigate).toHaveBeenCalledWith({ q: 'dogs' });
         });
 
         it('suggests the searches starting with the text first, then those containing it, without the text itself', async () => {
