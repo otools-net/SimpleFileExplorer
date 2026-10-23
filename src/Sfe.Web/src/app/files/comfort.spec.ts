@@ -225,6 +225,91 @@ describe('ChangeFeed', () => {
         expect([...store.selection()]).toEqual([a.path]);
         expect(store.status()).toBe('ready');
     });
+
+    describe('connection', () => {
+        /** A stand-in for the browser's EventSource: the test opens, drops and closes it. */
+        class FakeSource extends EventTarget {
+            static readonly CONNECTING = 0;
+            static readonly OPEN = 1;
+            static readonly CLOSED = 2;
+            static all: FakeSource[] = [];
+            readyState = FakeSource.CONNECTING;
+            constructor(readonly url: string) {
+                super();
+                FakeSource.all.push(this);
+            }
+            close(): void {
+                this.readyState = FakeSource.CLOSED;
+            }
+            emit(type: 'open' | 'error' | 'ping', state = this.readyState): void {
+                this.readyState = state;
+                this.dispatchEvent(new Event(type));
+            }
+        }
+        let feed: ChangeFeed;
+        const last = () => FakeSource.all[FakeSource.all.length - 1];
+
+        beforeEach(async () => {
+            FakeSource.all = [];
+            vi.stubGlobal('EventSource', FakeSource);
+            await setUp();
+            vi.useFakeTimers();
+            feed = TestBed.inject(ChangeFeed);
+            feed.start();
+            last().emit('open', FakeSource.OPEN);
+        });
+
+        afterEach(() => {
+            feed.stop();
+            vi.useRealTimers();
+            vi.unstubAllGlobals();
+        });
+
+        it('tells the server lost once a drop lasts, and reads the folder again once it is back', () => {
+            // The feed ends every 10 minutes and comes back after 5 s: not shown.
+            last().emit('error', FakeSource.CONNECTING);
+            vi.advanceTimersByTime(5_000);
+            last().emit('open', FakeSource.OPEN);
+            vi.advanceTimersByTime(20_000);
+            expect(feed.serverLost()).toBe(false);
+
+            last().emit('error', FakeSource.CONNECTING);
+            vi.advanceTimersByTime(10_000);
+            expect(feed.serverLost()).toBe(true);
+
+            const browses = api.browse.mock.calls.length;
+            last().emit('open', FakeSource.OPEN);
+            expect(feed.serverLost()).toBe(false);
+            expect(api.browse.mock.calls.length).toBe(browses + 1);
+        });
+
+        it('opens the feed again itself when the browser gives up (an error status)', () => {
+            last().emit('error', FakeSource.CLOSED);
+            vi.advanceTimersByTime(5_000);
+            expect(FakeSource.all).toHaveLength(2);
+            vi.advanceTimersByTime(5_000);
+            expect(feed.serverLost()).toBe(true);
+
+            last().emit('open', FakeSource.OPEN);
+            expect(feed.serverLost()).toBe(false);
+        });
+
+        it('takes a minute without a word (pings come every 25 s) for a lost server, and opens the feed again', () => {
+            for (let i = 0; i < 4; i++) {
+                vi.advanceTimersByTime(25_000);
+                last().emit('ping');
+            }
+            expect(feed.serverLost()).toBe(false);
+            expect(FakeSource.all).toHaveLength(1);
+
+            vi.advanceTimersByTime(60_000);
+            expect(feed.serverLost()).toBe(true);
+            expect(FakeSource.all).toHaveLength(2);
+            expect(FakeSource.all[0].readyState).toBe(FakeSource.CLOSED);
+            last().emit('open', FakeSource.OPEN);
+            expect(feed.serverLost()).toBe(false);
+        });
+    });
 });
 
 describe('Phones', () => {

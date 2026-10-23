@@ -17,6 +17,7 @@ import { Popovers } from './popovers.service';
  * account, full screen, the administration page (settings, tags, duplicates, background tasks, people...), signing
  * out. Each entry shows only with its right. While keep alive pings the library folder, a dot on the button says how it
  * goes: green, or a yellow ! when the folder doesn't answer (and a line in the menu, a link for `settings.keepAlive`).
+ * The yellow ! also shows, for everyone, while the server doesn't answer (`ChangeFeed.serverLost`), with its own line.
  */
 @Component({
     selector: 'sfe-main-menu',
@@ -27,8 +28,8 @@ import { Popovers } from './popovers.service';
         <button type="button" class="icon-button" aria-haspopup="menu" [title]="buttonTitle()" aria-controls="menu" [attr.aria-label]="buttonLabel()"
                 [attr.aria-expanded]="isOpen()" (click)="popovers.toggle('menu')">
             <svg sfeIcon="more"></svg>
-            @if (keepAlive() !== 'none') {
-                <span class="menu-keep-alive" [class.failing]="keepAlive() === 'failing'" aria-hidden="true">{{ keepAlive() === 'failing' ? '!' : '' }}</span>
+            @if (serverLost() || keepAlive() !== 'none') {
+                <span class="menu-keep-alive" [class.failing]="warning()" aria-hidden="true">{{ warning() ? '!' : '' }}</span>
             }
         </button>
         <div class="popover menu-list" id="menu" role="menu" [hidden]="!isOpen()">
@@ -50,7 +51,12 @@ import { Popovers } from './popovers.service';
                     </span>
                 </p>
             }
-            @if (keepAlive() !== 'none') {
+            @if (serverLost()) {
+                <!-- What keep alive found is not known meanwhile: this line in its place. -->
+                <p class="menu-keep-alive-line menu-server-lost failing" role="none" title="The connection to the server is lost: changes may not show and actions may fail until it answers again">
+                    <span class="menu-keep-alive failing" aria-hidden="true">!</span>Server not answering
+                </p>
+            } @else if (keepAlive() !== 'none') {
                 @if (canSeeKeepAlive()) {
                     <a class="menu-keep-alive-line" role="menuitem" routerLink="/admin" [queryParams]="{ section: 'keepAlive' }" [state]="{ sfeFromLibrary: true }"
                        [class.failing]="keepAlive() === 'failing'" title="Keep alive: what the last pings of the library folder found" (click)="popovers.close()">
@@ -140,13 +146,19 @@ export class MainMenuComponent {
     });
     /** How keep alive goes (the change feed): a dot on the button, a line in the menu; nothing when it is off. */
     protected readonly keepAlive = inject(ChangeFeed).keepAlive;
+    /** The server doesn't answer (the change feed is lost): the yellow ! and a line of its own, for everyone. */
+    protected readonly serverLost = inject(ChangeFeed).serverLost;
+    protected readonly warning = computed(() => this.serverLost() || this.keepAlive() === 'failing');
     protected readonly keepAliveText = computed(() => this.keepAlive() === 'failing' ? 'Network folder not answering' : 'Network folder answering');
     protected readonly canSeeKeepAlive = computed(() => this.configService.rights().has(Rights.keepAliveSettings));
     protected readonly buttonTitle = computed(() => {
         const title = 'Scan this folder, administration, your account and more';
+        if (this.serverLost())
+            return `${title} · Server not answering`;
         return this.keepAlive() === 'none' ? title : `${title} · ${this.keepAliveText()}`;
     });
-    protected readonly buttonLabel = computed(() => this.keepAlive() === 'failing' ? 'More (network folder not answering)' : 'More');
+    protected readonly buttonLabel = computed(() =>
+        this.serverLost() ? 'More (server not answering)' : this.keepAlive() === 'failing' ? 'More (network folder not answering)' : 'More');
     protected readonly versionTitle = computed(() => {
         const config = this.config();
         return config?.commit ? `Version ${config.version}, commit ${config.commit}` : `Version ${config?.version}`;

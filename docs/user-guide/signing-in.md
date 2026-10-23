@@ -56,3 +56,12 @@ says how it goes, and a line at the top of the menu says it in words:
 
 There is no mark while keep alive is off. With the right `settings.keepAlive`, the line opens
 **Administration › Keep alive**, which says which folder and why. The mark changes by itself, without reloading.
+
+### When the server doesn't answer
+
+![The ⋮ button and menu while the server doesn't answer](../images/main-menu-server-lost.png)
+
+When the connection to the server is lost (the server stopped, or the network is down), the ⋮ button shows a yellow
+**!** after about ten seconds, for everyone, and the menu says **Server not answering**. Meanwhile changes made
+elsewhere don't show and actions may fail. The mark goes away by itself once the server answers again, and the folder
+you are viewing is read again.

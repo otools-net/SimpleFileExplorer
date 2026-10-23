@@ -46,6 +46,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - On phones, the video player's speed list opens as a sheet across the bottom of the screen, like the item menu, with
   large buttons.
 
+- When the server stops answering (stopped, or the network is down), the ⋮ button at the top right shows a yellow
+  **!** and its menu says **Server not answering**, until the connection comes back; the folder shown is then read
+  again.
+
 ### Fixed
 
 - Two SFE servers on the same computer (on different ports) opened in one browser no longer sign each other out: each

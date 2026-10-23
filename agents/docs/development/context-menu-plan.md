@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 31/34 done. Next: Closing, visual check of every row of the map (desktop and phone width).**
+**Progress: 32/35 done. Next: Closing, visual check of every row of the map (desktop and phone width).**
 
 ## How to use this file
 
@@ -200,6 +200,17 @@ new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
   [sessions-and-pipeline](../architecture/sessions-and-pipeline.md).
   Done: confirmed (reproduced in Edge with `two-instances.mjs`); cookie names per port (`InstanceCookieManager`), a
   session under the shared name read once and renamed; the guest's space cookie too (asked again once)
+- [x] Small fix (asked 2026-10-23, not part of the menu work): when the server stops answering, the indicator of the ⋮
+  menu (top right corner) shows a warning, so the user knows the connection is lost. Today the dot shows only how keep
+  alive goes and keeps its last state: `ChangeFeed` (`library/change-feed.service.ts`) has no `error`/`open` handling
+  (the browser reopens the `EventSource` by itself). Track the feed's state (`EventSource` `error` with `readyState`,
+  `open` again; maybe failed API calls with status 0 too), and while it is down show the warning dot and a menu line
+  ("Server not answering", above keep alive's), back to normal once it reconnects; no warning for a moment's drop
+  (a short delay). `main-menu.component.ts` (dot, `buttonLabel`, title), tests, user docs
+  (`docs/user-guide/signing-in.md` › The ⋮ menu, where the mark is described) + screenshot, CHANGELOG.
+  Done: `ChangeFeed.serverLost` (error not reopened within 10 s, or 60 s without a word: the server now sends a `ping`
+  event instead of a comment), the ! and a "Server not answering" line for everyone, listing refreshed when it is back;
+  `server-lost.mjs` checks it in Edge
 - [ ] Epic marked done here; `edge` merged into `main` with a minor version bump
 
 ## Verification

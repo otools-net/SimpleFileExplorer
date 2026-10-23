@@ -78,6 +78,15 @@ public sealed class ChangeFeedRouteTests
     }
 
     [TestMethod]
+    public void QuietFeedsSendAPingThePageSees()
+    {
+        // A named event with data reaches the page's listener (a comment, or an event without data, would not): the
+        // client takes a feed silent for a minute as a server that doesn't answer.
+        CollectionAssert.AreEqual(new[] { "event: ping", "data: {}", "", "" }, ChangeEndpoints.PingEvent.Split('\n'));
+        Assert.IsLessThan(TimeSpan.FromSeconds(30), ChangeEndpoints.KeepAlive, "Well within the client's minute");
+    }
+
+    [TestMethod]
     public async Task KeepAliveIsToldFirstThenWhenItChanges()
     {
         using var feed = await _alice.GetAsync("/api/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);

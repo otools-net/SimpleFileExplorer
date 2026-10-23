@@ -34,8 +34,14 @@ public static class ChangeEndpoints
     /// <summary>A feed ends after this; the browser opens it again (reading the session and the rights anew).</summary>
     public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(10);
 
-    /// <summary>A comment sent when nothing happened for this long, so that proxies keep the connection.</summary>
+    /// <summary>
+    /// A `ping` event sent when nothing happened for this long: proxies keep the connection, and the client knows the
+    /// server still answers (a comment would keep the connection too, but scripts don't see comments).
+    /// </summary>
     public static readonly TimeSpan KeepAlive = TimeSpan.FromSeconds(25);
+
+    /// <summary>The `ping` event (an event needs data to reach the page).</summary>
+    public const string PingEvent = "event: ping\ndata: {}\n\n";
 
     private static readonly ConcurrentDictionary<string, int> Streams = new();
     private static readonly Lock Gate = new();
@@ -51,11 +57,11 @@ public static class ChangeEndpoints
             .RequireRight(Rights.Browse)
             .FolderScoped("only folders the caller sees (files.browse) are told")
             .WithName("FolderChanges")
-            .WithSummary("Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; `keepAlive` with `{ state }`.")
+            .WithSummary("Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; `keepAlive` with `{ state }`; `ping`.")
             .WithDescription($"""
                 Open with `EventSource`; `origin` is the `{TabHeader}` header of the request that changed it (a tab skips
                 its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or nothing
-                pinged), `ok`, `failing`; no folder nor error is named. A comment every {KeepAlive.TotalSeconds:N0} s keeps it open; it ends after
+                pinged), `ok`, `failing`; no folder nor error is named. A `ping` event after {KeepAlive.TotalSeconds:N0} s without anything keeps it open; it ends after
                 {Lifetime.TotalMinutes:N0} minutes and the browser opens it again. {MaxStreamsPerCaller} at once per caller (429).
                 """);
         return api;
@@ -109,7 +115,7 @@ public static class ChangeEndpoints
                 }
                 catch (OperationCanceledException) when (!token.IsCancellationRequested)
                 {
-                    await response.WriteAsync(": keep-alive\n\n", token);
+                    await response.WriteAsync(PingEvent, token);
                     await response.Body.FlushAsync(token);
                     continue;
                 }
