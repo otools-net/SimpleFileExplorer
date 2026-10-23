@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { formatDate, formatSize, joinParts, plural } from '../core/format';
@@ -9,6 +9,8 @@ import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
+import { ListingStore } from '../library/listing.store';
+import { ContextMenuDirective, MenuEntry, MenuTarget } from '../menus/context-menu';
 
 /**
  * Administration › File management › Trash: what was deleted to the trash (that the session may see), newest first,
@@ -16,7 +18,7 @@ import { IconComponent } from '../shared/icon.component';
  */
 @Component({
     selector: 'sfe-trash-section',
-    imports: [BusyDirective, IconComponent, RouterLink],
+    imports: [BusyDirective, IconComponent, RouterLink, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'settings-panel trash-section' },
     template: `
@@ -34,7 +36,7 @@ import { IconComponent } from '../shared/icon.component';
                 <li class="muted trash-empty">The trash is empty.</li>
             }
             @for (item of items(); track item.id) {
-                <li class="tracking-missing" [attr.data-id]="item.id">
+                <li class="tracking-missing" [attr.data-id]="item.id" [sfeContextMenu]="rowMenu(item)">
                     <div class="tracking-missing-head">
                         <span class="tracking-thumb"><svg [sfeIcon]="item.isFolder ? 'folder' : 'file'"></svg></span>
                         <span class="tracking-file">
@@ -70,6 +72,8 @@ export class TrashSectionComponent implements OnInit {
     private readonly api = inject(Api);
     private readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
+    private readonly store = inject(ListingStore);
+    private readonly router = inject(Router);
 
     protected readonly items = signal<TrashItem[]>([]);
     protected readonly next = signal<number | null>(null);
@@ -130,6 +134,27 @@ export class TrashSectionComponent implements OnInit {
             item.previousVersion ? `saved over ${formatDate(item.deletedAt)}` : `deleted ${formatDate(item.deletedAt)}`,
             item.deletedBy ? `by ${item.deletedBy}` : null,
         ]);
+    }
+
+    /** The menu of an entry (a right click): its buttons, and the folder it was deleted from (here or in a new tab). */
+    protected rowMenu(item: TrashItem): MenuTarget {
+        return { kind: 'trash', key: `trash:${item.id}`, name: item.name, entries: () => this.rowEntries(item) };
+    }
+
+    private rowEntries(item: TrashItem): MenuEntry[] {
+        const entries: MenuEntry[] = [];
+        if (this.canRestore() && this.busy() === null)
+            entries.push({ id: 'restore', label: 'Restore', icon: 'undo', title: 'Put it back where it was (a number is added to its name if that is taken)', run: () => void this.restore(item) });
+        if (this.canPurge() && this.busy() === null)
+            entries.push({ id: 'purge', label: 'Delete for good…', icon: 'trash', title: 'Delete it for good (asks first)', run: () => void this.purge(item) });
+        const folder = this.folderOf(item);
+        const params = { path: folder || null };
+        const name = folder || this.rootName();
+        entries.push(
+            { id: 'openFolder', label: 'Open its folder', icon: 'folder', title: `List ${name}, where it was`, run: () => void this.router.navigate(['/'], { queryParams: params }) },
+            { id: 'folderNewTab', label: 'Open its folder in new tab', icon: 'external', title: `List ${name} in a tab of its own`, href: this.store.pageUrl(params), newTab: true },
+        );
+        return entries;
     }
 
     protected folderOf(item: TrashItem): string {

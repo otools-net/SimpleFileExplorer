@@ -10,7 +10,8 @@ was, **Delete** deletes it for good, **Empty the trash** deletes everything you 
 (see and restore what you deleted, and what was deleted where you may delete), `files.deletePermanently` (delete for
 good). A file saved over in the [text editor](../user-guide/editing-text.md) leaves its previous version here, marked
 **previous version**: restored, it comes back next to the file, with a number added to its name. A folder that had folder access rules of its own shows only to whoever deleted it and to those who manage the
-space's access. Server administrators see everything.
+space's access. Server administrators see everything. A right click on an item opens its menu: Restore, Delete
+for good, and the folder it was deleted from (also in a new tab).
 
 ![Administration › File management › Trash](../images/admin-files-trash.png)
 
