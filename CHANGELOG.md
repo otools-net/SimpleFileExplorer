@@ -29,6 +29,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - The video's own window has a right-click menu too: the player's controls, copy link at this time, download.
 - A right click on a **tag chip** (on a file, in the sidebar, in the viewer) opens its menu: search it (also in a new
   tab), add it to the search or leave it out, remove it from the file, edit the tag.
+- The files listed in **Duplicates**, **Similar videos** and the candidates of **Missing files** have a right-click
+  menu: open in a new tab, open the folder (also in a new tab), download, copy full path.
 - A right click on the app's other links (the ⋮ menu's, the administration's) opens a small menu: **Open**, **Open in
   new tab**, **Copy link address**.
 
