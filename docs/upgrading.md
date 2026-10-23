@@ -36,6 +36,13 @@ to the earlier version by installing it again.
   files already tagged.
 - The Administrators and Users groups of every space get the new right `tags.folderDefaults`
   ([default tags](user-guide/tags.md#default-tags-of-a-folder)).
+- A **right click** anywhere in SFE opens SFE's menu (with **Open in new tab**); **Shift** with the right click still
+  opens the browser's own menu ([managing files](user-guide/managing-files.md#other-menus)).
+- The sign-in cookie is named after the server's port when the address has one (`sfe.session-5000`), so that two
+  servers on one computer don't sign each other out. Sessions of before keep working (renamed at the next visit);
+  visitors without an account choose their space again once.
+- The change feed sends a `ping` event instead of a comment when nothing happened for 25 s: nothing to change on a
+  reverse proxy that already passed the feed.
 
 ## To 1.80
 

@@ -75,7 +75,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [server-modes-plan](agents/docs/development/server-modes-plan.md) | **server modes epic: Local / External, Docker image; phases, todo list, open questions** (update as it is built) | `ServerModes`, `Dockerfile` (planned) |
 | [docker-publishing-plan](agents/docs/development/docker-publishing-plan.md) | **publishing the image on ghcr.io: GitHub Actions workflow, settings, release steps** (update as it is built) | `.github/workflows/` (planned) |
 | [keep-alive-plan](agents/docs/development/keep-alive-plan.md) | **keep alive epic: pinging network folders so file servers don't drop idle sessions; design, phases, open questions** (update as it is built) | `Core/KeepAlive/`, `KeepAliveEndpoints` |
-| [context-menu-plan](agents/docs/development/context-menu-plan.md) | **context menu epic: one app menu for every right-click, Open in new tab; map of which menu where, phases, todo list** (update as it is built) | `files/item-menu.ts` → `menus/context-menu.ts` (planned) |
+| [context-menu-plan](agents/docs/development/context-menu-plan.md) | context menu epic (done, 1.81.0): one app menu for every right-click, Open in new tab; decisions, map of which menu where | `menus/context-menu.ts`, `ItemMenu`, `FolderMenu` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |

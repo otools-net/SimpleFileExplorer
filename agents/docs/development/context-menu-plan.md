@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 34/35 done. Next: Closing, the epic marked done and `edge` merged into `main` (minor version bump), when the user asks.**
+**Done (2026-10-23): 35/35, released in 1.81.0.** Kept for its decisions and map; the feature's note is [context-menu](../features/context-menu.md).
 
 ## How to use this file
 
@@ -214,7 +214,7 @@ new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
   Done: `ChangeFeed.serverLost` (error not reopened within 10 s, or 60 s without a word: the server now sends a `ping`
   event instead of a comment), the ! and a "Server not answering" line for everyone, listing refreshed when it is back;
   `server-lost.mjs` checks it in Edge
-- [ ] Epic marked done here; `edge` merged into `main` with a minor version bump
+- [x] Epic marked done here; `edge` merged into `main` with a minor version bump (1.81.0)
 
 ## Verification
 
