@@ -11,7 +11,7 @@ is a file, a folder or a page, which replaces the browser's "Open link in new ta
 Shift+right-click (`docs/user-guide/managing-files.md`). Client only: no server change, no new right, setting or
 migration; every entry reuses an action that already has its right.
 
-**Progress: 26/33 done. Next: Phase 3, app links (check what the link menu leaves) and the admin page menu.**
+**Progress: 28/33 done. Next: Phase 3, no menu in modal dialogs, folder picker, picture editor canvas.**
 
 ## How to use this file
 
@@ -174,8 +174,8 @@ new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
 - [x] Duplicates / Similar / Missing rows: the files (`TrackingFileComponent`); a missing file itself has none
 - [x] Trash rows
 - [x] Uploads and operations panel rows (job menu)
-- [ ] App links: main menu, admin navigation, admin system links, brand
-- [ ] Page menu on admin, logs, tasks, settings pages
+- [x] App links: main menu, admin navigation, admin system links, brand (the generic link menu, outside dialogs)
+- [x] Page menu on admin, logs, tasks, settings pages (all sections of the administration page: `pageTarget`)
 - [ ] No menu in modal dialogs, folder picker, picture editor canvas
 - [ ] Tests; user docs + screenshots; CHANGELOG
 
@@ -203,5 +203,8 @@ new tab, Copy link address: `ContextMenu.linkTarget`), outside dialogs.
   quote): write such lines with the Edit tool.
 - The search box's suggestion list closes when the menu takes the focus (blur): the history entry's menu target keeps
   only its query, so its entries still work.
+- The browser check's "Open in new tab" opens a tab that comes to the front: the page under test, left in a background
+  tab, isn't laid out again (rectangles and hit-testing went stale, a chip's right click hit its row). The check
+  closes that tab and brings its page back (`Page.bringToFront`).
 - In Edge, a CDP right click (`Input.dispatchMouseEvent` with `button: 'right'`) fires `contextmenu`; the
   ContextMenu key fires one `contextmenu` after the keydown, Shift+F10 none (the menu opens from the keydown).

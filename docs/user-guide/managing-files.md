@@ -51,6 +51,7 @@ Right-clicking elsewhere on the page also opens SFE's menu, for what is under th
 - **A quick link** in the sidebar: the same for its folder or file, then Move up, Move down and Remove.
 - **A recent search** suggested by the search box: Search, Open in new tab, Remove from the history.
 - **Any other link** of the app (in the ⋮ menu, in the administration): Open, Open in new tab, Copy link address.
+- **The administration page** elsewhere: Back, Reload, Open in new tab, Copy page link.
 
 ![The menu of the folder listed](../images/background-menu.png)
 

@@ -16,6 +16,7 @@ import { SettingsPanelComponent } from '../settings/settings-panel.component';
 import { SIMPLE_SETTINGS, TABS } from '../settings/settings-schema';
 import { valueOf } from '../shared/events';
 import { EmptyStateComponent } from '../shared/empty-state.component';
+import { ContextMenu, usePageMenu } from '../menus/context-menu';
 import { IconComponent } from '../shared/icon.component';
 import { TagEditorDialog } from '../tags/tag-editor.dialog';
 import { TagListComponent } from '../tags/tag-list.component';
@@ -447,6 +448,8 @@ export class AdminPageComponent implements OnInit {
             : 'Save and apply the settings of every page, for everyone using this server');
 
     constructor() {
+        // A right click on the page (not on a link, a field or a menu of its own): back, reload, its address.
+        usePageMenu(inject(ContextMenu).pageTarget('Administration'));
         const title = inject(Title);
         effect(() => {
             if (this.overview() || this.sectionList())

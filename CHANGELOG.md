@@ -36,7 +36,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - **Moves, copies and uploads** in progress (the panel at the bottom right, and Administration › Uploads) have a
   right-click menu: their buttons (cancel, pause, resume, close) and the folder they go into, also in a new tab.
 - A right click on the app's other links (the ⋮ menu's, the administration's) opens a small menu: **Open**, **Open in
-  new tab**, **Copy link address**.
+  new tab**, **Copy link address**; elsewhere on the administration page: **Back**, **Reload**, **Open in new tab**,
+  **Copy page link**.
 
 ### Changed
 

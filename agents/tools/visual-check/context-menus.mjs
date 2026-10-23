@@ -88,6 +88,11 @@ try {
     await sleep(1500);
     const after = (await b.send('Target.getTargets')).targetInfos.filter(t => t.type === 'page');
     check('folder: Open in new tab opens a tab', after.length === before + 1, after.map(t => t.url).join(' '));
+    // Close it and come back: a page left in a background tab isn't laid out again (stale hit-testing).
+    for (const tab of after.filter(t => t.url.includes('2024%20Beach%20trip')))
+        await b.send('Target.closeTarget', { targetId: tab.targetId });
+    await b.send('Page.bringToFront');
+    await sleep(300);
 
     state = await rightClick(b, '.crumbs a');
     check('breadcrumb: folder link menu', state.kind === 'folderLink', state.entries.join(' '));
@@ -156,6 +161,50 @@ try {
     await b.realClick('.item-menu [data-entry="speed-2"]');
     await sleep(400);
     check('player: a rate picked plays at it', await b.eval(`document.querySelector('dialog.viewer video').playbackRate === 2`));
+    await b.key('Escape', 'Escape', 27);
+    await sleep(300);
+    await b.key('Escape', 'Escape', 27);
+    await sleep(500);
+
+    // A tag chip on a file (list view: the grid's tiles hide theirs under the caption): the tag's menu, not the file's.
+    await b.eval(`localStorage.setItem('sfe.view', 'list'); 1`);
+    await b.goto(url + '?path=Photos%2F2025%20Mountains', 3000);
+    await b.eval(recorder);
+    await sleep(1500);
+    // A chip the pointer can reach (a row's text box may clip its tags).
+    const reachable = await b.eval(`(() => {
+        const chip = [...document.querySelectorAll('.row sfe-tag-chip')].find(c => {
+            const r = c.getBoundingClientRect();
+            return c.contains(document.elementFromPoint(r.x + Math.min(r.width / 2, 20), r.y + r.height / 2));
+        });
+        chip?.setAttribute('data-check', '');
+        return Boolean(chip);
+    })()`);
+    if (reachable) {
+        state = await rightClick(b, '.row sfe-tag-chip[data-check]');
+        check('tag chip: the tag\'s menu', state.kind === 'tag', state.entries.join(' '));
+        await closeMenu(b);
+    } else
+        check('tag chip: a tag chip the pointer reaches', false, 'none in Photos/2025 Mountains');
+    await b.eval(`localStorage.setItem('sfe.view', 'grid'); 1`);
+
+    // The main menu's links: a link menu, over the open popover.
+    await b.click('button[aria-controls="menu"]');
+    await sleep(400);
+    state = await rightClick(b, '#menu a[href]');
+    check('main menu link: link menu', state.kind === 'appLink' && state.entries.join(' ') === 'open newTab copyLink', state.entries.join(' '));
+    await closeMenu(b);
+
+    // The administration: links get the link menu, the rest the page's.
+    await b.goto(url + 'admin', 3000);
+    await b.waitFor('.admin-nav a');
+    await b.eval(recorder);
+    state = await rightClick(b, '.admin-nav a');
+    check('admin: a section link gets the link menu', state.kind === 'appLink', state.entries.join(' '));
+    await closeMenu(b);
+    state = await rightClick(b, '.admin-nav h2');
+    check('admin: elsewhere the page menu', state.kind === 'page' && state.entries.join(' ') === 'back reload newTab copyLink', state.entries.join(' '));
+    await closeMenu(b);
     await b.close();
 
     // Phone width: the background menu is a sheet across the bottom.

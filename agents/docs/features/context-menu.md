@@ -48,6 +48,8 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
 | Files of Duplicates, Similar videos, Missing files' candidates (`li[sfeTrackingFile]`, `tracking-parts.ts`) | `file` (`tracking:<path>`) | Open in new tab, Open containing folder (the panel's `openFolder`), the folder in a new tab, Download, Copy full path; the row's buttons (Delete, Choose…) stay buttons. Missing files themselves: none (they aren't there) |
 | Trash entries (`files/trash-section.component.ts`) | `trash` (`trash:<id>`) | Restore, Delete for good… (rights and not busy, as the buttons), Open its folder, the folder in a new tab |
 | Move / copy jobs (operations panel), uploads (its panel, Administration › Uploads) | `job` | Their buttons as entries (Cancel / Close; Pause / Resume, Cancel / Close; Cancel), then `FolderMenu.targetEntries(target)`: Open the folder, the folder in a new tab |
+| A link with no menu of its own (main menu, administration, empty states, brand) | `appLink` (`ContextMenu.linkTarget`) | Open (a click on it), Open in new tab, Copy link address |
+| Administration page, elsewhere (`admin-page.component.ts`) | `page` (`ContextMenu.pageTarget`) | Back, Reload, Open in new tab, Copy page link |
 | Player page (`player?path=`) | `page` | The player's entries, Copy link at this time, external player, Download, Copy full path |
 
 - Links: a file's `ItemActions.fileUrl` (its `view?path=` page for formats with one, else the raw file); a listing's

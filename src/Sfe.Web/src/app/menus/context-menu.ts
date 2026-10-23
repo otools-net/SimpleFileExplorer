@@ -111,6 +111,21 @@ export class ContextMenu {
         };
     }
 
+    /** A page's own menu, for pages with nothing else to offer (the administration): back, reload, its address. */
+    pageTarget(name: string): MenuTarget {
+        return {
+            kind: 'page',
+            key: `page:${name}`,
+            name,
+            entries: () => [
+                { id: 'back', label: 'Back', icon: 'left', title: 'The page before this one', run: () => history.back() },
+                { id: 'reload', label: 'Reload', icon: 'refresh', title: 'Load this page again', run: () => location.reload() },
+                { id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'This page in a tab of its own', href: location.href, newTab: true },
+                { id: 'copyLink', label: 'Copy page link', icon: 'copy', title: 'Copy the address of this page', run: () => void this.copyLink(location.href) },
+            ],
+        };
+    }
+
     private async copyLink(href: string): Promise<void> {
         try {
             await copyText(href);
