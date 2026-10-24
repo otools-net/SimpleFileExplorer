@@ -228,7 +228,7 @@
 
 /*
  * A narrow list (a phone, or landscape with the sidebar open): two lines, the name on the whole first one, type · size ·
- * resolution under it; the picture on the left, tag and ⋮ on the right (overflow menus plan, step 10).
+ * resolution under it; the picture on the left, tag and ⋮ on the right (agents/docs/features/overflow-menus.md).
  */
 @container files-list (max-width: 560px) {
     /* .files.list: above responsive.css's phone columns, which come later. */

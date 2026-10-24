@@ -83,7 +83,7 @@ Code: client `app/formats/formats.ts` (registry), `app/formats/text/` (`text-vie
 - A view that preventDefaults a key (CodeMirror does for the arrows it handles) is fine: the viewer returns early for
   anything inside `[data-owns-keys]`.
 - The test fake `item()` gives extensions with a dot; real items don't.
-- Toolbars (every format but EPUB) are overflow rows ([overflow-menus-plan](../development/overflow-menus-plan.md)):
+- Toolbars (every format but EPUB) are overflow rows ([overflow-menus](overflow-menus.md)):
   each viewer has a `more` record of `MenuEntry` factories (shared ones in `formats/toolbar-entries.ts`); the editing
   actions and the fields stay (fields 110 px on phones, Save a copy / Done as icons). No margins between toolbar items
   (padding instead): margins aren't measured. `.text-view` has `grid-template-columns: minmax(0, 1fr)`: without it a

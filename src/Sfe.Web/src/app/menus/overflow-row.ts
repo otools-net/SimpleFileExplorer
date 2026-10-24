@@ -10,7 +10,7 @@ let nextId = 0;
  * (`overflowPriority`: a lower one leaves earlier), and a "⋯" button (`button[sfeOverflowMore]`, the row's last child)
  * shows them in the app's menu. Every child of the row is a `[sfeOverflowItem]` (`overflowStay` for the ones that never
  * leave: their width must be counted too) but the "⋯"; what doesn't take part goes outside the row. Measuring and
- * choosing: `@fluentui/priority-overflow`, from the items' widths and the row's (agents/docs/development/overflow-menus-plan.md).
+ * choosing: `@fluentui/priority-overflow`, from the items' widths and the row's (agents/docs/features/overflow-menus.md).
  */
 @Directive({ selector: '[sfeOverflowRow]', host: { class: 'overflow-row' } })
 export class OverflowRowDirective implements OnInit {

@@ -36,3 +36,7 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   relative to that ancestor (`DefaultTagsBadgeComponent`). Modal dialogs (`dialog.sheet`) already do this below
   761 px (`trickplay.css`, `base.css`). Not sheets: toasts, the operations panel and the selection bar (status that
   stays while the page is used), and the top bar's popovers (they open from the top).
+- **Rows of buttons on narrow screens (rule, 2026-10-24):** a row of buttons that may not fit a 360 px phone is an
+  overflow row (`sfeOverflowRow`): one line, the buttons leaving right to left into a "⋯" menu, the developer saying
+  which stay. Never `flex-wrap` or buttons cut off; space its items with `gap`, not margins. Check with
+  `overflow.mjs` and `narrow-audit.mjs`: [overflow-menus](../features/overflow-menus.md).

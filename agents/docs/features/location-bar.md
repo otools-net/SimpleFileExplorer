@@ -10,4 +10,4 @@ Code: `src/app/library/location/` (`LocationStripComponent`, `LocationComponent`
 - It sticks below the scan panel: `ScanPanelComponent` writes its height to `--scan-panel-h` on `<html>`
   (ResizeObserver, 0 while hidden).
 - Phones (≤ 640 px): the pin and the folder's buttons (`.location-action`) hide; `.location-more` ("⋯") opens the
-  folder's menu, `FolderMenu.target()`, the same as a right click on the listing (overflow menus plan, step 7).
+  folder's menu, `FolderMenu.target()`, the same as a right click on the listing ([overflow-menus](overflow-menus.md)).

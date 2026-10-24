@@ -1,4 +1,4 @@
-// Rows of buttons on narrow screens (overflow menus epic, agents/docs/development/overflow-menus-plan.md): at the
+// Rows of buttons on narrow screens (overflow menus epic, agents/docs/features/overflow-menus.md): at the
 // target sizes (360×800, 390×844, 414×896 portrait, 800×360 landscape; 1280×800 for comparison) each scene opens a
 // screen, and every `[sfeOverflowRow]` (or other row listed in the scene) must stay on one line, inside itself and the
 // screen; prints `ok`/`FAIL` per check with what left the row (exit code 1 on a failure), saves

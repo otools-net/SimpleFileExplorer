@@ -2,7 +2,7 @@ import { MenuEntry } from '../menus/context-menu';
 
 /**
  * The document toolbars' buttons as entries of their "⋯" menu (overflow rows: on a narrow screen they leave the bar
- * from the right; agents/docs/development/overflow-menus-plan.md): the ones every reader has.
+ * from the right; agents/docs/features/overflow-menus.md): the ones every reader has.
  */
 
 /** Show › Tree / Table / Source / Split, the one shown checked. */

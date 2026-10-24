@@ -10,7 +10,7 @@ Streams: [video-streams.md](video-streams.md).
   position) → host `--player-min-width`; the video's `min-width: min(var(--player-min-width), 100cqw)` against
   `.viewer-stage` (`container-type: size`): a `100%` there resolved against the player, which the video itself sizes,
   and capped it at ~320 px.
-- `.player-row` is an overflow row (`sfeOverflowRow`, [overflow-menus-plan](../development/overflow-menus-plan.md)): one
+- `.player-row` is an overflow row (`sfeOverflowRow`, [overflow-menus](overflow-menus.md)): one
   line; the time is two items, the position (stays) and `.player-time-length` (priority -1, no menu entry: leaves
   first, alone, without showing the "⋯"); then Cinema, Save frame, Loop, Convert, Speed, Forward, Back leave from the
   right into the "⋯" (`more` entries: Loop and Cinema `checked`, Speed a submenu). Play, Mute, Fullscreen stay. The

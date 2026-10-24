@@ -49,7 +49,7 @@ Code: client `app/formats/pdf/` (`pdf-document.ts`: pdf.js behind `PDF_LOADER`; 
 - `pdf_viewer.css` defines `--bg` only inside its signature dialog: no clash with the app's.
 - The `.text-view` grid has four rows (toolbar, editing bar, content, status): the PDF view has no editing bar, so its
   messages sit in a `.pdf-messages` that is always there (row two), or the pages fall in a row as tall as its content.
-- Toolbar ([overflow-menus-plan](../development/overflow-menus-plan.md)): pages and Smaller / Larger stay; the zoom
+- Toolbar ([overflow-menus](overflow-menus.md)): pages and Smaller / Larger stay; the zoom
   list, Outline and Dark pages may leave into "⋯" (zoom as a submenu of sizes). On phones (≤ 640 px) find is a
   magnifier (`.pdf-find-toggle`, `findOpen`): the field shows absolutely under the bar, so the item stays the
   button's width; Ctrl+F opens it (focus after a tick), Esc on an empty field hides it.

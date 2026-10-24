@@ -1,5 +1,5 @@
-// Audit of every screen on narrow screens (overflow menus epic, agents/docs/development/overflow-menus-plan.md, step
-// 3): at the phone sizes (360×800, 390×844, 414×896 portrait, 800×360 landscape) each scene opens a screen and lists
+// Audit of every screen on narrow screens (agents/docs/features/overflow-menus.md): at the phone sizes (360×800,
+// 390×844, 414×896 portrait, 800×360 landscape) each scene opens a screen and lists
 // what looks broken: an element sticking out of the screen, a button cut off by a box that doesn't scroll, a row of
 // three or more buttons on more than one line, the page wider than the screen. Prints the problems per scene and
 // size, then a summary per scene (problems seen at several sizes once); saves `<prefix>-<scene>-<size>.png`.

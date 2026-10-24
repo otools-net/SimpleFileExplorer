@@ -10,7 +10,7 @@
 
 .location-head { display: flex; align-items: flex-start; gap: 8px; }
 .location-head .crumbs { flex: 1; min-width: 0; }
-/* Phones: the breadcrumbs keep the line; the folder's buttons give way to one "⋯", its menu (overflow menus plan). */
+/* Phones: the breadcrumbs keep the line; the folder's buttons give way to one "⋯", its menu (agents/docs/features/overflow-menus.md). */
 .location-head .location-more { display: none; flex: none; color: var(--text-muted); }
 @media (max-width: 640px) {
     .location-head .location-action { display: none; }
