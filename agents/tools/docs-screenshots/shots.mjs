@@ -625,6 +625,11 @@ const scenes = {
         await b.eval(`document.querySelector('.folder-item[data-path="Photos/2024 Beach trip"] .item-menu-button').click(); 1`);
         await sleep(800);
         await b.shot(OUT + 'phone-item-menu.png');
+        // The folder's actions: one "⋯" beside the breadcrumbs, its menu as a sheet.
+        await b.open('?path=Photos%2F2024%20Beach%20trip');
+        await b.click('.location-more');
+        await sleep(800);
+        await b.shot(OUT + 'phone-folder-menu.png');
         await b.close();
     },
     async batchRename() {

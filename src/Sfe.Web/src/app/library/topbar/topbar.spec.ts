@@ -4,6 +4,7 @@ import { ConfigService } from '../../core/config.service';
 import { ClientConfig, DirectoryListing, LibraryItem, SessionInfo } from '../../core/models';
 import { Rights } from '../../core/rights';
 import { ApiMock, fakeConfig, item, LIBRARY, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
+import { ContextMenu } from '../../menus/context-menu';
 import { ChangeFeed } from '../change-feed.service';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
@@ -143,6 +144,22 @@ describe('LocationComponent', () => {
         await loadConfig(api, fakeConfig({ rootPath: '/srv/' }));
         await settle();
         expect(element.querySelector('.copy-folder-path')).not.toBeNull();
+    });
+
+    it('opens the folder\'s menu from its "⋯" (all the actions on a phone), or the search\'s', async () => {
+        await show('Media');
+        const more = element.querySelector<HTMLButtonElement>('.location-more')!;
+        expect(more.title).toContain('Actions on this folder');
+        more.click();
+        const menu = TestBed.inject(ContextMenu);
+        expect(menu.open()?.target.kind).toBe('background');
+        expect(menu.open()?.trigger).toBe(more);
+        expect(menu.open()!.target.entries().map(entry => entry.id)).toEqual(expect.arrayContaining(['refresh']));
+        more.click();
+        expect(menu.open()).toBeNull();
+
+        await show('Media', 'beach');
+        expect(element.querySelector<HTMLButtonElement>('.location-more')!.title).toBe('Actions on this search');
     });
 });
 

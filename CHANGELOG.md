@@ -18,6 +18,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   don't fit go, from the right (Aa first), into their **More actions** (⋯) button; the editing buttons and the fields
   stay (Save a copy and Done as icons on a phone). On a phone the PDF's find is a magnifier opening the field under
   the bar, and its zoom list goes into the menu.
+- On a phone, the **folder's buttons beside the path** (quick link, tags, upload, new file, new folder, copy path) give
+  way to one **⋯** opening the folder's menu, the same as a right click on a computer (with Paste, Select all, Refresh,
+  Properties…): the path keeps its line, and the files start higher. They used to fill one or two lines of their own.
 - SFE's **work files** (the trash, unfinished uploads) go to the server's data folder by default, no longer to a
   hidden `.sfe` folder in the library. The spaces of an install updated from an earlier version keep theirs in the
   library; only new installs and spaces created later start on the server.

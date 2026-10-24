@@ -9,7 +9,7 @@ import { defaultSort, SEARCH_SORTS } from '../library-route';
 import { DefaultTagsBadgeComponent } from '../../tags/default-tags-badge.component';
 import { exclusionChip, exclusionTitle } from '../items/exclusions';
 import { FolderMenu } from '../folder-menu';
-import { ContextMenuDirective } from '../../menus/context-menu';
+import { ContextMenu, ContextMenuDirective } from '../../menus/context-menu';
 import { ListingStore } from '../listing.store';
 import { SearchBoxState, SearchExplainComponent } from '../search-explain/search-explain.component';
 import { PinButtonComponent } from '../quick-links/pin-button.component';
@@ -56,20 +56,20 @@ const SORT_OPTIONS: [SortField, string][] = [
                 }
             </nav>
             @if (!store.route().q) {
-                <button [sfePin]="store.route().path" [name]="folderName()" class="small ghost"></button>
+                <button [sfePin]="store.route().path" [name]="folderName()" class="small ghost location-action"></button>
             }
             @if (canTag()) {
-                <button type="button" class="icon-button small ghost scope-tags-button" [attr.aria-label]="scopeTagsTitle()" [title]="scopeTagsTitle()"
+                <button type="button" class="icon-button small ghost scope-tags-button location-action" [attr.aria-label]="scopeTagsTitle()" [title]="scopeTagsTitle()"
                         (click)="openScopeTags()">
                     <svg sfeIcon="tag"></svg>
                 </button>
             }
             @if (uploads.canUploadInto()) {
-                <button type="button" class="icon-button small ghost upload-button" aria-label="Upload files" title="Upload files into this folder (or drop them on the page)"
+                <button type="button" class="icon-button small ghost upload-button location-action" aria-label="Upload files" title="Upload files into this folder (or drop them on the page)"
                         (click)="filesInput.click()">
                     <svg sfeIcon="upload"></svg>
                 </button>
-                <button type="button" class="icon-button small ghost upload-folder-button" aria-label="Upload a folder" title="Upload a folder, with everything in it, into this folder"
+                <button type="button" class="icon-button small ghost upload-folder-button location-action" aria-label="Upload a folder" title="Upload a folder, with everything in it, into this folder"
                         (click)="folderInput.click()">
                     <svg sfeIcon="folder-up"></svg>
                 </button>
@@ -77,24 +77,29 @@ const SORT_OPTIONS: [SortField, string][] = [
             <input #filesInput type="file" multiple hidden (change)="upload(filesInput)">
             <input #folderInput type="file" webkitdirectory hidden (change)="upload(folderInput)">
             @if (canCreateFile()) {
-                <button type="button" class="icon-button small ghost new-file-button" aria-label="New file" title="New empty file in this folder"
+                <button type="button" class="icon-button small ghost new-file-button location-action" aria-label="New file" title="New empty file in this folder"
                         (click)="newFile()">
                     <svg sfeIcon="file-plus"></svg>
                 </button>
             }
             @if (canCreateFolder()) {
-                <button type="button" class="icon-button small ghost new-folder-button" aria-label="New folder" title="New folder in this folder (Shift+N)"
+                <button type="button" class="icon-button small ghost new-folder-button location-action" aria-label="New folder" title="New folder in this folder (Shift+N)"
                         (click)="newFolder()">
                     <svg sfeIcon="folder-plus"></svg>
                 </button>
             }
             @if (copyPaths.enabled()) {
                 <!-- Copies the folder browsed, or searched in. -->
-                <button type="button" class="icon-button small ghost copy-folder-path" aria-label="Copy the full path of this folder"
+                <button type="button" class="icon-button small ghost copy-folder-path location-action" aria-label="Copy the full path of this folder"
                         title="Copy the full path of this folder" (click)="copyPaths.copy(store.route().path)">
                     <svg sfeIcon="copy"></svg>
                 </button>
             }
+            <!-- Phones: the buttons above are hidden, this opens the folder's menu (the listing's right-click one) instead. -->
+            <button type="button" class="icon-button small ghost location-more" [title]="moreTitle()" [attr.aria-label]="moreTitle()" aria-haspopup="menu"
+                    (click)="openFolderMenu($event)">
+                <svg sfeIcon="more-horizontal"></svg>
+            </button>
         </div>
         @if (search.canExplain() && search.explainOpen()) {
             <sfe-search-explain id="search-explain" />
@@ -137,6 +142,15 @@ export class LocationComponent {
     protected readonly links = inject(LocationLinks);
     protected readonly uploads = inject(UploadQueue);
     protected readonly folder = inject(FolderMenu);
+    private readonly contextMenu = inject(ContextMenu);
+    protected readonly moreTitle = computed(() => this.store.route().q ? 'Actions on this search' : 'Actions on this folder: new folder, upload, tags, quick link…');
+
+    /** The folder's menu (New folder, Upload…, Tags, quick link, Copy full path, Properties…), under the button. */
+    protected openFolderMenu(event: MouseEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.contextMenu.toggle(this.folder.target(), event.currentTarget as HTMLElement);
+    }
     protected readonly canTag = this.folder.canTag;
     /** Uploads the files picked into the folder listed. */
     protected upload(input: HTMLInputElement): void {

@@ -41,7 +41,7 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 | [4](#step-4--viewer-bar) | Viewer bar | `[-]` fine at every size (audit) |
 | [5](#step-5--document-viewers-toolbars) | Document viewers' toolbars (text, PDF, EPUB, Markdown, JSON, CSV, subtitles) | `[x]` committed (version at the merge into main) |
 | [6](#step-6--picture-editor) | Picture editor | `[-]` fine at every size (audit) |
-| [7](#step-7--top-bar-and-location-bar) | Location bar: the folder actions (the top bar is fine) | `[ ]` |
+| [7](#step-7--top-bar-and-location-bar) | Location bar: the folder actions (the top bar is fine) | `[x]` committed (version at the merge into main) |
 | [8](#step-8--administration-toolbars) | Administration tabs (logs and tasks toolbars are fine) | `[ ]` |
 | [10](#step-10--file-names-in-the-list-view) | File names in the list view, buttons cut in landscape (found in step 2) | `[ ]` |
 | [9](#step-9--finishing) | Finishing (notes, rule, plan removed) | `[ ]` |
@@ -273,10 +273,21 @@ Code: `app/library/topbar/topbar.component.ts`, `app/library/location/`, `styles
 The top bar already hides some things below 760 px (brand, labels, layout buttons cycle). List the buttons at the start;
 ask which stay.
 
-Decided: _(empty: ask first)_
+Decided (2026-10-24, shown as mockups): on a phone **one "⋯" for all the folder's actions**, the pin included
+("everything can go there"); the breadcrumbs keep the whole line. Not an overflow row: all or nothing below 640 px.
+The "⋯" opens the **folder's own menu** (`FolderMenu.target()`, the listing's right-click one): it already holds
+every action and more (Paste, Select all, Refresh, Properties), which phones couldn't reach without a right click.
 
-- [ ] Audit result checked; asked, Decided written.
-- [ ] Fix, specs, visual check, `CHANGELOG.md`, `docs/` screenshots.
+- [x] Asked, Decided written. The top bar: nothing wrong (audit).
+- [x] `location.component.ts`: the pin and the action buttons get `.location-action`, a `.location-more` button
+      (horizontal dots, "Actions on this folder" / "on this search") toggles `ContextMenu` with `FolderMenu.target()`;
+      `location.css`: below 640 px the actions hide and the "⋯" shows (above, hidden: nothing changes on a computer).
+- [x] Spec in `topbar.spec.ts` (LocationComponent: the "⋯" opens and closes the folder's menu, a search's title).
+- [x] `narrow-audit.mjs` listing scenes: nothing found any more (the actions' 2nd and 3rd lines are gone).
+- [x] `docs/user-guide/browsing.md` (On a phone) + `phone-folder-menu.png` (scene `phone`), `CHANGELOG.md`,
+      [location-bar](../features/location-bar.md).
+- [x] `npm test` passes; no server change.
+- [x] Committed on `edge`; the version comes with the merge into `main`.
 
 ## Step 8 — administration toolbars
 

@@ -167,3 +167,10 @@ The separate video player window always stays dark.
 The same page adapts to small screens: the sidebar (quick links and tags) becomes a drawer (its button at the top left), the search box
 narrows, and the slim location bar appears as you scroll. Tile buttons are always shown, since there is no hover. In
 the viewer, swipe to go to the previous or next file.
+
+The folder's buttons beside the path (quick link, tags, upload, new file, new folder, copy full path) give way to one
+**⋯** at the end of the path's line: it opens the folder's menu, the same as a right click on the page on a computer
+(New folder, New file, Upload, Paste, Select all, Refresh, Tags of this folder, quick link, Copy full path,
+Properties…). In a search it holds the search's actions.
+
+<img src="../images/phone-folder-menu.png" alt="The folder's menu on a phone, from the ⋯ beside the path" width="300">
