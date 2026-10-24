@@ -254,8 +254,19 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     .admin-head h2 { font-size: 19px; }
     /* No room for the group, which the list of sections shows anyway. */
     .admin-crumbs .admin-crumb-group { display: none; }
-    /* No sidebar: the sub-pages are chips above the page, wrapping so that all of them stay in view. */
-    .admin-chips { flex-wrap: wrap; gap: 6px; margin-top: 0; padding: 0 0 12px; overflow: visible; }
+    /* No sidebar: the sub-pages are chips above the page, one line that scrolls sideways (the one shown brought into
+       view), from edge to edge of the screen: a chip cut at the edge shows there are more. */
+    .admin-chips {
+        flex-wrap: nowrap;
+        gap: 6px;
+        margin: 0 -12px;
+        padding: 0 12px 12px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        overscroll-behavior-x: contain;
+    }
+    .admin-chips::-webkit-scrollbar { display: none; }
+    .admin-chips .settings-tab { white-space: nowrap; }
     .admin-chips .settings-tab {
         padding: 6px 12px;
         border: 1px solid var(--border);

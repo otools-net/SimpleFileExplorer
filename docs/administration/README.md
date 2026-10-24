@@ -80,5 +80,6 @@ sign-in. Set them in the [configuration](../configuration.md).
 <img src="../images/phone-admin-section.png" alt="A section on a phone, with its breadcrumbs and pages as chips" width="300">
 
 On phones the page opens on the list of sections, with the search box at its top, each one then a page of its own with a
-back arrow to the list and its pages as chips at the top. The breadcrumbs leave the group out there, and **Administration** in them returns to the list
+back arrow to the list and its pages as chips at the top, on one line that scrolls sideways when they don't all fit
+(the page shown is scrolled into view). The breadcrumbs leave the group out there, and **Administration** in them returns to the list
 of sections.

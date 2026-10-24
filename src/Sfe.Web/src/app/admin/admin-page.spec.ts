@@ -8,6 +8,7 @@ import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { ListingStore } from '../library/listing.store';
 import { ContextMenu } from '../menus/context-menu';
+import { showChip } from './admin-page.component';
 import { ApiMock, buttonNamed, adminPageProviders, deferred, fakeConfig, loadConfig, mockApi, setMediaQuery, settingsValues, settle, tag, type } from '../../testing/fakes';
 import { setValue } from '../settings/settings-schema';
 import { ADMIN_GROUPS, ADMIN_SECTIONS, groupId, visibleSections } from './admin-sections';
@@ -860,5 +861,32 @@ describe('AdminPageComponent by rights and levels', () => {
         expect(api.saveSettingChanges).toHaveBeenCalledWith({ values: {}, lock: ['player.loop'], unlock: [] }, 'tenant');
         expect(lock.checked).toBe(true);
         expect(element.querySelector('.admin-savebar-status')!.textContent).toBe('Following the server\'s settings');
+    });
+});
+
+describe('showChip (phones: the line of sub-page chips)', () => {
+    /** A strip from 0 to 300 px scrolled to `scrollLeft`, and a chip at `left`–`right` on the screen. */
+    function strip(left: number, right: number, scrollLeft = 0) {
+        const line = document.createElement('div');
+        const chip = document.createElement('button');
+        line.append(chip);
+        line.scrollLeft = scrollLeft;
+        line.getBoundingClientRect = () => ({ left: 0, right: 300 }) as DOMRect;
+        chip.getBoundingClientRect = () => ({ left, right }) as DOMRect;
+        return { line, chip };
+    }
+
+    it('scrolls the chip shown into view, with room beside it, and leaves one in view alone', () => {
+        const after = strip(320, 400);
+        showChip(after.chip);
+        expect(after.line.scrollLeft).toBe(112);
+
+        const before = strip(-50, 40, 200);
+        showChip(before.chip);
+        expect(before.line.scrollLeft).toBe(138);
+
+        const shown = strip(20, 120, 30);
+        showChip(shown.chip);
+        expect(shown.line.scrollLeft).toBe(30);
     });
 });

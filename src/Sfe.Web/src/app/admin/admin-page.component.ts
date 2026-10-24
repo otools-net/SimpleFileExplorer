@@ -1,5 +1,5 @@
 import { Location, NgTemplateOutlet } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injector, OnInit, signal, untracked, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, Directive, effect, ElementRef, inject, Injector, input, OnInit, signal, untracked, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -54,9 +54,25 @@ export { leaveAdminPage } from './leave-admin-page';
  * sub-pages and settings (admin-search.ts). The settings sub-pages share one form (SettingsForm), saved from the bar at
  * the bottom. Moving between sections and sub-pages replaces the history entry, so that "back" returns to the listing page.
  */
+/** Phones: the sub-pages' chips are one line that scrolls sideways; the one shown (`sfeChipInView`) is brought into view. */
+@Directive({ selector: '[sfeChipInView]' })
+export class ChipInViewDirective {
+    readonly sfeChipInView = input.required<string>();
+
+    constructor() {
+        const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+        const injector = inject(Injector);
+        effect(() => {
+            this.sfeChipInView();
+            // Drawn with the strip (its section loaded), and again when another sub-page is chosen.
+            afterNextRender(() => showChip(host.querySelector<HTMLElement>('[aria-selected="true"]')), { injector });
+        });
+    }
+}
+
 @Component({
     selector: 'sfe-admin-page',
-    imports: [RouterLink, NgTemplateOutlet, IconComponent, EmptyStateComponent, SettingsPanelComponent, TagListComponent, TagEditorDialog,
+    imports: [ChipInViewDirective, RouterLink, NgTemplateOutlet, IconComponent, EmptyStateComponent, SettingsPanelComponent, TagListComponent, TagEditorDialog,
         TrackingSectionComponent, TasksSectionComponent, TrickplayActivityComponent, KeepAliveStatusComponent, SystemSectionComponent, AccessSectionComponent,
         AccountSectionComponent, LogsSectionComponent, VideoStreamsComponent, TrashSectionComponent, UploadsSectionComponent, ExclusionsSectionComponent],
     providers: [SettingsForm],
@@ -225,7 +241,7 @@ export { leaveAdminPage } from './leave-admin-page';
                         </header>
                         <!-- Phones have no sidebar: the sub-pages are chips. -->
                         @if (phone() && section().subpages.length > 1) {
-                            <div class="settings-tabs admin-chips" role="tablist" [attr.aria-label]="section().title" (keydown)="onChipKey($event)">
+                            <div class="settings-tabs admin-chips" role="tablist" [attr.aria-label]="section().title" [sfeChipInView]="subpage().id" (keydown)="onChipKey($event)">
                                 @for (item of section().subpages; track item.id) {
                                     <button type="button" role="tab" class="settings-tab" [id]="'admin-chip-' + item.id" aria-controls="admin-panel"
                                             [attr.aria-selected]="subpage().id === item.id" [tabIndex]="subpage().id === item.id ? 0 : -1"
@@ -690,4 +706,17 @@ export class AdminPageComponent implements OnInit {
         if (this.form.changed())
             event.preventDefault();
     }
+}
+
+/** Scrolls the line of chips (phones) so that `chip` is fully in view, with a little room beside it. */
+export function showChip(chip: HTMLElement | null): void {
+    const strip = chip?.parentElement;
+    if (!chip || !strip)
+        return;
+    const box = strip.getBoundingClientRect();
+    const own = chip.getBoundingClientRect();
+    if (own.left < box.left)
+        strip.scrollLeft += own.left - box.left - 12;
+    else if (own.right > box.right)
+        strip.scrollLeft += own.right - box.right + 12;
 }

@@ -42,8 +42,10 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 | [5](#step-5--document-viewers-toolbars) | Document viewers' toolbars (text, PDF, EPUB, Markdown, JSON, CSV, subtitles) | `[x]` committed (version at the merge into main) |
 | [6](#step-6--picture-editor) | Picture editor | `[-]` fine at every size (audit) |
 | [7](#step-7--top-bar-and-location-bar) | Location bar: the folder actions (the top bar is fine) | `[x]` committed (version at the merge into main) |
-| [8](#step-8--administration-toolbars) | Administration tabs (logs and tasks toolbars are fine) | `[ ]` |
-| [10](#step-10--file-names-in-the-list-view) | File names in the list view, buttons cut in landscape (found in step 2) | `[ ]` |
+| [8](#step-8--administration-toolbars) | Administration tabs (logs and tasks toolbars are fine) | `[x]` committed (version at the merge into main) |
+| [10](#step-10--file-names-in-the-list-view) | File names in the list view, buttons cut in landscape (found in step 2) | `[ ]` decided, to build |
+| [11](#step-11--moved-files-on-a-phone) | Moved files (missing files): buttons over the file's text on phones (found in step 8) | `[ ]` decided, to build |
+| [12](#step-12--long-lines-in-the-text-viewer) | Text viewer: wrap long lines, or scroll sideways when off (asked by the developer) | `[ ]` |
 | [9](#step-9--finishing) | Finishing (notes, rule, plan removed) | `[ ]` |
 
 ## Target sizes
@@ -210,6 +212,7 @@ Results (360×800, 390×844, 414×896, 800×360):
 | Administration tabs (`.settings-tabs`: Duplicates, Tasks) | on 2 lines, nothing cut | 8 |
 | List view, landscape 800×360 | names one letter wide, tag and ⋮ cut off (the sidebar shows above 760 px) | 10 |
 | Viewer bar, picture editor, top bar, menus, dialogs (properties, folder tags), EPUB, Markdown in the viewer, logs, accounts, settings | nothing | 4, 6 dropped |
+| Again 2026-10-24, every administration page added (33) and a check for **buttons over text** (by-design overlays left out: menus, fixed / sticky bars, the viewer's arrows, text clipped by its scrolling box) | Moved files: Choose file… and Forget over the file's text, every size | 11 |
 
 ## Step 4 — viewer bar
 
@@ -291,15 +294,22 @@ every action and more (Paste, Select all, Refresh, Properties), which phones cou
 
 ## Step 8 — administration toolbars
 
-Code: `app/logs/logs-section.component.ts`, `app/tasks/task-history.component.ts`,
-`app/library/scan/scan-panel.component.ts`, others the audit finds. One question per toolbar.
+Code: `app/admin/admin-page.component.ts` (`.admin-chips`, `ChipInViewDirective`, `showChip`), `styles/admin.css`.
+The audit found only the sub-page chips of a section on phones wrapping onto 2 lines (Duplicates & moves: 4 chips);
+the logs, tasks and scan panel toolbars are fine.
 
-Decided: _(empty: ask first, per toolbar)_
+Decided (2026-10-24): the chips are **one line that scrolls sideways** (not a "⋯": they are navigation).
 
-- [ ] Logs: asked, decided, done.
-- [ ] Task history: asked, decided, done.
-- [ ] Scan panel: asked, decided, done.
-- [ ] Specs, visual check, `CHANGELOG.md`, `docs/` screenshots.
+- [x] Asked, Decided written.
+- [x] `.admin-chips` (≤ 640 px): `nowrap`, `overflow-x: auto`, edge to edge (`margin: 0 -12px`), no scrollbar; a chip
+      cut at the edge shows there are more. `[sfeChipInView]` on the strip scrolls the selected chip into view (12 px
+      room) after each render: an effect in the page's constructor ran before the chips existed (the section loads
+      first) and never scrolled.
+- [x] Spec: `showChip` (scrolls right, left, or not at all) in `admin-page.spec.ts`; `narrow-audit.mjs` scene
+      `admin-tracking-settings` (the last chip): nothing found, the strip scrolled to it (checked in the screenshot).
+- [x] `docs/administration/README.md` (On a phone), `CHANGELOG.md`.
+- [x] `npm test` passes; no server change.
+- [x] Committed on `edge`; the version comes with the merge into `main`.
 
 ## Step 10 — file names in the list view
 
@@ -313,11 +323,56 @@ Code: `items/file-tile.component.ts` (`FileRowComponent`), `styles/items.css`, `
 Ask the developer: on a phone, what should a list row show and what may go (the type badge, the size, the
 resolution, the tag button, the ⋮)? Names on two lines at most, ellipsis after, or whole names wrapped at spaces?
 
-Decided: _(empty: ask first)_
+Decided (2026-10-24, shown as mockups): when the **list itself is narrow** (a phone, and landscape with the sidebar:
+a container query on the list, not a screen breakpoint), a row has **two lines**: the name on the whole first line,
+type · size · resolution under it in small text (then the tags); picture on the left, tag and ⋮ on the right.
 
-- [ ] Questions asked, Decided written.
+- [x] Questions asked, Decided written.
 - [ ] Fix; specs if the template changes; `overflow.mjs` scene for the list view at the target sizes; screenshots.
 - [ ] `docs/` if visible, `CHANGELOG.md`.
+- [ ] `npm test` passes.
+
+## Step 11 — moved files on a phone
+
+Found in step 8 (2026-10-24, `docs/images/phone-admin-section.png`, 390×844, Duplicates & moves › Moved files): a
+missing file's **Choose file…** and **Forget** buttons are drawn over its text ("Was in Photos/2025 I… · ce 23"):
+the row's buttons don't leave room for the path and the date. `narrow-audit.mjs` doesn't see overlaps (only things off
+screen, cut or wrapped): check the screenshots too.
+
+Code: `app/tracking/` (missing files panel, `tracking-parts.ts`), `styles/` (tracking rows).
+
+Ask the developer: on a phone, the buttons under the file's text (a line of their own), or in a "⋯"?
+
+Decided (2026-10-24, shown as mockups): when the row is narrow, **Choose file… and Forget go on a line below** the
+file's text, right-aligned; on a computer, as today when there is room.
+
+- [x] Questions asked, Decided written.
+- [ ] Fix; specs if the template changes; screenshots at the target sizes.
+- [ ] `docs/` if visible, `CHANGELOG.md`.
+- [ ] `npm test` passes.
+
+## Step 12 — long lines in the text viewer
+
+Asked by the developer (2026-10-24): in the text viewer a line too long for the screen is **cut off**. Wanted: an
+option to **wrap long lines** and, when it is off, **scrolling sideways** to read the rest of the line.
+
+Known before starting: the toolbar already has **Wrap long lines** (`own().wrap`, a reading preference per profile;
+CodeMirror's `lineWrapping`), and step 5 gave `.text-view` `grid-template-columns: minmax(0, 1fr)` (before, a long
+line widened the whole viewer). To check first, on a phone and a computer, every reader (text, log, code, Markdown and
+JSON sources, the editor): is the line cut with wrapping off (no horizontal scroll in `.cm-scroller`), is the option
+easy to find, does a swipe sideways reach the end of the line (and not go to the next file: the viewer's swipe)?
+
+Code: `app/formats/text/codemirror.ts`, `text-view.component.ts`, `app/formats/reading/`, `styles/reader.css`,
+`library/viewer/viewer.component.ts` (swipes).
+
+Ask the developer: wrapping on by default on phones? Where the option lives (the toolbar's button, the "Aa" panel, both)?
+A sideways swipe on the text: scroll the line, and change files only from the arrows / the swipe outside the text?
+
+Decided: _(empty: ask first)_
+
+- [ ] Checked how it behaves now (screenshots at the target sizes and on a computer); questions asked, Decided written.
+- [ ] Fix: wrapping option, horizontal scroll when off; specs.
+- [ ] `docs/user-guide/text-files.md`, `CHANGELOG.md`.
 - [ ] `npm test` passes.
 
 ## Step 9 — finishing

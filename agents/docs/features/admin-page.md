@@ -36,3 +36,5 @@ Code: `src/app/admin/` (`AdminPageComponent`, `admin-sections.ts`, `leave-admin-
   `sfeFromList` (kept by `go`), so back (arrow or browser) returns to the list.
 - `TagManagerDialog` stays on the listing page (sidebar, tag dialogs) around the same `TagListComponent`.
 - Tests: `adminPageProviders(api)` + `RouterTestingHarness` ([testing.md](../development/testing.md)).
+- Phones: a section's sub-page chips (`.admin-chips`) are one line scrolling sideways; `[sfeChipInView]` (with
+  `showChip`) scrolls the selected one into view after each render (overflow menus plan, step 8).

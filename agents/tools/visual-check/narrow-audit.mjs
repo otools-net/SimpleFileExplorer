@@ -69,8 +69,36 @@ const scenes = {
     'admin-accounts': page('admin?section=access&page=accounts'),
     'admin-tags': page('admin?section=tags&page=list'),
     'admin-duplicates': page('admin?section=tracking&page=duplicates'),
+    // The last chip of a section: its line of chips scrolled to show it (phones).
+    'admin-tracking-settings': page('admin?section=tracking&page=settings'),
     'admin-settings': page('admin?section=interface&page=appearance'),
     'admin-keep-alive': page('admin?section=keepAlive&page=status'),
+    // Every other administration page (as the docs screenshots them).
+    'admin-interface-browsing': page('admin?section=interface&page=browsing'),
+    'admin-interface-search': page('admin?section=interface&page=search'),
+    'admin-playback-player': page('admin?section=playback&page=player'),
+    'admin-playback-streaming': page('admin?section=playback&page=streaming'),
+    'admin-scanning-skipped': page('admin?section=scanning&page=skipped'),
+    'admin-scanning-fileTypes': page('admin?section=scanning&page=fileTypes'),
+    'admin-scanning-indexing': page('admin?section=scanning&page=indexing'),
+    'admin-tags-settings': page('admin?section=tags&page=settings'),
+    'admin-tracking-similar': page('admin?section=tracking&page=similar'),
+    'admin-tracking-missing': page('admin?section=tracking&page=missing'),
+    'admin-keepAlive-settings': page('admin?section=keepAlive&page=settings'),
+    'admin-thumbnails': page('admin?section=thumbnails'),
+    'admin-trickplay-activity': page('admin?section=trickplay&page=activity'),
+    'admin-trickplay-settings': page('admin?section=trickplay&page=settings'),
+    'admin-editor': page('admin?section=editor'),
+    'admin-access-spaces': page('admin?section=access&page=spaces'),
+    'admin-tasks-settings': page('admin?section=tasks&page=settings'),
+    'admin-system': page('admin?section=system'),
+    'admin-system-maintenance': page('admin?section=system&page=maintenance'),
+    'admin-account-preferences': page('admin?section=account&page=preferences'),
+    'admin-account-password': page('admin?section=account&page=password'),
+    'admin-logs': page('admin?section=logs'),
+    'admin-files-trash': page('admin?section=files&page=trash'),
+    'admin-files-uploads': page('admin?section=files&page=uploads'),
+    'admin-files-settings': page('admin?section=files&page=files'),
 };
 
 /** The problems on the page now (in the page; returns JSON). */
@@ -127,6 +155,51 @@ const audit = `JSON.stringify((() => {
         } else if (!box2 && (box.right > width + 1 || box.left < -1))
             problems.push('off screen: ' + name(element) + ' in ' + where(element));
     }
+    // Buttons drawn over text that isn't theirs (the text's own boxes, not its element's: a line of text and a button
+    // beside it may share a box).
+    const texts = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: text => text.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+        const owner = text.parentElement;
+        if (!owner || !shown(owner) || owner.closest('button, select, option, [role=button], [popover], dialog:not([open])'))
+            continue;
+        const range = document.createRange();
+        range.selectNodeContents(text);
+        // Only the part of the text its scrolling boxes show (a dialog's body scrolls under its footer).
+        const clips = [];
+        for (let node = owner.parentElement; node && node !== document.documentElement; node = node.parentElement)
+            if (getComputedStyle(node).overflowY !== 'visible' || getComputedStyle(node).overflowX !== 'visible')
+                clips.push(node.getBoundingClientRect());
+        for (const whole of range.getClientRects()) {
+            const rect = clips.reduce((r, c) => ({ left: Math.max(r.left, c.left), right: Math.min(r.right, c.right), top: Math.max(r.top, c.top), bottom: Math.min(r.bottom, c.bottom) }),
+                { left: whole.left, right: whole.right, top: whole.top, bottom: whole.bottom });
+            if (rect.right - rect.left > 2 && rect.bottom - rect.top > 2)
+                texts.push([owner, rect]);
+        }
+    }
+    const overlaps = new Set();
+    /** Over the page by design: menus and popovers, bars fixed or sticky (a save bar), the viewer's arrows. */
+    const overlay = element => {
+        if (element.closest('[popover], .viewer-nav'))
+            return true;
+        for (let node = element; node && node !== document.body; node = node.parentElement)
+            if (['fixed', 'sticky'].includes(getComputedStyle(node).position))
+                return true;
+        return false;
+    };
+    for (const button of controls.filter(element => (element.localName === 'button' || element.getAttribute('role') === 'button') && !overlay(element))) {
+        const box = button.getBoundingClientRect();
+        for (const [owner, rect] of texts) {
+            // A text in a bar over the page (the save bar) is over the button, not under it.
+            if (button.contains(owner) || owner.contains(button) || overlay(owner))
+                continue;
+            const x = Math.min(box.right, rect.right) - Math.max(box.left, rect.left);
+            const y = Math.min(box.bottom, rect.bottom) - Math.max(box.top, rect.top);
+            if (x > 3 && y > 3)
+                overlaps.add('over text: ' + name(button) + ' covers "' + owner.textContent.trim().slice(0, 30) + '" in ' + where(button));
+        }
+    }
+    problems.push(...[...overlaps].slice(0, 10));
     // Rows of buttons on more than one line.
     const rows = new Set(controls.filter(element => element.localName === 'button').map(button => button.parentElement));
     for (const row of rows) {

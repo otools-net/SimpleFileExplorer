@@ -21,6 +21,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - On a phone, the **folder's buttons beside the path** (quick link, tags, upload, new file, new folder, copy path) give
   way to one **⋯** opening the folder's menu, the same as a right click on a computer (with Paste, Select all, Refresh,
   Properties…): the path keeps its line, and the files start higher. They used to fill one or two lines of their own.
+- On a phone, the **sub-pages of an administration section** (chips at the top) are one line that scrolls sideways, the
+  page shown scrolled into view, instead of wrapping onto two lines.
 - SFE's **work files** (the trash, unfinished uploads) go to the server's data folder by default, no longer to a
   hidden `.sfe` folder in the library. The spaces of an install updated from an earlier version keep theirs in the
   library; only new installs and spaces created later start on the server.
