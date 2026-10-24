@@ -23,6 +23,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   Properties…): the path keeps its line, and the files start higher. They used to fill one or two lines of their own.
 - On a phone, the **sub-pages of an administration section** (chips at the top) are one line that scrolls sideways, the
   page shown scrolled into view, instead of wrapping onto two lines.
+- In the **List** layout, a narrow list (a phone, or a small window with the sidebar open) gives each file two lines:
+  its whole name, then its type, size and resolution in small text. Names used to break mid-word over three lines.
+- In the **text viewer**, with long lines not wrapped, a fade at the right edge shows that a line goes on past it,
+  until the text is scrolled to its end.
 - SFE's **work files** (the trash, unfinished uploads) go to the server's data folder by default, no longer to a
   hidden `.sfe` folder in the library. The spaces of an install updated from an earlier version keep theirs in the
   library; only new installs and spaces created later start on the server.
@@ -31,6 +35,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 - In the **text viewer** on a phone, the reading settings button (Aa) was off the screen when the text had long lines
   (the bar grew with them).
+- In **Duplicates & moves › Moved files**, a missing file's Choose file… and Forget buttons were drawn over its "Was
+  in …" line on a phone or a narrow window: the line now ends with "…", and on a phone the buttons have a line of
+  their own under the file.
 - **Security:** `System.Security.Cryptography.Pkcs` (brought by the SQL Server driver) updated to 10.0.13 for the .NET
   denial of service vulnerabilities CVE-2026-84008 and CVE-2026-70162.
 

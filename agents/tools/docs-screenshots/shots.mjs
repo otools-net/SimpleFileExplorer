@@ -616,6 +616,11 @@ const scenes = {
         await b.eval('window.scrollTo(0, 700); 1');
         await sleep(1500);
         await b.shot(OUT + 'phone-scrolled.png');
+        // The list layout on a phone: the name on its own line, type · size · resolution under it.
+        await b.eval("localStorage.setItem('sfe.view', 'list'); 1");
+        await b.open('?path=Photos%2F2024%20Beach%20trip');
+        await b.shot(OUT + 'phone-list.png');
+        await b.eval("localStorage.removeItem('sfe.view'); 1");
         await b.open('admin');
         await b.shot(OUT + 'phone-admin.png');
         await b.open(admin('tracking', 'missing'));

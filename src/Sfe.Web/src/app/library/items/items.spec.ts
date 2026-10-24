@@ -581,6 +581,26 @@ describe('FileRowComponent', () => {
         await fixture.whenStable();
         expect((fixture.nativeElement as HTMLElement).querySelector('.thumb .resolution-mark')?.textContent).toBe('LR');
     });
+
+    it('has the line a narrow list shows under the name: type, size, resolution, duration', async () => {
+        await setUp(fakeConfig());
+        const fixture = TestBed.createComponent(FileRowComponent);
+        fixture.componentRef.setInput('item', item('clip.mp4', { size: 2048, width: 1280, height: 720, duration: 65, extension: 'mp4' }));
+        await fixture.whenStable();
+        const meta = (fixture.nativeElement as HTMLElement).querySelector('.row-main > .row-meta')!;
+        expect(meta.querySelector('.row-meta-type')?.textContent).toBe('mp4');
+        expect(meta.textContent).toBe('mp4 · 2 KB · 1280×720 · 1:05');
+    });
+
+    it('leaves the type out of that line for a file without extension', async () => {
+        await setUp(fakeConfig());
+        const fixture = TestBed.createComponent(FileRowComponent);
+        fixture.componentRef.setInput('item', item('README', { kind: 'file', size: 13 }));
+        await fixture.whenStable();
+        const meta = (fixture.nativeElement as HTMLElement).querySelector('.row-meta')!;
+        expect(meta.querySelector('.row-meta-type')).toBeNull();
+        expect(meta.textContent).toBe('13 B');
+    });
 });
 
 describe('FolderItemComponent', () => {

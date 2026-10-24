@@ -25,7 +25,7 @@ them runs. **Edit** changes them: see [Editing text files](editing-text.md).
 
 | Button | Key | |
 |---|---|---|
-| Wrap long lines | | Long lines continue on the next line instead of going off the side |
+| Wrap long lines | | Long lines continue on the next line instead of going off the side. Off, the text scrolls sideways to their end (drag it with a finger on a phone), and a fade at the right edge shows a line goes on |
 | Line numbers | | Shows or hides the numbers at the left |
 | Find (magnifier) | Ctrl+F | Finds a word in the text: **next**, **previous**, **all**, match case, regular expression, whole word |
 | Go to line | Ctrl+Alt+G | Jumps to a line number (`42`), or a line and column (`42:7`) |

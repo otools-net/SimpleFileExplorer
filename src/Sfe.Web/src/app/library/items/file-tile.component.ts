@@ -167,7 +167,11 @@ export class FileTileComponent extends FileItemBase {
     }
 }
 
-/** A file in the list view: check box, thumbnail, name, folder and tags, type, size (and resolution, duration), date and buttons. */
+/**
+ * A file in the list view: check box, thumbnail, name, folder and tags, type, size (and resolution, duration), date and
+ * buttons. A narrow list (a phone, landscape with the sidebar) gives the name the whole line and puts type, size and
+ * resolution under it (`.row-meta`, shown by a container query in files.css) instead of their columns.
+ */
 @Component({
     selector: 'div[sfeFileRow]',
     imports: [IconComponent, HighlightComponent, PreviewImageDirective, TrickplayMarkComponent, ItemTagsComponent, SelectBoxComponent,
@@ -202,6 +206,7 @@ export class FileTileComponent extends FileItemBase {
             <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
                 <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
             </a>
+            <span class="row-meta">@if (item().extension) {<span class="row-meta-type">{{ item().extension }}</span> · }{{ meta() }}</span>
             <sfe-item-folder [item]="item()" [pattern]="pattern()" />
             <sfe-item-tags [item]="item()" />
         </div>
@@ -220,6 +225,8 @@ export class FileRowComponent extends FileItemBase {
     protected readonly resolution = computed(() => this.config.resolution(this.item()));
     protected readonly duration = computed(() => this.config.duration(this.item()));
     protected readonly date = computed(() => formatDate(this.item().modified));
+    /** The narrow list's line under the name: size, resolution, duration (after the type, styled apart). */
+    protected readonly meta = computed(() => joinParts([this.size(), this.resolution(), this.duration()]));
 
     protected previewContainer() {
         return this.thumb()?.nativeElement;

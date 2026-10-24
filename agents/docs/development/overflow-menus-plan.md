@@ -43,9 +43,9 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done (version), `[-]` dropped (
 | [6](#step-6--picture-editor) | Picture editor | `[-]` fine at every size (audit) |
 | [7](#step-7--top-bar-and-location-bar) | Location bar: the folder actions (the top bar is fine) | `[x]` committed (version at the merge into main) |
 | [8](#step-8--administration-toolbars) | Administration tabs (logs and tasks toolbars are fine) | `[x]` committed (version at the merge into main) |
-| [10](#step-10--file-names-in-the-list-view) | File names in the list view, buttons cut in landscape (found in step 2) | `[ ]` decided, to build |
-| [11](#step-11--moved-files-on-a-phone) | Moved files (missing files): buttons over the file's text on phones (found in step 8) | `[ ]` decided, to build |
-| [12](#step-12--long-lines-in-the-text-viewer) | Text viewer: wrap long lines, or scroll sideways when off (asked by the developer) | `[ ]` |
+| [10](#step-10--file-names-in-the-list-view) | File names in the list view, buttons cut in landscape (found in step 2) | `[x]` committed |
+| [11](#step-11--moved-files-on-a-phone) | Moved files (missing files): buttons over the file's text on phones (found in step 8) | `[x]` committed |
+| [12](#step-12--long-lines-in-the-text-viewer) | Text viewer: wrap long lines, or scroll sideways when off (asked by the developer) | `[x]` committed |
 | [9](#step-9--finishing) | Finishing (notes, rule, plan removed) | `[ ]` |
 
 ## Target sizes
@@ -328,9 +328,15 @@ a container query on the list, not a screen breakpoint), a row has **two lines**
 type · size · resolution under it in small text (then the tags); picture on the left, tag and ⋮ on the right.
 
 - [x] Questions asked, Decided written.
-- [ ] Fix; specs if the template changes; `overflow.mjs` scene for the list view at the target sizes; screenshots.
-- [ ] `docs/` if visible, `CHANGELOG.md`.
-- [ ] `npm test` passes.
+- [x] `.files.list` is a container (`files-list`); at `max-width: 560px` the row's columns are check box, picture,
+      name, buttons; `.row-meta` (in `.row-main`, hidden otherwise) shows type · size · resolution · duration. The
+      rules start with `.files.list` to beat `responsive.css`'s phone columns, which load later. Names wrap at spaces,
+      a single long word anywhere.
+- [x] Specs: the line's text with and without an extension (`items.spec.ts`). `overflow.mjs` scenes `list-view`,
+      `list-search` with a `probe` (the line shown at the four phone sizes, the columns kept at 1280).
+- [x] `docs/user-guide/browsing.md` (On a phone) + `phone-list.png`; `CHANGELOG.md`.
+- [x] `npm test` passes; no server change.
+- [x] Committed on `edge` (steps 10 to 12 together); the version comes with the merge into `main`.
 
 ## Step 11 — moved files on a phone
 
@@ -347,9 +353,15 @@ Decided (2026-10-24, shown as mockups): when the row is narrow, **Choose file…
 file's text, right-aligned; on a computer, as today when there is room.
 
 - [x] Questions asked, Decided written.
-- [ ] Fix; specs if the template changes; screenshots at the target sizes.
-- [ ] `docs/` if visible, `CHANGELOG.md`.
-- [ ] `npm test` passes.
+- [x] Cause: `.tracking-file` aligns its lines to the start, so the nowrap "Was in …" line never shrank (only the
+      name had `max-width: 100%`) and ran under the buttons, even at 800×360. Now `max-width: 100%` with an ellipsis.
+- [x] `.tracking-missing` is a container (`tracking-missing`); at `max-width: 480px` its head wraps and
+      `.tracking-actions` takes the whole line (right-aligned). The ≤ 760 px `flex-wrap` rule it replaces is gone.
+- [x] CSS only, no spec; `narrow-audit.mjs` scenes `admin-tracking-missing`, `admin-tracking-similar`: nothing found
+      at the four sizes (800×360 had the overlap before).
+- [x] `phone-admin-section.png` re-shot; `CHANGELOG.md` (Fixed).
+- [x] `npm test` passes; no server change.
+- [x] Committed on `edge` (steps 10 to 12 together); the version comes with the merge into `main`.
 
 ## Step 12 — long lines in the text viewer
 
@@ -368,12 +380,30 @@ Code: `app/formats/text/codemirror.ts`, `text-view.component.ts`, `app/formats/r
 Ask the developer: wrapping on by default on phones? Where the option lives (the toolbar's button, the "Aa" panel, both)?
 A sideways swipe on the text: scroll the line, and change files only from the arrows / the swipe outside the text?
 
-Decided: _(empty: ask first)_
+Checked (2026-10-24, `overflow.mjs` scenes `text-viewer`, `text-nowrap`, `text-swipe`, `text-page` with probes): with
+wrapping off, `.cm-scroller` (`overflow-x: auto`) scrolls to the end of the longest line at every size, in the viewer
+and on the `view?path=` page; a finger dragged over the text (CDP touch events) scrolls the line and the viewer stays
+on the file (swipes inside `[data-owns-keys]` aren't the viewer's). Wrapping is the toolbar's button (shown at 360 px)
+and a check box of the "Aa" panel; the code profile (logs, code) starts with it off, prose on. The cut the developer
+saw was step 5's bug: `.text-view` had no column size, so the whole view grew as wide as the longest line (no scroll
+in `.cm-scroller`, clipped by the viewer); fixed by `minmax(0, 1fr)` in 9621823. Other readers cut long values with
+"…" on purpose: the JSON tree, subtitle cues, CSV cells.
 
-- [ ] Checked how it behaves now (screenshots at the target sizes and on a computer); questions asked, Decided written.
-- [ ] Fix: wrapping option, horizontal scroll when off; specs.
-- [ ] `docs/user-guide/text-files.md`, `CHANGELOG.md`.
-- [ ] `npm test` passes.
+Decided (2026-10-24): the defaults **stay** (code and logs unwrapped, prose wrapped, on phones too); a **fade at the
+right edge** while a line goes on past it; the JSON tree, subtitles and CSV keep their "…" (full values are in the
+source view or the selected row).
+
+- [x] Checked how it behaves now (screenshots at the target sizes and on a computer).
+- [x] Questions asked, Decided written.
+- [x] `lineContinues` in `formats/text/codemirror.ts`: `cm-line-continues` on the editor while the scroller can go
+      further right; the fade is `&.cm-line-continues::after` in `readerTheme`, kept off the scroll bars and the search
+      panel by `--cm-fade-*`. Read on scroll, after updates through `requestMeasure` (no layout reads in `update`).
+- [x] Specs: `codemirror.spec.ts` (fades while the line goes on, not at its end nor when it fits, placement, removed
+      with the editor). `overflow.mjs` probes: the fade at the four phone sizes, none at 1280 for the log (fits), gone
+      when scrolled to the end; `text-swipe` still scrolls the line.
+- [x] `docs/user-guide/text-files.md`, feature note `text-viewer.md`, `CHANGELOG.md`.
+- [x] `npm test` passes (1085); no server change.
+- [x] Committed on `edge` (steps 10 to 12 together); the version comes with the merge into `main`.
 
 ## Step 9 — finishing
 

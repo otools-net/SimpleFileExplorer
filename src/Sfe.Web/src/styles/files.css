@@ -177,6 +177,7 @@
 /* ---------- Files: list ---------- */
 
 .files.list {
+    container: files-list / inline-size;
     overflow: hidden;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -223,6 +224,29 @@
     white-space: nowrap;
 }
 .row .item-name { font-weight: 500; }
+.row .row-meta { display: none; }
+
+/*
+ * A narrow list (a phone, or landscape with the sidebar open): two lines, the name on the whole first one, type · size ·
+ * resolution under it; the picture on the left, tag and ⋮ on the right (overflow menus plan, step 10).
+ */
+@container files-list (max-width: 560px) {
+    /* .files.list: above responsive.css's phone columns, which come later. */
+    .files.list .row { grid-template-columns: 20px 44px minmax(0, 1fr) auto; gap: 8px; padding-right: 6px; }
+    .files.list .row .thumb { width: 44px; }
+    .row :is(.type, .size, .date) { display: none; }
+    .row .row-meta {
+        display: block;
+        overflow: hidden;
+        color: var(--text-muted);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .row .row-meta-type { color: var(--kind); font: 700 11px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+    .row .item-name { display: block; overflow-wrap: anywhere; word-break: normal; }
+}
 
 .folders.list { grid-template-columns: 1fr; gap: 0; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); }
 .folders.list .folder { border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }

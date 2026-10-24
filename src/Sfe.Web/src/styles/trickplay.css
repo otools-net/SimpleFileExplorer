@@ -149,6 +149,12 @@ sfe-tracking-section .settings-status-text { white-space: normal; }
 .tracking-sub { margin: 8px 0 2px; }
 .tracking-list, .tracking-missing-list { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; }
 .tracking-missing-list { gap: 10px; }
+.tracking-missing { container: tracking-missing / inline-size; }
+
+/* A narrow missing file (a phone): Choose file… and Forget on a line of their own under its text, on the right. */
+@container tracking-missing (max-width: 480px) {
+    .tracking-missing-head > .tracking-actions { flex-basis: 100%; }
+}
 
 .tracking-row, .tracking-missing-head { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 6px 0; }
 .tracking-row { border-bottom: 1px solid var(--border); }
@@ -183,7 +189,7 @@ a.tracking-name:hover { color: var(--accent); }
 
 .tracking-folder .icon { flex: none; width: 13px; height: 13px; }
 .tracking-folder:hover { color: var(--text); text-decoration: underline; }
-.tracking-folder, .tracking-was { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tracking-folder, .tracking-was { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tracking-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
 .tracking-detail { flex: none; color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .tracking-actions { display: flex; flex: none; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }

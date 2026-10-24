@@ -4,6 +4,7 @@ import { gotoLine, highlightSelectionMatches, openSearchPanel, search, searchKey
 import { Compartment, EditorState, Extension, Text } from '@codemirror/state';
 import {
     drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers,
+    ViewPlugin, ViewUpdate,
 } from '@codemirror/view';
 import { classHighlighter } from '@lezer/highlight';
 import { languageFor } from './languages';
@@ -37,7 +38,67 @@ const readerTheme = EditorView.theme({
     '.cm-textfield': { backgroundColor: 'var(--reader-bg)', color: 'var(--reader-text)', border: '1px solid var(--reader-border)', borderRadius: '6px', padding: '3px 6px' },
     '.cm-button': { backgroundImage: 'none', backgroundColor: 'var(--reader-active-line)', color: 'var(--reader-text)', border: '1px solid var(--reader-border)', borderRadius: '6px' },
     '.cm-panel.cm-search [name=close]': { color: 'var(--reader-muted)' },
+    // A line going on past the right edge (see lineContinues): a fade over the text, not over the scroll bars or panels.
+    '&.cm-line-continues::after': {
+        content: '""',
+        position: 'absolute',
+        zIndex: '2',
+        top: 'var(--cm-fade-top, 0)',
+        right: 'var(--cm-fade-right, 0)',
+        bottom: 'var(--cm-fade-bottom, 0)',
+        width: '32px',
+        background: 'linear-gradient(to right, transparent, var(--reader-bg))',
+        pointerEvents: 'none',
+    },
 });
+
+/**
+ * Shows that a line goes on past the right edge (wrapping off, not scrolled to its end): `cm-line-continues` on the
+ * editor, a fade (readerTheme) placed by `--cm-fade-*` inside the scroller's scroll bars and under a search panel.
+ */
+export const lineContinues = ViewPlugin.fromClass(class {
+    constructor(private readonly view: EditorView) {
+        view.scrollDOM.addEventListener('scroll', this.onScroll, { passive: true });
+        this.schedule();
+    }
+
+    update(update: ViewUpdate): void {
+        if (update.geometryChanged || update.docChanged || update.viewportChanged)
+            this.schedule();
+    }
+
+    destroy(): void {
+        this.view.scrollDOM.removeEventListener('scroll', this.onScroll);
+        this.view.dom.classList.remove('cm-line-continues');
+    }
+
+    /** Scrolling reads the layout at once (nothing is being updated then). */
+    private readonly onScroll = () => showLineContinues(this.view, readLineContinues(this.view));
+
+    /** After an update, when CodeMirror reads the layout. */
+    private schedule(): void {
+        this.view.requestMeasure({ key: this, read: readLineContinues, write: (fade, view) => showLineContinues(view, fade) });
+    }
+});
+
+interface LineFade { continues: boolean; top: number; right: number; bottom: number }
+
+function readLineContinues(view: EditorView): LineFade {
+    const scroller = view.scrollDOM;
+    return {
+        continues: scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 1,
+        top: scroller.offsetTop,
+        right: scroller.offsetWidth - scroller.clientWidth,
+        bottom: scroller.offsetHeight - scroller.clientHeight,
+    };
+}
+
+function showLineContinues(view: EditorView, fade: LineFade): void {
+    view.dom.classList.toggle('cm-line-continues', fade.continues);
+    view.dom.style.setProperty('--cm-fade-top', `${fade.top}px`);
+    view.dom.style.setProperty('--cm-fade-right', `${Math.max(0, fade.right)}px`);
+    view.dom.style.setProperty('--cm-fade-bottom', `${Math.max(0, fade.bottom)}px`);
+}
 
 export interface TextEditorOptions {
     text: string;
@@ -85,6 +146,7 @@ export class TextEditor {
             bracketMatching(),
             syntaxHighlighting(classHighlighter),
             readerTheme,
+            lineContinues,
             highlightSelectionMatches(),
             search({ top: true }),
             this.editing.of(TextEditor.editingExtensions(options.editable ?? false)),

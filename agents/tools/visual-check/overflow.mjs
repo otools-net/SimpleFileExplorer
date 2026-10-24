@@ -24,7 +24,17 @@ const url = 'http://localhost:5095/';
 const sizes = [[360, 800], [390, 844], [414, 896], [800, 360], [1280, 800]];
 const enc = value => encodeURIComponent(value);
 
-/** Each scene opens its screen in `b` (signed in) and names the rows to check (CSS selectors). */
+/** The first list rows: the name's height, the line under it (null when hidden), whether the size column shows. */
+const listProbe = `JSON.stringify([...document.querySelectorAll('.files.list .row')].slice(0, 3).map(row => ({
+    name: Math.round(row.querySelector('.item-name').getBoundingClientRect().height),
+    meta: getComputedStyle(row.querySelector('.row-meta')).display === 'none' ? null : row.querySelector('.row-meta').textContent,
+    sizeColumn: getComputedStyle(row.querySelector('.size')).display !== 'none',
+})))`;
+
+/**
+ * Each scene opens its screen in `b` (signed in) and names the rows to check (CSS selectors); `probe`, if any, is an
+ * expression evaluated in the page whose value is printed at each size (what a layout shows).
+ */
 const scenes = {
     'viewer-video': {
         rows: ['.player-row'],
@@ -58,8 +68,87 @@ const scenes = {
             await sleep(800);
         },
     },
+    // List rows (step 10): a narrow list shows the name on its own line, type · size · resolution under it.
+    'list-view': {
+        rows: ['.files.list .row'],
+        probe: listProbe,
+        async open(b) {
+            await b.eval(`localStorage.setItem('sfe.view', 'list'); 1`);
+            await b.goto(url + '?path=' + enc('Photos'), 3000);
+        },
+    },
+    'list-search': {
+        rows: ['.files.list .row'],
+        probe: listProbe,
+        async open(b) {
+            await b.eval(`localStorage.setItem('sfe.view', 'list'); 1`);
+            await b.goto(url + '?q=' + enc('e'), 3500);
+        },
+    },
     // The document viewers' toolbars (step 5).
-    'text-viewer': { rows: ['.text-toolbar'], open: b => openDocument(b, 'Documents', 'Photo backup.log') },
+    'text-viewer': {
+        rows: ['.text-toolbar'],
+        open: b => openDocument(b, 'Documents', 'Photo backup.log'),
+        // Long lines (step 12): wrapped or not, and whether the text scrolls sideways to their end.
+        probe: `JSON.stringify((() => {
+            const scroller = document.querySelector('.viewer .cm-scroller');
+            const style = getComputedStyle(scroller);
+            const before = scroller.scrollLeft;
+            scroller.scrollLeft = 10000;
+            const reached = scroller.scrollLeft;
+            scroller.dispatchEvent(new Event('scroll'));
+            const fadeAtEnd = document.querySelector('.viewer .cm-editor').classList.contains('cm-line-continues');
+            scroller.scrollLeft = before;
+            scroller.dispatchEvent(new Event('scroll'));
+            return {
+                wrap: Boolean(document.querySelector('.viewer .cm-lineWrapping')),
+                fade: document.querySelector('.viewer .cm-editor').classList.contains('cm-line-continues'),
+                overflowX: style.overflowX, touchAction: style.touchAction,
+                scrollWidth: scroller.scrollWidth, clientWidth: scroller.clientWidth, scrolledTo: reached, fadeAtEnd,
+                widest: Math.max(...[...document.querySelectorAll('.viewer .cm-line')].map(line => line.scrollWidth)),
+            };
+        })())`,
+    },
+    // A prose file (its profile has a width) with wrapping turned off.
+    'text-nowrap': {
+        rows: ['.text-toolbar'],
+        async open(b) {
+            await openDocument(b, 'Documents', 'Trip diary.txt');
+            await b.eval(`document.querySelector('.viewer .text-toolbar button[aria-label="Wrap long lines"]').click(); 1`);
+            await sleep(800);
+        },
+        get probe() { return scenes['text-viewer'].probe; },
+    },
+    // A finger dragged right to left over a long line: the line should scroll, the viewer stay on the file.
+    'text-swipe': {
+        rows: ['.text-toolbar'],
+        async open(b) {
+            await scenes['text-nowrap'].open(b);
+            const { width } = await b.rect('.viewer .cm-scroller');
+            const y = 210;
+            const touch = (type, x) => b.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+            await touch('touchStart', width - 40);
+            for (let x = width - 60; x >= 40; x -= 20) {
+                await touch('touchMove', x);
+                await sleep(16);
+            }
+            await touch('touchEnd', 40);
+            await sleep(1200);
+        },
+        probe: `JSON.stringify({
+            file: document.querySelector('.viewer-title strong')?.textContent,
+            scrollLeft: Math.round(document.querySelector('.viewer .cm-scroller')?.scrollLeft ?? -1),
+        })`,
+    },
+    'text-page': {
+        rows: ['.text-toolbar'],
+        open: b => b.goto(url + 'view?path=' + enc('Documents/Photo backup.log'), 3500),
+        probe: `JSON.stringify((() => {
+            const scroller = document.querySelector('.cm-scroller');
+            scroller.scrollLeft = 10000;
+            return { scrollWidth: scroller.scrollWidth, clientWidth: scroller.clientWidth, scrolledTo: scroller.scrollLeft, page: document.documentElement.scrollWidth };
+        })())`,
+    },
     'text-editor': {
         rows: ['.text-toolbar'],
         async open(b) {
@@ -154,6 +243,8 @@ try {
                 withMore ??= result.more ? selector : null;
                 console.log(`${ok ? 'ok  ' : 'FAIL'} ${name} ${size} ${selector} ${JSON.stringify(result)}`);
             }
+            if (scene.probe)
+                console.log(`     probe: ${await b.eval(scene.probe)}`);
             await b.shot(`${out}-${name}-${size}.png`);
             if (withMore) {
                 // The "⋯" of that row (a row hidden elsewhere on the page may have one too).

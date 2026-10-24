@@ -40,6 +40,11 @@ Code: client `app/formats/formats.ts` (registry), `app/formats/text/` (`text-vie
   [text-editor.md](text-editor.md)). Compartments: wrap, line numbers,
   language. Language: `languageFor(name)` — aliases (MSBuild files → XML, `.conf`/`.cfg`/`.env`… → Properties
   files), then our `Log` and `Subtitles` stream modes, then `@codemirror/language-data` (each language its own chunk).
+- Long lines with wrapping off: `.cm-scroller` scrolls sideways (`.text-view` needs `grid-template-columns: minmax(0, 1fr)`,
+  or the whole view grows as wide as the longest line and nothing scrolls); a finger on the text scrolls it, not the
+  viewer's file swipe (`data-owns-keys`). `lineContinues` (a view plugin) puts `cm-line-continues` on the editor while
+  a line goes on past the right edge: a fade from `readerTheme`, placed by `--cm-fade-*` inside the scroll bars and
+  under the search panel; read on scroll, after updates through `requestMeasure`.
 - Colours: `readerTheme` (`EditorView.theme`) uses `--reader-*` variables; highlighting uses `classHighlighter`
   (`tok-*` classes) coloured by `--tok-*` in `reader.css`; both follow the app's light/dark theme.
 - Font, size, spacing, wrap, line numbers and colours are the reading preferences of the format's profile (code or

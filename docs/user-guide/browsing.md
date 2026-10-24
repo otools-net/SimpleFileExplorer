@@ -168,6 +168,11 @@ The same page adapts to small screens: the sidebar (quick links and tags) become
 narrows, and the slim location bar appears as you scroll. Tile buttons are always shown, since there is no hover. In
 the viewer, swipe to go to the previous or next file.
 
+In the **List** layout a narrow list (a phone, or a small window with the sidebar open) gives each file two lines:
+its whole name on the first, its type, size and resolution under it; the tag and ⋮ buttons stay at the end.
+
+<img src="../images/phone-list.png" alt="The list layout on a phone: names on their own line, type, size and resolution under them" width="300">
+
 The folder's buttons beside the path (quick link, tags, upload, new file, new folder, copy full path) give way to one
 **⋯** at the end of the path's line: it opens the folder's menu, the same as a right click on the page on a computer
 (New folder, New file, Upload, Paste, Select all, Refresh, Tags of this folder, quick link, Copy full path,
