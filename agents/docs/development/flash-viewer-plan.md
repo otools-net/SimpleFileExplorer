@@ -42,7 +42,7 @@ Yes, in a sandboxed frame.
 - [ ] Phones: touch input; Ruffle's virtual keyboard (opened when a text field of the movie takes the focus).
 - [ ] Firefox: headless Firefox started from the agent's shell fetched nothing; check by hand.
 - [ ] `docs/images/admin-playback-player.png` again (the new Flash movies group).
-- [ ] At the merge: a `docs/upgrading.md` note (`.swf` files now open in the viewer; `Player:Flash` turns it off).
+- [x] `docs/upgrading.md` note (1.83.0).
 
 Later, not in this epic: a thumbnail of the first frame (Ruffle's desktop build can render headless; ffmpeg can't
 play ActionScript), `.spl` (FutureSplash), movies' saved games (`SharedObject`: the frame has no storage).

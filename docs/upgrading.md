@@ -30,6 +30,13 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.83
+
+- **Flash movies** (`.swf`) now open in the viewer, played by Ruffle, which comes with SFE: they used to be only
+  downloaded. Nothing to do; to keep them downloaded only, turn off **Play Flash movies** in
+  [Playback](administration/playback.md#flash-movies) (`Sfe:Player:Flash`). The packages are about 29 MB larger
+  (Ruffle's WebAssembly).
+
 ## To 1.82
 
 - SFE's **work files** (the trash, unfinished uploads) now go to the server's data folder by default, no longer to a
