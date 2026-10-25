@@ -460,6 +460,8 @@ export interface ClientConfig {
     reading?: unknown;
     /** The library's own extensions shown as text (`Sfe:FileTypes:Text`); absent from older servers. */
     textExtensions?: string[] | null;
+    /** Flash movies (`.swf`) play in the viewer (`Player:Flash` and the right to view files); absent from older servers. */
+    flash?: boolean;
 }
 
 /** `api/streaming/probe`: a video the server can convert. */

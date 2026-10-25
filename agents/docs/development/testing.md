@@ -22,6 +22,8 @@ Code: `tests/Sfe.Tests/` (`Infrastructure/`: `TestLibrary`, `CoreServices`, `Api
 - A test that makes a database first (`CoreServices`, an old settings file + index) and then starts the HTTP server
   meets the update gate: call `ApiClients.MigrateAsync(factory)` before anything else.
 - Core has `InternalsVisibleTo Sfe.Tests`.
+- Media a test needs (videos, audio, pictures made by ffmpeg) come from `tests/samples/media` through `TestSamples`,
+  never rendered by the test ([test-samples.md](test-samples.md)).
 - New search cases go in `SearchCombinationTests` (data rows over its fixture).
 
 ## Client

@@ -497,3 +497,6 @@ src/Sfe.Api/appsettings.Development.json
 
 # This machine's own settings over the neutral appsettings.json (Program.cs loads it after appsettings.json)
 src/Sfe.Api/appsettings.Local.json
+
+# Sample files are committed whatever their type (a log for the text viewer...): tests/samples/README.md.
+!tests/samples/**

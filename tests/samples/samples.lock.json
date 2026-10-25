@@ -1,0 +1,22 @@
+{
+  "library": {
+    "generator": "01c247d5e9f80f2b"
+  },
+  "media": {
+    "testsrc-64x48-5frames.gif": "bc8462cd79a4492a",
+    "testsrc-64x48-still.gif": "b823a7c23e1fca03",
+    "testsrc-64x48-5frames.apng": "dfa11ea21189c355",
+    "testsrc-64x48-still.png": "b823a7c23e1fca03",
+    "testsrc-1s-320x180.mp4": "8910a3a7411aa6f7",
+    "sine-440hz-2s.wav": "5e086bfc45b065f3",
+    "testsrc-2s-keyframes.mp4": "a8f0da2c2800140d",
+    "testsrc-3s-keyframes.mp4": "1256dcaf147ccd9a",
+    "testsrc-5s-keyframes.mp4": "dcab81a5d7ace125",
+    "testsrc-7.5s-keyframes.mp4": "b57c76b1d00a3930",
+    "mandelbrot-20s.mp4": "639cf8b3de1ef0ef",
+    "life-20s.mp4": "69062557828810d8",
+    "mandelbrot-20s-small.mp4": "84402cb400837b63",
+    "testsrc-4s-mpeg4-pcm.avi": "2a4ec6ed479cefd5",
+    "testsrc-4s-noise-h264-aac.mp4": "d8e14145d0e2ebcc"
+  }
+}

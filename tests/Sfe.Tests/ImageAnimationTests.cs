@@ -65,28 +65,18 @@ public sealed class ImageAnimationTests
     }
 
     [TestMethod]
-    public async Task PicturesMadeByFfmpegAreToldApart()
+    public void PicturesMadeByFfmpegAreToldApart()
     {
-        using var library = new TestLibrary();
-        await using var services = await CoreServices.CreateAsync(library, s =>
-            s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG") is { Length: > 0 } path ? path : "ffmpeg");
-        var ffmpeg = services.Get<Ffmpeg>();
-        if (!ffmpeg.IsAvailable)
-            Assert.Inconclusive("ffmpeg not found: set SFE_TEST_FFMPEG to make the test pictures.");
-
-        async Task<bool> Make(string name, params string[] options)
+        static bool Sample(string name)
         {
-            var path = Path.Combine(library.Root, name);
-            await SlowWork.RunFfmpegAsync(ffmpeg, ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc=size=64x48:rate=5", .. options, path],
-                60, TestContext.CancellationToken);
-            await using var stream = File.OpenRead(path);
+            using var stream = File.OpenRead(TestSamples.PathOf(name));
             return ImageAnimation.IsAnimated(stream);
         }
 
-        Assert.IsTrue(await Make("moving.gif", "-frames:v", "5"));
-        Assert.IsFalse(await Make("still.gif", "-frames:v", "1"));
-        Assert.IsTrue(await Make("moving.apng", "-frames:v", "5", "-f", "apng"));
-        Assert.IsFalse(await Make("still.png", "-frames:v", "1"));
+        Assert.IsTrue(Sample("testsrc-64x48-5frames.gif"));
+        Assert.IsFalse(Sample("testsrc-64x48-still.gif"));
+        Assert.IsTrue(Sample("testsrc-64x48-5frames.apng"));
+        Assert.IsFalse(Sample("testsrc-64x48-still.png"));
     }
 
     /* ---------- Helpers ---------- */

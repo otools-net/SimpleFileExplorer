@@ -58,8 +58,8 @@ public sealed class TrickplayTests
     [TestMethod]
     public async Task PassGeneratesTheVideosOfTheConfiguredFolders()
     {
-        await RenderVideoAsync("Media/clip.mp4", seconds: 7.5);
-        await RenderVideoAsync("Other/outside.mp4", seconds: 2);
+        AddVideo("Media/clip.mp4", seconds: 7.5);
+        AddVideo("Other/outside.mp4", seconds: 2);
 
         _worker = Trickplay.RunAsync(_stop.Token);
         var status = await WaitAsync(s => s.LastPassFinished is not null);
@@ -98,8 +98,8 @@ public sealed class TrickplayTests
     [TestMethod]
     public async Task ExcludedFoldersGetNoTrickplay()
     {
-        await RenderVideoAsync("Media/clip.mp4", seconds: 2);
-        await RenderVideoAsync("Media/Skipped/Deeper/skipped.mp4", seconds: 2);
+        AddVideo("Media/clip.mp4", seconds: 2);
+        AddVideo("Media/Skipped/Deeper/skipped.mp4", seconds: 2);
 
         _worker = Trickplay.RunAsync(_stop.Token);
         await WaitAsync(s => s.LastPassFinished is not null);
@@ -115,7 +115,7 @@ public sealed class TrickplayTests
     [TestMethod]
     public async Task RequestedVideoShowsAsWaitingUntilDone()
     {
-        await RenderVideoAsync("Media/later.mp4", seconds: 3);
+        AddVideo("Media/later.mp4", seconds: 3);
 
         // A thumbnail's hover preview only looks.
         Assert.IsNull(Trickplay.Get("Media/later.mp4", queue: false));
@@ -142,13 +142,13 @@ public sealed class TrickplayTests
         Assert.IsNull(Trickplay.Get("Media/later.mp4"));
 
         // Added after the pass: the player's request queues it right away.
-        await RenderVideoAsync("Media/later.mp4", seconds: 3);
+        AddVideo("Media/later.mp4", seconds: 3);
         Assert.IsNull(Trickplay.Get("Media/later.mp4"));
         await WaitAsync(_ => Trickplay.Get("Media/later.mp4") is not null);
         Assert.AreEqual(3, Trickplay.Get("Media/later.mp4")!.Count);
 
         // Replaced by another video: the old frames are not served while the new ones are made.
-        await RenderVideoAsync("Media/later.mp4", seconds: 5);
+        AddVideo("Media/later.mp4", seconds: 5);
         File.SetLastWriteTimeUtc(_library.FullPath("Media/later.mp4"), DateTime.UtcNow.AddMinutes(1));
         var refreshed = Trickplay.Get("Media/later.mp4");
         Assert.IsTrue(refreshed is null || refreshed.Count == 5);
@@ -163,7 +163,7 @@ public sealed class TrickplayTests
             Assert.Inconclusive("Only Windows keeps a folder holding an open file from being deleted.");
         _worker = Trickplay.RunAsync(_stop.Token);
         await WaitAsync(s => s.LastPassFinished is not null);
-        await RenderVideoAsync("Media/later.mp4", seconds: 3);
+        AddVideo("Media/later.mp4", seconds: 3);
         await WaitAsync(_ => Trickplay.Get("Media/later.mp4") is not null);
         var failed = Trickplay.Status.Failed;
 
@@ -172,7 +172,7 @@ public sealed class TrickplayTests
         var cache = Trickplay.GetCacheFolder(_library.FullPath("Media/later.mp4"));
         await using (var held = new FileStream(Path.Combine(cache, "0.jpg"), FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            await RenderVideoAsync("Media/later.mp4", seconds: 5);
+            AddVideo("Media/later.mp4", seconds: 5);
             File.SetLastWriteTimeUtc(_library.FullPath("Media/later.mp4"), DateTime.UtcNow.AddMinutes(1));
             Trickplay.Get("Media/later.mp4");
             // The new trickplay is complete and waits for the old one to go.
@@ -187,15 +187,7 @@ public sealed class TrickplayTests
     private Task<TrickplayStatus> WaitAsync(Func<TrickplayStatus, bool> condition) =>
         SlowWork.UntilAsync(() => Trickplay.Status, condition, 60, "trickplay", TestContext.CancellationToken);
 
-    /// <summary>A small test pattern video with a key frame every second.</summary>
-    private Task RenderVideoAsync(string relativePath, double seconds)
-    {
-        var path = _library.FullPath(relativePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        return SlowWork.RunFfmpegAsync(_services.Get<Ffmpeg>(),
-            ["-hide_banner", "-loglevel", "error", "-nostdin", "-y",
-             "-f", "lavfi", "-i", $"testsrc=duration={seconds}:size=320x180:rate=10",
-             "-g", "10", "-pix_fmt", "yuv420p", path],
-            30, TestContext.CancellationToken);
-    }
+    /// <summary>A small test pattern video of 2, 3, 5 or 7.5 seconds with a key frame every second (tests/samples/media).</summary>
+    private void AddVideo(string relativePath, double seconds) =>
+        TestSamples.CopyTo($"testsrc-{seconds.ToString(System.Globalization.CultureInfo.InvariantCulture)}s-keyframes.mp4", _library.FullPath(relativePath));
 }

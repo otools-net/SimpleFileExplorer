@@ -9,6 +9,8 @@ Code: `src/Sfe.Web/src/styles/base.css`.
 - A `position: fixed` box (an open modal `<dialog>` too) stops short of the scrollbar and of the room kept for it:
   while a phone's bottom sheet is open (item menu ≤ 640px, `dialog.sheet` ≤ 760px), `base.css` takes both away
   (`html:has(...) { overflow: hidden; scrollbar-gutter: auto }`). A new bottom sheet goes in that rule.
+- The viewer (`dialog.viewer`, full screen) does the same **at every width**: without it a strip of the page's
+  scrollbar, or the gutter's empty room, showed beside it. Check: `agents/tools/visual-check/viewer-scrollbar.mjs`.
 - That rule also pads the page with `--scrollbar-w` (`core/scrollbar-width.ts`, measured on a probe by `App`):
   without it the page widens, names wrap less, the page gets shorter, the scroll position is clamped and that scroll
   closes the item menu. Check: `agents/tools/visual-check/phone-sheets.mjs`.

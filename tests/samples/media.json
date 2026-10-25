@@ -1,0 +1,20 @@
+{
+  "about": "The test media of tests/samples/media/: each file and the ffmpeg arguments that make it (after -hide_banner -loglevel error -nostdin -y; the output path goes last). {sample:name} stands for another sample of this list, made first. Update with: node agents/tools/samples/update-samples.mjs (see tests/samples/README.md).",
+  "media": [
+    { "name": "testsrc-64x48-5frames.gif", "for": "ImageAnimationTests", "args": ["-f", "lavfi", "-i", "testsrc=size=64x48:rate=5", "-frames:v", "5"] },
+    { "name": "testsrc-64x48-still.gif", "for": "ImageAnimationTests", "args": ["-f", "lavfi", "-i", "testsrc=size=64x48:rate=5", "-frames:v", "1"] },
+    { "name": "testsrc-64x48-5frames.apng", "for": "ImageAnimationTests", "args": ["-f", "lavfi", "-i", "testsrc=size=64x48:rate=5", "-frames:v", "5", "-f", "apng"] },
+    { "name": "testsrc-64x48-still.png", "for": "ImageAnimationTests", "args": ["-f", "lavfi", "-i", "testsrc=size=64x48:rate=5", "-frames:v", "1"] },
+    { "name": "testsrc-1s-320x180.mp4", "for": "MediaResolutionTests", "args": ["-f", "lavfi", "-i", "testsrc=duration=1:size=320x180:rate=10", "-pix_fmt", "yuv420p"] },
+    { "name": "sine-440hz-2s.wav", "for": "MediaResolutionTests", "args": ["-f", "lavfi", "-i", "sine=frequency=440:duration=2"] },
+    { "name": "testsrc-2s-keyframes.mp4", "for": "TrickplayTests", "args": ["-f", "lavfi", "-i", "testsrc=duration=2:size=320x180:rate=10", "-g", "10", "-pix_fmt", "yuv420p"] },
+    { "name": "testsrc-3s-keyframes.mp4", "for": "TrickplayTests", "args": ["-f", "lavfi", "-i", "testsrc=duration=3:size=320x180:rate=10", "-g", "10", "-pix_fmt", "yuv420p"] },
+    { "name": "testsrc-5s-keyframes.mp4", "for": "TrickplayTests", "args": ["-f", "lavfi", "-i", "testsrc=duration=5:size=320x180:rate=10", "-g", "10", "-pix_fmt", "yuv420p"] },
+    { "name": "testsrc-7.5s-keyframes.mp4", "for": "TrickplayTests", "args": ["-f", "lavfi", "-i", "testsrc=duration=7.5:size=320x180:rate=10", "-g", "10", "-pix_fmt", "yuv420p"] },
+    { "name": "mandelbrot-20s.mp4", "for": "SimilarVideoTests", "args": ["-f", "lavfi", "-i", "mandelbrot=size=320x180:rate=10", "-t", "20", "-g", "10", "-crf", "18", "-pix_fmt", "yuv420p"] },
+    { "name": "life-20s.mp4", "for": "SimilarVideoTests", "args": ["-f", "lavfi", "-i", "life=size=320x180:rate=10:mold=10:ratio=0.3:seed=5", "-t", "20", "-g", "10", "-crf", "18", "-pix_fmt", "yuv420p"] },
+    { "name": "mandelbrot-20s-small.mp4", "for": "SimilarVideoTests", "args": ["-i", "{sample:mandelbrot-20s.mp4}", "-vf", "scale=160:-2", "-g", "10", "-crf", "35", "-pix_fmt", "yuv420p"] },
+    { "name": "testsrc-4s-mpeg4-pcm.avi", "for": "StreamingTests", "args": ["-f", "lavfi", "-i", "testsrc=duration=4:size=320x180:rate=10", "-f", "lavfi", "-i", "sine=frequency=440:duration=4", "-c:v", "mpeg4", "-c:a", "pcm_s16le", "-shortest"] },
+    { "name": "testsrc-4s-noise-h264-aac.mp4", "for": "StreamingTests: noise makes it ~1.4 MB, more than the response pipe holds", "args": ["-f", "lavfi", "-i", "testsrc=duration=4:size=320x180:rate=10", "-f", "lavfi", "-i", "sine=frequency=440:duration=4", "-vf", "noise=alls=60:allf=t", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest"] }
+  ]
+}

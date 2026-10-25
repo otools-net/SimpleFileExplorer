@@ -201,8 +201,25 @@ export const EPUB_FORMAT: FileFormat = {
     page: true,
 };
 
+/** The library plays Flash movies (`Player:Flash`, `config.flash`): a signal, so that listings follow. */
+const flashMovies = signal(false);
+
+export function setFlashMovies(enabled: boolean | null | undefined): void {
+    flashMovies.set(enabled === true);
+}
+
+/** Flash movies and games: played by Ruffle in a frame of no origin, when the library plays them. */
+export const FLASH_FORMAT: FileFormat = {
+    id: 'flash',
+    label: 'Flash',
+    priority: 20,
+    matches: item => item.kind === 'file' && extensionOf(item) === 'swf' && flashMovies(),
+    view: { load: () => import('./flash/flash-view.component').then(m => m.FlashViewComponent) },
+    page: true,
+};
+
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT, PDF_FORMAT, EPUB_FORMAT];
+export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT, PDF_FORMAT, EPUB_FORMAT, FLASH_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text

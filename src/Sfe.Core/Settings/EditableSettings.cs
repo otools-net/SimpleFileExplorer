@@ -116,6 +116,7 @@ public sealed class EditableSettings
             ExternalName = options.Player.ExternalName,
             ExternalUrl = options.Player.ExternalUrl,
             LinkLifetimeMinutes = options.Player.LinkLifetimeMinutes,
+            Flash = options.Player.Flash,
         },
         Streaming = new()
         {
@@ -223,6 +224,7 @@ public sealed class EditableSettings
         options.Player.ExternalName = Player.ExternalName;
         options.Player.ExternalUrl = Player.ExternalUrl;
         options.Player.LinkLifetimeMinutes = Player.LinkLifetimeMinutes;
+        options.Player.Flash = Player.Flash;
         options.Streaming.Mode = Streaming.Mode;
         options.Streaming.MaxStreams = Streaming.MaxStreams;
         options.Streaming.Quality = Streaming.Quality;
@@ -349,6 +351,7 @@ public sealed class PlayerSettings
     public string? ExternalName { get; set; }
     public string? ExternalUrl { get; set; }
     public int LinkLifetimeMinutes { get; set; }
+    public bool Flash { get; set; }
 }
 
 public sealed class StreamingSettings

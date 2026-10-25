@@ -658,6 +658,13 @@
 .epub-view[data-mode="scroll"] .epub-stage { inset: 0; }
 .epub-toc a.current { color: var(--reader-text); font-weight: 600; }
 
+/* ---------- Flash (formats/flash/): Ruffle's frame filling the stage (it letterboxes the movie itself) ---------- */
+
+.flash-stage { position: relative; min-height: 0; min-width: 0; background: #000; }
+.flash-stage[hidden] { display: none; }
+.flash-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+.flash-volume { width: 96px; accent-color: var(--accent); }
+
 /* Highlighting (classHighlighter of @lezer/highlight): one set of colours for every language. */
 .tok-keyword, .tok-bool, .tok-modifier, .tok-controlKeyword, .tok-definitionKeyword, .tok-moduleKeyword { color: var(--tok-keyword); }
 .tok-string, .tok-string2, .tok-character, .tok-inserted { color: var(--tok-string); }

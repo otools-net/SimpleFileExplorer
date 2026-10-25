@@ -127,6 +127,7 @@ api.MapArchiveEndpoints();
 api.MapPropertyEndpoints();
 api.MapTextEndpoints();
 api.MapEpubEndpoints();
+api.MapFlashEndpoints();
 api.MapChangeEndpoints();
 api.MapSettingsEndpoints();
 api.MapQuickLinkEndpoints();

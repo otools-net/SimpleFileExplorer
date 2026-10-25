@@ -1,0 +1,7 @@
+2025-07-14 21:00:02.118 INFO  Backup started: 1,284 photos to copy
+2025-07-14 21:00:02.240 DEBUG Destination "Backup drive" has 412 GB free
+2025-07-14 21:03:41.906 INFO  Copied 600 of 1,284 photos
+2025-07-14 21:04:15.377 WARN  Skipped "IMG_2231.jpg": in use by another program
+2025-07-14 21:07:58.051 INFO  Copied 1,283 of 1,284 photos
+2025-07-14 21:07:58.122 ERROR Could not copy "IMG_2231.jpg" after 3 tries
+2025-07-14 21:07:58.130 INFO  Backup finished in 7 min 56 s, 1 photo left for next time

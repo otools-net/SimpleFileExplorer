@@ -20,6 +20,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { launch, sleep } from './cdp.mjs';
+import { libraryFolder as sampleLibrary, libraryIsCurrent } from '../samples/samples.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../../..');
@@ -128,7 +129,16 @@ if (!fs.existsSync(dll)) throw new Error(`no build at ${dll}: run without --skip
 
 if (!shotsOnly) {
     step('sample library');
-    await node('make-media.mjs', library, ...(ffmpeg ? [ffmpeg] : []));
+    // The committed copy (tests/samples/library) when it matches make-media.mjs and its helpers: copied in a second,
+    // dated now. Otherwise made here, and the samples need updating (agents/tools/samples/update-samples.mjs).
+    if (libraryIsCurrent()) {
+        fs.cpSync(sampleLibrary, library, { recursive: true });
+        console.log(`copied ${path.relative(repo, sampleLibrary)}`);
+    } else {
+        console.log('WARNING: tests/samples/library is older than make-media.mjs (or missing): making the library here; '
+            + 'update the samples with node agents/tools/samples/update-samples.mjs --ffmpeg <path>');
+        await node('make-media.mjs', library, ...(ffmpeg ? [ffmpeg] : []));
+    }
 }
 
 /** The app on the sample library with the database, settings and caches of `folder`; resolves once it answers. */

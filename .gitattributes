@@ -5,3 +5,7 @@ build/linux/*.desktop text eol=lf
 
 # Windows batch files (portable package): cmd.exe expects CRLF.
 *.cmd text eol=crlf
+
+# Sample files of the tests and the docs screenshots: kept byte for byte (some text samples are CRLF on purpose).
+tests/samples/library/** -text
+tests/samples/media/** -text

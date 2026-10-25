@@ -2,6 +2,8 @@
 // node make-media.mjs <folder> [ffmpeg path]  (the folder is emptied first; ffmpeg also from env FFMPEG)
 // With ffmpeg: 40 s WebM clips panning over a drawn landscape, two re-encoded copies (similar videos) and MP3 audio.
 // Without it: short clips recorded in the browser (MediaRecorder) and WAV audio.
+// Its output (with ffmpeg) is committed as tests/samples/library, which run.mjs copies instead of running this: after
+// a change here or in make-epub/make-pdf/make-swf, run agents/tools/samples/update-samples.mjs (tests/samples/README.md).
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -9,6 +11,7 @@ import path from 'node:path';
 import { launch } from './cdp.mjs';
 import { makeEpub } from './make-epub.mjs';
 import { makePdf } from './make-pdf.mjs';
+import { makeSwf } from './make-swf.mjs';
 
 const root = process.argv[2];
 if (!root) throw new Error('usage: node make-media.mjs <empty folder for the sample library> [ffmpeg]');
@@ -237,6 +240,26 @@ fs.writeFileSync(path.join(root, 'Documents/Hut stories.epub'), makeEpub('Hut st
     { title: 'Night at the hut', paragraphs: [...story].reverse() },
     { title: 'Storm', paragraphs: story.slice(1).concat(story[0]) },
 ]));
+// A Flash movie for the Flash viewer: a hut at dusk, which loads the moon from a second movie of its folder
+// (loadMovieNum: a movie reads the files next to it through its flash link).
+fs.mkdirSync(path.join(root, 'Documents/Flash'), { recursive: true });
+fs.writeFileSync(path.join(root, 'Documents/Flash/Hut at dusk.swf'), makeSwf({
+    width: 640, height: 400, background: 0x1d3557,
+    rectangles: [
+        { x: 0, y: 300, width: 640, height: 100, color: 0x2a4d3a },
+        { x: 0, y: 220, width: 180, height: 80, color: 0x46627a },
+        { x: 430, y: 200, width: 210, height: 100, color: 0x46627a },
+        { x: 250, y: 210, width: 160, height: 100, color: 0x8d5a3b },
+        { x: 236, y: 186, width: 188, height: 30, color: 0x5c3a28 },
+        { x: 280, y: 240, width: 36, height: 30, color: 0xffd166 },
+        { x: 344, y: 250, width: 36, height: 60, color: 0x3b2618 },
+    ],
+    getUrl: [['Moon.swf', '_level1']],
+}));
+fs.writeFileSync(path.join(root, 'Documents/Flash/Moon.swf'), makeSwf({
+    width: 640, height: 400, background: 0x1d3557,
+    rectangles: [{ x: 520, y: 50, width: 56, height: 56, color: 0xf1faee }],
+}));
 // A PDF for the PDF view: three pages, an outline, a title.
 fs.writeFileSync(path.join(root, 'Documents/Hut handbook.pdf'), makePdf('Mountain hut handbook', [
     { heading: 'Before you go', lines: [

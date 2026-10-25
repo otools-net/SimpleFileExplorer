@@ -328,6 +328,19 @@ const scenes = {
         await phone.shot(OUT + 'text-reading-phone.png');
         await phone.close();
     },
+    async flash() {
+        // Played by Ruffle (bundled) in its frame of no origin; the moon comes from a second movie of the folder.
+        const b = await session();
+        await b.open('?path=Documents%2FFlash');
+        await b.click('a.item-link[title^="Hut at dusk.swf"]');
+        await sleep(8000);
+        const status = await b.eval(`document.querySelector('.flash-view .text-status')?.textContent ?? ''`);
+        console.log(`flash movie played: ${status.trim()}`);
+        if (!status.includes('SWF'))
+            throw new Error('Ruffle played no movie');
+        await b.shot(OUT + 'flash-viewer.png');
+        await b.close();
+    },
     async video() {
         const b = await session();
         await b.open('?path=Videos%2FHolidays');

@@ -29,16 +29,39 @@ public sealed class SecurityHeaders(RequestDelegate next)
     /// </summary>
     public const string FilePolicy = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
 
+    /// <summary>The page of the Flash viewer's frame (<see cref="FlashPlayerPage"/>), the only one framed by the app.</summary>
+    public const string FlashPlayerPage = "/flash/player.html";
+
+    /// <summary>Ruffle's own files (scripts, WebAssembly): fetched by the player's frame, which has no origin.</summary>
+    public const string RuffleFiles = "/flash/ruffle";
+
+    /// <summary>
+    /// The Flash viewer's frame (agents/docs/features/flash-viewer.md): Ruffle compiles WebAssembly (<c>'wasm-unsafe-eval'</c>,
+    /// on this page only), and the page is sandboxed without <c>allow-same-origin</c>: it has no origin, so neither Ruffle
+    /// nor a movie can send the session's cookie, read the app's storage or reach the page around it. It loads only the
+    /// app's files; only the app may frame it.
+    /// </summary>
+    public const string FlashPolicy =
+        "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; " +
+        "font-src 'self' data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts allow-pointer-lock";
+
     public Task InvokeAsync(HttpContext context)
     {
-        var docs = context.Request.Path.StartsWithSegments("/api/docs");
+        var path = context.Request.Path;
+        var docs = path.StartsWithSegments("/api/docs");
+        var flash = path.Equals(FlashPlayerPage, StringComparison.OrdinalIgnoreCase);
+        var ruffle = path.StartsWithSegments(RuffleFiles, StringComparison.OrdinalIgnoreCase);
         context.Response.OnStarting(() =>
         {
             var headers = context.Response.Headers;
             headers[HeaderNames.XContentTypeOptions] = "nosniff";
-            headers[HeaderNames.XFrameOptions] = "DENY";
+            headers[HeaderNames.XFrameOptions] = flash ? "SAMEORIGIN" : "DENY";
             headers["Referrer-Policy"] = "same-origin";
-            if (!headers.ContainsKey(HeaderNames.ContentSecurityPolicy))
+            if (ruffle)
+                headers.AccessControlAllowOrigin = "*";
+            if (flash)
+                headers[HeaderNames.ContentSecurityPolicy] = FlashPolicy;
+            else if (!headers.ContainsKey(HeaderNames.ContentSecurityPolicy))
                 headers[HeaderNames.ContentSecurityPolicy] = docs ? DocsPolicy : AppPolicy;
             return Task.CompletedTask;
         });

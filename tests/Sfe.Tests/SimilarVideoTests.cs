@@ -60,10 +60,10 @@ public sealed class SimilarVideoTests
     [TestMethod]
     public async Task SmallerCopyOfAVideoIsFoundWithItsMatch()
     {
-        await RenderAsync("mandelbrot=size=320x180:rate=10", "Clips/zoom.mp4");
-        await RenderAsync("life=size=320x180:rate=10:mold=10:ratio=0.3:seed=5", "Clips/life.mp4");
-        await RunFfmpegAsync("-i", _library.FullPath("Clips/zoom.mp4"), "-vf", "scale=160:-2", "-g", "10", "-crf", "35", "-pix_fmt", "yuv420p",
-            CreateFolderFor("Clips/Copies/zoom small.mp4"));
+        // 20 seconds of a moving test picture, a key frame every second; the small one is a copy of the first.
+        TestSamples.CopyTo("mandelbrot-20s.mp4", _library.FullPath("Clips/zoom.mp4"));
+        TestSamples.CopyTo("life-20s.mp4", _library.FullPath("Clips/life.mp4"));
+        TestSamples.CopyTo("mandelbrot-20s-small.mp4", _library.FullPath("Clips/Copies/zoom small.mp4"));
 
         var scan = _services.Get<ScanCoordinator>();
         Assert.IsTrue(scan.TryStart(""));
@@ -99,19 +99,4 @@ public sealed class SimilarVideoTests
 
     private Task<TrickplayStatus> WaitAsync(Func<TrickplayStatus, bool> condition) =>
         SlowWork.UntilAsync(() => Trickplay.Status, condition, 60, "trickplay", TestContext.CancellationToken);
-
-    /// <summary>20 seconds of a moving test picture, a key frame every second.</summary>
-    private Task RenderAsync(string source, string relativePath) =>
-        RunFfmpegAsync("-f", "lavfi", "-i", source, "-t", "20", "-g", "10", "-crf", "18", "-pix_fmt", "yuv420p", CreateFolderFor(relativePath));
-
-    private string CreateFolderFor(string relativePath)
-    {
-        var path = _library.FullPath(relativePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        return path;
-    }
-
-    private Task RunFfmpegAsync(params string[] arguments) =>
-        SlowWork.RunFfmpegAsync(_services.Get<Ffmpeg>(), ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", .. arguments],
-            60, TestContext.CancellationToken);
 }

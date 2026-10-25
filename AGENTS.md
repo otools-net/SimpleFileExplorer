@@ -34,6 +34,9 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
   docs/tests/build only ([versioning-and-changelog](agents/docs/development/versioning-and-changelog.md)).
 - **Tests** come with every feature and fix; not done until `dotnet test` and `npm test` pass
   ([testing](agents/docs/development/testing.md)).
+- **Sample files:** media and documents that tests and tools use (png, mp3, mp4, swf, epub…) are committed in
+  `tests/samples/` and copied, never made per run; a new sample, or a change to what makes one, updates them in the
+  same commit with `agents/tools/samples/update-samples.mjs` ([test-samples](agents/docs/development/test-samples.md)).
 - **User docs:** user-visible changes go in `docs/` with screenshots ([user-docs](agents/docs/development/user-docs.md)).
 - **Rights:** every route names its right; new functions get one ([rights](agents/docs/features/rights.md)).
 - **Scale:** millions of files; nothing proportional to a folder or the index per request
@@ -77,6 +80,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
 | [testing-client](agents/docs/development/testing-client.md) | Vitest/jsdom gotchas | `src/testing/setup.ts` |
+| [test-samples](agents/docs/development/test-samples.md) | committed sample files (test media, docs library), keeping them up to date | `tests/samples/`, `agents/tools/samples/`, `TestSamples` |
+| [flash-viewer-plan](agents/docs/development/flash-viewer-plan.md) | plan: Flash viewer, why Ruffle, what is left | |
 
 ### Environment — `agents/docs/environment/`
 
@@ -150,6 +155,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [subtitles-viewer](agents/docs/features/subtitles-viewer.md) | SRT / VTT cues (media-captions), Play in the video next to them, Shift times, `api/files/text/video` | `app/formats/subtitles/`, `Core/Files/Subtitles` |
 | [pdf-viewer](agents/docs/features/pdf-viewer.md) | PDF with pdf.js bundled (worker, cmaps, fonts served by the app; CSP: no wasm), find, zoom, outline, dark pages | `app/formats/pdf/`, `angular.json` |
 | [epub-reader](agents/docs/features/epub-reader.md) | EPUB with epub.js: page, two pages or scroll; the book's files served by the app (`api/files/epub`), reading preferences on its pages | `app/formats/epub/`, `EpubEntries`, `EpubEndpoints` |
+| [flash-viewer](agents/docs/features/flash-viewer.md) | Flash movies (`.swf`) played by Ruffle (bundled) in a frame of no origin (`FlashPolicy`), flash links to the movie's folder, `Player:Flash` | `app/formats/flash/`, `public/flash/`, `FlashLinks`, `FlashEndpoints` |
 | [overflow-menus](agents/docs/features/overflow-menus.md) | narrow screens: rows of buttons on one line with a "⋯" for those that don't fit (right to left, what stays per screen), target sizes, other phone layouts, checking tools | `menus/overflow-row.ts`, `styles/overflow.css` |
 | [context-menu](agents/docs/features/context-menu.md) | the app's one right-click menu: targets, which menu where, browser menu kept (Shift, text), keyboard, Open in new tab | `menus/context-menu.ts`, `ItemMenu`, `FolderMenu` |
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |

@@ -193,7 +193,7 @@ public sealed class StreamingTests
     [TestMethod]
     public async Task AVideoPlaysConvertedFromThePositionAskedAndIsListedMeanwhile()
     {
-        await RenderAsync("Films/clip.avi", "-c:v", "mpeg4", "-c:a", "pcm_s16le");
+        await AddVideoAsync("testsrc-4s-mpeg4-pcm.avi", "Films/clip.avi");
         var admin = await ApiClients.SetUpAsync(Factory(s => s["Sfe:Thumbnails:FfmpegPath"] = FfmpegPath), TestContext.CancellationToken);
 
         using (var config = await GetJsonAsync(admin, "/api/config"))
@@ -250,7 +250,7 @@ public sealed class StreamingTests
     {
         // Noise makes the copy (~1.4 MB) larger than the response pipe holds: ffmpeg waits for the reader instead of
         // finishing the stream before the list is asked for (a plain 4 s clip is ~50 KB, copied in milliseconds).
-        await RenderAsync("Films/clip.mp4", "-vf", "noise=alls=60:allf=t", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac");
+        await AddVideoAsync("testsrc-4s-noise-h264-aac.mp4", "Films/clip.mp4");
         var admin = await ApiClients.SetUpAsync(Factory(s => s["Sfe:Thumbnails:FfmpegPath"] = FfmpegPath), TestContext.CancellationToken);
 
         using (var probe = await GetJsonAsync(admin, "/api/streaming/probe?path=Films/clip.mp4"))
@@ -284,15 +284,15 @@ public sealed class StreamingTests
             + double.Parse(duration.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    private async Task RenderAsync(string relativePath, params string[] codecs)
+    /// <summary>
+    /// A 4 s test clip with sound (tests/samples/media) at <paramref name="relativePath"/>, once ffmpeg is known to be
+    /// there (inconclusive otherwise: the server needs it to stream).
+    /// </summary>
+    private async Task AddVideoAsync(string sample, string relativePath)
     {
-        var target = _library.FullPath(relativePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-        var (exitCode, errors) = await RunFfmpegAsync([
-            "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
-            "-f", "lavfi", "-i", "testsrc=duration=4:size=320x180:rate=10", "-f", "lavfi", "-i", "sine=frequency=440:duration=4",
-            .. codecs, "-shortest", target]);
+        var (exitCode, errors) = await RunFfmpegAsync("-hide_banner", "-version");
         Assert.AreEqual(0, exitCode, errors);
+        TestSamples.CopyTo(sample, _library.FullPath(relativePath));
     }
 
     /// <summary>Runs ffmpeg as the tests find it; inconclusive when there is none.</summary>

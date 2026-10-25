@@ -67,6 +67,9 @@ html { scroll-padding-top: calc(var(--topbar-h) + var(--location-strip-h) + 8px)
     html:has(dialog.sheet[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
 }
 
+/* The viewer covers the whole screen at any width: the page's scrollbar (and its room) go the same way. */
+html:has(dialog.viewer[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
+
 body {
     margin: 0;
     min-height: 100vh;

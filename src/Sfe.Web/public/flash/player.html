@@ -1,0 +1,19 @@
+<!doctype html>
+<!--
+    The Flash viewer's frame (agents/docs/features/flash-viewer.md): Ruffle plays the movie here, in a page of no origin
+    (the server's FlashPolicy sandboxes it), told what to play by the app around it (player.js).
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Flash player</title>
+    <style>
+        html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+        ruffle-player { display: block; width: 100%; height: 100%; }
+    </style>
+    <script src="player.js"></script>
+    <script src="ruffle/ruffle.js"></script>
+</head>
+<body></body>
+</html>

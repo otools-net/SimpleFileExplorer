@@ -48,6 +48,11 @@
                 "glob": "**/*",
                 "input": "node_modules/pdfjs-dist/standard_fonts",
                 "output": "pdfjs/standard_fonts"
+              },
+              {
+                "glob": "{ruffle.js,core.ruffle.*.js,*.wasm}",
+                "input": "node_modules/@ruffle-rs/ruffle",
+                "output": "flash/ruffle"
               }
             ],
             "styles": [
@@ -88,7 +93,8 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "proxyConfig": "proxy.conf.json"
+            "proxyConfig": "proxy.conf.json",
+            "headers": { "Access-Control-Allow-Origin": "*" }
           },
           "configurations": {
             "production": {

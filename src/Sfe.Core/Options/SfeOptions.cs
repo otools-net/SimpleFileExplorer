@@ -119,6 +119,12 @@ public sealed partial class PlayerOptions
     public int LinkLifetimeMinutes { get; set; } = 360;
 
     /// <summary>
+    /// Flash movies (<c>.swf</c>) play in the viewer, through Ruffle (a Flash Player emulator bundled with the app), in a
+    /// frame that can't act as the signed-in user. Off: they are only downloaded.
+    /// </summary>
+    public bool Flash { get; set; } = true;
+
+    /// <summary>
     /// The link starts with a scheme other than those running script or showing content in the page itself: a library's
     /// administrator sets it for everyone, so a <c>javascript:</c> link would run in the browser of every user and guest.
     /// </summary>

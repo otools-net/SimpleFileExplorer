@@ -273,6 +273,13 @@ export const TABS: SettingTab[] = [
                         hint: 'The player gets a link of its own to the file, working without signing in, for this long: long enough to watch a whole film, as players ask again at each seek. A new password or a disabled account ends the links it gave out.' },
                 ],
             },
+            {
+                title: 'Flash movies',
+                fields: [
+                    { key: 'player.flash', label: 'Play Flash movies', type: 'checkbox',
+                        hint: 'Flash movies and games (.swf) play in the viewer, through Ruffle, a Flash Player emulator that comes with SFE. A movie can only read the files of its own folder, and never acts as the person watching it. Off: .swf files are only downloaded.' },
+                ],
+            },
         ],
     },
     {

@@ -1,8 +1,9 @@
 # Viewer
 
 Clicking a file in a listing opens it full screen over the page: pictures as they are, videos and audio in SFE's own
-[player](video-player.md), and [text files](text-files.md) with their lines numbered and their code highlighted. Other
-files (a PDF, an archive) open in a new tab or download, as the browser chooses.
+[player](video-player.md), [text files](text-files.md) with their lines numbered and their code highlighted, and
+[Flash movies](#flash-movies) played as Flash Player did. Other files (an archive) open in a new tab or download, as the
+browser chooses.
 
 ![A picture in the viewer](../images/viewer.png)
 
@@ -55,3 +56,31 @@ around it, or scroll it with the mouse wheel (<kbd>Shift</kbd> + wheel: sideways
 ![A picture at its actual size, being dragged](../images/viewer-actual-size.png)
 
 A large photo shown through its thumbnail can be seen at its actual size once its original has loaded.
+
+## Flash movies
+
+Flash movies and games (`.swf`) play in the viewer, through [Ruffle](https://ruffle.rs), a Flash Player emulator that
+comes with SFE: nothing to install, and nothing is fetched from the internet. They also have a
+[page of their own](text-files.md#a-page-of-its-own) (**Open in new tab**).
+
+![A Flash movie in the viewer](../images/flash-viewer.png)
+
+| Button | |
+|---|---|
+| ▶ / ❚❚ | Plays or pauses the movie |
+| ⟳ | Plays it again from the start |
+| Speaker, slider | Mutes it, or sets its volume (this browser keeps both) |
+| Full screen | The movie fills the screen (<kbd>Esc</kbd> leaves it) |
+
+- The bar at the bottom tells what the movie is: its ActionScript version (1/2 or 3), its Flash version, its size and
+  its frame rate.
+- Click the movie to play with the keyboard. Inside the movie, <kbd>Esc</kbd> gives the keys back to the viewer, and a
+  second <kbd>Esc</kbd> closes it. A right click opens Ruffle's own menu.
+- A movie may load the files of its own folder and its subfolders (other levels, music, data), as on the website it
+  came from; it can read nothing else, can't open other sites, and never acts as you (it can't change anything in SFE).
+- Most animations and older games play well; some newer games (ActionScript 3) don't yet. A movie Ruffle can't play
+  offers **Download** instead.
+- On a phone, Ruffle shows a keyboard when the movie asks for text; games played with the arrow keys need a real
+  keyboard.
+- An administrator can turn Flash movies off ([Playback › Player](../administration/playback.md#flash-movies)): they
+  are then only downloaded.

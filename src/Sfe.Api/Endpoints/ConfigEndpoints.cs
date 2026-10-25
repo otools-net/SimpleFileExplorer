@@ -75,9 +75,10 @@ public sealed record FilesConfig(bool DeletePermanently, int TrashRetentionDays,
 /// Videos the browser can't play are converted by the server (<c>/api/streaming/play</c>); null when streaming is off,
 /// ffmpeg is missing, or without the right <c>files.stream</c>.
 /// </param>
+/// <param name="Flash">Flash movies play in the viewer (<c>Player:Flash</c>, and the right <c>files.view</c>).</param>
 public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool AnimatedHover, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
     IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor, StreamingConfig? Streaming,
-    FilesConfig? Files = null, ReadingOptions? Reading = null, IReadOnlyList<string>? TextExtensions = null, ServerMode Mode = ServerMode.Local);
+    FilesConfig? Files = null, ReadingOptions? Reading = null, IReadOnlyList<string>? TextExtensions = null, ServerMode Mode = ServerMode.Local, bool Flash = false);
 
 public static class ConfigEndpoints
 {
@@ -151,6 +152,7 @@ public static class ConfigEndpoints
                 : null,
             settings.Reading,
             settings.FileTypes.Text,
-            ServerModes.InEffect(configuration)));
+            ServerModes.InEffect(configuration),
+            settings.Player.Flash && state.Has(Rights.ViewFiles)));
     }
 }

@@ -24,3 +24,6 @@ Rules and helpers: [testing.md](testing.md). Code: `src/Sfe.Web/src/testing/setu
 - CodeMirror runs in jsdom with the real editor; `setup.ts` stubs `Range.getClientRects`/`getBoundingClientRect`,
   which it calls a frame after a change (else an unhandled "getClientRects is not a function" fails the run).
 - `confirm` (unsaved changes) is jsdom's "not implemented" stub returning nothing: spy on `window.confirm` in specs.
+- An `<iframe>` with a `src` logs jsdom's "Not implemented: navigation to another Document": harmless (the Flash
+  view's `flash-player.spec.ts`); its `contentWindow` exists, and a message "from it" is a `MessageEvent` dispatched on
+  `window` with `source: frame.contentWindow`.

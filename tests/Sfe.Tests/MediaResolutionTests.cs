@@ -356,11 +356,7 @@ public sealed class MediaResolutionTests
         if (!ffmpeg.IsAvailable)
             Assert.Inconclusive("ffmpeg not found: set SFE_TEST_FFMPEG to run the video resolution test.");
 
-        var clip = _library.FullPath("Clips/clip.mp4");
-        Directory.CreateDirectory(Path.GetDirectoryName(clip)!);
-        await SlowWork.RunFfmpegAsync(ffmpeg,
-            ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-f", "lavfi", "-i", "testsrc=duration=1:size=320x180:rate=10", "-pix_fmt", "yuv420p", clip],
-            30, TestContext.CancellationToken);
+        TestSamples.CopyTo("testsrc-1s-320x180.mp4", _library.FullPath("Clips/clip.mp4"));
 
         await services.Get<DirectoryIndexer>().IndexAsync(_library.FullPath("Clips"), true, new ScanProgress(), TestContext.CancellationToken);
 
@@ -389,11 +385,7 @@ public sealed class MediaResolutionTests
         if (!ffmpeg.IsAvailable)
             Assert.Inconclusive("ffmpeg not found: set SFE_TEST_FFMPEG to run the audio duration test.");
 
-        var song = _library.FullPath("Music/song.wav");
-        Directory.CreateDirectory(Path.GetDirectoryName(song)!);
-        await SlowWork.RunFfmpegAsync(ffmpeg,
-            ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", song],
-            30, TestContext.CancellationToken);
+        TestSamples.CopyTo("sine-440hz-2s.wav", _library.FullPath("Music/song.wav"));
 
         async Task ScanMusicAsync() =>
             await services.Get<DirectoryIndexer>().IndexAsync(_library.FullPath("Music"), true, new ScanProgress(), TestContext.CancellationToken);

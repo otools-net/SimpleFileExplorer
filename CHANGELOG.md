@@ -12,11 +12,20 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   it holds (99+ above), kept up to date as things are deleted, restored or purged.
 - **Fullscreen on a phone or tablet** turns the screen sideways for a wide video, as YouTube does, and back when it
   ends (browsers that allow it, such as Chrome on Android; iPhones already turn by themselves).
+- **Flash movies and games** (`.swf`) play in the viewer and on a page of their own, through Ruffle, a Flash Player
+  emulator that comes with SFE (nothing fetched from the internet): play / pause, play again, volume, full screen, and
+  what the movie is (ActionScript version, size, frame rate). A movie may load the other files of its folder (levels,
+  music), never anything else, and never acts as the person watching it. Administration › Playback › **Play Flash
+  movies** (on by default) turns it off for a library.
 
 ### Changed
 
 - The **tag sidebar's sections** fold under their heading: **Last searched** and **I feel lucky** are folded until you
   open them, and each browser remembers which ones you folded or opened.
+
+### Fixed
+
+- The **viewer** covers the whole screen: the page's scrollbar no longer shows as a strip at its right.
 
 ## 1.82.0
 

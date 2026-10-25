@@ -85,6 +85,12 @@ input, LIKE escaped, no `innerHTML` in the client.
   duplicate removal keeping a hidden copy; a user in two groups (rights stay with the group granting them).
 - **Content:** `.html`/`.svg`/`.xml`/polyglot files via raw, shared and download; `<script>` in file, folder and tag
   names; external player and data server URLs (`javascript:` variants).
+- **Flash movies** ([flash-viewer.md](../features/flash-viewer.md)): a movie (Ruffle runs it) calling `api/` with
+  `URLLoader`, custom headers (`X-SFE-Request`) or `getURL("javascript:…")`; `navigateToURL`, `_blank`, `_top`;
+  `ExternalInterface`; the frame opened alone (`flash/player.html`: still sandboxed by its CSP) or framed by another
+  site; a flash link's entry with `..`, encoded separators, a hidden subfolder, `.sfe`; an external player's token on
+  the flash route and back; links of a disabled account, after a rule, with `Player:Flash` off. Checked 2026-10-25: the
+  frame sends no cookie (`Origin: null`), `javascript:`/`_blank` do nothing (`FlashRouteTests`, spike in headless Edge).
 - **CSRF/framing/rebinding:** cross-site POST without the header, framing the app, foreign `Host`.
 - **DoS:** floods of thumbnails/probes as a guest, `*` searches, big covers requests, parallel editor uploads, streams.
 - **Secrets at rest:** backup content, log store and log files, permissions of `data/`.

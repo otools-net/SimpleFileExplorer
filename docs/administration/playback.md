@@ -46,6 +46,17 @@ The address the player gets is a link of its own to that one file (`api/files/sh
 link lifetime and ended early by a password change, a disabled account or the loss of the right `files.external`. With
 a data server, the player gets that server's address instead.
 
+### Flash movies
+
+| Setting | Default | |
+|---|---|---|
+| **Play Flash movies** | on | Flash movies and games (`.swf`) play in the viewer, through Ruffle, which comes with SFE (`Sfe:Player:Flash`); off, they are only downloaded. A library setting |
+
+A movie plays in a frame cut off from SFE: it never sends the viewer's sign-in, and reads only the files of its own
+folder and below (through a link of its own, `api/files/flash/<token>/…`, valid for 12 hours and checked again, with
+the folder rules, at every file). Ruffle's files (about 5 MB to download, once per browser) are served by SFE itself.
+How it plays: [Viewer › Flash movies](../user-guide/viewer.md#flash-movies).
+
 ## Streaming
 
 ![Administration › Playback › Streaming](../images/admin-playback-streaming.png)

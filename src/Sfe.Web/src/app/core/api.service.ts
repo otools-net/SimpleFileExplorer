@@ -226,6 +226,8 @@ export class Api {
 
     /** A link to `path` working without signing in, for a while: for external players. */
     fileLink = (path: string) => this.post<FileLink>('api/files/links', { path });
+    /** A link playing the Flash movie `path` in the player's frame, opening the files of its folder to it, read only. */
+    flashLink = (path: string) => this.post<FileLink>('api/files/flash-links', { path });
     /** Creates the folder `name` in the folder `path`. Resolves with the conflict (409: the name is taken, a scan runs...). */
     createFolder = (path: string, name: string) => this.post<FileOperationResult>('api/files/folders', { path, name });
     /** Creates the empty file `name` in the folder `path`. Resolves with the conflict (409) as `createFolder`. */
