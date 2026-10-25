@@ -126,10 +126,14 @@ right can delete.
 
 ## The trash
 
-**Administration › File management › Trash** lists what was deleted to the trash: what you deleted, and what was deleted
-in folders where you may delete. **Restore** puts an item back where it was, with the tags of its files and a folder's
-access rules (its folder is made again if it is gone; a number is added to its name if that is taken there); a restored
-folder is scanned again. **Delete** and **Empty the trash** delete for good (right `files.deletePermanently`).
+**Administration › File management › Trash**, also opened by **Trash** at the bottom of the library's sidebar (its icon
+shows whether the trash is empty, and a number how many items you see in it), lists what was deleted to the trash: what
+you deleted, and what was deleted in folders where you may delete. **Restore** puts an item back where it was, with the
+tags of its files and a folder's access rules (its folder is made again if it is gone; a number is added to its name if
+that is taken there); a restored folder is scanned again. **Delete** and **Empty the trash** delete for good (right
+`files.deletePermanently`).
+
+![The Trash link of the sidebar, with two items in the trash](../images/sidebar-trash.png)
 
 ![The trash](../images/admin-files-trash.png)
 

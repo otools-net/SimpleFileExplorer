@@ -23,7 +23,8 @@ export interface FolderChange {
  * The change feed (agents/docs/features/change-feed.md): the server tells each open listing that a folder was changed
  * through SFE elsewhere (another tab, another person, a move or copy job); the folder listed is then refreshed in
  * place. The browser opens the feed again by itself when it ends or drops. It also tells how keep alive goes
- * (`keepAlive`), and whether the server answers (`serverLost`), for the indicator of the ⋮ menu.
+ * (`keepAlive`) and whether the server answers (`serverLost`), for the indicator of the ⋮ menu, and that the trash
+ * changed (`trashChanges`), for the sidebar's Trash link.
  */
 @Injectable({ providedIn: 'root' })
 export class ChangeFeed {
@@ -38,6 +39,9 @@ export class ChangeFeed {
 
     /** How keep alive goes in the space: sent first when the feed opens, then each time it changes. */
     readonly keepAlive = signal<KeepAliveState>('none');
+
+    /** Counts the `trash` events: something came into or left the trash (sent to those who may delete). */
+    readonly trashChanges = signal(0);
 
     /**
      * The server doesn't answer: the feed dropped and didn't come back within `LOST_AFTER`, or nothing came through it
@@ -95,6 +99,10 @@ export class ChangeFeed {
         source.addEventListener('changed', event => {
             this.heard();
             this.changed(JSON.parse((event as MessageEvent<string>).data) as FolderChange);
+        });
+        source.addEventListener('trash', () => {
+            this.heard();
+            this.trashChanges.update(n => n + 1);
         });
         source.addEventListener('keepAlive', event => {
             this.heard();

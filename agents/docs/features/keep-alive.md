@@ -3,8 +3,7 @@
 Code: `src/Sfe.Core/KeepAlive/` (`KeepAliveService`, `NetworkFolders`), `KeepAliveOptions` in `Options/SfeOptions.cs`,
 `src/Sfe.Api/KeepAliveWorker.cs` (registered in `Tenancy/TenantHost.cs`), `Endpoints/KeepAliveEndpoints.cs`; client
 `app/admin/keep-alive-status.component.ts`, tab `keepAlive` of `settings/settings-schema.ts`. Tests: `KeepAliveTests`,
-`KeepAliveRouteTests`, `admin-page.spec.ts`. Plan and what is still to do:
-[keep-alive-plan](../development/keep-alive-plan.md). User docs: `docs/administration/keep-alive.md`,
+`KeepAliveRouteTests`, `admin-page.spec.ts`. User docs: `docs/administration/keep-alive.md`,
 `docs/configuration.md` (Libraries on a network share).
 
 - One `KeepAliveService` per library (its container), looped by `KeepAliveWorker`: each round pings the library's root
@@ -42,3 +41,15 @@ Code: `src/Sfe.Core/KeepAlive/` (`KeepAliveService`, `NetworkFolders`), `KeepAli
 - Tests replace `Ping` and `IsNetwork` (internal properties) and call `PingAllAsync` directly, with an
   `IOptionsMonitor` of their own whose `Change` fires `OnChange`.
 - It prevents the drop; it does not reconnect a lost mapping (the user's case is "mapping is lost").
+- Settings and their defaults were decided with the user (2026-10-22): `Off`; every kind of setup counts (Windows SMB,
+  NAS, Linux CIFS/NFS, Docker); library folders only; always ping (no skipping after use); `List` stays the default,
+  `Touch` opt-in per library.
+
+## Left to do
+
+- **Not yet verified on real shares** (the user checks it): does a directory listing reset the server's idle timer?
+  SMB clients cache (Windows ~10 s `DirectoryCacheLifetime`, SMB 3 directory leases; Linux CIFS echoes every 60 s). How
+  to check: `Mode` `Auto`, `IntervalSeconds` 60, SFE idle; on a Windows file server shorten
+  `Set-SmbServerConfiguration -AutoDisconnectTimeout 2` and watch `Get-SmbSession` `SecondsIdle` (session stays with
+  keep alive, drops with it `Off`); on a Samba NAS `smbstatus -b`; on Linux `/proc/fs/cifs/DebugData`. If the session
+  drops despite pings, the listing is served from the client's cache and `Touch` may need to become the default.

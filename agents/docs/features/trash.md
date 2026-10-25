@@ -39,3 +39,11 @@ Code: `src/Sfe.Core/Files/Trash.cs`, `FileTree.cs`, `FileOperations.DeleteAsync`
   folder rules only to `tenant.members` (its own rules may have hidden it from people allowed in the parent).
 - Client: `FileActions` (rights), `DeleteDialog` (asks, applies `applyRemoved`, Undo toast restores then reloads at the
   same position, offers permanent for `trashUnavailable`), `applyRemoved` shifts the next page's offset back.
+- Shortcut: **Trash** at the bottom of the library's sidebar (`SidebarComponent`, shown with `files.delete` or
+  `files.deletePermanently`, like the admin sub-page) links to `admin?section=files&page=trash`. Its icon is `trash`
+  when empty, `trash-full` with a badge otherwise, from `GET api/files/trash/count` → `{ count, more }`
+  (`Trash.CountAsync`: what `SeesInTrash` lets through, read newest first in batches of 200, stopping past
+  `Trash.CountCap` = 99, shown "99+"). `SidebarService.trash`, read on init and again (300 ms debounce) on the feed's
+  `trash` event.
+- `Trash.EntriesChanged` fires after an entry comes in (`MoveInAsync`, `CopyInAsync`) or leaves (`RestoreAsync`,
+  `PurgeAsync`, so also Empty and the purge task); not for `ForgetAsync` (a failed delete, nothing told yet).

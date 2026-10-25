@@ -163,6 +163,20 @@ public sealed class TrashRouteTests
     }
 
     [TestMethod]
+    public async Task TheCountIsWhatTheCallerSees()
+    {
+        Assert.AreEqual(new TrashCount(0, false), await CountAsync(_alice));
+
+        await DeleteAsync(_alice, ["ChildDir/AFile1.txt"]);
+        await DeleteAsync(_admin, ["ChildDir/AFile2", "Media/photo.jpg", "SpecialDir"]);
+        using var bob = ApiClients.Create(_factory);
+
+        Assert.AreEqual(new TrashCount(2, false), await CountAsync(_alice), "Hers, and what went where she may delete");
+        Assert.AreEqual(new TrashCount(4, false), await CountAsync(_admin));
+        Assert.AreNotEqual(HttpStatusCode.OK, (await bob.GetAsync("/api/files/trash/count", Token)).StatusCode);
+    }
+
+    [TestMethod]
     public async Task EmptyingTakesWhatTheCallerMayDeleteForGood()
     {
         await DeleteAsync(_admin, ["ChildDir/AFile1.txt", "Media/photo.jpg", "SpecialDir"]);
@@ -193,6 +207,13 @@ public sealed class TrashRouteTests
         using var response = await client.PostAsJsonAsync("/api/files/delete", new DeleteRequest(paths, permanent), Json, Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<DeleteResults>(Json, Token))!;
+    }
+
+    private async Task<TrashCount> CountAsync(HttpClient client)
+    {
+        using var response = await client.GetAsync("/api/files/trash/count", Token);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+        return (await response.Content.ReadFromJsonAsync<TrashCount>(Json, Token))!;
     }
 
     private async Task<TrashPage> ListAsync(HttpClient client)

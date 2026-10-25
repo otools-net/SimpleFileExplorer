@@ -32,6 +32,10 @@ Code: `LibraryBrowser.FolderChanged` (raised by `Invalidate`, after the cache is
 - `ChangeFeed.listen(listener)` (1.69.0): other parts hear the changes made by other tabs, whatever is listed (an open
   text file checks its version when its folder changed).
 - It also carries `event: keepAlive` (`{ state }`, sent first and on each change) for the ⋮ indicator:
-  [keep-alive.md](keep-alive.md). Its channel holds `object` items (`FolderChange` or `KeepAliveSignal`); tests read
-  events by name (`NextEventAsync`).
+  [keep-alive.md](keep-alive.md). Its channel holds `object` items (`FolderChange`, `KeepAliveSignal`, `TrashSignal`);
+  tests read events by name (`NextEventAsync`).
+- And `event: trash` (`data: {}`, `ChangeEndpoints.TrashEvent`) when `Trash.EntriesChanged` fires, only to feeds
+  whose caller has `files.delete` or `files.deletePermanently`, at most once per write (emptying the trash fires once
+  per entry); no origin filter, so the deleting tab hears it too. Client: `ChangeFeed.trashChanges` (a counter), which
+  the sidebar watches to read the count again ([trash.md](trash.md)).
 - Proxies must not buffer it (`X-Accel-Buffering: no` for nginx); documented in `docs/installation.md`.

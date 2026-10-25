@@ -48,8 +48,46 @@
 .sidebar-tags .tag-count { flex: none; color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .sidebar-tags .sidebar-empty { display: block; color: var(--text-muted); font-size: 12px; }
 .sidebar-tags .sidebar-empty:hover { background: none; }
-.sidebar-manage { align-self: flex-start; margin-top: auto; }
-.sidebar-manage .icon { width: 16px; height: 16px; }
+/* The heading folds its list; the arrow points right while folded. */
+.sidebar-fold {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 30px;
+    margin: 0 0 0 -4px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+}
+.sidebar-fold:hover { color: var(--text); }
+.sidebar-fold .icon { width: 14px; height: 14px; transition: transform .15s; }
+.sidebar-fold[aria-expanded="false"] .icon { transform: rotate(-90deg); }
+.sidebar-section:has(.sidebar-fold[aria-expanded="false"]) .sidebar-heading { margin-bottom: 0; }
+
+.sidebar-footer { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.sidebar-footer .icon { width: 16px; height: 16px; }
+.sidebar-trash.full .icon { color: var(--accent); }
+
+/* The number of items in the trash; the link stays plain while the trash is empty. */
+.sidebar-badge {
+    min-width: 18px;
+    margin-left: 2px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
 
 @media (max-width: 760px) {
     /* A drawer over the page. */

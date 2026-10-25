@@ -102,6 +102,40 @@ public sealed class ChangeFeedRouteTests
     }
 
     [TestMethod]
+    public async Task TrashChangesAreToldToThoseWhoMayDelete()
+    {
+        using var adminFeed = await _admin.GetAsync("/api/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
+        using var admin = new StreamReader(await adminFeed.Content.ReadAsStreamAsync(Token));
+        using var aliceFeed = await _alice.GetAsync("/api/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
+        using var alice = new StreamReader(await aliceFeed.Content.ReadAsStreamAsync(Token));
+        // The first event comes once each feed listens.
+        await NextEventAsync<KeepAliveSignal>(admin, "keepAlive");
+        await NextEventAsync<KeepAliveSignal>(alice, "keepAlive");
+
+        using (var deleted = await _admin.PostAsJsonAsync("/api/files/delete", new DeleteRequest(["ChildDir/AFile1.txt"]), Json, Token))
+            Assert.AreEqual(HttpStatusCode.OK, deleted.StatusCode, await deleted.Content.ReadAsStringAsync(Token));
+        await CreateFolderAsync("RepeatedDir", "after", null);
+
+        Assert.IsNotNull(await NextEventAsync<JsonObject>(admin, "trash"));
+        // Alice may only browse: up to the folder created after the delete, no `trash`.
+        var seen = new List<string>();
+        while (true)
+        {
+            var (name, data) = await NextAnyEventAsync(alice);
+            seen.Add(name);
+            if (name == "changed" && JsonSerializer.Deserialize<FolderChange>(data, Json)!.Path == "RepeatedDir")
+                break;
+        }
+        CollectionAssert.DoesNotContain(seen, "trash");
+    }
+
+    [TestMethod]
+    public void TheTrashEventReachesThePage()
+    {
+        CollectionAssert.AreEqual(new[] { "event: trash", "data: {}", "", "" }, ChangeEndpoints.TrashEvent.Split('\n'));
+    }
+
+    [TestMethod]
     public async Task NewFilesNeedTheirRight()
     {
         using var refused = await _alice.PostAsJsonAsync("/api/files/new-file", new CreateFileRequest("ChildDir", "notes.txt"), Json, Token);
@@ -139,5 +173,21 @@ public sealed class ChangeFeedRouteTests
                 return JsonSerializer.Deserialize<T>(line["data: ".Length..], Json)!;
         }
         throw new AssertFailedException($"The feed ended without a {name} event.");
+    }
+
+    /// <summary>The name and data of the next event, whatever it is.</summary>
+    private async Task<(string Name, string Data)> NextAnyEventAsync(StreamReader reader)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Token);
+        timeout.CancelAfter(TimeSpan.FromSeconds(10));
+        string? current = null;
+        while (await reader.ReadLineAsync(timeout.Token) is { } line)
+        {
+            if (line.StartsWith("event: ", StringComparison.Ordinal))
+                current = line["event: ".Length..];
+            else if (line.StartsWith("data: ", StringComparison.Ordinal) && current is not null)
+                return (current, line["data: ".Length..]);
+        }
+        throw new AssertFailedException("The feed ended.");
     }
 }

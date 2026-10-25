@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Api } from '../../core/api.service';
-import { TagSidebar } from '../../core/models';
+import { TagSidebar, TrashCount } from '../../core/models';
 import { readPreference, writePreference } from '../../core/preferences';
 
 const PREFERENCE = 'sfe.sidebar';
@@ -15,9 +15,13 @@ export class SidebarService {
     private readonly narrowQuery = matchMedia('(max-width: 760px)');
     private timer = 0;
     private sequence = 0;
+    private trashTimer = 0;
+    private trashSequence = 0;
 
     readonly data = signal<TagSidebar | null>(null);
     readonly open = signal(this.preferredOpen());
+    /** What the trash holds, for its link; null until read. */
+    readonly trash = signal<TrashCount | null>(null);
 
     constructor() {
         this.narrowQuery.addEventListener('change', () => this.open.set(this.preferredOpen()));
@@ -58,6 +62,24 @@ export class SidebarService {
                 this.data.set(data);
         } catch {
             // The index may be unavailable: keep what is shown.
+        }
+    }
+
+    /** Reads the trash's count again, a moment later: emptying it tells many changes. */
+    refreshTrash(): void {
+        clearTimeout(this.trashTimer);
+        this.trashTimer = setTimeout(() => this.reloadTrash(), 300);
+    }
+
+    async reloadTrash(): Promise<void> {
+        clearTimeout(this.trashTimer);
+        const request = ++this.trashSequence;
+        try {
+            const count = await this.api.trashCount();
+            if (request === this.trashSequence)
+                this.trash.set(count);
+        } catch {
+            // Keep what is shown.
         }
     }
 

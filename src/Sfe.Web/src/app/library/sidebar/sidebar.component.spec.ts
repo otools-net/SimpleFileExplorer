@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TagSidebar } from '../../core/models';
 import { TagManagerDialog } from '../../tags/tag-manager.dialog';
-import { ApiMock, loadConfig, mockApi, settle, setMediaQuery, summary, tag, testProviders } from '../../../testing/fakes';
+import { ApiMock, fakeConfig, loadConfig, mockApi, settle, setMediaQuery, summary, tag, testProviders } from '../../../testing/fakes';
+import { ChangeFeed } from '../change-feed.service';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { SidebarComponent } from './sidebar.component';
@@ -23,7 +24,9 @@ describe('SidebarComponent', () => {
         historyEnabled: true,
         ...overrides,
     });
-    const section = (title: string) => [...element.querySelectorAll<HTMLElement>('.sidebar-section')].find(s => s.querySelector('h2')!.textContent === title)!;
+    const section = (title: string) => [...element.querySelectorAll<HTMLElement>('.sidebar-section')].find(s => s.querySelector('h2')!.textContent!.trim() === title)!;
+    const fold = (title: string) => section(title).querySelector<HTMLButtonElement>('.sidebar-fold')!;
+    const folded = (title: string) => section(title).querySelector<HTMLElement>('.sidebar-tags')!.hidden;
     const names = (title: string) => [...section(title).querySelectorAll('.tag-name')].map(n => n.textContent!.trim());
 
     async function create(answer: TagSidebar = data()): Promise<void> {
@@ -82,8 +85,42 @@ describe('SidebarComponent', () => {
         expect(navigate).toHaveBeenCalledWith({ q: 't:"Science Fiction"' });
     });
 
+    it('folds Last searched and I feel lucky until opened, and remembers it in this browser', async () => {
+        await create();
+
+        expect(folded('Most popular')).toBe(false);
+        expect(folded('Last viewed')).toBe(false);
+        expect(folded('Last searched')).toBe(true);
+        expect(folded('I feel lucky')).toBe(true);
+        expect(fold('I feel lucky').getAttribute('aria-expanded')).toBe('false');
+        expect(section('I feel lucky').querySelector('button[aria-label="Other random tags"]')).toBeNull();
+
+        fold('I feel lucky').click();
+        fold('Most popular').click();
+        await settle();
+        expect(folded('I feel lucky')).toBe(false);
+        expect(fold('I feel lucky').getAttribute('aria-expanded')).toBe('true');
+        expect(folded('Most popular')).toBe(true);
+
+        fixture.destroy();
+        await create();
+        expect(folded('I feel lucky')).toBe(false);
+        expect(folded('Most popular')).toBe(true);
+        expect(folded('Last searched')).toBe(true);
+    });
+
+    it('ignores a broken folding preference', async () => {
+        localStorage.setItem('sfe.sidebar.sections', '{nope');
+        await create();
+
+        expect(folded('Most popular')).toBe(false);
+        expect(folded('I feel lucky')).toBe(true);
+    });
+
     it('draws other random tags on request', async () => {
         await create();
+        fold('I feel lucky').click();
+        await settle();
         api.tagSidebar.mockResolvedValue(data({ lucky: [{ tag: summary(tag('Random')), fileCount: 0 }] }));
 
         section('I feel lucky').querySelector<HTMLButtonElement>('button[aria-label="Other random tags"]')!.click();
@@ -100,6 +137,72 @@ describe('SidebarComponent', () => {
         element.querySelector<HTMLButtonElement>('.sidebar-manage')!.click();
 
         expect(manager.open).toHaveBeenCalled();
+    });
+
+    it('links to the trash for those who may delete', async () => {
+        await create();
+
+        const link = element.querySelector<HTMLAnchorElement>('a.sidebar-trash')!;
+        expect(link.textContent!.trim()).toBe('Trash');
+        expect(link.getAttribute('href')).toBe('/admin?section=files&page=trash');
+    });
+
+    it('has no trash link without the right to delete, and does not count it', async () => {
+        await loadConfig(api, fakeConfig({ rights: ['tags.view'] }));
+        await create();
+
+        expect(element.querySelector('a.sidebar-trash')).toBeNull();
+        expect(api.trashCount).not.toHaveBeenCalled();
+    });
+
+    describe('the trash link', () => {
+        const link = () => element.querySelector<HTMLAnchorElement>('a.sidebar-trash')!;
+        const icon = () => link().querySelector('use')!.getAttribute('href');
+        const badge = () => link().querySelector('.sidebar-badge')?.textContent?.trim() ?? null;
+
+        it('shows an empty trash', async () => {
+            api.trashCount.mockResolvedValue({ count: 0, more: false });
+            await create();
+
+            expect(icon()).toBe('#i-trash');
+            expect(badge()).toBeNull();
+            expect(link().classList).not.toContain('full');
+            expect(link().getAttribute('aria-label')).toBe('Trash: empty');
+        });
+
+        it('shows a trash holding items, with their number', async () => {
+            api.trashCount.mockResolvedValue({ count: 3, more: false });
+            await create();
+
+            expect(icon()).toBe('#i-trash-full');
+            expect(badge()).toBe('3');
+            expect(link().classList).toContain('full');
+            expect(link().getAttribute('aria-label')).toBe('Trash: 3 items');
+        });
+
+        it('stops counting at 99', async () => {
+            api.trashCount.mockResolvedValue({ count: 99, more: true });
+            await create();
+
+            expect(badge()).toBe('99+');
+            expect(link().title).toBe('Trash: more than 99 items');
+        });
+
+        it('counts again when the change feed says the trash changed', async () => {
+            api.trashCount.mockResolvedValue({ count: 0, more: false });
+            await create();
+            expect(api.trashCount).toHaveBeenCalledTimes(1);
+
+            api.trashCount.mockResolvedValue({ count: 2, more: false });
+            const feed = TestBed.inject(ChangeFeed);
+            feed.trashChanges.update(n => n + 1);
+            await settle();
+            feed.trashChanges.update(n => n + 1);
+            await settle(350);
+
+            expect(api.trashCount).toHaveBeenCalledTimes(2);
+            expect(badge()).toBe('2');
+        });
     });
 
     describe('as a drawer on phones', () => {

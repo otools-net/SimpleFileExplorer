@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, ArchiveLink, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, KeepAliveView, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, ArchiveLink, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, TrashCount, KeepAliveView, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     ExcludedFolder, ExclusionKind, FolderAccessReport, FolderDefaults, FolderDefaultTagsChange, FolderDefaultTagsResult, FolderCover, FolderExclusions, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -236,6 +236,8 @@ export class Api {
     deleteItems = (paths: string[], permanent: boolean) => this.post<DeleteResults>('api/files/delete', { paths, permanent });
     /** The trash, newest first; `before`: the `next` of the previous page. */
     trash = (before: number | null = null) => this.get<TrashPage>('api/files/trash', { before });
+    /** How many items of the trash the session sees, for the sidebar's Trash link. */
+    trashCount = () => this.get<TrashCount>('api/files/trash/count');
     /** Puts an item of the trash back. Resolves with the conflict (409: a scan runs there...). */
     restoreFromTrash = (id: number) => this.post<FileOperationResult>(`api/files/trash/${id}/restore`);
     purgeFromTrash = (id: number) => this.delete<void>(`api/files/trash/${id}`);

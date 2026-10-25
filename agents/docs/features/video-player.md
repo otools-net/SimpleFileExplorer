@@ -20,5 +20,9 @@ Streams: [video-streams.md](video-streams.md).
   video (cinema mode) then overflowed the dialog, which showed a scrollbar.
 - Cinema mode (`cinemaButton`, viewer only, `sfe.player.cinema`) = host class `cinema`,
   `.viewer-stage:has(> .player.cinema)`.
+- Fullscreen on a coarse pointer with a wide video (`videoWidth > videoHeight`) calls
+  `screen.orientation.lock('landscape')` after `requestFullscreen` (`turnToLandscape`); `unlock` when fullscreen ends
+  and on destroy. Browsers only lock in fullscreen (Android Chrome); elsewhere `lock` is missing or rejects, ignored.
+  The iPhone path (`webkitEnterFullscreen`) turns by itself.
 - The player page stays dark ([theme.md](theme.md)) and opts out of the scrollbar gutter.
 - Tests stub `HTMLMediaElement` ([testing-client.md](../development/testing-client.md)).

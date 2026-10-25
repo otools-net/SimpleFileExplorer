@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { settle } from '../../testing/fakes';
+import { setMediaQuery, settle } from '../../testing/fakes';
 import { VideoStream } from '../core/config.service';
 import { StreamProbe } from '../core/models';
 import { By } from '@angular/platform-browser';
@@ -524,6 +524,77 @@ describe('VideoPlayerComponent', () => {
             expect(component().handleKey(new KeyboardEvent('keydown', { key: 'C' }))).toBe(true);
             await settle();
             expect(element().classList).toContain('cinema');
+        });
+    });
+
+    describe('fullscreen on a phone', () => {
+        let lock: ReturnType<typeof vi.fn>;
+        let unlock: ReturnType<typeof vi.fn>;
+        let fullscreenElement: Element | null;
+
+        const fullscreenButton = () => fixture.nativeElement.querySelector('button[aria-label="Fullscreen (F)"]') as HTMLButtonElement;
+        const host = () => fixture.nativeElement.querySelector('sfe-video-player') as HTMLElement;
+
+        async function goFullscreen(width: number, height: number): Promise<void> {
+            await create(false);
+            Object.defineProperty(video(), 'videoWidth', { configurable: true, value: width });
+            Object.defineProperty(video(), 'videoHeight', { configurable: true, value: height });
+            host().requestFullscreen = vi.fn(async () => {
+                fullscreenElement = host();
+                document.dispatchEvent(new Event('fullscreenchange'));
+            });
+            fullscreenButton().click();
+            await settle();
+        }
+
+        beforeEach(() => {
+            fullscreenElement = null;
+            lock = vi.fn().mockResolvedValue(undefined);
+            unlock = vi.fn();
+            Object.defineProperty(screen, 'orientation', { configurable: true, value: { lock, unlock } });
+            Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => fullscreenElement });
+            setMediaQuery('(pointer: coarse)', true);
+        });
+
+        afterEach(() => {
+            setMediaQuery('(pointer: coarse)', false);
+            delete (screen as { orientation?: unknown }).orientation;
+            delete (document as { fullscreenElement?: unknown }).fullscreenElement;
+        });
+
+        it('turns the screen sideways for a wide video, and frees it on leaving', async () => {
+            await goFullscreen(1920, 1080);
+            expect(lock).toHaveBeenCalledWith('landscape');
+
+            fullscreenElement = null;
+            document.dispatchEvent(new Event('fullscreenchange'));
+            expect(unlock).toHaveBeenCalledTimes(1);
+        });
+
+        it('leaves a tall video as it is', async () => {
+            await goFullscreen(1080, 1920);
+            expect(host().requestFullscreen).toHaveBeenCalled();
+            expect(lock).not.toHaveBeenCalled();
+
+            fullscreenElement = null;
+            document.dispatchEvent(new Event('fullscreenchange'));
+            expect(unlock).not.toHaveBeenCalled();
+        });
+
+        it('leaves the screen alone with a mouse', async () => {
+            setMediaQuery('(pointer: coarse)', false);
+            await goFullscreen(1920, 1080);
+            expect(lock).not.toHaveBeenCalled();
+        });
+
+        it('frees the screen when the player closes in fullscreen', async () => {
+            document.exitFullscreen = vi.fn().mockResolvedValue(undefined);
+            await goFullscreen(1920, 1080);
+
+            fixture.destroy();
+
+            expect(unlock).toHaveBeenCalledTimes(1);
+            delete (document as Partial<Document>).exitFullscreen;
         });
     });
 

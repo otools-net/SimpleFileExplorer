@@ -158,6 +158,12 @@ public static class FileEndpoints
             .WithName("ListTrash")
             .WithSummary("The space's trash, newest first.")
             .WithDescription("Pages of at most 200; `before` is the `next` of the previous page.");
+        trash.MapGet("/count", CountTrash)
+            .RequireRight(Rights.DeleteFiles, Rights.DeletePermanently)
+            .FolderScoped("counts what the caller deleted, and what was deleted where the caller may delete")
+            .WithName("CountTrash")
+            .WithSummary("How many files and folders of the trash the caller sees, for the sidebar's Trash link.")
+            .WithDescription($"Counted up to {Trash.CountCap}; `more` when there are more.");
         trash.MapPost("/{id:int}/restore", Restore)
             .RequireRight(Rights.DeleteFiles)
             .FolderScoped("files.delete where it was")
@@ -231,6 +237,12 @@ public static class FileEndpoints
     {
         var state = await current.GetAsync();
         return TypedResults.Ok(await trash.ListAsync(before, limit, item => SeesInTrash(state, paths, item), cancellationToken));
+    }
+
+    private static async Task<Ok<TrashCount>> CountTrash(Trash trash, LibraryPaths paths, CurrentAccess current, CancellationToken cancellationToken)
+    {
+        var state = await current.GetAsync();
+        return TypedResults.Ok(await trash.CountAsync(item => SeesInTrash(state, paths, item), cancellationToken));
     }
 
     private static async Task<Results<Ok<LibraryItem>, NotFound, ForbidHttpResult, ProblemHttpResult>> Restore(

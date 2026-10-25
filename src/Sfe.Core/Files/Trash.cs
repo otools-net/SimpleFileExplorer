@@ -28,6 +28,10 @@ public sealed record TrashItem(int Id, string Path, string Name, bool IsFolder, 
 /// <param name="RetentionDays">Days things stay in the trash (<see cref="TrashOptions.RetentionDays"/>); 0 = until emptied.</param>
 public sealed record TrashPage(IReadOnlyList<TrashItem> Items, bool HasMore, int? Next, int RetentionDays);
 
+/// <summary>How many entries of the trash someone sees, counted up to <see cref="Trash.CountCap"/>.</summary>
+/// <param name="More">There are more than <see cref="Count"/>.</param>
+public sealed record TrashCount(int Count, bool More);
+
 public enum TrashPurgeState
 {
     Idle,
@@ -63,6 +67,9 @@ public sealed class Trash(
     public const string FolderName = "trash";
     public const int MaxPageSize = 200;
 
+    /// <summary>The count of the sidebar's Trash link stops here (shown "99+").</summary>
+    public const int CountCap = 99;
+
     /// <summary>The purge runs by itself when the trash is used, at most this often.</summary>
     private static readonly TimeSpan AutomaticPurgeInterval = TimeSpan.FromHours(12);
 
@@ -89,6 +96,9 @@ public sealed class Trash(
                 return _cacheDeletes;
         }
     }
+
+    /// <summary>Raised when an entry comes in or leaves (deleted, restored, purged), on that thread; for the change feed.</summary>
+    public event Action? EntriesChanged;
 
     public int RetentionDays => Math.Max(0, options.CurrentValue.Files.Trash.RetentionDays);
 
@@ -172,6 +182,7 @@ public sealed class Trash(
         }
 
         Changed(full);
+        TellEntriesChanged();
         logger.LogInformation("{Account} deleted {Path} to the trash", actor.Name, relative);
         PurgeWhenDue();
         return entry.Id;
@@ -208,6 +219,7 @@ public sealed class Trash(
             await ForgetAsync(entry.Id, holder);
             throw;
         }
+        TellEntriesChanged();
         logger.LogInformation("{Account} kept the previous version of {Path} in the trash", actor.Name, relative);
         PurgeWhenDue();
         return entry.Id;
@@ -272,6 +284,29 @@ public sealed class Trash(
             items.RemoveRange(size, items.Count - size);
         }
         return new TrashPage(items, more, more ? items[^1].Id : null, RetentionDays);
+    }
+
+    /// <summary>
+    /// How many entries <paramref name="visible"/> lets through, up to <see cref="CountCap"/>: read newest first in
+    /// batches, as the pages, and never further than one past the cap.
+    /// </summary>
+    public async Task<TrashCount> CountAsync(Func<TrashItem, bool> visible, CancellationToken cancellationToken = default)
+    {
+        const int batchSize = MaxPageSize;
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var cursor = int.MaxValue;
+        var count = 0;
+        while (count <= CountCap)
+        {
+            var batch = await db.TrashEntries.AsNoTracking().Where(t => t.Id < cursor).OrderByDescending(t => t.Id).Take(batchSize).ToListAsync(cancellationToken);
+            if (batch.Count == 0)
+                break;
+            cursor = batch[^1].Id;
+            count += batch.Select(ToItem).Count(visible);
+            if (batch.Count < batchSize)
+                break;
+        }
+        return new TrashCount(Math.Min(count, CountCap), count > CountCap);
     }
 
     public async Task<TrashItem?> FindAsync(int id, CancellationToken cancellationToken = default)
@@ -364,6 +399,7 @@ public sealed class Trash(
             await using (var forget = await dbFactory.CreateDbContextAsync())
                 await forget.TrashEntries.Where(t => t.Id == entry.Id).ExecuteDeleteAsync();
             Changed(target);
+            TellEntriesChanged();
         }
 
         // The rest of a folder is indexed by a scan of it (none starts while another scan runs: the next one does).
@@ -394,6 +430,7 @@ public sealed class Trash(
         TryDeleteHolder(entry);
         await using (var db = await dbFactory.CreateDbContextAsync(cancellationToken))
             await db.TrashEntries.Where(t => t.Id == id).ExecuteDeleteAsync(cancellationToken);
+        TellEntriesChanged();
         if (actor is not null)
             logger.LogInformation("{Account} deleted {Path} from the trash for good", actor.Name, entry.Path);
         return true;
@@ -612,6 +649,18 @@ public sealed class Trash(
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             logger.LogDebug(ex, "Could not delete the trash folder of entry {Id}", entry.Id);
+        }
+    }
+
+    private void TellEntriesChanged()
+    {
+        try
+        {
+            EntriesChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "A listener of the trash's changes failed");
         }
     }
 

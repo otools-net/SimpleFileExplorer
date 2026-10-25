@@ -110,6 +110,9 @@ few tags in each section, with their number of files. Click a tag to search for 
 | **Last viewed** | Tags of the files opened lately |
 | **I feel lucky** | Random tags; the ↻ button shows others |
 
+Click a section's heading to fold or open it: **Last searched** and **I feel lucky** are folded at first. Each browser
+remembers which sections you folded or opened.
+
 The history is shared by everyone using the space; it is turned off or cleared in
 [Administration › Tags › Settings](../administration/tags.md#settings).
 

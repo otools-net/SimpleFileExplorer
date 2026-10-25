@@ -341,6 +341,12 @@ export interface TrashPage {
     retentionDays: number;
 }
 
+/** How many files and folders of the trash the session sees, counted up to 99 (`more` above). */
+export interface TrashCount {
+    count: number;
+    more: boolean;
+}
+
 export interface DirectoryListing {
     path: string;
     name: string;

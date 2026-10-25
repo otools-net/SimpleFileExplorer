@@ -16,7 +16,7 @@ Videos and audio files play in SFE's own player, in the [viewer](viewer.md) or i
 | Camera | S | Saves the frame on screen as a PNG at the video's resolution, named after the video and the position (e.g. `Holiday 1-23.png`) |
 | Mute | M | |
 | Cinema mode | C | In the viewer: the player spans the whole width of the window and the video is enlarged to it (as YouTube's theater mode); press again for the default view. Remembered by this browser |
-| Fullscreen | F | |
+| Fullscreen | F | On a phone or tablet a wide video turns the screen sideways, and back when you leave fullscreen (where the browser allows it, e.g. Chrome on Android; an iPhone turns by itself) |
 | Convert (⟳) | | Shown when the server can convert videos: plays the video converted by the server, from where it is (see below) |
 
 ![Trickplay frames above the seek bar](../images/player-trickplay.png)

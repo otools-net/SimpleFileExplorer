@@ -57,6 +57,42 @@ public sealed class TrashTests
     }
 
     [TestMethod]
+    public async Task EntriesComingAndGoingAreTold()
+    {
+        var told = 0;
+        Trash.EntriesChanged += () => told++;
+
+        var deleted = await Files.DeleteAsync("Media/photo.jpg", permanent: false, Me, Token);
+        Assert.AreEqual(1, told, "Deleted to the trash");
+        await Trash.RestoreAsync(deleted.TrashId!.Value, Me, Token);
+        Assert.AreEqual(2, told, "Restored");
+        deleted = await Files.DeleteAsync("Media/photo.jpg", permanent: false, Me, Token);
+        await Trash.PurgeAsync(deleted.TrashId!.Value, Me, Token);
+        Assert.AreEqual(4, told, "Deleted, then purged");
+        await Files.DeleteAsync("ChildDir/AFile1.txt", permanent: true, Me, Token);
+        Assert.AreEqual(4, told, "Deleted for good: the trash didn't change");
+    }
+
+    [TestMethod]
+    public async Task TheCountStopsAtItsCap()
+    {
+        Assert.AreEqual(new TrashCount(0, false), await Trash.CountAsync(_ => true, Token));
+        await using (var db = await DbAsync())
+        {
+            db.TrashEntries.AddRange(Enumerable.Range(0, Trash.CountCap + 150).Select(i => new TrashEntry
+            {
+                Path = $"ChildDir/f{i}", Name = $"f{i}", DeletedAt = DateTime.UtcNow, Folder = Guid.NewGuid().ToString("N"),
+            }));
+            await db.SaveChangesAsync(Token);
+        }
+
+        Assert.AreEqual(new TrashCount(Trash.CountCap, true), await Trash.CountAsync(_ => true, Token));
+        Assert.AreEqual(new TrashCount(Trash.CountCap, false), await Trash.CountAsync(item => int.Parse(item.Name[1..]) < Trash.CountCap, Token));
+        Assert.AreEqual(new TrashCount(3, false), await Trash.CountAsync(item => item.Name is "f0" or "f1" or "f200", Token),
+            "Read past the first batches to find them");
+    }
+
+    [TestMethod]
     public async Task AFileGoesToTheTrashAndComesBackWithItsTags()
     {
         await ScanAsync();

@@ -747,6 +747,9 @@ const scenes = {
         await b.shot(OUT + 'delete-dialog.png');
         await b.eval(`[...document.querySelectorAll('sfe-delete-dialog button')].find(x => x.textContent.trim() === 'Delete').click(); 1`);
         await sleep(1500);
+        // The sidebar's Trash link, told by the change feed: the full icon and the number of items.
+        const footer = await b.rect('.sidebar-footer');
+        await b.shot(OUT + 'sidebar-trash.png', { x: 0, y: footer.y - 12, width: 250, height: footer.height + 24 });
         await b.close();
         const a = await session({ height: 900 });
         await a.open(admin('files', 'trash'), 3000);

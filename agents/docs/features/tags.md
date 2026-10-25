@@ -6,6 +6,9 @@ Code: `src/Sfe.Core/Tagging/` (`TagService`, `TagGraph` (parent inheritance), bu
 search: [scope-tagging.md](scope-tagging.md).
 
 - The multi-file tags dialog (`FilesTagsDialog`) sends changes in parts of `config.maxFilesPerTagChange`.
+- Sidebar (`library/sidebar/sidebar.component.ts`): each tag section folds under its heading; `Section.folded` gives
+  the default (Last searched, I feel lucky folded), the user's choices are kept per browser in `sfe.sidebar.sections`
+  (`{ key: folded }`). Its footer holds Manage tags and the Trash link (rights of the Trash sub-page).
 - `TagManagerDialog` stays on the listing page (sidebar, tag dialogs) around the same `TagListComponent` as the admin
   page.
 - Tag counts are cached briefly ([scale.md](../development/scale.md)).

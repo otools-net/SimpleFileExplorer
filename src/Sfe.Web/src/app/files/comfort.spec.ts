@@ -241,7 +241,7 @@ describe('ChangeFeed', () => {
             close(): void {
                 this.readyState = FakeSource.CLOSED;
             }
-            emit(type: 'open' | 'error' | 'ping', state = this.readyState): void {
+            emit(type: 'open' | 'error' | 'ping' | 'trash', state = this.readyState): void {
                 this.readyState = state;
                 this.dispatchEvent(new Event(type));
             }
@@ -321,6 +321,16 @@ describe('ChangeFeed', () => {
             expect(FakeSource.all).toHaveLength(2);
             expect(FakeSource.all[0].readyState).toBe(FakeSource.CLOSED);
             last().emit('open', FakeSource.OPEN);
+            expect(feed.serverLost()).toBe(false);
+        });
+
+        it('counts the trash events, which also tell the server answers', () => {
+            vi.advanceTimersByTime(50_000);
+            last().emit('trash');
+            last().emit('trash');
+            vi.advanceTimersByTime(50_000);
+
+            expect(feed.trashChanges()).toBe(2);
             expect(feed.serverLost()).toBe(false);
         });
     });

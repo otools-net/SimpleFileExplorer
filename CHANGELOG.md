@@ -3,6 +3,21 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## Unreleased
+
+### Added
+
+- A **Trash** link at the bottom of the library's sidebar opens Administration › File management › Trash in one click,
+  for those who may delete. Its icon shows whether the trash is empty, and a small number how many files and folders
+  it holds (99+ above), kept up to date as things are deleted, restored or purged.
+- **Fullscreen on a phone or tablet** turns the screen sideways for a wide video, as YouTube does, and back when it
+  ends (browsers that allow it, such as Chrome on Android; iPhones already turn by themselves).
+
+### Changed
+
+- The **tag sidebar's sections** fold under their heading: **Last searched** and **I feel lucky** are folded until you
+  open them, and each browser remembers which ones you folded or opened.
+
 ## 1.82.0
 
 ### Changed

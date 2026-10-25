@@ -5,8 +5,7 @@ Code: `src/Sfe.Api/Security/ServerModes.cs`, `Maintenance/InstallationSettings.c
 `Endpoints/SessionEndpoints.cs` (`SignIn`), `AccessService.IsAdministratorAsync`; client
 `account/installation-form.component.ts` (mode fieldset), `setup-page` (`[setup]="true"`),
 `account/local-only-page.component.ts`, `core/api.service.ts` (403 `local-only`). Tests: `InstallationTests` (mode
-tests), `ServerModeTests`, `account.spec.ts`. Epic and what is still to build:
-[server-modes-plan](../development/server-modes-plan.md).
+tests), `ServerModeTests`, `account.spec.ts`. The Docker image (External): [docker](../environment/docker.md).
 
 - `Sfe:Mode` is read as a word (`ServerModes.Configured`), never bound into `SfeOptions`: the binder throws on a
   misspelled enum and would stop the server. An unknown word counts as External (the stricter one). None set = Local
@@ -49,6 +48,18 @@ tests), `ServerModeTests`, `account.spec.ts`. Epic and what is still to build:
   for a code nobody has).
 - **Fast sign-in** (`FastSignIn.IssueAsync`/`RedeemAsync`) is Local only; the setup page offers it only while the
   installation is not External. The browser still opens at start on an External portable server (harmless).
+
+## Decisions kept from the epic (1.76.0–1.79.0)
+
+- Mode in the configuration (`Sfe:Mode`), not a database row, not build-time, not inferred from `Urls` or a proxy.
+- Missing key = Local once the setup is done (the upgrade of existing installs: no upgrade step, no database change);
+  before the setup nothing is restricted, so a headless server can still be set up from another computer with the code.
+- `LocalVisitor.IsOnThisComputer` needs a loopback connection, no forwarded headers and a loopback `Host`: in Local mode
+  `http://<machine-name>:port` is refused even from the same computer, so messages name `http://localhost:<port>`.
+- Local mode does not rewrite `Urls` (existing installs keep their files): the guard refuses other computers instead.
+- External locks the paths also during the setup: who wants to pick them on the page does it while still Local.
+- Left for later: a health check route. Dropped: a `docker` target in `build/build.sh`/`build.ps1` (those scripts
+  don't build images).
 
 ## Tests
 

@@ -5,6 +5,7 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Files;
 using Sfe.Core.KeepAlive;
 using Sfe.Core.Library;
 using Sfe.Core.Paths;
@@ -18,10 +19,14 @@ public sealed record FolderChange(string Path, string? Origin);
 /// <param name="State">How keep alive goes in the space: `none` (off, or nothing pinged), `ok`, `failing`.</param>
 public sealed record KeepAliveSignal(KeepAliveState State);
 
+/// <summary>Something came into or left the trash.</summary>
+public sealed record TrashSignal;
+
 /// <summary>
 /// The change feed (agents/docs/features/change-feed.md): server-sent events telling each open listing that a folder
 /// it may see was changed through SFE (by another tab, another person, a move or copy job), so that it lists it again;
-/// and how keep alive goes (agents/docs/features/keep-alive.md), for the indicator of the top bar.
+/// how keep alive goes (agents/docs/features/keep-alive.md), for the indicator of the top bar; and that the trash
+/// changed, for the count of the sidebar's Trash link.
 /// </summary>
 public static class ChangeEndpoints
 {
@@ -43,6 +48,9 @@ public static class ChangeEndpoints
     /// <summary>The `ping` event (an event needs data to reach the page).</summary>
     public const string PingEvent = "event: ping\ndata: {}\n\n";
 
+    /// <summary>The `trash` event: the client asks for its count again.</summary>
+    public const string TrashEvent = "event: trash\ndata: {}\n\n";
+
     private static readonly ConcurrentDictionary<string, int> Streams = new();
     private static readonly Lock Gate = new();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
@@ -57,18 +65,20 @@ public static class ChangeEndpoints
             .RequireRight(Rights.Browse)
             .FolderScoped("only folders the caller sees (files.browse) are told")
             .WithName("FolderChanges")
-            .WithSummary("Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; `keepAlive` with `{ state }`; `ping`.")
+            .WithSummary("Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; `keepAlive` with `{ state }`; `trash`; `ping`.")
             .WithDescription($"""
                 Open with `EventSource`; `origin` is the `{TabHeader}` header of the request that changed it (a tab skips
                 its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or nothing
-                pinged), `ok`, `failing`; no folder nor error is named. A `ping` event after {KeepAlive.TotalSeconds:N0} s without anything keeps it open; it ends after
+                pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete or
+                files.deletePermanently) when something came into or left the trash: ask its count again. A `ping` event after {KeepAlive.TotalSeconds:N0} s without anything keeps it open; it ends after
                 {Lifetime.TotalMinutes:N0} minutes and the browser opens it again. {MaxStreamsPerCaller} at once per caller (429).
                 """);
         return api;
     }
 
     private static async Task StreamAsync(
-        HttpContext context, LibraryBrowser browser, KeepAliveService keepAlive, LibraryPaths paths, CurrentAccess current, IHttpContextAccessor accessor)
+        HttpContext context, LibraryBrowser browser, KeepAliveService keepAlive, Trash trash, LibraryPaths paths, CurrentAccess current,
+        IHttpContextAccessor accessor)
     {
         var state = await current.GetAsync();
         var caller = RequestLimits.Caller(context);
@@ -79,7 +89,7 @@ public static class ChangeEndpoints
         }
 
         // Read by the request (or job) that changed a folder, or by keep alive's loop: only queued here (a FolderChange
-        // or a KeepAliveSignal), written by this request's own loop.
+        // a KeepAliveSignal or a TrashSignal), written by this request's own loop.
         var changes = Channel.CreateBounded<object>(new BoundedChannelOptions(256) { FullMode = BoundedChannelFullMode.DropOldest, SingleReader = true });
         void OnChanged(string path)
         {
@@ -89,8 +99,14 @@ public static class ChangeEndpoints
 
         void OnKeepAlive(KeepAliveState keepAliveState) => changes.Writer.TryWrite(new KeepAliveSignal(keepAliveState));
 
+        // The trash's count is for those who may open it.
+        var seesTrash = state.Access.Rights.Contains(Rights.DeleteFiles) || state.Access.Rights.Contains(Rights.DeletePermanently);
+        void OnTrash() => changes.Writer.TryWrite(new TrashSignal());
+
         browser.FolderChanged += OnChanged;
         keepAlive.StateChanged += OnKeepAlive;
+        if (seesTrash)
+            trash.EntriesChanged += OnTrash;
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
         lifetime.CancelAfter(Lifetime);
         var token = lifetime.Token;
@@ -121,15 +137,21 @@ public static class ChangeEndpoints
                 }
                 if (!ready)
                     break;
-                // Several at once (a move touches both folders): one write.
+                // Several at once (a move touches both folders): one write, with one `trash` at most (emptying the
+                // trash purges many).
                 var text = new System.Text.StringBuilder();
+                var trashChanged = false;
                 while (changes.Reader.TryRead(out var item))
                 {
-                    if (item is KeepAliveSignal signal)
+                    if (item is TrashSignal)
+                        trashChanged = true;
+                    else if (item is KeepAliveSignal signal)
                         text.Append(KeepAliveEvent(signal));
                     else if (item is FolderChange change && state.Check(paths, change.Path, Rights.Browse) == PathVerdict.Allowed)
                         text.Append("event: changed\ndata: ").Append(JsonSerializer.Serialize(change, Json)).Append("\n\n");
                 }
+                if (trashChanged)
+                    text.Append(TrashEvent);
                 if (text.Length == 0)
                     continue;
                 await response.WriteAsync(text.ToString(), token);
@@ -148,6 +170,7 @@ public static class ChangeEndpoints
         {
             browser.FolderChanged -= OnChanged;
             keepAlive.StateChanged -= OnKeepAlive;
+            trash.EntriesChanged -= OnTrash;
             Leave(caller);
         }
     }

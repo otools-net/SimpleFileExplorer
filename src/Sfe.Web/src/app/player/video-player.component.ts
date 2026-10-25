@@ -21,6 +21,9 @@ const BUTTON_WIDTH = 42;
 const TIME_CHAR_WIDTH = 7.5;
 const CONTROLS_PADDING = 28;
 
+/** `ScreenOrientation.lock`, missing from some DOM typings and from browsers without it. */
+type LockableOrientation = ScreenOrientation & { lock?(orientation: 'landscape' | 'portrait'): Promise<void> };
+
 interface Playback {
     url: string;
     /** Seconds into the video where the conversion starts (0 for the file). */
@@ -173,6 +176,8 @@ export class VideoPlayerComponent {
     protected readonly controlsVisible = signal(true);
     protected readonly waiting = signal(false);
     protected readonly fullscreen = signal(false);
+    /** The screen was turned sideways for a fullscreen video, to free when it ends. */
+    private orientationLocked = false;
     protected readonly muted = signal(false);
     protected readonly speed = signal(1);
     protected readonly speedMenu = signal(false);
@@ -505,9 +510,10 @@ export class VideoPlayerComponent {
         try {
             if (document.fullscreenElement)
                 await document.exitFullscreen();
-            else if (this.host.requestFullscreen)
+            else if (this.host.requestFullscreen) {
                 await this.host.requestFullscreen({ navigationUI: 'hide' });
-            else
+                this.turnToLandscape();
+            } else
                 video.webkitEnterFullscreen?.();      // iPhone: only the video element itself can go fullscreen
         } catch {
             // Refused (e.g. not triggered by a user gesture): stay as is.
@@ -516,6 +522,32 @@ export class VideoPlayerComponent {
 
     protected onFullscreenChange(): void {
         this.fullscreen.set(document.fullscreenElement === this.host);
+        if (!document.fullscreenElement)
+            this.releaseOrientation();
+    }
+
+    /**
+     * On a phone or tablet, a wide video turns the screen sideways while in fullscreen, as YouTube does. Browsers only
+     * lock the orientation of a page in fullscreen (Android); elsewhere `lock` is missing or refuses, harmlessly. The
+     * iPhone's own video fullscreen turns by itself.
+     */
+    private turnToLandscape(): void {
+        const orientation = screen.orientation as LockableOrientation | undefined;
+        if (!orientation?.lock || !matchMedia('(pointer: coarse)').matches || this.video.videoWidth <= this.video.videoHeight)
+            return;
+        this.orientationLocked = true;
+        orientation.lock('landscape').catch(() => this.orientationLocked = false);
+    }
+
+    private releaseOrientation(): void {
+        if (!this.orientationLocked)
+            return;
+        this.orientationLocked = false;
+        try {
+            screen.orientation?.unlock();
+        } catch {
+            // Already free.
+        }
     }
 
     /** The file can't be played: the server's conversion takes over when it offers one. */
@@ -808,6 +840,7 @@ export class VideoPlayerComponent {
         this.hintTimers.forEach(timer => clearTimeout(timer));
         if (document.fullscreenElement === this.host)
             document.exitFullscreen().catch(() => { });
+        this.releaseOrientation();
         const video = this.video;
         video.pause();
         video.removeAttribute('src');
