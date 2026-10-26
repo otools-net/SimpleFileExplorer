@@ -40,3 +40,7 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   overflow row (`sfeOverflowRow`): one line, the buttons leaving right to left into a "⋯" menu, the developer saying
   which stay. Never `flex-wrap` or buttons cut off; space its items with `gap`, not margins. Check with
   `overflow.mjs` and `narrow-audit.mjs`: [overflow-menus](../features/overflow-menus.md).
+- **Battery (rule, 2026-10-26):** anything that polls or ticks uses `visibleInterval` (`core/visible-interval.ts`):
+  nothing while the tab is hidden, once right away when shown. A timer only while it has work (an `effect` on the state,
+  not a 1 s interval that checks). Animate `transform`/`opacity`, never `left`/`width` in an infinite animation (a
+  layout per frame). Measure with the [battery probe](../environment/battery-probe.md).

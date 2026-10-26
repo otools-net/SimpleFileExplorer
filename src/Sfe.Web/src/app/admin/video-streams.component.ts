@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signa
 import { Api } from '../core/api.service';
 import { formatDuration, formatElapsed, formatSize, joinParts, plural } from '../core/format';
 import { StreamActivity, StreamingStatus } from '../core/models';
+import { visibleInterval } from '../core/visible-interval';
 
 const REFRESH_MS = 2000;
 
@@ -61,7 +62,6 @@ interface Row {
 })
 export class VideoStreamsComponent {
     private readonly api = inject(Api);
-    private readonly timer: ReturnType<typeof setInterval>;
 
     protected readonly status = signal<StreamingStatus | null>(null);
     protected readonly error = signal<string | null>(null);
@@ -97,8 +97,7 @@ export class VideoStreamsComponent {
 
     constructor() {
         void this.refresh();
-        this.timer = setInterval(() => void this.refresh(), REFRESH_MS);
-        inject(DestroyRef).onDestroy(() => clearInterval(this.timer));
+        inject(DestroyRef).onDestroy(visibleInterval(() => void this.refresh(), REFRESH_MS));
     }
 
     private async refresh(): Promise<void> {

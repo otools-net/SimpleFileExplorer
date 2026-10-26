@@ -25,7 +25,8 @@ export function describeScan(status: ScanStatus): string {
 
 /**
  * The scan of the index, which runs on the server: its status is read from GET /api/scan when the page opens, so
- * a refresh (or another tab or device) shows a running scan too, then polled while it runs.
+ * a refresh (or another tab or device) shows a running scan too, then polled while it runs, and while the page shows:
+ * a phone keeping the tab in the background through a scan of hours would otherwise ask every second.
  */
 @Injectable({ providedIn: 'root' })
 export class ScanService {
@@ -35,6 +36,8 @@ export class ScanService {
     private readonly toasts = inject(ToastService);
     private timer = 0;
     private started = false;
+    /** A poll of a running scan skipped while the page was hidden: made when it shows. */
+    private waiting = false;
 
     readonly status = signal<ScanStatus | null>(null);
     readonly running = computed(() => this.status()?.state === 'running');
@@ -48,6 +51,13 @@ export class ScanService {
         return Boolean(status && status.state !== 'idle' && (status.state === 'running' || this.dismissed() !== status.startedAt));
     });
     readonly busy = computed(() => this.running() || this.starting());
+
+    constructor() {
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && this.waiting)
+                void this.poll({ quiet: true });
+        });
+    }
 
     /**
      * Picks up a scan that is running (started before a refresh, or from another tab or device), and keeps checking
@@ -120,12 +130,13 @@ export class ScanService {
 
     private async poll({ quiet = false } = {}): Promise<void> {
         clearTimeout(this.timer);
+        this.waiting = false;
         const wasRunning = this.running();
         try {
             const status = await this.api.scanStatus();
             this.status.set(status);
             if (status.state === 'running')
-                this.timer = setTimeout(() => this.poll(), 1000);
+                this.later(() => this.poll(), 1000);
             else if (wasRunning && status.state === 'completed')
                 this.toasts.show(`Index updated: ${describeScan(status)}`);
         } catch (error) {
@@ -133,7 +144,17 @@ export class ScanService {
                 this.toasts.error(`Cannot read scan status: ${(error as Error).message}`);
             // Keep watching a running scan through a hiccup (e.g. the server restarting).
             if (wasRunning)
-                this.timer = setTimeout(() => this.poll({ quiet: true }), 5000);
+                this.later(() => this.poll({ quiet: true }), 5000);
         }
+    }
+
+    /** The next poll of a running scan, or, while the page is hidden, once it shows. */
+    private later(poll: () => void, ms: number): void {
+        this.timer = setTimeout(() => {
+            if (document.hidden)
+                this.waiting = true;
+            else
+                poll();
+        }, ms);
     }
 }

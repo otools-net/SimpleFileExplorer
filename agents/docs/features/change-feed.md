@@ -24,6 +24,10 @@ Code: `LibraryBrowser.FolderChanged` (raised by `Invalidate`, after the cache is
 - The feed is closed on `pagehide` and opened again on `pageshow` (when it was open): a page kept by the browser for
   Back held its connection, and browsers allow 6 per server over HTTP/1.1, so after a few full page loads the next
   page waited for minutes (found by the context menu check's many `goto`s).
+- Also closed once the tab stays hidden `HIDDEN_GRACE` (30 s; a quick app switch keeps it): the `ping` every 25 s and
+  the 10-minute reopen kept phones' radios waking all day ([battery probe](../environment/battery-probe.md)). Shown
+  again: opened, and on `open` the folder listed is refreshed and `trashChanges` bumped (changes meanwhile weren't
+  told); `serverLost` stays quiet while closed.
 - `origin` is the `X-SFE-Tab` header of the request that changed it, read through `IHttpContextAccessor` in the handler
   (null for background jobs after their request ended): a tab ignores its own changes, which it already applied.
 - Client: `EventSource('api/files/changes')` opened by the library page (closed when leaving it); a change of the folder

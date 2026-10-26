@@ -58,6 +58,10 @@ export async function launch({ width = 1280, height = 800, mobile = false, scale
 
     const api = {
         send,
+        /** Calls `listener(params)` for each `method` event (enable its domain first, e.g. `Network.enable`). */
+        on(method, listener) {
+            listeners.push(m => { if (m.method === method) listener(m.params); });
+        },
         async eval(expression) {
             const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
             if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description ?? r.exceptionDetails.text);

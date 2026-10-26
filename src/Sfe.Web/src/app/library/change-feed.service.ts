@@ -13,6 +13,11 @@ export const SILENCE = 60_000;
 export const LOST_AFTER = 10_000;
 /** The browser gave up (an error status, e.g. a proxy's 502 while the server is down): opened again after this. */
 export const RETRY = 5_000;
+/**
+ * The tab hidden this long (another app, the screen off): the feed is closed, as its `ping` every 25 s kept a phone's
+ * radio waking all day. Opened again when the tab shows; a quick switch to another app and back keeps it.
+ */
+export const HIDDEN_GRACE = 30_000;
 
 export interface FolderChange {
     path: string;
@@ -35,6 +40,7 @@ export class ChangeFeed {
     private lostTimer: ReturnType<typeof setTimeout> | undefined;
     private watchdog: ReturnType<typeof setTimeout> | undefined;
     private retryTimer: ReturnType<typeof setTimeout> | undefined;
+    private hiddenTimer: ReturnType<typeof setTimeout> | undefined;
     private readonly listeners = new Set<(change: FolderChange) => void>();
 
     /** How keep alive goes in the space: sent first when the feed opens, then each time it changes. */
@@ -53,7 +59,8 @@ export class ChangeFeed {
         // A page left for another (kept by the browser for Back) gives its connection up: browsers allow 6 per server
         // over HTTP/1.1, and kept pages holding theirs made the next pages wait. Opened again when the page is back.
         const hidden = () => {
-            this.parked = this.source !== null;
+            clearTimeout(this.hiddenTimer);
+            this.parked ||= this.source !== null;
             this.stop();
         };
         const shown = () => {
@@ -61,17 +68,35 @@ export class ChangeFeed {
                 this.start();
             this.parked = false;
         };
+        // Hidden for a while: closed too. What changed meanwhile wasn't told: the folder and the trash are read again.
+        const visibility = () => {
+            clearTimeout(this.hiddenTimer);
+            if (!document.hidden) {
+                if (this.parked && this.missed)
+                    shown();
+            } else if (this.source) {
+                this.hiddenTimer = setTimeout(() => {
+                    this.missed = true;
+                    hidden();
+                }, HIDDEN_GRACE);
+            }
+        };
         window.addEventListener('pagehide', hidden);
         window.addEventListener('pageshow', shown);
+        document.addEventListener('visibilitychange', visibility);
         inject(DestroyRef).onDestroy(() => {
             window.removeEventListener('pagehide', hidden);
             window.removeEventListener('pageshow', shown);
+            document.removeEventListener('visibilitychange', visibility);
+            clearTimeout(this.hiddenTimer);
             this.stop();
         });
     }
 
-    /** The feed was open when the page was left (`pagehide`): opened again when it shows. */
+    /** The feed was open when the page was left (`pagehide`) or hidden for a while: opened again when it shows. */
     private parked = false;
+    /** Closed while the tab was hidden: changes may have been missed, read again once open. */
+    private missed = false;
 
     /** Opens the feed (once), where the browser has EventSource and the session may browse. */
     start(): void {
@@ -116,7 +141,11 @@ export class ChangeFeed {
         clearTimeout(this.lostTimer);
         this.lostTimer = undefined;
         this.heard();
-        if (this.serverLost()) {
+        if (this.missed) {
+            this.missed = false;
+            this.trashChanges.update(n => n + 1);
+            void this.store.refresh();
+        } else if (this.serverLost()) {
             this.serverLost.set(false);
             void this.store.refresh();
         }

@@ -3,6 +3,7 @@ import { Api } from '../core/api.service';
 import { formatDate, formatElapsed, joinParts, plural } from '../core/format';
 import { TaskInfo, TaskKind, TaskOverview, TaskRunSummary, TaskSchedule } from '../core/models';
 import { ToastService } from '../core/toast.service';
+import { visibleInterval } from '../core/visible-interval';
 import { ListingStore } from '../library/listing.store';
 import { ScanService } from '../library/scan/scan.service';
 import { BusyDirective } from '../shared/busy.directive';
@@ -194,7 +195,6 @@ export class TasksSectionComponent {
     private readonly store = inject(ListingStore);
     private readonly scan = inject(ScanService);
     private readonly history = viewChild.required(TaskHistoryComponent);
-    private readonly timer: ReturnType<typeof setInterval>;
 
     protected readonly names = TASK_NAMES;
     protected readonly purposes = TASK_PURPOSES;
@@ -257,8 +257,7 @@ export class TasksSectionComponent {
 
     constructor() {
         void this.refresh();
-        this.timer = setInterval(() => void this.refresh(), REFRESH_MS);
-        inject(DestroyRef).onDestroy(() => clearInterval(this.timer));
+        inject(DestroyRef).onDestroy(visibleInterval(() => void this.refresh(), REFRESH_MS));
         // The runs are read when their tab is shown, then with each refresh.
         effect(() => {
             if (this.tab() === 'history')

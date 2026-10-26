@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, signal } from '@angular/core';
 import { formatElapsed } from '../../core/format';
+import { visibleInterval } from '../../core/visible-interval';
 import { IconComponent } from '../../shared/icon.component';
 import { describeScan, ScanService } from './scan.service';
 
@@ -41,7 +42,7 @@ const TITLES: Record<string, (where: string) => string> = {
 export class ScanPanelComponent {
     protected readonly scan = inject(ScanService);
     protected readonly describe = describeScan;
-    /** Ticks the elapsed time between polls. */
+    /** Ticks the elapsed time between polls, only while a scan runs and the page shows. */
     private readonly now = signal(Date.now());
 
     protected readonly title = computed(() => {
@@ -57,12 +58,11 @@ export class ScanPanelComponent {
     });
 
     constructor() {
-        const clock = setInterval(() => {
+        effect(onCleanup => {
             if (this.scan.running())
-                this.now.set(Date.now());
-        }, 1000);
+                onCleanup(visibleInterval(() => this.now.set(Date.now()), 1000));
+        });
         const destroyRef = inject(DestroyRef);
-        destroyRef.onDestroy(() => clearInterval(clock));
         this.scan.watch();
 
         // The panel sticks under the top bar: its height (0 while hidden) puts the compact location bar below it.

@@ -197,6 +197,21 @@ export function setMediaQuery(query: string, matches: boolean): void {
     (globalThis as unknown as { setMediaQuery(query: string, matches: boolean): void }).setMediaQuery(query, matches);
 }
 
+/**
+ * The tab in the background (`true`) or shown again: `document.hidden` and `visibilityState` follow, and
+ * `visibilitychange` is sent. Put it back with `setHidden(false)` after the test (specs share one document).
+ */
+export function setHidden(hidden: boolean): void {
+    if (hidden) {
+        Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    } else {
+        delete (document as { hidden?: boolean }).hidden;
+        delete (document as { visibilityState?: string }).visibilityState;
+    }
+    document.dispatchEvent(new Event('visibilitychange'));
+}
+
 /** Types into an input as a user would: sets the value and sends the `input` event. */
 export function type(input: HTMLInputElement | HTMLTextAreaElement, text: string): void {
     input.value = text;

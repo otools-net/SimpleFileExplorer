@@ -3,8 +3,8 @@ import { TAB_ID } from '../core/api.service';
 import { DirectoryListing, FileJobView, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders, type } from '../../testing/fakes';
-import { ChangeFeed } from '../library/change-feed.service';
+import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, setHidden, settle, testProviders, type } from '../../testing/fakes';
+import { ChangeFeed, HIDDEN_GRACE } from '../library/change-feed.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { SidebarService } from '../library/sidebar/sidebar.service';
@@ -322,6 +322,40 @@ describe('ChangeFeed', () => {
             expect(FakeSource.all[0].readyState).toBe(FakeSource.CLOSED);
             last().emit('open', FakeSource.OPEN);
             expect(feed.serverLost()).toBe(false);
+        });
+
+        it('closes the feed once the tab stays hidden, and on showing opens it, reads the folder and trash again', () => {
+            try {
+                // A quick look at another app: kept.
+                setHidden(true);
+                vi.advanceTimersByTime(HIDDEN_GRACE - 1000);
+                setHidden(false);
+                vi.advanceTimersByTime(HIDDEN_GRACE);
+                expect(FakeSource.all).toHaveLength(1);
+                expect(last().readyState).toBe(FakeSource.OPEN);
+
+                last().emit('ping');
+                setHidden(true);
+                vi.advanceTimersByTime(HIDDEN_GRACE);
+                expect(FakeSource.all[0].readyState).toBe(FakeSource.CLOSED);
+                vi.advanceTimersByTime(3_600_000);
+                expect(FakeSource.all).toHaveLength(1);
+                expect(feed.serverLost()).toBe(false);
+
+                const browses = api.browse.mock.calls.length;
+                setHidden(false);
+                expect(FakeSource.all).toHaveLength(2);
+                last().emit('open', FakeSource.OPEN);
+                expect(api.browse.mock.calls.length).toBe(browses + 1);
+                expect(feed.trashChanges()).toBe(1);
+
+                // Open again as usual: no second reading.
+                last().emit('error', FakeSource.CONNECTING);
+                last().emit('open', FakeSource.OPEN);
+                expect(api.browse.mock.calls.length).toBe(browses + 1);
+            } finally {
+                setHidden(false);
+            }
         });
 
         it('counts the trash events, which also tell the server answers', () => {

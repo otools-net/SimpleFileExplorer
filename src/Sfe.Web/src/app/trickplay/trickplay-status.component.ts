@@ -3,6 +3,7 @@ import { Api } from '../core/api.service';
 import { formatDate, joinParts, plural } from '../core/format';
 import { TrickplayStatus } from '../core/models';
 import { ToastService } from '../core/toast.service';
+import { visibleInterval } from '../core/visible-interval';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 
 const REFRESH_MS = 3000;
@@ -31,7 +32,7 @@ export class TrickplayStatusComponent {
 
     private readonly api = inject(Api);
     private readonly toasts = inject(ToastService);
-    private timer = 0;
+    private stopTimer: (() => void) | null = null;
 
     protected readonly status = signal<TrickplayStatus | null>(null);
     private readonly error = signal<string | null>(null);
@@ -77,15 +78,15 @@ export class TrickplayStatusComponent {
     }
 
     start(): void {
-        if (this.timer)
+        if (this.stopTimer)
             return;
         void this.refresh();
-        this.timer = setInterval(() => this.refresh(), REFRESH_MS);
+        this.stopTimer = visibleInterval(() => this.refresh(), REFRESH_MS);
     }
 
     stop(): void {
-        clearInterval(this.timer);
-        this.timer = 0;
+        this.stopTimer?.();
+        this.stopTimer = null;
     }
 
     async refresh(): Promise<void> {

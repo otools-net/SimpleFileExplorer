@@ -3,6 +3,18 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## Unreleased
+
+### Fixed
+
+- **Uses less battery on phones**, above all with SFE left open in the background:
+  - a tab hidden for more than 30 seconds closes its live connection to the server (which woke the phone every
+    25 seconds) and opens it again when shown, reading the folder and the trash count again;
+  - a running scan, and the administration pages that refresh by themselves (Tasks, Video streams, Trickplay, Keep
+    alive), are no longer polled while the tab is hidden, and refresh at once when it shows;
+  - the scan's moving progress bar no longer makes the browser lay the whole page out on every frame, and the scan
+    panel's clock only ticks while a scan runs.
+
 ## 1.83.0
 
 ### Added

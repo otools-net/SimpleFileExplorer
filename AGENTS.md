@@ -94,6 +94,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [running-the-app](agents/docs/environment/running-the-app.md) | the app on a scratch library |
 | [visual-check](agents/docs/environment/visual-check.md) | headless Edge screenshots and clicks |
 | [docs-screenshots](agents/docs/environment/docs-screenshots.md) | regenerating `docs/images/` |
+| [battery-probe](agents/docs/environment/battery-probe.md) | requests, timers, CPU of an open page on a phone (headless) |
 | [dev-machine](agents/docs/environment/dev-machine.md) | this machine: node, ffmpeg path, shells |
 | [line-endings](agents/docs/environment/line-endings.md) | LF/CRLF, Git Bash pitfalls, git warnings |
 

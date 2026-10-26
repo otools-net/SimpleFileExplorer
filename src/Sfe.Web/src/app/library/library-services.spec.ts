@@ -3,7 +3,7 @@ import { Api, ApiError } from '../core/api.service';
 import { ScanStatus, TagSidebar } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { waitForTrickplay } from '../trickplay/trickplay';
-import { ApiMock, deferred, loadConfig, mockApi, settle, setMediaQuery, testProviders } from '../../testing/fakes';
+import { ApiMock, deferred, loadConfig, mockApi, setHidden, settle, setMediaQuery, testProviders } from '../../testing/fakes';
 import { Dialogs } from './dialogs.service';
 import { ListingStore } from './listing.store';
 import { describeScan, ScanService } from './scan/scan.service';
@@ -164,6 +164,32 @@ describe('ScanService', () => {
 
         expect(scan.status()).toEqual(completed);
         expect(show).toHaveBeenCalledWith('Index updated: 2 folders scanned · 5 files indexed');
+    });
+
+    it('does not poll a running scan while the page is hidden, and asks again once it shows', async () => {
+        vi.spyOn(window, 'confirm').mockReturnValue(true);
+        api.startScan.mockResolvedValue(running());
+        api.scanStatus.mockResolvedValue(running());
+        try {
+            await scan.start();
+            await settle(1100);
+            const calls = api.scanStatus.mock.calls.length;
+
+            setHidden(true);
+            await settle(2300);
+            expect(api.scanStatus.mock.calls.length).toBeLessThanOrEqual(calls + 1);
+            const hidden = api.scanStatus.mock.calls.length;
+            await settle(1100);
+            expect(api.scanStatus.mock.calls.length).toBe(hidden);
+
+            api.scanStatus.mockResolvedValue(completed);
+            setHidden(false);
+            await settle();
+            expect(api.scanStatus.mock.calls.length).toBe(hidden + 1);
+            expect(scan.status()).toEqual(completed);
+        } finally {
+            setHidden(false);
+        }
     });
 
     it('says when another scan is already running elsewhere', async () => {

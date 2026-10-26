@@ -39,8 +39,10 @@
 .scan-text span { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 .scan-panel.failed strong { color: var(--danger); }
 
+/* Moved by transform, not `left`: `left` laid the whole page out again on each frame for as long as a scan ran (the
+   bar is 30% wide: -100% to 333% of itself is -30% to 100% of the track). */
 @keyframes indeterminate {
-    from { left: -30%; }
-    to { left: 100%; }
+    from { transform: translateX(-100%); }
+    to { transform: translateX(333.34%); }
 }
 

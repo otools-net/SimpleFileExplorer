@@ -3,6 +3,7 @@ import { Api } from '../core/api.service';
 import { formatDate, plural } from '../core/format';
 import { KeepAliveFolder, KeepAliveView } from '../core/models';
 import { ToastService } from '../core/toast.service';
+import { visibleInterval } from '../core/visible-interval';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
 
@@ -87,8 +88,7 @@ export class KeepAliveStatusComponent {
 
     constructor() {
         void this.refresh();
-        const timer = setInterval(() => this.refresh(), REFRESH_MS);
-        inject(DestroyRef).onDestroy(() => clearInterval(timer));
+        inject(DestroyRef).onDestroy(visibleInterval(() => this.refresh(), REFRESH_MS));
     }
 
     protected network(folder: KeepAliveFolder): string {
