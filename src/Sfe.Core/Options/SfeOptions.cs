@@ -408,6 +408,12 @@ public sealed class ArchiveOptions
     public int MaxSkippedMegabytes { get; set; } = 2048;
 
     /// <summary>
+    /// Largest list of entries of a 7z read (its header, unpacked): SharpCompress holds a 7z's list whole, ~570 bytes per
+    /// entry, so a larger one is refused rather than read (listed, opened or extracted). 32 MB: ~400 000 entries.
+    /// </summary>
+    public int MaxSevenZipListMegabytes { get; set; } = Files.Compression.SevenZipList.DefaultMaxMegabytes;
+
+    /// <summary>
     /// Entries listed at most for an archive whose names are encrypted: its list is held in memory (never written to
     /// disk), while its password is.
     /// </summary>

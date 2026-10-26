@@ -29,6 +29,37 @@ public sealed class ArchiveReaderTests
     public void Delete() => Directory.Delete(_folder, recursive: true);
 
     [TestMethod]
+    public void ASevenZipsListIsMeasuredBeforeItIsReadAndRefusedPastTheLimit()
+    {
+        // 7-Zip compresses the list (LZMA), and encrypts it too for hidden names (AES then LZMA: two coders).
+        foreach (var name in new[] { "tree-solid.7z", "tree-files-encrypted.7z", "tree-names-encrypted.7z" })
+        {
+            using var stream = File.OpenRead(TestSamples.ArchiveOf(name));
+            stream.Position = 5;
+            var size = SevenZipList.UnpackedSize(stream);
+            Assert.IsTrue(size is > 100 and < 64 * 1024, $"{name}: {size}");
+            Assert.AreEqual(5, stream.Position, "the stream is left where it was");
+        }
+
+        var solid = TestSamples.ArchiveOf("tree-solid.7z");
+        var listed = Assert.Throws<ArchiveException>(() => ArchiveReader.ReadEntries(solid, ArchiveFormat.SevenZip, maxSevenZipList: 100).ToList());
+        StringAssert.Contains(listed.Message, "MaxSevenZipListMegabytes");
+        Assert.Throws<ArchiveException>(() => ArchiveReader.ReadThrough(solid, ArchiveFormat.SevenZip, null, (_, _) => { }, maxSevenZipList: 100));
+        var entry = ArchiveReader.ReadEntries(solid, ArchiveFormat.SevenZip).First(found => found.Kind == ArchiveEntryKind.File);
+        Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, entry, maxSevenZipList: 100).Dispose());
+        using (ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, entry))
+        {
+            // Under the default limit: opened.
+        }
+
+        // Headers that can't be followed: no size (SharpCompress says what is wrong).
+        var cut = Path.Combine(_folder, "cut.7z");
+        File.WriteAllBytes(cut, File.ReadAllBytes(solid)[..40]);
+        using (var stream = File.OpenRead(cut))
+            Assert.IsNull(SevenZipList.UnpackedSize(stream));
+    }
+
+    [TestMethod]
     public void TheBytesDecideTheFormatAndTheNameTellsATarFromOneFile()
     {
         var zip = TestArchives.Zip(_folder, "a.zip", ("x.txt", "x"));

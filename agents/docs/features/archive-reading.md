@@ -43,7 +43,11 @@ proportion to its entries.
   Extended timestamp (`0x5455`) over DOS time. Unix mode in the external attributes gives links and devices.
   `Locator` = the local header's offset: opening an entry is one seek. Stored and deflate only (others answer that
   the method isn't read).
-- **7z**: SharpCompress' archive (the header is at the end and read whole); `Locator` = the entry's index.
+- **7z**: SharpCompress' archive (the header is at the end and read whole); `Locator` = the entry's index. Its list is
+  held whole (~570 bytes an entry): `SevenZipList.UnpackedSize` reads the list's size first (the start header; for a
+  compressed list, the unpack size of its streams, a few bytes, coders parsed but nothing unpacked) and every opening
+  (list, entry, extraction) refuses past `Files:Archives:MaxSevenZipListMegabytes` (32: ~400 000 entries); headers it
+  can't follow give null and SharpCompress decides.
 - **rar, tar, compressed tars**: SharpCompress' forward reader; opening an entry walks to its index.
 - **Passwords**: `ReadEntries(…, password)` (7z, rar lists encrypted) and `OpenEntry(…, password)`; without one,
   `ArchiveException.NeedsPassword`. 7z and rar through SharpCompress' `ReaderOptions.Password` (a wrong one throws a
@@ -115,8 +119,8 @@ after its start. Pages: the root's median of 10 (200 rows), a folder's first pag
 | 7z, 1 000 000 empty files (38 MB, a header only) | 8.4 s | **717 MB** (145) | 62 MB | 10 ms | 17 ms | 0.9 s | Find in this folder 17 ms |
 
 - Zip and tar reads stream: memory stays flat whatever the count. **A 7z's list is held whole by SharpCompress**:
-  ~570 bytes per entry (1 M: +570 MB; `MaxEntries` 10 M would be GBs). See
-  [archives-next-plan](../development/archives-next-plan.md).
+  ~570 bytes per entry (1 M: +570 MB; `MaxEntries` 10 M would be GBs): hence `MaxSevenZipListMegabytes` (this 7z's
+  38 MB list is now refused in 0.3 s, 149 MB peak).
 - Pages cost the same on any archive (keyset ranges); before catalog version 3 every page scanned all entries for
   `SmallestEncrypted` (600 ms at 5 M).
 - Go to by `at` is bounded by the address: Kestrel's 8 KB request line, each `/` sent as `%2F` (~2 000 levels).

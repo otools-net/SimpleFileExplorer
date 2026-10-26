@@ -24,9 +24,8 @@ what it left for later, none of it promised. Tick `[x]` in the commit that does 
 
 ## Measured (`agents/tools/archives/measure.mjs`, results in [archive-reading](../features/archive-reading.md))
 
-- [ ] **7z lists in memory**: SharpCompress holds a 7z's whole list, ~570 bytes per entry (1 M entries: 717 MB peak).
-  A bound before reading (its header's size is in the start header: 20 bytes at offset 12) or a limit of 7z entries
-  well under `MaxEntries`; or our own header reader streaming entries, as `ZipDirectory` does for zips.
+- [ ] 7z lists past `MaxSevenZipListMegabytes` (refused today): our own header reader streaming entries, as
+  `ZipDirectory` does for zips, if people need bigger 7z.
 - [ ] RAR with millions of entries: not measured (nothing free writes one).
 - [ ] Find in archive's `where` for results very deep costs a lookup per level (9 999: ~1 s): a cap, or the path
   built from the folders' rows of the page.

@@ -170,7 +170,7 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         var needsPassword = false;
         try
         {
-            foreach (var entry in ArchiveReader.ReadEntries(archivePath, format, cancel, password))
+            foreach (var entry in ArchiveReader.ReadEntries(archivePath, format, cancel, password, options.MaxSevenZipListMegabytes * 1024L * 1024))
             {
                 if (writer.Entries >= options.MaxEntries)
                 {

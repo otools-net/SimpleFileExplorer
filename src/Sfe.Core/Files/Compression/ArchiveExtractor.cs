@@ -7,7 +7,8 @@ namespace Sfe.Core.Files.Compression;
 /// <param name="MaxCompressionRatio">A file claiming more than this many times its packed size is left out.</param>
 /// <param name="PortableNames">Names Windows refuses are left out on other systems too (<see cref="FileNames.Check"/>).</param>
 /// <param name="MaxFullPath">Longest full path written (the index's limit), or none.</param>
-public sealed record ExtractLimits(int MaxDepth, long MaxEntries, double MaxCompressionRatio, bool PortableNames, int? MaxFullPath = null);
+public sealed record ExtractLimits(int MaxDepth, long MaxEntries, double MaxCompressionRatio, bool PortableNames, int? MaxFullPath = null,
+    long MaxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024);
 
 /// <summary>An entry not extracted, and why.</summary>
 public sealed record ExtractLeftOut(string Name, string Reason);
@@ -91,7 +92,7 @@ public static class ArchiveExtractor
                 if (picked is not null && (start = PickedAt(segments, picked, pickedDepth)) < 0)
                     return;
                 Write(entry, segments, start, open);
-            }, read, cancel);
+            }, read, cancel, limits.MaxSevenZipList);
         }
         catch (Stop stop)
         {

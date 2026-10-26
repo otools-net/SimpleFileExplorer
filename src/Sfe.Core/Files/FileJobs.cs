@@ -566,7 +566,8 @@ public sealed class FileJobs(
             await using (var db = await dbFactory.CreateDbContextAsync(token))
                 maxFullPath = db.PathLengthLimit;
             var archives = settings.Files.Archives;
-            var limits = new ExtractLimits(archives.MaxDepth, archives.MaxEntries, archives.MaxCompressionRatio, settings.Files.PortableNames, maxFullPath);
+            var limits = new ExtractLimits(archives.MaxDepth, archives.MaxEntries, archives.MaxCompressionRatio, settings.Files.PortableNames, maxFullPath,
+                archives.MaxSevenZipListMegabytes * 1024L * 1024);
             var margin = Math.Max(0, settings.Files.MinimumFreeSpaceMegabytes) * 1024L * 1024;
             var unchecked_ = FreeSpaceStep;   // the first file: read at once
             extracted = ArchiveExtractor.Extract(source, format, job.Password, partial, job.Request.Entries, limits,

@@ -381,7 +381,7 @@ public static class ExploreEndpoints
             return TypedResults.Problem(state.Error, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
 
         var log = loggers.CreateLogger("Sfe.Api.Archives");
-        var opens = await Task.Run(() => Opens(full, format, catalog, request.Password, options.CurrentValue.Files.Archives.MaxSkippedMegabytes * 1024L * 1024), cancellationToken);
+        var opens = await Task.Run(() => Opens(full, format, catalog, request.Password, options.CurrentValue.Files.Archives), cancellationToken);
         if (opens is null)
             return TypedResults.Problem("Nothing in this archive is protected by a password.", statusCode: StatusCodes.Status409Conflict, type: NotProtectedType);
         var access = await current.GetAsync();
@@ -402,19 +402,20 @@ public static class ExploreEndpoints
     /// encrypted file read through (up to <see cref="TryBytes"/>: the checks of zip and RAR come first, AES' at the end);
     /// null when nothing in it is encrypted.
     /// </summary>
-    private static bool? Opens(string full, ArchiveFormat format, ArchiveCatalog catalog, string password, long maxSkipped)
+    private static bool? Opens(string full, ArchiveFormat format, ArchiveCatalog catalog, string password, ArchiveOptions settings)
     {
+        var maxList = settings.MaxSevenZipListMegabytes * 1024L * 1024;
         try
         {
             if (catalog.Summary().NeedsPassword)
             {
                 // The list decrypts (its first entry read) or the reader says the password is wrong.
-                _ = ArchiveReader.ReadEntries(full, format, password: password).Take(1).ToList();
+                _ = ArchiveReader.ReadEntries(full, format, password: password, maxSevenZipList: maxList).Take(1).ToList();
                 return true;
             }
             if (catalog.SmallestEncrypted() is not { } file)
                 return null;
-            using var data = ArchiveReader.OpenEntry(full, format, file.Entry, password, maxSkipped);
+            using var data = ArchiveReader.OpenEntry(full, format, file.Entry, password, settings.MaxSkippedMegabytes * 1024L * 1024, maxList);
             var buffer = new byte[64 * 1024];
             for (long read = 0, got; read < TryBytes && (got = data.Read(buffer)) > 0; read += got)
             {
@@ -543,7 +544,8 @@ public static class ExploreEndpoints
 
         try
         {
-            return new(null, ArchiveReader.OpenEntry(full, format, entry, password, settings.MaxSkippedMegabytes * 1024L * 1024), file, full, canonical);
+            return new(null, ArchiveReader.OpenEntry(full, format, entry, password, settings.MaxSkippedMegabytes * 1024L * 1024,
+                settings.MaxSevenZipListMegabytes * 1024L * 1024), file, full, canonical);
         }
         catch (ArchiveException error) when (error.TooFar)
         {

@@ -136,6 +136,7 @@ Set in the configuration only ([configuration](../configuration.md)), under `Sfe
 | `MaxCompressedTarMegabytes` | 2048 | Largest `.tar.gz` / `.tar.bz2` / `.tar.xz` explored |
 | `MaxEncryptedListEntries` | 500 000 | Entries listed at most for an archive whose list is protected (kept in the server's memory, never on its disk, while the password is) |
 | `MaxPreviewMegabytes` | 64 | Largest file opened from an archive in a tab; larger ones only download |
+| `MaxSevenZipListMegabytes` | 32 | Largest list of entries of a 7z read (about 400 000 entries): a 7z's list is held whole in the server's memory while it is read, so a larger one is not opened nor extracted by the server (download it) |
 | `MaxSkippedMegabytes` | 2048 | A solid 7z or rar, or a `.tar.gz`, has to unpack the files before the one opened: past this much, that file is only extracted, or the archive downloaded |
 | `MaxCompressionRatio` | 10 000 | A file claiming to be larger than this many times its packed size is refused (a "zip bomb") |
 | `CatalogBuilds` | 1 | Archives' lists read at once by the whole server; others wait their turn |

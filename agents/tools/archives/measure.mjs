@@ -172,6 +172,13 @@ for (const scenario of scenarios) {
             archiveMB: fs.statSync(file).size / 1048576, buildS: build, memoryBeforeMB: before, peakMB: peak, catalogMB: folderSize(path.join(cache, 'archives')) / 1048576,
             rootPageMs: median(root),
         };
+        if (!listing.complete) {
+            // Refused or stopped (a limit): said so, nothing more to time.
+            row.stopped = listing.stopped;
+            results.push(row);
+            console.log(JSON.stringify(row));
+            continue;
+        }
         if (scenario.folder) {
             const folder = await timed(cookie, '', { path: scenario.file, at: scenario.folder, limit: 1000 });
             row.folderPageMs = folder.ms;
@@ -231,6 +238,6 @@ console.log('|---|---|---|---|---|---|---|---|---|---|');
 for (const row of results) {
     const other = [row.walk && `walk: ${row.walk}`, row.findInFolder && `find in folder: ${row.findInFolder}`,
         row.goToDeepMs !== undefined && `Go to ${row.goToLevels.toLocaleString('en')} folders down: ${fixed(row.goToDeepMs)} ms (${row.trailSkipped} skipped)`,
-        !row.complete && 'INCOMPLETE', row.leftOut && `${row.leftOut} left out`].filter(Boolean).join('; ');
-    console.log(`| ${row.name}: ${row.what} | ${row.entries.toLocaleString('en')} | ${fixed(row.archiveMB)} MB | ${fixed(row.buildS, 1)} s | ${fixed(row.peakMB)} MB (${fixed(row.memoryBeforeMB)}) | ${fixed(row.catalogMB)} MB | ${fixed(row.rootPageMs, 1)} ms | ${row.folderPageMs === undefined ? "" : `${fixed(row.folderPageMs, 1)} ms`} | ${row.findAll} | ${other} |`);
+        !row.complete && `STOPPED: ${row.stopped}`, row.leftOut && `${row.leftOut} left out`].filter(Boolean).join('; ');
+    console.log(`| ${row.name}: ${row.what} | ${row.entries.toLocaleString('en')} | ${fixed(row.archiveMB)} MB | ${fixed(row.buildS, 1)} s | ${fixed(row.peakMB)} MB (${fixed(row.memoryBeforeMB)}) | ${fixed(row.catalogMB)} MB | ${fixed(row.rootPageMs, 1)} ms | ${row.folderPageMs === undefined ? "" : `${fixed(row.folderPageMs, 1)} ms`} | ${row.findAll ?? ''} | ${other} |`);
 }

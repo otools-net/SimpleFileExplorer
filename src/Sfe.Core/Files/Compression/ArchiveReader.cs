@@ -16,13 +16,15 @@ public static class ArchiveReader
     /// <summary>
     /// The entries of the archive at <paramref name="fullPath"/>, in the archive's order, as they are read (a caller
     /// stops when it has enough). Errors of the archive come as <see cref="ArchiveException"/>. <paramref name="password"/>
-    /// opens a 7z or rar whose list is encrypted (a zip's names are never encrypted).
+    /// opens a 7z or rar whose list is encrypted (a zip's names are never encrypted). A 7z whose list is larger than
+    /// <paramref name="maxSevenZipList"/> bytes is refused before it is read (<see cref="SevenZipList"/>).
     /// </summary>
-    public static IEnumerable<ArchiveEntry> ReadEntries(string fullPath, ArchiveFormat format, CancellationToken cancel = default, string? password = null) =>
+    public static IEnumerable<ArchiveEntry> ReadEntries(string fullPath, ArchiveFormat format, CancellationToken cancel = default, string? password = null,
+        long maxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024) =>
         format switch
         {
             ArchiveFormat.Zip => ReadZip(fullPath, cancel),
-            ArchiveFormat.SevenZip => ReadSevenZip(fullPath, cancel, password),
+            ArchiveFormat.SevenZip => ReadSevenZip(fullPath, cancel, password, maxSevenZipList),
             ArchiveFormat.TarGzip or ArchiveFormat.TarBzip2 or ArchiveFormat.TarXz => ReadCompressedTar(fullPath, format, cancel),
             _ => ReadForward(fullPath, format, cancel, password),
         };
@@ -33,7 +35,8 @@ public static class ArchiveReader
     /// tar, unpacks the entries before it to reach it: past <paramref name="maxSkipped"/> bytes of those (as declared,
     /// which is what the decoder produces), it is refused (<see cref="ArchiveException.TooFar"/>), before any is unpacked.
     /// </summary>
-    public static Stream OpenEntry(string fullPath, ArchiveFormat format, ArchiveEntry entry, string? password = null, long maxSkipped = long.MaxValue)
+    public static Stream OpenEntry(string fullPath, ArchiveFormat format, ArchiveEntry entry, string? password = null, long maxSkipped = long.MaxValue,
+        long maxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024)
     {
         if (entry.Kind != ArchiveEntryKind.File)
             throw new ArchiveException("Only files of an archive have data.");
@@ -45,7 +48,7 @@ public static class ArchiveReader
             if (format == ArchiveFormat.Zip)
                 return ZipDirectory.Locate(stream).OpenEntry(stream, entry, password);
             return Wrap(() => format == ArchiveFormat.SevenZip
-                ? OpenSevenZip(stream, entry, password, maxSkipped)
+                ? OpenSevenZip(stream, entry, password, maxSkipped, maxSevenZipList)
                 : OpenForward(stream, format, entry, password, maxSkipped));
         }
         catch
@@ -62,7 +65,7 @@ public static class ArchiveReader
     /// is told how far into the archive's file the pass is, after each entry.
     /// </summary>
     public static void ReadThrough(string fullPath, ArchiveFormat format, string? password, Action<ArchiveEntry, Func<Stream>> visit,
-        Action<long>? read = null, CancellationToken cancel = default)
+        Action<long>? read = null, CancellationToken cancel = default, long maxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024)
     {
         switch (format)
         {
@@ -72,6 +75,7 @@ public static class ArchiveReader
             case ArchiveFormat.SevenZip:
                 {
                     using var stream = Open(fullPath);
+                    SevenZipList.Check(stream, maxSevenZipList);
                     using var archive = Wrap(() => SevenZipArchive.OpenArchive(stream, Options(password)));
                     using var reader = Wrap(archive.ExtractAllEntries);
                     ReadThroughReader(reader, password, visit, () => read?.Invoke(stream.Position), cancel);
@@ -169,9 +173,10 @@ public static class ArchiveReader
             yield return entry;
     }
 
-    private static IEnumerable<ArchiveEntry> ReadSevenZip(string fullPath, CancellationToken cancel, string? password)
+    private static IEnumerable<ArchiveEntry> ReadSevenZip(string fullPath, CancellationToken cancel, string? password, long maxList)
     {
         using var stream = Open(fullPath);
+        SevenZipList.Check(stream, maxList);
         using var archive = Wrap(() => SevenZipArchive.OpenArchive(stream, Options(password)));
         using var entries = Wrap(() => archive.Entries.GetEnumerator());
         for (var index = 0L; Wrap(entries.MoveNext); index++)
@@ -250,8 +255,9 @@ public static class ArchiveReader
     private static ArchiveException CutOff() =>
         new("The archive ends without its end mark: it is cut off or broken. Only the entries before the break are listed.");
 
-    private static Stream OpenSevenZip(FileStream stream, ArchiveEntry entry, string? password, long maxSkipped)
+    private static Stream OpenSevenZip(FileStream stream, ArchiveEntry entry, string? password, long maxSkipped, long maxList)
     {
+        SevenZipList.Check(stream, maxList);
         var archive = SevenZipArchive.OpenArchive(stream, Options(password));
         try
         {
