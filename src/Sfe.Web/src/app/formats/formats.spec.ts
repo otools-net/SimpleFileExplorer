@@ -92,6 +92,8 @@ describe('formats', () => {
 
     it('explores archives only where it works: never one file compressed alone, nor a big compressed tar', () => {
         const zip = item('a/backup.zip', { kind: 'file' });
+        // A module's state: a configuration loaded by another spec in this worker may have set it.
+        setArchives(null);
         expect(formatOf(zip), 'off until the configuration says so (the right to view files)').toBeNull();
 
         setArchives({ maxCompressedTarMegabytes: 10 });

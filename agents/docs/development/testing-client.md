@@ -27,3 +27,6 @@ Rules and helpers: [testing.md](testing.md). Code: `src/Sfe.Web/src/testing/setu
 - An `<iframe>` with a `src` logs jsdom's "Not implemented: navigation to another Document": harmless (the Flash
   view's `flash-player.spec.ts`); its `contentWindow` exists, and a message "from it" is a `MessageEvent` dispatched on
   `window` with `source: frame.contentWindow`.
+- Module-level state of `formats.ts` (`setArchives`, `setTextExtensions`, `setFlashMovies`, set by `loadConfig`) lives
+  on between spec files of one worker: a spec asserting the "off" state sets it first (`setArchives(null)`), else it
+  fails only in some orders.
