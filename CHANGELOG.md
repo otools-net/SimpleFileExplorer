@@ -12,6 +12,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   deep). Move around with the folders, **Up** and **Go to folder**; open a file from the archive in a new tab, or
   download it. Names leading out of the archive and links are never offered. See
   [Archives](docs/user-guide/archives.md).
+- **Archives with a password** open with it: the viewer asks for it (as it opens an archive whose list is protected,
+  or when a protected file is clicked), then their files open for 15 minutes. Zips with AES or ZipCrypto, 7z and rar.
+  The password stays in the server's memory only, for you only, and a protected list is never written to its disk.
 
 ### Fixed
 

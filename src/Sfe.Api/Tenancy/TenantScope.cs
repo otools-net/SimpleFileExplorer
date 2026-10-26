@@ -107,6 +107,7 @@ public static class TenancyServiceCollectionExtensions
         services.AddSingleton<FfmpegLimits>();
         services.AddSingleton<VideoStreams>();
         services.AddSingleton<Sfe.Core.Files.Compression.ArchiveBuildGate>();
+        services.AddSingleton<Security.ArchiveUnlocks>();
         // The update of an install to this version, which the libraries wait for, and its backups.
         services.AddSingleton<Maintenance.MigrationCoordinator>();
         services.AddSingleton<Maintenance.BackupSources>();

@@ -239,6 +239,15 @@ export interface ArchiveListing {
     trail: { skipped: number; last: { id: number; name: string }[] };
     items: ArchiveItem[];
     next: string | null;
+    /** Some of its files are encrypted (or its list was read with a password). */
+    protected?: boolean;
+    /** The unlock sent opens this archive. */
+    unlocked?: boolean;
+}
+
+/** `api/files/explore/unlock`: what later requests about the archive send back (never the password). */
+export interface ArchiveUnlocked {
+    unlock: string;
 }
 
 /** The archive's list is being read (202): entries read so far. */
@@ -248,6 +257,9 @@ export interface ArchiveReading {
 
 /** What `api/files/explore` answers: a page, the reading so far, or why it can't be explored (409). */
 export type ArchiveAnswer = ArchiveListing | ArchiveReading | FileConflict;
+
+/** What trying a password answers: an unlock, the list still being read, or (409) nothing in it is protected. */
+export type ArchiveUnlockAnswer = ArchiveUnlocked | ArchiveReading | FileConflict;
 
 /** The answer of a file operation: the new or renamed item, or why it was not done. */
 export type FileOperationResult = LibraryItem | FileConflict;

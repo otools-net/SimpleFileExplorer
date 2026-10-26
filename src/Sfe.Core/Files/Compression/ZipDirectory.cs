@@ -114,6 +114,7 @@ internal sealed class ZipDirectory
                 throw new ArchiveException("The zip's directory is damaged.");
             int madeBy = U16(header, 4), flags = U16(header, 8), method = U16(header, 10);
             int time = U16(header, 12), date = U16(header, 14);
+            var crc = U32(header, 16);
             long packed = U32(header, 20), size = U32(header, 24);
             int nameLength = U16(header, 28), extraLength = U16(header, 30), commentLength = U16(header, 32);
             var attributes = U32(header, 38);
@@ -127,6 +128,7 @@ internal sealed class ZipDirectory
                 stream.Seek(commentLength, SeekOrigin.Current);
 
             DateTime? modified = DosTime(date, time);
+            int? aesInfo = null;
             var at = 0;
             while (at + 4 <= extraLength)
             {
@@ -148,30 +150,49 @@ internal sealed class ZipDirectory
                     var seconds = BinaryPrimitives.ReadInt32LittleEndian(extra.AsSpan(data + 1));
                     modified = DateTime.SpecifyKind(DateTime.UnixEpoch.AddSeconds(seconds).ToLocalTime(), DateTimeKind.Unspecified);
                 }
+                else if (id == 0x9901 && length >= 7 && extra[data + 2] == 'A' && extra[data + 3] == 'E')
+                {
+                    // WinZip AES: the vendor version (AE-1, AE-2), the strength, and the method under the encryption.
+                    aesInfo = (U16(extra, data) << 4) | extra[data + 4];
+                    method = U16(extra, data + 5);
+                }
                 at = data + length;
             }
 
             var text = DecodeName(name.AsSpan(0, nameLength), (flags & 0x0800) != 0);
+            var encrypted = (flags & 1) != 0;
+            // ZipCrypto's check byte: the CRC's high byte, or the time's when the sizes follow the data (flag 3).
+            var cipher = !encrypted ? ZipCipher.None : aesInfo is null ? ZipCipher.ZipCrypto : ZipCipher.Aes;
+            var cipherInfo = cipher switch
+            {
+                ZipCipher.Aes => aesInfo!.Value,
+                ZipCipher.ZipCrypto => (flags & 8) != 0 ? (time >> 8) & 0xFF : (int)(crc >> 24),
+                _ => 0,
+            };
             yield return new ArchiveEntry(
                 text,
                 KindOf(text, madeBy, attributes),
                 size,
                 packed,
                 modified,
-                Encrypted: (flags & 1) != 0,
+                Encrypted: encrypted,
                 Locator: offset + Shift,
-                Method: method);
+                Method: method,
+                Crc: crc,
+                Cipher: cipher,
+                CipherInfo: cipherInfo);
         }
     }
 
     /// <summary>
-    /// The data of <paramref name="entry"/>, decompressed and held to its declared size. Stored and deflated entries
-    /// (nearly every zip); others answer that the method isn't read.
+    /// The data of <paramref name="entry"/>, decrypted with <paramref name="password"/> when it is encrypted,
+    /// decompressed and held to its declared size. Stored and deflated entries (nearly every zip); others answer that
+    /// the method isn't read.
     /// </summary>
-    public Stream OpenEntry(Stream stream, ArchiveEntry entry)
+    public Stream OpenEntry(Stream stream, ArchiveEntry entry, string? password = null)
     {
-        if (entry.Encrypted)
-            throw new ArchiveException("This entry is protected by a password.", needsPassword: true);
+        if (entry.Encrypted && entry.Cipher == ZipCipher.None)
+            throw new ArchiveException("This entry is encrypted in a way SFE doesn't read.");
         if (entry.Locator < 0 || entry.Locator > Start - LocalLength)
             throw new ArchiveException("An entry of the zip points outside of it: the archive is broken.");
         var local = new byte[LocalLength];
@@ -183,14 +204,27 @@ internal sealed class ZipDirectory
         // An entry's data never runs into the directory (overlapping entries are how some zip bombs multiply).
         if (entry.Packed < 0 || dataStart + entry.Packed > Start)
             throw new ArchiveException("An entry of the zip runs past its data: the archive is broken.");
-        var packed = new WindowStream(stream, dataStart, entry.Packed);
-        return entry.Method switch
+        Stream packed = new WindowStream(stream, dataStart, entry.Packed);
+        if (entry.Encrypted)
+            packed = ZipEncryption.Decrypt(packed, entry, password);
+        // What encryption adds to the packed size: a stored entry's data is its size once that is taken off.
+        var overhead = entry.Cipher switch
         {
-            0 when entry.Packed == entry.Size => new DeclaredSizeStream(packed, entry.Size),
+            ZipCipher.ZipCrypto => ZipEncryption.ZipCryptoHeader,
+            ZipCipher.Aes => ZipEncryption.SaltLength(entry.CipherInfo & 0xF) + ZipEncryption.AesVerifier + ZipEncryption.AesAuthCode,
+            _ => 0,
+        };
+        Stream data = entry.Method switch
+        {
+            0 when entry.Packed - overhead == entry.Size => packed,
             0 => throw new ArchiveException("A stored entry of the zip has two sizes: the archive is broken."),
-            8 => new DeclaredSizeStream(new DeflateStream(packed, CompressionMode.Decompress), entry.Size),
+            8 => new DeflateStream(packed, CompressionMode.Decompress),
             _ => throw new ArchiveException($"This entry uses a compression method SFE doesn't read ({entry.Method})."),
         };
+        // A wrong ZipCrypto password passes its check byte 1 time in 256, AE-1 keeps the CRC too: checked at the end.
+        if (entry.Cipher == ZipCipher.ZipCrypto || (entry.Cipher == ZipCipher.Aes && entry.CipherInfo >> 4 == 1))
+            data = new CrcCheckStream(data, entry.Crc);
+        return new DeclaredSizeStream(data, entry.Size);
     }
 
     private static ArchiveEntryKind KindOf(string name, int madeBy, uint attributes)

@@ -159,6 +159,113 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
         }
     }
 
+    /// <summary>Lists of archives with encrypted names held at once per library (each up to <see cref="ArchiveOptions.MaxEncryptedListEntries"/>).</summary>
+    public const int MaxInMemory = 4;
+
+    /// <summary>A list in memory unused this long is dropped (as the unlock that opened it).</summary>
+    internal TimeSpan InMemoryIdle { get; init; } = TimeSpan.FromMinutes(15);
+
+    private readonly Dictionary<string, MemoryList> _inMemory = [];
+
+    /// <summary>
+    /// The catalog of an archive whose names are encrypted, read with <paramref name="password"/> into memory for the
+    /// unlock <paramref name="unlock"/>: built in the background as others are (Building), then Ready; Failed with a
+    /// wrong password. Never written to disk.
+    /// </summary>
+    public ArchiveCatalogState GetInMemory(string fullPath, string canonicalPath, ArchiveFormat format, string unlock, string password)
+    {
+        var info = new FileInfo(fullPath);
+        var key = unlock + ":" + KeyOf(canonicalPath, info.Length, info.LastWriteTimeUtc);
+        MemoryList list;
+        lock (_inMemory)
+        {
+            DropIdle();
+            if (!_inMemory.TryGetValue(key, out list!))
+            {
+                while (_inMemory.Count >= MaxInMemory)
+                    Drop(_inMemory.MinBy(pair => pair.Value.Used).Key);
+                list = _inMemory[key] = new MemoryList();
+                _ = Task.Run(() => BuildInMemoryAsync(list, fullPath, format, password));
+            }
+            list.Used = DateTime.UtcNow;
+        }
+        if (list.Error is { } error)
+            return new ArchiveCatalogState(ArchiveCatalogStatus.Failed, Error: error);
+        return list.Catalog is { } catalog
+            ? new ArchiveCatalogState(ArchiveCatalogStatus.Ready, catalog)
+            : new ArchiveCatalogState(ArchiveCatalogStatus.Building, Read: list.Read);
+    }
+
+    private async Task BuildInMemoryAsync(MemoryList list, string fullPath, ArchiveFormat format, string password)
+    {
+        var settings = options.CurrentValue.Files.Archives;
+        var semaphore = gate.Builds(settings.CatalogBuilds);
+        var entered = false;
+        try
+        {
+            await semaphore.WaitAsync(list.Cancel.Token).ConfigureAwait(false);
+            entered = true;
+            var limited = new ArchiveOptions
+            {
+                MaxEntries = Math.Min(settings.MaxEntries, settings.MaxEncryptedListEntries),
+                MaxDepth = settings.MaxDepth,
+            };
+            var catalog = ArchiveCatalog.BuildInMemory(fullPath, format, password, limited, out var keeper,
+                new Progress(read => list.Read = read), list.Cancel.Token);
+            lock (_inMemory)
+            {
+                if (list.Cancel.IsCancellationRequested)
+                {
+                    keeper.Dispose();
+                    return;
+                }
+                list.Keeper = keeper;
+                var summary = catalog.Summary();
+                if (summary.NeedsPassword && summary.Entries == 0)
+                    list.Error = "That password doesn't open this archive.";
+                else
+                    list.Catalog = catalog;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or SqliteException)
+        {
+            logger.LogWarning(error, "Couldn't read the list of {Archive} with its password.", fullPath);
+            list.Error = "The archive can't be read now (in use, or the server may not read it).";
+        }
+        finally
+        {
+            if (entered)
+                semaphore.Release();
+        }
+    }
+
+    private void DropIdle()
+    {
+        foreach (var key in _inMemory.Where(pair => DateTime.UtcNow - pair.Value.Used > InMemoryIdle).Select(pair => pair.Key).ToList())
+            Drop(key);
+    }
+
+    private void Drop(string key)
+    {
+        if (!_inMemory.Remove(key, out var list))
+            return;
+        list.Cancel.Cancel();
+        list.Keeper?.Dispose();
+    }
+
+    private sealed class MemoryList
+    {
+        public readonly CancellationTokenSource Cancel = new();
+        public DateTime Used = DateTime.UtcNow;
+        public long Read;
+        public ArchiveCatalog? Catalog;
+        public SqliteConnection? Keeper;
+        public string? Error;
+    }
+
     /// <summary>The least recently used catalogs deleted until the library's are under the cap (the new one kept).</summary>
     internal void Evict(string keep)
     {

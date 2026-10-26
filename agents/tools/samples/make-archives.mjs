@@ -1,5 +1,5 @@
-// Makes the backend tests' archives that need another program (tests/samples/README.md): 7z by 7-Zip. Zips and tars
-// are written by the tests themselves (.NET writes them).
+// Makes the backend tests' archives that need another program (tests/samples/README.md): 7z, and encrypted zips (AES,
+// ZipCrypto), by 7-Zip. Plain zips and tars are written by the tests themselves (.NET writes them).
 //
 //   node agents/tools/samples/make-archives.mjs <output folder> <7z program>
 //
@@ -35,15 +35,19 @@ try {
         fs.utimesSync(path.join(entry.parentPath, entry.name), fixedTime, fixedTime);
 
     fs.mkdirSync(output, { recursive: true });
-    const make = (name, ...switches) => {
+    const make = (name, type, ...switches) => {
         const target = path.resolve(output, name);
         fs.rmSync(target, { force: true });
         // -mtc=off -mta=off: only modified times (the same at each run); "*" from inside the folder: relative names.
-        execFileSync(sevenZip, ['a', '-bd', '-bso0', '-t7z', '-mtc=off', '-mta=off', ...switches, target, '*'], { cwd: content, stdio: 'inherit' });
+        execFileSync(sevenZip, ['a', '-bd', '-bso0', `-t${type}`, '-mtc=off', '-mta=off', ...switches, target, '*'], { cwd: content, stdio: 'inherit' });
     };
-    make('tree-solid.7z', '-mx=5', '-ms=on');
-    make('tree-files-encrypted.7z', '-mx=5', '-psecret');
-    make('tree-names-encrypted.7z', '-mx=5', '-psecret', '-mhe=on');
+    make('tree-solid.7z', '7z', '-mx=5', '-ms=on');
+    make('tree-files-encrypted.7z', '7z', '-mx=5', '-psecret');
+    make('tree-names-encrypted.7z', '7z', '-mx=5', '-psecret', '-mhe=on');
+    // Zips with a password: their names stay in clear, the data is encrypted.
+    make('tree-aes256.zip', 'zip', '-mx=5', '-psecret', '-mem=AES256');
+    make('tree-aes128.zip', 'zip', '-mx=5', '-psecret', '-mem=AES128');
+    make('tree-zipcrypto.zip', 'zip', '-mx=5', '-psecret', '-mem=ZipCrypto');
 } finally {
     fs.rmSync(content, { recursive: true, force: true });
 }

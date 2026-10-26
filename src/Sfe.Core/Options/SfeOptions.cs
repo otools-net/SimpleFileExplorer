@@ -397,6 +397,12 @@ public sealed class ArchiveOptions
 
     /// <summary>Largest entry opened in the viewer from inside an archive; larger ones are only downloaded.</summary>
     public int MaxPreviewMegabytes { get; set; } = 64;
+
+    /// <summary>
+    /// Entries listed at most for an archive whose names are encrypted: its list is held in memory (never written to
+    /// disk), while its password is.
+    /// </summary>
+    public int MaxEncryptedListEntries { get; set; } = 500_000;
 }
 
 public sealed class UploadOptions

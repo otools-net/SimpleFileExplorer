@@ -51,10 +51,10 @@ public sealed record ArchiveTrail(int Skipped, IReadOnlyList<ArchiveFolder> Last
 /// is never stored whole, however deep. Every walk over depth is a loop: a tree 10 000 deep has no recursion to
 /// overflow.
 /// </summary>
-public sealed class ArchiveCatalog(string path)
+public sealed class ArchiveCatalog(string path, bool inMemory = false)
 {
-    /// <summary>Changes with the schema: catalogs of another version are made again, never read.</summary>
-    public const int Version = 1;
+    /// <summary>Changes with the schema: catalogs of another version are made again, never read (2: zip ciphers, CRC).</summary>
+    public const int Version = 2;
 
     /// <summary>The root folder's id (its parent is 0, no folder).</summary>
     public const long RootId = 1;
@@ -66,6 +66,12 @@ public sealed class ArchiveCatalog(string path)
     private const int FolderCacheCount = 200_000;
 
     public string Path { get; } = path;
+
+    /// <summary>
+    /// Held in memory (a shared-cache SQLite database named <see cref="Path"/>), never on disk: the list of an archive
+    /// whose names are encrypted. It lives while the connection <see cref="BuildInMemory"/> answered stays open.
+    /// </summary>
+    public bool InMemory { get; } = inMemory;
 
     /// <summary>
     /// Reads the archive's list into a new catalog at <paramref name="catalogPath"/> (written beside it, then moved
@@ -85,55 +91,8 @@ public sealed class ArchiveCatalog(string path)
         File.Delete(building);
         try
         {
-            using (var connection = Connect(building, SqliteOpenMode.ReadWriteCreate))
-            {
-                Execute(connection, """
-                    PRAGMA journal_mode = OFF;
-                    PRAGMA synchronous = OFF;
-                    PRAGMA cache_size = -16000;
-                    CREATE TABLE Info (Key TEXT PRIMARY KEY, Value TEXT) WITHOUT ROWID;
-                    CREATE TABLE Folders (
-                        Id INTEGER PRIMARY KEY, ParentId INTEGER NOT NULL, Name TEXT NOT NULL COLLATE NOCASE,
-                        Depth INTEGER NOT NULL, Time INTEGER,
-                        Folders INTEGER NOT NULL DEFAULT 0, Files INTEGER NOT NULL DEFAULT 0,
-                        AllFiles INTEGER NOT NULL DEFAULT 0, Size REAL NOT NULL DEFAULT 0, Packed REAL NOT NULL DEFAULT 0);
-                    CREATE INDEX FoldersByExactName ON Folders (ParentId, Name COLLATE BINARY);
-                    CREATE TABLE Entries (
-                        Id INTEGER PRIMARY KEY, FolderId INTEGER NOT NULL, Name TEXT NOT NULL COLLATE NOCASE,
-                        Kind INTEGER NOT NULL, Size INTEGER NOT NULL, Packed INTEGER NOT NULL, Time INTEGER,
-                        Encrypted INTEGER NOT NULL, Locator INTEGER NOT NULL, Method INTEGER NOT NULL);
-                    CREATE TABLE LeftOut (Name TEXT NOT NULL, Reason TEXT NOT NULL);
-                    INSERT INTO Folders (Id, ParentId, Name, Depth) VALUES (1, 0, '', 0);
-                    """);
-                var writer = new Writer(connection, options.MaxDepth);
-                string? stopped = null;
-                var needsPassword = false;
-                try
-                {
-                    foreach (var entry in ArchiveReader.ReadEntries(archivePath, format, cancel))
-                    {
-                        if (writer.Entries >= options.MaxEntries)
-                        {
-                            stopped = $"The archive holds more than {options.MaxEntries:N0} entries: only the first are listed.";
-                            break;
-                        }
-                        writer.Add(entry);
-                        if (writer.Entries % BatchRows == 0)
-                        {
-                            writer.Commit();
-                            progress?.Report(writer.Entries);
-                        }
-                    }
-                }
-                catch (ArchiveException error)
-                {
-                    stopped = error.Message;
-                    needsPassword = error.NeedsPassword;
-                }
-                writer.Commit();
-                writer.Finish(format, stopped, needsPassword);
-                progress?.Report(writer.Entries);
-            }
+            using (var connection = Connect(building, SqliteOpenMode.ReadWriteCreate, inMemory: false))
+                Fill(connection, archivePath, format, options, null, progress, cancel);
             File.Move(building, catalogPath, overwrite: true);
             return new ArchiveCatalog(catalogPath);
         }
@@ -144,9 +103,88 @@ public sealed class ArchiveCatalog(string path)
         }
     }
 
+    /// <summary>
+    /// Reads the list of an archive whose names are encrypted, with its <paramref name="password"/>, into a catalog in
+    /// memory: the names never reach the disk. The catalog lives as long as <paramref name="keeper"/> stays open.
+    /// </summary>
+    public static ArchiveCatalog BuildInMemory(
+        string archivePath,
+        ArchiveFormat format,
+        string password,
+        ArchiveOptions options,
+        out SqliteConnection keeper,
+        IProgress<long>? progress = null,
+        CancellationToken cancel = default)
+    {
+        var name = "sfe-archive-" + Guid.NewGuid().ToString("N");
+        keeper = Connect(name, SqliteOpenMode.Memory, inMemory: true);
+        try
+        {
+            Fill(keeper, archivePath, format, options, password, progress, cancel);
+            return new ArchiveCatalog(name, inMemory: true);
+        }
+        catch
+        {
+            keeper.Dispose();
+            throw;
+        }
+    }
+
+    private static void Fill(SqliteConnection connection, string archivePath, ArchiveFormat format, ArchiveOptions options, string? password,
+        IProgress<long>? progress, CancellationToken cancel)
+    {
+        Execute(connection, """
+            PRAGMA journal_mode = OFF;
+            PRAGMA synchronous = OFF;
+            PRAGMA cache_size = -16000;
+            CREATE TABLE Info (Key TEXT PRIMARY KEY, Value TEXT) WITHOUT ROWID;
+            CREATE TABLE Folders (
+                Id INTEGER PRIMARY KEY, ParentId INTEGER NOT NULL, Name TEXT NOT NULL COLLATE NOCASE,
+                Depth INTEGER NOT NULL, Time INTEGER,
+                Folders INTEGER NOT NULL DEFAULT 0, Files INTEGER NOT NULL DEFAULT 0,
+                AllFiles INTEGER NOT NULL DEFAULT 0, Size REAL NOT NULL DEFAULT 0, Packed REAL NOT NULL DEFAULT 0);
+            CREATE INDEX FoldersByExactName ON Folders (ParentId, Name COLLATE BINARY);
+            CREATE TABLE Entries (
+                Id INTEGER PRIMARY KEY, FolderId INTEGER NOT NULL, Name TEXT NOT NULL COLLATE NOCASE,
+                Kind INTEGER NOT NULL, Size INTEGER NOT NULL, Packed INTEGER NOT NULL, Time INTEGER,
+                Encrypted INTEGER NOT NULL, Locator INTEGER NOT NULL, Method INTEGER NOT NULL,
+                Crc INTEGER NOT NULL, Cipher INTEGER NOT NULL, CipherInfo INTEGER NOT NULL);
+            CREATE TABLE LeftOut (Name TEXT NOT NULL, Reason TEXT NOT NULL);
+            INSERT INTO Folders (Id, ParentId, Name, Depth) VALUES (1, 0, '', 0);
+            """);
+        var writer = new Writer(connection, options.MaxDepth);
+        string? stopped = null;
+        var needsPassword = false;
+        try
+        {
+            foreach (var entry in ArchiveReader.ReadEntries(archivePath, format, cancel, password))
+            {
+                if (writer.Entries >= options.MaxEntries)
+                {
+                    stopped = $"The archive holds more than {options.MaxEntries:N0} entries: only the first are listed.";
+                    break;
+                }
+                writer.Add(entry);
+                if (writer.Entries % BatchRows == 0)
+                {
+                    writer.Commit();
+                    progress?.Report(writer.Entries);
+                }
+            }
+        }
+        catch (ArchiveException error)
+        {
+            stopped = error.Message;
+            needsPassword = error.NeedsPassword;
+        }
+        writer.Commit();
+        writer.Finish(format, stopped, needsPassword);
+        progress?.Report(writer.Entries);
+    }
+
     public ArchiveCatalogSummary Summary()
     {
-        using var connection = Connect(Path, SqliteOpenMode.ReadOnly);
+        using var connection = Open();
         var info = new Dictionary<string, string?>();
         using (var reader = Command(connection, "SELECT Key, Value FROM Info").ExecuteReader())
             while (reader.Read())
@@ -168,7 +206,7 @@ public sealed class ArchiveCatalog(string path)
             return false;
         try
         {
-            using var connection = Connect(catalogPath, SqliteOpenMode.ReadOnly);
+            using var connection = Connect(catalogPath, SqliteOpenMode.ReadOnly, inMemory: false);
             return Command(connection, "SELECT Value FROM Info WHERE Key = 'version'").ExecuteScalar() as string
                 == Version.ToString(CultureInfo.InvariantCulture);
         }
@@ -180,7 +218,7 @@ public sealed class ArchiveCatalog(string path)
 
     public ArchiveFolder? Folder(long id)
     {
-        using var connection = Connect(Path, SqliteOpenMode.ReadOnly);
+        using var connection = Open();
         return FolderOf(connection, id);
     }
 
@@ -190,7 +228,7 @@ public sealed class ArchiveCatalog(string path)
     /// </summary>
     public long? FindFolder(string folderPath)
     {
-        using var connection = Connect(Path, SqliteOpenMode.ReadOnly);
+        using var connection = Open();
         using var exact = Command(connection, "SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name COLLATE BINARY LIMIT 1");
         using var anyCase = Command(connection, "SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name ORDER BY Id LIMIT 1");
         var id = RootId;
@@ -218,7 +256,7 @@ public sealed class ArchiveCatalog(string path)
     /// </summary>
     public ArchiveTrail? Trail(long id, int last)
     {
-        using var connection = Connect(Path, SqliteOpenMode.ReadOnly);
+        using var connection = Open();
         var folders = new List<ArchiveFolder>();
         var folder = FolderOf(connection, id);
         if (folder is null)
@@ -236,7 +274,7 @@ public sealed class ArchiveCatalog(string path)
     /// <summary>The whole path of folder <paramref name="id"/> (<c>/</c>-separated, empty for the root): one lookup per level.</summary>
     public string? PathOf(long id)
     {
-        using var connection = Connect(Path, SqliteOpenMode.ReadOnly);
+        using var connection = Open();
         var names = new List<string>();
         var folder = FolderOf(connection, id);
         if (folder is null)
@@ -256,7 +294,7 @@ public sealed class ArchiveCatalog(string path)
     /// </summary>
     public ArchivePage Children(long folderId, ArchiveCursor? after, int limit)
     {
-        using var connection = Connect(Path, SqliteOpenMode.ReadOnly);
+        using var connection = Open();
         var folders = new List<ArchiveFolder>();
         var files = new List<ArchiveFile>();
         if (after is null || !after.InFiles)
@@ -307,9 +345,18 @@ public sealed class ArchiveCatalog(string path)
 
     public ArchiveFile? Entry(long id)
     {
-        using var connection = Connect(Path, SqliteOpenMode.ReadOnly);
+        using var connection = Open();
         using var command = Command(connection, $"SELECT {FileColumns} FROM Entries WHERE Id = $id");
         command.Parameters.AddWithValue("$id", id);
+        using var reader = command.ExecuteReader();
+        return reader.Read() ? ReadFile(reader) : null;
+    }
+
+    /// <summary>The smallest encrypted file: what a password is tried on (all of it read, its checks included).</summary>
+    public ArchiveFile? SmallestEncrypted()
+    {
+        using var connection = Open();
+        using var command = Command(connection, $"SELECT {FileColumns} FROM Entries WHERE Encrypted = 1 AND Kind = 0 ORDER BY Size, Id LIMIT 1");
         using var reader = command.ExecuteReader();
         return reader.Read() ? ReadFile(reader) : null;
     }
@@ -317,7 +364,7 @@ public sealed class ArchiveCatalog(string path)
     /// <summary>The first entries left out (refused names, too deep), with why.</summary>
     public IReadOnlyList<(string Name, string Reason)> LeftOut()
     {
-        using var connection = Connect(Path, SqliteOpenMode.ReadOnly);
+        using var connection = Open();
         using var reader = Command(connection, "SELECT Name, Reason FROM LeftOut ORDER BY rowid").ExecuteReader();
         var list = new List<(string, string)>();
         while (reader.Read())
@@ -326,7 +373,7 @@ public sealed class ArchiveCatalog(string path)
     }
 
     private const string FolderColumns = "Id, ParentId, Name, Depth, Time, Folders, Files, AllFiles, Size, Packed";
-    private const string FileColumns = "Id, FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method";
+    private const string FileColumns = "Id, FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method, Crc, Cipher, CipherInfo";
 
     private static ArchiveFolder? FolderOf(SqliteConnection connection, long id)
     {
@@ -345,7 +392,8 @@ public sealed class ArchiveCatalog(string path)
         var name = reader.GetString(2);
         var entry = new ArchiveEntry(
             name, (ArchiveEntryKind)reader.GetInt32(3), reader.GetInt64(4), reader.GetInt64(5), TimeOf(reader, 6),
-            reader.GetInt64(7) != 0, reader.GetInt64(8), reader.GetInt32(9));
+            reader.GetInt64(7) != 0, reader.GetInt64(8), reader.GetInt32(9), (uint)reader.GetInt64(10), (ZipCipher)reader.GetInt32(11),
+            reader.GetInt32(12));
         return new ArchiveFile(reader.GetInt64(0), reader.GetInt64(1), name, entry);
     }
 
@@ -355,10 +403,18 @@ public sealed class ArchiveCatalog(string path)
     /// <summary>Totals are kept as REAL: sizes a hostile directory claims can't overflow a sum.</summary>
     private static long ToLong(double value) => value >= long.MaxValue ? long.MaxValue : (long)value;
 
-    private static SqliteConnection Connect(string file, SqliteOpenMode mode)
+    private SqliteConnection Open() => Connect(Path, InMemory ? SqliteOpenMode.Memory : SqliteOpenMode.ReadOnly, InMemory);
+
+    private static SqliteConnection Connect(string source, SqliteOpenMode mode, bool inMemory)
     {
         // Not pooled: a catalog is opened per question, and a pooled handle would keep the file locked for its eviction.
-        var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = file, Mode = mode, Pooling = false }.ToString());
+        var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = source,
+            Mode = mode,
+            Cache = inMemory ? SqliteCacheMode.Shared : SqliteCacheMode.Default,
+            Pooling = false,
+        }.ToString());
         connection.Open();
         return connection;
     }
@@ -402,9 +458,9 @@ public sealed class ArchiveCatalog(string path)
                 "$parent", "$name");
             folderTime = Prepare("UPDATE Folders SET Time = $time WHERE Id = $id", "$time", "$id");
             insertEntry = Prepare("""
-                INSERT INTO Entries (FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method)
-                VALUES ($folder, $name, $kind, $size, $packed, $time, $encrypted, $locator, $method)
-                """, "$folder", "$name", "$kind", "$size", "$packed", "$time", "$encrypted", "$locator", "$method");
+                INSERT INTO Entries (FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method, Crc, Cipher, CipherInfo)
+                VALUES ($folder, $name, $kind, $size, $packed, $time, $encrypted, $locator, $method, $crc, $cipher, $cipherInfo)
+                """, "$folder", "$name", "$kind", "$size", "$packed", "$time", "$encrypted", "$locator", "$method", "$crc", "$cipher", "$cipherInfo");
             insertLeftOut = Prepare("INSERT INTO LeftOut (Name, Reason) VALUES ($name, $reason)", "$name", "$reason");
         }
 
@@ -430,7 +486,7 @@ public sealed class ArchiveCatalog(string path)
             }
             var folder = ResolveFolder(segments, segments.Length - 1);
             Run(insertEntry, folder, segments[^1], (int)entry.Kind, Math.Max(entry.Size, 0), Math.Max(entry.Packed, 0),
-                entry.Time?.Ticks, entry.Encrypted ? 1 : 0, entry.Locator, entry.Method);
+                entry.Time?.Ticks, entry.Encrypted ? 1 : 0, entry.Locator, entry.Method, (long)entry.Crc, (int)entry.Cipher, entry.CipherInfo);
         }
 
         public void Commit()

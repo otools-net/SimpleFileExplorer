@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ApiError } from '../../core/api.service';
 import { ArchiveItem, ArchiveListing } from '../../core/models';
 import { pathToken } from '../../core/paths';
 import { Rights } from '../../core/rights';
@@ -60,7 +61,7 @@ describe('ArchiveViewComponent', () => {
         api.exploreArchive.mockResolvedValue(listing([folder(2, 'Day 1', { folders: 0, files: 3, allFiles: 3, size: 6 }), file(10, 'readme.txt')]));
         await show();
 
-        expect(api.exploreArchive).toHaveBeenCalledWith('Media/trip.zip', { limit: 200 }, expect.any(AbortSignal));
+        expect(api.exploreArchive).toHaveBeenCalledWith('Media/trip.zip', { limit: 200, unlock: null }, expect.any(AbortSignal));
         expect(names()).toEqual(['Day 1', 'readme.txt']);
         expect(element.querySelector('[data-kind="folder"] .archive-size')!.textContent!.trim()).toBe('3 files');
         expect(element.querySelector('[data-kind="file"] .archive-size')!.textContent!.trim()).toBe('2 KB');
@@ -91,13 +92,13 @@ describe('ArchiveViewComponent', () => {
 
         element.querySelector<HTMLButtonElement>('[data-kind="folder"] .archive-open')!.click();
         await stable();
-        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: 2, limit: 200 }, expect.any(AbortSignal));
+        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: 2, limit: 200, unlock: null }, expect.any(AbortSignal));
         expect(crumbs()).toEqual(['trip.zip', '…', 'c', 'd', 'deep']);
         expect(element.querySelector('[data-skipped]')!.getAttribute('title')).toBe('4,996 folders in between');
 
         element.querySelector('.archive-scroller')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }));
         await stable();
-        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: 6, limit: 200 }, expect.any(AbortSignal));
+        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: 6, limit: 200, unlock: null }, expect.any(AbortSignal));
     });
 
     it('goes to a folder by its path inside the archive', async () => {
@@ -108,7 +109,7 @@ describe('ArchiveViewComponent', () => {
         box.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
         await stable();
 
-        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { at: 'Day 2/Deep', limit: 200 }, expect.any(AbortSignal));
+        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { at: 'Day 2/Deep', limit: 200, unlock: null }, expect.any(AbortSignal));
         expect(element.querySelector('[data-empty]')).not.toBeNull();
     });
 
@@ -159,6 +160,65 @@ describe('ArchiveViewComponent', () => {
         await show();
         expect(element.querySelector('[data-password]')).not.toBeNull();
         expect(element.querySelector('[data-stopped]')).toBeNull();
+        // Its list isn't read yet: not an empty folder.
+        expect(element.querySelector('[data-empty]')).toBeNull();
+        expect(element.querySelector('[data-counts]')).toBeNull();
+    });
+
+    async function typePassword(password: string): Promise<void> {
+        const box = element.querySelector<HTMLInputElement>('[data-password-box]')!;
+        box.value = password;
+        element.querySelector<HTMLFormElement>('[data-password]')!.dispatchEvent(new Event('submit', { cancelable: true }));
+        await stable();
+    }
+
+    it('asks the password of an archive whose list is encrypted, then lists it with the unlock', async () => {
+        api.exploreArchive.mockResolvedValueOnce(listing([], { format: '7z', complete: false, stopped: 'The archive is protected by a password.', needsPassword: true }));
+        await show('Media/hidden.7z');
+        expect(element.querySelector('[data-password]')).not.toBeNull();
+        expect(element.querySelector('[data-password]')!.textContent).not.toContain('names stay readable');
+        expect(element.querySelector('[data-stopped]')).toBeNull();
+
+        api.unlockArchive.mockResolvedValue({ unlock: 'u'.repeat(64) });
+        api.exploreArchive.mockResolvedValue(listing([file(10, 'readme.txt')], { format: '7z', protected: true, unlocked: true }));
+        await typePassword('secret');
+
+        expect(api.unlockArchive).toHaveBeenCalledWith('Media/hidden.7z', 'secret');
+        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/hidden.7z', { folder: null, limit: 200, unlock: 'u'.repeat(64) }, expect.any(AbortSignal));
+        expect(element.querySelector('[data-password]')).toBeNull();
+        expect(names()).toEqual(['readme.txt']);
+        expect(element.querySelector<HTMLAnchorElement>('a.archive-open')!.getAttribute('href')).toContain(`?unlock=${'u'.repeat(64)}`);
+    });
+
+    it('says when the password is wrong, or tried too often', async () => {
+        api.exploreArchive.mockResolvedValue(listing([], { needsPassword: true, complete: false }));
+        await show('Media/hidden.zip');
+
+        api.unlockArchive.mockRejectedValueOnce(new ApiError(422, "That password doesn't open this archive.", null, 'wrong-password'));
+        await typePassword('guess');
+        expect(element.querySelector('[data-password-problem]')!.textContent).toContain("doesn't open");
+
+        api.unlockArchive.mockRejectedValueOnce(new ApiError(429, 'Too Many Requests'));
+        await typePassword('guess again');
+        expect(element.querySelector('[data-password-problem]')!.textContent).toContain('wait a minute');
+    });
+
+    it('opens protected files once the password is given', async () => {
+        api.exploreArchive.mockResolvedValue(listing([file(10, 'secret.txt', { encrypted: true }), file(11, 'plain.txt')], { protected: true }));
+        await show('Media/secret.zip');
+        expect(element.querySelector('[data-password]')).toBeNull();
+        expect(element.querySelector('[data-protected]')).not.toBeNull();
+        expect([...element.querySelectorAll('a.archive-open')].map(link => link.textContent!.trim())).toEqual(['plain.txt']);
+
+        element.querySelector<HTMLButtonElement>('[data-kind="file"] button.archive-open')!.click();
+        await stable();
+        expect(element.querySelector('[data-password]')!.textContent).toContain('names stay readable');
+
+        api.unlockArchive.mockResolvedValue({ unlock: 'k'.repeat(64) });
+        api.exploreArchive.mockResolvedValue(listing([file(10, 'secret.txt', { encrypted: true }), file(11, 'plain.txt')], { protected: true, unlocked: true }));
+        await typePassword('secret');
+        expect([...element.querySelectorAll('a.archive-open')].map(link => link.textContent!.trim())).toEqual(['secret.txt', 'plain.txt']);
+        expect(element.querySelector('[data-protected]')).toBeNull();
     });
 
     it('loads the next page as the rows near the end of those loaded', async () => {
@@ -167,7 +227,7 @@ describe('ArchiveViewComponent', () => {
             .mockResolvedValue(listing([file(999, 'more.txt')], { next: null }));
         await show();
 
-        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: 1, after: 'cursor-1', limit: 1000 }, expect.any(AbortSignal));
+        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: 1, after: 'cursor-1', limit: 1000, unlock: null }, expect.any(AbortSignal));
         expect(api.exploreArchive).toHaveBeenCalledTimes(2);
         expect(element.querySelector('.archive-body')!.getAttribute('style')).toContain(`height: ${120 * 32}px`);
     });

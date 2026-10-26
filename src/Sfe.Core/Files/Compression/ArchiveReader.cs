@@ -15,30 +15,34 @@ public static class ArchiveReader
 
     /// <summary>
     /// The entries of the archive at <paramref name="fullPath"/>, in the archive's order, as they are read (a caller
-    /// stops when it has enough). Errors of the archive come as <see cref="ArchiveException"/>.
+    /// stops when it has enough). Errors of the archive come as <see cref="ArchiveException"/>. <paramref name="password"/>
+    /// opens a 7z or rar whose list is encrypted (a zip's names are never encrypted).
     /// </summary>
-    public static IEnumerable<ArchiveEntry> ReadEntries(string fullPath, ArchiveFormat format, CancellationToken cancel = default) =>
+    public static IEnumerable<ArchiveEntry> ReadEntries(string fullPath, ArchiveFormat format, CancellationToken cancel = default, string? password = null) =>
         format switch
         {
             ArchiveFormat.Zip => ReadZip(fullPath, cancel),
-            ArchiveFormat.SevenZip => ReadSevenZip(fullPath, cancel),
+            ArchiveFormat.SevenZip => ReadSevenZip(fullPath, cancel, password),
             ArchiveFormat.TarGzip or ArchiveFormat.TarBzip2 or ArchiveFormat.TarXz => ReadCompressedTar(fullPath, format, cancel),
-            _ => ReadForward(fullPath, format, cancel),
+            _ => ReadForward(fullPath, format, cancel, password),
         };
 
-    /// <summary>The data of <paramref name="entry"/> (as listed by <see cref="ReadEntries"/>), held to its declared size.</summary>
-    public static Stream OpenEntry(string fullPath, ArchiveFormat format, ArchiveEntry entry)
+    /// <summary>
+    /// The data of <paramref name="entry"/> (as listed by <see cref="ReadEntries"/>), decrypted with
+    /// <paramref name="password"/> when it is encrypted, held to its declared size.
+    /// </summary>
+    public static Stream OpenEntry(string fullPath, ArchiveFormat format, ArchiveEntry entry, string? password = null)
     {
         if (entry.Kind != ArchiveEntryKind.File)
             throw new ArchiveException("Only files of an archive have data.");
-        if (entry.Encrypted)
+        if (entry.Encrypted && string.IsNullOrEmpty(password))
             throw new ArchiveException("This entry is protected by a password.", needsPassword: true);
         var stream = Open(fullPath);
         try
         {
             if (format == ArchiveFormat.Zip)
-                return ZipDirectory.Locate(stream).OpenEntry(stream, entry);
-            return Wrap(() => format == ArchiveFormat.SevenZip ? OpenSevenZip(stream, entry) : OpenForward(stream, entry));
+                return ZipDirectory.Locate(stream).OpenEntry(stream, entry, password);
+            return Wrap(() => format == ArchiveFormat.SevenZip ? OpenSevenZip(stream, entry, password) : OpenForward(stream, entry, password));
         }
         catch
         {
@@ -55,10 +59,10 @@ public static class ArchiveReader
             yield return entry;
     }
 
-    private static IEnumerable<ArchiveEntry> ReadSevenZip(string fullPath, CancellationToken cancel)
+    private static IEnumerable<ArchiveEntry> ReadSevenZip(string fullPath, CancellationToken cancel, string? password)
     {
         using var stream = Open(fullPath);
-        using var archive = Wrap(() => SevenZipArchive.OpenArchive(stream, Options()));
+        using var archive = Wrap(() => SevenZipArchive.OpenArchive(stream, Options(password)));
         using var entries = Wrap(() => archive.Entries.GetEnumerator());
         for (var index = 0L; Wrap(entries.MoveNext); index++)
         {
@@ -67,10 +71,10 @@ public static class ArchiveReader
         }
     }
 
-    private static IEnumerable<ArchiveEntry> ReadForward(string fullPath, ArchiveFormat format, CancellationToken cancel)
+    private static IEnumerable<ArchiveEntry> ReadForward(string fullPath, ArchiveFormat format, CancellationToken cancel, string? password)
     {
         using var stream = Open(fullPath);
-        using var reader = Wrap(() => ReaderFactory.OpenReader(stream, Options()));
+        using var reader = Wrap(() => ReaderFactory.OpenReader(stream, Options(password)));
         for (var index = 0L; Wrap(reader.MoveToNextEntry); index++)
         {
             cancel.ThrowIfCancellationRequested();
@@ -126,9 +130,9 @@ public static class ArchiveReader
     private static ArchiveException CutOff() =>
         new("The archive ends without its end mark: it is cut off or broken. Only the entries before the break are listed.");
 
-    private static Stream OpenSevenZip(FileStream stream, ArchiveEntry entry)
+    private static Stream OpenSevenZip(FileStream stream, ArchiveEntry entry, string? password)
     {
-        var archive = SevenZipArchive.OpenArchive(stream, Options());
+        var archive = SevenZipArchive.OpenArchive(stream, Options(password));
         try
         {
             var found = archive.Entries.Skip((int)Math.Min(entry.Locator, int.MaxValue)).FirstOrDefault()
@@ -143,9 +147,9 @@ public static class ArchiveReader
     }
 
     /// <summary>Rar and tars have no index: the reader walks to the entry, skipping the others' data.</summary>
-    private static Stream OpenForward(FileStream stream, ArchiveEntry entry)
+    private static Stream OpenForward(FileStream stream, ArchiveEntry entry, string? password)
     {
-        var reader = ReaderFactory.OpenReader(stream, Options());
+        var reader = ReaderFactory.OpenReader(stream, Options(password));
         try
         {
             for (var index = 0L; index <= entry.Locator; index++)
@@ -171,7 +175,8 @@ public static class ArchiveReader
         return new ArchiveEntry(entry.Key ?? "", kind, entry.Size, entry.CompressedSize, entry.LastModifiedTime, entry.IsEncrypted, index);
     }
 
-    private static ReaderOptions Options() => new() { LeaveStreamOpen = true };
+    private static ReaderOptions Options(string? password = null) =>
+        new() { LeaveStreamOpen = true, Password = string.IsNullOrEmpty(password) ? null : password };
 
     private static FileStream Open(string fullPath) =>
         new(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, BufferSize, FileOptions.SequentialScan);

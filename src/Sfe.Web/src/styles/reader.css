@@ -783,6 +783,24 @@ a.archive-open:hover, button.archive-open:hover { text-decoration: underline; }
 .archive-modified { color: var(--reader-muted); }
 .archive-view > .text-status { flex: none; }
 
+/* The password of an archive: asked above its rows. */
+.archive-password {
+    display: grid;
+    flex: none;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--reader-border);
+    background: var(--reader-gutter);
+}
+.archive-password-why { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0; }
+.archive-password-why > svg { flex: none; width: 16px; height: 16px; color: var(--reader-muted); }
+.archive-password-hint { width: 100%; color: var(--reader-muted); font-size: .9em; }
+.archive-password-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.archive-password-row input[type="password"], .archive-password-row input[type="text"] { flex: 1; min-width: 0; max-width: 320px; }
+.archive-password-show { display: flex; align-items: center; gap: 4px; color: var(--reader-muted); white-space: nowrap; }
+.archive-password-problem { margin: 0; color: var(--danger, #e5534b); }
+.archive-note .button { margin-left: auto; }
+
 /* Phones: the name and the size only. */
 @media (max-width: 640px) {
     .archive-row { grid-template-columns: minmax(0, 1fr) 96px; }

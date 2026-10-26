@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Sfe.Api.Security;
@@ -25,11 +26,20 @@ public sealed record ArchiveCrumb(long Id, string Name);
 public sealed record ArchiveTrail(int Skipped, IReadOnlyList<ArchiveCrumb> Last);
 
 /// <param name="Complete">False when the list stopped (a limit, damage): <paramref name="Stopped"/> says why.</param>
+/// <param name="NeedsPassword">The archive's list is encrypted and no unlock was given (or it expired): ask for it.</param>
+/// <param name="Protected">Some of its files are encrypted: opening them needs the password.</param>
+/// <param name="Unlocked">The unlock given opens this archive (its list was read with the password, or its files open).</param>
 /// <param name="Folder">The folder listed: its totals (<c>AllFiles</c>, <c>Size</c>: its whole tree).</param>
 /// <param name="Next">The cursor of the next page; null on the last one.</param>
 public sealed record ArchiveListing(
     string Format, bool Complete, string? Stopped, bool NeedsPassword, long Entries, long LeftOut,
-    ArchiveItem Folder, ArchiveTrail Trail, IReadOnlyList<ArchiveItem> Items, string? Next);
+    ArchiveItem Folder, ArchiveTrail Trail, IReadOnlyList<ArchiveItem> Items, string? Next, bool Protected = false, bool Unlocked = false);
+
+public sealed record ArchiveUnlockRequest(string? Path, string? Password);
+
+/// <param name="Unlock">Sent back with later requests about this archive (header <c>X-SFE-Archive-Unlock</c>, or
+/// <c>unlock</c> in an entry's address); 15 minutes unused, a sign-out or a change of the archive end it.</param>
+public sealed record ArchiveUnlocked(string Unlock);
 
 /// <param name="Read">Entries read so far.</param>
 public sealed record ArchiveReading(long Read);
@@ -44,6 +54,12 @@ public static class ExploreEndpoints
     public const string NotExplorableType = "not-explorable";
     public const string UnreadableType = "archive-unreadable";
     public const string TooLargeType = "too-large";
+    public const string WrongPasswordType = "wrong-password";
+    public const string NotProtectedType = "not-protected";
+    public const string UnlockHeader = "X-SFE-Archive-Unlock";
+
+    /// <summary>The most of an entry read to try a password: its checks are at its start (zip) or come with its data.</summary>
+    private const int TryBytes = 16 * 1024 * 1024;
     public const int PageSize = 200;
     public const int MaxPageSize = 1000;
 
@@ -77,13 +93,29 @@ public static class ExploreEndpoints
                 `Files:Archives:MaxPreviewMegabytes` only with `download=true` (413 `{TooLargeType}` otherwise). An entry
                 claiming more than `Files:Archives:MaxCompressionRatio` times its packed size is refused (422). Its data is
                 held to the size the archive declares: more or less is a broken archive, and the download is cut off.
+                `unlock` (from `unlock`) opens an encrypted entry, or any of an archive whose list is encrypted.
+                """);
+        explore.MapPost("/unlock", Unlock)
+            .RequireRight(Rights.ViewFiles)
+            .RequireRateLimiting(RequestLimits.Unlock)
+            .FolderScoped("files.view at the archive")
+            .WithName("UnlockArchive")
+            .WithSummary("Tries a password on an archive; answers an unlock for the requests that need it.")
+            .WithDescription($"""
+                Checked on the archive itself: its encrypted list (7z, rar), else its smallest encrypted file read through
+                (its checks and authentication). 422 (`{WrongPasswordType}`) for a wrong one, 409 (`{NotProtectedType}`)
+                for an archive that has nothing encrypted, 202 while its list is still being read. At most
+                {RequestLimits.UnlocksPerMinute} a minute per caller (429). The password stays in the server's memory only,
+                behind the unlock: never logged, never answered; the unlock serves its caller only, for this archive as it
+                is, until 15 minutes unused or a sign-out.
                 """);
         return api;
     }
 
     private static async Task<Results<Ok<ArchiveListing>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>> List(
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        CurrentAccess current, HttpContext context, string? path, long? folder, string? at, string? after, int? limit)
+        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, long? folder, string? at, string? after, int? limit,
+        [FromHeader(Name = UnlockHeader)] string? unlock)
     {
         var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles);
         if (refused is { } forbidden)
@@ -91,8 +123,9 @@ public static class ExploreEndpoints
         if (FormatOf(full, options.CurrentValue) is not { } format)
             return NotExplorable();
 
-        var state = catalogs.Get(full, canonical, format);
         context.Response.Headers.CacheControl = "no-store";
+        var password = unlocks.PasswordFor(unlock, (await current.GetAsync()).TenantId, ArchiveUnlocks.OwnerOf(context), full);
+        var state = CatalogOf(catalogs, full, canonical, format, unlock, password);
         if (state.Status == ArchiveCatalogStatus.Building)
             return TypedResults.Accepted((string?)null, new ArchiveReading(state.Read));
         if (state.Catalog is not { } catalog)
@@ -114,22 +147,107 @@ public static class ExploreEndpoints
         var page = catalog.Children(id, ParseCursor(after), Math.Clamp(limit ?? PageSize, 1, MaxPageSize));
         var trail = catalog.Trail(id, 4)!;
         var items = page.Folders.Select(ToItem).Concat(page.Files.Select(ToItem)).ToList();
+        var encryptedFiles = !catalog.InMemory && catalog.SmallestEncrypted() is not null;
         return TypedResults.Ok(new ArchiveListing(
             FormatName(format), summary.Complete, summary.Stopped, summary.NeedsPassword, summary.Entries, summary.LeftOut,
             ToItem(shown), new ArchiveTrail(trail.Skipped, [.. trail.Last.Select(crumb => new ArchiveCrumb(crumb.Id, crumb.Name))]),
-            items, page.Next is { } next ? Cursor(next) : null));
+            items, page.Next is { } next ? Cursor(next) : null,
+            Protected: catalog.InMemory || encryptedFiles, Unlocked: password is not null));
+    }
+
+    /// <summary>
+    /// The catalog to answer from: the archive's own (on disk); for an archive whose list is encrypted, the one read with
+    /// the unlock's password, in memory.
+    /// </summary>
+    private static ArchiveCatalogState CatalogOf(ArchiveCatalogs catalogs, string full, string canonical, ArchiveFormat format, string? unlock, string? password)
+    {
+        var state = catalogs.Get(full, canonical, format);
+        if (state.Catalog is { } catalog && password is not null && catalog.Summary().NeedsPassword)
+            return catalogs.GetInMemory(full, canonical, format, unlock!, password);
+        return state;
+    }
+
+    private static async Task<Results<Ok<ArchiveUnlocked>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>> Unlock(
+        ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
+        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, ILoggerFactory loggers, ArchiveUnlockRequest request,
+        CancellationToken cancellationToken)
+    {
+        var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, request.Path, Rights.ViewFiles);
+        if (refused is { } forbidden)
+            return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
+        if (FormatOf(full, options.CurrentValue) is not { } format)
+            return NotExplorable();
+        if (string.IsNullOrEmpty(request.Password) || request.Password.Length > 1024)
+            return TypedResults.Problem("Enter the archive's password.", statusCode: StatusCodes.Status400BadRequest);
+        var state = catalogs.Get(full, canonical, format);
+        if (state.Status == ArchiveCatalogStatus.Building)
+            return TypedResults.Accepted((string?)null, new ArchiveReading(state.Read));
+        if (state.Catalog is not { } catalog)
+            return TypedResults.Problem(state.Error, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
+
+        var log = loggers.CreateLogger("Sfe.Api.Archives");
+        var opens = await Task.Run(() => Opens(full, format, catalog, request.Password), cancellationToken);
+        if (opens is null)
+            return TypedResults.Problem("Nothing in this archive is protected by a password.", statusCode: StatusCodes.Status409Conflict, type: NotProtectedType);
+        var access = await current.GetAsync();
+        if (opens is false)
+        {
+            // Never the password: who tried, on what.
+            log.LogWarning("Wrong password for the archive {Archive} by {User} from {Address}.", canonical,
+                access.User?.UserName ?? "a visitor", context.Connection.RemoteIpAddress);
+            return TypedResults.Problem("That password doesn't open this archive.", statusCode: StatusCodes.Status422UnprocessableEntity, type: WrongPasswordType);
+        }
+        log.LogInformation("Archive {Archive} unlocked by {User}.", canonical, access.User?.UserName ?? "a visitor");
+        context.Response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(new ArchiveUnlocked(unlocks.Add(access.TenantId, ArchiveUnlocks.OwnerOf(context), full, request.Password)));
+    }
+
+    /// <summary>
+    /// Whether <paramref name="password"/> opens the archive: its encrypted list read (its first entry), else its smallest
+    /// encrypted file read through (up to <see cref="TryBytes"/>: the checks of zip and RAR come first, AES' at the end);
+    /// null when nothing in it is encrypted.
+    /// </summary>
+    private static bool? Opens(string full, ArchiveFormat format, ArchiveCatalog catalog, string password)
+    {
+        try
+        {
+            if (catalog.Summary().NeedsPassword)
+            {
+                // The list decrypts (its first entry read) or the reader says the password is wrong.
+                _ = ArchiveReader.ReadEntries(full, format, password: password).Take(1).ToList();
+                return true;
+            }
+            if (catalog.SmallestEncrypted() is not { } file)
+                return null;
+            using var data = ArchiveReader.OpenEntry(full, format, file.Entry, password);
+            var buffer = new byte[64 * 1024];
+            for (long read = 0, got; read < TryBytes && (got = data.Read(buffer)) > 0; read += got)
+            {
+            }
+            return true;
+        }
+        catch (ArchiveException error) when (error.NeedsPassword)
+        {
+            return false;
+        }
+        catch (ArchiveException)
+        {
+            // Garbage after the checks (a wrong ZipCrypto password passing its 1-byte check): not opened.
+            return false;
+        }
     }
 
     private static async Task<Results<FileStreamHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>> GetEntry(
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        CurrentAccess current, HttpContext context, string archive, long id, string name, bool? download)
+        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string archive, long id, string name, bool? download, string? unlock)
     {
         var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, EpubEntries.PathOf(archive), Rights.ViewFiles, Rights.Download);
         if (refused is { } forbidden)
             return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
         var settings = options.CurrentValue.Files.Archives;
+        var password = unlocks.PasswordFor(unlock, (await current.GetAsync()).TenantId, ArchiveUnlocks.OwnerOf(context), full);
         if (FormatOf(full, options.CurrentValue) is not { } format
-            || catalogs.Get(full, canonical, format) is not { Status: ArchiveCatalogStatus.Ready, Catalog: { } catalog }
+            || CatalogOf(catalogs, full, canonical, format, unlock, password) is not { Status: ArchiveCatalogStatus.Ready, Catalog: { } catalog }
             || catalog.Entry(id) is not { Entry.Kind: ArchiveEntryKind.File } file
             || !string.Equals(file.Name, name, StringComparison.Ordinal))
             return TypedResults.NotFound();
@@ -145,10 +263,14 @@ public static class ExploreEndpoints
             return TypedResults.Problem($"It is too large to be opened from the archive (more than {settings.MaxPreviewMegabytes} MB): download it.",
                 statusCode: StatusCodes.Status413PayloadTooLarge, type: TooLargeType);
 
+        if (entry.Encrypted && password is null)
+            return TypedResults.Problem("This file is protected by a password: open the archive with it first.",
+                statusCode: StatusCodes.Status403Forbidden, type: WrongPasswordType);
+
         Stream data;
         try
         {
-            data = ArchiveReader.OpenEntry(full, format, entry);
+            data = ArchiveReader.OpenEntry(full, format, entry, password);
         }
         catch (ArchiveException error)
         {

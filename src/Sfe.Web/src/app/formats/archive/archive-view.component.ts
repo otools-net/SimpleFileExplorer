@@ -85,9 +85,33 @@ interface Shown {
             }
         }
         @if (shown(); as current) {
-            @if (current.listing.needsPassword) {
-                <p class="archive-note" data-password role="status"><svg sfeIcon="lock"></svg> This archive is protected by a password: its list can't be read without it.</p>
-            } @else if (!current.listing.complete) {
+            @if (asking()) {
+                <form class="archive-password" data-password (submit)="unlockWith(passwordBox.value); $event.preventDefault()">
+                    <p class="archive-password-why">
+                        <svg sfeIcon="lock"></svg>
+                        {{ current.listing.needsPassword ? lockedList : lockedFiles }}
+                        @if (current.listing.format === 'zip') {
+                            <span class="archive-password-hint">A zip's password protects only the files' content: their names stay readable.</span>
+                        }
+                    </p>
+                    <div class="archive-password-row">
+                        <input #passwordBox [type]="showPassword() ? 'text' : 'password'" class="json-filter" data-password-box autocomplete="off" aria-label="Password"
+                               placeholder="Password" [disabled]="unlocking()" />
+                        <label class="archive-password-show" title="Show what is typed"><input type="checkbox" [checked]="showPassword()" (change)="showPassword.set(!showPassword())" /> Show</label>
+                        <button type="submit" class="button primary" data-unlock [disabled]="unlocking()" title="Open the archive with this password">Open</button>
+                        @if (!current.listing.needsPassword) {
+                            <button type="button" class="button" title="Keep browsing without the password" (click)="asking.set(false)">Not now</button>
+                        }
+                    </div>
+                    @if (passwordMessage(); as problem) {
+                        <p class="archive-password-problem" role="alert" data-password-problem>{{ problem }}</p>
+                    }
+                </form>
+            } @else if (current.listing.protected && !current.listing.unlocked) {
+                <p class="archive-note" data-protected><svg sfeIcon="lock"></svg> Some files are protected by a password.
+                    <button type="button" class="button" data-ask-password title="Give the archive's password to open them" (click)="asking.set(true)">Enter the password</button></p>
+            }
+            @if (!current.listing.complete && !current.listing.needsPassword) {
                 <p class="archive-note" data-stopped role="status">Only part of the list is shown: {{ current.listing.stopped }}</p>
             }
             @if (current.listing.leftOut > 0) {
@@ -101,7 +125,7 @@ interface Shown {
                 <span role="columnheader" class="archive-packed">Packed</span>
                 <span role="columnheader" class="archive-modified">Modified</span>
             </div>
-            @if (state() === 'ready' && count() === 0) {
+            @if (state() === 'ready' && count() === 0 && !shown()?.listing?.needsPassword) {
                 <p class="text-message" data-empty>This folder is empty.</p>
             }
             <div class="archive-body" [style.height.px]="virtual.total()">
@@ -115,8 +139,10 @@ interface Shown {
                                 <svg [sfeIcon]="iconOf(entry)"></svg>
                                 @if (entry.kind === 'folder') {
                                     <button type="button" class="archive-open" [title]="'Open ' + entry.name" (click)="enter(entry.id); $event.stopPropagation()">{{ entry.name }}</button>
-                                } @else if (entry.kind === 'file' && canDownload() && !entry.encrypted) {
+                                } @else if (entry.kind === 'file' && canDownload() && (!entry.encrypted || unlock())) {
                                     <a class="archive-open" [href]="entryUrl(entry, false)" target="_blank" rel="noopener" [title]="'Open ' + entry.name + ' in a new tab'">{{ entry.name }}</a>
+                                } @else if (entry.kind === 'file' && canDownload()) {
+                                    <button type="button" class="archive-open" [title]="'Give the password to open ' + entry.name" (click)="asking.set(true); $event.stopPropagation()">{{ entry.name }}</button>
                                 } @else {
                                     <span class="archive-open" [title]="titleOf(entry)">{{ entry.name }}</span>
                                 }
@@ -137,7 +163,9 @@ interface Shown {
             </div>
         </div>
         @if (shown(); as current) {
-            <p class="text-status" data-counts>{{ countsOf(current.listing) }}</p>
+            @if (!current.listing.needsPassword) {
+                <p class="text-status" data-counts>{{ countsOf(current.listing) }}</p>
+            }
         }
     `,
 })
@@ -175,6 +203,16 @@ export class ArchiveViewComponent {
     });
 
     protected readonly canDownload = computed(() => this.host.can(Rights.download));
+
+    /** The unlock the password given answered: kept by this view only (never the password), sent with its requests. */
+    protected readonly unlock = signal<string | null>(null);
+    /** The password form shows: the list is encrypted, or a protected file was asked for. */
+    protected readonly asking = signal(false);
+    protected readonly unlocking = signal(false);
+    protected readonly showPassword = signal(false);
+    protected readonly passwordMessage = signal<string | null>(null);
+    protected readonly lockedList = "This archive is protected by a password: its list can't be read without it.";
+    protected readonly lockedFiles = 'Its files are protected by a password.';
     protected readonly archiveDownload = computed(() => this.canDownload() ? this.config.urls()?.download(this.item().path) ?? null : null);
 
     private abort: AbortController | null = null;
@@ -188,7 +226,13 @@ export class ArchiveViewComponent {
         });
         effect(() => {
             this.item();
-            untracked(() => void this.open({}));
+            untracked(() => {
+                // Another archive: the password given for this one isn't sent with it.
+                this.unlock.set(null);
+                this.asking.set(false);
+                this.passwordMessage.set(null);
+                void this.open({});
+            });
         });
         effect(() => this.virtual.setCount(this.count()));
         // More rows as they scroll in: the next page when the last rows drawn near the end of those loaded.
@@ -223,8 +267,41 @@ export class ArchiveViewComponent {
     protected activate(entry: ArchiveItem): void {
         if (entry.kind === 'folder')
             this.enter(entry.id);
-        else if (entry.kind === 'file' && this.canDownload() && !entry.encrypted)
+        else if (entry.kind === 'file' && this.canDownload() && entry.encrypted && !this.unlock())
+            this.asking.set(true);
+        else if (entry.kind === 'file' && this.canDownload())
             window.open(this.entryUrl(entry, false), '_blank', 'noopener');
+    }
+
+    /** Tries `password` on the archive; once it opens, the folder shown is asked again with the unlock. */
+    protected async unlockWith(password: string): Promise<void> {
+        if (!password || this.unlocking())
+            return;
+        this.unlocking.set(true);
+        this.passwordMessage.set(null);
+        try {
+            for (;;) {
+                const answer = await this.api.unlockArchive(this.item().path, password);
+                if ('unlock' in answer) {
+                    this.unlock.set(answer.unlock);
+                    this.asking.set(false);
+                    await this.open({ folder: this.shown()?.listing.needsPassword ? null : this.shown()?.listing.folder.id ?? null });
+                    return;
+                }
+                if (!('read' in answer)) {
+                    this.passwordMessage.set(answer.detail ?? 'Nothing in this archive is protected by a password.');
+                    return;
+                }
+                await pause(READING_POLL_MS, new AbortController().signal);
+            }
+        } catch (error) {
+            this.passwordMessage.set(error instanceof ApiError && error.status === 429
+                ? 'Too many tries: wait a minute before the next one.'
+                : error instanceof ApiError && error.type === 'wrong-password' ? "That password doesn't open this archive."
+                : error instanceof Error ? error.message : String(error));
+        } finally {
+            this.unlocking.set(false);
+        }
     }
 
     protected onKeydown(event: KeyboardEvent): void {
@@ -247,14 +324,20 @@ export class ArchiveViewComponent {
 
     /** The address of an entry's data: inline in a tab for what the browser shows safely, else (or `download`) a download. */
     protected entryUrl(entry: ArchiveItem, download: boolean): string {
-        return `api/files/explore/entry/${pathToken(this.item().path)}/${entry.id}/${encodeURIComponent(entry.name)}${download ? '?download=true' : ''}`;
+        const query = new URLSearchParams();
+        if (download)
+            query.set('download', 'true');
+        if (this.unlock())
+            query.set('unlock', this.unlock()!);
+        const search = query.toString();
+        return `api/files/explore/entry/${pathToken(this.item().path)}/${entry.id}/${encodeURIComponent(entry.name)}${search ? '?' + search : ''}`;
     }
 
     protected menuOf(entry: ArchiveItem): MenuTarget | null {
         const entries: MenuEntry[] = [];
         if (entry.kind === 'folder')
             entries.push({ id: 'open', label: 'Open', icon: 'folder', title: 'Show this folder of the archive', run: () => this.enter(entry.id) });
-        else if (entry.kind === 'file' && this.canDownload() && !entry.encrypted) {
+        else if (entry.kind === 'file' && this.canDownload() && (!entry.encrypted || this.unlock())) {
             entries.push({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Open it in a new tab', href: this.entryUrl(entry, false), newTab: true });
             entries.push({ id: 'download', label: 'Download', icon: 'download', title: 'Save it from the archive', href: this.entryUrl(entry, true) });
         }
@@ -321,11 +404,13 @@ export class ArchiveViewComponent {
             this.state.set('loading');
         try {
             for (;;) {
-                const answer = await this.api.exploreArchive(this.item().path, { ...where, limit: FIRST_PAGE }, abort.signal);
+                const answer = await this.api.exploreArchive(this.item().path, { ...where, limit: FIRST_PAGE, unlock: this.unlock() }, abort.signal);
                 if (abort.signal.aborted)
                     return;
                 if (isListing(answer)) {
                     this.shown.set({ listing: answer, rows: answer.items, next: answer.next });
+                    if (answer.needsPassword)
+                        this.asking.set(true);
                     this.selected.set(-1);
                     this.state.set('ready');
                     this.scroller().nativeElement.scrollTop = 0;
@@ -353,7 +438,7 @@ export class ArchiveViewComponent {
         this.loadingMore = true;
         const abort = this.abort;
         try {
-            const answer = await this.api.exploreArchive(this.item().path, { folder: shown.listing.folder.id, after: shown.next, limit: NEXT_PAGE }, abort?.signal);
+            const answer = await this.api.exploreArchive(this.item().path, { folder: shown.listing.folder.id, after: shown.next, limit: NEXT_PAGE, unlock: this.unlock() }, abort?.signal);
             if (abort?.signal.aborted || this.shown() !== shown || !isListing(answer))
                 return;
             this.shown.set({ listing: shown.listing, rows: [...shown.rows, ...answer.items], next: answer.next });

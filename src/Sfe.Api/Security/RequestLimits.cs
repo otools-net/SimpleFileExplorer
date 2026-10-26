@@ -23,6 +23,11 @@ public static class RequestLimits
     /// <summary>Chunks of resumable uploads (16 MB at most, streamed to disk): a few at once per caller, the rest queued.</summary>
     public const string Chunks = "chunks";
 
+    /// <summary>Passwords tried on archives per minute and caller: a guess costs CPU (7z: 2^19 SHA-256 rounds).</summary>
+    public const string Unlock = "unlock";
+
+    public const int UnlocksPerMinute = 10;
+
     public const int MediaConcurrency = 8;
     public const int MediaQueue = 500;
     public const int SearchesPerMinute = 240;
@@ -38,6 +43,11 @@ public static class RequestLimits
         options.AddPolicy(Search, context => RateLimitPartition.GetFixedWindowLimiter(Caller(context), _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = SearchesPerMinute,
+            Window = TimeSpan.FromMinutes(1),
+        }));
+        options.AddPolicy(Unlock, context => RateLimitPartition.GetFixedWindowLimiter(Caller(context), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = UnlocksPerMinute,
             Window = TimeSpan.FromMinutes(1),
         }));
         options.AddPolicy(Chunks, context => RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions

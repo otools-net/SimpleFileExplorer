@@ -275,6 +275,72 @@ public sealed class ArchiveReaderTests
     }
 
     [TestMethod]
+    [DataRow("tree-aes256.zip", ZipCipher.Aes)]
+    [DataRow("tree-aes128.zip", ZipCipher.Aes)]
+    [DataRow("tree-zipcrypto.zip", ZipCipher.ZipCrypto)]
+    public void ZipsMadeWithAPasswordOpenWithIt(string name, ZipCipher cipher)
+    {
+        var zip = TestSamples.ArchiveOf(name);
+        var files = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).Where(entry => entry.Kind == ArchiveEntryKind.File)
+            .ToDictionary(entry => entry.Name.Replace('\\', '/'));
+        Assert.HasCount(4, files, "a zip's names are never encrypted");
+        Assert.IsTrue(files.Values.All(entry => entry.Encrypted && entry.Cipher == cipher), name);
+        var notes = files["Photos/2024/notes.txt"];
+
+        Assert.IsTrue(Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, notes)).NeedsPassword, "no password");
+        var wrong = Assert.Throws<ArchiveException>(() =>
+        {
+            using var data = ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, notes, "wrong");
+            data.CopyTo(Stream.Null);
+        });
+        Assert.IsTrue(wrong.NeedsPassword, wrong.Message);
+        Assert.AreEqual(new string('x', 4096) + "\n", ReadText(zip, ArchiveFormat.Zip, notes, "secret"));
+        Assert.AreEqual("Unicode names survive.\n", ReadText(zip, ArchiveFormat.Zip, files["Photos/2024/día uno.txt"], "secret"));
+    }
+
+    [TestMethod]
+    public void AnAesEntryWhoseDataWasChangedFailsItsAuthentication()
+    {
+        var zip = Path.Combine(_folder, "changed.zip");
+        File.Copy(TestSamples.ArchiveOf("tree-aes256.zip"), zip);
+        var notes = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).Single(entry => entry.Name.EndsWith("notes.txt"));
+        // One byte of the encrypted data flipped: the verifier still passes, the HMAC at the end doesn't.
+        var bytes = File.ReadAllBytes(zip);
+        var local = (int)notes.Locator;
+        var dataStart = local + 30 + BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(local + 26)) + BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(local + 28));
+        bytes[dataStart + 16 + 2 + 3] ^= 0x40;
+        File.WriteAllBytes(zip, bytes);
+
+        var error = Assert.Throws<ArchiveException>(() =>
+        {
+            using var data = ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, notes, "secret");
+            data.CopyTo(Stream.Null);
+        });
+        StringAssert.Contains(error.Message, "authentication");
+    }
+
+    [TestMethod]
+    public void SevenZipsAndRarsOpenWithTheirPassword()
+    {
+        var names = TestSamples.ArchiveOf("tree-names-encrypted.7z");
+        var listed = ArchiveReader.ReadEntries(names, ArchiveFormat.SevenZip, password: "secret").Where(entry => entry.Kind == ArchiveEntryKind.File).ToList();
+        Assert.HasCount(4, listed, "the list, with the password");
+        Assert.AreEqual("An archive made for the tests.\n", ReadText(names, ArchiveFormat.SevenZip, listed.Single(entry => entry.Name == "readme.txt"), "secret"));
+        Assert.IsTrue(Assert.Throws<ArchiveException>(() => ArchiveReader.ReadEntries(names, ArchiveFormat.SevenZip, password: "wrong").ToList()).NeedsPassword);
+
+        var data = TestSamples.ArchiveOf("tree-files-encrypted.7z");
+        var readme = ArchiveReader.ReadEntries(data, ArchiveFormat.SevenZip).Single(entry => entry.Name == "readme.txt");
+        Assert.AreEqual("An archive made for the tests.\n", ReadText(data, ArchiveFormat.SevenZip, readme, "secret"));
+
+        foreach (var rar in new[] { "Rar5.encrypted_filesAndHeader.rar", "Rar5.encrypted_filesOnly.rar", "Rar.encrypted_filesAndHeader.rar" })
+        {
+            var path = TestSamples.ThirdPartyOf("sharpcompress/" + rar);
+            var text = ArchiveReader.ReadEntries(path, ArchiveFormat.Rar, password: "test").Single(entry => entry.Name == "тест.txt");
+            Assert.AreEqual(15_498, ReadText(path, ArchiveFormat.Rar, text, "test").Length, rar);
+        }
+    }
+
+    [TestMethod]
     public void PasswordsAreSaidNotGuessed()
     {
         var filesEncrypted = TestSamples.ArchiveOf("tree-files-encrypted.7z");
@@ -287,9 +353,9 @@ public sealed class ArchiveReaderTests
         Assert.Contains("password", Assert.Throws<ArchiveException>(() => ArchiveReader.ReadEntries(namesEncrypted, ArchiveFormat.SevenZip).ToList()).Message);
     }
 
-    private static string ReadText(string path, ArchiveFormat format, ArchiveEntry entry)
+    private static string ReadText(string path, ArchiveFormat format, ArchiveEntry entry, string? password = null)
     {
-        using var data = ArchiveReader.OpenEntry(path, format, entry);
+        using var data = ArchiveReader.OpenEntry(path, format, entry, password);
         using var reader = new StreamReader(data);
         return reader.ReadToEnd();
     }

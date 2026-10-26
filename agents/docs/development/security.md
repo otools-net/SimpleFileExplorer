@@ -85,6 +85,13 @@ input, LIKE escaped, no `innerHTML` in the client.
   duplicate removal keeping a hidden copy; a user in two groups (rights stay with the group granting them).
 - **Content:** `.html`/`.svg`/`.xml`/polyglot files via raw, shared and download; `<script>` in file, folder and tag
   names; external player and data server URLs (`javascript:` variants).
+- **Archives** ([archive-viewer.md](../features/archive-viewer.md), [archive-reading.md](../features/archive-reading.md)):
+  names leaving the archive (`../`, `C:\`, `\\server`, `...`), links in tar/7z/rar, a directory claiming more entries
+  than it holds, an entry inflating past its declared size, overlapping or outside offsets, a ratio past the limit, an
+  `.html`/`.svg` entry opened (attachment, sandboxed), a token with `..` or for a hidden or protected folder; passwords:
+  guessing through `unlock` (10 a minute per caller), another account's or space's unlock id, an unlock after sign-out
+  or a change of the archive, the password in logs, errors, answers or URLs (only the unlock id is), encrypted names
+  written under the cache (`ExploreRouteTests` scans it).
 - **Flash movies** ([flash-viewer.md](../features/flash-viewer.md)): a movie (Ruffle runs it) calling `api/` with
   `URLLoader`, custom headers (`X-SFE-Request`) or `getURL("javascript:…")`; `navigateToURL`, `_blank`, `_top`;
   `ExternalInterface`; the frame opened alone (`flash/player.html`: still sandboxed by its CSP) or framed by another

@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Sfe.Api.Endpoints;
+using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Sfe.Core.Files;
@@ -214,12 +215,124 @@ public sealed class ExploreRouteTests
         Assert.AreEqual(2 * 1024 * 1024, (await download.Content.ReadAsByteArrayAsync(Token)).Length);
     }
 
+    [TestMethod]
+    public async Task AZipsPasswordOpensItsFilesForTheOneWhoGaveIt()
+    {
+        File.Copy(TestSamples.ArchiveOf("tree-aes256.zip"), _library.FullPath("Media/secret.zip"));
+        var top = await ListAsync(_alice, "path=Media/secret.zip");
+        Assert.AreEqual((true, false, false), (top.Protected, top.Unlocked, top.NeedsPassword), "names in clear, files encrypted");
+        var readme = top.Items.Single(item => item.Name == "readme.txt");
+        Assert.IsTrue(readme.Encrypted);
+        var url = $"/api/files/explore/entry/{EpubEntries.Token("Media/secret.zip")}/{readme.Id}/readme.txt";
+        using (var locked = await _alice.GetAsync(url, Token))
+            Assert.AreEqual(HttpStatusCode.Forbidden, locked.StatusCode);
+
+        using (var wrong = await UnlockAsync(_alice, "Media/secret.zip", "guess"))
+        {
+            Assert.AreEqual(HttpStatusCode.UnprocessableEntity, wrong.StatusCode);
+            StringAssert.Contains(await wrong.Content.ReadAsStringAsync(Token), ExploreEndpoints.WrongPasswordType);
+        }
+        var unlock = await UnlockedAsync(_alice, "Media/secret.zip", "secret");
+        using (var opened = await _alice.GetAsync($"{url}?unlock={unlock}", Token))
+        {
+            Assert.AreEqual(HttpStatusCode.OK, opened.StatusCode, await opened.Content.ReadAsStringAsync(Token));
+            Assert.AreEqual("An archive made for the tests.\n", await opened.Content.ReadAsStringAsync(Token));
+        }
+        Assert.IsTrue((await ListAsync(_alice, "path=Media/secret.zip", unlock)).Unlocked);
+
+        // Another account (with every right) gets nothing from Alice's unlock.
+        using (var other = await _admin.GetAsync($"{url}?unlock={unlock}", Token))
+            Assert.AreEqual(HttpStatusCode.Forbidden, other.StatusCode);
+        // The archive changed: its unlock no longer opens it.
+        File.SetLastWriteTimeUtc(_library.FullPath("Media/secret.zip"), DateTime.UtcNow.AddMinutes(5));
+        using (var changed = await _alice.GetAsync($"{url}?unlock={unlock}", Token))
+            Assert.AreNotEqual(HttpStatusCode.OK, changed.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task AnUnlockEndsWithTheSession()
+    {
+        File.Copy(TestSamples.ArchiveOf("tree-zipcrypto.zip"), _library.FullPath("Media/secret.zip"));
+        var readme = (await ListAsync(_alice, "path=Media/secret.zip")).Items.Single(item => item.Name == "readme.txt");
+        var unlock = await UnlockedAsync(_alice, "Media/secret.zip", "secret");
+        var url = $"/api/files/explore/entry/{EpubEntries.Token("Media/secret.zip")}/{readme.Id}/readme.txt?unlock={unlock}";
+        using (var opened = await _alice.GetAsync(url, Token))
+            Assert.AreEqual(HttpStatusCode.OK, opened.StatusCode);
+
+        using (var signOut = await _alice.PostAsync("/api/session/logout", null, Token))
+            Assert.AreEqual(HttpStatusCode.OK, signOut.StatusCode);
+        using var again = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
+        using var ended = await again.GetAsync(url, Token);
+        Assert.AreEqual(HttpStatusCode.Forbidden, ended.StatusCode, "signed in again: the password must be given again");
+    }
+
+    [TestMethod]
+    public async Task AnArchiveWhoseNamesAreEncryptedIsListedFromMemoryOnly()
+    {
+        File.Copy(TestSamples.ArchiveOf("tree-names-encrypted.7z"), _library.FullPath("Media/hidden names.7z"));
+        var locked = await ListAsync(_alice, $"path={Uri.EscapeDataString("Media/hidden names.7z")}");
+        Assert.AreEqual((true, 0), (locked.NeedsPassword, locked.Items.Count));
+
+        var unlock = await UnlockedAsync(_alice, "Media/hidden names.7z", "secret");
+        var top = await ListAsync(_alice, $"path={Uri.EscapeDataString("Media/hidden names.7z")}", unlock);
+        Assert.AreEqual((false, true, true), (top.NeedsPassword, top.Protected, top.Unlocked));
+        CollectionAssert.AreEqual(new[] { "Deep", "Photos", "readme.txt" }, top.Items.Select(item => item.Name).ToList());
+        var readme = top.Items.Single(item => item.Name == "readme.txt");
+        using (var opened = await _alice.GetAsync($"/api/files/explore/entry/{EpubEntries.Token("Media/hidden names.7z")}/{readme.Id}/readme.txt?unlock={unlock}", Token))
+            Assert.AreEqual("An archive made for the tests.\n", await opened.Content.ReadAsStringAsync(Token));
+
+        // The names never reached the disk: nothing in the cache folder (where catalogs are) holds them.
+        var catalogs = Directory.EnumerateFiles(_library.ThumbnailPath, "*", SearchOption.AllDirectories).ToList();
+        Assert.IsNotEmpty(catalogs, "the archive's own catalog (empty: its list is encrypted)");
+        foreach (var file in catalogs)
+        {
+            using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var copy = new MemoryStream();
+            await stream.CopyToAsync(copy, Token);
+            Assert.AreEqual(-1, copy.ToArray().AsSpan().IndexOf("notes.txt"u8), file);
+        }
+    }
+
+    [TestMethod]
+    public async Task PasswordsAreTriedAFewTimesAMinuteAndOnlyWhereTheyMatter()
+    {
+        TestArchives.Zip(_library.Root, "Media/plain.zip", ("a.txt", "a"));
+        await ListAsync(_alice, "path=Media/plain.zip");
+        using (var plain = await UnlockAsync(_alice, "Media/plain.zip", "anything"))
+        {
+            Assert.AreEqual(HttpStatusCode.Conflict, plain.StatusCode);
+            StringAssert.Contains(await plain.Content.ReadAsStringAsync(Token), ExploreEndpoints.NotProtectedType);
+        }
+        File.Copy(TestSamples.ArchiveOf("tree-aes128.zip"), _library.FullPath("Media/secret.zip"));
+        await ListAsync(_alice, "path=Media/secret.zip");
+        var statuses = new List<HttpStatusCode>();
+        for (var i = 0; i < RequestLimits.UnlocksPerMinute + 1; i++)
+        {
+            using var response = await UnlockAsync(_alice, "Media/secret.zip", $"guess {i}");
+            statuses.Add(response.StatusCode);
+        }
+        Assert.AreEqual(HttpStatusCode.TooManyRequests, statuses[^1], string.Join(", ", statuses));
+    }
+
+    private Task<HttpResponseMessage> UnlockAsync(HttpClient client, string path, string password) =>
+        client.PostAsJsonAsync("/api/files/explore/unlock", new ArchiveUnlockRequest(path, password), Token);
+
+    private async Task<string> UnlockedAsync(HttpClient client, string path, string password)
+    {
+        using var response = await UnlockAsync(client, path, password);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+        return (await response.Content.ReadFromJsonAsync<ArchiveUnlocked>(Json, Token))!.Unlock;
+    }
+
     /// <summary>A folder's page, once the archive's list is read (202 until then).</summary>
-    private async Task<ArchiveListing> ListAsync(HttpClient client, string query)
+    private async Task<ArchiveListing> ListAsync(HttpClient client, string query, string? unlock = null)
     {
         for (var attempt = 0; attempt < 400; attempt++)
         {
-            using var response = await client.GetAsync($"/api/files/explore?{query}", Token);
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/files/explore?{query}");
+            if (unlock is not null)
+                request.Headers.Add(ExploreEndpoints.UnlockHeader, unlock);
+            using var response = await client.SendAsync(request, Token);
             if (response.StatusCode == HttpStatusCode.Accepted)
             {
                 await Task.Delay(25, Token);

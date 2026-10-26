@@ -98,7 +98,8 @@ must keep the server's memory, CPU and disk use bounded whatever the archive hol
 
 ## Passwords
 
-What a password protects differs by format, and the view says which: a zip encrypts only the **content** (names,
+Opening is built (phase 2, [archive-viewer](../features/archive-viewer.md)); extracting (phase 3) and creating
+(phase 4) are left. What a password protects differs by format, and the view says which: a zip encrypts only the **content** (names,
 sizes and dates stay readable by anyone with the file); a 7z or RAR made with "encrypt names" hides the list too.
 
 - **Opening.** The catalog read, or an entry opened, answers `password-needed` (the archive's names are encrypted, or
@@ -197,9 +198,12 @@ Done 2026-10-26 ([archive-viewer](../features/archive-viewer.md); user docs `doc
 
 Left:
 
-- [ ] Passwords ("Passwords" above): the `unlock` route and its limit, unlocks in memory, in-memory catalogs for
-  encrypted names, our zip decryption (ZipCrypto, AES), 7z/RAR passwords through SharpCompress; the view's password
-  prompt (today: a note that the archive is protected), and what it says a zip's password protects.
+- [x] Passwords (2026-10-26; [archive-viewer](../features/archive-viewer.md), "Passwords"): `unlock` and its limit,
+  `ArchiveUnlocks` (memory only, owner + stamp, 15 idle minutes, sign-out), catalogs in memory for encrypted lists,
+  our zip decryption (ZipCrypto, AES; checked against 7-Zip's zips), 7z/RAR through SharpCompress, the view's form.
+  Tests: `ZipsMadeWithAPasswordOpenWithIt`, `ExploreRouteTests` (4 more), `ArchiveUnlocksTests`, 3 specs, the real-app
+  check. Left: a screenshot of the form for the user docs (the docs library has no encrypted archive until SFE writes
+  them, phase 4).
 - [ ] Search across the archive (`GET …/explore/search?path=&q=&after=`: names containing, on the catalog, paged,
   a time cap per page) and a name filter inside a folder (a prefix range on the folder's index).
 - [ ] Open a picture / text / PDF entry in the viewer itself (today: a new tab): a `LibraryItem`-like entry whose

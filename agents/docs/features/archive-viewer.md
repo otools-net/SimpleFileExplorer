@@ -39,6 +39,24 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
 - Last use = the catalog file's write time (touched at most once a minute); after each build, past
   `CatalogMegabytes` the least recently used are deleted (one being read is skipped).
 
+## Passwords
+
+- `POST api/files/explore/unlock {path, password}` (`files.view`, `RequestLimits.Unlock`: 10 a minute per caller,
+  429): tried on the archive (`Opens`): an encrypted list, its first entry read; else the smallest encrypted file
+  (`ArchiveCatalog.SmallestEncrypted`) read through, up to 16 MB (zip's checks come first, AES' at the end). 422
+  `wrong-password` (logged as a warning with who and where from, never the password), 409 `not-protected`, 202 while
+  the list is read; else `{ unlock }`.
+- `ArchiveUnlocks` (Api, one for the server): 32 random bytes as hex → the password, its library, its owner
+  (`user:{id}:{stamp}`: a new password ends it; a visitor without an account: `address:{ip}`) and the archive's full
+  path, size and time (a changed archive ends it); 15 idle minutes; 20 per owner; `Forget(owner)` in
+  `SfeSession.SignOutAsync`.
+- Pages send the unlock in `X-SFE-Archive-Unlock`, entry links as `?unlock=` (an `<a>` sends no header). An archive
+  whose list is encrypted (`summary.NeedsPassword` on its disk catalog, which holds nothing) is answered from
+  `ArchiveCatalogs.GetInMemory` (key: unlock + archive; read with the password through the same gate; at most
+  `MaxInMemory` 4 per library, the least used dropped; 15 idle minutes; `MaxEncryptedListEntries`); its ids are its
+  own. An encrypted entry without a valid unlock: 403 `wrong-password`.
+- The listing says `protected` (some files encrypted, or the list) and `unlocked` (the unlock sent opens it).
+
 ## Client
 
 - `ARCHIVE_FORMAT` (priority 20, `page: true`) matches `isExplorable(item)`: `.zip .7z .rar .tar`, compressed tars up to
@@ -50,6 +68,9 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   new tab (an `<a target=_blank>` on the entry route) with `files.download`; each row has its context menu (Open /
   Open in new tab, Download). Keys: ↑ ↓, Enter, Backspace (up); the view owns its keys (`data-owns-keys`).
 - An `api.get` 409 resolves with its problem: the answer is told apart by shape (`items`, `read`, else a problem).
+- Passwords: the form shows by itself for an encrypted list, or from **Enter the password** / a click on a locked
+  file (a button then, not a link); the unlock is a signal of the view only (dropped with another archive), sent with
+  every request and entry link; zips say their names stay readable; 422 `wrong-password` and 429 have their messages.
 
 ## Measured (2026-10-26)
 

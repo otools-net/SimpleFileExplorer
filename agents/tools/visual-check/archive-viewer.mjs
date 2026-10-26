@@ -1,7 +1,9 @@
 // The archive viewer in the real app: a zip with a big folder and a deep chain of folders, opened on its own page at
 // desktop and phone widths. Checks the rows drawn (only those on screen), more pages loaded while scrolling, the way to
-// a deep folder collapsed, Go to, Up, and an entry opened from the archive; ok/FAIL per check (exit code 1 on a failure).
-// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -phone.png)
+// a deep folder collapsed, Go to, Up, and an entry opened from the archive; passwords: a 7z whose list is encrypted
+// (asked, a wrong one refused, the right one lists it) and an AES zip (a protected file opened once the password is
+// given); ok/FAIL per check (exit code 1 on a failure).
+// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -password.png, -phone.png)
 // Needs a docs-screenshots run first (its build and seeded data in <tmp>/sfe-docs, or env SFE_DOCS_WORK); serves
 // them on :5096 and writes Archives/Check.zip into that copy of the library.
 import { spawn } from 'node:child_process';
@@ -29,6 +31,9 @@ for (let i = 0; i < BIG; i++)
     entries.push({ name: `Big folder/entry ${String(i).padStart(5, '0')}.txt`, data: Buffer.from(`entry ${i}\n`) });
 entries.push({ name: Array.from({ length: DEPTH }, (_, i) => `level ${i + 1}`).join('/') + '/bottom.txt', data: Buffer.from('the bottom\n') });
 writeZip(path.join(work, 'library', 'Archives', 'Check.zip'), entries);
+// Archives with a password (made by 7-Zip: tests/samples/archives; password "secret").
+fs.copyFileSync(path.join(repo, 'tests/samples/archives/tree-names-encrypted.7z'), path.join(work, 'library', 'Archives', 'Hidden names.7z'));
+fs.copyFileSync(path.join(repo, 'tests/samples/archives/tree-aes256.zip'), path.join(work, 'library', 'Archives', 'Secret.zip'));
 
 const installation = path.join(data, 'installation-archive-check.json');
 fs.writeFileSync(installation, JSON.stringify({ Urls: url.replace(/\/$/, ''), Sfe: { Root: path.join(work, 'library') } }));
@@ -85,7 +90,7 @@ try {
                 'scrolled to the end: the last rows loaded page by page');
 
             const deepPath = Array.from({ length: DEPTH }, (_, i) => `level ${i + 1}`).join('/');
-            await b.eval(`const box = document.querySelector('[data-go]'); box.value = ${JSON.stringify(deepPath)}; box.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); 1`);
+            await b.eval(`{ const box = document.querySelector('[data-go]'); box.value = ${JSON.stringify(deepPath)}; box.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); } 1`);
             check(await until(b, `[...document.querySelectorAll('.archive-open')].some(e => e.textContent.trim() === 'bottom.txt')`), `Go to: ${DEPTH} folders down`);
             const skipped = await b.eval(`document.querySelector('[data-skipped]')?.getAttribute('title') ?? ''`);
             check(skipped.startsWith(`${DEPTH - 4}`), `the way there collapsed: "${skipped}"`);
@@ -99,6 +104,28 @@ try {
             const readme = await b.eval(`[...document.querySelectorAll('a.archive-open')].find(e => e.textContent.trim() === 'readme.txt')?.getAttribute('href') ?? ''`);
             const text = await b.eval(`fetch(${JSON.stringify(readme)}).then(r => r.text())`);
             check(text.includes('archive-viewer.mjs'), 'an entry opened from the archive');
+
+            const submit = password => b.eval(`{ const box = document.querySelector('[data-password-box]'); box.value = ${JSON.stringify(password)};
+                document.querySelector('[data-password]').requestSubmit(); } 1`);
+            await b.goto(url + 'view?path=' + encodeURIComponent('Archives/Hidden names.7z'), 1500);
+            check(await until(b, `document.querySelector('[data-password-box]')`), 'a list encrypted: its password asked');
+            await submit('wrong');
+            check(await until(b, `document.querySelector('[data-password-problem]')?.textContent.includes("doesn't open")`), 'a wrong password: said so');
+            if (out)
+                await b.shot(`${out}-password.png`);
+            await submit('secret');
+            check(await until(b, `[...document.querySelectorAll('.archive-open')].some(e => e.textContent.trim() === 'readme.txt')`), 'the right password: the list shown');
+            const hidden = await b.eval(`fetch([...document.querySelectorAll('a.archive-open')].find(e => e.textContent.trim() === 'readme.txt').getAttribute('href')).then(r => r.text())`);
+            check(hidden.includes('An archive made for the tests'), 'a file of the hidden list opened');
+
+            await b.goto(url + 'view?path=' + encodeURIComponent('Archives/Secret.zip'), 1500);
+            check(await until(b, `document.querySelector('[data-protected]')`), 'a zip with protected files: said so, its names listed');
+            await b.eval(`[...document.querySelectorAll('button.archive-open')].find(e => e.textContent.trim() === 'readme.txt').click(); 1`);
+            check(await until(b, `document.querySelector('[data-password]')?.textContent.includes('names stay readable')`), "a protected file: its password asked, with what a zip's protects");
+            await submit('secret');
+            check(await until(b, `[...document.querySelectorAll('a.archive-open')].some(e => e.textContent.trim() === 'readme.txt')`), 'the right password: the file opens');
+            const secret = await b.eval(`fetch([...document.querySelectorAll('a.archive-open')].find(e => e.textContent.trim() === 'readme.txt').getAttribute('href')).then(r => r.text())`);
+            check(secret.includes('An archive made for the tests'), 'the AES file decrypted');
         }
         await b.close();
     }

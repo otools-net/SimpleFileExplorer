@@ -58,6 +58,8 @@ public static class SfeSession
     /// <summary>Removes the cookie, and makes the rest of the request see a visitor without an account.</summary>
     public static async Task SignOutAsync(HttpContext context)
     {
+        // The archives' passwords given in this session go with it.
+        context.RequestServices.GetService<ArchiveUnlocks>()?.Forget(ArchiveUnlocks.OwnerOf(context));
         await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         context.User = new ClaimsPrincipal(new ClaimsIdentity());
         context.RequestServices.GetRequiredService<CurrentAccess>().Reset();

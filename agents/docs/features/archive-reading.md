@@ -33,8 +33,17 @@ proportion to its entries.
   the method isn't read).
 - **7z**: SharpCompress' archive (the header is at the end and read whole); `Locator` = the entry's index.
 - **rar, tar, compressed tars**: SharpCompress' forward reader; opening an entry walks to its index.
-- **Passwords** are not given yet (phase 2): an encrypted entry, or an archive whose list is encrypted, answers
-  "protected by a password". SharpCompress 0.50.7 needs the password even to list a RAR 5 whose names are in clear.
+- **Passwords**: `ReadEntries(…, password)` (7z, rar lists encrypted) and `OpenEntry(…, password)`; without one,
+  `ArchiveException.NeedsPassword`. 7z and rar through SharpCompress' `ReaderOptions.Password` (a wrong one throws a
+  `CryptographicException`: wrapped). SharpCompress 0.50.7 needs the password even to list a RAR 5 whose names are in
+  clear: such an archive is treated as one whose list is encrypted.
+- **Zip encryption is ours** (`ZipEncryption`): ZipCrypto (keys from the password, the 12-byte header's last byte
+  against the CRC's high byte, or the time's with flag 3; the CRC checked at the end by `CrcCheckStream`: the check
+  byte passes a wrong password 1 time in 256) and WinZip AES (extra `0x9901`: AE-1/AE-2, strength 1–3, the real
+  method; salt 8/12/16 bytes, PBKDF2-HMAC-SHA1 1000 rounds into the AES key, the HMAC key and a 2-byte verifier;
+  AES-CTR, a little-endian counter from 1; HMAC-SHA1 of the encrypted data, its first 10 bytes after the data,
+  checked at the end; AE-1 also its CRC). Password bytes: UTF-8. Checked against 7-Zip's AES-128, AES-256 and
+  ZipCrypto zips (`tests/samples/archives/tree-*.zip`).
 - **Truncated tars**: a gzip cut short just ends, and SharpCompress' tar reader stops quietly (checked 2026-10-26).
   Compressed tars are decompressed by us through `TailStream` (keeps the last 1 KB); a tar must end with its end
   mark (whole 512-byte blocks, the last 1 KB zero), plain tars checked on the file's end. No mark = "cut off".
@@ -56,9 +65,13 @@ proportion to its entries.
 - `ArchiveCatalog.Build(archive, format, catalogPath, options, progress, cancel)` reads the list once into a SQLite
   file (written as `….building`, moved in at the end: a cut build leaves nothing). Not pooled connections, opened per
   question. `journal_mode = OFF`, `synchronous = OFF`, 16 MB page cache: it is a cache, made again if lost.
-- Schema (`Version` 1): `Folders(Id, ParentId, Name NOCASE, Depth, Time, Folders, Files, AllFiles, Size REAL,
+- Schema (`Version` 2): `Folders(Id, ParentId, Name NOCASE, Depth, Time, Folders, Files, AllFiles, Size REAL,
   Packed REAL)`, root `Id` 1; `Entries(Id, FolderId, Name NOCASE, Kind, Size, Packed, Time, Encrypted, Locator,
-  Method)`; `LeftOut` (first 1000); `Info` (version, format, entries, folders, leftOut, complete, stopped).
+  Method, Crc, Cipher, CipherInfo)`; `LeftOut` (first 1000); `Info` (version, format, entries, folders, leftOut,
+  complete, stopped, needsPassword). A version change moves catalogs to a new `v*` folder; the old one is deleted.
+- **In memory** (`BuildInMemory`): the list of an archive whose names are encrypted, read with its password into a
+  shared-cache SQLite memory database (`Mode=Memory`, `Cache=Shared`) that lives while its keeper connection is open;
+  the same queries. Its names never reach the disk.
 - Folders are rows by id: no path is stored whole. While reading, the folders of the last entry's path are kept as a
   stack (archives list folder by folder) plus a `(parent, name)` cache of 200 000, then the exact-name index.
 - After the read: indexes, direct counts from `Entries`, then totals rolled up **one depth level per statement**
