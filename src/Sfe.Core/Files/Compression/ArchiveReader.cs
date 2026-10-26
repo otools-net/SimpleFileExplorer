@@ -5,7 +5,7 @@ namespace Sfe.Core.Files.Compression;
 
 /// <summary>
 /// Reads an archive's list of entries and one entry's data, never unpacking anything else
-/// (agents/docs/development/compressed-archives-plan.md). Zip goes through <see cref="ZipDirectory"/>; the others
+/// (agents/docs/features/archive-reading.md). Zip goes through <see cref="ZipDirectory"/>; the others
 /// through SharpCompress: its forward reader for rar and tars (headers spread over the file, constant memory), its
 /// archive for 7z (whose header sits at the end and is read whole).
 /// </summary>

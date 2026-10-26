@@ -82,7 +82,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [testing-client](agents/docs/development/testing-client.md) | Vitest/jsdom gotchas | `src/testing/setup.ts` |
 | [test-samples](agents/docs/development/test-samples.md) | committed sample files (test media, docs library), keeping them up to date | `tests/samples/`, `agents/tools/samples/`, `TestSamples` |
 | [flash-viewer-plan](agents/docs/development/flash-viewer-plan.md) | plan: Flash viewer, why Ruffle, what is left | |
-| [compressed-archives-plan](agents/docs/development/compressed-archives-plan.md) | plan: compress to zip (levels, passwords), explore and extract archives (zip, 7z, rar, tar), passwords | |
+| [archives-next-plan](agents/docs/development/archives-next-plan.md) | plan: what the archives epic left (compress target and size, search in archives, Open as archive, extract from the selection bar, measuring tool) | |
 
 ### Environment — `agents/docs/environment/`
 

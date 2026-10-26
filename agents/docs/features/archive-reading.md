@@ -3,12 +3,24 @@
 Code: `src/Sfe.Core/Files/Compression/` (`ArchiveFormats`, `ArchiveEntryNames`, `ZipDirectory`, `ArchiveReader`,
 `ArchiveCatalog`, `BoundedStreams`), `ArchiveOptions` (`Files:Archives:*`) in `SfeOptions.cs`. Tests:
 `ArchiveReaderTests`, `ArchiveCatalogTests`; samples `tests/samples/archives/` (7z, by
-`agents/tools/samples/make-archives.mjs`) and `tests/samples/third-party/sharpcompress/` (RAR, from SharpCompress' tests). The epic and what is left: [compressed-archives-plan](../development/compressed-archives-plan.md).
+`agents/tools/samples/make-archives.mjs`) and `tests/samples/third-party/sharpcompress/` (RAR, from SharpCompress' tests). What is left: [archives-next-plan](../development/archives-next-plan.md).
 
 The core under exploring and extracting archives: nothing here unpacks an archive, and nothing costs memory in
 proportion to its entries.
 
 ## Formats
+
+| Format | Explore / extract | Create | What listing reads (never the data) |
+|---|---|---|---|
+| `.zip` (Zip64, UTF-8 and code-page names) | yes | yes ([compression](compression.md)) | the central directory at the end (one sequential read) |
+| `.7z` (solid or not, LZMA/LZMA2) | yes | no (dropped) | the header at the end (may itself be LZMA-packed: only it is unpacked) |
+| `.rar` (4, 5) | yes, read only | no | one header per entry, spread over the file: seeks past each entry's data |
+| `.tar` | yes | later, if asked | one header per entry: seeks past each entry's data |
+| `.tar.gz`/`.tgz`, `.tar.bz2`, `.tar.xz` | extract; explore only up to `MaxCompressedTarMegabytes` | later, if asked | **the whole stream decompressed**: no index exists |
+| `.gz`, `.bz2`, `.xz` alone (one file) | extract only | no | nothing (one file) |
+
+`.cbz`/`.cbr`, `.epub`, `.docx` are zips too but keep their own viewer (an "Open as archive" is in
+[archives-next-plan](../development/archives-next-plan.md)).
 
 - `ArchiveFormats.Detect(path)`: the first 512 bytes decide the family (zip `PK\3\4` or `PK\5\6`, 7z, `Rar!`, gzip,
   bzip2, xz, `ustar` at 257); the name only tells a compressed tar (`.tar.gz`, `.tgz`…) from one file compressed

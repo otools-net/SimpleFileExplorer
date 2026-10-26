@@ -192,6 +192,8 @@ With the right to compress (`files.compress`, which no group has until an admini
 can be put in a zip saved in the library: **Compress…** in the selection bar, or in a file's or folder's menu. The zip
 goes into the folder listed (in search results, the folder of the first item).
 
+![Compress…: name, compression and a password typed twice](../images/compress-dialog.png)
+
 - **Name**: the only item's name, or the folder's; `.zip` is added.
 - **Compression**: **Store** (no compression: the fastest), **Fastest**, **Normal** (the default) or **Maximum** (the
   smallest, several times slower).

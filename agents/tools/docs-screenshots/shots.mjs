@@ -355,6 +355,49 @@ const scenes = {
         await b.eval(`[...document.querySelectorAll('.archive-open')].find(e => e.textContent.trim() === 'Day 2 - Summit').click(); 1`);
         await sleep(1500);
         await b.shot(OUT + 'archive-viewer-folder.png');
+
+        const menuOf = async path => {
+            await b.eval(`document.querySelector('[data-path="${path}"]').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 420, clientY: 320 })); 1`);
+            await sleep(600);
+        };
+        const typeInto = (selector, value) => b.eval(`{ const box = document.querySelector('${selector}'); box.value = ${JSON.stringify(value)}; box.dispatchEvent(new Event('input')); } 1`);
+
+        // Extract…: the archive's menu in the listing, then its dialog (into a new folder, beside it).
+        await b.open('?path=Documents');
+        await menuOf('Documents/Mountain trip.zip');
+        await b.eval(`document.querySelector('[data-entry="extract"]').click(); 1`);
+        await sleep(1200);
+        await b.shot(OUT + 'extract-dialog.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(400);
+
+        // Compress…: a folder's menu, the password typed twice and what it protects.
+        await b.open('?path=Photos');
+        await menuOf('Photos/2025 Mountains');
+        await b.eval(`document.querySelector('[data-entry="compress"]').click(); 1`);
+        await sleep(800);
+        await typeInto('[data-zip-password]', 'blue-hour-at-the-hut');
+        await sleep(300);
+        await typeInto('[data-zip-confirm]', 'blue-hour-at-the-hut');
+        await sleep(600);
+        await b.shot(OUT + 'compress-dialog.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(400);
+
+        // A zip with a password, made by SFE: a protected file clicked asks for it. Deleted after, for the other scenes.
+        const zip = 'Documents/Private.zip';
+        await b.eval(api('POST', 'api/files/jobs/compress', {
+            paths: ['Documents/Trip diary.txt', 'Photos/2025 Mountains/Summit.jpg', 'Photos/2025 Mountains/Starry sky.jpg', 'Photos/2025 Mountains/Blue hour.jpg'],
+            target: 'Documents', name: 'Private', level: 6, skipCompressed: true, password: 'blue-hour-at-the-hut',
+        }));
+        await sleep(4000);
+        await b.open('view?path=' + enc(zip));
+        await b.eval(`[...document.querySelectorAll('button.archive-open')].find(e => e.textContent.trim() === 'Trip diary.txt').click(); 1`);
+        await sleep(800);
+        if (!await b.eval(`Boolean(document.querySelector('[data-password-box]'))`))
+            throw new Error('a protected file asked for no password');
+        await b.shot(OUT + 'archive-password.png');
+        await b.eval(api('POST', 'api/files/delete', { paths: [zip], permanent: true }));
         await b.close();
     },
     async video() {

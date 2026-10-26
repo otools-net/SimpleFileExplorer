@@ -6,7 +6,7 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
 `styles/reader.css`. Tests: `ExploreRouteTests`, `ArchiveCatalogsTests`, `archive-view.component.spec.ts`, rows in
 `formats.spec.ts`; real app: `agents/tools/visual-check/archive-viewer.mjs`; docs scene `archive`. User docs:
 `docs/user-guide/archives.md`. The core (formats, names, catalogs): [archive-reading](archive-reading.md); what is left:
-[compressed-archives-plan](../development/compressed-archives-plan.md).
+[archives-next-plan](../development/archives-next-plan.md).
 
 ## Routes
 
@@ -45,7 +45,8 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
 
 ## Passwords
 
-- `POST api/files/explore/unlock {path, password}` (`files.view`, `RequestLimits.Unlock`: 10 a minute per caller,
+- `POST api/files/explore/unlock {path, password}` (`files.view`, `RequestLimits.Unlock`: 10 a minute per caller, as
+  7z derives its key with 2^19 SHA-256 rounds, ~0.3 s of CPU a try: guessing is also a way to load the server;
   429): tried on the archive (`Opens`): an encrypted list, its first entry read; else the smallest encrypted file
   (`ArchiveCatalog.SmallestEncrypted`) read through, up to 16 MB (zip's checks come first, AES' at the end). 422
   `wrong-password` (logged as a warning with who and where from, never the password), 409 `not-protected`, 202 while

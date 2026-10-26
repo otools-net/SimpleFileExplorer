@@ -5,7 +5,7 @@ using System.Text;
 namespace Sfe.Core.Files.Compression;
 
 /// <summary>
-/// Decrypting zip entries (agents/docs/development/compressed-archives-plan.md, "Passwords"): ZipCrypto (old archives)
+/// Decrypting zip entries (agents/docs/features/archive-reading.md): ZipCrypto (old archives)
 /// and WinZip AES (AE-1, AE-2; 128, 192, 256 bits). Ours, not SharpCompress' zip: our directory reader keeps memory flat
 /// whatever the count, and AES is also what SFE writes.
 /// </summary>

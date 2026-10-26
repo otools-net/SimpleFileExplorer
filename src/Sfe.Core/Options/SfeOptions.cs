@@ -370,7 +370,7 @@ public sealed class FileManagementOptions
 
 /// <summary>
 /// Bounds on what reading an archive costs the server: an archive is a stranger's file, and its directory may claim
-/// anything (agents/docs/development/compressed-archives-plan.md, "Scale").
+/// anything (agents/docs/features/archive-reading.md, "Catalogs").
 /// </summary>
 public sealed class ArchiveOptions
 {

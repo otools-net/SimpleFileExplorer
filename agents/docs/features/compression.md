@@ -6,7 +6,17 @@ downloads: `IZipTarget`, `DownloadTarget`, `CompressTarget`), `FileJobs.Compress
 client `files/compress.dialog.ts`, `FileTransfers.compress`/`canCompress`, `ItemMenu` (`compress`), the selection bar.
 Tests: `ZipWriterTests`, `CompressJobTests`, `FileJobRouteTests` (one), `compress.spec.ts`; downloads' walk:
 `ArchivesTests`. User docs: `docs/user-guide/managing-files.md#compress-into-a-zip`. The plan:
-[compressed-archives-plan](../development/compressed-archives-plan.md).
+[archives-next-plan](../development/archives-next-plan.md).
+
+## Decisions (2026-10-26)
+
+- **Zip only.** Making 7z was dropped: a 7-Zip program would mean a setting, an install step and a process per job;
+  7z is still explored and extracted. SharpCompress has had a managed 7z writer since 0.50.x: if 7z is ever wanted,
+  it needs no program. tar / tar.gz: later, if asked.
+- **AES-256 only** for passwords (AE-2): secure, opened by 7-Zip, WinRAR, macOS `ditto` and Windows 11's newer zip
+  support, not by older Windows Explorer nor macOS Archive Utility (the dialog says so). ZipCrypto is read, never
+  written. AE-2 keeps no CRC (a CRC leaks a small file's content).
+- The level is the person's, per zip: the dialog's four choices (0, 1, 6, 9), the API takes 0–9.
 
 ## The writer (`ZipWriter`)
 

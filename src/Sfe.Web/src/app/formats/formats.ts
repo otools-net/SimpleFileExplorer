@@ -233,7 +233,7 @@ const ARCHIVE_SUFFIXES: readonly string[] = ['.zip', '.7z', '.rar', '.tar'];
 const COMPRESSED_TAR_SUFFIXES: readonly string[] = ['.tar.gz', '.tgz', '.tar.bz2', '.tbz2', '.tbz', '.tar.xz', '.txz'];
 
 /**
- * The archive viewer is offered for `item` (agents/docs/development/compressed-archives-plan.md): the server's rule
+ * The archive viewer is offered for `item` (agents/docs/features/archive-viewer.md): the server's rule
  * (`ArchiveFormats.IsExplorable`), from the listing alone. Never for one file compressed alone (`.gz`, `.xz`), nor a
  * compressed tar over the library's size; the server checks the bytes (a renamed file answers `not-explorable`).
  */

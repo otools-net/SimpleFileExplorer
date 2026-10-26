@@ -6,7 +6,7 @@ Code: `Core/Files/Compression/ArchiveExtractor.cs` (writing entries), `ArchiveRe
 `FileTransfers.extract`/`canExtract`, `ItemMenu` (`extractBeside`, `extract`), the archive viewer's **Extract…**,
 `isExtractable` in `formats/formats.ts`. Tests: `ArchiveExtractorTests`, `ExtractJobTests`, `ExploreRouteTests`
 (extract rows), `extract.spec.ts`, the archive view spec. User docs: `docs/user-guide/archives.md#extracting`. The
-plan: [compressed-archives-plan](../development/compressed-archives-plan.md); reading: [archive-reading](archive-reading.md).
+plan: [archives-next-plan](../development/archives-next-plan.md); reading: [archive-reading](archive-reading.md).
 
 ## Reading
 

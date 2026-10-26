@@ -2,7 +2,7 @@ using Sfe.Core.Options;
 
 namespace Sfe.Core.Files.Compression;
 
-/// <summary>The archives SFE reads (agents/docs/development/compressed-archives-plan.md, "Formats").</summary>
+/// <summary>The archives SFE reads (agents/docs/features/archive-reading.md, "Formats").</summary>
 public enum ArchiveFormat
 {
     Zip,

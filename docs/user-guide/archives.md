@@ -44,6 +44,8 @@ An archive whose list itself is protected (a 7z or rar made with "encrypt file n
 opens. One whose files only are protected shows its list with a lock on those files: click one, or **Enter the
 password**, to give it.
 
+![A protected file of a zip: its password asked](../images/archive-password.png)
+
 - Type the password and **Open** (**Show** shows what you type). A wrong one says so; after 10 tries in a minute, wait
   a minute.
 - Once given, the archive's files open as the others do, for 15 minutes after you last use it. It is asked again after
@@ -66,6 +68,8 @@ archive's files can be written into the library:
   Untick **Into a new folder** to put what the archive holds straight into the folder, with what is there: a name
   already taken there is asked about as for a [copy](managing-files.md#move-and-copy) (Replace, Skip, Keep both).
   **Password**: the archive's, when it has one.
+
+  ![Extract…: the folder, a new folder or not, the password](../images/extract-dialog.png)
 - In the viewer, **Extract…** in the bar extracts the folder shown (the whole archive at its top), and a row's menu
   (right click) extracts that folder or file alone. The password given in the viewer is used: it isn't asked again.
 

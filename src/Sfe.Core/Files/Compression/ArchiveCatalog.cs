@@ -47,7 +47,7 @@ public sealed record ArchiveTrail(int Skipped, IReadOnlyList<ArchiveFolder> Last
 /// <summary>
 /// An archive's list of entries, read once into a SQLite file so that every later question (a folder's page, its
 /// totals, the way to it, one entry) is an indexed query: its cost follows the page, never the archive
-/// (agents/docs/development/compressed-archives-plan.md, "Scale"). Folders are rows by id with their parent: a path
+/// (agents/docs/features/archive-reading.md, "Catalogs"). Folders are rows by id with their parent: a path
 /// is never stored whole, however deep. Every walk over depth is a loop: a tree 10 000 deep has no recursion to
 /// overflow.
 /// </summary>
