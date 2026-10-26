@@ -112,6 +112,10 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
 - `FILE_SOURCE` (default: the library) is what the format views read through (`textFile`, `original`, `download`);
   `library: false` hides Follow and parts (a 413 is a message), skips `TextSession.checkDisk` and the subtitles'
   video, and gives Markdown `relative: false` (relative links and pictures become text).
+- **Open as archive** (item menu, `openAsArchive`): `formatOf(item, { asArchive })` gives `ARCHIVE_FORMAT` for
+  `isContainer` (a name in `CONTAINER_EXTENSIONS`: `.cbz .cbr .epub .docx .odt .jar .apk .nupkg`…, not explorable
+  already); the viewer keeps it as `asText` (`opened().asArchive`; its new tab is `view?path=…&asArchive=1`). The
+  server needs nothing: `ArchiveFormats.Detect` reads the bytes, a name lying gives 409 `not-explorable`.
 - An `api.get` 409 resolves with its problem: the answer is told apart by shape (`items`, `read`, else a problem).
 - **Find** (`data-find`, after 300 ms and 2 characters): `found` replaces the folder's rows in the same grid (each
   with `in <where>`, a button opening that folder through `at`); pages go on as rows scroll in, and at once when a

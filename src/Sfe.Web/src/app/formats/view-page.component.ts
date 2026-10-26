@@ -60,6 +60,7 @@ export class ViewPageComponent implements OnInit {
 
     protected readonly path = this.params.get('path') || '';
     private readonly asText = this.params.get('asText') === '1';
+    private readonly asArchive = this.params.get('asArchive') === '1';
     protected readonly edit = this.params.get('edit') === '1';
     protected readonly name = baseName(this.path);
     protected readonly state = signal<'loading' | 'ready' | 'missing' | 'unviewable' | 'unreachable'>('loading');
@@ -116,7 +117,7 @@ export class ViewPageComponent implements OnInit {
             this.state.set('unreachable');
             return;
         }
-        const format = this.config.can(Rights.viewFiles) ? formatOf(item, { asText: this.asText }) : null;
+        const format = this.config.can(Rights.viewFiles) ? formatOf(item, { asText: this.asText, asArchive: this.asArchive }) : null;
         if (!format) {
             this.state.set('unviewable');
             return;

@@ -139,7 +139,7 @@ export class ViewerComponent {
      * The file shown, by path: a refresh of the listing in place keeps it (with its new tags...), even when the files
      * around it change. `asText`: opened with "Open as text"; `edit`: ready to be changed (a new file).
      */
-    private readonly opened = signal<{ item: LibraryItem; asText: boolean; edit: boolean } | null>(null);
+    private readonly opened = signal<{ item: LibraryItem; asText: boolean; edit: boolean; asArchive?: boolean } | null>(null);
     protected readonly editRequested = computed(() => this.opened()?.edit ?? false);
     protected readonly item = computed((): LibraryItem | null => {
         const opened = this.opened();
@@ -164,7 +164,7 @@ export class ViewerComponent {
         };
         return { previous: find(-1), next: find(1) };
     });
-    protected readonly format = computed(() => formatOf(this.item(), { asText: this.opened()?.asText }));
+    protected readonly format = computed(() => formatOf(this.item(), { asText: this.opened()?.asText, asArchive: this.opened()?.asArchive }));
     /** The viewer's own markup for media; null for a format with a component. */
     protected readonly builtin = computed(() => {
         const view = this.format()?.view;
@@ -211,7 +211,11 @@ export class ViewerComponent {
     /** "Open in new tab": the file itself, or its viewer's page for formats that have one. */
     protected readonly fileUrl = computed(() => {
         const item = this.item();
-        return item ? (this.format()?.page ? this.urls()!.view(item.path) : this.urls()!.file(item.path)) : null;
+        if (!item)
+            return null;
+        if (!this.format()?.page)
+            return this.urls()!.file(item.path);
+        return this.opened()?.asArchive ? `${this.urls()!.view(item.path)}&asArchive=1` : this.urls()!.view(item.path);
     });
     /** The picture shown and its thumbnail, marked with its time: one saved over (the picture editor) shows again. */
     protected readonly pictureUrls = computed(() => {
@@ -366,10 +370,10 @@ export class ViewerComponent {
     }
 
     /**
-     * Shows `item` (`asText`: any file, as text; `edit`: ready to be changed). Nothing happens for a file without a
-     * viewer, nor when the file shown has changes the person keeps.
+     * Shows `item` (`asText`: any file, as text; `asArchive`: a container, as an archive; `edit`: ready to be changed).
+     * Nothing happens for a file without a viewer, nor when the file shown has changes the person keeps.
      */
-    open(item: LibraryItem, options?: { asText?: boolean; edit?: boolean }): void {
+    open(item: LibraryItem, options?: { asText?: boolean; asArchive?: boolean; edit?: boolean }): void {
         if (!formatOf(item, options))
             return;
         const dialog = this.dialog().nativeElement;
@@ -377,7 +381,7 @@ export class ViewerComponent {
             return;
         if (!dialog.open)
             dialog.showModal();
-        this.show(item, options?.asText ?? false, options?.edit ?? false);
+        this.show(item, options?.asText ?? false, options?.edit ?? false, options?.asArchive ?? false);
     }
 
     /** Closes the viewer, unless the file shown has changes the person keeps; false then. */
@@ -404,11 +408,11 @@ export class ViewerComponent {
             event.preventDefault();
     }
 
-    private show(item: LibraryItem, asText = false, edit = false): void {
+    private show(item: LibraryItem, asText = false, edit = false, asArchive = false): void {
         this.closeMenu();
         this.stopPending();
         this.resetZoom();
-        this.opened.set({ item, asText, edit });
+        this.opened.set({ item, asText, edit, asArchive });
         this.unsupported.set(false);
         this.converted.set(false);
         this.thumbnailFailed.set(false);

@@ -27,6 +27,10 @@ The first time an archive is opened, SFE reads its list of entries once (big arc
 entries…" and how many so far); after that every folder opens at once, however big the archive is. A changed archive
 is read again.
 
+Comic books (`.cbz`, `.cbr`), EPUB books, Word, Excel and PowerPoint documents (`.docx`, `.xlsx`, `.pptx`),
+OpenDocument files and packages (`.jar`, `.apk`, `.nupkg`…) are archives too, underneath. They keep their own viewer,
+or none; **Open as archive** in their menu (right click, or ⋮) shows the files they are made of instead.
+
 ## Files inside an archive
 
 With the right to download files, clicking a file's name shows it right there, in place of the list, when the viewer

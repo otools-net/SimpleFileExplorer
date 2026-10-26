@@ -5,6 +5,7 @@ import { ConfigService } from '../core/config.service';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders, type } from '../../testing/fakes';
+import { setArchives } from '../formats/formats';
 import { Dialogs } from '../library/dialogs.service';
 import { LibraryPageComponent } from '../library/library-page.component';
 import { ListingStore } from '../library/listing.store';
@@ -248,7 +249,26 @@ describe('ItemMenu', () => {
         expect(TestBed.inject(ItemMenu).entries(archive).map(e => e.id)).not.toContain('openAsText');
     });
 
-    it('edits text files in the viewer and crops pictures, for those who may', async () => {
+    it('opens containers (comic books, books, office documents) as archives, for those who may open files', async () => {
+        await setUp([Rights.browse, Rights.viewFiles]);
+        setArchives({ maxCompressedTarMegabytes: 10 });
+        try {
+            const menu = TestBed.inject(ItemMenu);
+            const open = vi.fn();
+            TestBed.inject(Dialogs).viewer.set({ open } as never);
+            const comic = item('Media/issue 1.cbz', { kind: 'file' });
+
+            menu.entries(comic).find(e => e.id === 'openAsArchive')!.run();
+
+            expect(open).toHaveBeenCalledWith(comic, { asArchive: true });
+            expect(menu.entries(item('Media/backup.zip', { kind: 'file' })).map(e => e.id), 'an archive opens as one').not.toContain('openAsArchive');
+            expect(menu.entries(photo).map(e => e.id)).not.toContain('openAsArchive');
+        } finally {
+            setArchives(null);
+        }
+    });
+
+        it('edits text files in the viewer and crops pictures, for those who may', async () => {
         await setUp([Rights.browse, Rights.viewFiles, Rights.createFiles, Rights.editImages]);
         const menu = TestBed.inject(ItemMenu);
         const open = vi.fn();

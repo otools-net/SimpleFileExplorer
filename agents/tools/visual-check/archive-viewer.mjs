@@ -1,12 +1,12 @@
 // The archive viewer in the real app: a zip with a big folder and a deep chain of folders, opened on its own page at
 // desktop and phone widths. Checks the rows drawn (only those on screen), more pages loaded while scrolling, the way to
 // a deep folder collapsed, Go to, Up, Find (a name among thousands, a result's folder opened, in this folder only), an entry opened from the
-// archive, and entries shown in place (text, Markdown, PDF, a picture); passwords: a 7z whose list is encrypted
+// archive, entries shown in place (text, Markdown, PDF, a picture), Open as archive (a book); passwords: a 7z whose list is encrypted
 // (asked, a wrong one refused, the right one lists it) and an AES zip (a protected file opened once the password is
 // given); extracting (the archive's menu, the dialog with the password, the job, the folder written and listed);
 // compressing that folder again (its menu, the dialog with a password, the zip made, tested by 7-Zip when installed);
 // ok/FAIL per check (exit code 1 on a failure).
-// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -find.png, -entry-text.png, -entry-pdf.png, -password.png, -extract.png, -compress.png, -phone.png)
+// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -find.png, -entry-text.png, -entry-pdf.png, -as-archive.png, -password.png, -extract.png, -compress.png, -phone.png)
 // Needs a docs-screenshots run first (its build and seeded data in <tmp>/sfe-docs, or env SFE_DOCS_WORK); serves
 // them on :5096 and writes Archives/Check.zip into that copy of the library.
 import { spawn } from 'node:child_process';
@@ -228,6 +228,16 @@ try {
                 const tested = spawnSync(sevenZip, ['t', '-pagain-secret', zip], { encoding: 'utf8' });
                 check(tested.status === 0 && tested.stdout.includes('Everything is Ok'), "7-Zip opens it with the password");
             }
+
+            // Open as archive: a book (a zip underneath) explored rather than read.
+            await b.goto(url + '?path=Documents', 1500);
+            await until(b, `document.querySelector('[data-path="Documents/Hut stories.epub"]')`);
+            await b.eval(`document.querySelector('[data-path="Documents/Hut stories.epub"]').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 300, clientY: 300 })); 1`);
+            check(await until(b, `!!document.querySelector('[data-entry="openAsArchive"]')`), "a book's menu: Open as archive");
+            await b.eval(`document.querySelector('[data-entry="openAsArchive"]').click(); 1`);
+            check(await until(b, `[...document.querySelectorAll('.archive-body .archive-open')].some(e => e.textContent.trim() === 'mimetype')`), 'Open as archive: the files of the book');
+            if (out)
+                await b.shot(`${out}-as-archive.png`);
         }
         await b.close();
     }

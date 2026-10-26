@@ -19,8 +19,8 @@ proportion to its entries.
 | `.tar.gz`/`.tgz`, `.tar.bz2`, `.tar.xz` | extract; explore only up to `MaxCompressedTarMegabytes` | later, if asked | **the whole stream decompressed**: no index exists |
 | `.gz`, `.bz2`, `.xz` alone (one file) | extract only | no | nothing (one file) |
 
-`.cbz`/`.cbr`, `.epub`, `.docx` are zips too but keep their own viewer (an "Open as archive" is in
-[archives-next-plan](../development/archives-next-plan.md)).
+`.cbz`/`.cbr`, `.epub`, `.docx` are zips too but keep their own viewer: "Open as archive" explores them
+([archive-viewer](archive-viewer.md)).
 
 - `ArchiveFormats.Detect(path)`: the first 512 bytes decide the family (zip `PK\3\4` or `PK\5\6`, 7z, `Rar!`, gzip,
   bzip2, xz, `ustar` at 257); the name only tells a compressed tar (`.tar.gz`, `.tgz`…) from one file compressed

@@ -4,7 +4,7 @@ import { ConfigService } from '../core/config.service';
 import { CopyPathService } from '../core/copy-path.service';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
-import { formatOf, isViewable } from '../formats/formats';
+import { formatOf, isContainer, isViewable } from '../formats/formats';
 import { ContextMenu, MenuEntry, MenuTarget } from '../menus/context-menu';
 import { IconComponent } from '../shared/icon.component';
 import { Dialogs } from '../library/dialogs.service';
@@ -18,7 +18,7 @@ import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu: always an action. */
 export interface ItemMenuEntry extends MenuEntry {
-    id: 'open' | 'newTab' | 'openFolder' | 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'extractBeside' | 'extractEach' | 'extract' | 'compress' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
+    id: 'open' | 'newTab' | 'openFolder' | 'openAsText' | 'openAsArchive' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'extractBeside' | 'extractEach' | 'extract' | 'compress' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
     run: () => void;
 }
 
@@ -74,7 +74,7 @@ export class ItemMenu {
      * only has its tags and ⋮ buttons: quick links and copying the path are here too.
      */
     hasActions(item: LibraryItem): boolean {
-        return this.canSeeProperties() || this.transfers.canExtract(item) || this.transfers.canCompress(item) || this.canOpenAsText(item) || this.canEditText(item) || this.canEditPicture(item) || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item) || this.canExclude(item);
+        return this.canSeeProperties() || this.transfers.canExtract(item) || this.transfers.canCompress(item) || this.canOpenAsText(item) || this.canOpenAsArchive(item) || this.canEditText(item) || this.canEditPicture(item) || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item) || this.canExclude(item);
     }
 
     /** Properties of what is listed: whoever browses. */
@@ -97,6 +97,11 @@ export class ItemMenu {
     }
 
     /** A file without a viewer of its own may be opened as text (the server refuses what isn't). */
+    /** A comic book, an EPUB, an office document…: a zip (or rar, 7z, tar) underneath, its files explored in the viewer. */
+    canOpenAsArchive(item: LibraryItem): boolean {
+        return isContainer(item) && this.store.can(Rights.viewFiles, item) && Boolean(this.dialogs.viewer());
+    }
+
     canOpenAsText(item: LibraryItem): boolean {
         return item.kind === 'file' && !formatOf(item) && this.store.can(Rights.viewFiles, item) && Boolean(this.dialogs.viewer());
     }
@@ -130,6 +135,8 @@ export class ItemMenu {
         const entries: ItemMenuEntry[] = this.openings(item, targets());
         if (this.canOpenAsText(item))
             entries.push({ id: 'openAsText', label: 'Open as text', icon: 'file', title: 'Show its content as text, in the viewer', run: () => this.dialogs.viewer()?.open(item, { asText: true }) });
+        if (this.canOpenAsArchive(item))
+            entries.push({ id: 'openAsArchive', label: 'Open as archive', icon: 'extract', title: 'Show the files it is made of, in the viewer', run: () => this.dialogs.viewer()?.open(item, { asArchive: true }) });
         if (this.canEditText(item))
             entries.push({ id: 'editText', label: 'Edit', icon: 'edit', title: 'Open it in the viewer, ready to be changed', run: () => this.dialogs.viewer()?.open(item, { edit: true }) });
         if (this.canEditPicture(item))

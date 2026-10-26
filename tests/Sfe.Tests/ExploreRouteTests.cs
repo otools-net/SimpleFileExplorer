@@ -183,6 +183,19 @@ public sealed class ExploreRouteTests
     }
 
     [TestMethod]
+    public async Task AContainerIsExploredByItsBytesWhateverItsName()
+    {
+        File.Copy(Path.Combine(TestSamples.Folder, "..", "library", "Documents", "Hut stories.epub"), _library.FullPath("Media/book.epub"));
+        var top = await ListAsync(_alice, "path=Media/book.epub");
+        Assert.AreEqual("zip", top.Format);
+        Assert.IsTrue(top.Items.Any(item => item.Name == "mimetype"), string.Join(", ", top.Items.Select(item => item.Name)));
+
+        File.WriteAllText(_library.FullPath("Media/fake.docx"), "not a zip at all");
+        using var fake = await _alice.GetAsync("/api/files/explore?path=Media/fake.docx", Token);
+        Assert.AreEqual(HttpStatusCode.Conflict, fake.StatusCode);
+    }
+
+    [TestMethod]
     public async Task TheRightsAndTheFolderRulesApply()
     {
         TestArchives.Zip(_library.Root, "SpecialDir/hidden.zip", ("a.txt", "a"));

@@ -1,5 +1,5 @@
 import { item } from '../../testing/fakes';
-import { ARCHIVE_FORMAT, CSV_FORMAT, EPUB_FORMAT, extensionOf, FLASH_FORMAT, isExplorable, setArchives, setFlashMovies, formatOf, FORMATS, isViewable, JSON_FORMAT, PDF_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
+import { ARCHIVE_FORMAT, CSV_FORMAT, EPUB_FORMAT, extensionOf, FLASH_FORMAT, isContainer, isExplorable, setArchives, setFlashMovies, formatOf, FORMATS, isViewable, JSON_FORMAT, PDF_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -105,10 +105,22 @@ describe('formats', () => {
             expect(isExplorable(item('a/folder.zip', { kind: 'directory' })), 'a folder named so').toBe(false);
             expect(ARCHIVE_FORMAT.page).toBe(true);
             expect(ARCHIVE_FORMAT.edits).toBeFalsy();
+
+            // Open as archive: containers keep their own viewer (or none) unless asked.
+            const book = item('a/Book.EPUB', { kind: 'file' });
+            const report = item('a/report.docx', { kind: 'file' });
+            expect(formatOf(book)).toBe(EPUB_FORMAT);
+            expect(formatOf(report)).toBeNull();
+            expect(formatOf(book, { asArchive: true })).toBe(ARCHIVE_FORMAT);
+            expect(formatOf(report, { asArchive: true })).toBe(ARCHIVE_FORMAT);
+            expect([book, report, item('a/comic.cbz', { kind: 'file' })].every(isContainer)).toBe(true);
+            expect(isContainer(zip), 'an archive already').toBe(false);
+            expect(formatOf(item('a/notes.txt', { kind: 'file' }), { asArchive: true }), 'not a container').toBe(PROSE_FORMAT);
         } finally {
             setArchives(null);
         }
         expect(formatOf(zip)).toBeNull();
+        expect(formatOf(item('a/report.docx', { kind: 'file' }), { asArchive: true }), 'nor without the configuration').toBeNull();
     });
 
     it('has no viewer for folders and other files, unless opened as text', () => {

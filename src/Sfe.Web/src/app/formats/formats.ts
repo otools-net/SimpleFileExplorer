@@ -273,16 +273,32 @@ export const ARCHIVE_FORMAT: FileFormat = {
     page: true,
 };
 
+/**
+ * Files that are archives underneath (zips mostly: comics, books, office documents, packages) but keep their own
+ * viewer or none: "Open as archive" explores them. The server reads the bytes, whatever the name.
+ */
+export const CONTAINER_EXTENSIONS: ReadonlySet<string> = new Set([
+    'cbz', 'cbr', 'cb7', 'cbt', 'epub', 'docx', 'xlsx', 'pptx', 'docm', 'xlsm', 'pptm', 'odt', 'ods', 'odp', 'odg', 'vsdx',
+    'jar', 'war', 'ear', 'apk', 'aab', 'aar', 'ipa', 'xpi', 'crx', 'vsix', 'nupkg', 'snupkg', 'whl', 'appx', 'msix', 'kmz', '3mf', 'sketch',
+]);
+
+/** `item` may be opened as an archive ("Open as archive"): a container by its name, not shown as an archive already. */
+export function isContainer(item: LibraryItem): boolean {
+    return item.kind === 'file' && archiveSettings() !== null && CONTAINER_EXTENSIONS.has(extensionOf(item)) && !isExplorable(item);
+}
+
 /** Every format, any order (the priority decides). */
 export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT, PDF_FORMAT, EPUB_FORMAT, FLASH_FORMAT, ARCHIVE_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text
- * ("Open as text"): the server refuses what isn't.
+ * ("Open as text"): the server refuses what isn't; `asArchive` a container as an archive ("Open as archive").
  */
-export function formatOf(item: LibraryItem | null | undefined, options?: { asText?: boolean }): FileFormat | null {
+export function formatOf(item: LibraryItem | null | undefined, options?: { asText?: boolean; asArchive?: boolean }): FileFormat | null {
     if (!item || item.kind === 'directory')
         return null;
+    if (options?.asArchive && isContainer(item))
+        return ARCHIVE_FORMAT;
     let best: FileFormat | null = null;
     for (const format of FORMATS) {
         if ((best === null || format.priority > best.priority) && format.matches(item))
