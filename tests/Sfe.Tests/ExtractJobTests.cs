@@ -168,9 +168,9 @@ public sealed class ExtractJobTests
         var wrong = await RunAsync(Extract("Secret/tree.zip", "Secret"), password: "wrong");
         var right = await RunAsync(Extract("Secret/tree.zip", "Secret"), password: "secret");
 
-        Assert.AreEqual(FileOperationStatus.Failed, missing.Results.Single().Status);
+        Assert.AreEqual(FileOperationStatus.NeedsPassword, missing.Results.Single().Status);
         StringAssert.Contains(missing.Results.Single().Message, "protected by a password");
-        Assert.AreEqual(FileOperationStatus.Failed, wrong.Results.Single().Status);
+        Assert.AreEqual(FileOperationStatus.NeedsPassword, wrong.Results.Single().Status);
         StringAssert.Contains(wrong.Results.Single().Message, "doesn't open");
         Assert.AreEqual(FileOperationStatus.Done, right.Results.Single().Status, right.Results.Single().Message);
         Assert.IsTrue(File.Exists(_library.FullPath("Secret/tree/Deep/a/b/c/d/e/bottom.txt")));

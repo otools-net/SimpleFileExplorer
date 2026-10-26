@@ -360,7 +360,8 @@ export interface FileJobConflict {
 export interface FileJobItem {
     path: string;
     newPath: string | null;
-    status: DeleteStatus | 'skipped' | 'invalid' | 'conflict';
+    /** `needsPassword`: an extraction of an archive whose password wasn't given, or was wrong. */
+    status: DeleteStatus | 'skipped' | 'invalid' | 'conflict' | 'needsPassword';
     message?: string | null;
 }
 

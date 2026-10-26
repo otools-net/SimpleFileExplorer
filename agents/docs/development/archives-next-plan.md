@@ -20,8 +20,6 @@ what it left for later, none of it promised. Tick `[x]` in the commit that does 
 
 ## Extract
 
-- [ ] Selection bar with one archive selected; several archives in one job.
-- [ ] Asking the password again from the panel when an extraction fails on it (today: its message, then Extract…).
 - [ ] Paths too long for Windows without long paths (.NET handles `\\?\` itself: only the index's limit applies now).
 - [ ] Desktop: drop an archive with Alt to extract it?
 

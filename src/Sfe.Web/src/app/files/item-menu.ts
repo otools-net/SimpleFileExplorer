@@ -18,7 +18,7 @@ import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu: always an action. */
 export interface ItemMenuEntry extends MenuEntry {
-    id: 'open' | 'newTab' | 'openFolder' | 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'extractBeside' | 'extract' | 'compress' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
+    id: 'open' | 'newTab' | 'openFolder' | 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'extractBeside' | 'extractEach' | 'extract' | 'compress' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
     run: () => void;
 }
 
@@ -175,6 +175,12 @@ export class ItemMenu {
                 id: 'extractBeside', label: `Extract to “${stemOf(item.name)}”`, icon: 'extract',
                 title: `Extract it here, into a new folder named after it (or after its one folder); in the background`,
                 run: () => void this.transfers.extract({ archive: item.path, target: this.store.route().path, newFolder: true }),
+            });
+        if (targets().length > 1 && this.transfers.canExtractEach(targets()))
+            entries.push({
+                id: 'extractEach', label: `Extract each here`, icon: 'extract',
+                title: `Extract the ${targets().length} archives here, each into a new folder named after it; in the background`,
+                run: () => void this.transfers.extractEach(targets()),
             });
         if (targets().length === 1 && this.transfers.canExtract(item) && this.dialogs.extract())
             entries.push({

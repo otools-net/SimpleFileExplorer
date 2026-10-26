@@ -41,6 +41,9 @@ public enum FileOperationStatus
 
     /// <summary>It can't go to the trash (a folder holding links, on another drive than the trash): delete it permanently instead?</summary>
     TrashUnavailable,
+
+    /// <summary>An archive protected by a password that wasn't given, or a wrong one: nothing was extracted.</summary>
+    NeedsPassword,
 }
 
 /// <param name="Item">The new or renamed file or folder.</param>

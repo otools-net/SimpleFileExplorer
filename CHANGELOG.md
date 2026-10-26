@@ -17,9 +17,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   or when a protected file is clicked), then their files open for 15 minutes. Zips with AES or ZipCrypto, 7z and rar.
   The password stays in the server's memory only, for you only, and a protected list is never written to its disk.
 - **Extract archives** (zip, 7z, rar, tar, gz…) into the library, in the background: **Extract to “name”** and
-  **Extract…** in an archive's menu, and **Extract…** in the archive viewer for a folder or a file of it. Names leading
-  out of the folder, links and zip bombs are left out and listed; a cancelled or failed extraction leaves nothing half
-  written. New right `files.extract`, given to no group. See [Archives](docs/user-guide/archives.md#extracting).
+  **Extract…** in an archive's menu and the selection bar (several archives at once, each beside it), and
+  **Extract…** in the archive viewer for a folder or a file of it; a wrong password is asked again from the panel.
+  Names leading out of the folder, links and zip bombs are left out and listed; a cancelled or failed extraction leaves
+  nothing half written. New right `files.extract`, given to no group. See [Archives](docs/user-guide/archives.md#extracting).
 - **Compress into a zip** saved in the library: **Compress…** in the selection bar and the item menu, with the
   compression asked (Store, Fastest, Normal, Maximum; pictures, videos and archives stored as they are) and an optional
   password (AES-256, the names stay visible). Made in the background, one at a time on the server; the panel tells

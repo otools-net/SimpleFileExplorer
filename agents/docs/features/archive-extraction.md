@@ -74,4 +74,11 @@ plan: [archives-next-plan](../development/archives-next-plan.md); reading: [arch
   each row's menu; hidden where the dialog isn't (the `view?path=` page).
 - The panel: icon `extract`, "Extracting … to …", bytes read; the result's message shown even when done (what was
   left out). The toast: what came out, **Open** to the new folder.
-- Not done: the selection bar, several archives at once, a password asked again when an extraction fails on it.
+- Several archives: `canExtractEach` (all of them `canExtractBeside`), `extractEach` starts one job each, beside
+  them, new folders; the selection bar (**Extract…** for one, **Extract** for several) and the item menu
+  (**Extract each here**).
+- A wrong or missing password ends the job with `FileOperationStatus.NeedsPassword` (`needsPassword`), nothing
+  written. `FileTransfers` remembers each extraction it started (`extractions`, the request without the password,
+  this page only): `canRetryExtraction`/`retryExtraction` reopen the dialog as asked (archive, entries chosen,
+  `target`, `newFolder`) from **Enter the password…** in the panel and the toast's action; a job resumed after a
+  reload keeps only its message.

@@ -20,6 +20,9 @@ export interface ExtractChoice {
     what?: string;
     /** The viewer's unlock of the archive: no password asked then. */
     unlock?: string | null;
+    /** The folder to start in (else the archive's), and whether into a new folder (else yes): an extraction asked again. */
+    target?: string;
+    newFolder?: boolean;
 }
 
 /**
@@ -94,11 +97,11 @@ export class ExtractDialog {
     /** Extract…: the folder is picked, starting with the archive's. */
     open(choice: ExtractChoice): void {
         this.choice.set(choice);
-        this.newFolder.set(true);
+        this.newFolder.set(choice.newFolder ?? true);
         this.password.set('');
         this.showPassword.set(false);
         this.browser.reset();
-        void this.browser.browse(parentPath(choice.path));
+        void this.browser.browse(choice.target ?? parentPath(choice.path));
         this.sheet().open();
     }
 

@@ -6,6 +6,7 @@ import { isExtractable } from '../formats/formats';
 import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
+import { SelectionBarComponent } from '../library/selection-bar.component';
 import { SidebarService } from '../library/sidebar/sidebar.service';
 import { ExtractDialog, stemOf } from './extract.dialog';
 import { FileTransfers } from './file-transfers';
@@ -112,6 +113,89 @@ describe('Extracting archives', () => {
         await settle();
 
         expect(toasts.toasts().map(t => t.message)).toContain('That password doesn\'t open “trip.zip”: nothing was extracted.');
+    });
+
+    it('asks the password again, as the extraction was asked, when it failed on it', async () => {
+        await setUp();
+        const open = vi.fn();
+        TestBed.inject(Dialogs).extract.set({ open } as never);
+        const toasts = TestBed.inject(ToastService);
+        const failed = job({
+            state: 'completed', done: 1, results: [{ path: zip.path, newPath: null, status: 'needsPassword', message: "That password doesn't open “trip.zip”: nothing was extracted." }],
+        });
+        api.fileJobs.mockResolvedValue([]);
+        const fixture = TestBed.createComponent(OperationsPanelComponent);
+        fixture.detectChanges();
+        await settle();
+        api.startExtract.mockResolvedValue(job());
+        api.fileJobs.mockResolvedValue([failed]);
+        const transfers = TestBed.inject(FileTransfers);
+
+        await transfers.extract({ archive: zip.path, target: 'Media/Holidays', newFolder: false, files: [4, 5], password: 'wrong' });
+        await settle();
+        fixture.detectChanges();
+
+        const toast = toasts.toasts().find(t => t.message.includes("doesn't open"))!;
+        expect(toast.error).toBe(true);
+        toasts.act(toast, toast.actions[0]);
+        expect(open).toHaveBeenCalledWith({
+            path: zip.path, name: 'trip.zip', folders: undefined, files: [4, 5], what: '2 items', target: 'Media/Holidays', newFolder: false,
+        });
+        (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('[data-retry-password]')!.click();
+        expect(open).toHaveBeenCalledTimes(2);
+        expect(transfers.canRetryExtraction({ ...failed, id: 99 })).toBe(false);
+    });
+
+    it('extracts several archives selected, each beside it, from the menu', async () => {
+        await setUp();
+        const other = item('Media/old.7z', { size: 100 });
+        api.browse.mockResolvedValue(listing('Media', [folder, zip, other, photo]));
+        await store.load();
+        api.startExtract.mockResolvedValue(job());
+        api.fileJobs.mockResolvedValue([job()]);
+        const menu = TestBed.inject(ItemMenu);
+
+        store.select(zip, true);
+        expect(menu.entries(zip).map(e => e.id)).not.toContain('extractEach');
+        store.select(other, true);
+        menu.entries(zip).find(e => e.id === 'extractEach')!.run();
+        await settle();
+        expect(api.startExtract).toHaveBeenCalledWith({ archive: zip.path, target: 'Media', newFolder: true });
+        expect(api.startExtract).toHaveBeenCalledWith({ archive: other.path, target: 'Media', newFolder: true });
+
+        store.select(photo, true);
+        expect(menu.entries(zip).map(e => e.id)).not.toContain('extractEach');
+    });
+
+    it('offers Extract… in the selection bar for one archive, Extract for several', async () => {
+        await setUp();
+        const other = item('Media/old.7z', { size: 100 });
+        api.browse.mockResolvedValue(listing('Media', [folder, zip, other, photo]));
+        await store.load();
+        const open = vi.fn();
+        TestBed.inject(Dialogs).extract.set({ open } as never);
+        api.startExtract.mockResolvedValue(job());
+        api.fileJobs.mockResolvedValue([job()]);
+        const fixture = TestBed.createComponent(SelectionBarComponent);
+        const element = fixture.nativeElement as HTMLElement;
+
+        store.select(zip, true);
+        fixture.detectChanges();
+        buttonNamed(element, 'Extract…')!.click();
+        expect(open).toHaveBeenCalledWith({ path: zip.path, name: zip.name });
+
+        store.select(other, true);
+        fixture.detectChanges();
+        expect(buttonNamed(element, 'Extract')!.title).toBe('Extract the 2 archives here, each into a new folder named after it');
+        buttonNamed(element, 'Extract')!.click();
+        await settle();
+        expect(api.startExtract).toHaveBeenCalledTimes(2);
+        expect(store.selection().size).toBe(0);
+
+        store.select(zip, true);
+        store.select(photo, true);
+        fixture.detectChanges();
+        expect(buttonNamed(element, 'Extract')).toBeUndefined();
     });
 });
 

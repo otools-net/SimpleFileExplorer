@@ -32,6 +32,8 @@ export class FileTransfers {
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
     private readonly dialogs = inject(Dialogs);
+    /** The extractions this page started, by job: one failing on its password is asked again as it was (never the password). */
+    private readonly extractions = new Map<number, ExtractRequest>();
 
     /** The session's jobs shown in the operations panel, newest first. */
     readonly jobs = signal<FileJobView[]>([]);
@@ -101,8 +103,40 @@ export class FileTransfers {
     }
 
     /** Starts an extraction and follows it. */
-    extract(request: ExtractRequest): Promise<FileJobView | null> {
-        return this.follow(() => this.api.startExtract(request), 'extract');
+    async extract(request: ExtractRequest): Promise<FileJobView | null> {
+        const view = await this.follow(() => this.api.startExtract(request), 'extract');
+        if (view)
+            this.extractions.set(view.id, { ...request, password: null });
+        return view;
+    }
+
+    /** The extraction `job` failed on its password, and this page started it: it can be asked again with one. */
+    canRetryExtraction(job: FileJobView): boolean {
+        return job.kind === 'extract' && job.results[0]?.status === 'needsPassword' && this.extractions.has(job.id) && Boolean(this.dialogs.extract());
+    }
+
+    /** Extract… again, as `job` was asked (archive, entries chosen, folder, new folder or not), for its password. */
+    retryExtraction(job: FileJobView): void {
+        const request = this.extractions.get(job.id);
+        if (!request?.archive)
+            return;
+        const chosen = (request.folders?.length ?? 0) + (request.files?.length ?? 0);
+        this.dialogs.extract()?.open({
+            path: request.archive, name: baseName(request.archive), folders: request.folders, files: request.files,
+            what: chosen ? plural(chosen, 'item') : undefined, target: request.target, newFolder: request.newFolder,
+        });
+    }
+
+    /** Several archives may each be extracted beside them (all of them: one that may not, and none is offered). */
+    canExtractEach(items: LibraryItem[]): boolean {
+        return items.length > 1 && items.every(item => this.canExtractBeside(item));
+    }
+
+    /** Each archive into a new folder named after it, in the folder listed: one job each, in the panel. */
+    async extractEach(items: LibraryItem[]): Promise<void> {
+        const target = this.store.route().path;
+        for (const item of items)
+            await this.extract({ archive: item.path, target, newFolder: true });
     }
 
     /** The space lets the session move (or copy) somewhere. */
@@ -278,6 +312,13 @@ export class FileTransfers {
         const result = job.results[0];
         if (job.state === 'cancelled') {
             this.toasts.show(`Stopped: nothing was extracted to “${where}”.`);
+            return;
+        }
+        if (this.canRetryExtraction(job)) {
+            this.toasts.show(result.message ?? 'It is protected by a password.', {
+                error: true, timeout: 12000,
+                actions: [{ label: 'Enter the password', title: 'Extract it again, with its password', run: () => this.retryExtraction(job) }],
+            });
             return;
         }
         if (!result || result.status !== 'done') {

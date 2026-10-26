@@ -99,6 +99,9 @@ const DROP_TARGET = '[data-drop]';
                             <li [class.skipped]="result.status === 'skipped'" [class.done]="result.status === 'done'">{{ result.message || baseName(result.path) }}</li>
                         }
                     </ul>
+                    @if (transfers.canRetryExtraction(job)) {
+                        <button type="button" class="button small" data-retry-password title="Extract it again, with its password" (click)="transfers.retryExtraction(job)">Enter the password…</button>
+                    }
                 }
             </section>
         }

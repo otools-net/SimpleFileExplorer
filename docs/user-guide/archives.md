@@ -76,11 +76,15 @@ archive's files can be written into the library:
   ![Extract…: the folder, a new folder or not, the password](../images/extract-dialog.png)
 - In the viewer, **Extract…** in the bar extracts the folder shown (the whole archive at its top), and a row's menu
   (right click) extracts that folder or file alone. The password given in the viewer is used: it isn't asked again.
+- With archives selected, the selection bar has **Extract…** for one (the same dialog), and **Extract** for several:
+  each goes into a new folder named after it, beside it (also **Extract each here** in their menu).
 
 Extracting runs on the server in the background, in the panel at the bottom right, as moves and copies do: its
 progress, **Cancel**, the questions, then what was extracted. Until it is over, what comes out is written in a hidden
 working folder (`….sfe-partial`): a cancelled or failed extraction leaves nothing half written, and a wrong password
-leaves nothing at all. What comes out is added to the index, with the folder's default tags.
+leaves nothing at all. When it fails on the password (none given, or a wrong one), **Enter the password…** in the panel
+and in its message opens the dialog again as it was, for the password. What comes out is added to the index, with the
+folder's default tags.
 
 Some entries are never written, and the panel lists them (the first few, and how many in all):
 

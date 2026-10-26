@@ -70,6 +70,12 @@ import { ListingStore } from './listing.store';
                 <span>Copy</span>
             </button>
         }
+        @if (extractable(); as extract) {
+            <button type="button" class="button small selection-extract" [sfeOverflowItem]="more.extract" [title]="extract.title" (click)="extractSelection()">
+                <svg sfeIcon="extract"></svg>
+                <span>{{ extract.label }}</span>
+            </button>
+        }
         @if (compressible()) {
             <button type="button" class="button small selection-compress" [sfeOverflowItem]="more.compress" title="Put the selected items in a zip in this folder" (click)="compressSelection()">
                 <svg sfeIcon="compress"></svg>
@@ -136,6 +142,16 @@ export class SelectionBarComponent {
     /** Some of the selection may go in a zip (only those do), and the dialog is there. */
     protected readonly compressible = computed(() => Boolean(this.dialogs.compress()) && this.selected().some(item => this.transfers.canCompress(item)));
 
+    /** Extract: one archive selected, its dialog; several (all archives), each beside it; null otherwise. */
+    protected readonly extractable = computed(() => {
+        const selected = this.selected();
+        if (selected.length === 1 && this.transfers.canExtract(selected[0]) && this.dialogs.extract())
+            return { label: 'Extract…', title: `Extract ${selected[0].name} into a folder picked next, with its password if it has one` };
+        if (this.transfers.canExtractEach(selected))
+            return { label: 'Extract', title: `Extract the ${selected.length} archives here, each into a new folder named after it` };
+        return null;
+    });
+
     /** Some of the selection may be deleted (only those are, the confirmation names them). */
     protected readonly deletable = computed(() => this.selected().some(item => this.fileActions.canDelete(item)));
     protected readonly deleteTitle = computed(() => this.fileActions.alwaysPermanent
@@ -157,8 +173,19 @@ export class SelectionBarComponent {
         move: (): MenuEntry => ({ id: 'move', label: 'Move to…', icon: 'move', title: 'Move the selected items to another folder (Ctrl+X, then Ctrl+V there; or drag them onto a folder)', run: () => this.transfers.pick('move', this.store.selectedItems()) }),
         copy: (): MenuEntry => ({ id: 'copy', label: 'Copy to…', icon: 'copy', title: 'Copy the selected items into another folder (Ctrl+C, then Ctrl+V there; or drag them onto a folder with Ctrl)', run: () => this.transfers.pick('copy', this.store.selectedItems()) }),
         download: (): MenuEntry => ({ id: 'download', label: 'Download', icon: 'download', title: this.downloadTitle(), run: () => this.downloadSelection() }),
+        extract: (): MenuEntry => ({ id: 'extract', label: this.extractable()?.label ?? 'Extract', icon: 'extract', title: this.extractable()?.title ?? '', run: () => this.extractSelection() }),
         compress: (): MenuEntry => ({ id: 'compress', label: 'Compress…', icon: 'compress', title: 'Put the selected items in a zip in this folder', run: () => this.compressSelection() }),
     };
+
+    protected extractSelection(): void {
+        const selected = this.selected();
+        if (selected.length === 1)
+            this.dialogs.extract()?.open({ path: selected[0].path, name: selected[0].name });
+        else if (this.transfers.canExtractEach(selected)) {
+            void this.transfers.extractEach(selected);
+            this.store.clearSelection();
+        }
+    }
 
     protected compressSelection(): void {
         this.dialogs.compress()?.open(this.store.selectedItems().filter(item => this.transfers.canCompress(item)));

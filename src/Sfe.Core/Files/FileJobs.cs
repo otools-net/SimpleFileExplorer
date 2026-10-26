@@ -586,7 +586,7 @@ public sealed class FileJobs(
         {
             RemovePartial(partial);
             if (ex is ArchiveException { NeedsPassword: true })
-                return new FileJobItem(path, null, FileOperationStatus.Failed, string.IsNullOrEmpty(job.Password)
+                return new FileJobItem(path, null, FileOperationStatus.NeedsPassword, string.IsNullOrEmpty(job.Password)
                     ? $"“{name}” is protected by a password: extract it with its password."
                     : $"That password doesn't open “{name}”: nothing was extracted.");
             if (ex is ArchiveException)
