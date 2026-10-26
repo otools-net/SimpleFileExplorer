@@ -176,8 +176,13 @@ export class VideoPlayerComponent {
     protected readonly controlsVisible = signal(true);
     protected readonly waiting = signal(false);
     protected readonly fullscreen = signal(false);
-    /** The screen was turned sideways for a fullscreen video, to free when it ends. */
+    /** The screen is held sideways for a fullscreen video, to free when it ends. */
     private orientationLocked = false;
+    /** Locks it sideways again when something else let it turn back (a seek reloading the video, the browser). */
+    private readonly keepLandscape = () => {
+        if (screen.orientation?.type?.startsWith('portrait'))
+            this.turnToLandscape();
+    };
     protected readonly muted = signal(false);
     protected readonly speed = signal(1);
     protected readonly speedMenu = signal(false);
@@ -529,20 +534,27 @@ export class VideoPlayerComponent {
     /**
      * On a phone or tablet, a wide video turns the screen sideways while in fullscreen, as YouTube does. Browsers only
      * lock the orientation of a page in fullscreen (Android); elsewhere `lock` is missing or refuses, harmlessly. The
-     * iPhone's own video fullscreen turns by itself.
+     * iPhone's own video fullscreen turns by itself. The lock is held until fullscreen ends: Chrome's own handling of
+     * the video lets the screen turn back when it loads again (a seek asking the conversion from elsewhere), so it is
+     * locked again then (`onMetadata`) and whenever the screen turns upright.
      */
     private turnToLandscape(): void {
         const orientation = screen.orientation as LockableOrientation | undefined;
-        if (!orientation?.lock || !matchMedia('(pointer: coarse)').matches || this.video.videoWidth <= this.video.videoHeight)
+        if (!orientation?.lock || document.fullscreenElement !== this.host || !matchMedia('(pointer: coarse)').matches
+            || this.video.videoWidth <= this.video.videoHeight)
             return;
-        this.orientationLocked = true;
-        orientation.lock('landscape').catch(() => this.orientationLocked = false);
+        if (!this.orientationLocked) {
+            this.orientationLocked = true;
+            orientation.addEventListener?.('change', this.keepLandscape);
+        }
+        orientation.lock('landscape').catch(() => { });
     }
 
     private releaseOrientation(): void {
         if (!this.orientationLocked)
             return;
         this.orientationLocked = false;
+        screen.orientation?.removeEventListener?.('change', this.keepLandscape);
         try {
             screen.orientation?.unlock();
         } catch {
@@ -578,6 +590,8 @@ export class VideoPlayerComponent {
             this.resume = false;
             this.video.play().catch(() => this.updatePlayState());
         }
+        // Loaded again in fullscreen (a conversion from elsewhere), or its size known only now.
+        this.turnToLandscape();
         this.updateTime();
     }
 

@@ -23,6 +23,9 @@ Streams: [video-streams.md](video-streams.md).
 - Fullscreen on a coarse pointer with a wide video (`videoWidth > videoHeight`) calls
   `screen.orientation.lock('landscape')` after `requestFullscreen` (`turnToLandscape`); `unlock` when fullscreen ends
   and on destroy. Browsers only lock in fullscreen (Android Chrome); elsewhere `lock` is missing or rejects, ignored.
+  The lock is held: Chrome let the screen turn upright again after a seek on the time bar (likely its own media
+  orientation handling when the video loads again), so it locks again on `loadedmetadata` in fullscreen and on a
+  `screen.orientation` `change` to portrait (`keepLandscape`, removed when fullscreen ends).
   The iPhone path (`webkitEnterFullscreen`) turns by itself.
 - The player page stays dark ([theme.md](theme.md)) and opts out of the scrollbar gutter.
 - Tests stub `HTMLMediaElement` ([testing-client.md](../development/testing-client.md)).

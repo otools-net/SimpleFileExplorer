@@ -279,6 +279,11 @@ function openDialog(trigger: HTMLElement | null): HTMLDialogElement | null {
     return modal.at(-1) ?? null;
 }
 
+/** The menu shows as a sheet at the bottom (phone-sheets.css), not at the pointer. */
+function isSheet(): boolean {
+    return typeof matchMedia === 'function' && matchMedia('(max-width: 640px)').matches;
+}
+
 /** The menu event comes from a finger: a long press (Chrome tells it; others, by a screen without a mouse). */
 export function fromTouch(event: MouseEvent): boolean {
     const pointer = (event as Partial<PointerEvent>).pointerType;
@@ -330,8 +335,8 @@ export class ContextMenuDirective {
         '(document:pointerdown)': 'outside($event)',
         '(document:contextmenu)': 'menu.fromPage($event)',
         '(document:keydown)': 'menu.fromKey($event)',
-        '(window:scroll)': 'menu.close()',
-        '(window:resize)': 'menu.close()',
+        '(window:scroll)': 'onScroll()',
+        '(window:resize)': 'onResize()',
     },
     template: `
         @if (menu.open(); as open) {
@@ -399,6 +404,8 @@ export class ContextMenuComponent {
     });
     /** Where the menu shows: at the pointer, moved back inside the window once its size is known. */
     protected readonly position = signal({ x: 0, y: 0 });
+    /** The window's width when the menu opened: a resize changing only the height doesn't close a phone sheet. */
+    private openWidth = 0;
 
     constructor() {
         effect(() => {
@@ -412,6 +419,7 @@ export class ContextMenuComponent {
             if (!open)
                 return;
             untracked(() => this.position.set({ x: open.x, y: open.y }));
+            this.openWidth = window.innerWidth;
             afterNextRender(() => {
                 showLayer(this.layer()?.nativeElement);
                 this.place(open.x, open.y);
@@ -466,6 +474,21 @@ export class ContextMenuComponent {
     protected back(): void {
         this.submenu.set(null);
         afterNextRender(() => this.focusFirst(), { injector: this.injector });
+    }
+
+    /** A menu at the pointer would be left behind by the page; a phone sheet stays at the bottom, the page frozen behind it. */
+    protected onScroll(): void {
+        if (!isSheet())
+            this.menu.close();
+    }
+
+    /**
+     * A phone's address bar shows again when a sheet freezes the page behind it (hidden by scrolling down), which
+     * resizes the window right after the sheet opened: only a change of width (turning the phone) closes a sheet.
+     */
+    protected onResize(): void {
+        if (!isSheet() || window.innerWidth !== this.openWidth)
+            this.menu.close();
     }
 
     protected outside(event: PointerEvent): void {

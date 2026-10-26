@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { settle } from '../../testing/fakes';
+import { setMediaQuery, settle } from '../../testing/fakes';
 import { ContextMenu, ContextMenuComponent, ContextMenuDirective, keepsBrowserMenu, MenuEntry, MenuTarget, usePageMenu } from './context-menu';
 
 function target(key: string, entries: MenuEntry[] = [{ id: 'act', label: 'Act', icon: 'info', title: 'Act', run: vi.fn() }], touch?: () => void): MenuTarget {
@@ -242,5 +242,44 @@ describe('ContextMenu', () => {
         expect(menu.open()).not.toBeNull();
         menu.toggle(target('inner'), trigger);
         expect(menu.open()).toBeNull();
+    });
+
+    describe('scrolling and resizing', () => {
+        const width = window.innerWidth;
+        const resize = (to: number) => {
+            Object.defineProperty(window, 'innerWidth', { configurable: true, value: to });
+            window.dispatchEvent(new Event('resize'));
+        };
+
+        afterEach(() => {
+            setMediaQuery('(max-width: 640px)', false);
+            Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+        });
+
+        it('closes a menu at the pointer when the page scrolls or the window resizes', async () => {
+            menu.showAt(target('inner'), at('#inner'));
+            await settle();
+            window.dispatchEvent(new Event('scroll'));
+            expect(menu.open()).toBeNull();
+
+            menu.showAt(target('inner'), at('#inner'));
+            await settle();
+            window.dispatchEvent(new Event('resize'));
+            expect(menu.open()).toBeNull();
+        });
+
+        it('keeps a phone sheet open through a scroll and the address bar showing again, not through a turn', async () => {
+            setMediaQuery('(max-width: 640px)', true);
+            menu.showAt(target('inner'), at('#inner'));
+            await settle();
+
+            // The end of a fling, then the address bar coming back as the sheet freezes the page: only the height changes.
+            window.dispatchEvent(new Event('scroll'));
+            window.dispatchEvent(new Event('resize'));
+            expect(menu.open()?.target.key).toBe('inner');
+
+            resize(width + 200);
+            expect(menu.open()).toBeNull();
+        });
     });
 });

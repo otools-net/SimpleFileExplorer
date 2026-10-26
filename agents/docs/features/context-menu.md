@@ -37,6 +37,9 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
   is a user gesture (no popup blocker) and middle click works; or `submenu` (shown in place, Back / Left arrow).
 - Closing: click elsewhere, Esc/Tab (focus back to the trigger), scroll, resize, navigation; item menus also when the
   listing changes (`ItemMenu`, `ListingStore.generation`, skipping the effect's first run).
+- A phone sheet (`max-width: 640px`, `isSheet`) closes neither on scroll nor on a resize keeping the width: opening
+  it freezes the page (`html:has(.sheet-backdrop)`), which brings back Chrome's address bar hidden by scrolling down
+  (a height-only `resize`) and ends a fling (a last `scroll`); both closed it at once. Turning the phone still does.
 
 ## Which menu (built so far)
 

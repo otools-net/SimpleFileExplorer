@@ -530,6 +530,7 @@ describe('VideoPlayerComponent', () => {
     describe('fullscreen on a phone', () => {
         let lock: ReturnType<typeof vi.fn>;
         let unlock: ReturnType<typeof vi.fn>;
+        let orientation: EventTarget & { type: string };
         let fullscreenElement: Element | null;
 
         const fullscreenButton = () => fixture.nativeElement.querySelector('button[aria-label="Fullscreen (F)"]') as HTMLButtonElement;
@@ -551,7 +552,8 @@ describe('VideoPlayerComponent', () => {
             fullscreenElement = null;
             lock = vi.fn().mockResolvedValue(undefined);
             unlock = vi.fn();
-            Object.defineProperty(screen, 'orientation', { configurable: true, value: { lock, unlock } });
+            orientation = Object.assign(new EventTarget(), { type: 'portrait-primary', lock, unlock });
+            Object.defineProperty(screen, 'orientation', { configurable: true, value: orientation });
             Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => fullscreenElement });
             setMediaQuery('(pointer: coarse)', true);
         });
@@ -569,6 +571,32 @@ describe('VideoPlayerComponent', () => {
             fullscreenElement = null;
             document.dispatchEvent(new Event('fullscreenchange'));
             expect(unlock).toHaveBeenCalledTimes(1);
+        });
+
+        it('holds the screen sideways when it turns back while in fullscreen (a seek reloading the video)', async () => {
+            await goFullscreen(1920, 1080);
+            lock.mockClear();
+
+            // Chrome let it go: upright again.
+            orientation.type = 'portrait-primary';
+            orientation.dispatchEvent(new Event('change'));
+            expect(lock).toHaveBeenCalledWith('landscape');
+
+            // A conversion asked from elsewhere loads again.
+            lock.mockClear();
+            video().dispatchEvent(new Event('loadedmetadata'));
+            expect(lock).toHaveBeenCalledWith('landscape');
+
+            // Sideways turns are left alone; after fullscreen nothing is held any more.
+            lock.mockClear();
+            orientation.type = 'landscape-secondary';
+            orientation.dispatchEvent(new Event('change'));
+            fullscreenElement = null;
+            document.dispatchEvent(new Event('fullscreenchange'));
+            orientation.type = 'portrait-primary';
+            orientation.dispatchEvent(new Event('change'));
+            video().dispatchEvent(new Event('loadedmetadata'));
+            expect(lock).not.toHaveBeenCalled();
         });
 
         it('leaves a tall video as it is', async () => {

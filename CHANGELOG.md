@@ -29,6 +29,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
     alive), are no longer polled while the tab is hidden, and refresh at once when it shows;
   - the scan's moving progress bar no longer makes the browser lay the whole page out on every frame, and the scan
     panel's clock only ticks while a scan runs.
+- On a phone, the **menu of a file or folder** (its ⋮ button) no longer closes as soon as it opens after scrolling
+  down the folder: the browser's address bar coming back, or the end of the scroll, closed it.
+- In **fullscreen on a phone**, a wide video no longer turns back upright when you move along the time bar: the screen
+  is held sideways until fullscreen ends.
 
 ## 1.83.0
 
