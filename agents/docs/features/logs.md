@@ -14,6 +14,11 @@ Code: `src/Sfe.Core/Logs/` (`AuditLogProvider`, `AuditLogService`), entity `Data
   `LogEntryLevel.SecurityWarning` (7; `LogEntry.Level` is `LogEntryLevel`, same numbers as `LogLevel`, so no
   migration), the API and client name it `securityWarning`, files write `SEC`. Use it for anything acting against the
   protections (sign-in failures, lockouts, codes, recoveries, installation changes), not for operational warnings.
+- **Refusals and failures of the API** (`Sfe.Api/Endpoints/ProblemLog`, an endpoint filter on the `/api` group): any
+  answer with a problem body is logged under `Sfe.Api.Problems` — method, path (never the query: unlock ids), status,
+  user, the detail and each field's errors. 400 warning, 5xx error, others (409/413/422) information; plain
+  401/403/404 not. Routes need nothing: return `TypedResults.Problem`/`ValidationProblem` and it is logged. Test:
+  `LogTests.WhatTheApiRefusesOrFailsWithIsLoggedWithWhoAskedButNoPassword`.
 - `AuditLogProvider.Suppress()` (an `AsyncLocal`) keeps the log's own EF commands and failures out of it, else EF at
   Information would log every insert into the log forever. Use it around anything the log service does.
 - `AuditLogWorker` (root hosted service) flushes every 2 s and purges hourly; while `MigrationCoordinator.IsBlocking`

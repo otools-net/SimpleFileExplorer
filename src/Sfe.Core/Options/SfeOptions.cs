@@ -402,6 +402,12 @@ public sealed class ArchiveOptions
     public int MaxPreviewMegabytes { get; set; } = 64;
 
     /// <summary>
+    /// Most data unpacked and thrown away to reach one file of a solid 7z or rar, or of a compressed tar (they keep no
+    /// way to jump to it): past it the file is only extracted, or the archive downloaded.
+    /// </summary>
+    public int MaxSkippedMegabytes { get; set; } = 2048;
+
+    /// <summary>
     /// Entries listed at most for an archive whose names are encrypted: its list is held in memory (never written to
     /// disk), while its password is.
     /// </summary>

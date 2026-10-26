@@ -35,7 +35,7 @@ public sealed class ArchiveUnlocksTests
         var other = Path.Combine(_folder, "b.zip");
         File.WriteAllText(other, "another");
         Assert.IsNull(unlocks.PasswordFor(id, 1, "user:1:stamp", other), "another archive");
-        Assert.IsNull(unlocks.PasswordFor(id[..^1] + "0", 1, "user:1:stamp", _archive), "another id");
+        Assert.IsNull(unlocks.PasswordFor(id[..^1] + (id[^1] == '0' ? "1" : "0"), 1, "user:1:stamp", _archive), "another id");
         Assert.IsNull(unlocks.PasswordFor(null, 1, "user:1:stamp", _archive));
 
         File.SetLastWriteTimeUtc(_archive, DateTime.UtcNow.AddHours(1));

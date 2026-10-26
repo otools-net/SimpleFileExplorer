@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, OnInit, signal } from '@angular/core';
 import { formatDate, formatSize, joinParts, plural } from '../core/format';
 import { ClashSide, FileJobView, LibraryItem } from '../core/models';
 import { baseName } from '../core/paths';
@@ -115,6 +115,31 @@ export class OperationsPanelComponent implements OnInit {
     protected readonly baseName = baseName;
     /** The folder under the pointer during a drag. */
     private over: HTMLElement | null = null;
+
+    constructor() {
+        // Toasts show above the panel (styles/toasts.css): how far its top is from the window's bottom, 0 while hidden.
+        if (typeof ResizeObserver === 'undefined')
+            return;
+        const host = inject(ElementRef<HTMLElement>).nativeElement;
+        const root = document.documentElement.style;
+        const place = () => {
+            const rect = host.getBoundingClientRect();
+            root.setProperty('--operations-clearance', `${rect.height > 0 ? Math.max(0, Math.round(window.innerHeight - rect.top)) : 0}px`);
+        };
+        const observer = new ResizeObserver(place);
+        observer.observe(host);
+        window.addEventListener('resize', place);
+        // The selection bar lifts the panel without resizing it.
+        effect(() => {
+            this.store.selection();
+            requestAnimationFrame(place);
+        });
+        inject(DestroyRef).onDestroy(() => {
+            observer.disconnect();
+            window.removeEventListener('resize', place);
+            root.removeProperty('--operations-clearance');
+        });
+    }
 
     ngOnInit(): void {
         this.transfers.resume();

@@ -32,6 +32,11 @@ server's own: start-up, sign-ins, the accounts), the part of SFE that wrote it, 
 Administrators group of each space) sees only the entries of the space they work in: not the server's own entries,
 nor those of other spaces.
 
+When the server refuses a request or fails at it with an explanation (a request it can't take, an archive it can't
+read, a folder not found to extract into…), the log keeps what was asked (the address, without what follows `?`), by
+whom, and the message given: a refused request is a Warning, a server failure an Error, the rest Info. Passwords are
+never in it.
+
 Which messages are logged follows the server's `Logging` configuration, as for its console: by default everything from Info up, except
 the web server's and the database's components, which log only their warnings and errors (see
 [Configuration](../configuration.md#logs)).

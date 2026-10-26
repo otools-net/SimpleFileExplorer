@@ -88,6 +88,25 @@ public sealed class LogTests
     }
 
     [TestMethod]
+    public async Task WhatTheApiRefusesOrFailsWithIsLoggedWithWhoAskedButNoPassword()
+    {
+        var factory = Factory();
+        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+
+        using var refused = await admin.PostAsJsonAsync("/api/files/jobs/compress",
+            new { paths = new[] { "Media" }, target = "", level = 12, password = "secret-zip-password" }, TestContext.CancellationToken);
+        Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
+        await FlushAsync(factory);
+
+        var entry = (await SearchAsync(admin, "q=" + Uri.EscapeDataString("answered 400"))).Entries.Single();
+        Assert.AreEqual(LogEntryLevel.Warning, entry.Level);
+        Assert.AreEqual(ProblemLog.Category, entry.Category);
+        StringAssert.Contains(entry.Message, "POST /api/files/jobs/compress answered 400 to admin");
+        StringAssert.Contains(entry.Message, "level: A level is 0 (stored) to 9 (smallest).");
+        Assert.IsEmpty((await SearchAsync(admin, "q=secret-zip-password")).Entries);
+    }
+
+    [TestMethod]
     public async Task PagesGoByKeyNewestFirst()
     {
         var factory = Factory();

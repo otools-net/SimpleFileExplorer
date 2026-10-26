@@ -29,9 +29,11 @@ public static class ArchiveReader
 
     /// <summary>
     /// The data of <paramref name="entry"/> (as listed by <see cref="ReadEntries"/>), decrypted with
-    /// <paramref name="password"/> when it is encrypted, held to its declared size.
+    /// <paramref name="password"/> when it is encrypted, held to its declared size. A solid 7z or rar, or a compressed
+    /// tar, unpacks the entries before it to reach it: past <paramref name="maxSkipped"/> bytes of those (as declared,
+    /// which is what the decoder produces), it is refused (<see cref="ArchiveException.TooFar"/>), before any is unpacked.
     /// </summary>
-    public static Stream OpenEntry(string fullPath, ArchiveFormat format, ArchiveEntry entry, string? password = null)
+    public static Stream OpenEntry(string fullPath, ArchiveFormat format, ArchiveEntry entry, string? password = null, long maxSkipped = long.MaxValue)
     {
         if (entry.Kind != ArchiveEntryKind.File)
             throw new ArchiveException("Only files of an archive have data.");
@@ -42,7 +44,9 @@ public static class ArchiveReader
         {
             if (format == ArchiveFormat.Zip)
                 return ZipDirectory.Locate(stream).OpenEntry(stream, entry, password);
-            return Wrap(() => format == ArchiveFormat.SevenZip ? OpenSevenZip(stream, entry, password) : OpenForward(stream, entry, password));
+            return Wrap(() => format == ArchiveFormat.SevenZip
+                ? OpenSevenZip(stream, entry, password, maxSkipped)
+                : OpenForward(stream, format, entry, password, maxSkipped));
         }
         catch
         {
@@ -235,16 +239,40 @@ public static class ArchiveReader
         return !end.AsSpan().ContainsAnyExcept((byte)0);
     }
 
+    private static void TooFar(long skipped, long maxSkipped)
+    {
+        if (skipped > maxSkipped)
+            throw new ArchiveException(
+                $"To reach this file the archive would unpack {skipped / (1024 * 1024):N0} MB before it (it is packed together with them): extract it, or download the archive.")
+            { TooFar = true };
+    }
+
     private static ArchiveException CutOff() =>
         new("The archive ends without its end mark: it is cut off or broken. Only the entries before the break are listed.");
 
-    private static Stream OpenSevenZip(FileStream stream, ArchiveEntry entry, string? password)
+    private static Stream OpenSevenZip(FileStream stream, ArchiveEntry entry, string? password, long maxSkipped)
     {
         var archive = SevenZipArchive.OpenArchive(stream, Options(password));
         try
         {
-            var found = archive.Entries.Skip((int)Math.Min(entry.Locator, int.MaxValue)).FirstOrDefault()
-                ?? throw new ArchiveException("The entry is no longer in the archive.");
+            // What the decoder unpacks first: the files before it in its block (IsSolid: shares the previous one's block).
+            var skipped = 0L;
+            var index = 0L;
+            SharpCompress.Archives.IArchiveEntry? found = null;
+            foreach (var candidate in archive.Entries)
+            {
+                if (index++ == entry.Locator)
+                {
+                    found = candidate;
+                    break;
+                }
+                if (candidate.IsDirectory || candidate.Size <= 0)
+                    continue;
+                skipped = (candidate.IsSolid ? skipped : 0) + candidate.Size;
+            }
+            if (found is null)
+                throw new ArchiveException("The entry is no longer in the archive.");
+            TooFar(found.IsSolid ? skipped : 0, maxSkipped);
             return Bounded(found.OpenEntryStream(), entry, new Owner(archive, stream));
         }
         catch
@@ -254,15 +282,31 @@ public static class ArchiveReader
         }
     }
 
-    /// <summary>Rar and tars have no index: the reader walks to the entry, skipping the others' data.</summary>
-    private static Stream OpenForward(FileStream stream, ArchiveEntry entry, string? password)
+    /// <summary>
+    /// Rar and tars have no index: the reader walks to the entry, skipping the others' data (unpacked in a compressed tar
+    /// and a solid rar, passed over in a plain tar and another rar).
+    /// </summary>
+    private static Stream OpenForward(FileStream stream, ArchiveFormat format, ArchiveEntry entry, string? password, long maxSkipped)
     {
         var reader = ReaderFactory.OpenReader(stream, Options(password));
         try
         {
-            for (var index = 0L; index <= entry.Locator; index++)
+            // The reader marks every file of a solid rar solid, the first too.
+            bool Unpacked(SharpCompress.Common.IEntry current) => format == ArchiveFormat.Rar ? current.IsSolid : format != ArchiveFormat.Tar;
+            var skipped = 0L;
+            for (var index = 0L; ; index++)
+            {
                 if (!reader.MoveToNextEntry())
                     throw new ArchiveException("The entry is no longer in the archive.");
+                if (index == entry.Locator)
+                    break;
+                // Checked before the next move unpacks this one's data.
+                if (Unpacked(reader.Entry) && !reader.Entry.IsDirectory)
+                    TooFar(skipped += Math.Max(reader.Entry.Size, 0), maxSkipped);
+            }
+            if (!Unpacked(reader.Entry))
+                skipped = 0;
+            TooFar(skipped, maxSkipped);
             return Bounded(reader.OpenEntryStream(), entry, new Owner(reader, stream));
         }
         catch

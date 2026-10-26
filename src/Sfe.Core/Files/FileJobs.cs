@@ -315,6 +315,9 @@ public sealed class FileJobs(
     private async Task<(string? Name, FileJobItem? Refused)> ClashAsync(Job job, string path, string source, string? sourcePath, bool isFolder,
         string targetPath, string targetFull, string name, bool keepBoth, CancellationToken token)
     {
+        // A name no route reaches (the work folder at the root, its 8.3 name): never placed, never replaced.
+        if (Reserved(targetPath, name))
+            return (null, new FileJobItem(path, null, FileOperationStatus.Invalid, $"“{name}” was left out: that name is kept for SFE's own files."));
         var destination = Path.Combine(targetFull, name);
         if (!File.Exists(destination) && !Directory.Exists(destination))
             return (name, null);
@@ -607,8 +610,9 @@ public sealed class FileJobs(
                 // One folder at the top keeps its name ("trip.zip" holding "trip/" gives "trip", not "trip/trip").
                 var single = top.Count == 1 && Directory.Exists(top[0]) ? top[0] : null;
                 var folderName = single is null ? stem : Path.GetFileName(single);
-                if (Taken(targetFull)(folderName))
-                    folderName = FileNames.KeepBoth(folderName, true, Taken(targetFull)) ?? throw new IOException("No free name.");
+                var taken = (string n) => Taken(targetFull)(n) || Reserved(targetPath, n);
+                if (taken(folderName))
+                    folderName = FileNames.KeepBoth(folderName, true, taken) ?? throw new IOException("No free name.");
                 var destination = Path.Combine(targetFull, folderName);
                 using var place = scans.TryBeginOperation(destination);
                 if (place is null)
@@ -856,6 +860,9 @@ public sealed class FileJobs(
         }
         throw new IOException("No free name.");
     }
+
+    /// <summary><paramref name="name"/> in <paramref name="folder"/> is a path no route takes (the work folder, its 8.3 name).</summary>
+    private bool Reserved(string folder, string name) => !paths.TryResolve(Join(folder, name), out _);
 
     private static Func<string, bool> Taken(string folder) =>
         n => File.Exists(Path.Combine(folder, n)) || Directory.Exists(Path.Combine(folder, n));

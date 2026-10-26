@@ -266,6 +266,51 @@ public sealed class ArchiveReaderTests
     }
 
     [TestMethod]
+    public void AFileReachedOnlyByUnpackingTooMuchIsRefusedFirst()
+    {
+        // 7z: the files before it in its block count; the block's first is reached at no cost.
+        var solid = TestSamples.ArchiveOf("tree-solid.7z");
+        var sevens = ArchiveReader.ReadEntries(solid, ArchiveFormat.SevenZip).Where(entry => entry.Kind == ArchiveEntryKind.File).OrderBy(entry => entry.Locator).ToList();
+        using (ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, sevens[0], maxSkipped: 0))
+        {
+        }
+        var refused = Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, sevens[^1], maxSkipped: 1));
+        Assert.IsTrue(refused.TooFar);
+        Assert.Contains("extract it", refused.Message);
+        using (ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, sevens[^1], maxSkipped: 1 << 20))
+        {
+        }
+
+        // Rar: a solid one unpacks what comes before, another passes over it.
+        ArchiveEntry Jpeg(string name) => ArchiveReader.ReadEntries(TestSamples.ThirdPartyOf("sharpcompress/" + name), ArchiveFormat.Rar)
+            .Single(entry => entry.Name.Replace('\\', '/') == "jpg/test.jpg");
+        Assert.IsTrue(Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(TestSamples.ThirdPartyOf("sharpcompress/Rar5.solid.rar"), ArchiveFormat.Rar,
+            Jpeg("Rar5.solid.rar"), maxSkipped: 1)).TooFar);
+        using (ArchiveReader.OpenEntry(TestSamples.ThirdPartyOf("sharpcompress/Rar5.rar"), ArchiveFormat.Rar, Jpeg("Rar5.rar"), maxSkipped: 0))
+        {
+        }
+
+        // Tars: a compressed one unpacks everything before, a plain one seeks past it.
+        foreach (var gzip in new[] { true, false })
+        {
+            var path = Path.Combine(_folder, gzip ? "far.tar.gz" : "far.tar");
+            using (var file = File.Create(path))
+            using (Stream compressed = gzip ? new GZipStream(file, CompressionLevel.Fastest) : file)
+            using (var tar = new TarWriter(compressed, TarEntryFormat.Pax))
+            {
+                tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "big.bin") { DataStream = new MemoryStream(new byte[100_000]) });
+                tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "after.txt") { DataStream = new MemoryStream("after"u8.ToArray()) });
+            }
+            var format = gzip ? ArchiveFormat.TarGzip : ArchiveFormat.Tar;
+            var after = ArchiveReader.ReadEntries(path, format).Single(entry => entry.Name.EndsWith("after.txt", StringComparison.Ordinal));
+            if (gzip)
+                Assert.IsTrue(Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(path, format, after, maxSkipped: 99_999)).TooFar);
+            else
+                Assert.AreEqual("after", ReadText(path, format, after, maxSkipped: 0));
+        }
+    }
+
+    [TestMethod]
     public void EncryptedRarsAskForTheirPassword()
     {
         // SharpCompress reads even a RAR 5 whose names are in clear only with its password (0.50.7): listed, it says so.
@@ -353,9 +398,9 @@ public sealed class ArchiveReaderTests
         Assert.Contains("password", Assert.Throws<ArchiveException>(() => ArchiveReader.ReadEntries(namesEncrypted, ArchiveFormat.SevenZip).ToList()).Message);
     }
 
-    private static string ReadText(string path, ArchiveFormat format, ArchiveEntry entry, string? password = null)
+    private static string ReadText(string path, ArchiveFormat format, ArchiveEntry entry, string? password = null, long maxSkipped = long.MaxValue)
     {
-        using var data = ArchiveReader.OpenEntry(path, format, entry, password);
+        using var data = ArchiveReader.OpenEntry(path, format, entry, password, maxSkipped);
         using var reader = new StreamReader(data);
         return reader.ReadToEnd();
     }

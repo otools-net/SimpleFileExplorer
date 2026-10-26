@@ -91,6 +91,60 @@ public sealed class ExtractJobTests
     }
 
     [TestMethod]
+    public async Task ExtractedHereOverTheFileItWasMadeFromReplacesIt()
+    {
+        File.WriteAllText(_library.FullPath("README.md"), "old");
+        Archive("README.zip", ("README.md", "new"));
+
+        var job = await RunAsync(Extract("README.zip", "") with { NewFolder = false, Conflicts = ConflictChoice.Replace });
+
+        var result = job.Results.Single();
+        Assert.AreEqual(FileOperationStatus.Done, result.Status, result.Message);
+        Assert.AreEqual("new", File.ReadAllText(_library.FullPath("README.md")));
+    }
+
+    [TestMethod]
+    public async Task NothingIsPlacedIntoTheWorkFolderNorReplacesIt()
+    {
+        var trash = Directory.CreateDirectory(_library.FullPath(".sfe/trash")).FullName;
+        File.WriteAllText(Path.Combine(trash, "kept.txt"), "kept");
+        var shortName = ShortName(_library.FullPath(".sfe"));
+        var entries = new List<(string, string?)> { (".sfe/trash/planted.txt", "planted"), (".SFE/x.txt", "x"), ("ok.txt", "ok") };
+        if (shortName is not null)
+            entries.Add(($"{shortName}/trash/short.txt", "short"));
+        Archive("drop.zip", [.. entries]);
+
+        var job = await RunAsync(Extract("drop.zip", "") with { NewFolder = false, Conflicts = ConflictChoice.Replace });
+
+        var result = job.Results.Single();
+        Assert.AreEqual(FileOperationStatus.Done, result.Status, result.Message);
+        StringAssert.Contains(result.Message, "not placed");
+        Assert.AreEqual("ok", File.ReadAllText(_library.FullPath("ok.txt")));
+        CollectionAssert.AreEquivalent(new[] { "kept.txt" }, Directory.GetFiles(trash).Select(Path.GetFileName).ToArray(), "the trash is untouched");
+        Assert.IsFalse(File.Exists(_library.FullPath(".sfe/x.txt")));
+
+        // In a new folder: one top folder named as the work folder takes another name.
+        Archive("one.zip", (".sfe/a.txt", "a"));
+        var inFolder = (await RunAsync(Extract("one.zip", ""))).Results.Single();
+        Assert.AreEqual(".sfe (2)", inFolder.NewPath, inFolder.Message);
+        Assert.IsFalse(File.Exists(_library.FullPath(".sfe/a.txt")));
+    }
+
+    /// <summary>The 8.3 name of <paramref name="path"/>'s last part (Windows, where the disk makes them), else null.</summary>
+    private static string? ShortName(string path)
+    {
+        if (!OperatingSystem.IsWindows())
+            return null;
+        var buffer = new System.Text.StringBuilder(1024);
+        var length = GetShortPathName(path, buffer, buffer.Capacity);
+        var name = length > 0 ? Path.GetFileName(buffer.ToString()) : null;
+        return name is null || string.Equals(name, Path.GetFileName(path), StringComparison.OrdinalIgnoreCase) ? null : name;
+    }
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, EntryPoint = "GetShortPathNameW")]
+    private static extern int GetShortPathName(string path, System.Text.StringBuilder shortPath, int length);
+
+    [TestMethod]
     public async Task TheEntriesChosenComeOutAlone()
     {
         Archive("Media/pick.zip", ("top.txt", "top"), ("Photos/2024/a.txt", "a"), ("Photos/2024/b.txt", "b"));

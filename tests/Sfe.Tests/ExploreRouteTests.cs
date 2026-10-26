@@ -207,7 +207,11 @@ public sealed class ExploreRouteTests
         Stop();
         _library.Dispose();
         _library = new TestLibrary();
-        await StartAsync(settings => settings["Sfe:Files:Archives:MaxPreviewMegabytes"] = "1");
+        await StartAsync(settings =>
+        {
+            settings["Sfe:Files:Archives:MaxPreviewMegabytes"] = "1";
+            settings["Sfe:Files:Archives:MaxSkippedMegabytes"] = "1";
+        });
         TestArchives.Zip(_library.Root, "Media/big.zip", ("big.txt", new string('b', 2 * 1024 * 1024)));
         var big = (await ListAsync(_alice, "path=Media/big.zip")).Items.Single();
         var url = $"/api/files/explore/entry/{EpubEntries.Token("Media/big.zip")}/{big.Id}/big.txt";
@@ -217,6 +221,19 @@ public sealed class ExploreRouteTests
         using var download = await _alice.GetAsync(url + "?download=true", Token);
         Assert.AreEqual(HttpStatusCode.OK, download.StatusCode);
         Assert.AreEqual(2 * 1024 * 1024, (await download.Content.ReadAsByteArrayAsync(Token)).Length);
+
+        // Reached only by unpacking 2 MB before it: refused, viewed or downloaded.
+        using (var file = File.Create(_library.FullPath("Media/far.tar.gz")))
+        using (var gzip = new System.IO.Compression.GZipStream(file, System.IO.Compression.CompressionLevel.Fastest))
+        using (var tar = new System.Formats.Tar.TarWriter(gzip, System.Formats.Tar.TarEntryFormat.Pax))
+        {
+            tar.WriteEntry(new System.Formats.Tar.PaxTarEntry(System.Formats.Tar.TarEntryType.RegularFile, "zeros.bin") { DataStream = new MemoryStream(new byte[2 * 1024 * 1024]) });
+            tar.WriteEntry(new System.Formats.Tar.PaxTarEntry(System.Formats.Tar.TarEntryType.RegularFile, "after.txt") { DataStream = new MemoryStream("after"u8.ToArray()) });
+        }
+        var after = (await ListAsync(_alice, "path=Media/far.tar.gz")).Items.Single(item => item.Name == "after.txt");
+        using var far = await _alice.GetAsync($"/api/files/explore/entry/{EpubEntries.Token("Media/far.tar.gz")}/{after.Id}/after.txt?download=true", Token);
+        Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, far.StatusCode);
+        StringAssert.Contains(await far.Content.ReadAsStringAsync(Token), "extract it");
     }
 
     [TestMethod]
@@ -338,6 +355,19 @@ public sealed class ExploreRouteTests
         Assert.AreEqual("hello", File.ReadAllText(_library.FullPath("ChildDir/readme.txt")));
         Assert.AreEqual("a", File.ReadAllText(_library.FullPath("ChildDir/Day 1/a.txt")));
         Assert.IsFalse(Directory.Exists(_library.FullPath("ChildDir/Day 2")));
+    }
+
+    [TestMethod]
+    public async Task AnArchiveIsExtractedAtTheRootOfTheLibrary()
+    {
+        TestArchives.Zip(_library.Root, "README.zip", ("README.md", "from the zip"));
+
+        var job = await ExtractAsync(_admin, new ExtractRequest("README.zip", "", NewFolder: false));
+
+        Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
+        Assert.AreEqual("from the zip", File.ReadAllText(_library.FullPath("README.md")));
+        using var noTarget = await _admin.PostAsJsonAsync("/api/files/jobs/extract", new ExtractRequest("README.zip", null), Token);
+        Assert.AreEqual(HttpStatusCode.BadRequest, noTarget.StatusCode);
     }
 
     [TestMethod]

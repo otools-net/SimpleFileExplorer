@@ -8,4 +8,7 @@ namespace Sfe.Core.Files.Compression;
 public sealed class ArchiveException(string message, Exception? inner = null, bool needsPassword = false) : IOException(message, inner)
 {
     public bool NeedsPassword { get; } = needsPassword;
+
+    /// <summary>The entry sits too far into a solid block or a compressed tar: reaching it would unpack too much.</summary>
+    public bool TooFar { get; init; }
 }

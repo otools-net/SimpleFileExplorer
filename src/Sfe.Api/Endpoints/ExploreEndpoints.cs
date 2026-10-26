@@ -105,7 +105,9 @@ public static class ExploreEndpoints
                 (the browser's file name). Sandboxed as the library's files are, inline only for what the browser shows
                 safely (pictures, audio, video, plain text), downloaded otherwise or with `download=true`. Larger than
                 `Files:Archives:MaxPreviewMegabytes` only with `download=true` (413 `{TooLargeType}` otherwise). An entry
-                claiming more than `Files:Archives:MaxCompressionRatio` times its packed size is refused (422). Its data is
+                claiming more than `Files:Archives:MaxCompressionRatio` times its packed size is refused (422); one that
+                would unpack more than `Files:Archives:MaxSkippedMegabytes` of the files before it (a solid 7z or rar, a
+                compressed tar) too (413 `{TooLargeType}`: extract it). Its data is
                 held to the size the archive declares: more or less is a broken archive, and the download is cut off.
                 `unlock` (from `unlock`) opens an encrypted entry, or any of an archive whose list is encrypted.
                 """);
@@ -207,7 +209,8 @@ public static class ExploreEndpoints
         var state = await current.GetAsync();
         if (state.Tenant is not { } tenant || !state.Has(Rights.ExtractFiles))
             return TypedResults.Forbid();
-        if (string.IsNullOrWhiteSpace(request.Target))
+        // "" is the library's root.
+        if (request.Target is null)
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["target"] = ["Name the folder to extract into."] });
         var chosen = (request.Folders?.Count ?? 0) + (request.Files?.Count ?? 0);
         if (chosen > MaxExtractChosen)
@@ -281,7 +284,7 @@ public static class ExploreEndpoints
             return TypedResults.Problem(state.Error, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
 
         var log = loggers.CreateLogger("Sfe.Api.Archives");
-        var opens = await Task.Run(() => Opens(full, format, catalog, request.Password), cancellationToken);
+        var opens = await Task.Run(() => Opens(full, format, catalog, request.Password, options.CurrentValue.Files.Archives.MaxSkippedMegabytes * 1024L * 1024), cancellationToken);
         if (opens is null)
             return TypedResults.Problem("Nothing in this archive is protected by a password.", statusCode: StatusCodes.Status409Conflict, type: NotProtectedType);
         var access = await current.GetAsync();
@@ -302,7 +305,7 @@ public static class ExploreEndpoints
     /// encrypted file read through (up to <see cref="TryBytes"/>: the checks of zip and RAR come first, AES' at the end);
     /// null when nothing in it is encrypted.
     /// </summary>
-    private static bool? Opens(string full, ArchiveFormat format, ArchiveCatalog catalog, string password)
+    private static bool? Opens(string full, ArchiveFormat format, ArchiveCatalog catalog, string password, long maxSkipped)
     {
         try
         {
@@ -314,7 +317,7 @@ public static class ExploreEndpoints
             }
             if (catalog.SmallestEncrypted() is not { } file)
                 return null;
-            using var data = ArchiveReader.OpenEntry(full, format, file.Entry, password);
+            using var data = ArchiveReader.OpenEntry(full, format, file.Entry, password, maxSkipped);
             var buffer = new byte[64 * 1024];
             for (long read = 0, got; read < TryBytes && (got = data.Read(buffer)) > 0; read += got)
             {
@@ -324,6 +327,11 @@ public static class ExploreEndpoints
         catch (ArchiveException error) when (error.NeedsPassword)
         {
             return false;
+        }
+        catch (ArchiveException error) when (error.TooFar)
+        {
+            // Too costly to try (deep in a solid block): taken unchecked; a wrong one fails when a file is opened.
+            return true;
         }
         catch (ArchiveException)
         {
@@ -365,7 +373,11 @@ public static class ExploreEndpoints
         Stream data;
         try
         {
-            data = ArchiveReader.OpenEntry(full, format, entry, password);
+            data = ArchiveReader.OpenEntry(full, format, entry, password, settings.MaxSkippedMegabytes * 1024L * 1024);
+        }
+        catch (ArchiveException error) when (error.TooFar)
+        {
+            return TypedResults.Problem(error.Message, statusCode: StatusCodes.Status413PayloadTooLarge, type: TooLargeType);
         }
         catch (ArchiveException error)
         {

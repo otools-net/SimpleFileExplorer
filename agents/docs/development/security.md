@@ -88,12 +88,14 @@ input, LIKE escaped, no `innerHTML` in the client.
 - **Archives** ([archive-viewer.md](../features/archive-viewer.md), [archive-reading.md](../features/archive-reading.md)):
   names leaving the archive (`../`, `C:\`, `\\server`, `...`), links in tar/7z/rar, a directory claiming more entries
   than it holds, an entry inflating past its declared size, overlapping or outside offsets, a ratio past the limit, an
-  `.html`/`.svg` entry opened (attachment, sandboxed), a token with `..` or for a hidden or protected folder; passwords:
+  `.html`/`.svg` entry opened (attachment, sandboxed), a token with `..` or for a hidden or protected folder, an entry
+  deep in a solid block or a compressed tar opened again and again (`MaxSkippedMegabytes`, `ArchiveReaderTests`); passwords:
   guessing through `unlock` (10 a minute per caller), another account's or space's unlock id, an unlock after sign-out
   or a change of the archive, the password in logs, errors, answers or URLs (only the unlock id is), encrypted names
   written under the cache (`ExploreRouteTests` scans it); extracting: every name above written outside the target,
   a link followed by a later entry (`escape` then `escape/x`), a file in the way of a folder, a lying size or CRC left
-  as a whole-looking file, the disk filled past the margin, extracting into `.sfe` or a server-files junction, a
+  as a whole-looking file, the disk filled past the margin, extracting into `.sfe` or a server-files junction, an
+  archive holding `.sfe/` or `SFE~1/` extracted at the root (never placed nor replacing the work folder), a
   password in the job's view or the log (`ArchiveExtractorTests`, `ExtractJobTests`); compressing: a hidden folder
   reached through its parent, a link followed, the zip put into itself, the server's files or a work folder in the zip,
   the password in the job's view or the log (`CompressJobTests`, `FileJobRouteTests`).

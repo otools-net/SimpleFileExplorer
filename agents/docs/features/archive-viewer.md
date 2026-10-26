@@ -24,6 +24,10 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   `LibraryEndpoints.OpensInline` types (an `.html` entry is an attachment), `?download=true` always an attachment;
   over `MaxPreviewMegabytes` only with `download` (413). `Size / Packed > MaxCompressionRatio` refused (422), only when
   the format gives packed sizes per entry (solid 7z/rar give 0: the declared size still bounds the data).
+  Reaching an entry of a solid 7z/rar or a compressed tar unpacks the ones before it: their declared sizes (7z: back to
+  the block's start, `IsSolid` = shares the previous one's block; rar's reader marks every file of a solid archive
+  solid; plain tars and other rars seek) past `MaxSkippedMegabytes` (2048) → 413 "extract it", checked before each skip
+  (`ArchiveException.TooFar`). The unlock check takes a password unchecked when its entry is that far.
   `private, no-cache` + ETag (catalog key, id): 304 while the archive is the same.
 - `/api/config` `archives: { maxCompressedTarMegabytes }` (with `files.view`): the client's `isExplorable` rule.
 

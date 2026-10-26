@@ -147,6 +147,29 @@ describe('CompressDialog', () => {
     });
 });
 
+describe('OperationsPanelComponent and the toasts', () => {
+    it('keeps the toasts above the panel while it shows', async () => {
+        await setUp();
+        let resized: () => void = () => { };
+        vi.stubGlobal('ResizeObserver', class { constructor(callback: () => void) { resized = callback; } observe() { } disconnect() { } });
+        try {
+            const fixture = TestBed.createComponent(OperationsPanelComponent);
+            const host = fixture.nativeElement as HTMLElement;
+            vi.spyOn(host, 'getBoundingClientRect').mockReturnValue({ top: window.innerHeight - 136, height: 120 } as DOMRect);
+            resized();
+            expect(document.documentElement.style.getPropertyValue('--operations-clearance')).toBe('136px');
+
+            vi.spyOn(host, 'getBoundingClientRect').mockReturnValue({ top: 0, height: 0 } as DOMRect);
+            resized();
+            expect(document.documentElement.style.getPropertyValue('--operations-clearance')).toBe('0px');
+            fixture.destroy();
+            expect(document.documentElement.style.getPropertyValue('--operations-clearance')).toBe('');
+        } finally {
+            vi.unstubAllGlobals();
+        }
+    });
+});
+
 describe('OperationsPanelComponent, compressions', () => {
     it('shows what is compressed, then the zip made and its ratio', async () => {
         await setUp();

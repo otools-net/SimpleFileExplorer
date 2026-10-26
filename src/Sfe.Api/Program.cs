@@ -104,7 +104,8 @@ app.UseSwaggerUI(options =>
 app.UseDefaultFiles();
 app.MapStaticAssets();
 
-var api = app.MapGroup("/api");
+// Answers explaining a refusal or a failure go into the log (ProblemLog).
+var api = app.MapGroup("/api").LogProblems();
 api.MapSetupEndpoints();
 api.MapInstallationEndpoints();
 api.MapMigrationEndpoints();

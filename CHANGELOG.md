@@ -24,6 +24,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   password (AES-256, the names stay visible). Made in the background, one at a time on the server; the panel tells
   the ratio achieved. New right `files.compress`, given to no group. See
   [Managing files](docs/user-guide/managing-files.md#compress-into-a-zip).
+- **The log keeps what the server refused or failed at**, with the message the person saw, who asked and the address
+  asked: a refused request is a warning, a server failure an error ([Logs](docs/administration/logs.md)).
 
 ### Fixed
 
@@ -36,6 +38,7 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
     panel's clock only ticks while a scan runs.
 - On a phone, the **menu of a file or folder** (its ⋮ button) no longer closes as soon as it opens after scrolling
   down the folder: the browser's address bar coming back, or the end of the scroll, closed it.
+- **Messages no longer cover the moves and copies panel**: they show above it while it is open.
 - In **fullscreen on a phone**, a wide video no longer turns back upright when you move along the time bar: the screen
   is held sideways until fullscreen ends.
 

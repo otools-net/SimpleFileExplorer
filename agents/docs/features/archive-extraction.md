@@ -48,6 +48,9 @@ plan: [compressed-archives-plan](../development/compressed-archives-plan.md); re
 - Then placed: `NewFolder` (default) → the one top folder keeps its name, else the stem (`StemOf`: `.tar.gz` too); a
   taken name gets `KeepBoth`. Not `NewFolder` → each top item through `ClashAsync` (asked, `forAll`). A `.gz` alone
   never gets a folder of its own.
+- Names no route reaches (`.sfe` at the root, its 8.3 name `SFE~1`): `FileJobs.Reserved` (`TryResolve` of the
+  target-relative path) — `ClashAsync` refuses them for every job kind (never placed, never replacing the work folder),
+  the new folder's name takes another (`.sfe (2)`). Test: `ExtractJobTests.NothingIsPlacedIntoTheWorkFolderNorReplacesIt`.
 - Any failure while extracting (wrong password, disk full `NoRoomException`, cancel) deletes the partial folder.
 - Free space: `reserve` reads the drive before the first file, before any file of 64 MB or more, and every 64 MB.
 - Progress: `BytesTotal` the archive's size, `SetBytes` the position in its file (zip: the data handle's).

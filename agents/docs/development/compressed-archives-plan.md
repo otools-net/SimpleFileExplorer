@@ -278,7 +278,9 @@ Left (carried over from the earlier steps, 2026-10-26, and this one's):
 ## Phase 5 — Ship
 
 - [~] Samples: `Documents/Mountain trip.zip` in the docs library (done, phase 2); later scenes for extract and compress.
-- [ ] Security ([security](security.md)): new attack vectors (zip-slip variants, links in tar/7z, bombs by ratio and
+- [x] Security (2026-10-26, listed in [security](security.md); two holes found and closed: an archive holding `.sfe/`
+  or `SFE~1/` extracted at the root reached the work folder (`FileJobs.Reserved`), and an entry deep in a solid block
+  or a compressed tar unpacked everything before it at each open (`MaxSkippedMegabytes`)): new attack vectors (zip-slip variants, links in tar/7z, bombs by ratio and
   by entry count, an `.html`/`.svg` entry served inline, an entry route token with `..`, a hidden folder reached by
   compressing its parent, extracting into `.sfe` or a server-files junction, solid-archive DoS on the entry route;
   passwords: guessing through `unlock` (the limit, 7z's costly key), another account's or space's unlock id, an
