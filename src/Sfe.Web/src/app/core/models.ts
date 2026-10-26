@@ -222,8 +222,10 @@ export interface ArchiveItem {
     folders?: number | null;
     files?: number | null;
     allFiles?: number | null;
-    /** In a search's results: the path of the folder it is in ("" at the top). */
+    /** In a search's results: the path of the folder it is in ("" at the top; deep down, its last folders after "…/"). */
     where?: string | null;
+    /** In a search's results: the id of the folder it is in. */
+    in?: number | null;
     /** A file the library calls a picture, video or audio (by its extension). */
     media?: 'image' | 'video' | 'audio' | null;
 }

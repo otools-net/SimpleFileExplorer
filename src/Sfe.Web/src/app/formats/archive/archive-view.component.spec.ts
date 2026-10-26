@@ -116,7 +116,7 @@ describe('ArchiveViewComponent', () => {
             await show();
             api.searchArchive
                 .mockResolvedValueOnce({ items: [], next: 'f10' })
-                .mockResolvedValueOnce({ items: [file(11, 'summit.jpg', { where: 'Day 1' }), file(12, 'Summit.txt', { where: '' })], next: null });
+                .mockResolvedValueOnce({ items: [file(11, 'summit.jpg', { where: 'Day 1', in: 2 }), file(12, 'Summit.txt', { where: '', in: 1 })], next: null });
 
             await type('s');
             expect(api.searchArchive).not.toHaveBeenCalled();
@@ -131,7 +131,7 @@ describe('ArchiveViewComponent', () => {
             api.exploreArchive.mockResolvedValue(listing([file(11, 'summit.jpg')], { folder: folder(2, 'Day 1', { files: 1 }), trail: { skipped: 0, last: [{ id: 2, name: 'Day 1' }] } }));
             element.querySelector<HTMLButtonElement>('[data-where]')!.click();
             await stable();
-            expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { at: 'Day 1', limit: 200, unlock: null }, expect.any(AbortSignal));
+            expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: 2, limit: 200, unlock: null }, expect.any(AbortSignal));
             expect(element.querySelector('[data-found]')).toBeNull();
             expect(element.querySelector<HTMLInputElement>('[data-find]')!.value).toBe('');
             expect(crumbs()).toEqual(['trip.zip', 'Day 1']);

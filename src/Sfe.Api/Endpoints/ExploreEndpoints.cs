@@ -16,10 +16,12 @@ namespace Sfe.Api.Endpoints;
 /// <param name="Kind"><c>folder</c>, <c>file</c>, <c>link</c> (never created when extracting) or <c>other</c>.</param>
 /// <param name="Packed">0 when the format doesn't tell it per entry (a solid 7z or rar).</param>
 /// <param name="Folders">A folder's folders and entries right inside it, and its files in all.</param>
+/// <param name="Where">In search results: the path of the folder it is in, its last folders after "…/" when deep.</param>
+/// <param name="In">In search results: the id of the folder it is in (to open it).</param>
 /// <param name="Media">A file the library calls a picture, video or audio (<c>image</c>, <c>video</c>, <c>audio</c>: <c>Sfe:FileTypes</c>), else null.</param>
 public sealed record ArchiveItem(
     string Kind, long Id, string Name, long Size, long Packed, DateTime? Modified, bool Encrypted,
-    long? Folders = null, long? Files = null, long? AllFiles = null, string? Where = null, string? Media = null);
+    long? Folders = null, long? Files = null, long? AllFiles = null, string? Where = null, string? Media = null, long? In = null);
 
 /// <param name="Items">Folders, then files, whose name holds the text; <c>Where</c> is the path of the folder each is in.</param>
 /// <param name="Next">Where to go on (a page cut short by its time has fewer items); null once all was looked through.</param>
@@ -267,8 +269,8 @@ public static class ExploreEndpoints
                 [.. here.Folders.Select(ToItem), .. here.Files.Select(file => ToItem(file, media))], here.Next is { } more ? Cursor(more) : null));
         }
         var page = catalog.Search(text, cursor, size, budget);
-        var items = page.Folders.Select(found => ToItem(found.Folder) with { Where = found.Where })
-            .Concat(page.Files.Select(found => ToItem(found.File, media) with { Where = found.Where }))
+        var items = page.Folders.Select(found => ToItem(found.Folder) with { Where = found.Where, In = found.Folder.ParentId })
+            .Concat(page.Files.Select(found => ToItem(found.File, media) with { Where = found.Where, In = found.File.FolderId }))
             .ToList();
         return TypedResults.Ok(new ArchiveSearch(items, page.Next is { } next ? $"{(next.InFiles ? 'f' : 'd')}{next.Id}" : null));
     }

@@ -234,6 +234,12 @@ public sealed class ArchiveCatalogTests
         Assert.AreEqual(deepest, trail.Last[^1].Id);
         Assert.HasCount(depth, catalog.PathOf(deepest)!.Split('/'));
 
+        // A search result that deep: its folder's last names only (8 lookups), and its folder's id to open it.
+        var found = catalog.Search($"at {depth}", null, 10, TimeSpan.FromSeconds(5)).Files.Single();
+        Assert.AreEqual("…/" + string.Join('/', Enumerable.Repeat("d", ArchiveCatalog.WhereLevels)), found.Where);
+        Assert.AreEqual(deepest, found.File.FolderId);
+        Assert.AreEqual("d/d/d/d/d/d/d/d", catalog.Search("at 1000", null, 10, TimeSpan.FromSeconds(5)).Files.Single().Where[^15..]);
+
         var root = catalog.Folder(ArchiveCatalog.RootId)!;
         Assert.AreEqual(5, root.AllFiles, "totals rolled up level by level");
         Assert.AreEqual(1, catalog.Children(ArchiveCatalog.RootId, null, 10).Folders.Single().Folders);

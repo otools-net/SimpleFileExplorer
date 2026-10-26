@@ -27,5 +27,3 @@ what it left for later, none of it promised. Tick `[x]` in the commit that does 
 - [ ] 7z lists past `MaxSevenZipListMegabytes` (refused today): our own header reader streaming entries, as
   `ZipDirectory` does for zips, if people need bigger 7z.
 - [ ] RAR with millions of entries: not measured (nothing free writes one).
-- [ ] Find in archive's `where` for results very deep costs a lookup per level (9 999: ~1 s): a cap, or the path
-  built from the folders' rows of the page.

@@ -511,28 +511,26 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         return command.ExecuteScalar() is long id ? id : 0;
     }
 
-    /// <summary>A folder's path, its ancestors' kept in <paramref name="known"/>: the results of a page share them.</summary>
+    /// <summary>Folders named at most in a search result's <c>where</c>: deeper, its start is "…/" (the result's folder id opens it).</summary>
+    public const int WhereLevels = 8;
+
+    /// <summary>
+    /// A folder's path for a search result: whole up to <see cref="WhereLevels"/> folders, else its last ones after
+    /// "…/" (a result 10 000 folders down costs 8 lookups, not 10 000); kept in <paramref name="known"/> for the page.
+    /// </summary>
     private static string PathOf(SqliteConnection connection, long id, Dictionary<long, string> known)
     {
-        var chain = new List<ArchiveFolder>();
-        var path = "";
-        for (var folder = FolderOf(connection, id); folder is not null && folder.Id != RootId; folder = FolderOf(connection, folder.ParentId))
-        {
-            if (known.TryGetValue(folder.Id, out var cached))
-            {
-                path = cached;
-                break;
-            }
-            chain.Add(folder);
-            if (chain.Count > 100_000)
-                break;
-        }
-        for (var i = chain.Count - 1; i >= 0; i--)
-        {
-            path = path.Length == 0 ? chain[i].Name : $"{path}/{chain[i].Name}";
-            known[chain[i].Id] = path;
-        }
-        return path;
+        if (known.TryGetValue(id, out var cached))
+            return cached;
+        var names = new List<string>();
+        var folder = FolderOf(connection, id);
+        for (; folder is not null && folder.Id != RootId && names.Count < WhereLevels; folder = FolderOf(connection, folder.ParentId))
+            names.Add(folder.Name);
+        names.Reverse();
+        var path = string.Join('/', names);
+        if (folder is not null && folder.Id != RootId)
+            path = $"…/{path}";
+        return known[id] = path;
     }
 
     public ArchiveFile? Entry(long id)

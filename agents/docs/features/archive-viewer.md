@@ -48,7 +48,8 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   function (`OrdinalIgnoreCase`: any letters, not only ASCII); a page ends when full (its `next` = the last found) or
   when its time is spent (1 s, `SearchBudgetMilliseconds`; `next` = the end of the range looked at, maybe with
   nothing found). The cursor is `d<id>`/`f<id>`. Each item's `where` (its folder's path) from one walk up per folder,
-  shared by the page's results.
+  shared by the page's results, at most `WhereLevels` (8) folders: deeper, `…/` and the last 8 (a result 9 999 down
+  cost ~1 s when whole); `in` is its folder's id, which the client opens ("in …" by id, not by path: no address limit).
 - **One folder** (`folder=<id>`, 404 when there is none): `ArchiveCatalog.FindIn(folder, text, after, limit, budget)`
   looks only at what is right inside it, through its own index `(ParentId/FolderId, Name, Id)` in ranges of 20 000
   names (the range's end: `LIMIT 1 OFFSET 19 999` on the index, then `holds` up to it), folders then files, in the

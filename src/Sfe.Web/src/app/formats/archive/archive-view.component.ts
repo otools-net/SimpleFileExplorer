@@ -404,10 +404,10 @@ export class ArchiveViewComponent {
         }
     }
 
-    /** A result's folder, opened: the search ends. */
+    /** A result's folder, opened (by its id: a deep one's path is shortened): the search ends. */
     protected showWhere(entry: ArchiveItem): void {
         this.endFind();
-        void this.open(entry.where ? { at: entry.where } : { folder: null });
+        void this.open(entry.in != null ? { folder: entry.in } : entry.where ? { at: entry.where } : { folder: null });
     }
 
     /**
