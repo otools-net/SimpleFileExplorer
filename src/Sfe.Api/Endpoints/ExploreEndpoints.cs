@@ -463,7 +463,8 @@ public static class ExploreEndpoints
         ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string archive, long id, string name, bool? download, string? unlock)
     {
         var opened = await OpenEntryAsync(catalogs, options.CurrentValue, paths, serverFiles, work, unlocks, current, context,
-            EpubEntries.PathOf(archive), new EntryKey(id, name, null), download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024, unlock);
+            EpubEntries.PathOf(archive), new EntryKey(id, name, null), download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024, unlock,
+            stored: true);
         return Serve(context, opened, download);
     }
 
@@ -472,7 +473,8 @@ public static class ExploreEndpoints
         ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string archive, string at, bool? download, string? unlock)
     {
         var opened = await OpenEntryAsync(catalogs, options.CurrentValue, paths, serverFiles, work, unlocks, current, context,
-            EpubEntries.PathOf(archive), new EntryKey(null, null, at), download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024, unlock);
+            EpubEntries.PathOf(archive), new EntryKey(null, null, at), download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024, unlock,
+            stored: true);
         return Serve(context, opened, download);
     }
 
@@ -486,8 +488,9 @@ public static class ExploreEndpoints
         var info = new FileInfo(opened.Full);
         context.Response.Headers[HeaderNames.ContentSecurityPolicy] = SecurityHeaders.FilePolicy;
         context.Response.Headers[HeaderNames.CacheControl] = "private, no-cache";
+        // A stored zip entry is a slice of the archive: Range is answered (a video seeks in it).
         return TypedResults.Stream(opened.Data!, contentType, inline ? null : file.Name, lastModified: info.LastWriteTimeUtc,
-            entityTag: new EntityTagHeaderValue($"\"{EntryTag(opened.Canonical, info, file.Id)}\""));
+            entityTag: new EntityTagHeaderValue($"\"{EntryTag(opened.Canonical, info, file.Id)}\""), enableRangeProcessing: opened.Data!.CanSeek);
     }
 
     private static async Task<Results<Ok<TextFile>, NotFound, ForbidHttpResult, ProblemHttpResult>> GetText(
@@ -550,11 +553,13 @@ public static class ExploreEndpoints
     /// A file of an archive opened to be read (<c>files.view</c> and <c>files.download</c> at the archive): only from a
     /// list already read (it never starts one), found as <paramref name="key"/> says; refused larger than
     /// <paramref name="maxSize"/> (413), claiming more than the compression ratio allows (422), encrypted without the
-    /// password (403), or when reaching it would unpack too much before it (413).
+    /// password (403), or when reaching it would unpack too much before it (413). <paramref name="stored"/>: a stored,
+    /// unencrypted zip entry comes as a seekable slice of the archive, whatever its size (nothing is unpacked).
     /// </summary>
     private static async Task<OpenedEntry> OpenEntryAsync(
         ArchiveCatalogs catalogs, SfeOptions options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, EntryKey key, long? maxSize, string? unlock)
+        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, EntryKey key, long? maxSize, string? unlock,
+        bool stored = false)
     {
         var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles, Rights.Download);
         if (refused is { } forbidden)
@@ -575,6 +580,22 @@ public static class ExploreEndpoints
         // Per-entry packed sizes exist only where the format keeps them (zip, non-solid): elsewhere the declared size holds.
         if (entry.Packed > 0 && entry.Size / entry.Packed > settings.MaxCompressionRatio)
             return Problem("This entry claims to be far larger than its packed data: the archive looks hostile.", StatusCodes.Status422UnprocessableEntity, UnreadableType);
+        if (stored && !entry.Encrypted)
+        {
+            try
+            {
+                if (ArchiveReader.OpenStored(full, format, entry) is { } slice)
+                    return new(null, slice, file, full, canonical);
+            }
+            catch (ArchiveException error)
+            {
+                return Problem(error.Message, StatusCodes.Status422UnprocessableEntity, UnreadableType);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return Problem("The archive can't be read now (in use, or the server may not read it).", StatusCodes.Status500InternalServerError);
+            }
+        }
         if (maxSize is { } most && entry.Size > most)
             return Problem($"It is too large to be opened from the archive (more than {most / (1024 * 1024)} MB): download it.", StatusCodes.Status413PayloadTooLarge, TooLargeType);
         if (entry.Encrypted && password is null)

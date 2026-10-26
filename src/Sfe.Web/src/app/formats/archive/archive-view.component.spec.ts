@@ -214,23 +214,31 @@ describe('ArchiveViewComponent', () => {
             expect(element.querySelector('.archive-row.selected .archive-open')!.textContent!.trim()).toBe('readme.txt');
         });
 
-        it('shows pictures, the arrows going from one to the next; Esc goes back; videos and Ctrl+click still open a tab', async () => {
-            api.exploreArchive.mockResolvedValue(listing([file(10, 'a.jpg', { media: 'image' }), file(11, 'clip.mp4', { media: 'video' }), file(12, 'b.png', { media: 'image' })]));
+        it('shows pictures, videos and audio, the arrows going from one to the next; Esc goes back; Ctrl+click still opens a tab', async () => {
+            api.exploreArchive.mockResolvedValue(listing([file(10, 'a.jpg', { media: 'image' }), file(11, 'clip.mp4', { media: 'video' }),
+                file(12, 'song.mp3', { media: 'audio' }), file(13, 'data.bin')]));
             await show();
+            const token = pathToken('Media/trip.zip');
 
             expect(open('a.jpg', { ctrlKey: true }).defaultPrevented).toBe(false);
-            expect(open('clip.mp4').defaultPrevented).toBe(false);
+            expect(open('data.bin').defaultPrevented, 'no viewer: a tab').toBe(false);
             await stable();
             expect(element.querySelector('[data-entry]')).toBeNull();
 
             open('a.jpg');
             await stable();
-            const picture = () => element.querySelector<HTMLImageElement>('[data-entry-picture]')!.getAttribute('src');
-            expect(picture()).toBe(`api/files/explore/entry/${pathToken('Media/trip.zip')}/10/a.jpg`);
-            const entry = element.querySelector<HTMLElement>('[data-entry]')!;
-            entry.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+            expect(element.querySelector<HTMLImageElement>('[data-entry-picture]')!.getAttribute('src')).toBe(`api/files/explore/entry/${token}/10/a.jpg`);
+            element.querySelector<HTMLElement>('[data-entry]')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
             await stable();
-            expect(picture()).toBe(`api/files/explore/entry/${pathToken('Media/trip.zip')}/12/b.png`); // the video between is passed
+            expect(element.querySelector('[data-entry-video] video')!.getAttribute('src')).toBe(`api/files/explore/entry/${token}/11/clip.mp4`);
+            element.querySelector<HTMLButtonElement>('[data-next]')!.click();
+            await stable();
+            expect(element.querySelector<HTMLAudioElement>('[data-entry-audio]')!.getAttribute('src')).toBe(`api/files/explore/entry/${token}/12/song.mp3`);
+            expect(element.querySelector<HTMLButtonElement>('[data-next]')!.disabled, 'data.bin has no viewer').toBe(true);
+
+            element.querySelector<HTMLAudioElement>('[data-entry-audio]')!.dispatchEvent(new Event('error'));
+            await stable();
+            expect(element.querySelector('[data-cannot-play] a')!.getAttribute('href')).toBe(`api/files/explore/entry/${token}/12/song.mp3?download=true`);
 
             element.querySelector<HTMLElement>('[data-entry]')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
             await stable();

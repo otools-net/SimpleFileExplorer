@@ -185,6 +185,27 @@ internal sealed class ZipDirectory
     }
 
     /// <summary>
+    /// Where a stored, unencrypted entry's bytes are in the zip (they are its data as they are): served as a slice of
+    /// the file, with Range (a video seeks in it); null for any other entry.
+    /// </summary>
+    public (long Start, long Length)? StoredRange(Stream stream, ArchiveEntry entry)
+    {
+        if (entry.Encrypted || entry.Method != 0 || entry.Packed != entry.Size || entry.Kind != ArchiveEntryKind.File)
+            return null;
+        if (entry.Locator < 0 || entry.Locator > Start - LocalLength)
+            throw new ArchiveException("An entry of the zip points outside of it: the archive is broken.");
+        var local = new byte[LocalLength];
+        stream.Position = entry.Locator;
+        stream.ReadExactly(local);
+        if (U32(local, 0) != LocalSignature)
+            throw new ArchiveException("An entry of the zip is damaged.");
+        var dataStart = entry.Locator + LocalLength + U16(local, 26) + U16(local, 28);
+        if (entry.Size < 0 || dataStart + entry.Size > Start)
+            throw new ArchiveException("An entry of the zip runs past its data: the archive is broken.");
+        return (dataStart, entry.Size);
+    }
+
+    /// <summary>
     /// The data of <paramref name="entry"/>, decrypted with <paramref name="password"/> when it is encrypted,
     /// decompressed and held to its declared size. Stored and deflated entries (nearly every zip); others answer that
     /// the method isn't read.

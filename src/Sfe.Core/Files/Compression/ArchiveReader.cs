@@ -59,6 +59,31 @@ public static class ArchiveReader
     }
 
     /// <summary>
+    /// A stored, unencrypted file of a zip as a seekable slice of the archive (its data as it is, with no decompression:
+    /// a video seeks in it); null for anything else (other formats, deflated or encrypted entries).
+    /// </summary>
+    public static Stream? OpenStored(string fullPath, ArchiveFormat format, ArchiveEntry entry)
+    {
+        if (format != ArchiveFormat.Zip || entry.Encrypted || entry.Method != 0)
+            return null;
+        var stream = Open(fullPath);
+        try
+        {
+            if (ZipDirectory.Locate(stream).StoredRange(stream, entry) is not { } range)
+            {
+                stream.Dispose();
+                return null;
+            }
+            return new SliceStream(stream, range.Start, range.Length);
+        }
+        catch
+        {
+            stream.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Every entry of the archive in the archive's order, each with its data (files only), for extracting: one pass
     /// over the file, so a solid 7z or rar block is unpacked once whatever is taken from it. <paramref name="visit"/>
     /// reads the stream it is given (or not) before returning: the stream ends with the visit. <paramref name="read"/>

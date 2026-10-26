@@ -31,6 +31,8 @@ const entries = [
     { name: 'Pictures/photo.jpg', data: fs.readFileSync(path.join(work, 'library', 'Photos', photo)) },
     { name: 'Notes/notes.md', data: Buffer.from('# Trip notes\n\nA [link to the photo](../Pictures/photo.jpg), and the photo itself:\n\n![The photo](../Pictures/photo.jpg)\n') },
     { name: 'Notes/handbook.pdf', data: fs.readFileSync(path.join(repo, 'tests/samples/library/Documents/Hut handbook.pdf')) },
+    // Stored (writeZip stores everything): served as a slice of the zip, with Range.
+    { name: 'Pictures/campfire.webm', data: fs.readFileSync(path.join(work, 'library', 'Videos', 'Holidays', 'Campfire.webm')) },
 ];
 for (let i = 0; i < BIG; i++)
     entries.push({ name: `Big folder/entry ${String(i).padStart(5, '0')}.txt`, data: Buffer.from(`entry ${i}\n`) });
@@ -165,6 +167,13 @@ try {
             await until(b, `[...document.querySelectorAll('.archive-open')].some(e => e.textContent.trim() === 'photo.jpg')`);
             await openName('photo.jpg');
             check(await until(b, `document.querySelector('[data-entry-picture]')?.naturalWidth > 0`), 'in place: a picture of the archive');
+            await b.eval(`document.querySelector('[data-previous]').click(); 1`);
+            check(await until(b, `document.querySelector('[data-entry-video] video')?.readyState >= 1`), 'in place: a video of the archive, the one before');
+            const seek = await b.eval(`(async () => { const v = document.querySelector('[data-entry-video] video'); v.muted = true;
+                const end = v.duration; v.currentTime = end / 2; await new Promise(r => setTimeout(r, 1500));
+                return JSON.stringify({ end, at: v.currentTime, seekable: v.seekable.length ? v.seekable.end(0) : 0 }); })()`);
+            const sought = JSON.parse(seek);
+            check(sought.seekable > 0 && sought.at >= sought.end / 2 - 0.5 && sought.at < sought.end / 2 + 3, `in place: the video seeks (Range on the stored zip entry): ${seek}`);
             await b.eval(`document.querySelector('[data-back]').click(); 1`);
 
             const submit = password => b.eval(`{ const box = document.querySelector('[data-password-box]'); box.value = ${JSON.stringify(password)};

@@ -33,7 +33,11 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   solid; plain tars and other rars seek) past `MaxSkippedMegabytes` (2048) → 413 "extract it", checked before each skip
   (`ArchiveException.TooFar`). The unlock check takes a password unchecked when its entry is that far.
   `private, no-cache` + ETag (catalog key, id): 304 while the archive is the same. The checks are `OpenEntryAsync`,
-  shared with the text route.
+  shared with the text route. **A stored, unencrypted zip entry** (`stored: true`, the entry routes only) is a
+  `SliceStream` of the archive (`ZipDirectory.StoredRange`, `ArchiveReader.OpenStored`): seekable, so Range is answered
+  and `MaxPreviewMegabytes` doesn't apply (nothing is unpacked; its CRC isn't checked, as a library file's isn't).
+  Decision: compressed entries get no Range (a seek would unpack from the start, or need a temp copy): archivers store
+  videos, so videos seek in practice; a compressed one plays from its start.
 - `GET api/files/explore/entry/{archive}/at/{**at}`: the same, the file found by its path in the archive
   (`ArchiveCatalog.FindFile`: as written, else any case; a folder or nothing: 404): what the links and pictures of a
   document of the archive lead to. `OpenEntryAsync` takes an `EntryKey` (id and name, or path).
@@ -106,13 +110,14 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   new tab (an `<a target=_blank>` on the entry route) with `files.download`; each row has its context menu (Open /
   Open in new tab, Download). Keys: ↑ ↓, Enter, Backspace (up); the view owns its keys (`data-owns-keys`).
 - **In place** (`viewing`, `.archive-entry`: an overlay over the list, which stays as it was): pictures (`media`
-  image: an `<img>` on the entry route) and the formats of `IN_PLACE` (text, prose, Markdown, JSON, CSV, subtitles,
+  image: an `<img>` on the entry route), videos (`sfe-video-player`, no stream conversion) and audio (`<audio>`), a
+  "can't be played here" with the download on their error / `unsupported`, and the formats of `IN_PLACE` (text, prose, Markdown, JSON, CSV, subtitles,
   PDF) by `formatOf` on a `LibraryItem` made for the entry (path `<archive>#<id>`: positions per entry), their
   component loaded on demand with an injector giving `FILE_SOURCE` (`formats/file-source.ts`: `library: false`, text
   from `explore/text`, bytes and download from the entry route, with the unlock) and a `FILE_VIEW_HOST` allowing only
   `files.view`/`files.download`. A plain click on the name (the link's default prevented) or Enter; Ctrl / middle
   button: the tab. Bar: Back (Esc, unless in an editor or a box), the name, before / after among the rows loaded
-  (← → for pictures), new tab, download. Videos, audio, EPUB, nested archives: a tab or a download.
+  (← → for pictures), new tab, download. EPUB, Flash, nested archives: a tab or a download.
 - `FILE_SOURCE` (default: the library) is what the format views read through (`textFile`, `original`, `download`);
   `library: false` hides Follow and parts (a 413 is a message), skips `TextSession.checkDisk` and the subtitles'
   video. `documents` (an entry's): the document's path in the archive (`listing.path`: the first page of a folder at

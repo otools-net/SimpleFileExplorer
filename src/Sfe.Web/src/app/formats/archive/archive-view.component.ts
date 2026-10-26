@@ -10,6 +10,7 @@ import { ToastService } from '../../core/toast.service';
 import { Dialogs } from '../../library/dialogs.service';
 import { ContextMenuDirective, MenuEntry, MenuTarget } from '../../menus/context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../../menus/overflow-row';
+import { VideoPlayerComponent } from '../../player/video-player.component';
 import { IconComponent } from '../../shared/icon.component';
 import { FILE_SOURCE, FileSource } from '../file-source';
 import { extensionOf, FILE_VIEW_HOST, FileFormat, FileViewHost, formatOf } from '../formats';
@@ -42,9 +43,13 @@ const FIND_MIN = 2;
 /** The formats an entry is shown with in place (read only, read whole); others open in a tab (videos, audio) or download. */
 const IN_PLACE: ReadonlySet<string> = new Set(['text', 'prose', 'markdown', 'json', 'csv', 'subtitles', 'pdf']);
 
-/** An entry shown in place of the list: a picture (`format` null) or a format's view of it, reading it from the archive. */
+/** What the archive view shows by itself: pictures, videos (the app's player) and audio. */
+type Media = 'picture' | 'video' | 'audio';
+
+/** An entry shown in place of the list: a picture, video or audio (`media`), or a format's view of it, reading it from the archive. */
 interface Viewing {
     entry: ArchiveItem;
+    media: Media | null;
     /** Its row (previous / next go from it). */
     index: number;
     item: LibraryItem;
@@ -70,7 +75,7 @@ interface Shown {
  */
 @Component({
     selector: 'sfe-archive-view',
-    imports: [NgComponentOutlet, IconComponent, ContextMenuDirective, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
+    imports: [NgComponentOutlet, VideoPlayerComponent, IconComponent, ContextMenuDirective, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'text-view archive-view',
@@ -230,8 +235,18 @@ interface Shown {
                     <button class="icon-button" sfeOverflowMore></button>
                 </div>
                 <div class="archive-entry-content">
-                    @if (!shown.format) {
+                    @if (cannotPlay()) {
+                        <div class="text-message" data-cannot-play>
+                            <p>It can't be played here: the browser doesn't read it, or it is too large to be opened from the archive.</p>
+                            <p><a class="button" [href]="entryUrl(shown.entry, true)"><svg sfeIcon="download"></svg> Download it</a></p>
+                        </div>
+                    } @else if (shown.media === 'picture') {
                         <img class="archive-entry-picture" data-entry-picture [src]="entryUrl(shown.entry, false)" [alt]="shown.entry.name" decoding="async" />
+                    } @else if (shown.media === 'video') {
+                        <sfe-video-player class="archive-entry-video" data-entry-video [src]="entryUrl(shown.entry, false)" [name]="shown.entry.name"
+                                          [seekStep]="config.config()?.seekSeconds ?? 10" (unsupported)="cannotPlay.set(true)" />
+                    } @else if (shown.media === 'audio') {
+                        <audio class="archive-entry-audio" data-entry-audio [src]="entryUrl(shown.entry, false)" controls autoplay preload="metadata" (error)="cannotPlay.set(true)"></audio>
                     } @else if (shown.component) {
                         <ng-container *ngComponentOutlet="shown.component; inputs: { item: shown.item, format: shown.format }; injector: shown.injector ?? undefined" />
                     } @else {
@@ -255,7 +270,7 @@ export class ArchiveViewComponent {
 
     private readonly api = inject(Api);
     private readonly host = inject(FILE_VIEW_HOST);
-    private readonly config = inject(ConfigService);
+    protected readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
     private readonly dialogs = inject(Dialogs);
     private readonly scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
@@ -303,6 +318,8 @@ export class ArchiveViewComponent {
 
     /** An entry shown in place of the list (Back: the list as it was). */
     protected readonly viewing = signal<Viewing | null>(null);
+    /** The video or audio shown can't be played (a format the browser doesn't read, too large unpacked): its download is offered. */
+    protected readonly cannotPlay = signal(false);
     protected readonly previousEntry = (): MenuEntry => ({ id: 'previous', label: 'The file before', icon: 'up', title: 'The file before', disabled: this.neighbour(-1) === null, run: () => this.step(-1) });
     protected readonly nextEntry = (): MenuEntry => ({ id: 'next', label: 'The file after', icon: 'down', title: 'The file after', disabled: this.neighbour(1) === null, run: () => this.step(1) });
     protected readonly newTabEntry = (): MenuEntry => ({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Open it in a new tab', href: this.entryUrl(this.viewing()!.entry, false), newTab: true });
@@ -505,14 +522,15 @@ export class ArchiveViewComponent {
         void this.show(entry, index);
     }
 
-    /** How an entry is shown in place: `'picture'`, a format (text, PDF…), or null (a new tab, a download). */
-    private placeOf(entry: ArchiveItem): FileFormat | 'picture' | null {
+    /**
+     * How an entry is shown in place: a picture, a video (seeking in it when the zip stores it), audio, a format (text,
+     * PDF…), or null (a new tab, a download).
+     */
+    private placeOf(entry: ArchiveItem): FileFormat | Media | null {
         if (entry.kind !== 'file' || !this.canDownload() || (entry.encrypted && !this.unlock()))
             return null;
-        if (entry.media === 'image')
-            return 'picture';
         if (entry.media)
-            return null;
+            return entry.media === 'image' ? 'picture' : entry.media;
         const format = formatOf(this.itemOf(entry));
         return format && IN_PLACE.has(format.id) ? format : null;
     }
@@ -551,8 +569,9 @@ export class ArchiveViewComponent {
             return;
         const entry: ArchiveItem = { ...shown, at: this.pathIn(shown) };
         const item = this.itemOf(entry);
-        if (place === 'picture') {
-            this.viewing.set({ entry, index, item, format: null, component: null, injector: null, back });
+        this.cannotPlay.set(false);
+        if (typeof place === 'string') {
+            this.viewing.set({ entry, media: place, index, item, format: null, component: null, injector: null, back });
             this.focusEntry();
             return;
         }
@@ -560,7 +579,7 @@ export class ArchiveViewComponent {
             providers: [{ provide: FILE_VIEW_HOST, useValue: this.entryHost }, { provide: FILE_SOURCE, useValue: this.entrySource(entry) }],
             parent: this.injector,
         });
-        const viewing: Viewing = { entry, index, item, format: place, component: null, injector, back };
+        const viewing: Viewing = { entry, media: null, index, item, format: place, component: null, injector, back };
         this.viewing.set(viewing);
         this.focusEntry();
         if (!('load' in place.view))
@@ -617,6 +636,7 @@ export class ArchiveViewComponent {
         const viewing = this.viewing();
         if (!viewing)
             return;
+        this.cannotPlay.set(false);
         if (viewing.back) {
             this.viewing.set(viewing.back);
             this.focusEntry();
@@ -692,7 +712,7 @@ export class ArchiveViewComponent {
             if (event.key === 'Escape') {
                 event.preventDefault();
                 this.closeEntry();
-            } else if (!viewing.format && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+            } else if (viewing.media === 'picture' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
                 event.preventDefault();
                 this.step(event.key === 'ArrowLeft' ? -1 : 1);
             }

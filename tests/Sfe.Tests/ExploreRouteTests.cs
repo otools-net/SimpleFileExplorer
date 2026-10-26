@@ -296,6 +296,31 @@ public sealed class ExploreRouteTests
         Assert.AreEqual(HttpStatusCode.OK, download.StatusCode);
         Assert.AreEqual(2 * 1024 * 1024, (await download.Content.ReadAsByteArrayAsync(Token)).Length);
 
+        // Stored (as videos are): a slice of the archive, any size, with Range (a video seeks in it).
+        var bytes = string.Concat(Enumerable.Range(0, 2 * 1024 * 1024 / 8).Select(i => $"{i % 10_000_000:D8}"));
+        TestArchives.Zip(_library.Root, "Media/stored.zip", System.IO.Compression.CompressionLevel.NoCompression, ("clip.mp4", bytes));
+        var clip = (await ListAsync(_alice, "path=Media/stored.zip")).Items.Single();
+        var clipUrl = $"/api/files/explore/entry/{EpubEntries.Token("Media/stored.zip")}/{clip.Id}/clip.mp4";
+        using (var whole = await _alice.GetAsync(clipUrl, Token))
+        {
+            Assert.AreEqual(HttpStatusCode.OK, whole.StatusCode, "stored: over the preview's size, nothing unpacked");
+            Assert.AreEqual("bytes", whole.Headers.AcceptRanges.Single());
+            Assert.AreEqual(bytes.Length, (await whole.Content.ReadAsByteArrayAsync(Token)).Length);
+        }
+        using (var request = new HttpRequestMessage(HttpMethod.Get, clipUrl))
+        {
+            request.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(1_000_000, 1_000_015);
+            using var part = await _alice.SendAsync(request, Token);
+            Assert.AreEqual(HttpStatusCode.PartialContent, part.StatusCode);
+            Assert.AreEqual(bytes.Substring(1_000_000, 16), await part.Content.ReadAsStringAsync(Token));
+        }
+        using (var byPath = new HttpRequestMessage(HttpMethod.Get, $"/api/files/explore/entry/{EpubEntries.Token("Media/stored.zip")}/at/clip.mp4"))
+        {
+            byPath.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, 7);
+            using var part = await _alice.SendAsync(byPath, Token);
+            Assert.AreEqual((HttpStatusCode.PartialContent, "00000000"), (part.StatusCode, await part.Content.ReadAsStringAsync(Token)));
+        }
+
         // Reached only by unpacking 2 MB before it: refused, viewed or downloaded.
         using (var file = File.Create(_library.FullPath("Media/far.tar.gz")))
         using (var gzip = new System.IO.Compression.GZipStream(file, System.IO.Compression.CompressionLevel.Fastest))

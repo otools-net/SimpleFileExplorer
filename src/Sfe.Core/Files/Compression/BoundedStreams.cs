@@ -49,6 +49,57 @@ internal sealed class WindowStream(Stream inner, long start, long length, IDispo
 }
 
 /// <summary>
+/// <paramref name="length"/> bytes of a file from <paramref name="start"/>, seekable: a stored zip entry served with
+/// Range. Owns the file.
+/// </summary>
+internal sealed class SliceStream(Stream file, long start, long length) : Stream
+{
+    private long position;
+
+    public override bool CanRead => true;
+    public override bool CanSeek => true;
+    public override bool CanWrite => false;
+    public override long Length => length;
+
+    public override long Position
+    {
+        get => position;
+        set => position = value is >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value));
+    }
+
+    public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
+
+    public override int Read(Span<byte> buffer)
+    {
+        var left = length - position;
+        if (left <= 0)
+            return 0;
+        file.Position = start + position;
+        var read = file.Read(buffer[..(int)Math.Min(buffer.Length, left)]);
+        position += read;
+        return read;
+    }
+
+    public override long Seek(long offset, SeekOrigin origin) => Position = origin switch
+    {
+        SeekOrigin.Begin => offset,
+        SeekOrigin.Current => position + offset,
+        _ => length + offset,
+    };
+
+    public override void Flush() { }
+    public override void SetLength(long value) => throw new NotSupportedException();
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+            file.Dispose();
+        base.Dispose(disposing);
+    }
+}
+
+/// <summary>
 /// An entry's data held to the size its archive declared: one byte more, or one less at the end, is a broken (or
 /// hostile) archive, never a longer file. This is what stops a zip bomb whose headers lie. A negative size (a format
 /// that declares none, such as one <c>.gz</c>) only counts; its callers bound it otherwise.

@@ -43,7 +43,10 @@ reads it: pictures, text files, Markdown, JSON, tables (CSV), subtitles and PDF 
   pictures, also ← and →), opens it in a **new tab**, or **downloads** it.
 - A Markdown document shows the pictures of the archive it links to, and its links to other documents of the
   archive open them in the same place (**back** returns to the document). Links leading out of the archive are text.
-- Videos and audio open in a new tab, anything else downloads. **Ctrl**+click (or the middle button) opens any file
+- Videos and audio play there too, with the app's player. In a zip, where videos are usually stored as they are,
+  you can jump anywhere in them; a video compressed inside a 7z or rar (rare) plays from its start, and a large one
+  only downloads.
+- Anything else downloads. **Ctrl**+click (or the middle button) opens any file
   in a new tab. A right click offers **Open**, **Open in new tab** and **Download**. Very large files only download.
 
 Some entries are only listed:
