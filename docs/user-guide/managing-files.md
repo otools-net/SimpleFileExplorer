@@ -186,6 +186,31 @@ people would see or change a folder in its new place, SFE says who, and offers t
 - A copy is refused when it would leave less free space on the drive than the space's
   [Free space kept by copies](../administration/file-management.md#settings) (1 GB by default).
 
+## Compress into a zip
+
+With the right to compress (`files.compress`, which no group has until an administrator gives it), files and folders
+can be put in a zip saved in the library: **Compress…** in the selection bar, or in a file's or folder's menu. The zip
+goes into the folder listed (in search results, the folder of the first item).
+
+- **Name**: the only item's name, or the folder's; `.zip` is added.
+- **Compression**: **Store** (no compression: the fastest), **Fastest**, **Normal** (the default) or **Maximum** (the
+  smallest, several times slower).
+- **Skip files already compressed** (ticked by default): pictures, videos, music and archives are stored as they are,
+  since compressing them again gains almost nothing.
+- **Password** (typed twice): the files' content is encrypted with AES-256. Their **names stay visible** to anyone with
+  the zip. 7-Zip, WinRAR and recent Windows 11 open such zips; older Windows zip folders don't. 7-Zip takes only
+  passwords made of A–Z, digits and common signs.
+
+The zip is made on the server in the background, one at a time for the whole server, in the panel at the bottom
+right: its progress, **Cancel** (nothing half made stays), then the ratio achieved ("12 MB → 4 MB (33 %)"); **Show**
+in the message shows it in its folder. When a zip of that name is already there, the panel asks (Replace, Skip, Keep
+both). What it holds is what you could download: folders you can't see are left out, links and folders you may not
+download are named in a file `SFE - left out.txt` inside the zip. A zip is refused when the drive would keep less than
+the space's [Free space kept by copies](../administration/file-management.md#settings).
+
+Downloading several items as a zip ([below](#download-several-files-or-a-folder)) doesn't change: it saves the zip on
+your device, not in the library.
+
 ## Extract an archive
 
 **Extract to “name”** and **Extract…** in a zip, 7z, rar or tar archive's menu write its files into the library, in

@@ -70,6 +70,12 @@ import { ListingStore } from './listing.store';
                 <span>Copy</span>
             </button>
         }
+        @if (compressible()) {
+            <button type="button" class="button small selection-compress" [sfeOverflowItem]="more.compress" title="Put the selected items in a zip in this folder" (click)="compressSelection()">
+                <svg sfeIcon="compress"></svg>
+                <span>Compress</span>
+            </button>
+        }
         @if (downloadable()) {
             <button type="button" class="button small selection-download" [sfeOverflowItem]="more.download" [title]="downloadTitle()" (click)="downloadSelection()">
                 <svg sfeIcon="download"></svg>
@@ -127,6 +133,8 @@ export class SelectionBarComponent {
 
     protected readonly movable = computed(() => this.selected().some(item => this.transfers.canMove(item)));
     protected readonly copyable = computed(() => this.selected().some(item => this.transfers.canCopy(item)));
+    /** Some of the selection may go in a zip (only those do), and the dialog is there. */
+    protected readonly compressible = computed(() => Boolean(this.dialogs.compress()) && this.selected().some(item => this.transfers.canCompress(item)));
 
     /** Some of the selection may be deleted (only those are, the confirmation names them). */
     protected readonly deletable = computed(() => this.selected().some(item => this.fileActions.canDelete(item)));
@@ -149,7 +157,12 @@ export class SelectionBarComponent {
         move: (): MenuEntry => ({ id: 'move', label: 'Move to…', icon: 'move', title: 'Move the selected items to another folder (Ctrl+X, then Ctrl+V there; or drag them onto a folder)', run: () => this.transfers.pick('move', this.store.selectedItems()) }),
         copy: (): MenuEntry => ({ id: 'copy', label: 'Copy to…', icon: 'copy', title: 'Copy the selected items into another folder (Ctrl+C, then Ctrl+V there; or drag them onto a folder with Ctrl)', run: () => this.transfers.pick('copy', this.store.selectedItems()) }),
         download: (): MenuEntry => ({ id: 'download', label: 'Download', icon: 'download', title: this.downloadTitle(), run: () => this.downloadSelection() }),
+        compress: (): MenuEntry => ({ id: 'compress', label: 'Compress…', icon: 'compress', title: 'Put the selected items in a zip in this folder', run: () => this.compressSelection() }),
     };
+
+    protected compressSelection(): void {
+        this.dialogs.compress()?.open(this.store.selectedItems().filter(item => this.transfers.canCompress(item)));
+    }
 
     private renameOne(): void {
         const item = this.renamable();

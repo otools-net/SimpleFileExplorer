@@ -102,6 +102,21 @@ describe('ArchiveViewComponent', () => {
         expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: 6, limit: 200, unlock: null }, expect.any(AbortSignal));
     });
 
+    it('goes up from a folder at the top of the archive with the Up button', async () => {
+        api.exploreArchive.mockResolvedValue(listing([folder(2, 'Empty')]));
+        await show();
+        api.exploreArchive.mockResolvedValue(listing([], { folder: folder(2, 'Empty'), trail: { skipped: 0, last: [{ id: 2, name: 'Empty' }] } }));
+        element.querySelector<HTMLButtonElement>('[data-kind="folder"] .archive-open')!.click();
+        await stable();
+        expect(up().disabled).toBe(false);
+
+        api.exploreArchive.mockResolvedValue(listing([folder(2, 'Empty')]));
+        up().click();
+        await stable();
+        expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: null, limit: 200, unlock: null }, expect.any(AbortSignal));
+        expect(up().disabled).toBe(true);
+    });
+
     it('goes to a folder by its path inside the archive', async () => {
         api.exploreArchive.mockResolvedValue(listing([]));
         await show();

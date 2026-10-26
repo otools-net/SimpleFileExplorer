@@ -19,6 +19,7 @@ import { PropertiesDialog } from '../files/properties.dialog';
 import { ChangeFeed } from './change-feed.service';
 import { TransferDialog } from '../files/transfer.dialog';
 import { ExtractDialog } from '../files/extract.dialog';
+import { CompressDialog } from '../files/compress.dialog';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { EmptyStateComponent } from '../shared/empty-state.component';
@@ -59,7 +60,7 @@ let created = false;
     selector: 'sfe-library-page',
     imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
         EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, FolderExclusionsDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, ExtractDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent],
+        RemoveFromIndexDialog, FolderExclusionsDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, ExtractDialog, CompressDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -95,6 +96,7 @@ let created = false;
             <sfe-delete-dialog />
             <sfe-transfer-dialog />
             <sfe-extract-dialog />
+            <sfe-compress-dialog />
             <sfe-properties-dialog />
             <sfe-batch-rename-dialog />
             <!-- After the viewer: it opens over it. -->

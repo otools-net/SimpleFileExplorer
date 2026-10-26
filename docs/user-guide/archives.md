@@ -109,4 +109,5 @@ Set in the configuration only ([configuration](../configuration.md)), under `Sfe
 | `MaxPreviewMegabytes` | 64 | Largest file opened from an archive in a tab; larger ones only download |
 | `MaxCompressionRatio` | 10 000 | A file claiming to be larger than this many times its packed size is refused (a "zip bomb") |
 | `CatalogBuilds` | 1 | Archives' lists read at once by the whole server; others wait their turn |
+| `CompressJobs` | 1 | Zips made at once by the whole server ([Compress](managing-files.md#compress-into-a-zip)); others wait their turn |
 | `CatalogMegabytes` | 1024 | Disk space the lists read may take per library, in the server's cache folder; the least recently used are deleted past it, and read again when needed |

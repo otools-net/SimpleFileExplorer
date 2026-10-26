@@ -18,6 +18,7 @@ export const Rights = {
     moveFiles: 'files.move',
     copyFiles: 'files.copy',
     extractFiles: 'files.extract',
+    compressFiles: 'files.compress',
     uploadFiles: 'files.upload',
     createFiles: 'files.createFiles',
     viewTags: 'tags.view',

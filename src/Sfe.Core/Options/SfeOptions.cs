@@ -392,6 +392,9 @@ public sealed class ArchiveOptions
     /// <summary>Archives' lists read at once by the whole server (catalogs built), the others queued.</summary>
     public int CatalogBuilds { get; set; } = 1;
 
+    /// <summary>Zips written at once by the whole server (compressing keeps a processor busy), the others queued.</summary>
+    public int CompressJobs { get; set; } = 1;
+
     /// <summary>Disk the catalogs of a library may take; past it the least recently used are deleted (made again if asked).</summary>
     public int CatalogMegabytes { get; set; } = 1024;
 

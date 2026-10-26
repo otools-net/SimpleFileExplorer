@@ -24,6 +24,9 @@ public enum FileJobKind
 
     /// <summary>An archive's entries written into a folder (agents/docs/features/archive-extraction.md).</summary>
     Extract,
+
+    /// <summary>Files and folders written into one zip in a folder (agents/docs/features/compression.md).</summary>
+    Compress,
 }
 
 public enum FileJobState
@@ -60,8 +63,12 @@ public enum ConflictChoice
 /// <param name="NewFolder">
 /// Extract: into a new folder named after the archive (or after its one top folder), rather than straight into the target.
 /// </param>
+/// <param name="Name">Compress: the zip's name (<c>.zip</c> added); null: its only item's, else their folder's.</param>
+/// <param name="Level">Compress: the deflate level, 0 (stored) to 9.</param>
+/// <param name="SkipCompressed">Compress: files already compressed (pictures, videos, archives…) stored whatever the level.</param>
 public sealed record FileJobRequest(FileJobKind Kind, IReadOnlyList<string> Paths, string Target, ConflictChoice Conflicts = ConflictChoice.Ask,
-    bool KeepAccess = false, bool KeepTags = false, IReadOnlyList<string>? Entries = null, bool NewFolder = false);
+    bool KeepAccess = false, bool KeepTags = false, IReadOnlyList<string>? Entries = null, bool NewFolder = false,
+    string? Name = null, int Level = 6, bool SkipCompressed = true);
 
 /// <summary>An item on one side of a name clash.</summary>
 public sealed record ClashSide(string Name, bool IsFolder, long? Size, DateTimeOffset? Modified);
@@ -93,6 +100,12 @@ public interface IFileJobAccess
 
     /// <summary>The full path really is (through links) among the server's own files or a work folder: never written to.</summary>
     bool IsProtected(string fullPath);
+
+    /// <summary>
+    /// The person's access now, for a walk through folders (a compression: <c>files.view</c> and <c>files.download</c> at
+    /// each); null when they have none any more.
+    /// </summary>
+    Task<IArchiveAccess?> ArchiveAccessAsync() => Task.FromResult<IArchiveAccess?>(null);
 }
 
 /// <summary>
@@ -116,7 +129,9 @@ public sealed class FileJobs(
     TenantBinding tenant,
     IOptionsMonitor<SfeOptions> options,
     ILogger<FileJobs> logger,
-    FolderRuleService? rules = null) : IDisposable
+    FolderRuleService? rules = null,
+    Archives? archives = null,
+    ArchiveBuildGate? gates = null) : IDisposable
 {
     /// <summary>Finished jobs kept for the operations panel.</summary>
     private const int KeptJobs = 50;
@@ -140,7 +155,7 @@ public sealed class FileJobs(
     {
         var job = new Job(Interlocked.Increment(ref _nextId), request, actor, access, CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token))
         {
-            Password = request.Kind == FileJobKind.Extract && !string.IsNullOrEmpty(password) ? password : null,
+            Password = request.Kind is FileJobKind.Extract or FileJobKind.Compress && !string.IsNullOrEmpty(password) ? password : null,
         };
         _jobs[job.Id] = job;
         job.Completion = Task.Run(() => RunAsync(job), CancellationToken.None);
@@ -184,8 +199,25 @@ public sealed class FileJobs(
                 return;
             }
             targetPath = paths.ToRelative(targetFull)!;
-            if (request.Kind is FileJobKind.Copy or FileJobKind.Extract)
+            if (request.Kind is FileJobKind.Copy or FileJobKind.Extract or FileJobKind.Compress)
                 job.BytesTotal = request.Paths.Sum(path => paths.TryResolve(path, out var full) ? SizeOf(full) : 0);
+            if (request.Kind == FileJobKind.Compress)
+            {
+                FileJobItem made;
+                try
+                {
+                    made = await CompressAsync(job, targetPath, targetFull, token);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    logger.LogWarning(ex, "{Account} could not compress into {Target}", job.Actor.Name, targetPath);
+                    made = new FileJobItem(request.Paths.Count == 1 ? request.Paths[0] : targetPath, null, FileOperationStatus.Failed,
+                        ex is NoRoomException ? ex.Message : FileOperations.DiskFailure(ex, "The zip could not be written").Message);
+                }
+                job.Report(made);
+                job.Finish(FileJobState.Completed);
+                return;
+            }
 
             foreach (var path in request.Paths.Distinct(StringComparer.Ordinal))
             {
@@ -638,6 +670,137 @@ public sealed class FileJobs(
         return new FileJobItem(path, newPath, FileOperationStatus.Done, ExtractMessage(extracted, skipped));
     }
 
+    /// <summary>
+    /// Compresses the request's items into one zip in the target (agents/docs/features/compression.md): the walk of the
+    /// downloads (<see cref="Archives"/>: links never followed, what the person may not see left out) into SFE's writer
+    /// (the level asked, a password), one compression at a time on the server. Written into a partial file, then given its
+    /// name (a clash asked then); cancelled or failed, the partial file goes.
+    /// </summary>
+    private async Task<FileJobItem> CompressAsync(Job job, string targetPath, string targetFull, CancellationToken token)
+    {
+        var request = job.Request;
+        var label = request.Paths.Count == 1 ? request.Paths[0] : targetPath;
+        if (archives is null || gates is null)
+            return new FileJobItem(label, null, FileOperationStatus.Failed, "Compressing is not available on this server.");
+        if (!await job.Access.MayAsync(targetPath, Rights.CompressFiles) || await job.Access.ArchiveAccessAsync() is not { } access)
+            return new FileJobItem(label, null, FileOperationStatus.Forbidden, "You may not compress into this folder.");
+        var plan = archives.Plan(request.Paths.Distinct(StringComparer.Ordinal).ToList(), access);
+        if (plan.Plan is not { } chosen)
+            return new FileJobItem(label, null, plan.Status, plan.Message);
+
+        var name = string.IsNullOrWhiteSpace(request.Name) ? chosen.FileName : request.Name.Trim();
+        if (!name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            name += ".zip";
+        var settings = options.CurrentValue;
+        if (FileNames.Check(name, settings.Files.PortableNames) is { } refused)
+            return new FileJobItem(label, null, FileOperationStatus.Invalid, refused);
+        var level = Math.Clamp(request.Level, 0, 9);
+
+        // The index's sizes: an upper bound of the zip (files already compressed are stored, the rest shrinks).
+        var margin = Math.Max(0, settings.Files.MinimumFreeSpaceMegabytes) * 1024L * 1024;
+        var bound = await archives.IndexedSizeAsync(chosen, token);
+        if (FreeSpace(targetFull) is { } free && free - bound < margin)
+            return new FileJobItem(label, null, FileOperationStatus.Failed,
+                $"“{name}” was not made: the drive would keep less than {margin / 1024 / 1024:N0} MB free.");
+
+        // One compression at a time on the server: the others wait their turn (the panel shows them running).
+        var gate = gates.Compressions(settings.Files.Archives.CompressJobs);
+        await gate.WaitAsync(token);
+        try
+        {
+            RemoveLeftovers(job, targetFull);
+            var partial = PartialFolder(targetFull, name);
+            using var hold = scans.TryBeginOperation(partial);
+            if (hold is null)
+                return ScanRunning(label);
+            job.Partials.Add(partial);
+            ArchiveSummary summary;
+            long zipLength;
+            try
+            {
+                await using var file = new FileStream(partial, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, CopyBuffer);
+                await using var writer = new ZipWriter(file, job.Password);
+                var checkedAt = 0L;
+                summary = await archives.CompressAsync(chosen, writer, new CompressOptions(level, request.SkipCompressed, LibraryPaths.RealPath(partial)), access,
+                    read: count => job.AddBytes(count),
+                    written: length =>
+                    {
+                        // The free space, read every 64 MB written.
+                        if (length - checkedAt < FreeSpaceStep)
+                            return;
+                        checkedAt = length;
+                        if (FreeSpace(targetFull) is { } left && left < margin)
+                            throw new NoRoomException($"“{name}” was not made: the drive would keep less than {margin / 1024 / 1024:N0} MB free.");
+                    },
+                    cancellationToken: token);
+                writer.Finish();
+                zipLength = file.Length;
+            }
+            catch
+            {
+                RemovePartialFile(partial);
+                throw;
+            }
+
+            // Its name, now that it is whole: a clash is asked (or answered by the request).
+            var (finalName, clash) = await ClashAsync(job, label, partial, null, false, targetPath, targetFull, name, false, token);
+            if (clash is not null)
+            {
+                RemovePartialFile(partial);
+                return clash;
+            }
+            var destination = Path.Combine(targetFull, finalName!);
+            using (var place = scans.TryBeginOperation(destination))
+            {
+                if (place is null)
+                {
+                    RemovePartialFile(partial);
+                    return ScanRunning(label);
+                }
+                File.Move(partial, destination);
+            }
+            try
+            {
+                browser.Invalidate(targetFull);
+                await indexer.IndexFilesAsync([destination], CancellationToken.None);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogWarning(ex, "The zip {Path} could not be indexed: the next scan does", destination);
+            }
+            var newPath = Join(targetPath, finalName!);
+            logger.LogInformation("{Account} compressed {Count} items into {Path}: {Files} files, {Bytes} bytes into {Zip} (level {Level}{Encrypted})",
+                job.Actor.Name, chosen.Items.Count, newPath, summary.Files, summary.Bytes, zipLength, level, job.Password is null ? "" : ", encrypted");
+            return new FileJobItem(label, newPath, FileOperationStatus.Done, CompressMessage(summary, zipLength, job.Password is not null));
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    /// <summary>What a compression says when it is done: what went in, the ratio, what was left out.</summary>
+    private static string CompressMessage(ArchiveSummary summary, long zipLength, bool encrypted)
+    {
+        var ratio = summary.Bytes > 0 ? $" ({zipLength * 100.0 / summary.Bytes:0} %)" : string.Empty;
+        var text = $"{Count(summary.Files, "file")}: {FormatBytes(summary.Bytes)} → {FormatBytes(zipLength)}{ratio}{(encrypted ? ", encrypted" : string.Empty)}.";
+        if (summary.LeftOut.Count > 0)
+            text += $" Left out {Count(summary.LeftOut.Count, "item")} (listed in “{Archives.LeftOutEntry}”).";
+        return text;
+    }
+
+    private void RemovePartialFile(string partial)
+    {
+        try
+        {
+            File.Delete(partial);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(ex, "Could not remove the partial file {File}: the next compression there does", partial);
+        }
+    }
+
     /// <summary>What an extraction says when it is done: what it wrote, what it left out and why, where it stopped.</summary>
     private static string ExtractMessage(ExtractResult result, int skipped)
     {
@@ -645,7 +808,7 @@ public sealed class FileJobs(
         {
             result.Files + result.Folders == 0
                 ? "Nothing was extracted."
-                : $"{Count(result.Files, "file")} extracted ({FormatBytes(result.Bytes)}).",
+                : $"{Count(result.Files, "file")} ({FormatBytes(result.Bytes)}).",
         };
         if (result.LeftOutCount > 0)
         {
@@ -681,7 +844,7 @@ public sealed class FileJobs(
         return stem.Length > 0 ? stem : name;
     }
 
-    /// <summary>A free <c>name.sfe-partial</c> folder in <paramref name="folder"/> (its name cut to stay a valid one).</summary>
+    /// <summary>A free <c>name.sfe-partial</c> in <paramref name="folder"/> (its name cut to stay a valid one), for a folder or a file.</summary>
     private static string PartialFolder(string folder, string stem)
     {
         stem = stem.Length > 200 ? stem[..200].TrimEnd('.', ' ') : stem;
@@ -709,6 +872,9 @@ public sealed class FileJobs(
             foreach (var leftover in Directory.EnumerateDirectories(folder, "*" + PartialSuffix))
                 if (!running.Contains(leftover) && new DirectoryInfo(leftover).LinkTarget is null)
                     RemovePartial(leftover);
+            foreach (var leftover in Directory.EnumerateFiles(folder, "*" + PartialSuffix))
+                if (!running.Contains(leftover) && new FileInfo(leftover).LinkTarget is null)
+                    RemovePartialFile(leftover);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -917,7 +1083,8 @@ public sealed class FileJobs(
         public FileJobView View()
         {
             lock (_gate)
-                return new FileJobView(Id, Request.Kind, State, Request.Target, Request.Paths.Distinct(StringComparer.Ordinal).Count(), _results.Count,
+                return new FileJobView(Id, Request.Kind, State, Request.Target,
+                    Request.Kind == FileJobKind.Compress ? 1 : Request.Paths.Distinct(StringComparer.Ordinal).Count(), _results.Count,
                     BytesTotal, Interlocked.Read(ref _bytesDone), Current, _conflict, [.. _results], Started, _finished, Actor.AccountId);
         }
     }

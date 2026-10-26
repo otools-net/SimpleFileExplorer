@@ -48,7 +48,7 @@ public sealed class ExtractJobTests
         var result = job.Results.Single();
         Assert.AreEqual(FileOperationStatus.Done, result.Status, result.Message);
         Assert.AreEqual("Media/holiday", result.NewPath);
-        StringAssert.Contains(result.Message, "2 files extracted (6 B)");
+        StringAssert.Contains(result.Message, "2 files (6 B).");
         Assert.AreEqual("hello", File.ReadAllText(_library.FullPath("Media/holiday/readme.txt")));
         Assert.AreEqual("a", File.ReadAllText(_library.FullPath("Media/holiday/Photos/a.txt")));
         Assert.AreEqual(new FileInfo(_library.FullPath("Media/holiday.zip")).Length, job.BytesTotal);

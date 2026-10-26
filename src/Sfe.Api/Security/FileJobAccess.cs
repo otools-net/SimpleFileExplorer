@@ -23,6 +23,9 @@ public sealed class FileJobAccess(
 
     public bool IsProtected(string fullPath) => FileEndpoints.Protected(fullPath, serverFiles, work);
 
+    public async Task<IArchiveAccess?> ArchiveAccessAsync() =>
+        await StateAsync() is { } state ? new ArchiveAccess(state, paths, serverFiles, work) : null;
+
     /// <returns>null once the account is gone or disabled.</returns>
     private async Task<AccessState?> StateAsync()
     {

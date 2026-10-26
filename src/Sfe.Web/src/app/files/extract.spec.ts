@@ -87,14 +87,14 @@ describe('Extracting archives', () => {
         api.startExtract.mockResolvedValue(job());
         api.fileJobs.mockResolvedValue([job({
             state: 'completed', done: 1, finished: '2026-10-26T10:00:01Z',
-            results: [{ path: zip.path, newPath: 'Media/trip', status: 'done', message: '3 files extracted (2 KB).' }],
+            results: [{ path: zip.path, newPath: 'Media/trip', status: 'done', message: '3 files (2 KB).' }],
         })]);
 
         await TestBed.inject(FileTransfers).extract({ archive: zip.path, target: 'Media', newFolder: true });
         await settle();
 
         const done = toasts.toasts().find(t => t.message.includes('extracted'))!;
-        expect(done.message).toBe('“trip.zip” extracted to “trip”. 3 files extracted (2 KB).');
+        expect(done.message).toBe('“trip.zip” extracted to “trip”. 3 files (2 KB).');
         const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => undefined as never);
         toasts.act(done, done.actions[0]);
         expect(navigate).toHaveBeenCalledWith({ path: 'Media/trip' });
@@ -187,7 +187,7 @@ describe('OperationsPanelComponent, extractions', () => {
         expect(element.textContent).toContain('1 KB of 4 KB read');
 
         api.fileJobs.mockResolvedValue([job({
-            state: 'completed', done: 1, results: [{ path: zip.path, newPath: 'Media/trip', status: 'done', message: '2 files extracted (1 KB). Left out 1 entry: “../x”: the path goes up.' }],
+            state: 'completed', done: 1, results: [{ path: zip.path, newPath: 'Media/trip', status: 'done', message: '2 files (1 KB). Left out 1 entry: “../x”: the path goes up.' }],
         })]);
         api.cancelFileJob.mockResolvedValue(undefined);
         await TestBed.inject(FileTransfers).cancel(job());

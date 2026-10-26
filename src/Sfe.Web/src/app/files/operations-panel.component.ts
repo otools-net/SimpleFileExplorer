@@ -30,7 +30,7 @@ const DROP_TARGET = '[data-drop]';
     host: {
         class: 'operations-panel',
         role: 'region',
-        'aria-label': 'Moves, copies, extractions and uploads',
+        'aria-label': 'Moves, copies, archives and uploads',
         '[hidden]': '!transfers.jobs().length && !transfers.clipboard() && !uploads.batches().length',
         '(document:dragstart)': 'onDragStart($event)',
         '(document:dragover)': 'onDragOver($event)',
@@ -78,7 +78,7 @@ const DROP_TARGET = '[data-drop]';
                         <p>“{{ conflict.existing.name }}” is already there.</p>
                         <dl>
                             <dt>There</dt><dd>{{ side(conflict.existing) }}</dd>
-                            <dt>{{ job.kind === 'move' ? 'Moved' : job.kind === 'copy' ? 'Copied' : 'Extracted' }}</dt><dd>{{ side(conflict.source) }}</dd>
+                            <dt>{{ job.kind === 'move' ? 'Moved' : job.kind === 'copy' ? 'Copied' : job.kind === 'extract' ? 'Extracted' : 'The new zip' }}</dt><dd>{{ side(conflict.source) }}</dd>
                         </dl>
                         <div class="operation-choices">
                             @if (conflict.canReplace) {
@@ -153,6 +153,14 @@ export class OperationsPanelComponent implements OnInit {
     protected title(job: FileJobView): string {
         const where = `“${baseName(job.target) || 'the library'}”`;
         const count = plural(job.total, 'item');
+        if (job.kind === 'compress') {
+            const zip = job.results[0]?.newPath;
+            if (job.state === 'cancelled')
+                return `Stopped: no zip made in ${where}`;
+            if (job.state === 'completed')
+                return zip ? `“${baseName(zip)}” made in ${where}` : 'No zip made';
+            return `Compressing into ${where}`;
+        }
         if (job.kind === 'extract') {
             const archive = `“${baseName(job.results[0]?.path ?? job.current ?? '')}”`;
             if (job.state === 'cancelled')
@@ -183,6 +191,8 @@ export class OperationsPanelComponent implements OnInit {
             return 'Waiting for your answer…';
         if (job.kind === 'extract')
             return job.bytesTotal ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} read` : 'Reading the archive…';
+        if (job.kind === 'compress')
+            return job.bytesDone ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} compressed` : 'Waiting for its turn…';
         return joinParts([
             `${job.done} of ${job.total}`,
             job.kind === 'copy' && job.bytesTotal ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)}` : null,
@@ -196,7 +206,7 @@ export class OperationsPanelComponent implements OnInit {
 
     /** What was not done, skipped included; an extraction's result whatever it is (what it left out). */
     protected problems(job: FileJobView) {
-        return job.results.filter(result => result.status !== 'done' || (job.kind === 'extract' && result.message));
+        return job.results.filter(result => result.status !== 'done' || ((job.kind === 'extract' || job.kind === 'compress') && result.message));
     }
 
     protected answer(job: FileJobView, choice: 'replace' | 'skip' | 'keepBoth'): void {

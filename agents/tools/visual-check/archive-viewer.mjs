@@ -3,8 +3,9 @@
 // a deep folder collapsed, Go to, Up, and an entry opened from the archive; passwords: a 7z whose list is encrypted
 // (asked, a wrong one refused, the right one lists it) and an AES zip (a protected file opened once the password is
 // given); extracting (the archive's menu, the dialog with the password, the job, the folder written and listed);
+// compressing that folder again (its menu, the dialog with a password, the zip made, tested by 7-Zip when installed);
 // ok/FAIL per check (exit code 1 on a failure).
-// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -password.png, -extract.png, -phone.png)
+// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -password.png, -extract.png, -compress.png, -phone.png)
 // Needs a docs-screenshots run first (its build and seeded data in <tmp>/sfe-docs, or env SFE_DOCS_WORK); serves
 // them on :5096 and writes Archives/Check.zip into that copy of the library.
 import { spawn } from 'node:child_process';
@@ -37,6 +38,7 @@ fs.copyFileSync(path.join(repo, 'tests/samples/archives/tree-names-encrypted.7z'
 fs.copyFileSync(path.join(repo, 'tests/samples/archives/tree-aes256.zip'), path.join(work, 'library', 'Archives', 'Secret.zip'));
 // What an earlier run extracted.
 fs.rmSync(path.join(work, 'library', 'Archives', 'Secret'), { recursive: true, force: true });
+fs.rmSync(path.join(work, 'library', 'Archives', 'Secret again.zip'), { force: true });
 
 const installation = path.join(data, 'installation-archive-check.json');
 fs.writeFileSync(installation, JSON.stringify({ Urls: url.replace(/\/$/, ''), Sfe: { Root: path.join(work, 'library') } }));
@@ -145,6 +147,31 @@ try {
             check(await until(b, `[...document.querySelectorAll('.operation-title')].some(e => e.textContent.includes('extracted to'))`), 'the panel: extracted');
             check(fs.existsSync(extracted), "the archive's files written into Archives/Secret");
             check(await until(b, `[...document.querySelectorAll('[data-path]')].some(e => e.getAttribute('data-path') === 'Archives/Secret')`), 'the new folder listed');
+
+            // Compressing it again, with a password: the folder's menu, the dialog, the zip made beside it.
+            await b.eval(`document.querySelector('[data-path="Archives/Secret"]').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 300, clientY: 300 })); 1`);
+            check(await until(b, `document.querySelector('[data-entry="compress"]')`), "the folder's menu: Compress…");
+            await b.eval(`document.querySelector('[data-entry="compress"]').click(); 1`);
+            check(await until(b, `document.querySelector('[data-zip-name]')?.value === 'Secret'`), 'Compress…: the dialog, named after the folder');
+            await b.eval(`{ const name = document.querySelector('[data-zip-name]'); name.value = 'Secret again'; name.dispatchEvent(new Event('input'));
+                const level = document.querySelector('[data-level]'); level.value = '9'; level.dispatchEvent(new Event('change'));
+                const box = document.querySelector('[data-zip-password]'); box.value = 'again-secret'; box.dispatchEvent(new Event('input')); } 1`);
+            await until(b, `document.querySelector('[data-zip-confirm]')`);
+            await b.eval(`{ const box = document.querySelector('[data-zip-confirm]'); box.value = 'again-secret'; box.dispatchEvent(new Event('input')); } 1`);
+            check(await until(b, `document.querySelector('[data-password-notes]')?.textContent.includes('File names stay visible') && !document.querySelector('[data-compress]').disabled`),
+                'the password typed twice, with what it protects');
+            if (out)
+                await b.shot(`${out}-compress.png`);
+            await b.eval(`document.querySelector('[data-compress]').click(); 1`);
+            check(await until(b, `[...document.querySelectorAll('.operation-title')].some(e => e.textContent.includes('“Secret again.zip” made in'))`), 'the panel: the zip made');
+            const zip = path.join(work, 'library', 'Archives', 'Secret again.zip');
+            check(fs.existsSync(zip), 'Archives/Secret again.zip written');
+            const sevenZip = process.env.SEVENZIP ?? (fs.existsSync('C:/Program Files/7-Zip/7z.exe') ? 'C:/Program Files/7-Zip/7z.exe' : null);
+            if (sevenZip && fs.existsSync(zip)) {
+                const { spawnSync } = await import('node:child_process');
+                const tested = spawnSync(sevenZip, ['t', '-pagain-secret', zip], { encoding: 'utf8' });
+                check(tested.status === 0 && tested.stdout.includes('Everything is Ok'), "7-Zip opens it with the password");
+            }
         }
         await b.close();
     }

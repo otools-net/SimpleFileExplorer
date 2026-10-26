@@ -171,6 +171,36 @@ public sealed class FileJobRouteTests
         Assert.IsTrue(rules.Any(r => r.Path == "ChildDir (2)" && r.Level == FolderLevel.Hidden), string.Join(", ", rules.Select(r => $"{r.Path}={r.Level}")));
     }
 
+    [TestMethod]
+    public async Task ACompressionLeavesOutWhatThePersonDoesNotSeeAndNeverShowsItsPassword()
+    {
+        using (var refused = await _alice.PostAsJsonAsync("/api/files/jobs/compress", new CompressRequest(["Media"], "ChildDir"), Json, Token))
+            Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode, "Users may not compress yet");
+        using (var wrongRoute = await _admin.PostAsJsonAsync("/api/files/jobs", new FileJobRequest(FileJobKind.Compress, ["Media"], "ChildDir"), Json, Token))
+            Assert.AreEqual(HttpStatusCode.BadRequest, wrongRoute.StatusCode);
+        var accounts = _factory.Services.GetRequiredService<AccessService>();
+        var users = (await accounts.GetBuiltInGroupAsync(_tenant, BuiltInGroup.Users, Token))!;
+        Assert.AreEqual(AccessStatus.Ok, (await accounts.UpdateGroupAsync(_tenant, _users,
+            new GroupInput(users.Name, Rights: [.. users.Rights, Rights.CompressFiles], MemberIds: users.MemberIds), cancellationToken: Token)).Status);
+        using (var level = await _alice.PostAsJsonAsync("/api/files/jobs/compress", new CompressRequest(["Media"], "ChildDir", Level: 10), Json, Token))
+            Assert.AreEqual(HttpStatusCode.BadRequest, level.StatusCode);
+
+        // The whole library, from a read-only folder too, into a folder Alice may change: SpecialDir isn't hers to see.
+        using var started = await _alice.PostAsJsonAsync("/api/files/jobs/compress", new CompressRequest([""], "ChildDir", "everything", Password: "route-secret"), Json, Token);
+        Assert.AreEqual(HttpStatusCode.Accepted, started.StatusCode, await started.Content.ReadAsStringAsync(Token));
+        var job = await FinishedAsync(_alice, (await started.Content.ReadFromJsonAsync<FileJobView>(Json, Token))!.Id);
+
+        Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
+        Assert.AreEqual("ChildDir/everything.zip", job.Results.Single().NewPath);
+        var names = Sfe.Core.Files.Compression.ArchiveReader.ReadEntries(_library.FullPath("ChildDir/everything.zip"), Sfe.Core.Files.Compression.ArchiveFormat.Zip)
+            .Select(e => e.Name).ToList();
+        Assert.Contains(n => n.Contains("/Media/photo.jpg"), names);
+        Assert.DoesNotContain(n => n.Contains("SpecialDir"), names);
+        Assert.DoesNotContain(n => n.Contains("everything"), names);
+        using var listed = await _alice.GetAsync("/api/files/jobs", Token);
+        Assert.DoesNotContain("route-secret", await listed.Content.ReadAsStringAsync(Token));
+    }
+
     private async Task<FileJobView> StartAsync(HttpClient client, FileJobRequest request)
     {
         using var response = await client.PostAsJsonAsync("/api/files/jobs", request, Json, Token);

@@ -45,6 +45,15 @@ public sealed record MoveCheck(IReadOnlyList<AccessGain> Gains);
 
 public sealed record JobAnswer(ConflictChoice Choice, bool ForAll = false);
 
+/// <param name="Paths">Files and folders to compress (root-relative).</param>
+/// <param name="Target">The folder the zip goes into.</param>
+/// <param name="Name">The zip's name (<c>.zip</c> added); null: its only item's, else their folder's.</param>
+/// <param name="Level">0 (stored) to 9 (smallest, slowest); 6 by default.</param>
+/// <param name="SkipCompressed">Pictures, videos, archives… stored whatever the level.</param>
+/// <param name="Password">Encrypts the files with AES-256 (the names stay readable); held by the job only while it runs.</param>
+public sealed record CompressRequest(IReadOnlyList<string>? Paths, string? Target, string? Name = null, int Level = 6, bool SkipCompressed = true,
+    string? Password = null, ConflictChoice Conflicts = ConflictChoice.Ask);
+
 /// <summary>File management (agents/docs/development/file-management-plan.md): changes to the library's files.</summary>
 public static class FileEndpoints
 {
@@ -55,6 +64,9 @@ public static class FileEndpoints
 
     /// <summary>Paths one delete request may name.</summary>
     public const int MaxDeletePaths = 1000;
+
+    /// <summary>Longest password of a zip made in the library.</summary>
+    public const int MaxPasswordLength = 1024;
 
     public static RouteGroupBuilder MapFileEndpoints(this RouteGroupBuilder api)
     {
@@ -130,23 +142,37 @@ public static class FileEndpoints
                 never follow links, leave out folders the caller may not see, and get the tags of their originals with
                 `keepTags`. Results per item in `results`.
                 """);
+        jobs.MapPost("/compress", Compress)
+            .RequireRight(Rights.CompressFiles)
+            .FolderScoped("files.view and files.download at each item (the folders inside checked as they are walked), files.compress at the target")
+            .WithName("CompressFiles")
+            .WithSummary("Compresses files and folders into one zip in a folder of the library, in the background.")
+            .WithDescription($"""
+                Starts a compression job and answers its first state (202), followed as moves and copies are. `paths` (1 to
+                {Archives.MaxItems:N0}), `target` the folder the zip goes into, `name` (`.zip` added; default: the only
+                item's name, else their folder's), `level` 0 (stored) to 9 (default 6), `skipCompressed` (default true:
+                pictures, videos, archives… stored whatever the level), `password` (AES-256; the names stay readable).
+                What the caller may not see is left out silently, links and folders they may not download are named in
+                `{Archives.LeftOutEntry}`. One compression at a time on the server (`Files:Archives:CompressJobs`). A name
+                taken in the target is asked as `conflicts` says. Its result tells the ratio achieved.
+                """);
         jobs.MapGet("", ListJobs)
-            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles, Rights.CompressFiles)
             .NotLibraryPaths()
             .WithName("ListFileJobs")
             .WithSummary("The caller's moves, copies and extractions, running and recent.");
         jobs.MapGet("/{id:int}", GetJob)
-            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles, Rights.CompressFiles)
             .NotLibraryPaths()
             .WithName("GetFileJob")
             .WithSummary("One of the caller's moves or copies.");
         jobs.MapPost("/{id:int}/answer", AnswerJob)
-            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles, Rights.CompressFiles)
             .NotLibraryPaths()
             .WithName("AnswerFileJob")
             .WithSummary("Answers a job's question about a name clash (`forAll`: the same for the next ones).");
         jobs.MapPost("/{id:int}/cancel", CancelJob)
-            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles, Rights.CompressFiles)
             .NotLibraryPaths()
             .WithName("CancelFileJob")
             .WithSummary("Stops a move or copy: what is done stays, nothing half copied does.");
@@ -330,8 +356,8 @@ public static class FileEndpoints
         var state = await current.GetAsync();
         if (state.Tenant is not { } tenant)
             return TypedResults.Forbid();
-        if (request.Kind == FileJobKind.Extract)
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["kind"] = ["Archives are extracted through api/files/jobs/extract."] });
+        if (request.Kind is FileJobKind.Extract or FileJobKind.Compress)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["kind"] = ["Archives are extracted through api/files/jobs/extract, made through api/files/jobs/compress."] });
         if (!state.Has(request.Kind == FileJobKind.Move ? Rights.MoveFiles : Rights.CopyFiles))
             return TypedResults.Forbid();
         if (request.Paths is not { Count: > 0 } || request.Paths.Count > MaxDeletePaths)
@@ -339,6 +365,28 @@ public static class FileEndpoints
         // Every item is checked as the job reaches it, with the person's access then.
         var access = new FileJobAccess(accounts, rights, paths, serverFiles, work, tenant, state.User?.Id);
         var view = jobs.Start(request, Actor(state), access);
+        return TypedResults.Accepted($"api/files/jobs/{view.Id}", view);
+    }
+
+    private static async Task<Results<Accepted<FileJobView>, ForbidHttpResult, ValidationProblem>> Compress(
+        FileJobs jobs, AccessService accounts, RightsEvaluator rights, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current,
+        CompressRequest request)
+    {
+        var state = await current.GetAsync();
+        if (state.Tenant is not { } tenant || !state.Has(Rights.CompressFiles))
+            return TypedResults.Forbid();
+        if (request.Paths is not { Count: > 0 } || request.Paths.Count > Archives.MaxItems)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["paths"] = [$"Name 1 to {Archives.MaxItems:N0} files or folders."] });
+        if (request.Target is null)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["target"] = ["Name the folder the zip goes into."] });
+        if (request.Level is < 0 or > 9)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["level"] = ["A level is 0 (stored) to 9 (smallest)."] });
+        if (request.Password is { Length: > MaxPasswordLength })
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["password"] = [$"At most {MaxPasswordLength} characters."] });
+        // Every item is checked as the job reaches it, with the person's access then.
+        var access = new FileJobAccess(accounts, rights, paths, serverFiles, work, tenant, state.User?.Id);
+        var view = jobs.Start(new FileJobRequest(FileJobKind.Compress, request.Paths, request.Target, request.Conflicts,
+            Name: request.Name, Level: request.Level, SkipCompressed: request.SkipCompressed), Actor(state), access, request.Password);
         return TypedResults.Accepted($"api/files/jobs/{view.Id}", view);
     }
 

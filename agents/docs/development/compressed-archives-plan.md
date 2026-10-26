@@ -11,8 +11,8 @@ browser and writes nothing to the library.
 
 - Tick `[x]` in the commit that does the work; what stays true goes into a feature note
   ([archive-reading](../features/archive-reading.md) for the core, [archive-viewer](../features/archive-viewer.md) for
-  exploring, [archive-extraction](../features/archive-extraction.md) for extracting, `features/compression.md` for
-  compressing).
+  exploring, [archive-extraction](../features/archive-extraction.md) for extracting,
+  [compression](../features/compression.md) for compressing).
 - When nothing is left: delete this file and its links (see `AGENTS.md`, "Keeping these notes current").
 
 Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
@@ -95,8 +95,9 @@ must keep the server's memory, CPU and disk use bounded whatever the archive hol
 
 ## Passwords
 
-Opening (phase 2, [archive-viewer](../features/archive-viewer.md)) and extracting (phase 3,
-[archive-extraction](../features/archive-extraction.md)) are built; creating (phase 4) is left. What a password protects differs by format, and the view says which: a zip encrypts only the **content** (names,
+Opening (phase 2, [archive-viewer](../features/archive-viewer.md)), extracting (phase 3,
+[archive-extraction](../features/archive-extraction.md)) and creating (phase 4, [compression](../features/compression.md))
+are built. What a password protects differs by format, and the view says which: a zip encrypts only the **content** (names,
 sizes and dates stay readable by anyone with the file); a 7z or RAR made with "encrypt names" hides the list too.
 
 - **Opening.** The catalog read, or an entry opened, answers `password-needed` (the archive's names are encrypted, or
@@ -229,33 +230,30 @@ Done 2026-10-26 ([archive-extraction](../features/archive-extraction.md); user d
 
 ## Phase 4 — Compress
 
-- [ ] `FileJobKind.Compress`: `paths` (≤ 10 000, as downloads), `target` folder, `name`, `level` (0–9),
-  `skipCompressed`, `password` (optional; held only while the job runs). Name: the item's or the common parent's,
-  keep-both on clash; the dialog shows it editable.
-- [ ] The walk of `Archives.Plan`/`WriteAsync` reused (move it to a shared walker, don't copy it): links never
-  followed, `IsProtectedReal`, folders hidden by rules left out silently, refused/unreadable ones listed,
-  `SFE - left out.txt` at the end; the new archive itself is never put into itself (target inside a chosen folder).
-- [ ] `Core/Files/Compression/ZipWriter`: SFE's own zip writer (neither .NET nor SharpCompress encrypts): writes the
-  partial file (seekable: each local header's sizes and CRC written back after its data, no data descriptors),
-  Zip64 past 4 GB or 65 535 entries, UTF-8 names (flag 11), modified times (DOS + extended timestamp), deflate at
-  levels 0–9 ("Compression level"), WinZip AES-256 AE-2 per entry with a password ("Passwords"). Checked against
-  `ZipDirectory` (ours), SharpCompress, `ZipFile` and 7-Zip.
-- [ ] Rights per item: `files.view` (+ `files.download`: compressing is a way to take the content) at each item,
-  `files.compress` at the target folder.
-- [ ] Free space (decided 2026-10-26: the only limit; `Files:MaxArchiveMegabytes` stays the downloads'): refused
-  when the drive would keep less than `Files:MinimumFreeSpaceMegabytes`, from the index's sizes (an upper bound),
-  checked again while writing.
-- [ ] After: the new file indexed, default tags, change feed, log line, toast with **Open**.
-- [ ] Client: **Compress…** in the selection bar and the item/folder menus: dialog (name; compression level: Store /
-  Fastest / Normal / Maximum, with "Skip files already compressed"; password and confirm, with what it protects;
-  where: here by default, or the picker), progress in the operations panel, the ratio achieved in its result.
-- [ ] Tests: `ZipWriterTests` (levels, Zip64, names, AES: see "Passwords" and "Compression level"),
-  `CompressJobTests` (a folder with sub-folders, a rule-hidden folder left out, a link not followed, the archive read
-  back by `ArchiveReader` and by `ZipFile`, a password never in the job's view nor the log, cancel removes the
-  partial),
-  route rows, client specs.
+Done 2026-10-26 ([compression](../features/compression.md); user docs
+`docs/user-guide/managing-files.md#compress-into-a-zip`):
 
-Carried over (open points of the earlier steps, moved here 2026-10-26):
+- [x] `FileJobKind.Compress` (`POST api/files/jobs/compress`: paths ≤ 10 000, target, name, level 0–9, skipCompressed,
+  password held by the job only); name: the item's or the folder's, the clash asked once the zip is whole.
+- [x] The walk of downloads shared (`Archives.WalkAsync` over an `IZipTarget`: the download's `ZipArchive`, or our
+  writer): links never followed, rules, `SFE - left out.txt`; the zip never in itself.
+- [x] `ZipWriter`: written back headers, Zip64, UTF-8, times, levels 0–9, AES-256 AE-2; read back by ours, `ZipFile`,
+  SharpCompress and 7-Zip.
+- [x] Rights: `files.view` + `files.download` per item and folder walked, `files.compress` (new, `since` 14, no group)
+  at the target.
+- [x] Free space from the index's sizes, read again every 64 MB; one compression at a time per server
+  (`Files:Archives:CompressJobs`).
+- [x] After: indexed, listing told, log line, toast with **Show**; the ratio in the result.
+- [x] Client: **Compress…** in the item menu and the selection bar, the dialog (name, level, skip, password twice with
+  its notes), the panel.
+- [x] Tests: `ZipWriterTests` (11), `CompressJobTests` (11), `FileJobRouteTests` (1), `compress.spec.ts` (6).
+
+Left (carried over from the earlier steps, 2026-10-26, and this one's):
+
+- [ ] Compress: a folder picker for where the zip goes (today: the folder listed), the total size before starting, an
+  estimate of the time at Maximum on a big folder.
+- [ ] A screenshot of the Compress dialog for the user docs (the real-app check is done: `archive-viewer.mjs`, the zip
+  tested by 7-Zip).
 
 - [ ] Zip methods other than stored and deflate (deflate64, bzip2, lzma, zstd): SharpCompress' decompressors over
   `WindowStream`, if real archives need them.

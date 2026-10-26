@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, ArchiveAnswer, ArchiveLink, ArchiveUnlockAnswer, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, ExtractRequest, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, TrashCount, KeepAliveView, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, ArchiveAnswer, ArchiveLink, ArchiveUnlockAnswer, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, CompressRequest, ExtractRequest, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, TrashCount, KeepAliveView, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     ExcludedFolder, ExclusionKind, FolderAccessReport, FolderDefaults, FolderDefaultTagsChange, FolderDefaultTagsResult, FolderCover, FolderExclusions, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -250,6 +250,8 @@ export class Api {
     startFileJob = (request: FileJobRequest) => this.post<FileJobView>('api/files/jobs', request);
     /** Extracts an archive: a job followed as moves and copies are. */
     startExtract = (request: ExtractRequest) => this.post<FileJobView>('api/files/jobs/extract', request);
+    /** Compresses files and folders into a zip in the library: a job followed as moves and copies are. */
+    startCompress = (request: CompressRequest) => this.post<FileJobView>('api/files/jobs/compress', request);
     /** The session's moves and copies, running and recent, newest first. */
     fileJobs = () => this.get<FileJobView[]>('api/files/jobs');
     answerFileJob = (id: number, choice: ConflictChoice, forAll: boolean) => this.post<void>(`api/files/jobs/${id}/answer`, { choice, forAll });

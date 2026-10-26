@@ -19,6 +19,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   **Extract…** in an archive's menu, and **Extract…** in the archive viewer for a folder or a file of it. Names leading
   out of the folder, links and zip bombs are left out and listed; a cancelled or failed extraction leaves nothing half
   written. New right `files.extract`, given to no group. See [Archives](docs/user-guide/archives.md#extracting).
+- **Compress into a zip** saved in the library: **Compress…** in the selection bar and the item menu, with the
+  compression asked (Store, Fastest, Normal, Maximum; pictures, videos and archives stored as they are) and an optional
+  password (AES-256, the names stay visible). Made in the background, one at a time on the server; the panel tells
+  the ratio achieved. New right `files.compress`, given to no group. See
+  [Managing files](docs/user-guide/managing-files.md#compress-into-a-zip).
 
 ### Fixed
 

@@ -1,6 +1,7 @@
 import { DestroyRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import type { ImageEditorDialog } from '../editor/image-editor.dialog';
 import type { DeleteDialog } from '../files/delete.dialog';
+import type { CompressDialog } from '../files/compress.dialog';
 import type { ExtractDialog } from '../files/extract.dialog';
 import type { BatchRenameDialog } from '../files/batch-rename.dialog';
 import type { NameDialog } from '../files/name.dialog';
@@ -40,6 +41,8 @@ export class Dialogs {
     readonly transfer = signal<TransferDialog | null>(null);
     /** Extract… of an archive (from its menu or the archive viewer). */
     readonly extract = signal<ExtractDialog | null>(null);
+    /** Compress… of files and folders into a zip. */
+    readonly compress = signal<CompressDialog | null>(null);
     readonly properties = signal<PropertiesDialog | null>(null);
     /** Several items renamed at once. */
     readonly batchRename = signal<BatchRenameDialog | null>(null);

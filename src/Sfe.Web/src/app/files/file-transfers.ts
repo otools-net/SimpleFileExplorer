@@ -2,7 +2,7 @@ import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core'
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { plural } from '../core/format';
-import { ConflictChoice, ExtractRequest, FileJobItem, FileJobKind, FileJobRequest, FileJobView, LibraryItem } from '../core/models';
+import { CompressRequest, ConflictChoice, ExtractRequest, FileJobItem, FileJobKind, FileJobRequest, FileJobView, LibraryItem } from '../core/models';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
@@ -54,7 +54,7 @@ export class FileTransfers {
 
     /** Follows the session's jobs still running (started before the page was loaded). */
     resume(): void {
-        if (this.config.can(Rights.moveFiles) || this.config.can(Rights.copyFiles) || this.config.can(Rights.extractFiles))
+        if ([Rights.moveFiles, Rights.copyFiles, Rights.extractFiles, Rights.compressFiles].some(right => this.config.can(right)))
             this.poll(0);
     }
 
@@ -83,6 +83,21 @@ export class FileTransfers {
     /** May extract `item` beside it, in the folder listed (not in search results, whose folders differ). */
     canExtractBeside(item: LibraryItem): boolean {
         return this.canExtract(item) && !this.store.searching() && this.store.can(Rights.extractFiles) && !this.store.folderAccess()?.pathOnly;
+    }
+
+    /** May put `item` in a zip: it is read (view, download); the zip goes where one may compress (the folder listed). */
+    canCompress(item: LibraryItem): boolean {
+        return this.config.can(Rights.compressFiles) && this.store.can(Rights.viewFiles, item) && this.store.can(Rights.download, item);
+    }
+
+    /** The folder a zip of `items` goes into: the one listed, or in search results the first item's. */
+    compressTarget(items: LibraryItem[]): string {
+        return this.store.route().q ? parentPath(items[0]?.path ?? '') : this.store.route().path;
+    }
+
+    /** Starts a compression and follows it. */
+    compress(request: CompressRequest): Promise<FileJobView | null> {
+        return this.follow(() => this.api.startCompress(request), 'compress');
     }
 
     /** Starts an extraction and follows it. */
@@ -240,6 +255,24 @@ export class FileTransfers {
             void this.transfer('move', paths, origin);
     }
 
+    /** A compression has ended: its toast says the ratio and shows the zip in its folder. */
+    private compressed(job: FileJobView, where: string): void {
+        const result = job.results[0];
+        if (job.state === 'cancelled') {
+            this.toasts.show(`Stopped: no zip was made in “${where}”.`);
+            return;
+        }
+        if (!result || result.status !== 'done' || !result.newPath) {
+            this.toasts.error(result?.message ?? 'The zip could not be made.', 8000);
+            return;
+        }
+        const zip = result.newPath;
+        this.toasts.show(`“${baseName(zip)}” made in “${where}”. ${result.message ?? ''}`.trim(), {
+            timeout: 8000,
+            actions: [{ label: 'Show', title: `Show ${baseName(zip)} in its folder`, run: () => this.store.reveal(zip) }],
+        });
+    }
+
     /** An extraction has ended: its toast opens what came out (the new folder, or the folder it went into). */
     private extracted(job: FileJobView, where: string): void {
         const result = job.results[0];
@@ -274,6 +307,10 @@ export class FileTransfers {
             this.extracted(job, where);
             return;
         }
+        if (job.kind === 'compress') {
+            this.compressed(job, where);
+            return;
+        }
         if (job.state === 'cancelled')
             this.toasts.show(`Stopped: ${plural(done.length, 'item')} ${verb} to “${where}” before.`);
         else if (done.length) {
@@ -294,7 +331,7 @@ export class FileTransfers {
 
 /** What a job did, in the past: moved, copied, extracted. */
 export function pastOf(kind: FileJobKind): string {
-    return kind === 'move' ? 'moved' : kind === 'copy' ? 'copied' : 'extracted';
+    return kind === 'move' ? 'moved' : kind === 'copy' ? 'copied' : kind === 'extract' ? 'extracted' : 'compressed';
 }
 
 /** The moves `done` undone: each item back into the folder it came from (one job per folder), asking about names taken there. */

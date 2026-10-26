@@ -49,7 +49,7 @@ interface Shown {
     template: `
         <div class="text-toolbar archive-toolbar" role="toolbar" aria-label="Archive" sfeOverflowRow="Archive">
             <button type="button" class="icon-button" data-up [sfeOverflowItem]="null" overflowStay title="Up to the folder above (Backspace)" aria-label="Up"
-                    [disabled]="!parent()" (click)="goUp()"><svg sfeIcon="folder-up"></svg></button>
+                    [disabled]="parent() === undefined" (click)="goUp()"><svg sfeIcon="folder-up"></svg></button>
             <nav class="archive-trail" aria-label="Folders" [sfeOverflowItem]="null" overflowStay>
                 <button type="button" class="archive-crumb" data-crumb-root [title]="'The top of ' + item().name" (click)="enter(null)">{{ item().name }}</button>
                 @if (shown()?.listing?.trail; as trail) {

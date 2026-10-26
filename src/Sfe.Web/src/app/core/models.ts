@@ -284,7 +284,22 @@ export interface DeleteResults {
     permanent: boolean;
 }
 
-export type FileJobKind = 'move' | 'copy' | 'extract';
+export type FileJobKind = 'move' | 'copy' | 'extract' | 'compress';
+
+/** Files and folders compressed into one zip (`POST api/files/jobs/compress`). */
+export interface CompressRequest {
+    paths: string[];
+    target: string;
+    /** `.zip` added; null: the only item's name, else their folder's. */
+    name?: string | null;
+    /** 0 (stored) to 9 (smallest). */
+    level: number;
+    /** Pictures, videos, archives… stored whatever the level. */
+    skipCompressed: boolean;
+    /** AES-256; the names stay readable. */
+    password?: string | null;
+    conflicts?: ConflictChoice;
+}
 
 /** An archive extracted (`POST api/files/jobs/extract`): all of it, or the folders and files chosen in its listing. */
 export interface ExtractRequest {

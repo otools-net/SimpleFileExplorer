@@ -32,8 +32,9 @@ to the earlier version by installing it again.
 
 ## To 1.84
 
-- New right `files.extract` (extracting archives), given to **no group**, as for 1.55: tick it for the groups that may
-  write archives' files into the library ([Archives](user-guide/archives.md#extracting)).
+- New rights `files.extract` (extracting archives) and `files.compress` (making zips in the library), given to **no
+  group**, as for 1.55: tick them for the groups that may write archives' files into the library
+  ([Archives](user-guide/archives.md#extracting)) or zips into it ([Compress](user-guide/managing-files.md#compress-into-a-zip)).
 
 ## To 1.83
 

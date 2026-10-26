@@ -129,20 +129,6 @@ public static class ArchiveEndpoints
     }
 
     /// <summary>The caller's access in this request.</summary>
-    private sealed class ArchiveAccess(AccessState state, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work) : IArchiveAccess
-    {
-        public ArchiveVerdict Check(string path) => state.Check(paths, path, Rights.ViewFiles) switch
-        {
-            PathVerdict.NotFound => ArchiveVerdict.Hidden,
-            PathVerdict.Allowed when state.Check(paths, path, Rights.Download) == PathVerdict.Allowed => ArchiveVerdict.Allowed,
-            _ => ArchiveVerdict.Refused,
-        };
-
-        public bool IsProtected(string fullPath) => FileEndpoints.Protected(fullPath, serverFiles, work);
-
-        public bool IsProtectedReal(string realPath) => serverFiles.ContainsReal(realPath) || work.Contains(realPath);
-    }
-
     /// <summary>
     /// The response as a stream for the zip, which writes small parts (headers, the directory) synchronously: those are
     /// kept in the response's buffer and sent with the next asynchronous write (the server refuses synchronous writes).
