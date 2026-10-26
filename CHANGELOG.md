@@ -5,6 +5,14 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ## Unreleased
 
+### Added
+
+- **Archives open in the viewer** like folders of their own: a zip, 7z, rar or tar file shows its folders and files,
+  their sizes and dates, without being unpacked, whatever its size (millions of entries, folders nested thousands
+  deep). Move around with the folders, **Up** and **Go to folder**; open a file from the archive in a new tab, or
+  download it. Names leading out of the archive and links are never offered. See
+  [Archives](docs/user-guide/archives.md).
+
 ### Fixed
 
 - **Uses less battery on phones**, above all with SFE left open in the background:

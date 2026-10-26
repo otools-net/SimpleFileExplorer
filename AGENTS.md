@@ -82,6 +82,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [testing-client](agents/docs/development/testing-client.md) | Vitest/jsdom gotchas | `src/testing/setup.ts` |
 | [test-samples](agents/docs/development/test-samples.md) | committed sample files (test media, docs library), keeping them up to date | `tests/samples/`, `agents/tools/samples/`, `TestSamples` |
 | [flash-viewer-plan](agents/docs/development/flash-viewer-plan.md) | plan: Flash viewer, why Ruffle, what is left | |
+| [compressed-archives-plan](agents/docs/development/compressed-archives-plan.md) | plan: compress to zip (levels, passwords), explore and extract archives (zip, 7z, rar, tar), passwords | |
 
 ### Environment — `agents/docs/environment/`
 
@@ -164,6 +165,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, conflicts, clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |
 | [uploads](agents/docs/features/uploads.md) | resumable chunked uploads, folder uploads, desktop drops, admin list | `Uploads`, `UploadEndpoints`, `app/files/uploads.ts` |
 | [archives](agents/docs/features/archives.md) | several files or a folder downloaded as one streamed zip, one-time links | `Archives`, `ArchiveEndpoints`, `ArchiveLinks`, `app/files/downloads.ts` |
+| [archive-viewer](agents/docs/features/archive-viewer.md) | exploring archives in the viewer: `api/files/explore` routes, catalog store (build queue, eviction), the virtual table, `isExplorable` | `ExploreEndpoints`, `ArchiveCatalogs`, `app/formats/archive/` |
+| [archive-reading](agents/docs/features/archive-reading.md) | reading zip/7z/rar/tar without unpacking: formats by bytes, hostile entry names, zip directory reader, bounded entry streams, catalogs (SQLite) for millions of entries and deep trees | `Core/Files/Compression/` |
 | [properties](agents/docs/features/properties.md) | properties sheet, folder totals and disk counts, checksums | `Properties`, `PropertyJobs`, `PropertyEndpoints`, `app/files/properties.dialog.ts` |
 | [batch-rename](agents/docs/features/batch-rename.md) | several items renamed at once: find/replace, numbered, preview, undo | `app/files/batch-rename.dialog.ts` |
 | [change-feed](agents/docs/features/change-feed.md) | folders changed elsewhere told to open listings (SSE), refresh in place | `LibraryBrowser.FolderChanged`, `ChangeEndpoints`, `change-feed.service.ts` |

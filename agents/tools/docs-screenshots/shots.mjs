@@ -341,6 +341,22 @@ const scenes = {
         await b.shot(OUT + 'flash-viewer.png');
         await b.close();
     },
+    async archive() {
+        // A zip explored without unpacking it: its folders, then a folder of photos inside it.
+        const b = await session();
+        await b.open('?path=Documents');
+        await b.click('a.item-link[title^="Mountain trip.zip"]');
+        await sleep(2500);
+        const rows = await b.eval(`document.querySelectorAll('.archive-body .archive-row:not(.placeholder)').length`);
+        console.log(`archive rows: ${rows}`);
+        if (rows < 3)
+            throw new Error('the archive viewer listed nothing');
+        await b.shot(OUT + 'archive-viewer.png');
+        await b.eval(`[...document.querySelectorAll('.archive-open')].find(e => e.textContent.trim() === 'Day 2 - Summit').click(); 1`);
+        await sleep(1500);
+        await b.shot(OUT + 'archive-viewer-folder.png');
+        await b.close();
+    },
     async video() {
         const b = await session();
         await b.open('?path=Videos%2FHolidays');

@@ -207,6 +207,48 @@ export interface FileConflict {
     detail?: string | null;
 }
 
+/** One thing inside an archive (`api/files/explore`): a folder (with its counts), a file, a link. */
+export interface ArchiveItem {
+    kind: 'folder' | 'file' | 'link' | 'other';
+    id: number;
+    name: string;
+    /** A folder: its whole tree's files. */
+    size: number;
+    /** 0 when the format doesn't tell it per entry (solid 7z, rar). */
+    packed: number;
+    modified: string | null;
+    encrypted: boolean;
+    /** A folder's folders and entries right inside it, and its files in all. */
+    folders?: number | null;
+    files?: number | null;
+    allFiles?: number | null;
+}
+
+/** A page of a folder of an archive. */
+export interface ArchiveListing {
+    format: string;
+    /** False when the list stopped (a limit, damage): `stopped` says why. */
+    complete: boolean;
+    stopped: string | null;
+    needsPassword: boolean;
+    entries: number;
+    /** Entries not listed (names leaving the archive, too deep). */
+    leftOut: number;
+    folder: ArchiveItem;
+    /** The way to the folder: its last few folders, and how many sit between them and the root. */
+    trail: { skipped: number; last: { id: number; name: string }[] };
+    items: ArchiveItem[];
+    next: string | null;
+}
+
+/** The archive's list is being read (202): entries read so far. */
+export interface ArchiveReading {
+    read: number;
+}
+
+/** What `api/files/explore` answers: a page, the reading so far, or why it can't be explored (409). */
+export type ArchiveAnswer = ArchiveListing | ArchiveReading | FileConflict;
+
 /** The answer of a file operation: the new or renamed item, or why it was not done. */
 export type FileOperationResult = LibraryItem | FileConflict;
 
@@ -462,6 +504,8 @@ export interface ClientConfig {
     textExtensions?: string[] | null;
     /** Flash movies (`.swf`) play in the viewer (`Player:Flash` and the right to view files); absent from older servers. */
     flash?: boolean;
+    /** Which archives the viewer explores; null without the right to view files (and from older servers: none). */
+    archives?: { maxCompressedTarMegabytes: number } | null;
 }
 
 /** `api/streaming/probe`: a video the server can convert. */

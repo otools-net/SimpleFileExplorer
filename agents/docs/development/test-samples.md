@@ -6,7 +6,13 @@ Code: `tests/samples/` (`library/`, `media/`, `media.json`, `samples.lock.json`,
 
 - **Files a test or a tool needs are committed, not made per run.** Pictures, audio, video, documents (EPUB, PDF,
   SWF…) go in `tests/samples/`: the backend tests' media in `media/` (listed in `media.json` with the ffmpeg arguments
-  that make them), the docs screenshots' library in `library/` (made by `make-media.mjs`). A test copies them
+  that make them), the docs screenshots' library in `library/` (made by `make-media.mjs`), the tests' 7z archives in
+  `archives/` (made by `agents/tools/samples/make-archives.mjs` with 7-Zip; `--sevenzip <path>`, else found on the
+  PATH or in `C:/Program Files/7-Zip`; `TestSamples.ArchiveOf`). ffmpeg is asked for only when what it makes is out
+  of date.
+- Files no tool here can make (RAR) come from another project's tests, unchanged, in `tests/samples/third-party/<project>/`
+  with the licence, the pinned commit and a row per file in its README (`TestSamples.ThirdPartyOf`); the update tool
+  never touches them. A test copies them
   (`TestSamples.CopyTo(name, destination)`: dated now, as a file just written) or reads them in place
   (`TestSamples.PathOf`), never into the samples folder.
 - **Keep them up to date in the same commit:** a new sample, or a change to how one is made (`media.json`,

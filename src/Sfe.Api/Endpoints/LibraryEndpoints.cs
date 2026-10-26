@@ -397,6 +397,10 @@ public static class LibraryEndpoints
         return TypedResults.PhysicalFile(thumbnail, "image/jpeg", lastModified: File.GetLastWriteTimeUtc(thumbnail));
     }
 
+    /// <summary>The type a file of this name is served as (the players' mappings: <c>.mkv</c> as WebM…).</summary>
+    internal static string ContentTypeOf(string name) =>
+        ContentTypes.TryGetContentType(name, out var contentType) ? contentType : "application/octet-stream";
+
     /// <summary>
     /// Pictures, videos, audio and plain text open in the browser; anything else is downloaded. SVG pictures are
     /// documents that run scripts when opened by themselves: they still show in &lt;img&gt;, which ignores the download.

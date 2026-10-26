@@ -1,5 +1,5 @@
 import { item } from '../../testing/fakes';
-import { CSV_FORMAT, EPUB_FORMAT, extensionOf, FLASH_FORMAT, setFlashMovies, formatOf, FORMATS, isViewable, JSON_FORMAT, PDF_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
+import { ARCHIVE_FORMAT, CSV_FORMAT, EPUB_FORMAT, extensionOf, FLASH_FORMAT, isExplorable, setArchives, setFlashMovies, formatOf, FORMATS, isViewable, JSON_FORMAT, PDF_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -90,8 +90,29 @@ describe('formats', () => {
         expect(formatOf(movie)).toBeNull();
     });
 
+    it('explores archives only where it works: never one file compressed alone, nor a big compressed tar', () => {
+        const zip = item('a/backup.zip', { kind: 'file' });
+        expect(formatOf(zip), 'off until the configuration says so (the right to view files)').toBeNull();
+
+        setArchives({ maxCompressedTarMegabytes: 10 });
+        try {
+            for (const name of ['backup.zip', 'Photos.7Z', 'old.rar', 'src.tar', 'src.tar.gz', 'src.TGZ', 'logs.tar.xz', 'logs.tbz2'])
+                expect(formatOf(item(`a/${name}`, { kind: 'file', size: 1024 })), name).toBe(ARCHIVE_FORMAT);
+            for (const name of ['dump.gz', 'dump.xz', 'dump.bz2', 'zip', '.zip', 'notes.txt'])
+                expect(isExplorable(item(`a/${name}`, { kind: 'file', size: 1024 })), name).toBe(false);
+            expect(isExplorable(item('a/big.tar.gz', { kind: 'file', size: 10 * 1024 * 1024 + 1 })), 'listing it would decompress all of it').toBe(false);
+            expect(isExplorable(item('a/ten.tar.gz', { kind: 'file', size: 10 * 1024 * 1024 })), 'up to the size').toBe(true);
+            expect(isExplorable(item('a/folder.zip', { kind: 'directory' })), 'a folder named so').toBe(false);
+            expect(ARCHIVE_FORMAT.page).toBe(true);
+            expect(ARCHIVE_FORMAT.edits).toBeFalsy();
+        } finally {
+            setArchives(null);
+        }
+        expect(formatOf(zip)).toBeNull();
+    });
+
     it('has no viewer for folders and other files, unless opened as text', () => {
-        const archive = item('a/backup.zip', { kind: 'file' });
+        const archive = item('a/backup.bin', { kind: 'file' });
 
         expect(formatOf(item('a/folder.txt', { kind: 'directory' }))).toBeNull();
         expect(formatOf(archive)).toBeNull();

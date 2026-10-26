@@ -76,9 +76,15 @@ public sealed record FilesConfig(bool DeletePermanently, int TrashRetentionDays,
 /// ffmpeg is missing, or without the right <c>files.stream</c>.
 /// </param>
 /// <param name="Flash">Flash movies play in the viewer (<c>Player:Flash</c>, and the right <c>files.view</c>).</param>
+/// <param name="Archives">Which archives the viewer explores; null without the right <c>files.view</c>.</param>
 public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool AnimatedHover, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
     IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor, StreamingConfig? Streaming,
-    FilesConfig? Files = null, ReadingOptions? Reading = null, IReadOnlyList<string>? TextExtensions = null, ServerMode Mode = ServerMode.Local, bool Flash = false);
+    FilesConfig? Files = null, ReadingOptions? Reading = null, IReadOnlyList<string>? TextExtensions = null, ServerMode Mode = ServerMode.Local, bool Flash = false,
+    ArchivesConfig? Archives = null);
+
+/// <param name="MaxCompressedTarMegabytes">Compressed tars (<c>.tar.gz</c>…) larger than this aren't explored (listing one
+/// decompresses all of it): the client offers no viewer for them.</param>
+public sealed record ArchivesConfig(int MaxCompressedTarMegabytes);
 
 public static class ConfigEndpoints
 {
@@ -153,6 +159,7 @@ public static class ConfigEndpoints
             settings.Reading,
             settings.FileTypes.Text,
             ServerModes.InEffect(configuration),
-            settings.Player.Flash && state.Has(Rights.ViewFiles)));
+            settings.Player.Flash && state.Has(Rights.ViewFiles),
+            state.Has(Rights.ViewFiles) ? new ArchivesConfig(Math.Max(0, server.Files.Archives.MaxCompressedTarMegabytes)) : null));
     }
 }

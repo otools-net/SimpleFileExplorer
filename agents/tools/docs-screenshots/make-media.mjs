@@ -12,6 +12,7 @@ import { launch } from './cdp.mjs';
 import { makeEpub } from './make-epub.mjs';
 import { makePdf } from './make-pdf.mjs';
 import { makeSwf } from './make-swf.mjs';
+import { writeZip } from './make-zip.mjs';
 
 const root = process.argv[2];
 if (!root) throw new Error('usage: node make-media.mjs <empty folder for the sample library> [ffmpeg]');
@@ -350,4 +351,15 @@ fs.writeFileSync(path.join(root, 'Documents/Rename photos.ps1'), [
     'Write-Host "Renamed $($count.Values | Measure-Object -Sum | Select-Object -ExpandProperty Sum) photos"',
     '',
 ].join('\r\n'));
+// An archive for the archive viewer: photos of the library and notes, in folders (stored: the same bytes at each run).
+const mountains = path.join(root, 'Photos/2025 Mountains');
+writeZip(path.join(root, 'Documents/Mountain trip.zip'), [
+    { name: 'Read me.txt', data: 'Photos and notes of the July trip, sorted by day.\n' },
+    { name: 'Day 1 - The climb/', data: '' },
+    ...['Forest trail.jpg', 'Valley at noon.jpg'].map(name => ({ name: `Day 1 - The climb/${name}`, data: fs.readFileSync(path.join(mountains, name)) })),
+    ...['Summit.jpg', 'Blue hour.jpg', 'Starry sky.jpg'].map(name => ({ name: `Day 2 - Summit/${name}`, data: fs.readFileSync(path.join(mountains, name)) })),
+    { name: 'Day 2 - Summit/Notes/Route.txt', data: 'Hut 06:00, ridge 09:00, summit 11:30, back at the hut by 16:00.\n' },
+    { name: 'Day 3 - Lake/Autumn lake.jpg', data: fs.readFileSync(path.join(mountains, 'Autumn lake.jpg')) },
+    { name: 'Packing list.txt', data: fs.readFileSync(path.join(root, 'Documents/Packing list.txt')) },
+]);
 console.log('done');

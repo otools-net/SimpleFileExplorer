@@ -3,7 +3,7 @@ import { Api } from './api.service';
 import { formatDuration, formatResolution } from './format';
 import { ClientConfig, LibraryItem, StreamProbe } from './models';
 import { encodePath } from './paths';
-import { setFlashMovies, setTextExtensions } from '../formats/formats';
+import { setArchives, setFlashMovies, setTextExtensions } from '../formats/formats';
 
 /** The links of the files, built from the configuration (data server, external player). */
 /** The mark on the preview of an image or video saying whether it is high resolution. */
@@ -149,6 +149,7 @@ export class ConfigService {
         this.current.set(config);
         setTextExtensions(config.textExtensions);
         setFlashMovies(config.flash);
+        setArchives(config.archives);
         this.api.tenantId = config.tenant?.id ?? null;
         return config;
     }

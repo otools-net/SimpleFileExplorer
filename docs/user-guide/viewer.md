@@ -2,8 +2,8 @@
 
 Clicking a file in a listing opens it full screen over the page: pictures as they are, videos and audio in SFE's own
 [player](video-player.md), [text files](text-files.md) with their lines numbered and their code highlighted, and
-[Flash movies](#flash-movies) played as Flash Player did. Other files (an archive) open in a new tab or download, as the
-browser chooses.
+[Flash movies](#flash-movies) played as Flash Player did, and [archives](archives.md) (zip, 7z, rar, tar) as folders of
+their own. Other files open in a new tab or download, as the browser chooses.
 
 ![A picture in the viewer](../images/viewer.png)
 

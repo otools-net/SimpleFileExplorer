@@ -218,8 +218,48 @@ export const FLASH_FORMAT: FileFormat = {
     page: true,
 };
 
+/**
+ * Which archives the library explores (`config.archives`; null: none, without the right to view files or from an
+ * older server): a signal, so that listings follow.
+ */
+const archiveSettings = signal<{ maxCompressedTarMegabytes: number } | null>(null);
+
+export function setArchives(settings: { maxCompressedTarMegabytes: number } | null | undefined): void {
+    archiveSettings.set(settings ?? null);
+}
+
+/** Archives explored by their name; compressed tars (no list of entries: listing one decompresses it) up to a size. */
+const ARCHIVE_SUFFIXES: readonly string[] = ['.zip', '.7z', '.rar', '.tar'];
+const COMPRESSED_TAR_SUFFIXES: readonly string[] = ['.tar.gz', '.tgz', '.tar.bz2', '.tbz2', '.tbz', '.tar.xz', '.txz'];
+
+/**
+ * The archive viewer is offered for `item` (agents/docs/development/compressed-archives-plan.md): the server's rule
+ * (`ArchiveFormats.IsExplorable`), from the listing alone. Never for one file compressed alone (`.gz`, `.xz`), nor a
+ * compressed tar over the library's size; the server checks the bytes (a renamed file answers `not-explorable`).
+ */
+export function isExplorable(item: LibraryItem): boolean {
+    const settings = archiveSettings();
+    if (!settings || item.kind !== 'file')
+        return false;
+    const name = item.name.toLowerCase();
+    const longer = (suffix: string) => name.endsWith(suffix) && name.length > suffix.length;
+    if (COMPRESSED_TAR_SUFFIXES.some(longer))
+        return item.size === null || item.size <= settings.maxCompressedTarMegabytes * 1024 * 1024;
+    return ARCHIVE_SUFFIXES.some(longer);
+}
+
+/** Archives (zip, 7z, rar, tars): their folders and files, explored without unpacking them. */
+export const ARCHIVE_FORMAT: FileFormat = {
+    id: 'archive',
+    label: 'Archive',
+    priority: 20,
+    matches: isExplorable,
+    view: { load: () => import('./archive/archive-view.component').then(m => m.ArchiveViewComponent) },
+    page: true,
+};
+
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT, PDF_FORMAT, EPUB_FORMAT, FLASH_FORMAT];
+export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT, PDF_FORMAT, EPUB_FORMAT, FLASH_FORMAT, ARCHIVE_FORMAT];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text

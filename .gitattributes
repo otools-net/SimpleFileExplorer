@@ -9,3 +9,5 @@ build/linux/*.desktop text eol=lf
 # Sample files of the tests and the docs screenshots: kept byte for byte (some text samples are CRLF on purpose).
 tests/samples/library/** -text
 tests/samples/media/** -text
+tests/samples/archives/** -text
+tests/samples/third-party/** -text

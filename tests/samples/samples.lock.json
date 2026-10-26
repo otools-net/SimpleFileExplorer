@@ -1,6 +1,9 @@
 {
   "library": {
-    "generator": "01c247d5e9f80f2b"
+    "generator": "f1d76c89052e64f8"
+  },
+  "archives": {
+    "generator": "48c92393f2b38b14"
   },
   "media": {
     "testsrc-64x48-5frames.gif": "bc8462cd79a4492a",

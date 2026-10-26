@@ -103,6 +103,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<FileJobs>();
         services.AddSingleton<Uploads>();
         services.AddSingleton<Archives>();
+        // Shared by every library (the application's instance, handed to each one), like FfmpegLimits.
+        services.TryAddSingleton<Files.Compression.ArchiveBuildGate>();
+        services.AddSingleton<Files.Compression.ArchiveCatalogs>();
         services.AddSingleton<Properties>();
         services.AddSingleton<FileContent>();
         services.AddSingleton<PropertyJobs>();

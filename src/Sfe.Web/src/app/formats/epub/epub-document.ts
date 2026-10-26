@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+import { pathToken } from '../../core/paths';
 
 /** How a book is laid out: one page at a time, two side by side (when the window is wide enough), or one long scroll. */
 export type EpubMode = 'pages' | 'spread' | 'scroll';
@@ -70,13 +71,8 @@ export type EpubLoader = (stage: HTMLElement, url: string, options: EpubOptions,
 /** How the view opens a book: epub.js (`openEpub`), a fake in the specs (jsdom lays nothing out). */
 export const EPUB_LOADER = new InjectionToken<EpubLoader>('EPUB_LOADER', { providedIn: 'root', factory: () => openEpub });
 
-/** The book's path as one URL segment (base64url of its UTF-8), as the server reads it (`EpubEntries.Token`). */
-export function bookToken(path: string): string {
-    let binary = '';
-    for (const byte of new TextEncoder().encode(path))
-        binary += String.fromCharCode(byte);
-    return btoa(binary).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
-}
+/** The book's path as one URL segment, as the server reads it (`EpubEntries.Token`). */
+export const bookToken = pathToken;
 
 /** The address of the book's files, served one by one by the app (`api/files/epub/{token}/`). */
 export function bookUrl(path: string): string {

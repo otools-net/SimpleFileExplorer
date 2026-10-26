@@ -699,3 +699,94 @@
         padding-bottom: max(14px, env(safe-area-inset-bottom));
     }
 }
+
+/* ---------- Archives (formats/archive/): a folder of an archive at a time ---------- */
+
+/* A column, not the text view's grid: notes come and go above the rows. */
+.archive-view { display: flex; flex-direction: column; }
+.archive-toolbar { flex: none; }
+.archive-trail { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; white-space: nowrap; }
+.archive-crumb {
+    overflow: hidden;
+    max-width: 220px;
+    padding: 4px 6px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--reader-text);
+    font: inherit;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+.archive-crumb:is(:hover, :focus-visible) { background: var(--reader-active-line); }
+.archive-crumb.current { font-weight: 600; cursor: default; }
+.archive-crumb.skipped { color: var(--reader-muted); cursor: default; }
+.archive-separator { color: var(--reader-muted); }
+.archive-go { width: 180px; }
+.archive-note {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--reader-border);
+    background: var(--reader-gutter);
+    color: var(--reader-muted);
+}
+.archive-note svg { flex: none; width: 16px; height: 16px; }
+.archive-view > .text-message { flex: none; }
+.archive-scroller { position: relative; flex: 1; min-height: 0; overflow: auto; outline: none; }
+.archive-scroller[hidden] { display: none; }
+.archive-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 110px 90px 170px;
+    align-items: center;
+    width: 100%;
+}
+.archive-row > span { overflow: hidden; padding: 0 10px; text-overflow: ellipsis; white-space: nowrap; }
+.archive-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    height: 32px;
+    border-bottom: 1px solid var(--reader-border);
+    background: var(--reader-gutter);
+    font-weight: 600;
+}
+.archive-body { position: relative; }
+.archive-body .archive-row { position: absolute; top: 0; left: 0; border-bottom: 1px solid color-mix(in srgb, var(--reader-border) 50%, transparent); }
+.archive-body .archive-row:hover { background: var(--reader-active-line); }
+.archive-body .archive-row.selected { background: var(--reader-selection-match); }
+.archive-row.placeholder { color: var(--reader-muted); }
+.archive-name { display: flex; align-items: center; gap: 8px; }
+.archive-name > svg { flex: none; width: 18px; height: 18px; color: var(--reader-muted); }
+.archive-row[data-kind="folder"] .archive-name > svg { color: var(--accent); }
+.archive-open {
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+span.archive-open { cursor: default; }
+a.archive-open:hover, button.archive-open:hover { text-decoration: underline; }
+.archive-row:is([data-kind="link"], [data-kind="other"]) .archive-open { color: var(--reader-muted); font-style: italic; }
+.archive-lock { flex: none; width: 14px; height: 14px; color: var(--reader-muted); }
+.archive-size, .archive-packed { text-align: right; font-variant-numeric: tabular-nums; }
+.archive-modified { color: var(--reader-muted); }
+.archive-view > .text-status { flex: none; }
+
+/* Phones: the name and the size only. */
+@media (max-width: 640px) {
+    .archive-row { grid-template-columns: minmax(0, 1fr) 96px; }
+    .archive-packed, .archive-modified { display: none; }
+    .archive-go { width: 120px; }
+    .archive-crumb { max-width: 120px; }
+}

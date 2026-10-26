@@ -20,6 +20,30 @@ public static class TestSamples
         return path;
     }
 
+    /// <summary>The tests' archives that need another program (7z), made by <c>agents/tools/samples/make-archives.mjs</c>.</summary>
+    public static string ArchivesFolder { get; } = Path.GetFullPath(Path.Combine(Folder, "..", "archives"));
+
+    /// <summary>An archive sample's path in the repository (read in place: nothing writes to it).</summary>
+    public static string ArchiveOf(string name)
+    {
+        var path = Path.Combine(ArchivesFolder, name);
+        if (!File.Exists(path))
+            Assert.Fail($"No archive {name} in {ArchivesFolder}: make it in agents/tools/samples/make-archives.mjs and run update-samples.mjs.");
+        return path;
+    }
+
+    /// <summary>
+    /// A file taken from another project's tests (<c>tests/samples/third-party/</c>, its README: source, commit,
+    /// licence), as <c>project/file</c>; read in place.
+    /// </summary>
+    public static string ThirdPartyOf(string name)
+    {
+        var path = Path.GetFullPath(Path.Combine(Folder, "..", "third-party", name));
+        if (!File.Exists(path))
+            Assert.Fail($"No third-party sample {name}: see tests/samples/third-party/README.md.");
+        return path;
+    }
+
     /// <summary>
     /// Copies the sample to <paramref name="destination"/> (folders made, a file there replaced), dated now, as a file
     /// just written; answers <paramref name="destination"/>.

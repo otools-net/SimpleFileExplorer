@@ -90,6 +90,7 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Editor:OutputFolder`, `Quality` | [Picture editor](administration/picture-editor.md) |
 | `Sfe:KeepAlive:Mode`, `IntervalSeconds`, `TimeoutSeconds`, `Method` (`List`, `Touch`), `Folders` | [Keep alive](administration/keep-alive.md#settings) |
 | `Sfe:Files:PortableNames`, `WorkFolder` (`Library`, `Server`), `DeletePermanently`, `Trash:RetentionDays`, `MinimumFreeSpaceMegabytes`, `Uploads:MaxFileSizeMegabytes`, `Uploads:KeepUnfinishedHours`, `MaxArchiveMegabytes` | [File management](administration/file-management.md) |
+| `Sfe:Files:Archives:MaxEntries`, `MaxDepth`, `MaxCompressedTarMegabytes`, `MaxPreviewMegabytes`, `MaxCompressionRatio`, `CatalogBuilds`, `CatalogMegabytes` | [Archives › Settings](user-guide/archives.md#settings) |
 | `Sfe:Tasks:LogRetentionDays` | [Background tasks › Settings](administration/background-tasks.md#settings) |
 | `Sfe:Logs:RetentionDays`, `WriteFiles` | [Logs › Settings](administration/logs.md#settings) |
 

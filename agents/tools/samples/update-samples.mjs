@@ -1,10 +1,13 @@
 // Brings tests/samples/ up to date with what makes its files (tests/samples/README.md):
 //   library/  the docs screenshots' sample library, made by agents/tools/docs-screenshots/make-media.mjs
 //   media/    the backend tests' media, made by ffmpeg from tests/samples/media.json
+//   archives/ the backend tests' 7z archives, made by agents/tools/samples/make-archives.mjs with 7-Zip
 //
-//   node agents/tools/samples/update-samples.mjs [--ffmpeg <path>] [--force <prefix>]... [--check]
+//   node agents/tools/samples/update-samples.mjs [--ffmpeg <path>] [--sevenzip <path>] [--force <prefix>]... [--check]
 //
 // --ffmpeg  ffmpeg (else env FFMPEG, SFE_TEST_FFMPEG, or `ffmpeg` on the PATH); needed unless --check
+// --sevenzip 7-Zip's 7z (else env SEVENZIP, `7z` on the PATH, or C:/Program Files/7-Zip/7z.exe); needed only when
+//           the archives are out of date
 // --force   makes these again even when nothing changed, videos included: a path under tests/samples
 //           (`library/Videos/Holidays/Beach walk.webm`, `media/life-20s.mp4`) or a prefix (`library/`, `media/`)
 // --check   changes nothing: lists what is out of date and exits 1 if anything is (no ffmpeg needed)
@@ -17,7 +20,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
-    argsHash, generatorHash, libraryFolder, listFiles, lockFile, mediaFolder, readLock, readManifest, repo, unstableExtensions,
+    archivesFolder, archivesHash, argsHash, generatorHash, libraryFolder, listFiles, lockFile, mediaFolder, readLock, readManifest, repo, unstableExtensions,
 } from './samples.mjs';
 
 const args = process.argv.slice(2);
@@ -27,11 +30,18 @@ const forced = [];
 for (let value; (value = option('--force')) !== undefined;)
     forced.push(value.replace(/\\/g, '/'));
 const check = flag('--check');
-const ffmpeg = option('--ffmpeg') ?? process.env.FFMPEG ?? process.env.SFE_TEST_FFMPEG ?? (onPath('ffmpeg') ? 'ffmpeg' : undefined);
+const sevenZip = option('--sevenzip') ?? process.env.SEVENZIP ?? (onPath('7z') ? '7z'
+    : fs.existsSync('C:/Program Files/7-Zip/7z.exe') ? 'C:/Program Files/7-Zip/7z.exe' : undefined);
+const foundFfmpeg = option('--ffmpeg') ?? process.env.FFMPEG ?? process.env.SFE_TEST_FFMPEG ?? (onPath('ffmpeg') ? 'ffmpeg' : undefined);
 if (args.length)
     throw new Error(`unknown arguments: ${args.join(' ')}`);
-if (!check && !ffmpeg)
-    throw new Error('no ffmpeg: pass --ffmpeg <path> (the samples are the ffmpeg variant: WebM clips, MP3)');
+
+/** ffmpeg, asked for only when something it makes is out of date (the archives alone don't need it). */
+function ffmpegProgram() {
+    if (!foundFfmpeg)
+        throw new Error('no ffmpeg: pass --ffmpeg <path> (the samples are the ffmpeg variant: WebM clips, MP3)');
+    return foundFfmpeg;
+}
 
 function onPath(program) {
     return spawnSync(process.platform === 'win32' ? 'where' : 'which', [program]).status === 0;
@@ -39,7 +49,7 @@ function onPath(program) {
 
 const isForced = relative => forced.some(prefix => relative === prefix || relative.startsWith(prefix.endsWith('/') ? prefix : prefix + '/'));
 const lock = readLock();
-const next = { library: { ...lock.library }, media: {} };
+const next = { library: { ...lock.library }, archives: { ...lock.archives }, media: {} };
 const report = [];
 
 // ---------- The sample library ----------
@@ -53,7 +63,7 @@ if (lock.library?.generator !== generator || libraryForced || !fs.existsSync(lib
         const made = fs.mkdtempSync(path.join(os.tmpdir(), 'sfe-samples-'));
         const fresh = path.join(made, 'library');
         console.log('making the sample library (make-media.mjs)…');
-        execFileSync(process.execPath, [path.join(repo, 'agents/tools/docs-screenshots/make-media.mjs'), fresh, ffmpeg], { stdio: 'inherit' });
+        execFileSync(process.execPath, [path.join(repo, 'agents/tools/docs-screenshots/make-media.mjs'), fresh, ffmpegProgram()], { stdio: 'inherit' });
         const before = new Set(listFiles(libraryFolder));
         for (const relative of listFiles(fresh)) {
             const target = path.join(libraryFolder, relative);
@@ -81,6 +91,37 @@ if (lock.library?.generator !== generator || libraryForced || !fs.existsSync(lib
     }
 }
 
+// ---------- The tests' archives ----------
+
+const archives = archivesHash();
+const archivesForced = forced.some(prefix => prefix === 'archives' || prefix.startsWith('archives/'));
+if (lock.archives?.generator !== archives || archivesForced || !fs.existsSync(archivesFolder)) {
+    if (check) {
+        report.push(`archives: ${lock.archives?.generator === archives ? 'forced' : 'make-archives.mjs changed'}: make them again`);
+    } else {
+        if (!sevenZip)
+            throw new Error('no 7-Zip: pass --sevenzip <path> (the archives are out of date)');
+        const made = fs.mkdtempSync(path.join(os.tmpdir(), 'sfe-archives-'));
+        console.log('making the archives (make-archives.mjs)…');
+        execFileSync(process.execPath, [path.join(repo, 'agents/tools/samples/make-archives.mjs'), made, sevenZip], { stdio: 'inherit' });
+        const before = new Set(listFiles(archivesFolder));
+        for (const relative of listFiles(made)) {
+            const target = path.join(archivesFolder, relative);
+            if (!before.has(relative) || !fs.readFileSync(path.join(made, relative)).equals(fs.readFileSync(target))) {
+                copy(path.join(made, relative), target);
+                report.push(`archives: ${before.has(relative) ? 'replaced' : 'added'} ${relative}`);
+            }
+            before.delete(relative);
+        }
+        for (const relative of before) {
+            fs.rmSync(path.join(archivesFolder, relative));
+            report.push(`archives: deleted ${relative} (no longer made)`);
+        }
+        fs.rmSync(made, { recursive: true, force: true });
+        next.archives.generator = archives;
+    }
+}
+
 // ---------- The tests' media ----------
 
 const manifest = readManifest();
@@ -101,7 +142,7 @@ for (const entry of manifest) {
                 throw new Error(`${entry.name}: no sample ${name} in media.json`);
             return path.join(mediaFolder, name);
         }));
-        execFileSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-nostdin', '-y', ...resolved, target], { stdio: 'inherit' });
+        execFileSync(ffmpegProgram(), ['-hide_banner', '-loglevel', 'error', '-nostdin', '-y', ...resolved, target], { stdio: 'inherit' });
         made.add(entry.name);
         report.push(`media: made ${entry.name} (${why})`);
     }
