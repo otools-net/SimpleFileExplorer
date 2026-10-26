@@ -41,7 +41,8 @@ reads it: pictures, text files, Markdown, JSON, tables (CSV), subtitles and PDF 
 
 - The bar above it goes **back** to the list (or **Esc**), to the file **before** or **after** in the folder (for
   pictures, also ← and →), opens it in a **new tab**, or **downloads** it.
-- Links and pictures between the files of an archive (in a Markdown document) are shown as text.
+- A Markdown document shows the pictures of the archive it links to, and its links to other documents of the
+  archive open them in the same place (**back** returns to the document). Links leading out of the archive are text.
 - Videos and audio open in a new tab, anything else downloads. **Ctrl**+click (or the middle button) opens any file
   in a new tab. A right click offers **Open**, **Open in new tab** and **Download**. Very large files only download.
 

@@ -38,9 +38,12 @@ public sealed record ArchiveTrail(int Skipped, IReadOnlyList<ArchiveCrumb> Last)
 /// <param name="Unlocked">The unlock given opens this archive (its list was read with the password, or its files open).</param>
 /// <param name="Folder">The folder listed: its totals (<c>AllFiles</c>, <c>Size</c>: its whole tree).</param>
 /// <param name="Next">The cursor of the next page; null on the last one.</param>
+/// <param name="Path">The folder's whole path in the archive ("" at its top): on a first page, for a folder at most
+/// <see cref="ExploreEndpoints.MaxPathDepth"/> deep (links between its files are resolved from it); else null.</param>
 public sealed record ArchiveListing(
     string Format, bool Complete, string? Stopped, bool NeedsPassword, long Entries, long LeftOut,
-    ArchiveItem Folder, ArchiveTrail Trail, IReadOnlyList<ArchiveItem> Items, string? Next, bool Protected = false, bool Unlocked = false);
+    ArchiveItem Folder, ArchiveTrail Trail, IReadOnlyList<ArchiveItem> Items, string? Next, bool Protected = false, bool Unlocked = false,
+    string? Path = null);
 
 public sealed record ArchiveUnlockRequest(string? Path, string? Password);
 
@@ -78,6 +81,9 @@ public static class ExploreEndpoints
     /// <summary>The most of an entry read to try a password: its checks are at its start (zip) or come with its data.</summary>
     private const int TryBytes = 16 * 1024 * 1024;
     public const int PageSize = 200;
+
+    /// <summary>Folders deep at most for a listing to give its path (one lookup per level).</summary>
+    public const int MaxPathDepth = 64;
     public const int MaxPageSize = 1000;
     public const string ReadingType = "archive-reading";
 
@@ -133,6 +139,17 @@ public static class ExploreEndpoints
                 held to the size the archive declares: more or less is a broken archive, and the download is cut off.
                 `unlock` (from `unlock`) opens an encrypted entry, or any of an archive whose list is encrypted.
                 """);
+        explore.MapGet("/entry/{archive}/at/{**at}", GetEntryAt)
+            .RequireRight(Rights.Download)
+            .RequireRateLimiting(RequestLimits.Media)
+            .FolderScoped("files.view and files.download at the archive")
+            .WithName("GetArchiveEntryAt")
+            .WithSummary("One file inside an archive by its path in the archive, as `entry/{archive}/{id}/{name}` serves it.")
+            .WithDescription("""
+                `at` is the file's path inside the archive (folders separated by `/`; as written, else in any case): the
+                address the links and pictures of a document of the archive lead to. The same rights, checks and answers
+                as by id.
+                """);
         explore.MapGet("/text", GetText)
             .RequireRight(Rights.Download)
             .RequireRateLimiting(RequestLimits.Media)
@@ -140,7 +157,7 @@ public static class ExploreEndpoints
             .WithName("GetArchiveEntryText")
             .WithSummary("A text file inside an archive, decoded as `GET api/files/text` decodes a library file; read only.")
             .WithDescription($"""
-                `id` is the entry's id in the archive's listing; `encoding` reads it in that encoding rather than the one it
+                `id` is the entry's id in the archive's listing (or `at` its path in the archive); `encoding` reads it in that encoding rather than the one it
                 seems to have. Up to {TextEndpoints.MaxBytes / (1024 * 1024)} MB (413 `{TooLargeType}`: download it); 415
                 `{TextEndpoints.NotTextType}` when it isn't text. `access` allows nothing: an entry is never saved over.
                 The same checks as `GET explore/entry` (password, compression ratio, files before it in a solid block).
@@ -223,7 +240,8 @@ public static class ExploreEndpoints
             FormatName(format), summary.Complete, summary.Stopped, summary.NeedsPassword, summary.Entries, summary.LeftOut,
             ToItem(shown), new ArchiveTrail(trail.Skipped, [.. trail.Last.Select(crumb => new ArchiveCrumb(crumb.Id, crumb.Name))]),
             items, page.Next is { } next ? Cursor(next) : null,
-            Protected: catalog.InMemory || encryptedFiles, Unlocked: password is not null));
+            Protected: catalog.InMemory || encryptedFiles, Unlocked: password is not null,
+            Path: after is null && shown.Depth <= MaxPathDepth ? catalog.PathOf(id) : null));
     }
 
     public const int MinSearchLength = 2;
@@ -444,9 +462,22 @@ public static class ExploreEndpoints
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
         ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string archive, long id, string name, bool? download, string? unlock)
     {
-        var settings = options.CurrentValue.Files.Archives;
         var opened = await OpenEntryAsync(catalogs, options.CurrentValue, paths, serverFiles, work, unlocks, current, context,
-            EpubEntries.PathOf(archive), id, name, download == true ? null : settings.MaxPreviewMegabytes * 1024L * 1024, unlock);
+            EpubEntries.PathOf(archive), new EntryKey(id, name, null), download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024, unlock);
+        return Serve(context, opened, download);
+    }
+
+    private static async Task<Results<FileStreamHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>> GetEntryAt(
+        ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
+        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string archive, string at, bool? download, string? unlock)
+    {
+        var opened = await OpenEntryAsync(catalogs, options.CurrentValue, paths, serverFiles, work, unlocks, current, context,
+            EpubEntries.PathOf(archive), new EntryKey(null, null, at), download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024, unlock);
+        return Serve(context, opened, download);
+    }
+
+    private static Results<FileStreamHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult> Serve(HttpContext context, OpenedEntry opened, bool? download)
+    {
         if (opened.Refused is { } refused)
             return refused;
         var file = opened.File!;
@@ -456,18 +487,20 @@ public static class ExploreEndpoints
         context.Response.Headers[HeaderNames.ContentSecurityPolicy] = SecurityHeaders.FilePolicy;
         context.Response.Headers[HeaderNames.CacheControl] = "private, no-cache";
         return TypedResults.Stream(opened.Data!, contentType, inline ? null : file.Name, lastModified: info.LastWriteTimeUtc,
-            entityTag: new EntityTagHeaderValue($"\"{EntryTag(opened.Canonical, info, id)}\""));
+            entityTag: new EntityTagHeaderValue($"\"{EntryTag(opened.Canonical, info, file.Id)}\""));
     }
 
     private static async Task<Results<Ok<TextFile>, NotFound, ForbidHttpResult, ProblemHttpResult>> GetText(
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, long id, string? encoding,
+        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, long? id, string? at, string? encoding,
         [FromHeader(Name = UnlockHeader)] string? unlock, CancellationToken cancellationToken)
     {
         if (encoding is not null && !TextCodec.ReadEncodings.Contains(encoding))
             return TypedResults.Problem($"`encoding` is one of {string.Join(", ", TextCodec.ReadEncodings)}.", statusCode: StatusCodes.Status400BadRequest);
+        if (id is null == at is null)
+            return TypedResults.Problem("Give the entry's `id` or its path `at`.", statusCode: StatusCodes.Status400BadRequest);
         var opened = await OpenEntryAsync(catalogs, options.CurrentValue, paths, serverFiles, work, unlocks, current, context,
-            path, id, null, TextEndpoints.MaxBytes, unlock);
+            path, new EntryKey(id, null, at), TextEndpoints.MaxBytes, unlock);
         if (opened.Refused is { } refused)
             return refused.Result switch
             {
@@ -496,7 +529,7 @@ public static class ExploreEndpoints
 
         var archive = new FileInfo(opened.Full);
         context.Response.Headers.CacheControl = "no-store";
-        return TypedResults.Ok(new TextFile(decoded.Text, decoded.Encoding, decoded.LineEnding, EntryTag(opened.Canonical, archive, id), bytes.Length,
+        return TypedResults.Ok(new TextFile(decoded.Text, decoded.Encoding, decoded.LineEnding, EntryTag(opened.Canonical, archive, opened.File!.Id), bytes.Length,
             opened.File!.Entry.Time ?? archive.LastWriteTimeUtc, new TextAccess(false, false, false, false),
             decoded.LineEnding == "mixed" ? TextCodec.DominantLineEnding(decoded.Text) : decoded.LineEnding));
     }
@@ -505,6 +538,9 @@ public static class ExploreEndpoints
     private static string EntryTag(string canonical, FileInfo archive, long id) =>
         $"{ArchiveCatalogs.KeyOf(canonical, archive.Length, archive.LastWriteTimeUtc)[..16]}-{id:x}";
 
+    /// <summary>An entry by its id (and its name, when given: it must be that), or by its path in the archive.</summary>
+    private sealed record EntryKey(long? Id, string? Name, string? At);
+
     /// <param name="Refused">Why it isn't opened (404, 403, a problem); else <paramref name="Data"/> is the entry's
     /// content, held to its declared size.</param>
     private sealed record OpenedEntry(
@@ -512,13 +548,13 @@ public static class ExploreEndpoints
 
     /// <summary>
     /// A file of an archive opened to be read (<c>files.view</c> and <c>files.download</c> at the archive): only from a
-    /// list already read (it never starts one), with its <paramref name="name"/> when one is given; refused larger than
+    /// list already read (it never starts one), found as <paramref name="key"/> says; refused larger than
     /// <paramref name="maxSize"/> (413), claiming more than the compression ratio allows (422), encrypted without the
     /// password (403), or when reaching it would unpack too much before it (413).
     /// </summary>
     private static async Task<OpenedEntry> OpenEntryAsync(
         ArchiveCatalogs catalogs, SfeOptions options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, long id, string? name, long? maxSize, string? unlock)
+        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, EntryKey key, long? maxSize, string? unlock)
     {
         var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles, Rights.Download);
         if (refused is { } forbidden)
@@ -531,8 +567,8 @@ public static class ExploreEndpoints
         if (FormatOf(full, options) is not { } format
             // An entry comes from a list already read: it never starts a read.
             || CatalogOf(catalogs, full, canonical, format, unlock, password, static () => false) is not { Status: ArchiveCatalogStatus.Ready, Catalog: { } catalog }
-            || catalog.Entry(id) is not { Entry.Kind: ArchiveEntryKind.File } file
-            || name is not null && !string.Equals(file.Name, name, StringComparison.Ordinal))
+            || (key.At is { } at ? catalog.FindFile(at) : catalog.Entry(key.Id ?? 0)) is not { Entry.Kind: ArchiveEntryKind.File } file
+            || key.Name is not null && !string.Equals(file.Name, key.Name, StringComparison.Ordinal))
             return new(TypedResults.NotFound(), null, null, full, canonical);
 
         var entry = file.Entry;

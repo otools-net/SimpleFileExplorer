@@ -29,7 +29,7 @@ const photo = fs.readdirSync(path.join(work, 'library', 'Photos'), { recursive: 
 const entries = [
     { name: 'readme.txt', data: Buffer.from('Made by agents/tools/visual-check/archive-viewer.mjs\n') },
     { name: 'Pictures/photo.jpg', data: fs.readFileSync(path.join(work, 'library', 'Photos', photo)) },
-    { name: 'Notes/notes.md', data: Buffer.from('# Trip notes\n\nA [link to the photo](../Pictures/photo.jpg), shown as text inside an archive.\n') },
+    { name: 'Notes/notes.md', data: Buffer.from('# Trip notes\n\nA [link to the photo](../Pictures/photo.jpg), and the photo itself:\n\n![The photo](../Pictures/photo.jpg)\n') },
     { name: 'Notes/handbook.pdf', data: fs.readFileSync(path.join(repo, 'tests/samples/library/Documents/Hut handbook.pdf')) },
 ];
 for (let i = 0; i < BIG; i++)
@@ -151,7 +151,8 @@ try {
             await until(b, `[...document.querySelectorAll('.archive-open')].some(e => e.textContent.trim() === 'notes.md')`);
             await openName('notes.md');
             check(await until(b, `[...document.querySelectorAll('[data-entry] h1')].some(h => h.textContent.includes('Trip notes'))`), 'in place: Markdown rendered');
-            check(await b.eval(`[...document.querySelectorAll('[data-entry] .markdown-body a[href], [data-entry] a[href]')].every(a => !a.textContent.includes('link to the photo'))`), 'in place: a relative link of an entry is text');
+            check(await b.eval(`[...document.querySelectorAll('[data-entry] a[href]')].some(a => a.textContent.includes('link to the photo') && a.getAttribute('href').includes('/at/Pictures/photo.jpg'))`), 'in place: a link of a document leads to the file of the archive');
+            check(await until(b, `document.querySelector('[data-entry] .markdown-content img')?.naturalWidth > 0`), 'in place: a picture of a document, from the archive');
             await b.eval(`document.querySelector('[data-previous]').click(); 1`);
             check(await until(b, `!!document.querySelector('[data-entry] canvas')`, 20000), 'The file before: the PDF drawn');
             if (out)

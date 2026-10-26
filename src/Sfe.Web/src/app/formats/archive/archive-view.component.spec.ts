@@ -237,6 +237,34 @@ describe('ArchiveViewComponent', () => {
             expect(element.querySelector('[data-entry]')).toBeNull();
         });
 
+        it('follows the links and pictures of a document to the files of the archive, Back returning to it', async () => {
+            api.exploreArchive.mockResolvedValue(listing([file(10, 'guide.md')], { path: 'docs' }));
+            api.archiveText.mockImplementation(async (_path: string, entry: number | string) => ({
+                ...textFile, text: entry === 10 ? '# Guide\n\n![map](img/map.png)\n\n[Next part](../more/part%202.md) and [outside](../../../x.md)\n' : '# Part 2\n',
+            }));
+            await show();
+
+            open('guide.md');
+            await until(() => Boolean(element.querySelector('[data-entry] .markdown-content h1')));
+            const token = pathToken('Media/trip.zip');
+            expect(element.querySelector('[data-entry] .markdown-content img')!.getAttribute('src')).toBe(`api/files/explore/entry/${token}/at/docs/img/map.png`);
+            const links = [...element.querySelectorAll<HTMLAnchorElement>('[data-entry] .markdown-content a')];
+            expect(links.find(a => a.textContent === 'outside')!.hasAttribute('href'), 'out of the archive: text').toBe(false);
+
+            links.find(a => a.textContent === 'Next part')!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+            await until(() => element.querySelector('[data-entry] .markdown-content h1')?.textContent === 'Part 2');
+            expect(api.archiveText).toHaveBeenLastCalledWith('Media/trip.zip', 'more/part 2.md', { encoding: undefined, unlock: null }, expect.any(AbortSignal));
+            expect(element.querySelector('[data-entry] .archive-entry-name')!.textContent!.trim()).toBe('part 2.md');
+            expect(element.querySelector<HTMLButtonElement>('[data-next]')!.disabled, 'no row of the list').toBe(true);
+
+            element.querySelector<HTMLButtonElement>('[data-back]')!.click();
+            await until(() => element.querySelector('[data-entry] .markdown-content h1')?.textContent === 'Guide');
+            expect(element.querySelector('[data-entry] .archive-entry-name')!.textContent!.trim()).toBe('guide.md');
+            element.querySelector<HTMLButtonElement>('[data-back]')!.click();
+            await stable();
+            expect(element.querySelector('[data-entry]')).toBeNull();
+        });
+
         it('opens a protected file in place only once the password is given, sending the unlock', async () => {
             api.exploreArchive.mockResolvedValue(listing([file(10, 'secret.txt', { encrypted: true })], { protected: true }));
             api.unlockArchive.mockResolvedValue({ unlock: 'u1' });

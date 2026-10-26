@@ -228,6 +228,8 @@ export interface ArchiveItem {
     in?: number | null;
     /** A file the library calls a picture, video or audio (by its extension). */
     media?: 'image' | 'video' | 'audio' | null;
+    /** The client's own: its path in the archive, when known (links between its files lead there). */
+    at?: string | null;
 }
 
 /** A page of a search in an archive: `next` goes on (a page cut short by its time may be empty); null once all was looked through. */
@@ -255,6 +257,8 @@ export interface ArchiveListing {
     protected?: boolean;
     /** The unlock sent opens this archive. */
     unlocked?: boolean;
+    /** The folder's whole path in the archive ("" at its top), on a first page of a folder not too deep; else null. */
+    path?: string | null;
 }
 
 /** `api/files/explore/unlock`: what later requests about the archive send back (never the password). */

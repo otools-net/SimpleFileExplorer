@@ -17,6 +17,23 @@ export interface FileSource {
     original(item: LibraryItem): string;
     /** The address saving it, or null. */
     download(item: LibraryItem): string | null;
+    /**
+     * Where a document's relative links and pictures lead, when not into the library: `path` is the document's own
+     * path among its neighbours (its archive's folders), null when unknown (they are text then).
+     */
+    readonly documents?: { path: string | null; links: DocumentLinks };
+}
+
+/** The addresses of a document's links (paths as `path` resolves them: `/`-separated, among its neighbours). */
+export interface DocumentLinks {
+    /** The file itself (pictures, files without a viewer). */
+    file(path: string): string;
+    /** The file in its viewer. */
+    view(path: string): string;
+    /** A folder. */
+    folder(path: string): string;
+    /** The file at `path` is shown by a viewer (a click opens it there, through `FileViewHost.open`). */
+    viewable(path: string): boolean;
 }
 
 export const FILE_SOURCE = new InjectionToken<FileSource>('FILE_SOURCE', {

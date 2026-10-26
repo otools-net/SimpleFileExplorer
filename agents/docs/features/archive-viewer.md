@@ -34,7 +34,10 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   (`ArchiveException.TooFar`). The unlock check takes a password unchecked when its entry is that far.
   `private, no-cache` + ETag (catalog key, id): 304 while the archive is the same. The checks are `OpenEntryAsync`,
   shared with the text route.
-- `GET api/files/explore/text?path=&id=&encoding=` (same rights and checks, `X-SFE-Archive-Unlock`): a `TextFile` as
+- `GET api/files/explore/entry/{archive}/at/{**at}`: the same, the file found by its path in the archive
+  (`ArchiveCatalog.FindFile`: as written, else any case; a folder or nothing: 404): what the links and pictures of a
+  document of the archive lead to. `OpenEntryAsync` takes an `EntryKey` (id and name, or path).
+- `GET api/files/explore/text?path=&id=|at=&encoding=` (same rights and checks, `X-SFE-Archive-Unlock`): a `TextFile` as
   `api/files/text` answers (`TextCodec.Decode`), up to `TextEndpoints.MaxBytes` (413, no parts), 415 not text,
   `access` all false (never saved), `version` the entry's ETag.
 - Items have `media` (`image`/`video`/`audio` by `MediaClassifier`, the library's `Sfe:FileTypes`): the client
@@ -112,7 +115,11 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   (← → for pictures), new tab, download. Videos, audio, EPUB, nested archives: a tab or a download.
 - `FILE_SOURCE` (default: the library) is what the format views read through (`textFile`, `original`, `download`);
   `library: false` hides Follow and parts (a 413 is a message), skips `TextSession.checkDisk` and the subtitles'
-  video, and gives Markdown `relative: false` (relative links and pictures become text).
+  video. `documents` (an entry's): the document's path in the archive (`listing.path`: the first page of a folder at
+  most `MaxPathDepth` 64 deep gives its whole path; a search result's whole `where`), from which Markdown resolves its
+  relative links (`resolveLibraryPath`: out of the archive → text) to the `at` route; viewable ones open in place
+  through `FileViewHost.open` (the archive view's `entryHost`), `Viewing.back` returning to the document. No path
+  known (deeper folders, shortened `where`): links and pictures are text.
 - **Open as archive** (item menu, `openAsArchive`): `formatOf(item, { asArchive })` gives `ARCHIVE_FORMAT` for
   `isContainer` (a name in `CONTAINER_EXTENSIONS`: `.cbz .cbr .epub .docx .odt .jar .apk .nupkg`…, not explorable
   already); the viewer keeps it as `asText` (`opened().asArchive`; its new tab is `view?path=…&asArchive=1`). The

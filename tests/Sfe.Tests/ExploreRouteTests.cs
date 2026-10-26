@@ -183,6 +183,40 @@ public sealed class ExploreRouteTests
     }
 
     [TestMethod]
+    public async Task AFileIsServedByItsPathInTheArchiveAndAListingGivesItsFolderPath()
+    {
+        TestArchives.Zip(_library.Root, "Media/site.zip", ("docs/readme.md", "# Hello\n\n![a](img/a.png)"), ("docs/img/a.png", "png bytes"), ("top.txt", "t"));
+        var top = await ListAsync(_alice, "path=Media/site.zip");
+        Assert.AreEqual("", top.Path);
+        var docs = await ListAsync(_alice, "path=Media/site.zip&at=docs");
+        Assert.AreEqual("docs", docs.Path);
+        var img = await ListAsync(_alice, $"path=Media/site.zip&at={Uri.EscapeDataString("docs/img")}");
+        Assert.AreEqual("docs/img", img.Path);
+
+        var token = EpubEntries.Token("Media/site.zip");
+        foreach (var at in new[] { "docs/img/a.png", "DOCS/Img/A.PNG" })
+        {
+            using var picture = await _alice.GetAsync($"/api/files/explore/entry/{token}/at/{at}", Token);
+            Assert.AreEqual(HttpStatusCode.OK, picture.StatusCode, at);
+            Assert.AreEqual("png bytes", await picture.Content.ReadAsStringAsync(Token));
+            StringAssert.Contains(picture.Headers.GetValues("Content-Security-Policy").Single(), "sandbox");
+        }
+        // A path only names files of the catalog (`..` is no folder of it, and addresses drop dot segments first).
+        foreach (var at in new[] { "docs/none.png", "docs", "docs/img" })
+        {
+            using var missing = await _alice.GetAsync($"/api/files/explore/entry/{token}/at/{at}", Token);
+            Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode, at);
+        }
+        using (var bob = await _bob.GetAsync($"/api/files/explore/entry/{token}/at/top.txt", Token))
+            Assert.AreEqual(HttpStatusCode.Forbidden, bob.StatusCode);
+
+        using (var text = await _alice.GetAsync("/api/files/explore/text?path=Media/site.zip&at=docs/readme.md", Token))
+            StringAssert.StartsWith((await text.Content.ReadFromJsonAsync<TextFile>(Json, Token))!.Text, "# Hello");
+        using (var both = await _alice.GetAsync($"/api/files/explore/text?path=Media/site.zip&at=top.txt&id={top.Items[0].Id}", Token))
+            Assert.AreEqual(HttpStatusCode.BadRequest, both.StatusCode);
+    }
+
+    [TestMethod]
     public async Task AContainerIsExploredByItsBytesWhateverItsName()
     {
         File.Copy(Path.Combine(TestSamples.Folder, "..", "library", "Documents", "Hut stories.epub"), _library.FullPath("Media/book.epub"));

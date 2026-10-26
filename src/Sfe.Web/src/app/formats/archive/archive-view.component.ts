@@ -51,6 +51,8 @@ interface Viewing {
     format: FileFormat | null;
     component: Type<unknown> | null;
     injector: Injector | null;
+    /** The document whose link opened it (Back returns there); null: opened from the list. */
+    back: Viewing | null;
 }
 
 /** What a folder shows: its first page (totals, trail, flags) and the rows loaded so far. */
@@ -515,6 +517,19 @@ export class ArchiveViewComponent {
         return format && IN_PLACE.has(format.id) ? format : null;
     }
 
+    /** A row's path in the archive: its folder's (the listing's, or a result's `where` when whole) and its name; null when unknown. */
+    private pathIn(entry: ArchiveItem): string | null {
+        if (entry.at !== undefined)
+            return entry.at;
+        const folder = this.found() ? (entry.where?.startsWith('…') ? null : entry.where ?? null) : this.shown()?.listing.path ?? null;
+        return folder === null ? null : folder ? `${folder}/${entry.name}` : entry.name;
+    }
+
+    /** A file of the archive known by its path only (a link of a document): found by the server from it. */
+    private linked(path: string): ArchiveItem {
+        return { kind: 'file', id: 0, name: path.slice(path.lastIndexOf('/') + 1), size: 0, packed: 0, modified: null, encrypted: false, at: path };
+    }
+
     protected inPlace(entry: ArchiveItem): boolean {
         return this.placeOf(entry) !== null;
     }
@@ -524,19 +539,20 @@ export class ArchiveViewComponent {
         const name = entry.name;
         const extension = extensionOf({ name } as LibraryItem);
         return {
-            name, path: `${this.item().path}#${entry.id}`, kind: entry.media ?? 'file', extension: extension ? `.${extension}` : null,
+            name, path: `${this.item().path}#${entry.id > 0 ? entry.id : `at:${entry.at}`}`, kind: entry.media ?? 'file', extension: extension ? `.${extension}` : null,
             size: entry.size, modified: entry.modified,
         };
     }
 
     /** Shows `entry` in place of the list; its format's view loaded on demand, reading it from the archive. */
-    private async show(entry: ArchiveItem, index: number): Promise<void> {
-        const place = this.placeOf(entry);
+    private async show(shown: ArchiveItem, index: number, back: Viewing | null = null): Promise<void> {
+        const place = this.placeOf(shown);
         if (!place)
             return;
+        const entry: ArchiveItem = { ...shown, at: this.pathIn(shown) };
         const item = this.itemOf(entry);
         if (place === 'picture') {
-            this.viewing.set({ entry, index, item, format: null, component: null, injector: null });
+            this.viewing.set({ entry, index, item, format: null, component: null, injector: null, back });
             this.focusEntry();
             return;
         }
@@ -544,7 +560,7 @@ export class ArchiveViewComponent {
             providers: [{ provide: FILE_VIEW_HOST, useValue: this.entryHost }, { provide: FILE_SOURCE, useValue: this.entrySource(entry) }],
             parent: this.injector,
         });
-        const viewing: Viewing = { entry, index, item, format: place, component: null, injector };
+        const viewing: Viewing = { entry, index, item, format: place, component: null, injector, back };
         this.viewing.set(viewing);
         this.focusEntry();
         if (!('load' in place.view))
@@ -569,15 +585,26 @@ export class ArchiveViewComponent {
     private readonly entryHost: FileViewHost = {
         place: 'viewer',
         can: right => (right === Rights.viewFiles || right === Rights.download) && this.host.can(right),
+        // A link of a document to another file of the archive: shown in its place, Back returning to the document.
+        open: item => void this.show(this.linked(item.path), -1, this.viewing()),
     };
 
     /** Reads `entry` from the archive, with the unlock given (the view's requests and addresses). */
     private entrySource(entry: ArchiveItem): FileSource {
         return {
             library: false,
-            textFile: (_item, signal, encoding) => this.api.archiveText(this.item().path, entry.id, { encoding, unlock: this.unlock() }, signal),
+            textFile: (_item, signal, encoding) => this.api.archiveText(this.item().path, entry.id > 0 ? entry.id : entry.at!, { encoding, unlock: this.unlock() }, signal),
             original: () => this.entryUrl(entry, false),
             download: () => this.canDownload() ? this.entryUrl(entry, true) : null,
+            documents: {
+                path: entry.at ?? null,
+                links: {
+                    file: path => this.entryUrl(this.linked(path), false),
+                    view: path => this.entryUrl(this.linked(path), false),
+                    folder: path => this.entryUrl(this.linked(path), false),
+                    viewable: path => this.placeOf(this.linked(path)) !== null,
+                },
+            },
         };
     }
 
@@ -585,11 +612,16 @@ export class ArchiveViewComponent {
         setTimeout(() => this.entryView()?.nativeElement.focus({ preventScroll: true }));
     }
 
-    /** Back to the list as it was, the entry's row selected. */
+    /** Back to the document whose link opened it, else to the list as it was, the entry's row selected. */
     protected closeEntry(): void {
         const viewing = this.viewing();
         if (!viewing)
             return;
+        if (viewing.back) {
+            this.viewing.set(viewing.back);
+            this.focusEntry();
+            return;
+        }
         this.viewing.set(null);
         this.selected.set(viewing.index);
         this.virtual.scrollTo(viewing.index);
@@ -602,6 +634,8 @@ export class ArchiveViewComponent {
         if (!viewing)
             return null;
         const rows = this.rows();
+        if (viewing.index < 0)
+            return null;
         for (let index = viewing.index + direction; index >= 0 && index < rows.length; index += direction) {
             if (rows[index] && this.inPlace(rows[index]))
                 return index;
@@ -689,7 +723,8 @@ export class ArchiveViewComponent {
         if (this.unlock())
             query.set('unlock', this.unlock()!);
         const search = query.toString();
-        return `api/files/explore/entry/${pathToken(this.item().path)}/${entry.id}/${encodeURIComponent(entry.name)}${search ? '?' + search : ''}`;
+        const which = entry.id > 0 ? `${entry.id}/${encodeURIComponent(entry.name)}` : `at/${(entry.at ?? '').split('/').map(encodeURIComponent).join('/')}`;
+        return `api/files/explore/entry/${pathToken(this.item().path)}/${which}${search ? '?' + search : ''}`;
     }
 
     /** Extract…: the folder shown (the whole archive at its top), into a folder of the library picked in the dialog. */

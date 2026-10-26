@@ -172,13 +172,19 @@ export class MarkdownViewComponent {
         return file ? textDetails(file, 'Markdown') : '';
     });
 
-    private readonly links: MarkdownLinks = {
-        file: path => this.config.urls()!.file(path),
-        view: path => this.config.urls()!.view(path),
-        folder: path => `./?${new URLSearchParams({ path })}`,
-        viewable: path => formatOf(itemAt(path)) !== null,
-        relative: this.fileSource.library,
-    };
+    private readonly links: MarkdownLinks = this.fileSource.documents
+        ? { ...this.fileSource.documents.links, relative: this.fileSource.documents.path !== null }
+        : {
+            file: path => this.config.urls()!.file(path),
+            view: path => this.config.urls()!.view(path),
+            folder: path => `./?${new URLSearchParams({ path })}`,
+            viewable: path => formatOf(itemAt(path)) !== null,
+        };
+
+    /** The path its relative links are resolved from: its own, or its place in its archive. */
+    private documentPath(item: LibraryItem): string {
+        return this.fileSource.documents?.path ?? item.path;
+    }
 
     constructor() {
         const abort = new AbortController();
@@ -224,7 +230,7 @@ export class MarkdownViewComponent {
                 // The source as typed; read again (changed elsewhere) without the source shown: the file's.
                 const text = this.sourceEditor()?.text() ?? this.session.file()?.text;
                 if (text !== undefined)
-                    void this.render(text, this.item().path);
+                    void this.render(text, this.documentPath(this.item()));
             }, RENDER_DELAY_MS);
         });
         effect(() => {
@@ -252,7 +258,7 @@ export class MarkdownViewComponent {
         if (cancel.aborted)
             return;
         this.session.attach(item, file);
-        const rendered = this.render(file.text, item.path);
+        const rendered = this.render(file.text, this.documentPath(item));
         this.file.set(file);
         this.state.set('ready');
         await rendered;

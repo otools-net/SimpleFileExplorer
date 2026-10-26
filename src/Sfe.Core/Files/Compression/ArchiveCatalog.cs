@@ -264,6 +264,29 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     }
 
     /// <summary>
+    /// The file at <paramref name="filePath"/> (<c>/</c>-separated, as <see cref="FindFolder"/>; its name as written,
+    /// else in any case); null when there is none, or it is a folder.
+    /// </summary>
+    public ArchiveFile? FindFile(string filePath)
+    {
+        var slash = filePath.TrimEnd('/').LastIndexOf('/');
+        var name = filePath.TrimEnd('/')[(slash + 1)..];
+        if (name.Length == 0 || FindFolder(slash < 0 ? "" : filePath[..slash]) is not { } folder)
+            return null;
+        using var connection = Open();
+        foreach (var match in new[] { "COLLATE BINARY", "ORDER BY Id" })
+        {
+            using var command = Command(connection, $"SELECT {FileColumns} FROM Entries WHERE FolderId = $folder AND Name = $name {match} LIMIT 1");
+            command.Parameters.AddWithValue("$folder", folder);
+            command.Parameters.AddWithValue("$name", name);
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+                return ReadFile(reader);
+        }
+        return null;
+    }
+
+    /// <summary>
     /// The way to folder <paramref name="id"/>: its <paramref name="last"/> nearest folders (itself included), and how
     /// many sit between them and the root. Costs <paramref name="last"/> lookups, never the depth.
     /// </summary>

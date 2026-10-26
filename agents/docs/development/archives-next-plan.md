@@ -12,8 +12,6 @@ what it left for later, none of it promised. Tick `[x]` in the commit that does 
 
 - [ ] Videos and audio of an archive in place (today: a new tab): they need Range on a decompressed stream (a seek
   re-reads from the entry's start, or a temp copy).
-- [ ] Links and pictures between the entries of a Markdown document of an archive (today: text): an entry route by
-  path (`…/entry/{archive}/at/{path}`), then `MarkdownLinks` for entries.
 - [ ] Zip methods other than stored and deflate (deflate64, bzip2, lzma, zstd): SharpCompress' decompressors over
   `WindowStream`, if real archives need them.
 

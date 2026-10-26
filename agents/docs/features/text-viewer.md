@@ -13,7 +13,8 @@ Code: client `app/formats/formats.ts` (registry), `app/formats/text/` (`text-vie
   the file in a tab). Media formats are `builtin` (the viewer's own markup); others `load()` a component, lazily.
 - A format view reads its file through `FILE_SOURCE` (`formats/file-source.ts`: `textFile`, `original`, `download`),
   never `api.textFile` / `urls().original` by path: the archive view gives its own for an entry (`library: false`:
-  read only, no parts nor Follow; [archive-viewer](archive-viewer.md)). A new library-only feature checks `library`.
+  read only, no parts nor Follow; its `documents` say where a document's relative links lead;
+  [archive-viewer](archive-viewer.md)). A new library-only feature checks `library`.
 - Text matches **kind `file` only** (never what the server classified as media: `.ts` stays a video) by name:
   `TEXT_EXTENSIONS` (lower case, no dot) or a whole name in `TEXT_NAMES` (`README`, `Dockerfile`, `.gitignore`…).
   `isTextFile` reads the name, not `item.extension`.
