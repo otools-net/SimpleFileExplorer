@@ -113,6 +113,8 @@ export class OperationsPanelComponent implements OnInit {
 
     protected readonly forAll = signal(false);
     protected readonly baseName = baseName;
+    /** When each job's bytes were first seen moving, and how many then: its speed since. */
+    private readonly moving = new Map<number, { at: number; bytes: number }>();
     /** The folder under the pointer during a drag. */
     private over: HTMLElement | null = null;
 
@@ -215,14 +217,24 @@ export class OperationsPanelComponent implements OnInit {
         if (job.state === 'waiting')
             return 'Waiting for your answer…';
         if (job.kind === 'extract')
-            return job.bytesTotal ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} read` : 'Reading the archive…';
+            return job.bytesTotal ? joinParts([`${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} read`, this.left(job)]) : 'Reading the archive…';
         if (job.kind === 'compress')
-            return job.bytesDone ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} compressed` : 'Waiting for its turn…';
+            return job.bytesDone ? joinParts([`${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} compressed`, this.left(job)]) : 'Waiting for its turn…';
         return joinParts([
             `${job.done} of ${job.total}`,
             job.kind === 'copy' && job.bytesTotal ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)}` : null,
             job.current ? baseName(job.current) : null,
         ]);
+    }
+
+    /** The time left of a job measured in bytes, from when its bytes started moving (a queue's wait left out). */
+    private left(job: FileJobView): string | null {
+        if (job.state !== 'running' || !job.bytesDone)
+            return null;
+        let start = this.moving.get(job.id);
+        if (!start)
+            this.moving.set(job.id, start = { at: Date.now(), bytes: job.bytesDone });
+        return timeLeft(start, Date.now(), job.bytesDone, job.bytesTotal);
     }
 
     protected side(side: ClashSide): string {
@@ -362,4 +374,20 @@ function parsePaths(json: string): string[] {
     } catch {
         return [];
     }
+}
+
+/**
+ * "about 4 min left", from the speed since `start` (when and how many bytes were done then); null for the first 10
+ * seconds, or while nothing moves.
+ */
+export function timeLeft(start: { at: number; bytes: number }, now: number, done: number, total: number): string | null {
+    const seconds = (now - start.at) / 1000;
+    const speed = (done - start.bytes) / seconds;
+    if (seconds < 10 || speed <= 0 || done >= total)
+        return null;
+    const left = (total - done) / speed;
+    if (left < 60)
+        return 'less than a minute left';
+    const minutes = Math.round(left / 60);
+    return minutes < 60 ? `about ${minutes} min left` : `about ${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, '0')} min left`;
 }

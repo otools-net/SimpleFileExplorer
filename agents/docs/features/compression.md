@@ -63,8 +63,11 @@ Tests: `ZipWriterTests`, `CompressJobTests`, `FileJobRouteTests` (one), `compres
 - **Compress…** in the item menu (the selection when the item is in it) and the selection bar (`compressible`: the
   right, view + download on an item, the dialog there). `CompressDialog`: name (`defaultName`), level select (Store 0,
   Fastest 1, Normal 6, Maximum 9: `COMPRESSION_LEVELS`), skip, password twice with Show and notes (names visible,
-  short, non-ASCII, plain HTTP, old Windows). The target is the folder listed (`compressTarget`; search: the first
-  item's folder).
-- Panel: icon `compress`, "Compressing into …", bytes compressed, then "“x.zip” made in …" with the message (ratio);
-  the toast's **Show** reveals the zip.
-- Not done: a folder picker for the target, the size before starting, an estimate of the time at Maximum.
+  short, non-ASCII, plain HTTP, old Windows). The target starts as the folder listed (`compressTarget`; search: the
+  first item's folder); **Another folder…** shows the shared `FolderBrowser` (`files/folder-browser.component.ts`),
+  refused where `files.compress` isn't allowed (the folder's `access`). The size line: the files' sizes from the
+  listing plus `GET api/files/properties/totals` of each folder (the index's; 50 at most, those not indexed said "not
+  counted", never guessed).
+- Panel: icon `compress`, "Compressing into …", bytes compressed and the time left (`timeLeft`: the speed since the
+  bytes first moved, so a queued job's wait doesn't count; after 10 s; extractions too), then "“x.zip” made in …"
+  with the message (ratio); the toast's **Show** reveals the zip.

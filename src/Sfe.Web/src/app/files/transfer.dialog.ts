@@ -1,20 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
-import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { joinParts, plural } from '../core/format';
-import { AccessGain, DirectoryListing, FileJobKind, FileJobRequest, LibraryItem } from '../core/models';
+import { AccessGain, FileJobKind, FileJobRequest, LibraryItem } from '../core/models';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { checkedOf } from '../shared/events';
-import { IconComponent } from '../shared/icon.component';
 import { SheetComponent } from '../shared/sheet.component';
 import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { FileTransfers } from './file-transfers';
-
-/** Folders listed at most in a folder of the picker (open one to go further). */
-const FOLDERS_SHOWN = 200;
+import { folderBrowser, FolderBrowserComponent } from './folder-browser.component';
 
 /**
  * Move to… and Copy to…: picks the folder by clicking through the library, then starts the job. Also the confirmation
@@ -23,37 +19,13 @@ const FOLDERS_SHOWN = 200;
  */
 @Component({
     selector: 'sfe-transfer-dialog',
-    imports: [BusyDirective, IconComponent, SheetComponent],
+    imports: [BusyDirective, FolderBrowserComponent, SheetComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <sfe-sheet #sheet [heading]="kind() === 'move' ? 'Move' : 'Copy'" variant="transfer-dialog">
             @if (step() === 'pick') {
                 <p>{{ what() }} into:</p>
-                <nav class="transfer-crumbs" aria-label="The folder chosen">
-                    @for (crumb of crumbs(); track crumb.path; let last = $last) {
-                        @if (last) {
-                            <strong><svg sfeIcon="folder"></svg>{{ crumb.name }}</strong>
-                        } @else {
-                            <button type="button" class="link-button" [title]="'Go back to ' + crumb.name" (click)="browse(crumb.path)">{{ crumb.name }}</button>
-                            <span aria-hidden="true">/</span>
-                        }
-                    }
-                </nav>
-                <ul class="transfer-folders">
-                    @for (folder of folders(); track folder.path) {
-                        <li>
-                            <button type="button" class="transfer-folder" [disabled]="isMoved(folder.path)"
-                                    [title]="isMoved(folder.path) ? 'It is moved itself' : 'Open ' + folder.name" (click)="browse(folder.path)">
-                                <svg sfeIcon="folder"></svg><span>{{ folder.name }}</span>
-                            </button>
-                        </li>
-                    } @empty {
-                        <li class="muted">{{ loading() ? 'Loading…' : 'No folders in here.' }}</li>
-                    }
-                    @if (truncated()) {
-                        <li class="muted">Only the first {{ shown }} folders are listed.</li>
-                    }
-                </ul>
+                <sfe-folder-browser [browser]="browser" [closedBecause]="closedBecause" />
                 @if (refusal(); as refusal) {
                     <p class="field-hint">{{ refusal }}</p>
                 }
@@ -86,33 +58,23 @@ const FOLDERS_SHOWN = 200;
     `,
 })
 export class TransferDialog {
-    private readonly api = inject(Api);
     private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
     private readonly transfers = inject(FileTransfers);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
 
-    protected readonly shown = FOLDERS_SHOWN;
     protected readonly kind = signal<FileJobKind>('move');
     protected readonly step = signal<'pick' | 'confirm'>('pick');
     private readonly paths = signal<string[]>([]);
     private readonly items = signal<LibraryItem[]>([]);
     /** The folder chosen (picker), or where the paste or drop goes. */
-    protected readonly target = signal('');
-    private readonly listing = signal<DirectoryListing | null>(null);
-    protected readonly loading = signal(false);
+    protected readonly browser = folderBrowser();
+    private readonly target = this.browser.target;
     protected readonly busy = signal(false);
     protected readonly gains = signal<AccessGain[]>([]);
     protected readonly keepAccess = signal(false);
     protected readonly keepTags = signal(true);
 
-    protected readonly folders = computed(() => this.listing()?.items.filter(item => item.kind === 'directory') ?? []);
-    protected readonly truncated = computed(() => (this.listing()?.directoryCount ?? 0) > this.folders().length);
-    protected readonly crumbs = computed(() => {
-        const root = { path: '', name: this.config.config()?.rootName || 'Library' };
-        const parts = this.target() ? this.target().split('/') : [];
-        return [root, ...parts.map((name, index) => ({ path: parts.slice(0, index + 1).join('/'), name }))];
-    });
     protected readonly what = computed(() => {
         const items = this.items();
         const folders = items.filter(item => item.kind === 'directory').length;
@@ -132,12 +94,10 @@ export class TransferDialog {
     });
     /** Why the folder chosen can't be used; null when it can. */
     protected readonly refusal = computed(() => {
-        const listing = this.listing();
+        const listing = this.browser.listing();
         if (!listing)
             return 'Pick a folder.';
-        const right = this.kind() === 'move' ? Rights.moveFiles : Rights.copyFiles;
-        const allowed = listing.access ? !listing.access.pathOnly && listing.access.rights.includes(right) : this.config.can(right);
-        if (!allowed)
+        if (!this.browser.allows(this.kind() === 'move' ? Rights.moveFiles : Rights.copyFiles))
             return `You may not ${this.kind()} files into this folder: open another.`;
         if (this.kind() === 'move' && this.paths().every(path => parentPath(path) === listing.path))
             return 'They are in this folder already: open another.';
@@ -158,14 +118,14 @@ export class TransferDialog {
         this.reset(kind, items.map(item => item.path), 'pick');
         this.items.set(items);
         const route = this.store.route();
-        void this.browse(route.q ? parentPath(items[0]?.path ?? '') : route.path);
+        void this.browser.browse(route.q ? parentPath(items[0]?.path ?? '') : route.path);
         this.sheet().open();
     }
 
     /** A paste or a drop into a known folder: the tags of a copy, the access gained by a move. */
     ask(request: FileJobRequest, gains: AccessGain[]): void {
         this.reset(request.kind, request.paths, 'confirm');
-        this.target.set(request.target);
+        this.browser.reset(request.target);
         this.gains.set(gains);
         this.sheet().open();
     }
@@ -178,29 +138,12 @@ export class TransferDialog {
         this.gains.set([]);
         this.keepAccess.set(false);
         this.keepTags.set(true);
-        this.listing.set(null);
-    }
-
-    protected async browse(path: string): Promise<void> {
-        this.target.set(path);
-        this.loading.set(true);
-        try {
-            const listing = await this.api.browse({ path, offset: 0, limit: FOLDERS_SHOWN, sort: 'name', desc: false });
-            if (this.target() === path)
-                this.listing.set(listing);
-        } catch {
-            // A folder gone meanwhile: back to the top.
-            if (path)
-                await this.browse('');
-        } finally {
-            this.loading.set(false);
-        }
+        this.browser.reset();
     }
 
     /** A folder moved can't take itself. */
-    protected isMoved(path: string): boolean {
-        return this.kind() === 'move' && this.paths().some(moved => path === moved || path.startsWith(`${moved}/`));
-    }
+    protected readonly closedBecause = (path: string): string | null =>
+        this.kind() === 'move' && this.paths().some(moved => path === moved || path.startsWith(`${moved}/`)) ? 'It is moved itself' : null;
 
     protected gainText(gain: AccessGain): string {
         const now = gain.before === 'hidden' ? 'who don\'t see it now' : 'who may only look now';

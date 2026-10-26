@@ -1,19 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
-import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { DirectoryListing } from '../core/models';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { checkedOf, valueOf } from '../shared/events';
-import { IconComponent } from '../shared/icon.component';
 import { SheetComponent } from '../shared/sheet.component';
 import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { FileTransfers } from './file-transfers';
-
-/** Folders listed at most in a folder of the picker (open one to go further). */
-const FOLDERS_SHOWN = 200;
+import { folderBrowser, FolderBrowserComponent } from './folder-browser.component';
 
 /** What is extracted: the archive, and in it the entries chosen in the viewer (none: all of it). */
 export interface ExtractChoice {
@@ -34,32 +29,12 @@ export interface ExtractChoice {
  */
 @Component({
     selector: 'sfe-extract-dialog',
-    imports: [BusyDirective, IconComponent, SheetComponent],
+    imports: [BusyDirective, FolderBrowserComponent, SheetComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <sfe-sheet #sheet heading="Extract" variant="transfer-dialog">
             <p>{{ what() }} into:</p>
-            <nav class="transfer-crumbs" aria-label="The folder chosen">
-                @for (crumb of crumbs(); track crumb.path; let last = $last) {
-                    @if (last) {
-                        <strong><svg sfeIcon="folder"></svg>{{ crumb.name }}</strong>
-                    } @else {
-                        <button type="button" class="link-button" [title]="'Go back to ' + crumb.name" (click)="browse(crumb.path)">{{ crumb.name }}</button>
-                        <span aria-hidden="true">/</span>
-                    }
-                }
-            </nav>
-            <ul class="transfer-folders">
-                @for (folder of folders(); track folder.path) {
-                    <li>
-                        <button type="button" class="transfer-folder" [title]="'Open ' + folder.name" (click)="browse(folder.path)">
-                            <svg sfeIcon="folder"></svg><span>{{ folder.name }}</span>
-                        </button>
-                    </li>
-                } @empty {
-                    <li class="muted">{{ loading() ? 'Loading…' : 'No folders in here.' }}</li>
-                }
-            </ul>
+            <sfe-folder-browser [browser]="browser" />
             @if (refusal(); as refusal) {
                 <p class="field-hint">{{ refusal }}</p>
             }
@@ -85,7 +60,6 @@ export interface ExtractChoice {
     `,
 })
 export class ExtractDialog {
-    private readonly api = inject(Api);
     private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
     private readonly transfers = inject(FileTransfers);
@@ -93,20 +67,13 @@ export class ExtractDialog {
 
     protected readonly choice = signal<ExtractChoice | null>(null);
     /** The folder chosen. */
-    protected readonly target = signal('');
-    private readonly listing = signal<DirectoryListing | null>(null);
-    protected readonly loading = signal(false);
+    protected readonly browser = folderBrowser();
+    private readonly target = this.browser.target;
     protected readonly busy = signal(false);
     protected readonly newFolder = signal(true);
     protected readonly password = signal('');
     protected readonly showPassword = signal(false);
 
-    protected readonly folders = computed(() => this.listing()?.items.filter(item => item.kind === 'directory') ?? []);
-    protected readonly crumbs = computed(() => {
-        const root = { path: '', name: this.config.config()?.rootName || 'Library' };
-        const parts = this.target() ? this.target().split('/') : [];
-        return [root, ...parts.map((name, index) => ({ path: parts.slice(0, index + 1).join('/'), name }))];
-    });
     protected readonly stem = computed(() => stemOf(this.choice()?.name ?? ''));
     protected readonly what = computed(() => {
         const choice = this.choice();
@@ -114,11 +81,9 @@ export class ExtractDialog {
     });
     /** Why the folder chosen can't be used; null when it can. */
     protected readonly refusal = computed(() => {
-        const listing = this.listing();
-        if (!listing)
+        if (!this.browser.listing())
             return 'Pick a folder.';
-        const allowed = listing.access ? !listing.access.pathOnly && listing.access.rights.includes(Rights.extractFiles) : this.config.can(Rights.extractFiles);
-        return allowed ? null : 'You may not extract archives into this folder: open another.';
+        return this.browser.allows(Rights.extractFiles) ? null : 'You may not extract archives into this folder: open another.';
     });
     protected readonly targetName = computed(() => baseName(this.target()) || this.config.config()?.rootName || 'the library');
 
@@ -132,25 +97,9 @@ export class ExtractDialog {
         this.newFolder.set(true);
         this.password.set('');
         this.showPassword.set(false);
-        this.listing.set(null);
-        void this.browse(parentPath(choice.path));
+        this.browser.reset();
+        void this.browser.browse(parentPath(choice.path));
         this.sheet().open();
-    }
-
-    protected async browse(path: string): Promise<void> {
-        this.target.set(path);
-        this.loading.set(true);
-        try {
-            const listing = await this.api.browse({ path, offset: 0, limit: FOLDERS_SHOWN, sort: 'name', desc: false });
-            if (this.target() === path)
-                this.listing.set(listing);
-        } catch {
-            // A folder gone meanwhile: back to the top.
-            if (path)
-                await this.browse('');
-        } finally {
-            this.loading.set(false);
-        }
     }
 
     protected checked(event: Event): boolean {

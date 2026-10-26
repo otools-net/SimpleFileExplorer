@@ -190,7 +190,9 @@ people would see or change a folder in its new place, SFE says who, and offers t
 
 With the right to compress (`files.compress`, which no group has until an administrator gives it), files and folders
 can be put in a zip saved in the library: **Compress…** in the selection bar, or in a file's or folder's menu. The zip
-goes into the folder listed (in search results, the folder of the first item).
+goes into the folder listed (in search results, the folder of the first item); **Another folder…** picks another one
+by clicking through the library. The dialog says how much will be read, from the index (folders never scanned are
+named, not counted).
 
 ![Compress…: name, compression and a password typed twice](../images/compress-dialog.png)
 
@@ -204,7 +206,7 @@ goes into the folder listed (in search results, the folder of the first item).
   passwords made of A–Z, digits and common signs.
 
 The zip is made on the server in the background, one at a time for the whole server, in the panel at the bottom
-right: its progress, **Cancel** (nothing half made stays), then the ratio achieved ("12 MB → 4 MB (33 %)"); **Show**
+right: its progress and the time left, **Cancel** (nothing half made stays), then the ratio achieved ("12 MB → 4 MB (33 %)"); **Show**
 in the message shows it in its folder. When a zip of that name is already there, the panel asks (Replace, Skip, Keep
 both). What it holds is what you could download: folders you can't see are left out, links and folders you may not
 download are named in a file `SFE - left out.txt` inside the zip. A zip is refused when the drive would keep less than

@@ -119,6 +119,10 @@ a.item-menu-entry { text-decoration: none; }
 .transfer-folder .icon { flex: none; width: 17px; height: 17px; color: var(--text-muted); }
 .transfer-folder span { overflow-wrap: anywhere; }
 .transfer-gains { margin: 0 0 12px; padding-left: 20px; }
+/* Compress: where the zip goes, with "Another folder…" beside it; the password notes close under the boxes. */
+.compress-where { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 4px; }
+.compress-size { margin: 0 0 12px; }
+.compress-notes { margin: 4px 0 0; padding-left: 20px; }
 .transfer-dialog .check { margin-top: 6px; }
 
 .operations-panel {

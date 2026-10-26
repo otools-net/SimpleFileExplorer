@@ -8,11 +8,6 @@ works is in [archive-reading](../features/archive-reading.md), [archive-viewer](
 [archive-extraction](../features/archive-extraction.md) and [compression](../features/compression.md). This file keeps
 what it left for later, none of it promised. Tick `[x]` in the commit that does it; delete the file once empty.
 
-## Compress
-
-- [ ] A folder picker for where the zip goes (today: the folder listed, or the first item's in search results).
-- [ ] The total size before starting (from the index), and an estimate of the time at Maximum on a big folder.
-
 ## Explore
 
 - [ ] Search across the archive (`GET …/explore/search?path=&q=&after=`: names containing, on the catalog, paged, a

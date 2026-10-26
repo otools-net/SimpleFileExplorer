@@ -9,7 +9,7 @@ import { SidebarService } from '../library/sidebar/sidebar.service';
 import { CompressDialog, defaultName } from './compress.dialog';
 import { FileTransfers } from './file-transfers';
 import { ItemMenu } from './item-menu';
-import { OperationsPanelComponent } from './operations-panel.component';
+import { OperationsPanelComponent, timeLeft } from './operations-panel.component';
 
 let api: ApiMock;
 let store: ListingStore;
@@ -106,8 +106,10 @@ describe('CompressDialog', () => {
         api.fileJobs.mockResolvedValue([job()]);
 
         TestBed.inject(Dialogs).compress()!.open([photo, notes]);
+        await settle();
         fixture.detectChanges();
         expect(element.textContent).toContain('Put 2 items into a zip in “Media”.');
+        expect(element.querySelector('[data-compress-size]')!.textContent).toBe('2.1 KB in 2 files to read.');
         expect(element.querySelector<HTMLInputElement>('[data-zip-name]')!.value).toBe('Media');
         expect([...element.querySelectorAll('option')].map(o => o.textContent!.split(':')[0])).toEqual(['Store', 'Fastest', 'Normal', 'Maximum']);
         expect(element.querySelector<HTMLSelectElement>('[data-level]')!.value).toBe('6');
@@ -131,6 +133,49 @@ describe('CompressDialog', () => {
         expect(api.startCompress).toHaveBeenCalledWith({ paths: [photo.path, notes.path], target: 'Media', name: 'holiday', level: 9, skipCompressed: true, password: 'pässwort' });
     });
 
+    it('puts the zip in another folder picked, where one may compress, and says the size to read', async () => {
+        await setUp();
+        const { fixture, element } = create();
+        api.folderTotals.mockResolvedValue({ indexed: true, files: 40, folders: 2, bytes: 3 * 1024 * 1024 });
+        const trips = item('Media/Trips', { kind: 'directory' });
+        api.browse.mockImplementation(async ({ path }: { path: string }) => path === 'Media/Trips'
+            ? { ...listing('Media/Trips', []), access: { pathOnly: false, rights: [Rights.browse] } }
+            : listing(path, [folder, trips]));
+        api.startCompress.mockResolvedValue(job());
+        api.fileJobs.mockResolvedValue([job()]);
+
+        TestBed.inject(Dialogs).compress()!.open([folder, photo]);
+        await settle();
+        fixture.detectChanges();
+        expect(api.folderTotals).toHaveBeenCalledWith('Media/Holidays', expect.any(AbortSignal));
+        expect(element.querySelector('[data-compress-size]')!.textContent).toBe('3 MB in 41 files to read.');
+
+        element.querySelector<HTMLButtonElement>('[data-pick-folder]')!.click();
+        fixture.detectChanges();
+        [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')].find(b => b.textContent!.includes('Trips'))!.click();
+        await settle();
+        fixture.detectChanges();
+        expect(element.querySelector('[data-compress-problem]')!.textContent).toContain('You may not make a zip in this folder');
+        expect(buttonNamed(element, 'Compress')!.disabled).toBe(true);
+
+        [...element.querySelectorAll<HTMLButtonElement>('.transfer-crumbs button')].find(b => b.textContent!.includes('Media'))!.click();
+        await settle();
+        fixture.detectChanges();
+        buttonNamed(element, 'Compress')!.click();
+        await settle();
+        expect(api.startCompress).toHaveBeenCalledWith(expect.objectContaining({ target: 'Media', paths: [folder.path, photo.path] }));
+    });
+
+    it('says which folders the index has not counted', async () => {
+        await setUp();
+        const { fixture, element } = create();
+        api.folderTotals.mockResolvedValue({ indexed: false, files: 0, folders: 0, bytes: 0 });
+        TestBed.inject(Dialogs).compress()!.open([folder, notes]);
+        await settle();
+        fixture.detectChanges();
+        expect(element.querySelector('[data-compress-size]')!.textContent).toBe('100 B in 1 file to read, and 1 folder not in the index (not counted).');
+    });
+
     it('needs a name the system takes', async () => {
         await setUp();
         const { fixture, element } = create();
@@ -144,6 +189,17 @@ describe('CompressDialog', () => {
         type(element, '[data-zip-name]', ' ');
         fixture.detectChanges();
         expect(element.textContent).toContain('Give the zip a name.');
+    });
+});
+
+describe('timeLeft', () => {
+    const start = { at: 0, bytes: 0 };
+    it('says the time left from the speed since the bytes started moving, after 10 seconds', () => {
+        expect(timeLeft(start, 5_000, 100, 1000)).toBeNull();
+        expect(timeLeft(start, 20_000, 100, 1000)).toBe('about 3 min left');
+        expect(timeLeft(start, 20_000, 900, 1000)).toBe('less than a minute left');
+        expect(timeLeft(start, 20_000, 1, 1000)).toBe('about 5 h 33 min left');
+        expect(timeLeft({ at: 0, bytes: 500 }, 20_000, 500, 1000)).toBeNull();
     });
 });
 

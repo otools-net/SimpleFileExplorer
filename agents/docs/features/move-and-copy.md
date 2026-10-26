@@ -46,5 +46,8 @@ Extractions are jobs of the same kind: [archive-extraction](archive-extraction.m
 - Drops: `OperationsPanelComponent` listens on the document; targets are elements with `data-drop` (folder items,
   location crumbs). The drag data is `DRAG_ITEMS` (shared with the quick links, whose `effectAllowed` is now `all`).
   Ctrl at drop = copy.
+- The picker is `FolderBrowser` + `<sfe-folder-browser>` (`files/folder-browser.component.ts`), shared with Extract…
+  and Compress…: the dialog holds the state (`folderBrowser()`: target, listing, `allows(right)` from the folder's
+  `access`), the component shows the way and the subfolders (`closedBecause`: a folder moved can't take itself).
 - Not done: merging folders on a clash (only replace/skip/keep both), dropping onto a quick link, "new folder" inside
   the picker, cancelling SFE's own work on a file in use.

@@ -1,14 +1,20 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
+import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { plural } from '../core/format';
+import { formatSize, plural } from '../core/format';
 import { LibraryItem } from '../core/models';
 import { baseName } from '../core/paths';
+import { Rights } from '../core/rights';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { checkedOf, valueOf } from '../shared/events';
 import { SheetComponent } from '../shared/sheet.component';
 import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { FileTransfers } from './file-transfers';
+import { folderBrowser, FolderBrowserComponent } from './folder-browser.component';
+
+/** Folders whose size is asked from the index at most; the others are said not counted. */
+const MEASURED_FOLDERS = 50;
 
 /** The levels offered (the server takes 0 to 9). */
 export const COMPRESSION_LEVELS: readonly { level: number; label: string; hint: string }[] = [
@@ -25,11 +31,22 @@ export const COMPRESSION_LEVELS: readonly { level: number; label: string; hint: 
  */
 @Component({
     selector: 'sfe-compress-dialog',
-    imports: [BusyDirective, SheetComponent],
+    imports: [BusyDirective, FolderBrowserComponent, SheetComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <sfe-sheet #sheet heading="Compress" variant="transfer-dialog">
-            <p>{{ what() }} into a zip in “{{ targetName() }}”.</p>
+            <p class="compress-where">
+                <span>{{ what() }} into a zip in “{{ targetName() }}”.</span>
+                @if (!picking()) {
+                    <button type="button" class="link-button" data-pick-folder title="Put the zip in another folder of the library" (click)="picking.set(true)">Another folder…</button>
+                }
+            </p>
+            @if (picking()) {
+                <sfe-folder-browser [browser]="browser" />
+            }
+            @if (size(); as size) {
+                <p class="field-hint compress-size" data-compress-size>{{ size }}</p>
+            }
             <label class="field">
                 <span>Name</span>
                 <input type="text" data-zip-name [value]="name()" (input)="name.set(value($event))" autocomplete="off" spellcheck="false">
@@ -84,6 +101,7 @@ export const COMPRESSION_LEVELS: readonly { level: number; label: string; hint: 
     `,
 })
 export class CompressDialog {
+    private readonly api = inject(Api);
     private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
     private readonly transfers = inject(FileTransfers);
@@ -91,7 +109,13 @@ export class CompressDialog {
 
     protected readonly levels = COMPRESSION_LEVELS;
     private readonly items = signal<LibraryItem[]>([]);
-    protected readonly target = signal('');
+    /** Where the zip goes: the folder listed, or one picked (Another folder…). */
+    protected readonly browser = folderBrowser();
+    protected readonly target = this.browser.target;
+    protected readonly picking = signal(false);
+    /** What will be read, from the index ("12.4 MB to read"); null while counting. */
+    protected readonly size = signal<string | null>(null);
+    private sizeRequest: AbortController | null = null;
     protected readonly name = signal('');
     protected readonly level = signal(6);
     protected readonly skipCompressed = signal(true);
@@ -117,6 +141,10 @@ export class CompressDialog {
             return 'A name can\'t hold \\ / : * ? " < > |.';
         if (this.password() && this.password() !== this.confirmation())
             return 'The two passwords differ.';
+        if (!this.browser.listing())
+            return this.browser.loading() ? 'Reading the folder…' : 'Pick a folder.';
+        if (!this.browser.allows(Rights.compressFiles))
+            return 'You may not make a zip in this folder: pick another.';
         return null;
     });
 
@@ -129,14 +157,49 @@ export class CompressDialog {
         if (!items.length)
             return;
         this.items.set(items);
-        this.target.set(this.transfers.compressTarget(items));
-        this.name.set(defaultName(items, this.target(), this.config.config()?.rootName ?? 'Library'));
+        const target = this.transfers.compressTarget(items);
+        this.browser.reset(target);
+        void this.browser.browse(target);
+        this.picking.set(false);
+        this.name.set(defaultName(items, target, this.config.config()?.rootName ?? 'Library'));
+        void this.measure(items);
         this.level.set(6);
         this.skipCompressed.set(true);
         this.password.set('');
         this.confirmation.set('');
         this.showPassword.set(false);
         this.sheet().open();
+    }
+
+    /** The size to read: the files' own, the folders' from the index (those never scanned are said, not guessed). */
+    private async measure(items: LibraryItem[]): Promise<void> {
+        this.sizeRequest?.abort();
+        const request = this.sizeRequest = new AbortController();
+        this.size.set(null);
+        let bytes = items.filter(item => item.kind !== 'directory').reduce((sum, item) => sum + (item.size ?? 0), 0);
+        let files = items.length - items.filter(item => item.kind === 'directory').length;
+        let unknown = 0;
+        const folders = items.filter(item => item.kind === 'directory');
+        for (const folder of folders.slice(0, MEASURED_FOLDERS)) {
+            try {
+                const totals = await this.api.folderTotals(folder.path, request.signal);
+                if (request.signal.aborted)
+                    return;
+                if (totals?.indexed) {
+                    bytes += totals.bytes;
+                    files += totals.files;
+                } else {
+                    unknown++;
+                }
+            } catch {
+                if (request.signal.aborted)
+                    return;
+                unknown++;
+            }
+        }
+        unknown += Math.max(0, folders.length - MEASURED_FOLDERS);
+        const read = `${formatSize(bytes)} in ${plural(files, 'file')} to read`;
+        this.size.set(unknown ? `${read}, and ${plural(unknown, 'folder')} not in the index (not counted).` : `${read}.`);
     }
 
     protected checked(event: Event): boolean {
