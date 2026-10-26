@@ -5,8 +5,8 @@ Code: `Core/Files/Compression/ArchiveExtractor.cs` (writing entries), `ArchiveRe
 (`POST api/files/jobs/extract`: ids → paths, unlock → password); client `files/extract.dialog.ts`,
 `FileTransfers.extract`/`canExtract`, `ItemMenu` (`extractBeside`, `extract`), the archive viewer's **Extract…**,
 `isExtractable` in `formats/formats.ts`. Tests: `ArchiveExtractorTests`, `ExtractJobTests`, `ExploreRouteTests`
-(extract rows), `extract.spec.ts`, the archive view spec. User docs: `docs/user-guide/archives.md#extracting`. The
-plan: [archives-next-plan](../development/archives-next-plan.md); reading: [archive-reading](archive-reading.md).
+(extract rows), `extract.spec.ts`, the archive view spec. User docs: `docs/user-guide/archives.md#extracting`. Reading:
+[archive-reading](archive-reading.md); what was decided against: below.
 
 ## Reading
 
@@ -24,7 +24,9 @@ plan: [archives-next-plan](../development/archives-next-plan.md); reading: [arch
 ## Writing (`ArchiveExtractor.Extract`)
 
 - Names: `ArchiveEntryNames.Split` then `FileNames.Check` per segment (`PortableNames`: Windows' refusals on Linux
-  too); the full path must start with the folder + separator; `MaxFullPath` (the index's `PathLengthLimit`).
+  too); the full path must start with the folder + separator; `MaxFullPath` (the index's `PathLengthLimit`): the only
+  bound on its length. Past Windows' old 260 characters is written (.NET's `\\?\` prefix, without long paths enabled:
+  `PathsPastWindowsOldLimitAreWritten`).
 - Left out and listed (first 1000, `LeftOutCount` all): refused names, links (never made), "other" entries, a ratio
   past `MaxCompressionRatio` (only when the format gives packed sizes), a second entry of the same name, a file where a
   folder is needed (and the reverse), a damaged entry (`ArchiveException` from its data: declared size, CRC).
@@ -82,3 +84,9 @@ plan: [archives-next-plan](../development/archives-next-plan.md); reading: [arch
   this page only): `canRetryExtraction`/`retryExtraction` reopen the dialog as asked (archive, entries chosen,
   `target`, `newFolder`) from **Enter the password…** in the panel and the toast's action; a job resumed after a
   reload keeps only its message.
+
+## Decided against
+
+- Alt+drop of an archive from the desktop to extract it: an upload then **Extract to "name"** is two clicks, a
+  modifier is invisible, and browsers and systems already give Alt (and Ctrl, Shift) a meaning while dragging (the
+  drop's effect).

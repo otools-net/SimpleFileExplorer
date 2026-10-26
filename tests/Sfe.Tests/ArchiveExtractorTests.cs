@@ -306,6 +306,21 @@ public sealed class ArchiveExtractorTests
     }
 
     [TestMethod]
+    public void PathsPastWindowsOldLimitAreWritten()
+    {
+        // 260 characters was Windows' limit without long paths enabled: .NET writes past it by itself (its `\\?\` prefix).
+        var folders = string.Join('/', Enumerable.Range(0, 4).Select(i => new string((char)('a' + i), 90)));
+        var zip = TestArchives.Zip(_folder, "deep-names.zip", ($"{folders}/far.txt", "far"));
+
+        var result = ArchiveExtractor.Extract(zip, ArchiveFormat.Zip, null, _into, null, Limits);
+
+        var written = Path.Combine(_into, folders.Replace('/', Path.DirectorySeparatorChar), "far.txt");
+        Assert.IsGreaterThan(300, written.Length);
+        Assert.AreEqual((1, 0), (result.Files, result.LeftOutCount));
+        Assert.AreEqual("far", File.ReadAllText(written));
+    }
+
+    [TestMethod]
     public void AnEntryAsLongAsTheIndexKeepsIsLeftOut()
     {
         var zip = TestArchives.Zip(_folder, "long.zip", ("short.txt", "s"), (new string('n', 150) + ".txt", "long"));

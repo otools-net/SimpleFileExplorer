@@ -5,8 +5,7 @@ downloads: `IZipTarget`, `DownloadTarget`, `CompressTarget`), `FileJobs.Compress
 (one at a time per server), `FileEndpoints.Compress` (`POST api/files/jobs/compress`), `Api/Security/ArchiveAccess.cs`;
 client `files/compress.dialog.ts`, `FileTransfers.compress`/`canCompress`, `ItemMenu` (`compress`), the selection bar.
 Tests: `ZipWriterTests`, `CompressJobTests`, `FileJobRouteTests` (one), `compress.spec.ts`; downloads' walk:
-`ArchivesTests`. User docs: `docs/user-guide/managing-files.md#compress-into-a-zip`. The plan:
-[archives-next-plan](../development/archives-next-plan.md).
+`ArchivesTests`. User docs: `docs/user-guide/managing-files.md#compress-into-a-zip`.
 
 ## Decisions (2026-10-26)
 

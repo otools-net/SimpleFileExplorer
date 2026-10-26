@@ -5,8 +5,7 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
 `ARCHIVE_FORMAT` / `isExplorable` / `setArchives` in `formats/formats.ts`, `pathToken` in `core/paths.ts`, the archive part of
 `styles/reader.css`. Tests: `ExploreRouteTests`, `ArchiveCatalogsTests`, `archive-view.component.spec.ts`, rows in
 `formats.spec.ts`; real app: `agents/tools/visual-check/archive-viewer.mjs`; docs scene `archive`. User docs:
-`docs/user-guide/archives.md`. The core (formats, names, catalogs): [archive-reading](archive-reading.md); what is left:
-[archives-next-plan](../development/archives-next-plan.md).
+`docs/user-guide/archives.md`. The core (formats, names, catalogs): [archive-reading](archive-reading.md).
 
 ## Routes
 

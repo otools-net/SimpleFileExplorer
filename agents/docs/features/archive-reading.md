@@ -3,7 +3,7 @@
 Code: `src/Sfe.Core/Files/Compression/` (`ArchiveFormats`, `ArchiveEntryNames`, `ZipDirectory`, `ArchiveReader`,
 `ArchiveCatalog`, `BoundedStreams`), `ArchiveOptions` (`Files:Archives:*`) in `SfeOptions.cs`; measurements: `agents/tools/archives/`. Tests:
 `ArchiveReaderTests`, `ArchiveCatalogTests`; samples `tests/samples/archives/` (7z, by
-`agents/tools/samples/make-archives.mjs`) and `tests/samples/third-party/sharpcompress/` (RAR, from SharpCompress' tests). What is left: [archives-next-plan](../development/archives-next-plan.md).
+`agents/tools/samples/make-archives.mjs`) and `tests/samples/third-party/sharpcompress/` (RAR, from SharpCompress' tests). Known limits: "Measured", below.
 
 The core under exploring and extracting archives: nothing here unpacks an archive, and nothing costs memory in
 proportion to its entries.
@@ -126,6 +126,10 @@ after its start. Pages: the root's median of 10 (200 rows), a folder's first pag
   38 MB list is now refused in 0.3 s, 149 MB peak).
 - Pages cost the same on any archive (keyset ranges); before catalog version 3 every page scanned all entries for
   `SmallestEncrypted` (600 ms at 5 M).
+- RAR: not measured (nothing free writes one); its list is read by SharpCompress' forward reader, one header at a
+  time as tar's, so memory should stay as flat.
+- 7z lists past `MaxSevenZipListMegabytes` are refused: our own 7z header reader, streaming entries as `ZipDirectory`
+  does, would lift it; not written unless people need bigger 7z.
 - Go to by `at` is bounded by the address: Kestrel's 8 KB request line, each `/` sent as `%2F` (~2 000 levels).
 - Earlier, by hand (Release, the catalog alone): 1 000 000 zip entries built in 11 s, 49 MB peak, ~3 ms a page.
 
