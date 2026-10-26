@@ -51,6 +51,112 @@ public static class ArchiveReader
         }
     }
 
+    /// <summary>
+    /// Every entry of the archive in the archive's order, each with its data (files only), for extracting: one pass
+    /// over the file, so a solid 7z or rar block is unpacked once whatever is taken from it. <paramref name="visit"/>
+    /// reads the stream it is given (or not) before returning: the stream ends with the visit. <paramref name="read"/>
+    /// is told how far into the archive's file the pass is, after each entry.
+    /// </summary>
+    public static void ReadThrough(string fullPath, ArchiveFormat format, string? password, Action<ArchiveEntry, Func<Stream>> visit,
+        Action<long>? read = null, CancellationToken cancel = default)
+    {
+        switch (format)
+        {
+            case ArchiveFormat.Zip:
+                ReadThroughZip(fullPath, password, visit, read, cancel);
+                break;
+            case ArchiveFormat.SevenZip:
+                {
+                    using var stream = Open(fullPath);
+                    using var archive = Wrap(() => SevenZipArchive.OpenArchive(stream, Options(password)));
+                    using var reader = Wrap(archive.ExtractAllEntries);
+                    ReadThroughReader(reader, password, visit, () => read?.Invoke(stream.Position), cancel);
+                    break;
+                }
+            case ArchiveFormat.TarGzip or ArchiveFormat.TarBzip2 or ArchiveFormat.TarXz:
+                {
+                    using var file = Open(fullPath);
+                    using var tail = new TailStream(Decompress(file, format));
+                    using var reader = Wrap(() => ReaderFactory.OpenReader(tail, Options()));
+                    ReadThroughReader(reader, password, visit, () => read?.Invoke(file.Position), cancel);
+                    Wrap(() =>
+                    {
+                        tail.CopyTo(Stream.Null);
+                        return 0;
+                    });
+                    if (!tail.EndsWithTarMark)
+                        throw CutOff();
+                    break;
+                }
+            default:
+                {
+                    using var stream = Open(fullPath);
+                    using var reader = Wrap(() => ReaderFactory.OpenReader(stream, Options(password)));
+                    ReadThroughReader(reader, password, visit, () => read?.Invoke(stream.Position), cancel);
+                    if (format == ArchiveFormat.Tar && !EndsWithTarMark(stream))
+                        throw CutOff();
+                    break;
+                }
+        }
+    }
+
+    /// <summary>A zip: its directory read from one handle, the entries' data from another (no seeking back and forth).</summary>
+    private static void ReadThroughZip(string fullPath, string? password, Action<ArchiveEntry, Func<Stream>> visit, Action<long>? read, CancellationToken cancel)
+    {
+        using var list = Open(fullPath);
+        using var data = Open(fullPath);
+        var directory = ZipDirectory.Locate(list);
+        foreach (var entry in directory.Read(list, cancel))
+        {
+            if (entry.Kind != ArchiveEntryKind.File)
+            {
+                visit(entry, NoData);
+                continue;
+            }
+            Stream? opened = null;
+            try
+            {
+                visit(entry, () => opened ??= Locked(entry, password) ?? directory.OpenEntry(new KeptOpen(data), entry, password));
+            }
+            finally
+            {
+                opened?.Dispose();
+            }
+            read?.Invoke(data.Position);
+        }
+    }
+
+    private static void ReadThroughReader(IReader reader, string? password, Action<ArchiveEntry, Func<Stream>> visit, Action read, CancellationToken cancel)
+    {
+        for (var index = 0L; Wrap(reader.MoveToNextEntry); index++)
+        {
+            cancel.ThrowIfCancellationRequested();
+            var entry = Map(reader.Entry, index);
+            if (entry.Kind != ArchiveEntryKind.File)
+            {
+                visit(entry, NoData);
+                continue;
+            }
+            Stream? opened = null;
+            try
+            {
+                // Errors of the data (a wrong password, a damaged block) come out of SharpCompress as it is read.
+                visit(entry, () => opened ??= Locked(entry, password) ?? Bounded(new WrappedErrors(Wrap(reader.OpenEntryStream)), entry, null));
+            }
+            finally
+            {
+                opened?.Dispose();
+            }
+            read();
+        }
+    }
+
+    private static Stream NoData() => throw new ArchiveException("Only files of an archive have data.");
+
+    /// <summary>An encrypted entry opened without a password: refused (only when it is taken, not when it is passed).</summary>
+    private static Stream? Locked(ArchiveEntry entry, string? password) =>
+        entry.Encrypted && string.IsNullOrEmpty(password) ? throw new ArchiveException("This entry is protected by a password.", needsPassword: true) : null;
+
     private static IEnumerable<ArchiveEntry> ReadZip(string fullPath, CancellationToken cancel)
     {
         using var stream = Open(fullPath);
@@ -92,13 +198,7 @@ public static class ArchiveReader
     private static IEnumerable<ArchiveEntry> ReadCompressedTar(string fullPath, ArchiveFormat format, CancellationToken cancel)
     {
         using var file = Open(fullPath);
-        using var tail = new TailStream(format switch
-        {
-            ArchiveFormat.TarGzip => new System.IO.Compression.GZipStream(file, System.IO.Compression.CompressionMode.Decompress),
-            ArchiveFormat.TarBzip2 => SharpCompress.Compressors.BZip2.BZip2Stream.Create(file,
-                SharpCompress.Compressors.CompressionMode.Decompress, decompressConcatenated: true, leaveOpen: false, tolerateTruncatedStream: false),
-            _ => new SharpCompress.Compressors.Xz.XZStream(file),
-        });
+        using var tail = new TailStream(Decompress(file, format));
         using var reader = Wrap(() => ReaderFactory.OpenReader(tail, Options()));
         for (var index = 0L; Wrap(reader.MoveToNextEntry); index++)
         {
@@ -114,6 +214,14 @@ public static class ArchiveReader
         if (!tail.EndsWithTarMark)
             throw CutOff();
     }
+
+    private static Stream Decompress(FileStream file, ArchiveFormat format) => format switch
+    {
+        ArchiveFormat.TarGzip => new System.IO.Compression.GZipStream(file, System.IO.Compression.CompressionMode.Decompress),
+        ArchiveFormat.TarBzip2 => SharpCompress.Compressors.BZip2.BZip2Stream.Create(file,
+            SharpCompress.Compressors.CompressionMode.Decompress, decompressConcatenated: true, leaveOpen: false, tolerateTruncatedStream: false),
+        _ => new SharpCompress.Compressors.Xz.XZStream(file),
+    };
 
     /// <summary>A whole tar ends with two zero blocks (then zeros to its record size): its length is whole blocks.</summary>
     private static bool EndsWithTarMark(FileStream stream)
@@ -244,6 +352,44 @@ public static class ArchiveReader
                 inner.Dispose();
             base.Dispose(disposing);
         }
+    }
+
+    /// <summary>The archive's file under one entry's stream: the entry ends, the file stays open for the next.</summary>
+    private sealed class KeptOpen(Stream inner) : ReadOnlyStream(inner)
+    {
+        public override bool CanSeek => true;
+        public override long Length => Inner.Length;
+        public override long Position { get => Inner.Position; set => Inner.Position = value; }
+        public override long Seek(long offset, SeekOrigin origin) => Inner.Seek(offset, origin);
+        public override int Read(Span<byte> buffer) => Inner.Read(buffer);
+
+        protected override void Dispose(bool disposing)
+        {
+        }
+    }
+
+    /// <summary>SharpCompress' errors while an entry's data is read (a wrong password, a damaged block), as <see cref="ArchiveException"/>.</summary>
+    private sealed class WrappedErrors(Stream inner) : ReadOnlyStream(inner)
+    {
+        public override int Read(Span<byte> buffer)
+        {
+            try
+            {
+                return Inner.Read(buffer);
+            }
+            catch (Exception error) when (error is not (ArchiveException or OperationCanceledException or OutOfMemoryException))
+            {
+                return Wrap<int>(() => throw error);
+            }
+        }
+
+        // SharpCompress reads the rest of an entry when its stream is closed: its errors come then too.
+        protected override void Dispose(bool disposing) =>
+            Wrap(() =>
+            {
+                base.Dispose(disposing);
+                return 0;
+            });
     }
 
     /// <summary>What an entry's stream keeps open: the reader (or archive), then the file.</summary>

@@ -13,11 +13,12 @@ import { ItemActions } from '../library/items/item-actions.service';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
 import { FileDownloads } from './downloads';
 import { FileActions } from './file-actions';
+import { stemOf } from './extract.dialog';
 import { FileTransfers } from './file-transfers';
 
 /** One entry of an item's menu: always an action. */
 export interface ItemMenuEntry extends MenuEntry {
-    id: 'open' | 'newTab' | 'openFolder' | 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
+    id: 'open' | 'newTab' | 'openFolder' | 'openAsText' | 'editText' | 'editPicture' | 'rename' | 'delete' | 'cut' | 'copy' | 'paste' | 'moveTo' | 'copyTo' | 'extractBeside' | 'extract' | 'download' | 'tags' | 'quickLink' | 'copyPath' | 'exclusions' | 'properties';
     run: () => void;
 }
 
@@ -73,7 +74,7 @@ export class ItemMenu {
      * only has its tags and ⋮ buttons: quick links and copying the path are here too.
      */
     hasActions(item: LibraryItem): boolean {
-        return this.canSeeProperties() || this.canOpenAsText(item) || this.canEditText(item) || this.canEditPicture(item) || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item) || this.canExclude(item);
+        return this.canSeeProperties() || this.transfers.canExtract(item) || this.canOpenAsText(item) || this.canEditText(item) || this.canEditPicture(item) || this.quickLinks.enabled() || this.copyPaths.enabled() || this.canRename(item) || this.files.canDelete(item) || this.transfers.canMove(item) || this.transfers.canCopy(item) || this.canExclude(item);
     }
 
     /** Properties of what is listed: whoever browses. */
@@ -169,6 +170,18 @@ export class ItemMenu {
             entries.push({ id: 'moveTo', label: 'Move to…', icon: 'move', title: 'Move it to another folder, picked next', run: () => this.transfers.pick('move', targets()) });
         if (canCopy)
             entries.push({ id: 'copyTo', label: 'Copy to…', icon: 'copy', title: 'Copy it into another folder, picked next', run: () => this.transfers.pick('copy', targets()) });
+        if (targets().length === 1 && this.transfers.canExtractBeside(item))
+            entries.push({
+                id: 'extractBeside', label: `Extract to “${stemOf(item.name)}”`, icon: 'extract',
+                title: `Extract it here, into a new folder named after it (or after its one folder); in the background`,
+                run: () => void this.transfers.extract({ archive: item.path, target: this.store.route().path, newFolder: true }),
+            });
+        if (targets().length === 1 && this.transfers.canExtract(item) && this.dialogs.extract())
+            entries.push({
+                id: 'extract', label: 'Extract…', icon: 'extract',
+                title: 'Extract it into a folder picked next, with its password if it has one',
+                run: () => this.dialogs.extract()?.open({ path: item.path, name: item.name }),
+            });
         if (this.downloads.canDownload(item)) {
             const selected = targets();
             const zip = this.downloads.isZip(selected);

@@ -284,7 +284,22 @@ export interface DeleteResults {
     permanent: boolean;
 }
 
-export type FileJobKind = 'move' | 'copy';
+export type FileJobKind = 'move' | 'copy' | 'extract';
+
+/** An archive extracted (`POST api/files/jobs/extract`): all of it, or the folders and files chosen in its listing. */
+export interface ExtractRequest {
+    archive: string;
+    target: string;
+    /** Into a new folder named after the archive (or after its one top folder); else straight into `target`. */
+    newFolder: boolean;
+    /** Ids of the archive's listing. */
+    folders?: number[];
+    files?: number[];
+    conflicts?: ConflictChoice;
+    /** The viewer's unlock of the archive, or its password. */
+    unlock?: string | null;
+    password?: string | null;
+}
 export type FileJobState = 'running' | 'waiting' | 'completed' | 'cancelled';
 /** What a job does when the target holds an item of the same name; `ask`: it waits for the answer. */
 export type ConflictChoice = 'ask' | 'replace' | 'skip' | 'keepBoth';

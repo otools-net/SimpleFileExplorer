@@ -4,6 +4,7 @@ Code: `src/Sfe.Core/Files/FileJobs.cs` (jobs, `IFileJobAccess`), `Api/Security/F
 `Api/Endpoints/FileEndpoints.cs` (`api/files/jobs…`); client `app/files/` (`file-transfers.ts` service and clipboard,
 `transfer.dialog.ts` picker and confirmations, `operations-panel.component.ts` panel and drops). Tests: `FileJobsTests`,
 `FileJobRouteTests`, `transfer.spec.ts`. User docs: `docs/user-guide/managing-files.md#move-and-copy`.
+Extractions are jobs of the same kind: [archive-extraction](archive-extraction.md).
 
 ## Decisions (2026-10-17)
 

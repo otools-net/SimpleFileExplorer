@@ -1,6 +1,7 @@
 import { DestroyRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import type { ImageEditorDialog } from '../editor/image-editor.dialog';
 import type { DeleteDialog } from '../files/delete.dialog';
+import type { ExtractDialog } from '../files/extract.dialog';
 import type { BatchRenameDialog } from '../files/batch-rename.dialog';
 import type { NameDialog } from '../files/name.dialog';
 import type { PropertiesDialog } from '../files/properties.dialog';
@@ -37,6 +38,8 @@ export class Dialogs {
     readonly delete = signal<DeleteDialog | null>(null);
     /** Move to… and Copy to…, and the confirmation of a paste or a drop. */
     readonly transfer = signal<TransferDialog | null>(null);
+    /** Extract… of an archive (from its menu or the archive viewer). */
+    readonly extract = signal<ExtractDialog | null>(null);
     readonly properties = signal<PropertiesDialog | null>(null);
     /** Several items renamed at once. */
     readonly batchRename = signal<BatchRenameDialog | null>(null);

@@ -10,7 +10,7 @@ import { ConfigService } from '../core/config.service';
 import { Rights } from '../core/rights';
 import { ListingStore } from '../library/listing.store';
 import { DRAG_ITEMS } from '../library/quick-links/quick-links.service';
-import { FileTransfers, finished } from './file-transfers';
+import { FileTransfers, finished, pastOf } from './file-transfers';
 import { UploadsPanelComponent } from './uploads-panel.component';
 import { droppedFiles, UploadQueue } from './uploads';
 
@@ -30,7 +30,7 @@ const DROP_TARGET = '[data-drop]';
     host: {
         class: 'operations-panel',
         role: 'region',
-        'aria-label': 'Moves, copies and uploads',
+        'aria-label': 'Moves, copies, extractions and uploads',
         '[hidden]': '!transfers.jobs().length && !transfers.clipboard() && !uploads.batches().length',
         '(document:dragstart)': 'onDragStart($event)',
         '(document:dragover)': 'onDragOver($event)',
@@ -59,7 +59,7 @@ const DROP_TARGET = '[data-drop]';
         @for (job of transfers.jobs(); track job.id) {
             <section class="operation" [class.done]="isDone(job)" [attr.data-job]="job.id" aria-live="polite" [sfeContextMenu]="jobMenu(job)">
                 <header class="operation-head">
-                    <svg [sfeIcon]="job.kind === 'move' ? 'move' : 'copy'"></svg>
+                    <svg [sfeIcon]="job.kind"></svg>
                     <span class="operation-title">{{ title(job) }}</span>
                     @if (isDone(job)) {
                         <button type="button" class="icon-button ghost small" aria-label="Close" title="Close" (click)="transfers.dismiss(job)">
@@ -78,7 +78,7 @@ const DROP_TARGET = '[data-drop]';
                         <p>“{{ conflict.existing.name }}” is already there.</p>
                         <dl>
                             <dt>There</dt><dd>{{ side(conflict.existing) }}</dd>
-                            <dt>{{ job.kind === 'move' ? 'Moved' : 'Copied' }}</dt><dd>{{ side(conflict.source) }}</dd>
+                            <dt>{{ job.kind === 'move' ? 'Moved' : job.kind === 'copy' ? 'Copied' : 'Extracted' }}</dt><dd>{{ side(conflict.source) }}</dd>
                         </dl>
                         <div class="operation-choices">
                             @if (conflict.canReplace) {
@@ -96,7 +96,7 @@ const DROP_TARGET = '[data-drop]';
                 @if (isDone(job) && problems(job).length) {
                     <ul class="operation-problems">
                         @for (result of problems(job); track result.path) {
-                            <li [class.skipped]="result.status === 'skipped'">{{ result.message || baseName(result.path) }}</li>
+                            <li [class.skipped]="result.status === 'skipped'" [class.done]="result.status === 'done'">{{ result.message || baseName(result.path) }}</li>
                         }
                     </ul>
                 }
@@ -153,26 +153,36 @@ export class OperationsPanelComponent implements OnInit {
     protected title(job: FileJobView): string {
         const where = `“${baseName(job.target) || 'the library'}”`;
         const count = plural(job.total, 'item');
+        if (job.kind === 'extract') {
+            const archive = `“${baseName(job.results[0]?.path ?? job.current ?? '')}”`;
+            if (job.state === 'cancelled')
+                return `Stopped: nothing extracted to ${where}`;
+            if (job.state === 'completed')
+                return job.results[0]?.status === 'done' ? `${archive} extracted to ${where}` : `${archive} not extracted`;
+            return `Extracting ${job.current ? `“${baseName(job.current)}”` : ''} to ${where}`;
+        }
         if (job.state === 'cancelled')
-            return `Stopped: ${job.done} of ${count} ${job.kind === 'move' ? 'moved' : 'copied'} to ${where}`;
+            return `Stopped: ${job.done} of ${count} ${pastOf(job.kind)} to ${where}`;
         if (job.state === 'completed') {
             const done = job.results.filter(result => result.status === 'done').length;
-            return `${plural(done, 'item')} ${job.kind === 'move' ? 'moved' : 'copied'} to ${where}`;
+            return `${plural(done, 'item')} ${pastOf(job.kind)} to ${where}`;
         }
         return `${job.kind === 'move' ? 'Moving' : 'Copying'} ${count} to ${where}`;
     }
 
     protected progressMax(job: FileJobView): number {
-        return job.kind === 'copy' && job.bytesTotal ? job.bytesTotal : Math.max(1, job.total);
+        return job.kind !== 'move' && job.bytesTotal ? job.bytesTotal : Math.max(1, job.total);
     }
 
     protected progressValue(job: FileJobView): number {
-        return job.kind === 'copy' && job.bytesTotal ? job.bytesDone : job.done;
+        return job.kind !== 'move' && job.bytesTotal ? job.bytesDone : job.done;
     }
 
     protected status(job: FileJobView): string {
         if (job.state === 'waiting')
             return 'Waiting for your answer…';
+        if (job.kind === 'extract')
+            return job.bytesTotal ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} read` : 'Reading the archive…';
         return joinParts([
             `${job.done} of ${job.total}`,
             job.kind === 'copy' && job.bytesTotal ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)}` : null,
@@ -184,9 +194,9 @@ export class OperationsPanelComponent implements OnInit {
         return joinParts([side.isFolder ? 'folder' : formatSize(side.size), side.modified ? `modified ${formatDate(side.modified)}` : null], ', ');
     }
 
-    /** What was not done, skipped included. */
+    /** What was not done, skipped included; an extraction's result whatever it is (what it left out). */
     protected problems(job: FileJobView) {
-        return job.results.filter(result => result.status !== 'done');
+        return job.results.filter(result => result.status !== 'done' || (job.kind === 'extract' && result.message));
     }
 
     protected answer(job: FileJobView, choice: 'replace' | 'skip' | 'keepBoth'): void {

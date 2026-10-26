@@ -221,9 +221,10 @@ internal sealed class ZipDirectory
             8 => new DeflateStream(packed, CompressionMode.Decompress),
             _ => throw new ArchiveException($"This entry uses a compression method SFE doesn't read ({entry.Method})."),
         };
-        // A wrong ZipCrypto password passes its check byte 1 time in 256, AE-1 keeps the CRC too: checked at the end.
-        if (entry.Cipher == ZipCipher.ZipCrypto || (entry.Cipher == ZipCipher.Aes && entry.CipherInfo >> 4 == 1))
-            data = new CrcCheckStream(data, entry.Crc);
+        // Every entry's CRC is checked at its end (a damaged archive is never a file written whole), but AE-2's, which
+        // keeps none (its HMAC checks it). A wrong ZipCrypto password passes its check byte 1 time in 256.
+        if (entry.Cipher != ZipCipher.Aes || entry.CipherInfo >> 4 == 1)
+            data = new CrcCheckStream(data, entry.Crc, entry.Encrypted);
         return new DeclaredSizeStream(data, entry.Size);
     }
 

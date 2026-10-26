@@ -131,22 +131,22 @@ public static class FileEndpoints
                 `keepTags`. Results per item in `results`.
                 """);
         jobs.MapGet("", ListJobs)
-            .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles)
             .NotLibraryPaths()
             .WithName("ListFileJobs")
-            .WithSummary("The caller's moves and copies, running and recent.");
+            .WithSummary("The caller's moves, copies and extractions, running and recent.");
         jobs.MapGet("/{id:int}", GetJob)
-            .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles)
             .NotLibraryPaths()
             .WithName("GetFileJob")
             .WithSummary("One of the caller's moves or copies.");
         jobs.MapPost("/{id:int}/answer", AnswerJob)
-            .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles)
             .NotLibraryPaths()
             .WithName("AnswerFileJob")
             .WithSummary("Answers a job's question about a name clash (`forAll`: the same for the next ones).");
         jobs.MapPost("/{id:int}/cancel", CancelJob)
-            .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
+            .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles)
             .NotLibraryPaths()
             .WithName("CancelFileJob")
             .WithSummary("Stops a move or copy: what is done stays, nothing half copied does.");
@@ -330,6 +330,8 @@ public static class FileEndpoints
         var state = await current.GetAsync();
         if (state.Tenant is not { } tenant)
             return TypedResults.Forbid();
+        if (request.Kind == FileJobKind.Extract)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["kind"] = ["Archives are extracted through api/files/jobs/extract."] });
         if (!state.Has(request.Kind == FileJobKind.Move ? Rights.MoveFiles : Rights.CopyFiles))
             return TypedResults.Forbid();
         if (request.Paths is not { Count: > 0 } || request.Paths.Count > MaxDeletePaths)

@@ -44,6 +44,16 @@ public sealed record ArchiveUnlocked(string Unlock);
 /// <param name="Read">Entries read so far.</param>
 public sealed record ArchiveReading(long Read);
 
+/// <param name="Archive">The archive's path in the library.</param>
+/// <param name="Target">The folder to extract into.</param>
+/// <param name="NewFolder">Into a new folder named after the archive (or after its one top folder); else straight into <paramref name="Target"/>.</param>
+/// <param name="Folders">Folders of the archive to extract (ids of its listing), with what they hold; none with <paramref name="Files"/>: all of it.</param>
+/// <param name="Files">Files of the archive to extract (ids of its listing).</param>
+/// <param name="Unlock">The unlock of the archive (from <c>explore/unlock</c>), or its <paramref name="Password"/>.</param>
+public sealed record ExtractRequest(
+    string? Archive, string? Target, bool NewFolder = true, IReadOnlyList<long>? Folders = null, IReadOnlyList<long>? Files = null,
+    ConflictChoice Conflicts = ConflictChoice.Ask, string? Unlock = null, string? Password = null);
+
 /// <summary>
 /// Archives explored without being unpacked (agents/docs/features/archive-reading.md): a folder of the archive at a
 /// time, in pages, from its catalog; one entry's data, for the viewer or to download. The archive's content is the
@@ -62,6 +72,10 @@ public static class ExploreEndpoints
     private const int TryBytes = 16 * 1024 * 1024;
     public const int PageSize = 200;
     public const int MaxPageSize = 1000;
+    public const string ReadingType = "archive-reading";
+
+    /// <summary>Folders and files of an archive chosen at most for one extraction.</summary>
+    public const int MaxExtractChosen = 10_000;
 
     public static RouteGroupBuilder MapExploreEndpoints(this RouteGroupBuilder api)
     {
@@ -94,6 +108,25 @@ public static class ExploreEndpoints
                 claiming more than `Files:Archives:MaxCompressionRatio` times its packed size is refused (422). Its data is
                 held to the size the archive declares: more or less is a broken archive, and the download is cut off.
                 `unlock` (from `unlock`) opens an encrypted entry, or any of an archive whose list is encrypted.
+                """);
+        api.MapPost("/files/jobs/extract", Extract)
+            .RequireRight(Rights.ExtractFiles)
+            .RequireRateLimiting(RequestLimits.Unlock)
+            .FolderScoped("files.view and files.download at the archive, files.extract at the target (checked again as the job runs); replacing: the right to delete there")
+            .WithTags("Files")
+            .WithName("ExtractArchive")
+            .WithSummary("Extracts an archive (zip, 7z, rar, tar, gz…), all of it or the entries chosen, in the background.")
+            .WithDescription($"""
+                Starts an extraction job and answers its first state (202), followed as moves and copies are (`GET
+                api/files/jobs/:id`, `answer`, `cancel`). `newFolder` (default): into a new folder named after the archive
+                (after its one top folder when it has one), never mixed with what is there; else straight into `target`,
+                where name clashes are asked as `conflicts` says. `folders` and `files` (at most {MaxExtractChosen}, ids of
+                the archive's listing: its list must have been read, else 409 `{ReadingType}`) choose what is extracted,
+                each from its own name. Names leading out of the folder, links, names the system refuses, and files
+                claiming more than `Files:Archives:MaxCompressionRatio` times their packed size are left out and listed in
+                the result. A protected archive needs `unlock` (or `password`): a wrong one fails the job before anything
+                stays. Cancelled or failed, nothing half written stays. At most {RequestLimits.UnlocksPerMinute} a minute
+                per caller.
                 """);
         explore.MapPost("/unlock", Unlock)
             .RequireRight(Rights.ViewFiles)
@@ -165,6 +198,68 @@ public static class ExploreEndpoints
         if (state.Catalog is { } catalog && password is not null && catalog.Summary().NeedsPassword)
             return catalogs.GetInMemory(full, canonical, format, unlock!, password);
         return state;
+    }
+
+    private static async Task<Results<Accepted<FileJobView>, NotFound, ForbidHttpResult, ValidationProblem, ProblemHttpResult>> Extract(
+        FileJobs jobs, ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, AccessService accounts, RightsEvaluator rights, LibraryPaths paths,
+        ServerFiles serverFiles, WorkFolder work, ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, ExtractRequest request)
+    {
+        var state = await current.GetAsync();
+        if (state.Tenant is not { } tenant || !state.Has(Rights.ExtractFiles))
+            return TypedResults.Forbid();
+        if (string.IsNullOrWhiteSpace(request.Target))
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["target"] = ["Name the folder to extract into."] });
+        var chosen = (request.Folders?.Count ?? 0) + (request.Files?.Count ?? 0);
+        if (chosen > MaxExtractChosen)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["folders"] = [$"Choose at most {MaxExtractChosen} folders and files: or the folder holding them."] });
+        var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, request.Archive, Rights.ViewFiles, Rights.Download);
+        if (refused is { } forbidden)
+            return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
+
+        var password = unlocks.PasswordFor(request.Unlock, tenant.Id, ArchiveUnlocks.OwnerOf(context), full)
+            ?? (string.IsNullOrEmpty(request.Password) ? null : request.Password);
+        IReadOnlyList<string>? entries = null;
+        if (chosen > 0)
+        {
+            // Ids are those of the listing the person saw: its catalog says which paths they are.
+            if (FormatOf(full, options.CurrentValue) is not { } format)
+                return NotExplorable();
+            var catalogState = CatalogOf(catalogs, full, canonical, format, request.Unlock, password);
+            if (catalogState.Status == ArchiveCatalogStatus.Building)
+                return TypedResults.Problem("The archive's list is still being read: try again in a moment.", statusCode: StatusCodes.Status409Conflict, type: ReadingType);
+            if (catalogState.Catalog is not { } catalog)
+                return TypedResults.Problem(catalogState.Error, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
+            if (catalog.Summary().NeedsPassword)
+                return TypedResults.Problem("The archive's list is protected by a password: unlock it first.", statusCode: StatusCodes.Status403Forbidden, type: WrongPasswordType);
+            var folderPaths = new Dictionary<long, string?>();
+            string? FolderPath(long id) => folderPaths.TryGetValue(id, out var known) ? known : folderPaths[id] = catalog.PathOf(id);
+            var list = new List<string>();
+            foreach (var id in request.Folders ?? [])
+            {
+                if (FolderPath(id) is not { } folder)
+                    return TypedResults.NotFound();
+                if (folder.Length == 0)
+                {
+                    // The root: all of it.
+                    list = null;
+                    break;
+                }
+                list.Add(folder);
+            }
+            foreach (var id in list is null ? [] : request.Files ?? [])
+            {
+                if (catalog.Entry(id) is not { } file || FolderPath(file.FolderId) is not { } folder)
+                    return TypedResults.NotFound();
+                list!.Add(folder.Length == 0 ? file.Name : $"{folder}/{file.Name}");
+            }
+            entries = list;
+        }
+
+        // Every right is checked again as the job runs, with the person's access then.
+        var access = new FileJobAccess(accounts, rights, paths, serverFiles, work, tenant, state.User?.Id);
+        var view = jobs.Start(new FileJobRequest(FileJobKind.Extract, [canonical], request.Target, request.Conflicts, Entries: entries, NewFolder: request.NewFolder),
+            FileEndpoints.Actor(state), access, password);
+        return TypedResults.Accepted($"api/files/jobs/{view.Id}", view);
     }
 
     private static async Task<Results<Ok<ArchiveUnlocked>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>> Unlock(

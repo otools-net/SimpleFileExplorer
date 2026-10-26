@@ -248,6 +248,21 @@ export function isExplorable(item: LibraryItem): boolean {
     return ARCHIVE_SUFFIXES.some(longer);
 }
 
+/** One file compressed alone: extracted, never explored. */
+const SINGLE_SUFFIXES: readonly string[] = ['.gz', '.bz2', '.xz'];
+
+/**
+ * `item` may be extracted (by its name: the server reads its bytes): every archive explored, compressed tars of any
+ * size, and one file compressed alone. Not without `config.archives` (an older server).
+ */
+export function isExtractable(item: LibraryItem): boolean {
+    if (!archiveSettings() || item.kind !== 'file')
+        return false;
+    const name = item.name.toLowerCase();
+    const longer = (suffix: string) => name.endsWith(suffix) && name.length > suffix.length;
+    return [...ARCHIVE_SUFFIXES, ...COMPRESSED_TAR_SUFFIXES, ...SINGLE_SUFFIXES].some(longer);
+}
+
 /** Archives (zip, 7z, rar, tars): their folders and files, explored without unpacking them. */
 export const ARCHIVE_FORMAT: FileFormat = {
     id: 'archive',

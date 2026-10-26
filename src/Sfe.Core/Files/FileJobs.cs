@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
+using Sfe.Core.Files.Compression;
 using Sfe.Core.Indexing;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
@@ -20,6 +21,9 @@ public enum FileJobKind
 {
     Move,
     Copy,
+
+    /// <summary>An archive's entries written into a folder (agents/docs/features/archive-extraction.md).</summary>
+    Extract,
 }
 
 public enum FileJobState
@@ -48,12 +52,16 @@ public enum ConflictChoice
     KeepBoth,
 }
 
-/// <param name="Paths">Files and folders to move or copy (root-relative).</param>
+/// <param name="Paths">Files and folders to move or copy (root-relative); the archive to extract.</param>
 /// <param name="Target">The folder they go into.</param>
 /// <param name="KeepAccess">Moved folders keep the access each group and account had (folder rules pinning it).</param>
 /// <param name="KeepTags">Copies get the tags of their originals.</param>
+/// <param name="Entries">Extract: the paths inside the archive to extract (each with what is below it); null: all of it.</param>
+/// <param name="NewFolder">
+/// Extract: into a new folder named after the archive (or after its one top folder), rather than straight into the target.
+/// </param>
 public sealed record FileJobRequest(FileJobKind Kind, IReadOnlyList<string> Paths, string Target, ConflictChoice Conflicts = ConflictChoice.Ask,
-    bool KeepAccess = false, bool KeepTags = false);
+    bool KeepAccess = false, bool KeepTags = false, IReadOnlyList<string>? Entries = null, bool NewFolder = false);
 
 /// <summary>An item on one side of a name clash.</summary>
 public sealed record ClashSide(string Name, bool IsFolder, long? Size, DateTimeOffset? Modified);
@@ -114,14 +122,26 @@ public sealed class FileJobs(
     private const int KeptJobs = 50;
     private const int CopyBuffer = 1 << 20;
 
+    /// <summary>Bytes written between two reads of the free space while extracting.</summary>
+    private const long FreeSpaceStep = 64L << 20;
+
     private readonly ConcurrentDictionary<int, Job> _jobs = new();
     private readonly CancellationTokenSource _shutdown = new();
     private int _nextId;
 
-    /// <summary>Starts a move or copy; the result is its first view.</summary>
-    public FileJobView Start(FileJobRequest request, FileActor actor, IFileJobAccess access)
+    /// <summary>Folders an extraction writes into before they take their names: never a name of the person's.</summary>
+    public const string PartialSuffix = ".sfe-partial";
+
+    /// <summary>
+    /// Starts a move, copy or extraction; the result is its first view. <paramref name="password"/>: the archive's, held
+    /// by the job only while it runs (never in its view, its request or the log).
+    /// </summary>
+    public FileJobView Start(FileJobRequest request, FileActor actor, IFileJobAccess access, string? password = null)
     {
-        var job = new Job(Interlocked.Increment(ref _nextId), request, actor, access, CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token));
+        var job = new Job(Interlocked.Increment(ref _nextId), request, actor, access, CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token))
+        {
+            Password = request.Kind == FileJobKind.Extract && !string.IsNullOrEmpty(password) ? password : null,
+        };
         _jobs[job.Id] = job;
         job.Completion = Task.Run(() => RunAsync(job), CancellationToken.None);
         Prune();
@@ -164,7 +184,7 @@ public sealed class FileJobs(
                 return;
             }
             targetPath = paths.ToRelative(targetFull)!;
-            if (request.Kind == FileJobKind.Copy)
+            if (request.Kind is FileJobKind.Copy or FileJobKind.Extract)
                 job.BytesTotal = request.Paths.Sum(path => paths.TryResolve(path, out var full) ? SizeOf(full) : 0);
 
             foreach (var path in request.Paths.Distinct(StringComparer.Ordinal))
@@ -174,7 +194,9 @@ public sealed class FileJobs(
                 FileJobItem result;
                 try
                 {
-                    result = await ItemAsync(job, path, targetPath, targetFull, copiedFolders, token);
+                    result = request.Kind == FileJobKind.Extract
+                        ? await ExtractAsync(job, path, targetPath, targetFull, copiedFolders, token)
+                        : await ItemAsync(job, path, targetPath, targetFull, copiedFolders, token);
                 }
                 catch (OperationCanceledException)
                 {
@@ -184,7 +206,8 @@ public sealed class FileJobs(
                 {
                     logger.LogWarning(ex, "{Account} could not {Kind} {Path} to {Target}", job.Actor.Name, request.Kind.ToString().ToLowerInvariant(), path, targetPath);
                     result = new FileJobItem(path, null, FileOperationStatus.Failed,
-                        ex is LinksInsideException ? ex.Message : FileOperations.DiskFailure(ex, $"“{Base(path)}” could not be {(request.Kind == FileJobKind.Move ? "moved" : "copied")}").Message);
+                        ex is LinksInsideException or NoRoomException ? ex.Message
+                        : FileOperations.DiskFailure(ex, $"“{Base(path)}” could not be {request.Kind switch { FileJobKind.Move => "moved", FileJobKind.Copy => "copied", _ => "extracted" }}").Message);
                 }
                 job.Report(result);
             }
@@ -201,6 +224,7 @@ public sealed class FileJobs(
         }
         finally
         {
+            job.Password = null;
             browser.Invalidate(paths.TryResolve(request.Target, out var target) ? target : paths.Root);
             tags.InvalidateFileCounts();
             // Copied folders are indexed by a scan of each (none starts while another runs: the next scan does it).
@@ -235,42 +259,12 @@ public sealed class FileJobs(
             return new FileJobItem(path, sourcePath, FileOperationStatus.Skipped, $"“{name}” is already there.");
 
         // A name clash: the person's choice, asked when needed.
+        var (clash, refused) = await ClashAsync(job, path, source, sourcePath, isFolder, targetPath, targetFull, name,
+            request.Kind == FileJobKind.Copy && LibraryPaths.PathComparer.Equals(Parent(sourcePath), targetPath), token);
+        if (refused is not null)
+            return refused;
+        name = clash!;
         var destination = Path.Combine(targetFull, name);
-        if (File.Exists(destination) || Directory.Exists(destination))
-        {
-            var replaceRight = trash.AlwaysPermanent ? Rights.DeletePermanently : Rights.DeleteFiles;
-            var existingPath = Join(targetPath, name);
-            // Never what holds the item itself (moving X/X next to X, then replacing X).
-            var canReplace = !FolderPolicy.IsSameOrBelow(sourcePath, existingPath)
-                && await job.Access.MayAsync(existingPath, replaceRight) && await job.Access.MayAsync(targetPath, replaceRight)
-                && (!Directory.Exists(destination) || await job.Access.MayThroughoutAsync(existingPath, replaceRight));
-            var choice = request.Kind == FileJobKind.Copy && LibraryPaths.PathComparer.Equals(Parent(sourcePath), targetPath)
-                ? ConflictChoice.KeepBoth   // a copy in its own folder
-                : await job.ChooseAsync(new FileJobConflict(Side(source), Side(destination), canReplace), token);
-            switch (choice)
-            {
-                case ConflictChoice.Skip:
-                    return new FileJobItem(path, null, FileOperationStatus.Skipped, $"“{name}” was left out: there is one of that name there.");
-                case ConflictChoice.KeepBoth:
-                    name = FileNames.KeepBoth(name, isFolder, n => File.Exists(Path.Combine(targetFull, n)) || Directory.Exists(Path.Combine(targetFull, n)))
-                        ?? throw new IOException("No free name.");
-                    destination = Path.Combine(targetFull, name);
-                    break;
-                case ConflictChoice.Replace when canReplace:
-                    using (var hold = scans.TryBeginOperation(destination))
-                    {
-                        if (hold is null)
-                            return ScanRunning(path);
-                        if (trash.AlwaysPermanent)
-                            await trash.DeleteForGoodAsync(destination, existingPath, Directory.Exists(destination), job.Actor, token);
-                        else
-                            await trash.MoveInAsync(destination, existingPath, Directory.Exists(destination), job.Actor, token);
-                    }
-                    break;
-                default:
-                    return new FileJobItem(path, null, FileOperationStatus.Forbidden, $"You may not replace “{name}” there.");
-            }
-        }
         var destinationPath = Join(targetPath, name);
         if (await TooLongForTheIndexAsync(source, destination.Length - source.Length, token) is { } tooLong)
             return new FileJobItem(path, null, FileOperationStatus.Invalid, tooLong);
@@ -278,6 +272,48 @@ public sealed class FileJobs(
         return move
             ? await MoveAsync(job, path, source, sourcePath, destination, destinationPath, isFolder, token)
             : await CopyAsync(job, path, source, sourcePath, destination, destinationPath, isFolder, copiedFolders, token);
+    }
+
+    /// <summary>
+    /// The name <paramref name="name"/> takes in the target: itself when free, else the person's choice (asked when
+    /// needed): another name, or the item there replaced (to the trash); or the item's result when it is left out.
+    /// </summary>
+    /// <param name="sourcePath">The item's place in the library, if it has one (an extracted item has none).</param>
+    /// <param name="keepBoth">Keep both without asking (a copy in its own folder).</param>
+    private async Task<(string? Name, FileJobItem? Refused)> ClashAsync(Job job, string path, string source, string? sourcePath, bool isFolder,
+        string targetPath, string targetFull, string name, bool keepBoth, CancellationToken token)
+    {
+        var destination = Path.Combine(targetFull, name);
+        if (!File.Exists(destination) && !Directory.Exists(destination))
+            return (name, null);
+        var replaceRight = trash.AlwaysPermanent ? Rights.DeletePermanently : Rights.DeleteFiles;
+        var existingPath = Join(targetPath, name);
+        // Never what holds the item itself (moving X/X next to X, then replacing X).
+        var canReplace = (sourcePath is null || !FolderPolicy.IsSameOrBelow(sourcePath, existingPath))
+            && await job.Access.MayAsync(existingPath, replaceRight) && await job.Access.MayAsync(targetPath, replaceRight)
+            && (!Directory.Exists(destination) || await job.Access.MayThroughoutAsync(existingPath, replaceRight));
+        var choice = keepBoth ? ConflictChoice.KeepBoth : await job.ChooseAsync(new FileJobConflict(Side(source), Side(destination), canReplace), token);
+        switch (choice)
+        {
+            case ConflictChoice.Skip:
+                return (null, new FileJobItem(path, null, FileOperationStatus.Skipped, $"“{name}” was left out: there is one of that name there."));
+            case ConflictChoice.KeepBoth:
+                return (FileNames.KeepBoth(name, isFolder, n => File.Exists(Path.Combine(targetFull, n)) || Directory.Exists(Path.Combine(targetFull, n)))
+                    ?? throw new IOException("No free name."), null);
+            case ConflictChoice.Replace when canReplace:
+                using (var hold = scans.TryBeginOperation(destination))
+                {
+                    if (hold is null)
+                        return (null, ScanRunning(path));
+                    if (trash.AlwaysPermanent)
+                        await trash.DeleteForGoodAsync(destination, existingPath, Directory.Exists(destination), job.Actor, token);
+                    else
+                        await trash.MoveInAsync(destination, existingPath, Directory.Exists(destination), job.Actor, token);
+                }
+                return (name, null);
+            default:
+                return (null, new FileJobItem(path, null, FileOperationStatus.Forbidden, $"You may not replace “{name}” there."));
+        }
     }
 
     private async Task<FileJobItem> MoveAsync(Job job, string path, string source, string sourcePath, string destination, string destinationPath, bool isFolder,
@@ -458,6 +494,241 @@ public sealed class FileJobs(
             await indexer.IndexFilesAsync([destination], token);
     }
 
+    /// <summary>
+    /// Extracts the archive <paramref name="path"/> (its entries chosen, or all) into a partial folder of the target,
+    /// then gives what came out its place: the new folder (named after the archive, or after its one top folder), or
+    /// each top item in the target with the clash questions. Cancelled or failed (a wrong password, the disk full):
+    /// the partial folder goes, nothing half written stays.
+    /// </summary>
+    private async Task<FileJobItem> ExtractAsync(Job job, string path, string targetPath, string targetFull, List<string> extractedFolders, CancellationToken token)
+    {
+        if (LibraryPaths.NormalizeRelative(path) is not { Length: > 0 } || !paths.TryResolve(path, out var source)
+            || paths.ToRelative(source) is not { Length: > 0 } sourcePath || !File.Exists(source)
+            || job.Access.IsProtected(source) || !await job.Access.MayAsync(sourcePath, Rights.Browse))
+            return new FileJobItem(path, null, FileOperationStatus.NotFound, "It was not found.");
+        var name = Path.GetFileName(source);
+        // An archive's content is the file's content: it is opened (view, download) and written where one may extract.
+        if (!await job.Access.MayAsync(sourcePath, Rights.ViewFiles) || !await job.Access.MayAsync(sourcePath, Rights.Download)
+            || !await job.Access.MayAsync(targetPath, Rights.ExtractFiles))
+            return new FileJobItem(path, null, FileOperationStatus.Forbidden, $"You may not extract “{name}” there.");
+        if (ArchiveFormats.Detect(source) is not { } format)
+            return new FileJobItem(path, null, FileOperationStatus.Invalid, $"“{name}” is not an archive SFE extracts (zip, 7z, rar, tar, gz, bz2, xz).");
+
+        var settings = options.CurrentValue;
+        var stem = StemOf(name);
+        RemoveLeftovers(job, targetFull);
+        var partial = PartialFolder(targetFull, stem);
+        using var hold = scans.TryBeginOperation(partial);
+        if (hold is null)
+            return ScanRunning(path);
+        job.Partials.Add(partial);
+
+        ExtractResult extracted;
+        try
+        {
+            Directory.CreateDirectory(partial);
+            int? maxFullPath = null;
+            await using (var db = await dbFactory.CreateDbContextAsync(token))
+                maxFullPath = db.PathLengthLimit;
+            var archives = settings.Files.Archives;
+            var limits = new ExtractLimits(archives.MaxDepth, archives.MaxEntries, archives.MaxCompressionRatio, settings.Files.PortableNames, maxFullPath);
+            var margin = Math.Max(0, settings.Files.MinimumFreeSpaceMegabytes) * 1024L * 1024;
+            var unchecked_ = FreeSpaceStep;   // the first file: read at once
+            extracted = ArchiveExtractor.Extract(source, format, job.Password, partial, job.Request.Entries, limits,
+                reserve: size =>
+                {
+                    // The free space, read before each big file and every 64 MB of small ones.
+                    unchecked_ += size;
+                    if (unchecked_ < FreeSpaceStep && size < FreeSpaceStep)
+                        return;
+                    unchecked_ = 0;
+                    if (FreeSpace(partial) is { } free && free - size < margin)
+                        throw new NoRoomException($"“{name}” was not extracted: the drive would keep less than {margin / 1024 / 1024:N0} MB free.");
+                },
+                read: job.SetBytes, cancel: token);
+        }
+        catch (Exception ex)
+        {
+            RemovePartial(partial);
+            if (ex is ArchiveException { NeedsPassword: true })
+                return new FileJobItem(path, null, FileOperationStatus.Failed, string.IsNullOrEmpty(job.Password)
+                    ? $"“{name}” is protected by a password: extract it with its password."
+                    : $"That password doesn't open “{name}”: nothing was extracted.");
+            if (ex is ArchiveException)
+                return new FileJobItem(path, null, FileOperationStatus.Failed, $"“{name}” could not be extracted: {Lower(ex.Message)}");
+            throw;
+        }
+
+        // What came out takes its place (the files are whole); a cancel while a clash is asked leaves the rest out.
+        var placed = new List<(string Full, bool IsFolder)>();
+        var skipped = 0;
+        string? newPath = targetPath;
+        try
+        {
+            var top = Directory.EnumerateFileSystemEntries(partial).Take(2).ToList();
+            if (top.Count == 0)
+            {
+                newPath = null;
+            }
+            else if (job.Request.NewFolder && format != ArchiveFormat.Single)
+            {
+                // One folder at the top keeps its name ("trip.zip" holding "trip/" gives "trip", not "trip/trip").
+                var single = top.Count == 1 && Directory.Exists(top[0]) ? top[0] : null;
+                var folderName = single is null ? stem : Path.GetFileName(single);
+                if (Taken(targetFull)(folderName))
+                    folderName = FileNames.KeepBoth(folderName, true, Taken(targetFull)) ?? throw new IOException("No free name.");
+                var destination = Path.Combine(targetFull, folderName);
+                using var place = scans.TryBeginOperation(destination);
+                if (place is null)
+                {
+                    RemovePartial(partial);
+                    return ScanRunning(path);
+                }
+                Directory.Move(single ?? partial, destination);
+                placed.Add((destination, true));
+                newPath = Join(targetPath, folderName);
+            }
+            else
+            {
+                foreach (var item in Directory.EnumerateFileSystemEntries(partial).ToList())
+                {
+                    var isFolder = Directory.Exists(item);
+                    var (itemName, refused) = await ClashAsync(job, path, item, null, isFolder, targetPath, targetFull, Path.GetFileName(item), false, token);
+                    if (refused is not null)
+                    {
+                        skipped++;
+                        continue;
+                    }
+                    var destination = Path.Combine(targetFull, itemName!);
+                    using var place = scans.TryBeginOperation(destination);
+                    if (place is null)
+                    {
+                        skipped++;
+                        continue;
+                    }
+                    FileTree.Move(item, destination, isFolder);
+                    placed.Add((destination, isFolder));
+                }
+            }
+        }
+        finally
+        {
+            RemovePartial(partial);
+        }
+
+        try
+        {
+            browser.Invalidate(targetFull);
+            var files = placed.Where(p => !p.IsFolder).Select(p => p.Full).ToList();
+            if (files.Count > 0)
+                await indexer.IndexFilesAsync(files, CancellationToken.None);
+            // Folders by a scan: of the one folder, or of the target holding several (one scan runs at a time).
+            var folders = placed.Where(p => p.IsFolder).Select(p => paths.ToRelative(p.Full)!).ToList();
+            if (folders.Count == 1)
+                extractedFolders.Add(folders[0]);
+            else if (folders.Count > 1)
+                extractedFolders.Add(targetPath);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "What was extracted from {Path} could not be indexed: the next scan does", sourcePath);
+        }
+        logger.LogInformation("{Account} extracted {Path} to {Target}: {Files} files, {Folders} folders, {LeftOut} left out",
+            job.Actor.Name, sourcePath, newPath ?? targetPath, extracted.Files, extracted.Folders, extracted.LeftOutCount);
+        return new FileJobItem(path, newPath, FileOperationStatus.Done, ExtractMessage(extracted, skipped));
+    }
+
+    /// <summary>What an extraction says when it is done: what it wrote, what it left out and why, where it stopped.</summary>
+    private static string ExtractMessage(ExtractResult result, int skipped)
+    {
+        var parts = new List<string>
+        {
+            result.Files + result.Folders == 0
+                ? "Nothing was extracted."
+                : $"{Count(result.Files, "file")} extracted ({FormatBytes(result.Bytes)}).",
+        };
+        if (result.LeftOutCount > 0)
+        {
+            var named = string.Join("; ", result.LeftOut.Take(5).Select(l => $"“{l.Name}”: {l.Reason}"));
+            parts.Add($"Left out {Count(result.LeftOutCount, "entry", "entries")}: {named}{(result.LeftOutCount > 5 ? $"; and {result.LeftOutCount - 5:N0} more" : string.Empty)}.");
+        }
+        if (skipped > 0)
+            parts.Add($"{Count(skipped, "item")} not placed: there is one of that name in the folder.");
+        if (result.Stopped is { } stopped)
+            parts.Add(stopped);
+        return string.Join(' ', parts);
+    }
+
+    private static string Count(long count, string one, string? many = null) => count == 1 ? $"1 {one}" : $"{count:N0} {many ?? one + "s"}";
+
+    private static string FormatBytes(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes} B",
+        < 1024 * 1024 => $"{bytes / 1024.0:0.#} KB",
+        < 1024L * 1024 * 1024 => $"{bytes / 1024.0 / 1024:0.#} MB",
+        _ => $"{bytes / 1024.0 / 1024 / 1024:0.##} GB",
+    };
+
+    private static string Lower(string message) => message.Length > 0 ? char.ToLowerInvariant(message[0]) + message[1..] : message;
+
+    /// <summary>The archive's name without what makes it an archive: <c>trip.tar.gz</c> → <c>trip</c>.</summary>
+    internal static string StemOf(string name)
+    {
+        foreach (var double_ in new[] { ".tar.gz", ".tar.bz2", ".tar.xz" })
+            if (name.EndsWith(double_, StringComparison.OrdinalIgnoreCase) && name.Length > double_.Length)
+                return name[..^double_.Length];
+        var stem = Path.GetFileNameWithoutExtension(name);
+        return stem.Length > 0 ? stem : name;
+    }
+
+    /// <summary>A free <c>name.sfe-partial</c> folder in <paramref name="folder"/> (its name cut to stay a valid one).</summary>
+    private static string PartialFolder(string folder, string stem)
+    {
+        stem = stem.Length > 200 ? stem[..200].TrimEnd('.', ' ') : stem;
+        for (var n = 1; n <= FileNames.MaxKeepBothAttempts; n++)
+        {
+            var name = n == 1 ? stem + PartialSuffix : $"{stem} ({n}){PartialSuffix}";
+            if (!Taken(folder)(name))
+                return Path.Combine(folder, name);
+        }
+        throw new IOException("No free name.");
+    }
+
+    private static Func<string, bool> Taken(string folder) =>
+        n => File.Exists(Path.Combine(folder, n)) || Directory.Exists(Path.Combine(folder, n));
+
+    /// <summary>
+    /// Partial folders an extraction left in <paramref name="folder"/> when the server stopped during it: removed at the
+    /// next extraction there, unless a running job writes into one.
+    /// </summary>
+    private void RemoveLeftovers(Job job, string folder)
+    {
+        try
+        {
+            var running = _jobs.Values.Where(j => j != job && j.State is FileJobState.Running or FileJobState.Waiting).SelectMany(j => j.Partials).ToHashSet(LibraryPaths.PathComparer);
+            foreach (var leftover in Directory.EnumerateDirectories(folder, "*" + PartialSuffix))
+                if (!running.Contains(leftover) && new DirectoryInfo(leftover).LinkTarget is null)
+                    RemovePartial(leftover);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogDebug(ex, "Could not look for partial folders in {Folder}", folder);
+        }
+    }
+
+    private void RemovePartial(string partial)
+    {
+        try
+        {
+            if (Directory.Exists(partial))
+                FileTree.Delete(partial);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(ex, "Could not remove the partial folder {Folder}: the next extraction there does", partial);
+        }
+    }
+
     /// <summary>The thumbnail and trickplay of a copy are those of its original (same content, same modification time).</summary>
     private void CopyCache(string original, string copy)
     {
@@ -532,6 +803,9 @@ public sealed class FileJobs(
         }
     }
 
+    /// <summary>The drive would keep less free space than the server's margin.</summary>
+    private sealed class NoRoomException(string message) : IOException(message);
+
     private static FileJobItem ScanRunning(string path) =>
         new(path, null, FileOperationStatus.ScanRunning, "A scan is running over it: try again when it has finished.");
 
@@ -574,6 +848,15 @@ public sealed class FileJobs(
         public Task? Completion { get; set; }
 
         public void AddBytes(long bytes) => Interlocked.Add(ref _bytesDone, bytes);
+
+        /// <summary>How far the job is in its source (an extraction: in the archive's file).</summary>
+        public void SetBytes(long bytes) => Interlocked.Exchange(ref _bytesDone, bytes);
+
+        /// <summary>The archive's password, while the job runs; never shown.</summary>
+        public string? Password { get; set; }
+
+        /// <summary>The partial folders the job writes into.</summary>
+        public ConcurrentBag<string> Partials { get; } = [];
 
         public void Report(FileJobItem item)
         {

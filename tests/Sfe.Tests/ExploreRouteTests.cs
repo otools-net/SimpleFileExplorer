@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Sfe.Api.Endpoints;
@@ -19,7 +20,10 @@ namespace Sfe.Tests;
 [TestClass]
 public sealed class ExploreRouteTests
 {
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+    };
 
     private TestLibrary _library = null!;
     private WebApplicationFactory<Program> _factory = null!;
@@ -312,6 +316,63 @@ public sealed class ExploreRouteTests
             statuses.Add(response.StatusCode);
         }
         Assert.AreEqual(HttpStatusCode.TooManyRequests, statuses[^1], string.Join(", ", statuses));
+    }
+
+    [TestMethod]
+    public async Task TheEntriesChosenInTheListingAreExtracted()
+    {
+        TestArchives.Zip(_library.Root, "Media/trip.zip", ("readme.txt", "hello"), ("Day 1/a.txt", "a"), ("Day 2/b.txt", "b"));
+        var root = await ListAsync(_admin, "path=Media/trip.zip");
+        var day1 = root.Items.Single(item => item.Name == "Day 1");
+        var readme = root.Items.Single(item => item.Name == "readme.txt");
+
+        // Alice (Users) has no right to extract; the jobs route doesn't take extractions.
+        using (var refused = await _alice.PostAsJsonAsync("/api/files/jobs/extract", new ExtractRequest("Media/trip.zip", "ChildDir"), Token))
+            Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode);
+        using (var wrongRoute = await _admin.PostAsJsonAsync("/api/files/jobs", new FileJobRequest(FileJobKind.Extract, ["Media/trip.zip"], "ChildDir"), Json, Token))
+            Assert.AreEqual(HttpStatusCode.BadRequest, wrongRoute.StatusCode);
+
+        var job = await ExtractAsync(_admin, new ExtractRequest("Media/trip.zip", "ChildDir", NewFolder: false, Folders: [day1.Id], Files: [readme.Id]));
+
+        Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
+        Assert.AreEqual("hello", File.ReadAllText(_library.FullPath("ChildDir/readme.txt")));
+        Assert.AreEqual("a", File.ReadAllText(_library.FullPath("ChildDir/Day 1/a.txt")));
+        Assert.IsFalse(Directory.Exists(_library.FullPath("ChildDir/Day 2")));
+    }
+
+    [TestMethod]
+    public async Task AnArchiveWhoseNamesAreEncryptedIsExtractedWithItsUnlock()
+    {
+        File.Copy(TestSamples.ArchiveOf("tree-names-encrypted.7z"), _library.FullPath("Media/hidden.7z"));
+        await ListAsync(_admin, "path=Media/hidden.7z");
+        using (var locked = await _admin.PostAsJsonAsync("/api/files/jobs/extract", new ExtractRequest("Media/hidden.7z", "Media", Files: [1]), Token))
+            Assert.AreEqual(HttpStatusCode.Forbidden, locked.StatusCode, "ids of a list not read: its password first");
+        var unlock = await UnlockedAsync(_admin, "Media/hidden.7z", "secret");
+        var top = await ListAsync(_admin, "path=Media/hidden.7z", unlock);
+        var readme = top.Items.Single(item => item.Name == "readme.txt");
+
+        var job = await ExtractAsync(_admin, new ExtractRequest("Media/hidden.7z", "Media", Files: [readme.Id], Unlock: unlock));
+
+        Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
+        Assert.AreEqual("An archive made for the tests.\n", File.ReadAllText(_library.FullPath("Media/hidden/readme.txt")));
+        Assert.IsFalse(Directory.Exists(_library.FullPath("Media/hidden/Photos")));
+        using var listed = await _admin.GetAsync("/api/files/jobs", Token);
+        Assert.DoesNotContain("secret", await listed.Content.ReadAsStringAsync(Token));
+    }
+
+    /// <summary>Starts an extraction and follows it to its end.</summary>
+    private async Task<FileJobView> ExtractAsync(HttpClient client, ExtractRequest request)
+    {
+        using var started = await client.PostAsJsonAsync("/api/files/jobs/extract", request, Json, Token);
+        Assert.AreEqual(HttpStatusCode.Accepted, started.StatusCode, await started.Content.ReadAsStringAsync(Token));
+        var view = (await started.Content.ReadFromJsonAsync<FileJobView>(Json, Token))!;
+        for (var attempt = 0; attempt < 400 && view.State is FileJobState.Running; attempt++)
+        {
+            await Task.Delay(25, Token);
+            view = (await client.GetFromJsonAsync<FileJobView>($"/api/files/jobs/{view.Id}", Json, Token))!;
+        }
+        Assert.AreEqual(FileJobState.Completed, view.State);
+        return view;
     }
 
     private Task<HttpResponseMessage> UnlockAsync(HttpClient client, string path, string password) =>

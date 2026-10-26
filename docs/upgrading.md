@@ -30,6 +30,11 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.84
+
+- New right `files.extract` (extracting archives), given to **no group**, as for 1.55: tick it for the groups that may
+  write archives' files into the library ([Archives](user-guide/archives.md#extracting)).
+
 ## To 1.83
 
 - **Flash movies** (`.swf`) now open in the viewer, played by Ruffle, which comes with SFE: they used to be only

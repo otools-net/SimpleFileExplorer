@@ -4,6 +4,7 @@ import { ArchiveItem, ArchiveListing } from '../../core/models';
 import { pathToken } from '../../core/paths';
 import { Rights } from '../../core/rights';
 import { ApiMock, item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
+import { Dialogs } from '../../library/dialogs.service';
 import { ARCHIVE_FORMAT, FILE_VIEW_HOST } from '../formats';
 import { ArchiveViewComponent } from './archive-view.component';
 
@@ -129,6 +130,30 @@ describe('ArchiveViewComponent', () => {
         expect(entries.map(entry => entry.id)).toEqual(['newTab', 'download']);
         expect(entries[1].href).toMatch(/\?download=true$/);
         expect(view.menuOf(file(12, 'passwd', { kind: 'link' }))).toBeNull();
+    });
+
+    it('extracts the folder shown, the whole archive at its top, or one entry, through the Extract dialog', async () => {
+        const open = vi.fn();
+        TestBed.inject(Dialogs).extract.set({ open } as never);
+        api.exploreArchive.mockResolvedValue(listing([folder(2, 'Day 1'), file(10, 'readme.txt')]));
+        await show();
+
+        element.querySelector<HTMLButtonElement>('[data-extract-shown]')!.click();
+        expect(open).toHaveBeenLastCalledWith({ path: 'Media/trip.zip', name: 'trip.zip', unlock: null, folders: undefined, what: undefined });
+
+        const view = fixture.componentInstance as unknown as { menuOf(entry: ArchiveItem): { entries(): { id: string; run?: () => void }[] } | null };
+        view.menuOf(file(10, 'readme.txt'))!.entries().find(entry => entry.id === 'extract')!.run!();
+        expect(open).toHaveBeenLastCalledWith({ path: 'Media/trip.zip', name: 'trip.zip', unlock: null, what: '“readme.txt”', folders: undefined, files: [10] });
+
+        api.exploreArchive.mockResolvedValue(listing([file(11, 'a.txt')], { folder: folder(2, 'Day 1', { files: 1 }), trail: { skipped: 0, last: [{ id: 2, name: 'Day 1' }] } }));
+        element.querySelector<HTMLButtonElement>('[data-kind="folder"] .archive-open')!.click();
+        await stable();
+        element.querySelector<HTMLButtonElement>('[data-extract-shown]')!.click();
+        expect(open).toHaveBeenLastCalledWith({ path: 'Media/trip.zip', name: 'trip.zip', unlock: null, folders: [2], what: '“Day 1”' });
+
+        rights.delete(Rights.download);
+        await show();
+        expect(element.querySelector('[data-extract-shown]'), 'its content is taken: the right to download').toBeNull();
     });
 
     it('offers no file without the right to download', async () => {

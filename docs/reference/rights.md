@@ -24,6 +24,7 @@ Each right is of one of two kinds (column **Kind**):
 | `files.rename` | [rename files and folders](../user-guide/managing-files.md#rename) | Write (files) | no | none |
 | `files.move` | [move files and folders](../user-guide/managing-files.md#move-and-copy) (at the place they leave, the folder they go to, and everywhere inside a folder) | Write (files) | no | none |
 | `files.copy` | [copy files and folders](../user-guide/managing-files.md#move-and-copy) into folders one may change (from folders one may only look at, too) | Write (files) | no | none |
+| `files.extract` | [extract archives](../user-guide/archives.md#extracting) into folders one may change (needs `files.view` and `files.download` at the archive) | Write (files) | no | none |
 | `files.createFiles` | [create empty files](../user-guide/managing-files.md#new-file), [save a copy of a text file](../user-guide/editing-text.md) | Write (files) | no | none |
 | `files.upload` | [upload files and folders](../user-guide/managing-files.md#upload) from one's computer into folders one may change | Write (files) | no | none |
 | `files.delete` | [delete to the trash](../user-guide/managing-files.md#delete), restore from it; with `files.createFiles`, [save over a text file](../user-guide/editing-text.md#who-may-save) | Write (files) | no | none |
@@ -50,7 +51,7 @@ Each right is of one of two kinds (column **Kind**):
 | `server.backup`, `server.streams` | backups, the list of video streams | Read | no | server administrators only |
 
 **Server administrators** have every right in every space, plus the server's own. The file management rights
-(`files.createFolders`, `files.createFiles`, `files.rename`, `files.move`, `files.copy`, `files.upload`, `files.delete`, `files.deletePermanently`) are in no group by default, even after an upgrade: tick them for the groups
+(`files.createFolders`, `files.createFiles`, `files.rename`, `files.move`, `files.copy`, `files.extract`, `files.upload`, `files.delete`, `files.deletePermanently`) are in no group by default, even after an upgrade: tick them for the groups
 that may change the library's files.
 
 Renaming a folder also needs the right everywhere below it: someone kept out of a sub-folder, or with it read-only,

@@ -186,6 +186,11 @@ people would see or change a folder in its new place, SFE says who, and offers t
 - A copy is refused when it would leave less free space on the drive than the space's
   [Free space kept by copies](../administration/file-management.md#settings) (1 GB by default).
 
+## Extract an archive
+
+**Extract to “name”** and **Extract…** in a zip, 7z, rar or tar archive's menu write its files into the library, in
+the background; see [Archives](archives.md#extracting).
+
 ## Upload
 
 Files and folders from your computer go into the folder you are viewing:

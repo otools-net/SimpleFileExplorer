@@ -2,8 +2,9 @@
 // desktop and phone widths. Checks the rows drawn (only those on screen), more pages loaded while scrolling, the way to
 // a deep folder collapsed, Go to, Up, and an entry opened from the archive; passwords: a 7z whose list is encrypted
 // (asked, a wrong one refused, the right one lists it) and an AES zip (a protected file opened once the password is
-// given); ok/FAIL per check (exit code 1 on a failure).
-// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -password.png, -phone.png)
+// given); extracting (the archive's menu, the dialog with the password, the job, the folder written and listed);
+// ok/FAIL per check (exit code 1 on a failure).
+// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -password.png, -extract.png, -phone.png)
 // Needs a docs-screenshots run first (its build and seeded data in <tmp>/sfe-docs, or env SFE_DOCS_WORK); serves
 // them on :5096 and writes Archives/Check.zip into that copy of the library.
 import { spawn } from 'node:child_process';
@@ -34,6 +35,8 @@ writeZip(path.join(work, 'library', 'Archives', 'Check.zip'), entries);
 // Archives with a password (made by 7-Zip: tests/samples/archives; password "secret").
 fs.copyFileSync(path.join(repo, 'tests/samples/archives/tree-names-encrypted.7z'), path.join(work, 'library', 'Archives', 'Hidden names.7z'));
 fs.copyFileSync(path.join(repo, 'tests/samples/archives/tree-aes256.zip'), path.join(work, 'library', 'Archives', 'Secret.zip'));
+// What an earlier run extracted.
+fs.rmSync(path.join(work, 'library', 'Archives', 'Secret'), { recursive: true, force: true });
 
 const installation = path.join(data, 'installation-archive-check.json');
 fs.writeFileSync(installation, JSON.stringify({ Urls: url.replace(/\/$/, ''), Sfe: { Root: path.join(work, 'library') } }));
@@ -126,6 +129,22 @@ try {
             check(await until(b, `[...document.querySelectorAll('a.archive-open')].some(e => e.textContent.trim() === 'readme.txt')`), 'the right password: the file opens');
             const secret = await b.eval(`fetch([...document.querySelectorAll('a.archive-open')].find(e => e.textContent.trim() === 'readme.txt').getAttribute('href')).then(r => r.text())`);
             check(secret.includes('An archive made for the tests'), 'the AES file decrypted');
+
+            // Extracting: the archive's menu in the listing, the dialog with the password, the job in the panel.
+            await b.goto(url + '?path=Archives', 1500);
+            await until(b, `document.querySelector('[data-path="Archives/Secret.zip"]')`);
+            await b.eval(`document.querySelector('[data-path="Archives/Secret.zip"]').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 300, clientY: 300 })); 1`);
+            check(await until(b, `document.querySelector('[data-entry="extractBeside"]')?.textContent.includes('Extract to “Secret”')`), "the archive's menu: Extract to “Secret”");
+            await b.eval(`document.querySelector('[data-entry="extract"]').click(); 1`);
+            check(await until(b, `document.querySelector('[data-extract-password]') && document.querySelector('[data-extract]') && !document.querySelector('[data-extract]').disabled`), "Extract…: the dialog, ready in the archive's folder");
+            await b.eval(`{ const box = document.querySelector('[data-extract-password]'); box.value = 'secret'; box.dispatchEvent(new Event('input')); } 1`);
+            if (out)
+                await b.shot(`${out}-extract.png`);
+            await b.eval(`document.querySelector('[data-extract]').click(); 1`);
+            const extracted = path.join(work, 'library', 'Archives', 'Secret', 'Deep', 'a', 'b', 'c', 'd', 'e', 'bottom.txt');
+            check(await until(b, `[...document.querySelectorAll('.operation-title')].some(e => e.textContent.includes('extracted to'))`), 'the panel: extracted');
+            check(fs.existsSync(extracted), "the archive's files written into Archives/Secret");
+            check(await until(b, `[...document.querySelectorAll('[data-path]')].some(e => e.getAttribute('data-path') === 'Archives/Secret')`), 'the new folder listed');
         }
         await b.close();
     }

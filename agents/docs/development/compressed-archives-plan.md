@@ -10,8 +10,9 @@ browser and writes nothing to the library.
 ## How to use this file
 
 - Tick `[x]` in the commit that does the work; what stays true goes into a feature note
-  ([archive-reading](../features/archive-reading.md) for the core, `features/archive-viewer.md` for exploring,
-  `features/compression.md` for compress/extract).
+  ([archive-reading](../features/archive-reading.md) for the core, [archive-viewer](../features/archive-viewer.md) for
+  exploring, [archive-extraction](../features/archive-extraction.md) for extracting, `features/compression.md` for
+  compressing).
 - When nothing is left: delete this file and its links (see `AGENTS.md`, "Keeping these notes current").
 
 Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
@@ -91,15 +92,11 @@ must keep the server's memory, CPU and disk use bounded whatever the archive hol
   viewer) over keyset pages of 200, loaded while scrolling; the folder's counts come from `Folders` so the scrollbar
   and "n items" are right before the pages arrive. Search across the whole archive (name contains) runs on the
   catalog, paged, cancellable, with a time cap per page.
-- [ ] **Measured, not assumed**: a tool in `agents/tools/archives/` writes big archives into a temp folder (5 M
-  entries, 10 000 nested folders, 100 000 files in one folder; zip, tar, and 7z/rar to check SharpCompress' memory
-  with millions: its 7z archive holds every entry) and reports build time, peak memory, catalog size and page
-  latency into the feature note. 1 M zip entries done by hand (see above).
 
 ## Passwords
 
-Opening is built (phase 2, [archive-viewer](../features/archive-viewer.md)); extracting (phase 3) and creating
-(phase 4) are left. What a password protects differs by format, and the view says which: a zip encrypts only the **content** (names,
+Opening (phase 2, [archive-viewer](../features/archive-viewer.md)) and extracting (phase 3,
+[archive-extraction](../features/archive-extraction.md)) are built; creating (phase 4) is left. What a password protects differs by format, and the view says which: a zip encrypts only the **content** (names,
 sizes and dates stay readable by anyone with the file); a 7z or RAR made with "encrypt names" hides the list too.
 
 - **Opening.** The catalog read, or an entry opened, answers `password-needed` (the archive's names are encrypted, or
@@ -174,10 +171,8 @@ The person chooses how hard to compress, for each archive, in the Compress dialo
 - [x] RAR samples: six files of SharpCompress' tests (MIT, pinned commit) in
   `tests/samples/third-party/sharpcompress/` (RAR 4, RAR 5, solid, encrypted; password `test`),
   `TestSamples.ThirdPartyOf`; RAR tests added (44 in all).
-- [ ] `MaxCompressionRatio` is an option but nothing applies it yet: the entry route (phase 2) and extraction
-  (phase 3) refuse an entry whose `Size / Packed` passes it.
-- [ ] Zip methods other than stored and deflate (deflate64, bzip2, lzma, zstd): SharpCompress' decompressors over
-  `WindowStream`, if real archives need them.
+- [x] `MaxCompressionRatio`: the entry route (phase 2) refuses, extraction (phase 3) leaves out an entry whose
+  `Size / Packed` passes it.
 
 ## Phase 2 — Explore: the archive viewer
 
@@ -196,52 +191,41 @@ Done 2026-10-26 ([archive-viewer](../features/archive-viewer.md); user docs `doc
   real app `agents/tools/visual-check/archive-viewer.mjs`; docs scene `archive` (sample library:
   `Documents/Mountain trip.zip`).
 
-Left:
+Also done:
 
 - [x] Passwords (2026-10-26; [archive-viewer](../features/archive-viewer.md), "Passwords"): `unlock` and its limit,
   `ArchiveUnlocks` (memory only, owner + stamp, 15 idle minutes, sign-out), catalogs in memory for encrypted lists,
   our zip decryption (ZipCrypto, AES; checked against 7-Zip's zips), 7z/RAR through SharpCompress, the view's form.
   Tests: `ZipsMadeWithAPasswordOpenWithIt`, `ExploreRouteTests` (4 more), `ArchiveUnlocksTests`, 3 specs, the real-app
-  check. Left: a screenshot of the form for the user docs (the docs library has no encrypted archive until SFE writes
-  them, phase 4).
-- [ ] Search across the archive (`GET …/explore/search?path=&q=&after=`: names containing, on the catalog, paged,
-  a time cap per page) and a name filter inside a folder (a prefix range on the folder's index).
-- [ ] Open a picture / text / PDF entry in the viewer itself (today: a new tab): a `LibraryItem`-like entry whose
-  file URL is the entry route; videos need Range on a decompressed stream (later).
-- [ ] Item menu: "Open as archive" for `.cbz`/`.epub`/`.docx`… ([context-menu](../features/context-menu.md)); the
-  viewer's Extract… with the selected entries (phase 3).
-- [ ] Per-caller limits on folder pages and builds started (entry opens have `RequestLimits.Media`).
+  check.
 
 ## Phase 3 — Extract
 
-- [ ] `FileJobKind.Extract` in `FileJobs`: same view, progress (bytes), cancel, conflict questions and
-  `forAll`, the operations panel, `resume()`, as [move-and-copy](../features/move-and-copy.md).
-  `FileJobRequest` gets `archive`, `entries` (catalog folder and entry ids; empty = all) and `target`. A chosen
-  folder is walked from the catalog folder by folder (a queue of folder ids, pages of children; never recursion): a
-  million-entry selection is never a list in memory or in the request. Entries are read in archive order (offset; 7z by block) so a solid block is unpacked
-  once. Paths too long for the target's system (Windows without long paths, 255 bytes per name on Linux) are left
-  out and listed, not cut.
-- [ ] Where: **Extract here** (into the archive's folder), **Extract to "name/"** (default; a new folder named after
-  the archive, keep-both name when it exists), **Extract to…** (the transfer dialog's picker). A single top folder in
-  the archive with "to name/" doesn't nest twice (`trip.zip` holding `trip/` → `trip/`, not `trip/trip/`).
-- [ ] Rights per item when the job reaches it (`FileJobAccess`): `files.view` + `files.download` at the archive,
-  `files.extract` at the target folder, and for each folder created; replace = delete right at the item replaced,
-  which goes to the trash; without it the job asks.
-- [ ] Writing: into `name.sfe-partial` then renamed (a cut job leaves no file that looks complete; leftovers cleaned
-  at the next start of the job kind); free space checked first from declared sizes and again while writing
-  (`Files:MinimumFreeSpaceMegabytes`); counted bytes against the limits; modified times from the entries; Unix
-  modes and owners ignored; `IsProtectedReal` and the work folder for every path written; the scan gate
-  (`ScanCoordinator.TryBeginOperation`).
-- [ ] Passwords: the unlock id or a password in the request, held only by the running job; asked in the Extract
-  dialog when the archive needs one; a wrong one fails before anything is written.
-- [ ] After: files indexed (`IndexFilesAsync`), folders by a scan, default tags of the target
-  ([default-tags](../features/default-tags.md)), the change feed tells open listings, a log line with the account
-  ([logs](../features/logs.md)); left-out entries listed in the job's result.
-- [ ] Client: the item menu and selection bar (one archive selected): Extract here / to "name/" / to…; the viewer's
-  Extract… with its selected entries; desktop: drop an archive with Alt? (later).
-- [ ] Tests: `ExtractJobTests` (each format, partial on cancel, conflicts, rights at the target, a rule hiding the
-  target's subfolder, free space, the bomb stopped mid-way and its partial file removed, zip-slip and links never
-  written outside), `FileJobRouteTests` rows, client specs.
+Done 2026-10-26 ([archive-extraction](../features/archive-extraction.md); user docs
+`docs/user-guide/archives.md#extracting`):
+
+- [x] `FileJobKind.Extract` in `FileJobs` (progress in bytes of the archive read, cancel, clash questions with
+  `forAll`, the panel, `resume()`); `POST api/files/jobs/extract` takes the listing's ids (folders, files; empty: all)
+  and turns them into paths inside the archive (never a list of a million entries: a chosen folder is a prefix).
+  Entries read in archive order (`ArchiveReader.ReadThrough`): a solid block unpacked once.
+- [x] Where: **Extract to “name”** (a new folder beside it), **Extract…** (the picker, **Into a new folder** or
+  straight in with the clash questions); one top folder doesn't nest twice.
+- [x] Rights per run: `files.view` + `files.download` at the archive, `files.extract` (new, `since` 13, no group) at
+  the target; replacing: the delete right there (the replaced item to the trash).
+- [x] Writing into `name.sfe-partial`, then placed; leftovers removed at the next extraction there; free space before
+  the first file and every 64 MB; times from the entries; links never made; every path checked inside the folder;
+  the scan gate.
+- [x] Passwords: the unlock id or a password in the request, held by the running job only; a wrong one fails the job
+  and leaves nothing.
+- [x] After: files indexed, folders by a scan, default tags, the listing told, a log line; left-out entries in the
+  result.
+- [x] Client: the item menu, the Extract dialog, the viewer's **Extract…** (folder shown, a row).
+- [x] Tests: `ArchiveExtractorTests` (each format and sample, passwords, chosen entries, zip-slip, links, a lying
+  size, a bad CRC, the ratio, duplicates, too many entries, the disk, cancel, long paths, a cut tar),
+  `ExtractJobTests` (new folder, one top folder, clash, chosen, passwords never shown, rights, not an archive, left
+  out, leftovers, free space), `ExploreRouteTests` (2), `extract.spec.ts` (7), the archive view spec.
+
+- [x] The real-app check (`archive-viewer.mjs`: the menu, the dialog with a password, the panel, the folder listed).
 
 ## Phase 4 — Compress
 
@@ -270,6 +254,28 @@ Left:
   back by `ArchiveReader` and by `ZipFile`, a password never in the job's view nor the log, cancel removes the
   partial),
   route rows, client specs.
+
+Carried over (open points of the earlier steps, moved here 2026-10-26):
+
+- [ ] Zip methods other than stored and deflate (deflate64, bzip2, lzma, zstd): SharpCompress' decompressors over
+  `WindowStream`, if real archives need them.
+- [ ] Search across the archive (`GET …/explore/search?path=&q=&after=`: names containing, on the catalog, paged,
+  a time cap per page) and a name filter inside a folder (a prefix range on the folder's index).
+- [ ] Open a picture / text / PDF entry in the viewer itself (today: a new tab): a `LibraryItem`-like entry whose
+  file URL is the entry route; videos need Range on a decompressed stream (later).
+- [ ] Item menu: "Open as archive" for `.cbz`/`.epub`/`.docx`… ([context-menu](../features/context-menu.md)); the
+  viewer's Extract… with the selected entries (phase 3).
+- [ ] Per-caller limits on folder pages and builds started (entry opens have `RequestLimits.Media`).
+- [ ] Selection bar with one archive selected; several archives in one job.
+- [ ] Asking the password again from the panel when an extraction fails on it (today: its message, then Extract…).
+- [ ] Paths too long for Windows without long paths (.NET handles `\\?\` itself: only the index's limit applies now).
+- [ ] Screenshots for the user docs: the viewer's password form (the docs library needs an encrypted archive: SFE
+  writes them in this phase) and the Extract dialog (docs scenes).
+- [ ] Desktop: drop an archive with Alt? (later).
+- [ ] **Measured, not assumed**: a tool in `agents/tools/archives/` writes big archives into a temp folder (5 M
+  entries, 10 000 nested folders, 100 000 files in one folder; zip, tar, and 7z/rar to check SharpCompress' memory
+  with millions: its 7z archive holds every entry) and reports build time, peak memory, catalog size and page
+  latency into the feature note. 1 M zip entries done by hand (see above).
 
 ## Phase 5 — Ship
 

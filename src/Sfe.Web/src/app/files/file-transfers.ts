@@ -2,10 +2,11 @@ import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core'
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { plural } from '../core/format';
-import { ConflictChoice, FileJobItem, FileJobKind, FileJobRequest, FileJobView, LibraryItem } from '../core/models';
+import { ConflictChoice, ExtractRequest, FileJobItem, FileJobKind, FileJobRequest, FileJobView, LibraryItem } from '../core/models';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
+import { isExtractable } from '../formats/formats';
 import { Dialogs } from '../library/dialogs.service';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
@@ -53,7 +54,7 @@ export class FileTransfers {
 
     /** Follows the session's jobs still running (started before the page was loaded). */
     resume(): void {
-        if (this.config.can(Rights.moveFiles) || this.config.can(Rights.copyFiles))
+        if (this.config.can(Rights.moveFiles) || this.config.can(Rights.copyFiles) || this.config.can(Rights.extractFiles))
             this.poll(0);
     }
 
@@ -69,6 +70,24 @@ export class FileTransfers {
     /** Copies only open what they copy: a read-only folder's files can be copied elsewhere. */
     canCopy(item: LibraryItem): boolean {
         return this.config.can(Rights.copyFiles) && this.store.can(Rights.viewFiles, item);
+    }
+
+    /**
+     * May extract the archive `item` somewhere: its content is opened (view, download) and written where one may
+     * extract (checked when the folder is picked, and by the server).
+     */
+    canExtract(item: LibraryItem): boolean {
+        return isExtractable(item) && this.config.can(Rights.extractFiles) && this.store.can(Rights.viewFiles, item) && this.store.can(Rights.download, item);
+    }
+
+    /** May extract `item` beside it, in the folder listed (not in search results, whose folders differ). */
+    canExtractBeside(item: LibraryItem): boolean {
+        return this.canExtract(item) && !this.store.searching() && this.store.can(Rights.extractFiles) && !this.store.folderAccess()?.pathOnly;
+    }
+
+    /** Starts an extraction and follows it. */
+    extract(request: ExtractRequest): Promise<FileJobView | null> {
+        return this.follow(() => this.api.startExtract(request), 'extract');
     }
 
     /** The space lets the session move (or copy) somewhere. */
@@ -143,12 +162,16 @@ export class FileTransfers {
     }
 
     /** Starts a job and follows it. */
-    async start(request: FileJobRequest): Promise<FileJobView | null> {
+    start(request: FileJobRequest): Promise<FileJobView | null> {
+        return this.follow(() => this.api.startFileJob(request), request.kind);
+    }
+
+    private async follow(started: () => Promise<FileJobView>, kind: FileJobKind): Promise<FileJobView | null> {
         let job: FileJobView;
         try {
-            job = await this.api.startFileJob(request);
+            job = await started();
         } catch (error) {
-            this.toasts.error(`Could not ${request.kind}: ${(error as Error).message}`);
+            this.toasts.error(`Could not ${kind}: ${(error as Error).message}`);
             return null;
         }
         this.following.add(job.id);
@@ -217,6 +240,24 @@ export class FileTransfers {
             void this.transfer('move', paths, origin);
     }
 
+    /** An extraction has ended: its toast opens what came out (the new folder, or the folder it went into). */
+    private extracted(job: FileJobView, where: string): void {
+        const result = job.results[0];
+        if (job.state === 'cancelled') {
+            this.toasts.show(`Stopped: nothing was extracted to “${where}”.`);
+            return;
+        }
+        if (!result || result.status !== 'done') {
+            this.toasts.error(result?.message ?? `“${baseName(job.target)}” could not be extracted.`, 8000);
+            return;
+        }
+        const opened = result.newPath && result.newPath !== job.target ? result.newPath : job.target;
+        const actions = opened !== this.store.route().path
+            ? [{ label: 'Open', title: `Open ${baseName(opened) || where}`, run: () => this.store.navigate({ path: opened }) }]
+            : [];
+        this.toasts.show(`“${baseName(result.path)}” extracted to “${baseName(opened) || where}”. ${result.message ?? ''}`.trim(), { timeout: 8000, actions });
+    }
+
     /** A job followed has ended: the listing shows its result, a toast says it. */
     private ended(job: FileJobView): void {
         const done = job.results.filter(result => result.status === 'done');
@@ -227,8 +268,12 @@ export class FileTransfers {
         if (done.length && (route.q || job.target === listed))
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + done.length });
 
-        const verb = job.kind === 'move' ? 'moved' : 'copied';
+        const verb = pastOf(job.kind);
         const where = baseName(job.target) || this.config.config()?.rootName || 'the library';
+        if (job.kind === 'extract') {
+            this.extracted(job, where);
+            return;
+        }
         if (job.state === 'cancelled')
             this.toasts.show(`Stopped: ${plural(done.length, 'item')} ${verb} to “${where}” before.`);
         else if (done.length) {
@@ -245,6 +290,11 @@ export class FileTransfers {
                 ? failed[0].message ?? `“${baseName(failed[0].path)}” could not be ${verb}.`
                 : `${plural(failed.length, 'item')} could not be ${verb}: ${failed[0].message ?? baseName(failed[0].path)}`, 8000);
     }
+}
+
+/** What a job did, in the past: moved, copied, extracted. */
+export function pastOf(kind: FileJobKind): string {
+    return kind === 'move' ? 'moved' : kind === 'copy' ? 'copied' : 'extracted';
 }
 
 /** The moves `done` undone: each item back into the folder it came from (one job per folder), asking about names taken there. */

@@ -91,7 +91,10 @@ input, LIKE escaped, no `innerHTML` in the client.
   `.html`/`.svg` entry opened (attachment, sandboxed), a token with `..` or for a hidden or protected folder; passwords:
   guessing through `unlock` (10 a minute per caller), another account's or space's unlock id, an unlock after sign-out
   or a change of the archive, the password in logs, errors, answers or URLs (only the unlock id is), encrypted names
-  written under the cache (`ExploreRouteTests` scans it).
+  written under the cache (`ExploreRouteTests` scans it); extracting: every name above written outside the target,
+  a link followed by a later entry (`escape` then `escape/x`), a file in the way of a folder, a lying size or CRC left
+  as a whole-looking file, the disk filled past the margin, extracting into `.sfe` or a server-files junction, a
+  password in the job's view or the log (`ArchiveExtractorTests`, `ExtractJobTests`).
 - **Flash movies** ([flash-viewer.md](../features/flash-viewer.md)): a movie (Ruffle runs it) calling `api/` with
   `URLLoader`, custom headers (`X-SFE-Request`) or `getURL("javascript:…")`; `navigateToURL`, `_blank`, `_top`;
   `ExternalInterface`; the frame opened alone (`flash/player.html`: still sandboxed by its CSP) or framed by another

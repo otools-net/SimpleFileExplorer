@@ -6,6 +6,7 @@ import { ArchiveAnswer, ArchiveItem, ArchiveListing, LibraryItem } from '../../c
 import { pathToken } from '../../core/paths';
 import { Rights } from '../../core/rights';
 import { ToastService } from '../../core/toast.service';
+import { Dialogs } from '../../library/dialogs.service';
 import { ContextMenuDirective, MenuEntry, MenuTarget } from '../../menus/context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../../menus/overflow-row';
 import { IconComponent } from '../../shared/icon.component';
@@ -64,6 +65,11 @@ interface Shown {
             </nav>
             <input #goTo type="search" class="json-filter archive-go" data-go [sfeOverflowItem]="null" overflowStay placeholder="Go to folder" aria-label="Go to a folder of the archive"
                    title="A folder's path inside the archive (folders separated by /), then Enter" (keydown.enter)="goToPath(goTo.value)" />
+            @if (canExtract() && shown()) {
+                <button type="button" class="button archive-extract" data-extract-shown [sfeOverflowItem]="extractEntry" [title]="extractTitle()" (click)="extractShown()">
+                    <svg sfeIcon="extract"></svg><span>Extract…</span>
+                </button>
+            }
             <button class="icon-button" sfeOverflowMore></button>
         </div>
         @switch (state()) {
@@ -177,6 +183,7 @@ export class ArchiveViewComponent {
     private readonly host = inject(FILE_VIEW_HOST);
     private readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
+    private readonly dialogs = inject(Dialogs);
     private readonly scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
 
     protected readonly state = signal<ArchiveState>('loading');
@@ -203,6 +210,12 @@ export class ArchiveViewComponent {
     });
 
     protected readonly canDownload = computed(() => this.host.can(Rights.download));
+    /** Extract… is offered: the right (to view, download and extract), and the dialog of the listing page. */
+    protected readonly canExtract = computed(() => this.canDownload() && this.host.can(Rights.viewFiles) && this.config.can(Rights.extractFiles) && Boolean(this.dialogs.extract()));
+    protected readonly extractTitle = computed(() => this.parent() === undefined
+        ? 'Extract the whole archive into a folder of the library, picked next'
+        : 'Extract this folder of the archive into a folder of the library, picked next');
+    protected readonly extractEntry = (): MenuEntry => ({ id: 'extract', label: 'Extract…', icon: 'extract', title: this.extractTitle(), run: () => this.extractShown() });
 
     /** The unlock the password given answered: kept by this view only (never the password), sent with its requests. */
     protected readonly unlock = signal<string | null>(null);
@@ -333,6 +346,29 @@ export class ArchiveViewComponent {
         return `api/files/explore/entry/${pathToken(this.item().path)}/${entry.id}/${encodeURIComponent(entry.name)}${search ? '?' + search : ''}`;
     }
 
+    /** Extract…: the folder shown (the whole archive at its top), into a folder of the library picked in the dialog. */
+    protected extractShown(): void {
+        const listing = this.shown()?.listing;
+        const item = this.item();
+        if (!listing)
+            return;
+        const top = this.parent() === undefined;
+        this.dialogs.extract()?.open({
+            path: item.path, name: item.name, unlock: this.unlock(),
+            folders: top ? undefined : [listing.folder.id], what: top ? undefined : `“${listing.folder.name}”`,
+        });
+    }
+
+    /** Extract…: one entry (a folder with what it holds, or a file). */
+    protected extractOne(entry: ArchiveItem): void {
+        const item = this.item();
+        this.dialogs.extract()?.open({
+            path: item.path, name: item.name, unlock: this.unlock(), what: `“${entry.name}”`,
+            folders: entry.kind === 'folder' ? [entry.id] : undefined,
+            files: entry.kind === 'folder' ? undefined : [entry.id],
+        });
+    }
+
     protected menuOf(entry: ArchiveItem): MenuTarget | null {
         const entries: MenuEntry[] = [];
         if (entry.kind === 'folder')
@@ -341,6 +377,8 @@ export class ArchiveViewComponent {
             entries.push({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Open it in a new tab', href: this.entryUrl(entry, false), newTab: true });
             entries.push({ id: 'download', label: 'Download', icon: 'download', title: 'Save it from the archive', href: this.entryUrl(entry, true) });
         }
+        if ((entry.kind === 'folder' || entry.kind === 'file') && this.canExtract())
+            entries.push({ id: 'extract', label: 'Extract…', icon: 'extract', title: `Extract ${entry.name} into a folder of the library, picked next`, run: () => this.extractOne(entry) });
         return entries.length ? { kind: 'file', key: `archive:${this.item().path}:${entry.id}`, name: entry.name, entries: () => entries } : null;
     }
 
