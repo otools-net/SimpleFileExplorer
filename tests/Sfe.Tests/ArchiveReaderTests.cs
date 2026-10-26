@@ -375,6 +375,94 @@ public sealed class ArchiveReaderTests
     }
 
     [TestMethod]
+    [DataRow("tree-deflate64.zip", 9)]
+    [DataRow("tree-bzip2.zip", 12)]
+    [DataRow("tree-lzma.zip", 14)]
+    [DataRow("tree-ppmd.zip", 98)]
+    [DataRow("tree-xz.zip", 95)]
+    public void ZipsCompressedWithOtherMethodsAreReadAndExtracted(string name, int method)
+    {
+        var zip = TestSamples.ArchiveOf(name);
+        var files = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).Where(entry => entry.Kind == ArchiveEntryKind.File)
+            .ToDictionary(entry => entry.Name.Replace('\\', '/'));
+        Assert.HasCount(4, files);
+        var notes = files["Photos/2024/notes.txt"];
+        Assert.AreEqual(method, notes.Method, "7-Zip used the method asked for");
+        Assert.AreEqual(new string('x', 4096) + "\n", ReadText(zip, ArchiveFormat.Zip, notes, null));
+        Assert.AreEqual("Five folders down.\n", ReadText(zip, ArchiveFormat.Zip, files["Deep/a/b/c/d/e/bottom.txt"], null));
+
+        // Extracting reads them the same way (one pass, every CRC checked).
+        var into = Path.Combine(_folder, "out");
+        var result = ArchiveExtractor.Extract(zip, ArchiveFormat.Zip, null, into, null, new ExtractLimits(100, 1000, 10_000, PortableNames: false));
+        Assert.AreEqual(0, result.LeftOutCount);
+        Assert.AreEqual("An archive made for the tests.\n", File.ReadAllText(Path.Combine(into, "readme.txt")));
+    }
+
+    [TestMethod]
+    public void AZstandardZipEntryIsRead()
+    {
+        // 7-Zip doesn't write Zstandard zips: one entry written here (method 93), its data by SharpCompress' encoder.
+        var text = string.Concat(Enumerable.Repeat("Zstandard inside a zip. ", 200));
+        var plain = System.Text.Encoding.UTF8.GetBytes(text);
+        using var packedData = new MemoryStream();
+        using (var encoder = new SharpCompress.Compressors.ZStandard.CompressionStream(packedData, 3))
+            encoder.Write(plain);
+        var zip = Path.Combine(_folder, "zstd.zip");
+        File.WriteAllBytes(zip, OneEntryZip("zstd.txt", method: 93, packedData.ToArray(), plain));
+
+        var entry = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).Single();
+        Assert.AreEqual(93, entry.Method);
+        Assert.AreEqual(text, ReadText(zip, ArchiveFormat.Zip, entry));
+    }
+
+    /// <summary>A zip of one entry whose data is <paramref name="packed"/> as <paramref name="method"/> says (CRC and size of <paramref name="plain"/>).</summary>
+    private static byte[] OneEntryZip(string name, ushort method, byte[] packed, byte[] plain)
+    {
+        var nameBytes = System.Text.Encoding.UTF8.GetBytes(name);
+        var crc = System.IO.Hashing.Crc32.HashToUInt32(plain);
+        using var zip = new MemoryStream();
+        using var writer = new BinaryWriter(zip);
+        void Common()
+        {
+            writer.Write((ushort)0x0800);
+            writer.Write(method);
+            writer.Write((ushort)0);
+            writer.Write((ushort)0x21);
+            writer.Write(crc);
+            writer.Write((uint)packed.Length);
+            writer.Write((uint)plain.Length);
+            writer.Write((ushort)nameBytes.Length);
+            writer.Write((ushort)0);
+        }
+        writer.Write(0x04034b50u);
+        writer.Write((ushort)63);
+        Common();
+        writer.Write(nameBytes);
+        writer.Write(packed);
+        var directory = zip.Position;
+        writer.Write(0x02014b50u);
+        writer.Write((ushort)63);
+        writer.Write((ushort)63);
+        Common();
+        writer.Write((ushort)0);
+        writer.Write((ushort)0);
+        writer.Write((ushort)0);
+        writer.Write(0u);
+        writer.Write(0u);
+        writer.Write(nameBytes);
+        var size = zip.Position - directory;
+        writer.Write(0x06054b50u);
+        writer.Write(0u);
+        writer.Write((ushort)1);
+        writer.Write((ushort)1);
+        writer.Write((uint)size);
+        writer.Write((uint)directory);
+        writer.Write((ushort)0);
+        writer.Flush();
+        return zip.ToArray();
+    }
+
+    [TestMethod]
     public void AnAesEntryWhoseDataWasChangedFailsItsAuthentication()
     {
         var zip = Path.Combine(_folder, "changed.zip");

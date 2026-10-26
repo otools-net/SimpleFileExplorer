@@ -10,8 +10,6 @@ what it left for later, none of it promised. Tick `[x]` in the commit that does 
 
 ## Explore
 
-- [ ] Zip methods other than stored and deflate (deflate64, bzip2, lzma, zstd): SharpCompress' decompressors over
-  `WindowStream`, if real archives need them.
 
 ## Extract
 

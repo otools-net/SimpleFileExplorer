@@ -41,8 +41,11 @@ proportion to its entries.
   refused, a count claiming more records than the directory holds refused, records read to the directory's end (the
   16-bit count is wrong past 65 535 without Zip64). Names: UTF-8 when flagged or valid UTF-8, else code page 437.
   Extended timestamp (`0x5455`) over DOS time. Unix mode in the external attributes gives links and devices.
-  `Locator` = the local header's offset: opening an entry is one seek. Stored and deflate only (others answer that
-  the method isn't read).
+  `Locator` = the local header's offset: opening an entry is one seek. Stored and deflate by .NET; Deflate64 (9,
+  what Windows writes for files over 2 GB), BZip2 (12), LZMA (14: a 4-byte header, then its properties), Zstandard
+  (93), XZ (95) and PPMd (98: 2 bytes of order and memory) by SharpCompress' decoders over the entry's window
+  (`ZipDirectory.OtherMethod`); any other method answers that it isn't read. Samples `tree-<method>.zip` by 7-Zip
+  (it writes no Zstandard zip: `AZstandardZipEntryIsRead` makes one).
 - **7z**: SharpCompress' archive (the header is at the end and read whole); `Locator` = the entry's index. Its list is
   held whole (~570 bytes an entry): `SevenZipList.UnpackedSize` reads the list's size first (the start header; for a
   compressed list, the unpack size of its streams, a few bytes, coders parsed but nothing unpacked) and every opening

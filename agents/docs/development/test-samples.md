@@ -6,7 +6,7 @@ Code: `tests/samples/` (`library/`, `media/`, `media.json`, `samples.lock.json`,
 
 - **Files a test or a tool needs are committed, not made per run.** Pictures, audio, video, documents (EPUB, PDF,
   SWF…) go in `tests/samples/`: the backend tests' media in `media/` (listed in `media.json` with the ffmpeg arguments
-  that make them), the docs screenshots' library in `library/` (made by `make-media.mjs`), the tests' 7z archives in
+  that make them), the docs screenshots' library in `library/` (made by `make-media.mjs`), the tests' 7z archives and zips .NET doesn't write in
   `archives/` (made by `agents/tools/samples/make-archives.mjs` with 7-Zip; `--sevenzip <path>`, else found on the
   PATH or in `C:/Program Files/7-Zip`; `TestSamples.ArchiveOf`). ffmpeg is asked for only when what it makes is out
   of date.
@@ -32,3 +32,6 @@ Code: `tests/samples/` (`library/`, `media/`, `media.json`, `samples.lock.json`,
   the Docker build context (`.dockerignore`) nor in the packages.
 - `.gitignore` ignores `*.log` and other build names: `!tests/samples/**` keeps every sample (the docs library's
   `Photo backup.log` would be left out without it). `.gitattributes` marks them `-text` (byte for byte).
+- `update-samples.mjs --sevenzip` remakes every archive when `make-archives.mjs` changes, the encrypted ones with new
+  random salts: `git checkout` those (the lock holds the generator's fingerprint, not the files) to keep only what the
+  change added.

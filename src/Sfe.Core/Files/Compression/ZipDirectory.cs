@@ -240,13 +240,52 @@ internal sealed class ZipDirectory
             0 when entry.Packed - overhead == entry.Size => packed,
             0 => throw new ArchiveException("A stored entry of the zip has two sizes: the archive is broken."),
             8 => new DeflateStream(packed, CompressionMode.Decompress),
-            _ => throw new ArchiveException($"This entry uses a compression method SFE doesn't read ({entry.Method})."),
+            _ => OtherMethod(packed, entry),
         };
         // Every entry's CRC is checked at its end (a damaged archive is never a file written whole), but AE-2's, which
         // keeps none (its HMAC checks it). A wrong ZipCrypto password passes its check byte 1 time in 256.
         if (entry.Cipher != ZipCipher.Aes || entry.CipherInfo >> 4 == 1)
             data = new CrcCheckStream(data, entry.Crc, entry.Encrypted);
         return new DeclaredSizeStream(data, entry.Size);
+    }
+
+    /// <summary>
+    /// The decoders of the methods zips use besides stored and deflate (SharpCompress'): Deflate64 (Windows' zips of
+    /// files over 2 GB), BZip2, LZMA (after zip's 4-byte header: its version, then its 5 properties), Zstandard, XZ and
+    /// PPMd (its 2 bytes of order and memory). Each reads only the entry's packed window.
+    /// </summary>
+    private static Stream OtherMethod(Stream packed, ArchiveEntry entry)
+    {
+        switch (entry.Method)
+        {
+            case 9:
+                return new SharpCompress.Compressors.Deflate64.Deflate64Stream(packed, SharpCompress.Compressors.CompressionMode.Decompress);
+            case 12:
+                return SharpCompress.Compressors.BZip2.BZip2Stream.Create(packed, SharpCompress.Compressors.CompressionMode.Decompress, decompressConcatenated: false);
+            case 14:
+                {
+                    Span<byte> header = stackalloc byte[4];
+                    packed.ReadExactly(header);
+                    var length = BinaryPrimitives.ReadUInt16LittleEndian(header[2..]);
+                    if (length is < 5 or > 64)
+                        throw new ArchiveException("An LZMA entry of the zip is damaged.");
+                    var properties = new byte[length];
+                    packed.ReadExactly(properties);
+                    return SharpCompress.Compressors.LZMA.LzmaStream.Create(properties, packed, entry.Packed - 4 - length, entry.Size);
+                }
+            case 93:
+                return new SharpCompress.Compressors.ZStandard.DecompressionStream(packed);
+            case 95:
+                return new SharpCompress.Compressors.Xz.XZStream(packed);
+            case 98:
+                {
+                    var properties = new byte[2];
+                    packed.ReadExactly(properties);
+                    return SharpCompress.Compressors.PPMd.PpmdStream.Create(new SharpCompress.Compressors.PPMd.PpmdProperties(properties), packed, false);
+                }
+            default:
+                throw new ArchiveException($"This entry uses a compression method SFE doesn't read ({entry.Method}).");
+        }
     }
 
     private static ArchiveEntryKind KindOf(string name, int madeBy, uint attributes)

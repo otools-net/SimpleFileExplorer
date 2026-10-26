@@ -1,5 +1,5 @@
-// Makes the backend tests' archives that need another program (tests/samples/README.md): 7z, and encrypted zips (AES,
-// ZipCrypto), by 7-Zip. Plain zips and tars are written by the tests themselves (.NET writes them).
+// Makes the backend tests' archives that need another program (tests/samples/README.md): 7z, encrypted zips (AES,
+// ZipCrypto), and zips compressed with Deflate64, BZip2, LZMA, PPMd and XZ, by 7-Zip. Plain zips and tars are written by the tests themselves (.NET writes them).
 //
 //   node agents/tools/samples/make-archives.mjs <output folder> <7z program>
 //
@@ -48,6 +48,12 @@ try {
     make('tree-aes256.zip', 'zip', '-mx=5', '-psecret', '-mem=AES256');
     make('tree-aes128.zip', 'zip', '-mx=5', '-psecret', '-mem=AES128');
     make('tree-zipcrypto.zip', 'zip', '-mx=5', '-psecret', '-mem=ZipCrypto');
+    // Zips with the other methods (Windows writes Deflate64 for files over 2 GB): plain, the same at each run.
+    make('tree-deflate64.zip', 'zip', '-mx=5', '-mm=Deflate64');
+    make('tree-bzip2.zip', 'zip', '-mx=5', '-mm=BZip2');
+    make('tree-lzma.zip', 'zip', '-mx=5', '-mm=LZMA');
+    make('tree-ppmd.zip', 'zip', '-mx=5', '-mm=PPMd');
+    make('tree-xz.zip', 'zip', '-mx=5', '-mm=XZ');
 } finally {
     fs.rmSync(content, { recursive: true, force: true });
 }
