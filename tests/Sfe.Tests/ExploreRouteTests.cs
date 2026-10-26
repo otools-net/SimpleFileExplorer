@@ -378,6 +378,32 @@ public sealed class ExploreRouteTests
     }
 
     [TestMethod]
+    public async Task AFolderOfAnArchiveIsSearchedAloneWithListingCursors()
+    {
+        TestArchives.Zip(_library.Root, "Media/trip.zip", ("Day 1/summit.jpg", "s"), ("Day 1/Summit 2.jpg", "s"), ("Day 1/Summit dir/a.txt", "a"),
+            ("Day 1/other.txt", "o"), ("Day 2/Summit notes.txt", "n"));
+        var day1 = (await ListAsync(_alice, "path=Media/trip.zip")).Items.Single(item => item.Name == "Day 1").Id;
+
+        using (var response = await _alice.GetAsync($"/api/files/explore/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&limit=2", Token))
+        {
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+            var first = (await response.Content.ReadFromJsonAsync<ArchiveSearch>(Json, Token))!;
+            CollectionAssert.AreEqual(new[] { ("Summit dir", "folder"), ("Summit 2.jpg", "file") }, first.Items.Select(item => (item.Name, item.Kind)).ToList());
+            Assert.IsTrue(first.Items.All(item => item.Where is null));
+            Assert.IsNotNull(first.Next);
+
+            using var rest = await _alice.GetAsync($"/api/files/explore/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&after={first.Next}", Token);
+            var second = (await rest.Content.ReadFromJsonAsync<ArchiveSearch>(Json, Token))!;
+            CollectionAssert.AreEqual(new[] { "summit.jpg" }, second.Items.Select(item => item.Name).ToList());
+            Assert.IsNull(second.Next);
+        }
+        using (var searchCursor = await _alice.GetAsync($"/api/files/explore/search?path=Media/trip.zip&q=summit&folder={day1}&after=f10", Token))
+            Assert.AreEqual(HttpStatusCode.BadRequest, searchCursor.StatusCode, "a folder's pages go on with listing cursors");
+        using (var noFolder = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=summit&folder=999", Token))
+            Assert.AreEqual(HttpStatusCode.NotFound, noFolder.StatusCode);
+    }
+
+    [TestMethod]
     public async Task ACallerStartsAFewReadsAMinuteAndAnEntryNeverStartsOne()
     {
         TestArchives.Zip(_library.Root, "Media/read.zip", ("a.txt", "a"));

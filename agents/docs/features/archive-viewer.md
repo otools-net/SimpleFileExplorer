@@ -43,9 +43,16 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   when its time is spent (1 s, `SearchBudgetMilliseconds`; `next` = the end of the range looked at, maybe with
   nothing found). The cursor is `d<id>`/`f<id>`. Each item's `where` (its folder's path) from one walk up per folder,
   shared by the page's results.
+- **One folder** (`folder=<id>`, 404 when there is none): `ArchiveCatalog.FindIn(folder, text, after, limit, budget)`
+  looks only at what is right inside it, through its own index `(ParentId/FolderId, Name, Id)` in ranges of 20 000
+  names (the range's end: `LIMIT 1 OFFSET 19 999` on the index, then `holds` up to it), folders then files, in the
+  folder's order; the same 1 s budget; `next` is a listing cursor (base64, as `GET explore`'s), no `where`. Chosen over
+  a prefix range (`Name >= x AND Name < x+1`), cheaper but another meaning than Find's "holds", and NOCASE folds A–Z
+  only. Client: the folder button beside Find (`data-find-here`, `findHere`), the search asked again at once.
 - `files.view`, `RequestLimits.Search` (240 a minute), 2 to 256 characters (400), 202 while the list is read, the
   read limit as for listing. Tests: `ArchiveCatalogTests` (any case, paging with tiny ranges and no time),
-  `ExploreRouteTests.AnArchiveIsSearchedByNameWithTheFolderOfEachFound`.
+  `ExploreRouteTests.AnArchiveIsSearchedByNameWithTheFolderOfEachFound`; one folder:
+  `ArchiveCatalogTests.AFolderIsSearchedAloneInItsOrderPageAfterPage`, `ExploreRouteTests.AFolderOfAnArchiveIsSearchedAloneWithListingCursors`.
 
 ## Catalog store (`ArchiveCatalogs`, one per library)
 

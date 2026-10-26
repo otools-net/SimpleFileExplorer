@@ -156,6 +156,43 @@ public sealed class ArchiveCatalogTests
     }
 
     [TestMethod]
+    public void AFolderIsSearchedAloneInItsOrderPageAfterPage()
+    {
+        var entries = new List<(string, string?)>();
+        for (var i = 0; i < 30; i++)
+            entries.Add(($"in/{(i % 2 == 0 ? "Match" : "skip")} dir {i:D2}/x.txt", "x"));
+        for (var i = 0; i < 200; i++)
+            entries.Add(($"in/{(i % 4 == 0 ? "MATCH" : "skip")} {i:D3}.txt", ""));
+        entries.Add(("match outside.txt", ""));
+        entries.Add(("in/skip dir 00/match below.txt", ""));
+        var catalog = Build(TestArchives.Zip(_folder, "in.zip", CompressionLevel.NoCompression, [.. entries]), ArchiveFormat.Zip);
+        var folder = catalog.FindFolder("in")!.Value;
+        var expected = Enumerable.Range(0, 15).Select(i => $"Match dir {i * 2:D2}/")
+            .Concat(Enumerable.Range(0, 50).Select(i => $"MATCH {i * 4:D3}.txt")).ToList();
+
+        foreach (var (limit, budget) in new[] { (1000, TimeSpan.FromSeconds(5)), (7, TimeSpan.FromSeconds(5)), (1000, TimeSpan.Zero), (3, TimeSpan.Zero) })
+        {
+            var names = new List<string>();
+            ArchiveCursor? cursor = null;
+            var pages = 0;
+            do
+            {
+                var page = catalog.FindIn(folder, "match", cursor, limit, budget, chunk: 16);
+                Assert.IsLessThanOrEqualTo(limit, page.Folders.Count + page.Files.Count);
+                names.AddRange(page.Folders.Select(found => found.Name + "/"));
+                names.AddRange(page.Files.Select(found => found.Name));
+                cursor = page.Next;
+                Assert.IsLessThan(1000, ++pages);
+            }
+            while (cursor is not null);
+
+            CollectionAssert.AreEqual(expected, names, $"limit {limit}, budget {budget}: its own, in its order, once");
+        }
+        Assert.IsEmpty(catalog.FindIn(ArchiveCatalog.RootId, "match", null, 100, TimeSpan.FromSeconds(5)).Folders);
+        CollectionAssert.AreEqual(new[] { "match outside.txt" }, catalog.FindIn(ArchiveCatalog.RootId, "MATCH", null, 100, TimeSpan.FromSeconds(5)).Files.Select(found => found.Name).ToList());
+    }
+
+    [TestMethod]
     public void ATreeThousandsOfFoldersDeepIsListedWithoutRecursion()
     {
         const int depth = 5000;

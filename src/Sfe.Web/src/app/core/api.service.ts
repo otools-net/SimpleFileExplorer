@@ -286,10 +286,13 @@ export class Api {
             params: params({ path, folder: where.folder, at: where.at, after: where.after, limit: where.limit }),
             headers: where.unlock ? this.headers(false).set('X-SFE-Archive-Unlock', where.unlock) : this.headers(false),
         }), signal);
-    /** Folders and files of an archive whose name holds `q` (2 characters or more), in pages that go on with `after`. */
-    searchArchive = (path: string, query: { q: string; after?: string | null; unlock?: string | null }, signal?: AbortSignal) =>
+    /**
+     * Folders and files of an archive whose name holds `q` (2 characters or more), in pages that go on with `after`;
+     * with `folder`, only those right inside that folder, in its order.
+     */
+    searchArchive = (path: string, query: { q: string; folder?: number | null; after?: string | null; unlock?: string | null }, signal?: AbortSignal) =>
         this.send(this.http.get<ArchiveSearchAnswer>('api/files/explore/search', {
-            params: params({ path, q: query.q, after: query.after }),
+            params: params({ path, q: query.q, folder: query.folder, after: query.after }),
             headers: query.unlock ? this.headers(false).set('X-SFE-Archive-Unlock', query.unlock) : this.headers(false),
         }), signal);
     /**

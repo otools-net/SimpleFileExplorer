@@ -16,7 +16,9 @@ entries or folders nested thousands deep.
 - **Find in archive**: type part of a name (two letters or more) to list the folders and files of the whole archive
   whose name holds it, in any case, each with the folder it is in ("in Day 2 - Summit/Notes": click it to open that
   folder). In a very big archive the results come as they are found, and more as you scroll. **Esc** or emptying the
-  box goes back to the folder.
+  box goes back to the folder. Press the folder button beside the box to look only right inside the folder shown
+  (**Find in this folder**): its folders and files whose name holds it, in the folder's order, without what is below
+  them.
 - ↑ / ↓ select a row. The bottom line counts the folder's folders and files, and the size of everything below it.
 
 ![A folder inside an archive](../images/archive-viewer-folder.png)

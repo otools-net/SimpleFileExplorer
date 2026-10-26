@@ -1,6 +1,6 @@
 // The archive viewer in the real app: a zip with a big folder and a deep chain of folders, opened on its own page at
 // desktop and phone widths. Checks the rows drawn (only those on screen), more pages loaded while scrolling, the way to
-// a deep folder collapsed, Go to, Up, Find (a name among thousands, a result's folder opened), and an entry opened from the
+// a deep folder collapsed, Go to, Up, Find (a name among thousands, a result's folder opened, in this folder only), and an entry opened from the
 // archive; passwords: a 7z whose list is encrypted
 // (asked, a wrong one refused, the right one lists it) and an AES zip (a protected file opened once the password is
 // given); extracting (the archive's menu, the dialog with the password, the job, the folder written and listed);
@@ -119,6 +119,16 @@ try {
             await b.eval(`document.querySelector('[data-where]').click(); 1`);
             check(await until(b, `document.querySelector('.archive-crumb.current')?.textContent.trim() === 'level ${DEPTH}' && !document.querySelector('[data-found]')`),
                 "Find: a result's folder opened, the search over");
+            // Find in this folder: only what is right inside the folder shown.
+            await b.eval(`document.querySelector('[data-find-here]').click(); 1`);
+            await find('entry');
+            check(await until(b, `document.querySelector('[data-found-none]')?.textContent.includes('in this folder')`), 'Find in this folder: the big folder\'s names not found here');
+            await find('bottom');
+            check(await until(b, `[...document.querySelectorAll('.archive-open')].map(e => e.textContent.trim()).join() === 'bottom.txt' && !document.querySelector('[data-where]')`),
+                'Find in this folder: its file, without a folder shown');
+            await b.eval(`document.querySelector('[data-find-here]').click(); 1`);
+            check(await until(b, `!!document.querySelector('[data-where]')`), 'Find in archive again: the folder of each shown');
+            await b.eval(`document.querySelector('[data-find]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); 1`);
 
             await b.goto(page, 1500);
             await until(b, `document.querySelector('.archive-open')`);

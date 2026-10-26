@@ -365,7 +365,7 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     public ArchiveSearchPage Search(string text, ArchiveSearchCursor? after, int limit, TimeSpan budget, int chunk = SearchChunk)
     {
         using var connection = Open();
-        connection.CreateFunction("holds", (string name, string part) => name.Contains(part, StringComparison.OrdinalIgnoreCase), isDeterministic: true);
+        AddHolds(connection);
         var started = System.Diagnostics.Stopwatch.StartNew();
         var folders = new List<ArchiveFolder>();
         var files = new List<ArchiveFile>();
@@ -424,6 +424,83 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             [.. files.Select(file => (file, PathOf(connection, file.FolderId, paths)))],
             next);
     }
+
+    /// <summary>
+    /// The folders, then the files, right inside folder <paramref name="folderId"/> whose name holds <paramref name="text"/>
+    /// (as <see cref="Search"/>), in the folder's order, after <paramref name="after"/>: the folder's index is looked
+    /// through by ranges of <paramref name="chunk"/> names, so a page costs <paramref name="budget"/> at most however
+    /// big the folder; a page cut short by it has fewer than <paramref name="limit"/> and a <c>Next</c> to go on.
+    /// </summary>
+    public ArchivePage FindIn(long folderId, string text, ArchiveCursor? after, int limit, TimeSpan budget, int chunk = SearchChunk)
+    {
+        using var connection = Open();
+        AddHolds(connection);
+        var started = System.Diagnostics.Stopwatch.StartNew();
+        var folders = new List<ArchiveFolder>();
+        var files = new List<ArchiveFile>();
+        var inFiles = after?.InFiles ?? false;
+        var (name, id) = (after?.Name ?? "", after?.Id ?? 0);
+        while (true)
+        {
+            var (table, parent) = inFiles ? ("Entries", "FolderId") : ("Folders", "ParentId");
+            // The range's end: the chunk-th name after the cursor (on the index alone); none, the folder's end.
+            (string Name, long Id)? end = null;
+            using (var command = Command(connection, $"""
+                SELECT Name, Id FROM {table} WHERE {parent} = $folder AND (Name, Id) > ($name, $id)
+                ORDER BY Name, Id LIMIT 1 OFFSET $skip
+                """))
+            {
+                command.Parameters.AddWithValue("$folder", folderId);
+                command.Parameters.AddWithValue("$name", name);
+                command.Parameters.AddWithValue("$id", id);
+                command.Parameters.AddWithValue("$skip", chunk - 1);
+                using var reader = command.ExecuteReader();
+                if (reader.Read())
+                    end = (reader.GetString(0), reader.GetInt64(1));
+            }
+            using (var command = Command(connection, $"""
+                SELECT {(inFiles ? FileColumns : FolderColumns)} FROM {table}
+                WHERE {parent} = $folder AND (Name, Id) > ($name, $id) {(end is null ? "" : "AND (Name, Id) <= ($endName, $endId)")}
+                    AND holds(Name, $text)
+                ORDER BY Name, Id LIMIT $room
+                """))
+            {
+                command.Parameters.AddWithValue("$folder", folderId);
+                command.Parameters.AddWithValue("$name", name);
+                command.Parameters.AddWithValue("$id", id);
+                command.Parameters.AddWithValue("$endName", end?.Name ?? "");
+                command.Parameters.AddWithValue("$endId", end?.Id ?? 0);
+                command.Parameters.AddWithValue("$text", text);
+                command.Parameters.AddWithValue("$room", limit - folders.Count - files.Count);
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    if (inFiles)
+                        files.Add(ReadFile(reader));
+                    else
+                        folders.Add(ReadFolder(reader));
+                }
+            }
+            if (folders.Count + files.Count >= limit)
+            {
+                // Full: the next page starts after the last one found.
+                var next = inFiles ? new ArchiveCursor(true, files[^1].Name, files[^1].Id) : new ArchiveCursor(false, folders[^1].Name, folders[^1].Id);
+                return new ArchivePage(folders, files, next);
+            }
+            if (end is { } reached)
+                (name, id) = reached;
+            else if (inFiles)
+                return new ArchivePage(folders, files, null);
+            else
+                (inFiles, name, id) = (true, "", 0);
+            if (started.Elapsed >= budget)
+                return new ArchivePage(folders, files, new ArchiveCursor(inFiles, name, id));
+        }
+    }
+
+    /// <summary><c>holds(name, part)</c>: any case, any letters (SQLite's NOCASE folds A–Z only).</summary>
+    private static void AddHolds(SqliteConnection connection) =>
+        connection.CreateFunction("holds", (string name, string part) => name.Contains(part, StringComparison.OrdinalIgnoreCase), isDeterministic: true);
 
     private static long MaxId(SqliteConnection connection, string table)
     {

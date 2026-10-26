@@ -10,8 +10,6 @@ what it left for later, none of it promised. Tick `[x]` in the commit that does 
 
 ## Explore
 
-- [ ] A name filter inside a folder (a prefix range on the folder's index `(ParentId/FolderId, Name)`): the search
-  of the whole archive is built (`GET …/explore/search`).
 - [ ] Open a picture / text / PDF entry in the viewer itself (today: a new tab): a `LibraryItem`-like entry whose file
   URL is the entry route; videos need Range on a decompressed stream.
 - [ ] Item menu: "Open as archive" for `.cbz`/`.epub`/`.docx`… ([context-menu](../features/context-menu.md)).

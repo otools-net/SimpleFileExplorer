@@ -137,6 +137,29 @@ describe('ArchiveViewComponent', () => {
             expect(crumbs()).toEqual(['trip.zip', 'Day 1']);
         });
 
+        it('looks only in the folder shown once This folder is pressed, again at once for what is typed', async () => {
+            api.exploreArchive.mockResolvedValue(listing([file(11, 'summit.jpg')], { folder: folder(2, 'Day 1', { files: 1 }), trail: { skipped: 0, last: [{ id: 2, name: 'Day 1' }] } }));
+            await show();
+            api.searchArchive.mockResolvedValue({ items: [file(11, 'summit.jpg', { where: 'Day 1' })], next: null });
+            await type('summ');
+            expect(api.searchArchive).toHaveBeenLastCalledWith('Media/trip.zip', { q: 'summ', after: null, unlock: null }, expect.any(AbortSignal));
+
+            api.searchArchive.mockResolvedValue({ items: [file(11, 'summit.jpg')], next: null });
+            const here = element.querySelector<HTMLButtonElement>('[data-find-here]')!;
+            here.click();
+            await stable();
+            expect(here.getAttribute('aria-pressed')).toBe('true');
+            expect(element.querySelector<HTMLInputElement>('[data-find]')!.placeholder).toBe('Find in this folder');
+            expect(api.searchArchive).toHaveBeenLastCalledWith('Media/trip.zip', { q: 'summ', folder: 2, after: null, unlock: null }, expect.any(AbortSignal));
+            expect(names()).toEqual(['summit.jpg']);
+            expect(element.querySelector('[data-where]')).toBeNull();
+            expect(element.querySelector('[data-found]')!.textContent).toContain('1 name in this folder holds “summ”');
+
+            api.searchArchive.mockResolvedValue({ items: [], next: null });
+            await type('zebra');
+            expect(element.querySelector('[data-found-none]')!.textContent).toContain('No name in this folder holds “zebra”.');
+        });
+
         it('says when no name holds it, and Esc goes back to the folder', async () => {
             api.exploreArchive.mockResolvedValue(listing([file(10, 'readme.txt')]));
             await show();

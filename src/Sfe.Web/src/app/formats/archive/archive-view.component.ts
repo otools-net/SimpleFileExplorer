@@ -24,9 +24,10 @@ const ROW_HEIGHT = 32;
 
 type ArchiveState = 'loading' | 'reading' | 'ready' | 'failed';
 
-/** A search's results so far: `next` goes on; `searching` while a page is asked for. */
+/** A search's results so far: `next` goes on; `searching` while a page is asked for; `folder`: in that folder only. */
 interface Found {
     query: string;
+    folder: number | null;
     rows: ArchiveItem[];
     next: string | null;
     searching: boolean;
@@ -77,8 +78,12 @@ interface Shown {
             </nav>
             <input #goTo type="search" class="json-filter archive-go" data-go [sfeOverflowItem]="null" overflowStay placeholder="Go to folder" aria-label="Go to a folder of the archive"
                    title="A folder's path inside the archive (folders separated by /), then Enter" (keydown.enter)="goToPath(goTo.value)" />
-            <input #find type="search" class="json-filter archive-find" data-find [sfeOverflowItem]="null" overflowStay placeholder="Find in archive" aria-label="Find in the archive by name"
-                   title="Folders and files of the whole archive whose name holds what is typed (Esc: back to the folder)" (input)="findTyped(find.value)" (keydown.escape)="endFind()" />
+            <input #find type="search" class="json-filter archive-find" data-find [sfeOverflowItem]="null" overflowStay
+                   [placeholder]="findHere() ? 'Find in this folder' : 'Find in archive'" [attr.aria-label]="findHere() ? 'Find in this folder by name' : 'Find in the archive by name'"
+                   [title]="(findHere() ? 'Folders and files right inside this folder' : 'Folders and files of the whole archive') + ' whose name holds what is typed (Esc: back to the folder)'"
+                   (input)="findTyped(find.value)" (keydown.escape)="endFind()" />
+            <button type="button" class="icon-button" data-find-here [sfeOverflowItem]="null" overflowStay [class.active]="findHere()" [attr.aria-pressed]="findHere()"
+                    title="Find in this folder only" aria-label="Find in this folder only" (click)="toggleFindHere(find.value)"><svg sfeIcon="folder"></svg></button>
             @if (canExtract() && shown()) {
                 <button type="button" class="button archive-extract" data-extract-shown [sfeOverflowItem]="extractEntry" [title]="extractTitle()" (click)="extractShown()">
                     <svg sfeIcon="extract"></svg><span>Extract…</span>
@@ -147,7 +152,7 @@ interface Shown {
             </div>
             @if (found(); as results) {
                 @if (!results.searching && !results.next && results.rows.length === 0) {
-                    <p class="text-message" data-found-none>No name in this archive holds “{{ results.query }}”.</p>
+                    <p class="text-message" data-found-none>No name {{ results.folder === null ? 'in this archive' : 'in this folder' }} holds “{{ results.query }}”.</p>
                 }
             } @else if (state() === 'ready' && count() === 0 && !shown()?.listing?.needsPassword) {
                 <p class="text-message" data-empty>This folder is empty.</p>
@@ -217,6 +222,8 @@ export class ArchiveViewComponent {
     protected readonly shown = signal<Shown | null>(null);
     /** A search of the whole archive by name, while one is typed: its results replace the folder's rows. */
     protected readonly found = signal<Found | null>(null);
+    /** Find looks only right inside the folder shown (else in the whole archive). */
+    protected readonly findHere = signal(false);
     protected readonly rows = computed(() => this.found()?.rows ?? this.shown()?.rows ?? []);
     protected readonly selected = signal(-1);
     protected readonly rowHeight = ROW_HEIGHT;
@@ -315,6 +322,15 @@ export class ArchiveViewComponent {
         this.findTimer = setTimeout(() => void this.search(query, null), FIND_DELAY_MS);
     }
 
+    /** This folder only, or the whole archive: what is typed is looked for again at once. */
+    protected toggleFindHere(text: string): void {
+        this.findHere.update(here => !here);
+        clearTimeout(this.findTimer);
+        const query = text.trim();
+        if (query.length >= FIND_MIN)
+            void this.search(query, null);
+    }
+
     /** Back to the folder: the search stops and its box is emptied. */
     protected endFind(): void {
         clearTimeout(this.findTimer);
@@ -347,16 +363,17 @@ export class ArchiveViewComponent {
         if (!after) {
             this.findAbort?.abort();
             this.findAbort = new AbortController();
-            this.found.set({ query, rows: [], next: null, searching: true });
+            this.found.set({ query, folder: this.findHere() ? this.shown()?.listing.folder.id ?? null : null, rows: [], next: null, searching: true });
             this.selected.set(-1);
             this.scroller().nativeElement.scrollTop = 0;
         } else {
             this.found.update(found => found && { ...found, searching: true });
         }
         const abort = this.findAbort!;
+        const folder = this.found()?.folder ?? null;
         try {
             for (let cursor = after; ;) {
-                const answer = await this.api.searchArchive(this.item().path, { q: query, after: cursor, unlock: this.unlock() }, abort.signal);
+                const answer = await this.api.searchArchive(this.item().path, { q: query, ...(folder === null ? {} : { folder }), after: cursor, unlock: this.unlock() }, abort.signal);
                 if (abort.signal.aborted)
                     return;
                 if ('read' in answer) {
@@ -364,9 +381,9 @@ export class ArchiveViewComponent {
                     continue;
                 }
                 const found = this.found();
-                if (!found || found.query !== query)
+                if (!found || found.query !== query || found.folder !== folder)
                     return;
-                this.found.set({ query, rows: [...found.rows, ...answer.items], next: answer.next, searching: answer.items.length === 0 && answer.next !== null });
+                this.found.set({ query, folder, rows: [...found.rows, ...answer.items], next: answer.next, searching: answer.items.length === 0 && answer.next !== null });
                 if (answer.items.length > 0 || !answer.next)
                     return;
                 cursor = answer.next;
@@ -388,9 +405,10 @@ export class ArchiveViewComponent {
     }
 
     protected foundStatus(found: Found): string {
-        const count = `${found.rows.length.toLocaleString()} ${found.rows.length === 1 ? 'name holds' : 'names hold'} “${found.query}”`;
+        const here = found.folder === null ? '' : ' in this folder';
+        const count = `${found.rows.length.toLocaleString()} ${found.rows.length === 1 ? 'name' : 'names'}${here} ${found.rows.length === 1 ? 'holds' : 'hold'} “${found.query}”`;
         if (found.searching)
-            return `Searching the archive… ${found.rows.length ? count + ' so far' : ''}`.trim();
+            return `Searching ${found.folder === null ? 'the archive' : 'this folder'}… ${found.rows.length ? count + ' so far' : ''}`.trim();
         return found.next ? `${count} so far: scroll for more` : count;
     }
 

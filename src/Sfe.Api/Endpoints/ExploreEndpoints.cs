@@ -105,12 +105,13 @@ public static class ExploreEndpoints
             .RequireRateLimiting(RequestLimits.Search)
             .FolderScoped("files.view at the archive")
             .WithName("SearchArchive")
-            .WithSummary("Folders and files of an archive whose name holds a text (any case), in the archive's order.")
+            .WithSummary("Folders and files of an archive, or of one of its folders, whose name holds a text (any case).")
             .WithDescription($"""
                 `q` (at least {MinSearchLength} characters) is looked for in the names of the whole archive, the catalog
                 looked through for {SearchBudgetMilliseconds} ms at most per request: a page may hold fewer than `limit`
                 (default {SearchPageSize}, at most {MaxPageSize}) and still have a `next` (ask again with `after`). Each
-                item has `where`, the path of its folder. 202 while the list is read, as for `GET explore`.
+                item has `where`, the path of its folder. With `folder` (a folder's id), only what is right inside that folder,
+                in its order (folders first, by name), without `where`. 202 while the list is read, as for `GET explore`.
                 """);
         explore.MapGet("/entry/{archive}/{id:long}/{name}", GetEntry)
             .RequireRight(Rights.Download)
@@ -216,14 +217,15 @@ public static class ExploreEndpoints
 
     private static async Task<Results<Ok<ArchiveSearch>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>> Search(
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        ArchiveUnlocks unlocks, CatalogBuildLimits limits, CurrentAccess current, HttpContext context, string? path, string? q, string? after, int? limit,
+        ArchiveUnlocks unlocks, CatalogBuildLimits limits, CurrentAccess current, HttpContext context, string? path, string? q, long? folder, string? after, int? limit,
         [FromHeader(Name = UnlockHeader)] string? unlock)
     {
         var text = q?.Trim() ?? "";
         if (text.Length < MinSearchLength || text.Length > 256)
             return TypedResults.Problem($"Search with {MinSearchLength} to 256 characters.", statusCode: StatusCodes.Status400BadRequest);
         ArchiveSearchCursor? cursor = null;
-        if (after is not null && (cursor = ParseSearchCursor(after)) is null)
+        ArchiveCursor? inFolder = null;
+        if (after is not null && (folder is null ? (cursor = ParseSearchCursor(after)) is null : (inFolder = ParseCursor(after)) is null))
             return TypedResults.Problem("`after` is not a cursor of this search.", statusCode: StatusCodes.Status400BadRequest);
         var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles);
         if (refused is { } forbidden)
@@ -241,7 +243,17 @@ public static class ExploreEndpoints
         if (state.Catalog is not { } catalog)
             return TypedResults.Problem(state.Error, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
 
-        var page = catalog.Search(text, cursor, Math.Clamp(limit ?? SearchPageSize, 1, MaxPageSize), TimeSpan.FromMilliseconds(SearchBudgetMilliseconds));
+        var size = Math.Clamp(limit ?? SearchPageSize, 1, MaxPageSize);
+        var budget = TimeSpan.FromMilliseconds(SearchBudgetMilliseconds);
+        if (folder is { } id)
+        {
+            if (catalog.Folder(id) is null)
+                return TypedResults.NotFound();
+            var here = catalog.FindIn(id, text, inFolder, size, budget);
+            return TypedResults.Ok(new ArchiveSearch(
+                [.. here.Folders.Select(ToItem), .. here.Files.Select(ToItem)], here.Next is { } more ? Cursor(more) : null));
+        }
+        var page = catalog.Search(text, cursor, size, budget);
         var items = page.Folders.Select(found => ToItem(found.Folder) with { Where = found.Where })
             .Concat(page.Files.Select(found => ToItem(found.File) with { Where = found.Where }))
             .ToList();
