@@ -22,10 +22,11 @@ what it left for later, none of it promised. Tick `[x]` in the commit that does 
 - [ ] Paths too long for Windows without long paths (.NET handles `\\?\` itself: only the index's limit applies now).
 - [ ] Desktop: drop an archive with Alt to extract it?
 
-## Measured, not assumed
+## Measured (`agents/tools/archives/measure.mjs`, results in [archive-reading](../features/archive-reading.md))
 
-- [ ] A tool in `agents/tools/archives/` that writes big archives into a temp folder (5 M entries, 10 000 nested
-  folders, 100 000 files in one folder; zip, tar, and 7z/rar to check SharpCompress' memory with millions: its 7z
-  archive holds every entry) and reports build time, peak memory, catalog size and page latency into
-  [archive-reading](../features/archive-reading.md). 1 M zip entries were measured by hand (11 s, 49 MB peak, ~3 ms a
-  page).
+- [ ] **7z lists in memory**: SharpCompress holds a 7z's whole list, ~570 bytes per entry (1 M entries: 717 MB peak).
+  A bound before reading (its header's size is in the start header: 20 bytes at offset 12) or a limit of 7z entries
+  well under `MaxEntries`; or our own header reader streaming entries, as `ZipDirectory` does for zips.
+- [ ] RAR with millions of entries: not measured (nothing free writes one).
+- [ ] Find in archive's `where` for results very deep costs a lookup per level (9 999: ~1 s): a cap, or the path
+  built from the folders' rows of the page.

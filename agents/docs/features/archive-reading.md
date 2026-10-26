@@ -1,7 +1,7 @@
 # Reading archives (formats, entry names, catalogs)
 
 Code: `src/Sfe.Core/Files/Compression/` (`ArchiveFormats`, `ArchiveEntryNames`, `ZipDirectory`, `ArchiveReader`,
-`ArchiveCatalog`, `BoundedStreams`), `ArchiveOptions` (`Files:Archives:*`) in `SfeOptions.cs`. Tests:
+`ArchiveCatalog`, `BoundedStreams`), `ArchiveOptions` (`Files:Archives:*`) in `SfeOptions.cs`; measurements: `agents/tools/archives/`. Tests:
 `ArchiveReaderTests`, `ArchiveCatalogTests`; samples `tests/samples/archives/` (7z, by
 `agents/tools/samples/make-archives.mjs`) and `tests/samples/third-party/sharpcompress/` (RAR, from SharpCompress' tests). What is left: [archives-next-plan](../development/archives-next-plan.md).
 
@@ -77,10 +77,14 @@ proportion to its entries.
 - `ArchiveCatalog.Build(archive, format, catalogPath, options, progress, cancel)` reads the list once into a SQLite
   file (written as `….building`, moved in at the end: a cut build leaves nothing). Not pooled connections, opened per
   question. `journal_mode = OFF`, `synchronous = OFF`, 16 MB page cache: it is a cache, made again if lost.
-- Schema (`Version` 2): `Folders(Id, ParentId, Name NOCASE, Depth, Time, Folders, Files, AllFiles, Size REAL,
+- Schema (`Version` 3): `Folders(Id, ParentId, Name NOCASE, Depth, Time, Folders, Files, AllFiles, Size REAL,
   Packed REAL)`, root `Id` 1; `Entries(Id, FolderId, Name NOCASE, Kind, Size, Packed, Time, Encrypted, Locator,
   Method, Crc, Cipher, CipherInfo)`; `LeftOut` (first 1000); `Info` (version, format, entries, folders, leftOut,
-  complete, stopped, needsPassword). A version change moves catalogs to a new `v*` folder; the old one is deleted.
+  complete, stopped, needsPassword). A version change moves catalogs to a new `v*` folder; the old one is deleted
+  (catalogs are a cache: read again on demand).
+- Indexes (made after the read): `FoldersByParent`, `FoldersByDepth`, `EntriesByFolder`, and `EncryptedFiles` (partial:
+  `Encrypted = 1 AND Kind = 0`, on `(Size, Id)`): `SmallestEncrypted` is asked on every page (the `protected` flag),
+  and without it scanned every entry (600 ms a page at 5 M, found by `agents/tools/archives/measure.mjs`; version 3).
 - **In memory** (`BuildInMemory`): the list of an archive whose names are encrypted, read with its password into a
   shared-cache SQLite memory database (`Mode=Memory`, `Cache=Shared`) that lives while its keeper connection is open;
   the same queries. Its names never reach the disk.
@@ -97,10 +101,26 @@ proportion to its entries.
 - Stops: more than `Files:Archives:MaxEntries` (10 000 000), or an `ArchiveException` mid-way, keep what was read
   with `complete = 0` and the reason; never shown as the whole archive.
 
-## Measured (2026-10-26, this machine, Release)
+## Measured (2026-10-26, `agents/tools/archives/measure.mjs`)
 
-- 1 000 000 zip entries in 1 940 folders (147 MB zip): catalog built in 11 s, 77 MB; process memory 7 MB before,
-  49 MB at the peak; a page of 200 in ~3 ms, the root's in ~2 ms.
+i7-8550U, 16 GB, Windows; the docs build (Debug, Development) over HTTP, signed in; "before" is the app's own peak
+after its start. Pages: the root's median of 10 (200 rows), a folder's first page of 1 000.
+
+| Archive | Read | Peak memory (before) | Catalog | Root page | Folder page | Find in archive (a name at the end) | Other |
+|---|---|---|---|---|---|---|---|
+| zip, 5 000 000 files in folders of 1 000 (548 MB) | 35 s | 205 MB (143) | 387 MB | 10 ms | 18 ms | 2.3 s, 3 pages | Find in this folder 17 ms |
+| zip, 100 000 files in one folder (10 MB) | 1.4 s | 209 MB (145) | 7 MB | 10 ms | 34 ms | 0.1 s | every page of 1 000: median 17 ms, the last 18 ms; Find in this folder 145 ms |
+| zip, 9 999 folders nested (2 MB) | 0.6 s | 199 MB (147) | 1 MB | 11 ms | | 1.2 s (its `where`: 9 999 lookups up) | Go to 1 500 folders down 149 ms |
+| tar, 1 000 000 empty files (488 MB) | 11.5 s | 201 MB (145) | 70 MB | 10 ms | 17 ms | 0.6 s | Find in this folder 19 ms |
+| 7z, 1 000 000 empty files (38 MB, a header only) | 8.4 s | **717 MB** (145) | 62 MB | 10 ms | 17 ms | 0.9 s | Find in this folder 17 ms |
+
+- Zip and tar reads stream: memory stays flat whatever the count. **A 7z's list is held whole by SharpCompress**:
+  ~570 bytes per entry (1 M: +570 MB; `MaxEntries` 10 M would be GBs). See
+  [archives-next-plan](../development/archives-next-plan.md).
+- Pages cost the same on any archive (keyset ranges); before catalog version 3 every page scanned all entries for
+  `SmallestEncrypted` (600 ms at 5 M).
+- Go to by `at` is bounded by the address: Kestrel's 8 KB request line, each `/` sent as `%2F` (~2 000 levels).
+- Earlier, by hand (Release, the catalog alone): 1 000 000 zip entries built in 11 s, 49 MB peak, ~3 ms a page.
 
 ## Gotchas
 

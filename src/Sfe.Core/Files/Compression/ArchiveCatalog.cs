@@ -63,8 +63,11 @@ public sealed record ArchiveTrail(int Skipped, IReadOnlyList<ArchiveFolder> Last
 /// </summary>
 public sealed class ArchiveCatalog(string path, bool inMemory = false)
 {
-    /// <summary>Changes with the schema: catalogs of another version are made again, never read (2: zip ciphers, CRC).</summary>
-    public const int Version = 2;
+    /// <summary>
+    /// Changes with the schema: catalogs of another version are made again, never read (2: zip ciphers, CRC; 3: the
+    /// index of encrypted files, asked on every page).
+    /// </summary>
+    public const int Version = 3;
 
     /// <summary>The root folder's id (its parent is 0, no folder).</summary>
     public const long RootId = 1;
@@ -692,6 +695,7 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
                 CREATE INDEX FoldersByParent ON Folders (ParentId, Name, Id);
                 CREATE INDEX FoldersByDepth ON Folders (Depth);
                 CREATE INDEX EntriesByFolder ON Entries (FolderId, Name, Id);
+                CREATE INDEX EncryptedFiles ON Entries (Size, Id) WHERE Encrypted = 1 AND Kind = 0;
                 UPDATE Folders SET Files = c.Count, AllFiles = c.Files, Size = c.Size, Packed = c.Packed
                 FROM (SELECT FolderId, count(*) AS Count, sum(Kind = 0) AS Files,
                         total(CASE WHEN Kind = 0 THEN Size END) AS Size, total(CASE WHEN Kind = 0 THEN Packed END) AS Packed

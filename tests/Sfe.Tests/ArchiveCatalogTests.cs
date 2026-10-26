@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
+using Microsoft.Data.Sqlite;
 using Sfe.Core.Files.Compression;
 using Sfe.Core.Options;
 using Sfe.Tests.Infrastructure;
@@ -153,6 +154,23 @@ public sealed class ArchiveCatalogTests
             CollectionAssert.AllItemsAreUnique(names);
             Assert.IsTrue(names.Take(40).All(name => name.EndsWith('/')), "folders first");
         }
+    }
+
+    [TestMethod]
+    public void TheSmallestEncryptedFileIsFoundThroughItsIndexNotAScanOfEveryEntry()
+    {
+        // Asked on every page of a listing (is anything protected?): a scan cost 600 ms a page with 5 million entries.
+        var catalog = Build(TestArchives.Zip(_folder, "plain.zip", ("a.txt", "a")), ArchiveFormat.Zip);
+        Assert.IsNull(catalog.SmallestEncrypted());
+        using var connection = new SqliteConnection($"Data Source={catalog.Path};Mode=ReadOnly;Pooling=False");
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "EXPLAIN QUERY PLAN SELECT * FROM Entries WHERE Encrypted = 1 AND Kind = 0 ORDER BY Size, Id LIMIT 1";
+        using var reader = command.ExecuteReader();
+        var plan = new List<string>();
+        while (reader.Read())
+            plan.Add(reader.GetString(3));
+        StringAssert.Contains(string.Join(" | ", plan), "USING INDEX EncryptedFiles");
     }
 
     [TestMethod]
