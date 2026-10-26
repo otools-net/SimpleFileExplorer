@@ -24,6 +24,18 @@ const ROW_HEIGHT = 32;
 
 type ArchiveState = 'loading' | 'reading' | 'ready' | 'failed';
 
+/** A search's results so far: `next` goes on; `searching` while a page is asked for. */
+interface Found {
+    query: string;
+    rows: ArchiveItem[];
+    next: string | null;
+    searching: boolean;
+}
+
+/** A search starts this long after the last key typed, with this many characters at least. */
+const FIND_DELAY_MS = 300;
+const FIND_MIN = 2;
+
 /** What a folder shows: its first page (totals, trail, flags) and the rows loaded so far. */
 interface Shown {
     listing: ArchiveListing;
@@ -65,6 +77,8 @@ interface Shown {
             </nav>
             <input #goTo type="search" class="json-filter archive-go" data-go [sfeOverflowItem]="null" overflowStay placeholder="Go to folder" aria-label="Go to a folder of the archive"
                    title="A folder's path inside the archive (folders separated by /), then Enter" (keydown.enter)="goToPath(goTo.value)" />
+            <input #find type="search" class="json-filter archive-find" data-find [sfeOverflowItem]="null" overflowStay placeholder="Find in archive" aria-label="Find in the archive by name"
+                   title="Folders and files of the whole archive whose name holds what is typed (Esc: back to the folder)" (input)="findTyped(find.value)" (keydown.escape)="endFind()" />
             @if (canExtract() && shown()) {
                 <button type="button" class="button archive-extract" data-extract-shown [sfeOverflowItem]="extractEntry" [title]="extractTitle()" (click)="extractShown()">
                     <svg sfeIcon="extract"></svg><span>Extract…</span>
@@ -131,7 +145,11 @@ interface Shown {
                 <span role="columnheader" class="archive-packed">Packed</span>
                 <span role="columnheader" class="archive-modified">Modified</span>
             </div>
-            @if (state() === 'ready' && count() === 0 && !shown()?.listing?.needsPassword) {
+            @if (found(); as results) {
+                @if (!results.searching && !results.next && results.rows.length === 0) {
+                    <p class="text-message" data-found-none>No name in this archive holds “{{ results.query }}”.</p>
+                }
+            } @else if (state() === 'ready' && count() === 0 && !shown()?.listing?.needsPassword) {
                 <p class="text-message" data-empty>This folder is empty.</p>
             }
             <div class="archive-body" [style.height.px]="virtual.total()">
@@ -155,6 +173,10 @@ interface Shown {
                                 @if (entry.encrypted) {
                                     <svg class="archive-lock" sfeIcon="lock" aria-label="Protected by a password"></svg>
                                 }
+                                @if (found() && entry.where !== undefined && entry.where !== null) {
+                                    <button type="button" class="archive-where" data-where [title]="'Show the folder it is in: ' + (entry.where || item().name)"
+                                            (click)="showWhere(entry); $event.stopPropagation()">in {{ whereOf(entry) }}</button>
+                                }
                             </span>
                             <span class="archive-size" role="gridcell" [title]="sizeTitle(entry)">{{ sizeOf(entry) }}</span>
                             <span class="archive-packed" role="gridcell">{{ entry.kind === 'file' && entry.packed > 0 ? bytes(entry.packed) : '' }}</span>
@@ -168,7 +190,9 @@ interface Shown {
                 }
             </div>
         </div>
-        @if (shown(); as current) {
+        @if (found(); as results) {
+            <p class="text-status" data-found role="status">{{ foundStatus(results) }}</p>
+        } @else if (shown(); as current) {
             @if (!current.listing.needsPassword) {
                 <p class="text-status" data-counts>{{ countsOf(current.listing) }}</p>
             }
@@ -185,18 +209,24 @@ export class ArchiveViewComponent {
     private readonly toasts = inject(ToastService);
     private readonly dialogs = inject(Dialogs);
     private readonly scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
+    private readonly findBox = viewChild<ElementRef<HTMLInputElement>>('find');
 
     protected readonly state = signal<ArchiveState>('loading');
     protected readonly read = signal(0);
     protected readonly message = signal('');
     protected readonly shown = signal<Shown | null>(null);
-    protected readonly rows = computed(() => this.shown()?.rows ?? []);
+    /** A search of the whole archive by name, while one is typed: its results replace the folder's rows. */
+    protected readonly found = signal<Found | null>(null);
+    protected readonly rows = computed(() => this.found()?.rows ?? this.shown()?.rows ?? []);
     protected readonly selected = signal(-1);
     protected readonly rowHeight = ROW_HEIGHT;
     protected readonly virtual = new VirtualRows(() => this.scroller()?.nativeElement ?? null, ROW_HEIGHT);
 
     /** The folder's rows in all (folders and entries right inside it), loaded or not. */
     protected readonly count = computed(() => {
+        const found = this.found();
+        if (found)
+            return found.rows.length;
         const folder = this.shown()?.listing.folder;
         return folder ? (folder.folders ?? 0) + (folder.files ?? 0) : 0;
     });
@@ -230,11 +260,14 @@ export class ArchiveViewComponent {
 
     private abort: AbortController | null = null;
     private loadingMore = false;
+    private findAbort: AbortController | null = null;
+    private findTimer: ReturnType<typeof setTimeout> | undefined;
 
     constructor() {
         afterNextRender(() => this.virtual.mount());
         inject(DestroyRef).onDestroy(() => {
             this.abort?.abort();
+            this.endFind();
             this.virtual.destroy();
         });
         effect(() => {
@@ -244,6 +277,7 @@ export class ArchiveViewComponent {
                 this.unlock.set(null);
                 this.asking.set(false);
                 this.passwordMessage.set(null);
+                this.endFind();
                 void this.open({});
             });
         });
@@ -251,6 +285,12 @@ export class ArchiveViewComponent {
         // More rows as they scroll in: the next page when the last rows drawn near the end of those loaded.
         effect(() => {
             const items = this.virtual.items();
+            const found = this.found();
+            if (found) {
+                if (found.next && !found.searching && items.length > 0 && items[items.length - 1].index >= found.rows.length - AHEAD)
+                    untracked(() => void this.search(found.query, found.next));
+                return;
+            }
             const shown = this.shown();
             if (!shown?.next || items.length === 0)
                 return;
@@ -260,7 +300,98 @@ export class ArchiveViewComponent {
     }
 
     protected enter(folder: number | null): void {
+        this.endFind();
         void this.open({ folder });
+    }
+
+    /** Typed in Find: the search starts after a pause; fewer than two characters, the folder again. */
+    protected findTyped(text: string): void {
+        clearTimeout(this.findTimer);
+        const query = text.trim();
+        if (query.length < FIND_MIN) {
+            this.stopFind();
+            return;
+        }
+        this.findTimer = setTimeout(() => void this.search(query, null), FIND_DELAY_MS);
+    }
+
+    /** Back to the folder: the search stops and its box is emptied. */
+    protected endFind(): void {
+        clearTimeout(this.findTimer);
+        const box = this.findBox()?.nativeElement;
+        if (box)
+            box.value = '';
+        this.stopFind();
+    }
+
+    private stopFind(): void {
+        this.findAbort?.abort();
+        this.findAbort = null;
+        if (this.found()) {
+            this.found.set(null);
+            this.selected.set(-1);
+        }
+    }
+
+    /** A result's folder, opened: the search ends. */
+    protected showWhere(entry: ArchiveItem): void {
+        this.endFind();
+        void this.open(entry.where ? { at: entry.where } : { folder: null });
+    }
+
+    /**
+     * A page of the search (`after`: the next one, added to those found). A page the server cut short with nothing
+     * found goes on at once; more come as the results scroll in.
+     */
+    private async search(query: string, after: string | null): Promise<void> {
+        if (!after) {
+            this.findAbort?.abort();
+            this.findAbort = new AbortController();
+            this.found.set({ query, rows: [], next: null, searching: true });
+            this.selected.set(-1);
+            this.scroller().nativeElement.scrollTop = 0;
+        } else {
+            this.found.update(found => found && { ...found, searching: true });
+        }
+        const abort = this.findAbort!;
+        try {
+            for (let cursor = after; ;) {
+                const answer = await this.api.searchArchive(this.item().path, { q: query, after: cursor, unlock: this.unlock() }, abort.signal);
+                if (abort.signal.aborted)
+                    return;
+                if ('read' in answer) {
+                    await pause(READING_POLL_MS, abort.signal);
+                    continue;
+                }
+                const found = this.found();
+                if (!found || found.query !== query)
+                    return;
+                this.found.set({ query, rows: [...found.rows, ...answer.items], next: answer.next, searching: answer.items.length === 0 && answer.next !== null });
+                if (answer.items.length > 0 || !answer.next)
+                    return;
+                cursor = answer.next;
+            }
+        } catch (error) {
+            if (abort.signal.aborted)
+                return;
+            this.found.update(found => found && { ...found, next: null, searching: false });
+            this.toasts.error(error instanceof Error ? error.message : String(error));
+        }
+    }
+
+    /** A result's folder, short: deep down, its last two folders ("…/Day 2/Notes"); the title has it whole. */
+    protected whereOf(entry: ArchiveItem): string {
+        const parts = entry.where ? entry.where.split('/') : [];
+        if (parts.length === 0)
+            return this.item().name;
+        return parts.length > 3 ? `…/${parts.slice(-2).join('/')}` : entry.where!;
+    }
+
+    protected foundStatus(found: Found): string {
+        const count = `${found.rows.length.toLocaleString()} ${found.rows.length === 1 ? 'name holds' : 'names hold'} “${found.query}”`;
+        if (found.searching)
+            return `Searching the archive… ${found.rows.length ? count + ' so far' : ''}`.trim();
+        return found.next ? `${count} so far: scroll for more` : count;
     }
 
     protected goUp(): void {
@@ -270,6 +401,7 @@ export class ArchiveViewComponent {
     }
 
     protected goToPath(path: string): void {
+        this.endFind();
         void this.open({ at: path.trim().replace(/^\/+|\/+$/g, '') });
     }
 

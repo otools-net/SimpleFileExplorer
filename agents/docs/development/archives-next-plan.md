@@ -10,12 +10,11 @@ what it left for later, none of it promised. Tick `[x]` in the commit that does 
 
 ## Explore
 
-- [ ] Search across the archive (`GET …/explore/search?path=&q=&after=`: names containing, on the catalog, paged, a
-  time cap per page) and a name filter inside a folder (a prefix range on the folder's index).
+- [ ] A name filter inside a folder (a prefix range on the folder's index `(ParentId/FolderId, Name)`): the search
+  of the whole archive is built (`GET …/explore/search`).
 - [ ] Open a picture / text / PDF entry in the viewer itself (today: a new tab): a `LibraryItem`-like entry whose file
   URL is the entry route; videos need Range on a decompressed stream.
 - [ ] Item menu: "Open as archive" for `.cbz`/`.epub`/`.docx`… ([context-menu](../features/context-menu.md)).
-- [ ] Per-caller limits on folder pages and builds started (entry opens have `RequestLimits.Media`).
 - [ ] Zip methods other than stored and deflate (deflate64, bzip2, lzma, zstd): SharpCompress' decompressors over
   `WindowStream`, if real archives need them.
 

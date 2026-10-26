@@ -48,6 +48,8 @@ public enum ArchiveCatalogStatus
     Building,
     /// <summary>Couldn't be read (the disk, the file in use): <see cref="ArchiveCatalogState.Error"/> says so; asked again later.</summary>
     Failed,
+    /// <summary>Not read yet, and no new read was started for this caller (<c>mayStart</c> said no): ask again later.</summary>
+    Limited,
 }
 
 public sealed record ArchiveCatalogState(ArchiveCatalogStatus Status, ArchiveCatalog? Catalog = null, long Read = 0, string? Error = null);
@@ -85,9 +87,10 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
 
     /// <summary>
     /// The catalog of the archive at <paramref name="fullPath"/> when it is ready; otherwise its build, started now if
-    /// none runs (asking keeps a build alive).
+    /// none runs (asking keeps a build alive). <paramref name="mayStart"/> is asked only before a new build starts (the
+    /// caller's limit): no, and the answer is <see cref="ArchiveCatalogStatus.Limited"/>.
     /// </summary>
-    public ArchiveCatalogState Get(string fullPath, string canonicalPath, ArchiveFormat format)
+    public ArchiveCatalogState Get(string fullPath, string canonicalPath, ArchiveFormat format, Func<bool>? mayStart = null)
     {
         var info = new FileInfo(fullPath);
         var key = KeyOf(canonicalPath, info.Length, info.LastWriteTimeUtc);
@@ -113,6 +116,8 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
                 Touch(file);
                 return new ArchiveCatalogState(ArchiveCatalogStatus.Ready, new ArchiveCatalog(file));
             }
+            if (mayStart is not null && !mayStart())
+                return new ArchiveCatalogState(ArchiveCatalogStatus.Limited);
             var build = new Build();
             if (!_builds.TryAdd(key, build))
                 continue;

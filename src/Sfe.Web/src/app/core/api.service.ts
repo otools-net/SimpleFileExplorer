@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
-    AccessGain, ArchiveAnswer, ArchiveLink, ArchiveUnlockAnswer, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, CompressRequest, ExtractRequest, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, TrashCount, KeepAliveView, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
+    AccessGain, ArchiveAnswer, ArchiveSearchAnswer, ArchiveLink, ArchiveUnlockAnswer, TextFile, TextPart, TextVersion, SubtitleVideo, SaveTextResult, TextToSave, BackupLink, ChecksumAlgorithm, FolderTotals, ItemProperties, PropertyJob, ClientConfig, ConflictChoice, DeleteResults, CompressRequest, ExtractRequest, FileJobRequest, FileJobView, UploadCheck, UploadInfo, FileOperationResult, TrashPage, TrashCount, KeepAliveView, DirectoryListing, EditedImage, EditedImageAccess, SaveImageResult, DuplicateResults, FileLink, FileTagChange, FileTagChangeResult, FileTags,
     ExcludedFolder, ExclusionKind, FolderAccessReport, FolderDefaults, FolderDefaultTagsChange, FolderDefaultTagsResult, FolderCover, FolderExclusions, FolderPicker, FolderRuleChange, FolderRuleView, FolderSiblings, GroupInfo, GroupInput, IndexedFolder, InstallationGrant, InstallationInput, InstallationSaved,
     InstallationView, LogQuery, LogSearchResult, MigrationInfo, MissingFileResults, QuickLink, RelinkPassResult, RemovedDuplicate,
     RemovedFromIndex, RightsCatalog, ScanStatus, ScopeTagChange, ScopeTagChangeResult, ScopeTags, SearchResults, SessionInfo, SettingChanges, SettingLevel,
@@ -285,6 +285,12 @@ export class Api {
         this.send(this.http.get<ArchiveAnswer>('api/files/explore', {
             params: params({ path, folder: where.folder, at: where.at, after: where.after, limit: where.limit }),
             headers: where.unlock ? this.headers(false).set('X-SFE-Archive-Unlock', where.unlock) : this.headers(false),
+        }), signal);
+    /** Folders and files of an archive whose name holds `q` (2 characters or more), in pages that go on with `after`. */
+    searchArchive = (path: string, query: { q: string; after?: string | null; unlock?: string | null }, signal?: AbortSignal) =>
+        this.send(this.http.get<ArchiveSearchAnswer>('api/files/explore/search', {
+            params: params({ path, q: query.q, after: query.after }),
+            headers: query.unlock ? this.headers(false).set('X-SFE-Archive-Unlock', query.unlock) : this.headers(false),
         }), signal);
     /**
      * Tries `password` on an archive: an unlock for the requests about it (kept by the page only), the list still being

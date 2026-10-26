@@ -18,6 +18,10 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   carries the summary (`complete`, `stopped`, `needsPassword`, `entries`, `leftOut`), the folder with its totals, its
   trail (`Trail(id, 4)`: the last four folders and how many skipped), the items and `next` (an opaque cursor:
   base64url of `d|f`, id, `\n`, name).
+- Limits per caller: pages share `RequestLimits.Media` (8 at once, queued); a read (catalog build) starts at most
+  `CatalogBuildLimits.PerMinute` (30) a minute (`ArchiveCatalogs.Get(…, mayStart)` asks only before starting one: an
+  archive read already never counts) → `ArchiveCatalogStatus.Limited` → 429. List, unlock and extract (chosen entries)
+  pass the limiter; the entry route passes `() => false`: it never starts a read (404 until the list is read).
 - `GET api/files/explore/entry/{archive}/{id}/{name}` (`files.download` + `files.view` at the archive, `RequestLimits.Media`):
   `archive` = `EpubEntries.Token` of the path, `id` the entry's catalog id, `name` must be its name (404 otherwise; it
   gives the browser the file name). Only when the catalog is ready. `FilePolicy` sandbox, inline only for
@@ -30,6 +34,18 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   (`ArchiveException.TooFar`). The unlock check takes a password unchecked when its entry is that far.
   `private, no-cache` + ETag (catalog key, id): 304 while the archive is the same.
 - `/api/config` `archives: { maxCompressedTarMegabytes }` (with `files.view`): the client's `isExplorable` rule.
+
+## Search (`GET api/files/explore/search?path=&q=&after=&limit=`)
+
+- `ArchiveCatalog.Search(text, after, limit, budget)`: no index on names (a `LIKE '%x%'` couldn't use one anyway): the
+  `Folders`, then the `Entries`, looked through by ranges of 20 000 ids (`SearchChunk`), `holds(Name, $text)` a .NET
+  function (`OrdinalIgnoreCase`: any letters, not only ASCII); a page ends when full (its `next` = the last found) or
+  when its time is spent (1 s, `SearchBudgetMilliseconds`; `next` = the end of the range looked at, maybe with
+  nothing found). The cursor is `d<id>`/`f<id>`. Each item's `where` (its folder's path) from one walk up per folder,
+  shared by the page's results.
+- `files.view`, `RequestLimits.Search` (240 a minute), 2 to 256 characters (400), 202 while the list is read, the
+  read limit as for listing. Tests: `ArchiveCatalogTests` (any case, paging with tiny ranges and no time),
+  `ExploreRouteTests.AnArchiveIsSearchedByNameWithTheFolderOfEachFound`.
 
 ## Catalog store (`ArchiveCatalogs`, one per library)
 
@@ -73,6 +89,10 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   new tab (an `<a target=_blank>` on the entry route) with `files.download`; each row has its context menu (Open /
   Open in new tab, Download). Keys: ↑ ↓, Enter, Backspace (up); the view owns its keys (`data-owns-keys`).
 - An `api.get` 409 resolves with its problem: the answer is told apart by shape (`items`, `read`, else a problem).
+- **Find** (`data-find`, after 300 ms and 2 characters): `found` replaces the folder's rows in the same grid (each
+  with `in <where>`, a button opening that folder through `at`); pages go on as rows scroll in, and at once when a
+  page cut short by the server's time came back empty; `endFind()` (Esc, entering a folder, Go to, another archive)
+  aborts it and empties the box.
 - Passwords: the form shows by itself for an encrypted list, or from **Enter the password** / a click on a locked
   file (a button then, not a link); the unlock is a signal of the view only (dropped with another archive), sent with
   every request and entry link; zips say their names stay readable; 422 `wrong-password` and 429 have their messages.

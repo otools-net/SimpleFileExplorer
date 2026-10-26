@@ -80,6 +80,7 @@ public static class SecurityServiceCollectionExtensions
         services.AddSingleton<SignInThrottle>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<FastSignIn>();
+        services.AddSingleton<CatalogBuildLimits>();
 
         services.AddRateLimiter(options =>
         {

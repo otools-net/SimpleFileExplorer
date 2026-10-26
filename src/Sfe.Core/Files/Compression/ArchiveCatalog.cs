@@ -41,6 +41,16 @@ public sealed record ArchivePage(IReadOnlyList<ArchiveFolder> Folders, IReadOnly
 /// <summary>Where a page stopped: in the folders or the files, after this name and id (keyset, never an offset).</summary>
 public sealed record ArchiveCursor(bool InFiles, string Name, long Id);
 
+/// <summary>
+/// A page of a search by name: the folders, then the files, whose name holds the text, in the archive's order, each with
+/// the path of the folder it is in. <c>Next</c> is null once the whole catalog was looked through.
+/// </summary>
+public sealed record ArchiveSearchPage(
+    IReadOnlyList<(ArchiveFolder Folder, string Where)> Folders, IReadOnlyList<(ArchiveFile File, string Where)> Files, ArchiveSearchCursor? Next);
+
+/// <summary>Where a search stopped: in the folders or the files, after this id (what was looked through, not only found).</summary>
+public sealed record ArchiveSearchCursor(bool InFiles, long Id);
+
 /// <summary>The end of the path to a folder: the root is always first, then the <c>Skipped</c> folders between, then <c>Last</c>.</summary>
 public sealed record ArchiveTrail(int Skipped, IReadOnlyList<ArchiveFolder> Last);
 
@@ -341,6 +351,108 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             return new ArchivePage(folders, files, next);
         }
         return new ArchivePage(folders, files, null);
+    }
+
+    /// <summary>Ids looked through at once by a search: one range of the primary key per query.</summary>
+    public const int SearchChunk = 20_000;
+
+    /// <summary>
+    /// Folders and files whose name holds <paramref name="text"/> (any case, any letters), after <paramref name="after"/>:
+    /// the catalog is looked through by ranges of ids, so a page costs <paramref name="budget"/> at most whatever the
+    /// archive holds; a page cut short by it has fewer than <paramref name="limit"/> and a <c>Next</c> to go on.
+    /// <paramref name="chunk"/>: ids per query (tests make it small).
+    /// </summary>
+    public ArchiveSearchPage Search(string text, ArchiveSearchCursor? after, int limit, TimeSpan budget, int chunk = SearchChunk)
+    {
+        using var connection = Open();
+        connection.CreateFunction("holds", (string name, string part) => name.Contains(part, StringComparison.OrdinalIgnoreCase), isDeterministic: true);
+        var started = System.Diagnostics.Stopwatch.StartNew();
+        var folders = new List<ArchiveFolder>();
+        var files = new List<ArchiveFile>();
+        var inFiles = after?.InFiles ?? false;
+        var from = after?.Id ?? (inFiles ? 0 : RootId);
+        ArchiveSearchCursor? next = null;
+        while (true)
+        {
+            var table = inFiles ? "Entries" : "Folders";
+            var last = MaxId(connection, table);
+            if (from >= last)
+            {
+                if (inFiles)
+                    break;
+                (inFiles, from) = (true, 0);
+                continue;
+            }
+            var to = Math.Min(from + chunk, last);
+            var room = limit - folders.Count - files.Count;
+            using (var command = Command(connection, $"""
+                SELECT {(inFiles ? FileColumns : FolderColumns)} FROM {table}
+                WHERE Id > $from AND Id <= $to AND holds(Name, $text)
+                ORDER BY Id LIMIT $room
+                """))
+            {
+                command.Parameters.AddWithValue("$from", from);
+                command.Parameters.AddWithValue("$to", to);
+                command.Parameters.AddWithValue("$text", text);
+                command.Parameters.AddWithValue("$room", room);
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    if (inFiles)
+                        files.Add(ReadFile(reader));
+                    else
+                        folders.Add(ReadFolder(reader));
+                }
+            }
+            if (folders.Count + files.Count >= limit)
+            {
+                // Full: the next page starts after the last one found (the rest of this range is looked at again).
+                next = new ArchiveSearchCursor(inFiles, inFiles ? files[^1].Id : folders[^1].Id);
+                break;
+            }
+            from = to;
+            if (started.Elapsed >= budget)
+            {
+                next = new ArchiveSearchCursor(inFiles, from);
+                break;
+            }
+        }
+
+        var paths = new Dictionary<long, string>();
+        return new ArchiveSearchPage(
+            [.. folders.Select(folder => (folder, PathOf(connection, folder.ParentId, paths)))],
+            [.. files.Select(file => (file, PathOf(connection, file.FolderId, paths)))],
+            next);
+    }
+
+    private static long MaxId(SqliteConnection connection, string table)
+    {
+        using var command = Command(connection, $"SELECT coalesce(max(Id), 0) FROM {table}");
+        return command.ExecuteScalar() is long id ? id : 0;
+    }
+
+    /// <summary>A folder's path, its ancestors' kept in <paramref name="known"/>: the results of a page share them.</summary>
+    private static string PathOf(SqliteConnection connection, long id, Dictionary<long, string> known)
+    {
+        var chain = new List<ArchiveFolder>();
+        var path = "";
+        for (var folder = FolderOf(connection, id); folder is not null && folder.Id != RootId; folder = FolderOf(connection, folder.ParentId))
+        {
+            if (known.TryGetValue(folder.Id, out var cached))
+            {
+                path = cached;
+                break;
+            }
+            chain.Add(folder);
+            if (chain.Count > 100_000)
+                break;
+        }
+        for (var i = chain.Count - 1; i >= 0; i--)
+        {
+            path = path.Length == 0 ? chain[i].Name : $"{path}/{chain[i].Name}";
+            known[chain[i].Id] = path;
+        }
+        return path;
     }
 
     public ArchiveFile? Entry(long id)

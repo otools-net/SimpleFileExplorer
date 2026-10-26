@@ -109,6 +109,53 @@ public sealed class ArchiveCatalogTests
     }
 
     [TestMethod]
+    public void NamesAreSearchedInAnyCaseWithTheFolderEachIsIn()
+    {
+        var zip = TestArchives.Zip(_folder, "s.zip",
+            ("Photos/2024/Día uno.txt", "1"), ("Photos/2024/notes.txt", "2"), ("Días/readme.txt", "3"), ("other.txt", "4"));
+        var catalog = Build(zip, ArchiveFormat.Zip);
+
+        var page = catalog.Search("DÍA", null, 100, TimeSpan.FromSeconds(5));
+        CollectionAssert.AreEqual(new[] { ("Días", "") }, page.Folders.Select(found => (found.Folder.Name, found.Where)).ToList());
+        CollectionAssert.AreEqual(new[] { ("Día uno.txt", "Photos/2024") }, page.Files.Select(found => (found.File.Name, found.Where)).ToList());
+        Assert.IsNull(page.Next, "all looked through");
+        Assert.IsEmpty(catalog.Search("nothing like it", null, 100, TimeSpan.FromSeconds(5)).Files);
+    }
+
+    [TestMethod]
+    public void SearchPagesGoOnWhereTheyStoppedWithoutGapsOrRepeats()
+    {
+        var entries = new List<(string, string?)>();
+        for (var i = 0; i < 40; i++)
+            entries.Add(($"match folder {i:D2}/other {i:D2}.txt", "x"));
+        for (var i = 0; i < 300; i++)
+            entries.Add(($"{(i % 3 == 0 ? "match" : "skip")} {i:D3}.txt", ""));
+        var catalog = Build(TestArchives.Zip(_folder, "pages.zip", CompressionLevel.NoCompression, [.. entries]), ArchiveFormat.Zip);
+
+        // Small pages, small ranges, and no time at all: every page stops after one range, and the whole is found once.
+        foreach (var (limit, budget) in new[] { (7, TimeSpan.FromSeconds(5)), (1000, TimeSpan.Zero), (3, TimeSpan.Zero) })
+        {
+            var names = new List<string>();
+            ArchiveSearchCursor? cursor = null;
+            var pages = 0;
+            do
+            {
+                var page = catalog.Search("MATCH", cursor, limit, budget, chunk: 16);
+                Assert.IsLessThanOrEqualTo(limit, page.Folders.Count + page.Files.Count);
+                names.AddRange(page.Folders.Select(found => found.Folder.Name + "/"));
+                names.AddRange(page.Files.Select(found => found.File.Name));
+                cursor = page.Next;
+                Assert.IsLessThan(1000, ++pages);
+            }
+            while (cursor is not null);
+
+            Assert.HasCount(40 + 100, names, $"limit {limit}, budget {budget}");
+            CollectionAssert.AllItemsAreUnique(names);
+            Assert.IsTrue(names.Take(40).All(name => name.EndsWith('/')), "folders first");
+        }
+    }
+
+    [TestMethod]
     public void ATreeThousandsOfFoldersDeepIsListedWithoutRecursion()
     {
         const int depth = 5000;

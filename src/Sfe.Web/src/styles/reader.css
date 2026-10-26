@@ -722,7 +722,7 @@
 .archive-crumb.current { font-weight: 600; cursor: default; }
 .archive-crumb.skipped { color: var(--reader-muted); cursor: default; }
 .archive-separator { color: var(--reader-muted); }
-.archive-go { width: 180px; }
+.archive-go, .archive-find { width: 180px; }
 .archive-note {
     display: flex;
     flex: none;
@@ -779,6 +779,23 @@ span.archive-open { cursor: default; }
 a.archive-open:hover, button.archive-open:hover { text-decoration: underline; }
 .archive-row:is([data-kind="link"], [data-kind="other"]) .archive-open { color: var(--reader-muted); font-style: italic; }
 .archive-lock { flex: none; width: 14px; height: 14px; color: var(--reader-muted); }
+/* A search's result: the folder it is in, after its name (opens it); the name keeps its room, the folder gives way. */
+.archive-name:has(.archive-where) .archive-open { flex: 0 1 auto; min-width: min(60%, 12ch); }
+.archive-where {
+    flex: 0 100 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--reader-muted);
+    font: inherit;
+    font-size: .9em;
+    cursor: pointer;
+}
+.archive-where:hover { text-decoration: underline; }
 .archive-size, .archive-packed { text-align: right; font-variant-numeric: tabular-nums; }
 .archive-modified { color: var(--reader-muted); }
 .archive-view > .text-status { flex: none; }
@@ -805,6 +822,6 @@ a.archive-open:hover, button.archive-open:hover { text-decoration: underline; }
 @media (max-width: 640px) {
     .archive-row { grid-template-columns: minmax(0, 1fr) 96px; }
     .archive-packed, .archive-modified { display: none; }
-    .archive-go { width: 120px; }
+    .archive-go, .archive-find { width: 120px; }
     .archive-crumb { max-width: 120px; }
 }

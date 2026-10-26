@@ -358,6 +358,55 @@ public sealed class ExploreRouteTests
     }
 
     [TestMethod]
+    public async Task AnArchiveIsSearchedByNameWithTheFolderOfEachFound()
+    {
+        TestArchives.Zip(_library.Root, "Media/trip.zip", ("Day 1/summit.jpg", "s"), ("Day 2/Summit notes.txt", "n"), ("readme.txt", "r"));
+        await ListAsync(_alice, "path=Media/trip.zip");
+
+        using var response = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=SUMMIT", Token);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+        var found = (await response.Content.ReadFromJsonAsync<ArchiveSearch>(Json, Token))!;
+        CollectionAssert.AreEquivalent(new[] { ("summit.jpg", "Day 1"), ("Summit notes.txt", "Day 2") }, found.Items.Select(item => (item.Name, item.Where)).ToList());
+        Assert.IsNull(found.Next);
+
+        using (var tooShort = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=s", Token))
+            Assert.AreEqual(HttpStatusCode.BadRequest, tooShort.StatusCode);
+        using (var badCursor = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=summit&after=x1", Token))
+            Assert.AreEqual(HttpStatusCode.BadRequest, badCursor.StatusCode);
+        using (var hidden = await _alice.GetAsync("/api/files/explore/search?path=SpecialDir/trip.zip&q=summit", Token))
+            Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task ACallerStartsAFewReadsAMinuteAndAnEntryNeverStartsOne()
+    {
+        TestArchives.Zip(_library.Root, "Media/read.zip", ("a.txt", "a"));
+        Assert.HasCount(1, (await ListAsync(_alice, "path=Media/read.zip")).Items);
+
+        // The entry route of an archive never read answers 404 without reading it.
+        TestArchives.Zip(_library.Root, "Media/never.zip", ("b.txt", "b"));
+        using (var entry = await _alice.GetAsync($"/api/files/explore/entry/{EpubEntries.Token("Media/never.zip")}/2/b.txt", Token))
+            Assert.AreEqual(HttpStatusCode.NotFound, entry.StatusCode);
+
+        // A read started per archive never read: past the limit, 429, the others' and the ones read still answer.
+        var statuses = new List<HttpStatusCode>();
+        for (var i = 1; i < CatalogBuildLimits.PerMinute; i++)
+        {
+            TestArchives.Zip(_library.Root, $"Media/many{i}.zip", ("c.txt", "c"));
+            using var response = await _alice.GetAsync($"/api/files/explore?path=Media/many{i}.zip", Token);
+            statuses.Add(response.StatusCode);
+        }
+        Assert.DoesNotContain(HttpStatusCode.TooManyRequests, statuses, "read.zip and these: the limit");
+        using (var refused = await _alice.GetAsync("/api/files/explore?path=Media/never.zip", Token))
+        {
+            Assert.AreEqual(HttpStatusCode.TooManyRequests, refused.StatusCode);
+            StringAssert.Contains(await refused.Content.ReadAsStringAsync(Token), "wait a minute");
+        }
+        Assert.HasCount(1, (await ListAsync(_alice, "path=Media/read.zip")).Items, "an archive read already is listed");
+        Assert.HasCount(1, (await ListAsync(_admin, "path=Media/never.zip")).Items, "another caller has their own limit");
+    }
+
+    [TestMethod]
     public async Task AnArchiveIsExtractedAtTheRootOfTheLibrary()
     {
         TestArchives.Zip(_library.Root, "README.zip", ("README.md", "from the zip"));

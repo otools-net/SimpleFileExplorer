@@ -13,6 +13,10 @@ entries or folders nested thousands deep.
 - **Up** (or **Backspace**) goes to the folder above.
 - **Go to folder**: type a folder's path inside the archive, with its folders separated by `/`
   (`Day 2 - Summit/Notes`), then **Enter**.
+- **Find in archive**: type part of a name (two letters or more) to list the folders and files of the whole archive
+  whose name holds it, in any case, each with the folder it is in ("in Day 2 - Summit/Notes": click it to open that
+  folder). In a very big archive the results come as they are found, and more as you scroll. **Esc** or emptying the
+  box goes back to the folder.
 - ↑ / ↓ select a row. The bottom line counts the folder's folders and files, and the size of everything below it.
 
 ![A folder inside an archive](../images/archive-viewer-folder.png)
@@ -89,6 +93,9 @@ Some entries are never written, and the panel lists them (the first few, and how
 An archive cut off or damaged part of the way keeps what came before the break, and the panel says where it stopped.
 Extracting is refused when the drive would keep less than the space's
 [Free space kept by copies](../administration/file-management.md#settings), and stops if it gets there while writing.
+
+Opening many archives never opened before in a short time (more than 30 a minute) asks you to wait a minute: each
+one's list has to be read first. Archives already opened don't count.
 
 ## What can be explored
 

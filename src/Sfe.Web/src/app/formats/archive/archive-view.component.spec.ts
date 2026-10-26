@@ -102,6 +102,56 @@ describe('ArchiveViewComponent', () => {
         expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { folder: 6, limit: 200, unlock: null }, expect.any(AbortSignal));
     });
 
+    describe('Find', () => {
+        const type = async (text: string) => {
+            const box = element.querySelector<HTMLInputElement>('[data-find]')!;
+            box.value = text;
+            box.dispatchEvent(new Event('input'));
+            await new Promise(resolve => setTimeout(resolve, 350));
+            await stable();
+        };
+
+        it('searches the whole archive by name, goes on where a page stopped, and opens the folder of a result', async () => {
+            api.exploreArchive.mockResolvedValue(listing([folder(2, 'Day 1'), file(10, 'readme.txt')]));
+            await show();
+            api.searchArchive
+                .mockResolvedValueOnce({ items: [], next: 'f10' })
+                .mockResolvedValueOnce({ items: [file(11, 'summit.jpg', { where: 'Day 1' }), file(12, 'Summit.txt', { where: '' })], next: null });
+
+            await type('s');
+            expect(api.searchArchive).not.toHaveBeenCalled();
+            await type('summ');
+
+            expect(api.searchArchive).toHaveBeenNthCalledWith(1, 'Media/trip.zip', { q: 'summ', after: null, unlock: null }, expect.any(AbortSignal));
+            expect(api.searchArchive).toHaveBeenNthCalledWith(2, 'Media/trip.zip', { q: 'summ', after: 'f10', unlock: null }, expect.any(AbortSignal));
+            expect(names()).toEqual(['summit.jpg', 'Summit.txt']);
+            expect([...element.querySelectorAll('[data-where]')].map(where => where.textContent!.trim())).toEqual(['in Day 1', 'in trip.zip']);
+            expect(element.querySelector('[data-found]')!.textContent).toContain('2 names hold “summ”');
+
+            api.exploreArchive.mockResolvedValue(listing([file(11, 'summit.jpg')], { folder: folder(2, 'Day 1', { files: 1 }), trail: { skipped: 0, last: [{ id: 2, name: 'Day 1' }] } }));
+            element.querySelector<HTMLButtonElement>('[data-where]')!.click();
+            await stable();
+            expect(api.exploreArchive).toHaveBeenLastCalledWith('Media/trip.zip', { at: 'Day 1', limit: 200, unlock: null }, expect.any(AbortSignal));
+            expect(element.querySelector('[data-found]')).toBeNull();
+            expect(element.querySelector<HTMLInputElement>('[data-find]')!.value).toBe('');
+            expect(crumbs()).toEqual(['trip.zip', 'Day 1']);
+        });
+
+        it('says when no name holds it, and Esc goes back to the folder', async () => {
+            api.exploreArchive.mockResolvedValue(listing([file(10, 'readme.txt')]));
+            await show();
+            api.searchArchive.mockResolvedValue({ items: [], next: null });
+
+            await type('zebra');
+            expect(element.querySelector('[data-found-none]')!.textContent).toContain('No name in this archive holds “zebra”.');
+
+            element.querySelector('[data-find]')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            await stable();
+            expect(names()).toEqual(['readme.txt']);
+            expect(element.querySelector('[data-counts]')).not.toBeNull();
+        });
+    });
+
     it('goes up from a folder at the top of the archive with the Up button', async () => {
         api.exploreArchive.mockResolvedValue(listing([folder(2, 'Empty')]));
         await show();

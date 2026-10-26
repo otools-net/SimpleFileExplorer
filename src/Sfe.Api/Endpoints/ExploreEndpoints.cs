@@ -18,7 +18,11 @@ namespace Sfe.Api.Endpoints;
 /// <param name="Folders">A folder's folders and entries right inside it, and its files in all.</param>
 public sealed record ArchiveItem(
     string Kind, long Id, string Name, long Size, long Packed, DateTime? Modified, bool Encrypted,
-    long? Folders = null, long? Files = null, long? AllFiles = null);
+    long? Folders = null, long? Files = null, long? AllFiles = null, string? Where = null);
+
+/// <param name="Items">Folders, then files, whose name holds the text; <c>Where</c> is the path of the folder each is in.</param>
+/// <param name="Next">Where to go on (a page cut short by its time has fewer items); null once all was looked through.</param>
+public sealed record ArchiveSearch(IReadOnlyList<ArchiveItem> Items, string? Next);
 
 public sealed record ArchiveCrumb(long Id, string Name);
 
@@ -83,6 +87,7 @@ public static class ExploreEndpoints
 
         explore.MapGet("", List)
             .RequireRight(Rights.ViewFiles)
+            .RequireRateLimiting(RequestLimits.Media)
             .FolderScoped("files.view at the archive")
             .WithName("ExploreArchive")
             .WithSummary("A folder of an archive (zip, 7z, rar, tar), in pages: its folders first, then its files, by name.")
@@ -90,9 +95,22 @@ public static class ExploreEndpoints
                 `folder` is a folder's id (from a previous answer; the root without it) or `at` its path inside the archive.
                 The first question about an archive reads its list once, in the background: 202 with the entries read so
                 far until it is ready (ask again). `after` is the previous page's `next`; `limit` at most {MaxPageSize}
-                (default {PageSize}). 409 (`{NotExplorableType}`) for a file that isn't an archive SFE explores (one file
+                (default {PageSize}). An archive not read yet starts its read, {CatalogBuildLimits.PerMinute} a minute per
+                caller at most (429 past it). 409 (`{NotExplorableType}`) for a file that isn't an archive SFE explores (one file
                 compressed alone, a compressed tar over `Files:Archives:MaxCompressedTarMegabytes`, a name its bytes deny);
                 422 (`{UnreadableType}`) when it can't be read now. `complete` false: the list stopped (`stopped` says why).
+                """);
+        explore.MapGet("/search", Search)
+            .RequireRight(Rights.ViewFiles)
+            .RequireRateLimiting(RequestLimits.Search)
+            .FolderScoped("files.view at the archive")
+            .WithName("SearchArchive")
+            .WithSummary("Folders and files of an archive whose name holds a text (any case), in the archive's order.")
+            .WithDescription($"""
+                `q` (at least {MinSearchLength} characters) is looked for in the names of the whole archive, the catalog
+                looked through for {SearchBudgetMilliseconds} ms at most per request: a page may hold fewer than `limit`
+                (default {SearchPageSize}, at most {MaxPageSize}) and still have a `next` (ask again with `after`). Each
+                item has `where`, the path of its folder. 202 while the list is read, as for `GET explore`.
                 """);
         explore.MapGet("/entry/{archive}/{id:long}/{name}", GetEntry)
             .RequireRight(Rights.Download)
@@ -149,7 +167,7 @@ public static class ExploreEndpoints
 
     private static async Task<Results<Ok<ArchiveListing>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>> List(
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, long? folder, string? at, string? after, int? limit,
+        ArchiveUnlocks unlocks, CatalogBuildLimits limits, CurrentAccess current, HttpContext context, string? path, long? folder, string? at, string? after, int? limit,
         [FromHeader(Name = UnlockHeader)] string? unlock)
     {
         var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles);
@@ -160,9 +178,11 @@ public static class ExploreEndpoints
 
         context.Response.Headers.CacheControl = "no-store";
         var password = unlocks.PasswordFor(unlock, (await current.GetAsync()).TenantId, ArchiveUnlocks.OwnerOf(context), full);
-        var state = CatalogOf(catalogs, full, canonical, format, unlock, password);
+        var state = CatalogOf(catalogs, full, canonical, format, unlock, password, limits.For(context));
         if (state.Status == ArchiveCatalogStatus.Building)
             return TypedResults.Accepted((string?)null, new ArchiveReading(state.Read));
+        if (state.Status == ArchiveCatalogStatus.Limited)
+            return TooManyReads();
         if (state.Catalog is not { } catalog)
             return TypedResults.Problem(state.Error, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
 
@@ -190,13 +210,61 @@ public static class ExploreEndpoints
             Protected: catalog.InMemory || encryptedFiles, Unlocked: password is not null));
     }
 
+    public const int MinSearchLength = 2;
+    public const int SearchPageSize = 100;
+    public const int SearchBudgetMilliseconds = 1000;
+
+    private static async Task<Results<Ok<ArchiveSearch>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>> Search(
+        ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
+        ArchiveUnlocks unlocks, CatalogBuildLimits limits, CurrentAccess current, HttpContext context, string? path, string? q, string? after, int? limit,
+        [FromHeader(Name = UnlockHeader)] string? unlock)
+    {
+        var text = q?.Trim() ?? "";
+        if (text.Length < MinSearchLength || text.Length > 256)
+            return TypedResults.Problem($"Search with {MinSearchLength} to 256 characters.", statusCode: StatusCodes.Status400BadRequest);
+        ArchiveSearchCursor? cursor = null;
+        if (after is not null && (cursor = ParseSearchCursor(after)) is null)
+            return TypedResults.Problem("`after` is not a cursor of this search.", statusCode: StatusCodes.Status400BadRequest);
+        var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles);
+        if (refused is { } forbidden)
+            return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
+        if (FormatOf(full, options.CurrentValue) is not { } format)
+            return NotExplorable();
+
+        context.Response.Headers.CacheControl = "no-store";
+        var password = unlocks.PasswordFor(unlock, (await current.GetAsync()).TenantId, ArchiveUnlocks.OwnerOf(context), full);
+        var state = CatalogOf(catalogs, full, canonical, format, unlock, password, limits.For(context));
+        if (state.Status == ArchiveCatalogStatus.Building)
+            return TypedResults.Accepted((string?)null, new ArchiveReading(state.Read));
+        if (state.Status == ArchiveCatalogStatus.Limited)
+            return TooManyReads();
+        if (state.Catalog is not { } catalog)
+            return TypedResults.Problem(state.Error, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
+
+        var page = catalog.Search(text, cursor, Math.Clamp(limit ?? SearchPageSize, 1, MaxPageSize), TimeSpan.FromMilliseconds(SearchBudgetMilliseconds));
+        var items = page.Folders.Select(found => ToItem(found.Folder) with { Where = found.Where })
+            .Concat(page.Files.Select(found => ToItem(found.File) with { Where = found.Where }))
+            .ToList();
+        return TypedResults.Ok(new ArchiveSearch(items, page.Next is { } next ? $"{(next.InFiles ? 'f' : 'd')}{next.Id}" : null));
+    }
+
+    internal static ArchiveSearchCursor? ParseSearchCursor(string token) =>
+        token.Length is >= 2 and <= 24 && token[0] is 'd' or 'f' && long.TryParse(token.AsSpan(1), System.Globalization.NumberStyles.None, null, out var id)
+            ? new ArchiveSearchCursor(token[0] == 'f', id)
+            : null;
+
+    private static ProblemHttpResult TooManyReads() =>
+        TypedResults.Problem($"You opened many archives not read before in a short time ({CatalogBuildLimits.PerMinute} a minute): wait a minute.",
+            statusCode: StatusCodes.Status429TooManyRequests);
+
     /// <summary>
     /// The catalog to answer from: the archive's own (on disk); for an archive whose list is encrypted, the one read with
     /// the unlock's password, in memory.
     /// </summary>
-    private static ArchiveCatalogState CatalogOf(ArchiveCatalogs catalogs, string full, string canonical, ArchiveFormat format, string? unlock, string? password)
+    private static ArchiveCatalogState CatalogOf(ArchiveCatalogs catalogs, string full, string canonical, ArchiveFormat format, string? unlock, string? password,
+        Func<bool> mayStart)
     {
-        var state = catalogs.Get(full, canonical, format);
+        var state = catalogs.Get(full, canonical, format, mayStart);
         if (state.Catalog is { } catalog && password is not null && catalog.Summary().NeedsPassword)
             return catalogs.GetInMemory(full, canonical, format, unlock!, password);
         return state;
@@ -204,7 +272,7 @@ public static class ExploreEndpoints
 
     private static async Task<Results<Accepted<FileJobView>, NotFound, ForbidHttpResult, ValidationProblem, ProblemHttpResult>> Extract(
         FileJobs jobs, ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, AccessService accounts, RightsEvaluator rights, LibraryPaths paths,
-        ServerFiles serverFiles, WorkFolder work, ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, ExtractRequest request)
+        ServerFiles serverFiles, WorkFolder work, ArchiveUnlocks unlocks, CatalogBuildLimits limits, CurrentAccess current, HttpContext context, ExtractRequest request)
     {
         var state = await current.GetAsync();
         if (state.Tenant is not { } tenant || !state.Has(Rights.ExtractFiles))
@@ -227,9 +295,11 @@ public static class ExploreEndpoints
             // Ids are those of the listing the person saw: its catalog says which paths they are.
             if (FormatOf(full, options.CurrentValue) is not { } format)
                 return NotExplorable();
-            var catalogState = CatalogOf(catalogs, full, canonical, format, request.Unlock, password);
+            var catalogState = CatalogOf(catalogs, full, canonical, format, request.Unlock, password, limits.For(context));
             if (catalogState.Status == ArchiveCatalogStatus.Building)
                 return TypedResults.Problem("The archive's list is still being read: try again in a moment.", statusCode: StatusCodes.Status409Conflict, type: ReadingType);
+            if (catalogState.Status == ArchiveCatalogStatus.Limited)
+                return TooManyReads();
             if (catalogState.Catalog is not { } catalog)
                 return TypedResults.Problem(catalogState.Error, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
             if (catalog.Summary().NeedsPassword)
@@ -267,7 +337,7 @@ public static class ExploreEndpoints
 
     private static async Task<Results<Ok<ArchiveUnlocked>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>> Unlock(
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, ILoggerFactory loggers, ArchiveUnlockRequest request,
+        ArchiveUnlocks unlocks, CatalogBuildLimits limits, CurrentAccess current, HttpContext context, ILoggerFactory loggers, ArchiveUnlockRequest request,
         CancellationToken cancellationToken)
     {
         var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, request.Path, Rights.ViewFiles);
@@ -277,9 +347,11 @@ public static class ExploreEndpoints
             return NotExplorable();
         if (string.IsNullOrEmpty(request.Password) || request.Password.Length > 1024)
             return TypedResults.Problem("Enter the archive's password.", statusCode: StatusCodes.Status400BadRequest);
-        var state = catalogs.Get(full, canonical, format);
+        var state = catalogs.Get(full, canonical, format, limits.For(context));
         if (state.Status == ArchiveCatalogStatus.Building)
             return TypedResults.Accepted((string?)null, new ArchiveReading(state.Read));
+        if (state.Status == ArchiveCatalogStatus.Limited)
+            return TooManyReads();
         if (state.Catalog is not { } catalog)
             return TypedResults.Problem(state.Error, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
 
@@ -350,7 +422,8 @@ public static class ExploreEndpoints
         var settings = options.CurrentValue.Files.Archives;
         var password = unlocks.PasswordFor(unlock, (await current.GetAsync()).TenantId, ArchiveUnlocks.OwnerOf(context), full);
         if (FormatOf(full, options.CurrentValue) is not { } format
-            || CatalogOf(catalogs, full, canonical, format, unlock, password) is not { Status: ArchiveCatalogStatus.Ready, Catalog: { } catalog }
+            // An entry comes from a list already read: it never starts a read.
+            || CatalogOf(catalogs, full, canonical, format, unlock, password, static () => false) is not { Status: ArchiveCatalogStatus.Ready, Catalog: { } catalog }
             || catalog.Entry(id) is not { Entry.Kind: ArchiveEntryKind.File } file
             || !string.Equals(file.Name, name, StringComparison.Ordinal))
             return TypedResults.NotFound();

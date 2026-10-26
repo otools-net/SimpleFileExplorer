@@ -222,6 +222,14 @@ export interface ArchiveItem {
     folders?: number | null;
     files?: number | null;
     allFiles?: number | null;
+    /** In a search's results: the path of the folder it is in ("" at the top). */
+    where?: string | null;
+}
+
+/** A page of a search in an archive: `next` goes on (a page cut short by its time may be empty); null once all was looked through. */
+export interface ArchiveSearch {
+    items: ArchiveItem[];
+    next: string | null;
 }
 
 /** A page of a folder of an archive. */
@@ -257,6 +265,9 @@ export interface ArchiveReading {
 
 /** What `api/files/explore` answers: a page, the reading so far, or why it can't be explored (409). */
 export type ArchiveAnswer = ArchiveListing | ArchiveReading | FileConflict;
+
+/** What a search in an archive answers: a page, or the list still being read (ask again). */
+export type ArchiveSearchAnswer = ArchiveSearch | ArchiveReading;
 
 /** What trying a password answers: an unlock, the list still being read, or (409) nothing in it is protected. */
 export type ArchiveUnlockAnswer = ArchiveUnlocked | ArchiveReading | FileConflict;

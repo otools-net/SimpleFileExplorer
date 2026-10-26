@@ -1,11 +1,12 @@
 // The archive viewer in the real app: a zip with a big folder and a deep chain of folders, opened on its own page at
 // desktop and phone widths. Checks the rows drawn (only those on screen), more pages loaded while scrolling, the way to
-// a deep folder collapsed, Go to, Up, and an entry opened from the archive; passwords: a 7z whose list is encrypted
+// a deep folder collapsed, Go to, Up, Find (a name among thousands, a result's folder opened), and an entry opened from the
+// archive; passwords: a 7z whose list is encrypted
 // (asked, a wrong one refused, the right one lists it) and an AES zip (a protected file opened once the password is
 // given); extracting (the archive's menu, the dialog with the password, the job, the folder written and listed);
 // compressing that folder again (its menu, the dialog with a password, the zip made, tested by 7-Zip when installed);
 // ok/FAIL per check (exit code 1 on a failure).
-// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -password.png, -extract.png, -compress.png, -phone.png)
+// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -find.png, -password.png, -extract.png, -compress.png, -phone.png)
 // Needs a docs-screenshots run first (its build and seeded data in <tmp>/sfe-docs, or env SFE_DOCS_WORK); serves
 // them on :5096 and writes Archives/Check.zip into that copy of the library.
 import { spawn } from 'node:child_process';
@@ -103,6 +104,21 @@ try {
                 await b.shot(`${out}-deep.png`);
             await b.eval(`document.querySelector('[data-up]').click(); 1`);
             check(await until(b, `document.querySelector('.archive-crumb.current')?.textContent.trim() === 'level ${DEPTH - 1}'`), 'Up: the folder above');
+
+            // Find: names of the whole archive, each with its folder; the folder of one opened from it.
+            const find = text => b.eval(`{ const box = document.querySelector('[data-find]'); box.value = ${JSON.stringify(text)}; box.dispatchEvent(new Event('input')); } 1`);
+            await find('entry 02999');
+            check(await until(b, `[...document.querySelectorAll('.archive-open')].map(e => e.textContent.trim()).join() === 'entry 02999.txt'
+                && document.querySelector('[data-where]')?.textContent.trim() === 'in Big folder'`), 'Find: one name among 3 000, with its folder');
+            await find('bottom');
+            check(await until(b, `document.querySelector('[data-where]')?.textContent.trim() === 'in …/level ${DEPTH - 1}/level ${DEPTH}'`), `Find: a file ${DEPTH} folders down, the end of its way shown`);
+            const nameShown = await b.eval(`(() => { const n = document.querySelector('.archive-body .archive-open'); return n.scrollWidth <= n.clientWidth; })()`);
+            check(nameShown, 'Find: the name shown whole, its folder giving way');
+            if (out)
+                await b.shot(`${out}-find.png`);
+            await b.eval(`document.querySelector('[data-where]').click(); 1`);
+            check(await until(b, `document.querySelector('.archive-crumb.current')?.textContent.trim() === 'level ${DEPTH}' && !document.querySelector('[data-found]')`),
+                "Find: a result's folder opened, the search over");
 
             await b.goto(page, 1500);
             await until(b, `document.querySelector('.archive-open')`);

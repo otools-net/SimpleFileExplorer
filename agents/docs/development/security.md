@@ -89,7 +89,8 @@ input, LIKE escaped, no `innerHTML` in the client.
   names leaving the archive (`../`, `C:\`, `\\server`, `...`), links in tar/7z/rar, a directory claiming more entries
   than it holds, an entry inflating past its declared size, overlapping or outside offsets, a ratio past the limit, an
   `.html`/`.svg` entry opened (attachment, sandboxed), a token with `..` or for a hidden or protected folder, an entry
-  deep in a solid block or a compressed tar opened again and again (`MaxSkippedMegabytes`, `ArchiveReaderTests`); passwords:
+  deep in a solid block or a compressed tar opened again and again (`MaxSkippedMegabytes`, `ArchiveReaderTests`), reads
+  of many archives started by one caller (30 a minute, `CatalogBuildLimits`); passwords:
   guessing through `unlock` (10 a minute per caller), another account's or space's unlock id, an unlock after sign-out
   or a change of the archive, the password in logs, errors, answers or URLs (only the unlock id is), encrypted names
   written under the cache (`ExploreRouteTests` scans it); extracting: every name above written outside the target,
