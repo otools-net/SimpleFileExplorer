@@ -175,6 +175,86 @@ describe('ArchiveViewComponent', () => {
         });
     });
 
+    describe('Files shown in place', () => {
+        const textFile = { text: 'hello from the archive\n', encoding: 'utf-8', lineEnding: 'lf', version: 'v', size: 23, modified: '2026-05-06T07:08:10', access: { overwrite: false, saveCopy: false, download: false, permanent: false }, saveLineEnding: 'lf' };
+        /** Waits for the view of the entry, loaded on demand (its own chunk). */
+        const until = async (ready: () => boolean) => {
+            for (let i = 0; i < 100 && !ready(); i++) {
+                await new Promise(resolve => setTimeout(resolve, 20));
+                await stable();
+            }
+        };
+        const open = (name: string, init: MouseEventInit = {}) => {
+            const link = [...element.querySelectorAll<HTMLAnchorElement>('a.archive-open')].find(a => a.textContent!.trim() === name)!;
+            const event = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0, ...init });
+            link.dispatchEvent(event);
+            return event;
+        };
+
+        it('reads a text file from the archive in the text view, read only, and goes back to the list as it was', async () => {
+            api.exploreArchive.mockResolvedValue(listing([folder(2, 'Day 1'), file(10, 'readme.txt'), file(11, 'notes.md')]));
+            api.archiveText.mockResolvedValue(textFile);
+            await show();
+
+            const click = open('readme.txt');
+            expect(click.defaultPrevented).toBe(true);
+            await until(() => Boolean(element.querySelector('[data-entry] .cm-content')));
+            expect(element.querySelector('[data-entry] .archive-entry-name')!.textContent!.trim()).toBe('readme.txt');
+            expect(api.archiveText).toHaveBeenCalledWith('Media/trip.zip', 10, { encoding: undefined, unlock: null }, expect.any(AbortSignal));
+            expect(element.querySelector('[data-entry] .cm-content')!.textContent).toContain('hello from the archive');
+            expect(element.querySelector('[data-entry] [data-follow]')).toBeNull();
+            expect(element.querySelector<HTMLAnchorElement>('[data-entry] [data-download]')!.getAttribute('href'))
+                .toBe(`api/files/explore/entry/${pathToken('Media/trip.zip')}/10/readme.txt?download=true`);
+            expect(element.querySelector<HTMLButtonElement>('[data-previous]')!.disabled).toBe(true);
+            expect(element.querySelector<HTMLButtonElement>('[data-next]')!.disabled).toBe(false);
+
+            element.querySelector<HTMLButtonElement>('[data-back]')!.click();
+            await stable();
+            expect(element.querySelector('[data-entry]')).toBeNull();
+            expect(element.querySelector('.archive-row.selected .archive-open')!.textContent!.trim()).toBe('readme.txt');
+        });
+
+        it('shows pictures, the arrows going from one to the next; Esc goes back; videos and Ctrl+click still open a tab', async () => {
+            api.exploreArchive.mockResolvedValue(listing([file(10, 'a.jpg', { media: 'image' }), file(11, 'clip.mp4', { media: 'video' }), file(12, 'b.png', { media: 'image' })]));
+            await show();
+
+            expect(open('a.jpg', { ctrlKey: true }).defaultPrevented).toBe(false);
+            expect(open('clip.mp4').defaultPrevented).toBe(false);
+            await stable();
+            expect(element.querySelector('[data-entry]')).toBeNull();
+
+            open('a.jpg');
+            await stable();
+            const picture = () => element.querySelector<HTMLImageElement>('[data-entry-picture]')!.getAttribute('src');
+            expect(picture()).toBe(`api/files/explore/entry/${pathToken('Media/trip.zip')}/10/a.jpg`);
+            const entry = element.querySelector<HTMLElement>('[data-entry]')!;
+            entry.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+            await stable();
+            expect(picture()).toBe(`api/files/explore/entry/${pathToken('Media/trip.zip')}/12/b.png`); // the video between is passed
+
+            element.querySelector<HTMLElement>('[data-entry]')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            await stable();
+            expect(element.querySelector('[data-entry]')).toBeNull();
+        });
+
+        it('opens a protected file in place only once the password is given, sending the unlock', async () => {
+            api.exploreArchive.mockResolvedValue(listing([file(10, 'secret.txt', { encrypted: true })], { protected: true }));
+            api.unlockArchive.mockResolvedValue({ unlock: 'u1' });
+            api.archiveText.mockResolvedValue(textFile);
+            await show();
+            element.querySelector<HTMLButtonElement>('button.archive-open')!.click();
+            await stable();
+            expect(element.querySelector('[data-password]')).not.toBeNull();
+
+            element.querySelector<HTMLInputElement>('[data-password-box]')!.value = 'secret';
+            element.querySelector<HTMLFormElement>('[data-password]')!.dispatchEvent(new Event('submit'));
+            await stable();
+            open('secret.txt');
+            await until(() => api.archiveText.mock.calls.length > 0);
+            expect(api.archiveText).toHaveBeenCalledWith('Media/trip.zip', 10, { encoding: undefined, unlock: 'u1' }, expect.any(AbortSignal));
+        });
+    });
+
     it('goes up from a folder at the top of the archive with the Up button', async () => {
         api.exploreArchive.mockResolvedValue(listing([folder(2, 'Empty')]));
         await show();

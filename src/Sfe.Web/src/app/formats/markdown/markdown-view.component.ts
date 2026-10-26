@@ -17,6 +17,7 @@ import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } fr
 import { findEntry, lineNumbersEntry, modesEntry, readingEntry } from '../toolbar-entries';
 import { TextSession } from '../text/text-session';
 import { highlightFences, MarkdownHeading, MarkdownLinks, renderMarkdown, showExternalImages } from './markdown';
+import { FILE_SOURCE } from '../file-source';
 
 export type MarkdownMode = 'rendered' | 'source' | 'split';
 export const MARKDOWN_MODE_KEY = 'sfe.markdown.mode';
@@ -130,6 +131,7 @@ export class MarkdownViewComponent {
     readonly edit = input(false);
 
     private readonly api = inject(Api);
+    private readonly fileSource = inject(FILE_SOURCE);
     protected readonly session = inject(TextSession);
     private readonly config = inject(ConfigService);
     private readonly fileHost = inject(FILE_VIEW_HOST);
@@ -164,7 +166,7 @@ export class MarkdownViewComponent {
     };
     protected readonly style = computed(() => this.reading.style('prose'));
     protected readonly downloadUrl = computed(() =>
-        this.offerDownload() && this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
+        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
     protected readonly details = computed(() => {
         const file = this.session.file() ?? this.file();
         return file ? textDetails(file, 'Markdown') : '';
@@ -175,6 +177,7 @@ export class MarkdownViewComponent {
         view: path => this.config.urls()!.view(path),
         folder: path => `./?${new URLSearchParams({ path })}`,
         viewable: path => formatOf(itemAt(path)) !== null,
+        relative: this.fileSource.library,
     };
 
     constructor() {
@@ -236,7 +239,7 @@ export class MarkdownViewComponent {
             return;
         let file: TextFile;
         try {
-            file = await this.api.textFile(item.path, cancel);
+            file = await this.fileSource.textFile(item, cancel);
         } catch (error) {
             if (cancel.aborted)
                 return;

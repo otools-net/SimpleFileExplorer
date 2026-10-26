@@ -32,7 +32,13 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   the block's start, `IsSolid` = shares the previous one's block; rar's reader marks every file of a solid archive
   solid; plain tars and other rars seek) past `MaxSkippedMegabytes` (2048) → 413 "extract it", checked before each skip
   (`ArchiveException.TooFar`). The unlock check takes a password unchecked when its entry is that far.
-  `private, no-cache` + ETag (catalog key, id): 304 while the archive is the same.
+  `private, no-cache` + ETag (catalog key, id): 304 while the archive is the same. The checks are `OpenEntryAsync`,
+  shared with the text route.
+- `GET api/files/explore/text?path=&id=&encoding=` (same rights and checks, `X-SFE-Archive-Unlock`): a `TextFile` as
+  `api/files/text` answers (`TextCodec.Decode`), up to `TextEndpoints.MaxBytes` (413, no parts), 415 not text,
+  `access` all false (never saved), `version` the entry's ETag.
+- Items have `media` (`image`/`video`/`audio` by `MediaClassifier`, the library's `Sfe:FileTypes`): the client
+  knows no media extensions.
 - `/api/config` `archives: { maxCompressedTarMegabytes }` (with `files.view`): the client's `isExplorable` rule.
 
 ## Search (`GET api/files/explore/search?path=&q=&after=&limit=`)
@@ -95,6 +101,17 @@ Code: server `Api/Endpoints/ExploreEndpoints.cs` (`api/files/explore`), `Archive
   drawn as placeholders, the next page (1000) asked when the drawn rows come within 60 of the end. Files open in a
   new tab (an `<a target=_blank>` on the entry route) with `files.download`; each row has its context menu (Open /
   Open in new tab, Download). Keys: ↑ ↓, Enter, Backspace (up); the view owns its keys (`data-owns-keys`).
+- **In place** (`viewing`, `.archive-entry`: an overlay over the list, which stays as it was): pictures (`media`
+  image: an `<img>` on the entry route) and the formats of `IN_PLACE` (text, prose, Markdown, JSON, CSV, subtitles,
+  PDF) by `formatOf` on a `LibraryItem` made for the entry (path `<archive>#<id>`: positions per entry), their
+  component loaded on demand with an injector giving `FILE_SOURCE` (`formats/file-source.ts`: `library: false`, text
+  from `explore/text`, bytes and download from the entry route, with the unlock) and a `FILE_VIEW_HOST` allowing only
+  `files.view`/`files.download`. A plain click on the name (the link's default prevented) or Enter; Ctrl / middle
+  button: the tab. Bar: Back (Esc, unless in an editor or a box), the name, before / after among the rows loaded
+  (← → for pictures), new tab, download. Videos, audio, EPUB, nested archives: a tab or a download.
+- `FILE_SOURCE` (default: the library) is what the format views read through (`textFile`, `original`, `download`);
+  `library: false` hides Follow and parts (a 413 is a message), skips `TextSession.checkDisk` and the subtitles'
+  video, and gives Markdown `relative: false` (relative links and pictures become text).
 - An `api.get` 409 resolves with its problem: the answer is told apart by shape (`items`, `read`, else a problem).
 - **Find** (`data-find`, after 300 ms and 2 characters): `found` replaces the folder's rows in the same grid (each
   with `in <where>`, a button opening that folder through `at`); pages go on as rows scroll in, and at once when a

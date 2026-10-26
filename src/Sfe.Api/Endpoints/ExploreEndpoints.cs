@@ -16,9 +16,10 @@ namespace Sfe.Api.Endpoints;
 /// <param name="Kind"><c>folder</c>, <c>file</c>, <c>link</c> (never created when extracting) or <c>other</c>.</param>
 /// <param name="Packed">0 when the format doesn't tell it per entry (a solid 7z or rar).</param>
 /// <param name="Folders">A folder's folders and entries right inside it, and its files in all.</param>
+/// <param name="Media">A file the library calls a picture, video or audio (<c>image</c>, <c>video</c>, <c>audio</c>: <c>Sfe:FileTypes</c>), else null.</param>
 public sealed record ArchiveItem(
     string Kind, long Id, string Name, long Size, long Packed, DateTime? Modified, bool Encrypted,
-    long? Folders = null, long? Files = null, long? AllFiles = null, string? Where = null);
+    long? Folders = null, long? Files = null, long? AllFiles = null, string? Where = null, string? Media = null);
 
 /// <param name="Items">Folders, then files, whose name holds the text; <c>Where</c> is the path of the folder each is in.</param>
 /// <param name="Next">Where to go on (a page cut short by its time has fewer items); null once all was looked through.</param>
@@ -130,6 +131,18 @@ public static class ExploreEndpoints
                 held to the size the archive declares: more or less is a broken archive, and the download is cut off.
                 `unlock` (from `unlock`) opens an encrypted entry, or any of an archive whose list is encrypted.
                 """);
+        explore.MapGet("/text", GetText)
+            .RequireRight(Rights.Download)
+            .RequireRateLimiting(RequestLimits.Media)
+            .FolderScoped("files.view and files.download at the archive")
+            .WithName("GetArchiveEntryText")
+            .WithSummary("A text file inside an archive, decoded as `GET api/files/text` decodes a library file; read only.")
+            .WithDescription($"""
+                `id` is the entry's id in the archive's listing; `encoding` reads it in that encoding rather than the one it
+                seems to have. Up to {TextEndpoints.MaxBytes / (1024 * 1024)} MB (413 `{TooLargeType}`: download it); 415
+                `{TextEndpoints.NotTextType}` when it isn't text. `access` allows nothing: an entry is never saved over.
+                The same checks as `GET explore/entry` (password, compression ratio, files before it in a solid block).
+                """);
         api.MapPost("/files/jobs/extract", Extract)
             .RequireRight(Rights.ExtractFiles)
             .RequireRateLimiting(RequestLimits.Unlock)
@@ -168,7 +181,7 @@ public static class ExploreEndpoints
 
     private static async Task<Results<Ok<ArchiveListing>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>> List(
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        ArchiveUnlocks unlocks, CatalogBuildLimits limits, CurrentAccess current, HttpContext context, string? path, long? folder, string? at, string? after, int? limit,
+        ArchiveUnlocks unlocks, CatalogBuildLimits limits, MediaClassifier media, CurrentAccess current, HttpContext context, string? path, long? folder, string? at, string? after, int? limit,
         [FromHeader(Name = UnlockHeader)] string? unlock)
     {
         var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles);
@@ -202,7 +215,7 @@ public static class ExploreEndpoints
         var summary = catalog.Summary();
         var page = catalog.Children(id, ParseCursor(after), Math.Clamp(limit ?? PageSize, 1, MaxPageSize));
         var trail = catalog.Trail(id, 4)!;
-        var items = page.Folders.Select(ToItem).Concat(page.Files.Select(ToItem)).ToList();
+        var items = page.Folders.Select(ToItem).Concat(page.Files.Select(file => ToItem(file, media))).ToList();
         var encryptedFiles = !catalog.InMemory && catalog.SmallestEncrypted() is not null;
         return TypedResults.Ok(new ArchiveListing(
             FormatName(format), summary.Complete, summary.Stopped, summary.NeedsPassword, summary.Entries, summary.LeftOut,
@@ -217,7 +230,7 @@ public static class ExploreEndpoints
 
     private static async Task<Results<Ok<ArchiveSearch>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>> Search(
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
-        ArchiveUnlocks unlocks, CatalogBuildLimits limits, CurrentAccess current, HttpContext context, string? path, string? q, long? folder, string? after, int? limit,
+        ArchiveUnlocks unlocks, CatalogBuildLimits limits, MediaClassifier media, CurrentAccess current, HttpContext context, string? path, string? q, long? folder, string? after, int? limit,
         [FromHeader(Name = UnlockHeader)] string? unlock)
     {
         var text = q?.Trim() ?? "";
@@ -251,11 +264,11 @@ public static class ExploreEndpoints
                 return TypedResults.NotFound();
             var here = catalog.FindIn(id, text, inFolder, size, budget);
             return TypedResults.Ok(new ArchiveSearch(
-                [.. here.Folders.Select(ToItem), .. here.Files.Select(ToItem)], here.Next is { } more ? Cursor(more) : null));
+                [.. here.Folders.Select(ToItem), .. here.Files.Select(file => ToItem(file, media))], here.Next is { } more ? Cursor(more) : null));
         }
         var page = catalog.Search(text, cursor, size, budget);
         var items = page.Folders.Select(found => ToItem(found.Folder) with { Where = found.Where })
-            .Concat(page.Files.Select(found => ToItem(found.File) with { Where = found.Where }))
+            .Concat(page.Files.Select(found => ToItem(found.File, media) with { Where = found.Where }))
             .ToList();
         return TypedResults.Ok(new ArchiveSearch(items, page.Next is { } next ? $"{(next.InFiles ? 'f' : 'd')}{next.Id}" : null));
     }
@@ -428,56 +441,122 @@ public static class ExploreEndpoints
         ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
         ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string archive, long id, string name, bool? download, string? unlock)
     {
-        var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, EpubEntries.PathOf(archive), Rights.ViewFiles, Rights.Download);
-        if (refused is { } forbidden)
-            return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
         var settings = options.CurrentValue.Files.Archives;
-        var password = unlocks.PasswordFor(unlock, (await current.GetAsync()).TenantId, ArchiveUnlocks.OwnerOf(context), full);
-        if (FormatOf(full, options.CurrentValue) is not { } format
-            // An entry comes from a list already read: it never starts a read.
-            || CatalogOf(catalogs, full, canonical, format, unlock, password, static () => false) is not { Status: ArchiveCatalogStatus.Ready, Catalog: { } catalog }
-            || catalog.Entry(id) is not { Entry.Kind: ArchiveEntryKind.File } file
-            || !string.Equals(file.Name, name, StringComparison.Ordinal))
-            return TypedResults.NotFound();
-
-        var entry = file.Entry;
-        // Per-entry packed sizes exist only where the format keeps them (zip, non-solid): elsewhere the declared size holds.
-        if (entry.Packed > 0 && entry.Size / entry.Packed > settings.MaxCompressionRatio)
-            return TypedResults.Problem("This entry claims to be far larger than its packed data: the archive looks hostile.",
-                statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
+        var opened = await OpenEntryAsync(catalogs, options.CurrentValue, paths, serverFiles, work, unlocks, current, context,
+            EpubEntries.PathOf(archive), id, name, download == true ? null : settings.MaxPreviewMegabytes * 1024L * 1024, unlock);
+        if (opened.Refused is { } refused)
+            return refused;
+        var file = opened.File!;
         var contentType = LibraryEndpoints.ContentTypeOf(file.Name);
         var inline = download != true && LibraryEndpoints.OpensInline(contentType);
-        if (download != true && entry.Size > settings.MaxPreviewMegabytes * 1024L * 1024)
-            return TypedResults.Problem($"It is too large to be opened from the archive (more than {settings.MaxPreviewMegabytes} MB): download it.",
-                statusCode: StatusCodes.Status413PayloadTooLarge, type: TooLargeType);
+        var info = new FileInfo(opened.Full);
+        context.Response.Headers[HeaderNames.ContentSecurityPolicy] = SecurityHeaders.FilePolicy;
+        context.Response.Headers[HeaderNames.CacheControl] = "private, no-cache";
+        return TypedResults.Stream(opened.Data!, contentType, inline ? null : file.Name, lastModified: info.LastWriteTimeUtc,
+            entityTag: new EntityTagHeaderValue($"\"{EntryTag(opened.Canonical, info, id)}\""));
+    }
 
-        if (entry.Encrypted && password is null)
-            return TypedResults.Problem("This file is protected by a password: open the archive with it first.",
-                statusCode: StatusCodes.Status403Forbidden, type: WrongPasswordType);
+    private static async Task<Results<Ok<TextFile>, NotFound, ForbidHttpResult, ProblemHttpResult>> GetText(
+        ArchiveCatalogs catalogs, IOptionsMonitor<SfeOptions> options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
+        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, long id, string? encoding,
+        [FromHeader(Name = UnlockHeader)] string? unlock, CancellationToken cancellationToken)
+    {
+        if (encoding is not null && !TextCodec.ReadEncodings.Contains(encoding))
+            return TypedResults.Problem($"`encoding` is one of {string.Join(", ", TextCodec.ReadEncodings)}.", statusCode: StatusCodes.Status400BadRequest);
+        var opened = await OpenEntryAsync(catalogs, options.CurrentValue, paths, serverFiles, work, unlocks, current, context,
+            path, id, null, TextEndpoints.MaxBytes, unlock);
+        if (opened.Refused is { } refused)
+            return refused.Result switch
+            {
+                ForbidHttpResult forbid => forbid,
+                ProblemHttpResult { StatusCode: StatusCodes.Status413PayloadTooLarge } => TypedResults.Problem(
+                    $"It is too large to be shown as text (more than {TextEndpoints.MaxBytes / (1024 * 1024)} MB): download it instead.",
+                    statusCode: StatusCodes.Status413PayloadTooLarge, type: TooLargeType),
+                ProblemHttpResult problem => problem,
+                _ => TypedResults.NotFound(),
+            };
 
-        Stream data;
+        byte[] bytes;
         try
         {
-            data = ArchiveReader.OpenEntry(full, format, entry, password, settings.MaxSkippedMegabytes * 1024L * 1024);
-        }
-        catch (ArchiveException error) when (error.TooFar)
-        {
-            return TypedResults.Problem(error.Message, statusCode: StatusCodes.Status413PayloadTooLarge, type: TooLargeType);
+            await using var data = opened.Data!;
+            using var buffer = new MemoryStream();
+            await data.CopyToAsync(buffer, cancellationToken);
+            bytes = buffer.ToArray();
         }
         catch (ArchiveException error)
         {
             return TypedResults.Problem(error.Message, statusCode: StatusCodes.Status422UnprocessableEntity, type: UnreadableType);
         }
+        if (TextCodec.Decode(bytes, encoding) is not { } decoded)
+            return TypedResults.Problem("It is not a text file.", statusCode: StatusCodes.Status415UnsupportedMediaType, type: TextEndpoints.NotTextType);
+
+        var archive = new FileInfo(opened.Full);
+        context.Response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(new TextFile(decoded.Text, decoded.Encoding, decoded.LineEnding, EntryTag(opened.Canonical, archive, id), bytes.Length,
+            opened.File!.Entry.Time ?? archive.LastWriteTimeUtc, new TextAccess(false, false, false, false),
+            decoded.LineEnding == "mixed" ? TextCodec.DominantLineEnding(decoded.Text) : decoded.LineEnding));
+    }
+
+    /// <summary>An entry's version: the archive as it is (its catalog's key) and the entry's id.</summary>
+    private static string EntryTag(string canonical, FileInfo archive, long id) =>
+        $"{ArchiveCatalogs.KeyOf(canonical, archive.Length, archive.LastWriteTimeUtc)[..16]}-{id:x}";
+
+    /// <param name="Refused">Why it isn't opened (404, 403, a problem); else <paramref name="Data"/> is the entry's
+    /// content, held to its declared size.</param>
+    private sealed record OpenedEntry(
+        Results<FileStreamHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>? Refused, Stream? Data, ArchiveFile? File, string Full, string Canonical);
+
+    /// <summary>
+    /// A file of an archive opened to be read (<c>files.view</c> and <c>files.download</c> at the archive): only from a
+    /// list already read (it never starts one), with its <paramref name="name"/> when one is given; refused larger than
+    /// <paramref name="maxSize"/> (413), claiming more than the compression ratio allows (422), encrypted without the
+    /// password (403), or when reaching it would unpack too much before it (413).
+    /// </summary>
+    private static async Task<OpenedEntry> OpenEntryAsync(
+        ArchiveCatalogs catalogs, SfeOptions options, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work,
+        ArchiveUnlocks unlocks, CurrentAccess current, HttpContext context, string? path, long id, string? name, long? maxSize, string? unlock)
+    {
+        var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles, Rights.Download);
+        if (refused is { } forbidden)
+            return new(forbidden ? TypedResults.Forbid() : TypedResults.NotFound(), null, null, full, canonical);
+        OpenedEntry Problem(string message, int status, string? type = null) =>
+            new(TypedResults.Problem(message, statusCode: status, type: type), null, null, full, canonical);
+
+        var settings = options.Files.Archives;
+        var password = unlocks.PasswordFor(unlock, (await current.GetAsync()).TenantId, ArchiveUnlocks.OwnerOf(context), full);
+        if (FormatOf(full, options) is not { } format
+            // An entry comes from a list already read: it never starts a read.
+            || CatalogOf(catalogs, full, canonical, format, unlock, password, static () => false) is not { Status: ArchiveCatalogStatus.Ready, Catalog: { } catalog }
+            || catalog.Entry(id) is not { Entry.Kind: ArchiveEntryKind.File } file
+            || name is not null && !string.Equals(file.Name, name, StringComparison.Ordinal))
+            return new(TypedResults.NotFound(), null, null, full, canonical);
+
+        var entry = file.Entry;
+        // Per-entry packed sizes exist only where the format keeps them (zip, non-solid): elsewhere the declared size holds.
+        if (entry.Packed > 0 && entry.Size / entry.Packed > settings.MaxCompressionRatio)
+            return Problem("This entry claims to be far larger than its packed data: the archive looks hostile.", StatusCodes.Status422UnprocessableEntity, UnreadableType);
+        if (maxSize is { } most && entry.Size > most)
+            return Problem($"It is too large to be opened from the archive (more than {most / (1024 * 1024)} MB): download it.", StatusCodes.Status413PayloadTooLarge, TooLargeType);
+        if (entry.Encrypted && password is null)
+            return Problem("This file is protected by a password: open the archive with it first.", StatusCodes.Status403Forbidden, WrongPasswordType);
+
+        try
+        {
+            return new(null, ArchiveReader.OpenEntry(full, format, entry, password, settings.MaxSkippedMegabytes * 1024L * 1024), file, full, canonical);
+        }
+        catch (ArchiveException error) when (error.TooFar)
+        {
+            return Problem(error.Message, StatusCodes.Status413PayloadTooLarge, TooLargeType);
+        }
+        catch (ArchiveException error)
+        {
+            return Problem(error.Message, StatusCodes.Status422UnprocessableEntity, UnreadableType);
+        }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            return TypedResults.Problem("The archive can't be read now (in use, or the server may not read it).", statusCode: StatusCodes.Status500InternalServerError);
+            return Problem("The archive can't be read now (in use, or the server may not read it).", StatusCodes.Status500InternalServerError);
         }
-
-        var info = new FileInfo(full);
-        context.Response.Headers[HeaderNames.ContentSecurityPolicy] = SecurityHeaders.FilePolicy;
-        context.Response.Headers[HeaderNames.CacheControl] = "private, no-cache";
-        return TypedResults.Stream(data, contentType, inline ? null : file.Name, lastModified: info.LastWriteTimeUtc,
-            entityTag: new EntityTagHeaderValue($"\"{ArchiveCatalogs.KeyOf(canonical, info.Length, info.LastWriteTimeUtc)[..16]}-{id:x}\""));
     }
 
     /// <summary>The archive's format when the viewer is offered for it (the client's rule, checked here on its bytes).</summary>
@@ -511,9 +590,16 @@ public static class ExploreEndpoints
     private static ArchiveItem ToItem(ArchiveFolder folder) =>
         new("folder", folder.Id, folder.Name, folder.Size, folder.Packed, folder.Time, false, folder.Folders, folder.Files, folder.AllFiles);
 
-    private static ArchiveItem ToItem(ArchiveFile file) => new(
+    private static ArchiveItem ToItem(ArchiveFile file, MediaClassifier media) => new(
         file.Entry.Kind switch { ArchiveEntryKind.File => "file", ArchiveEntryKind.Link => "link", _ => "other" },
-        file.Id, file.Name, file.Entry.Size, file.Entry.Packed, file.Entry.Time, file.Entry.Encrypted);
+        file.Id, file.Name, file.Entry.Size, file.Entry.Packed, file.Entry.Time, file.Entry.Encrypted,
+        Media: file.Entry.Kind != ArchiveEntryKind.File ? null : media.Classify(Path.GetExtension(file.Name)) switch
+        {
+            ItemKind.Image => "image",
+            ItemKind.Video => "video",
+            ItemKind.Audio => "audio",
+            _ => null,
+        });
 
     private static string FormatName(ArchiveFormat format) => format switch
     {

@@ -20,6 +20,8 @@ export interface MarkdownLinks {
     folder(path: string): string;
     /** The file `path` has a viewer of the app. */
     viewable(path: string): boolean;
+    /** False: relative links and pictures lead nowhere (a document inside an archive): text, no picture. */
+    relative?: boolean;
 }
 
 export interface MarkdownHeading {
@@ -125,7 +127,7 @@ export function renderMarkdown(text: string, documentPath: string, links: Markdo
         else if (SCHEME.test(src) || !src)
             image.removeAttribute('src');
         else {
-            const path = resolveLibraryPath(documentPath, src);
+            const path = links.relative === false ? null : resolveLibraryPath(documentPath, src);
             if (path === null)
                 image.removeAttribute('src');
             else
@@ -155,7 +157,7 @@ function rewriteLink(anchor: HTMLAnchorElement, documentPath: string, links: Mar
         anchor.classList.add('external');
         return;
     }
-    const path = scheme ? null : resolveLibraryPath(documentPath, href);
+    const path = scheme || links.relative === false ? null : resolveLibraryPath(documentPath, href);
     if (path === null) {
         // javascript:, file:, a path out of the library...: text, not a link.
         anchor.removeAttribute('href');

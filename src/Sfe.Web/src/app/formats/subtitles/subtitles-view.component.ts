@@ -18,6 +18,7 @@ import { findEntry, lineNumbersEntry, modesEntry, readingEntry } from '../toolba
 import { TextSession } from '../text/text-session';
 import { VirtualRows } from '../virtual-rows';
 import { formatSpan, formatTime, parseShift, parseSubtitles, shiftEdits, SubtitleCue, SubtitleDocument, subtitleTypeOf } from './subtitles';
+import { FILE_SOURCE } from '../file-source';
 
 export type SubtitlesMode = 'cues' | 'source' | 'split';
 export const SUBTITLES_MODE_KEY = 'sfe.subtitles.mode';
@@ -156,6 +157,7 @@ export class SubtitlesViewComponent {
     readonly edit = input(false);
 
     private readonly api = inject(Api);
+    private readonly fileSource = inject(FILE_SOURCE);
     protected readonly session = inject(TextSession);
     private readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
@@ -223,7 +225,7 @@ export class SubtitlesViewComponent {
     });
     protected readonly videoName = computed(() => this.video()?.split('/').at(-1) ?? '');
     protected readonly downloadUrl = computed(() =>
-        this.offerDownload() && this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
+        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
     protected readonly details = computed(() => {
         const file = this.session.file();
         return file ? textDetails(file, subtitleTypeOf(this.item().name) === 'srt' ? 'SubRip' : 'WebVTT') : '';
@@ -291,7 +293,7 @@ export class SubtitlesViewComponent {
             return;
         let file: TextFile;
         try {
-            file = await this.api.textFile(item.path, cancel);
+            file = await this.fileSource.textFile(item, cancel);
         } catch (error) {
             if (cancel.aborted)
                 return;
@@ -311,7 +313,7 @@ export class SubtitlesViewComponent {
         if (untracked(this.edit))
             this.session.startEdit();
         // The video to play the cues in: only for a session that may watch videos.
-        if (this.fileHost.can(Rights.viewFiles))
+        if (this.fileHost.can(Rights.viewFiles) && this.fileSource.library)
             this.api.subtitleVideo(item.path, cancel).then(found => this.video.set(found.path), () => undefined);
     }
 

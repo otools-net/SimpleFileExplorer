@@ -20,6 +20,7 @@ import { TextSession } from '../text/text-session';
 import {
     CHUNK, expandAll, filterTree, formatEdits, JsonDocument, JsonRow, parseJson, pathLabel, previewOf, rowsOf, sizeOf, sourceOf, valueClass,
 } from './json-tree';
+import { FILE_SOURCE } from '../file-source';
 
 export type JsonMode = 'tree' | 'source' | 'split';
 export const JSON_MODE_KEY = 'sfe.json.mode';
@@ -175,6 +176,7 @@ export class JsonViewComponent {
     readonly edit = input(false);
 
     private readonly api = inject(Api);
+    private readonly fileSource = inject(FILE_SOURCE);
     protected readonly session = inject(TextSession);
     private readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
@@ -230,7 +232,7 @@ export class JsonViewComponent {
         return index >= 0 ? this.domId(index) : null;
     });
     protected readonly downloadUrl = computed(() =>
-        this.offerDownload() && this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
+        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
     protected readonly details = computed(() => {
         const file = this.session.file();
         const document = this.document();
@@ -288,7 +290,7 @@ export class JsonViewComponent {
             return;
         let file: TextFile;
         try {
-            file = await this.api.textFile(item.path, cancel);
+            file = await this.fileSource.textFile(item, cancel);
         } catch (error) {
             if (cancel.aborted)
                 return;

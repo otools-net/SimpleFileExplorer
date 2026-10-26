@@ -1,12 +1,12 @@
 // The archive viewer in the real app: a zip with a big folder and a deep chain of folders, opened on its own page at
 // desktop and phone widths. Checks the rows drawn (only those on screen), more pages loaded while scrolling, the way to
-// a deep folder collapsed, Go to, Up, Find (a name among thousands, a result's folder opened, in this folder only), and an entry opened from the
-// archive; passwords: a 7z whose list is encrypted
+// a deep folder collapsed, Go to, Up, Find (a name among thousands, a result's folder opened, in this folder only), an entry opened from the
+// archive, and entries shown in place (text, Markdown, PDF, a picture); passwords: a 7z whose list is encrypted
 // (asked, a wrong one refused, the right one lists it) and an AES zip (a protected file opened once the password is
 // given); extracting (the archive's menu, the dialog with the password, the job, the folder written and listed);
 // compressing that folder again (its menu, the dialog with a password, the zip made, tested by 7-Zip when installed);
 // ok/FAIL per check (exit code 1 on a failure).
-// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -find.png, -password.png, -extract.png, -compress.png, -phone.png)
+// Usage: node archive-viewer.mjs [<out prefix>]   (saves <prefix>-desktop.png, -deep.png, -find.png, -entry-text.png, -entry-pdf.png, -password.png, -extract.png, -compress.png, -phone.png)
 // Needs a docs-screenshots run first (its build and seeded data in <tmp>/sfe-docs, or env SFE_DOCS_WORK); serves
 // them on :5096 and writes Archives/Check.zip into that copy of the library.
 import { spawn } from 'node:child_process';
@@ -29,6 +29,8 @@ const photo = fs.readdirSync(path.join(work, 'library', 'Photos'), { recursive: 
 const entries = [
     { name: 'readme.txt', data: Buffer.from('Made by agents/tools/visual-check/archive-viewer.mjs\n') },
     { name: 'Pictures/photo.jpg', data: fs.readFileSync(path.join(work, 'library', 'Photos', photo)) },
+    { name: 'Notes/notes.md', data: Buffer.from('# Trip notes\n\nA [link to the photo](../Pictures/photo.jpg), shown as text inside an archive.\n') },
+    { name: 'Notes/handbook.pdf', data: fs.readFileSync(path.join(repo, 'tests/samples/library/Documents/Hut handbook.pdf')) },
 ];
 for (let i = 0; i < BIG; i++)
     entries.push({ name: `Big folder/entry ${String(i).padStart(5, '0')}.txt`, data: Buffer.from(`entry ${i}\n`) });
@@ -78,7 +80,7 @@ try {
         await b.goto(page, 1500);
         check(await until(b, `document.querySelectorAll('.archive-body .archive-row:not(.placeholder)').length >= 3`), `${name}: the top of the archive listed`);
         const top = JSON.parse(await b.eval(`JSON.stringify([...document.querySelectorAll('.archive-body .archive-open')].map(e => e.textContent.trim()))`));
-        check(JSON.stringify(top) === JSON.stringify(['Big folder', 'level 1', 'Pictures', 'readme.txt']), `${name}: folders first, then files: ${top.join(', ')}`);
+        check(JSON.stringify(top) === JSON.stringify(['Big folder', 'level 1', 'Notes', 'Pictures', 'readme.txt']), `${name}: folders first, then files: ${top.join(', ')}`);
         const wide = await b.eval(`document.documentElement.scrollWidth <= window.innerWidth`);
         check(wide, `${name}: the page is no wider than the screen`);
         if (out)
@@ -135,6 +137,34 @@ try {
             const readme = await b.eval(`[...document.querySelectorAll('a.archive-open')].find(e => e.textContent.trim() === 'readme.txt')?.getAttribute('href') ?? ''`);
             const text = await b.eval(`fetch(${JSON.stringify(readme)}).then(r => r.text())`);
             check(text.includes('archive-viewer.mjs'), 'an entry opened from the archive');
+
+            // Files shown in place: text, Markdown, PDF, a picture; Back to the list as it was.
+            const openName = name => b.eval(`[...document.querySelectorAll('.archive-body .archive-open')].find(e => e.textContent.trim() === ${JSON.stringify(name)}).click(); 1`);
+            await openName('readme.txt');
+            check(await until(b, `document.querySelector('[data-entry] .cm-content')?.textContent.includes('archive-viewer.mjs')`), 'in place: a text file read from the archive');
+            check(await b.eval(`!document.querySelector('[data-entry] [data-follow]')`), 'in place: no Follow for an entry');
+            if (out)
+                await b.shot(`${out}-entry-text.png`);
+            await b.eval(`document.querySelector('[data-back]').click(); 1`);
+            check(await until(b, `!document.querySelector('[data-entry]') && document.querySelector('.archive-row.selected')?.textContent.includes('readme.txt')`), 'Back: the list, the file selected');
+            await openName('Notes');
+            await until(b, `[...document.querySelectorAll('.archive-open')].some(e => e.textContent.trim() === 'notes.md')`);
+            await openName('notes.md');
+            check(await until(b, `[...document.querySelectorAll('[data-entry] h1')].some(h => h.textContent.includes('Trip notes'))`), 'in place: Markdown rendered');
+            check(await b.eval(`[...document.querySelectorAll('[data-entry] .markdown-body a[href], [data-entry] a[href]')].every(a => !a.textContent.includes('link to the photo'))`), 'in place: a relative link of an entry is text');
+            await b.eval(`document.querySelector('[data-previous]').click(); 1`);
+            check(await until(b, `!!document.querySelector('[data-entry] canvas')`, 20000), 'The file before: the PDF drawn');
+            if (out)
+                await b.shot(`${out}-entry-pdf.png`);
+            await b.eval(`document.querySelector('[data-entry]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); 1`);
+            check(await until(b, `!document.querySelector('[data-entry]')`), 'Esc: back to the list');
+            await b.eval(`document.querySelector('[data-crumb-root]').click(); 1`);
+            await until(b, `[...document.querySelectorAll('.archive-open')].some(e => e.textContent.trim() === 'Pictures')`);
+            await openName('Pictures');
+            await until(b, `[...document.querySelectorAll('.archive-open')].some(e => e.textContent.trim() === 'photo.jpg')`);
+            await openName('photo.jpg');
+            check(await until(b, `document.querySelector('[data-entry-picture]')?.naturalWidth > 0`), 'in place: a picture of the archive');
+            await b.eval(`document.querySelector('[data-back]').click(); 1`);
 
             const submit = password => b.eval(`{ const box = document.querySelector('[data-password-box]'); box.value = ${JSON.stringify(password)};
                 document.querySelector('[data-password]').requestSubmit(); } 1`);

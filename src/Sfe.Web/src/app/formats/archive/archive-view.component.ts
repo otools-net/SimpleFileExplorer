@@ -1,4 +1,5 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, untracked, viewChild } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injector, input, signal, Type, untracked, viewChild } from '@angular/core';
 import { Api, ApiError } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { formatDate, formatSize } from '../../core/format';
@@ -10,7 +11,8 @@ import { Dialogs } from '../../library/dialogs.service';
 import { ContextMenuDirective, MenuEntry, MenuTarget } from '../../menus/context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../../menus/overflow-row';
 import { IconComponent } from '../../shared/icon.component';
-import { FILE_VIEW_HOST, FileFormat } from '../formats';
+import { FILE_SOURCE, FileSource } from '../file-source';
+import { extensionOf, FILE_VIEW_HOST, FileFormat, FileViewHost, formatOf } from '../formats';
 import { VirtualRows } from '../virtual-rows';
 
 /** The first page of a folder, then larger ones while scrolling (keyset pages: one indexed range each on the server). */
@@ -37,6 +39,20 @@ interface Found {
 const FIND_DELAY_MS = 300;
 const FIND_MIN = 2;
 
+/** The formats an entry is shown with in place (read only, read whole); others open in a tab (videos, audio) or download. */
+const IN_PLACE: ReadonlySet<string> = new Set(['text', 'prose', 'markdown', 'json', 'csv', 'subtitles', 'pdf']);
+
+/** An entry shown in place of the list: a picture (`format` null) or a format's view of it, reading it from the archive. */
+interface Viewing {
+    entry: ArchiveItem;
+    /** Its row (previous / next go from it). */
+    index: number;
+    item: LibraryItem;
+    format: FileFormat | null;
+    component: Type<unknown> | null;
+    injector: Injector | null;
+}
+
 /** What a folder shows: its first page (totals, trail, flags) and the rows loaded so far. */
 interface Shown {
     listing: ArchiveListing;
@@ -52,7 +68,7 @@ interface Shown {
  */
 @Component({
     selector: 'sfe-archive-view',
-    imports: [IconComponent, ContextMenuDirective, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
+    imports: [NgComponentOutlet, IconComponent, ContextMenuDirective, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'text-view archive-view',
@@ -163,13 +179,14 @@ interface Shown {
                     @if (entry) {
                         <div class="archive-row" role="row" [attr.data-kind]="entry.kind" [attr.data-index]="row.index" [class.selected]="selected() === row.index"
                              [style.transform]="'translateY(' + row.start + 'px)'" [style.height.px]="rowHeight" [sfeContextMenu]="menuOf(entry)"
-                             (click)="select(row.index)" (dblclick)="activate(entry)">
+                             (click)="select(row.index)" (dblclick)="activate(entry, row.index)">
                             <span class="archive-name" role="gridcell">
                                 <svg [sfeIcon]="iconOf(entry)"></svg>
                                 @if (entry.kind === 'folder') {
                                     <button type="button" class="archive-open" [title]="'Open ' + entry.name" (click)="enter(entry.id); $event.stopPropagation()">{{ entry.name }}</button>
                                 } @else if (entry.kind === 'file' && canDownload() && (!entry.encrypted || unlock())) {
-                                    <a class="archive-open" [href]="entryUrl(entry, false)" target="_blank" rel="noopener" [title]="'Open ' + entry.name + ' in a new tab'">{{ entry.name }}</a>
+                                    <a class="archive-open" [href]="entryUrl(entry, false)" target="_blank" rel="noopener" [title]="inPlace(entry) ? 'Open ' + entry.name : 'Open ' + entry.name + ' in a new tab'"
+                                       (click)="openFromLink($event, entry, row.index)">{{ entry.name }}</a>
                                 } @else if (entry.kind === 'file' && canDownload()) {
                                     <button type="button" class="archive-open" [title]="'Give the password to open ' + entry.name" (click)="asking.set(true); $event.stopPropagation()">{{ entry.name }}</button>
                                 } @else {
@@ -195,6 +212,32 @@ interface Shown {
                 }
             </div>
         </div>
+        @if (viewing(); as shown) {
+            <div #entryView class="archive-entry" data-entry tabindex="-1" role="region" [attr.aria-label]="shown.entry.name">
+                <div class="text-toolbar archive-toolbar archive-entry-bar" role="toolbar" aria-label="File of the archive" sfeOverflowRow="File of the archive">
+                    <button type="button" class="icon-button" data-back [sfeOverflowItem]="null" overflowStay title="Back to the folder (Esc)" aria-label="Back to the folder"
+                            (click)="closeEntry()"><svg sfeIcon="left"></svg></button>
+                    <span class="archive-entry-name" [sfeOverflowItem]="null" overflowStay [title]="shown.entry.name">{{ shown.entry.name }}</span>
+                    <button type="button" class="icon-button" data-previous [sfeOverflowItem]="previousEntry" overflowStay title="The file before" aria-label="The file before"
+                            [disabled]="neighbour(-1) === null" (click)="step(-1)"><svg sfeIcon="up"></svg></button>
+                    <button type="button" class="icon-button" data-next [sfeOverflowItem]="nextEntry" overflowStay title="The file after" aria-label="The file after"
+                            [disabled]="neighbour(1) === null" (click)="step(1)"><svg sfeIcon="down"></svg></button>
+                    <a class="icon-button" data-new-tab [sfeOverflowItem]="newTabEntry" [href]="entryUrl(shown.entry, false)" target="_blank" rel="noopener"
+                       title="Open it in a new tab" aria-label="Open it in a new tab"><svg sfeIcon="external"></svg></a>
+                    <a class="icon-button" data-download [sfeOverflowItem]="downloadEntry" [href]="entryUrl(shown.entry, true)" title="Save it from the archive" aria-label="Download"><svg sfeIcon="download"></svg></a>
+                    <button class="icon-button" sfeOverflowMore></button>
+                </div>
+                <div class="archive-entry-content">
+                    @if (!shown.format) {
+                        <img class="archive-entry-picture" data-entry-picture [src]="entryUrl(shown.entry, false)" [alt]="shown.entry.name" decoding="async" />
+                    } @else if (shown.component) {
+                        <ng-container *ngComponentOutlet="shown.component; inputs: { item: shown.item, format: shown.format }; injector: shown.injector ?? undefined" />
+                    } @else {
+                        <p class="text-message">Loading…</p>
+                    }
+                </div>
+            </div>
+        }
         @if (found(); as results) {
             <p class="text-status" data-found role="status">{{ foundStatus(results) }}</p>
         } @else if (shown(); as current) {
@@ -215,6 +258,8 @@ export class ArchiveViewComponent {
     private readonly dialogs = inject(Dialogs);
     private readonly scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
     private readonly findBox = viewChild<ElementRef<HTMLInputElement>>('find');
+    private readonly entryView = viewChild<ElementRef<HTMLElement>>('entryView');
+    private readonly injector = inject(Injector);
 
     protected readonly state = signal<ArchiveState>('loading');
     protected readonly read = signal(0);
@@ -254,6 +299,14 @@ export class ArchiveViewComponent {
         : 'Extract this folder of the archive into a folder of the library, picked next');
     protected readonly extractEntry = (): MenuEntry => ({ id: 'extract', label: 'Extract…', icon: 'extract', title: this.extractTitle(), run: () => this.extractShown() });
 
+    /** An entry shown in place of the list (Back: the list as it was). */
+    protected readonly viewing = signal<Viewing | null>(null);
+    protected readonly previousEntry = (): MenuEntry => ({ id: 'previous', label: 'The file before', icon: 'up', title: 'The file before', disabled: this.neighbour(-1) === null, run: () => this.step(-1) });
+    protected readonly nextEntry = (): MenuEntry => ({ id: 'next', label: 'The file after', icon: 'down', title: 'The file after', disabled: this.neighbour(1) === null, run: () => this.step(1) });
+    protected readonly newTabEntry = (): MenuEntry => ({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Open it in a new tab', href: this.entryUrl(this.viewing()!.entry, false), newTab: true });
+    protected readonly downloadEntry = (): MenuEntry => ({ id: 'download', label: 'Download', icon: 'download', title: 'Save it from the archive', href: this.entryUrl(this.viewing()!.entry, true) });
+    private readonly components = new Map<string, Promise<Type<unknown>>>();
+
     /** The unlock the password given answered: kept by this view only (never the password), sent with its requests. */
     protected readonly unlock = signal<string | null>(null);
     /** The password form shows: the list is encrypted, or a protected file was asked for. */
@@ -284,6 +337,7 @@ export class ArchiveViewComponent {
                 this.unlock.set(null);
                 this.asking.set(false);
                 this.passwordMessage.set(null);
+                this.viewing.set(null);
                 this.endFind();
                 void this.open({});
             });
@@ -307,6 +361,7 @@ export class ArchiveViewComponent {
     }
 
     protected enter(folder: number | null): void {
+        this.viewing.set(null);
         this.endFind();
         void this.open({ folder });
     }
@@ -427,13 +482,139 @@ export class ArchiveViewComponent {
         this.selected.set(index);
     }
 
-    protected activate(entry: ArchiveItem): void {
+    protected activate(entry: ArchiveItem, index = this.rows().indexOf(entry)): void {
         if (entry.kind === 'folder')
             this.enter(entry.id);
         else if (entry.kind === 'file' && this.canDownload() && entry.encrypted && !this.unlock())
             this.asking.set(true);
+        else if (this.inPlace(entry))
+            void this.show(entry, index);
         else if (entry.kind === 'file' && this.canDownload())
             window.open(this.entryUrl(entry, false), '_blank', 'noopener');
+    }
+
+    /** A file's name clicked: shown in place when it can be; a new tab with Ctrl, Shift or the middle button, or for the rest. */
+    protected openFromLink(event: MouseEvent, entry: ArchiveItem, index: number): void {
+        event.stopPropagation();
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || !this.inPlace(entry))
+            return;
+        event.preventDefault();
+        this.select(index);
+        void this.show(entry, index);
+    }
+
+    /** How an entry is shown in place: `'picture'`, a format (text, PDF…), or null (a new tab, a download). */
+    private placeOf(entry: ArchiveItem): FileFormat | 'picture' | null {
+        if (entry.kind !== 'file' || !this.canDownload() || (entry.encrypted && !this.unlock()))
+            return null;
+        if (entry.media === 'image')
+            return 'picture';
+        if (entry.media)
+            return null;
+        const format = formatOf(this.itemOf(entry));
+        return format && IN_PLACE.has(format.id) ? format : null;
+    }
+
+    protected inPlace(entry: ArchiveItem): boolean {
+        return this.placeOf(entry) !== null;
+    }
+
+    /** The entry as the format views take it: its own path (positions remembered per entry), read through `FILE_SOURCE`. */
+    private itemOf(entry: ArchiveItem): LibraryItem {
+        const name = entry.name;
+        const extension = extensionOf({ name } as LibraryItem);
+        return {
+            name, path: `${this.item().path}#${entry.id}`, kind: entry.media ?? 'file', extension: extension ? `.${extension}` : null,
+            size: entry.size, modified: entry.modified,
+        };
+    }
+
+    /** Shows `entry` in place of the list; its format's view loaded on demand, reading it from the archive. */
+    private async show(entry: ArchiveItem, index: number): Promise<void> {
+        const place = this.placeOf(entry);
+        if (!place)
+            return;
+        const item = this.itemOf(entry);
+        if (place === 'picture') {
+            this.viewing.set({ entry, index, item, format: null, component: null, injector: null });
+            this.focusEntry();
+            return;
+        }
+        const injector = Injector.create({
+            providers: [{ provide: FILE_VIEW_HOST, useValue: this.entryHost }, { provide: FILE_SOURCE, useValue: this.entrySource(entry) }],
+            parent: this.injector,
+        });
+        const viewing: Viewing = { entry, index, item, format: place, component: null, injector };
+        this.viewing.set(viewing);
+        this.focusEntry();
+        if (!('load' in place.view))
+            return;
+        let loading = this.components.get(place.id);
+        if (!loading)
+            this.components.set(place.id, loading = place.view.load());
+        try {
+            const component = await loading;
+            if (this.viewing() === viewing)
+                this.viewing.set({ ...viewing, component });
+        } catch {
+            this.components.delete(place.id);
+            if (this.viewing() === viewing) {
+                this.viewing.set(null);
+                this.toasts.error('This viewer could not be loaded: reload the page to try again.');
+            }
+        }
+    }
+
+    /** What an entry's view may do: read it (and save it with the right to download); never write. */
+    private readonly entryHost: FileViewHost = {
+        place: 'viewer',
+        can: right => (right === Rights.viewFiles || right === Rights.download) && this.host.can(right),
+    };
+
+    /** Reads `entry` from the archive, with the unlock given (the view's requests and addresses). */
+    private entrySource(entry: ArchiveItem): FileSource {
+        return {
+            library: false,
+            textFile: (_item, signal, encoding) => this.api.archiveText(this.item().path, entry.id, { encoding, unlock: this.unlock() }, signal),
+            original: () => this.entryUrl(entry, false),
+            download: () => this.canDownload() ? this.entryUrl(entry, true) : null,
+        };
+    }
+
+    private focusEntry(): void {
+        setTimeout(() => this.entryView()?.nativeElement.focus({ preventScroll: true }));
+    }
+
+    /** Back to the list as it was, the entry's row selected. */
+    protected closeEntry(): void {
+        const viewing = this.viewing();
+        if (!viewing)
+            return;
+        this.viewing.set(null);
+        this.selected.set(viewing.index);
+        this.virtual.scrollTo(viewing.index);
+        this.scroller().nativeElement.focus({ preventScroll: true });
+    }
+
+    /** The row of the next entry shown in place, before (-1) or after (1) the one shown, among the rows loaded; null at an end. */
+    protected neighbour(direction: -1 | 1): number | null {
+        const viewing = this.viewing();
+        if (!viewing)
+            return null;
+        const rows = this.rows();
+        for (let index = viewing.index + direction; index >= 0 && index < rows.length; index += direction) {
+            if (rows[index] && this.inPlace(rows[index]))
+                return index;
+        }
+        return null;
+    }
+
+    protected step(direction: -1 | 1): void {
+        const index = this.neighbour(direction);
+        if (index !== null) {
+            this.selected.set(index);
+            void this.show(this.rows()[index], index);
+        }
     }
 
     /** Tries `password` on the archive; once it opens, the folder shown is asked again with the unlock. */
@@ -468,7 +649,22 @@ export class ArchiveViewComponent {
     }
 
     protected onKeydown(event: KeyboardEvent): void {
-        if ((event.target as HTMLElement).closest('input'))
+        const target = event.target as HTMLElement;
+        const viewing = this.viewing();
+        if (viewing) {
+            // The entry's view keeps its keys (an editor, a find box); the bar and a picture: Esc back, ← → the files around.
+            if (event.defaultPrevented || target.closest('input, textarea, [contenteditable="true"], .cm-editor'))
+                return;
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                this.closeEntry();
+            } else if (!viewing.format && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+                event.preventDefault();
+                this.step(event.key === 'ArrowLeft' ? -1 : 1);
+            }
+            return;
+        }
+        if (target.closest('input'))
             return;
         const rows = this.rows();
         if (event.key === 'Backspace' && this.parent() !== undefined) {
@@ -523,6 +719,8 @@ export class ArchiveViewComponent {
         const entries: MenuEntry[] = [];
         if (entry.kind === 'folder')
             entries.push({ id: 'open', label: 'Open', icon: 'folder', title: 'Show this folder of the archive', run: () => this.enter(entry.id) });
+        else if (this.inPlace(entry))
+            entries.push({ id: 'open', label: 'Open', icon: 'file', title: 'Show it here', run: () => this.activate(entry) });
         else if (entry.kind === 'file' && this.canDownload() && (!entry.encrypted || this.unlock())) {
             entries.push({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Open it in a new tab', href: this.entryUrl(entry, false), newTab: true });
             entries.push({ id: 'download', label: 'Download', icon: 'download', title: 'Save it from the archive', href: this.entryUrl(entry, true) });

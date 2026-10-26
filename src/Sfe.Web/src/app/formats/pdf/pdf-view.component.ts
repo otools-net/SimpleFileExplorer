@@ -7,6 +7,7 @@ import { Rights } from '../../core/rights';
 import { MenuEntry } from '../../menus/context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../../menus/overflow-row';
 import { IconComponent } from '../../shared/icon.component';
+import { FILE_SOURCE } from '../file-source';
 import { FILE_VIEW_HOST, FileFormat } from '../formats';
 import { readPosition, writePosition } from '../text/positions';
 import { NotPdfError, PDF_LOADER, PdfHandle, PdfLockedError, PdfMatches, PdfOutlineItem } from './pdf-document';
@@ -147,6 +148,7 @@ export class PdfViewComponent {
     readonly edit = input(false);
 
     private readonly config = inject(ConfigService);
+    private readonly fileSource = inject(FILE_SOURCE);
     private readonly fileHost = inject(FILE_VIEW_HOST);
     private readonly load = inject(PDF_LOADER);
     private readonly container = viewChild.required<ElementRef<HTMLDivElement>>('container');
@@ -206,7 +208,7 @@ export class PdfViewComponent {
         const value = this.scaleValue();
         return SCALES.some(choice => choice.value === value) ? null : { value, label: `${Math.round(Number(value) * 100)} %` };
     });
-    protected readonly downloadUrl = computed(() => this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
+    protected readonly downloadUrl = computed(() => this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
     protected readonly details = computed(() => {
         const size = this.item().size;
         return joinParts(['PDF', `${this.pages().toLocaleString()} ${this.pages() === 1 ? 'page' : 'pages'}`, size ? formatSize(size) : null, this.title()], '  ·  ');
@@ -243,11 +245,10 @@ export class PdfViewComponent {
     }
 
     private async open(item: LibraryItem, destroyed: () => boolean): Promise<void> {
-        const urls = this.config.urls();
-        if (!urls || this.handle)
+        if (!this.config.urls() || this.handle)
             return;
         try {
-            const handle = await this.load(this.container().nativeElement, urls.original(item.path), {
+            const handle = await this.load(this.container().nativeElement, this.fileSource.original(item), {
                 page: page => {
                     this.page.set(page);
                     clearTimeout(this.savePage);

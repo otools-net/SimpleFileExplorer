@@ -355,6 +355,14 @@ const scenes = {
         await b.eval(`[...document.querySelectorAll('.archive-open')].find(e => e.textContent.trim() === 'Day 2 - Summit').click(); 1`);
         await sleep(1500);
         await b.shot(OUT + 'archive-viewer-folder.png');
+        // A photo of the archive shown in place of the list.
+        await b.eval(`[...document.querySelectorAll('.archive-open')].find(e => e.textContent.trim() === 'Summit.jpg').click(); 1`);
+        await sleep(1500);
+        if (!await b.eval(`document.querySelector('[data-entry-picture]')?.naturalWidth > 0`))
+            throw new Error('the photo of the archive was not shown');
+        await b.shot(OUT + 'archive-entry.png');
+        await b.eval(`document.querySelector('[data-back]').click(); 1`);
+        await sleep(500);
 
         const menuOf = async path => {
             await b.eval(`document.querySelector('[data-path="${path}"]').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 420, clientY: 320 })); 1`);

@@ -7,6 +7,7 @@ import { ToastService } from '../../core/toast.service';
 import { ChangeFeed } from '../../library/change-feed.service';
 import { FILE_VIEW_HOST } from '../formats';
 import { TextEditor } from './codemirror';
+import { FILE_SOURCE } from '../file-source';
 
 /** What stops a save, shown as a bar over the text: the file changed elsewhere, its encoding can't hold the text, or the copy's name asked for. */
 export type TextProblem = { kind: 'changed' } | { kind: 'not-encodable'; message: string } | { kind: 'copy'; error: string | null }
@@ -40,6 +41,7 @@ const LINE_BREAKS: Readonly<Record<string, string>> = { lf: '\n', crlf: '\r\n', 
 @Injectable()
 export class TextSession {
     private readonly api = inject(Api);
+    private readonly fileSource = inject(FILE_SOURCE);
     private readonly toasts = inject(ToastService);
     private readonly config = inject(ConfigService);
     private readonly host = inject(FILE_VIEW_HOST);
@@ -216,7 +218,7 @@ export class TextSession {
         if (!this.item)
             return false;
         try {
-            const file = await this.api.textFile(this.item.path, undefined, this.readEncoding());
+            const file = await this.fileSource.textFile(this.item, undefined, this.readEncoding());
             this.file.set(file);
             this.encoding.set(file.encoding);
             this.lineEnding.set(lineEndingOf(file));
@@ -247,7 +249,8 @@ export class TextSession {
     /** Has the file changed elsewhere? Asked when not busy with something else; a version the person ignored stays ignored. */
     async checkDisk(): Promise<void> {
         const file = this.file();
-        if (!file || !this.item || this.following() || this.saving() || this.problem())
+        // An entry of an archive changes with its archive: the archive view is opened again then.
+        if (!file || !this.item || !this.fileSource.library || this.following() || this.saving() || this.problem())
             return;
         let now: string | null;
         try {

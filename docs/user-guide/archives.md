@@ -29,9 +29,17 @@ is read again.
 
 ## Files inside an archive
 
-With the right to download files, a file's name opens it in a new tab: pictures, videos, audio and plain text show
-in the browser, anything else downloads. A right click on it offers **Open in new tab** and **Download**. Very large
-files only download.
+With the right to download files, clicking a file's name shows it right there, in place of the list, when the viewer
+reads it: pictures, text files, Markdown, JSON, tables (CSV), subtitles and PDF documents, with the same tools as the
+[viewer](viewer.md) has for them (find, zoom, reading settings…), but read only.
+
+![A photo of an archive shown in place of its list](../images/archive-entry.png)
+
+- The bar above it goes **back** to the list (or **Esc**), to the file **before** or **after** in the folder (for
+  pictures, also ← and →), opens it in a **new tab**, or **downloads** it.
+- Links and pictures between the files of an archive (in a Markdown document) are shown as text.
+- Videos and audio open in a new tab, anything else downloads. **Ctrl**+click (or the middle button) opens any file
+  in a new tab. A right click offers **Open**, **Open in new tab** and **Download**. Very large files only download.
 
 Some entries are only listed:
 

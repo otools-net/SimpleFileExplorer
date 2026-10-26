@@ -21,6 +21,7 @@ import { VirtualRows } from '../virtual-rows';
 import {
     columnsOf, CsvDelimiter, CsvTable, delimiterFor, delimiterName, DELIMITERS, filterRecords, parseCsv, shownCell, SortDirection, sortRecords,
 } from './csv-table';
+import { FILE_SOURCE } from '../file-source';
 
 export type CsvMode = 'table' | 'source' | 'split';
 export const CSV_MODE_KEY = 'sfe.csv.mode';
@@ -175,6 +176,7 @@ export class CsvViewComponent {
     readonly edit = input(false);
 
     private readonly api = inject(Api);
+    private readonly fileSource = inject(FILE_SOURCE);
     protected readonly session = inject(TextSession);
     private readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
@@ -270,7 +272,7 @@ export class CsvViewComponent {
         return { text, label: `Row ${(position.record - this.first() + 1).toLocaleString()} · ${column.name}: ${shownCell(text).slice(0, 60)}` };
     });
     protected readonly downloadUrl = computed(() =>
-        this.offerDownload() && this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
+        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
     protected readonly details = computed(() => {
         const file = this.session.file();
         return file ? textDetails(file, extensionOf(this.item()) === 'tsv' ? 'TSV' : 'CSV') : '';
@@ -342,7 +344,7 @@ export class CsvViewComponent {
             return;
         let file: TextFile;
         try {
-            file = await this.api.textFile(item.path, cancel);
+            file = await this.fileSource.textFile(item, cancel);
         } catch (error) {
             if (cancel.aborted)
                 return;

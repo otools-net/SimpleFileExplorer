@@ -156,6 +156,33 @@ public sealed class ExploreRouteTests
     }
 
     [TestMethod]
+    public async Task ATextEntryIsReadDecodedAndReadOnlyAndMediaAreNamed()
+    {
+        TestArchives.Zip(_library.Root, "Media/texts.zip", ("notes.txt", "first\r\nsecond\r\n"), ("photo.jpg", "not really"), ("song.mp3", "x"),
+            ("data.bin", "\0\0\0binary\0"));
+        var items = (await ListAsync(_alice, "path=Media/texts.zip")).Items.ToDictionary(item => item.Name);
+        Assert.AreEqual(("image", "audio", (string?)null), (items["photo.jpg"].Media, items["song.mp3"].Media, items["notes.txt"].Media));
+
+        using (var response = await _alice.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}", Token))
+        {
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+            var text = (await response.Content.ReadFromJsonAsync<TextFile>(Json, Token))!;
+            Assert.AreEqual(("first\r\nsecond\r\n", "utf-8", "crlf"), (text.Text, text.Encoding, text.LineEnding));
+            Assert.AreEqual(new TextAccess(false, false, false, false), text.Access, "an entry is never saved over");
+        }
+        using (var latin = await _alice.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=windows-1252", Token))
+            Assert.AreEqual("windows-1252", (await latin.Content.ReadFromJsonAsync<TextFile>(Json, Token))!.Encoding);
+        using (var binary = await _alice.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["data.bin"].Id}", Token))
+            Assert.AreEqual(HttpStatusCode.UnsupportedMediaType, binary.StatusCode);
+        using (var badEncoding = await _alice.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=ebcdic", Token))
+            Assert.AreEqual(HttpStatusCode.BadRequest, badEncoding.StatusCode);
+        using (var none = await _alice.GetAsync("/api/files/explore/text?path=Media/texts.zip&id=99999", Token))
+            Assert.AreEqual(HttpStatusCode.NotFound, none.StatusCode);
+        using (var bob = await _bob.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}", Token))
+            Assert.AreEqual(HttpStatusCode.Forbidden, bob.StatusCode, "Bob may not open files");
+    }
+
+    [TestMethod]
     public async Task TheRightsAndTheFolderRulesApply()
     {
         TestArchives.Zip(_library.Root, "SpecialDir/hidden.zip", ("a.txt", "a"));

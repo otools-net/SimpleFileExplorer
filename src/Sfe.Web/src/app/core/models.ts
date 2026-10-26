@@ -224,6 +224,8 @@ export interface ArchiveItem {
     allFiles?: number | null;
     /** In a search's results: the path of the folder it is in ("" at the top). */
     where?: string | null;
+    /** A file the library calls a picture, video or audio (by its extension). */
+    media?: 'image' | 'video' | 'audio' | null;
 }
 
 /** A page of a search in an archive: `next` goes on (a page cut short by its time may be empty); null once all was looked through. */

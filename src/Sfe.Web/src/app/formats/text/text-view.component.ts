@@ -16,6 +16,7 @@ import { ENCODINGS, LINE_ENDINGS, textFailure } from './text-document';
 import { TextEditActionsComponent, TextEditBarComponent } from './text-edit.component';
 import { TextSession } from './text-session';
 import { findEntry, readingEntry } from '../toolbar-entries';
+import { FILE_SOURCE } from '../file-source';
 
 /** The encodings a file can be read with (Reopen with encoding), and those it can be saved in. */
 const READ_ENCODINGS = ['utf-8', 'windows-1252', 'utf-16le', 'utf-16be'];
@@ -71,7 +72,7 @@ interface Part {
                     <button type="button" class="text-action" data-part="end" title="The end of the file" [disabled]="shown.end >= shown.size || loadingPart()" (click)="openPart(-1)">End</button>
                 </div>
             }
-            @if (state() === 'ready' && !session.editing()) {
+            @if (state() === 'ready' && !session.editing() && fileSource.library) {
                 <button type="button" class="text-action" data-follow [sfeOverflowItem]="more.follow" [class.active]="following()" [attr.aria-pressed]="following()"
                         title="Show what is added to the end of the file as it grows (a log being written)" (click)="toggleFollow()"><svg sfeIcon="down"></svg> Follow</button>
             }
@@ -149,6 +150,7 @@ export class TextViewComponent {
     readonly edit = input(false);
 
     private readonly api = inject(Api);
+    protected readonly fileSource = inject(FILE_SOURCE);
     protected readonly session = inject(TextSession);
     private readonly config = inject(ConfigService);
     private readonly fileHost = inject(FILE_VIEW_HOST);
@@ -206,7 +208,7 @@ export class TextViewComponent {
     protected readonly style = computed(() => this.reading.style(this.profile()));
 
     protected readonly downloadUrl = computed(() =>
-        this.offerDownload() && this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
+        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
     protected readonly partRange = computed(() => {
         const part = this.part();
         return part ? `${formatSize(part.offset)} – ${formatSize(part.end)} of ${formatSize(part.size)}` : '';
@@ -248,11 +250,11 @@ export class TextViewComponent {
             return;
         let file: TextFile;
         try {
-            file = await this.api.textFile(item.path, cancel);
+            file = await this.fileSource.textFile(item, cancel);
         } catch (error) {
             if (cancel.aborted)
                 return;
-            if (error instanceof ApiError && error.status === 413) {
+            if (error instanceof ApiError && error.status === 413 && this.fileSource.library) {
                 // Too large to be read whole: in parts, a log from its end.
                 await this.openPart(extensionOf(item) === 'log' ? -1 : 0);
                 return;

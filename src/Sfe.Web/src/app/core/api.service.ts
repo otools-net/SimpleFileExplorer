@@ -295,6 +295,12 @@ export class Api {
             params: params({ path, q: query.q, folder: query.folder, after: query.after }),
             headers: query.unlock ? this.headers(false).set('X-SFE-Archive-Unlock', query.unlock) : this.headers(false),
         }), signal);
+    /** A text file inside an archive (its listing's `id`), decoded as `textFile` decodes a library file; read only. */
+    archiveText = (path: string, id: number, query: { encoding?: string | null; unlock?: string | null } = {}, signal?: AbortSignal) =>
+        this.send(this.http.get<TextFile>('api/files/explore/text', {
+            params: params({ path, id, encoding: query.encoding }),
+            headers: query.unlock ? this.headers(false).set('X-SFE-Archive-Unlock', query.unlock) : this.headers(false),
+        }), signal);
     /**
      * Tries `password` on an archive: an unlock for the requests about it (kept by the page only), the list still being
      * read, or 409 `not-protected`; a wrong password rejects (422 `wrong-password`), too many tries too (429).

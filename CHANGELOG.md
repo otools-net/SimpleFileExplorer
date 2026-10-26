@@ -10,7 +10,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - **Archives open in the viewer** like folders of their own: a zip, 7z, rar or tar file shows its folders and files,
   their sizes and dates, without being unpacked, whatever its size (millions of entries, folders nested thousands
   deep). Move around with the folders, **Up** and **Go to folder**, or **Find in archive** by name across all of
-  it (or in the folder shown only); open a file from the archive in a new tab, or download it. Names leading out of the archive and links are never
+  it (or in the folder shown only); open a file from the archive in place (pictures, text, Markdown, JSON, CSV, subtitles, PDF, read only) or in a new
+  tab, or download it. Names leading out of the archive and links are never
   offered. See
   [Archives](docs/user-guide/archives.md).
 - **Archives with a password** open with it: the viewer asks for it (as it opens an archive whose list is protected,

@@ -10,8 +10,10 @@ what it left for later, none of it promised. Tick `[x]` in the commit that does 
 
 ## Explore
 
-- [ ] Open a picture / text / PDF entry in the viewer itself (today: a new tab): a `LibraryItem`-like entry whose file
-  URL is the entry route; videos need Range on a decompressed stream.
+- [ ] Videos and audio of an archive in place (today: a new tab): they need Range on a decompressed stream (a seek
+  re-reads from the entry's start, or a temp copy).
+- [ ] Links and pictures between the entries of a Markdown document of an archive (today: text): an entry route by
+  path (`…/entry/{archive}/at/{path}`), then `MarkdownLinks` for entries.
 - [ ] Item menu: "Open as archive" for `.cbz`/`.epub`/`.docx`… ([context-menu](../features/context-menu.md)).
 - [ ] Zip methods other than stored and deflate (deflate64, bzip2, lzma, zstd): SharpCompress' decompressors over
   `WindowStream`, if real archives need them.
