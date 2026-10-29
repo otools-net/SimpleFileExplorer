@@ -51,3 +51,25 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
   `overscroll-behavior-x: none` while the viewer is open (base.css).
 - WebKit (Windows) gives a page reloaded by Back `history.state` null (Chromium: the state written before leaving), so
   listing positions saved there are lost; `navigation.spec.ts` marks it `fixme` on WebKit until checked on an iPhone.
+
+## Running it in the work
+
+- Times on this machine: the quick set (`--grep "@smoke|@reported"`, android + iphone) ~50 s; everything (~245
+  tests, 6 devices) ~7.5 min with the default workers; the first run of a session adds the build (~45 s).
+- CI: `.github/workflows/e2e.yml`, the quick set on pushes to `edge`, everything on `main` and by hand; failures keep
+  the report, traces and app log as the run's artifact. CI retries a failed test once (`retries` in the config).
+- Flaky tests: no fixed sleeps outside the measuring helpers; a test failing twice in a week without a change is
+  fixed or marked `test.fixme` with the reason and a line in the plan, never deleted silently.
+- `test.fixme` / `test.skip` always say why (a browser that can't, a width where it doesn't apply).
+
+## By hand on real phones (before a release; emulation can't see these)
+
+- Android Chrome and an iPhone, on a library of a few hundred photos, scrolled down so the address bar is hidden:
+  select an item (long press on Android, its box on iPhone), open its ⋮ menu: the bar at the bottom stays, the
+  address bar stays hidden, the menu opens at once; a dialog (Rename) the same.
+- The on-screen keyboard: Rename, search and tags fields stay visible above it, their buttons reachable; no zoom.
+- The viewer: swipes between photos (never back a page), pinch on a picture, a video's Play, full screen and turning
+  the phone; a PDF and an EPUB by finger.
+- Back on the iPhone after leaving SFE for another site: the listing comes back where it was (WebKit on Windows loses
+  it, `navigation.spec.ts`).
+- The home indicator and notch (safe areas): nothing under them in portrait and landscape.

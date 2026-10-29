@@ -14,7 +14,7 @@ npm run browsers             # once: Playwright's WebKit (iPhone) and Chromium
 
 npm run e2e                                     # everything: builds the app, starts it, runs, stops it
 npm run e2e -- --project=android                # one device: android, android-small, iphone, landscape, desktop
-npm run e2e -- --grep @smoke                    # the quick set
+npm run e2e -- --grep "@smoke|@reported"       # the quick set (CI on edge: android and iphone)
 npm run e2e -- specs/reported.spec.ts           # one file
 SFE_E2E_SKIP_BUILD=1 npm run e2e                # reuse the last build (no client or server change since)
 npx playwright show-report <tmp>/sfe-e2e/report # the HTML report, with traces and videos of failures
@@ -56,5 +56,6 @@ creates the accounts, scans and saves their sign-ins. The app stops when the run
   timing helpers, which measure over time.
 - A spec that changes files works in a folder of its own (made and removed by the spec): workers run in parallel on
   one library.
-- Tags in the title: `@smoke` (the quick set), `@desktop` (also on the desktop project), `@desktop-only`.
+- Tags in the title: `@smoke` (the quick set), `@reported` (a bug users reported: in the quick set too), `@timing`
+  (also on `android-slow`), `@desktop` (also on the desktop project), `@desktop-only`, `@diagnose` (measurements).
 - A phone bug fix adds a spec that fails without the fix.

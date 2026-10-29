@@ -11,7 +11,7 @@ const menu = '.item-menu[role="menu"]';
 const bar = '.selection-dock .selection-bar';
 
 
-test.describe('@timing 2026-10-29: select an item, open its menu: the bottom bar jumps, the menu opens late', () => {
+test.describe('@reported @timing 2026-10-29: select an item, open its menu: the bottom bar jumps, the menu opens late', () => {
     test('long press, then ⋮ (Android)', async ({ page, browserName }) => {
         needsTouchGestures(browserName);
         await openFolder(page, folder);
@@ -49,7 +49,7 @@ test.describe('@timing 2026-10-29: select an item, open its menu: the bottom bar
 // root stops scrolling (`overflow: hidden`), the viewport gets shorter and everything fixed at the bottom moves up.
 // Emulation has no address bar, so this checks the cause: a sheet on a touch screen holds the page without touching the
 // root's overflow, and the page still doesn't scroll behind it.
-test.describe('2026-10-29: a sheet holds the page without changing the root (the address bar would come back)', () => {
+test.describe('@reported 2026-10-29: a sheet holds the page without changing the root (the address bar would come back)', () => {
     test('the root keeps its overflow while the item menu is open', async ({ page }) => {
         test.skip(!isSheetWidth(page), 'sheets: phones up to 640 px');
         await openFolder(page, 'Many photos');
@@ -95,7 +95,7 @@ test.describe('2026-10-29: a sheet holds the page without changing the root (the
 
 // Found by the suite (2026-10-29): the sheet closed at the press on its backdrop, so the tap's click went to what was
 // under it (the sidebar button at the top left opened the sidebar; on the listing, a file opened).
-test('a tap on the dimmed area closes the menu and nothing under it', async ({ page }) => {
+test('@reported a tap on the dimmed area closes the menu and nothing under it', async ({ page }) => {
     test.skip(!isSheetWidth(page), 'sheets: phones up to 640 px');
     await openFolder(page, folder);
     const sidebar = page.getByRole('button', { name: 'Sidebar' });
@@ -110,7 +110,7 @@ test('a tap on the dimmed area closes the menu and nothing under it', async ({ p
 });
 
 // The same for dialogs shown as sheets on phones (rename, tags, properties…: `dialog.sheet`, base.css).
-test.describe('2026-10-29: a dialog sheet holds the page without changing the root', () => {
+test.describe('@reported 2026-10-29: a dialog sheet holds the page without changing the root', () => {
     async function openRename(page: import('@playwright/test').Page) {
         await openFolder(page, 'Many photos');
         await page.evaluate(() => window.scrollTo(0, 600));

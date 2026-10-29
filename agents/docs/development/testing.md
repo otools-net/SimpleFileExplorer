@@ -11,6 +11,9 @@ phone-sized browsers): `tests/e2e/`, [testing-e2e.md](testing-e2e.md).
   behaviour, frontend (a `*.spec.ts`) for client behaviour, both when it spans the two.
 - A bug fix gets a test that fails without it.
 - Not done until `dotnet test` and `npm test` pass.
+- A change seen on phones (layout, touch, menus, dialogs, viewers) also runs `cd tests/e2e && npm run e2e -- --grep
+  "@smoke|@reported"` and the specs of its area; a phone bug fix adds an end-to-end test that fails without it
+  ([testing-e2e.md](testing-e2e.md)). The whole suite runs before `edge` is merged into `main`.
 
 ## Backend
 

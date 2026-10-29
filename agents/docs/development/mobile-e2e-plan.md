@@ -54,9 +54,9 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
   `iphone` (WebKit, 390×844, DPR 3, touch), `landscape` (Chromium, 800×360), `desktop` (Chromium 1280×800, a smoke
   subset tagged `@desktop` so phone fixes don't break the mouse path). Same target sizes as
   [overflow-menus](../features/overflow-menus.md).
-- [ ] **What stays in `visual-check/`**: the static audits (`narrow-audit`, `overflow`) stay scripts; the checks that
-  are really tests (`phone-sheets.mjs`, the phone part of `context-menus.mjs`) move into the suite and are removed
-  from the scripts in the same commit.
+- [-] **What stays in `visual-check/`**: all of it for now. `phone-sheets.mjs` and `context-menus.mjs` check classic
+  (desktop) scrollbars and right clicks, which the phone suite doesn't emulate; the suite covers their phone side
+  (`menus.spec.ts`, `reported.spec.ts`).
 
 ## Phase 0: reproduce the reports (before building anything)
 
@@ -265,17 +265,14 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ## Phase 4: in the workflow
 
-- [ ] Run time: the whole suite under ~10 min on this machine with workers; `@smoke` under 2 min.
-- [ ] Rule in `AGENTS.md` and [testing](testing.md): a change visible on phones runs `npm run e2e -- --grep @smoke`
-  plus its area's specs; a phone bug fix adds a scenario that fails without it; the full suite before merging `edge`
-  into `main` ([versioning-and-changelog](versioning-and-changelog.md)).
-- [ ] CI: a GitHub workflow (next to `.github/workflows/docker-image.yml`) running `@smoke` on `android` and `iphone`
-  on pushes to `edge`, the full suite on pull requests to `main`; traces uploaded as artifacts.
-- [ ] Flakiness: no fixed sleeps (wait on states), retries 1 in CI only, a test failing twice in a week is fixed or
-  quarantined with a bullet here.
-- [ ] By hand before each release (what emulation can't see): the "Reproduce" steps of Phase 0 on a real Android
-  phone and an iPhone, the address bar and home indicator, the keyboard, rotation; a short checklist in
-  `testing-e2e.md`.
+- [x] Run time: the whole suite ~7.5 min on this machine; the quick set (`@smoke|@reported`) ~50 s.
+- [x] Rule in `AGENTS.md` and [testing](testing.md): a change visible on phones runs the quick set plus its area's
+  specs; a phone bug fix adds a scenario that fails without it; the full suite before merging `edge` into `main`.
+- [~] CI: `.github/workflows/e2e.yml` (quick set on `edge`, everything on `main` and by hand, report as artifact).
+  Written, not yet run on GitHub: check its first run (Linux: Playwright's Chromium, `--with-deps`).
+- [x] Flakiness: retries 1 in CI only; policy in [testing-e2e](testing-e2e.md).
+- [x] By hand before each release: the checklist in [testing-e2e](testing-e2e.md) (real phones: address bar,
+  keyboard, rotation, safe areas, iPhone Back).
 - [ ] Later, not in this epic: Playwright's experimental Android support (`_android`, a real phone over adb) for the
   `@smoke` set; visual comparisons (`toHaveScreenshot`) for sheets and bars once the layout is stable.
 

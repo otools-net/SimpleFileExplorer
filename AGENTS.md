@@ -33,7 +33,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
   is bumped only when `edge` is merged into `main` (patch for fixes only, minor for a feature); none for
   docs/tests/build only ([versioning-and-changelog](agents/docs/development/versioning-and-changelog.md)).
 - **Tests** come with every feature and fix; not done until `dotnet test` and `npm test` pass
-  ([testing](agents/docs/development/testing.md)).
+  ([testing](agents/docs/development/testing.md)); a change seen on phones also runs the end-to-end quick set and its
+  area's specs, a phone bug fix adds one ([testing-e2e](agents/docs/development/testing-e2e.md)).
 - **Sample files:** media and documents that tests and tools use (png, mp3, mp4, swf, epub…) are committed in
   `tests/samples/` and copied, never made per run; a new sample, or a change to what makes one, updates them in the
   same commit with `agents/tools/samples/update-samples.mjs` ([test-samples](agents/docs/development/test-samples.md)).

@@ -1,0 +1,64 @@
+# End-to-end tests on phone-sized browsers (tests/e2e/README.md, agents/docs/development/testing-e2e.md):
+# - a push to edge runs the quick set (@smoke and the reported bugs) on the Android and iPhone devices;
+# - a push to main, and "Run workflow" (Actions tab), run everything on every device.
+# The report, traces and videos of failures are kept as the run's artifact.
+name: End-to-end tests
+
+on:
+  push:
+    branches: [edge, main]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      SFE_E2E_WORK: ${{ runner.temp }}/sfe-e2e
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            src/Sfe.Web/package-lock.json
+            tests/e2e/package-lock.json
+
+      - name: Packages and browsers
+        working-directory: tests/e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium webkit
+
+      - name: Quick set (edge)
+        if: github.ref == 'refs/heads/edge'
+        working-directory: tests/e2e
+        run: npm run e2e -- --project=android --project=iphone --grep "@smoke|@reported"
+
+      - name: Everything
+        if: github.ref != 'refs/heads/edge'
+        working-directory: tests/e2e
+        run: npm run e2e
+
+      - name: Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            ${{ runner.temp }}/sfe-e2e/report
+            ${{ runner.temp }}/sfe-e2e/results
+            ${{ runner.temp }}/sfe-e2e/app.log
+          retention-days: 14
