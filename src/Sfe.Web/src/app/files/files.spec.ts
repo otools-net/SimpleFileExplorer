@@ -358,6 +358,16 @@ describe('ItemMenu', () => {
         document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
         expect(TestBed.inject(ContextMenu).open()).toBeNull();
 
+        // The sheet's backdrop closes it on its click, not on the press: gone at the press, the tap's click would land
+        // on what is under it (the sidebar button...).
+        rightClick(menuEvent(), photo);
+        await settle();
+        const backdrop = element.querySelector<HTMLElement>('.sheet-backdrop')!;
+        backdrop.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        expect(TestBed.inject(ContextMenu).open()).not.toBeNull();
+        backdrop.click();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
+
         rightClick(menuEvent(), photo);
         await settle();
         await store.load();

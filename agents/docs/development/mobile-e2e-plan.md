@@ -90,6 +90,16 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
     opening closes it, looking like "didn't open".
   - [x] A long task on the tap (change detection over a big listing, overflow measuring, layout after `has()`):
     measure input → sheet painted. 165–460 ms at 4× CPU, mostly the app's script; the lock's `:has()` part of it.
+  - [x] Found on the way: a tap on the sheet's backdrop closed it at the press, so its click reached what was under
+    it (the sidebar button opened). **Fixed:** the backdrop closes on its click; test "a tap on the dimmed area…".
+  - [x] Found on the way: tile captions were `content-visibility: auto` with a 72 px guess (real 54–124 px): tiles
+    changed height after showing and a tap on ⋮ became a click on the link below (landscape). **Fixed:** captions
+    always laid out (cheaper: `listing-cost.spec.ts`).
+- [~] **Menu still slow at phone speed** (median ~180 ms at 4× CPU, target 100). Profile (`menu-profile.spec.ts`):
+  Angular's render pass ~95 ms, of which `ContextMenu.place` ~45–55 ms (its `offsetWidth` forces the layout of the
+  menu: 121 objects, 40–48 ms) and the menu's template ~30–40 ms; then paint/layerize 20–40 ms. Options, to decide:
+  build the menu while the finger is down (`pointerdown`, shown on `click`), a lighter menu (fewer elements per
+  entry), or accept it. The test holds it with ratchet budgets meanwhile.
 - [~] Each confirmed cause gets a failing e2e scenario **before** its fix (the fixes are separate commits with
   changelog lines; this epic itself is tests only).
 

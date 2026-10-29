@@ -30,3 +30,16 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
   `LoadEnclaveImageW failed, error code 577` on its own stderr (not the page's console): harmless.
 - `@diagnose` specs (`specs/diagnose/`) measure rather than assert; they skip unless `SFE_E2E_DIAGNOSE=1`.
   `SFE_E2E_TIMINGS=1` prints each `expectOpensWithin` (project | test | split).
+- WebKit (Playwright on Windows) sends a tap's `click` to what was under the finger before a scroll that just happened,
+  Playwright's own retry scrolls included: use `tapWhenSettled` after scrolling (`fixtures/touch.ts`). Not known for a
+  real iPhone.
+- `expectOpensWithin` prints the tap's events when nothing shows (`pointerdown`/`touchend`/`click` targets, the
+  element in and out): a `click` on another element than the `pointerdown` means the page moved under the finger.
+- Timings swing on a loaded machine (single taps 80–600 ms at 4× CPU): `expectMedianOpensWithin` takes the median of
+  5. Budgets per project are ratchets (`MENU_BUDGET` in `reported.spec.ts`); WebKit under the full suite's load ran
+  ~1.5× its alone time.
+- The setup dismisses its scan's panel in the saved browser states (`sfe.scan.dismissed`): else it shows above the
+  listing in every test. The old wait read `isRunning`, which the status hasn't (`state`): it never waited.
+- Diagnostics: `menu-trace` (kinds of work, layout objects), `menu-profile` (functions, source-mapped: build first with
+  `node scripts/profile-client.mjs`; Playwright's injected `visitNode`, `_shadowRoot`… are its own checks, not the
+  app), `sheet-cost`, `listing-cost` (Chromium metrics, what-if CSS).

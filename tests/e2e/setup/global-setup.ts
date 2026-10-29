@@ -15,6 +15,18 @@ async function call<T = unknown>(api: APIRequestContext, method: string, url: st
     return (text ? JSON.parse(text) : null) as T;
 }
 
+/**
+ * Saves `api`'s sign-in for the specs, with the panel of the setup's scan dismissed in its browser storage, as a user
+ * who has seen it once: else it shows on every page of every test (each starts with a fresh browser), above the
+ * listing. The panel itself gets specs of its own.
+ */
+async function saveSignIn(api: APIRequestContext, file: string, scanStartedAt: string): Promise<void> {
+    const state = await api.storageState();
+    const origin = new URL(baseURL).origin;
+    state.origins = [{ origin, localStorage: [{ name: 'sfe.scan.dismissed', value: scanStartedAt }] }];
+    fs.writeFileSync(file, JSON.stringify(state, null, 2));
+}
+
 export default async function globalSetup(): Promise<void> {
     fs.mkdirSync(path.dirname(auth('admin')), { recursive: true });
 
@@ -24,10 +36,14 @@ export default async function globalSetup(): Promise<void> {
         displayName: 'Alex (admin)', libraryName: 'Home media',
     });
     await call(admin, 'POST', 'api/scan', { path: '' });
+    let scanStartedAt = '';
     for (let i = 0; ; i++) {
-        const scan = await call<{ isRunning?: boolean; running?: boolean }>(admin, 'GET', 'api/scan');
-        if (!scan.isRunning && !scan.running)
+        const scan = await call<{ state?: string; startedAt?: string }>(admin, 'GET', 'api/scan');
+        // Idle: not started yet; then running; then completed (or failed, cancelled).
+        if (scan.state !== 'running' && scan.state !== 'idle') {
+            scanStartedAt = scan.startedAt ?? '';
             break;
+        }
         if (i > 200)
             throw new Error('the scan of the sample library did not end in a minute');
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -41,11 +57,11 @@ export default async function globalSetup(): Promise<void> {
         userName: accounts.sam.userName, displayName: 'Sam', password: accounts.sam.password,
         kind: 'user', isServerAdmin: false, disabled: false, groupIds: [users.id],
     });
-    await admin.storageState({ path: auth('admin') });
+    await saveSignIn(admin, auth('admin'), scanStartedAt);
     await admin.dispose();
 
     const sam = await request.newContext({ baseURL, extraHTTPHeaders: headers });
     await call(sam, 'POST', 'api/session/login', { userName: accounts.sam.userName, password: accounts.sam.password, remember: true });
-    await sam.storageState({ path: auth('sam') });
+    await saveSignIn(sam, auth('sam'), scanStartedAt);
     await sam.dispose();
 }

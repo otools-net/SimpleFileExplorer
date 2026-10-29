@@ -59,3 +59,31 @@ export async function swipe(page: Page, from: { x: number; y: number }, to: { x:
         await cdp.detach();
     }
 }
+
+/**
+ * Taps `locator` once the page has settled after scrolling it into view (no scroll for 200 ms, its box the same over
+ * two frames). WebKit (Playwright on Windows) sends a tap's `click` to what was under the finger before a scroll that
+ * just happened (Playwright's own retry scrolls included): the touch events reach the ⋮ button, the click its tile.
+ */
+export async function tapWhenSettled(page: Page, locator: Locator): Promise<void> {
+    await locator.scrollIntoViewIfNeeded();
+    await locator.evaluate(element => new Promise<void>(resolve => {
+        let last = performance.now();
+        const scrolled = () => { last = performance.now(); };
+        addEventListener('scroll', scrolled, { capture: true, passive: true });
+        let box = element.getBoundingClientRect();
+        const frame = () => {
+            const now = element.getBoundingClientRect();
+            const same = now.x === box.x && now.y === box.y && now.width === box.width && now.height === box.height;
+            box = now;
+            if (same && performance.now() - last >= 200) {
+                removeEventListener('scroll', scrolled, { capture: true });
+                resolve();
+            } else {
+                requestAnimationFrame(frame);
+            }
+        };
+        requestAnimationFrame(frame);
+    }));
+    await locator.tap();
+}

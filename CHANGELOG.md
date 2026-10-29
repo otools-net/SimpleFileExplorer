@@ -12,7 +12,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   again, which moved everything at the bottom. The page is now held without it, and a swipe on the dimmed area no
   longer scrolls the page.
 - **Phones: tiles keep their place as pictures load**: a tile takes the shape of its picture from the index at once,
-  instead of when its preview arrives, so the rows no longer re-pack under the finger and a tap lands where aimed.
+  instead of when its preview arrives, and the names under the pictures are laid out with them, so the rows no longer
+  move under the finger and a tap on ⋮ no longer opens the file below it instead.
+- **Phones: a tap on the dimmed area around a menu only closes the menu**: the tap no longer also reaches what is
+  under it (the sidebar button, a file).
 
 ## 1.84.0
 

@@ -35,7 +35,9 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
   in Edge: one event after the ContextMenu key, none after Shift+F10).
 - Entries: `run`; or `href` (+ `newTab`): rendered as a real `<a target="_blank" rel="noopener">`, so Open in new tab
   is a user gesture (no popup blocker) and middle click works; or `submenu` (shown in place, Back / Left arrow).
-- Closing: click elsewhere, Esc/Tab (focus back to the trigger), scroll, resize, navigation; item menus also when the
+- Closing: click elsewhere, Esc/Tab (focus back to the trigger), scroll, resize, navigation; a phone sheet's backdrop
+  on its `click`, not at the press (`outside` skips it): closed at the press, the tap's click went to what was under
+  it (e2e `reported.spec.ts`); item menus also when the
   listing changes (`ItemMenu`, `ListingStore.generation`, skipping the effect's first run).
 - A phone sheet (`max-width: 640px`, `isSheet`) closes neither on scroll nor on a resize keeping the width; turning
   the phone does. With a mouse (`any-pointer: fine`) opening it freezes the page (`html:has(.sheet-backdrop)`); on

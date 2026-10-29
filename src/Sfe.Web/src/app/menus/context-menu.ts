@@ -343,7 +343,7 @@ export class ContextMenuDirective {
             <!-- The top layer (a manual popover): above the page and an open modal dialog, which it is moved into. -->
             <div #layer class="context-menu-layer" [attr.popover]="popovers ? 'manual' : null">
             <!-- On phones: an action sheet at the bottom, under its target's name, over a backdrop that closes it. -->
-            <div class="item-menu-backdrop sheet-backdrop" aria-hidden="true"></div>
+            <div #backdrop class="item-menu-backdrop sheet-backdrop" aria-hidden="true" (click)="menu.close()"></div>
             <div #box class="item-menu phone-sheet" role="menu" [attr.aria-label]="'Actions for ' + open.target.name" [attr.data-menu]="open.target.kind"
                  [style.left.px]="position().x" [style.top.px]="position().y" (keydown)="keydown($event)">
                 <div class="item-menu-title">{{ open.target.name }}</div>
@@ -393,6 +393,7 @@ export class ContextMenuComponent {
     protected readonly popovers = typeof HTMLElement.prototype.showPopover === 'function';
     private readonly box = viewChild<ElementRef<HTMLElement>>('box');
     private readonly layer = viewChild<ElementRef<HTMLElement>>('layer');
+    private readonly backdrop = viewChild<ElementRef<HTMLElement>>('backdrop');
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     /** Where the menu lives when no modal dialog is open (the root component). */
     private home: Node | null = null;
@@ -494,8 +495,9 @@ export class ContextMenuComponent {
     protected outside(event: PointerEvent): void {
         const open = this.menu.open();
         const target = event.target as Node;
-        // The ⋮ button that opened it closes it itself (a toggle).
-        if (open && !this.box()?.nativeElement.contains(target) && !open.trigger?.contains(target))
+        // The ⋮ button that opened it closes it itself (a toggle); the sheet's backdrop on its click: closed at the
+        // press, the tap's click would land on what is under it.
+        if (open && !this.box()?.nativeElement.contains(target) && !open.trigger?.contains(target) && target !== this.backdrop()?.nativeElement)
             this.menu.close();
     }
 
