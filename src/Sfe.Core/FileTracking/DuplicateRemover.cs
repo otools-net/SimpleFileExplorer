@@ -73,7 +73,7 @@ public sealed class DuplicateRemover(
 
         // The trash then takes its index row (not kept as a missing file: its tags are on the copy kept) and keeps its
         // tags with it for a restore.
-        var relative = paths.ToRelative(remove);
+        var relative = paths.ToRelative(remove)!;     // resolved in the library above
         int? trashId = null;
         try
         {
