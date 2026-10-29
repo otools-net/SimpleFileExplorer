@@ -7,8 +7,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
-- **Phones: the bar at the bottom no longer jumps** when a menu opens from the bottom of the screen (an item's
-  menu while items are selected, for example): holding the page behind the menu made Chrome show its address bar
+- **Phones: the bar at the bottom no longer jumps** when a menu or a dialog opens from the bottom of the screen (an
+  item's menu while items are selected, Rename, Tags…): holding the page behind it made Chrome show its address bar
   again, which moved everything at the bottom. The page is now held without it, and a swipe on the dimmed area no
   longer scrolls the page.
 - **Phones: tiles keep their place as pictures load**: a tile takes the shape of its picture from the index at once,

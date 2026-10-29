@@ -36,7 +36,8 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   viewer's ⋮ menu, the default tags panel, the player's speed menu. A popup under a transformed or clipping ancestor
   goes in the top layer (`popover="manual"`, `showPopover()`) with the backdrop inside it, else `position: fixed` is
   relative to that ancestor (`DefaultTagsBadgeComponent`). Modal dialogs (`dialog.sheet`) already do this below
-  761 px (`trickplay.css`, `base.css`). Not sheets: toasts, the operations panel and the selection bar (status that
+  761 px (`trickplay.css`, `base.css`: touch, the dialog `touch-action: none` and its `.sheet-body`
+  `overscroll-behavior: contain`, the root untouched; mouse, the root locked). Not sheets: toasts, the operations panel and the selection bar (status that
   stays while the page is used), and the top bar's popovers (they open from the top).
 - **Rows of buttons on narrow screens (rule, 2026-10-24):** a row of buttons that may not fit a 360 px phone is an
   overflow row (`sfeOverflowRow`): one line, the buttons leaving right to left into a "⋯" menu, the developer saying

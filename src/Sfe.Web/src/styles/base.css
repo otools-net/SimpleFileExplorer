@@ -63,7 +63,16 @@ html { scroll-padding-top: calc(var(--topbar-h) + var(--location-strip-h) + 8px)
    (`--scrollbar-w`, scrollbar-width.ts): wider, its names would wrap less and its end come closer, and that scroll
    closes the item menu. */
 
+/* On a touch screen the root is left alone (its `overflow: hidden` brought back Android Chrome's address bar and the
+   bars at the bottom jumped, as for phone-sheets.css): a finger can't pan the dialog (its head, foot and backdrop, which
+   touches reach as the dialog) and its body's scrolling stops at its ends. The wheel ignores both: with a mouse the
+   root is held. */
 @media (max-width: 760px) {
+    dialog.sheet { touch-action: none; }
+    dialog.sheet .sheet-body { overscroll-behavior: contain; }
+}
+
+@media (max-width: 760px) and (any-pointer: fine) {
     html:has(dialog.sheet[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
 }
 

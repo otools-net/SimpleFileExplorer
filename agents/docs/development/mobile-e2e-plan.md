@@ -73,7 +73,9 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
     moves it back. Not seen in emulation (no address bar), but recorded in context-menu.md since 1.62 ("brings back
     Chrome's address bar"). **Fixed 2026-10-29:** on touch screens the root is left alone (backdrop `touch-action:
     none`, sheet `overscroll-behavior: contain`); tests: root overflow kept, swipes on sheet and backdrop don't scroll.
-    Confirm on a phone. Modal dialog sheets (`dialog.sheet[open]`, `base.css`) still lock the root: next.
+    Confirm on a phone. Modal dialog sheets (`dialog.sheet[open]`, `base.css`): same fix (dialog `touch-action:
+    none`, body `overscroll-behavior: contain`; the body still scrolls), tests in `reported.spec.ts`. The viewer
+    (`dialog.viewer[open]`) still locks the root: it covers the screen, nothing at the bottom to jump; left as is.
   - [x] Found on the way: tiles re-packed as their previews loaded (shape learned on load), so items moved under the
     finger in the first half second; a tap on ⋮ then hit another element (WebKit, 2 runs in 6). **Fixed:** tiles take
     the index's width/height at once (`PreviewsService.shapeOf`); test `listing.spec.ts`.

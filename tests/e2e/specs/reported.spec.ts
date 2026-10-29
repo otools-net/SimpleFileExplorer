@@ -116,3 +116,55 @@ test('a tap on the dimmed area closes the menu and nothing under it', async ({ p
         await expect(sidebar).toHaveAttribute('aria-expanded', 'false');
     }
 });
+
+// The same for dialogs shown as sheets on phones (rename, tags, properties…: `dialog.sheet`, base.css).
+test.describe('2026-10-29: a dialog sheet holds the page without changing the root', () => {
+    async function openRename(page: import('@playwright/test').Page) {
+        await openFolder(page, 'Many photos');
+        await page.evaluate(() => window.scrollTo(0, 600));
+        await tapWhenSettled(page, item(page, 'Many photos/Photo 020.jpg').locator('.item-menu-button'));
+        await page.locator(`${menu} [data-entry="rename"]`).tap();
+        const dialog = page.locator('dialog.sheet[open]');
+        await expect(dialog).toBeVisible();
+        return dialog;
+    }
+
+    test('the root keeps its overflow while a dialog sheet is open', async ({ page }) => {
+        test.skip(page.viewportSize()!.width > 760, 'dialog sheets: up to 760 px');
+        const root = () => page.evaluate(() => getComputedStyle(document.documentElement).overflowY);
+        const before = await root();
+        const dialog = await openRename(page);
+        expect(await root()).toBe(before);
+        await dialog.getByRole('button', { name: 'Close' }).tap();
+        await expect(dialog).toBeHidden();
+    });
+
+    test('swipes on a dialog sheet and on the dimmed area do not scroll the page', async ({ page, browserName }) => {
+        test.skip(page.viewportSize()!.width > 760, 'dialog sheets: up to 760 px');
+        needsTouchGestures(browserName);
+        const dialog = await openRename(page);
+        const scrollY = await page.evaluate(() => window.scrollY);
+        const width = page.viewportSize()!.width;
+        const box = (await dialog.boundingBox())!;
+        await swipe(page, { x: width / 2, y: box.y + 20 }, { x: width / 2, y: box.y - 130 });
+        await swipe(page, { x: width / 2, y: Math.max(20, box.y - 30) }, { x: width / 2, y: Math.max(10, box.y - 180) });
+        await page.waitForTimeout(300);
+        expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY)).toBeLessThan(20);
+        await expect(dialog).toBeVisible();
+    });
+
+    test('a finger still scrolls the body of the dialog', async ({ page, browserName }) => {
+        test.skip(page.viewportSize()!.width > 760, 'dialog sheets: up to 760 px');
+        needsTouchGestures(browserName);
+        const dialog = await openRename(page);
+        // More content than the screen holds (a long properties sheet, a batch rename preview…).
+        const body = dialog.locator('.sheet-body');
+        await body.evaluate(element => element.insertAdjacentHTML('beforeend', '<div style="flex: none; height: 2000px">tall</div>'));
+        const scrollY = await page.evaluate(() => window.scrollY);
+        const box = (await body.boundingBox())!;
+        await swipe(page, { x: box.x + box.width / 2, y: box.y + box.height - 20 }, { x: box.x + box.width / 2, y: box.y + 20 });
+        await page.waitForTimeout(300);
+        expect(await body.evaluate(element => element.scrollTop)).toBeGreaterThan(50);
+        expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY)).toBeLessThan(20);
+    });
+});
