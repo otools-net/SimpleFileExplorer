@@ -5,6 +5,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ## Unreleased
 
+### Added
+
+- **Phones and tablets: two fingers zoom a picture in the viewer**, around the point between them, up to its actual
+  size; bringing them together fits it back.
+
 ### Fixed
 
 - **The server log on a phone held sideways (or a narrow window)**: its lines kept their message (it was squeezed to

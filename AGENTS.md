@@ -144,6 +144,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [trickplay](agents/docs/features/trickplay.md) | timeline sheets, passes | `Core/Trickplay/`, `TrickplayWorker` |
 | [hover-preview](agents/docs/features/hover-preview.md) | trickplay on hover / hold | `TrickplayHoverService` |
 | [animated-hover](agents/docs/features/animated-hover.md) | large animated images played on hover | `ImageAnimation`, `AnimatedHoverService` |
+| [picture-zoom](agents/docs/features/picture-zoom.md) | pictures in the viewer: actual size, drag, two-finger pinch (@use-gesture) | `library/viewer/viewer.component.ts` |
 | [video-player](agents/docs/features/video-player.md) | shared player, size, cinema mode | `app/player/` |
 | [video-streams](agents/docs/features/video-streams.md) | ffmpeg conversion while playing | `Core/Streaming/` |
 | [external-player](agents/docs/features/external-player.md) | external player links, file tokens | `FileLinks`, `PlayerOptions` |

@@ -55,6 +55,10 @@ around it, or scroll it with the mouse wheel (<kbd>Shift</kbd> + wheel: sideways
 
 ![A picture at its actual size, being dragged](../images/viewer-actual-size.png)
 
+On a phone or a tablet, spread **two fingers** on a picture to zoom into it, as far as its actual size (or three times
+the screen for a small one), and bring them together to make it smaller; let go near its first size and it fits the
+screen again. One finger then moves it around.
+
 A large photo shown through its thumbnail can be seen at its actual size once its original has loaded.
 
 ## Flash movies

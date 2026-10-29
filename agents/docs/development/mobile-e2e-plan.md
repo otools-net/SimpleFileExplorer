@@ -248,8 +248,9 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [x] Open a picture by tap; swipe left / right to the next / previous file; ✕ closes; the listing behind keeps its
   scroll position (`navigation.spec.ts`). **Found and fixed:** a swipe right (previous file) was Chrome's swipe back
   and left the page (`overscroll-behavior-x: none` while the viewer is open).
-- [ ] Picture: double tap / pinch zoom, pan with a finger, no page scroll behind; zoom from an npm pan / zoom library
-  (decided; today a click shows the actual size and a drag pans).
+- [x] Picture: pinch zoom (`@use-gesture/vanilla`, [picture-zoom](../features/picture-zoom.md)), pan with a finger,
+  the page not zoomed behind, the file kept (`navigation.spec.ts`, Chromium: no multi-touch on WebKit). A tap keeps
+  showing the actual size: a double tap would undo itself, not added.
 - [~] Video: Play by a tap, a tap hides / shows the controls, a double tap on the right jumps forward, the controls on
   one line with buttons ≥ 24 px, their "⋯" a sheet (`video.spec.ts`; WebKit on Windows plays no WebM: skipped, the
   app's "can't play" fallback works). **Fixed:** the controls covered the big Play on a 360 px phone (a tap only

@@ -3,7 +3,7 @@
 import type { Page } from '@playwright/test';
 import { expect, item, openFolder, test } from '../fixtures/test';
 import { expectFitsScreen } from '../fixtures/layout';
-import { needsTouchGestures, swipe, tapWhenSettled } from '../fixtures/touch';
+import { needsTouchGestures, pinch, swipe, tapWhenSettled } from '../fixtures/touch';
 
 const title = (page: Page) => page.locator('dialog.viewer[open] .viewer-title strong');
 
@@ -36,6 +36,29 @@ test.describe('navigation', () => {
         await expect(title(page)).toHaveText('Blue hour.jpg');
         // Not the browser's swipe back (Chrome went back a page: base.css, the viewer's overscroll-behavior-x).
         expect(new URL(page.url()).searchParams.get('path')).toBe('Photos/2025 Mountains');
+    });
+
+    // Decided 2026-10-29: two fingers zoom a picture (@use-gesture), the page itself doesn't zoom, the file stays.
+    test('two fingers zoom a picture and fit it back; neither the page zooms nor the file changes', async ({ page, browserName }) => {
+        needsTouchGestures(browserName);
+        await openFolder(page, 'Photos/2025 Mountains');
+        await item(page, 'Photos/2025 Mountains/Blue hour.jpg').locator('.item-link').first().tap();
+        const picture = page.locator('dialog.viewer[open] .viewer-stage > img:not(.preview)');
+        await expect(picture).toBeVisible();
+        await expect.poll(() => picture.evaluate(img => (img as HTMLImageElement).complete)).toBe(true);
+        const fit = (await picture.boundingBox())!;
+        const centre = { x: fit.x + fit.width / 2, y: fit.y + fit.height / 2 };
+
+        await pinch(page, centre, 60, 240);
+        await expect(picture).toHaveClass(/actual-size/);
+        const zoomed = (await picture.boundingBox())!;
+        expect(zoomed.width, 'larger').toBeGreaterThan(fit.width * 1.5);
+        expect(await page.evaluate(() => visualViewport?.scale ?? 1), 'the page itself not zoomed').toBe(1);
+        await expect(title(page)).toHaveText('Blue hour.jpg');
+
+        await pinch(page, centre, 240, 50);
+        await expect(picture).not.toHaveClass(/actual-size/);
+        await expect(title(page)).toHaveText('Blue hour.jpg');
     });
 
     test('a tap opens a folder, Back comes back to it', async ({ page }) => {
