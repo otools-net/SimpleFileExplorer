@@ -19,9 +19,11 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: read
-    env:
-      SFE_E2E_WORK: ${{ runner.temp }}/sfe-e2e
     steps:
+      # The work folder in the runner's temp folder: `runner.temp` isn't available in a job's `env:`, only in steps.
+      - name: Work folder
+        run: echo "SFE_E2E_WORK=$RUNNER_TEMP/sfe-e2e" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v5
 
       - uses: actions/setup-dotnet@v5
