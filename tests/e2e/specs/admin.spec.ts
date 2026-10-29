@@ -76,3 +76,25 @@ test('long names in the trash keep the page within the screen', async ({ page, s
     // The name keeps room (it was squeezed to nothing beside the buttons in a narrow column of a wide screen).
     expect((await row.locator('.tracking-name').boundingBox())!.width).toBeGreaterThan(80);
 });
+
+test('the server log scrolls by finger and loads older entries at its end', async ({ page, scratch }) => {
+    // More entries than a page (100): a line per folder made (FileOperations logs each), in this test's own folder.
+    const headers = { 'X-SFE-Request': '1' };
+    for (let start = 0; start < 110; start += 10)
+        await Promise.all(Array.from({ length: 10 }, (_, i) =>
+            page.request.post('api/files/folders', { data: { path: scratch, name: `Log ${start + i}` }, headers })));
+    // Written a moment later (AuditLogWorker).
+    await expect.poll(async () => (await (await page.request.get('api/logs', { headers })).json()).next, { timeout: 20_000 }).not.toBeNull();
+
+    await page.goto('./admin?section=logs');
+    const entries = page.locator('.log-entries > li');
+    await expect(entries.first()).toBeVisible();
+    const before = await entries.count();
+    // Down to its end with the page's own scrolling, as a finger flicks.
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    const older = page.getByRole('button', { name: 'Load older entries' });
+    await older.tap();
+    await expect.poll(() => entries.count()).toBeGreaterThan(before);
+    await expectFitsScreen(page);
+    await expectNothingCut(page);
+});

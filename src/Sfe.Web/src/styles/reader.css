@@ -256,6 +256,7 @@
 .reading-size output { min-width: 48px; text-align: center; font-variant-numeric: tabular-nums; }
 .text-view .reading-size .icon-button { width: auto; padding: 0 10px; border-color: var(--reader-border); font-weight: 700; }
 .reading-check { display: flex; align-items: center; gap: 8px; }
+@media (pointer: coarse) { .reading-check { min-height: 24px; } }
 
 .reading-themes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
 .reading-theme {
@@ -491,6 +492,8 @@
 }
 .json-toggle svg { width: .9em; height: .9em; transition: transform .1s; }
 .json-toggle.open svg { transform: rotate(90deg); }
+/* A finger's target: 24 px (WCAG 2.5.8). */
+@media (pointer: coarse) { .json-toggle { width: 24px; height: 24px; } }
 .json-key { flex: none; }
 .json-index { color: var(--reader-muted); }
 .json-colon { margin-left: -6px; color: var(--reader-muted); }
@@ -809,6 +812,8 @@
 }
 span.archive-open { cursor: default; }
 a.archive-open:hover, button.archive-open:hover { text-decoration: underline; }
+/* A finger's target: a 24 px line in the 32 px row (WCAG 2.5.8). */
+@media (pointer: coarse) { .archive-open { line-height: 24px; } }
 .archive-row:is([data-kind="link"], [data-kind="other"]) .archive-open { color: var(--reader-muted); font-style: italic; }
 .archive-lock { flex: none; width: 14px; height: 14px; color: var(--reader-muted); }
 /* A search's result: the folder it is in, after its name (opens it); the name keeps its room, the folder gives way. */

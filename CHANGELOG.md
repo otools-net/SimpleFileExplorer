@@ -12,6 +12,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **Phones: the listing no longer jumps when a scan's panel comes in** (a scan started by someone else, or
+  by a copy or an extraction indexing its folder): a tap or a long press under way stayed on the item it was aimed at.
+- **Phones and tablets: small targets made at least 24 px** for a finger: file names in the listing, tags, an
+  archive's folders, the JSON viewer's arrows, the reading settings' check boxes.
 - **Accessibility**: the search box is announced as a box with suggestions, and it and the administration's search
   point screen readers only to lists that are shown; links within a line of text are underlined; the folder link of a
   search result is easier to tap.

@@ -24,6 +24,31 @@ test.describe('listing', () => {
         await watch.expectSteady(2500, 2);
     });
 
+    // A scan started elsewhere (another user, a copy or an extraction indexing its folder) is found by the page's poll
+    // (every 30 s): its panel comes in under the top bar. It pushed the listing down by its height, and a long press
+    // under way landed on the folder instead of the photo (selection.spec.ts, under the full run).
+    test('a scan started elsewhere: its panel comes in, the tile under the finger stays put', async ({ page, scratch }) => {
+        const headers = { 'X-SFE-Request': '1' };
+        const panel = page.locator('sfe-scan-panel');
+        await page.clock.install();
+        await openFolder(page, 'Many photos');
+        // Another test's scan may be running or its result shown: over and dismissed first, so ours is the one coming in.
+        await expect.poll(async () => (await (await page.request.get('api/scan', { headers })).json()).state, { timeout: 60_000 }).not.toBe('running');
+        await page.reload();
+        await expect(item(page, 'Many photos/Photo 001.jpg')).toBeVisible();
+        if (await panel.isVisible())
+            await panel.getByRole('button', { name: 'Dismiss' }).tap();
+        await expect(panel).toBeHidden();
+
+        const tile = item(page, 'Many photos/Photo 006.jpg');
+        const before = (await tile.boundingBox())!.y;
+        await expect.poll(async () => (await (await page.request.post('api/scan', { data: { path: scratch }, headers })).json()).path,
+            { timeout: 60_000 }).toBe(scratch);
+        await page.clock.runFor(31_000);
+        await expect(panel).toBeVisible();
+        await expect.poll(async () => (await tile.boundingBox())!.y).toBeCloseTo(before, 0);
+    });
+
     // Phones show the active layout's button only: a tap moves on to the next (grid, list, one per row).
     test('each layout by a tap: fits, its items open and have their menu', async ({ page }) => {
         await openFolder(page, 'Photos/2025 Mountains');

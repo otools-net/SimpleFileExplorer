@@ -146,3 +146,28 @@ test.describe('holding a finger, as on an iPhone', () => {
         await expect(page.locator('dialog.viewer[open]'), 'the lift opened nothing').toHaveCount(0);
     });
 });
+
+test.describe('after a menu', () => {
+    test('closed, the listing is where it was, the selection kept, no keyboard brought up', async ({ page }) => {
+        await openFolder(page, 'Many photos');
+        await page.evaluate(() => window.scrollTo(0, 1500));
+        const photo = item(page, 'Many photos/Photo 030.jpg');
+        await photo.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        await photo.locator('.select-box').tap();
+        await expect(photo).toHaveClass(/selected/);
+        const scrollY = await page.evaluate(() => window.scrollY);
+
+        await photo.locator('.item-menu-button').tap();
+        await expect(page.locator(menu)).toBeVisible();
+        await closeMenu(page);
+        await expect(page.locator(menu)).toHaveCount(0);
+        expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY), 'the listing did not move').toBeLessThanOrEqual(2);
+        await expect(photo).toHaveClass(/selected/);
+        const focused = await page.evaluate(() => {
+            const element = document.activeElement;
+            return element?.matches('input:not([type=checkbox]):not([type=radio]), textarea, [contenteditable=true]') ? element.outerHTML.slice(0, 80) : null;
+        });
+        expect(focused, 'a text field focused (the keyboard would come up)').toBeNull();
+    });
+});

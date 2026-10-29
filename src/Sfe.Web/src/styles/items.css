@@ -40,6 +40,8 @@
 /* A finger's target: a 24 px line (WCAG 2.5.8; e2e a11y.spec.ts, search results). */
 @media (pointer: coarse) {
     .item-folder { line-height: 24px; }
+    /* The name's link (the picture's is the large one): a 24 px line at least, two lines when it wraps. */
+    .item .item-link:has(> .item-name) { min-height: 24px; align-content: center; }
 }
 
 mark {

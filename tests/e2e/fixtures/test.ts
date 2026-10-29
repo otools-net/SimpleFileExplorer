@@ -1,9 +1,12 @@
 // The `test` every spec imports: Playwright's, signed in as `account` (default the administrator), and failing on
 // what a user wouldn't see but is still a bug: console errors, uncaught page errors, CSP violations, server errors.
+// On a phone, the screen a test ends on is checked too (`layoutCheck`): no sideways scroll, nothing cut off, no tap
+// target under 24 px (mobile e2e plan, Phase 3).
 import { test as base, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { auth, library, type Account } from '../paths';
+import { expectFitsScreen, expectNothingCut, expectTapTargets } from './layout';
 
 type Options = {
     /** Who is signed in: `test.use({ account: 'sam' })`. */
@@ -15,9 +18,14 @@ type Options = {
     allowedErrors: RegExp | null;
     /** The CPU slowed this many times (Chromium only): a phone's speed on a desktop (project `android-slow`). */
     cpuSlowdown: number;
+    /**
+     * The screen the test ends on fits the phone, nothing cut off, its targets ≥ 24 px. Off (`false`) for a test that
+     * ends on a state made on purpose (a measurement, a probe), with a comment saying why.
+     */
+    layoutCheck: boolean;
 };
 
-export const test = base.extend<Options & { guard: void; slowCpu: void; scratch: string }>({
+export const test = base.extend<Options & { guard: void; slowCpu: void; finalLayout: void; scratch: string }>({
     /**
      * A folder of this test's own, for what changes files (workers run in parallel on one library): `Scratch/<id>`
      * with three sample photos (`A.jpg`, `B.jpg`, `C.jpg`) and an empty folder `Inside`; removed after the test.
@@ -38,6 +46,19 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; scratch:
     account: ['admin', { option: true }],
     allowedErrors: [null, { option: true }],
     cpuSlowdown: [1, { option: true }],
+    layoutCheck: [true, { option: true }],
+    finalLayout: [async ({ page, layoutCheck, isMobile }, use, testInfo) => {
+        await use();
+        // Only after a test that passed (a failure says more than its layout), on a phone, on one of the app's pages.
+        if (!layoutCheck || !isMobile || testInfo.status !== testInfo.expectedStatus || testInfo.status !== 'passed'
+            || page.isClosed() || !page.url().startsWith('http'))
+            return;
+        await test.step('the final screen fits the phone', async () => {
+            await expectFitsScreen(page);
+            await expectNothingCut(page);
+            await expectTapTargets(page);
+        });
+    }, { auto: true }],
     slowCpu: [async ({ page, cpuSlowdown, browserName }, use) => {
         if (cpuSlowdown > 1 && browserName === 'chromium') {
             const cdp = await page.context().newCDPSession(page);
@@ -59,7 +80,21 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; scratch:
             if (message.type() === 'error' && !allowed(text))
                 problems.push(`console: ${text}`);
         });
-        page.on('pageerror', error => { if (!allowed(error.message)) problems.push(`page error: ${error.message}`); });
+        // WebKit reports a request that leaving the page cancelled as "… due to access control checks" (the app has one
+        // origin, nothing else gives it): forgiven when the page navigates within the second; any other time it counts.
+        let cancelled: { text: string; at: number }[] = [];
+        page.on('framenavigated', frame => {
+            if (frame === page.mainFrame())
+                cancelled = cancelled.filter(each => Date.now() - each.at > 1000);
+        });
+        page.on('pageerror', error => {
+            if (allowed(error.message))
+                return;
+            if (/due to access control checks\.$/.test(error.message))
+                cancelled.push({ text: `page error: ${error.message}`, at: Date.now() });
+            else
+                problems.push(`page error: ${error.message}`);
+        });
         page.on('response', response => {
             if (response.status() >= 500 && !allowed(response.url()))
                 problems.push(`server: ${response.status()} ${response.request().method()} ${response.url()}`);
@@ -69,7 +104,7 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; scratch:
                 console.error(`CSP violation: ${event.violatedDirective} ${event.blockedURI}`));
         });
         await use();
-        expect(problems, 'errors while the test ran').toEqual([]);
+        expect([...problems, ...cancelled.map(each => each.text)], 'errors while the test ran').toEqual([]);
     }, { auto: true }],
 });
 

@@ -6,6 +6,7 @@ import path from 'node:path';
 import { expect, item, openFolder, test } from '../fixtures/test';
 import { expectFitsScreen, expectNothingCut, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';
 import { library } from '../paths';
+import { tapWhenSettled } from '../fixtures/touch';
 import { expectFocusedFieldShown, openKeyboard } from '../fixtures/viewport';
 
 const menu = '.item-menu[role="menu"]';
@@ -13,7 +14,9 @@ const dialog = (page: Page) => page.locator('dialog.sheet[open]');
 
 /** Opens the menu of `path` with its ⋮ and taps the entry `entry` (its `data-entry`). */
 async function fromItemMenu(page: Page, path: string, entry: string): Promise<void> {
-    await item(page, path).locator('.item-menu-button').tap();
+    // Scrolled into view by the tap, the ⋮ of a tile in a lower row (landscape: C.jpg) brings the compact location bar
+    // in over it, which took the tap: tapped once the page is still (Playwright then sees what covers it).
+    await tapWhenSettled(page, item(page, path).locator('.item-menu-button'));
     await page.locator(`${menu} [data-entry="${entry}"]`).tap();
     await expect(dialog(page)).toBeVisible();
 }
@@ -191,7 +194,9 @@ test.describe('more file operations', () => {
         await page.keyboard.press('Control+End');
         await page.keyboard.type('Typed on a phone');
         await viewer.locator('[data-save]').tap();
-        await expect.poll(() => fs.readFileSync(file, 'utf8')).toContain('Typed on a phone');
+        // The save swaps a temp file in (`File.Replace`): on Windows a reader can find no file for a moment, and an
+        // ENOENT thrown in a poll ends it at once (seen under the full run's load).
+        await expect.poll(() => fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '').toContain('Typed on a phone');
 
         // A change not saved: closing the viewer asks; "no" keeps it open with the text.
         await editor.tap();
@@ -209,6 +214,6 @@ test.describe('more file operations', () => {
 
 /** Opens the menu of `path` and taps `entry`, which opens no dialog. */
 async function fromItemMenuEntry(page: Page, path: string, entry: string): Promise<void> {
-    await item(page, path).locator('.item-menu-button').tap();
+    await tapWhenSettled(page, item(page, path).locator('.item-menu-button'));
     await page.locator(`${menu} [data-entry="${entry}"]`).tap();
 }

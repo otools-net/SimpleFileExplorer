@@ -31,6 +31,10 @@
 button.tag-name { cursor: pointer; }
 button.tag-name:hover { text-decoration: underline; }
 .tag-name:has(+ .tag-remove) { padding-right: 2px; }
+/* A finger's target: 24 px (WCAG 2.5.8; e2e fixtures/test.ts, the final screen's check). */
+@media (pointer: coarse) {
+    .tag-chip { height: 24px; line-height: 24px; }
+}
 
 .tag-remove {
     display: grid;

@@ -50,7 +50,7 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
   folder ([running-the-app](../environment/running-the-app.md)), creates the administrator and accounts through the
   API, scans, and stops everything at the end, also on failure (the machine has little RAM). No ffmpeg needed for the
   default run; a tagged `@ffmpeg` group for video thumbnails / trickplay / conversion.
-- [~] **Isolation** (fresh context per test done; per-test folders when the first spec changes files): read-only specs share the library; specs that change files (rename, move, delete, upload,
+- [x] **Isolation** (fresh context per test; per-test folders: the `scratch` fixture): read-only specs share the library; specs that change files (rename, move, delete, upload,
   extract) get their own folder under the library per test (made through the API, removed after) so workers don't
   collide. Each test has a fresh browser context (storage, cookies).
 - [x] **Projects (devices)**: `android` (Chromium, Pixel 7), `android-slow` (CPU 4×, `@timing` only), `android-small` (360×800),
@@ -87,7 +87,7 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
 - [x] The same in emulation, as a committed spec (`specs/reported.spec.ts`): findings below.
 - [-] Moved to [real-phone-tests-plan](real-phone-tests-plan.md). With Chrome remote debugging on the Android phone (`chrome://inspect`: Performance panel around the tap, layout
   shifts, long tasks).
-- [~] Check these suspects one by one, write down which hold (`[x]` holds, `[-]` doesn't):
+- [x] Check these suspects one by one, write down which hold (`[x]` holds, `[-]` doesn't):
   - [x] Opening a sheet sets `html { overflow: hidden }` (`html:has(.sheet-backdrop)`, `styles/phone-sheets.css`):
     on Android Chrome that brings the hidden address bar back, the layout viewport shrinks, and the fixed
     `.selection-dock` (`bottom: max(20px, env(safe-area-inset-bottom))`, `styles/selection.css`) moves up; closing
@@ -124,7 +124,7 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
   (keys and mouse still are; Esc closes it from anywhere). Now: Android at 4× CPU ~70 ms, iPhone (WebKit, software
   painting) ~150 ms alone; budgets 100 / 350 (`fixtures/timing.ts`). Further (building the menu on `pointerdown`, a
   lighter menu): only if real phones still feel it.
-- [~] Each confirmed cause gets a failing e2e scenario **before** its fix (the fixes are separate commits with
+- [x] Each confirmed cause gets a failing e2e scenario **before** its fix (the fixes are separate commits with
   changelog lines; this epic itself is tests only).
 
 ### Findings in emulation (2026-10-29)
@@ -219,11 +219,13 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [x] A sheet longer than the screen fits in 75 % and scrolls inside itself; the page behind doesn't scroll (swipe
   on the backdrop and on the sheet).
 - [x] Submenus (Speed in the player's "⋯") open in place, against the bottom; Back returns (`video.spec.ts`).
-- [~] Closing: backdrop tap, a chosen entry, Android Back (decided: closes it, stays on the page; **done**, a
+- [x] Closing: backdrop tap, a chosen entry, Android Back (decided: closes it, stays on the page; **done**, a
   `CloseWatcher`, `menus.spec.ts`); turning the phone keeps it open, laid out again (**done**; found: a popup taller
   than a sideways phone ran off the screen, and the page's scroll after the turn closed it; fixed); never on the
-  scroll that the lock itself causes. Left: Back on a modal dialog (the browser's own, not reachable from a test).
-- [ ] After closing: the scroll position and the selection are as before; focus doesn't pop the keyboard.
+  scroll that the lock itself causes. Back on a modal dialog: the browser's own, not reachable from a test
+  ([real-phone-tests-plan](real-phone-tests-plan.md)).
+- [x] After closing: the scroll position and the selection are as before; focus doesn't pop the keyboard
+  (`menus.spec.ts`, "after a menu").
 - [x] iOS: every function reachable without `contextmenu`. **Found:** tag chips, crumbs, folder links, recent
   searches, quick links, trash / upload / operation rows and archive entries had menus only a right click or
   Android's long press opened. **Fixed** with the app's own hold (`ContextMenu.holdStart`, 650 ms) rather than ⋮
@@ -251,7 +253,7 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [x] Picture: pinch zoom (`@use-gesture/vanilla`, [picture-zoom](../features/picture-zoom.md)), pan with a finger,
   the page not zoomed behind, the file kept (`navigation.spec.ts`, Chromium: no multi-touch on WebKit). A tap keeps
   showing the actual size: a double tap would undo itself, not added.
-- [~] Video: Play by a tap, a tap hides / shows the controls, a double tap on the right jumps forward, the controls on
+- [x] Video: Play by a tap, a tap hides / shows the controls, a double tap on the right jumps forward, the controls on
   one line with buttons ≥ 24 px, their "⋯" a sheet (`video.spec.ts`; WebKit on Windows plays no WebM: skipped, the
   app's "can't play" fallback works). **Fixed:** the controls covered the big Play on a 360 px phone (a tap only
   showed them); the seek bar was 18 px tall. Full screen by a tap and back, turning the phone while it plays
@@ -259,7 +261,7 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   **Found and fixed:** holding a video's tile played its preview and also selected the video.
 - [x] Audio: play / pause by a tap on its bar, above the bottom of the screen (`video.spec.ts`; WebKit on Windows has no
   MP3: skipped there).
-- [~] Documents open by a tap, show content, fit, no zoom, toolbar buttons ≥ 24 px: text, Markdown, JSON, CSV, PDF,
+- [x] Documents open by a tap, show content, fit, no zoom, toolbar buttons ≥ 24 px: text, Markdown, JSON, CSV, PDF,
   EPUB, archive, subtitles (`viewers.spec.ts`). **Fixed:** ResizeObserver loops on phones (a 34 px view switch and a
   38 px Extract button in 32 px toolbars), the text status bar's 12 px select (iOS zoom). Find and the Aa panel in a
   text, PDF zoom and find, EPUB page turns, archive folders, Up and Go to (`documents.spec.ts`). **Found and fixed:**
@@ -294,21 +296,29 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   narrow column of a wide screen (the name squeezed to 0, the page wider than the screen). Saving a preference and
   finding it after a reload (`accounts.spec.ts`). **Found and fixed:** My account asked a user for the space's
   settings (403 on every visit).
-- [~] Tasks, logs, duplicates, missing files, trash: each section opens and fits (`admin.spec.ts`); restore from the
-  trash by finger (`files.spec.ts`). Scrolling long lists: left.
+- [x] Tasks, logs, duplicates, missing files, trash: each section opens and fits (`admin.spec.ts`); restore from the
+  trash by finger (`files.spec.ts`). A long list: the server log scrolls by finger and loads older entries at its end
+  (`admin.spec.ts`); the others page the same way.
 - [x] Server lost / back while on a phone (the ⋮ warning, its line in the menu; gone when it answers), a session that
   ended (the sign-in page, then the folder it was on) (`accounts.spec.ts`).
 - [x] Light and dark theme: the first paint already has the theme (`pages.spec.ts`).
 
 ## Phase 3: checks on every scenario (in the fixture, not repeated by hand)
 
-- [ ] No console error, page error, CSP violation, unexpected failed request.
-- [ ] Page no wider than the screen; nothing interactive off screen or under the home indicator.
-- [ ] Fixed bars steady across the scenario's actions (`expectSteady` on the dock, top bar, location bar).
-- [ ] One tap = one action: no double fire (tap opening and the long press also selecting), no tap needing a second
-  one.
-- [ ] Tap targets: fail under 24, list under 44 (decided); nothing reachable only by hover or right click.
-- [ ] No focus that pops the keyboard unasked (a sheet focusing its first field on open, on phones).
+- [x] No console error, page error, CSP violation, unexpected failed request (`guard`, fixtures/test.ts).
+- [x] Page no wider than the screen; nothing interactive off screen or under the home indicator (`finalLayout`, at
+  the end of every phone test; safe areas in `selection.spec.ts`).
+- [x] Fixed bars steady across the scenario's actions (`expectSteady` on the dock, top bar, location bar): in the
+  specs of the reports (`reported.spec.ts`, `listing.spec.ts`), not every test (it needs the scenario's moments).
+  **Found and fixed:** a scan's panel coming in (started elsewhere) pushed the listing under a finger.
+- [x] One tap = one action: no double fire (tap opening and the long press also selecting), no tap needing a second
+  one (`expectOpensWithin`, `selection.spec.ts`, `trickplay.spec.ts`).
+- [x] Tap targets: fail under 24, list under 44 (decided), at the end of every phone test (`finalLayout`); nothing
+  reachable only by hover or right click (iOS item above). **Found and fixed:** file names (18 px), tags (22),
+  an archive's folders (20), the JSON arrows (17), the reading check boxes (19).
+- [x] No focus that pops the keyboard unasked (a sheet focusing its first field on open, on phones): menus
+  (`menus.spec.ts`, "after a menu"). Dialogs focus a field only where typing is what they are for (Rename, New
+  folder: `files.spec.ts` expects it).
 - [x] `@a11y` run (`a11y.spec.ts`, `@axe-core/playwright` 4.14.0, WCAG 2.2 A/AA, android only): listing, selection
   bar, item menu, viewer, a dialog, search, administration, My account, sign-in. **Found and fixed:** the search box
   (`aria-expanded` on a plain search field: now a combobox; `aria-controls` to lists not shown, there and in the

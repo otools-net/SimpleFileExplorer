@@ -58,6 +58,19 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
   `expectNoZoomOnFocus`), `viewport.ts` (`setAddressBar`, `openKeyboard` + `expectFocusedFieldShown`, `turn`,
   `setSafeArea` + `expectClearOfInsets`), `touch.ts` `pinch` (Chromium). `expectOpensWithin` lists long tasks
   (Chromium's `longtask`) in its report line.
+- Every phone test that passes ends with a layout check of the screen it is on (`finalLayout`, fixtures/test.ts):
+  `expectFitsScreen`, `expectNothingCut`, `expectTapTargets`. A test ending on a state made on purpose opts out with
+  `test.use({ layoutCheck: false })` and a comment saying why. Its first run found 18 px file names, 22 px tags and
+  others: coarse-pointer rules (`@media (pointer: coarse)`) make them 24 px.
+- Tests share one server and one administrator: what one test starts (a scan, by an extraction) shows in the others'
+  pages. A long press failed once in the full run as a scan's panel pushed the listing (fixed in the app, listing.spec.ts).
+- WebKit reports a request cancelled by leaving the page (`page.goto` while the sidebar's trash count loads) as a
+  page error "… due to access control checks": the guard forgives it only when the page navigates within the second.
+- `expect.poll` ends at once when its function throws: read files with a fallback (`existsSync`), a save's
+  `File.Replace` leaves a moment without the file on Windows.
+- A tile's ⋮ tapped right after Playwright scrolled it into view can be covered by the compact location bar the scroll
+  brought in: `tapWhenSettled` (files.spec.ts' menu helpers).
+- `page.clock.install()` before the page loads, then `page.clock.runFor(31_000)`, runs the app's 30 s polls at once.
 - The keyboard is emulated by a shorter viewport (as `interactive-widget=resizes-content`); Chrome and Safari shrink
   only the visual viewport, which no test can do: the real one is on the by-hand list.
 - Safe areas: `Emulation.setSafeAreaInsetsOverride` works in this Edge (`env(safe-area-inset-*)` takes the values;
