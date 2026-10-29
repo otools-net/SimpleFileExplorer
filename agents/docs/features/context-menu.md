@@ -35,6 +35,10 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
   in Edge: one event after the ContextMenu key, none after Shift+F10).
 - Entries: `run`; or `href` (+ `newTab`): rendered as a real `<a target="_blank" rel="noopener">`, so Open in new tab
   is a user gesture (no popup blocker) and middle click works; or `submenu` (shown in place, Back / Left arrow).
+- Opening (2026-10-29, e2e `reported.spec.ts` timings): a phone sheet isn't measured (`place` only off sheets: its
+  `offsetWidth` forced a layout of the menu, ~50 ms of a phone's opening); the focus goes to the first entry only when
+  a mouse or the keyboard opened it (`open().touch` from the last `pointerdown`'s type, `ContextMenu`). Esc closes an
+  open menu wherever the focus is (a capture `keydown` on the document, before a dialog's own Esc).
 - Closing: click elsewhere, Esc/Tab (focus back to the trigger), scroll, resize, navigation; a phone sheet's backdrop
   on its `click`, not at the press (`outside` skips it): closed at the press, the tap's click went to what was under
   it (e2e `reported.spec.ts`); item menus also when the

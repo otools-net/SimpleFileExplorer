@@ -100,11 +100,12 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
   - [x] Found on the way: tile captions were `content-visibility: auto` with a 72 px guess (real 54–124 px): tiles
     changed height after showing and a tap on ⋮ became a click on the link below (landscape). **Fixed:** captions
     always laid out (cheaper: `listing-cost.spec.ts`).
-- [~] **Menu still slow at phone speed** (median ~180 ms at 4× CPU, target 100). Profile (`menu-profile.spec.ts`):
-  Angular's render pass ~95 ms, of which `ContextMenu.place` ~45–55 ms (its `offsetWidth` forces the layout of the
-  menu: 121 objects, 40–48 ms) and the menu's template ~30–40 ms; then paint/layerize 20–40 ms. Options, to decide:
-  build the menu while the finger is down (`pointerdown`, shown on `click`), a lighter menu (fewer elements per
-  entry), or accept it. The test holds it with ratchet budgets meanwhile.
+- [x] **Menu slow at phone speed** (median ~180 ms at 4× CPU, target 100). Profile (`menu-profile.spec.ts`): Angular's
+  render pass ~95 ms, of which `ContextMenu.place` ~45–55 ms (its `offsetWidth` forced the menu's layout), then the
+  focus moved into it. **Fixed in the component** (2026-10-29): sheets aren't measured, a finger's menu isn't focused
+  (keys and mouse still are; Esc closes it from anywhere). Now: Android at 4× CPU ~70 ms, iPhone (WebKit, software
+  painting) ~150 ms alone; budgets 100 / 350 (`fixtures/timing.ts`). Further (building the menu on `pointerdown`, a
+  lighter menu): only if real phones still feel it.
 - [~] Each confirmed cause gets a failing e2e scenario **before** its fix (the fixes are separate commits with
   changelog lines; this epic itself is tests only).
 

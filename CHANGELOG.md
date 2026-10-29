@@ -7,6 +7,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **Phones: menus open about twice as fast** (an item's ⋮ menu, the folder's, the viewer's): the menu no longer
+  measures itself to be placed when it is a sheet at the bottom, and no longer moves the focus into itself after a
+  tap (the keyboard still gets it; Esc closes it wherever the focus is).
 - **Phones: the bar at the bottom no longer jumps** when a menu or a dialog opens from the bottom of the screen (an
   item's menu while items are selected, Rename, Tags…): holding the page behind it made Chrome show its address bar
   again, which moved everything at the bottom. The page is now held without it, and a swipe on the dimmed area no

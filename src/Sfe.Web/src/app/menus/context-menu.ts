@@ -53,13 +53,22 @@ const keyboardEcho = 800;
  */
 @Injectable({ providedIn: 'root' })
 export class ContextMenu {
-    /** The open menu: its target, where, and what opened it (focus goes back there). */
-    readonly open = signal<{ target: MenuTarget; x: number; y: number; trigger: HTMLElement | null } | null>(null);
+    /**
+     * The open menu: its target, where, what opened it (focus goes back there), and whether a finger did (`touch`: the
+     * focus stays where it is, nothing to move between entries with).
+     */
+    readonly open = signal<{ target: MenuTarget; x: number; y: number; trigger: HTMLElement | null; touch: boolean } | null>(null);
     /** The menu of the page shown, for a right click on nothing with a menu of its own; set by the page. */
     readonly page = signal<MenuTarget | null>(null);
     private readonly elements = new WeakMap<Element, () => MenuTarget | null>();
     private readonly toasts = inject(ToastService);
     private keyboardAt = -Infinity;
+    /** The pointer of the last press: a menu opened right after a finger's is a touch one. */
+    private lastPointer = '';
+
+    constructor() {
+        addEventListener('pointerdown', event => { this.lastPointer = event.pointerType; }, { capture: true, passive: true });
+    }
 
     /** `element` has the menu of `target` (for the keyboard: the focused element's menu). */
     register(element: Element, target: () => MenuTarget | null): void {
@@ -162,7 +171,7 @@ export class ContextMenu {
         event.preventDefault();
         this.keyboardAt = performance.now();
         const box = element?.getBoundingClientRect();
-        this.show(target, box ? box.left : window.innerWidth / 2, box ? box.bottom + 4 : window.innerHeight / 3, element ?? focused);
+        this.show(target, box ? box.left : window.innerWidth / 2, box ? box.bottom + 4 : window.innerHeight / 3, element ?? focused, false);
     }
 
     /** Opens the menu of `target` under `trigger` (a ⋮ button). */
@@ -189,8 +198,8 @@ export class ContextMenu {
             this.close();
     }
 
-    private show(target: MenuTarget, x: number, y: number, trigger: HTMLElement | null): void {
-        this.open.set({ target, x, y, trigger });
+    private show(target: MenuTarget, x: number, y: number, trigger: HTMLElement | null, touch = this.lastPointer === 'touch'): void {
+        this.open.set({ target, x, y, trigger, touch });
     }
 
     /** The nearest element around `element` with a menu, and that menu; else a link's menu, else the page's. */
@@ -423,14 +432,31 @@ export class ContextMenuComponent {
             this.openWidth = window.innerWidth;
             afterNextRender(() => {
                 showLayer(this.layer()?.nativeElement);
-                this.place(open.x, open.y);
+                // A phone's sheet is placed by its CSS (phone-sheets.css): measuring it forced a layout of the menu inside
+                // this frame (~50 ms of a phone's opening it, e2e menu-profile.spec.ts) for a position it doesn't use.
+                if (!isSheet())
+                    this.place(open.x, open.y);
+                // A finger has no keys to move between the entries: the focus stays (no ring, no work); keys and mouse get it.
+                if (!open.touch)
+                    this.focusFirst();
             }, { injector: this.injector });
         });
         const navigations = inject(Router, { optional: true })?.events.subscribe(event => {
             if (event instanceof NavigationStart)
                 this.menu.close();
         });
+        // Esc closes the menu wherever the focus is: one a finger opened leaves it outside (a tablet's keyboard). Caught
+        // before a dialog's own Esc, which would close the viewer under the menu.
+        const escape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape' || !this.menu.open() || this.box()?.nativeElement.contains(event.target as Node))
+                return;
+            event.preventDefault();
+            event.stopPropagation();
+            this.menu.close();
+        };
+        document.addEventListener('keydown', escape, true);
         inject(DestroyRef).onDestroy(() => {
+            document.removeEventListener('keydown', escape, true);
             navigations?.unsubscribe();
             this.menu.close();
         });
@@ -446,7 +472,6 @@ export class ContextMenuComponent {
             x: Math.max(4, Math.min(x, window.innerWidth - width - 4)),
             y: Math.max(4, y + height > window.innerHeight - 4 ? y - height : y),
         });
-        this.focusFirst();
     }
 
     private focusFirst(): void {

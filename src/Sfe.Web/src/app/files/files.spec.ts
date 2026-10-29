@@ -338,6 +338,38 @@ describe('ItemMenu', () => {
         expect(TestBed.inject(ContextMenu).open()).toBeNull();
     });
 
+    it('moves the focus into a menu a mouse or the keyboard opened, not into one a finger opened', async () => {
+        await setUp();
+        const fixture = TestBed.createComponent(ContextMenuComponent);
+        fixture.detectChanges();
+        const contextMenu = TestBed.inject(ContextMenu);
+        const trigger = document.body.appendChild(document.createElement('button'));
+        const press = (pointerType: string) =>
+            document.dispatchEvent(Object.assign(new Event('pointerdown', { bubbles: true }), { pointerType }));
+
+        // A finger: nothing to move between the entries with; the focus stays (e2e: the menu's opening time).
+        trigger.focus();
+        press('touch');
+        contextMenu.toggle(TestBed.inject(ItemMenu).target(photo), trigger);
+        await settle();
+        expect(contextMenu.open()?.touch).toBe(true);
+        expect(document.activeElement).toBe(trigger);
+        // Esc still closes it, the focus outside (a tablet's keyboard), before anything else takes the key.
+        const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        trigger.dispatchEvent(escape);
+        expect(contextMenu.open()).toBeNull();
+        expect(escape.defaultPrevented).toBe(true);
+        await settle();
+
+        press('mouse');
+        contextMenu.toggle(TestBed.inject(ItemMenu).target(photo), trigger);
+        await settle();
+        expect(contextMenu.open()?.touch).toBe(false);
+        expect(document.activeElement?.getAttribute('data-entry')).toBe('newTab');
+        contextMenu.close();
+        trigger.remove();
+    });
+
     it('closes on Esc, on a click elsewhere and when the listing changes', async () => {
         await setUp();
         const fixture = TestBed.createComponent(ContextMenuComponent);
