@@ -14,6 +14,7 @@ npm run browsers             # once: Playwright's WebKit (iPhone) and Chromium
 
 npm run e2e                                     # everything: builds the app, starts it, runs, stops it
 npm run e2e -- --project=android                # one device: android, android-small, iphone, landscape, desktop
+npm run e2e -- --project=android-slow --no-deps # the timing budgets alone (else every device runs first)
 npm run e2e -- --grep "@smoke|@reported"       # the quick set (CI on edge: android and iphone)
 npm run e2e -- specs/reported.spec.ts           # one file
 SFE_E2E_SKIP_BUILD=1 npm run e2e                # reuse the last build (no client or server change since)

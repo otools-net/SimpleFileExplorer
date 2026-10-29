@@ -213,28 +213,35 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ### Menus and sheets — [context-menu](../features/context-menu.md), [frontend](frontend.md) (phone sheets)
 
-- [~] Item menu, folder menu (location bar "⋯"), viewer ⋮, selection bar "⋯": sheets, full width, against the
-  bottom, entries ≥ 24 px, one tap within the budget (`menus.spec.ts`). Player speed menu, default tags panel, tag
-  chip menu: left.
+- [x] Item menu, folder menu (location bar "⋯"), viewer ⋮, selection bar "⋯": sheets, full width, against the
+  bottom, entries ≥ 24 px, one tap within the budget (`menus.spec.ts`). Player speed menu (`video.spec.ts`), default
+  tags panel and tag chip menu (`tags.spec.ts`).
 - [x] A sheet longer than the screen fits in 75 % and scrolls inside itself; the page behind doesn't scroll (swipe
   on the backdrop and on the sheet).
-- [ ] Submenus (Speed, view switch) open in place; Back returns.
+- [x] Submenus (Speed in the player's "⋯") open in place, against the bottom; Back returns (`video.spec.ts`).
 - [~] Closing: backdrop tap, a chosen entry, Android Back (decided: closes it, stays on the page; **done**, a
   `CloseWatcher`, `menus.spec.ts`); turning the phone keeps it open, laid out again (**done**; found: a popup taller
   than a sideways phone ran off the screen, and the page's scroll after the turn closed it; fixed); never on the
   scroll that the lock itself causes. Left: Back on a modal dialog (the browser's own, not reachable from a test).
 - [ ] After closing: the scroll position and the selection are as before; focus doesn't pop the keyboard.
-- [ ] iOS: every function reachable without `contextmenu` (⋮ buttons everywhere a menu exists).
+- [x] iOS: every function reachable without `contextmenu`. **Found:** tag chips, crumbs, folder links, recent
+  searches, quick links, trash / upload / operation rows and archive entries had menus only a right click or
+  Android's long press opened. **Fixed** with the app's own hold (`ContextMenu.holdStart`, 650 ms) rather than ⋮
+  buttons everywhere; holding a listed item now selects it on iPhones too (`menus.spec.ts`, `holdLikeIos`).
 
 ### Top bar, location bar, search — [location-bar](../features/location-bar.md), [search-history](../features/search-history.md)
 
 - [x] Search field: tap focuses, no zoom (fields 16 px on touch: **fixed**, were 14), Enter searches, results listed,
   a recent search runs on a tap (**fixed** on WebKit: `pointerdown` prevented cancelled the tap; now `mousedown`)
   (`search.spec.ts`). Keyboard emulation (the list above it): left.
-- [ ] Location bar sticky while scrolling, its "⋯" opens the folder menu, breadcrumbs scroll sideways, up / previous
-  / next folder.
-- [ ] Main menu (⋮ in the top bar): opens from the top, every link works, closes on a tap outside.
-- [ ] Quick links on a phone: open, Move to… instead of drag.
+- [x] Location bar: the compact bar sticks under the top bar while scrolling, its title goes back to the top; up /
+  previous / next folder; a long path wraps (crumbs wrap, they don't scroll sideways) (`location.spec.ts`); its "⋯"
+  in `menus.spec.ts`.
+- [x] Main menu (⋮ in the top bar): opens, fits, closes on a tap outside, Administration and Back (`listing.spec.ts`).
+  **Found and fixed:** on iPhones a tap outside it (or outside the phone's sidebar) closed nothing: Safari sends no
+  click for a tap on what isn't clickable; both close on the press now.
+- [x] Quick links on a phone: added from an item's menu, opened from the sidebar (which closes), removed by a tap
+  (`quick-links.spec.ts`); reordered by the Move up / down of their menu (a hold opens it on iPhones too).
 
 ### Viewer — [video-player](../features/video-player.md), [hover-preview](../features/hover-preview.md)
 
@@ -258,12 +265,14 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 ### File operations — [new-folder-and-rename](../features/new-folder-and-rename.md), [move-and-copy](../features/move-and-copy.md), [uploads](../features/uploads.md), [trash](../features/trash.md)
 
 - [x] New folder, Rename: the dialog fits, no zoom, buttons ≥ 24 px (**fixed:** the Close button was squeezed to
-  22 px), Enter confirms (`files.spec.ts`, scratch folders). Batch rename, the keyboard open: left.
-- [~] Move to… with the folder picker by touch (**fixed:** its path's buttons were 20 px tall) (`files.spec.ts`).
-  Copy, the operations panel against the selection bar: left.
+  22 px), Enter confirms (`files.spec.ts`, scratch folders). Batch rename (numbered), Rename with the keyboard open.
+- [x] Move to… with the folder picker by touch (**fixed:** its path's buttons were 20 px tall) (`files.spec.ts`).
+  Copy to…, the operations panel never over the selection bar.
 - [x] Upload from the phone (the folder menu's Upload files…, the file chooser), the file listed (`files.spec.ts`).
-- [~] Delete → trash (`files.spec.ts`). Restore, Compress / Extract dialogs: left.
-- [ ] Text editor: edit, Save, the unsaved-changes guard on Back.
+- [x] Delete → trash, restore (`files.spec.ts`); Compress, Extract beside it.
+- [x] Text editor: edit, Save, the question when closing with changes (no: stays; yes: not saved) (`files.spec.ts`).
+  **Found and fixed:** "Saving…" (wider than "Save") made the toolbar measure itself in a loop on phones
+  (ResizeObserver errors); the label stays, the button shows busy.
 
 ### Tags — [tags](../features/tags.md), [scope-tagging](../features/scope-tagging.md)
 
@@ -272,14 +281,17 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ### Accounts, administration, other pages
 
-- [x] Sign in on a phone: fits, no zoom, buttons ≥ 24 px, signed in by finger (`admin.spec.ts`). Sign out, setup
-  page: left.
+- [x] Sign in on a phone: fits, no zoom, buttons ≥ 24 px, signed in by finger (`admin.spec.ts`). Sign out from the
+  main menu (`accounts.spec.ts`). The setup page: left (the suite's server is set up before the first test).
 - [x] Administration: each of the 15 sections opens, fits, no zoom, buttons ≥ 24 px (`admin.spec.ts`). **Fixed:**
   check box and lock labels, Duplicates & moves' names and folders (17–19 px), the trash / missing files row in a
-  narrow column of a wide screen (the name squeezed to 0, the page wider than the screen). Saving settings: left.
+  narrow column of a wide screen (the name squeezed to 0, the page wider than the screen). Saving a preference and
+  finding it after a reload (`accounts.spec.ts`). **Found and fixed:** My account asked a user for the space's
+  settings (403 on every visit).
 - [~] Tasks, logs, duplicates, missing files, trash: each section opens and fits (`admin.spec.ts`); restore from the
   trash by finger (`files.spec.ts`). Scrolling long lists: left.
-- [ ] Server lost / back while on a phone (the ⋮ warning), a session that expired (redirect to sign in, back after).
+- [x] Server lost / back while on a phone (the ⋮ warning, its line in the menu; gone when it answers), a session that
+  ended (the sign-in page, then the folder it was on) (`accounts.spec.ts`).
 - [x] Light and dark theme: the first paint already has the theme (`pages.spec.ts`).
 
 ## Phase 3: checks on every scenario (in the fixture, not repeated by hand)
@@ -299,7 +311,10 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [x] Rule in `AGENTS.md` and [testing](testing.md): a change visible on phones runs the quick set plus its area's
   specs; a phone bug fix adds a scenario that fails without it; the full suite before merging `edge` into `main`.
 - [~] CI: `.github/workflows/e2e.yml` (quick set on `edge`, everything on `main` and by hand, report as artifact).
-  Written, not yet run on GitHub: check its first run (Linux: Playwright's Chromium, `--with-deps`).
+  Written, not yet run on GitHub: check its first run (Linux: Playwright's Chromium, `--with-deps`). **Found on its
+  first run (reported 2026-10-29):** "Invalid workflow file … Unrecognized named-value: 'runner'" (line 23,
+  `SFE_E2E_WORK: ${{ runner.temp }}` in the job's `env:`, where the `runner` context isn't available). **Fixed:** set
+  by a first step through `$GITHUB_ENV`; the next run is to be checked.
 - [x] Flakiness: retries 1 in CI only; policy in [testing-e2e](testing-e2e.md).
 - [x] By hand before each release: the checklist in [testing-e2e](testing-e2e.md) (real phones: address bar,
   keyboard, rotation, safe areas, iPhone Back).

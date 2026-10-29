@@ -221,9 +221,10 @@ describe('SidebarComponent', () => {
             expect(sidebar.open()).toBe(false);
 
             sidebar.setOpen(true);
-            element.querySelector('h2')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            element.querySelector('h2')!.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
             expect(sidebar.open()).toBe(true);
-            document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            // A press, not a click: iOS sends no click for a tap on what isn't clickable.
+            document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
             expect(sidebar.open()).toBe(false);
         });
 
@@ -234,7 +235,7 @@ describe('SidebarComponent', () => {
             toggle.className = 'sidebar-toggle';
 
             sidebar.setOpen(true);
-            toggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            toggle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
 
             expect(sidebar.open()).toBe(true);
             toggle.remove();
@@ -245,7 +246,7 @@ describe('SidebarComponent', () => {
         const sidebar = TestBed.inject(SidebarService);
         await create();
 
-        document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
 
         expect(sidebar.open()).toBe(true);

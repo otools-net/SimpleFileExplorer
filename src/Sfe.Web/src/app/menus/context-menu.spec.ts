@@ -340,3 +340,84 @@ describe('ContextMenu', () => {
         });
     });
 });
+
+// iOS sends no `contextmenu` for a held finger: the app's own hold opens the same menus (Android's own event wins).
+describe('a finger held on an element with a menu', () => {
+    let menu: ContextMenu;
+    let element: HTMLElement;
+    const pointer = (type: string, on: Element, init: { x?: number; y?: number } = {}) => on.dispatchEvent(Object.assign(new Event(type, { bubbles: true, cancelable: true }),
+        { pointerType: 'touch', pointerId: 7, isPrimary: true, clientX: init.x ?? 10, clientY: init.y ?? 20 }));
+
+    beforeEach(async () => {
+        vi.useFakeTimers();
+        const fixture = TestBed.createComponent(Host);
+        fixture.detectChanges();
+        element = fixture.nativeElement;
+        menu = TestBed.inject(ContextMenu);
+    });
+    afterEach(() => {
+        menu.close();
+        vi.useRealTimers();
+    });
+
+    it('opens its menu after a moment, as a finger\'s, and the lift is no tap', () => {
+        const inner = element.querySelector('#inner')!;
+        expect(inner.hasAttribute('data-menu-target')).toBe(true);
+        pointer('pointerdown', inner);
+        vi.advanceTimersByTime(600);
+        expect(menu.open()).toBeNull();
+        vi.advanceTimersByTime(100);
+        expect(menu.open()?.target.key).toBe('inner');
+        expect(menu.open()?.touch).toBe(true);
+
+        pointer('pointerup', inner);
+        const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+        inner.dispatchEvent(click);
+        expect(click.defaultPrevented).toBe(true);
+        // The next tap's click goes through.
+        pointer('pointerdown', inner);
+        pointer('pointerup', inner);
+        const next = new MouseEvent('click', { bubbles: true, cancelable: true });
+        inner.dispatchEvent(next);
+        expect(next.defaultPrevented).toBe(false);
+    });
+
+    it('leaves it to the browser that sends its own (Android), and drops a second one after (a Windows touch screen)', () => {
+        const inner = element.querySelector('#inner')!;
+        const seen = vi.fn();
+        inner.addEventListener('contextmenu', seen);
+        pointer('pointerdown', inner);
+        vi.advanceTimersByTime(500);
+        inner.dispatchEvent(Object.assign(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }), { pointerType: 'touch' }));
+        vi.advanceTimersByTime(500);
+        expect(seen).toHaveBeenCalledTimes(1);
+        pointer('pointerup', inner);
+
+        pointer('pointerdown', inner);
+        vi.advanceTimersByTime(700);
+        expect(seen).toHaveBeenCalledTimes(2);
+        const late = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+        inner.dispatchEvent(late);
+        expect(seen).toHaveBeenCalledTimes(2);
+        expect(late.defaultPrevented).toBe(true);
+
+        // Sent after the lift (a slow phone, a Windows touch screen): still the hold's, dropped for a moment.
+        pointer('pointerup', inner);
+        const afterLift = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+        inner.dispatchEvent(afterLift);
+        expect(seen).toHaveBeenCalledTimes(2);
+        expect(afterLift.defaultPrevented).toBe(true);
+    });
+
+    it('is no hold when the finger moves (scrolling) or the element has no menu', () => {
+        const inner = element.querySelector('#inner')!;
+        pointer('pointerdown', inner);
+        pointer('pointermove', inner, { x: 10, y: 40 });
+        vi.advanceTimersByTime(1000);
+        expect(menu.open()).toBeNull();
+
+        pointer('pointerdown', element.querySelector('#plain')!);
+        vi.advanceTimersByTime(1000);
+        expect(menu.open()).toBeNull();
+    });
+});

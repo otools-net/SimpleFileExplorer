@@ -93,6 +93,8 @@ the first MB when hashes are on) → `browser.Invalidate(parent)` (change feed) 
 
 ## Gotchas
 
+- Save keeps its label while saving (`saving` class, `aria-busy`, the title says "Saving…"): a wider "Saving…" made the
+  toolbar, an overflow row, measure itself in a loop on phones (e2e `files.spec.ts`).
 - A read-only CodeMirror keeps `contenteditable="true"`: E skips only real inputs (the find panel).
 - jsdom: `Range.getClientRects` stubbed in `setup.ts`; spy on `window.confirm`.
 - `Api.send` resolves 409 with its body: conflicts the client must tell apart from success are 412/422/428 (rejections).

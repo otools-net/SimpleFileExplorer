@@ -17,7 +17,8 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
   Windows. `longPress` uses the gesture and dispatches a `contextmenu` (`pointerType: 'touch'`) from the page at
   500 ms: untrusted, so the browser's own menu isn't covered. `harness.spec.ts` checks the sequence.
 - WebKit has no long press or swipe in Playwright (no DevTools protocol): `needsTouchGestures` skips those specs
-  there. iOS sends no `contextmenu` anyway; iPhone specs select with the select box.
+  there. iOS sends no `contextmenu`: the app times the hold itself (`holdStart`), driven on WebKit by `holdLikeIos`
+  (pointer events sent from the page: the app's logic, not iOS's own gestures).
 - `expectOpensWithin` splits the time at the `click` (browser: a double-tap delay would show here) and at the element
   entering the page (`MutationObserver`; before: the app's script, after: style, layout, paint). Use
   `performance.now()` inside the frame, not the frame's time stamp (it can predate the element). Floors measured by
@@ -35,6 +36,9 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
   real iPhone.
 - `expectOpensWithin` prints the tap's events when nothing shows (`pointerdown`/`touchend`/`click` targets, the
   element in and out): a `click` on another element than the `pointerdown` means the page moved under the finger.
+- `android-slow` (the `@timing` budgets) runs after the other devices, one test at a time (`dependencies`,
+  `fullyParallel: false`): under the full run's load its medians crossed 100 ms (107) where alone they are ~70. Alone:
+  `npm run e2e -- --project=android-slow --no-deps` (without `--no-deps` it runs every device first).
 - Timings swing on a loaded machine (single taps 80–600 ms at 4× CPU): `expectMedianOpensWithin` takes the median of
   5. Budgets per project are ratchets (`MENU_BUDGET` in `reported.spec.ts`); WebKit under the full suite's load ran
   ~1.5× its alone time.
@@ -70,6 +74,8 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
   tests, 6 devices) ~7.5 min with the default workers; the first run of a session adds the build (~45 s).
 - CI: `.github/workflows/e2e.yml`, the quick set on pushes to `edge`, everything on `main` and by hand; failures keep
   the report, traces and app log as the run's artifact. CI retries a failed test once (`retries` in the config).
+  `runner.temp` can't be used in a job's `env:` (GitHub refuses the whole file): the work folder is set by a step
+  writing to `$GITHUB_ENV`; `${{ runner.temp }}` is fine in a step's `with:`.
 - Flaky tests: no fixed sleeps outside the measuring helpers; a test failing twice in a week without a change is
   fixed or marked `test.fixme` with the reason and a line in the plan, never deleted silently.
 - `test.fixme` / `test.skip` always say why (a browser that can't, a width where it doesn't apply).

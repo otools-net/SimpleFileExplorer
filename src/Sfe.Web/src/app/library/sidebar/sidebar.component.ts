@@ -49,7 +49,8 @@ const SECTIONS: Section[] = [
         'aria-label': 'Quick links and tags',
         role: 'complementary',
         '(document:keydown.escape)': 'closeDrawer()',
-        '(document:click)': 'closeOnOutsideClick($event)',
+        // A press, not a click: iOS sends no click for a tap on what isn't clickable (the page's text, an empty area).
+        '(document:pointerdown)': 'closeOnOutsideClick($event)',
     },
     template: `
         <section sfeQuickLinks></section>
@@ -171,7 +172,7 @@ export class SidebarComponent implements OnInit {
     }
 
     /** Tapping the page next to the drawer closes it. */
-    protected closeOnOutsideClick(event: MouseEvent): void {
+    protected closeOnOutsideClick(event: PointerEvent): void {
         const target = event.target as Element;
         if (this.sidebar.narrow && this.sidebar.open() && !this.host.contains(target) && !target.closest?.('.sidebar-toggle'))
             this.sidebar.setOpen(false, { remember: false });

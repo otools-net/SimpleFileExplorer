@@ -529,7 +529,9 @@ export class AdminPageComponent implements OnInit {
             return;
         }
         this.ready.set(true);
-        void this.form.load();
+        // A user who may change no settings (My account only: its own form) asks nothing: the space's were refused (403).
+        if (this.form.levels().length)
+            void this.form.load();
     }
 
     /** False when the user would rather stay, to save the settings changed. */

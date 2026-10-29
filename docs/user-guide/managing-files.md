@@ -263,8 +263,9 @@ again.
 
 ## On phones
 
-- **Press and hold** a file or folder to select it (as phone file managers do); press and hold others, or tick their
-  boxes, to add them, then use the selection bar.
+- **Press and hold** a file or folder to select it (as phone file managers do), on Android and iPhones; press and
+  hold others, or tick their boxes, to add them, then use the selection bar.
+- Press and hold a tag, a folder of the path, a recent search or a row of a list to open its menu.
 - The **⋮** button of each item opens its menu, as a sheet at the bottom of the screen. Android's **Back** closes it
   (and stays on the page); it stays open when you turn the phone.
 

@@ -98,6 +98,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (pointer: coarse) {
     input:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file]), select, textarea { font-size: max(16px, 1em) !important; }
 }
+/* Touch-only screens: holding an element with an app menu opens it (context-menu.ts, `holdStart`); iOS's link preview
+   and text selection would take the hold first. */
+@media (hover: none) and (pointer: coarse) {
+    [data-menu-target] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+}
 code { font-family: var(--mono); font-size: .92em; }
 [hidden] { display: none !important; }
 

@@ -29,7 +29,14 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
 - The browser's menu is kept (`keepsBrowserMenu`): Shift held, a text field (`isTextField`: text inputs, textarea,
   contenteditable; not check boxes), a right click on selected text; and when the target has no entries.
 - Touch: a target with `touch` (listed items) does it on a long press instead of the menu (select); other targets open
-  the menu, a sheet at the bottom on phones. iOS sends no `contextmenu`: the ⋮ buttons.
+  the menu, a sheet at the bottom on phones.
+- iOS sends no `contextmenu`: `ContextMenu` times a finger held still (`holdStart`: touch, primary, on an element
+  registered with a menu; ended by a 10 px move, a scroll, `pointercancel`, the lift) and after 650 ms dispatches a
+  `contextmenu` (`pointerType: 'touch'`) there, so every menu (tag chips, crumbs, recent searches, rows) and the
+  long-press selection work on iPhones. A browser's own one before it (Android, ~500 ms) cancels the hold; one after
+  it (a Windows touch screen sends it on the lift) is dropped; the click of the lift is swallowed. Registered elements
+  get `data-menu-target`: no iOS callout or text selection on touch-only screens (`base.css`). Plain links keep the
+  browser's own long press. e2e: `holdLikeIos` (`menus.spec.ts`), unit tests in `context-menu.spec.ts`.
 - Keyboard: the ContextMenu key and Shift+F10 (`document:keydown`) open the focused element's menu under it (else the
   page's), not in text fields; the browser's own `contextmenu` that follows the key is swallowed for 800 ms (checked
   in Edge: one event after the ContextMenu key, none after Shift+F10).

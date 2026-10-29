@@ -4,6 +4,7 @@ import type { Page } from '@playwright/test';
 import { closeMenu, expect, isSheetWidth, item, openFolder, test } from '../fixtures/test';
 import { expectTapTargets } from '../fixtures/layout';
 import { expectMedianOpensWithin, menuBudget } from '../fixtures/timing';
+import { holdLikeIos } from '../fixtures/touch';
 
 const menu = '.item-menu[role="menu"]';
 
@@ -121,5 +122,27 @@ test.describe('closing and turning', () => {
         }
         await expectSheet(page);
         await closeMenu(page);
+    });
+});
+
+// iOS sends no `contextmenu`: holding an element with a menu opens it all the same (the app's own hold).
+test.describe('holding a finger, as on an iPhone', () => {
+    test('a folder of the path: its menu', async ({ page }) => {
+        await openFolder(page, 'Photos/2025 Mountains');
+        const crumb = page.locator('nav.crumbs a[data-path="Photos"]');
+        await holdLikeIos(page, crumb);
+        await expect(page.locator(menu)).toBeVisible();
+        await expect(page.locator(`${menu} .item-menu-title`)).toHaveText('Photos');
+        expect(new URL(page.url()).searchParams.get('path'), 'the lift opened nothing').toBe('Photos/2025 Mountains');
+        await closeMenu(page);
+    });
+
+    test('a listed item: selected, as on Android', async ({ page }) => {
+        await openFolder(page, 'Photos/2025 Mountains');
+        const tile = item(page, 'Photos/2025 Mountains/Summit.jpg');
+        await holdLikeIos(page, tile.locator('.preview'));
+        await expect(tile).toHaveClass(/selected/);
+        await expect(page.locator(menu)).toHaveCount(0);
+        await expect(page.locator('dialog.viewer[open]'), 'the lift opened nothing').toHaveCount(0);
     });
 });

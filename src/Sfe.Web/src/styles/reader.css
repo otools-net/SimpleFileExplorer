@@ -150,6 +150,7 @@
 /* A file too large to be read whole: its parts. */
 .text-parts { display: flex; gap: 4px; padding-right: 8px; }
 .text-view .text-action:disabled { opacity: .5; cursor: default; }
+.text-view .text-action.saving:disabled { opacity: .8; cursor: progress; }
 
 .text-bar {
     display: flex;

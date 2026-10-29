@@ -54,4 +54,24 @@ test.describe('listing', () => {
         await page.keyboard.press('Escape');
         await expect(menu).toBeHidden();
     });
+
+    test('the main menu closes on a tap outside, and its links work', async ({ page }) => {
+        await openFolder(page, 'Photos');
+        const more = page.getByRole('button', { name: 'More', exact: true });
+        const menu = page.locator('sfe-main-menu #menu');
+        await more.tap();
+        await expect(menu).toBeVisible();
+        // A tap on the folder's summary line ("3 folders · 2 files"), away from the menu: closes it, opens nothing.
+        const summary = (await page.locator('.location-bar .summary').boundingBox())!;
+        await page.touchscreen.tap(summary.x + 10, summary.y + summary.height / 2);
+        await expect(menu).toBeHidden();
+        expect(new URL(page.url()).searchParams.get('path')).toBe('Photos');
+
+        await more.tap();
+        await menu.getByRole('menuitem', { name: 'Administration' }).tap();
+        await expect(page).toHaveURL(/\/admin/);
+        await page.goBack();
+        await expect(page.locator('sfe-listing [data-path]').first()).toBeVisible();
+        expect(new URL(page.url()).searchParams.get('path')).toBe('Photos');
+    });
 });

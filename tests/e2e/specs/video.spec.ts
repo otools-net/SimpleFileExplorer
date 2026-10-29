@@ -79,4 +79,33 @@ test.describe('video', () => {
         await closeMenu(page);
         await expect(page.locator('dialog.viewer[open]'), 'the viewer stays').toHaveCount(1);
     });
+
+    test("Speed: its rates by a tap (its button, or in the \"⋯\" in the menu's place, Back returns)", async ({ page }) => {
+        await openVideo(page);
+        const button = page.locator(`${player} .player-speed`);
+        if (await button.isVisible()) {
+            await button.tap();
+            const list = page.locator(`${player} .player-speed-menu`);
+            await expect(list).toBeVisible();
+            await expectFitsScreen(page);
+            await expectTapTargets(page, `${player} .player-speed-menu`);
+            await list.getByRole('menuitemradio', { name: '1.5×' }).tap();
+            await expect(list).toHaveCount(0);
+        } else {
+            await page.locator(`${player} .player-row .overflow-more.shown`).tap();
+            const menu = page.locator('.item-menu[role="menu"]');
+            const before = (await menu.boundingBox())!;
+            await menu.locator('[data-entry="speed"]').tap();
+            await expect(menu.locator('[data-entry="speed-1.5"]')).toBeVisible();
+            const submenu = (await menu.boundingBox())!;
+            if (isSheetWidth(page))
+                expect(Math.round(submenu.y + submenu.height), 'still against the bottom').toBe(Math.round(before.y + before.height));
+            await menu.locator('[data-entry="back"]').tap();
+            await expect(menu.locator('[data-entry="speed"]')).toBeVisible();
+            await menu.locator('[data-entry="speed"]').tap();
+            await menu.locator('[data-entry="speed-1.5"]').tap();
+            await expect(menu).toHaveCount(0);
+        }
+        await expect.poll(() => video(page).evaluate(v => (v as HTMLVideoElement).playbackRate)).toBe(1.5);
+    });
 });

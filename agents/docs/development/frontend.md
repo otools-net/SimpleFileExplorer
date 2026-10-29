@@ -45,7 +45,11 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   are ≥ 24 px each way on phones (`expectTapTargets`), a flex row's icon button `flex-shrink: 0`. Every item of an
   overflow row is as tall as the row's others (32 px in the document toolbars): a taller one leaving into the "⋯"
   changes the row's height inside its ResizeObserver callback, which the browser reports as a "ResizeObserver loop"
-  error (Angular logs it) and the content below shifts.
+  error (Angular logs it) and the content below shifts. Nor does an item's label change width with its state ("Save"
+  → "Saving…"): show the state another way (`aria-busy`, a class).
+- **Closing on a tap outside (rule, 2026-10-29):** listen to `document:pointerdown`, not `click`: iOS Safari sends no
+  click for a tap on what isn't clickable (text, an empty area), so the popup stayed open on iPhones (main menu,
+  sidebar). A long press on iPhones: `ContextMenu.holdStart` ([context-menu](../features/context-menu.md)).
 - **Rows of buttons on narrow screens (rule, 2026-10-24):** a row of buttons that may not fit a 360 px phone is an
   overflow row (`sfeOverflowRow`): one line, the buttons leaving right to left into a "⋯" menu, the developer saying
   which stay. Never `flex-wrap` or buttons cut off; space its items with `gap`, not margins. Check with

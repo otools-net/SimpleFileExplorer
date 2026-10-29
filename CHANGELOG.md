@@ -7,6 +7,15 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **The server log on a phone held sideways (or a narrow window)**: its lines kept their message (it was squeezed to
+  nothing) and no longer made the page wider than the screen.
+- **iPhones: a tap outside the main menu or the sidebar closes it** (Safari sends no click for a tap on the page's
+  text or an empty area).
+- **Phones: saving a text file no longer reshuffles the editor's toolbar** (its "Saving…" was wider than "Save").
+- **My account no longer asks for settings a user may not see** (a refused request on every visit).
+- **iPhones: pressing and holding works as on Android**: it selects a file or folder, and opens the menu of a tag, a
+  folder of the path, a recent search or a row (Safari sends no long-press event: some actions, such as removing a
+  recent search, couldn't be reached).
 - **Phones: an archive's toolbar fits the screen**: its "Find in this folder only" button was cut off at the edge.
 - **Phones: Android's Back closes an open menu** instead of leaving the page; turning the phone keeps the menu open,
   laid out again (it closed, or ran off a phone held sideways).

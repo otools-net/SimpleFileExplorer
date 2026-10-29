@@ -86,6 +86,12 @@ export async function pinch(page: Page, centre: { x: number; y: number }, from: 
  * just happened (Playwright's own retry scrolls included): the touch events reach the ⋮ button, the click its tile.
  */
 export async function tapWhenSettled(page: Page, locator: Locator): Promise<void> {
+    await settled(locator);
+    await locator.tap();
+}
+
+/** `locator` scrolled into view, the page still (no scroll for 200 ms, its box the same over two frames). */
+async function settled(locator: Locator): Promise<void> {
     await locator.scrollIntoViewIfNeeded();
     await locator.evaluate(element => new Promise<void>(resolve => {
         let last = performance.now();
@@ -105,5 +111,29 @@ export async function tapWhenSettled(page: Page, locator: Locator): Promise<void
         };
         requestAnimationFrame(frame);
     }));
-    await locator.tap();
+}
+
+/**
+ * A finger held on `locator` for `ms` as iOS Safari reports it: pointer events and no `contextmenu` (the app opens its
+ * menus itself after 650 ms, context-menu.ts `holdStart`). Sent from the page (Playwright has no held touch on WebKit):
+ * untrusted, so it checks the app's handling in the engine, not iOS's own gestures (link previews, text selection).
+ */
+export async function holdLikeIos(page: Page, locator: Locator, ms = 800): Promise<void> {
+    // A scroll during the hold ends it, as a finger that moves: the page still first.
+    await settled(locator);
+    const point = await centre(locator);
+    const init = { x: point.x, y: point.y };
+    await page.evaluate(({ x, y }) => {
+        const target = document.elementFromPoint(x, y)!;
+        const init = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerType: 'touch', pointerId: 41, isPrimary: true };
+        target.dispatchEvent(new PointerEvent('pointerdown', init));
+        (window as unknown as { __held: Element }).__held = target;
+    }, init);
+    await page.waitForTimeout(ms);
+    await page.evaluate(({ x, y }) => {
+        const target = (window as unknown as { __held: Element }).__held;
+        const init = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerType: 'touch', pointerId: 41, isPrimary: true };
+        target.dispatchEvent(new PointerEvent('pointerup', init));
+        target.dispatchEvent(new MouseEvent('click', init));
+    }, init);
 }

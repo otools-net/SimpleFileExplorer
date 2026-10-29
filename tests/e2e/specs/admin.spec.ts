@@ -23,6 +23,17 @@ for (const section of sections) {
             await expectNothingCut(page);
             await expectNoZoomOnFocus(page, `main ${fields}`);
             await expectTapTargets(page, 'main');
+            // Found 2026-10-29: beside the sections (800 px sideways) a log line's fixed parts left its message nothing
+            // and pushed the page wider.
+            if (section === 'logs') {
+                const lines = await page.locator('.log-entry-head').evaluateAll(heads => heads.map(head => ({
+                    message: head.querySelector('.log-message')?.getBoundingClientRect().width ?? 0,
+                    right: Math.max(...[...head.children].map(child => child.getBoundingClientRect().right)),
+                })));
+                expect(lines.length).toBeGreaterThan(0);
+                const width = page.viewportSize()!.width;
+                expect(lines.filter(line => line.message < 40 || line.right > width + 1), 'log lines squeezed or past the screen').toEqual([]);
+            }
         });
     });
 }

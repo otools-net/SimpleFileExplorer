@@ -43,6 +43,16 @@ export interface MenuTarget {
     item?: LibraryItem;
 }
 
+/**
+ * A finger held this long without a menu event from the browser (iOS Safari sends none; Android's comes at ~500 ms)
+ * opens the menu as one would (`ContextMenu.holdStart`).
+ */
+const HOLD_MS = 650;
+/** How long after the lift of a hold that opened a menu the browser's own late menu event is still dropped. */
+const HELD_ECHO_MS = 1000;
+/** A held finger moving further than this is scrolling or dragging, not holding. */
+const HOLD_SLOP_PX = 10;
+
 /** How long the page's scrolling after a resize still belongs to it (the page laid out again for the new size). */
 const RESIZE_SCROLL_MS = 500;
 
@@ -68,14 +78,109 @@ export class ContextMenu {
     private keyboardAt = -Infinity;
     /** The pointer of the last press: a menu opened right after a finger's is a touch one. */
     private lastPointer = '';
+    /** A finger held on an element with a menu: where, since when; `fired` once the menu event was sent for it. */
+    private hold: { pointer: number; x: number; y: number; target: Element; timer: ReturnType<typeof setTimeout>; fired: boolean } | null = null;
+    /** Sending the held finger's own menu event (not to be taken for the browser's). */
+    private holding = false;
+    /** The click of a finger lifted after its hold opened something: swallowed (the lift is not a tap). */
+    private swallowClick = false;
+    /** Until when a browser's menu event still belongs to the hold that fired (one sent on or after the lift). */
+    private heldUntil = -Infinity;
 
     constructor() {
-        addEventListener('pointerdown', event => { this.lastPointer = event.pointerType; }, { capture: true, passive: true });
+        const capture = { capture: true, passive: true };
+        addEventListener('pointerdown', event => {
+            this.lastPointer = event.pointerType;
+            this.holdStart(event);
+        }, capture);
+        addEventListener('pointermove', event => {
+            if (this.hold && this.hold.pointer === event.pointerId && Math.hypot(event.clientX - this.hold.x, event.clientY - this.hold.y) > HOLD_SLOP_PX)
+                this.holdEnd();
+        }, capture);
+        addEventListener('pointerup', event => this.holdLift(event), capture);
+        addEventListener('pointercancel', () => this.holdEnd(), capture);
+        addEventListener('scroll', () => this.holdEnd(), capture);
+        // The browser's own menu event for the hold: before ours, it is the one (Android); after, a second one (a
+        // Windows touch screen sends it on the lift, a slow phone late), dropped, up to `HELD_ECHO_MS` after the lift.
+        addEventListener('contextmenu', event => {
+            if (this.holding)
+                return;
+            if (!this.hold) {
+                if (performance.now() < this.heldUntil) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                }
+                return;
+            }
+            if (this.hold.fired) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            } else {
+                this.holdEnd();
+            }
+        }, { capture: true });
+        addEventListener('click', event => {
+            if (!this.swallowClick)
+                return;
+            this.swallowClick = false;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }, { capture: true });
     }
 
     /** `element` has the menu of `target` (for the keyboard: the focused element's menu). */
     register(element: Element, target: () => MenuTarget | null): void {
         this.elements.set(element, target);
+        // iOS: no link preview or text callout on a long press there: the hold opens the app's menu (`holdStart`).
+        element.setAttribute('data-menu-target', '');
+    }
+
+    /**
+     * A finger down on an element with a menu of the app: held still for `HOLD_MS` with no menu event from the
+     * browser, it gets one (`contextmenu`, `pointerType: 'touch'`) as Android sends, so iOS reaches the same menus
+     * (and selects listed items by holding them). Plain links and text keep the browser's own long press.
+     */
+    private holdStart(event: PointerEvent): void {
+        this.holdEnd();
+        this.swallowClick = false;
+        this.heldUntil = -Infinity;
+        if (event.pointerType !== 'touch' || !event.isPrimary || !(event.target instanceof Element))
+            return;
+        const [element] = this.targetOf(event.target as HTMLElement);
+        if (!element)
+            return;
+        const { pointerId: pointer, clientX: x, clientY: y, target } = event;
+        this.hold = { pointer, x, y, target, fired: false, timer: setTimeout(() => this.holdFire(), HOLD_MS) };
+    }
+
+    private holdFire(): void {
+        const hold = this.hold;
+        if (!hold || !hold.target.isConnected)
+            return;
+        hold.fired = true;
+        this.holding = true;
+        try {
+            hold.target.dispatchEvent(new PointerEvent('contextmenu', {
+                bubbles: true, cancelable: true, composed: true, clientX: hold.x, clientY: hold.y, pointerType: 'touch', isPrimary: true,
+            }));
+        } finally {
+            this.holding = false;
+        }
+    }
+
+    private holdLift(event: PointerEvent): void {
+        const hold = this.hold;
+        if (!hold || hold.pointer !== event.pointerId)
+            return;
+        this.swallowClick = hold.fired;
+        this.heldUntil = hold.fired ? performance.now() + HELD_ECHO_MS : -Infinity;
+        this.holdEnd();
+    }
+
+    private holdEnd(): void {
+        if (this.hold)
+            clearTimeout(this.hold.timer);
+        this.hold = null;
     }
 
     /**
