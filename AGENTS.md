@@ -85,6 +85,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [test-samples](agents/docs/development/test-samples.md) | committed sample files (test media, docs library), keeping them up to date | `tests/samples/`, `agents/tools/samples/`, `TestSamples` |
 | [flash-viewer-plan](agents/docs/development/flash-viewer-plan.md) | plan: Flash viewer, why Ruffle, what is left | |
 | [mobile-e2e-plan](agents/docs/development/mobile-e2e-plan.md) | plan: end-to-end tests of the phone experience (Playwright, touch, WebKit), reported phone bugs and findings | `tests/e2e/` |
+| [real-phone-tests-plan](agents/docs/development/real-phone-tests-plan.md) | plan: checks on real Android and iPhone devices that emulation can't do (address bar, Safari Back, timing), done with the user | `tests/e2e/scripts/` |
 
 ### Environment — `agents/docs/environment/`
 

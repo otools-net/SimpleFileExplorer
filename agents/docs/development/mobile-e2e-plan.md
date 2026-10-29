@@ -61,13 +61,31 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
   (desktop) scrollbars and right clicks, which the phone suite doesn't emulate; the suite covers their phone side
   (`menus.spec.ts`, `reported.spec.ts`).
 
+### Taken with the user, 2026-10-29 (the open points, one by one)
+
+- Selection bar buttons on touch screens (`pointer: coarse`): **36 px** (were 30); desktop unchanged.
+- An item deleted or moved elsewhere while its menu is open: the menu **closes with a short notice** (a toast saying
+  it is no longer in this folder). A change-feed refresh otherwise leaves the menu open (`ListingStore.refresh`
+  keeps `generation`).
+- Real-phone checks (Phase 0 on devices, remote debugging, iPhone Back): moved to
+  [real-phone-tests-plan](real-phone-tests-plan.md), done in a session of their own.
+- First CI run: `edge` is pushed at the end of this plan's work, then the run is checked.
+- **Android Back closes** an open menu, sheet or dialog (a history entry while it is open) and stays on the page.
+- **Turning the phone** keeps an open menu open, laid out again for the new size.
+- Pictures in the viewer: pan / zoom from an **npm library** (pinch, double tap, pan; touch and mouse) instead of the
+  click-for-actual-size of today.
+- `@ffmpeg` specs (hold-to-preview): run where ffmpeg is found, skipped with a reason elsewhere; CI installs it.
+- Tap targets: a test fails under 24 px, lists under 44 (Phase 3's "≥ 44" means listed, not failed).
+- Accessibility pass (`@axe-core/playwright`, `@a11y`): done, serious and critical findings fixed, others listed.
+- The "later" ideas (Android over adb, screenshot comparisons): bullets in [testing-e2e](testing-e2e.md), not a plan.
+
 ## Phase 0: reproduce the reports (before building anything)
 
-- [ ] On a real Android phone (Chrome) and an iPhone (Safari), on a seeded library: select an item (long press), tap
+- [-] Moved to [real-phone-tests-plan](real-phone-tests-plan.md). On a real Android phone (Chrome) and an iPhone (Safari), on a seeded library: select an item (long press), tap
   its ⋮; write down exactly what moves (the selection bar? by how much? when?) and how late the sheet opens, or
   whether a second tap is needed. Screen recordings into the report folder (not the repo).
 - [x] The same in emulation, as a committed spec (`specs/reported.spec.ts`): findings below.
-- [ ] With Chrome remote debugging on the Android phone (`chrome://inspect`: Performance panel around the tap, layout
+- [-] Moved to [real-phone-tests-plan](real-phone-tests-plan.md). With Chrome remote debugging on the Android phone (`chrome://inspect`: Performance panel around the tap, layout
   shifts, long tasks).
 - [~] Check these suspects one by one, write down which hold (`[x]` holds, `[-]` doesn't):
   - [x] Opening a sheet sets `html { overflow: hidden }` (`html:has(.sheet-backdrop)`, `styles/phone-sheets.css`):
@@ -91,7 +109,7 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
     `contextmenu` swallow after a key (`context-menu.ts`), the long press's own `contextmenu`/`click` arriving after
     the finger lifts, or a tap on ⋮ while something is selected toggling the selection instead of opening the menu. One tap
     always opened it; the long press sends no click.
-  - [ ] `ItemMenu` closes its menu when `ListingStore.generation` changes: a refresh (change feed, scan) right after
+  - [-] Doesn't hold: a change-feed refresh keeps `generation` (only a new listing changes it). `ItemMenu` closes its menu when `ListingStore.generation` changes: a refresh (change feed, scan) right after
     opening closes it, looking like "didn't open".
   - [x] A long task on the tap (change detection over a big listing, overflow measuring, layout after `has()`):
     measure input → sheet painted. 165–460 ms at 4× CPU, mostly the app's script; the lock's `:has()` part of it.
@@ -178,17 +196,17 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   toggle.
 - [x] Select all, Clear; the count updates; the bar fits and its buttons are ≥ 24 px; the bar doesn't cover the
   last row (`selection.spec.ts`). Safe area: not emulated (see viewport helpers).
-- [ ] **Decide:** the selection bar's buttons are 30 px tall on phones (Clear, Select all, Tags, "⋯": 30×30 to
+- [ ] **Decided: 36 px on touch screens** (to do). The selection bar's buttons are 30 px tall on phones (Clear, Select all, Tags, "⋯": 30×30 to
   78×30): above WCAG AA's 24, under Apple's / AAA's 44. Larger on touch screens (`pointer: coarse`)?
 - [x] Tap opens a file (viewer) / folder; infinite scroll loads all 600; Back restores the position after the app's
   own links (`navigation.spec.ts`). List and cards views: left.
-- [ ] **iPhone:** Back to a page that was left (a full load in between) restores nothing in WebKit on Windows:
+- [-] Moved to [real-phone-tests-plan](real-phone-tests-plan.md). **iPhone:** Back to a page that was left (a full load in between) restores nothing in WebKit on Windows:
   `history.state` comes back null. Check on a real iPhone; if so there, keep positions in `sessionStorage` too
   (`navigation.spec.ts`, `fixme` on WebKit).
 - [x] Address bar shown / hidden (height-only resizes): the selection bar stays at the bottom
   (`selection.spec.ts`); a swipe scrolls and selects nothing.
-- [ ] A refresh from the change feed while the menu is open: the menu's behaviour is what we decide (stays, or
-  closes visibly), never silently gone.
+- [ ] A refresh from the change feed while the menu is open: the menu stays; its item removed elsewhere: the menu
+  closes with a notice (decided).
 
 ### Menus and sheets — [context-menu](../features/context-menu.md), [frontend](frontend.md) (phone sheets)
 
@@ -198,8 +216,8 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [x] A sheet longer than the screen fits in 75 % and scrolls inside itself; the page behind doesn't scroll (swipe
   on the backdrop and on the sheet).
 - [ ] Submenus (Speed, view switch) open in place; Back returns.
-- [ ] Closing: backdrop tap, a chosen entry, Android Back (history) if we decide it should, orientation turn; never
-  on the scroll that the lock itself causes.
+- [ ] Closing: backdrop tap, a chosen entry, Android Back (decided: closes it, stays on the page); turning the phone
+  keeps it open, laid out again (decided); never on the scroll that the lock itself causes.
 - [ ] After closing: the scroll position and the selection are as before; focus doesn't pop the keyboard.
 - [ ] iOS: every function reachable without `contextmenu` (⋮ buttons everywhere a menu exists).
 
@@ -218,7 +236,8 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [x] Open a picture by tap; swipe left / right to the next / previous file; ✕ closes; the listing behind keeps its
   scroll position (`navigation.spec.ts`). **Found and fixed:** a swipe right (previous file) was Chrome's swipe back
   and left the page (`overscroll-behavior-x: none` while the viewer is open).
-- [ ] Picture: double tap / pinch zoom, pan with a finger (`touch-action: none` on the stage), no page scroll behind.
+- [ ] Picture: double tap / pinch zoom, pan with a finger, no page scroll behind; zoom from an npm pan / zoom library
+  (decided; today a click shows the actual size and a drag pans).
 - [~] Video: Play by a tap, a tap hides / shows the controls, a double tap on the right jumps forward, the controls on
   one line with buttons ≥ 24 px, their "⋯" a sheet (`video.spec.ts`; WebKit on Windows plays no WebM: skipped, the
   app's "can't play" fallback works). **Fixed:** the controls covered the big Play on a 360 px phone (a tap only
@@ -265,9 +284,9 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [ ] Fixed bars steady across the scenario's actions (`expectSteady` on the dock, top bar, location bar).
 - [ ] One tap = one action: no double fire (tap opening and the long press also selecting), no tap needing a second
   one.
-- [ ] Tap targets ≥ 44×44; nothing reachable only by hover or right click.
+- [ ] Tap targets: fail under 24, list under 44 (decided); nothing reachable only by hover or right click.
 - [ ] No focus that pops the keyboard unasked (a sheet focusing its first field on open, on phones).
-- [ ] Optional `@a11y` run: `@axe-core/playwright` on each screen's main states (labels, contrast, roles).
+- [ ] `@a11y` run (decided: do it, fix serious / critical): `@axe-core/playwright` on each screen's main states (labels, contrast, roles).
 
 ## Phase 4: in the workflow
 
@@ -279,8 +298,8 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [x] Flakiness: retries 1 in CI only; policy in [testing-e2e](testing-e2e.md).
 - [x] By hand before each release: the checklist in [testing-e2e](testing-e2e.md) (real phones: address bar,
   keyboard, rotation, safe areas, iPhone Back).
-- [ ] Later, not in this epic: Playwright's experimental Android support (`_android`, a real phone over adb) for the
-  `@smoke` set; visual comparisons (`toHaveScreenshot`) for sheets and bars once the layout is stable.
+- [x] Later, not in this epic: Android over adb and screenshot comparisons, moved to "Possible next steps" in
+  [testing-e2e](testing-e2e.md).
 
 ## Production
 

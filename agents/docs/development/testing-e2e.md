@@ -73,3 +73,8 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
 - Back on the iPhone after leaving SFE for another site: the listing comes back where it was (WebKit on Windows loses
   it, `navigation.spec.ts`).
 - The home indicator and notch (safe areas): nothing under them in portrait and landscape.
+
+## Possible next steps (not planned)
+
+- Playwright's experimental Android support (`_android`, a real phone over adb) for the `@smoke` set.
+- Visual comparisons (`toHaveScreenshot`) for sheets and bars, once the layout is stable.
