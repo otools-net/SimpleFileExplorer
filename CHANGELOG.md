@@ -16,6 +16,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   move under the finger and a tap on ⋮ no longer opens the file below it instead.
 - **Phones: the document viewers' toolbars keep their height** as their buttons move into "⋯" (JSON, CSV, subtitles,
   archives): the list under them no longer shifts by a few pixels as it opens.
+- **The trash and missing files keep their names in a narrow column** (a phone held sideways, a tablet beside the
+  sidebar): the buttons took the whole line, the name vanished and the page could be scrolled sideways.
+- **Phones: settings' check boxes and lock switches, and the files of Duplicates & moves are easier to hit** with a
+  finger.
 - **Phones: swiping to the previous file in the viewer stays in the viewer**: Chrome took a swipe to the right as
   its own "back" and left the page.
 - **iPhones: a tap on a recent search or a tag suggestion takes it** (in the search box, the tag pickers): the tap was

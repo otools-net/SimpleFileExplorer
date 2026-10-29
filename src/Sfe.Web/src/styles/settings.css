@@ -95,6 +95,7 @@
 .setting-lock { align-self: flex-start; cursor: pointer; }
 .setting-lock input { width: 14px; height: 14px; margin: 0; accent-color: var(--accent); }
 .setting-lock:has(input:checked) { color: var(--accent); }
+@media (pointer: coarse) { .setting-lock { min-height: 28px; } }
 .setting-check .check input:disabled { opacity: .55; cursor: not-allowed; }
 
 /* Which level the settings pages edit (server administrators): the library's or the server's. */

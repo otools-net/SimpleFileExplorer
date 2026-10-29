@@ -241,9 +241,11 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ### Accounts, administration, other pages
 
-- [ ] Sign in / out on a phone (keyboard, password manager field types, no zoom on focus); setup page.
-- [ ] Administration: section chips scroll sideways, each section usable at 360 px, settings saved (a smoke per
-  section, not every field).
+- [x] Sign in on a phone: fits, no zoom, buttons ≥ 24 px, signed in by finger (`admin.spec.ts`). Sign out, setup
+  page: left.
+- [x] Administration: each of the 15 sections opens, fits, no zoom, buttons ≥ 24 px (`admin.spec.ts`). **Fixed:**
+  check box and lock labels, Duplicates & moves' names and folders (17–19 px), the trash / missing files row in a
+  narrow column of a wide screen (the name squeezed to 0, the page wider than the screen). Saving settings: left.
 - [ ] Tasks, logs, duplicates, similar videos, missing files: lists scroll, row buttons reachable.
 - [ ] Server lost / back while on a phone (the ⋮ warning), a session that expired (redirect to sign in, back after).
 - [ ] Light and dark theme: the first paint has the right theme (no flash), sheets readable in both.

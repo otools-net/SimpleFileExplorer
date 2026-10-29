@@ -70,8 +70,9 @@ Phone layouts of the same work that are not overflow rows:
 - Administration: a section's sub-page chips are one line scrolling sideways ([admin-page](admin-page.md)).
 - List view: a narrow list (container `files-list` ≤ 560 px) gives each file two lines, the name then type · size ·
   resolution (`.row-meta`, [listing-page](listing-page.md)).
-- Moved files: a narrow missing file (container `tracking-missing` ≤ 480 px) puts Choose file… and Forget on a line
-  below its text ([missing-files](missing-files.md)).
+- Moved files and the trash: a narrow missing file (container `tracking-missing` ≤ 480 px) wraps its row and puts
+  Choose file… and Forget (Restore, Delete) on a line below its text, also on a wide screen with a narrow column
+  ([missing-files](missing-files.md)).
 - Text viewer: long lines unwrapped scroll sideways, with a fade at the right edge while a line goes on
   ([text-viewer](text-viewer.md), `lineContinues`). The JSON tree, subtitle cues and CSV cells keep their "…" on purpose.
 - Viewer bar, picture editor, top bar, EPUB: fine at every size (audited), unchanged.

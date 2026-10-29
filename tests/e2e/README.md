@@ -40,10 +40,12 @@ creates the accounts, scans and saves their sign-ins. The app stops when the run
 | `paths.ts` | work folder, port, accounts |
 | `scripts/server.mjs` | build + library + app, run by Playwright's `webServer` |
 | `setup/global-setup.ts` | setup, scan, accounts (`admin`, `sam`), sign-in states |
-| `fixtures/test.ts` | the `test` to import: signed in (`test.use({ account: 'sam' })`), fails on console errors, page errors, CSP violations, 5xx; `openFolder`, `item` |
-| `fixtures/touch.ts` | `longPress`, `swipe` (Chromium: DevTools touch events), `needsTouchGestures` |
+| `fixtures/test.ts` | the `test` to import: signed in (`test.use({ account: 'sam' })`), fails on console errors, page errors, CSP violations, 5xx (`test.use({ allowedErrors: /…/ })` for expected ones); `scratch`: a folder of the test's own with `A.jpg`, `B.jpg`, `C.jpg`, `Inside/`; `openFolder`, `item`, `closeMenu`, `isSheetWidth` |
+| `fixtures/layout.ts` | `expectFitsScreen` (no sideways scroll), `expectTapTargets` (≥ 24 px, WCAG 2.5.8 with its exceptions), `expectNoZoomOnFocus` (fields ≥ 16 px for iOS) |
+| `fixtures/diagnose.ts`, `specs/diagnose/` | `@diagnose` measurements (traces, profiles, what-if CSS): `SFE_E2E_DIAGNOSE=1` |
+| `fixtures/touch.ts` | `longPress`, `swipe` (Chromium: DevTools touch events), `tapWhenSettled`, `needsTouchGestures` |
 | `fixtures/steady.ts` | `watchBoxes(page, { name: selector }).expectSteady()`: fails when a box moves between frames |
-| `fixtures/timing.ts` | `expectOpensWithin(page, selector, tap, ms)`: one tap, shown within the budget |
+| `fixtures/timing.ts` | `expectOpensWithin(page, selector, tap, ms)`: one tap, shown within the budget; `expectMedianOpensWithin` (5 taps), `menuBudget()` per device |
 | `specs/` | the tests, one file per area; `reported.spec.ts` holds user-reported bugs |
 
 ## Writing a spec
