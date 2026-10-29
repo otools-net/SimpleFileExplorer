@@ -26,9 +26,13 @@ for (const [file, view, allowed] of documents) {
             const viewer = page.locator('dialog.viewer[open]');
             const shown = viewer.locator(view);
             await expect(shown).toBeVisible();
-            // Something in it: text, a page drawn (PDF), a book's frame (EPUB).
-            await expect.poll(() => shown.evaluate(element =>
-                (element as HTMLElement).innerText.trim().length > 10 || !!element.querySelector('canvas, iframe')), { timeout: 15_000 }).toBe(true);
+            // Something in it: text, a page drawn (PDF), a book's page (EPUB). Not the status line's words: a blank book
+            // passed on them (found 2026-10-29: epub-document.ts, a resize before the first page was placed).
+            const content = view === 'sfe-pdf-view' ? 'canvas' : view === 'sfe-epub-view' ? '.epub-container iframe' : null;
+            await expect.poll(() => shown.evaluate((element, content) => content
+                ? !!element.querySelector(content)
+                : [...element.children].filter(child => !child.matches('footer, [role=toolbar], .text-toolbar')).some(child => (child as HTMLElement).innerText.trim().length > 10),
+            content), { timeout: 15_000 }).toBe(true);
             await page.waitForTimeout(500);
             await expectFitsScreen(page);
             await expectNothingCut(page);

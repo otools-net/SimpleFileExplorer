@@ -12,6 +12,7 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **EPUB books no longer open blank**: the page was laid out, then cleared as the "Loading…" message went away.
 - **The server log on a phone held sideways (or a narrow window)**: its lines kept their message (it was squeezed to
   nothing) and no longer made the page wider than the screen.
 - **iPhones: a tap outside the main menu or the sidebar closes it** (Safari sends no click for a tap on the page's

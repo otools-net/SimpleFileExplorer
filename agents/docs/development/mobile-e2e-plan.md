@@ -258,8 +258,10 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [ ] Audio: play / pause, the bar reachable above the home indicator.
 - [~] Documents open by a tap, show content, fit, no zoom, toolbar buttons ≥ 24 px: text, Markdown, JSON, CSV, PDF,
   EPUB, archive, subtitles (`viewers.spec.ts`). **Fixed:** ResizeObserver loops on phones (a 34 px view switch and a
-  38 px Extract button in 32 px toolbars), the text status bar's 12 px select (iOS zoom). Left: find, Aa panel,
-  scrolling, PDF zoom, EPUB page turns, archive Go to / entries.
+  38 px Extract button in 32 px toolbars), the text status bar's 12 px select (iOS zoom). Find and the Aa panel in a
+  text, PDF zoom and find, EPUB page turns, archive folders, Up and Go to (`documents.spec.ts`). **Found and fixed:**
+  EPUB books opened blank on every device (a resize before the first page was placed; the old check passed on the
+  status line's words).
 - [x] `view?path=` page on a phone: fits, buttons ≥ 24 px (`pages.spec.ts`). **Fixed:** the Markdown outline's
   headings squeezed to half their height in landscape (flex items shrinking instead of the outline scrolling).
 
