@@ -22,6 +22,7 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   finger.
 - **Phones: the big Play button of a video always plays it**: on a small screen the controls covered it, and a tap
   only showed them. The seek bar is easier to grab with a finger.
+- **Phones held sideways: a Markdown file's outline is readable**: its headings were squeezed to half their height.
 - **Phones: swiping to the previous file in the viewer stays in the viewer**: Chrome took a swipe to the right as
   its own "back" and left the page.
 - **iPhones: a tap on a recent search or a tag suggestion takes it** (in the search box, the tag pickers): the tap was

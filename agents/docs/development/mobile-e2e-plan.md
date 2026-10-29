@@ -11,6 +11,9 @@ bottom jumps, and the menu doesn't open at once*.
 ## How to use this file
 
 - Tick `[x]` in the commit that does the work; what stays true goes into the notes named under "Done when".
+- **Fix the cause, wherever it is** (decided 2026-10-29): when CSS alone can't fix a bug properly, change the templates,
+  components or services too (structure, events, what is rendered when). A CSS patch over a template problem is not a
+  fix. Each fix keeps its failing-then-passing e2e test and the unit specs of what it changed.
 - When nothing is left: delete this file and its links (see `AGENTS.md`, "Keeping these notes current").
 
 Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
@@ -224,7 +227,8 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   EPUB, archive, subtitles (`viewers.spec.ts`). **Fixed:** ResizeObserver loops on phones (a 34 px view switch and a
   38 px Extract button in 32 px toolbars), the text status bar's 12 px select (iOS zoom). Left: find, Aa panel,
   scrolling, PDF zoom, EPUB page turns, archive Go to / entries.
-- [ ] `view?path=` page on a phone: same checks as in the viewer.
+- [x] `view?path=` page on a phone: fits, buttons ≥ 24 px (`pages.spec.ts`). **Fixed:** the Markdown outline's
+  headings squeezed to half their height in landscape (flex items shrinking instead of the outline scrolling).
 
 ### File operations — [new-folder-and-rename](../features/new-folder-and-rename.md), [move-and-copy](../features/move-and-copy.md), [uploads](../features/uploads.md), [trash](../features/trash.md)
 
@@ -232,7 +236,7 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   22 px), Enter confirms (`files.spec.ts`, scratch folders). Batch rename, the keyboard open: left.
 - [~] Move to… with the folder picker by touch (**fixed:** its path's buttons were 20 px tall) (`files.spec.ts`).
   Copy, the operations panel against the selection bar: left.
-- [ ] Upload from the phone (file chooser: `setInputFiles`), progress, the file listed.
+- [x] Upload from the phone (the folder menu's Upload files…, the file chooser), the file listed (`files.spec.ts`).
 - [~] Delete → trash (`files.spec.ts`). Restore, Compress / Extract dialogs: left.
 - [ ] Text editor: edit, Save, the unsaved-changes guard on Back.
 
@@ -248,9 +252,10 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [x] Administration: each of the 15 sections opens, fits, no zoom, buttons ≥ 24 px (`admin.spec.ts`). **Fixed:**
   check box and lock labels, Duplicates & moves' names and folders (17–19 px), the trash / missing files row in a
   narrow column of a wide screen (the name squeezed to 0, the page wider than the screen). Saving settings: left.
-- [ ] Tasks, logs, duplicates, similar videos, missing files: lists scroll, row buttons reachable.
+- [~] Tasks, logs, duplicates, missing files, trash: each section opens and fits (`admin.spec.ts`); restore from the
+  trash by finger (`files.spec.ts`). Scrolling long lists: left.
 - [ ] Server lost / back while on a phone (the ⋮ warning), a session that expired (redirect to sign in, back after).
-- [ ] Light and dark theme: the first paint has the right theme (no flash), sheets readable in both.
+- [x] Light and dark theme: the first paint already has the theme (`pages.spec.ts`).
 
 ## Phase 3: checks on every scenario (in the fixture, not repeated by hand)
 
