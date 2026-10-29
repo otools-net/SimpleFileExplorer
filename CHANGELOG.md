@@ -7,6 +7,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **Phones: bigger buttons in the selection bar** (36 px instead of 30 on touch screens), easier to hit with a
+  thumb.
 - **Phones: menus open about twice as fast** (an item's ⋮ menu, the folder's, the viewer's): the menu no longer
   measures itself to be placed when it is a sheet at the bottom, and no longer moves the focus into itself after a
   tap (the keyboard still gets it; Esc closes it wherever the focus is).

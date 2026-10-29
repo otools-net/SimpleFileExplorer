@@ -196,7 +196,7 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   toggle.
 - [x] Select all, Clear; the count updates; the bar fits and its buttons are ≥ 24 px; the bar doesn't cover the
   last row (`selection.spec.ts`). Safe area: not emulated (see viewport helpers).
-- [ ] **Decided: 36 px on touch screens** (to do). The selection bar's buttons are 30 px tall on phones (Clear, Select all, Tags, "⋯": 30×30 to
+- [x] **Decided: 36 px on touch screens** (done, `selection.css`, `selection.spec.ts`). The selection bar's buttons are 30 px tall on phones (Clear, Select all, Tags, "⋯": 30×30 to
   78×30): above WCAG AA's 24, under Apple's / AAA's 44. Larger on touch screens (`pointer: coarse`)?
 - [x] Tap opens a file (viewer) / folder; infinite scroll loads all 600; Back restores the position after the app's
   own links (`navigation.spec.ts`). List and cards views: left.
