@@ -2,7 +2,8 @@
 
 Code: `tests/Sfe.Tests/` (`Infrastructure/`: `TestLibrary`, `CoreServices`, `ApiClients`, `WarningLog`); client
 `src/Sfe.Web/src/testing/` (`setup.ts`, `fakes.ts`) and `*.spec.ts` next to the code. Gotchas:
-[testing-backend.md](testing-backend.md), [testing-client.md](testing-client.md).
+[testing-backend.md](testing-backend.md), [testing-client.md](testing-client.md). End-to-end (the real app in
+phone-sized browsers): `tests/e2e/`, [testing-e2e.md](testing-e2e.md).
 
 ## Rules
 

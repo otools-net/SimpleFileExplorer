@@ -80,8 +80,10 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
 | [testing-client](agents/docs/development/testing-client.md) | Vitest/jsdom gotchas | `src/testing/setup.ts` |
+| [testing-e2e](agents/docs/development/testing-e2e.md) | end-to-end tests: Playwright on phone-sized devices, touch, timing and stability helpers, gotchas | `tests/e2e/` |
 | [test-samples](agents/docs/development/test-samples.md) | committed sample files (test media, docs library), keeping them up to date | `tests/samples/`, `agents/tools/samples/`, `TestSamples` |
 | [flash-viewer-plan](agents/docs/development/flash-viewer-plan.md) | plan: Flash viewer, why Ruffle, what is left | |
+| [mobile-e2e-plan](agents/docs/development/mobile-e2e-plan.md) | plan: end-to-end tests of the phone experience (Playwright, touch, WebKit), reported phone bugs and findings | `tests/e2e/` |
 
 ### Environment — `agents/docs/environment/`
 
