@@ -218,8 +218,10 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [ ] Video `@ffmpeg`: tap shows controls, double tap seeks, the controls row on one line with its "⋯", full screen
   and back, rotation in full screen, hold-to-preview on a tile (trickplay on touch).
 - [ ] Audio: play / pause, the bar reachable above the home indicator.
-- [ ] Documents: text (scroll, find, Aa panel, long lines sideways), Markdown, JSON, CSV (virtual rows by swipe), PDF
-  (pinch / zoom buttons, find), EPUB (tap zones / swipe to turn pages), archive viewer (rows, Go to, open an entry).
+- [~] Documents open by a tap, show content, fit, no zoom, toolbar buttons ≥ 24 px: text, Markdown, JSON, CSV, PDF,
+  EPUB, archive, subtitles (`viewers.spec.ts`). **Fixed:** ResizeObserver loops on phones (a 34 px view switch and a
+  38 px Extract button in 32 px toolbars), the text status bar's 12 px select (iOS zoom). Left: find, Aa panel,
+  scrolling, PDF zoom, EPUB page turns, archive Go to / entries.
 - [ ] `view?path=` page on a phone: same checks as in the viewer.
 
 ### File operations — [new-folder-and-rename](../features/new-folder-and-rename.md), [move-and-copy](../features/move-and-copy.md), [uploads](../features/uploads.md), [trash](../features/trash.md)
@@ -234,7 +236,8 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ### Tags — [tags](../features/tags.md), [scope-tagging](../features/scope-tagging.md)
 
-- [ ] Tag the selection from the bar: picker opens, keyboard and suggestions, chips added; tag a whole folder.
+- [x] Tag the selection from the bar: picker, suggestion taken by a tap (fixed for iPhones), chip on the tile
+  (`tags.spec.ts`). A whole folder: left.
 
 ### Accounts, administration, other pages
 

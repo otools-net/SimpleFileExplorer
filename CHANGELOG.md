@@ -14,12 +14,14 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - **Phones: tiles keep their place as pictures load**: a tile takes the shape of its picture from the index at once,
   instead of when its preview arrives, and the names under the pictures are laid out with them, so the rows no longer
   move under the finger and a tap on ⋮ no longer opens the file below it instead.
+- **Phones: the document viewers' toolbars keep their height** as their buttons move into "⋯" (JSON, CSV, subtitles,
+  archives): the list under them no longer shifts by a few pixels as it opens.
 - **Phones: swiping to the previous file in the viewer stays in the viewer**: Chrome took a swipe to the right as
   its own "back" and left the page.
 - **iPhones: a tap on a recent search or a tag suggestion takes it** (in the search box, the tag pickers): the tap was
   cancelled and nothing happened.
-- **iPhones: the page no longer zooms in when a field gets the focus** (search, rename, new folder…): text fields are
-  16 px on touch screens. The folder picker's path, the search's "in folder" button and the Close button of dialogs
+- **iPhones: the page no longer zooms in when a field gets the focus** (search, rename, new folder, the text viewer's
+  status bar…): text fields are 16 px on touch screens. The folder picker's path, the search's "in folder" button and the Close button of dialogs
   are easier to hit with a finger.
 - **Phones: a tap on the dimmed area around a menu only closes the menu**: the tap no longer also reaches what is
   under it (the sidebar button, a file).

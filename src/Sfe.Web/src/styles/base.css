@@ -94,9 +94,9 @@ a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Touch screens: iOS zooms the whole page into a field whose text is under 16 px when it gets the focus, and leaves
-   it zoomed (e2e `expectNoZoomOnFocus`). */
+   it zoomed (e2e `expectNoZoomOnFocus`). Over the fields' own sizes (`font: inherit` in a 12 px status bar...). */
 @media (pointer: coarse) {
-    input:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file]), select, textarea { font-size: max(16px, 1em); }
+    input:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file]), select, textarea { font-size: max(16px, 1em) !important; }
 }
 code { font-family: var(--mono); font-size: .92em; }
 [hidden] { display: none !important; }

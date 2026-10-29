@@ -8,7 +8,7 @@ import { auth, baseURL, here, work, type Account } from './paths';
 const channel = process.env.SFE_E2E_CHANNEL ?? (process.platform === 'win32' ? 'msedge' : undefined);
 const android = { ...devices['Pixel 7'], channel };
 
-type Options = { account: Account; allowedErrors: RegExp[]; cpuSlowdown: number };
+type Options = { account: Account; allowedErrors: RegExp | null; cpuSlowdown: number };
 
 export default defineConfig<Options>({
     testDir: path.join(here, 'specs'),

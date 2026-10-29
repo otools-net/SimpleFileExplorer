@@ -115,6 +115,9 @@
     color: var(--reader-text);
 }
 .text-view .text-toolbar .icon-button:hover, .text-view .reading-panel .icon-button:hover { background: var(--reader-active-line); }
+/* As tall as the bar's other controls (a button is 38 px): a taller item leaving into the "⋯" shrank the bar and the
+   list under it, and its ResizeObserver looped (the archive viewer's Extract; e2e viewers.spec.ts). */
+.text-toolbar .button { height: 32px; }
 .text-view .text-toolbar .icon-button.active { background: var(--reader-selection-match); color: var(--accent); }
 .text-view .reading-panel .button, .text-view .text-message .button {
     border-color: var(--reader-border);
@@ -301,9 +304,11 @@
 
 /* ---------- Markdown (formats/markdown/): read, source or both ---------- */
 
+/* 32 px tall with its padding and border, as the toolbar's other controls: taller, the bar shrank when the switch went
+   into its "⋯" and its ResizeObserver looped (e2e viewers.spec.ts, "ResizeObserver loop" errors on phones). */
 .markdown-modes { display: flex; gap: 2px; padding: 2px; border: 1px solid var(--reader-border); border-radius: 8px; }
 .markdown-mode {
-    height: 28px;
+    height: 26px;
     padding: 0 10px;
     border: 0;
     border-radius: 6px;

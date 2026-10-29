@@ -8,8 +8,11 @@ import { auth, library, type Account } from '../paths';
 type Options = {
     /** Who is signed in: `test.use({ account: 'sam' })`. */
     account: Account;
-    /** Console errors a spec expects (a refused request it provokes...): matched against the message. */
-    allowedErrors: RegExp[];
+    /**
+     * Console errors a spec expects (a refused request it provokes...): matched against the message. One expression
+     * (`/a|b/`): `test.use` takes an array as `[value, options]`.
+     */
+    allowedErrors: RegExp | null;
     /** The CPU slowed this many times (Chromium only): a phone's speed on a desktop (project `android-slow`). */
     cpuSlowdown: number;
 };
@@ -33,7 +36,7 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; scratch:
         } catch { /* left for the next run's server start, which empties the library */ }
     },
     account: ['admin', { option: true }],
-    allowedErrors: [[], { option: true }],
+    allowedErrors: [null, { option: true }],
     cpuSlowdown: [1, { option: true }],
     slowCpu: [async ({ page, cpuSlowdown, browserName }, use) => {
         if (cpuSlowdown > 1 && browserName === 'chromium') {
@@ -45,7 +48,7 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; scratch:
     storageState: async ({ account }, use) => use(auth(account)),
     guard: [async ({ page, allowedErrors }, use) => {
         const problems: string[] = [];
-        const allowed = (text: string) => allowedErrors.some(pattern => pattern.test(text));
+        const allowed = (text: string) => allowedErrors?.test(text) ?? false;
         page.on('console', message => {
             if (message.type() === 'error' && !allowed(message.text()))
                 problems.push(`console: ${message.text()}`);

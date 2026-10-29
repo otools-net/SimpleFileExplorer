@@ -42,7 +42,10 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
 - **Touch (rules, 2026-10-29; e2e `tests/e2e`):** text fields are ≥ 16 px on touch screens (`base.css`, `pointer:
   coarse`; else iOS zooms the page into them); a list option that must keep the focus in its field prevents
   `mousedown`, never `pointerdown` (WebKit then cancels the tap: no click, the option not taken on an iPhone); buttons
-  are ≥ 24 px each way on phones (`expectTapTargets`), a flex row's icon button `flex-shrink: 0`.
+  are ≥ 24 px each way on phones (`expectTapTargets`), a flex row's icon button `flex-shrink: 0`. Every item of an
+  overflow row is as tall as the row's others (32 px in the document toolbars): a taller one leaving into the "⋯"
+  changes the row's height inside its ResizeObserver callback, which the browser reports as a "ResizeObserver loop"
+  error (Angular logs it) and the content below shifts.
 - **Rows of buttons on narrow screens (rule, 2026-10-24):** a row of buttons that may not fit a 360 px phone is an
   overflow row (`sfeOverflowRow`): one line, the buttons leaving right to left into a "⋯" menu, the developer saying
   which stay. Never `flex-wrap` or buttons cut off; space its items with `gap`, not margins. Check with
