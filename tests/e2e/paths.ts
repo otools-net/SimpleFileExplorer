@@ -13,6 +13,8 @@ export const baseURL = `http://localhost:${port}/`;
 export const setupCode = 'e2e-setup-code-1';
 
 export const auth = (account: string) => path.join(work, 'auth', `${account}.json`);
+/** The copy of tests/samples/library the app serves (scripts/server.mjs). */
+export const library = path.join(work, 'library');
 
 /** The accounts the setup makes (`setup/global-setup.ts`); specs pick one with `test.use({ account })`. */
 export const accounts = {

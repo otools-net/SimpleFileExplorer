@@ -39,6 +39,10 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   761 px (`trickplay.css`, `base.css`: touch, the dialog `touch-action: none` and its `.sheet-body`
   `overscroll-behavior: contain`, the root untouched; mouse, the root locked). Not sheets: toasts, the operations panel and the selection bar (status that
   stays while the page is used), and the top bar's popovers (they open from the top).
+- **Touch (rules, 2026-10-29; e2e `tests/e2e`):** text fields are ≥ 16 px on touch screens (`base.css`, `pointer:
+  coarse`; else iOS zooms the page into them); a list option that must keep the focus in its field prevents
+  `mousedown`, never `pointerdown` (WebKit then cancels the tap: no click, the option not taken on an iPhone); buttons
+  are ≥ 24 px each way on phones (`expectTapTargets`), a flex row's icon button `flex-shrink: 0`.
 - **Rows of buttons on narrow screens (rule, 2026-10-24):** a row of buttons that may not fit a 360 px phone is an
   overflow row (`sfeOverflowRow`): one line, the buttons leaving right to left into a "⋯" menu, the developer saying
   which stay. Never `flex-wrap` or buttons cut off; space its items with `gap`, not margins. Check with

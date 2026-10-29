@@ -1,7 +1,9 @@
 // The `test` every spec imports: Playwright's, signed in as `account` (default the administrator), and failing on
 // what a user wouldn't see but is still a bug: console errors, uncaught page errors, CSP violations, server errors.
 import { test as base, expect, type Page } from '@playwright/test';
-import { auth, type Account } from '../paths';
+import fs from 'node:fs';
+import path from 'node:path';
+import { auth, library, type Account } from '../paths';
 
 type Options = {
     /** Who is signed in: `test.use({ account: 'sam' })`. */
@@ -12,7 +14,24 @@ type Options = {
     cpuSlowdown: number;
 };
 
-export const test = base.extend<Options & { guard: void; slowCpu: void }>({
+export const test = base.extend<Options & { guard: void; slowCpu: void; scratch: string }>({
+    /**
+     * A folder of this test's own, for what changes files (workers run in parallel on one library): `Scratch/<id>`
+     * with three sample photos (`A.jpg`, `B.jpg`, `C.jpg`) and an empty folder `Inside`; removed after the test.
+     */
+    scratch: async ({}, use, testInfo) => {
+        const relative = `Scratch/${testInfo.project.name}-${testInfo.testId}-${testInfo.repeatEachIndex}-${testInfo.retry}`;
+        const folder = path.join(library, relative);
+        fs.rmSync(folder, { recursive: true, force: true });
+        fs.mkdirSync(path.join(folder, 'Inside'), { recursive: true });
+        for (const [name, from] of [['A.jpg', 'Photos/2025 Mountains/Summit.jpg'], ['B.jpg', 'Photos/2025 Mountains/Blue hour.jpg'], ['C.jpg', 'Photos/Sunrise.jpg']])
+            fs.copyFileSync(path.join(library, from), path.join(folder, name));
+        await use(relative);
+        // The app may still hold it open for a moment (Windows: EPERM): retried, and never a failure of the test.
+        try {
+            fs.rmSync(folder, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+        } catch { /* left for the next run's server start, which empties the library */ }
+    },
     account: ['admin', { option: true }],
     allowedErrors: [[], { option: true }],
     cpuSlowdown: [1, { option: true }],

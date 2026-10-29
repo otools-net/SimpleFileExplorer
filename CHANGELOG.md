@@ -16,6 +16,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   move under the finger and a tap on ⋮ no longer opens the file below it instead.
 - **Phones: swiping to the previous file in the viewer stays in the viewer**: Chrome took a swipe to the right as
   its own "back" and left the page.
+- **iPhones: a tap on a recent search or a tag suggestion takes it** (in the search box, the tag pickers): the tap was
+  cancelled and nothing happened.
+- **iPhones: the page no longer zooms in when a field gets the focus** (search, rename, new folder…): text fields are
+  16 px on touch screens. The folder picker's path, the search's "in folder" button and the Close button of dialogs
+  are easier to hit with a finger.
 - **Phones: a tap on the dimmed area around a menu only closes the menu**: the tap no longer also reaches what is
   under it (the sidebar button, a file).
 

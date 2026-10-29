@@ -201,8 +201,9 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ### Top bar, location bar, search — [location-bar](../features/location-bar.md), [search-history](../features/search-history.md)
 
-- [ ] Search field: tap focuses, keyboard opens, the page doesn't zoom (font ≥ 16 px on iOS), recent searches and tag
-  suggestions are tappable above the keyboard, Enter searches, results listed.
+- [x] Search field: tap focuses, no zoom (fields 16 px on touch: **fixed**, were 14), Enter searches, results listed,
+  a recent search runs on a tap (**fixed** on WebKit: `pointerdown` prevented cancelled the tap; now `mousedown`)
+  (`search.spec.ts`). Keyboard emulation (the list above it): left.
 - [ ] Location bar sticky while scrolling, its "⋯" opens the folder menu, breadcrumbs scroll sideways, up / previous
   / next folder.
 - [ ] Main menu (⋮ in the top bar): opens from the top, every link works, closes on a tap outside.
@@ -223,12 +224,12 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ### File operations — [new-folder-and-rename](../features/new-folder-and-rename.md), [move-and-copy](../features/move-and-copy.md), [uploads](../features/uploads.md), [trash](../features/trash.md)
 
-- [ ] New folder, Rename, Batch rename: the dialog is a sheet; the field above the keyboard; buttons reachable with
-  the keyboard open; Enter confirms.
-- [ ] Move to… / Copy to… with the folder picker by touch; the operations panel doesn't cover the selection bar or
-  the last row.
+- [x] New folder, Rename: the dialog fits, no zoom, buttons ≥ 24 px (**fixed:** the Close button was squeezed to
+  22 px), Enter confirms (`files.spec.ts`, scratch folders). Batch rename, the keyboard open: left.
+- [~] Move to… with the folder picker by touch (**fixed:** its path's buttons were 20 px tall) (`files.spec.ts`).
+  Copy, the operations panel against the selection bar: left.
 - [ ] Upload from the phone (file chooser: `setInputFiles`), progress, the file listed.
-- [ ] Delete → trash, Restore; Compress / Extract dialogs on a phone.
+- [~] Delete → trash (`files.spec.ts`). Restore, Compress / Extract dialogs: left.
 - [ ] Text editor: edit, Save, the unsaved-changes guard on Back.
 
 ### Tags — [tags](../features/tags.md), [scope-tagging](../features/scope-tagging.md)

@@ -37,3 +37,11 @@ export async function expectTapTargets(page: Page, scope = 'body', min = 24): Pr
         test.info().annotations.push({ type: 'tap targets under 44 px', description: under44.join('; ') });
     expect([...new Set(small(min))], `tap targets under ${min} px`).toEqual([]);
 }
+
+/** iOS zooms the whole page into a field whose text is under 16 px when it gets the focus: none of those. */
+export async function expectNoZoomOnFocus(page: Page, selector: string): Promise<void> {
+    const small = await page.evaluate(selector => [...document.querySelectorAll<HTMLElement>(selector)]
+        .filter(element => element.getClientRects().length > 0 && parseFloat(getComputedStyle(element).fontSize) < 16)
+        .map(element => `${element.tagName.toLowerCase()}${element.id ? '#' + element.id : ''}.${String(element.className).split(' ')[0]} ${getComputedStyle(element).fontSize}`), selector);
+    expect(small, 'fields with text under 16 px (iOS zooms into them)').toEqual([]);
+}

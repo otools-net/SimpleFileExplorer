@@ -25,6 +25,8 @@
 }
 
 .sheet-title { min-width: 0; }
+/* A long title shrinks, not the Close button (squeezed to 22 px wide on a phone). */
+.sheet-head > .icon-button { flex-shrink: 0; }
 .sheet-head h2 { margin: 0; font-size: 17px; }
 .sheet-subtitle { margin: 2px 0 0; overflow: hidden; color: var(--text-muted); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 

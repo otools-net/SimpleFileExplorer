@@ -61,7 +61,7 @@ interface TagTerm {
             [id]="listId" [hidden]="!suggesting()">
             @for (query of recent(); track query; let index = $index) {
                 <li role="option" class="search-history-option" [id]="listId + '-' + index" [attr.aria-selected]="index === active()"
-                    title="Search again" (pointerdown)="$event.preventDefault()" (click)="pickRecent(query)" [sfeContextMenu]="recentTarget(query)">
+                    title="Search again" (mousedown)="$event.preventDefault()" (click)="pickRecent(query)" [sfeContextMenu]="recentTarget(query)">
                     <svg sfeIcon="clock"></svg>
                     <span class="search-history-text">@for (part of parts(query); track $index) {@if (part.mark) {<b>{{ part.text }}</b>} @else {<ng-container>{{ part.text }}</ng-container>}}</span>
                     <button type="button" class="icon-button ghost small" aria-label="Remove from the search history"
@@ -72,7 +72,7 @@ interface TagTerm {
             }
             @for (tag of options(); track tag.id; let index = $index) {
                 <li role="option" [id]="listId + '-' + index" [attr.aria-selected]="index === active()"
-                    (pointerdown)="$event.preventDefault()" (click)="pick(tag)">
+                    (mousedown)="$event.preventDefault()" (click)="pick(tag)">
                     <sfe-tag-chip [tag]="tag" />
                     @if (describe(tag); as detail) {
                         <span class="tag-option-detail">{{ detail }}</span>
