@@ -152,8 +152,8 @@ SFE_E2E_TIMINGS=1`), 5 runs each, select box then ⋮; floors (`harness.spec.ts`
   (height shrink + `visualViewport` resize while a field has the focus), orientation turn (swap width and height),
   safe-area insets (CDP `Emulation.setSafeAreaInsetsOverride` if this Edge has it; else a CSS override and a by-hand
   check on an iPhone).
-- [ ] Layout helpers reused from `narrow-audit.mjs` as functions: nothing off screen, page no wider than the screen,
-  tap targets ≥ 44×44 CSS px (WCAG 2.5.5 / Apple; 48 for Android where we can), no text cut.
+- [~] Layout helpers (`fixtures/layout.ts`): `expectFitsScreen` (no sideways scroll), `expectTapTargets` (fails
+  under 24 px, WCAG 2.2 AA; under 44 listed in the report). Off-screen and cut text from `narrow-audit.mjs`: left.
 - [x] On failure: trace, video, screenshot; report folder in the temp folder, not the repo.
 - [x] A first `@smoke` spec (sign in, list a folder, open the item menu sheet, close it) green on every project.
 - [x] Note [testing-e2e](testing-e2e.md): how to run, fixtures, helpers, gotchas; a line in `AGENTS.md`;
@@ -165,19 +165,21 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ### Listing and selection — [selection-and-keys](../features/selection-and-keys.md), [listing-page](../features/listing-page.md)
 
-- [ ] **The report:** long press an item → selected, selection bar appears **once** (no replayed animation); tap ⋮ on
+- [x] **The report:** long press an item → selected, selection bar appears **once** (no replayed animation); tap ⋮ on
   it → sheet within 100 ms on the first tap; the selection bar does not move (`expectSteady`) while the sheet opens,
   is open, and closes; backdrop tap closes; selection kept.
-- [ ] Long press selects and opens no menu, no browser menu, no text selection, no callout (iOS); lifting the finger
+- [x] Long press selects and opens no menu, no browser menu, no text selection, no callout (iOS); lifting the finger
   doesn't also open the file.
-- [ ] In selection mode a tap toggles files and folders (folders don't navigate); tapping ⋮ opens the menu, not a
+- [x] In selection mode a tap toggles files and folders (folders don't navigate); tapping ⋮ opens the menu, not a
   toggle.
-- [ ] Select all, Clear; the count updates; the bar's "⋯" entries at each width; the bar stays above the home
-  indicator (safe area) and doesn't cover the last row (the listing has room below).
+- [x] Select all, Clear; the count updates; the bar fits and its buttons are ≥ 24 px; the bar doesn't cover the
+  last row (`selection.spec.ts`). Safe area: not emulated (see viewport helpers).
+- [ ] **Decide:** the selection bar's buttons are 30 px tall on phones (Clear, Select all, Tags, "⋯": 30×30 to
+  78×30): above WCAG AA's 24, under Apple's / AAA's 44. Larger on touch screens (`pointer: coarse`)?
 - [ ] Tiles, list and cards views: tap opens a file / folder; scroll by swipe, infinite scroll loads more, scroll
   position restored on Back ([position-restore](../features/position-restore.md)).
-- [ ] Address bar shown / hidden while scrolling: the selection dock and fixed bars follow the viewport, nothing
-  jumps mid-scroll.
+- [x] Address bar shown / hidden (height-only resizes): the selection bar stays at the bottom
+  (`selection.spec.ts`); a swipe scrolls and selects nothing.
 - [ ] A refresh from the change feed while the menu is open: the menu's behaviour is what we decide (stays, or
   closes visibly), never silently gone.
 
