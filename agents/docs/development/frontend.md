@@ -28,9 +28,11 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   (touch gestures excepted, as the player's).
 - **Phone sheets (rule, 2026-10-23):** on a phone (≤ 640 px) every menu or popup that opens in the lower part of the
   screen is a sheet like the item menu: full width with no side margins, against the bottom edge (safe area padded),
-  top corners rounded, over a dimming backdrop that closes it, and the page behind locked so the sheet and backdrop
-  cover the scrollbar's room. Use the shared classes of `styles/phone-sheets.css`: `phone-sheet` on the popup,
-  a `sheet-backdrop` next to it (a click on it closes; it is what locks the page). Applied to the item menu, the
+  top corners rounded, over a dimming backdrop that closes it, and the page behind held (touch: the backdrop takes no
+  pan and the sheet's scrolling stops at its ends, the root untouched, else Chrome's address bar comes back and the
+  bottom bars jump; mouse: the root locked, the sheet and backdrop covering the scrollbar's room). Use the shared
+  classes of `styles/phone-sheets.css`: `phone-sheet` on the popup, a `sheet-backdrop` next to it (a click on it
+  closes; it is what holds the page). Applied to the item menu, the
   viewer's ⋮ menu, the default tags panel, the player's speed menu. A popup under a transformed or clipping ancestor
   goes in the top layer (`popover="manual"`, `showPopover()`) with the backdrop inside it, else `position: fixed` is
   relative to that ancestor (`DefaultTagsBadgeComponent`). Modal dialogs (`dialog.sheet`) already do this below

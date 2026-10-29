@@ -139,11 +139,11 @@ export class FileTileComponent extends FileItemBase {
     private readonly shapes = inject(PreviewsService);
     private readonly learned = signal<number | null>(null);
     /**
-     * The preview's shape (width / height), which the tile takes: known from an earlier render (other layout, back
-     * navigation), or once loaded.
+     * The preview's shape (width / height), which the tile takes: once loaded, else known before (an earlier render,
+     * the index: `PreviewsService.shapeOf`); without one, the layout's guess (files.css).
      */
     protected readonly ratio = computed(() => {
-        const ratio = this.hasPreview() ? this.learned() ?? this.shapes.knownRatio(this.item().path) : null;
+        const ratio = this.hasPreview() ? this.learned() ?? this.shapes.shapeOf(this.item()) : null;
         return ratio ? ratio.toFixed(4) : null;
     });
     protected readonly duration = computed(() => this.config.duration(this.item()));

@@ -14,8 +14,8 @@ export class PreviewsService {
     private guessFrame = 0;
 
     /**
-     * The typical preview shape of the listed files (geometric mean of the known ones): tiles whose preview hasn't
-     * loaded yet take it, and it sets the row height of the justified layouts.
+     * The typical preview shape of the listed files (geometric mean of the known ones, learned or indexed): tiles of
+     * unknown shape take it, and it sets the row height of the justified layouts.
      */
     readonly ratioGuess = signal<number | null>(null);
 
@@ -40,6 +40,15 @@ export class PreviewsService {
         return this.ratios.get(path) ?? null;
     }
 
+    /**
+     * The shape a file's tile takes before its preview loads: learned from an earlier render, else the file's own
+     * width and height from the index (oriented as shown: EXIF and video rotations swap them), so the rows are laid
+     * out right at once instead of re-packing as previews arrive (a tap then lands on another item).
+     */
+    shapeOf(item: LibraryItem): number | null {
+        return this.ratios.get(item.path) ?? (item.width && item.height ? item.width / item.height : null);
+    }
+
     learn(path: string, ratio: number): void {
         this.ratios.set(path, ratio);
     }
@@ -51,7 +60,7 @@ export class PreviewsService {
             let sum = 0;
             let count = 0;
             for (const item of items()) {
-                const ratio = this.ratios.get(item.path);
+                const ratio = this.shapeOf(item);
                 if (ratio) {
                     sum += Math.log(Math.min(Math.max(ratio, 0.25), 4));    // a panorama shouldn't skew the rows
                     count++;

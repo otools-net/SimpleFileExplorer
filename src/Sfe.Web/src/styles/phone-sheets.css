@@ -3,8 +3,11 @@
 /*
  * The rule for every menu or popup that opens at the bottom of a phone's screen (agents/docs/development/frontend.md):
  * it is a sheet across the whole width, against the bottom edge, rounded at its top corners only, over a backdrop.
- * While one is open the page behind doesn't scroll, so its scrollbar goes and the sheet and its backdrop cover that
- * room too (the page keeps the scrollbar's width as padding: `--scrollbar-w`, scrollbar-width.ts).
+ * While one is open the page behind doesn't scroll. On a touch screen a finger can't pan the backdrop and the sheet's
+ * own scrolling stops at its ends, so the page's root is left alone: `overflow: hidden` there brought back Android
+ * Chrome's address bar, the viewport got shorter and the selection bar jumped up, and it re-laid out the whole page.
+ * With a mouse (the wheel ignores touch-action) the root is held, its scrollbar goes and the sheet and its backdrop
+ * cover that room too (the page keeps the scrollbar's width as padding: `--scrollbar-w`, scrollbar-width.ts).
  *
  * Mark the popup `phone-sheet` and put a `sheet-backdrop` next to it (shown only on phones; a click on it closes the
  * popup). Its position on larger screens is its own; under 641 px these rules win (this file comes last). A popup
@@ -21,6 +24,7 @@
         display: block;
         background: rgb(0 0 0 / .45);
         pointer-events: auto;
+        touch-action: none;
     }
 
     .phone-sheet {
@@ -32,6 +36,7 @@
         max-height: 75dvh !important;
         margin: 0 !important;
         overflow-y: auto;
+        overscroll-behavior: contain;
         padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
         border-right: 0 !important;
         border-bottom: 0 !important;
@@ -39,6 +44,8 @@
         border-radius: var(--radius) var(--radius) 0 0 !important;
         pointer-events: auto;
     }
+}
 
+@media (max-width: 640px) and (any-pointer: fine) {
     html:has(.sheet-backdrop) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
 }

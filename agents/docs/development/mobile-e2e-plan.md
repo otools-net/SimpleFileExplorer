@@ -67,10 +67,16 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
 - [ ] With Chrome remote debugging on the Android phone (`chrome://inspect`: Performance panel around the tap, layout
   shifts, long tasks).
 - [~] Check these suspects one by one, write down which hold (`[x]` holds, `[-]` doesn't):
-  - [ ] Opening a sheet sets `html { overflow: hidden }` (`html:has(.sheet-backdrop)`, `styles/phone-sheets.css`):
+  - [x] Opening a sheet sets `html { overflow: hidden }` (`html:has(.sheet-backdrop)`, `styles/phone-sheets.css`):
     on Android Chrome that brings the hidden address bar back, the layout viewport shrinks, and the fixed
     `.selection-dock` (`bottom: max(20px, env(safe-area-inset-bottom))`, `styles/selection.css`) moves up; closing
-    moves it back. Not in emulation (no address bar): needs a phone.
+    moves it back. Not seen in emulation (no address bar), but recorded in context-menu.md since 1.62 ("brings back
+    Chrome's address bar"). **Fixed 2026-10-29:** on touch screens the root is left alone (backdrop `touch-action:
+    none`, sheet `overscroll-behavior: contain`); tests: root overflow kept, swipes on sheet and backdrop don't scroll.
+    Confirm on a phone. Modal dialog sheets (`dialog.sheet[open]`, `base.css`) still lock the root: next.
+  - [x] Found on the way: tiles re-packed as their previews loaded (shape learned on load), so items moved under the
+    finger in the first half second; a tap on ⋮ then hit another element (WebKit, 2 runs in 6). **Fixed:** tiles take
+    the index's width/height at once (`PreviewsService.shapeOf`); test `listing.spec.ts`.
   - [-] The selection bar re-measures when the selection changes (`OverflowRow`, `fitGaps`): the long / short count
     and the "⋯" swap, the centred pill changes width and re-centres; or it is re-created and replays its `toast-in`
     animation. Steady within 1 px on every project.
@@ -84,7 +90,7 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
     opening closes it, looking like "didn't open".
   - [x] A long task on the tap (change detection over a big listing, overflow measuring, layout after `has()`):
     measure input → sheet painted. 165–460 ms at 4× CPU, mostly the app's script; the lock's `:has()` part of it.
-- [ ] Each confirmed cause gets a failing e2e scenario **before** its fix (the fixes are separate commits with
+- [~] Each confirmed cause gets a failing e2e scenario **before** its fix (the fixes are separate commits with
   changelog lines; this epic itself is tests only).
 
 ### Findings in emulation (2026-10-29)
