@@ -268,7 +268,7 @@ describe('ContextMenu', () => {
             expect(menu.open()).toBeNull();
         });
 
-        it('keeps a phone sheet open through a scroll and the address bar showing again, not through a turn', async () => {
+        it('keeps a phone sheet open through a scroll, the address bar showing again and a turn', async () => {
             setMediaQuery('(max-width: 640px)', true);
             menu.showAt(target('inner'), at('#inner'));
             await settle();
@@ -279,7 +279,64 @@ describe('ContextMenu', () => {
             expect(menu.open()?.target.key).toBe('inner');
 
             resize(width + 200);
+            expect(menu.open()?.target.key).toBe('inner');
+        });
+
+        it("places a finger's menu again under its button when a turn makes the sheet a popup", async () => {
+            setMediaQuery('(max-width: 640px)', true);
+            document.dispatchEvent(Object.assign(new Event('pointerdown', { bubbles: true }), { pointerType: 'touch' }));
+            const trigger = at('#inner');
+            menu.showAt(target('inner'), trigger);
+            await settle();
+            vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue(new DOMRect(30, 40, 20, 10));
+
+            setMediaQuery('(max-width: 640px)', false);
+            resize(width + 200);
+            expect(menu.open()?.target.key).toBe('inner');
+            await settle();
+            expect(document.querySelector<HTMLElement>('.item-menu')!.style.top).toBe('54px');
+            // The page scrolling as it is laid out again for the new size: part of the turn, the menu stays.
+            window.dispatchEvent(new Event('scroll'));
+            expect(menu.open()?.target.key).toBe('inner');
+        });
+    });
+
+    describe("close watchers (Android's Back)", () => {
+        const made: { onclose: (() => void) | null; destroyed: boolean; destroy(): void }[] = [];
+        class FakeWatcher {
+            onclose: (() => void) | null = null;
+            destroyed = false;
+            constructor() { made.push(this); }
+            destroy(): void { this.destroyed = true; }
+        }
+
+        beforeEach(() => {
+            made.length = 0;
+            (globalThis as { CloseWatcher?: unknown }).CloseWatcher = FakeWatcher;
+        });
+        afterEach(() => delete (globalThis as { CloseWatcher?: unknown }).CloseWatcher);
+
+        it('Back closes the open menu, and only it', async () => {
+            menu.showAt(target('inner'), at('#inner'));
+            await settle();
+            expect(made).toHaveLength(1);
+            made[0].onclose!();
+            await settle();
             expect(menu.open()).toBeNull();
+        });
+
+        it("a menu closed otherwise lets go of its watcher (the next Back is the page's again)", async () => {
+            menu.showAt(target('inner'), at('#inner'));
+            await settle();
+            menu.close();
+            await settle();
+            expect(made[0].destroyed).toBe(true);
+
+            menu.showAt(target('outer'), at('#outer'));
+            await settle();
+            // The old watcher, if it ever fired, would not close the new menu.
+            made[0].onclose?.();
+            expect(menu.open()?.target.key).toBe('outer');
         });
     });
 });

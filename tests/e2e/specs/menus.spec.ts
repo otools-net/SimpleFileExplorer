@@ -70,3 +70,56 @@ test.describe('menus', () => {
         await closeMenu(page);
     });
 });
+
+// Decided 2026-10-29: Android's Back closes the open menu and stays on the page (a close watcher, Chromium only);
+// turning the phone keeps it open, laid out again.
+test.describe('closing and turning', () => {
+    test('Android\'s Back closes the open menu, and only it', async ({ page, browserName }) => {
+        test.skip(browserName !== 'chromium', 'close watchers: Chromium (Android\'s Back); iOS has no Back button');
+        // Back reaches the newest close watcher: kept here to ask it, as the system does.
+        await page.addInitScript(() => {
+            const Native = (window as unknown as { CloseWatcher?: new () => object }).CloseWatcher;
+            if (!Native)
+                return;
+            const made: object[] = [];
+            Object.assign(window, { __watchers: made });
+            Object.assign(window, { CloseWatcher: class extends Native { constructor() { super(); made.push(this); } } });
+        });
+        const back = () => page.evaluate(() => (window as unknown as { __watchers: { requestClose(): void }[] }).__watchers.at(-1)!.requestClose());
+        await openFolder(page, 'Photos/2025 Mountains');
+        const url = page.url();
+        await item(page, 'Photos/2025 Mountains/Summit.jpg').locator('.item-menu-button').tap();
+        await expect(page.locator(menu)).toBeVisible();
+        await back();
+        await expect(page.locator(menu)).toHaveCount(0);
+        expect(page.url()).toBe(url);
+
+        // In the viewer: Back closes its menu, the viewer stays.
+        await item(page, 'Photos/2025 Mountains/Summit.jpg').locator('.item-link').first().tap();
+        await page.locator('dialog.viewer[open] .viewer-menu-button').tap();
+        await expect(page.locator(menu)).toBeVisible();
+        await back();
+        await expect(page.locator(menu)).toHaveCount(0);
+        await expect(page.locator('dialog.viewer[open]')).toHaveCount(1);
+    });
+
+    test('turning the phone keeps the menu open, inside the screen', async ({ page }) => {
+        const { width, height } = page.viewportSize()!;
+        test.skip(width > height, 'starts upright');
+        await openFolder(page, 'Photos/2025 Mountains');
+        const tile = item(page, 'Photos/2025 Mountains/Summit.jpg');
+        await tile.locator('.item-menu-button').tap();
+        await expect(page.locator(menu)).toBeVisible();
+
+        for (const size of [{ width: height, height: width }, { width, height }]) {
+            await page.setViewportSize(size);
+            await expect(page.locator(menu)).toBeVisible();
+            await expect.poll(async () => {
+                const box = (await page.locator(menu).boundingBox())!;
+                return box.x >= 0 && box.y >= 0 && box.x + box.width <= size.width + 0.5 && box.y + box.height <= size.height + 0.5;
+            }, `the menu inside ${size.width}×${size.height}`).toBe(true);
+        }
+        await expectSheet(page);
+        await closeMenu(page);
+    });
+});

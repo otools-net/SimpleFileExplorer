@@ -28,6 +28,10 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
+    /* A window lower than the menu (a phone held sideways): it scrolls inside itself instead of leaving the screen. */
+    max-height: calc(100dvh - 8px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .item-menu-entry {

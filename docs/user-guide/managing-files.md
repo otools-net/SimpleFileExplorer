@@ -265,7 +265,8 @@ again.
 
 - **Press and hold** a file or folder to select it (as phone file managers do); press and hold others, or tick their
   boxes, to add them, then use the selection bar.
-- The **⋮** button of each item opens its menu, as a sheet at the bottom of the screen.
+- The **⋮** button of each item opens its menu, as a sheet at the bottom of the screen. Android's **Back** closes it
+  (and stays on the page); it stays open when you turn the phone.
 
   ![The item menu on a phone](../images/phone-item-menu.png)
 

@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
+import { ToastService } from '../core/toast.service';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders, type } from '../../testing/fakes';
@@ -405,6 +406,26 @@ describe('ItemMenu', () => {
         await store.load();
         await settle();
         expect(TestBed.inject(ContextMenu).open()).toBeNull();
+    });
+
+    it('stays open through a refresh from the change feed, closes with a word when its item left the folder', async () => {
+        await setUp();
+        TestBed.createComponent(ContextMenuComponent).detectChanges();
+        const toasts = TestBed.inject(ToastService);
+        rightClick(menuEvent(), photo);
+        await settle();
+
+        await store.refresh();
+        await settle();
+        expect(TestBed.inject(ContextMenu).open()?.target.item?.path).toBe(photo.path);
+        expect(toasts.toasts()).toEqual([]);
+
+        // Deleted in another tab: the change feed lists the folder again without it.
+        api.browse.mockResolvedValue(listing([folder]));
+        await store.refresh();
+        await settle();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
+        expect(toasts.toasts().map(toast => toast.message)).toEqual(['beach.jpg is no longer in this folder: it was moved or deleted elsewhere.']);
     });
 });
 

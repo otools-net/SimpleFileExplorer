@@ -43,6 +43,9 @@ export interface MenuTarget {
     item?: LibraryItem;
 }
 
+/** How long the page's scrolling after a resize still belongs to it (the page laid out again for the new size). */
+const RESIZE_SCROLL_MS = 500;
+
 /** How long after the ContextMenu key or Shift+F10 the browser's own `contextmenu` event of that key is swallowed. */
 const keyboardEcho = 800;
 
@@ -289,6 +292,12 @@ function openDialog(trigger: HTMLElement | null): HTMLDialogElement | null {
 }
 
 /** The menu shows as a sheet at the bottom (phone-sheets.css), not at the pointer. */
+/** The browser's `CloseWatcher` (Chromium 120+; not yet in TypeScript's DOM types). */
+interface CloseWatcherLike {
+    onclose: (() => void) | null;
+    destroy(): void;
+}
+
 function isSheet(): boolean {
     return typeof matchMedia === 'function' && matchMedia('(max-width: 640px)').matches;
 }
@@ -414,8 +423,10 @@ export class ContextMenuComponent {
     });
     /** Where the menu shows: at the pointer, moved back inside the window once its size is known. */
     protected readonly position = signal({ x: 0, y: 0 });
-    /** The window's width when the menu opened: a resize changing only the height doesn't close a phone sheet. */
-    private openWidth = 0;
+    /** Android's Back (and Esc) closes the open menu instead of leaving the page, where the browser has close watchers. */
+    private watcher: CloseWatcherLike | null = null;
+    /** When the window last changed size (`onScroll`). */
+    private resizedAt = -Infinity;
 
     constructor() {
         effect(() => {
@@ -426,10 +437,10 @@ export class ContextMenuComponent {
             const parent = open ? openDialog(open.trigger) ?? this.home : this.home;
             if (parent && this.host.parentNode !== parent)
                 parent.appendChild(this.host);
+            untracked(() => this.watch(!!open));
             if (!open)
                 return;
             untracked(() => this.position.set({ x: open.x, y: open.y }));
-            this.openWidth = window.innerWidth;
             afterNextRender(() => {
                 showLayer(this.layer()?.nativeElement);
                 // A phone's sheet is placed by its CSS (phone-sheets.css): measuring it forced a layout of the menu inside
@@ -459,7 +470,23 @@ export class ContextMenuComponent {
             document.removeEventListener('keydown', escape, true);
             navigations?.unsubscribe();
             this.menu.close();
+            this.watch(false);
         });
+    }
+
+    /** One close watcher per menu opened (a dialog under it keeps its own, closed by the next Back). */
+    private watch(open: boolean): void {
+        this.watcher?.destroy();
+        this.watcher = null;
+        const Watcher = (globalThis as { CloseWatcher?: new () => CloseWatcherLike }).CloseWatcher;
+        if (!open || !Watcher)
+            return;
+        const watcher = new Watcher();
+        watcher.onclose = () => {
+            if (this.watcher === watcher)
+                this.menu.close();
+        };
+        this.watcher = watcher;
     }
 
     private place(x: number, y: number): void {
@@ -468,9 +495,11 @@ export class ContextMenuComponent {
             return;
         const width = box.offsetWidth;
         const height = box.offsetHeight;
+        // Below the point, else above it; always inside the window (a turned phone can leave the button off screen).
+        const top = y + height > window.innerHeight - 4 ? y - height : y;
         this.position.set({
             x: Math.max(4, Math.min(x, window.innerWidth - width - 4)),
-            y: Math.max(4, y + height > window.innerHeight - 4 ? y - height : y),
+            y: Math.max(4, Math.min(top, window.innerHeight - height - 4)),
         });
     }
 
@@ -502,18 +531,33 @@ export class ContextMenuComponent {
         afterNextRender(() => this.focusFirst(), { injector: this.injector });
     }
 
-    /** A menu at the pointer would be left behind by the page; a phone sheet stays at the bottom, the page frozen behind it. */
+    /**
+     * A menu at the pointer would be left behind by the page; a phone sheet stays at the bottom, the page frozen behind
+     * it. The scroll a resize makes (a turned phone's page laid out again) is part of the resize.
+     */
     protected onScroll(): void {
-        if (!isSheet())
+        if (isSheet())
+            return;
+        if (performance.now() - this.resizedAt < RESIZE_SCROLL_MS)
+            this.onResize();
+        else
             this.menu.close();
     }
 
     /**
-     * A phone's address bar shows again when a sheet freezes the page behind it (hidden by scrolling down), which
-     * resizes the window right after the sheet opened: only a change of width (turning the phone) closes a sheet.
+     * A sheet is laid out by its CSS: it stays through any resize (a phone's address bar coming back, the phone
+     * turned). A menu at the pointer: a finger's is placed again under what opened it (turned from a sheet to a
+     * popup); one of the mouse closes, as the window it was placed in changed.
      */
     protected onResize(): void {
-        if (!isSheet() || window.innerWidth !== this.openWidth)
+        this.resizedAt = performance.now();
+        const open = this.menu.open();
+        if (!open || isSheet())
+            return;
+        const trigger = open.touch && open.trigger?.isConnected ? open.trigger.getBoundingClientRect() : null;
+        if (trigger)
+            this.place(trigger.left, trigger.bottom + 4);
+        else
             this.menu.close();
     }
 
