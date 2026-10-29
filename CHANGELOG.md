@@ -7,6 +7,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **Phones: Android's Back closes an open menu** instead of leaving the page; turning the phone keeps the menu open,
+  laid out again (it closed, or ran off a phone held sideways).
+- **Menus never run off a low window**: taller than the window, a menu scrolls inside itself.
+- **A menu whose item was deleted or moved elsewhere** (another tab, another person) closes with a short notice
+  instead of staying on an item that is gone.
 - **Phones: bigger buttons in the selection bar** (36 px instead of 30 on touch screens), easier to hit with a
   thumb.
 - **Phones: menus open about twice as fast** (an item's ⋮ menu, the folder's, the viewer's): the menu no longer

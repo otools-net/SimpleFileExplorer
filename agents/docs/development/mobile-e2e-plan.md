@@ -205,8 +205,8 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   (`navigation.spec.ts`, `fixme` on WebKit).
 - [x] Address bar shown / hidden (height-only resizes): the selection bar stays at the bottom
   (`selection.spec.ts`); a swipe scrolls and selects nothing.
-- [ ] A refresh from the change feed while the menu is open: the menu stays; its item removed elsewhere: the menu
-  closes with a notice (decided).
+- [x] A refresh from the change feed while the menu is open: the menu stays; its item removed elsewhere: the menu
+  closes with a notice (`ItemMenu`, unit test in `files.spec.ts`).
 
 ### Menus and sheets — [context-menu](../features/context-menu.md), [frontend](frontend.md) (phone sheets)
 
@@ -216,8 +216,10 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [x] A sheet longer than the screen fits in 75 % and scrolls inside itself; the page behind doesn't scroll (swipe
   on the backdrop and on the sheet).
 - [ ] Submenus (Speed, view switch) open in place; Back returns.
-- [ ] Closing: backdrop tap, a chosen entry, Android Back (decided: closes it, stays on the page); turning the phone
-  keeps it open, laid out again (decided); never on the scroll that the lock itself causes.
+- [~] Closing: backdrop tap, a chosen entry, Android Back (decided: closes it, stays on the page; **done**, a
+  `CloseWatcher`, `menus.spec.ts`); turning the phone keeps it open, laid out again (**done**; found: a popup taller
+  than a sideways phone ran off the screen, and the page's scroll after the turn closed it; fixed); never on the
+  scroll that the lock itself causes. Left: Back on a modal dialog (the browser's own, not reachable from a test).
 - [ ] After closing: the scroll position and the selection are as before; focus doesn't pop the keyboard.
 - [ ] iOS: every function reachable without `contextmenu` (⋮ buttons everywhere a menu exists).
 
