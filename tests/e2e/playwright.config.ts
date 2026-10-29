@@ -2,7 +2,10 @@
 // sample library, driven in phone-sized browsers with touch. Reports and traces go to the work folder, not the repo.
 import { defineConfig, devices } from '@playwright/test';
 import path from 'node:path';
-import { auth, baseURL, here, work, type Account } from './paths';
+import { auth, baseURL, ffmpeg, here, work, type Account } from './paths';
+
+// Found once here; the server script and the workers read it (empty: none, the `@ffmpeg` specs skip).
+process.env.SFE_E2E_FFMPEG = ffmpeg ?? '';
 
 // Chromium: the installed Edge on Windows (no download), Playwright's own elsewhere (CI). WebKit: `npm run browsers`.
 const channel = process.env.SFE_E2E_CHANNEL ?? (process.platform === 'win32' ? 'msedge' : undefined);

@@ -119,6 +119,13 @@ async function settled(locator: Locator): Promise<void> {
  * untrusted, so it checks the app's handling in the engine, not iOS's own gestures (link previews, text selection).
  */
 export async function holdLikeIos(page: Page, locator: Locator, ms = 800): Promise<void> {
+    const lift = await pressLikeIos(page, locator);
+    await page.waitForTimeout(ms);
+    await lift();
+}
+
+/** A finger put down on `locator` as `holdLikeIos` does, held until the returned function lifts it (with its click). */
+export async function pressLikeIos(page: Page, locator: Locator): Promise<() => Promise<void>> {
     // A scroll during the hold ends it, as a finger that moves: the page still first.
     await settled(locator);
     const point = await centre(locator);
@@ -129,8 +136,7 @@ export async function holdLikeIos(page: Page, locator: Locator, ms = 800): Promi
         target.dispatchEvent(new PointerEvent('pointerdown', init));
         (window as unknown as { __held: Element }).__held = target;
     }, init);
-    await page.waitForTimeout(ms);
-    await page.evaluate(({ x, y }) => {
+    return () => page.evaluate(({ x, y }) => {
         const target = (window as unknown as { __held: Element }).__held;
         const init = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerType: 'touch', pointerId: 41, isPrimary: true };
         target.dispatchEvent(new PointerEvent('pointerup', init));

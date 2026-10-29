@@ -64,6 +64,15 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
   `expectClearOfInsets` checks that first); WebKit in Playwright has no equivalent (skipped).
 - No mouse in phone specs: `harness.spec.ts` fails on `.click(`, `.dblclick(`, `.hover(`, `mouse.*(` in specs and
   fixtures unless the line ends with `// mouse: <why>` (the desktop project's branch).
+- ffmpeg (`@ffmpeg` specs): `paths.ts` finds it once (`SFE_E2E_FFMPEG`, else `SFE_TEST_FFMPEG`, else `ffmpeg` on the
+  PATH); the config sets `SFE_E2E_FFMPEG` for the server and the workers. With it the server gets `FfmpegPath` and
+  trickplay of `Videos/Timelapses` only (1 s frames); without it the specs skip. CI installs it for the full runs.
+- WebKit on Windows plays no WebM and no MP3 (an iPhone plays MP3): video and audio specs skip there when the app shows
+  its "can't play" message.
+- `@a11y` (`a11y.spec.ts`): axe-core's WCAG 2.2 A/AA rules on the main screens, once per run (android); serious and
+  critical fail, the others are listed in the report (annotations `a11y <screen>`).
+- The guard lets one console error through: a 404 of a video's trickplay description (`api/trickplay/files/…`, not a
+  `sheet=`), the app's "not made yet" (only with ffmpeg); a failed load's message carries its address.
 - `npm run typecheck` in `tests/e2e`: Playwright strips the types without checking them.
 - WebKit (Windows) gives a page reloaded by Back `history.state` null (Chromium: the state written before leaving), so
   listing positions saved there are lost; `navigation.spec.ts` marks it `fixme` on WebKit until checked on an iPhone.

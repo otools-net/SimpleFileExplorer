@@ -47,6 +47,9 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   changes the row's height inside its ResizeObserver callback, which the browser reports as a "ResizeObserver loop"
   error (Angular logs it) and the content below shifts. Nor does an item's label change width with its state ("Save"
   → "Saving…"): show the state another way (`aria-busy`, a class).
+- **Accessibility (rules, 2026-10-29; e2e `a11y.spec.ts`):** `aria-controls` names only an element that is there
+  (bind it, null while the list or panel is hidden); a text field with suggestions is `role="combobox"`; a link inside
+  a line of text is underlined (`p a:not([class])`, `base.css`).
 - **Closing on a tap outside (rule, 2026-10-29):** listen to `document:pointerdown`, not `click`: iOS Safari sends no
   click for a tap on what isn't clickable (text, an empty area), so the popup stayed open on iPhones (main menu,
   sidebar). A long press on iPhones: `ContextMenu.holdStart` ([context-menu](../features/context-menu.md)).

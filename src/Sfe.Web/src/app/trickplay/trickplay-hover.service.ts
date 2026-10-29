@@ -123,11 +123,13 @@ export class TrickplayHoverService {
             }],
             ['pointerup', () => release()],
             ['pointercancel', () => release()],
-            // A long press opens the browser's menu for the link (Android), which would end the touch.
+            // A long press opens the browser's menu for the link (Android), which would end the touch, and selects the
+            // item (its menu target, `ContextMenu.fromEvent`): the hold is the preview's. Capturing, so it comes before
+            // the item's own handler on the same element (e2e trickplay.spec.ts).
             ['contextmenu', (event: Event) => {
                 if (hover?.touch && (hover.stop || player.isReady(path())))
                     event.preventDefault();
-            }],
+            }, true],
             // Capturing, so it comes before the link's own handler.
             ['click', (event: MouseEvent) => {
                 if (swallowClick) {

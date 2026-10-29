@@ -58,9 +58,17 @@ const app = spawn('dotnet', [dll, '--contentRoot', path.join(repo, 'src/Sfe.Api'
         Sfe__Setup__Code: 'e2e-setup-code-1',
         // Specs that sign in through the page, in parallel: the per-address limit would refuse them.
         Sfe__Security__SignInsPerMinute: '1000',
+        // With ffmpeg (found by playwright.config.ts): trickplay of the timelapses only, for the `@ffmpeg` specs (one
+        // frame a second: the samples are seconds long); WebM converted for browsers that can't play it.
+        ...(process.env.SFE_E2E_FFMPEG ? {
+            Sfe__Thumbnails__FfmpegPath: process.env.SFE_E2E_FFMPEG,
+            Sfe__Trickplay__Enabled: 'true',
+            Sfe__Trickplay__Folders__0: 'Videos/Timelapses',
+            Sfe__Trickplay__IntervalSeconds: '1',
+        } : {}),
     },
 });
-console.log(`[e2e] app on http://localhost:${port}/ (log ${path.join(work, 'app.log')})`);
+console.log(`[e2e] app on http://localhost:${port}/ (log ${path.join(work, 'app.log')}; ffmpeg: ${process.env.SFE_E2E_FFMPEG || 'none'})`);
 
 const stop = () => { app.kill(); process.exit(0); };
 process.on('SIGINT', stop);

@@ -50,8 +50,14 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; scratch:
         const problems: string[] = [];
         const allowed = (text: string) => allowedErrors?.test(text) ?? false;
         page.on('console', message => {
-            if (message.type() === 'error' && !allowed(message.text()))
-                problems.push(`console: ${message.text()}`);
+            // A video's trickplay description (not a sheet) answers 404 until it is made, or outside the trickplay's
+            // folders: the app asks, by design (TrickplayEndpoints `GetTrickplay`); the browser logs it. Only with ffmpeg.
+            if (/^Failed to load resource: .*404/.test(message.text()) && /\/api\/trickplay\/files\/[^?]+(\?(?!.*\bsheet=).*)?$/.test(message.location().url))
+                return;
+            // A failed load names its address (the browser's message doesn't).
+            const text = message.text().startsWith('Failed to load resource') ? `${message.text()} ${message.location().url}` : message.text();
+            if (message.type() === 'error' && !allowed(text))
+                problems.push(`console: ${text}`);
         });
         page.on('pageerror', error => { if (!allowed(error.message)) problems.push(`page error: ${error.message}`); });
         page.on('response', response => {

@@ -37,6 +37,10 @@
 }
 
 .item-folder:hover { color: var(--accent); text-decoration: underline; }
+/* A finger's target: a 24 px line (WCAG 2.5.8; e2e a11y.spec.ts, search results). */
+@media (pointer: coarse) {
+    .item-folder { line-height: 24px; }
+}
 
 mark {
     padding: 0 1px;

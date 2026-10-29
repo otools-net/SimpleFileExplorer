@@ -254,8 +254,11 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 - [~] Video: Play by a tap, a tap hides / shows the controls, a double tap on the right jumps forward, the controls on
   one line with buttons ≥ 24 px, their "⋯" a sheet (`video.spec.ts`; WebKit on Windows plays no WebM: skipped, the
   app's "can't play" fallback works). **Fixed:** the controls covered the big Play on a 360 px phone (a tap only
-  showed them); the seek bar was 18 px tall. Left: full screen, rotation, hold-to-preview (trickplay, `@ffmpeg`).
-- [ ] Audio: play / pause, the bar reachable above the home indicator.
+  showed them); the seek bar was 18 px tall. Full screen by a tap and back, turning the phone while it plays
+  (`video.spec.ts`); hold-to-preview (`trickplay.spec.ts`, `@ffmpeg`: ffmpeg found or skipped; CI installs it).
+  **Found and fixed:** holding a video's tile played its preview and also selected the video.
+- [x] Audio: play / pause by a tap on its bar, above the bottom of the screen (`video.spec.ts`; WebKit on Windows has no
+  MP3: skipped there).
 - [~] Documents open by a tap, show content, fit, no zoom, toolbar buttons ≥ 24 px: text, Markdown, JSON, CSV, PDF,
   EPUB, archive, subtitles (`viewers.spec.ts`). **Fixed:** ResizeObserver loops on phones (a 34 px view switch and a
   38 px Extract button in 32 px toolbars), the text status bar's 12 px select (iOS zoom). Find and the Aa panel in a
@@ -280,7 +283,7 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 ### Tags — [tags](../features/tags.md), [scope-tagging](../features/scope-tagging.md)
 
 - [x] Tag the selection from the bar: picker, suggestion taken by a tap (fixed for iPhones), chip on the tile
-  (`tags.spec.ts`). A whole folder: left.
+  (`tags.spec.ts`). A whole folder from its menu, every file tagged (`tags.spec.ts`).
 
 ### Accounts, administration, other pages
 
@@ -306,7 +309,11 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   one.
 - [ ] Tap targets: fail under 24, list under 44 (decided); nothing reachable only by hover or right click.
 - [ ] No focus that pops the keyboard unasked (a sheet focusing its first field on open, on phones).
-- [ ] `@a11y` run (decided: do it, fix serious / critical): `@axe-core/playwright` on each screen's main states (labels, contrast, roles).
+- [x] `@a11y` run (`a11y.spec.ts`, `@axe-core/playwright` 4.14.0, WCAG 2.2 A/AA, android only): listing, selection
+  bar, item menu, viewer, a dialog, search, administration, My account, sign-in. **Found and fixed:** the search box
+  (`aria-expanded` on a plain search field: now a combobox; `aria-controls` to lists not shown, there and in the
+  administration's search), the search explain button, links told apart by colour only (sign-in), search results'
+  folder links under 24 px. Moderate / minor: none on these screens (they would be listed in the report): `@axe-core/playwright` on each screen's main states (labels, contrast, roles).
 
 ## Phase 4: in the workflow
 

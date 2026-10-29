@@ -18,6 +18,7 @@ npm run e2e -- --project=android-slow --no-deps # the timing budgets alone (else
 npm run e2e -- --grep "@smoke|@reported"       # the quick set (CI on edge: android and iphone)
 npm run e2e -- specs/reported.spec.ts           # one file
 SFE_E2E_SKIP_BUILD=1 npm run e2e                # reuse the last build (no client or server change since)
+SFE_E2E_FFMPEG=C:/Portables/ffmpeg/bin/ffmpeg.exe npm run e2e -- --grep @ffmpeg   # trickplay specs (else ffmpeg from the PATH, or skipped)
 npm run typecheck                               # the specs and fixtures type-check (Playwright runs them unchecked)
 npx playwright show-report <tmp>/sfe-e2e/report # the HTML report, with traces and videos of failures
 ```

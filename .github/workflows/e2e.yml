@@ -49,6 +49,11 @@ jobs:
         working-directory: tests/e2e
         run: npm run e2e -- --project=android --project=iphone --grep "@smoke|@reported"
 
+      # The @ffmpeg specs (hold-to-preview, conversion) find it on the PATH (tests/e2e/paths.ts).
+      - name: ffmpeg
+        if: github.ref != 'refs/heads/edge'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
       - name: Everything
         if: github.ref != 'refs/heads/edge'
         working-directory: tests/e2e

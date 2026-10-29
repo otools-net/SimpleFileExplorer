@@ -96,7 +96,7 @@ export class ChipInViewDirective {
                     <nav class="admin-nav" aria-label="Administration sections">
                         <div class="admin-search" role="search">
                             <svg sfeIcon="search" class="search-icon"></svg>
-                            <input #searchBox type="search" placeholder="Find a setting…" aria-label="Find a setting or a page" aria-controls="admin-search-results"
+                            <input #searchBox type="search" placeholder="Find a setting…" aria-label="Find a setting or a page" [attr.aria-controls]="searching() ? 'admin-search-results' : null"
                                    title="Find the settings and pages whose name or description has these words (Enter opens the first one, Esc clears)"
                                    spellcheck="false" autocomplete="off" enterkeyhint="go" [value]="query()" (input)="query.set(valueOf($event))" (keydown)="onSearchKey($event)">
                             @if (query()) {

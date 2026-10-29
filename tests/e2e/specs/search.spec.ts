@@ -6,7 +6,7 @@ import { expectFitsScreen, expectNoZoomOnFocus, expectTapTargets } from '../fixt
 test.describe('search', () => {
     test('a tap focuses the search box, which does not make iOS zoom', async ({ page }) => {
         await openFolder(page, 'Photos');
-        const box = page.getByRole('searchbox', { name: 'Search' });
+        const box = page.getByRole('combobox', { name: 'Search', exact: true });
         await box.tap();
         await expect(box).toBeFocused();
         await expectNoZoomOnFocus(page, 'input[type=search]');
@@ -15,7 +15,7 @@ test.describe('search', () => {
 
     test('a query lists its results; the top bar keeps fitting', async ({ page }) => {
         await openFolder(page, 'Photos');
-        const box = page.getByRole('searchbox', { name: 'Search' });
+        const box = page.getByRole('combobox', { name: 'Search', exact: true });
         await box.tap();
         await box.fill('summit');
         await box.press('Enter');
@@ -26,7 +26,7 @@ test.describe('search', () => {
 
     test('a recent search is offered on the next tap and runs on a tap', async ({ page }) => {
         await openFolder(page, 'Photos');
-        const box = page.getByRole('searchbox', { name: 'Search' });
+        const box = page.getByRole('combobox', { name: 'Search', exact: true });
         await box.tap();
         await box.fill('lake');
         await box.press('Enter');

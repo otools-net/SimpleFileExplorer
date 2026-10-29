@@ -87,3 +87,30 @@ test.describe('tag panels and menus', () => {
         await expect(page.locator('sfe-listing [data-path]').first()).toBeVisible();
     });
 });
+
+test.describe('a whole folder', () => {
+    test("tag every file of a folder from the folder's menu", async ({ page, scratch }) => {
+        const tag = await newTag(page, 'Folder');
+        await openFolder(page, scratch);
+        const more = page.locator('button.location-more');
+        test.skip(!await more.isVisible(), 'the folder menu is a "⋯" up to 640 px');
+        await more.tap();
+        await page.locator('.item-menu[role="menu"] [data-entry="tags"]').tap();
+        const dialog = page.locator('dialog.sheet[open]');
+        await expect(dialog.locator('.scope-count')).toBeVisible();
+        await expectFitsScreen(page);
+        await expectTapTargets(page, 'dialog.sheet[open]');
+
+        // The files' picker (the folder's default tags have one too, below).
+        const input = dialog.getByRole('combobox', { name: 'Add a tag to all these files…' });
+        await input.tap();
+        await input.fill(tag.name.slice(0, 12));
+        await dialog.locator('.tag-options li[role=option]', { hasText: tag.name }).first().tap();
+        await dialog.locator('.scope-confirm').getByRole('button', { name: 'Add tag' }).tap();
+        await expect(dialog.locator('.tag-group', { hasText: 'On all these files' }).locator('sfe-tag-chip', { hasText: tag.name })).toBeVisible({ timeout: 15_000 });
+        await dialog.getByRole('button', { name: 'Done' }).tap();
+        await expect(dialog).toHaveCount(0);
+        for (const name of ['A.jpg', 'B.jpg', 'C.jpg'])
+            await expect(item(page, `${scratch}/${name}`).locator('sfe-item-tags')).toContainText(tag.name);
+    });
+});

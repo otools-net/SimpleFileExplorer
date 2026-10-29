@@ -12,6 +12,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **Accessibility**: the search box is announced as a box with suggestions, and it and the administration's search
+  point screen readers only to lists that are shown; links within a line of text are underlined; the folder link of a
+  search result is easier to tap.
+- **Phones: holding a video's tile plays its preview without also selecting the video.**
 - **EPUB books no longer open blank**: the page was laid out, then cleared as the "Loading…" message went away.
 - **The server log on a phone held sideways (or a narrow window)**: its lines kept their message (it was squeezed to
   nothing) and no longer made the page wider than the screen.

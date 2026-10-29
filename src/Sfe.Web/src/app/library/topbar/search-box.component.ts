@@ -37,8 +37,9 @@ interface TagTerm {
     host: { class: 'search', role: 'search', autocomplete: 'off', '(submit)': 'submit($event)' },
     template: `
         <svg sfeIcon="search" class="search-icon"></svg>
-        <input #input name="q" type="search" placeholder="Search the index…" aria-label="Search" enterkeyhint="search"
-               aria-autocomplete="list" [attr.aria-controls]="listId" [attr.aria-expanded]="suggesting()"
+        <!-- A combobox: its list of recent searches is named only while it shows (an id of nothing isn't valid ARIA). -->
+        <input #input name="q" type="search" role="combobox" placeholder="Search the index…" aria-label="Search" enterkeyhint="search"
+               aria-autocomplete="list" [attr.aria-controls]="suggesting() ? listId : null" [attr.aria-expanded]="suggesting()"
                [attr.aria-activedescendant]="suggesting() && active() >= 0 ? listId + '-' + active() : null"
                (input)="onInput()" (search)="onClear()" (click)="updateSuggestions()" (focus)="updateSuggestions()"
                (blur)="onBlur()" (keyup)="onKeyup($event)" (keydown)="onKeydown($event)">
@@ -46,7 +47,7 @@ interface TagTerm {
             <span class="search-count" [title]="found.title">{{ found.text }}</span>
         }
         <button type="button" class="search-scope" [hidden]="!store.route().path" [title]="scopeTitle()" (click)="onScope()">{{ scopeText() }}</button>
-        <button type="button" class="icon-button ghost search-explain-button" aria-label="Explain this search" aria-controls="search-explain"
+        <button type="button" class="icon-button ghost search-explain-button" aria-label="Explain this search" [attr.aria-controls]="search.explainOpen() ? 'search-explain' : null"
                 [hidden]="!search.canExplain()" [attr.aria-pressed]="search.explainOpen()"
                 [title]="search.explainOpen() ? 'Hide the explanation of this search' : 'Explain this search in plain words'"
                 (click)="search.setExplainOpen(!search.explainOpen())">
