@@ -91,3 +91,12 @@ export async function expectMedianOpensWithin(page: Page, selector: string, open
     expect(median, `${selector}: median ${median.toFixed(0)} ms of ${samples.map(s => s.toFixed(0)).join(', ')}; budget ${budget} ms`).toBeLessThanOrEqual(budget);
     return median;
 }
+
+/**
+ * Median ms from a tap to a menu on screen, per project. The target is 100 everywhere; on a phone's speed and on WebKit
+ * (software painting on Windows) the menus aren't there yet (mobile-e2e-plan.md, findings): these hold them where they
+ * are (measured 2026-10-29: medians ~180 ms, and 200-360 ms on WebKit depending on the machine's load) so they can't
+ * get worse unnoticed. Lower them as menus get faster.
+ */
+const MENU_BUDGET: Record<string, number> = { 'android-slow': 250, iphone: 450 };
+export const menuBudget = () => MENU_BUDGET[test.info().project.name] ?? 100;

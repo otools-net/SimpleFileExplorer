@@ -2,7 +2,7 @@
 // Each stays as a regression test once fixed.
 import { closeMenu, expect, isSheetWidth, item, openFolder, test } from '../fixtures/test';
 import { watchBoxes } from '../fixtures/steady';
-import { expectMedianOpensWithin } from '../fixtures/timing';
+import { expectMedianOpensWithin, menuBudget } from '../fixtures/timing';
 import { longPress, needsTouchGestures, swipe, tapWhenSettled } from '../fixtures/touch';
 
 const folder = 'Photos/2025 Mountains';
@@ -10,14 +10,6 @@ const file = `${folder}/Summit.jpg`;
 const menu = '.item-menu[role="menu"]';
 const bar = '.selection-dock .selection-bar';
 
-/**
- * Median ms from the tap to the item menu on screen. The target is 100 everywhere; on a phone's speed and on WebKit
- * (software painting on Windows) the menu isn't there yet (mobile-e2e-plan.md, findings): these hold it where it is
- * (measured 2026-10-29: medians ~180 ms, and 200–360 ms on WebKit depending on the machine's load) so it can't get
- * worse unnoticed. Lower them as it gets faster.
- */
-const MENU_BUDGET: Record<string, number> = { 'android-slow': 250, iphone: 450 };
-const menuBudget = () => MENU_BUDGET[test.info().project.name] ?? 100;
 
 test.describe('@timing 2026-10-29: select an item, open its menu: the bottom bar jumps, the menu opens late', () => {
     test('long press, then ⋮ (Android)', async ({ page, browserName }) => {

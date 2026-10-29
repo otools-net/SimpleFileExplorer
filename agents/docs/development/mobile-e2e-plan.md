@@ -176,8 +176,11 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   last row (`selection.spec.ts`). Safe area: not emulated (see viewport helpers).
 - [ ] **Decide:** the selection bar's buttons are 30 px tall on phones (Clear, Select all, Tags, "⋯": 30×30 to
   78×30): above WCAG AA's 24, under Apple's / AAA's 44. Larger on touch screens (`pointer: coarse`)?
-- [ ] Tiles, list and cards views: tap opens a file / folder; scroll by swipe, infinite scroll loads more, scroll
-  position restored on Back ([position-restore](../features/position-restore.md)).
+- [x] Tap opens a file (viewer) / folder; infinite scroll loads all 600; Back restores the position after the app's
+  own links (`navigation.spec.ts`). List and cards views: left.
+- [ ] **iPhone:** Back to a page that was left (a full load in between) restores nothing in WebKit on Windows:
+  `history.state` comes back null. Check on a real iPhone; if so there, keep positions in `sessionStorage` too
+  (`navigation.spec.ts`, `fixme` on WebKit).
 - [x] Address bar shown / hidden (height-only resizes): the selection bar stays at the bottom
   (`selection.spec.ts`); a swipe scrolls and selects nothing.
 - [ ] A refresh from the change feed while the menu is open: the menu's behaviour is what we decide (stays, or
@@ -185,11 +188,11 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ### Menus and sheets — [context-menu](../features/context-menu.md), [frontend](frontend.md) (phone sheets)
 
-- [ ] Item menu, folder menu (location bar "⋯"), viewer ⋮, overflow "⋯" of each row, player speed menu, default tags
-  panel, tag chip menu: each a sheet, full width, against the bottom, backdrop under, page locked, opens in ≤ 100 ms
-  on one tap.
-- [ ] A sheet longer than the screen scrolls inside itself; the page behind doesn't scroll (swipe on the backdrop
-  and on the sheet).
+- [~] Item menu, folder menu (location bar "⋯"), viewer ⋮, selection bar "⋯": sheets, full width, against the
+  bottom, entries ≥ 24 px, one tap within the budget (`menus.spec.ts`). Player speed menu, default tags panel, tag
+  chip menu: left.
+- [x] A sheet longer than the screen fits in 75 % and scrolls inside itself; the page behind doesn't scroll (swipe
+  on the backdrop and on the sheet).
 - [ ] Submenus (Speed, view switch) open in place; Back returns.
 - [ ] Closing: backdrop tap, a chosen entry, Android Back (history) if we decide it should, orientation turn; never
   on the scroll that the lock itself causes.
@@ -207,8 +210,9 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
 
 ### Viewer — [video-player](../features/video-player.md), [hover-preview](../features/hover-preview.md)
 
-- [ ] Open a picture by tap; swipe left / right to the next / previous file; swipe down or ✕ to close; the listing
-  behind keeps its scroll position.
+- [x] Open a picture by tap; swipe left / right to the next / previous file; ✕ closes; the listing behind keeps its
+  scroll position (`navigation.spec.ts`). **Found and fixed:** a swipe right (previous file) was Chrome's swipe back
+  and left the page (`overscroll-behavior-x: none` while the viewer is open).
 - [ ] Picture: double tap / pinch zoom, pan with a finger (`touch-action: none` on the stage), no page scroll behind.
 - [ ] Video `@ffmpeg`: tap shows controls, double tap seeks, the controls row on one line with its "⋯", full screen
   and back, rotation in full screen, hold-to-preview on a tile (trickplay on touch).

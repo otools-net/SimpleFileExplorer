@@ -76,8 +76,10 @@ html { scroll-padding-top: calc(var(--topbar-h) + var(--location-strip-h) + 8px)
     html:has(dialog.sheet[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
 }
 
-/* The viewer covers the whole screen at any width: the page's scrollbar (and its room) go the same way. */
-html:has(dialog.viewer[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
+/* The viewer covers the whole screen at any width: the page's scrollbar (and its room) go the same way. Its sideways
+   swipes go to the next or previous file: not to the browser's own swipe back (Chrome went back a page, leaving the
+   viewer and the listing, on a swipe to the previous file). */
+html:has(dialog.viewer[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); overscroll-behavior-x: none; }
 
 body {
     margin: 0;

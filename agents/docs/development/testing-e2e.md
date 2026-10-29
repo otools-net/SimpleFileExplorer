@@ -43,3 +43,11 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
 - Diagnostics: `menu-trace` (kinds of work, layout objects), `menu-profile` (functions, source-mapped: build first with
   `node scripts/profile-client.mjs`; Playwright's injected `visitNode`, `_shadowRoot`… are its own checks, not the
   app), `sheet-cost`, `listing-cost` (Chromium metrics, what-if CSS).
+- `locator.tap()` scrolls its target "into view" first; on a sticky element (the location bar's links) that moved
+  the page, and the app then saved that position: tap what a finger sees with `page.touchscreen.tap(x, y)` at its
+  box. `filter({ visible: true })` means CSS-visible, not on screen: pick by `boundingBox`.
+- A horizontal swipe with nothing to scroll sideways is Chrome's swipe back (overscroll history navigation): in the
+  viewer it left the page (`about:blank` in a test: the document gone, `window` globals undefined). Fixed with
+  `overscroll-behavior-x: none` while the viewer is open (base.css).
+- WebKit (Windows) gives a page reloaded by Back `history.state` null (Chromium: the state written before leaving), so
+  listing positions saved there are lost; `navigation.spec.ts` marks it `fixme` on WebKit until checked on an iPhone.
