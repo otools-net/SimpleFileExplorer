@@ -1,4 +1,4 @@
-// The document viewers on a phone (mobile e2e plan, Phase 2, viewer): each format opens by a tap from its folder, shows
+// The document viewers on a phone: each format opens by a tap from its folder, shows
 // something, fits the screen, its fields don't make iOS zoom and its buttons are big enough for a finger.
 import { expect, item, openFolder, test } from '../fixtures/test';
 import { expectFitsScreen, expectNothingCut, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';

@@ -1,7 +1,7 @@
 // The `test` every spec imports: Playwright's, signed in as `account` (default the administrator), and failing on
 // what a user wouldn't see but is still a bug: console errors, uncaught page errors, CSP violations, server errors.
 // On a phone, the screen a test ends on is checked too (`layoutCheck`): no sideways scroll, nothing cut off, no tap
-// target under 24 px (mobile e2e plan, Phase 3).
+// target under 24 px.
 import { test as base, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';

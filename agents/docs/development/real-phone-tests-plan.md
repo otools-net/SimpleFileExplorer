@@ -25,6 +25,10 @@ Status legend: `[ ]` to do, `[~]` started, `[x]` done, `[-]` dropped (why).
 
 ## Checks
 
+- [ ] **The first CI run** of `.github/workflows/e2e.yml` on GitHub (the quick set, after `edge` was pushed on
+  2026-10-30): green, or what Linux changes (Playwright's Chromium instead of Edge, ffmpeg from apt on full runs). Its
+  first version was refused (`runner.temp` in a job's `env:`), fixed since. Read it in the repository's Actions tab.
+
 - [ ] **The report, Android Chrome:** scroll the listing down so the address bar hides; long press an item; tap its
   ⋮. Does the bar at the bottom move (how far, when)? Does the address bar come back? Does the menu open on the
   first tap, at once? Same with a dialog (Rename). A screen recording kept outside the repo.

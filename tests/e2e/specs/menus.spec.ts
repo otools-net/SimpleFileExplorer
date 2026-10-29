@@ -1,4 +1,4 @@
-// Every menu that opens at the bottom of a phone (mobile e2e plan, Phase 2, menus and sheets): a sheet across the
+// Every menu that opens at the bottom of a phone: a sheet across the
 // width, against the bottom, opened by one tap within the budget, closed by a tap on the dimmed area.
 import type { Page } from '@playwright/test';
 import { closeMenu, expect, isSheetWidth, item, openFolder, test } from '../fixtures/test';

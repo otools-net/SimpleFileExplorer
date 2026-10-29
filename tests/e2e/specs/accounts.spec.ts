@@ -1,4 +1,4 @@
-// Accounts and the connection on a phone (mobile e2e plan, Phase 2, accounts): sign out from the main menu, a session
+// Accounts and the connection on a phone: sign out from the main menu, a session
 // that ended (back to the sign-in page, then where it was), the server not answering (the ⋮ warning), saving a
 // preference. Each signs in on its own: signing out ends the session the other specs share.
 import type { Page } from '@playwright/test';

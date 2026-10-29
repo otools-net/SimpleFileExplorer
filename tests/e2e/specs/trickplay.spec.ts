@@ -1,6 +1,6 @@
-// Holding a finger on a video's tile plays its preview (trickplay, hover-preview.md), on a phone (mobile e2e plan,
-// Phase 2, viewer). `@ffmpeg`: the server makes the timelapses' trickplay only with ffmpeg (paths.ts `ffmpeg`, set by
-// SFE_E2E_FFMPEG / SFE_TEST_FFMPEG or found on the PATH); without it, skipped.
+// Holding a finger on a video's tile plays its preview (trickplay, hover-preview.md), on a phone. `@ffmpeg`: the
+// server makes the timelapses' trickplay only with ffmpeg (paths.ts `ffmpeg`, set by SFE_E2E_FFMPEG / SFE_TEST_FFMPEG
+// or found on the PATH); without it, skipped.
 import { expect, item, openFolder, test } from '../fixtures/test';
 import { pressLikeIos } from '../fixtures/touch';
 

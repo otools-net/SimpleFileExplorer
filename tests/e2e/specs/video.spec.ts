@@ -1,4 +1,4 @@
-// The video player on a phone (mobile e2e plan, Phase 2, video): Play by a tap, a tap shows / hides the controls,
+// The video player on a phone: Play by a tap, a tap shows / hides the controls,
 // a double tap on the right jumps forward, the controls fit on one line with big enough buttons, their "⋯" is a sheet.
 // The samples are WebM: a browser that can't play them (WebKit on Windows: the app falls back to the server's
 // conversion, which needs ffmpeg, then says it can't play it) skips these.

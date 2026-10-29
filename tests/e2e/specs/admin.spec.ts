@@ -1,4 +1,4 @@
-// The administration and the sign-in page on a phone (mobile e2e plan, Phase 2, accounts and administration): each
+// The administration and the sign-in page on a phone: each
 // section opens, fits the screen, its fields don't make iOS zoom and its buttons are big enough for a finger.
 import fs from 'node:fs';
 import path from 'node:path';

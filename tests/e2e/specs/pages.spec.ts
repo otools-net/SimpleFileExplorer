@@ -1,4 +1,4 @@
-// Pages besides the listing on a phone (mobile e2e plan, Phase 2): a file's own page (`view?path=`), the theme from the
+// Pages besides the listing on a phone: a file's own page (`view?path=`), the theme from the
 // first paint.
 import { expect, test } from '../fixtures/test';
 import { expectFitsScreen, expectNothingCut, expectTapTargets } from '../fixtures/layout';

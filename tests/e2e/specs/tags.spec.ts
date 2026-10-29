@@ -1,4 +1,4 @@
-// Tagging on a phone (mobile e2e plan, Phase 2, tags): the selection bar's Tags, the picker's suggestion taken by a
+// Tagging on a phone: the selection bar's Tags, the picker's suggestion taken by a
 // tap (it wasn't on iPhones: a prevented pointerdown cancelled the tap), the tag shown on the tile.
 import type { Page } from '@playwright/test';
 import { expect, isSheetWidth, item, openFolder, test } from '../fixtures/test';

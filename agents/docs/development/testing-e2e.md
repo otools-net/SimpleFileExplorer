@@ -1,7 +1,7 @@
 # End-to-end tests (Playwright, phones first)
 
-Code: `tests/e2e/` (how to run: its [README](../../../tests/e2e/README.md)). Rules: [testing](testing.md). Plan and
-open work: [mobile-e2e-plan](mobile-e2e-plan.md).
+Code: `tests/e2e/` (how to run: its [README](../../../tests/e2e/README.md)). Rules: [testing](testing.md). Checks on
+real phones, still open: [real-phone-tests-plan](real-phone-tests-plan.md).
 
 - `cd tests/e2e && npm run e2e` builds `Sfe.Api` into `<tmp>/sfe-e2e/build`, copies `tests/samples/library` (plus
   `Many photos/`: 600 copies of a 20 KB photo, made per run), starts the app on :5181 (External mode, SQLite) through
@@ -90,6 +90,25 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
 - WebKit (Windows) gives a page reloaded by Back `history.state` null (Chromium: the state written before leaving), so
   listing positions saved there are lost; `navigation.spec.ts` marks it `fixme` on WebKit until checked on an iPhone.
 
+## Decisions and findings (the mobile e2e epic, 2026-10)
+
+- Started from phone reports: *select an item, open its menu: the bar at the bottom jumps, and the menu doesn't open
+  at once*. Both have failing-then-passing scenarios in `reported.spec.ts` (android, iphone, `android-slow`).
+- The menu was late because of the app: its render measured the sheet (`ContextMenu.place`, a forced layout) and
+  moved the focus into it. Sheets aren't measured, a finger's menu isn't focused ([context-menu](../features/context-menu.md)).
+  At 4× CPU ~70 ms median (budget 100), WebKit ~150 ms alone (budget 350). Further work (building the menu on
+  `pointerdown`) only if real phones still feel it.
+- The bar jump wasn't reproduced in a fixed viewport (steady within 1 px everywhere). The suspect, a sheet's
+  `html { overflow: hidden }` bringing back Android Chrome's address bar, is fixed (touch screens leave the root
+  alone); confirming it on a phone is in [real-phone-tests-plan](real-phone-tests-plan.md).
+- Fix the cause wherever it is: when CSS alone can't fix a phone bug properly, change templates, components or
+  services. Each fix keeps its failing-then-passing e2e test.
+- Tap targets: a test fails under 24 px (WCAG 2.2 AA), lists those under 44 in the report.
+- Kept in `agents/tools/visual-check/`: `phone-sheets.mjs` and `context-menus.mjs` check desktop scrollbars and right
+  clicks, which this suite doesn't emulate.
+- Not tested here: the setup page (the suite's server is set up before the first test); Back on a modal dialog (the
+  browser's own).
+
 ## Running it in the work
 
 - Times on this machine: the quick set (`--grep "@smoke|@reported"`, android + iphone) ~50 s; everything (~245
@@ -99,7 +118,7 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
   `runner.temp` can't be used in a job's `env:` (GitHub refuses the whole file): the work folder is set by a step
   writing to `$GITHUB_ENV`; `${{ runner.temp }}` is fine in a step's `with:`.
 - Flaky tests: no fixed sleeps outside the measuring helpers; a test failing twice in a week without a change is
-  fixed or marked `test.fixme` with the reason and a line in the plan, never deleted silently.
+  fixed or marked `test.fixme` with the reason and a line in this note, never deleted silently.
 - `test.fixme` / `test.skip` always say why (a browser that can't, a width where it doesn't apply).
 
 ## By hand on real phones (before a release; emulation can't see these)

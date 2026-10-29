@@ -1,4 +1,4 @@
-// Quick links on a phone (mobile e2e plan, Phase 2): added from an item's menu, opened from the sidebar (an overlay on
+// Quick links on a phone: added from an item's menu, opened from the sidebar (an overlay on
 // phones, closed by opening a link), removed by a tap. Each test its own folder: the links are the account's, shared
 // by the projects running at once.
 import { expect, item, openFolder, test } from '../fixtures/test';

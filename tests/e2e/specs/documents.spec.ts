@@ -1,4 +1,4 @@
-// Using the document viewers by finger (mobile e2e plan, Phase 2, viewer): find in a text, its reading settings ("Aa"),
+// Using the document viewers by finger: find in a text, its reading settings ("Aa"),
 // a PDF's zoom and find, an EPUB's page turns, an archive's folders. Opening each format: viewers.spec.ts.
 import type { Locator, Page } from '@playwright/test';
 import { expect, item, openFolder, test } from '../fixtures/test';

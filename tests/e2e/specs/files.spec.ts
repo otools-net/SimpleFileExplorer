@@ -1,4 +1,4 @@
-// File operations on a phone (mobile e2e plan, Phase 2, file operations), each in a scratch folder of its own:
+// File operations on a phone, each in a scratch folder of its own:
 // rename, new folder, delete, move, through the menus and dialogs a finger uses.
 import type { Page } from '@playwright/test';
 import fs from 'node:fs';

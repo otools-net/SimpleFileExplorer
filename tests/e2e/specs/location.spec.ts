@@ -1,4 +1,4 @@
-// The location bar on a phone (mobile e2e plan, Phase 2, top bar and location bar): agents/docs/features/location-bar.md.
+// The location bar on a phone: agents/docs/features/location-bar.md.
 // The compact bar sticks under the top bar once the folder's head scrolls away; up / previous / next by a tap; a long
 // path wraps on the screen.
 import fs from 'node:fs';

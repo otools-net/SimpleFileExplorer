@@ -1,4 +1,4 @@
-// Selecting on a phone (mobile e2e plan, Phase 2, listing and selection): agents/docs/features/selection-and-keys.md.
+// Selecting on a phone: agents/docs/features/selection-and-keys.md.
 import { expect, item, openFolder, test } from '../fixtures/test';
 import { expectFitsScreen, expectNothingCut, expectTapTargets } from '../fixtures/layout';
 import { longPress, needsTouchGestures, swipe } from '../fixtures/touch';

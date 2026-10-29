@@ -1,4 +1,4 @@
-// The listing on a phone: what is on screen stays where it is while it settles (mobile e2e plan, Phase 2, listing).
+// The listing on a phone: what is on screen stays where it is while it settles.
 import { closeMenu, expect, item, openFolder, test } from '../fixtures/test';
 import { expectFitsScreen, expectTapTargets } from '../fixtures/layout';
 import { watchBoxes } from '../fixtures/steady';

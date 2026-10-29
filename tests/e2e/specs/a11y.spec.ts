@@ -1,4 +1,4 @@
-// Accessibility of the main screens on a phone (mobile e2e plan, Phase 3, `@a11y`): axe-core's WCAG 2.2 A and AA rules
+// Accessibility of the main screens on a phone: axe-core's WCAG 2.2 A and AA rules
 // on each screen's main states. Serious and critical findings fail; moderate and minor ones are listed in the report.
 // Once per run (the android device): the rules don't depend on the engine, and the layouts are checked elsewhere.
 import AxeBuilder from '@axe-core/playwright';

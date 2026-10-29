@@ -1,4 +1,4 @@
-// What a phone's screen does that a fixed viewport doesn't (mobile e2e plan, Phase 1): the address bar coming and
+// What a phone's screen does that a fixed viewport doesn't: the address bar coming and
 // going, the on-screen keyboard, turning the phone, the notch and home indicator. Each is an approximation, said
 // where; the real thing is in the by-hand checklist (testing-e2e.md) and real-phone-tests-plan.md.
 import { expect, test, type Page } from '@playwright/test';

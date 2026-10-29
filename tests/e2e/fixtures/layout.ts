@@ -1,4 +1,4 @@
-// Checks of a screen's layout on a phone (mobile e2e plan, Phase 3): no sideways scrolling, buttons big enough for a
+// Checks of a screen's layout on a phone: no sideways scrolling, buttons big enough for a
 // finger.
 import { expect, test, type Page } from '@playwright/test';
 

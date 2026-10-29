@@ -1,4 +1,4 @@
-// Moving around on a phone (mobile e2e plan, Phase 2): files and folders opened by a tap, the viewer's swipes, Back,
+// Moving around on a phone: files and folders opened by a tap, the viewer's swipes, Back,
 // more items as the listing scrolls.
 import type { Page } from '@playwright/test';
 import { expect, item, openFolder, test } from '../fixtures/test';

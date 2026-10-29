@@ -1,4 +1,4 @@
-// The search box on a phone (mobile e2e plan, Phase 2, top bar and search): a tap focuses it without zooming, a query
+// The search box on a phone: a tap focuses it without zooming, a query
 // lists results, recent searches are offered and tappable.
 import { expect, openFolder, test } from '../fixtures/test';
 import { expectFitsScreen, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';

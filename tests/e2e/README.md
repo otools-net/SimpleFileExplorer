@@ -1,7 +1,7 @@
 # End-to-end tests (phones first)
 
 The real app, built from this checkout, in real browsers sized and driven like phones (touch, Android Chromium, iOS
-WebKit). Plan and progress: `agents/docs/development/mobile-e2e-plan.md`.
+WebKit). Notes: `agents/docs/development/testing-e2e.md`.
 
 ## Run
 
