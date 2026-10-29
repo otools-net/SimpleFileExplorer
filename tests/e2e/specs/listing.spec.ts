@@ -1,5 +1,6 @@
 // The listing on a phone: what is on screen stays where it is while it settles (mobile e2e plan, Phase 2, listing).
-import { expect, item, openFolder, test } from '../fixtures/test';
+import { closeMenu, expect, item, openFolder, test } from '../fixtures/test';
+import { expectFitsScreen, expectTapTargets } from '../fixtures/layout';
 import { watchBoxes } from '../fixtures/steady';
 
 test.describe('listing', () => {
@@ -21,5 +22,36 @@ test.describe('listing', () => {
         await openFolder(page, 'Photos/2025 Mountains');
         const watch = await watchBoxes(page, { 'first tile': 'sfe-listing [data-path]' });
         await watch.expectSteady(2500, 2);
+    });
+
+    // Phones show the active layout's button only: a tap moves on to the next (grid, list, one per row).
+    test('each layout by a tap: fits, its items open and have their menu', async ({ page }) => {
+        await openFolder(page, 'Photos/2025 Mountains');
+        const layout = page.getByRole('group', { name: 'Layout' });
+        for (const view of ['list', 'single', 'grid']) {
+            await layout.locator('button[aria-pressed="true"]').tap();
+            await expect(page.locator(`sfe-listing .files.${view}`)).toBeVisible();
+            await expectFitsScreen(page);
+            await expectTapTargets(page, 'sfe-listing');
+            const photo = item(page, 'Photos/2025 Mountains/Summit.jpg');
+            await photo.locator('.item-menu-button').tap();
+            await expect(page.locator('.item-menu[role="menu"]')).toBeVisible();
+            await closeMenu(page);
+            await photo.locator('.item-link').first().tap();
+            await expect(page.locator('dialog.viewer[open] .viewer-title strong')).toHaveText('Summit.jpg');
+            await page.locator('dialog.viewer[open]').getByRole('button', { name: 'Close' }).tap();
+            await expect(page.locator('dialog.viewer[open]')).toHaveCount(0);
+        }
+    });
+
+    test('the main menu opens from the top bar, fits and closes', async ({ page }) => {
+        await openFolder(page, 'Photos');
+        await page.getByRole('button', { name: 'More', exact: true }).tap();
+        const menu = page.locator('sfe-main-menu [role=menu], sfe-main-menu .popover').first();
+        await expect(menu).toBeVisible();
+        await expectFitsScreen(page);
+        await expectTapTargets(page, 'sfe-main-menu');
+        await page.keyboard.press('Escape');
+        await expect(menu).toBeHidden();
     });
 });

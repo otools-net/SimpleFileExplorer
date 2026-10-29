@@ -338,7 +338,9 @@
     background: var(--reader-gutter);
     font-size: 13px;
 }
+/* Full height, the outline scrolling: in a short outline (30vh of a phone held sideways) they shrank, cut in half. */
 .markdown-outline a {
+    flex-shrink: 0;
     overflow: hidden;
     padding: 3px 6px;
     border-radius: 4px;
