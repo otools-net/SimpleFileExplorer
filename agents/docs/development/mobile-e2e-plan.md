@@ -215,8 +215,10 @@ Every scenario also runs the cross-cutting checks of Phase 3. Rights-dependent o
   scroll position (`navigation.spec.ts`). **Found and fixed:** a swipe right (previous file) was Chrome's swipe back
   and left the page (`overscroll-behavior-x: none` while the viewer is open).
 - [ ] Picture: double tap / pinch zoom, pan with a finger (`touch-action: none` on the stage), no page scroll behind.
-- [ ] Video `@ffmpeg`: tap shows controls, double tap seeks, the controls row on one line with its "⋯", full screen
-  and back, rotation in full screen, hold-to-preview on a tile (trickplay on touch).
+- [~] Video: Play by a tap, a tap hides / shows the controls, a double tap on the right jumps forward, the controls on
+  one line with buttons ≥ 24 px, their "⋯" a sheet (`video.spec.ts`; WebKit on Windows plays no WebM: skipped, the
+  app's "can't play" fallback works). **Fixed:** the controls covered the big Play on a 360 px phone (a tap only
+  showed them); the seek bar was 18 px tall. Left: full screen, rotation, hold-to-preview (trickplay, `@ffmpeg`).
 - [ ] Audio: play / pause, the bar reachable above the home indicator.
 - [~] Documents open by a tap, show content, fit, no zoom, toolbar buttons ≥ 24 px: text, Markdown, JSON, CSV, PDF,
   EPUB, archive, subtitles (`viewers.spec.ts`). **Fixed:** ResizeObserver loops on phones (a 34 px view switch and a

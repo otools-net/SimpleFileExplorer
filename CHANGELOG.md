@@ -20,6 +20,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   sidebar): the buttons took the whole line, the name vanished and the page could be scrolled sideways.
 - **Phones: settings' check boxes and lock switches, and the files of Duplicates & moves are easier to hit** with a
   finger.
+- **Phones: the big Play button of a video always plays it**: on a small screen the controls covered it, and a tap
+  only showed them. The seek bar is easier to grab with a finger.
 - **Phones: swiping to the previous file in the viewer stays in the viewer**: Chrome took a swipe to the right as
   its own "back" and left the page.
 - **iPhones: a tap on a recent search or a tag suggestion takes it** (in the search box, the tag pickers): the tap was

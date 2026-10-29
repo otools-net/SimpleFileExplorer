@@ -77,6 +77,8 @@
     cursor: pointer;
     transform: translate(-50%, -50%);
     transition: opacity .2s;
+    /* Over the controls: in a short video (a phone) they reach the middle, and a tap on Play only showed them. */
+    z-index: 1;
 }
 
 .player-big-play .icon { width: 34px; height: 34px; margin-left: 4px; fill: #fff; stroke: none; }
@@ -141,7 +143,10 @@
     padding: 28px 10px 6px;
     background: linear-gradient(transparent, rgb(0 0 0 / .75));
     transition: opacity .25s;
+    /* Its fading top is the picture's: taps there reach the picture (and Play), not the bar. */
+    pointer-events: none;
 }
+.player.controls-visible .player-controls > * { pointer-events: auto; }
 
 .player:not(.controls-visible) .player-controls { opacity: 0; pointer-events: none; }
 
@@ -263,6 +268,14 @@ html:has(.player-page) { scrollbar-gutter: auto; }    /* never scrolls: no grey 
 }
 
 .player-seek::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--accent); }
+
+/* A finger's size on touch screens: the bar is grabbed anywhere in its height (18 px was hard to hit), the track stays
+   thin, the thumb grows. */
+@media (pointer: coarse) {
+    .player-seek { height: 32px; }
+    .player-seek::-webkit-slider-thumb { width: 20px; height: 20px; margin-top: -8px; }
+    .player-seek::-moz-range-thumb { width: 20px; height: 20px; }
+}
 
 /* Time (and trickplay frame) of the position under the pointer, above the seek bar. */
 .player-seek-wrap { position: relative; }
