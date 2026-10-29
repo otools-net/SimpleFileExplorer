@@ -1,7 +1,7 @@
 // The document viewers on a phone (mobile e2e plan, Phase 2, viewer): each format opens by a tap from its folder, shows
 // something, fits the screen, its fields don't make iOS zoom and its buttons are big enough for a finger.
 import { expect, item, openFolder, test } from '../fixtures/test';
-import { expectFitsScreen, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';
+import { expectFitsScreen, expectNothingCut, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';
 
 const documents: [file: string, view: string, allowed?: RegExp][] = [
     ['Documents/Packing list.txt', 'sfe-text-view'],
@@ -31,6 +31,7 @@ for (const [file, view, allowed] of documents) {
                 (element as HTMLElement).innerText.trim().length > 10 || !!element.querySelector('canvas, iframe')), { timeout: 15_000 }).toBe(true);
             await page.waitForTimeout(500);
             await expectFitsScreen(page);
+            await expectNothingCut(page);
             await expectNoZoomOnFocus(page, 'dialog.viewer[open] :is(input:not([type=checkbox]):not([type=radio]), textarea, select)');
             await expectTapTargets(page, 'dialog.viewer[open] :is(.viewer-bar, [class*=toolbar])');
         });

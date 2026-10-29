@@ -2,17 +2,17 @@
 // the first animation frame where `selector` is shown, measured in the page. One tap must be enough: a menu that
 // needs a second one never shows within the wait and fails. The time is split at the `click` (before it: the browser,
 // a tap delay waiting for a double tap) and at the element entering the page (before it: the app's script; after it:
-// style, layout and paint until the frame that has it).
+// style, layout and paint until the frame that has it). Tasks over 50 ms meanwhile are listed (Chromium).
 import { expect, test, type Page } from '@playwright/test';
 
 declare global {
-    interface Window { __sfeOpen?: { lifted: number | null; clicked: number | null; added: number | null; shown: number | null; log: string[] } }
+    interface Window { __sfeOpen?: { lifted: number | null; clicked: number | null; added: number | null; shown: number | null; log: string[]; longTasks: number[] } }
 }
 
 /** Runs `action` (one tap) and returns the ms until `selector` shows; fails if it doesn't show in `budget` ms. */
 export async function expectOpensWithin(page: Page, selector: string, action: () => Promise<void>, budget = 100): Promise<number> {
     await page.evaluate(selector => {
-        const open = { lifted: null as number | null, clicked: null as number | null, added: null as number | null, shown: null as number | null, log: [] as string[] };
+        const open = { lifted: null as number | null, clicked: null as number | null, added: null as number | null, shown: null as number | null, log: [] as string[], longTasks: [] as number[] };
         // What happened, for the failure message: where each event of the tap went, the element coming and going.
         const t0 = performance.now();
         const describe = (target: EventTarget | null) => {
@@ -30,6 +30,15 @@ export async function expectOpensWithin(page: Page, selector: string, action: ()
             present = now;
         }).observe(document.body, { childList: true, subtree: true });
         window.__sfeOpen = open;
+        // Tasks over 50 ms until the element shows (Chromium: `longtask` entries; others have none), for the report.
+        if (PerformanceObserver.supportedEntryTypes?.includes('longtask')) {
+            const tasks = new PerformanceObserver(list => {
+                for (const entry of list.getEntries())
+                    if (open.shown === null)
+                        open.longTasks.push(Math.round(entry.duration));
+            });
+            tasks.observe({ type: 'longtask' });
+        }
         let touched = false;
         // The last finger lifted before the element shows; with no touch at all (desktop), the mouse button.
         document.addEventListener('touchend', () => { touched = true; if (open.shown === null) open.lifted = performance.now(); }, { capture: true });
@@ -61,11 +70,12 @@ export async function expectOpensWithin(page: Page, selector: string, action: ()
         throw new Error(`${selector} not shown after one tap; events: ${log.join(' | ')}`);
     }
     await expect.poll(() => page.evaluate(() => window.__sfeOpen!.shown)).not.toBeNull();
-    const { lifted, clicked, added, shown } = await page.evaluate(() => window.__sfeOpen!);
+    const { lifted, clicked, added, shown, longTasks } = await page.evaluate(() => window.__sfeOpen!);
     const ms = shown! - lifted!;
     const at = (from: number | null, to: number | null) => from === null || to === null ? '?' : (to - from).toFixed(0);
     const split = `click +${at(lifted, clicked)}, in the page +${at(clicked ?? lifted, added)}, on screen +${at(added, shown)} ms`;
-    const text = `${selector}: ${ms.toFixed(0)} ms (${split})`;
+    const tasks = longTasks.length ? `; long tasks ${longTasks.join(', ')} ms` : '';
+    const text = `${selector}: ${ms.toFixed(0)} ms (${split}${tasks})`;
     // In the HTML report under the test; printed with SFE_E2E_TIMINGS=1.
     test.info().annotations.push({ type: 'opens', description: text });
     if (process.env.SFE_E2E_TIMINGS === '1')

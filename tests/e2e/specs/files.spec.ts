@@ -4,8 +4,9 @@ import type { Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { expect, item, openFolder, test } from '../fixtures/test';
-import { expectFitsScreen, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';
+import { expectFitsScreen, expectNothingCut, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';
 import { library } from '../paths';
+import { expectFocusedFieldShown, openKeyboard } from '../fixtures/viewport';
 
 const menu = '.item-menu[role="menu"]';
 const dialog = (page: Page) => page.locator('dialog.sheet[open]');
@@ -20,6 +21,7 @@ async function fromItemMenu(page: Page, path: string, entry: string): Promise<vo
 /** The dialog fits the screen, its fields don't make iOS zoom, its buttons are big enough. */
 async function expectPhoneDialog(page: Page): Promise<void> {
     await expectFitsScreen(page);
+    await expectNothingCut(page);
     await expectNoZoomOnFocus(page, 'dialog.sheet[open] :is(input:not([type=checkbox]):not([type=radio]), textarea, select)');
     await expectTapTargets(page, 'dialog.sheet[open]');
 }
@@ -99,5 +101,22 @@ test.describe('file operations', () => {
         await expect(row).toHaveCount(0);
         await openFolder(page, scratch);
         await expect(item(page, `${scratch}/B.jpg`)).toBeVisible();
+    });
+});
+
+test.describe('with the keyboard open', () => {
+    test('rename: the field and the dialog\'s buttons stay above the keyboard', async ({ page, scratch }) => {
+        await openFolder(page, scratch);
+        await fromItemMenu(page, `${scratch}/A.jpg`, 'rename');
+        await expect(dialog(page).getByRole('textbox')).toBeFocused();
+        const close = await openKeyboard(page);
+        await expectFocusedFieldShown(page);
+        const save = dialog(page).locator('button.primary');
+        await expect(save).toBeInViewport();
+        await expectFitsScreen(page);
+        await dialog(page).getByRole('textbox').fill('Typed.jpg');
+        await save.tap();
+        await expect(item(page, `${scratch}/Typed.jpg`)).toBeVisible();
+        await close();
     });
 });

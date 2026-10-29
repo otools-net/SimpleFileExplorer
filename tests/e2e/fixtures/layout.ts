@@ -61,3 +61,69 @@ export async function expectNoZoomOnFocus(page: Page, selector: string): Promise
         .map(element => `${element.tagName.toLowerCase()}${element.id ? '#' + element.id : ''}.${String(element.className).split(' ')[0]} ${getComputedStyle(element).fontSize}`), selector);
     expect(small, 'fields with text under 16 px (iOS zooms into them)').toEqual([]);
 }
+
+/**
+ * Nothing in `scope` sticks out sideways: no control or heading cut off by a box that clips without scrolling, none
+ * past the screen's edges (from `agents/tools/visual-check/narrow-audit.mjs`). Behind a modal dialog only the dialog
+ * and what floats over it count (the rest is inert).
+ */
+export async function expectNothingCut(page: Page, scope = 'body'): Promise<void> {
+    const problems = await page.evaluate(scope => {
+        const problems: string[] = [];
+        const width = innerWidth;
+        const name = (element: Element) => {
+            const label = element.getAttribute('aria-label') || element.getAttribute('title') || (element.children.length ? '' : element.textContent!.trim());
+            const classes = [...element.classList].slice(0, 2).map(c => '.' + c).join('');
+            return element.localName + classes + (label ? ` "${label.split(' ').slice(0, 3).join(' ')}"` : '');
+        };
+        const modal = document.querySelector('dialog:modal');
+        const shown = (element: Element) => {
+            if (element.closest('[hidden], [inert], .visually-hidden, [aria-hidden=true]'))
+                return false;
+            if (modal && !modal.contains(element) && !element.closest('[popover]'))
+                return false;
+            const style = getComputedStyle(element);
+            if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0)
+                return false;
+            const box = element.getBoundingClientRect();
+            return box.width > 1 && box.height > 1;
+        };
+        /** The nearest box that clips it sideways, and whether it scrolls. */
+        const clipper = (element: Element): [Element | null, boolean] => {
+            for (let node = element.parentElement; node && node !== document.documentElement; node = node.parentElement) {
+                const x = getComputedStyle(node).overflowX;
+                if (x !== 'visible')
+                    return [node, x === 'auto' || x === 'scroll'];
+            }
+            return [null, false];
+        };
+        /** Inside a box the user scrolls sideways (a wide table): past the screen's edge is reachable. */
+        const inScroller = (element: Element) => {
+            for (let node = element.parentElement; node && node !== document.documentElement; node = node.parentElement)
+                if (['auto', 'scroll'].includes(getComputedStyle(node).overflowX) && node.scrollWidth > node.clientWidth)
+                    return true;
+            return false;
+        };
+        /** Shortened on purpose, with an ellipsis ("…"): the box clipping it says so. */
+        const ellipsis = (element: Element, clip: Element) => getComputedStyle(clip).textOverflow === 'ellipsis' || getComputedStyle(element).textOverflow === 'ellipsis';
+        const selector = 'button, a[href], input:not([type=hidden]), select, textarea, [role=button], label, h1, h2, h3, .chip, sfe-tag-chip';
+        for (const element of [...document.querySelectorAll(`${scope} :is(${selector})`)].filter(shown)) {
+            const box = element.getBoundingClientRect();
+            const [clip, scrolls] = clipper(element);
+            const offScreen = (box.right > width + 1 || box.left < -1) && !inScroller(element);
+            if (clip && !scrolls) {
+                const outer = clip.getBoundingClientRect();
+                // Shortened on purpose: what shows ends at the box with its "…" (the box itself is checked on its own).
+                if (box.right > outer.right + 1 || box.left < outer.left - 1) {
+                    if (!ellipsis(element, clip))
+                        problems.push(`cut off: ${name(element)}`);
+                } else if (offScreen)
+                    problems.push(`off screen: ${name(element)}`);
+            } else if (!clip && offScreen) {
+                problems.push(`off screen: ${name(element)}`);
+            }
+        }
+        return [...new Set(problems)];
+    }, scope);
+    expect(problems, 'controls and headings cut off or off screen').toEqual([]);
+}

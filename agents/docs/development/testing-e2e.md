@@ -49,6 +49,18 @@ open work: [mobile-e2e-plan](mobile-e2e-plan.md).
 - A horizontal swipe with nothing to scroll sideways is Chrome's swipe back (overscroll history navigation): in the
   viewer it left the page (`about:blank` in a test: the document gone, `window` globals undefined). Fixed with
   `overscroll-behavior-x: none` while the viewer is open (base.css).
+- Helpers besides touch and timing: `layout.ts` (`expectFitsScreen`, `expectNothingCut`: controls cut by a box that
+  doesn't scroll or past the screen's edge, an ellipsis and a sideways scroller being fine; `expectTapTargets`;
+  `expectNoZoomOnFocus`), `viewport.ts` (`setAddressBar`, `openKeyboard` + `expectFocusedFieldShown`, `turn`,
+  `setSafeArea` + `expectClearOfInsets`), `touch.ts` `pinch` (Chromium). `expectOpensWithin` lists long tasks
+  (Chromium's `longtask`) in its report line.
+- The keyboard is emulated by a shorter viewport (as `interactive-widget=resizes-content`); Chrome and Safari shrink
+  only the visual viewport, which no test can do: the real one is on the by-hand list.
+- Safe areas: `Emulation.setSafeAreaInsetsOverride` works in this Edge (`env(safe-area-inset-*)` takes the values;
+  `expectClearOfInsets` checks that first); WebKit in Playwright has no equivalent (skipped).
+- No mouse in phone specs: `harness.spec.ts` fails on `.click(`, `.dblclick(`, `.hover(`, `mouse.*(` in specs and
+  fixtures unless the line ends with `// mouse: <why>` (the desktop project's branch).
+- `npm run typecheck` in `tests/e2e`: Playwright strips the types without checking them.
 - WebKit (Windows) gives a page reloaded by Back `history.state` null (Chromium: the state written before leaving), so
   listing positions saved there are lost; `navigation.spec.ts` marks it `fixme` on WebKit until checked on an iPhone.
 

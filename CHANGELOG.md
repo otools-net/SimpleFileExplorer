@@ -7,6 +7,7 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **Phones: an archive's toolbar fits the screen**: its "Find in this folder only" button was cut off at the edge.
 - **Phones: Android's Back closes an open menu** instead of leaving the page; turning the phone keeps the menu open,
   laid out again (it closed, or ran off a phone held sideways).
 - **Menus never run off a low window**: taller than the window, a menu scrolls inside itself.

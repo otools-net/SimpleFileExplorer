@@ -17,6 +17,7 @@ npm run e2e -- --project=android                # one device: android, android-s
 npm run e2e -- --grep "@smoke|@reported"       # the quick set (CI on edge: android and iphone)
 npm run e2e -- specs/reported.spec.ts           # one file
 SFE_E2E_SKIP_BUILD=1 npm run e2e                # reuse the last build (no client or server change since)
+npm run typecheck                               # the specs and fixtures type-check (Playwright runs them unchecked)
 npx playwright show-report <tmp>/sfe-e2e/report # the HTML report, with traces and videos of failures
 ```
 

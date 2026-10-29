@@ -1,7 +1,8 @@
 // Selecting on a phone (mobile e2e plan, Phase 2, listing and selection): agents/docs/features/selection-and-keys.md.
 import { expect, item, openFolder, test } from '../fixtures/test';
-import { expectFitsScreen, expectTapTargets } from '../fixtures/layout';
+import { expectFitsScreen, expectNothingCut, expectTapTargets } from '../fixtures/layout';
 import { longPress, needsTouchGestures, swipe } from '../fixtures/touch';
+import { expectClearOfInsets, setSafeArea } from '../fixtures/viewport';
 
 const bar = '.selection-dock .selection-bar';
 
@@ -40,6 +41,7 @@ test.describe('selection', () => {
         const dock = page.locator(bar);
         await expect(dock).toBeVisible();
         await expectFitsScreen(page);
+        await expectNothingCut(page);
         await expectTapTargets(page, '.selection-dock');
         // Touch screens: 36 px buttons (decided 2026-10-29; 30 with a mouse).
         const heights = await dock.locator(':scope > :is(.button, .icon-button):visible').evaluateAll(buttons => buttons.map(button => button.getBoundingClientRect().height));
@@ -93,4 +95,13 @@ test.describe('selection', () => {
         await expect(page.locator('sfe-listing .selected')).toHaveCount(0);
         await expect(page.locator('dialog.viewer[open]')).toHaveCount(0);
     });
+});
+
+// An iPhone's home indicator under the selection bar (`env(safe-area-inset-bottom)`): emulated on Chromium.
+test('the selection bar keeps clear of the home indicator', async ({ page }) => {
+    await setSafeArea(page);
+    await openFolder(page, 'Photos/2025 Mountains');
+    await item(page, 'Photos/2025 Mountains/Summit.jpg').locator('.select-box').tap();
+    await expect(page.locator(bar)).toBeVisible();
+    await expectClearOfInsets(page, '.selection-dock');
 });

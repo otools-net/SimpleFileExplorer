@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { expect, test } from '../fixtures/test';
-import { expectFitsScreen, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';
+import { expectFitsScreen, expectNothingCut, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';
 import { accounts, library } from '../paths';
 
 const sections = ['account', 'interface', 'playback', 'scanning', 'files', 'keepAlive', 'tags', 'tracking', 'thumbnails',
@@ -20,6 +20,7 @@ for (const section of sections) {
             await expect(page.locator('.admin-head')).toBeVisible();
             await page.waitForTimeout(500);
             await expectFitsScreen(page);
+            await expectNothingCut(page);
             await expectNoZoomOnFocus(page, `main ${fields}`);
             await expectTapTargets(page, 'main');
         });
@@ -35,6 +36,7 @@ test.describe('sign-in', () => {
         const name = page.getByLabel(/user name|name/i).first();
         await expect(name).toBeVisible();
         await expectFitsScreen(page);
+        await expectNothingCut(page);
         await expectNoZoomOnFocus(page, fields);
         await expectTapTargets(page);
         await name.tap();
@@ -59,6 +61,7 @@ test('long names in the trash keep the page within the screen', async ({ page, s
     const row = page.locator('.tracking-missing', { hasText: 'IMG_20261029' }).first();
     await expect(row).toBeVisible();
     await expectFitsScreen(page);
+    await expectNothingCut(page);
     // The name keeps room (it was squeezed to nothing beside the buttons in a narrow column of a wide screen).
     expect((await row.locator('.tracking-name').boundingBox())!.width).toBeGreaterThan(80);
 });

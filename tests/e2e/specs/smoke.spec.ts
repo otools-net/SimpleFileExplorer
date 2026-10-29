@@ -11,7 +11,7 @@ test.describe('@smoke @desktop', () => {
         if (isMobile)
             await menuButton.tap();
         else
-            await menuButton.click();
+            await menuButton.click(); // mouse: the desktop project
         const menu = page.locator('.item-menu[role="menu"]');
         await expect(menu).toBeVisible();
         await expect(menu.locator('.item-menu-title')).toHaveText('Summit.jpg');

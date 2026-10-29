@@ -61,6 +61,26 @@ export async function swipe(page: Page, from: { x: number; y: number }, to: { x:
 }
 
 /**
+ * Two fingers on `centre` (page coordinates), `from` px apart, moved to `to` px apart (further: zoom in; closer: zoom
+ * out), side by side, over about `ms`. Chromium only (`Input.dispatchTouchEvent`; Playwright has no multi-touch on
+ * WebKit).
+ */
+export async function pinch(page: Page, centre: { x: number; y: number }, from: number, to: number, ms = 300, steps = 12): Promise<void> {
+    const cdp = await page.context().newCDPSession(page);
+    const fingers = (apart: number) => [{ x: centre.x - apart / 2, y: centre.y, id: 0 }, { x: centre.x + apart / 2, y: centre.y, id: 1 }];
+    try {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: fingers(from) });
+        for (let i = 1; i <= steps; i++) {
+            await page.waitForTimeout(ms / steps);
+            await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: fingers(from + (to - from) * i / steps) });
+        }
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    } finally {
+        await cdp.detach();
+    }
+}
+
+/**
  * Taps `locator` once the page has settled after scrolling it into view (no scroll for 200 ms, its box the same over
  * two frames). WebKit (Playwright on Windows) sends a tap's `click` to what was under the finger before a scroll that
  * just happened (Playwright's own retry scrolls included): the touch events reach the ⋮ button, the click its tile.

@@ -157,8 +157,8 @@ SFE_E2E_TIMINGS=1`), 5 runs each, select box then ⋮; floors (`harness.spec.ts`
   (`admin`, a limited account, a guest), scan, a `storageState` per account so tests start signed in.
 - [x] Fixture (`fixtures/test.ts`): signed-in page per account (`account` option); `openFolder(page, path)`; console errors, page errors, CSP violations
   (`securitypolicyviolation`) and failed requests (4xx/5xx not expected by the test) **fail the test**.
-- [~] Touch helpers (`fixtures/touch.ts`): `locator.tap()`, `longPress`, `swipe` done; `pinch` left;
-  no-`click()` check left (CDP `Input.dispatchTouchEvent` on Chromium; WebKit:
+- [x] Touch helpers (`fixtures/touch.ts`): `locator.tap()`, `longPress`, `swipe`, `pinch` (Chromium) done;
+  no-`click()` check done (`harness.spec.ts`, `// mouse: <why>` to allow a line) (CDP `Input.dispatchTouchEvent` on Chromium; WebKit:
   `touchscreen.tap` + what Playwright offers, gaps written down). Never `click()` in phone specs (a lint rule or a
   grep in the suite's own check).
 - [x] Stability helper (`watchBoxes(...).expectSteady()`) `expectSteady(locators, during: () => action, { ms: 600, tolerance: 1 })`: samples the
@@ -168,14 +168,17 @@ SFE_E2E_TIMINGS=1`), 5 runs each, select box then ⋮; floors (`harness.spec.ts`
 - [x] Responsiveness helper `expectOpensWithin(action, locator, { ms })`: time from the touch end to the element
   visible and stable (`requestAnimationFrame` after it is laid out), budget **100 ms** for menus and sheets, 300 ms
   for dialogs that load data; also asserts **one** tap was enough. Long tasks (`PerformanceObserver` `longtask`, on
-  Chromium) over 50 ms during the action are reported (left). CPU slowed 4× (CDP `Emulation.setCPUThrottlingRate`):
+  Chromium) over 50 ms during the action are reported (done, in the report line). CPU slowed 4× (CDP `Emulation.setCPUThrottlingRate`):
   done, project `android-slow` (`@timing` specs). The time is split at the click and at the element entering the page.
-- [ ] Viewport helpers: address bar shown / hidden (a height-only resize, as Chrome does), on-screen keyboard
+- [x] Viewport helpers (`fixtures/viewport.ts`; done: Rename with the keyboard open in `files.spec.ts`, the
+  selection bar clear of the home indicator in `selection.spec.ts`): address bar shown / hidden (a height-only resize, as Chrome does), on-screen keyboard
   (height shrink + `visualViewport` resize while a field has the focus), orientation turn (swap width and height),
   safe-area insets (CDP `Emulation.setSafeAreaInsetsOverride` if this Edge has it; else a CSS override and a by-hand
   check on an iPhone).
-- [~] Layout helpers (`fixtures/layout.ts`): `expectFitsScreen` (no sideways scroll), `expectTapTargets` (fails
-  under 24 px, WCAG 2.2 AA; under 44 listed in the report). Off-screen and cut text from `narrow-audit.mjs`: left.
+- [x] Layout helpers (`fixtures/layout.ts`): `expectFitsScreen` (no sideways scroll), `expectTapTargets` (fails
+  under 24 px, WCAG 2.2 AA; under 44 listed in the report), `expectNothingCut` (from `narrow-audit.mjs`, beside every
+  `expectFitsScreen`). **Found and fixed:** an archive's toolbar cut its last button off on phones (its two fields
+  couldn't shrink).
 - [x] On failure: trace, video, screenshot; report folder in the temp folder, not the repo.
 - [x] A first `@smoke` spec (sign in, list a folder, open the item menu sheet, close it) green on every project.
 - [x] Note [testing-e2e](testing-e2e.md): how to run, fixtures, helpers, gotchas; a line in `AGENTS.md`;

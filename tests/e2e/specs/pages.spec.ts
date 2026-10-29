@@ -1,7 +1,7 @@
 // Pages besides the listing on a phone (mobile e2e plan, Phase 2): a file's own page (`view?path=`), the theme from the
 // first paint.
 import { expect, test } from '../fixtures/test';
-import { expectFitsScreen, expectTapTargets } from '../fixtures/layout';
+import { expectFitsScreen, expectNothingCut, expectTapTargets } from '../fixtures/layout';
 
 test('a file on its own page (view?path=) fits, with buttons big enough', async ({ page }) => {
     await page.goto('./view?path=' + encodeURIComponent('Documents/Hiking guide.md'));
@@ -9,6 +9,7 @@ test('a file on its own page (view?path=) fits, with buttons big enough', async 
     await expect(view).toBeVisible();
     await expect.poll(() => view.evaluate(element => (element as HTMLElement).innerText.trim().length)).toBeGreaterThan(20);
     await expectFitsScreen(page);
+    await expectNothingCut(page);
     await expectTapTargets(page, 'sfe-view-page');
 });
 

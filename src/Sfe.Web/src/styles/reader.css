@@ -729,7 +729,12 @@
 .archive-crumb.current { font-weight: 600; cursor: default; }
 .archive-crumb.skipped { color: var(--reader-muted); cursor: default; }
 .archive-separator { color: var(--reader-muted); }
+/* The fields and the trail give way on a phone (an overflow row's children don't shrink, overflow.css; an input's own
+   minimum is its default size): every control that stays in the row fits. */
 .archive-go, .archive-find { width: 180px; }
+.archive-toolbar > :is(.archive-go, .archive-find) { flex: 0 1 180px; min-width: 88px; }
+.archive-toolbar > .archive-trail { flex-shrink: 1; }
+.archive-trail > .archive-crumb { flex-shrink: 1; min-width: 44px; }
 .archive-note {
     display: flex;
     flex: none;
