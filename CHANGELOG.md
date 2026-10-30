@@ -10,6 +10,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - **Phones and tablets: two fingers zoom a picture in the viewer**, around the point between them, up to its actual
   size; bringing them together fits it back.
 
+### Changed
+
+- **A click or a tap around the shown file no longer closes the viewer** (it closed by mistake): Esc, the ✕ button or
+  the phone's Back closes it.
+
 ### Fixed
 
 - **Phones: the listing no longer jumps when a scan's panel comes in** (a scan started by someone else, or

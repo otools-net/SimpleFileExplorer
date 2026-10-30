@@ -196,6 +196,16 @@ describe('ViewerComponent › Actual size', () => {
         expect(element.querySelector('.viewer-title strong')!.textContent).toBe('photo.jpg');
     });
 
+    it('stays open on a click around the picture; only Esc, × or Back close it', async () => {
+        await view();
+
+        element.querySelector<HTMLElement>('.viewer-stage')!.click();
+        await settle();
+
+        expect(dialog().open).toBe(true);
+        expect(element.querySelector('.viewer-title strong')!.textContent).toBe('photo.jpg');
+    });
+
     it('shows the next file fitted to the screen', async () => {
         await view();
         await click(500, 350);

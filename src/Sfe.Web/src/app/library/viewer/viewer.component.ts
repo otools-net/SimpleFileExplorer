@@ -76,7 +76,7 @@ const OWNS_KEYS = '[data-owns-keys]';
                     <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
                 </div>
             </header>
-            <div #stage class="viewer-stage" [sfeContextMenu]="stageMenu()" [attr.data-context-menu]="stageMenu() ? null : 'own'" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
+            <div #stage class="viewer-stage" [sfeContextMenu]="stageMenu()" [attr.data-context-menu]="stageMenu() ? null : 'own'" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)">
                 @for (shown of shownItem(); track shown.path) {
                     @if (unsupported()) {
                         <div class="viewer-message">
@@ -736,12 +736,6 @@ export class ViewerComponent {
         this.touchStart = null;
         if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5)
             void this.go(dx < 0 ? 1 : -1);
-    }
-
-    /** Clicking the dark area around the media closes the viewer. */
-    protected onStageClick(event: MouseEvent): void {
-        if (event.target === this.stage().nativeElement)
-            this.close();
     }
 
     protected onWheel(event: WheelEvent): void {

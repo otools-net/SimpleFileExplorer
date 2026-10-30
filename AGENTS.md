@@ -83,8 +83,6 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [testing-client](agents/docs/development/testing-client.md) | Vitest/jsdom gotchas | `src/testing/setup.ts` |
 | [testing-e2e](agents/docs/development/testing-e2e.md) | end-to-end tests: Playwright on phone-sized devices, touch, timing and stability helpers, gotchas | `tests/e2e/` |
 | [test-samples](agents/docs/development/test-samples.md) | committed sample files (test media, docs library), keeping them up to date | `tests/samples/`, `agents/tools/samples/`, `TestSamples` |
-| [flash-viewer-plan](agents/docs/development/flash-viewer-plan.md) | plan: Flash viewer, why Ruffle, what is left | |
-| [real-phone-tests-plan](agents/docs/development/real-phone-tests-plan.md) | plan: checks on real Android and iPhone devices that emulation can't do (address bar, Safari Back, timing), done with the user | `tests/e2e/scripts/` |
 
 ### Environment — `agents/docs/environment/`
 
@@ -160,7 +158,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [subtitles-viewer](agents/docs/features/subtitles-viewer.md) | SRT / VTT cues (media-captions), Play in the video next to them, Shift times, `api/files/text/video` | `app/formats/subtitles/`, `Core/Files/Subtitles` |
 | [pdf-viewer](agents/docs/features/pdf-viewer.md) | PDF with pdf.js bundled (worker, cmaps, fonts served by the app; CSP: no wasm), find, zoom, outline, dark pages | `app/formats/pdf/`, `angular.json` |
 | [epub-reader](agents/docs/features/epub-reader.md) | EPUB with epub.js: page, two pages or scroll; the book's files served by the app (`api/files/epub`), reading preferences on its pages | `app/formats/epub/`, `EpubEntries`, `EpubEndpoints` |
-| [flash-viewer](agents/docs/features/flash-viewer.md) | Flash movies (`.swf`) played by Ruffle (bundled) in a frame of no origin (`FlashPolicy`), flash links to the movie's folder, `Player:Flash` | `app/formats/flash/`, `public/flash/`, `FlashLinks`, `FlashEndpoints` |
+| [flash-viewer](agents/docs/features/flash-viewer.md) | Flash movies (`.swf`) played by Ruffle (bundled; why Ruffle) in a frame of no origin (`FlashPolicy`), flash links to the movie's folder, `Player:Flash` | `app/formats/flash/`, `public/flash/`, `FlashLinks`, `FlashEndpoints` |
 | [overflow-menus](agents/docs/features/overflow-menus.md) | narrow screens: rows of buttons on one line with a "⋯" for those that don't fit (right to left, what stays per screen), target sizes, other phone layouts, checking tools | `menus/overflow-row.ts`, `styles/overflow.css` |
 | [context-menu](agents/docs/features/context-menu.md) | the app's one right-click menu: targets, which menu where, browser menu kept (Shift, text), keyboard, Open in new tab | `menus/context-menu.ts`, `ItemMenu`, `FolderMenu` |
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |

@@ -1,7 +1,7 @@
 # End-to-end tests (Playwright, phones first)
 
-Code: `tests/e2e/` (how to run: its [README](../../../tests/e2e/README.md)). Rules: [testing](testing.md). Checks on
-real phones, still open: [real-phone-tests-plan](real-phone-tests-plan.md).
+Code: `tests/e2e/` (how to run: its [README](../../../tests/e2e/README.md)). Rules: [testing](testing.md). What
+emulation can't see is checked on real phones by hand ([below](#by-hand-on-real-phones-before-a-release-emulation-cant-see-these)).
 
 - `cd tests/e2e && npm run e2e` builds `Sfe.Api` into `<tmp>/sfe-e2e/build`, copies `tests/samples/library` (plus
   `Many photos/`: 600 copies of a 20 KB photo, made per run), starts the app on :5181 (External mode, SQLite) through
@@ -100,7 +100,9 @@ real phones, still open: [real-phone-tests-plan](real-phone-tests-plan.md).
   `pointerdown`) only if real phones still feel it.
 - The bar jump wasn't reproduced in a fixed viewport (steady within 1 px everywhere). The suspect, a sheet's
   `html { overflow: hidden }` bringing back Android Chrome's address bar, is fixed (touch screens leave the root
-  alone); confirming it on a phone is in [real-phone-tests-plan](real-phone-tests-plan.md).
+  alone); confirming it on a phone is in the by-hand list below.
+- Real-phone checks were closed with the user on 2026-10-30 (no session with the agent): what they would look at is
+  the by-hand list below.
 - Fix the cause wherever it is: when CSS alone can't fix a phone bug properly, change templates, components or
   services. Each fix keeps its failing-then-passing e2e test.
 - Tap targets: a test fails under 24 px (WCAG 2.2 AA), lists those under 44 in the report.
@@ -127,13 +129,18 @@ real phones, still open: [real-phone-tests-plan](real-phone-tests-plan.md).
   select an item (long press on Android, its box on iPhone), open its ⋮ menu: the bar at the bottom stays, the
   address bar stays hidden, the menu opens at once; a dialog (Rename) the same.
 - The on-screen keyboard: Rename, search and tags fields stay visible above it, their buttons reachable; no zoom.
-- The viewer: swipes between photos (never back a page), pinch on a picture, a video's Play, full screen and turning
-  the phone; a PDF and an EPUB by finger.
+- The viewer: swipes between photos (never back a page), pinch on a picture, a tap around it (stays open), Back
+  (closes it), a video's Play, full screen and turning the phone; a PDF and an EPUB by finger.
 - Back on the iPhone after leaving SFE for another site: the listing comes back where it was (WebKit on Windows loses
   it, `navigation.spec.ts`).
 - The home indicator and notch (safe areas): nothing under them in portrait and landscape.
 
 ## Possible next steps (not planned)
 
+- Phones on the local network: `tests/e2e/scripts/server.mjs` binds `localhost` only; a host option (e.g.
+  `SFE_E2E_HOST=0.0.0.0`, Windows firewall rule) would let real phones open the suite's app. Plain `http` there has no
+  secure context (clipboard, service workers): not the app's fault.
+- Timing on a real Android: Chrome remote debugging (`chrome://inspect`), Performance panel around the tap on ⋮;
+  compare with `android-slow` (~70 ms median at 4× CPU).
 - Playwright's experimental Android support (`_android`, a real phone over adb) for the `@smoke` set.
 - Visual comparisons (`toHaveScreenshot`) for sheets and bars, once the layout is stable.

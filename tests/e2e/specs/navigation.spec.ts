@@ -38,6 +38,19 @@ test.describe('navigation', () => {
         expect(new URL(page.url()).searchParams.get('path')).toBe('Photos/2025 Mountains');
     });
 
+    // Decided 2026-10-30: a tap around the file no longer closes the viewer (it did by mistake); Back, Esc or × do.
+    test('a tap around the picture leaves the viewer open; Back closes it', async ({ page }) => {
+        await openFolder(page, 'Photos/2025 Mountains');
+        await item(page, 'Photos/2025 Mountains/Blue hour.jpg').locator('.item-link').first().tap();
+        await expect(title(page)).toHaveText('Blue hour.jpg');
+        const stage = (await page.locator('dialog.viewer[open] .viewer-stage').boundingBox())!;
+        await page.touchscreen.tap(stage.x + 8, stage.y + stage.height - 8);
+        await expect(page.locator('dialog.viewer[open]')).toBeVisible();
+        await expect(title(page)).toHaveText('Blue hour.jpg');
+        await page.goBack();
+        await expect(page.locator('dialog.viewer[open]')).toHaveCount(0);
+    });
+
     // Decided 2026-10-29: two fingers zoom a picture (@use-gesture), the page itself doesn't zoom, the file stays.
     test('two fingers zoom a picture and fit it back; neither the page zooms nor the file changes', async ({ page, browserName }) => {
         needsTouchGestures(browserName);
