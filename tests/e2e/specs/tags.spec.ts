@@ -1,7 +1,7 @@
 // Tagging on a phone: the selection bar's Tags, the picker's suggestion taken by a
 // tap (it wasn't on iPhones: a prevented pointerdown cancelled the tap), the tag shown on the tile.
 import type { Page } from '@playwright/test';
-import { expect, isSheetWidth, item, openFolder, test } from '../fixtures/test';
+import { expect, isSheetWidth, item, openFolder, quietScans, test } from '../fixtures/test';
 import { expectFitsScreen, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';
 import { holdLikeIos } from '../fixtures/touch';
 
@@ -74,6 +74,8 @@ test.describe('tag panels and menus', () => {
         const tag = await newTag(page, 'Chip');
         const tagged = await page.request.post('api/file-tags', { data: { paths: [`${scratch}/A.jpg`], add: [tag.id] }, headers });
         expect(tagged.ok(), await tagged.text()).toBe(true);
+        // A held finger: another test's scan panel coming in would move the page under it (menus.spec.ts).
+        await quietScans(page);
         await openFolder(page, scratch);
         const chip = item(page, `${scratch}/A.jpg`).locator('sfe-tag-chip', { hasText: tag.name });
         await expect(chip).toBeVisible();

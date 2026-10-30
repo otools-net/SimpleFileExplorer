@@ -19,6 +19,9 @@
 
 .files.grid > .tile {
     flex: var(--ratio, var(--ratio-guess)) 1 calc(var(--ratio, var(--ratio-guess)) * var(--row-h));
+    /* Room for its select box, Tags and ⋮ side by side: a portrait tile on a phone (~65 px at the row height) cut
+       its Tags button off (e2e accounts.spec.ts, iPhone). */
+    min-width: 116px;
 }
 
 /* The last row keeps its natural size instead of stretching a few tiles across the page. */

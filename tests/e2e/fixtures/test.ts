@@ -116,6 +116,20 @@ export async function openFolder(page: Page, folder: string): Promise<void> {
     await expect(page.locator('sfe-listing [data-path]').first()).toBeVisible();
 }
 
+/**
+ * Scans started by other tests (their Scratch folders, on the shared server) show no panel in this page: the server
+ * answers its scan status as idle. For tests a panel coming in would disturb (a held finger: the page moves under it
+ * and the hold ends; a scroll position compared); call it before the page opens. listing.spec.ts tests the panel.
+ */
+export async function quietScans(page: Page): Promise<void> {
+    await page.route(/\/api\/scan(\?.*)?$/, async route => {
+        if (route.request().method() !== 'GET')
+            return route.fallback();
+        const response = await route.fetch();
+        await route.fulfill({ response, json: { ...await response.json(), state: 'idle' } });
+    });
+}
+
 /** A listed file or folder by its root-relative path. */
 export const item = (page: Page, itemPath: string) => page.locator(`sfe-listing [data-path="${itemPath}"]`);
 

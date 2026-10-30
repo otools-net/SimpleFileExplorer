@@ -4,7 +4,7 @@
 // conversion, which needs ffmpeg, then says it can't play it) skips these.
 import type { Page } from '@playwright/test';
 import { closeMenu, expect, isSheetWidth, item, openFolder, test } from '../fixtures/test';
-import { expectFitsScreen, expectTapTargets } from '../fixtures/layout';
+import { expectFitsScreen, expectNothingCut, expectTapTargets } from '../fixtures/layout';
 import { turn } from '../fixtures/viewport';
 
 const player = 'dialog.viewer[open] sfe-video-player';
@@ -112,7 +112,10 @@ test.describe('video', () => {
 });
 
 test.describe('video, the whole screen', () => {
-    test('full screen by a tap: the player fills the screen, its controls fit; back by a tap', async ({ page }) => {
+    test('full screen by a tap: the player fills the screen, its controls fit; back by a tap', async ({ page, browserName }) => {
+        // An iPhone has no element fullscreen: the app hands the video to the system's player (`webkitEnterFullscreen`),
+        // checked by hand. WebKit in Playwright has `requestFullscreen` but never grants it (Linux; Windows plays no WebM).
+        test.skip(browserName === 'webkit', "the iPhone's fullscreen is the system's video player: by hand");
         await openVideo(page);
         const host = page.locator(player);
         await host.locator('.player-row button[aria-label^="Fullscreen"]').tap();
@@ -143,11 +146,14 @@ test.describe('video, the whole screen', () => {
         expect(row.x + row.width).toBeLessThanOrEqual(upright.height + 0.5);
         expect(await video(page).evaluate(v => (v as HTMLVideoElement).paused), 'still playing').toBe(false);
         await page.setViewportSize(upright);
+        // Turned back, the row measures itself again (ResizeObserver) a moment later: under CI's load the final
+        // layout check came first and found its buttons cut (iPhone).
+        await expect(() => expectNothingCut(page, player)).toPass({ timeout: 5000 });
     });
 });
 
 test.describe('audio', () => {
-    test('a song plays by a tap on its bar, which fits the screen above the bottom edge', async ({ page }) => {
+    test('a song plays by a tap on its bar, which fits the screen above the bottom edge', async ({ page, browserName }) => {
         await openFolder(page, 'Music');
         await item(page, 'Music/Evening walk.mp3').locator('.item-link').first().tap();
         const audio = page.locator('dialog.viewer[open] audio');
@@ -159,6 +165,10 @@ test.describe('audio', () => {
         await expectFitsScreen(page);
         const box = (await audio.boundingBox())!;
         expect(box.y + box.height, 'above the bottom of the screen').toBeLessThanOrEqual(page.viewportSize()!.height - 8);
+        // The bar is the browser's own: WebKit's differs per platform (Linux: "back 15 s" first, Play second; an
+        // iPhone's is another), so the tap at Play's place is Chromium's; the iPhone's is checked by hand.
+        if (browserName !== 'chromium')
+            return;
         // It plays by itself (autoplay), where the browser lets it; a tap on the bar's play button pauses or plays it.
         const paused = () => audio.evaluate(a => (a as HTMLAudioElement).paused);
         // Autoplay starts when it may: settled before the tap, else the tap and it cross.

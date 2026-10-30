@@ -196,6 +196,15 @@ main.page.drop-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
 .properties-section h3 { margin: 0 0 8px; font-size: 14px; }
 .properties-section p { margin: 0 0 8px; }
 .properties-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* The app's colours, not the browser's own select: Linux Chromium's was light text on its grey (a11y.spec.ts, contrast). */
+.properties-actions select {
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text);
+}
 .properties-checksum { display: flex; align-items: center; gap: 8px; margin-top: 8px !important; }
 .properties-checksum code { min-width: 0; overflow-wrap: anywhere; font-size: 12px; user-select: all; }
 

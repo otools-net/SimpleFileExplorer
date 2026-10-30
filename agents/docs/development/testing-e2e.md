@@ -64,6 +64,8 @@ emulation can't see is checked on real phones by hand ([below](#by-hand-on-real-
   others: coarse-pointer rules (`@media (pointer: coarse)`) make them 24 px.
 - Tests share one server and one administrator: what one test starts (a scan, by an extraction) shows in the others'
   pages. A long press failed once in the full run as a scan's panel pushed the listing (fixed in the app, listing.spec.ts).
+  A held finger (`holdLikeIos`) ends when the page scrolls, and a panel coming in does: tests a panel would disturb call
+  `quietScans(page)` (fixtures/test.ts: the scan status answered as idle) before the page opens.
 - WebKit reports a request cancelled by leaving the page (`page.goto` while the sidebar's trash count loads) as a
   page error "… due to access control checks": the guard forgives it only when the page navigates within the second.
 - `expect.poll` ends at once when its function throws: read files with a fallback (`existsSync`), a save's
@@ -119,6 +121,17 @@ emulation can't see is checked on real phones by hand ([below](#by-hand-on-real-
   the report, traces and app log as the run's artifact. CI retries a failed test once (`retries` in the config).
   `runner.temp` can't be used in a job's `env:` (GitHub refuses the whole file): the work folder is set by a step
   writing to `$GITHUB_ENV`; `${{ runner.temp }}` is fine in a step's `with:`.
+- CI is Linux: Playwright's Chromium (not Edge), Linux WebKit, Linux fonts. A failure seen only there is reproduced
+  with `agents/tools/e2e-linux/` (WSL, [README](../../../agents/tools/e2e-linux/README.md)). Found by its first full
+  run (2026-10-30): wider fonts overflowed rows that just fit on Windows (a grid's `auto` column grown to a toolbar,
+  a flex item's min-content of an unbroken folder name, a 12 px select 23 px high); WebKit there plays WebM and MP3,
+  so the iPhone's video and audio specs run (they skip on Windows).
+- WebKit in Playwright has `requestFullscreen` but never grants it; an iPhone has no element fullscreen at all (the
+  app calls `webkitEnterFullscreen`, the system's player): the fullscreen spec skips on WebKit, checked by hand.
+- `<audio controls>` is the browser's own bar: WebKit's differs per platform (Linux: "back 15 s" first, then Play), so
+  a tap at Play's place is Chromium's only.
+- After `setViewportSize`, an overflow row measures itself again a moment later (ResizeObserver): a test ending just
+  after a resize waits for it (`expect(() => expectNothingCut(...)).toPass()`), else the final layout check races it.
 - Flaky tests: no fixed sleeps outside the measuring helpers; a test failing twice in a week without a change is
   fixed or marked `test.fixme` with the reason and a line in this note, never deleted silently.
 - `test.fixme` / `test.skip` always say why (a browser that can't, a width where it doesn't apply).

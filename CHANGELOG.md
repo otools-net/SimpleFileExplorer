@@ -3,6 +3,18 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## Unreleased
+
+### Fixed
+
+- **A stopped server stops watching its configuration files** (`appsettings.Local.json` and the installation page's
+  file): on Linux each watcher held one of the user's 128 inotify instances until the process ended.
+- **Phones: no more sideways scrolling or cut-off buttons where the text is wider** (Linux fonts, for one): a file on
+  its own page (`view?path=`), the line "N results in <folder>" with its sort, a narrow portrait tile's Tags button.
+- **Phones: the text viewer's encoding choices are at least 24 px high** for a finger.
+- **The checksum algorithm in Properties has the app's colours** (it was the browser's own control, hard to read on
+  Linux).
+
 ## 1.85.0
 
 ### Added

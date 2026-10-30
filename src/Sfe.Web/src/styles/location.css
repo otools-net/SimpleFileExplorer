@@ -55,7 +55,8 @@
     padding-left: 6px;
 }
 
-.summary { margin: 0; color: var(--text-muted); }
+/* A long folder name breaks anywhere: unbroken, it pushed the sort past the screen's edge on a phone. */
+.summary { min-width: 0; margin: 0; color: var(--text-muted); overflow-wrap: anywhere; }
 /* What the folder browsed is kept out of (folders.css › .exclusion-chip); a button for those who may change it. */
 .summary .exclusion-chip { margin-left: 8px; vertical-align: 1px; }
 button.exclusion-chip { background: none; font-family: inherit; cursor: pointer; }
@@ -64,7 +65,7 @@ button.exclusion-chip:hover, button.exclusion-chip:focus-visible { color: var(--
 .summary .default-tags-button { height: 22px; min-width: 22px; }
 .summary .default-tags-button .icon { width: 15px; height: 15px; }
 
-.sort { display: flex; align-items: center; gap: 6px; }
+.sort { display: flex; flex-shrink: 0; align-items: center; gap: 6px; }
 
 .sort select {
     height: 30px;

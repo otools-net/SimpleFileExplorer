@@ -1,7 +1,7 @@
 // Every menu that opens at the bottom of a phone: a sheet across the
 // width, against the bottom, opened by one tap within the budget, closed by a tap on the dimmed area.
 import type { Page } from '@playwright/test';
-import { closeMenu, expect, isSheetWidth, item, openFolder, test } from '../fixtures/test';
+import { closeMenu, expect, isSheetWidth, item, openFolder, quietScans, test } from '../fixtures/test';
 import { expectTapTargets } from '../fixtures/layout';
 import { expectMedianOpensWithin, menuBudget } from '../fixtures/timing';
 import { holdLikeIos } from '../fixtures/touch';
@@ -127,6 +127,9 @@ test.describe('closing and turning', () => {
 
 // iOS sends no `contextmenu`: holding an element with a menu opens it all the same (the app's own hold).
 test.describe('holding a finger, as on an iPhone', () => {
+    // Another test's scan panel coming in moved the page under the finger: the hold ended (CI).
+    test.beforeEach(({ page }) => quietScans(page));
+
     test('a folder of the path: its menu', async ({ page }) => {
         await openFolder(page, 'Photos/2025 Mountains');
         const crumb = page.locator('nav.crumbs a[data-path="Photos"]');
@@ -148,6 +151,9 @@ test.describe('holding a finger, as on an iPhone', () => {
 });
 
 test.describe('after a menu', () => {
+    // Another test's scan panel coming in moved the listing (4 px, CI's landscape run).
+    test.beforeEach(({ page }) => quietScans(page));
+
     test('closed, the listing is where it was, the selection kept, no keyboard brought up', async ({ page }) => {
         await openFolder(page, 'Many photos');
         await page.evaluate(() => window.scrollTo(0, 1500));
