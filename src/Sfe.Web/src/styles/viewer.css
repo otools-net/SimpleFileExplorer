@@ -71,7 +71,9 @@
 
 .viewer-stage > audio { width: min(560px, 100%); }
 
-/* A picture shown smaller than it is: a click shows it at its actual size, which can then be dragged around. */
+/* A picture shown smaller than it is: a click shows it at its actual size, which can then be dragged around. Two
+   fingers zoom it (viewer.component.ts, `onPinch`): the page itself doesn't pinch-zoom behind it. */
+.viewer-stage:has(> img) { touch-action: none; }
 .viewer-stage > img.zoomable { cursor: zoom-in; }
 .viewer-stage.zoomed { position: relative; overflow: hidden; }
 .viewer-stage > img.actual-size {

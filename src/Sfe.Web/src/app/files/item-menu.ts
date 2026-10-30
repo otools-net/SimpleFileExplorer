@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, Injecta
 import { Router } from '@angular/router';
 import { ConfigService } from '../core/config.service';
 import { CopyPathService } from '../core/copy-path.service';
+import { ToastService } from '../core/toast.service';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { formatOf, isContainer, isViewable } from '../formats/formats';
@@ -40,19 +41,38 @@ export class ItemMenu {
     private readonly quickLinks = inject(QuickLinksService);
 
     private readonly menu = inject(ContextMenu);
+    private readonly toasts = inject(ToastService);
     private readonly router = inject(Router);
 
     constructor() {
-        // Another listing: the item whose menu is open may not be there any more.
+        // Another listing: the item whose menu is open may not be there any more. The same listing refreshed (the change
+        // feed) keeps the menu open, unless its item left the folder (deleted or moved elsewhere): closed with a word,
+        // never silently gone.
         let generation = untracked(() => this.store.generation());
+        let watched: string | null = null;
         effect(() => {
             const now = this.store.generation();
-            if (now === generation)
-                return;
-            generation = now;
+            const items = this.store.items();
+            const item = this.menu.open()?.target.item;
             untracked(() => {
-                if (this.menu.open()?.target.item)
+                if (now !== generation) {
+                    generation = now;
+                    watched = null;
+                    if (item)
+                        this.menu.close();
+                    return;
+                }
+                const listed = !!item && items.some(other => other.path === item.path);
+                if (!item || watched !== item.path) {
+                    // A new menu: only an item of the listing can leave it.
+                    watched = listed ? item!.path : null;
+                    return;
+                }
+                if (!listed) {
+                    watched = null;
                     this.menu.close();
+                    this.toasts.show(`${item.name} is no longer in this folder: it was moved or deleted elsewhere.`);
+                }
             });
         });
     }

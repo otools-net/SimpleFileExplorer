@@ -42,6 +42,12 @@ Code: client `app/formats/epub/` (`epub-document.ts`: epub.js behind `EPUB_LOADE
 
 ## Gotchas
 
+- A resize before epub.js knows its location (the first `relocated`) blanks the book: its manager clears the pages on
+  a new size and the rendition shows them again only `if (this.location)`. The loading message going away resized the
+  stage right then, on every device. `resize` in `epub-document.ts` displays again (at the place before the resize)
+  when no page is left (`getContents()` empty). e2e: `documents.spec.ts`, `viewers.spec.ts` (an `iframe` in the
+  container, not the status line's words).
+
 - `themes.register(name, rules)` works but its types say otherwise: use `register({ name: rules })`.
 - The book opens before the host's `[style]` binding is applied: its computed `--reader-font` is still reader.css'
   monospace default. The font comes from `ReadingService.style('prose')` (its `var()`s resolved on the host), and the

@@ -28,6 +28,10 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
+    /* A window lower than the menu (a phone held sideways): it scrolls inside itself instead of leaving the screen. */
+    max-height: calc(100dvh - 8px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .item-menu-entry {
@@ -91,6 +95,8 @@ a.item-menu-entry { text-decoration: none; }
 .transfer-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 0 0 8px; overflow-wrap: anywhere; }
 .transfer-crumbs strong { display: inline-flex; align-items: center; gap: 6px; }
 .transfer-crumbs .icon { width: 16px; height: 16px; color: var(--text-muted); }
+/* A finger's size on touch screens (20 px tall as a line of text). */
+@media (pointer: coarse) { .transfer-crumbs .link-button { min-height: 32px; align-items: center; } }
 .transfer-folders {
     max-height: min(320px, 45vh);
     margin: 0 0 12px;

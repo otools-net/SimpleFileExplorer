@@ -3,6 +3,7 @@
 ```sh
 dotnet build ; dotnet test                                            # the Sfe.Api build runs npm ci + ng build
 cd src/Sfe.Web ; npm test ; npm run build ; npm start                 # client: Vitest, build into wwwroot, ng serve :4200
+cd tests/e2e ; npm ci ; npm run browsers ; npm run e2e              # end-to-end on phone-sized browsers (testing-e2e.md)
 dotnet build -p:SfeSkipWebClient=true                                 # without rebuilding the client
 SFE_TEST_FFMPEG=<path to ffmpeg> dotnet test                          # also run the ffmpeg tests (path: dev-machine.md)
 dotnet run --project src/Sfe.Api                                      # :5080, Development

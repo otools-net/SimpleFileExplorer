@@ -14,5 +14,11 @@ Code: `src/Sfe.Core/Thumbnails/` (`ThumbnailService` (disk cache, concurrency ga
   listings and the viewer.
 - `Thumbnails:SingleViewOriginals` (`/api/config` `singleViewOriginals`) makes `FileTileComponent` ask
   `PreviewsService.sources(item, true)` in the `single` view.
+- Tile shapes (justified grid, `--ratio`, `--ratio-guess` in `files.css`): `PreviewsService.shapeOf(item)` = the shape
+  learned from an earlier render, else the index's `width`/`height` (oriented as shown); the loaded preview's wins.
+  The guess (row height) counts both. Before, tiles took their shape only on load and rows re-packed under the finger
+  (e2e `listing.spec.ts`, "does not move once shown"). Captions (`.tile .info`) are not `content-visibility: auto`
+  (their 54–124 px height came late and moved the rows); only previews are. Measured cheaper without it
+  (`specs/diagnose/listing-cost.spec.ts`: layout 450–530 against 560–820 ms listing 600 photos at 4× CPU).
 - Cancelling thumbnails: `ThumbnailService.CancelAll` ([background-tasks.md](background-tasks.md)).
 - A cache layout change needs an upgrade path ([production-upgrades.md](../development/production-upgrades.md)).

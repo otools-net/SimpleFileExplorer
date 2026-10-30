@@ -1,5 +1,6 @@
 import { NgComponentOutlet } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, Injector, signal, Type, untracked, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injector, signal, Type, untracked, viewChild } from '@angular/core';
+import { PinchGesture } from '@use-gesture/vanilla';
 import { ConfigService, withVersion } from '../../core/config.service';
 import { copyText, CopyPathService } from '../../core/copy-path.service';
 import { ToastService } from '../../core/toast.service';
@@ -30,6 +31,11 @@ const CLICK_SLOP = 4;
 function clampAxis(position: number, room: number, size: number): number {
     return size <= room ? (room - size) / 2 : Math.min(0, Math.max(room - size, position));
 }
+
+/** Two fingers can make a picture this many times larger than it fits the screen, or its actual size if larger. */
+const PINCH_MAX_FIT = 3;
+/** Pinched back to within this much of the size that fits the screen: fitted again. */
+const PINCH_FIT_SLACK = 1.05;
 
 /** Where keys, the wheel and swipes belong to what is shown (a text view's own scrolling, cursor and shortcuts). */
 const OWNS_KEYS = '[data-owns-keys]';
@@ -70,7 +76,7 @@ const OWNS_KEYS = '[data-owns-keys]';
                     <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
                 </div>
             </header>
-            <div #stage class="viewer-stage" [sfeContextMenu]="stageMenu()" [attr.data-context-menu]="stageMenu() ? null : 'own'" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)" (click)="onStageClick($event)">
+            <div #stage class="viewer-stage" [sfeContextMenu]="stageMenu()" [attr.data-context-menu]="stageMenu() ? null : 'own'" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)">
                 @for (shown of shownItem(); track shown.path) {
                     @if (unsupported()) {
                         <div class="viewer-message">
@@ -321,20 +327,33 @@ export class ViewerComponent {
 
     /** The original is shown smaller than it is (fitted to the stage): clicking it shows it at its actual size. */
     protected readonly zoomable = signal(false);
-    /** The picture at its actual size (one picture pixel per CSS pixel, as a browser shows a picture at 100%). */
+    /**
+     * The picture larger than it fits: at its actual size (a click, Z: one picture pixel per CSS pixel, as a browser
+     * shows a picture at 100%), or at the size two fingers made (`onPinch`).
+     */
     protected readonly zoomed = signal(false);
+    /** The zoomed picture's size on the screen. */
     protected readonly actualSize = signal({ width: 0, height: 0 });
+    /** The picture's size fitted to the stage, measured before it zooms: the smallest a pinch makes it. */
+    private fitSize = { width: 0, height: 0 };
     /** The zoomed picture's top-left corner, relative to the stage. */
     protected readonly pan = signal({ x: 0, y: 0 });
     protected readonly dragging = signal(false);
     private drag: { pointerId: number; startX: number; startY: number; panX: number; panY: number; moved: boolean } | null = null;
 
     private touchStart: Touch | null = null;
+    private readonly destroyRef = inject(DestroyRef);
     private wheelDelta = 0;
     private wheelBlockedUntil = 0;
 
     constructor() {
         registerDialog(dialogs => dialogs.viewer, this);
+        // Two fingers zoom a picture (@use-gesture: touch, pointer and Safari's gesture events alike). Not the wheel with
+        // Ctrl: the browser's own zoom, as over a video or a document.
+        afterNextRender(() => {
+            const pinch = new PinchGesture(this.stage().nativeElement, state => this.onPinch(state), { pinchOnWheel: false });
+            this.destroyRef.onDestroy(() => pinch.destroy());
+        });
         // The component of a format, loaded the first time one of its files is shown.
         effect(() => {
             const format = this.format();
@@ -487,6 +506,7 @@ export class ViewerComponent {
         if (!picture || this.zoomed())
             return;
         const box = picture.getBoundingClientRect();
+        this.fitSize = { width: box.width, height: box.height };
         this.zoomable.set(picture.naturalWidth > box.width + 1 || picture.naturalHeight > box.height + 1);
     }
 
@@ -502,17 +522,49 @@ export class ViewerComponent {
         const picture = this.picture()?.nativeElement;
         if (!picture || this.zoomed() || !this.zoomable())
             return;
+        this.zoomTo(picture, picture.naturalWidth, picture.naturalHeight, clientX, clientY);
+    }
+
+    /** Shows the picture `width` × `height`, keeping the point at `clientX`, `clientY` (else the centre) where it is. */
+    private zoomTo(picture: HTMLImageElement, width: number, height: number, clientX?: number, clientY?: number): void {
         const box = picture.getBoundingClientRect();
         const stage = this.stage().nativeElement.getBoundingClientRect();
         const x = clientX ?? box.left + box.width / 2;
         const y = clientY ?? box.top + box.height / 2;
-        const width = picture.naturalWidth;
-        const height = picture.naturalHeight;
         this.actualSize.set({ width, height });
         this.zoomed.set(true);
         this.pan.set(this.clampPan(
             x - stage.left - (box.width ? (x - box.left) / box.width : 0.5) * width,
             y - stage.top - (box.height ? (y - box.top) / box.height : 0.5) * height));
+    }
+
+    /**
+     * Two fingers on a picture: it follows their spread, around the point between them, from the size that fits the
+     * screen up to `PINCH_MAX_FIT` times it (or its actual size, if larger); let go near the fitted size, it fits again.
+     * A finger moving it once zoomed is the drag of `onPicturePointerMove`.
+     */
+    private onPinch({ first, last, movement: [scale], origin: [x, y], memo }: { first: boolean; last: boolean; movement: [number, number]; origin: [number, number]; memo?: { width: number; height: number } }): { width: number; height: number } | undefined {
+        const picture = this.picture()?.nativeElement;
+        if (!picture || this.builtin() !== 'image')
+            return undefined;
+        if (first || !memo) {
+            // Not a drag nor a tap any more (nor a swipe: `onTouchStart` sees the two fingers).
+            this.endDrag();
+            if (!this.zoomed())
+                this.measure();
+            memo = this.zoomed() ? this.actualSize() : { ...this.fitSize };
+        }
+        const fit = this.fitSize;
+        if (!fit.width || !fit.height)
+            return memo;
+        const largest = Math.max(picture.naturalWidth, fit.width * PINCH_MAX_FIT);
+        const width = Math.min(largest, Math.max(fit.width, memo.width * scale));
+        const height = width * fit.height / fit.width;
+        if (last && width <= fit.width * PINCH_FIT_SLACK)
+            this.zoomOut();
+        else if (width > fit.width + 0.5 || this.zoomed())
+            this.zoomTo(picture, width, height, x, y);
+        return memo;
     }
 
     protected zoomOut(): void {
@@ -684,12 +736,6 @@ export class ViewerComponent {
         this.touchStart = null;
         if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5)
             void this.go(dx < 0 ? 1 : -1);
-    }
-
-    /** Clicking the dark area around the media closes the viewer. */
-    protected onStageClick(event: MouseEvent): void {
-        if (event.target === this.stage().nativeElement)
-            this.close();
     }
 
     protected onWheel(event: WheelEvent): void {

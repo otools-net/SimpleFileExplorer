@@ -130,6 +130,11 @@
 }
 .selection-bar .button:disabled { cursor: default; }
 .selection-bar .icon-button { border-radius: 50%; }
+/* Touch screens: 36 px buttons (30 with a mouse), easier for a thumb; the pill grows to 54 px. */
+@media (pointer: coarse) {
+    .selection-bar > :is(.button, .icon-button) { height: 36px; }
+    .selection-bar > .icon-button { width: 36px; }
+}
 .selection-bar .button .icon { width: 16px; height: 16px; }
 .selection-count { padding: 0 6px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 /* "15 selected": only once the long wording left the bar. */

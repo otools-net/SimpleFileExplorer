@@ -84,6 +84,8 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+/* A finger's size on touch screens (21 px tall at 12 px). */
+@media (pointer: coarse) { .search-scope { min-height: 28px; } }
 
 .actions { display: flex; align-items: center; gap: 8px; }
 

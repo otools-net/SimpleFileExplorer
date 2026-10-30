@@ -425,6 +425,15 @@ describe('AdminPageComponent search', () => {
         expect(results()).toHaveLength(0);
     });
 
+    it('asks for no settings a user may not change (My account only: no refused request)', async () => {
+        TestBed.resetTestingModule();
+        await setUp({ rights: [Rights.browse, Rights.ownPassword, Rights.ownPreferences], user: { id: 2, userName: 'alice', displayName: null, kind: 'user', isServerAdmin: false, local: true } });
+        await open('/admin?section=account');
+
+        expect(api.settings).not.toHaveBeenCalled();
+        expect(heading()).toBe('Preferences');
+    });
+
     it('searches from the list of sections on phones', async () => {
         setMediaQuery('(max-width: 760px)', true);
         await open('/admin', { sfeFromLibrary: true });

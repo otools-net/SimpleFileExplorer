@@ -43,6 +43,19 @@ export interface MenuTarget {
     item?: LibraryItem;
 }
 
+/**
+ * A finger held this long without a menu event from the browser (iOS Safari sends none; Android's comes at ~500 ms)
+ * opens the menu as one would (`ContextMenu.holdStart`).
+ */
+const HOLD_MS = 650;
+/** How long after the lift of a hold that opened a menu the browser's own late menu event is still dropped. */
+const HELD_ECHO_MS = 1000;
+/** A held finger moving further than this is scrolling or dragging, not holding. */
+const HOLD_SLOP_PX = 10;
+
+/** How long the page's scrolling after a resize still belongs to it (the page laid out again for the new size). */
+const RESIZE_SCROLL_MS = 500;
+
 /** How long after the ContextMenu key or Shift+F10 the browser's own `contextmenu` event of that key is swallowed. */
 const keyboardEcho = 800;
 
@@ -53,17 +66,121 @@ const keyboardEcho = 800;
  */
 @Injectable({ providedIn: 'root' })
 export class ContextMenu {
-    /** The open menu: its target, where, and what opened it (focus goes back there). */
-    readonly open = signal<{ target: MenuTarget; x: number; y: number; trigger: HTMLElement | null } | null>(null);
+    /**
+     * The open menu: its target, where, what opened it (focus goes back there), and whether a finger did (`touch`: the
+     * focus stays where it is, nothing to move between entries with).
+     */
+    readonly open = signal<{ target: MenuTarget; x: number; y: number; trigger: HTMLElement | null; touch: boolean } | null>(null);
     /** The menu of the page shown, for a right click on nothing with a menu of its own; set by the page. */
     readonly page = signal<MenuTarget | null>(null);
     private readonly elements = new WeakMap<Element, () => MenuTarget | null>();
     private readonly toasts = inject(ToastService);
     private keyboardAt = -Infinity;
+    /** The pointer of the last press: a menu opened right after a finger's is a touch one. */
+    private lastPointer = '';
+    /** A finger held on an element with a menu: where, since when; `fired` once the menu event was sent for it. */
+    private hold: { pointer: number; x: number; y: number; target: Element; timer: ReturnType<typeof setTimeout>; fired: boolean } | null = null;
+    /** Sending the held finger's own menu event (not to be taken for the browser's). */
+    private holding = false;
+    /** The click of a finger lifted after its hold opened something: swallowed (the lift is not a tap). */
+    private swallowClick = false;
+    /** Until when a browser's menu event still belongs to the hold that fired (one sent on or after the lift). */
+    private heldUntil = -Infinity;
+
+    constructor() {
+        const capture = { capture: true, passive: true };
+        addEventListener('pointerdown', event => {
+            this.lastPointer = event.pointerType;
+            this.holdStart(event);
+        }, capture);
+        addEventListener('pointermove', event => {
+            if (this.hold && this.hold.pointer === event.pointerId && Math.hypot(event.clientX - this.hold.x, event.clientY - this.hold.y) > HOLD_SLOP_PX)
+                this.holdEnd();
+        }, capture);
+        addEventListener('pointerup', event => this.holdLift(event), capture);
+        addEventListener('pointercancel', () => this.holdEnd(), capture);
+        addEventListener('scroll', () => this.holdEnd(), capture);
+        // The browser's own menu event for the hold: before ours, it is the one (Android); after, a second one (a
+        // Windows touch screen sends it on the lift, a slow phone late), dropped, up to `HELD_ECHO_MS` after the lift.
+        addEventListener('contextmenu', event => {
+            if (this.holding)
+                return;
+            if (!this.hold) {
+                if (performance.now() < this.heldUntil) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                }
+                return;
+            }
+            if (this.hold.fired) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            } else {
+                this.holdEnd();
+            }
+        }, { capture: true });
+        addEventListener('click', event => {
+            if (!this.swallowClick)
+                return;
+            this.swallowClick = false;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }, { capture: true });
+    }
 
     /** `element` has the menu of `target` (for the keyboard: the focused element's menu). */
     register(element: Element, target: () => MenuTarget | null): void {
         this.elements.set(element, target);
+        // iOS: no link preview or text callout on a long press there: the hold opens the app's menu (`holdStart`).
+        element.setAttribute('data-menu-target', '');
+    }
+
+    /**
+     * A finger down on an element with a menu of the app: held still for `HOLD_MS` with no menu event from the
+     * browser, it gets one (`contextmenu`, `pointerType: 'touch'`) as Android sends, so iOS reaches the same menus
+     * (and selects listed items by holding them). Plain links and text keep the browser's own long press.
+     */
+    private holdStart(event: PointerEvent): void {
+        this.holdEnd();
+        this.swallowClick = false;
+        this.heldUntil = -Infinity;
+        if (event.pointerType !== 'touch' || !event.isPrimary || !(event.target instanceof Element))
+            return;
+        const [element] = this.targetOf(event.target as HTMLElement);
+        if (!element)
+            return;
+        const { pointerId: pointer, clientX: x, clientY: y, target } = event;
+        this.hold = { pointer, x, y, target, fired: false, timer: setTimeout(() => this.holdFire(), HOLD_MS) };
+    }
+
+    private holdFire(): void {
+        const hold = this.hold;
+        if (!hold || !hold.target.isConnected)
+            return;
+        hold.fired = true;
+        this.holding = true;
+        try {
+            hold.target.dispatchEvent(new PointerEvent('contextmenu', {
+                bubbles: true, cancelable: true, composed: true, clientX: hold.x, clientY: hold.y, pointerType: 'touch', isPrimary: true,
+            }));
+        } finally {
+            this.holding = false;
+        }
+    }
+
+    private holdLift(event: PointerEvent): void {
+        const hold = this.hold;
+        if (!hold || hold.pointer !== event.pointerId)
+            return;
+        this.swallowClick = hold.fired;
+        this.heldUntil = hold.fired ? performance.now() + HELD_ECHO_MS : -Infinity;
+        this.holdEnd();
+    }
+
+    private holdEnd(): void {
+        if (this.hold)
+            clearTimeout(this.hold.timer);
+        this.hold = null;
     }
 
     /**
@@ -162,7 +279,7 @@ export class ContextMenu {
         event.preventDefault();
         this.keyboardAt = performance.now();
         const box = element?.getBoundingClientRect();
-        this.show(target, box ? box.left : window.innerWidth / 2, box ? box.bottom + 4 : window.innerHeight / 3, element ?? focused);
+        this.show(target, box ? box.left : window.innerWidth / 2, box ? box.bottom + 4 : window.innerHeight / 3, element ?? focused, false);
     }
 
     /** Opens the menu of `target` under `trigger` (a ⋮ button). */
@@ -189,8 +306,8 @@ export class ContextMenu {
             this.close();
     }
 
-    private show(target: MenuTarget, x: number, y: number, trigger: HTMLElement | null): void {
-        this.open.set({ target, x, y, trigger });
+    private show(target: MenuTarget, x: number, y: number, trigger: HTMLElement | null, touch = this.lastPointer === 'touch'): void {
+        this.open.set({ target, x, y, trigger, touch });
     }
 
     /** The nearest element around `element` with a menu, and that menu; else a link's menu, else the page's. */
@@ -280,6 +397,12 @@ function openDialog(trigger: HTMLElement | null): HTMLDialogElement | null {
 }
 
 /** The menu shows as a sheet at the bottom (phone-sheets.css), not at the pointer. */
+/** The browser's `CloseWatcher` (Chromium 120+; not yet in TypeScript's DOM types). */
+interface CloseWatcherLike {
+    onclose: (() => void) | null;
+    destroy(): void;
+}
+
 function isSheet(): boolean {
     return typeof matchMedia === 'function' && matchMedia('(max-width: 640px)').matches;
 }
@@ -343,7 +466,7 @@ export class ContextMenuDirective {
             <!-- The top layer (a manual popover): above the page and an open modal dialog, which it is moved into. -->
             <div #layer class="context-menu-layer" [attr.popover]="popovers ? 'manual' : null">
             <!-- On phones: an action sheet at the bottom, under its target's name, over a backdrop that closes it. -->
-            <div class="item-menu-backdrop sheet-backdrop" aria-hidden="true"></div>
+            <div #backdrop class="item-menu-backdrop sheet-backdrop" aria-hidden="true" (click)="menu.close()"></div>
             <div #box class="item-menu phone-sheet" role="menu" [attr.aria-label]="'Actions for ' + open.target.name" [attr.data-menu]="open.target.kind"
                  [style.left.px]="position().x" [style.top.px]="position().y" (keydown)="keydown($event)">
                 <div class="item-menu-title">{{ open.target.name }}</div>
@@ -393,6 +516,7 @@ export class ContextMenuComponent {
     protected readonly popovers = typeof HTMLElement.prototype.showPopover === 'function';
     private readonly box = viewChild<ElementRef<HTMLElement>>('box');
     private readonly layer = viewChild<ElementRef<HTMLElement>>('layer');
+    private readonly backdrop = viewChild<ElementRef<HTMLElement>>('backdrop');
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     /** Where the menu lives when no modal dialog is open (the root component). */
     private home: Node | null = null;
@@ -404,8 +528,10 @@ export class ContextMenuComponent {
     });
     /** Where the menu shows: at the pointer, moved back inside the window once its size is known. */
     protected readonly position = signal({ x: 0, y: 0 });
-    /** The window's width when the menu opened: a resize changing only the height doesn't close a phone sheet. */
-    private openWidth = 0;
+    /** Android's Back (and Esc) closes the open menu instead of leaving the page, where the browser has close watchers. */
+    private watcher: CloseWatcherLike | null = null;
+    /** When the window last changed size (`onScroll`). */
+    private resizedAt = -Infinity;
 
     constructor() {
         effect(() => {
@@ -416,23 +542,56 @@ export class ContextMenuComponent {
             const parent = open ? openDialog(open.trigger) ?? this.home : this.home;
             if (parent && this.host.parentNode !== parent)
                 parent.appendChild(this.host);
+            untracked(() => this.watch(!!open));
             if (!open)
                 return;
             untracked(() => this.position.set({ x: open.x, y: open.y }));
-            this.openWidth = window.innerWidth;
             afterNextRender(() => {
                 showLayer(this.layer()?.nativeElement);
-                this.place(open.x, open.y);
+                // A phone's sheet is placed by its CSS (phone-sheets.css): measuring it forced a layout of the menu inside
+                // this frame (~50 ms of a phone's opening it, e2e menu-profile.spec.ts) for a position it doesn't use.
+                if (!isSheet())
+                    this.place(open.x, open.y);
+                // A finger has no keys to move between the entries: the focus stays (no ring, no work); keys and mouse get it.
+                if (!open.touch)
+                    this.focusFirst();
             }, { injector: this.injector });
         });
         const navigations = inject(Router, { optional: true })?.events.subscribe(event => {
             if (event instanceof NavigationStart)
                 this.menu.close();
         });
+        // Esc closes the menu wherever the focus is: one a finger opened leaves it outside (a tablet's keyboard). Caught
+        // before a dialog's own Esc, which would close the viewer under the menu.
+        const escape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape' || !this.menu.open() || this.box()?.nativeElement.contains(event.target as Node))
+                return;
+            event.preventDefault();
+            event.stopPropagation();
+            this.menu.close();
+        };
+        document.addEventListener('keydown', escape, true);
         inject(DestroyRef).onDestroy(() => {
+            document.removeEventListener('keydown', escape, true);
             navigations?.unsubscribe();
             this.menu.close();
+            this.watch(false);
         });
+    }
+
+    /** One close watcher per menu opened (a dialog under it keeps its own, closed by the next Back). */
+    private watch(open: boolean): void {
+        this.watcher?.destroy();
+        this.watcher = null;
+        const Watcher = (globalThis as { CloseWatcher?: new () => CloseWatcherLike }).CloseWatcher;
+        if (!open || !Watcher)
+            return;
+        const watcher = new Watcher();
+        watcher.onclose = () => {
+            if (this.watcher === watcher)
+                this.menu.close();
+        };
+        this.watcher = watcher;
     }
 
     private place(x: number, y: number): void {
@@ -441,11 +600,12 @@ export class ContextMenuComponent {
             return;
         const width = box.offsetWidth;
         const height = box.offsetHeight;
+        // Below the point, else above it; always inside the window (a turned phone can leave the button off screen).
+        const top = y + height > window.innerHeight - 4 ? y - height : y;
         this.position.set({
             x: Math.max(4, Math.min(x, window.innerWidth - width - 4)),
-            y: Math.max(4, y + height > window.innerHeight - 4 ? y - height : y),
+            y: Math.max(4, Math.min(top, window.innerHeight - height - 4)),
         });
-        this.focusFirst();
     }
 
     private focusFirst(): void {
@@ -476,26 +636,42 @@ export class ContextMenuComponent {
         afterNextRender(() => this.focusFirst(), { injector: this.injector });
     }
 
-    /** A menu at the pointer would be left behind by the page; a phone sheet stays at the bottom, the page frozen behind it. */
+    /**
+     * A menu at the pointer would be left behind by the page; a phone sheet stays at the bottom, the page frozen behind
+     * it. The scroll a resize makes (a turned phone's page laid out again) is part of the resize.
+     */
     protected onScroll(): void {
-        if (!isSheet())
+        if (isSheet())
+            return;
+        if (performance.now() - this.resizedAt < RESIZE_SCROLL_MS)
+            this.onResize();
+        else
             this.menu.close();
     }
 
     /**
-     * A phone's address bar shows again when a sheet freezes the page behind it (hidden by scrolling down), which
-     * resizes the window right after the sheet opened: only a change of width (turning the phone) closes a sheet.
+     * A sheet is laid out by its CSS: it stays through any resize (a phone's address bar coming back, the phone
+     * turned). A menu at the pointer: a finger's is placed again under what opened it (turned from a sheet to a
+     * popup); one of the mouse closes, as the window it was placed in changed.
      */
     protected onResize(): void {
-        if (!isSheet() || window.innerWidth !== this.openWidth)
+        this.resizedAt = performance.now();
+        const open = this.menu.open();
+        if (!open || isSheet())
+            return;
+        const trigger = open.touch && open.trigger?.isConnected ? open.trigger.getBoundingClientRect() : null;
+        if (trigger)
+            this.place(trigger.left, trigger.bottom + 4);
+        else
             this.menu.close();
     }
 
     protected outside(event: PointerEvent): void {
         const open = this.menu.open();
         const target = event.target as Node;
-        // The ⋮ button that opened it closes it itself (a toggle).
-        if (open && !this.box()?.nativeElement.contains(target) && !open.trigger?.contains(target))
+        // The ⋮ button that opened it closes it itself (a toggle); the sheet's backdrop on its click: closed at the
+        // press, the tap's click would land on what is under it.
+        if (open && !this.box()?.nativeElement.contains(target) && !open.trigger?.contains(target) && target !== this.backdrop()?.nativeElement)
             this.menu.close();
     }
 

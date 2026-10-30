@@ -28,14 +28,31 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   (touch gestures excepted, as the player's).
 - **Phone sheets (rule, 2026-10-23):** on a phone (≤ 640 px) every menu or popup that opens in the lower part of the
   screen is a sheet like the item menu: full width with no side margins, against the bottom edge (safe area padded),
-  top corners rounded, over a dimming backdrop that closes it, and the page behind locked so the sheet and backdrop
-  cover the scrollbar's room. Use the shared classes of `styles/phone-sheets.css`: `phone-sheet` on the popup,
-  a `sheet-backdrop` next to it (a click on it closes; it is what locks the page). Applied to the item menu, the
+  top corners rounded, over a dimming backdrop that closes it, and the page behind held (touch: the backdrop takes no
+  pan and the sheet's scrolling stops at its ends, the root untouched, else Chrome's address bar comes back and the
+  bottom bars jump; mouse: the root locked, the sheet and backdrop covering the scrollbar's room). Use the shared
+  classes of `styles/phone-sheets.css`: `phone-sheet` on the popup, a `sheet-backdrop` next to it (a click on it
+  closes; it is what holds the page). Applied to the item menu, the
   viewer's ⋮ menu, the default tags panel, the player's speed menu. A popup under a transformed or clipping ancestor
   goes in the top layer (`popover="manual"`, `showPopover()`) with the backdrop inside it, else `position: fixed` is
   relative to that ancestor (`DefaultTagsBadgeComponent`). Modal dialogs (`dialog.sheet`) already do this below
-  761 px (`trickplay.css`, `base.css`). Not sheets: toasts, the operations panel and the selection bar (status that
+  761 px (`trickplay.css`, `base.css`: touch, the dialog `touch-action: none` and its `.sheet-body`
+  `overscroll-behavior: contain`, the root untouched; mouse, the root locked). Not sheets: toasts, the operations panel and the selection bar (status that
   stays while the page is used), and the top bar's popovers (they open from the top).
+- **Touch (rules, 2026-10-29; e2e `tests/e2e`):** text fields are ≥ 16 px on touch screens (`base.css`, `pointer:
+  coarse`; else iOS zooms the page into them); a list option that must keep the focus in its field prevents
+  `mousedown`, never `pointerdown` (WebKit then cancels the tap: no click, the option not taken on an iPhone); buttons
+  are ≥ 24 px each way on phones (`expectTapTargets`), a flex row's icon button `flex-shrink: 0`. Every item of an
+  overflow row is as tall as the row's others (32 px in the document toolbars): a taller one leaving into the "⋯"
+  changes the row's height inside its ResizeObserver callback, which the browser reports as a "ResizeObserver loop"
+  error (Angular logs it) and the content below shifts. Nor does an item's label change width with its state ("Save"
+  → "Saving…"): show the state another way (`aria-busy`, a class).
+- **Accessibility (rules, 2026-10-29; e2e `a11y.spec.ts`):** `aria-controls` names only an element that is there
+  (bind it, null while the list or panel is hidden); a text field with suggestions is `role="combobox"`; a link inside
+  a line of text is underlined (`p a:not([class])`, `base.css`).
+- **Closing on a tap outside (rule, 2026-10-29):** listen to `document:pointerdown`, not `click`: iOS Safari sends no
+  click for a tap on what isn't clickable (text, an empty area), so the popup stayed open on iPhones (main menu,
+  sidebar). A long press on iPhones: `ContextMenu.holdStart` ([context-menu](../features/context-menu.md)).
 - **Rows of buttons on narrow screens (rule, 2026-10-24):** a row of buttons that may not fit a 360 px phone is an
   overflow row (`sfeOverflowRow`): one line, the buttons leaving right to left into a "⋯" menu, the developer saying
   which stay. Never `flex-wrap` or buttons cut off; space its items with `gap`, not margins. Check with

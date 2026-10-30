@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
+import { ToastService } from '../core/toast.service';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders, type } from '../../testing/fakes';
@@ -338,6 +339,38 @@ describe('ItemMenu', () => {
         expect(TestBed.inject(ContextMenu).open()).toBeNull();
     });
 
+    it('moves the focus into a menu a mouse or the keyboard opened, not into one a finger opened', async () => {
+        await setUp();
+        const fixture = TestBed.createComponent(ContextMenuComponent);
+        fixture.detectChanges();
+        const contextMenu = TestBed.inject(ContextMenu);
+        const trigger = document.body.appendChild(document.createElement('button'));
+        const press = (pointerType: string) =>
+            document.dispatchEvent(Object.assign(new Event('pointerdown', { bubbles: true }), { pointerType }));
+
+        // A finger: nothing to move between the entries with; the focus stays (e2e: the menu's opening time).
+        trigger.focus();
+        press('touch');
+        contextMenu.toggle(TestBed.inject(ItemMenu).target(photo), trigger);
+        await settle();
+        expect(contextMenu.open()?.touch).toBe(true);
+        expect(document.activeElement).toBe(trigger);
+        // Esc still closes it, the focus outside (a tablet's keyboard), before anything else takes the key.
+        const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        trigger.dispatchEvent(escape);
+        expect(contextMenu.open()).toBeNull();
+        expect(escape.defaultPrevented).toBe(true);
+        await settle();
+
+        press('mouse');
+        contextMenu.toggle(TestBed.inject(ItemMenu).target(photo), trigger);
+        await settle();
+        expect(contextMenu.open()?.touch).toBe(false);
+        expect(document.activeElement?.getAttribute('data-entry')).toBe('newTab');
+        contextMenu.close();
+        trigger.remove();
+    });
+
     it('closes on Esc, on a click elsewhere and when the listing changes', async () => {
         await setUp();
         const fixture = TestBed.createComponent(ContextMenuComponent);
@@ -358,11 +391,41 @@ describe('ItemMenu', () => {
         document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
         expect(TestBed.inject(ContextMenu).open()).toBeNull();
 
+        // The sheet's backdrop closes it on its click, not on the press: gone at the press, the tap's click would land
+        // on what is under it (the sidebar button...).
+        rightClick(menuEvent(), photo);
+        await settle();
+        const backdrop = element.querySelector<HTMLElement>('.sheet-backdrop')!;
+        backdrop.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        expect(TestBed.inject(ContextMenu).open()).not.toBeNull();
+        backdrop.click();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
+
         rightClick(menuEvent(), photo);
         await settle();
         await store.load();
         await settle();
         expect(TestBed.inject(ContextMenu).open()).toBeNull();
+    });
+
+    it('stays open through a refresh from the change feed, closes with a word when its item left the folder', async () => {
+        await setUp();
+        TestBed.createComponent(ContextMenuComponent).detectChanges();
+        const toasts = TestBed.inject(ToastService);
+        rightClick(menuEvent(), photo);
+        await settle();
+
+        await store.refresh();
+        await settle();
+        expect(TestBed.inject(ContextMenu).open()?.target.item?.path).toBe(photo.path);
+        expect(toasts.toasts()).toEqual([]);
+
+        // Deleted in another tab: the change feed lists the folder again without it.
+        api.browse.mockResolvedValue(listing([folder]));
+        await store.refresh();
+        await settle();
+        expect(TestBed.inject(ContextMenu).open()).toBeNull();
+        expect(toasts.toasts().map(toast => toast.message)).toEqual(['beach.jpg is no longer in this folder: it was moved or deleted elsewhere.']);
     });
 });
 

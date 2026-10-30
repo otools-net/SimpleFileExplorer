@@ -376,6 +376,27 @@ describe('PreviewsService', () => {
         expect(previews.ratioGuess()).toBeCloseTo(Math.cbrt(9), 3);
     });
 
+    it('takes the shape of a file from the index until its preview tells', async () => {
+        await setUp();
+        const previews = TestBed.inject(PreviewsService);
+        const portrait = item('p.jpg', { width: 3000, height: 4000 });
+
+        expect(previews.shapeOf(portrait)).toBe(0.75);
+        expect(previews.shapeOf(item('unmeasured.jpg'))).toBeNull();
+        previews.learn('p.jpg', 0.8);
+        expect(previews.shapeOf(portrait)).toBe(0.8);
+    });
+
+    it('counts the indexed shapes in its guess before any preview loaded', async () => {
+        await setUp();
+        const previews = TestBed.inject(PreviewsService);
+
+        previews.scheduleGuess(() => [item('a.jpg', { width: 4000, height: 3000 }), item('b.jpg', { width: 3000, height: 4000 })]);
+        await new Promise(resolve => requestAnimationFrame(resolve));
+
+        expect(previews.ratioGuess()).toBeCloseTo(1, 3);
+    });
+
     it('has no guess before any preview loaded', async () => {
         await setUp();
         const previews = TestBed.inject(PreviewsService);

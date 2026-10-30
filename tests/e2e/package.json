@@ -1,0 +1,17 @@
+{
+  "name": "sfe-e2e",
+  "version": "0.0.0",
+  "description": "SFE's end-to-end tests: the real app in real browsers, phones first (see README.md).",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e": "playwright test",
+    "typecheck": "tsc --noEmit -p .",
+    "browsers": "playwright install webkit chromium"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.19.2"
+  }
+}

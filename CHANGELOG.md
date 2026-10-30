@@ -3,6 +3,75 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## 1.85.0
+
+### Added
+
+- **Phones and tablets: two fingers zoom a picture in the viewer**, around the point between them, up to its actual
+  size; bringing them together fits it back.
+
+### Changed
+
+- **A click or a tap around the shown file no longer closes the viewer** (it closed by mistake): Esc, the ✕ button or
+  the phone's Back closes it.
+
+### Fixed
+
+- **Phones: the listing no longer jumps when a scan's panel comes in** (a scan started by someone else, or
+  by a copy or an extraction indexing its folder): a tap or a long press under way stayed on the item it was aimed at.
+- **Phones and tablets: small targets made at least 24 px** for a finger: file names in the listing, tags, an
+  archive's folders, the JSON viewer's arrows, the reading settings' check boxes.
+- **Accessibility**: the search box is announced as a box with suggestions, and it and the administration's search
+  point screen readers only to lists that are shown; links within a line of text are underlined; the folder link of a
+  search result is easier to tap.
+- **Phones: holding a video's tile plays its preview without also selecting the video.**
+- **EPUB books no longer open blank**: the page was laid out, then cleared as the "Loading…" message went away.
+- **The server log on a phone held sideways (or a narrow window)**: its lines kept their message (it was squeezed to
+  nothing) and no longer made the page wider than the screen.
+- **iPhones: a tap outside the main menu or the sidebar closes it** (Safari sends no click for a tap on the page's
+  text or an empty area).
+- **Phones: saving a text file no longer reshuffles the editor's toolbar** (its "Saving…" was wider than "Save").
+- **My account no longer asks for settings a user may not see** (a refused request on every visit).
+- **iPhones: pressing and holding works as on Android**: it selects a file or folder, and opens the menu of a tag, a
+  folder of the path, a recent search or a row (Safari sends no long-press event: some actions, such as removing a
+  recent search, couldn't be reached).
+- **Phones: an archive's toolbar fits the screen**: its "Find in this folder only" button was cut off at the edge.
+- **Phones: Android's Back closes an open menu** instead of leaving the page; turning the phone keeps the menu open,
+  laid out again (it closed, or ran off a phone held sideways).
+- **Menus never run off a low window**: taller than the window, a menu scrolls inside itself.
+- **A menu whose item was deleted or moved elsewhere** (another tab, another person) closes with a short notice
+  instead of staying on an item that is gone.
+- **Phones: bigger buttons in the selection bar** (36 px instead of 30 on touch screens), easier to hit with a
+  thumb.
+- **Phones: menus open about twice as fast** (an item's ⋮ menu, the folder's, the viewer's): the menu no longer
+  measures itself to be placed when it is a sheet at the bottom, and no longer moves the focus into itself after a
+  tap (the keyboard still gets it; Esc closes it wherever the focus is).
+- **Phones: the bar at the bottom no longer jumps** when a menu or a dialog opens from the bottom of the screen (an
+  item's menu while items are selected, Rename, Tags…): holding the page behind it made Chrome show its address bar
+  again, which moved everything at the bottom. The page is now held without it, and a swipe on the dimmed area no
+  longer scrolls the page.
+- **Phones: tiles keep their place as pictures load**: a tile takes the shape of its picture from the index at once,
+  instead of when its preview arrives, and the names under the pictures are laid out with them, so the rows no longer
+  move under the finger and a tap on ⋮ no longer opens the file below it instead.
+- **Phones: the document viewers' toolbars keep their height** as their buttons move into "⋯" (JSON, CSV, subtitles,
+  archives): the list under them no longer shifts by a few pixels as it opens.
+- **The trash and missing files keep their names in a narrow column** (a phone held sideways, a tablet beside the
+  sidebar): the buttons took the whole line, the name vanished and the page could be scrolled sideways.
+- **Phones: settings' check boxes and lock switches, and the files of Duplicates & moves are easier to hit** with a
+  finger.
+- **Phones: the big Play button of a video always plays it**: on a small screen the controls covered it, and a tap
+  only showed them. The seek bar is easier to grab with a finger.
+- **Phones held sideways: a Markdown file's outline is readable**: its headings were squeezed to half their height.
+- **Phones: swiping to the previous file in the viewer stays in the viewer**: Chrome took a swipe to the right as
+  its own "back" and left the page.
+- **iPhones: a tap on a recent search or a tag suggestion takes it** (in the search box, the tag pickers): the tap was
+  cancelled and nothing happened.
+- **iPhones: the page no longer zooms in when a field gets the focus** (search, rename, new folder, the text viewer's
+  status bar…): text fields are 16 px on touch screens. The folder picker's path, the search's "in folder" button and the Close button of dialogs
+  are easier to hit with a finger.
+- **Phones: a tap on the dimmed area around a menu only closes the menu**: the tap no longer also reaches what is
+  under it (the sidebar button, a file).
+
 ## 1.84.0
 
 ### Added

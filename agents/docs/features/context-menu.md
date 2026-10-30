@@ -29,17 +29,41 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
 - The browser's menu is kept (`keepsBrowserMenu`): Shift held, a text field (`isTextField`: text inputs, textarea,
   contenteditable; not check boxes), a right click on selected text; and when the target has no entries.
 - Touch: a target with `touch` (listed items) does it on a long press instead of the menu (select); other targets open
-  the menu, a sheet at the bottom on phones. iOS sends no `contextmenu`: the ⋮ buttons.
+  the menu, a sheet at the bottom on phones.
+- iOS sends no `contextmenu`: `ContextMenu` times a finger held still (`holdStart`: touch, primary, on an element
+  registered with a menu; ended by a 10 px move, a scroll, `pointercancel`, the lift) and after 650 ms dispatches a
+  `contextmenu` (`pointerType: 'touch'`) there, so every menu (tag chips, crumbs, recent searches, rows) and the
+  long-press selection work on iPhones. A browser's own one before it (Android, ~500 ms) cancels the hold; one after
+  it (a Windows touch screen sends it on the lift) is dropped; the click of the lift is swallowed. Registered elements
+  get `data-menu-target`: no iOS callout or text selection on touch-only screens (`base.css`). Plain links keep the
+  browser's own long press. e2e: `holdLikeIos` (`menus.spec.ts`), unit tests in `context-menu.spec.ts`.
 - Keyboard: the ContextMenu key and Shift+F10 (`document:keydown`) open the focused element's menu under it (else the
   page's), not in text fields; the browser's own `contextmenu` that follows the key is swallowed for 800 ms (checked
   in Edge: one event after the ContextMenu key, none after Shift+F10).
 - Entries: `run`; or `href` (+ `newTab`): rendered as a real `<a target="_blank" rel="noopener">`, so Open in new tab
   is a user gesture (no popup blocker) and middle click works; or `submenu` (shown in place, Back / Left arrow).
-- Closing: click elsewhere, Esc/Tab (focus back to the trigger), scroll, resize, navigation; item menus also when the
-  listing changes (`ItemMenu`, `ListingStore.generation`, skipping the effect's first run).
-- A phone sheet (`max-width: 640px`, `isSheet`) closes neither on scroll nor on a resize keeping the width: opening
-  it freezes the page (`html:has(.sheet-backdrop)`), which brings back Chrome's address bar hidden by scrolling down
-  (a height-only `resize`) and ends a fling (a last `scroll`); both closed it at once. Turning the phone still does.
+- Opening (2026-10-29, e2e `reported.spec.ts` timings): a phone sheet isn't measured (`place` only off sheets: its
+  `offsetWidth` forced a layout of the menu, ~50 ms of a phone's opening); the focus goes to the first entry only when
+  a mouse or the keyboard opened it (`open().touch` from the last `pointerdown`'s type, `ContextMenu`). Esc closes an
+  open menu wherever the focus is (a capture `keydown` on the document, before a dialog's own Esc).
+- Closing: click elsewhere, Esc/Tab (focus back to the trigger), scroll, resize, navigation; a phone sheet's backdrop
+  on its `click`, not at the press (`outside` skips it): closed at the press, the tap's click went to what was under
+  it (e2e `reported.spec.ts`); item menus also when the
+  listing changes (`ItemMenu`, `ListingStore.generation`, skipping the effect's first run). A change-feed refresh
+  (`ListingStore.refresh`) keeps `generation`: the menu stays, unless its item left the listing (deleted or moved
+  elsewhere): closed with a toast saying so (`ItemMenu`, decided 2026-10-29; `files.spec.ts`).
+- **Android's Back** closes the open menu and stays on the page: a `CloseWatcher` per menu opened (Chromium 120+;
+  `watch` in `ContextMenuComponent`, destroyed when the menu closes otherwise, so the next Back is the page's). Modal
+  dialogs (`showModal`: sheets, the viewer) get Back from the browser itself. Safari has no close watchers (and iOS
+  no Back button). e2e `menus.spec.ts` asks the newest watcher, as the system does.
+- A phone sheet (`max-width: 640px`, `isSheet`) closes neither on scroll nor on any resize (the address bar, turning
+  the phone: laid out by its CSS, decided 2026-10-29). Turned wider than 640 px, a finger's menu becomes a popup
+  placed again under its button (`onResize`; the page's scroll in the next 500 ms is part of the resize); a mouse's
+  menu closes on a resize. A popup is at most the window's height and scrolls inside itself (`file-management.css`),
+  always placed inside the window (`place`). With a mouse (`any-pointer: fine`) opening it freezes the page (`html:has(.sheet-backdrop)`); on
+  touch screens the page's root is left alone (its `overflow: hidden` brought back Android Chrome's address bar: the
+  viewport got shorter and the selection bar jumped; changed 2026-10-29), the backdrop has `touch-action: none` and the sheet
+  `overscroll-behavior: contain` instead (`phone-sheets.css`; e2e `reported.spec.ts`).
 
 ## Which menu (built so far)
 

@@ -115,6 +115,9 @@
     color: var(--reader-text);
 }
 .text-view .text-toolbar .icon-button:hover, .text-view .reading-panel .icon-button:hover { background: var(--reader-active-line); }
+/* As tall as the bar's other controls (a button is 38 px): a taller item leaving into the "⋯" shrank the bar and the
+   list under it, and its ResizeObserver looped (the archive viewer's Extract; e2e viewers.spec.ts). */
+.text-toolbar .button { height: 32px; }
 .text-view .text-toolbar .icon-button.active { background: var(--reader-selection-match); color: var(--accent); }
 .text-view .reading-panel .button, .text-view .text-message .button {
     border-color: var(--reader-border);
@@ -147,6 +150,7 @@
 /* A file too large to be read whole: its parts. */
 .text-parts { display: flex; gap: 4px; padding-right: 8px; }
 .text-view .text-action:disabled { opacity: .5; cursor: default; }
+.text-view .text-action.saving:disabled { opacity: .8; cursor: progress; }
 
 .text-bar {
     display: flex;
@@ -252,6 +256,7 @@
 .reading-size output { min-width: 48px; text-align: center; font-variant-numeric: tabular-nums; }
 .text-view .reading-size .icon-button { width: auto; padding: 0 10px; border-color: var(--reader-border); font-weight: 700; }
 .reading-check { display: flex; align-items: center; gap: 8px; }
+@media (pointer: coarse) { .reading-check { min-height: 24px; } }
 
 .reading-themes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
 .reading-theme {
@@ -301,9 +306,11 @@
 
 /* ---------- Markdown (formats/markdown/): read, source or both ---------- */
 
+/* 32 px tall with its padding and border, as the toolbar's other controls: taller, the bar shrank when the switch went
+   into its "⋯" and its ResizeObserver looped (e2e viewers.spec.ts, "ResizeObserver loop" errors on phones). */
 .markdown-modes { display: flex; gap: 2px; padding: 2px; border: 1px solid var(--reader-border); border-radius: 8px; }
 .markdown-mode {
-    height: 28px;
+    height: 26px;
     padding: 0 10px;
     border: 0;
     border-radius: 6px;
@@ -333,7 +340,9 @@
     background: var(--reader-gutter);
     font-size: 13px;
 }
+/* Full height, the outline scrolling: in a short outline (30vh of a phone held sideways) they shrank, cut in half. */
 .markdown-outline a {
+    flex-shrink: 0;
     overflow: hidden;
     padding: 3px 6px;
     border-radius: 4px;
@@ -483,6 +492,8 @@
 }
 .json-toggle svg { width: .9em; height: .9em; transition: transform .1s; }
 .json-toggle.open svg { transform: rotate(90deg); }
+/* A finger's target: 24 px (WCAG 2.5.8). */
+@media (pointer: coarse) { .json-toggle { width: 24px; height: 24px; } }
 .json-key { flex: none; }
 .json-index { color: var(--reader-muted); }
 .json-colon { margin-left: -6px; color: var(--reader-muted); }
@@ -722,7 +733,12 @@
 .archive-crumb.current { font-weight: 600; cursor: default; }
 .archive-crumb.skipped { color: var(--reader-muted); cursor: default; }
 .archive-separator { color: var(--reader-muted); }
+/* The fields and the trail give way on a phone (an overflow row's children don't shrink, overflow.css; an input's own
+   minimum is its default size): every control that stays in the row fits. */
 .archive-go, .archive-find { width: 180px; }
+.archive-toolbar > :is(.archive-go, .archive-find) { flex: 0 1 180px; min-width: 88px; }
+.archive-toolbar > .archive-trail { flex-shrink: 1; }
+.archive-trail > .archive-crumb { flex-shrink: 1; min-width: 44px; }
 .archive-note {
     display: flex;
     flex: none;
@@ -796,6 +812,8 @@
 }
 span.archive-open { cursor: default; }
 a.archive-open:hover, button.archive-open:hover { text-decoration: underline; }
+/* A finger's target: a 24 px line in the 32 px row (WCAG 2.5.8). */
+@media (pointer: coarse) { .archive-open { line-height: 24px; } }
 .archive-row:is([data-kind="link"], [data-kind="other"]) .archive-open { color: var(--reader-muted); font-style: italic; }
 .archive-lock { flex: none; width: 14px; height: 14px; color: var(--reader-muted); }
 /* A search's result: the folder it is in, after its name (opens it); the name keeps its room, the folder gives way. */

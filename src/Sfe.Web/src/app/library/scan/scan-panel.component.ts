@@ -68,11 +68,33 @@ export class ScanPanelComponent {
         // The panel sticks under the top bar: its height (0 while hidden) puts the compact location bar below it.
         if (typeof ResizeObserver !== 'undefined') {
             const root = document.documentElement.style;
-            const observer = new ResizeObserver(([entry]) =>
-                root.setProperty('--scan-panel-h', `${entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height}px`));
-            observer.observe(inject(ElementRef<HTMLElement>).nativeElement);
+            const listingTop = () => document.querySelector('sfe-listing')?.getBoundingClientRect().top ?? null;
+            let height = 0;
+            let top = listingTop();
+            const scrolled = () => top = listingTop();
+            const panel = inject(ElementRef<HTMLElement>).nativeElement;
+            // The panel's size, and the page's (the listing coming in): where the listing is before the panel moves it.
+            const observer = new ResizeObserver(entries => {
+                const entry = entries.find(each => each.target === panel);
+                if (entry) {
+                    const next = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+                    root.setProperty('--scan-panel-h', `${next}px`);
+                    // Coming in (a scan started elsewhere, found by a poll) or growing, it pushes the listing down under
+                    // a finger: the page scrolls by as much, unless the browser already did (scroll anchoring, Chrome
+                    // once scrolled), and the panel covers the top instead (e2e selection.spec.ts, a long press).
+                    const now = listingTop();
+                    if (next > height && top !== null && now !== null && Math.abs(now - top - (next - height)) < 1)
+                        scrollBy(0, next - height);
+                    height = next;
+                }
+                top = listingTop();
+            });
+            observer.observe(panel);
+            observer.observe(document.body);
+            addEventListener('scroll', scrolled, { passive: true });
             destroyRef.onDestroy(() => {
                 observer.disconnect();
+                removeEventListener('scroll', scrolled);
                 root.removeProperty('--scan-panel-h');
             });
         }

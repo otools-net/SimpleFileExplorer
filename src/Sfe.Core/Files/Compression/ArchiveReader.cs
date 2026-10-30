@@ -347,7 +347,7 @@ public static class ArchiveReader
         }
     }
 
-    private static Stream Bounded(Stream data, ArchiveEntry entry, IDisposable owner) =>
+    private static Stream Bounded(Stream data, ArchiveEntry entry, IDisposable? owner) =>
         new DeclaredSizeStream(data, entry.Size, owner);
 
     private static ArchiveEntry Map(SharpCompress.Common.IEntry entry, long index)

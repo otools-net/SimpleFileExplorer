@@ -7,7 +7,20 @@ Code: client `app/formats/flash/` (`flash-player.ts`: the frame behind `FLASH_LO
 `SecurityHeaders.FlashPolicy`, setting `Player:Flash`. Tests: `FlashRouteTests`, `flash-view.component.spec.ts` (a
 fake loader: jsdom runs no WebAssembly), `flash-player.spec.ts` (messages), a row in `formats.spec.ts`; the real Ruffle
 runs in the docs screenshots (scene `flash`, `make-swf.mjs`). User docs: `docs/user-guide/viewer.md#flash-movies`,
-`docs/administration/playback.md#flash-movies`. Open work: [flash-viewer-plan](../development/flash-viewer-plan.md).
+`docs/administration/playback.md#flash-movies`.
+
+## Why Ruffle (decided 2026-10-25)
+
+- The only maintained Flash Player emulator for the web (Rust compiled to WebAssembly), licence MIT OR Apache-2.0,
+  a self-hosted build that needs no bundler.
+- Before building it, a spike (a Node server with the planned headers, hand-made movies, headless Edge) proved the
+  frame of no origin works: scripts and `.wasm` load under `'self'` from the opaque frame, no CSP violation, requests
+  carry no cookie, sibling movies load with `base`, `javascript:` and `_blank` do nothing.
+- Not done, maybe later: a thumbnail of the first frame (Ruffle's desktop build can render headless; ffmpeg can't play
+  ActionScript), `.spl` (FutureSplash), movies' saved games (`SharedObject`: the frame has no storage).
+- The epic was closed by the user on 2026-10-30. Never checked by an agent (headless Firefox started from the agent's
+  shell fetched nothing): Firefox; touch input and Ruffle's virtual keyboard on phones; full screen, sound after the
+  opening click, keyboard in the frame and Esc passed on, in a real browser. Look there first if a report comes in.
 
 ## Ruffle, bundled and local
 

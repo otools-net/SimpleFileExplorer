@@ -205,8 +205,14 @@ export async function openEpub(stage: HTMLElement, url: string, options: EpubOpt
             container?.scrollBy({ top: pages ? pixels * container.clientHeight * 0.9 : pixels });
         },
         resize: () => {
-            if (stage.clientWidth && stage.clientHeight)
-                rendition.resize();
+            if (!stage.clientWidth || !stage.clientHeight)
+                return;
+            const place = rendition.currentLocation()?.start?.cfi ?? options.start ?? undefined;
+            rendition.resize();
+            // epub.js clears its pages on a new size and shows them again only once it knows where it is: a resize before
+            // that (the loading message going away, a phone's bar) left the book blank (e2e documents.spec.ts).
+            if (!rendition.getContents().length)
+                void rendition.display(place).catch(() => rendition.display());
         },
         destroy: () => {
             rendition.destroy();

@@ -98,6 +98,31 @@ describe('ViewerComponent › Actual size', () => {
         expect(await entry('actualSize')).toBeNull();
     });
 
+    it('follows two fingers: larger around the point between them, no larger than its actual size, fitted again when let go near it', async () => {
+        await view();
+        type Pinch = { first: boolean; last: boolean; movement: [number, number]; origin: [number, number]; memo?: { width: number; height: number } };
+        const viewer = fixture.componentInstance as unknown as { onPinch(state: Pinch): { width: number; height: number } | undefined };
+        const pinch = async (scale: number, step: 'first' | 'move' | 'last', memo?: Pinch['memo']) => {
+            const next = viewer.onPinch({ first: step === 'first', last: step === 'last', movement: [scale, 0], origin: [500, 350], memo });
+            await settle();
+            return next;
+        };
+
+        const memo = await pinch(1, 'first');
+        expect(memo).toEqual({ width: 800, height: 600 });
+        expect(picture().classList).not.toContain('actual-size');
+        await pinch(2, 'move', memo);
+        expect(picture().style.width).toBe('1600px');
+        expect(picture().style.height).toBe('1200px');
+        // The point between the fingers stays where it is.
+        expect(transform()).toBe('translate(-300px, -300px)');
+        await pinch(10, 'move', memo);
+        expect(picture().style.width).toBe('4000px');
+        await pinch(1.03, 'last', memo);
+        expect(picture().classList).not.toContain('actual-size');
+        expect(picture().style.width).toBe('');
+    });
+
     it('never leaves a gap at the edges when zooming near a corner', async () => {
         await view();
 
@@ -168,6 +193,16 @@ describe('ViewerComponent › Actual size', () => {
         await settle();
 
         expect(transform()).toBe('translate(-1500px, -1300px)');
+        expect(element.querySelector('.viewer-title strong')!.textContent).toBe('photo.jpg');
+    });
+
+    it('stays open on a click around the picture; only Esc, × or Back close it', async () => {
+        await view();
+
+        element.querySelector<HTMLElement>('.viewer-stage')!.click();
+        await settle();
+
+        expect(dialog().open).toBe(true);
         expect(element.querySelector('.viewer-title strong')!.textContent).toBe('photo.jpg');
     });
 

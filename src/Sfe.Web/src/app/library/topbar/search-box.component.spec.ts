@@ -196,7 +196,11 @@ describe('SearchBoxComponent', () => {
 
     describe('tag suggestions', () => {
         it('suggests tags for the t: term around the caret', async () => {
+            // A combobox naming its list only while it shows (an id of nothing isn't valid ARIA: e2e a11y.spec.ts).
+            expect(input().getAttribute('role')).toBe('combobox');
+            expect(input().hasAttribute('aria-controls')).toBe(false);
             await typeText('cat t:sh');
+            expect(input().getAttribute('aria-controls')).toBe(list().id);
 
             expect(api.tags).toHaveBeenLastCalledWith({ q: 'sh', limit: 12 });
             expect(list().hidden).toBe(false);

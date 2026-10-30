@@ -18,7 +18,8 @@ const VIEW_BUTTONS: { view: View; icon: string; label: string; title: string }[]
     selector: 'header[sfeTopbar]',
     imports: [IconComponent, RouterLink, SearchBoxComponent, MainMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'topbar', '(document:click)': 'closePopovers($event)' },
+    // A press, not a click: iOS sends no click for a tap on what isn't clickable (the page's text, an empty area).
+    host: { class: 'topbar', '(document:pointerdown)': 'closePopovers($event)' },
     template: `
         <button type="button" class="icon-button ghost sidebar-toggle" aria-controls="sidebar" aria-label="Sidebar"
                 [attr.aria-expanded]="sidebar.open()" [title]="sidebar.open() ? 'Hide the sidebar (quick links and tags)' : 'Show the sidebar (quick links and tags)'" (click)="sidebar.toggle()">
@@ -59,7 +60,7 @@ export class TopbarComponent {
     }
 
     /** A click outside the popovers and the buttons opening them closes them. */
-    protected closePopovers(event: MouseEvent): void {
+    protected closePopovers(event: PointerEvent): void {
         if (!(event.target as Element).closest?.('.popover, [aria-expanded]'))
             this.popovers.close();
     }

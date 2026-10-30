@@ -182,7 +182,10 @@ describe('TagPickerComponent', () => {
         input().focus();
         await settle();
 
-        const press = new Event('pointerdown', { bubbles: true, cancelable: true });
+        // On mousedown, not pointerdown: a pointerdown prevented on a touch screen cancels the tap in WebKit (no click,
+        // the suggestion not taken on an iPhone).
+        options()[0].dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true }));
+        const press = new Event('mousedown', { bubbles: true, cancelable: true });
         options()[0].dispatchEvent(press);
         options()[0].dispatchEvent(new Event('pointerup', { bubbles: true }));
 

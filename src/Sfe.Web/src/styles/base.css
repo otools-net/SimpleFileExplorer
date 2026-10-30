@@ -63,12 +63,23 @@ html { scroll-padding-top: calc(var(--topbar-h) + var(--location-strip-h) + 8px)
    (`--scrollbar-w`, scrollbar-width.ts): wider, its names would wrap less and its end come closer, and that scroll
    closes the item menu. */
 
+/* On a touch screen the root is left alone (its `overflow: hidden` brought back Android Chrome's address bar and the
+   bars at the bottom jumped, as for phone-sheets.css): a finger can't pan the dialog (its head, foot and backdrop, which
+   touches reach as the dialog) and its body's scrolling stops at its ends. The wheel ignores both: with a mouse the
+   root is held. */
 @media (max-width: 760px) {
+    dialog.sheet { touch-action: none; }
+    dialog.sheet .sheet-body { overscroll-behavior: contain; }
+}
+
+@media (max-width: 760px) and (any-pointer: fine) {
     html:has(dialog.sheet[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
 }
 
-/* The viewer covers the whole screen at any width: the page's scrollbar (and its room) go the same way. */
-html:has(dialog.viewer[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
+/* The viewer covers the whole screen at any width: the page's scrollbar (and its room) go the same way. Its sideways
+   swipes go to the next or previous file: not to the browser's own swipe back (Chrome went back a page, leaving the
+   viewer and the listing, on a swipe to the previous file). */
+html:has(dialog.viewer[open]) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); overscroll-behavior-x: none; }
 
 body {
     margin: 0;
@@ -80,7 +91,20 @@ body {
 }
 
 a { color: inherit; text-decoration: none; }
+/* A link inside a line of text is underlined: not told apart by its colour alone (WCAG 1.4.1; e2e a11y.spec.ts). */
+p a:not([class]) { text-decoration: underline; text-underline-offset: 2px; }
 button, input, select, textarea { font: inherit; color: inherit; }
+
+/* Touch screens: iOS zooms the whole page into a field whose text is under 16 px when it gets the focus, and leaves
+   it zoomed (e2e `expectNoZoomOnFocus`). Over the fields' own sizes (`font: inherit` in a 12 px status bar...). */
+@media (pointer: coarse) {
+    input:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file]), select, textarea { font-size: max(16px, 1em) !important; }
+}
+/* Touch-only screens: holding an element with an app menu opens it (context-menu.ts, `holdStart`); iOS's link preview
+   and text selection would take the hold first. */
+@media (hover: none) and (pointer: coarse) {
+    [data-menu-target] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+}
 code { font-family: var(--mono); font-size: .92em; }
 [hidden] { display: none !important; }
 

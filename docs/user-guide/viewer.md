@@ -19,7 +19,7 @@ The top right of the viewer holds three buttons: **Tags**, **⋮** (more actions
 | ‹ / › at the sides | ← / →, mouse wheel down / up, a swipe | Previous / next file of the listing that the viewer shows, skipping the others (the wheel works anywhere but over the video controls and in a text) |
 | Tags | T | The file's [tags](tags.md) |
 | ⋮ | | The menu below |
-| × | Esc | Back to the listing, scrolled where you were |
+| × | Esc, the phone's Back | Back to the listing, scrolled where you were (a click or a tap around the file leaves the viewer open) |
 
 The **⋮** menu offers what applies to the file shown (Esc closes it). A right click on the picture or the video opens the same
 menu (documents keep their own right click, or the browser's menu). For a video, the [player's controls](video-player.md#its-menu) come
@@ -54,6 +54,10 @@ around it, or scroll it with the mouse wheel (<kbd>Shift</kbd> + wheel: sideways
 <kbd>Z</kbd> or <kbd>Esc</kbd> show it whole again. Moving to another file shows it whole too.
 
 ![A picture at its actual size, being dragged](../images/viewer-actual-size.png)
+
+On a phone or a tablet, spread **two fingers** on a picture to zoom into it, as far as its actual size (or three times
+the screen for a small one), and bring them together to make it smaller; let go near its first size and it fits the
+screen again. One finger then moves it around.
 
 A large photo shown through its thumbnail can be seen at its actual size once its original has loaded.
 

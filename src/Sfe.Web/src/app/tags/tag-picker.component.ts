@@ -38,7 +38,7 @@ let nextId = 0;
         <ul class="tag-options" role="listbox" [id]="listId" [hidden]="!options().length">
             @for (option of options(); track $index; let index = $index) {
                 <li role="option" [id]="listId + '-' + index" [class.create]="option.create" [attr.aria-selected]="index === active()"
-                    (pointerdown)="$event.preventDefault()" (click)="choose(option)">
+                    (mousedown)="$event.preventDefault()" (click)="choose(option)">
                     @if (option.create) {
                         <svg sfeIcon="plus"></svg><span>Create tag <strong>“{{ option.create }}”</strong></span>
                     } @else {

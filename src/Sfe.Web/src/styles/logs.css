@@ -84,7 +84,10 @@
     overflow-wrap: anywhere;
 }
 
-@media (max-width: 600px) {
+/* The list's own width, not the screen's: beside the administration's sections (a phone held sideways, 800 px) it
+   has ~500 px, where the head's fixed parts left the message nothing and pushed the page wider (e2e admin.spec.ts). */
+.log-entries { container-type: inline-size; }
+@container (max-width: 640px) {
     .log-entry-head { flex-wrap: wrap; gap: 2px 10px; }
     .log-category, .log-space { max-width: none; }
     .log-message { flex-basis: 100%; white-space: normal; overflow-wrap: anywhere; }

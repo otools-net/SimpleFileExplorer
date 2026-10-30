@@ -69,11 +69,12 @@
 .tile .preview img.loaded { opacity: 1; }
 
 /*
- * Long listings keep every loaded tile: the browser skips painting the ones off screen. The preview's size comes
- * from its aspect ratio, so skipping it changes nothing; the caption's height is remembered once shown.
+ * Long listings keep every loaded tile: the browser skips painting the previews off screen, whose size comes from
+ * their aspect ratio, so skipping them changes nothing. Not the captions: their height (54–124 px: names on one or two
+ * lines, tags) is only known once shown, and a tile taking it late moved the rows under a finger (a tap on ⋮ landed on
+ * the link below it; e2e listing.spec.ts).
  */
 .tile .preview { content-visibility: auto; }
-.tile .info { content-visibility: auto; contain-intrinsic-size: auto 72px; }
 
 .placeholder {
     display: flex;
