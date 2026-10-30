@@ -31,6 +31,8 @@ args = StartupLogo.TakeNoLogo(args, out var noLogo);
 StartupLogo.ShowIfWanted(noLogo);
 
 WebApplicationBuilder builder;
+// The watchers of the two files below (ResolveFileProvider): nothing else disposes them (see app.Lifetime below).
+var watchedFiles = new List<IDisposable>();
 try
 {
     builder = WebApplication.CreateBuilder(PortableBuild.CreateOptions(args));
@@ -41,7 +43,8 @@ try
     local.ResolveFileProvider();
     var main = builder.Configuration.Sources.ToList().FindIndex(source => source is JsonConfigurationSource { Path: "appsettings.json" });
     builder.Configuration.Sources.Insert(main >= 0 ? main + 1 : InstallationSettings.AfterAppSettings(builder.Configuration), local);
-    InstallationSettings.AddTo(builder.Configuration, InstallationSettings.ResolvePath(builder.Configuration, builder.Environment.ContentRootPath));
+    var installation = InstallationSettings.AddTo(builder.Configuration, InstallationSettings.ResolvePath(builder.Configuration, builder.Environment.ContentRootPath));
+    watchedFiles.AddRange(new[] { local.FileProvider, installation.FileProvider }.OfType<IDisposable>());
 }
 catch (InvalidDataException ex)
 {
@@ -71,6 +74,9 @@ builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document,
 }));
 
 var app = builder.Build();
+// Disposing the configuration leaves the file providers it did not create watching (one inotify instance each on
+// Linux, 128 per user): the tests start hundreds of servers in one process.
+app.Lifetime.ApplicationStopped.Register(() => watchedFiles.ForEach(watcher => watcher.Dispose()));
 app.Logger.LogInformation("SFE {Version} ({Commit})", AppVersion.Version, AppVersion.Commit ?? "unknown commit");
 
 // The visitor's address and scheme behind a trusted reverse proxy, before anything reads them (sign-in limits, cookie).

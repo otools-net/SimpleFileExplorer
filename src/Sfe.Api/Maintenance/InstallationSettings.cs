@@ -90,12 +90,13 @@ public sealed class InstallationSettings
     /// Inserts the file in <paramref name="configuration"/> right after the last <c>appsettings*.json</c>: before the
     /// environment variables and the command line, which keep the last word.
     /// </summary>
-    public static void AddTo(IConfigurationBuilder configuration, string path)
+    public static JsonConfigurationSource AddTo(IConfigurationBuilder configuration, string path)
     {
         var source = new JsonConfigurationSource { Path = path, Optional = true, ReloadOnChange = true };
         // Watches the nearest existing folder: the data folder may not exist yet.
         source.ResolveFileProvider();
         configuration.Sources.Insert(AfterAppSettings(configuration), source);
+        return source;
     }
 
     /// <summary>Where a source after the <c>appsettings*.json</c> files goes.</summary>

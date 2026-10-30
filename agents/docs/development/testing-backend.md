@@ -27,5 +27,9 @@ Rules and infrastructure: [testing.md](testing.md). Search expectations: [search
   media too (assert either way).
 - File-tracking tests make junctions/hard links with `cmd /c mklink /J|/H` (no admin); `TestLibrary` can't delete
   through a junction, remove it first. "Registered after" ordering needs separate scans (one scan is parallel).
+- "The configured user limit (128) on the number of inotify instances has been reached" (Linux, CI) = file watchers
+  leaked by test servers: a `JsonConfigurationSource` given its own provider (`ResolveFileProvider`) is not disposed
+  with the configuration, `Program.cs` disposes them at `ApplicationStopped`. `ConfigurationWatcherTests` counts them
+  (Linux only; WSL Ubuntu has .NET 10: `dotnet test -p:SfeSkipWebClient=true` on a copy outside `/mnt/c`).
 - User's app running → locked DLLs: build/test with `--artifacts-path <scratch dir>`; there,
   `TheShippedChangelogHasTheRunningVersion` fails ([build.md](../environment/build.md)).
