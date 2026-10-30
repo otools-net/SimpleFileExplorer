@@ -3,7 +3,7 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
-## Unreleased
+## 1.85.1
 
 ### Fixed
 
