@@ -67,10 +67,9 @@ public sealed class LogTests
         var anyCase = await SearchAsync(admin, "q=PROBE+GAMMA");
         var inException = await SearchAsync(admin, "q=inner+trouble");
         var byCategory = await SearchAsync(admin, "q=" + Category);
-        var inRange = await SearchAsync(
-            admin,
-            $"q=probe&from={Uri.EscapeDataString(before.ToString("O"))}&to={Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(1).ToString("O"))}"
-        );
+        var from = Uri.EscapeDataString(before.ToString("O"));
+        var to = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(1).ToString("O"));
+        var inRange = await SearchAsync(admin, $"q=probe&from={from}&to={to}");
         var later = await SearchAsync(
             admin,
             $"q=probe&from={Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(1).ToString("O"))}"
@@ -399,7 +398,8 @@ public sealed class LogTests
             DROP TABLE "LogEntries";
             DELETE FROM "GroupRights" WHERE "Right" IN ('{Rights.ViewLogs}', '{Rights.LogSettings}');
             UPDATE "Tenants" SET "RightsRevision" = 3;
-            UPDATE "{AccessDbContext.ServerPropertiesTable}" SET "Value" = '1.45.0' WHERE "Key" = '{ServerProperty.VersionKey}';
+            UPDATE "{AccessDbContext.ServerPropertiesTable}" SET "Value" = '1.45.0'
+            WHERE "Key" = '{ServerProperty.VersionKey}';
             PRAGMA wal_checkpoint(TRUNCATE);
             """
         );

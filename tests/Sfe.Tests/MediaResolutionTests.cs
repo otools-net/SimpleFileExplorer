@@ -97,7 +97,7 @@ public sealed class MediaResolutionTests
         Assert.IsNull(Header([]));
     }
 
-    /* ---------- ffmpeg output ---------- */
+    /* ---------- ffmpeg output, as ffmpeg prints it: some lines are over 120 characters on purpose ---------- */
 
     [TestMethod]
     public void ReadsTheFirstVideoStreamOfFfmpeg()

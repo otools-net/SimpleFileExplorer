@@ -19,7 +19,8 @@ public static class TestSamples
         if (!File.Exists(path))
         {
             Assert.Fail(
-                $"No sample {name} in {Folder}: add it to tests/samples/media.json and run agents/tools/samples/update-samples.mjs."
+                $"No sample {name} in {Folder}: add it to tests/samples/media.json and run "
+                    + $"agents/tools/samples/update-samples.mjs."
             );
         }
 
@@ -38,7 +39,8 @@ public static class TestSamples
         if (!File.Exists(path))
         {
             Assert.Fail(
-                $"No archive {name} in {ArchivesFolder}: make it in agents/tools/samples/make-archives.mjs and run update-samples.mjs."
+                $"No archive {name} in {ArchivesFolder}: make it in agents/tools/samples/make-archives.mjs and run "
+                    + $"update-samples.mjs."
             );
         }
 

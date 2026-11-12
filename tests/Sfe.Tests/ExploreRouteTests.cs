@@ -583,9 +583,10 @@ public sealed class ExploreRouteTests
             top.Items.Select(item => item.Name).ToList()
         );
         var readme = top.Items.Single(item => item.Name == "readme.txt");
+        var archive = EpubEntries.Token("Media/hidden names.7z");
         using (
             var opened = await _alice.GetAsync(
-                $"/api/files/explore/entry/{EpubEntries.Token("Media/hidden names.7z")}/{readme.Id}/readme.txt?unlock={unlock}",
+                $"/api/files/explore/entry/{archive}/{readme.Id}/readme.txt?unlock={unlock}",
                 Token
             )
         )

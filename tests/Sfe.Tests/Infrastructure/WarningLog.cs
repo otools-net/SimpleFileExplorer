@@ -39,7 +39,8 @@ public sealed class WarningLog : ILoggerProvider
             if (IsEnabled(logLevel))
             {
                 log._entries.Enqueue(
-                    $"{logLevel} {category}: {formatter(state, exception)}{(exception is null ? "" : Environment.NewLine + exception)}"
+                    $"{logLevel} {category}: "
+                        + $"{formatter(state, exception)}{(exception is null ? "" : Environment.NewLine + exception)}"
                 );
             }
         }

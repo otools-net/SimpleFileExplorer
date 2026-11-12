@@ -164,7 +164,8 @@ public sealed class StreamingTests
         Assert.AreEqual(
             "7.1-full_build-www.gyan.dev",
             Ffmpeg.ParseVersion(
-                "ffmpeg version 7.1-full_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers\nbuilt with gcc"
+                "ffmpeg version 7.1-full_build-www.gyan.dev Copyright (c) 2000-2024 the FFmpeg developers\nbuilt with "
+                    + "gcc"
             )
         );
         Assert.IsNull(Ffmpeg.ParseVersion("something else"));

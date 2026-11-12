@@ -1,5 +1,4 @@
 <Project>
-
   <!--
     The version of SFE, for every project: bump it here for a release (semantic versioning: major.minor.patch).
     The SDK appends the commit to the informational version (1.2.0+<sha>), which the app shows next to it
@@ -9,5 +8,4 @@
   <PropertyGroup>
     <Version>1.85.1</Version>
   </PropertyGroup>
-
 </Project>

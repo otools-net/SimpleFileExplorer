@@ -21,7 +21,8 @@ public sealed class TestSamplesTests
         CollectionAssert.AllItemsAreUnique(listed);
         Assert.IsEmpty(
             listed.Except(files).ToList(),
-            "Listed in tests/samples/media.json but not made: run node agents/tools/samples/update-samples.mjs --ffmpeg <path>"
+            "Listed in tests/samples/media.json but not made: run node agents/tools/samples/update-samples.mjs "
+                + "--ffmpeg <path>"
         );
         Assert.IsEmpty(
             files.Except(listed).ToList(),

@@ -629,7 +629,8 @@ public sealed class FolderRulesUpgradeTests
             await using var command = connection.CreateCommand();
             command.CommandText = $"""
                 DROP TABLE "FolderRules";
-                UPDATE "{AccessDbContext.ServerPropertiesTable}" SET "Value" = '1.51.0' WHERE "Key" = '{ServerProperty.VersionKey}';
+                UPDATE "{AccessDbContext.ServerPropertiesTable}" SET "Value" = '1.51.0'
+                WHERE "Key" = '{ServerProperty.VersionKey}';
                 PRAGMA wal_checkpoint(TRUNCATE);
                 """;
             await command.ExecuteNonQueryAsync(TestContext.CancellationToken);

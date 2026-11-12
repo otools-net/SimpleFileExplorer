@@ -446,7 +446,8 @@ public sealed class MigrationTests
         await using var command = connection.CreateCommand();
         command.CommandText = version is null
             ? $"DROP TABLE \"{AccessDbContext.ServerPropertiesTable}\""
-            : $"UPDATE \"{AccessDbContext.ServerPropertiesTable}\" SET Value = $version WHERE Key = '{ServerProperty.VersionKey}'";
+            : $"UPDATE \"{AccessDbContext.ServerPropertiesTable}\" SET Value = $version WHERE Key = "
+                + $"'{ServerProperty.VersionKey}'";
         command.Parameters.AddWithValue("$version", version ?? "");
         await command.ExecuteNonQueryAsync(TestContext.CancellationToken);
         // Folds the write-ahead log into the file, so that the file alone says what the database holds.

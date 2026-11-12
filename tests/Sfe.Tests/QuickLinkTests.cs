@@ -269,7 +269,8 @@ public sealed class QuickLinkTests
                 DROP TABLE "QuickLinks";
                 DELETE FROM "GroupRights" WHERE "Right" = '{Rights.QuickLinks}';
                 UPDATE "Tenants" SET "RightsRevision" = 2;
-                UPDATE "{AccessDbContext.ServerPropertiesTable}" SET "Value" = '1.41.0' WHERE "Key" = '{ServerProperty.VersionKey}';
+                UPDATE "{AccessDbContext.ServerPropertiesTable}" SET "Value" = '1.41.0'
+                WHERE "Key" = '{ServerProperty.VersionKey}';
                 PRAGMA wal_checkpoint(TRUNCATE);
                 """;
             await command.ExecuteNonQueryAsync(TestContext.CancellationToken);

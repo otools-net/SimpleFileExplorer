@@ -228,7 +228,8 @@ public sealed class AccessTests
         var silent = routes
             .Where(e => e.Metadata.GetMetadata<FolderMetadata>() is null)
             .Select(e =>
-                $"{string.Join('/', e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? [])} {e.RoutePattern.RawText}"
+                $"{string.Join('/', e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? [])} "
+                + $"{e.RoutePattern.RawText}"
             )
             .ToList();
 

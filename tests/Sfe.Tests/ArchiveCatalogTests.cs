@@ -499,7 +499,8 @@ public sealed class ArchiveCatalogTests
         var catalog = Build(path, ArchiveFormat.Zip);
         var built = watch.Elapsed;
         TestContext.WriteLine(
-            $"200 000 entries: catalog built in {built.TotalSeconds:F1} s, {new FileInfo(catalog.Path).Length / 1024} KB"
+            $"200 000 entries: catalog built in {built.TotalSeconds:F1} s, {new FileInfo(catalog.Path).Length / 1024} "
+                + $"KB"
         );
 
         var last = catalog.FindFolder("part 99")!.Value;
