@@ -9,8 +9,8 @@ using Sfe.Api.Endpoints;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
-using Sfe.Core.Indexing;
 using Sfe.Core.Files;
+using Sfe.Core.Indexing;
 using Sfe.Core.Settings;
 using Sfe.Tests.Infrastructure;
 

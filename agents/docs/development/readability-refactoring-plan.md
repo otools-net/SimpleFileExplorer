@@ -48,7 +48,8 @@ too big is split into sub-items here before starting it. A new trap found on the
 
 - [x] `dotnet format` over `src/` (diff reviewed for renames): the IDE1006 renames and 5 braces of `if`/`else`
   chains done by hand; the braces grew the baseline (file lines +151, long functions +2, deep +1), accepted
-- [ ] `dotnet format` over `tests/`, plus the MSTest asserts, CA1416, IDE0052, IDE0044 by hand
+- [x] `dotnet format` over `tests/`, plus the MSTest asserts, CA1416, IDE0052, IDE0044 by hand (two of the
+  fixer's asserts did not compile, see the traps)
 - [ ] Hashes of both in `.git-blame-ignore-revs`; `dotnet format --verify-no-changes` passes
 
 ### Phase 2: long lines (numbers: lines over 120 characters on 2026-11-12)
@@ -216,6 +217,12 @@ Traps met:
   braces of an `if`/`else` chain where one branch already has them: both by hand. Renaming a field to `_name` by
   text: keep `this.name = name` constructor parameters, and string literals equal to the name (`"folders"` in
   `ArchiveCatalog`).
+- `dotnet format` applies the MSTEST0037 fixes itself, two of them not compiling: `Assert.EndsWith('\n', …)` (takes
+  a string) and `Assert.HasCount(long, …)` (takes an int; `AreEqual(size, array.LongLength)` instead), and `Assert.AreEqual(0, enumValue)` (needs
+  `(FileAttributes)0`); `dotnet format` itself still reports nothing then: build the tests. The
+  CA1416 guard `if (OperatingSystem.IsWindows()) Assert.Inconclusive(…)` needs a `return;` after it for the analyzer.
+- A local constant renamed by text: leave the content of raw string literals (`"""`) alone (test data such as
+  `Video: h264 (High)` that a `Replace` looks for), and rename inside interpolations (`$"at {depth}"`).
 - Added braces lengthen files and functions: `measure.mjs --check` fails for them; `--write-baseline` accepts it in
   this phase only.
 - `references.mjs` fails when another `dotnet` build runs at the same time: run it alone.

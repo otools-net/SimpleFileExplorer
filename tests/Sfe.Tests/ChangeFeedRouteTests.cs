@@ -96,7 +96,9 @@ public sealed class ChangeFeedRouteTests
         // Turned on for the space: the settings change pings at once, and the feed tells it (no folder named).
         using (var saved = await _admin.PatchAsJsonAsync("/api/settings?level=tenant",
                    new SettingChanges(new Dictionary<string, JsonNode?> { ["keepAlive.mode"] = "always" }), Json, Token))
+        {
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
+        }
 
         Assert.AreEqual(KeepAliveState.Ok, (await NextEventAsync<KeepAliveSignal>(reader, "keepAlive")).State);
     }

@@ -9,7 +9,6 @@ using Sfe.Core.FileTracking;
 using Sfe.Core.Indexing;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
-using Sfe.Core.Search;
 using Sfe.Core.Settings;
 using Sfe.Core.Tagging;
 using Sfe.Core.Tasks;
@@ -783,7 +782,10 @@ public sealed class ApiTests
     public async Task TagSearchLimitIsKeptInRange()
     {
         for (var i = 0; i < 3; i++)
-            using (await _client.PostAsJsonAsync("/api/tags", new TagInput($"Tag {i}"), Json, TestContext.CancellationToken)) { }
+        {
+            using (await _client.PostAsJsonAsync("/api/tags", new TagInput($"Tag {i}"), Json, TestContext.CancellationToken))
+            { }
+        }
 
         var zero = await GetAsync<TagSearchResults>("/api/tags?limit=0");
         var negative = await GetAsync<TagSearchResults>("/api/tags?limit=-5");
@@ -802,7 +804,8 @@ public sealed class ApiTests
     [TestMethod]
     public async Task ViewedFilesFeedTheSidebarUntilTheHistoryIsCleared()
     {
-        using (await _client.PostAsJsonAsync("/api/file-tags", new FileTagChange(["Media/photo.jpg"], Add: [BuiltInTags.Favorite]), Json, TestContext.CancellationToken)) { }
+        using (await _client.PostAsJsonAsync("/api/file-tags", new FileTagChange(["Media/photo.jpg"], Add: [BuiltInTags.Favorite]), Json, TestContext.CancellationToken))
+        { }
 
         using var viewed = await _client.PostAsJsonAsync("/api/file-tags/viewed", new ViewedFile("Media/photo.jpg"), Json, TestContext.CancellationToken);
         using var notAFile = await _client.PostAsJsonAsync("/api/file-tags/viewed", new ViewedFile("Media"), Json, TestContext.CancellationToken);
@@ -936,7 +939,8 @@ public sealed class ApiTests
         var tag = (await created.Content.ReadFromJsonAsync<TagDetails>(Json, TestContext.CancellationToken))!;
         using (var start = await _client.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken))
             await WaitForScanAsync();
-        using (await _client.PostAsJsonAsync("/api/file-tags", new FileTagChange(["Media/Episode 2.mkv"], Add: [tag.Id]), Json, TestContext.CancellationToken)) { }
+        using (await _client.PostAsJsonAsync("/api/file-tags", new FileTagChange(["Media/Episode 2.mkv"], Add: [tag.Id]), Json, TestContext.CancellationToken))
+        { }
 
         var duplicates = await GetAsync<DuplicateResults>("/api/duplicates");
         var group = Assert.ContainsSingle(duplicates.Groups);

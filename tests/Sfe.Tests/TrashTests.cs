@@ -18,7 +18,7 @@ public sealed class TrashTests
     private TestLibrary _library = null!;
     private CoreServices _services = null!;
     private readonly List<string> _links = [];
-    private WarningLog _log = new();
+    private readonly WarningLog _log = new();
 
     public TestContext TestContext { get; set; } = null!;
 
@@ -81,7 +81,10 @@ public sealed class TrashTests
         {
             db.TrashEntries.AddRange(Enumerable.Range(0, Trash.CountCap + 150).Select(i => new TrashEntry
             {
-                Path = $"ChildDir/f{i}", Name = $"f{i}", DeletedAt = DateTime.UtcNow, Folder = Guid.NewGuid().ToString("N"),
+                Path = $"ChildDir/f{i}",
+                Name = $"f{i}",
+                DeletedAt = DateTime.UtcNow,
+                Folder = Guid.NewGuid().ToString("N"),
             }));
             await db.SaveChangesAsync(Token);
         }

@@ -273,7 +273,7 @@ public sealed class TenantTests
         using var file = await player.GetAsync("/" + link.Url, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, file.StatusCode);
-        Assert.AreEqual(3 * 1024, (await file.Content.ReadAsByteArrayAsync(TestContext.CancellationToken)).Length);
+        Assert.HasCount(3 * 1024, await file.Content.ReadAsByteArrayAsync(TestContext.CancellationToken));
     }
 
     private WebApplicationFactory<Program> Factory(Action<IDictionary<string, string?>>? configure = null)

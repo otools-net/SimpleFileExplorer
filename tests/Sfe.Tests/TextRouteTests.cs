@@ -32,7 +32,6 @@ public sealed class TextRouteTests
     private HttpClient _bob = null!;
     private HttpClient _eve = null!;
     private HttpClient _cara = null!;
-    private int _tenant;
 
     public TestContext TestContext { get; set; } = null!;
 
@@ -52,7 +51,6 @@ public sealed class TextRouteTests
         var accounts = _factory.Services.GetRequiredService<AccessService>();
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
-        _tenant = tenant;
         var browsers = (await accounts.CreateGroupAsync(tenant, new GroupInput("Browsers", Rights: [Rights.Browse]), cancellationToken: Token)).Value!;
         var editors = (await accounts.CreateGroupAsync(tenant, new GroupInput("Editors",
             Rights: [Rights.Browse, Rights.ViewFiles, Rights.Download, Rights.CreateFiles, .. editorRights.Length > 0 ? editorRights : [Rights.DeleteFiles]]), cancellationToken: Token)).Value!;
@@ -140,12 +138,12 @@ public sealed class TextRouteTests
     [TestMethod]
     public async Task UnicodeTextRoundTrips()
     {
-        const string text = "Ünïcödé — 写真\n";
-        await File.WriteAllTextAsync(_library.FullPath("ChildDir/unicode.md"), text, new UTF8Encoding(false), Token);
+        const string Text = "Ünïcödé — 写真\n";
+        await File.WriteAllTextAsync(_library.FullPath("ChildDir/unicode.md"), Text, new UTF8Encoding(false), Token);
 
         var read = (await _alice.GetFromJsonAsync<TextFile>("/api/files/text?path=ChildDir/unicode.md", Json, Token))!;
 
-        Assert.AreEqual((text, TextCodec.Utf8, "lf"), (read.Text, read.Encoding, read.LineEnding));
+        Assert.AreEqual((Text, TextCodec.Utf8, "lf"), (read.Text, read.Encoding, read.LineEnding));
     }
 
     /* ---------- Saving ---------- */

@@ -101,20 +101,20 @@ public sealed class MediaResolutionTests
     [TestMethod]
     public void ReadsTheFirstVideoStreamOfFfmpeg()
     {
-        const string output = """
+        const string Output = """
             Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'clip.mp4':
               Duration: 00:00:10.00, start: 0.000000, bitrate: 1205 kb/s
               Stream #0:0[0x1](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 128 kb/s (default)
               Stream #0:1[0x2](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1920x1080 [SAR 1:1 DAR 16:9], 1070 kb/s, 30 fps (default)
             At least one output file must be specified
             """;
-        Assert.AreEqual(new PixelSize(1920, 1080), MediaDimensions.ParseFfmpegOutput(output));
+        Assert.AreEqual(new PixelSize(1920, 1080), MediaDimensions.ParseFfmpegOutput(Output));
     }
 
     [TestMethod]
     public void PortraitPhoneVideosAreTurned()
     {
-        const string output = """
+        const string Output = """
               Stream #0:0[0x1](eng): Video: hevc (Main) (hvc1 / 0x31637668), yuv420p(tv, bt709), 1920x1080, 9000 kb/s, 29.97 fps (default)
                 Metadata:
                   handler_name    : Core Media Video
@@ -122,31 +122,31 @@ public sealed class MediaResolutionTests
                   displaymatrix: rotation of -90.00 degrees
               Stream #0:1[0x2](eng): Audio: aac (LC) (mp4a / 0x6134706D), 44100 Hz, mono, fltp, 96 kb/s (default)
             """;
-        Assert.AreEqual(new PixelSize(1080, 1920), MediaDimensions.ParseFfmpegOutput(output));
+        Assert.AreEqual(new PixelSize(1080, 1920), MediaDimensions.ParseFfmpegOutput(Output));
     }
 
     [TestMethod]
     public void CoverPicturesAreNotTheVideo()
     {
-        const string output = """
+        const string Output = """
               Stream #0:0: Video: mjpeg (Baseline), yuvj420p(pc, bt470bg/unknown/unknown), 600x600 [SAR 1:1 DAR 1:1], 90k tbr, 90k tbn (attached pic)
               Stream #0:1: Video: vp9 (Profile 0), yuv420p(tv, bt709), 3840x2160, SAR 1:1 DAR 16:9, 25 fps, 25 tbr, 1k tbn (default)
             """;
-        Assert.AreEqual(new PixelSize(3840, 2160), MediaDimensions.ParseFfmpegOutput(output));
+        Assert.AreEqual(new PixelSize(3840, 2160), MediaDimensions.ParseFfmpegOutput(Output));
         Assert.AreEqual(PixelSize.Unknown, MediaDimensions.ParseFfmpegOutput("clip.mkv: Invalid data found when processing input"));
     }
 
     [TestMethod]
     public void ReadsTheDurationOfFfmpeg()
     {
-        const string output = """
+        const string Output = """
             Input #0, matroska,webm, from 'movie.mkv':
               Metadata:
                 title           : Duration: 99:99:99
               Duration: 01:32:05.48, start: 0.000000, bitrate: 2205 kb/s
               Stream #0:0: Video: h264 (High), yuv420p(progressive), 1920x800, SAR 1:1 DAR 12:5, 23.98 fps (default)
             """;
-        Assert.AreEqual(5525.48, MediaDimensions.ParseDuration(output));
+        Assert.AreEqual(5525.48, MediaDimensions.ParseDuration(Output));
         Assert.AreEqual(0, MediaDimensions.ParseDuration("  Duration: N/A, start: 0.000000, bitrate: N/A"));
         Assert.AreEqual(0, MediaDimensions.ParseDuration("clip.mkv: Invalid data found when processing input"));
     }

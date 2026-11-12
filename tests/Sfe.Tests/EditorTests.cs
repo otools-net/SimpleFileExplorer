@@ -161,7 +161,8 @@ public sealed class EditorTests
     {
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        using (await admin.PutAsJsonAsync("/api/access/tenant/guest-access", new GuestAccessChange(true), TestContext.CancellationToken)) { }
+        using (await admin.PutAsJsonAsync("/api/access/tenant/guest-access", new GuestAccessChange(true), TestContext.CancellationToken))
+        { }
         var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
         var users = groups.Single(g => g.BuiltIn == BuiltInGroup.Users);
         var guests = groups.Single(g => g.BuiltIn == BuiltInGroup.Guests);
@@ -179,7 +180,10 @@ public sealed class EditorTests
         using var byUser = await PostImageAsync(alice, "Media/photo.jpg", Png(2, 2));
         using (var revoke = await admin.PutAsJsonAsync($"/api/access/groups/{users.Id}",
             new GroupInput(users.Name, Rights: users.Rights.Where(r => r != Rights.EditImages).ToList()), Json, TestContext.CancellationToken))
+        {
             Assert.AreEqual(HttpStatusCode.OK, revoke.StatusCode);
+        }
+
         using var afterRevoke = await PostImageAsync(alice, "Media/photo.jpg", Png(2, 2));
         var aliceConfig = await GetAsync<ClientConfig>(alice, "/api/config");
 
@@ -317,7 +321,10 @@ public sealed class EditorTests
         var guests = await GroupAsync(upgraded, BuiltInGroup.Guests);
         using (var revoke = await upgraded.PutAsJsonAsync($"/api/access/groups/{users.Id}",
             new GroupInput(users.Name, Rights: users.Rights.Where(r => r != Rights.EditImages).ToList()), Json, TestContext.CancellationToken))
+        {
             Assert.AreEqual(HttpStatusCode.OK, revoke.StatusCode);
+        }
+
         var restarted = await RestartAsync();
 
         CollectionAssert.Contains(users.Rights.ToList(), Rights.EditImages);

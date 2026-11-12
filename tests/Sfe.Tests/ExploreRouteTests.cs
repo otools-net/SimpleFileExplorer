@@ -294,7 +294,7 @@ public sealed class ExploreRouteTests
             Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, preview.StatusCode);
         using var download = await _alice.GetAsync(url + "?download=true", Token);
         Assert.AreEqual(HttpStatusCode.OK, download.StatusCode);
-        Assert.AreEqual(2 * 1024 * 1024, (await download.Content.ReadAsByteArrayAsync(Token)).Length);
+        Assert.HasCount(2 * 1024 * 1024, await download.Content.ReadAsByteArrayAsync(Token));
 
         // Stored (as videos are): a slice of the archive, any size, with Range (a video seeks in it).
         var bytes = string.Concat(Enumerable.Range(0, 2 * 1024 * 1024 / 8).Select(i => $"{i % 10_000_000:D8}"));
@@ -305,7 +305,7 @@ public sealed class ExploreRouteTests
         {
             Assert.AreEqual(HttpStatusCode.OK, whole.StatusCode, "stored: over the preview's size, nothing unpacked");
             Assert.AreEqual("bytes", whole.Headers.AcceptRanges.Single());
-            Assert.AreEqual(bytes.Length, (await whole.Content.ReadAsByteArrayAsync(Token)).Length);
+            Assert.HasCount(bytes.Length, await whole.Content.ReadAsByteArrayAsync(Token));
         }
         using (var request = new HttpRequestMessage(HttpMethod.Get, clipUrl))
         {

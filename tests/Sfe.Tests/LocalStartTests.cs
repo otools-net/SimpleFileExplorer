@@ -197,13 +197,15 @@ public sealed class LocalStartTests
         var links = factory.Services.GetRequiredService<FastSignIn>();
 
         var remote = Browser(factory, AnotherComputer);
-        using (await remote.GetAsync($"/{FastSignIn.Route}?token={await links.IssueAsync(TestContext.CancellationToken)}", TestContext.CancellationToken)) { }
+        using (await remote.GetAsync($"/{FastSignIn.Route}?token={await links.IssueAsync(TestContext.CancellationToken)}", TestContext.CancellationToken))
+        { }
         var remoteSession = await GetAsync<SessionInfo>(remote, "/api/session");
 
         var late = Browser(factory, ThisComputer);
         var token = await links.IssueAsync(TestContext.CancellationToken);
         time.Offset = FastSignIn.Lifetime + TimeSpan.FromSeconds(1);
-        using (await late.GetAsync($"/{FastSignIn.Route}?token={token}", TestContext.CancellationToken)) { }
+        using (await late.GetAsync($"/{FastSignIn.Route}?token={token}", TestContext.CancellationToken))
+        { }
         var lateSession = await GetAsync<SessionInfo>(late, "/api/session");
 
         Assert.IsNull(remoteSession.User);
@@ -222,9 +224,13 @@ public sealed class LocalStartTests
         var pending = await links.IssueAsync(TestContext.CancellationToken);
         using (var created = await admin.PostAsJsonAsync("/api/access/users",
                    new UserInput("second", Password: "second-password", IsServerAdmin: true), Json, TestContext.CancellationToken))
+        {
             Assert.AreEqual(HttpStatusCode.Created, created.StatusCode, await created.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        }
+
         var browser = Browser(on, ThisComputer);
-        using (await browser.GetAsync($"/{FastSignIn.Route}?token={pending}", TestContext.CancellationToken)) { }
+        using (await browser.GetAsync($"/{FastSignIn.Route}?token={pending}", TestContext.CancellationToken))
+        { }
 
         Assert.IsNull(await off.Services.GetRequiredService<FastSignIn>().IssueAsync(TestContext.CancellationToken));
         Assert.IsNull(await links.IssueAsync(TestContext.CancellationToken), "Two administrators: whose session would it be?");
@@ -331,10 +337,13 @@ public sealed class LocalStartTests
         foreach (var option in new[] { BrowserLauncher.NoBrowserArgument, StartupLogo.NoLogoArgument, "--help",
                                        WindowsServiceSetup.InstallArgument, WindowsServiceSetup.UninstallArgument,
                                        WindowsServiceSetup.OpenFolderArgument, "--urls" })
+        {
             StringAssert.Contains(help, option);
+        }
+
         StringAssert.Contains(help, "Simple File Explorer 1.2.3");
         foreach (var line in help.Split('\n'))
-            Assert.IsTrue(line.TrimEnd('\r').Length <= 80, $"Too long for a console: {line}");
+            Assert.IsLessThanOrEqualTo(80, line.TrimEnd('\r').Length, $"Too long for a console: {line}");
         Assert.IsTrue(help.All(c => c < 128), "Any console code page shows it");
     }
 

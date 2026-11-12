@@ -88,7 +88,8 @@ public sealed class IndexAndSearchTests
                 {
                     errors.Enqueue(ex.Message);
                 }
-            }) { IsBackground = true }).ToList();
+            })
+            { IsBackground = true }).ToList();
             threads.ForEach(t => t.Start());
             if (!threads.All(t => t.Join(TimeSpan.FromSeconds(30))))
             {

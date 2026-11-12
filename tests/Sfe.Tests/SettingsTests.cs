@@ -59,7 +59,7 @@ public sealed class SettingsTests
         var classifier = _services.Get<MediaClassifier>();
         Assert.AreEqual(ItemKind.Video, classifier.Classify(".mp4"));
         Assert.AreEqual(ItemKind.File, classifier.Classify(".mkv"));
-        Assert.IsTrue(_services.Get<LibraryBrowser>().EnumerationOptions.AttributesToSkip == 0);
+        Assert.AreEqual((FileAttributes)0, _services.Get<LibraryBrowser>().EnumerationOptions.AttributesToSkip);
 
         await ScanAsync();
         Assert.IsEmpty(await SearchNamesAsync("RDFile"), "RepeatedDir is now ignored.");
@@ -141,7 +141,7 @@ public sealed class SettingsTests
         var options = _services.Get<Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions>>().CurrentValue;
         Assert.AreEqual(_library.ThumbnailPath, options.Thumbnails.CacheDirectory);
         Assert.AreEqual(300, options.Thumbnails.Width);
-        Assert.IsFalse(System.Text.Json.JsonSerializer.Serialize(Settings.Get(), SettingsStore.Json).Contains("cacheDirectory"));
+        Assert.DoesNotContain("cacheDirectory", System.Text.Json.JsonSerializer.Serialize(Settings.Get(), SettingsStore.Json));
     }
 
     [TestMethod]

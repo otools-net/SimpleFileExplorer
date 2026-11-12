@@ -82,8 +82,11 @@ public sealed class FolderRuleServiceTests
             "An account in no group of the space");
         Assert.AreEqual(AccessStatus.Invalid, (await _rules.SetAsync(_tenant, "Photos", new FolderPrincipalRef(_users, _alice), FolderLevel.Read, null, Token)).Status);
         if (OperatingSystem.IsWindows())
+        {
             Assert.AreEqual(AccessStatus.Invalid, (await _rules.SetAsync(_tenant, "Private.", FolderPrincipalRef.Group(_users), FolderLevel.Hidden, null, Token)).Status,
                 "Windows opens \"Private.\" as \"Private\"");
+        }
+
         Assert.IsEmpty(await _rules.GetAsync(_tenant, Token));
     }
 
@@ -94,7 +97,11 @@ public sealed class FolderRuleServiceTests
         {
             db.FolderRules.AddRange(Enumerable.Range(0, FolderRuleService.MaxRules).Select(i => new FolderRule
             {
-                TenantId = _tenant, Path = $"Folder {i}", GroupId = _users, Level = FolderLevel.Read, Created = DateTime.UtcNow,
+                TenantId = _tenant,
+                Path = $"Folder {i}",
+                GroupId = _users,
+                Level = FolderLevel.Read,
+                Created = DateTime.UtcNow,
             }));
             await db.SaveChangesAsync(Token);
         }

@@ -36,7 +36,10 @@ public sealed class SecretFilesTests
     public void ASecretFileIsForTheServersAccountOnly()
     {
         if (OperatingSystem.IsWindows())
+        {
             Assert.Inconclusive("No file modes on Windows: a file has the rights of its folder.");
+            return;
+        }
         var file = Path.Combine(_folder, "code.txt");
 
         SecretFiles.WriteAllText(file, "secret");
@@ -48,7 +51,10 @@ public sealed class SecretFilesTests
     public void AFileThatWasOpenToOthersIsClosedWhenRewritten()
     {
         if (OperatingSystem.IsWindows())
+        {
             Assert.Inconclusive("No file modes on Windows.");
+            return;
+        }
         var file = Path.Combine(_folder, "code.txt");
         File.WriteAllText(file, "old");
         File.SetUnixFileMode(file, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
@@ -76,7 +82,10 @@ public sealed class SecretFilesTests
     public void AnExistingFolderKeepsItsModeAndIsReportedOpen()
     {
         if (OperatingSystem.IsWindows())
+        {
             Assert.Inconclusive("No file modes on Windows.");
+            return;
+        }
         var shared = Path.Combine(_folder, "shared");
         var mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute | UnixFileMode.GroupRead | UnixFileMode.GroupExecute;
         Directory.CreateDirectory(shared, mode);

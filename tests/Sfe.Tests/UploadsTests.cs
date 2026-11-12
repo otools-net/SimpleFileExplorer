@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Sfe.Core.Files;
-using Sfe.Core.Tagging;
 using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;

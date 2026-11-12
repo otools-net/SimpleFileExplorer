@@ -202,7 +202,7 @@ public sealed class MigrationTests
         Assert.AreEqual(HttpStatusCode.OK, download.StatusCode);
         Assert.AreEqual("application/zip", download.Content.Headers.ContentType?.MediaType);
         StringAssert.StartsWith(link.FileName, "SFE-backup-");
-        Assert.AreEqual(link.Size, zip.Length);
+        Assert.AreEqual(link.Size, zip.LongLength);
         Assert.AreEqual(HttpStatusCode.NotFound, twice.StatusCode);
         AssertBackup(zip, "1.36.0");
         Assert.AreEqual(before, Fingerprint(), "Backing up changes nothing");
@@ -215,7 +215,10 @@ public sealed class MigrationTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         using (var created = await admin.PostAsJsonAsync("/api/tenants", new TenantInput("Other", Slug: "other", Root: _library.FullPath("Media")), Json,
                    TestContext.CancellationToken))
+        {
             Assert.AreEqual(HttpStatusCode.Created, created.StatusCode, await created.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        }
+
         await File.WriteAllTextAsync(_library.SettingsPath, """{ "player": { "seekSeconds": 25 } }""", TestContext.CancellationToken);
         await File.WriteAllTextAsync(Path.Combine(_library.BasePath, "installation.json"), """{ "Urls": "http://*:5181" }""", TestContext.CancellationToken);
 

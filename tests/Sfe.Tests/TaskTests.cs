@@ -56,8 +56,8 @@ public sealed class TaskTests
     {
         // 03:00 at UTC+2 is 01:00 UTC. 10 October 2026 is a Saturday.
         var start = Utc(2026, 10, 1, 1);
-        const int mondayAndSaturday = 1 << 1 | 1 << 6;
-        var runs = ScheduleCalculator.NextRuns(ScheduleKind.Weekly, start, 0, mondayAndSaturday, Utc(2026, 10, 10, 2), PlusTwo, 3);
+        const int MondayAndSaturday = 1 << 1 | 1 << 6;
+        var runs = ScheduleCalculator.NextRuns(ScheduleKind.Weekly, start, 0, MondayAndSaturday, Utc(2026, 10, 10, 2), PlusTwo, 3);
         CollectionAssert.AreEqual(new[] { Utc(2026, 10, 12, 1), Utc(2026, 10, 17, 1), Utc(2026, 10, 19, 1) }, runs);
         Assert.IsNull(ScheduleCalculator.Next(ScheduleKind.Weekly, start, 0, 0, start, PlusTwo));
     }

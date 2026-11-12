@@ -1,6 +1,5 @@
 using System.Formats.Tar;
 using System.IO.Compression;
-using System.Text;
 using Sfe.Core.Files.Compression;
 using Sfe.Tests.Infrastructure;
 

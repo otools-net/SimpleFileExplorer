@@ -1,6 +1,5 @@
 using System.Buffers.Binary;
 using Sfe.Core.Library;
-using Sfe.Core.Thumbnails;
 using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;

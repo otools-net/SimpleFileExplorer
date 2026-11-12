@@ -610,7 +610,8 @@ public sealed class AccessTests
     {
         var factory = Factory(settings => settings["Sfe:Security:AnonymousGuests"] = "false");
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        using (await admin.PutAsJsonAsync("/api/access/tenant/guest-access", new GuestAccessChange(true), TestContext.CancellationToken)) { }
+        using (await admin.PutAsJsonAsync("/api/access/tenant/guest-access", new GuestAccessChange(true), TestContext.CancellationToken))
+        { }
 
         using var config = await Client(factory).GetAsync("/api/config", TestContext.CancellationToken);
 
@@ -674,7 +675,10 @@ public sealed class AccessTests
         using var before = await aliceClient.GetAsync("/api/config", TestContext.CancellationToken);
         using (var disabled = await admin.PutAsJsonAsync($"/api/access/users/{alice.Id}",
                    new UserInput("alice", Disabled: true, GroupIds: [users.Id]), Json, TestContext.CancellationToken))
+        {
             Assert.AreEqual(HttpStatusCode.OK, disabled.StatusCode);
+        }
+
         using var after = await aliceClient.GetAsync("/api/config", TestContext.CancellationToken);
         using var signIn = await SignInAsync(Client(factory), "alice", "alice-password");
 
@@ -731,7 +735,8 @@ public sealed class AccessTests
         using var part = await player.SendAsync(range, TestContext.CancellationToken);
         var token = link.Url.Split('/')[3];
         using var forged = await player.GetAsync("/" + link.Url.Replace(token, token[..^2] + (token[^2] == 'A' ? "BB" : "AA")), TestContext.CancellationToken);
-        using (await admin.PutAsJsonAsync("/api/session/password", new PasswordChange(ApiClients.AdminPassword, "new-password-1"), TestContext.CancellationToken)) { }
+        using (await admin.PutAsJsonAsync("/api/session/password", new PasswordChange(ApiClients.AdminPassword, "new-password-1"), TestContext.CancellationToken))
+        { }
         using var revoked = await player.GetAsync("/" + link.Url, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, created.StatusCode);
@@ -739,7 +744,7 @@ public sealed class AccessTests
         Assert.IsGreaterThan(DateTimeOffset.UtcNow.AddMinutes(300), link.Expires);
         Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, whole.StatusCode);
-        Assert.AreEqual(200 * 1024, (await whole.Content.ReadAsByteArrayAsync(TestContext.CancellationToken)).Length);
+        Assert.HasCount(200 * 1024, await whole.Content.ReadAsByteArrayAsync(TestContext.CancellationToken));
         Assert.AreEqual(HttpStatusCode.PartialContent, part.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, forged.StatusCode);
         Assert.AreEqual(HttpStatusCode.Forbidden, revoked.StatusCode);
@@ -778,7 +783,7 @@ public sealed class AccessTests
         Assert.IsTrue(setup.Recover);
         Assert.AreEqual(HttpStatusCode.OK, restored.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, signIn.StatusCode);
-        Assert.AreEqual(1, users.Count, "The administrator was restored, not duplicated");
+        Assert.HasCount(1, users, "The administrator was restored, not duplicated");
     }
 
     [TestMethod]
@@ -821,7 +826,7 @@ public sealed class AccessTests
         var member = await CreateUserAsync(admin, new UserInput("member", Password: "member-password", GroupIds: [users.Id]));
         var outsider = await CreateUserAsync(admin, new UserInput("outsider", Password: "outsider-password"));
         users = await GroupAsync(admin, BuiltInGroup.Users);
-        var manager =await ApiClients.SignInAsync(factory, "manager", "manager-password", TestContext.CancellationToken);
+        var manager = await ApiClients.SignInAsync(factory, "manager", "manager-password", TestContext.CancellationToken);
 
         // Taken into a group, the account would belong to this library alone: its administrators could set its password.
         using var pulledIn = await manager.PutAsJsonAsync($"/api/access/groups/{users.Id}",

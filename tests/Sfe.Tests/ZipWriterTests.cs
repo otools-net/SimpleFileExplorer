@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Text;
-using SharpCompress.Readers;
 using Sfe.Core.Files.Compression;
+using SharpCompress.Readers;
 
 namespace Sfe.Tests;
 
@@ -71,9 +71,14 @@ public sealed class ZipWriterTests
         var seen = new Dictionary<string, string>();
         using (var file = File.OpenRead(zip))
         using (var reader = ReaderFactory.OpenReader(file))
+        {
             while (reader.MoveToNextEntry())
+            {
                 if (!reader.Entry.IsDirectory)
                     seen[reader.Entry.Key!] = new StreamReader(reader.OpenEntryStream()).ReadToEnd();
+            }
+        }
+
         CollectionAssert.AreEquivalent(Tree.Select(f => f.Name).ToList(), seen.Keys.ToList());
         Assert.AreEqual(Tree[2].Text, seen[Tree[2].Name]);
         SevenZipTests(zip, null);
@@ -116,11 +121,14 @@ public sealed class ZipWriterTests
         {
             var read = 0;
             while (reader.MoveToNextEntry())
+            {
                 if (!reader.Entry.IsDirectory && reader.Entry.Key == Tree[1].Name)
                 {
                     Assert.AreEqual(Tree[1].Text, new StreamReader(reader.OpenEntryStream()).ReadToEnd());
                     read++;
                 }
+            }
+
             Assert.AreEqual(1, read, "SharpCompress opens it with the password");
         }
         // 7-Zip takes only ASCII passwords for zips ("The parameter is incorrect" otherwise; 26.01): SFE writes UTF-8,

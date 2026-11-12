@@ -257,7 +257,7 @@ public sealed class FileContentTests
 
         Assert.AreEqual(("line 0001\n", 0L, 90L, 20_000L, TextCodec.Utf8), (start.Text![..10], start.Offset, start.End, start.Size, start.Encoding));
         Assert.AreEqual((100L, "line 0011\n"), (middle.Offset, middle.Text![..10]), "from the line after the offset");
-        Assert.IsTrue(middle.Text.EndsWith('\n'));
+        Assert.EndsWith("\n", middle.Text);
         Assert.AreEqual((19_910L, 20_000L, "line 1992\n"), (end.Offset, end.End, end.Text![..10]));
         Assert.AreEqual((20_000L, ""), (past.Offset, past.Text));
         Assert.IsNull(await Content.ReadPartAsync(Path.Combine(_library.Root, "nothing.log"), 0, 10, null, Token));

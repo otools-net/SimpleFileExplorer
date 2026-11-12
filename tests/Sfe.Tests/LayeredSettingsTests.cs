@@ -10,7 +10,6 @@ using Sfe.Core.Data;
 using Sfe.Core.Indexing;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
-using Sfe.Core.Search;
 using Sfe.Core.Settings;
 using Sfe.Tests.Infrastructure;
 
@@ -168,7 +167,8 @@ public sealed class LayeredSettingsTests
     {
         var factory = Factory();
         var admin = await AdminAsync(factory);
-        using (await admin.PutAsJsonAsync("/api/access/tenant/guest-access", new GuestAccessChange(true), TestContext.CancellationToken)) { }
+        using (await admin.PutAsJsonAsync("/api/access/tenant/guest-access", new GuestAccessChange(true), TestContext.CancellationToken))
+        { }
 
         using var preferences = await ApiClients.Create(factory).GetAsync("/api/me/preferences", TestContext.CancellationToken);
 
@@ -378,9 +378,15 @@ public sealed class LayeredSettingsTests
         await PatchOkAsync(admin, "tenant", new() { ["reading.theme"] = "sepia", ["reading.prose.size"] = 20 });
         using (var saved = await PatchPreferencesAsync(alice, new()
         {
-            ["reading.prose.size"] = 22, ["reading.code.lineHeight"] = 1.8, ["reading.code.font"] = "custom", ["reading.customFont"] = " Fira Code ",
+            ["reading.prose.size"] = 22,
+            ["reading.code.lineHeight"] = 1.8,
+            ["reading.code.font"] = "custom",
+            ["reading.customFont"] = " Fira Code ",
         }))
+        {
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        }
+
         using var height = await PatchPreferencesAsync(alice, new() { ["reading.code.lineHeight"] = 1.7 });
         using var font = await PatchPreferencesAsync(alice, new() { ["reading.prose.font"] = "comic-sans" });
         using var name = await PatchPreferencesAsync(alice, new() { ["reading.customFont"] = "x\"; } body { color: red" });

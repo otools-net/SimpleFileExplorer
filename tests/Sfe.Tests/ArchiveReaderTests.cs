@@ -163,8 +163,10 @@ public sealed class ArchiveReaderTests
         var path = Path.Combine(_folder, "many.zip");
         using (var file = File.Create(path))
         using (var zip = new ZipArchive(file, ZipArchiveMode.Create))
+        {
             for (var i = 0; i < 70_000; i++)
                 zip.CreateEntry($"f{i / 1000}/{i}.txt", CompressionLevel.NoCompression);
+        }
 
         var count = 0;
         foreach (var entry in ArchiveReader.ReadEntries(path, ArchiveFormat.Zip))
@@ -346,8 +348,10 @@ public sealed class ArchiveReaderTests
     {
         // SharpCompress reads even a RAR 5 whose names are in clear only with its password (0.50.7): listed, it says so.
         foreach (var name in new[] { "Rar5.encrypted_filesOnly.rar", "Rar5.encrypted_filesAndHeader.rar", "Rar.encrypted_filesAndHeader.rar" })
+        {
             Assert.Contains("password", Assert.Throws<ArchiveException>(
                 () => ArchiveReader.ReadEntries(TestSamples.ThirdPartyOf("sharpcompress/" + name), ArchiveFormat.Rar).ToList()).Message, name);
+        }
     }
 
     [TestMethod]

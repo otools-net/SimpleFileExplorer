@@ -72,12 +72,12 @@ public sealed class TextCodecTests
     [DataRow(TextCodec.Windows1252)]
     public void EncodedTextReadsBackTheSame(string encoding)
     {
-        const string text = "Café — “quoted” €5\nsecond line\n";
+        const string Text = "Café — “quoted” €5\nsecond line\n";
 
-        var encoded = TextCodec.Encode(text, encoding, "crlf");
+        var encoded = TextCodec.Encode(Text, encoding, "crlf");
         var decoded = TextCodec.Decode(encoded.Bytes)!;
 
-        Assert.AreEqual((text.Replace("\n", "\r\n"), encoding, "crlf"), (decoded.Text, decoded.Encoding, decoded.LineEnding));
+        Assert.AreEqual((Text.Replace("\n", "\r\n"), encoding, "crlf"), (decoded.Text, decoded.Encoding, decoded.LineEnding));
     }
 
     [TestMethod]

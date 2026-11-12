@@ -89,7 +89,7 @@ public sealed class FlashRouteTests
             Assert.AreEqual(HttpStatusCode.OK, movie.StatusCode);
             Assert.AreEqual("*", movie.Headers.GetValues("Access-Control-Allow-Origin").Single(), "the player's frame has no origin");
             StringAssert.Contains(movie.Headers.GetValues("Content-Security-Policy").Single(), "sandbox");
-            Assert.AreEqual(300, (await movie.Content.ReadAsByteArrayAsync(Token)).Length);
+            Assert.HasCount(300, await movie.Content.ReadAsByteArrayAsync(Token));
         }
         foreach (var sibling in new[] { "level2.swf", "data/map.xml", "notes.txt" })
             Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(_frame, folder + sibling), sibling);
@@ -179,13 +179,13 @@ public sealed class FlashRouteTests
         Assert.AreEqual("SAMEORIGIN", page.Headers.GetValues("X-Frame-Options").Single());
         Assert.AreEqual(SecurityHeaders.FlashPolicy, page.Headers.GetValues("Content-Security-Policy").Single());
         StringAssert.Contains(SecurityHeaders.FlashPolicy, "sandbox allow-scripts");
-        Assert.IsFalse(SecurityHeaders.FlashPolicy.Contains("allow-same-origin"), "the frame must have no origin");
+        Assert.DoesNotContain("allow-same-origin", SecurityHeaders.FlashPolicy, "the frame must have no origin");
         Assert.AreEqual("*", ruffle.Headers.GetValues("Access-Control-Allow-Origin").Single());
         foreach (var other in new[] { app, api })
         {
             Assert.AreEqual("DENY", other.Headers.GetValues("X-Frame-Options").Single());
             Assert.IsFalse(other.Headers.Contains("Access-Control-Allow-Origin"));
-            Assert.IsFalse(other.Headers.GetValues("Content-Security-Policy").Single().Contains("wasm-unsafe-eval"));
+            Assert.DoesNotContain("wasm-unsafe-eval", other.Headers.GetValues("Content-Security-Policy").Single());
         }
     }
 

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Sfe.Core.FileTracking;
 using Sfe.Core.Indexing;
 using Sfe.Core.Thumbnails;

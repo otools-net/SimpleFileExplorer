@@ -41,22 +41,22 @@ public sealed class StreamingTests
     [TestMethod]
     public void TheProbeTellsWhichPicturesBrowsersPlay()
     {
-        const string h264 = """
+        const string H264 = """
             Input #0, matroska,webm, from 'film.mkv':
               Duration: 01:02:03.50, start: 0.000000, bitrate: 2000 kb/s
               Stream #0:0(eng): Video: h264 (High), yuv420p(tv, bt709, progressive), 1920x1080, 23.98 fps (default)
               Stream #0:1(eng): Audio: ac3, 48000 Hz, 5.1(side), fltp, 384 kb/s (default)
               Stream #0:2(eng): Audio: aac (LC), 48000 Hz, stereo, fltp
             """;
-        var probe = VideoStreamer.Parse(h264);
+        var probe = VideoStreamer.Parse(H264);
         Assert.AreEqual(3723.5, probe.Duration!.Value, 0.01);
         Assert.AreEqual("h264", probe.VideoCodec);
         Assert.IsTrue(probe.BrowserPictures);
         Assert.AreEqual("ac3", probe.AudioCodec, "The first sound stream is the one played");
 
-        Assert.IsFalse(VideoStreamer.Parse(h264.Replace("yuv420p(tv", "yuv420p10le(tv")).BrowserPictures, "10-bit H.264");
-        Assert.IsTrue(VideoStreamer.Parse(h264.Replace("yuv420p(tv", "yuvj420p(pc")).BrowserPictures, "Full-range 8-bit H.264");
-        Assert.IsFalse(VideoStreamer.Parse(h264.Replace("h264 (High)", "hevc (Main)")).BrowserPictures);
+        Assert.IsFalse(VideoStreamer.Parse(H264.Replace("yuv420p(tv", "yuv420p10le(tv")).BrowserPictures, "10-bit H.264");
+        Assert.IsTrue(VideoStreamer.Parse(H264.Replace("yuv420p(tv", "yuvj420p(pc")).BrowserPictures, "Full-range 8-bit H.264");
+        Assert.IsFalse(VideoStreamer.Parse(H264.Replace("h264 (High)", "hevc (Main)")).BrowserPictures);
 
         var withCover = VideoStreamer.Parse("""
               Duration: N/A, bitrate: N/A

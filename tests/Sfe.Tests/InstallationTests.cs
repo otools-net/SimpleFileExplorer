@@ -263,7 +263,10 @@ public sealed class InstallationTests
         var spaceAdmins = groups.Single(g => g.BuiltIn == BuiltInGroup.Administrators);
         using (var created = await admin.PostAsJsonAsync("/api/access/users",
                    new UserInput("spaceadmin", Password: "spaceadmin-password", GroupIds: [spaceAdmins.Id]), Json, TestContext.CancellationToken))
+        {
             Assert.AreEqual(HttpStatusCode.Created, created.StatusCode, await created.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        }
+
         var spaceAdmin = await ApiClients.SignInAsync(factory, "spaceadmin", "spaceadmin-password", TestContext.CancellationToken);
         var visitor = ApiClients.Create(factory);
 

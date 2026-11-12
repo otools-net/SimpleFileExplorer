@@ -162,7 +162,10 @@ public sealed class QuickLinkTests
         var users = (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g => g.BuiltIn == BuiltInGroup.Users);
         using (var created = await admin.PostAsJsonAsync("/api/access/users",
                    new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]), Json, TestContext.CancellationToken))
+        {
             Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
+        }
+
         var alice = await ApiClients.SignInAsync(factory, "alice", "alice-password", TestContext.CancellationToken);
         _disposables.Add(alice);
 

@@ -213,29 +213,29 @@ public sealed class ArchiveCatalogTests
     [TestMethod]
     public void ATreeThousandsOfFoldersDeepIsListedWithoutRecursion()
     {
-        const int depth = 5000;
+        const int Depth = 5000;
         var entries = new List<(string, string?)>();
         var path = "";
-        for (var level = 1; level <= depth; level++)
+        for (var level = 1; level <= Depth; level++)
         {
             path += "d/";
-            if (level % 1000 == 0 || level == depth)
+            if (level % 1000 == 0 || level == Depth)
                 entries.Add((path + $"at {level}.txt", "1"));
         }
         var catalog = Build(TestArchives.Zip(_folder, "deep.zip", CompressionLevel.NoCompression, [.. entries]), ArchiveFormat.Zip,
             new ArchiveOptions { MaxDepth = 10_000 });
 
-        var deepest = catalog.FindFolder(string.Join('/', Enumerable.Repeat("d", depth)))!.Value;
-        Assert.AreEqual(depth, catalog.Folder(deepest)!.Depth);
-        Assert.AreEqual($"at {depth}.txt", catalog.Children(deepest, null, 10).Files.Single().Name);
+        var deepest = catalog.FindFolder(string.Join('/', Enumerable.Repeat("d", Depth)))!.Value;
+        Assert.AreEqual(Depth, catalog.Folder(deepest)!.Depth);
+        Assert.AreEqual($"at {Depth}.txt", catalog.Children(deepest, null, 10).Files.Single().Name);
         var trail = catalog.Trail(deepest, 3)!;
-        Assert.AreEqual(depth - 3, trail.Skipped);
+        Assert.AreEqual(Depth - 3, trail.Skipped);
         Assert.HasCount(3, trail.Last);
         Assert.AreEqual(deepest, trail.Last[^1].Id);
-        Assert.HasCount(depth, catalog.PathOf(deepest)!.Split('/'));
+        Assert.HasCount(Depth, catalog.PathOf(deepest)!.Split('/'));
 
         // A search result that deep: its folder's last names only (8 lookups), and its folder's id to open it.
-        var found = catalog.Search($"at {depth}", null, 10, TimeSpan.FromSeconds(5)).Files.Single();
+        var found = catalog.Search($"at {Depth}", null, 10, TimeSpan.FromSeconds(5)).Files.Single();
         Assert.AreEqual("…/" + string.Join('/', Enumerable.Repeat("d", ArchiveCatalog.WhereLevels)), found.Where);
         Assert.AreEqual(deepest, found.File.FolderId);
         Assert.AreEqual("d/d/d/d/d/d/d/d", catalog.Search("at 1000", null, 10, TimeSpan.FromSeconds(5)).Files.Single().Where[^15..]);
@@ -243,7 +243,7 @@ public sealed class ArchiveCatalogTests
         var root = catalog.Folder(ArchiveCatalog.RootId)!;
         Assert.AreEqual(5, root.AllFiles, "totals rolled up level by level");
         Assert.AreEqual(1, catalog.Children(ArchiveCatalog.RootId, null, 10).Folders.Single().Folders);
-        Assert.AreEqual((long)depth, catalog.Summary().Folders);
+        Assert.AreEqual((long)Depth, catalog.Summary().Folders);
     }
 
     [TestMethod]
@@ -298,8 +298,11 @@ public sealed class ArchiveCatalogTests
         using (var file = File.Create(path))
         using (var gzip = new GZipStream(file, CompressionLevel.Fastest))
         using (var tar = new TarWriter(gzip, TarEntryFormat.Pax))
+        {
             for (var i = 0; i < 200; i++)
                 tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, $"{i}.bin") { DataStream = new MemoryStream(new byte[2000].Select((_, n) => (byte)(n * i)).ToArray()) });
+        }
+
         var bytes = File.ReadAllBytes(path);
         File.WriteAllBytes(path, bytes[..(bytes.Length / 2)]);
 
@@ -316,8 +319,11 @@ public sealed class ArchiveCatalogTests
         var whole = Path.Combine(_folder, "whole.tar");
         using (var file = File.Create(whole))
         using (var tar = new TarWriter(file, TarEntryFormat.Ustar))
+        {
             for (var i = 0; i < 5; i++)
                 tar.WriteEntry(new UstarTarEntry(TarEntryType.RegularFile, $"{i}.bin") { DataStream = new MemoryStream(Enumerable.Repeat((byte)1, 512).ToArray()) });
+        }
+
         var compressed = Path.Combine(_folder, "whole.tar.gz");
         using (var source = File.OpenRead(whole))
         using (var target = new GZipStream(File.Create(compressed), CompressionLevel.Fastest))
@@ -378,8 +384,10 @@ public sealed class ArchiveCatalogTests
         var path = Path.Combine(_folder, "big.zip");
         using (var file = File.Create(path))
         using (var zip = new ZipArchive(file, ZipArchiveMode.Create))
+        {
             for (var i = 0; i < 200_000; i++)
                 zip.CreateEntry($"part {i % 100:D2}/entry {i:D6}.dat", CompressionLevel.NoCompression);
+        }
 
         var watch = Stopwatch.StartNew();
         var catalog = Build(path, ArchiveFormat.Zip);

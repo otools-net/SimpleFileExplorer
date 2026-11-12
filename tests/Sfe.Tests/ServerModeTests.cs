@@ -51,7 +51,10 @@ public sealed class ServerModeTests
         using var setupInfo = await remote.GetAsync("/api/setup", TestContext.CancellationToken);
         using (var setup = await remote.PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, ApiClients.AdminName, ApiClients.AdminPassword),
                    TestContext.CancellationToken))
+        {
             Assert.AreEqual(HttpStatusCode.OK, setup.StatusCode, "Nothing is restricted before the setup is done");
+        }
+
         using var remoteBrowse = await remote.GetAsync("/api/browse", TestContext.CancellationToken);
         using var remoteSession = await remote.GetAsync("/api/session", TestContext.CancellationToken);
         using var remoteDocs = await remote.GetAsync("/openapi/v1.json", TestContext.CancellationToken);
@@ -99,7 +102,10 @@ public sealed class ServerModeTests
 
         using (var demoted = await admin.PutAsJsonAsync($"/api/access/users/{id}",
                    new UserInput("spaceadmin", GroupIds: [groups.Single(g => g.BuiltIn == BuiltInGroup.Users).Id]), Json, TestContext.CancellationToken))
+        {
             Assert.AreEqual(HttpStatusCode.OK, demoted.StatusCode, await demoted.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        }
+
         using var after = await client.GetAsync("/api/browse", TestContext.CancellationToken);
         var session = await GetAsync<JsonObject>(client, "/api/session");
 

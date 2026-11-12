@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Sfe.Core.Thumbnails;
 using Sfe.Core.Trickplay;
 using Sfe.Tests.Infrastructure;
