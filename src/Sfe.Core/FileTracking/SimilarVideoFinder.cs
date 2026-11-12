@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
-using Sfe.Core.Library;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Search;
@@ -13,68 +12,6 @@ using Sfe.Core.Tasks;
 using Sfe.Core.Trickplay;
 
 namespace Sfe.Core.FileTracking;
-
-public enum SimilarVideoState
-{
-    /// <summary>No comparison since the application started.</summary>
-    Idle,
-    Running,
-    Completed,
-
-    /// <summary>Stopped from the "Background tasks" dialog.</summary>
-    Cancelled,
-    Failed,
-}
-
-/// <param name="Checked">Videos whose fingerprint the comparison running (or the last one) has read.</param>
-/// <param name="Total">Indexed videos that comparison looks at.</param>
-/// <param name="Message">Why the last comparison failed.</param>
-public sealed record SimilarVideoStatus(
-    SimilarVideoState State,
-    int Checked,
-    int Total,
-    DateTimeOffset? Started,
-    DateTimeOffset? Finished,
-    string? Message
-);
-
-/// <param name="Match">Matching frames with the first video of the group, in percent of the longer one; null for that
-/// first video.</param>
-/// <param name="Duration">Seconds, as seen by the trickplay (frames × interval).</param>
-public sealed record SimilarVideo(LibraryItem File, int? Match, int Duration);
-
-/// <param name="Count">Videos in the group; <paramref name="Videos"/> lists at most
-/// <see cref="DuplicateFinder.MaxFilesPerGroup"/>.</param>
-/// <param name="WastedBytes">Space taken by all videos but the biggest.</param>
-/// <param name="Videos">The video the others are compared to (the longest, then the biggest) first.</param>
-public sealed record SimilarVideoGroup(int Count, long WastedBytes, IReadOnlyList<SimilarVideo> Videos);
-
-/// <param name="Groups">Groups with a video in the folder asked for.</param>
-/// <param name="Videos">Indexed videos in the whole library when the comparison ran.</param>
-/// <param name="Compared">Of those, the videos that had a fingerprint (trickplay) and were compared.</param>
-/// <param name="MinimumPercent">Match the comparison listed groups from.</param>
-public sealed record SimilarVideoSummary(
-    int Groups,
-    int Files,
-    long WastedBytes,
-    int Videos,
-    int Compared,
-    int MinimumPercent
-);
-
-/// <param name="Summary">Totals of the last comparison; only on the first page, null before any comparison.</param>
-/// <param name="Next">Value of the <c>after</c> parameter that requests the next page; null on the last page.</param>
-/// <param name="TrickplayEnabled">Trickplay is made in the background: videos get the fingerprints compared
-/// here.</param>
-public sealed record SimilarVideoResults(
-    string Path,
-    SimilarVideoStatus Status,
-    SimilarVideoSummary? Summary,
-    IReadOnlyList<SimilarVideoGroup> Groups,
-    bool HasMore,
-    string? Next,
-    bool TrickplayEnabled
-);
 
 /// <summary>
 /// Videos with the same pictures but other bytes: copies at another resolution, bitrate or codec, or trimmed, that

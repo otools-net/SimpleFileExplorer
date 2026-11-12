@@ -4,14 +4,6 @@ using Sfe.Core.Trickplay;
 namespace Sfe.Core.FileTracking;
 
 /// <summary>
-/// A video of a group and how much of it matches the group's reference (null for the reference itself).
-/// </summary>
-internal readonly record struct VideoMember(int Video, int? Percent);
-
-/// <summary>Similar videos: the reference (the longest) first.</summary>
-internal sealed record VideoGroup(IReadOnlyList<VideoMember> Members);
-
-/// <summary>
 /// Finds videos with the same pictures among <see cref="VideoFingerprint"/>s of the same interval.
 /// </summary>
 /// <remarks>

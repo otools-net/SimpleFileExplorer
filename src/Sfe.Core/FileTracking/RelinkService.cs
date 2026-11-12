@@ -444,39 +444,3 @@ public sealed class RelinkService(
     // Copies to another file system can round the time (FAT keeps it to 2 seconds).
     private static bool SameTimestamp(DateTime a, DateTime b) => Math.Abs((a - b).TotalSeconds) <= 2;
 }
-
-/// <param name="Relinked">Missing files whose tags went to their new place.</param>
-/// <param name="Forgotten">Missing files dropped for being kept longer than the retention.</param>
-/// <param name="Remaining">Missing files still waiting.</param>
-public sealed record RelinkPassResult(int Relinked, int Forgotten, int Remaining);
-
-/// <param name="Path">Where the file was, relative to the library (absolute when outside it).</param>
-/// <param name="Candidates">Indexed files that may be it, same name first.</param>
-public sealed record MissingFileInfo(
-    int Id,
-    string Path,
-    string Name,
-    long Size,
-    DateTimeOffset Modified,
-    DateTimeOffset MissingSince,
-    IReadOnlyList<TagSummary> Tags,
-    IReadOnlyList<LibraryItem> Candidates
-);
-
-/// <param name="Total">Missing files in all; only on the first page.</param>
-/// <param name="Next">Value of the <c>after</c> parameter that requests the next page; null on the last page.</param>
-/// <param name="Enabled">Relinking is on (<c>FileTracking:Relink:Enabled</c>).</param>
-public sealed record MissingFileResults(
-    IReadOnlyList<MissingFileInfo> Items,
-    int? Total,
-    bool HasMore,
-    int? Next,
-    bool Enabled
-);
-
-public enum RelinkStatus
-{
-    Relinked,
-    NotFound,
-    InvalidPath,
-}

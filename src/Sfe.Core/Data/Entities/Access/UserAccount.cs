@@ -44,12 +44,3 @@ public sealed class UserAccount
 
     public List<GroupMember> Groups { get; set; } = [];
 }
-
-/// <summary>
-/// Guests never get the rights that change anything (<see cref="Access.RightDefinition.GuestAllowed"/>).
-/// </summary>
-public enum UserKind
-{
-    User,
-    Guest,
-}
