@@ -10,11 +10,6 @@ using Sfe.Core.Paths;
 
 namespace Sfe.Api.Endpoints;
 
-public sealed record ArchiveRequest(IReadOnlyList<string?>? Paths);
-
-/// <param name="Url">Where the browser downloads the zip, once, within <see cref="ArchiveLinks.Lifetime"/>.</param>
-public sealed record ArchiveLink(string Url, string FileName);
-
 /// <summary>
 /// Several files, or folders with everything in them, downloaded as one zip (agents/docs/features/archives.md): the
 /// page names them, then the browser downloads the zip, written while it is sent.

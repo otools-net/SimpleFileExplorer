@@ -12,17 +12,6 @@ using Sfe.Core.Paths;
 
 namespace Sfe.Api.Endpoints;
 
-/// <param name="Path">The folder changed (root-relative).</param>
-/// <param name="Origin">The tab whose request changed it (`X-SFE-Tab`), which needs no notice; null from a background
-/// job.</param>
-public sealed record FolderChange(string Path, string? Origin);
-
-/// <param name="State">How keep alive goes in the space: `none` (off, or nothing pinged), `ok`, `failing`.</param>
-public sealed record KeepAliveSignal(KeepAliveState State);
-
-/// <summary>Something came into or left the trash.</summary>
-public sealed record TrashSignal;
-
 /// <summary>
 /// The change feed (agents/docs/features/change-feed.md): server-sent events telling each open listing that a folder
 /// it may see was changed through SFE (by another tab, another person, a move or copy job), so that it lists it again;

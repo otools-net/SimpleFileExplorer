@@ -9,17 +9,6 @@ using Sfe.Core.Tagging;
 
 namespace Sfe.Api.Endpoints;
 
-/// <param name="Target">The folder the files would go into.</param>
-/// <param name="Names">Their names, or paths below it for a folder upload.</param>
-public sealed record UploadCheckRequest(string? Target, IReadOnlyList<string>? Names);
-
-/// <param name="Existing">The names (of <see cref="UploadCheckRequest.Names"/>) already taken there, seen by the caller
-/// or not.</param>
-/// <param name="CanReplace">The caller may replace what is there (it would go to the trash).</param>
-public sealed record UploadCheck(IReadOnlyList<string> Existing, bool CanReplace);
-
-public sealed record UploadFinish(ConflictChoice Conflicts = ConflictChoice.Ask);
-
 /// <summary>
 /// Resumable uploads (agents/docs/features/uploads.md): check the names, start, send chunks at the offset the server
 /// has, finish. Unfinished uploads are listed for their owner (to go on after a reload) and, with `settings.files`,

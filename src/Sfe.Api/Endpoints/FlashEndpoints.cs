@@ -8,9 +8,6 @@ using Sfe.Core.Settings;
 
 namespace Sfe.Api.Endpoints;
 
-/// <param name="Path">The movie (<c>.swf</c>), relative to the library root.</param>
-public sealed record FlashLinkRequest(string? Path);
-
 /// <summary>
 /// Flash movies for the viewer of the web client (agents/docs/features/flash-viewer.md). Ruffle plays them in a frame
 /// of no origin (<see cref="SecurityHeaders.FlashPolicy"/>): a movie can't send the session's cookie, so it loads its

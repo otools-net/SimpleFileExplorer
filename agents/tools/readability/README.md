@@ -126,3 +126,22 @@ node agents/tools/readability/split-strings-ts.mjs src/Sfe.Web/src tests/e2e   #
   members, strings inside a template's `${…}`, and Angular's inline `template:`/`styles:`.
 - Check: the client build (`references.mjs --only client`) keeps every chunk's size, since esbuild folds `'a' + 'b'`
   back (checked 2026-11-12: identical after 242 splits).
+
+## One type per file (C#)
+
+```sh
+dotnet run agents/tools/readability/split-types/SplitTypes.cs -- --dry-run src/Sfe.Core/Files   # what would move
+dotnet run agents/tools/readability/split-types/SplitTypes.cs -- src/Sfe.Core/Files             # moves them
+dotnet format style Sfe.slnx --severity warn --include src/Sfe.Core/Files/                        # unused usings
+dotnet csharpier format src/Sfe.Core/Files
+```
+
+- A .NET 10 file-based app (`#:package Microsoft.CodeAnalysis.CSharp`): each top-level type is cut with Roslyn, its
+  doc comment and attributes with it, into a file of the same folder and namespace; the file's usings are copied and
+  `dotnet format style` drops those a new file does not need.
+- Where a type goes: the type named like the file stays; the other types of `XEndpoints.cs` go to `XContracts.cs`;
+  those of a class listed in `modelsOf` (`EditableSettings`) to `XModels.cs`; a `…Models.cs` or `…Contracts.cs`
+  within 400 lines is left; anything else to `<Type>.cs`. A file none of whose types is named after it is deleted
+  once they have left. An existing destination is refused (the file is left).
+- Files that are not one file-scoped namespace (`Program.cs`) are left.
+- Check: build, and `references.mjs --only openapi,ef` identical (schema names come from types, not files).

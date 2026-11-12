@@ -85,7 +85,8 @@ then by hand for what they leave: comments and long strings. One commit per step
 
 ### Phase 3: one type per file, `models.ts` by area
 
-- [ ] `Sfe.Api/Endpoints` (29 files): routes + `<Area>Contracts.cs`, 3–4 commits
+- [x] `Sfe.Api/Endpoints` (29 files): routes + `<Area>Contracts.cs`, one commit with `split-types/SplitTypes.cs`
+  (107 types; OpenAPI identical)
 - [ ] `Sfe.Core/Files` (16, `FileJobs` records and enums included, the class left for phase 6)
 - [ ] `Sfe.Core/Access` (10), `Sfe.Api/Security` (9)
 - [ ] `Sfe.Core/Options` (`SfeOptions.cs` by section) and `Settings` (5, `EditableSettings`)

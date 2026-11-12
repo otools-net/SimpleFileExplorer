@@ -5,10 +5,6 @@ using Sfe.Core.Settings;
 
 namespace Sfe.Api.Endpoints;
 
-/// <param name="Keys">The settings this level locks for the levels below (its other lockable settings are
-/// unlocked).</param>
-public sealed record SettingLocks(IReadOnlyList<string>? Keys);
-
 public static class SettingsEndpoints
 {
     /// <summary>Every right that changes some setting: the routes need one of them, each setting its own.</summary>

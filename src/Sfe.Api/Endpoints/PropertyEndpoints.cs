@@ -8,14 +8,6 @@ using Sfe.Core.Tagging;
 
 namespace Sfe.Api.Endpoints;
 
-/// <param name="Item">As listings show it, with what the index knows (tags, resolution, duration).</param>
-/// <param name="CanChecksum">The caller may read the file whole for a checksum (right `files.download`).</param>
-public sealed record ItemProperties(LibraryItem Item, ItemDetails Details, bool CanChecksum);
-
-public sealed record CountRequest(string? Path);
-
-public sealed record ChecksumRequest(string? Path, ChecksumAlgorithm Algorithm = ChecksumAlgorithm.Sha256);
-
 /// <summary>
 /// Properties of a file or folder (agents/docs/features/properties.md): details from the disk, a folder's totals from
 /// the index, and jobs for what reads the disk at length (a folder counted, a checksum).
