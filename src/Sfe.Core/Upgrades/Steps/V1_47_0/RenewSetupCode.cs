@@ -27,12 +27,20 @@ public sealed class RenewSetupCode : IUpgradeStep
         try
         {
             if (code.Renew())
-                context.Note($"The setup code changes: a new one will be shown in the server's console and kept in {code.FilePath} when needed.");
+            {
+                context.Note(
+                    $"The setup code changes: a new one will be shown in the server's console and kept in {code.FilePath} when needed."
+                );
+            }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Not worth failing the update over: the code can still be changed by deleting the file.
-            context.Logger.LogWarning(ex, "Cannot delete the setup code file {Path}: delete it so that a new code is made", code.FilePath);
+            context.Logger.LogWarning(
+                ex,
+                "Cannot delete the setup code file {Path}: delete it so that a new code is made",
+                code.FilePath
+            );
             context.Note($"Could not renew the setup code: delete {code.FilePath} so that a new one is made.");
         }
 

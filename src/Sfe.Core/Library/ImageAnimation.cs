@@ -23,7 +23,7 @@ public static class ImageAnimation
         if (head.Length >= 8 && head[..8].SequenceEqual<byte>([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]))
             return IsAnimatedPng(stream);
         if (head.Length >= 21 && head[..4].SequenceEqual("RIFF"u8) && head[8..12].SequenceEqual("WEBP"u8))
-            return head[12..16].SequenceEqual("VP8X"u8) && (head[20] & 0x02) != 0;     // the VP8X animation flag
+            return head[12..16].SequenceEqual("VP8X"u8) && (head[20] & 0x02) != 0; // the VP8X animation flag
         if (head.Length >= 12 && head[4..8].SequenceEqual("ftyp"u8))
             return IsImageSequence(stream, BinaryPrimitives.ReadUInt32BigEndian(head));
         return false;
@@ -39,11 +39,11 @@ public static class ImageAnimation
         {
             switch (stream.ReadByte())
             {
-                case 0x21:      // extension: label, then data sub-blocks
+                case 0x21: // extension: label, then data sub-blocks
                     if (stream.ReadByte() < 0 || !SkipSubBlocks(stream))
                         return false;
                     break;
-                case 0x2C:      // image: descriptor, local colour table, LZW code size, data sub-blocks
+                case 0x2C: // image: descriptor, local colour table, LZW code size, data sub-blocks
                     if (++frames > 1)
                         return true;
                     if (stream.ReadAtLeast(descriptor, 9, throwOnEndOfStream: false) < 9)
@@ -52,7 +52,7 @@ public static class ImageAnimation
                     if (!SkipSubBlocks(stream))
                         return false;
                     break;
-                default:        // trailer (0x3B), end of file or garbage
+                default: // trailer (0x3B), end of file or garbage
                     return false;
             }
         }
@@ -84,7 +84,7 @@ public static class ImageAnimation
             var length = BinaryPrimitives.ReadUInt32BigEndian(chunk);
             var type = chunk[4..8];
             if (type.SequenceEqual("acTL"u8))
-                return BinaryPrimitives.ReadUInt32BigEndian(chunk[8..]) > 1;    // num_frames
+                return BinaryPrimitives.ReadUInt32BigEndian(chunk[8..]) > 1; // num_frames
             if (type.SequenceEqual("IDAT"u8) || type.SequenceEqual("IEND"u8))
                 return false;
             // Next chunk: the rest of this one's data (4 bytes of it were read) and its 4-byte CRC.
@@ -107,7 +107,7 @@ public static class ImageAnimation
             return false;
         for (var at = 8; at + 4 <= box.Length; at += 4)
         {
-            if (at != 12 && box.AsSpan(at, 4).SequenceEqual("avis"u8))     // 12: the minor version
+            if (at != 12 && box.AsSpan(at, 4).SequenceEqual("avis"u8)) // 12: the minor version
                 return true;
         }
 

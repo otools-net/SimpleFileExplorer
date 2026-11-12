@@ -8,6 +8,7 @@ public sealed class MediaClassifier(IOptionsMonitor<SfeOptions> options)
     // Rebuilt when the file type lists change (a new options instance comes with new lists). A class, so that
     // concurrent requests swap it with one atomic reference write.
     private sealed record Cache(FileTypeOptions Source, Dictionary<string, ItemKind> Kinds);
+
     private Cache? _cache;
 
     /// <param name="extension">Extension with or without the leading dot.</param>
@@ -17,7 +18,8 @@ public sealed class MediaClassifier(IOptionsMonitor<SfeOptions> options)
             : ItemKind.File;
 
     /// <summary>The extensions (without dot) classified as <paramref name="kind"/>; one listed under two kinds counts as the last.</summary>
-    public IReadOnlyList<string> Extensions(ItemKind kind) => [.. Kinds().Where(k => k.Value == kind).Select(k => k.Key)];
+    public IReadOnlyList<string> Extensions(ItemKind kind) =>
+        [.. Kinds().Where(k => k.Value == kind).Select(k => k.Key)];
 
     private Dictionary<string, ItemKind> Kinds()
     {

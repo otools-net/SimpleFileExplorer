@@ -40,7 +40,8 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
         {
             entity.ToTable("Directories");
             ConfigureEntry(entity, isSqlServer);
-            entity.HasOne(d => d.Parent)
+            entity
+                .HasOne(d => d.Parent)
                 .WithMany(d => d.Directories)
                 .HasForeignKey(d => d.ParentId)
                 .OnDelete(DeleteBehavior.NoAction);
@@ -65,10 +66,15 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             // virtual generated column to an existing table (DatabaseInitializer); bigint so that no odd header
             // overflows an int on SQL Server.
             entity.HasIndex(f => f.Duration);
-            entity.Property(f => f.Pixels).HasComputedColumnSql(
-                isSqlServer ? "CAST([Width] AS bigint) * [Height]" : "\"Width\" * \"Height\"", stored: false);
+            entity
+                .Property(f => f.Pixels)
+                .HasComputedColumnSql(
+                    isSqlServer ? "CAST([Width] AS bigint) * [Height]" : "\"Width\" * \"Height\"",
+                    stored: false
+                );
             entity.HasIndex(f => f.Pixels);
-            entity.HasOne(f => f.Directory)
+            entity
+                .HasOne(f => f.Directory)
                 .WithMany(d => d.Files)
                 .HasForeignKey(f => f.DirectoryId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -130,7 +136,11 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.Property(t => t.Path).IsRequired();
             entity.HasIndex(t => t.TrashEntryId);
             entity.HasIndex(t => t.TagId);
-            entity.HasOne(t => t.Entry).WithMany(e => e.Tags).HasForeignKey(t => t.TrashEntryId).OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne(t => t.Entry)
+                .WithMany(e => e.Tags)
+                .HasForeignKey(t => t.TrashEntryId)
+                .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(t => t.Tag).WithMany().HasForeignKey(t => t.TagId).OnDelete(DeleteBehavior.Cascade);
         });
     }
@@ -162,14 +172,12 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.ToTable("MissingFileTags");
             entity.HasKey(l => new { l.MissingFileId, l.TagId });
             entity.HasIndex(l => l.TagId);
-            entity.HasOne(l => l.MissingFile)
+            entity
+                .HasOne(l => l.MissingFile)
                 .WithMany(m => m.TagLinks)
                 .HasForeignKey(l => l.MissingFileId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(l => l.Tag)
-                .WithMany()
-                .HasForeignKey(l => l.TagId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(l => l.Tag).WithMany().HasForeignKey(l => l.TagId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 
@@ -186,7 +194,8 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.Property(t => t.Shorthand).HasMaxLength(MaxTagNameLength);
             entity.Property(t => t.Color).HasMaxLength(32).IsUnicode(false);
             entity.HasIndex(t => t.Name);
-            entity.HasOne(t => t.Disambiguation)
+            entity
+                .HasOne(t => t.Disambiguation)
                 .WithMany()
                 .HasForeignKey(t => t.DisambiguationId)
                 .OnDelete(DeleteBehavior.NoAction);
@@ -204,7 +213,8 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.ToTable("TagAliases");
             entity.Property(a => a.Name).HasMaxLength(MaxTagNameLength).IsRequired();
             entity.HasIndex(a => a.Name);
-            entity.HasOne(a => a.Tag)
+            entity
+                .HasOne(a => a.Tag)
                 .WithMany(t => t.Aliases)
                 .HasForeignKey(a => a.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -219,11 +229,13 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.ToTable("TagParents");
             entity.HasKey(p => new { p.ParentId, p.ChildId });
             entity.HasIndex(p => p.ChildId);
-            entity.HasOne(p => p.Parent)
+            entity
+                .HasOne(p => p.Parent)
                 .WithMany(t => t.ChildLinks)
                 .HasForeignKey(p => p.ParentId)
                 .OnDelete(DeleteBehavior.NoAction);
-            entity.HasOne(p => p.Child)
+            entity
+                .HasOne(p => p.Child)
                 .WithMany(t => t.ParentLinks)
                 .HasForeignKey(p => p.ChildId)
                 .OnDelete(DeleteBehavior.NoAction);
@@ -236,11 +248,13 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.ToTable("FileTags");
             entity.HasKey(l => new { l.FileId, l.TagId });
             entity.HasIndex(l => l.TagId);
-            entity.HasOne(l => l.File)
+            entity
+                .HasOne(l => l.File)
                 .WithMany(f => f.TagLinks)
                 .HasForeignKey(l => l.FileId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(l => l.Tag)
+            entity
+                .HasOne(l => l.Tag)
                 .WithMany(t => t.FileLinks)
                 .HasForeignKey(l => l.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -254,10 +268,7 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.Property(d => d.Path).HasMaxLength(MaxPathLength).IsRequired();
             entity.HasIndex(d => new { d.Path, d.TagId }).IsUnique();
             entity.HasIndex(d => d.TagId);
-            entity.HasOne(d => d.Tag)
-                .WithMany()
-                .HasForeignKey(d => d.TagId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(d => d.Tag).WithMany().HasForeignKey(d => d.TagId).OnDelete(DeleteBehavior.Cascade);
             if (!isSqlServer && LibraryPaths.IsCaseInsensitiveFileSystem)
                 entity.Property(d => d.Path).UseCollation("NOCASE");
         });
@@ -270,14 +281,16 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             entity.HasKey(a => a.TagId);
             entity.HasIndex(a => a.LastSearchedAt);
             entity.HasIndex(a => a.LastViewedAt);
-            entity.HasOne(a => a.Tag)
+            entity
+                .HasOne(a => a.Tag)
                 .WithOne(t => t.Activity)
                 .HasForeignKey<TagActivity>(a => a.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
 
-    private static void ConfigureEntry<T>(EntityTypeBuilder<T> entity, bool isSqlServer) where T : IndexEntry
+    private static void ConfigureEntry<T>(EntityTypeBuilder<T> entity, bool isSqlServer)
+        where T : IndexEntry
     {
         entity.Property(e => e.FullName).HasMaxLength(MaxPathLength).IsRequired();
         entity.Property(e => e.Name).HasMaxLength(MaxPathLength).IsRequired();

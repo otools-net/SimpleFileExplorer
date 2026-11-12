@@ -19,7 +19,8 @@ public sealed class TagGraph
         int? DisambiguationId,
         IReadOnlyList<string> Aliases,
         List<int> Parents,
-        List<int> Children);
+        List<int> Children
+    );
 
     private readonly Dictionary<int, Node> _nodes;
 
@@ -29,16 +30,39 @@ public sealed class TagGraph
 
     public static async Task<TagGraph> LoadAsync(SfeDbContext db, CancellationToken cancellationToken = default)
     {
-        var tags = await db.Tags.AsNoTracking()
-            .Select(t => new { t.Id, t.Name, t.Shorthand, t.Color, t.IsCategory, t.IsHidden, t.DisambiguationId })
+        var tags = await db
+            .Tags.AsNoTracking()
+            .Select(t => new
+            {
+                t.Id,
+                t.Name,
+                t.Shorthand,
+                t.Color,
+                t.IsCategory,
+                t.IsHidden,
+                t.DisambiguationId,
+            })
             .ToListAsync(cancellationToken);
-        var aliases = (await db.TagAliases.AsNoTracking().Select(a => new { a.TagId, a.Name }).ToListAsync(cancellationToken))
-            .ToLookup(a => a.TagId, a => a.Name);
+        var aliases = (
+            await db.TagAliases.AsNoTracking().Select(a => new { a.TagId, a.Name }).ToListAsync(cancellationToken)
+        ).ToLookup(a => a.TagId, a => a.Name);
         var links = await db.TagParents.AsNoTracking().ToListAsync(cancellationToken);
 
-        var nodes = tags.ToDictionary(t => t.Id, t => new Node(
-            t.Id, t.Name, t.Shorthand, t.Color, t.IsCategory, t.IsHidden, t.DisambiguationId,
-            aliases[t.Id].ToList(), [], []));
+        var nodes = tags.ToDictionary(
+            t => t.Id,
+            t => new Node(
+                t.Id,
+                t.Name,
+                t.Shorthand,
+                t.Color,
+                t.IsCategory,
+                t.IsHidden,
+                t.DisambiguationId,
+                aliases[t.Id].ToList(),
+                [],
+                []
+            )
+        );
         foreach (var link in links)
         {
             if (nodes.TryGetValue(link.ChildId, out var child) && nodes.TryGetValue(link.ParentId, out var parent))
@@ -90,8 +114,8 @@ public sealed class TagGraph
     public IReadOnlyList<int> Resolve(string term)
     {
         var spaced = term.Replace('_', ' ');
-        return _nodes.Values
-            .Where(n => Names(n).Select(Unquoted).Any(name => Same(name, term) || Same(name, spaced)))
+        return _nodes
+            .Values.Where(n => Names(n).Select(Unquoted).Any(name => Same(name, term) || Same(name, spaced)))
             .Select(n => n.Id)
             .ToList();
     }

@@ -35,7 +35,9 @@ public static class LibraryEndpoints
     {
         api.MapGet("/browse", Browse)
             .RequireRight(Rights.Browse)
-            .FolderScoped("404 for a folder the subject doesn't see; hidden entries left out of the listing and its counts")
+            .FolderScoped(
+                "404 for a folder the subject doesn't see; hidden entries left out of the listing and its counts"
+            )
             .WithName("Browse")
             .WithTags("Library")
             .WithSummary("Lists a folder of the library (folders first).");
@@ -46,10 +48,12 @@ public static class LibraryEndpoints
             .WithName("GetFolderSiblings")
             .WithTags("Library")
             .WithSummary("The folders before and after a folder in its parent.")
-            .WithDescription("""
+            .WithDescription(
+                """
                 Pass the `sort` and `desc` the parent is listed with (as for `/browse`): the siblings follow that order.
                 The library root has no siblings.
-                """);
+                """
+            );
 
         api.MapPost("/browse/covers", Covers)
             .RequireRateLimiting(RequestLimits.Media)
@@ -58,11 +62,13 @@ public static class LibraryEndpoints
             .WithName("GetFolderCovers")
             .WithTags("Library")
             .WithSummary("The first pictures of folders, shown on their cards.")
-            .WithDescription($"""
+            .WithDescription(
+                $"""
                 Takes up to {LibraryBrowser.MaxCoverPaths} folders and returns, for each one that exists, its first
                 `Browse:FolderPictures` images and videos in name order (videos only when thumbnails are available).
                 Only a folder's own files count; a folder without any, or a setting of 0, gets an empty list.
-                """);
+                """
+            );
 
         api.MapGet("/search", Search)
             .RequireRateLimiting(RequestLimits.Search)
@@ -71,7 +77,8 @@ public static class LibraryEndpoints
             .WithName("Search")
             .WithTags("Library")
             .WithSummary("Searches the file index.")
-            .WithDescription("""
+            .WithDescription(
+                """
                 `,` separates alternatives (OR), a space separates required terms (AND), `-term` excludes,
                 `s:<10mb` / `s:>=1gb` / `s:700mb` filter by size, `e:mp4` by extension, `w:>=1920` / `h:<720` /
                 `r:1920x1080` by resolution, `d:>10m` by duration, `type:image` / `type:video` / `type:audio` /
@@ -86,7 +93,8 @@ public static class LibraryEndpoints
                 Pages follow each other by passing the previous page's `next` as `after`, with the same sort.
                 The first page also gives `total`, the number of matches counted up to 10,000 (`totalCapped` when there
                 are more); the next pages leave it null.
-                """);
+                """
+            );
 
         api.MapGet("/files/raw/{**path}", Raw)
             .RequireRight(Rights.ViewFiles)
@@ -104,10 +112,12 @@ public static class LibraryEndpoints
             .WithName("GetImageAnimation")
             .WithTags("Library")
             .WithSummary("Whether a picture is animated (GIF, APNG, WebP or AVIF with more than one frame).")
-            .WithDescription("""
+            .WithDescription(
+                """
                 Read from the file's structure, without decoding it. The listings ask before playing the original of an
                 image they show through its thumbnail, on hover.
-                """);
+                """
+            );
 
         api.MapPost("/files/links", CreateLink)
             .RequireRight(Rights.ExternalPlayer)
@@ -115,11 +125,13 @@ public static class LibraryEndpoints
             .WithName("CreateFileLink")
             .WithTags("Library")
             .WithSummary("A link to a file that works without signing in, for a while: for external players.")
-            .WithDescription("""
+            .WithDescription(
+                """
                 The link (`api/files/shared/{token}/{name}`, relative to the app) works for `Player:LinkLifetimeMinutes`.
                 It stops working earlier when the account that asked for it changes its password, is disabled, or loses the
                 right to view files or use external players.
-                """);
+                """
+            );
 
         api.MapGet("/files/shared/{token}/{**name}", Shared)
             .AllowAnonymous()
@@ -128,7 +140,9 @@ public static class LibraryEndpoints
             .FolderScoped("the token's subject: files.view and files.external at the file, as the rules are now")
             .WithName("GetSharedFile")
             .WithTags("Library")
-            .WithSummary("Streams the file of a link made by `CreateFileLink` (the token stands for the sign-in; range requests supported).");
+            .WithSummary(
+                "Streams the file of a link made by `CreateFileLink` (the token stands for the sign-in; range requests supported)."
+            );
 
         api.MapGet("/thumbnails/{**path}", Thumbnail)
             .RequireRateLimiting(RequestLimits.Media)
@@ -157,7 +171,8 @@ public static class LibraryEndpoints
         int offset = 0,
         int? limit = null,
         string? sort = null,
-        bool desc = false)
+        bool desc = false
+    )
     {
         // Parsed by hand: enum binding of query values is case-sensitive and the client sends "size", "name"...
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Name;
@@ -165,21 +180,39 @@ public static class LibraryEndpoints
         var state = await current.GetAsync();
         if (FolderListing(state, paths, path) is not { } folder)
             return TypedResults.NotFound();
-        var listing = browser.List(path, Math.Max(0, offset), Clamp(limit, page.DefaultPageSize, page.MaxPageSize), sortField, desc, folder.Filter);
+        var listing = browser.List(
+            path,
+            Math.Max(0, offset),
+            Clamp(limit, page.DefaultPageSize, page.MaxPageSize),
+            sortField,
+            desc,
+            folder.Filter
+        );
         if (listing is not null && !state.Access.FolderPolicy.IsUnrestricted && state.At(paths, path) is { } here)
         {
             // The client shows only what the asker may do here: tag, download, edit...
-            var children = state.Access.FolderPolicy.ChildrenWithRules(listing.Path, state.Access.Rights)
+            var children = state
+                .Access.FolderPolicy.ChildrenWithRules(listing.Path, state.Access.Rights)
                 .Where(c => c.Value.IsVisible)
-                .ToDictionary(c => c.Key, c => new FolderAccessView([.. c.Value.Allowed.Order(StringComparer.Ordinal)], c.Value.PathOnly), LibraryPaths.PathComparer);
-            listing = listing with { Access = new FolderAccessView([.. here.Allowed.Order(StringComparer.Ordinal)], here.PathOnly, children) };
+                .ToDictionary(
+                    c => c.Key,
+                    c => new FolderAccessView([.. c.Value.Allowed.Order(StringComparer.Ordinal)], c.Value.PathOnly),
+                    LibraryPaths.PathComparer
+                );
+            listing = listing with
+            {
+                Access = new FolderAccessView([.. here.Allowed.Order(StringComparer.Ordinal)], here.PathOnly, children),
+            };
         }
         if (listing is null)
         {
             // Said apart from a missing sub-folder: the whole library is gone, and an administrator can pick another.
             return LibraryPaths.NormalizeRelative(path) is "" && !Directory.Exists(paths.Root)
-                ? TypedResults.Problem($"The library folder {paths.Root} does not exist on the server.", statusCode: StatusCodes.Status404NotFound,
-                    type: LibraryRootMissingType)
+                ? TypedResults.Problem(
+                    $"The library folder {paths.Root} does not exist on the server.",
+                    statusCode: StatusCodes.Status404NotFound,
+                    type: LibraryRootMissingType
+                )
                 : TypedResults.NotFound();
         }
 
@@ -195,14 +228,22 @@ public static class LibraryEndpoints
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Browsing works without the index: list the folder without tags or resolutions.
-            loggerFactory.CreateLogger(typeof(LibraryEndpoints)).LogWarning(ex, "Cannot read the tags and resolutions of {Path}", path);
+            loggerFactory
+                .CreateLogger(typeof(LibraryEndpoints))
+                .LogWarning(ex, "Cannot read the tags and resolutions of {Path}", path);
         }
 
         return TypedResults.Ok(listing);
     }
 
     private static async Task<Results<Ok<FolderSiblings>, NotFound>> Siblings(
-        LibraryBrowser browser, LibraryPaths paths, CurrentAccess current, string? path = null, string? sort = null, bool desc = false)
+        LibraryBrowser browser,
+        LibraryPaths paths,
+        CurrentAccess current,
+        string? path = null,
+        string? sort = null,
+        bool desc = false
+    )
     {
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Name;
         var state = await current.GetAsync();
@@ -227,7 +268,11 @@ public static class LibraryEndpoints
     /// Whether the subject may list <paramref name="path"/> (also when it only leads to what it sees), and what the
     /// listing leaves out; null when it may not.
     /// </summary>
-    private static (ListingFilter? Filter, bool PathOnly)? FolderListing(AccessState state, LibraryPaths paths, string? path)
+    private static (ListingFilter? Filter, bool PathOnly)? FolderListing(
+        AccessState state,
+        LibraryPaths paths,
+        string? path
+    )
     {
         if (state.Access.FolderPolicy.IsUnrestricted)
             return (null, false);
@@ -237,18 +282,32 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<Ok<IReadOnlyList<FolderCover>>, ValidationProblem>> Covers(
-        LibraryBrowser browser, ThumbnailService thumbnails, LibraryPaths paths, CurrentAccess current, FolderCoversRequest? request)
+        LibraryBrowser browser,
+        ThumbnailService thumbnails,
+        LibraryPaths paths,
+        CurrentAccess current,
+        FolderCoversRequest? request
+    )
     {
         var folders = request?.Paths ?? [];
         if (folders.Count > LibraryBrowser.MaxCoverPaths)
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["paths"] = [$"At most {LibraryBrowser.MaxCoverPaths} paths."] });
+        {
+            return TypedResults.ValidationProblem(
+                new Dictionary<string, string[]> { ["paths"] = [$"At most {LibraryBrowser.MaxCoverPaths} paths."] }
+            );
+        }
 
         var state = await current.GetAsync();
         if (state.Access.FolderPolicy.IsUnrestricted)
             return TypedResults.Ok(browser.Covers(folders, videos: thumbnails.IsAvailable));
         // A folder only on the way to others shows nothing of its own.
-        var covers = browser.Covers(folders.Where(f => state.Sees(paths, f ?? string.Empty)), videos: thumbnails.IsAvailable);
-        return TypedResults.Ok<IReadOnlyList<FolderCover>>([.. covers.Select(c => c with { Items = [.. c.Items.Where(i => state.Sees(paths, i.Path))] })]);
+        var covers = browser.Covers(
+            folders.Where(f => state.Sees(paths, f ?? string.Empty)),
+            videos: thumbnails.IsAvailable
+        );
+        return TypedResults.Ok<IReadOnlyList<FolderCover>>([
+            .. covers.Select(c => c with { Items = [.. c.Items.Where(i => state.Sees(paths, i.Path))] }),
+        ]);
     }
 
     private static async Task<Results<Ok<SearchResults>, NotFound>> Search(
@@ -262,7 +321,8 @@ public static class LibraryEndpoints
         string? after = null,
         int? limit = null,
         string? sort = null,
-        bool desc = false)
+        bool desc = false
+    )
     {
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Path;
         var page = options.CurrentValue.Search;
@@ -270,13 +330,28 @@ public static class LibraryEndpoints
         if (state.At(paths, path) is not { IsVisible: true })
             return TypedResults.NotFound();
         var results = await search.SearchAsync(
-            q, path, string.IsNullOrEmpty(after) ? null : after, Clamp(limit, page.DefaultPageSize, page.MaxPageSize), sortField, desc, cancellationToken,
-            state.Visible());
-        return results is null ? TypedResults.NotFound() : TypedResults.Ok(results with { Items = state.Seen(paths, results.Items) });
+            q,
+            path,
+            string.IsNullOrEmpty(after) ? null : after,
+            Clamp(limit, page.DefaultPageSize, page.MaxPageSize),
+            sortField,
+            desc,
+            cancellationToken,
+            state.Visible()
+        );
+        return results is null
+            ? TypedResults.NotFound()
+            : TypedResults.Ok(results with { Items = state.Seen(paths, results.Items) });
     }
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound, ForbidHttpResult>> Raw(
-        LibraryPaths paths, CurrentAccess current, ServerFiles serverFiles, HttpContext context, string path, bool download = false)
+        LibraryPaths paths,
+        CurrentAccess current,
+        ServerFiles serverFiles,
+        HttpContext context,
+        string path,
+        bool download = false
+    )
     {
         // The server's own files answer as if they weren't there, wherever a link put them.
         if (!paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
@@ -291,7 +366,13 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<Ok<ImageAnimationInfo>, NotFound>> Animated(
-        LibraryPaths paths, CurrentAccess current, ServerFiles serverFiles, ILoggerFactory loggerFactory, string path, CancellationToken cancellationToken)
+        LibraryPaths paths,
+        CurrentAccess current,
+        ServerFiles serverFiles,
+        ILoggerFactory loggerFactory,
+        string path,
+        CancellationToken cancellationToken
+    )
     {
         if (!paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
             return TypedResults.NotFound();
@@ -300,36 +381,69 @@ public static class LibraryEndpoints
 
         try
         {
-            await using var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 64 * 1024, useAsync: false);
-            return TypedResults.Ok(new ImageAnimationInfo(await Task.Run(() => ImageAnimation.IsAnimated(stream), cancellationToken)));
+            await using var stream = new FileStream(
+                fullPath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite,
+                64 * 1024,
+                useAsync: false
+            );
+            return TypedResults.Ok(
+                new ImageAnimationInfo(await Task.Run(() => ImageAnimation.IsAnimated(stream), cancellationToken))
+            );
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Unreadable now (locked, drive gone): shown as still, the thumbnail stays.
-            loggerFactory.CreateLogger(typeof(LibraryEndpoints)).LogWarning(ex, "Cannot tell whether {Path} is animated", path);
+            loggerFactory
+                .CreateLogger(typeof(LibraryEndpoints))
+                .LogWarning(ex, "Cannot tell whether {Path} is animated", path);
             return TypedResults.Ok(new ImageAnimationInfo(false));
         }
     }
 
     private static async Task<Results<Ok<FileLink>, NotFound, ForbidHttpResult>> CreateLink(
-        LibraryPaths paths, CurrentAccess current, FileLinks links, ServerFiles serverFiles, IOptionsMonitor<SfeOptions> options, FileLinkRequest request)
+        LibraryPaths paths,
+        CurrentAccess current,
+        FileLinks links,
+        ServerFiles serverFiles,
+        IOptionsMonitor<SfeOptions> options,
+        FileLinkRequest request
+    )
     {
         var path = LibraryPaths.NormalizeRelative(request.Path);
-        if (path is null || !paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
+        if (
+            path is null
+            || !paths.TryResolve(path, out var fullPath)
+            || !File.Exists(fullPath)
+            || serverFiles.Contains(fullPath)
+        )
+        {
             return TypedResults.NotFound();
+        }
 
         var state = await current.GetAsync();
         if (state.Check(paths, path, Rights.ViewFiles) is var verdict and not PathVerdict.Allowed)
             return verdict == PathVerdict.NotFound ? TypedResults.NotFound() : TypedResults.Forbid();
         if (state.Check(paths, path, Rights.ExternalPlayer) != PathVerdict.Allowed)
             return TypedResults.Forbid();
-        var lifetime = TimeSpan.FromMinutes(Math.Clamp(options.CurrentValue.Player.LinkLifetimeMinutes, 1, SettingsService.MaxLinkLifetimeMinutes));
+        var lifetime = TimeSpan.FromMinutes(
+            Math.Clamp(options.CurrentValue.Player.LinkLifetimeMinutes, 1, SettingsService.MaxLinkLifetimeMinutes)
+        );
         return TypedResults.Ok(links.Create(state.TenantId, state.User, path, lifetime));
     }
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound, ProblemHttpResult>> Shared(
-        HttpContext context, FileLinks links, AccessService accounts, RightsEvaluator rights, TenantRegistry tenants, ServerFiles serverFiles,
-        string token, string name)
+        HttpContext context,
+        FileLinks links,
+        AccessService accounts,
+        RightsEvaluator rights,
+        TenantRegistry tenants,
+        ServerFiles serverFiles,
+        string token,
+        string name
+    )
     {
         if (links.Read(token) is not { } claims)
             return TypedResults.NotFound();
@@ -339,20 +453,47 @@ public static class LibraryEndpoints
         {
             var user = await accounts.GetSessionUserAsync(userId, context.RequestAborted);
             if (user is null || user.Disabled || user.SecurityStamp != claims.Stamp)
-                return TypedResults.Problem("This link no longer works: ask for a new one.", statusCode: StatusCodes.Status403Forbidden);
+            {
+                return TypedResults.Problem(
+                    "This link no longer works: ask for a new one.",
+                    statusCode: StatusCodes.Status403Forbidden
+                );
+            }
         }
 
         var access = await rights.GetAsync(new AccessSubject(claims.Tenant, claims.User), context.RequestAborted);
         if (!access.Has(Rights.ViewFiles) || !access.Has(Rights.ExternalPlayer))
-            return TypedResults.Problem("This link no longer works: ask for a new one.", statusCode: StatusCodes.Status403Forbidden);
+        {
+            return TypedResults.Problem(
+                "This link no longer works: ask for a new one.",
+                statusCode: StatusCodes.Status403Forbidden
+            );
+        }
 
-        var paths = (await tenants.GetAsync(claims.Tenant, context.RequestAborted))?.Services.GetRequiredService<LibraryPaths>();
-        if (paths is null || !paths.TryResolve(claims.Path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
+        var paths = (
+            await tenants.GetAsync(claims.Tenant, context.RequestAborted)
+        )?.Services.GetRequiredService<LibraryPaths>();
+        if (
+            paths is null
+            || !paths.TryResolve(claims.Path, out var fullPath)
+            || !File.Exists(fullPath)
+            || serverFiles.Contains(fullPath)
+        )
+        {
             return TypedResults.NotFound();
+        }
         // The folder rules as they are now: a rule made after the link hides the file from it too.
         var subject = new AccessState(null, null, access);
-        if (subject.Check(paths, claims.Path, Rights.ViewFiles) != PathVerdict.Allowed || subject.Check(paths, claims.Path, Rights.ExternalPlayer) != PathVerdict.Allowed)
-            return TypedResults.Problem("This link no longer works: ask for a new one.", statusCode: StatusCodes.Status403Forbidden);
+        if (
+            subject.Check(paths, claims.Path, Rights.ViewFiles) != PathVerdict.Allowed
+            || subject.Check(paths, claims.Path, Rights.ExternalPlayer) != PathVerdict.Allowed
+        )
+        {
+            return TypedResults.Problem(
+                "This link no longer works: ask for a new one.",
+                statusCode: StatusCodes.Status403Forbidden
+            );
+        }
 
         return ServeFile(context, fullPath, download: false);
     }
@@ -377,7 +518,8 @@ public static class LibraryEndpoints
             contentType,
             fileDownloadName: download || !OpensInline(contentType) ? Path.GetFileName(fullPath) : null,
             lastModified: File.GetLastWriteTimeUtc(fullPath),
-            enableRangeProcessing: true);
+            enableRangeProcessing: true
+        );
     }
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound>> Thumbnail(
@@ -386,7 +528,8 @@ public static class LibraryEndpoints
         CurrentAccess current,
         HttpContext context,
         string path,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if ((await current.GetAsync()).Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
             return TypedResults.NotFound();
@@ -418,7 +561,10 @@ public static class LibraryEndpoints
         contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase)
         || contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase)
         || contentType.Equals("text/plain", StringComparison.OrdinalIgnoreCase)
-        || (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) && !contentType.Contains("svg", StringComparison.OrdinalIgnoreCase));
+        || (
+            contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
+            && !contentType.Contains("svg", StringComparison.OrdinalIgnoreCase)
+        );
 
     private static int Clamp(int? requested, int fallback, int max) =>
         Math.Clamp(requested ?? fallback, 1, Math.Max(1, max));

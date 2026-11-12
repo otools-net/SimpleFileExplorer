@@ -27,11 +27,15 @@ public sealed class InstallationAccess(IDataProtectionProvider protection, IOpti
 
     public static readonly TimeSpan Lifetime = TimeSpan.FromHours(1);
 
-    private readonly ITimeLimitedDataProtector _protector = protection.CreateProtector("Sfe.Installation.v1").ToTimeLimitedDataProtector();
+    private readonly ITimeLimitedDataProtector _protector = protection
+        .CreateProtector("Sfe.Installation.v1")
+        .ToTimeLimitedDataProtector();
 
     /// <summary>A token for <paramref name="code"/>; null when it is not the setup code.</summary>
     public string? Grant(string? code) =>
-        setup.CurrentValue is var options && options.Matches(code) ? _protector.Protect(Fingerprint(options), Lifetime) : null;
+        setup.CurrentValue is var options && options.Matches(code)
+            ? _protector.Protect(Fingerprint(options), Lifetime)
+            : null;
 
     /// <summary>
     /// A token without the code, for the setup of a new install from the server's own computer
@@ -82,5 +86,11 @@ public sealed class InstallationAccess(IDataProtectionProvider protection, IOpti
     private const string WithoutCode = "local-setup";
 
     private static string Fingerprint(SetupOptions options) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(options.CodeIsGenerated ? GeneratedSetupCode.Normalize(options.Code) : options.Code!.Trim())));
+        Convert.ToHexString(
+            SHA256.HashData(
+                Encoding.UTF8.GetBytes(
+                    options.CodeIsGenerated ? GeneratedSetupCode.Normalize(options.Code) : options.Code!.Trim()
+                )
+            )
+        );
 }

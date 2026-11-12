@@ -9,7 +9,8 @@ public static class SecretFiles
 {
     private const UnixFileMode OwnerFile = UnixFileMode.UserRead | UnixFileMode.UserWrite;
     private const UnixFileMode OwnerFolder = OwnerFile | UnixFileMode.UserExecute;
-    private const UnixFileMode Others = UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.OtherRead | UnixFileMode.OtherWrite;
+    private const UnixFileMode Others =
+        UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.OtherRead | UnixFileMode.OtherWrite;
 
     /// <summary>
     /// Writes <paramref name="text"/> to <paramref name="path"/>, readable by the server's account only from the
@@ -18,7 +19,12 @@ public static class SecretFiles
     /// <exception cref="IOException">The folder is not writable.</exception>
     public static void WriteAllText(string path, string text)
     {
-        var options = new FileStreamOptions { Mode = FileMode.Create, Access = FileAccess.Write, Share = FileShare.None };
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.Create,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+        };
         if (!OperatingSystem.IsWindows())
             options.UnixCreateMode = OwnerFile;
 

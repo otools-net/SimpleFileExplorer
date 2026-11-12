@@ -20,7 +20,12 @@ internal static class MissingFileRecorder
     /// scan would record them a second time.
     /// </remarks>
     public static async Task<int> DeleteAsync(
-        SfeDbContext db, IQueryable<FileEntry> files, Func<CancellationToken, Task<int>> delete, bool remember, CancellationToken cancellationToken)
+        SfeDbContext db,
+        IQueryable<FileEntry> files,
+        Func<CancellationToken, Task<int>> delete,
+        bool remember,
+        CancellationToken cancellationToken
+    )
     {
         if (!remember)
             return await delete(cancellationToken);
@@ -43,11 +48,25 @@ internal static class MissingFileRecorder
         });
     }
 
-    private static async Task RecordAsync(SfeDbContext db, IQueryable<FileEntry> files, CancellationToken cancellationToken)
+    private static async Task RecordAsync(
+        SfeDbContext db,
+        IQueryable<FileEntry> files,
+        CancellationToken cancellationToken
+    )
     {
         var tagged = await files
             .Where(f => f.TagLinks.Any())
-            .Select(f => new { f.FullName, f.Name, f.Extension, f.Size, f.Sha1, f.LastWriteTime, f.RegisterTime, TagIds = f.TagLinks.Select(l => l.TagId).ToList() })
+            .Select(f => new
+            {
+                f.FullName,
+                f.Name,
+                f.Extension,
+                f.Size,
+                f.Sha1,
+                f.LastWriteTime,
+                f.RegisterTime,
+                TagIds = f.TagLinks.Select(l => l.TagId).ToList(),
+            })
             .ToListAsync(cancellationToken);
         if (tagged.Count == 0)
             return;
@@ -55,18 +74,20 @@ internal static class MissingFileRecorder
         var now = DateTime.Now;
         foreach (var file in tagged)
         {
-            db.MissingFiles.Add(new MissingFile
-            {
-                FullName = file.FullName,
-                Name = file.Name,
-                Extension = file.Extension,
-                Size = file.Size,
-                Sha1 = file.Sha1,
-                LastWriteTime = file.LastWriteTime,
-                RegisterTime = file.RegisterTime,
-                MissingSince = now,
-                TagLinks = file.TagIds.Select(id => new MissingFileTag { TagId = id }).ToList(),
-            });
+            db.MissingFiles.Add(
+                new MissingFile
+                {
+                    FullName = file.FullName,
+                    Name = file.Name,
+                    Extension = file.Extension,
+                    Size = file.Size,
+                    Sha1 = file.Sha1,
+                    LastWriteTime = file.LastWriteTime,
+                    RegisterTime = file.RegisterTime,
+                    MissingSince = now,
+                    TagLinks = file.TagIds.Select(id => new MissingFileTag { TagId = id }).ToList(),
+                }
+            );
         }
 
         await db.SaveChangesAsync(cancellationToken);

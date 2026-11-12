@@ -68,7 +68,11 @@ public sealed class ArchiveTooLargeException(string message) : IOException(messa
 /// folders never included, and each folder is checked against the downloader's access on the way.
 /// </summary>
 public sealed class Archives(
-    IDbContextFactory<SfeDbContext> dbFactory, LibraryPaths paths, IOptionsMonitor<SfeOptions> options, ILogger<Archives> logger)
+    IDbContextFactory<SfeDbContext> dbFactory,
+    LibraryPaths paths,
+    IOptionsMonitor<SfeOptions> options,
+    ILogger<Archives> logger
+)
 {
     /// <summary>Items one zip may name (the folders among them bring everything inside them).</summary>
     public const int MaxItems = 10_000;
@@ -87,18 +91,112 @@ public sealed class Archives(
     /// </summary>
     private static readonly HashSet<string> AlreadyCompressed = new(StringComparer.OrdinalIgnoreCase)
     {
-        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".heic", ".heif", ".jxl", ".mp4", ".m4v", ".mkv", ".mov", ".avi", ".webm", ".wmv",
-        ".mpg", ".mpeg", ".ts", ".mts", ".m2ts", ".3gp", ".flv", ".mp3", ".m4a", ".aac", ".ogg", ".oga", ".opus", ".flac", ".wma", ".zip", ".7z",
-        ".rar", ".gz", ".tgz", ".bz2", ".xz", ".zst", ".lz", ".lzma", ".cab", ".cbz", ".cbr", ".epub", ".docx", ".xlsx", ".pptx", ".odt", ".ods",
-        ".odp", ".jar", ".apk", ".swf", ".woff", ".woff2",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".avif",
+        ".heic",
+        ".heif",
+        ".jxl",
+        ".mp4",
+        ".m4v",
+        ".mkv",
+        ".mov",
+        ".avi",
+        ".webm",
+        ".wmv",
+        ".mpg",
+        ".mpeg",
+        ".ts",
+        ".mts",
+        ".m2ts",
+        ".3gp",
+        ".flv",
+        ".mp3",
+        ".m4a",
+        ".aac",
+        ".ogg",
+        ".oga",
+        ".opus",
+        ".flac",
+        ".wma",
+        ".zip",
+        ".7z",
+        ".rar",
+        ".gz",
+        ".tgz",
+        ".bz2",
+        ".xz",
+        ".zst",
+        ".lz",
+        ".lzma",
+        ".cab",
+        ".cbz",
+        ".cbr",
+        ".epub",
+        ".docx",
+        ".xlsx",
+        ".pptx",
+        ".odt",
+        ".ods",
+        ".odp",
+        ".jar",
+        ".apk",
+        ".swf",
+        ".woff",
+        ".woff2",
     };
 
     /// <summary>Extensions whose files gain from compression; everything else (media, archives, documents that are zips) is stored.</summary>
     private static readonly HashSet<string> Compressible = new(StringComparer.OrdinalIgnoreCase)
     {
-        ".txt", ".md", ".csv", ".tsv", ".json", ".xml", ".html", ".htm", ".css", ".js", ".ts", ".svg", ".log", ".ini", ".cfg", ".conf",
-        ".yaml", ".yml", ".srt", ".ass", ".ssa", ".vtt", ".sub", ".nfo", ".cue", ".m3u", ".m3u8", ".pls", ".bmp", ".tif", ".tiff",
-        ".wav", ".psd", ".rtf", ".sql", ".tex", ".ps1", ".sh", ".bat", ".cs", ".py", ".java", ".c", ".h", ".cpp",
+        ".txt",
+        ".md",
+        ".csv",
+        ".tsv",
+        ".json",
+        ".xml",
+        ".html",
+        ".htm",
+        ".css",
+        ".js",
+        ".ts",
+        ".svg",
+        ".log",
+        ".ini",
+        ".cfg",
+        ".conf",
+        ".yaml",
+        ".yml",
+        ".srt",
+        ".ass",
+        ".ssa",
+        ".vtt",
+        ".sub",
+        ".nfo",
+        ".cue",
+        ".m3u",
+        ".m3u8",
+        ".pls",
+        ".bmp",
+        ".tif",
+        ".tiff",
+        ".wav",
+        ".psd",
+        ".rtf",
+        ".sql",
+        ".tex",
+        ".ps1",
+        ".sh",
+        ".bat",
+        ".cs",
+        ".py",
+        ".java",
+        ".c",
+        ".h",
+        ".cpp",
     };
 
     /// <summary>The zip's largest size in bytes, 0 when unlimited.</summary>
@@ -118,8 +216,14 @@ public sealed class Archives(
         var seen = new HashSet<string>(LibraryPaths.PathComparer);
         foreach (var raw in chosen)
         {
-            if (LibraryPaths.NormalizeRelative(raw) is not { } normalized || !paths.TryResolve(normalized, out var full))
+            if (
+                LibraryPaths.NormalizeRelative(raw) is not { } normalized
+                || !paths.TryResolve(normalized, out var full)
+            )
+            {
                 return ArchivePlanResult.Fail(FileOperationStatus.NotFound, "An item was not found.");
+            }
+
             var isFolder = Directory.Exists(full);
             if ((!isFolder && !File.Exists(full)) || access.IsProtected(full))
                 return ArchivePlanResult.Fail(FileOperationStatus.NotFound, "An item was not found.");
@@ -129,7 +233,10 @@ public sealed class Archives(
                 case ArchiveVerdict.Hidden:
                     return ArchivePlanResult.Fail(FileOperationStatus.NotFound, "An item was not found.");
                 case ArchiveVerdict.Refused:
-                    return ArchivePlanResult.Fail(FileOperationStatus.Forbidden, $"You may not download “{Path.GetFileName(full)}”.");
+                    return ArchivePlanResult.Fail(
+                        FileOperationStatus.Forbidden,
+                        $"You may not download “{Path.GetFileName(full)}”."
+                    );
             }
             if (seen.Add(path))
                 found.Add((path, full, isFolder));
@@ -146,7 +253,12 @@ public sealed class Archives(
             var name = EntryName(path.Length == 0 ? paths.RootName : Path.GetFileName(full));
             var unique = name;
             for (var n = 2; !names.Add(unique); n++)
-                unique = isFolder ? $"{name} ({n})" : $"{Path.GetFileNameWithoutExtension(name)} ({n}){Path.GetExtension(name)}";
+            {
+                unique = isFolder
+                    ? $"{name} ({n})"
+                    : $"{Path.GetFileNameWithoutExtension(name)} ({n}){Path.GetExtension(name)}";
+            }
+
             items.Add(new ArchiveItem(path, full, LibraryPaths.RealPath(full), isFolder, unique));
         }
         return new ArchivePlanResult(FileOperationStatus.Done, new ArchivePlan(items, FileName(items)), null);
@@ -168,8 +280,11 @@ public sealed class Archives(
             }
             else
             {
-                total += await db.Files.AsNoTracking().Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, item.FullPath))
-                    .SumAsync(f => (long?)f.Size, cancellationToken) ?? 0;
+                total += await db
+                    .Files.AsNoTracking()
+                    .Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, item.FullPath))
+                    .SumAsync(f => (long?)f.Size, cancellationToken)
+                    ?? 0;
             }
         }
         return total;
@@ -181,11 +296,31 @@ public sealed class Archives(
     /// links, unreadable files and folders not downloadable are named in <see cref="LeftOutEntry"/>.
     /// </summary>
     /// <exception cref="ArchiveTooLargeException">The zip passes <see cref="MaxBytes"/>: the output is incomplete.</exception>
-    public async Task<ArchiveSummary> WriteAsync(ArchivePlan plan, Stream output, IArchiveAccess access, CancellationToken cancellationToken = default)
+    public async Task<ArchiveSummary> WriteAsync(
+        ArchivePlan plan,
+        Stream output,
+        IArchiveAccess access,
+        CancellationToken cancellationToken = default
+    )
     {
-        var zip = await ZipArchive.CreateAsync(output, ZipArchiveMode.Create, leaveOpen: true, entryNameEncoding: null, cancellationToken);
+        var zip = await ZipArchive.CreateAsync(
+            output,
+            ZipArchiveMode.Create,
+            leaveOpen: true,
+            entryNameEncoding: null,
+            cancellationToken
+        );
         await using (zip)
-            return await WalkAsync(plan, new DownloadTarget(zip, cancellationToken), access, MaxBytes, null, cancellationToken);
+        {
+            return await WalkAsync(
+                plan,
+                new DownloadTarget(zip, cancellationToken),
+                access,
+                MaxBytes,
+                null,
+                cancellationToken
+            );
+        }
     }
 
     /// <summary>
@@ -194,11 +329,32 @@ public sealed class Archives(
     /// but the disk's. <paramref name="read"/> is told the bytes read, <paramref name="written"/> the zip's length after
     /// each file. The caller finishes the writer.
     /// </summary>
-    public Task<ArchiveSummary> CompressAsync(ArchivePlan plan, ZipWriter writer, CompressOptions options, IArchiveAccess access,
-        Action<int>? read = null, Action<long>? written = null, CancellationToken cancellationToken = default) =>
-        WalkAsync(plan, new CompressTarget(writer, options, read, written, cancellationToken), access, 0, options.Exclude, cancellationToken);
+    public Task<ArchiveSummary> CompressAsync(
+        ArchivePlan plan,
+        ZipWriter writer,
+        CompressOptions options,
+        IArchiveAccess access,
+        Action<int>? read = null,
+        Action<long>? written = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        WalkAsync(
+            plan,
+            new CompressTarget(writer, options, read, written, cancellationToken),
+            access,
+            0,
+            options.Exclude,
+            cancellationToken
+        );
 
-    private async Task<ArchiveSummary> WalkAsync(ArchivePlan plan, IZipTarget target, IArchiveAccess access, long maxBytes, string? exclude, CancellationToken cancellationToken)
+    private async Task<ArchiveSummary> WalkAsync(
+        ArchivePlan plan,
+        IZipTarget target,
+        IArchiveAccess access,
+        long maxBytes,
+        string? exclude,
+        CancellationToken cancellationToken
+    )
     {
         var writer = new Writer(target, access, maxBytes, exclude, logger, cancellationToken);
         foreach (var item in plan.Items)
@@ -220,20 +376,33 @@ public sealed class Archives(
     private string FileName(IReadOnlyList<ArchiveItem> items)
     {
         if (items.Count == 1)
-            return (items[0].IsFolder ? items[0].EntryName : Path.GetFileNameWithoutExtension(items[0].EntryName)) + ".zip";
+        {
+            return (items[0].IsFolder ? items[0].EntryName : Path.GetFileNameWithoutExtension(items[0].EntryName))
+                + ".zip";
+        }
+
         var parents = items.Select(item => ParentOf(item.Path)).Distinct(LibraryPaths.PathComparer).ToList();
         var parent = parents.Count == 1 ? parents[0] : string.Empty;
         return EntryName(parent.Length == 0 ? paths.RootName : parent[(parent.LastIndexOf('/') + 1)..]) + ".zip";
     }
 
-    private static string ParentOf(string path) => path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
+    private static string ParentOf(string path) =>
+        path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
 
     private static bool IsInside(string path, string folder) =>
-        folder.Length == 0 || (path.Length > folder.Length && path[folder.Length] == '/' && path.StartsWith(folder, LibraryPaths.PathComparison));
+        folder.Length == 0
+        || (
+            path.Length > folder.Length
+            && path[folder.Length] == '/'
+            && path.StartsWith(folder, LibraryPaths.PathComparison)
+        );
 
     private static DateTimeOffset ZipTime(DateTime local) =>
         // A zip holds 1980 to 2107.
-        local.Year < 1980 ? new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Local) : local.Year > 2107 ? new DateTime(2107, 12, 31, 0, 0, 0, DateTimeKind.Local) : local;
+        local.Year < 1980
+            ? new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Local)
+        : local.Year > 2107 ? new DateTime(2107, 12, 31, 0, 0, 0, DateTimeKind.Local)
+        : local;
 
     /// <summary>Where the walk puts what it finds: the download's zip, or SFE's own writer.</summary>
     private interface IZipTarget
@@ -256,7 +425,10 @@ public sealed class Archives(
 
         public async Task AddFileAsync(string name, DateTime modified, Stream input, string extension)
         {
-            var entry = zip.CreateEntry(name, Compressible.Contains(extension) ? CompressionLevel.Fastest : CompressionLevel.NoCompression);
+            var entry = zip.CreateEntry(
+                name,
+                Compressible.Contains(extension) ? CompressionLevel.Fastest : CompressionLevel.NoCompression
+            );
             entry.LastWriteTime = ZipTime(modified);
             await using var target = await entry.OpenAsync(token);
             await input.CopyToAsync(target, CopyBuffer, token);
@@ -271,7 +443,13 @@ public sealed class Archives(
     }
 
     /// <summary>A compression into the library: SFE's writer, at the level asked, files already compressed stored when asked.</summary>
-    private sealed class CompressTarget(ZipWriter writer, CompressOptions options, Action<int>? read, Action<long>? written, CancellationToken token) : IZipTarget
+    private sealed class CompressTarget(
+        ZipWriter writer,
+        CompressOptions options,
+        Action<int>? read,
+        Action<long>? written,
+        CancellationToken token
+    ) : IZipTarget
     {
         public Task AddFolderAsync(string name, DateTime modified)
         {
@@ -288,11 +466,25 @@ public sealed class Archives(
 
         public async Task AddNoteAsync(string name, byte[] text)
         {
-            await writer.AddFileAsync(name, DateTime.Now, new MemoryStream(text), Math.Max(1, options.Level), null, token);
+            await writer.AddFileAsync(
+                name,
+                DateTime.Now,
+                new MemoryStream(text),
+                Math.Max(1, options.Level),
+                null,
+                token
+            );
         }
     }
 
-    private sealed class Writer(IZipTarget target, IArchiveAccess access, long maxBytes, string? exclude, ILogger logger, CancellationToken token)
+    private sealed class Writer(
+        IZipTarget target,
+        IArchiveAccess access,
+        long maxBytes,
+        string? exclude,
+        ILogger logger,
+        CancellationToken token
+    )
     {
         public int Files { get; private set; }
         public long Bytes { get; private set; }
@@ -306,7 +498,10 @@ public sealed class Archives(
             IEnumerable<FileSystemInfo> entries;
             try
             {
-                entries = new DirectoryInfo(full).EnumerateFileSystemInfos("*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = true });
+                entries = new DirectoryInfo(full).EnumerateFileSystemInfos(
+                    "*",
+                    new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = true }
+                );
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -321,8 +516,13 @@ public sealed class Archives(
                 var entryPath = path.Length == 0 ? entry.Name : $"{path}/{entry.Name}";
                 var entryReal = Path.Join(real, entry.Name);
                 // The server's own files and the work folder: as if they weren't there. Nor the zip being written.
-                if (access.IsProtectedReal(entryReal) || (exclude is not null && LibraryPaths.PathComparer.Equals(entryReal, exclude)))
+                if (
+                    access.IsProtectedReal(entryReal)
+                    || (exclude is not null && LibraryPaths.PathComparer.Equals(entryReal, exclude))
+                )
+                {
                     continue;
+                }
                 // Links are never followed (out of the library, or round in circles).
                 if (entry.LinkTarget is not null)
                 {
@@ -354,8 +554,14 @@ public sealed class Archives(
             FileStream input;
             try
             {
-                input = new FileStream(full, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, CopyBuffer,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan);
+                input = new FileStream(
+                    full,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete,
+                    CopyBuffer,
+                    FileOptions.Asynchronous | FileOptions.SequentialScan
+                );
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -367,7 +573,12 @@ public sealed class Archives(
             await using (input)
             {
                 if (maxBytes > 0 && Bytes + input.Length > maxBytes)
-                    throw new ArchiveTooLargeException($"The zip would be larger than the {maxBytes / 1024 / 1024:N0} MB allowed.");
+                {
+                    throw new ArchiveTooLargeException(
+                        $"The zip would be larger than the {maxBytes / 1024 / 1024:N0} MB allowed."
+                    );
+                }
+
                 var counted = new CountingStream(input);
                 await target.AddFileAsync(entryName, File.GetLastWriteTime(full), counted, Path.GetExtension(full));
                 Bytes += counted.Total;
@@ -377,7 +588,9 @@ public sealed class Archives(
 
         public async Task AddNoteAsync()
         {
-            var text = new StringBuilder("Left out of this zip (links, files that could not be read, folders you may not download):\r\n\r\n");
+            var text = new StringBuilder(
+                "Left out of this zip (links, files that could not be read, folders you may not download):\r\n\r\n"
+            );
             foreach (var path in LeftOut.Take(MaxLeftOutListed))
                 text.Append(path).Append("\r\n");
             if (LeftOut.Count > MaxLeftOutListed)
@@ -395,19 +608,32 @@ public sealed class Archives(
         public override bool CanSeek => inner.CanSeek;
         public override bool CanWrite => false;
         public override long Length => inner.Length;
-        public override long Position { get => inner.Position; set => throw new NotSupportedException(); }
+        public override long Position
+        {
+            get => inner.Position;
+            set => throw new NotSupportedException();
+        }
+
         public override void Flush() { }
 
         public override int Read(byte[] buffer, int offset, int count) => Count(inner.Read(buffer, offset, count));
 
-        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
-            Count(await inner.ReadAsync(buffer, cancellationToken));
+        public override async ValueTask<int> ReadAsync(
+            Memory<byte> buffer,
+            CancellationToken cancellationToken = default
+        ) => Count(await inner.ReadAsync(buffer, cancellationToken));
 
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
-            ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+        public override Task<int> ReadAsync(
+            byte[] buffer,
+            int offset,
+            int count,
+            CancellationToken cancellationToken
+        ) => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
 
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
         public override void SetLength(long value) => throw new NotSupportedException();
+
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
         private int Count(int read)

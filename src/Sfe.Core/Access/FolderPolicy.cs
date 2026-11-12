@@ -13,7 +13,11 @@ namespace Sfe.Core.Access;
 /// True for a group: where no rule of it is above a path, it has <see cref="FolderLevel.Write"/> there (what every
 /// group had before folder rules). False for an account: without a rule of its own it has no say.
 /// </param>
-public sealed record FolderPrincipal(IReadOnlyDictionary<string, FolderLevel> Rules, IReadOnlySet<string> Rights, bool UnrestrictedByDefault);
+public sealed record FolderPrincipal(
+    IReadOnlyDictionary<string, FolderLevel> Rules,
+    IReadOnlySet<string> Rights,
+    bool UnrestrictedByDefault
+);
 
 /// <summary>
 /// Where a subject may use its rights in a library, compiled from the folder rules of its principals
@@ -46,11 +50,19 @@ public sealed class FolderPolicy
         if (principals.All(p => p.Rules.Count == 0))
             return Unrestricted;
 
-        var normalized = principals.Select(p => p with { Rules = new Dictionary<string, FolderLevel>(p.Rules, LibraryPaths.PathComparer) }).ToList();
+        var normalized = principals
+            .Select(p => p with { Rules = new Dictionary<string, FolderLevel>(p.Rules, LibraryPaths.PathComparer) })
+            .ToList();
         var paths = new HashSet<string>(LibraryPaths.PathComparer) { string.Empty };
         foreach (var principal in normalized)
             paths.UnionWith(principal.Rules.Keys);
-        return new FolderPolicy(paths.ToDictionary(path => path, IReadOnlySet<string> (path) => RightsAt(normalized, path), LibraryPaths.PathComparer));
+        return new FolderPolicy(
+            paths.ToDictionary(
+                path => path,
+                IReadOnlySet<string> (path) => RightsAt(normalized, path),
+                LibraryPaths.PathComparer
+            )
+        );
     }
 
     /// <summary>
@@ -111,13 +123,23 @@ public sealed class FolderPolicy
         }
 
         var regions = kept.Where(k => k.Value.Allowed)
-            .Select(k => new PathRegion(k.Key, [.. kept.Where(c => c.Value.Parent is { } parent && LibraryPaths.PathComparer.Equals(parent, k.Key)).Select(c => c.Key)]))
+            .Select(k => new PathRegion(
+                k.Key,
+                [
+                    .. kept.Where(c => c.Value.Parent is { } parent && LibraryPaths.PathComparer.Equals(parent, k.Key))
+                        .Select(c => c.Key),
+                ]
+            ))
             .ToList();
         return new PathFilter(regions);
     }
 
     /// <summary>The level a principal with <paramref name="rules"/> has at <paramref name="path"/>; null when it has no say.</summary>
-    public static FolderLevel? LevelAt(IReadOnlyDictionary<string, FolderLevel> rules, string path, bool unrestrictedByDefault)
+    public static FolderLevel? LevelAt(
+        IReadOnlyDictionary<string, FolderLevel> rules,
+        string path,
+        bool unrestrictedByDefault
+    )
     {
         foreach (var candidate in SelfAndAncestors(path))
         {
@@ -135,7 +157,9 @@ public sealed class FolderPolicy
     public static bool IsBelow(string path, string folder) =>
         folder.Length == 0
             ? path.Length > 0
-            : path.Length > folder.Length + 1 && path[folder.Length] == '/' && path.StartsWith(folder, LibraryPaths.PathComparison);
+            : path.Length > folder.Length + 1
+                && path[folder.Length] == '/'
+                && path.StartsWith(folder, LibraryPaths.PathComparison);
 
     /// <summary>The path, then each folder above it up to the root (<c>a/b</c>, <c>a</c>, empty).</summary>
     public static IEnumerable<string> SelfAndAncestors(string path)
@@ -244,7 +268,9 @@ public sealed class PathFilter
 
     /// <summary>The right applies at <paramref name="path"/> (root-relative).</summary>
     public bool Includes(string path) =>
-        Regions.Any(r => FolderPolicy.IsSameOrBelow(path, r.Path) && !r.Except.Any(e => FolderPolicy.IsSameOrBelow(path, e)));
+        Regions.Any(r =>
+            FolderPolicy.IsSameOrBelow(path, r.Path) && !r.Except.Any(e => FolderPolicy.IsSameOrBelow(path, e))
+        );
 
     /// <summary>
     /// Index rows whose full path (selected by <paramref name="fullName"/>) lies where the right applies, in the
@@ -258,7 +284,13 @@ public sealed class PathFilter
         {
             Expression inRegion = SearchPredicateBuilder.InTree(fullName, paths.Resolve(region.Path)).Body;
             foreach (var except in region.Except)
-                inRegion = Expression.AndAlso(inRegion, Expression.Not(SearchPredicateBuilder.InTree(fullName, paths.Resolve(except)).Body));
+            {
+                inRegion = Expression.AndAlso(
+                    inRegion,
+                    Expression.Not(SearchPredicateBuilder.InTree(fullName, paths.Resolve(except)).Body)
+                );
+            }
+
             body = body is ConstantExpression ? inRegion : Expression.OrElse(body, inRegion);
         }
         return Expression.Lambda<Func<T, bool>>(body, fullName.Parameters);
@@ -271,6 +303,10 @@ public static class PathFilterQueries
     /// The rows whose full path (selected by <paramref name="fullName"/>) <paramref name="filter"/> includes; all of them
     /// for a null filter or <see cref="PathFilter.Everything"/> (no condition added: the query stays as it was).
     /// </summary>
-    public static IQueryable<T> WhereVisible<T>(this IQueryable<T> query, PathFilter? filter, Expression<Func<T, string>> fullName, LibraryPaths paths) =>
-        filter is null || filter.IsEverything ? query : query.Where(filter.ToPredicate(fullName, paths));
+    public static IQueryable<T> WhereVisible<T>(
+        this IQueryable<T> query,
+        PathFilter? filter,
+        Expression<Func<T, string>> fullName,
+        LibraryPaths paths
+    ) => filter is null || filter.IsEverything ? query : query.Where(filter.ToPredicate(fullName, paths));
 }

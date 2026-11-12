@@ -16,19 +16,21 @@ public static class ProblemLog
 
     public static RouteGroupBuilder LogProblems(this RouteGroupBuilder group)
     {
-        group.AddEndpointFilter(async (context, next) =>
-        {
-            var result = await next(context);
-            try
+        group.AddEndpointFilter(
+            async (context, next) =>
             {
-                await LogAsync(context.HttpContext, result);
+                var result = await next(context);
+                try
+                {
+                    await LogAsync(context.HttpContext, result);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // The answer goes out whatever the log does.
+                }
+                return result;
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                // The answer goes out whatever the log does.
-            }
-            return result;
-        });
+        );
         return group;
     }
 
@@ -36,8 +38,13 @@ public static class ProblemLog
     {
         while (result is INestedHttpResult nested)
             result = nested.Result;
-        if (result is not IStatusCodeHttpResult { StatusCode: >= 400 and var status } || result is not IValueHttpResult { Value: ProblemDetails problem })
+        if (
+            result is not IStatusCodeHttpResult { StatusCode: >= 400 and var status }
+            || result is not IValueHttpResult { Value: ProblemDetails problem }
+        )
+        {
             return;
+        }
 
         var logger = http.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(Category);
         var level = status switch
@@ -48,9 +55,18 @@ public static class ProblemLog
         };
         if (!logger.IsEnabled(level))
             return;
-        var who = http.RequestServices.GetService<CurrentAccess>() is { } current ? (await current.GetAsync()).User?.UserName : null;
-        logger.Log(level, "{Method} {Path} answered {Status} to {User}: {Problem}",
-            http.Request.Method, http.Request.Path.Value, status, who ?? "a visitor", Describe(problem));
+        var who = http.RequestServices.GetService<CurrentAccess>() is { } current
+            ? (await current.GetAsync()).User?.UserName
+            : null;
+        logger.Log(
+            level,
+            "{Method} {Path} answered {Status} to {User}: {Problem}",
+            http.Request.Method,
+            http.Request.Path.Value,
+            status,
+            who ?? "a visitor",
+            Describe(problem)
+        );
     }
 
     /// <summary>The problem's words: its detail or title, and each field's errors.</summary>
@@ -58,7 +74,12 @@ public static class ProblemLog
     {
         var text = problem.Detail ?? problem.Title ?? "no detail";
         if (problem is HttpValidationProblemDetails { Errors.Count: > 0 } validation)
-            text += " " + string.Join("; ", validation.Errors.Select(field => $"{field.Key}: {string.Join(" ", field.Value)}"));
+        {
+            text +=
+                " "
+                + string.Join("; ", validation.Errors.Select(field => $"{field.Key}: {string.Join(" ", field.Value)}"));
+        }
+
         return text;
     }
 }

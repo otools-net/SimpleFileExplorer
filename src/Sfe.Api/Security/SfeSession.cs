@@ -30,12 +30,19 @@ public static class SfeSession
 
     public static int? UserId(this ClaimsPrincipal principal) =>
         principal.Identity?.IsAuthenticated == true
-        && int.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), NumberStyles.None, CultureInfo.InvariantCulture, out var id)
+        && int.TryParse(
+            principal.FindFirstValue(ClaimTypes.NameIdentifier),
+            NumberStyles.None,
+            CultureInfo.InvariantCulture,
+            out var id
+        )
             ? id
             : null;
 
     public static int? TenantId(this ClaimsPrincipal principal) =>
-        int.TryParse(principal.FindFirstValue(TenantClaim), NumberStyles.None, CultureInfo.InvariantCulture, out var id) ? id : null;
+        int.TryParse(principal.FindFirstValue(TenantClaim), NumberStyles.None, CultureInfo.InvariantCulture, out var id)
+            ? id
+            : null;
 
     /// <summary>Writes the cookie, and makes the rest of the request see the new session.</summary>
     public static async Task SignInAsync(HttpContext context, SessionUser user, int? tenantId, bool persistent)
@@ -49,8 +56,14 @@ public static class SfeSession
         if (tenantId is { } tenant)
             claims.Add(new Claim(TenantClaim, tenant.ToString(CultureInfo.InvariantCulture)));
 
-        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
-        await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, new AuthenticationProperties { IsPersistent = persistent });
+        var principal = new ClaimsPrincipal(
+            new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)
+        );
+        await context.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties { IsPersistent = persistent }
+        );
         context.User = principal;
         context.RequestServices.GetRequiredService<CurrentAccess>().Reset();
     }
@@ -87,10 +100,14 @@ public static class SfeSession
 
         var accounts = context.HttpContext.RequestServices.GetRequiredService<AccessService>();
         var user = await accounts.GetSessionUserAsync(userId, context.HttpContext.RequestAborted);
-        if (user is null || user.Disabled || user.SecurityStamp != principal.FindFirstValue(StampClaim)
+        if (
+            user is null
+            || user.Disabled
+            || user.SecurityStamp != principal.FindFirstValue(StampClaim)
             // A Local server lets only administrators in (ServerModes): another account's session ends.
             || ServerModes.IsLocal(context.HttpContext.RequestServices.GetRequiredService<IConfiguration>())
-            && !await accounts.IsAdministratorAsync(userId, context.HttpContext.RequestAborted))
+                && !await accounts.IsAdministratorAsync(userId, context.HttpContext.RequestAborted)
+        )
         {
             context.RejectPrincipal();
             await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

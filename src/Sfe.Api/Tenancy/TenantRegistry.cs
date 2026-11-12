@@ -10,9 +10,13 @@ namespace Sfe.Api.Tenancy;
 /// the install waits for its update (<see cref="MigrationCoordinator"/>): starting one updates its index.
 /// </summary>
 public sealed class TenantRegistry(
-    IServiceProvider application, IConfiguration configuration, IWebHostEnvironment environment, AccessService accounts, MigrationCoordinator migration,
-    ILogger<TenantRegistry> logger)
-    : IHostedService, IAsyncDisposable
+    IServiceProvider application,
+    IConfiguration configuration,
+    IWebHostEnvironment environment,
+    AccessService accounts,
+    MigrationCoordinator migration,
+    ILogger<TenantRegistry> logger
+) : IHostedService, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<int, TenantHost> _hosts = new();
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -32,9 +36,19 @@ public sealed class TenantRegistry(
         {
             if (_hosts.TryGetValue(tenantId, out host))
                 return host;
-            host = await TenantHost.StartAsync(tenant, application, configuration, environment.ContentRootPath, cancellationToken);
+            host = await TenantHost.StartAsync(
+                tenant,
+                application,
+                configuration,
+                environment.ContentRootPath,
+                cancellationToken
+            );
             _hosts[tenantId] = host;
-            logger.LogInformation("Library {Library} started ({Root})", tenant.Name, tenant.Root ?? "the configured root");
+            logger.LogInformation(
+                "Library {Library} started ({Root})",
+                tenant.Name,
+                tenant.Root ?? "the configured root"
+            );
             return host;
         }
         finally

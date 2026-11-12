@@ -26,11 +26,13 @@ if (WindowsServiceSetup.TryRun(args) is { } serviceExitCode)
 
 // "--no-browser": the portable packages don't open the browser at start (BrowserLauncher), whatever the settings say.
 args = BrowserLauncher.TakeNoBrowser(args, out var noBrowser);
+
 // "--no-logo": no SFE logo in the console at start (StartupLogo).
 args = StartupLogo.TakeNoLogo(args, out var noLogo);
 StartupLogo.ShowIfWanted(noLogo);
 
 WebApplicationBuilder builder;
+
 // The watchers of the two files below (ResolveFileProvider): nothing else disposes them (see app.Lifetime below).
 var watchedFiles = new List<IDisposable>();
 try
@@ -39,11 +41,24 @@ try
     // This machine's own values (appsettings.Local.json, git-ignored) right after appsettings.json, so that
     // appsettings.{Environment}.json still overrides them; after all of them, what the installation page wrote (library
     // folder, address, ffmpeg). The environment and the command line still have the last word.
-    var local = new JsonConfigurationSource { Path = Path.Combine(builder.Environment.ContentRootPath, "appsettings.Local.json"), Optional = true, ReloadOnChange = true };
+    var local = new JsonConfigurationSource
+    {
+        Path = Path.Combine(builder.Environment.ContentRootPath, "appsettings.Local.json"),
+        Optional = true,
+        ReloadOnChange = true,
+    };
     local.ResolveFileProvider();
-    var main = builder.Configuration.Sources.ToList().FindIndex(source => source is JsonConfigurationSource { Path: "appsettings.json" });
-    builder.Configuration.Sources.Insert(main >= 0 ? main + 1 : InstallationSettings.AfterAppSettings(builder.Configuration), local);
-    var installation = InstallationSettings.AddTo(builder.Configuration, InstallationSettings.ResolvePath(builder.Configuration, builder.Environment.ContentRootPath));
+    var main = builder
+        .Configuration.Sources.ToList()
+        .FindIndex(source => source is JsonConfigurationSource { Path: "appsettings.json" });
+    builder.Configuration.Sources.Insert(
+        main >= 0 ? main + 1 : InstallationSettings.AfterAppSettings(builder.Configuration),
+        local
+    );
+    var installation = InstallationSettings.AddTo(
+        builder.Configuration,
+        InstallationSettings.ResolvePath(builder.Configuration, builder.Environment.ContentRootPath)
+    );
     watchedFiles.AddRange(new[] { local.FileProvider, installation.FileProvider }.OfType<IDisposable>());
 }
 catch (InvalidDataException ex)
@@ -57,23 +72,32 @@ builder.Host.UseSystemd();
 
 // Relative paths in the settings (thumbnail cache, SQLite file, keys) live next to the application.
 builder.Services.AddSfeAccess(builder.Configuration, builder.Environment.ContentRootPath);
+
 // Each library (tenant) has its own index, caches and workers (TenantRegistry); requests use their library's.
 builder.Services.AddSfeTenancy(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddSfeSecurity(builder.Configuration, builder.Environment.ContentRootPath);
+
 // A Local server (Sfe:Mode) has no visitors without an account.
 ServerModes.ApplyTo(builder.Services, builder.Configuration);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
-    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
+);
 builder.Services.AddProblemDetails();
+
 // The document carries the application version (its default is the document name, "v1").
-builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document, _, _) =>
-{
-    document.Info.Version = AppVersion.Version;
-    return Task.CompletedTask;
-}));
+builder.Services.AddOpenApi(options =>
+    options.AddDocumentTransformer(
+        (document, _, _) =>
+        {
+            document.Info.Version = AppVersion.Version;
+            return Task.CompletedTask;
+        }
+    )
+);
 
 var app = builder.Build();
+
 // Disposing the configuration leaves the file providers it did not create watching (one inotify instance each on
 // Linux, 128 per user): the tests start hundreds of servers in one process.
 app.Lifetime.ApplicationStopped.Register(() => watchedFiles.ForEach(watcher => watcher.Dispose()));
@@ -84,6 +108,7 @@ app.WarnIfKeysAreOpen();
 app.UseForwardedHeaders();
 if (app.Services.GetRequiredService<IOptions<SecurityOptions>>().Value.RequireHttps)
     app.UseHsts();
+
 // First, so that every answer (errors and 401s too) carries them.
 app.UseMiddleware<SecurityHeaders>();
 app.UseExceptionHandler();
@@ -97,6 +122,7 @@ app.UseRateLimiter();
 app.UseMiddleware<TenantMiddleware>();
 
 app.MapOpenApi().RequireRight(Rights.ApiDocs);
+
 // Swagger UI's files are embedded in the Swashbuckle package and served by the app itself.
 app.UseSwaggerUI(options =>
 {
@@ -154,6 +180,7 @@ var migration = app.Services.GetRequiredService<MigrationCoordinator>();
 await migration.InitializeAsync();
 var setupOptions = app.Services.GetRequiredService<IOptionsMonitor<SetupOptions>>();
 var code = setupOptions.CurrentValue;
+
 // The addresses the server listens on from now (the installation page tells when a restart is due).
 app.Services.GetRequiredService<InstallationSettings>();
 switch (migration.Status)
@@ -162,12 +189,19 @@ switch (migration.Status)
         code = EnsureSetupCode(code);
         app.Logger.LogWarning(
             "The databases and settings belong to SFE {Installed}; this is SFE {Version}. Nobody can use the app until they are updated: open it in a browser and confirm the update with the setup code{Hint}",
-            migration.DatabaseVersion ?? "(before 1.37.0)", AppVersion.Version,
-            code.HasUsableCode ? "" : $" (set Sfe:Setup:Code to at least {SetupOptions.MinimumCodeLength} characters first, then restart)");
+            migration.DatabaseVersion ?? "(before 1.37.0)",
+            AppVersion.Version,
+            code.HasUsableCode
+                ? ""
+                : $" (set Sfe:Setup:Code to at least {SetupOptions.MinimumCodeLength} characters first, then restart)"
+        );
         break;
     case MigrationStatus.Newer:
-        app.Logger.LogError("The databases belong to SFE {Installed}, later than this SFE {Version}: install that version again, or restore a backup",
-            migration.DatabaseVersion, AppVersion.Version);
+        app.Logger.LogError(
+            "The databases belong to SFE {Installed}, later than this SFE {Version}: install that version again, or restore a backup",
+            migration.DatabaseVersion,
+            AppVersion.Version
+        );
         break;
     case MigrationStatus.None:
         try
@@ -180,27 +214,43 @@ switch (migration.Status)
                 {
                     app.Logger.LogWarning(
                         "No administrator yet and no usable setup code: set Sfe:Setup:Code (e.g. the environment variable Sfe__Setup__Code) to at least {Length} characters, restart, then open the app",
-                        SetupOptions.MinimumCodeLength);
+                        SetupOptions.MinimumCodeLength
+                    );
                 }
                 else if (!code.CodeIsGenerated)
                 {
-                    app.Logger.LogWarning("No administrator yet: open the app in a browser and enter the setup code (Sfe:Setup:Code) to create one");
+                    app.Logger.LogWarning(
+                        "No administrator yet: open the app in a browser and enter the setup code (Sfe:Setup:Code) to create one"
+                    );
                 }
             }
             else if (!string.IsNullOrWhiteSpace(code.Code) && !code.Recover && !code.CodeIsGenerated)
             {
-                app.Logger.LogInformation("Sfe:Setup:Code is set but no longer needed: an administrator exists (keep it for the next update)");
+                app.Logger.LogInformation(
+                    "Sfe:Setup:Code is set but no longer needed: an administrator exists (keep it for the next update)"
+                );
             }
         }
         catch (Exception ex)
         {
-            app.Logger.LogError(ex, "Cannot read the accounts and libraries; nobody can sign in until the database is fixed");
+            app.Logger.LogError(
+                ex,
+                "Cannot read the accounts and libraries; nobody can sign in until the database is fixed"
+            );
         }
         break;
 }
 
-if (app.Configuration[InstallationSettings.RootKey] is { Length: > 0 } root && !Directory.Exists(LibraryPaths.NormalizeRoot(root)))
-    app.Logger.LogWarning("The library folder {Root} does not exist: pick another in Administration › System › Installation (or set Sfe:Root)", root);
+if (
+    app.Configuration[InstallationSettings.RootKey] is { Length: > 0 } root
+    && !Directory.Exists(LibraryPaths.NormalizeRoot(root))
+)
+{
+    app.Logger.LogWarning(
+        "The library folder {Root} does not exist: pick another in Administration › System › Installation (or set Sfe:Root)",
+        root
+    );
+}
 
 try
 {
@@ -212,8 +262,14 @@ catch (IOException ex) when (ex.InnerException is AddressInUseException)
 }
 
 var newInstall = migration.Status != MigrationStatus.Required && await NewInstallAsync();
-if (code.CodeIsGenerated && (migration.Status == MigrationStatus.Required || code.Recover || await SetupStillRequiredAsync()))
+if (
+    code.CodeIsGenerated
+    && (migration.Status == MigrationStatus.Required || code.Recover || await SetupStillRequiredAsync())
+)
+{
     AnnounceSetupCode(code.Code!, newInstall);
+}
+
 await BrowserLauncher.OpenIfWantedAsync(app, noBrowser, migration.IsBlocking, newInstall);
 await app.WaitForShutdownAsync();
 return 0;
@@ -231,7 +287,11 @@ SetupOptions EnsureSetupCode(SetupOptions current)
     }
     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
     {
-        app.Logger.LogError(ex, "Cannot write the setup code to {Path}: set Sfe:Setup:Code instead", generated.FilePath);
+        app.Logger.LogError(
+            ex,
+            "Cannot write the setup code to {Path}: set Sfe:Setup:Code instead",
+            generated.FilePath
+        );
     }
 
     return setupOptions.CurrentValue;
@@ -255,8 +315,9 @@ async Task<bool> NewInstallAsync()
 {
     try
     {
-        return setupOptions.CurrentValue.LocalWithoutCode && !LocalVisitor.ExternalByConfiguration(app.Services)
-               && await app.Services.GetRequiredService<SetupService>().IsFreshAsync();
+        return setupOptions.CurrentValue.LocalWithoutCode
+            && !LocalVisitor.ExternalByConfiguration(app.Services)
+            && await app.Services.GetRequiredService<SetupService>().IsFreshAsync();
     }
     catch (Exception)
     {
@@ -269,42 +330,45 @@ async Task<bool> NewInstallAsync()
 // files, which administrators read and backups hold.
 void AnnounceSetupCode(string setupCode, bool localWithoutCode)
 {
-    var address = app.Services.GetRequiredService<Microsoft.AspNetCore.Hosting.Server.IServer>()
-        .Features.Get<Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature>()?.Addresses.FirstOrDefault();
+    var address = app
+        .Services.GetRequiredService<Microsoft.AspNetCore.Hosting.Server.IServer>()
+        .Features.Get<Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature>()
+        ?.Addresses.FirstOrDefault();
     var url = BrowserLauncher.BrowserUrl(address) ?? "SFE's address";
     var file = app.Services.GetRequiredService<GeneratedSetupCode>().FilePath;
     var link = app.Services.GetRequiredService<LocalSetupLink>().UrlFor(url);
     app.Logger.LogWarning("A setup code is needed: it is shown in the console and kept in {File}", file);
-    Console.Out.WriteLine(localWithoutCode
-        ? $"""
+    Console.Out.WriteLine(
+        localWithoutCode
+            ? $"""
 
-        ==============================================================
-          To set SFE up, open this link in a browser on this computer
-          (no code needed with it; it works until SFE stops):
+            ==============================================================
+              To set SFE up, open this link in a browser on this computer
+              (no code needed with it; it works until SFE stops):
 
-              {link}
+                  {link}
 
-          Anywhere else, or without the link, open {url}
-          and enter this setup code:
+              Anywhere else, or without the link, open {url}
+              and enter this setup code:
 
-              {setupCode}
+                  {setupCode}
 
-          (also kept in {file})
-        ==============================================================
-        """
-        : $"""
+              (also kept in {file})
+            ==============================================================
+            """
+            : $"""
 
-        ==============================================================
-          Open {url} in a browser and enter this setup code:
+            ==============================================================
+              Open {url} in a browser and enter this setup code:
 
-              {setupCode}
+                  {setupCode}
 
-          (also kept in {file})
-        ==============================================================
-        """);
+              (also kept in {file})
+            ==============================================================
+            """
+    );
     Console.Out.Flush();
 }
-
 
 /// <summary>Entry point marker for integration tests.</summary>
 public partial class Program;

@@ -37,48 +37,114 @@ public static class SettingCatalog
 {
     private static readonly HashSet<string> ServerKeys =
     [
-        "dataServer", "browse.maxPageSize", "search.maxPageSize", "scan.parallelism", "thumbnails.maxConcurrency",
-        "thumbnails.timeoutSeconds", "trickplay.parallelism", "trickplay.timeoutMinutes", "tasks.logRetentionDays", "logs.retentionDays", "logs.writeFiles", "streaming.maxStreams", "streaming.quality",
-        "streaming.maxHeight", "streaming.copyVideo", "openBrowser", "fastSignIn",
+        "dataServer",
+        "browse.maxPageSize",
+        "search.maxPageSize",
+        "scan.parallelism",
+        "thumbnails.maxConcurrency",
+        "thumbnails.timeoutSeconds",
+        "trickplay.parallelism",
+        "trickplay.timeoutMinutes",
+        "tasks.logRetentionDays",
+        "logs.retentionDays",
+        "logs.writeFiles",
+        "streaming.maxStreams",
+        "streaming.quality",
+        "streaming.maxHeight",
+        "streaming.copyVideo",
+        "openBrowser",
+        "fastSignIn",
     ];
 
     private static readonly HashSet<string> UserKeys =
     [
-        "appearance.theme", "browse.defaultPageSize", "search.defaultPageSize", "browse.folderPictures", "browse.showResolution",
-        "browse.showDuration", "browse.resolutionMark", "thumbnails.singleViewOriginals", "thumbnails.animatedHover", "player.seekSeconds", "player.loop",
-        "trickplay.hoverPreview", "search.historySize", "tags.sidebarCount",
+        "appearance.theme",
+        "browse.defaultPageSize",
+        "search.defaultPageSize",
+        "browse.folderPictures",
+        "browse.showResolution",
+        "browse.showDuration",
+        "browse.resolutionMark",
+        "thumbnails.singleViewOriginals",
+        "thumbnails.animatedHover",
+        "player.seekSeconds",
+        "player.loop",
+        "trickplay.hoverPreview",
+        "search.historySize",
+        "tags.sidebarCount",
         // How text reads in the viewer: a library default, each account's own.
-        "reading.theme", "reading.customFont",
-        "reading.code.font", "reading.code.size", "reading.code.lineHeight", "reading.code.width", "reading.code.padding", "reading.code.wrap", "reading.code.lineNumbers",
-        "reading.prose.font", "reading.prose.size", "reading.prose.lineHeight", "reading.prose.width", "reading.prose.padding", "reading.prose.wrap", "reading.prose.lineNumbers",
+        "reading.theme",
+        "reading.customFont",
+        "reading.code.font",
+        "reading.code.size",
+        "reading.code.lineHeight",
+        "reading.code.width",
+        "reading.code.padding",
+        "reading.code.wrap",
+        "reading.code.lineNumbers",
+        "reading.prose.font",
+        "reading.prose.size",
+        "reading.prose.lineHeight",
+        "reading.prose.width",
+        "reading.prose.padding",
+        "reading.prose.wrap",
+        "reading.prose.lineNumbers",
     ];
 
     private static readonly HashSet<string> PerLibraryKeys =
-        ["scan.excludedFolders", "trickplay.folders", "trickplay.excludedFolders", "thumbnails.excludedFolders", "editor.outputFolder", "keepAlive.folders"];
+    [
+        "scan.excludedFolders",
+        "trickplay.folders",
+        "trickplay.excludedFolders",
+        "thumbnails.excludedFolders",
+        "editor.outputFolder",
+        "keepAlive.folders",
+    ];
 
     /// <summary>The right of a key, by its first part (the settings page's sections).</summary>
     private static readonly (string Prefix, string Right)[] RightsByPrefix =
     [
-        ("appearance.", Rights.InterfaceSettings), ("reading.", Rights.InterfaceSettings), ("browse.", Rights.InterfaceSettings), ("search.", Rights.InterfaceSettings),
-        ("player.", Rights.PlaybackSettings), ("dataServer", Rights.PlaybackSettings), ("streaming.", Rights.PlaybackSettings),
-        ("showHiddenItems", Rights.ScanningSettings), ("scan.", Rights.ScanningSettings), ("fileTypes.", Rights.ScanningSettings),
-        ("thumbnails.", Rights.ThumbnailSettings), ("trickplay.", Rights.TrickplaySettings), ("fileTracking.", Rights.TrackingSettings),
-        ("tags.", Rights.TagSettings), ("tasks.", Rights.TaskSettings), ("logs.", Rights.LogSettings), ("editor.", Rights.EditorSettings),
-        ("files.", Rights.FileSettings), ("keepAlive.", Rights.KeepAliveSettings),
+        ("appearance.", Rights.InterfaceSettings),
+        ("reading.", Rights.InterfaceSettings),
+        ("browse.", Rights.InterfaceSettings),
+        ("search.", Rights.InterfaceSettings),
+        ("player.", Rights.PlaybackSettings),
+        ("dataServer", Rights.PlaybackSettings),
+        ("streaming.", Rights.PlaybackSettings),
+        ("showHiddenItems", Rights.ScanningSettings),
+        ("scan.", Rights.ScanningSettings),
+        ("fileTypes.", Rights.ScanningSettings),
+        ("thumbnails.", Rights.ThumbnailSettings),
+        ("trickplay.", Rights.TrickplaySettings),
+        ("fileTracking.", Rights.TrackingSettings),
+        ("tags.", Rights.TagSettings),
+        ("tasks.", Rights.TaskSettings),
+        ("logs.", Rights.LogSettings),
+        ("editor.", Rights.EditorSettings),
+        ("files.", Rights.FileSettings),
+        ("keepAlive.", Rights.KeepAliveSettings),
         // How the server starts: only its administrators (System › Start-up).
-        ("openBrowser", Rights.ServerSettings), ("fastSignIn", Rights.ServerSettings),
+        ("openBrowser", Rights.ServerSettings),
+        ("fastSignIn", Rights.ServerSettings),
     ];
 
-    public static IReadOnlyList<SettingDefinition> All { get; } = SettingKeys.Flatten(SettingKeys.ToJson(new EditableSettings()))
-        .Keys
-        .Select(key => new SettingDefinition(
-            key,
-            ServerKeys.Contains(key) ? SettingLevel.Server : UserKeys.Contains(key) ? SettingLevel.User : SettingLevel.Tenant,
-            RightsByPrefix.First(p => key.StartsWith(p.Prefix, StringComparison.Ordinal)).Right,
-            PerLibraryKeys.Contains(key)))
-        .ToList();
+    public static IReadOnlyList<SettingDefinition> All { get; } =
+        SettingKeys
+            .Flatten(SettingKeys.ToJson(new EditableSettings()))
+            .Keys.Select(key => new SettingDefinition(
+                key,
+                ServerKeys.Contains(key) ? SettingLevel.Server
+                    : UserKeys.Contains(key) ? SettingLevel.User
+                    : SettingLevel.Tenant,
+                RightsByPrefix.First(p => key.StartsWith(p.Prefix, StringComparison.Ordinal)).Right,
+                PerLibraryKeys.Contains(key)
+            ))
+            .ToList();
 
-    private static readonly Dictionary<string, SettingDefinition> ByKey = All.ToDictionary(d => d.Key, StringComparer.Ordinal);
+    private static readonly Dictionary<string, SettingDefinition> ByKey = All.ToDictionary(
+        d => d.Key,
+        StringComparer.Ordinal
+    );
 
     public static SettingDefinition? Find(string key) => ByKey.GetValueOrDefault(key);
 
@@ -92,7 +158,8 @@ public static class SettingCatalog
 /// <summary>Settings as JSON, flattened to their keys (<c>browse.defaultPageSize</c>) and back.</summary>
 public static class SettingKeys
 {
-    public static JsonObject ToJson(EditableSettings settings) => JsonSerializer.SerializeToNode(settings, SettingsStore.Json)!.AsObject();
+    public static JsonObject ToJson(EditableSettings settings) =>
+        JsonSerializer.SerializeToNode(settings, SettingsStore.Json)!.AsObject();
 
     public static EditableSettings FromJson(JsonObject json) => json.Deserialize<EditableSettings>(SettingsStore.Json)!;
 

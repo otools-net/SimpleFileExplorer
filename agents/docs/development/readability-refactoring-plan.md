@@ -61,7 +61,9 @@ then by hand for what they leave: comments and long strings. One commit per step
 - [x] Tools: CSharpier 1.4.0 (`dotnet-tools.json`, `.csharpierrc.yaml`, `.csharpierignore`), Prettier 3.10.1
   (`src/Sfe.Web`, `.prettierrc.json`), `rewrap-comments.mjs`; IDE0055 off; checks become CSharpier +
   `dotnet format style` + `dotnet format analyzers`
-- [ ] CSharpier over `src/` (with `dotnet format style` adding the braces of wrapped statements)
+- [x] CSharpier over `src/` (with `dotnet format style` adding the braces of wrapped statements): long lines
+  2749 -> 845 (621 of them comments), but functions over 60 lines 50 -> 88 and nested ones 14 -> 21 (braces added
+  to wrapped `if`s count now); `measure.mjs` taught CSharpier's layout first
 - [ ] CSharpier over `tests/`
 - [ ] Comments rewrapped: server, then server tests
 - [ ] Long strings of the server (about 220 lines: OpenAPI descriptions, log templates, messages), by folder
@@ -255,6 +257,9 @@ Traps met:
   OpenAPI document compared identical).
 - CSharpier over `src/`: 187 files, +15389 / -4422 lines (about 2700 short lines re-laid out too); 224 code lines and
   621 comment lines still over 120 after it.
+- `measure.mjs` read C# headers up to the line at the brace's indent: CSharpier's `)` on its own line hid every
+  method with parameters one per line (functions with > 5 parameters fell from 121 to 3). Fixed before the
+  baseline; compare `--json` counts before and after a layout change.
 - awk's `length` counts bytes, so lines with `…` or `→` look long to it: measure with Node (`measure.mjs`).
 
 ## Phase 3: one type per file (server) and `models.ts` by area (client)

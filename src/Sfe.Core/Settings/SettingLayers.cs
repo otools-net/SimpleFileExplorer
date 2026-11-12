@@ -18,7 +18,8 @@ public sealed record SettingSources(
     IReadOnlyDictionary<string, JsonNode?> Server,
     IReadOnlyCollection<string> ServerLocks,
     IReadOnlyDictionary<string, StoredSetting> Tenant,
-    IReadOnlyDictionary<string, JsonNode?> User);
+    IReadOnlyDictionary<string, JsonNode?> User
+);
 
 /// <param name="Value">In effect at the level asked for.</param>
 /// <param name="Source">The level it comes from.</param>
@@ -34,7 +35,15 @@ public sealed record ResolvedSetting(JsonNode? Value, SettingLevel Source, Setti
 /// <param name="Locked">This level locked it.</param>
 /// <param name="LockedBy">The level above that locked it, when one did.</param>
 /// <param name="Inherited">The value of the levels above, which applies without one of this level.</param>
-public sealed record SettingState(SettingLevel Scope, SettingLevel Source, bool Editable, bool Lockable, bool Locked, SettingLevel? LockedBy, JsonNode? Inherited);
+public sealed record SettingState(
+    SettingLevel Scope,
+    SettingLevel Source,
+    bool Editable,
+    bool Lockable,
+    bool Locked,
+    SettingLevel? LockedBy,
+    JsonNode? Inherited
+);
 
 /// <summary>
 /// The settings by level (<see cref="SettingLevel"/>): the configuration's, then the server settings page's
@@ -50,7 +59,13 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
     private readonly ILogger<SettingLayers> _logger;
     private CancellationTokenSource _changed = new();
 
-    public SettingLayers(IConfiguration configuration, SettingsStore server, SettingRows rows, AccessChanges changes, ILogger<SettingLayers> logger)
+    public SettingLayers(
+        IConfiguration configuration,
+        SettingsStore server,
+        SettingRows rows,
+        AccessChanges changes,
+        ILogger<SettingLayers> logger
+    )
     {
         _configuration = configuration;
         _server = server;
@@ -92,8 +107,14 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
         {
             var environment = SettingKeys.Flatten(SettingKeys.ToJson(EditableSettings.From(options)));
             var tenant = tenantId ?? _rows.DefaultTenantId();
-            var sources = new SettingSources(environment, options.Locked, _server.Values, _server.Locked,
-                tenant is { } id ? _rows.ForTenant(id) : new Dictionary<string, StoredSetting>(), new Dictionary<string, JsonNode?>());
+            var sources = new SettingSources(
+                environment,
+                options.Locked,
+                _server.Values,
+                _server.Locked,
+                tenant is { } id ? _rows.ForTenant(id) : new Dictionary<string, StoredSetting>(),
+                new Dictionary<string, JsonNode?>()
+            );
             ToSettings(Resolve(sources, SettingLevel.Tenant)).ApplyTo(options);
         }
         catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException)
@@ -111,8 +132,14 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
         var options = Configured();
         try
         {
-            var sources = new SettingSources(SettingKeys.Flatten(SettingKeys.ToJson(EditableSettings.From(options))), options.Locked,
-                _server.Values, _server.Locked, new Dictionary<string, StoredSetting>(), new Dictionary<string, JsonNode?>());
+            var sources = new SettingSources(
+                SettingKeys.Flatten(SettingKeys.ToJson(EditableSettings.From(options))),
+                options.Locked,
+                _server.Values,
+                _server.Locked,
+                new Dictionary<string, StoredSetting>(),
+                new Dictionary<string, JsonNode?>()
+            );
             ToSettings(Resolve(sources, SettingLevel.Server)).ApplyTo(options);
         }
         catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException)
@@ -123,7 +150,11 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
         return options;
     }
 
-    public async Task<SettingSources> LoadAsync(int? tenantId, int? userId, CancellationToken cancellationToken = default)
+    public async Task<SettingSources> LoadAsync(
+        int? tenantId,
+        int? userId,
+        CancellationToken cancellationToken = default
+    )
     {
         var configured = Configured();
         var tenant = tenantId ?? _rows.DefaultTenantId();
@@ -133,7 +164,8 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
             _server.Values,
             _server.Locked,
             tenant is { } id ? _rows.ForTenant(id) : new Dictionary<string, StoredSetting>(),
-            userId is { } user ? await _rows.ForUserAsync(user, cancellationToken) : new Dictionary<string, JsonNode?>());
+            userId is { } user ? await _rows.ForUserAsync(user, cancellationToken) : new Dictionary<string, JsonNode?>()
+        );
     }
 
     /// <summary>Every setting in effect at <paramref name="level"/>, with where it comes from.</summary>
@@ -145,7 +177,9 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
             var key = definition.Key;
             var value = sources.Environment.GetValueOrDefault(key);
             var source = SettingLevel.Environment;
-            SettingLevel? lockedAt = sources.EnvironmentLocks.Any(p => SettingCatalog.Matches(p, key)) ? SettingLevel.Environment : null;
+            SettingLevel? lockedAt = sources.EnvironmentLocks.Any(p => SettingCatalog.Matches(p, key))
+                ? SettingLevel.Environment
+                : null;
             var inherited = value;
 
             // Each level in turn: what it inherits is the value before its own applies.
@@ -153,8 +187,14 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
             {
                 if (current == level)
                     inherited = value;
-                if (lockedAt is not null || current > definition.Scope || (current == SettingLevel.Server && definition.PerLibrary))
+                if (
+                    lockedAt is not null
+                    || current > definition.Scope
+                    || (current == SettingLevel.Server && definition.PerLibrary)
+                )
+                {
                     continue;
+                }
 
                 switch (current)
                 {
@@ -183,7 +223,11 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
 
     /// <summary>How each setting shows on the page of <paramref name="level"/>.</summary>
     /// <param name="canChange">Whether the person may change a setting at all (their rights); null = every one.</param>
-    public static Dictionary<string, SettingState> States(Dictionary<string, ResolvedSetting> resolved, SettingLevel level, Func<SettingDefinition, bool>? canChange = null)
+    public static Dictionary<string, SettingState> States(
+        Dictionary<string, ResolvedSetting> resolved,
+        SettingLevel level,
+        Func<SettingDefinition, bool>? canChange = null
+    )
     {
         var states = new Dictionary<string, SettingState>(StringComparer.Ordinal);
         foreach (var definition in SettingCatalog.All)
@@ -191,7 +235,11 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
             var setting = resolved[definition.Key];
             var lockedAbove = setting.LockedAt is { } at && at < level ? at : (SettingLevel?)null;
             var inScope = level <= definition.Scope && !(definition.PerLibrary && level == SettingLevel.Server);
-            var editable = inScope && lockedAbove is null && level > SettingLevel.Environment && (canChange?.Invoke(definition) ?? true);
+            var editable =
+                inScope
+                && lockedAbove is null
+                && level > SettingLevel.Environment
+                && (canChange?.Invoke(definition) ?? true);
             states[definition.Key] = new SettingState(
                 definition.Scope,
                 setting.Source,
@@ -199,7 +247,8 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
                 editable && level < definition.Scope,
                 setting.LockedAt == level,
                 lockedAbove,
-                setting.Inherited);
+                setting.Inherited
+            );
         }
 
         return states;
@@ -226,14 +275,27 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
 
         var environment = SettingKeys.Flatten(SettingKeys.ToJson(EditableSettings.From(Configured())));
         var rows = _rows.ForTenant(defaultTenantId).ToDictionary(r => r.Key, r => r.Value, StringComparer.Ordinal);
-        foreach (var definition in perLibrary.Where(d => !rows.ContainsKey(d.Key) && !SettingKeys.Same(saved[d.Key], environment.GetValueOrDefault(d.Key))))
+        foreach (
+            var definition in perLibrary.Where(d =>
+                !rows.ContainsKey(d.Key) && !SettingKeys.Same(saved[d.Key], environment.GetValueOrDefault(d.Key))
+            )
+        )
+        {
             rows[definition.Key] = new StoredSetting(saved[definition.Key], false);
+        }
+
         await _rows.SaveTenantAsync(defaultTenantId, rows, cancellationToken);
 
-        var remaining = saved.Where(v => perLibrary.All(d => d.Key != v.Key)).ToDictionary(v => v.Key, v => v.Value, StringComparer.Ordinal);
+        var remaining = saved
+            .Where(v => perLibrary.All(d => d.Key != v.Key))
+            .ToDictionary(v => v.Key, v => v.Value, StringComparer.Ordinal);
         await _server.SaveLayerAsync(remaining, _server.Locked, cancellationToken);
         NotifyChanged();
-        _logger.LogWarning("Moved the settings {Settings} from {File} to the first library's own settings", string.Join(", ", perLibrary.Select(d => d.Key)), _server.FilePath);
+        _logger.LogWarning(
+            "Moved the settings {Settings} from {File} to the first library's own settings",
+            string.Join(", ", perLibrary.Select(d => d.Key)),
+            _server.FilePath
+        );
     }
 
     /// <summary>
@@ -243,14 +305,25 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
     /// Idempotent: once kept, the libraries have their value.
     /// </summary>
     /// <returns>How many libraries keep the previous value (all of them for a server lock); 0 when the configuration sets or locks it.</returns>
-    public async Task<int> KeepPreviousDefaultAsync(string key, JsonNode previous, IReadOnlyCollection<int> tenantIds, CancellationToken cancellationToken = default)
+    public async Task<int> KeepPreviousDefaultAsync(
+        string key,
+        JsonNode previous,
+        IReadOnlyCollection<int> tenantIds,
+        CancellationToken cancellationToken = default
+    )
     {
         if (SettingCatalog.Find(key) is null)
             throw new ArgumentException($"Unknown setting {key}", nameof(key));
 
         var configured = _configuration.GetSection($"{SfeOptions.SectionName}:{key.Replace('.', ':')}").Exists();
-        if (configured || Configured().Locked.Any(pattern => SettingCatalog.Matches(pattern, key)) || _server.Values.ContainsKey(key))
+        if (
+            configured
+            || Configured().Locked.Any(pattern => SettingCatalog.Matches(pattern, key))
+            || _server.Values.ContainsKey(key)
+        )
+        {
             return 0;
+        }
 
         if (_server.Locked.Contains(key))
         {
@@ -264,7 +337,14 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
             var rows = _rows.ForTenant(tenantId);
             if (rows.ContainsKey(key))
                 continue;
-            await _rows.SaveTenantAsync(tenantId, new Dictionary<string, StoredSetting>(rows, StringComparer.Ordinal) { [key] = new(previous.DeepClone(), false) }, cancellationToken);
+            await _rows.SaveTenantAsync(
+                tenantId,
+                new Dictionary<string, StoredSetting>(rows, StringComparer.Ordinal)
+                {
+                    [key] = new(previous.DeepClone(), false),
+                },
+                cancellationToken
+            );
             kept++;
         }
 
@@ -276,7 +356,11 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
     /// differs from the configuration's value. Nothing changes when the configuration locks it.
     /// </summary>
     /// <returns>The value applies now.</returns>
-    public async Task<bool> SaveServerValueAsync(string key, JsonNode? value, CancellationToken cancellationToken = default)
+    public async Task<bool> SaveServerValueAsync(
+        string key,
+        JsonNode? value,
+        CancellationToken cancellationToken = default
+    )
     {
         var configured = Configured();
         if (SettingCatalog.Find(key) is null || configured.Locked.Any(pattern => SettingCatalog.Matches(pattern, key)))

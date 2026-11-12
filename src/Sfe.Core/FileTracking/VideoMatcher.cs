@@ -53,7 +53,12 @@ internal static class VideoMatcher
     /// </summary>
     /// <param name="videos">Fingerprints of one interval.</param>
     /// <param name="sizes">File size of each video.</param>
-    public static List<VideoGroup> FindGroups(IReadOnlyList<VideoFingerprint> videos, IReadOnlyList<long> sizes, int minimumPercent, CancellationToken cancellationToken)
+    public static List<VideoGroup> FindGroups(
+        IReadOnlyList<VideoFingerprint> videos,
+        IReadOnlyList<long> sizes,
+        int minimumPercent,
+        CancellationToken cancellationToken
+    )
     {
         var informative = videos.Select(InformativeFrames).ToArray();
         var pairs = FindPairs(videos, informative, minimumPercent, cancellationToken);
@@ -76,10 +81,19 @@ internal static class VideoMatcher
             var reference = members.OrderByDescending(v => informative[v]).ThenByDescending(v => sizes[v]).First();
             var others = members
                 .Where(v => v != reference)
-                .Select(v => new VideoMember(v, pairs.TryGetValue(PairKey(reference, v), out var percent)
-                    ? percent
-                    // Only linked through other members: scored against the reference at every offset.
-                    : Compare(videos[reference], videos[v], informative[reference], informative[v], AllOffsets(videos[reference], videos[v])).Percent))
+                .Select(v => new VideoMember(
+                    v,
+                    pairs.TryGetValue(PairKey(reference, v), out var percent)
+                        ? percent
+                        // Only linked through other members: scored against the reference at every offset.
+                        : Compare(
+                            videos[reference],
+                            videos[v],
+                            informative[reference],
+                            informative[v],
+                            AllOffsets(videos[reference], videos[v])
+                        ).Percent
+                ))
                 .OrderByDescending(m => m.Percent);
             groups.Add(new VideoGroup([new VideoMember(reference, null), .. others]));
         }
@@ -88,7 +102,12 @@ internal static class VideoMatcher
     }
 
     /// <summary>Pairs (<see cref="PairKey"/>) matching at <paramref name="minimumPercent"/> % or more, with their percentage.</summary>
-    private static Dictionary<long, int> FindPairs(IReadOnlyList<VideoFingerprint> videos, int[] informative, int minimumPercent, CancellationToken cancellationToken)
+    private static Dictionary<long, int> FindPairs(
+        IReadOnlyList<VideoFingerprint> videos,
+        int[] informative,
+        int minimumPercent,
+        CancellationToken cancellationToken
+    )
     {
         // One entry per band of each frame: band (2 bits) | band value (22) | video (24) | frame (16). Sorted, the
         // frames sharing a band value are neighbours, by video then frame.
@@ -117,7 +136,7 @@ internal static class VideoMatcher
         sorted.Sort();
 
         var votes = new Dictionary<long, Dictionary<int, int>>();
-        for (var start = 0; start < sorted.Length;)
+        for (var start = 0; start < sorted.Length; )
         {
             var key = sorted[start] >> 40;
             var end = start + 1;
@@ -130,12 +149,17 @@ internal static class VideoMatcher
                 {
                     for (var y = x + 1; y < end; y++)
                     {
-                        int a = Video(sorted[x]), b = Video(sorted[y]);
+                        int a = Video(sorted[x]),
+                            b = Video(sorted[y]);
                         if (a == b)
                             continue;
                         ref var offsets = ref CollectionsMarshal.GetValueRefOrAddDefault(votes, PairKey(a, b), out _);
                         offsets ??= [];
-                        CollectionsMarshal.GetValueRefOrAddDefault(offsets, Frame(sorted[y]) - Frame(sorted[x]), out _)++;
+                        CollectionsMarshal.GetValueRefOrAddDefault(
+                            offsets,
+                            Frame(sorted[y]) - Frame(sorted[x]),
+                            out _
+                        )++;
                     }
                 }
             }
@@ -150,9 +174,15 @@ internal static class VideoMatcher
         {
             if (offsets.Values.Sum() < MinimumVotes)
                 continue;
-            int a = (int)(pair >> 32), b = (int)pair;
-            var best = Compare(videos[a], videos[b], informative[a], informative[b],
-                offsets.OrderByDescending(o => o.Value).Take(OffsetsTried).Select(o => o.Key));
+            int a = (int)(pair >> 32),
+                b = (int)pair;
+            var best = Compare(
+                videos[a],
+                videos[b],
+                informative[a],
+                informative[b],
+                offsets.OrderByDescending(o => o.Value).Take(OffsetsTried).Select(o => o.Key)
+            );
             if (best.Percent >= minimumPercent)
                 pairs[pair] = best.Percent;
         }
@@ -161,7 +191,13 @@ internal static class VideoMatcher
     }
 
     /// <summary>Best percentage of <paramref name="a"/> and <paramref name="b"/> over <paramref name="offsets"/>.</summary>
-    private static (int Percent, int Offset) Compare(VideoFingerprint a, VideoFingerprint b, int informativeA, int informativeB, IEnumerable<int> offsets)
+    private static (int Percent, int Offset) Compare(
+        VideoFingerprint a,
+        VideoFingerprint b,
+        int informativeA,
+        int informativeB,
+        IEnumerable<int> offsets
+    )
     {
         (int Percent, int Offset) best = (0, 0);
         var frames = Math.Max(informativeA, informativeB);
@@ -186,14 +222,21 @@ internal static class VideoMatcher
         for (var i = Math.Max(0, -offset); i < end; i++)
         {
             var j = i + offset;
-            if (a.IsInformative(i) && b.IsInformative(j) && VideoFingerprint.Distance(a.Hashes[i], b.Hashes[j]) <= FrameDistance)
+            if (
+                a.IsInformative(i)
+                && b.IsInformative(j)
+                && VideoFingerprint.Distance(a.Hashes[i], b.Hashes[j]) <= FrameDistance
+            )
+            {
                 matched++;
+            }
         }
 
         return matched;
     }
 
-    private static IEnumerable<int> AllOffsets(VideoFingerprint a, VideoFingerprint b) => Enumerable.Range(1 - a.Count, a.Count + b.Count - 1);
+    private static IEnumerable<int> AllOffsets(VideoFingerprint a, VideoFingerprint b) =>
+        Enumerable.Range(1 - a.Count, a.Count + b.Count - 1);
 
     private static int InformativeFrames(VideoFingerprint video)
     {

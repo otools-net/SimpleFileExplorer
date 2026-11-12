@@ -20,14 +20,18 @@ internal static class BrowserLauncher
     public const string NoBrowserArgument = "--no-browser";
 
     /// <summary>The arguments without <see cref="NoBrowserArgument"/>, which the configuration would read as a key taking the next argument as its value.</summary>
-    public static string[] TakeNoBrowser(string[] args, out bool noBrowser) => CommandLine.TakeSwitch(args, "no-browser", out noBrowser);
+    public static string[] TakeNoBrowser(string[] args, out bool noBrowser) =>
+        CommandLine.TakeSwitch(args, "no-browser", out noBrowser);
 
     /// <param name="newInstall">No account yet and the setup may skip the code here: the browser opens the setup link.</param>
     public static async Task OpenIfWantedAsync(WebApplication app, bool noBrowser, bool updateDue, bool newInstall)
     {
-        if (noBrowser || !PortableBuild.IsPortable
+        if (
+            noBrowser
+            || !PortableBuild.IsPortable
             || SetupEndpoints.DetectHosting() is not (HostingKind.Portable or HostingKind.AppImage)
-            || !Environment.UserInteractive)
+            || !Environment.UserInteractive
+        )
         {
             return;
         }
@@ -36,7 +40,10 @@ internal static class BrowserLauncher
         if (!app.Services.GetRequiredService<SettingLayers>().ServerLevel().OpenBrowser)
             return;
 
-        var address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses.FirstOrDefault();
+        var address = app
+            .Services.GetRequiredService<IServer>()
+            .Features.Get<IServerAddressesFeature>()
+            ?.Addresses.FirstOrDefault();
         if (BrowserUrl(address) is not { } url)
             return;
         var target = newInstall ? app.Services.GetRequiredService<LocalSetupLink>().UrlFor(url) : url;
@@ -66,7 +73,13 @@ internal static class BrowserLauncher
     {
         if (string.IsNullOrEmpty(address))
             return null;
-        var url = address.Replace("://*", "://localhost").Replace("://+", "://localhost").Replace("://0.0.0.0", "://localhost").Replace("://[::]", "://localhost");
-        return Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https" ? uri.GetLeftPart(UriPartial.Authority) + "/" : null;
+        var url = address
+            .Replace("://*", "://localhost")
+            .Replace("://+", "://localhost")
+            .Replace("://0.0.0.0", "://localhost")
+            .Replace("://[::]", "://localhost");
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https"
+            ? uri.GetLeftPart(UriPartial.Authority) + "/"
+            : null;
     }
 }

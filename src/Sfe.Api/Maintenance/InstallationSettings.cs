@@ -28,18 +28,32 @@ public sealed record InstallationField(string? Value, bool Locked, string? Locke
 /// <param name="ModeInEffect">The mode the server works in (<see cref="ServerModes.InEffect"/>).</param>
 /// <param name="OnThisComputer">The visitor is on the server's own computer (<see cref="LocalVisitor"/>): only they may choose Local.</param>
 public sealed record InstallationView(
-    InstallationField Root, bool RootExists,
-    InstallationField Urls, int Port, bool Network,
-    InstallationField FfmpegPath, string? FfmpegFound, string? FfmpegVersion,
+    InstallationField Root,
+    bool RootExists,
+    InstallationField Urls,
+    int Port,
+    bool Network,
+    InstallationField FfmpegPath,
+    string? FfmpegFound,
+    string? FfmpegVersion,
     bool RestartRequired,
-    InstallationField Mode, ServerMode ModeInEffect, bool OnThisComputer = false);
+    InstallationField Mode,
+    ServerMode ModeInEffect,
+    bool OnThisComputer = false
+);
 
 /// <param name="Root">The first library's folder; null keeps it.</param>
 /// <param name="Network">Listen on every network interface (true) or on this computer only (false); null keeps it.</param>
 /// <param name="Port">The port; null keeps it.</param>
 /// <param name="FfmpegPath">ffmpeg's executable or folder; empty = look for it on PATH; null keeps it.</param>
 /// <param name="Mode">How the server is used; null keeps it.</param>
-public sealed record InstallationInput(string? Root = null, bool? Network = null, int? Port = null, string? FfmpegPath = null, ServerMode? Mode = null);
+public sealed record InstallationInput(
+    string? Root = null,
+    bool? Network = null,
+    int? Port = null,
+    string? FfmpegPath = null,
+    ServerMode? Mode = null
+);
 
 /// <param name="SetupDone">The server has its administrator: the mode no longer goes back from External to Local here.</param>
 /// <param name="OnThisComputer">The visitor is on the server's own computer (<see cref="LocalVisitor"/>).</param>
@@ -59,7 +73,8 @@ public sealed class InstallationSettings
 
     public const string RootKey = $"{SfeOptions.SectionName}:{nameof(SfeOptions.Root)}";
     public const string UrlsKey = "Urls";
-    public const string FfmpegKey = $"{SfeOptions.SectionName}:{nameof(SfeOptions.Thumbnails)}:{nameof(ThumbnailOptions.FfmpegPath)}";
+    public const string FfmpegKey =
+        $"{SfeOptions.SectionName}:{nameof(SfeOptions.Thumbnails)}:{nameof(ThumbnailOptions.FfmpegPath)}";
     public const string ModeKey = ServerModes.Key;
 
     /// <summary>The keys the file may hold.</summary>
@@ -84,7 +99,10 @@ public sealed class InstallationSettings
 
     /// <summary>Full path of the file from a configuration (Program.cs adds it before the host exists).</summary>
     public static string ResolvePath(IConfiguration configuration, string contentRootPath) =>
-        Path.GetFullPath(LibraryPaths.ExpandHome(configuration[FileKey] is { Length: > 0 } file ? file : DefaultFile), contentRootPath);
+        Path.GetFullPath(
+            LibraryPaths.ExpandHome(configuration[FileKey] is { Length: > 0 } file ? file : DefaultFile),
+            contentRootPath
+        );
 
     /// <summary>
     /// Inserts the file in <paramref name="configuration"/> right after the last <c>appsettings*.json</c>: before the
@@ -92,7 +110,12 @@ public sealed class InstallationSettings
     /// </summary>
     public static JsonConfigurationSource AddTo(IConfigurationBuilder configuration, string path)
     {
-        var source = new JsonConfigurationSource { Path = path, Optional = true, ReloadOnChange = true };
+        var source = new JsonConfigurationSource
+        {
+            Path = path,
+            Optional = true,
+            ReloadOnChange = true,
+        };
         // Watches the nearest existing folder: the data folder may not exist yet.
         source.ResolveFileProvider();
         configuration.Sources.Insert(AfterAppSettings(configuration), source);
@@ -105,8 +128,10 @@ public sealed class InstallationSettings
         var last = -1;
         for (var i = 0; i < configuration.Sources.Count; i++)
         {
-            if (configuration.Sources[i] is JsonConfigurationSource { Path: { } path }
-                && Path.GetFileName(path).StartsWith("appsettings", StringComparison.OrdinalIgnoreCase))
+            if (
+                configuration.Sources[i] is JsonConfigurationSource { Path: { } path }
+                && Path.GetFileName(path).StartsWith("appsettings", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 last = i;
             }
@@ -120,16 +145,31 @@ public sealed class InstallationSettings
         var root = Field(RootKey);
         var urls = Field(UrlsKey) is { Value: null } unset ? unset with { Value = DefaultUrls } : Field(UrlsKey);
         var (port, network) = ParseUrls(urls.Value);
-        var ffmpeg = Field(FfmpegKey) is { Value: null } noFfmpeg ? noFfmpeg with { Value = new ThumbnailOptions().FfmpegPath } : Field(FfmpegKey);
+        var ffmpeg = Field(FfmpegKey) is { Value: null } noFfmpeg
+            ? noFfmpeg with
+            {
+                Value = new ThumbnailOptions().FfmpegPath,
+            }
+            : Field(FfmpegKey);
         var found = Ffmpeg.Find(ffmpeg.Value);
         var version = found is null ? null : await Ffmpeg.ProbeVersionAsync(found, cancellationToken);
         var rootPath = root.Value is { Length: > 0 } configured ? Full(configured) : null;
         return new InstallationView(
-            root with { Value = rootPath ?? root.Value }, rootPath is not null && Directory.Exists(rootPath),
-            urls, port, network,
-            ffmpeg, found, version,
+            root with
+            {
+                Value = rootPath ?? root.Value,
+            },
+            rootPath is not null && Directory.Exists(rootPath),
+            urls,
+            port,
+            network,
+            ffmpeg,
+            found,
+            version,
             !string.Equals(urls.Value, _startUrls, StringComparison.OrdinalIgnoreCase),
-            Field(ModeKey), ServerModes.InEffect(_configuration));
+            Field(ModeKey),
+            ServerModes.InEffect(_configuration)
+        );
     }
 
     /// <summary>Checks and writes the changed values.</summary>
@@ -138,8 +178,11 @@ public sealed class InstallationSettings
     /// </param>
     /// <param name="visitor">Who saves: the mode's rules depend on it.</param>
     /// <returns>The errors by field (<c>root</c>, <c>port</c>, <c>ffmpegPath</c>, <c>mode</c>), or the keys that changed.</returns>
-    public (Dictionary<string, string[]>? Errors, IReadOnlyList<string> Changed) Save(InstallationInput input, IReadOnlyList<string> libraryRoots,
-        InstallationVisitorInfo visitor)
+    public (Dictionary<string, string[]>? Errors, IReadOnlyList<string> Changed) Save(
+        InstallationInput input,
+        IReadOnlyList<string> libraryRoots,
+        InstallationVisitorInfo visitor
+    )
     {
         var errors = new Dictionary<string, string[]>();
         var values = new Dictionary<string, string?>();
@@ -177,11 +220,25 @@ public sealed class InstallationSettings
             {
                 var full = Path.GetFullPath(found);
                 if (!Ffmpeg.IsFfmpegName(full))
+                {
                     errors["ffmpegPath"] = ["This program is not ffmpeg: pick ffmpeg itself, or the folder it is in."];
-                else if (libraryRoots.Any(root => LibraryPaths.NormalizeRoot(root) is var folder && full.StartsWith(folder, LibraryPaths.PathComparison)))
-                    errors["ffmpegPath"] = ["ffmpeg cannot be taken from a library folder: install it elsewhere on the server."];
+                }
+                else if (
+                    libraryRoots.Any(root =>
+                        LibraryPaths.NormalizeRoot(root) is var folder
+                        && full.StartsWith(folder, LibraryPaths.PathComparison)
+                    )
+                )
+                {
+                    errors["ffmpegPath"] =
+                    [
+                        "ffmpeg cannot be taken from a library folder: install it elsewhere on the server.",
+                    ];
+                }
                 else
+                {
                     values[FfmpegKey] = found;
+                }
             }
             else
             {
@@ -193,30 +250,54 @@ public sealed class InstallationSettings
         {
             var configured = ServerModes.Configured(_configuration);
             if (!Enum.IsDefined(mode))
+            {
                 errors["mode"] = ["Choose Local or External."];
+            }
             // An External server's administrator must not re-open, from the web, what External closes.
             else if (mode == ServerMode.Local && visitor.SetupDone && configured == ServerMode.External)
-                errors["mode"] = [$"SFE is in External mode: it goes back to Local only in the server's configuration ({ModeKey} in {Path.GetFileName(FilePath)}, or the environment)."];
+            {
+                errors["mode"] =
+                [
+                    $"SFE is in External mode: it goes back to Local only in the server's configuration ({ModeKey} in {Path.GetFileName(FilePath)}, or the environment).",
+                ];
+            }
             // Local lets only this computer in: chosen from elsewhere, it would shut out whoever chose it.
             else if (mode == ServerMode.Local && configured != ServerMode.Local && !visitor.OnThisComputer)
-                errors["mode"] = ["Local only lets this computer in: choose it from a browser on the server itself, at http://localhost."];
+            {
+                errors["mode"] =
+                [
+                    "Local only lets this computer in: choose it from a browser on the server itself, at http://localhost.",
+                ];
+            }
             else
+            {
                 values[ModeKey] = mode.ToString();
+            }
         }
 
         foreach (var key in values.Keys)
         {
             if (Field(key) is { Locked: true, LockedBy: var by })
+            {
                 errors[FieldName(key)] = [$"Set by {by}: change it there."];
+            }
             // Local → External with a new folder or ffmpeg in the same save: External decides, as it would a moment later.
             else if (key is RootKey or FfmpegKey && input.Mode == ServerMode.External)
-                errors[FieldName(key)] = ["An External server takes its library folder and ffmpeg from its configuration only: save them while Local, or set them there."];
+            {
+                errors[FieldName(key)] =
+                [
+                    "An External server takes its library folder and ffmpeg from its configuration only: save them while Local, or set them there.",
+                ];
+            }
         }
 
         if (errors.Count > 0)
             return (errors, []);
 
-        var changed = values.Where(v => !string.Equals(v.Value, _configuration[v.Key], StringComparison.Ordinal)).Select(v => v.Key).ToList();
+        var changed = values
+            .Where(v => !string.Equals(v.Value, _configuration[v.Key], StringComparison.Ordinal))
+            .Select(v => v.Key)
+            .ToList();
         if (changed.Count > 0)
             Write(values);
         return (null, changed);
@@ -233,8 +314,11 @@ public sealed class InstallationSettings
             return new InstallationField(value, true, source);
         if (key is RootKey or FfmpegKey && ServerModes.InEffect(_configuration) == ServerMode.External)
         {
-            return new InstallationField(value, true,
-                $"the server's configuration (External mode: {(key == RootKey ? "Sfe__Root" : "Sfe__Thumbnails__FfmpegPath")} in its environment, or appsettings.json)");
+            return new InstallationField(
+                value,
+                true,
+                $"the server's configuration (External mode: {(key == RootKey ? "Sfe__Root" : "Sfe__Thumbnails__FfmpegPath")} in its environment, or appsettings.json)"
+            );
         }
 
         return new InstallationField(value, false, null);
@@ -242,7 +326,8 @@ public sealed class InstallationSettings
 
     /// <summary>The installation file itself gives <paramref name="key"/> (whatever comes after it).</summary>
     public bool FileHolds(string key) =>
-        _configuration is IConfigurationRoot root && root.Providers.Any(provider => IsOurs(provider) && provider.TryGet(key, out _));
+        _configuration is IConfigurationRoot root
+        && root.Providers.Any(provider => IsOurs(provider) && provider.TryGet(key, out _));
 
     /// <summary>A source after the file that gives <paramref name="key"/>, in words (an environment variable, the command line...); null when none does.</summary>
     public string? SetByConfiguration(string key)
@@ -266,20 +351,22 @@ public sealed class InstallationSettings
         && files.GetFileInfo(path).PhysicalPath is { } physical
         && string.Equals(Path.GetFullPath(physical), FilePath, StringComparison.OrdinalIgnoreCase);
 
-    private static string Describe(IConfigurationProvider provider) => provider switch
-    {
-        EnvironmentVariablesConfigurationProvider => "an environment variable of the server",
-        CommandLineConfigurationProvider => "the server's command line",
-        _ => "the server's configuration",
-    };
+    private static string Describe(IConfigurationProvider provider) =>
+        provider switch
+        {
+            EnvironmentVariablesConfigurationProvider => "an environment variable of the server",
+            CommandLineConfigurationProvider => "the server's command line",
+            _ => "the server's configuration",
+        };
 
-    private static string FieldName(string key) => key switch
-    {
-        RootKey => "root",
-        UrlsKey => "port",
-        ModeKey => "mode",
-        _ => "ffmpegPath",
-    };
+    private static string FieldName(string key) =>
+        key switch
+        {
+            RootKey => "root",
+            UrlsKey => "port",
+            ModeKey => "mode",
+            _ => "ffmpegPath",
+        };
 
     /// <summary>Merges <paramref name="values"/> into the file (null removes a key) and reloads it at once.</summary>
     private void Write(Dictionary<string, string?> values)
@@ -337,13 +424,21 @@ public sealed class InstallationSettings
     /// <summary>The port of the first address, and whether it listens beyond this computer.</summary>
     internal static (int Port, bool Network) ParseUrls(string? urls)
     {
-        var first = (urls ?? DefaultUrls).Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault() ?? DefaultUrls;
+        var first = (urls ?? DefaultUrls)
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault()
+            ?? DefaultUrls;
         // "http://*:5080" and "http://+:5080" aren't valid URIs: read host and port by hand.
-        var rest = first.Contains("://", StringComparison.Ordinal) ? first[(first.IndexOf("://", StringComparison.Ordinal) + 3)..] : first;
+        var rest = first.Contains("://", StringComparison.Ordinal)
+            ? first[(first.IndexOf("://", StringComparison.Ordinal) + 3)..]
+            : first;
         rest = rest.Split('/', 2)[0];
         var colon = rest.LastIndexOf(':');
         var host = colon > 0 && !rest.EndsWith(']') ? rest[..colon] : rest;
-        var port = colon > 0 && int.TryParse(rest[(colon + 1)..], out var parsed) ? parsed : first.StartsWith("https", StringComparison.OrdinalIgnoreCase) ? 443 : 80;
+        var port =
+            colon > 0 && int.TryParse(rest[(colon + 1)..], out var parsed) ? parsed
+            : first.StartsWith("https", StringComparison.OrdinalIgnoreCase) ? 443
+            : 80;
         var local = host is "localhost" or "127.0.0.1" or "[::1]";
         return (port, !local);
     }

@@ -38,7 +38,12 @@ public sealed record StreamingConfig(bool Always);
 /// <param name="TrashRetentionDays">Days in the trash before the purge; 0 = until emptied.</param>
 /// <param name="MaxUploadMegabytes">The largest file one may upload; 0 = no limit.</param>
 /// <param name="KeepUnfinishedUploadsHours">Hours an unfinished upload is kept without receiving anything.</param>
-public sealed record FilesConfig(bool DeletePermanently, int TrashRetentionDays, int MaxUploadMegabytes = 0, int KeepUnfinishedUploadsHours = 48);
+public sealed record FilesConfig(
+    bool DeletePermanently,
+    int TrashRetentionDays,
+    int MaxUploadMegabytes = 0,
+    int KeepUnfinishedUploadsHours = 48
+);
 
 /// <param name="DataServer">When set, the client links files to this server instead of <c>/api/files/raw</c>: a base the path is appended to, or a template with <c>{url}</c> / <c>{encodedUrl}</c> (<see cref="DataServerUrl"/>).</param>
 /// <param name="PageSize">Items the client loads at a time while browsing a folder.</param>
@@ -77,10 +82,44 @@ public sealed record FilesConfig(bool DeletePermanently, int TrashRetentionDays,
 /// </param>
 /// <param name="Flash">Flash movies play in the viewer (<c>Player:Flash</c>, and the right <c>files.view</c>).</param>
 /// <param name="Archives">Which archives the viewer explores; null without the right <c>files.view</c>.</param>
-public sealed record ClientConfig(string RootName, string? DataServer, int PageSize, int SearchPageSize, ClientFeatures Features, IReadOnlyList<TagColor> TagColors, int MaxFilesPerTagChange, long LargeImageSize, int SeekSeconds, bool Loop, bool TrickplayHover, int FolderPictures, bool SearchExplain, int SearchHistory, bool SingleViewOriginals, bool AnimatedHover, bool ShowResolution, bool ShowDuration, ResolutionThresholds? ResolutionMark, string? RootPath, ExternalPlayer? ExternalPlayer, Theme Theme, string Version, string? Commit,
-    IReadOnlyCollection<string> Rights, SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, EditorConfig? Editor, StreamingConfig? Streaming,
-    FilesConfig? Files = null, ReadingOptions? Reading = null, IReadOnlyList<string>? TextExtensions = null, ServerMode Mode = ServerMode.Local, bool Flash = false,
-    ArchivesConfig? Archives = null);
+public sealed record ClientConfig(
+    string RootName,
+    string? DataServer,
+    int PageSize,
+    int SearchPageSize,
+    ClientFeatures Features,
+    IReadOnlyList<TagColor> TagColors,
+    int MaxFilesPerTagChange,
+    long LargeImageSize,
+    int SeekSeconds,
+    bool Loop,
+    bool TrickplayHover,
+    int FolderPictures,
+    bool SearchExplain,
+    int SearchHistory,
+    bool SingleViewOriginals,
+    bool AnimatedHover,
+    bool ShowResolution,
+    bool ShowDuration,
+    ResolutionThresholds? ResolutionMark,
+    string? RootPath,
+    ExternalPlayer? ExternalPlayer,
+    Theme Theme,
+    string Version,
+    string? Commit,
+    IReadOnlyCollection<string> Rights,
+    SessionAccount? User,
+    SessionTenant? Tenant,
+    IReadOnlyList<SessionTenant> Tenants,
+    EditorConfig? Editor,
+    StreamingConfig? Streaming,
+    FilesConfig? Files = null,
+    ReadingOptions? Reading = null,
+    IReadOnlyList<string>? TextExtensions = null,
+    ServerMode Mode = ServerMode.Local,
+    bool Flash = false,
+    ArchivesConfig? Archives = null
+);
 
 /// <param name="MaxCompressedTarMegabytes">Compressed tars (<c>.tar.gz</c>…) larger than this aren't explored (listing one
 /// decompresses all of it): the client offers no viewer for them.</param>
@@ -100,8 +139,18 @@ public static class ConfigEndpoints
     }
 
     private static async Task<Ok<ClientConfig>> GetConfig(
-        LibraryPaths paths, ThumbnailService thumbnails, TrickplayService trickplay, VideoStreamer streamer, IOptionsMonitor<SfeOptions> options,
-        CurrentAccess current, SettingsService preferences, AccessService accounts, RightsEvaluator rights, IConfiguration configuration, CancellationToken cancellationToken)
+        LibraryPaths paths,
+        ThumbnailService thumbnails,
+        TrickplayService trickplay,
+        VideoStreamer streamer,
+        IOptionsMonitor<SfeOptions> options,
+        CurrentAccess current,
+        SettingsService preferences,
+        AccessService accounts,
+        RightsEvaluator rights,
+        IConfiguration configuration,
+        CancellationToken cancellationToken
+    )
     {
         var state = await current.GetAsync();
         var server = options.CurrentValue;
@@ -109,57 +158,90 @@ public static class ConfigEndpoints
         var settings = await preferences.GetEffectiveAsync(state.Tenant?.Id, state.User?.Id, cancellationToken);
         var tenants = await accounts.GetCachedTenantsAsync(cancellationToken);
         var reachable = state.User is { } account ? await rights.GetTenantIdsAsync(account.Id, cancellationToken) : [];
-        return TypedResults.Ok(new ClientConfig(
-            paths.RootName,
-            DataServerUrl.Normalize(server.DataServer),
-            settings.Browse.DefaultPageSize,
-            settings.Search.DefaultPageSize,
-            new ClientFeatures(thumbnails.IsAvailable, trickplay.IsAvailable),
-            TagColors.All,
-            TagService.MaxFilesPerChange,
-            server.Thumbnails.LargeImageKilobytes * 1024L,
-            settings.Player.SeekSeconds,
-            settings.Player.Loop,
-            settings.Trickplay.HoverPreview,
-            Math.Clamp(settings.Browse.FolderPictures, 0, LibraryBrowser.MaxFolderPictures),
-            server.Search.Explain,
-            Math.Clamp(settings.Search.HistorySize, 0, SettingsService.MaxSearchHistory),
-            settings.Thumbnails.SingleViewOriginals,
-            settings.Thumbnails.AnimatedHover,
-            settings.Browse.ShowResolution,
-            settings.Browse.ShowDuration,
-            settings.Browse.ResolutionMark
-                ? new ResolutionThresholds(
-                    Math.Clamp(server.Browse.ImageHighResolutionPixels, 1, SettingsService.MaxHighResolutionPixels),
-                    Math.Clamp(server.Browse.VideoHighResolutionPixels, 1, SettingsService.MaxHighResolutionPixels))
-                : null,
-            server.Browse.CopyPaths && state.Has(Rights.CopyPaths) ? paths.Root : null,
-            server.Player.ExternalUrl is { } url && PlayerOptions.IsAllowedExternalUrl(url) && state.Has(Rights.ExternalPlayer)
-                ? new ExternalPlayer(string.IsNullOrWhiteSpace(server.Player.ExternalName) ? "external player" : server.Player.ExternalName, url)
-                : null,
-            settings.Appearance.Theme,
-            AppVersion.Version,
-            AppVersion.Commit,
-            state.Access.Rights.Order(StringComparer.Ordinal).ToList(),
-            state.User is { } user ? new SessionAccount(user.Id, user.UserName, user.DisplayName, user.Kind, user.IsServerAdmin, user.IsLocal) : null,
-            state.Tenant is { } tenant ? new SessionTenant(tenant.Id, tenant.Slug, tenant.Name) : null,
-            tenants.Where(t => reachable.Contains(t.Id)).Select(t => new SessionTenant(t.Id, t.Slug, t.Name)).ToList(),
-            state.Has(Rights.EditImages)
-                ? new EditorConfig(
-                    LibraryPaths.NormalizeRelative(server.Editor.OutputFolder?.Trim()) ?? string.Empty,
-                    Math.Clamp(server.Editor.Quality, EditedImages.MinQuality, 100))
-                : null,
-            streamer.IsAvailable && state.Has(Rights.Stream) && state.Has(Rights.ViewFiles)
-                ? new StreamingConfig(streamer.Mode == StreamingMode.Always)
-                : null,
-            state.Has(Rights.DeleteFiles) || state.Has(Rights.DeletePermanently) || state.Has(Rights.UploadFiles) || state.Has(Rights.FileSettings)
-                ? new FilesConfig(settings.Files.DeletePermanently, Math.Max(0, settings.Files.Trash.RetentionDays),
-                    Math.Max(0, settings.Files.Uploads.MaxFileSizeMegabytes), Math.Max(1, settings.Files.Uploads.KeepUnfinishedHours))
-                : null,
-            settings.Reading,
-            settings.FileTypes.Text,
-            ServerModes.InEffect(configuration),
-            settings.Player.Flash && state.Has(Rights.ViewFiles),
-            state.Has(Rights.ViewFiles) ? new ArchivesConfig(Math.Max(0, server.Files.Archives.MaxCompressedTarMegabytes)) : null));
+        return TypedResults.Ok(
+            new ClientConfig(
+                paths.RootName,
+                DataServerUrl.Normalize(server.DataServer),
+                settings.Browse.DefaultPageSize,
+                settings.Search.DefaultPageSize,
+                new ClientFeatures(thumbnails.IsAvailable, trickplay.IsAvailable),
+                TagColors.All,
+                TagService.MaxFilesPerChange,
+                server.Thumbnails.LargeImageKilobytes * 1024L,
+                settings.Player.SeekSeconds,
+                settings.Player.Loop,
+                settings.Trickplay.HoverPreview,
+                Math.Clamp(settings.Browse.FolderPictures, 0, LibraryBrowser.MaxFolderPictures),
+                server.Search.Explain,
+                Math.Clamp(settings.Search.HistorySize, 0, SettingsService.MaxSearchHistory),
+                settings.Thumbnails.SingleViewOriginals,
+                settings.Thumbnails.AnimatedHover,
+                settings.Browse.ShowResolution,
+                settings.Browse.ShowDuration,
+                settings.Browse.ResolutionMark
+                    ? new ResolutionThresholds(
+                        Math.Clamp(server.Browse.ImageHighResolutionPixels, 1, SettingsService.MaxHighResolutionPixels),
+                        Math.Clamp(server.Browse.VideoHighResolutionPixels, 1, SettingsService.MaxHighResolutionPixels)
+                    )
+                    : null,
+                server.Browse.CopyPaths && state.Has(Rights.CopyPaths) ? paths.Root : null,
+                server.Player.ExternalUrl is { } url
+                && PlayerOptions.IsAllowedExternalUrl(url)
+                && state.Has(Rights.ExternalPlayer)
+                    ? new ExternalPlayer(
+                        string.IsNullOrWhiteSpace(server.Player.ExternalName)
+                            ? "external player"
+                            : server.Player.ExternalName,
+                        url
+                    )
+                    : null,
+                settings.Appearance.Theme,
+                AppVersion.Version,
+                AppVersion.Commit,
+                state.Access.Rights.Order(StringComparer.Ordinal).ToList(),
+                state.User is { } user
+                    ? new SessionAccount(
+                        user.Id,
+                        user.UserName,
+                        user.DisplayName,
+                        user.Kind,
+                        user.IsServerAdmin,
+                        user.IsLocal
+                    )
+                    : null,
+                state.Tenant is { } tenant ? new SessionTenant(tenant.Id, tenant.Slug, tenant.Name) : null,
+                tenants
+                    .Where(t => reachable.Contains(t.Id))
+                    .Select(t => new SessionTenant(t.Id, t.Slug, t.Name))
+                    .ToList(),
+                state.Has(Rights.EditImages)
+                    ? new EditorConfig(
+                        LibraryPaths.NormalizeRelative(server.Editor.OutputFolder?.Trim()) ?? string.Empty,
+                        Math.Clamp(server.Editor.Quality, EditedImages.MinQuality, 100)
+                    )
+                    : null,
+                streamer.IsAvailable && state.Has(Rights.Stream) && state.Has(Rights.ViewFiles)
+                    ? new StreamingConfig(streamer.Mode == StreamingMode.Always)
+                    : null,
+                state.Has(Rights.DeleteFiles)
+                || state.Has(Rights.DeletePermanently)
+                || state.Has(Rights.UploadFiles)
+                || state.Has(Rights.FileSettings)
+                    ? new FilesConfig(
+                        settings.Files.DeletePermanently,
+                        Math.Max(0, settings.Files.Trash.RetentionDays),
+                        Math.Max(0, settings.Files.Uploads.MaxFileSizeMegabytes),
+                        Math.Max(1, settings.Files.Uploads.KeepUnfinishedHours)
+                    )
+                    : null,
+                settings.Reading,
+                settings.FileTypes.Text,
+                ServerModes.InEffect(configuration),
+                settings.Player.Flash && state.Has(Rights.ViewFiles),
+                state.Has(Rights.ViewFiles)
+                    ? new ArchivesConfig(Math.Max(0, server.Files.Archives.MaxCompressedTarMegabytes))
+                    : null
+            )
+        );
     }
 }

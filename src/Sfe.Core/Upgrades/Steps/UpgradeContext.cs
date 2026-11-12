@@ -14,4 +14,5 @@ public sealed record UpgradeContext(
     ILogger Logger,
     Access.GeneratedSetupCode? GeneratedCode = null,
     Settings.SettingLayers? Settings = null,
-    IReadOnlyList<int>? TenantIds = null);
+    IReadOnlyList<int>? TenantIds = null
+);

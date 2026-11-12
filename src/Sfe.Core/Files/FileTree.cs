@@ -26,7 +26,8 @@ public static class FileTree
             Directory.Move(from, to);
         }
         // Only into a place that is free: the clean-up of a failed copy deletes it.
-        catch (IOException ex) when ((IsOtherDrive(ex) || !SameRoot(from, to)) && !Directory.Exists(to) && !File.Exists(to))
+        catch (IOException ex)
+            when ((IsOtherDrive(ex) || !SameRoot(from, to)) && !Directory.Exists(to) && !File.Exists(to))
         {
             MoveByCopy(from, to);
         }
@@ -75,11 +76,25 @@ public static class FileTree
     /// <summary>The files below <paramref name="folder"/> (links not followed), for a walk over what is deleted.</summary>
     public static IEnumerable<string> Files(string folder) =>
         Directory.Exists(folder) && !IsLink(folder)
-            ? Directory.EnumerateFiles(folder, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint, IgnoreInaccessible = true })
+            ? Directory.EnumerateFiles(
+                folder,
+                "*",
+                new EnumerationOptions
+                {
+                    RecurseSubdirectories = true,
+                    AttributesToSkip = FileAttributes.ReparsePoint,
+                    IgnoreInaccessible = true,
+                }
+            )
             : [];
 
     /// <summary>Every entry, hidden and system ones too, links not followed.</summary>
-    private static readonly EnumerationOptions All = new() { AttributesToSkip = 0, IgnoreInaccessible = false, RecurseSubdirectories = false };
+    private static readonly EnumerationOptions All = new()
+    {
+        AttributesToSkip = 0,
+        IgnoreInaccessible = false,
+        RecurseSubdirectories = false,
+    };
 
     /// <summary>
     /// A folder and what is in it. .NET's recursive delete refuses a folder holding a junction ("access denied"), so
@@ -125,7 +140,12 @@ public static class FileTree
         {
             var target = Path.Combine(to, entry.Name);
             if (entry.LinkTarget is not null)
-                throw new LinksInsideException($"“{entry.Name}” is a link: a folder holding links is not copied to another drive.");
+            {
+                throw new LinksInsideException(
+                    $"“{entry.Name}” is a link: a folder holding links is not copied to another drive."
+                );
+            }
+
             if (entry is DirectoryInfo)
                 CopyFolder(entry.FullName, target);
             else
@@ -135,7 +155,11 @@ public static class FileTree
 
     /// <summary>.NET refuses a folder move between two roots (drive letters) before asking the system.</summary>
     private static bool SameRoot(string a, string b) =>
-        string.Equals(Path.GetPathRoot(Path.GetFullPath(a)), Path.GetPathRoot(Path.GetFullPath(b)), StringComparison.OrdinalIgnoreCase);
+        string.Equals(
+            Path.GetPathRoot(Path.GetFullPath(a)),
+            Path.GetPathRoot(Path.GetFullPath(b)),
+            StringComparison.OrdinalIgnoreCase
+        );
 
     /// <summary>The move crosses drives: Windows' ERROR_NOT_SAME_DEVICE (17), EXDEV (18) elsewhere.</summary>
     private static bool IsOtherDrive(IOException ex) => (ex.HResult & 0xFFFF) is 17 or 18;

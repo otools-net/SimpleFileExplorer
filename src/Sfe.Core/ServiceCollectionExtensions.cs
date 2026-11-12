@@ -36,8 +36,12 @@ public static class ServiceCollectionExtensions
     /// against; the current directory when null.
     /// </param>
     /// <param name="tenantId">The library these services work for; null = the first library (the configuration's).</param>
-    public static IServiceCollection AddSfeCore(this IServiceCollection services, IConfiguration configuration, string? contentRootPath = null,
-        int? tenantId = null)
+    public static IServiceCollection AddSfeCore(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string? contentRootPath = null,
+        int? tenantId = null
+    )
     {
         var basePath = contentRootPath ?? Directory.GetCurrentDirectory();
         var configured = configuration.GetSection(SfeOptions.SectionName).Get<SfeOptions>() ?? new SfeOptions();
@@ -47,21 +51,32 @@ public static class ServiceCollectionExtensions
         AddSettingsStore(services, configured, basePath);
         services.AddSingleton<IOptionsChangeTokenSource<SfeOptions>>(sp => sp.GetRequiredService<SettingsStore>());
         services.AddSingleton<IOptionsChangeTokenSource<SfeOptions>>(sp =>
-            (IOptionsChangeTokenSource<SfeOptions>?)sp.GetService<SettingLayers>() ?? new ConfigurationChangeTokenSource<SfeOptions>(configuration));
+            (IOptionsChangeTokenSource<SfeOptions>?)sp.GetService<SettingLayers>()
+            ?? new ConfigurationChangeTokenSource<SfeOptions>(configuration)
+        );
         services.AddSingleton(new TenantBinding(tenantId));
 
-        services.AddOptions<SfeOptions>()
+        services
+            .AddOptions<SfeOptions>()
             .Bind(configuration.GetSection(SfeOptions.SectionName))
-            .PostConfigure(options => options.FileTypes.ApplyDefaults(list =>
-                configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.FileTypes)}:{list}").Exists()))
-            .PostConfigure<IServiceProvider>((options, sp) =>
-            {
-                if (sp.GetService<SettingLayers>() is { } layers)
-                    layers.ApplyTo(options, sp.GetRequiredService<TenantBinding>().TenantId);
-                else
-                    sp.GetRequiredService<SettingsStore>().Apply(options);
-            })
-            .Validate(o => !string.IsNullOrWhiteSpace(o.Root), $"{SfeOptions.SectionName}:{nameof(SfeOptions.Root)} is required.")
+            .PostConfigure(options =>
+                options.FileTypes.ApplyDefaults(list =>
+                    configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.FileTypes)}:{list}").Exists()
+                )
+            )
+            .PostConfigure<IServiceProvider>(
+                (options, sp) =>
+                {
+                    if (sp.GetService<SettingLayers>() is { } layers)
+                        layers.ApplyTo(options, sp.GetRequiredService<TenantBinding>().TenantId);
+                    else
+                        sp.GetRequiredService<SettingsStore>().Apply(options);
+                }
+            )
+            .Validate(
+                o => !string.IsNullOrWhiteSpace(o.Root),
+                $"{SfeOptions.SectionName}:{nameof(SfeOptions.Root)} is required."
+            )
             .PostConfigure(options =>
             {
                 var cache = options.Thumbnails.CacheDirectory;
@@ -75,7 +90,9 @@ public static class ServiceCollectionExtensions
             ?? throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is not configured.");
         if (provider == DatabaseProvider.Sqlite)
             connectionString = SfeDatabase.PrepareSqlite(connectionString, contentRootPath);
-        services.AddDbContextFactory<SfeDbContext>(options => SfeDatabase.Configure(options, provider, connectionString));
+        services.AddDbContextFactory<SfeDbContext>(options =>
+            SfeDatabase.Configure(options, provider, connectionString)
+        );
 
         services.AddSingleton<LibraryPaths>();
         services.AddSingleton<MediaClassifier>();
@@ -132,28 +149,45 @@ public static class ServiceCollectionExtensions
     /// Accounts, groups, rights and libraries: one set for the whole server, in the database of
     /// <c>ConnectionStrings:Sfe</c> (<see cref="AccessDbContext"/>).
     /// </summary>
-    public static IServiceCollection AddSfeAccess(this IServiceCollection services, IConfiguration configuration, string? contentRootPath = null)
+    public static IServiceCollection AddSfeAccess(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string? contentRootPath = null
+    )
     {
         var section = configuration.GetSection(SfeOptions.SectionName);
         services.AddOptions<SetupOptions>().Bind(section.GetSection(nameof(SfeOptions.Setup)));
         // Without a configured setup code, the one the server made itself (written at start-up when needed).
-        var codeFile = section.GetSection(nameof(SfeOptions.Setup)).Get<SetupOptions>()?.CodeFile is { Length: > 0 } file ? file : new SetupOptions().CodeFile;
-        var codePath = Path.GetFullPath(LibraryPaths.ExpandHome(codeFile), contentRootPath ?? Directory.GetCurrentDirectory());
-        services.AddSingleton(sp => new GeneratedSetupCode(codePath, sp.GetRequiredService<ILogger<GeneratedSetupCode>>()));
+        var codeFile = section.GetSection(nameof(SfeOptions.Setup)).Get<SetupOptions>()?.CodeFile
+            is { Length: > 0 } file
+            ? file
+            : new SetupOptions().CodeFile;
+        var codePath = Path.GetFullPath(
+            LibraryPaths.ExpandHome(codeFile),
+            contentRootPath ?? Directory.GetCurrentDirectory()
+        );
+        services.AddSingleton(sp => new GeneratedSetupCode(
+            codePath,
+            sp.GetRequiredService<ILogger<GeneratedSetupCode>>()
+        ));
         services.AddSingleton<IPostConfigureOptions<SetupOptions>>(sp => sp.GetRequiredService<GeneratedSetupCode>());
-        services.AddSingleton<IOptionsChangeTokenSource<SetupOptions>>(sp => sp.GetRequiredService<GeneratedSetupCode>());
+        services.AddSingleton<IOptionsChangeTokenSource<SetupOptions>>(sp =>
+            sp.GetRequiredService<GeneratedSetupCode>()
+        );
         services.AddOptions<SecurityOptions>().Bind(section.GetSection(nameof(SfeOptions.Security)));
         services.AddOptions<RightOptions>().Bind(section.GetSection(nameof(SfeOptions.Rights)));
         services.AddOptions<TenantOptions>().Bind(section.GetSection(nameof(SfeOptions.Tenants)));
         services.AddOptions<BackupOptions>().Bind(section.GetSection(nameof(SfeOptions.Backup)));
 
-        var provider = section.GetSection(nameof(SfeOptions.Database)).Get<DatabaseOptions>()?.Provider ?? DatabaseProvider.SqlServer;
+        var provider = section.GetSection(nameof(SfeOptions.Database)).Get<DatabaseOptions>()?.Provider
+            ?? DatabaseProvider.SqlServer;
         var connectionString = configuration.GetConnectionString(ConnectionStringName)
             ?? throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is not configured.");
         if (provider == DatabaseProvider.Sqlite)
             connectionString = SfeDatabase.PrepareSqlite(connectionString, contentRootPath);
         services.AddDbContextFactory<AccessDbContext>(options =>
-            SfeDatabase.Configure(options, provider, connectionString, AccessDbContext.MigrationsHistoryTable));
+            SfeDatabase.Configure(options, provider, connectionString, AccessDbContext.MigrationsHistoryTable)
+        );
 
         services.AddSingleton<AccessChanges>();
         services.AddSingleton<AccessDatabaseInitializer>();
@@ -163,8 +197,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<SignInService>();
         services.AddSingleton<SetupService>();
         // Its codes are kept beside the setup code (a service has no console to show them in).
-        services.AddSingleton(sp => new AccountRecovery(sp.GetRequiredService<IDbContextFactory<AccessDbContext>>(), sp.GetRequiredService<AccessService>(),
-            Path.Combine(Path.GetDirectoryName(codePath)!, "recovery-code.txt"), sp.GetRequiredService<ILogger<AccountRecovery>>()));
+        services.AddSingleton(sp => new AccountRecovery(
+            sp.GetRequiredService<IDbContextFactory<AccessDbContext>>(),
+            sp.GetRequiredService<AccessService>(),
+            Path.Combine(Path.GetDirectoryName(codePath)!, "recovery-code.txt"),
+            sp.GetRequiredService<ILogger<AccountRecovery>>()
+        ));
         services.AddSingleton<QuickLinkService>();
         services.AddSingleton<FolderRuleService>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
@@ -172,23 +210,41 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<BackupWriter>();
 
         // Settings by level: the server's settings file, the libraries' and users' rows.
-        AddSettingsStore(services, section.Get<SfeOptions>() ?? new SfeOptions(), contentRootPath ?? Directory.GetCurrentDirectory());
+        AddSettingsStore(
+            services,
+            section.Get<SfeOptions>() ?? new SfeOptions(),
+            contentRootPath ?? Directory.GetCurrentDirectory()
+        );
         services.AddSingleton<SettingRows>();
         services.AddSingleton<SettingLayers>();
 
         // The server's log: every logger's entries (also the libraries', TenantHost), in the database and daily files.
-        var logsDirectory = section.GetSection(nameof(SfeOptions.Logs)).Get<LogOptions>()?.Directory is { Length: > 0 } logs ? logs : new LogOptions().Directory;
-        logsDirectory = Path.GetFullPath(LibraryPaths.ExpandHome(logsDirectory), contentRootPath ?? Directory.GetCurrentDirectory());
+        var logsDirectory = section.GetSection(nameof(SfeOptions.Logs)).Get<LogOptions>()?.Directory
+            is { Length: > 0 } logs
+            ? logs
+            : new LogOptions().Directory;
+        logsDirectory = Path.GetFullPath(
+            LibraryPaths.ExpandHome(logsDirectory),
+            contentRootPath ?? Directory.GetCurrentDirectory()
+        );
         services.AddSingleton<AuditLogProvider>();
         services.AddSingleton<ILoggerProvider>(sp => sp.GetRequiredService<AuditLogProvider>());
-        services.AddSingleton(sp => new AuditLogService(sp.GetRequiredService<AuditLogProvider>(), sp.GetRequiredService<IDbContextFactory<AccessDbContext>>(),
-            sp.GetRequiredService<SettingLayers>(), logsDirectory, sp.GetRequiredService<ILogger<AuditLogService>>()));
+        services.AddSingleton(sp => new AuditLogService(
+            sp.GetRequiredService<AuditLogProvider>(),
+            sp.GetRequiredService<IDbContextFactory<AccessDbContext>>(),
+            sp.GetRequiredService<SettingLayers>(),
+            logsDirectory,
+            sp.GetRequiredService<ILogger<AuditLogService>>()
+        ));
         return services;
     }
 
     private static void AddSettingsStore(IServiceCollection services, SfeOptions configured, string basePath)
     {
         var settingsFile = Path.GetFullPath(LibraryPaths.ExpandHome(configured.SettingsFile), basePath);
-        services.TryAddSingleton(sp => new SettingsStore(settingsFile, sp.GetRequiredService<ILogger<SettingsStore>>()));
+        services.TryAddSingleton(sp => new SettingsStore(
+            settingsFile,
+            sp.GetRequiredService<ILogger<SettingsStore>>()
+        ));
     }
 }

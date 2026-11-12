@@ -9,10 +9,18 @@ namespace Sfe.Core.Search;
 /// <param name="ImageExtensions">Extensions classified as images (without dot).</param>
 /// <param name="ImagePixels">Smallest shorter side of a high-resolution image.</param>
 public sealed record HighResolution(
-    IReadOnlyCollection<string> ImageExtensions, int ImagePixels, IReadOnlyCollection<string> VideoExtensions, int VideoPixels);
+    IReadOnlyCollection<string> ImageExtensions,
+    int ImagePixels,
+    IReadOnlyCollection<string> VideoExtensions,
+    int VideoPixels
+);
 
 /// <summary>The extensions (without dot) the listing classifies as each kind of media (<c>type:</c>).</summary>
-public sealed record MediaKinds(IReadOnlyCollection<string> Images, IReadOnlyCollection<string> Videos, IReadOnlyCollection<string> Audio);
+public sealed record MediaKinds(
+    IReadOnlyCollection<string> Images,
+    IReadOnlyCollection<string> Videos,
+    IReadOnlyCollection<string> Audio
+);
 
 /// <summary>Translates a <see cref="SearchQuery"/> into an EF Core predicate over <see cref="FileEntry"/>.</summary>
 public static class SearchPredicateBuilder
@@ -26,18 +34,24 @@ public static class SearchPredicateBuilder
     /// <param name="highResolution">What <c>r:hr</c> and <c>r:lr</c> compare with; without it, they match nothing.</param>
     /// <param name="kinds">What <c>type:</c> compares with; without it, type terms match nothing.</param>
     public static Expression<Func<FileEntry, bool>> Build(
-        SearchQuery query, Func<string, IReadOnlyCollection<int>>? resolveTag = null, HighResolution? highResolution = null, MediaKinds? kinds = null)
+        SearchQuery query,
+        Func<string, IReadOnlyCollection<int>>? resolveTag = null,
+        HighResolution? highResolution = null,
+        MediaKinds? kinds = null
+    )
     {
         if (query.IsEmpty)
             return _ => true;
 
         var context = new Context(resolveTag ?? (_ => []), highResolution, kinds);
-        return query.Groups
-            .Select(group => BuildGroup(group, query.MatchFullPath, context))
-            .Aggregate(Or);
+        return query.Groups.Select(group => BuildGroup(group, query.MatchFullPath, context)).Aggregate(Or);
     }
 
-    private sealed record Context(Func<string, IReadOnlyCollection<int>> ResolveTag, HighResolution? HighResolution, MediaKinds? Kinds);
+    private sealed record Context(
+        Func<string, IReadOnlyCollection<int>> ResolveTag,
+        HighResolution? HighResolution,
+        MediaKinds? Kinds
+    );
 
     /// <summary>Files with at least one of the tags.</summary>
     public static Expression<Func<FileEntry, bool>> HasAnyTag(IReadOnlyCollection<int> tagIds)
@@ -48,7 +62,10 @@ public static class SearchPredicateBuilder
         return f => f.TagLinks.Any(l => ids.Contains(l.TagId));
     }
 
-    private static Expression<Func<FileEntry, bool>> Tag(TagFilter filter, Func<string, IReadOnlyCollection<int>> resolveTag)
+    private static Expression<Func<FileEntry, bool>> Tag(
+        TagFilter filter,
+        Func<string, IReadOnlyCollection<int>> resolveTag
+    )
     {
         Expression<Func<FileEntry, bool>> hasTag = filter.Name is null
             ? f => f.TagLinks.Any()
@@ -97,11 +114,12 @@ public static class SearchPredicateBuilder
     }
 
     /// <summary>Escapes LIKE wildcards so user input is matched literally.</summary>
-    public static string EscapeLike(string value) => value
-        .Replace(LikeEscape, LikeEscape + LikeEscape)
-        .Replace("%", LikeEscape + "%")
-        .Replace("_", LikeEscape + "_")
-        .Replace("[", LikeEscape + "[");
+    public static string EscapeLike(string value) =>
+        value
+            .Replace(LikeEscape, LikeEscape + LikeEscape)
+            .Replace("%", LikeEscape + "%")
+            .Replace("_", LikeEscape + "_")
+            .Replace("[", LikeEscape + "[");
 
     private static Expression<Func<FileEntry, bool>> BuildGroup(SearchGroup group, bool matchFullPath, Context context)
     {
@@ -118,7 +136,9 @@ public static class SearchPredicateBuilder
         if (group.Kinds.Count > 0)
             conditions.Add(group.Kinds.Select(kind => Kind(kind, context.Kinds)).Aggregate(Or));
         conditions.AddRange(group.Tags.Select(tag => Tag(tag, context.ResolveTag)));
-        conditions.AddRange(group.ExcludedFilters.Select(excluded => Negate(BuildGroup(excluded, matchFullPath, context))));
+        conditions.AddRange(
+            group.ExcludedFilters.Select(excluded => Negate(BuildGroup(excluded, matchFullPath, context)))
+        );
 
         return conditions.Aggregate(And);
     }
@@ -152,17 +172,18 @@ public static class SearchPredicateBuilder
             return _ => false;
 
         return new[]
-            {
-                (Extensions: thresholds.ImageExtensions, Pixels: thresholds.ImagePixels),
-                (Extensions: thresholds.VideoExtensions, Pixels: thresholds.VideoPixels),
-            }
+        {
+            (Extensions: thresholds.ImageExtensions, Pixels: thresholds.ImagePixels),
+            (Extensions: thresholds.VideoExtensions, Pixels: thresholds.VideoPixels),
+        }
             .Where(kind => kind.Extensions.Count > 0)
             .Select(kind =>
             {
                 var pixels = kind.Pixels;
-                Expression<Func<FileEntry, bool>> size = level == ResolutionLevel.High
-                    ? f => f.Width >= pixels && f.Height >= pixels
-                    : f => f.Width > 0 && f.Height > 0 && (f.Width < pixels || f.Height < pixels);
+                Expression<Func<FileEntry, bool>> size =
+                    level == ResolutionLevel.High
+                        ? f => f.Width >= pixels && f.Height >= pixels
+                        : f => f.Width > 0 && f.Height > 0 && (f.Width < pixels || f.Height < pixels);
                 return And(HasExtension(kind.Extensions), size);
             })
             .DefaultIfEmpty(f => false)
@@ -240,17 +261,22 @@ public static class SearchPredicateBuilder
     private static Expression<Func<FileEntry, bool>> Negate(Expression<Func<FileEntry, bool>> predicate) =>
         Expression.Lambda<Func<FileEntry, bool>>(Expression.Not(predicate.Body), predicate.Parameters);
 
-    private static Expression<Func<FileEntry, bool>> And(Expression<Func<FileEntry, bool>> left, Expression<Func<FileEntry, bool>> right) =>
-        Combine(left, right, Expression.AndAlso);
+    private static Expression<Func<FileEntry, bool>> And(
+        Expression<Func<FileEntry, bool>> left,
+        Expression<Func<FileEntry, bool>> right
+    ) => Combine(left, right, Expression.AndAlso);
 
-    private static Expression<Func<FileEntry, bool>> Or(Expression<Func<FileEntry, bool>> left, Expression<Func<FileEntry, bool>> right) =>
-        Combine(left, right, Expression.OrElse);
+    private static Expression<Func<FileEntry, bool>> Or(
+        Expression<Func<FileEntry, bool>> left,
+        Expression<Func<FileEntry, bool>> right
+    ) => Combine(left, right, Expression.OrElse);
 
     /// <summary>Merges two lambdas into one sharing a single parameter (no Expression.Invoke, which EF Core cannot translate).</summary>
     private static Expression<Func<FileEntry, bool>> Combine(
         Expression<Func<FileEntry, bool>> left,
         Expression<Func<FileEntry, bool>> right,
-        Func<Expression, Expression, BinaryExpression> combine)
+        Func<Expression, Expression, BinaryExpression> combine
+    )
     {
         var parameter = left.Parameters[0];
         var rightBody = new ParameterReplacer(right.Parameters[0], parameter).Visit(right.Body);

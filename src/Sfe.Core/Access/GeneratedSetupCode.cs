@@ -13,7 +13,8 @@ namespace Sfe.Core.Access;
 /// configured <c>Sfe:Setup:Code</c> always wins. The file stays after the setup: the update page asks for the code too.
 /// </summary>
 public sealed class GeneratedSetupCode(string filePath, ILogger<GeneratedSetupCode> logger)
-    : IPostConfigureOptions<SetupOptions>, IOptionsChangeTokenSource<SetupOptions>
+    : IPostConfigureOptions<SetupOptions>,
+        IOptionsChangeTokenSource<SetupOptions>
 {
     /// <summary>No 0/O, 1/I/L: people retype it from a console or a text file.</summary>
     private const string Alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";

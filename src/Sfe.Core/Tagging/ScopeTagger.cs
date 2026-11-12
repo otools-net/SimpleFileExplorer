@@ -19,29 +19,43 @@ public sealed class ScopeTagger(
     DirectoryIndexer indexer,
     ScanCoordinator scans,
     TagService tags,
-    FileSearchService search)
+    FileSearchService search
+)
 {
     private const int BatchSize = FileTagRows.BatchSize;
 
     /// <summary>The indexed files of the scope, and how many of them have each tag.</summary>
     /// <param name="visible">Where the asker may see files (folder rules); null = everywhere.</param>
     /// <returns>null when the scope's folder is not a folder of the library.</returns>
-    public async Task<ScopeTags?> GetTagsAsync(TagScope scope, CancellationToken cancellationToken = default, PathFilter? visible = null)
+    public async Task<ScopeTags?> GetTagsAsync(
+        TagScope scope,
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         if (!TryResolve(scope, out var directory))
             return null;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
-        var files = (await FilesAsync(db, graph, scope, directory, cancellationToken)).WhereVisible(visible, f => f.FullName, paths);
+        var files = (await FilesAsync(db, graph, scope, directory, cancellationToken)).WhereVisible(
+            visible,
+            f => f.FullName,
+            paths
+        );
         var count = await files.CountAsync(cancellationToken);
-        var counts = count == 0 ? [] : (await files
-            .SelectMany(f => f.TagLinks)
-            .GroupBy(l => l.TagId)
-            .Select(g => new { TagId = g.Key, Count = g.Count() })
-            .ToListAsync(cancellationToken))
-            .Select(c => (c.TagId, c.Count))
-            .ToList();
+        var counts =
+            count == 0
+                ? []
+                : (
+                    await files
+                        .SelectMany(f => f.TagLinks)
+                        .GroupBy(l => l.TagId)
+                        .Select(g => new { TagId = g.Key, Count = g.Count() })
+                        .ToListAsync(cancellationToken)
+                )
+                    .Select(c => (c.TagId, c.Count))
+                    .ToList();
 
         var usages = counts
             .Where(c => graph.Contains(c.TagId))
@@ -63,7 +77,11 @@ public sealed class ScopeTagger(
     /// file it matched at the start. A cancelled request keeps the batches already written. With
     /// <paramref name="visible"/> (folder rules), only the files the asker may see are changed.
     /// </remarks>
-    public async Task<ScopeTagOutcome> ChangeAsync(ScopeTagChange change, CancellationToken cancellationToken = default, PathFilter? visible = null)
+    public async Task<ScopeTagOutcome> ChangeAsync(
+        ScopeTagChange change,
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         var add = (change.Add ?? []).Distinct().ToList();
         var remove = (change.Remove ?? []).Distinct().Where(id => !add.Contains(id)).ToList();
@@ -87,7 +105,11 @@ public sealed class ScopeTagger(
             await indexer.IndexAsync(directory, scope.Recursive, new ScanProgress(), cancellationToken);
         }
 
-        var files = (await FilesAsync(db, graph, scope, directory, cancellationToken)).WhereVisible(visible, f => f.FullName, paths);
+        var files = (await FilesAsync(db, graph, scope, directory, cancellationToken)).WhereVisible(
+            visible,
+            f => f.FullName,
+            paths
+        );
         var count = 0;
         var added = 0;
         var removed = 0;
@@ -112,8 +134,8 @@ public sealed class ScopeTagger(
 
                 if (remove.Count > 0)
                 {
-                    removed += await db.FileTags
-                        .Where(l => ids.Contains(l.FileId) && remove.Contains(l.TagId))
+                    removed += await db
+                        .FileTags.Where(l => ids.Contains(l.FileId) && remove.Contains(l.TagId))
                         .ExecuteDeleteAsync(cancellationToken);
                 }
             }
@@ -124,7 +146,10 @@ public sealed class ScopeTagger(
                 tags.InvalidateFileCounts();
         }
 
-        return new ScopeTagOutcome(ScopeTagStatus.Ok, new ScopeTagChangeResult(Describe(scope, directory), count, added, removed));
+        return new ScopeTagOutcome(
+            ScopeTagStatus.Ok,
+            new ScopeTagChangeResult(Describe(scope, directory), count, added, removed)
+        );
     }
 
     /// <summary>The scope's folder, as stored in the index: without trailing separator (drive roots keep theirs).</summary>
@@ -137,7 +162,13 @@ public sealed class ScopeTagger(
         return true;
     }
 
-    private async Task<IQueryable<FileEntry>> FilesAsync(SfeDbContext db, TagGraph graph, TagScope scope, string directory, CancellationToken cancellationToken)
+    private async Task<IQueryable<FileEntry>> FilesAsync(
+        SfeDbContext db,
+        TagGraph graph,
+        TagScope scope,
+        string directory,
+        CancellationToken cancellationToken
+    )
     {
         if (scope.IsSearch)
             return search.Matches(db, graph, scope.Query, directory);
@@ -146,15 +177,17 @@ public sealed class ScopeTagger(
         if (scope.Recursive)
             return files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, directory));
 
-        var folderId = await db.Directories
-            .Where(d => d.FullName == directory)
+        var folderId = await db
+            .Directories.Where(d => d.FullName == directory)
             .Select(d => (int?)d.Id)
             .FirstOrDefaultAsync(cancellationToken);
         return folderId is { } id ? files.Where(f => f.DirectoryId == id) : files.Where(f => false);
     }
 
-    private TagScope Describe(TagScope scope, string directory) => new(
-        paths.ToRelative(directory) ?? string.Empty,
-        !scope.IsSearch && scope.Recursive,
-        scope.IsSearch ? scope.Query!.Trim() : null);
+    private TagScope Describe(TagScope scope, string directory) =>
+        new(
+            paths.ToRelative(directory) ?? string.Empty,
+            !scope.IsSearch && scope.Recursive,
+            scope.IsSearch ? scope.Query!.Trim() : null
+        );
 }

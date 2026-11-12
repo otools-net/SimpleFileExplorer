@@ -41,12 +41,17 @@ public static class Subtitles
         {
             foreach (var extension in extensions)
             {
-                foreach (var spelling in new[] { extension, extension.ToUpperInvariant() }.Distinct(StringComparer.Ordinal))
+                foreach (
+                    var spelling in new[] { extension, extension.ToUpperInvariant() }.Distinct(StringComparer.Ordinal)
+                )
                 {
                     var candidate = Path.Combine(folder, $"{name}.{spelling}");
                     // As it is written on disk (a file system ignoring case finds `film.MKV` for `film.mkv`).
                     if (File.Exists(candidate))
-                        return Directory.EnumerateFiles(folder, Path.GetFileName(candidate)).FirstOrDefault() ?? candidate;
+                    {
+                        return Directory.EnumerateFiles(folder, Path.GetFileName(candidate)).FirstOrDefault()
+                            ?? candidate;
+                    }
                 }
             }
         }

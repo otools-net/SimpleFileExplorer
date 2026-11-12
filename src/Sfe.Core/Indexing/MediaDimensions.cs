@@ -32,22 +32,39 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
     private static readonly TimeSpan FfmpegTimeout = TimeSpan.FromSeconds(30);
 
     /// <summary>Whether <see cref="ReadAsync"/> can tell anything about files of this kind right now.</summary>
-    public bool CanRead(ItemKind kind) => kind == ItemKind.Image || kind is ItemKind.Video or ItemKind.Audio && ffmpeg.IsAvailable;
+    public bool CanRead(ItemKind kind) =>
+        kind == ItemKind.Image || kind is ItemKind.Video or ItemKind.Audio && ffmpeg.IsAvailable;
 
     /// <returns>
     /// The size (<see cref="PixelSize.Unknown"/> when the file is not a picture it understands; none for audio) and, for
     /// a video or audio file, its duration; null when it cannot tell now (ffmpeg missing or timed out, file locked), so
     /// that the next scan tries again.
     /// </returns>
-    public async Task<MediaProperties?> ReadAsync(string fullPath, ItemKind kind, CancellationToken cancellationToken = default)
+    public async Task<MediaProperties?> ReadAsync(
+        string fullPath,
+        ItemKind kind,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
             if (kind == ItemKind.Image)
             {
                 PixelSize? header;
-                await using (var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, useAsync: false))
+                await using (
+                    var stream = new FileStream(
+                        fullPath,
+                        FileMode.Open,
+                        FileAccess.Read,
+                        FileShare.ReadWrite,
+                        4096,
+                        useAsync: false
+                    )
+                )
+                {
                     header = ReadImageHeader(stream);
+                }
+
                 if (header is { } size)
                     return new MediaProperties(size);
             }
@@ -91,7 +108,8 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
         var match = DurationLine().Match(output);
         if (!match.Success)
             return 0;
-        var seconds = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) * 3600
+        var seconds =
+            int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) * 3600
             + int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture) * 60
             + double.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture);
         return Math.Round(seconds, 2);
@@ -116,9 +134,11 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
 
             var size = new PixelSize(
                 int.Parse(dimensions.Groups[1].Value, CultureInfo.InvariantCulture),
-                int.Parse(dimensions.Groups[2].Value, CultureInfo.InvariantCulture));
+                int.Parse(dimensions.Groups[2].Value, CultureInfo.InvariantCulture)
+            );
             var rotation = Rotation().Match(stream);
-            return rotation.Success && IsQuarterTurn(double.Parse(rotation.Groups[1].Value, CultureInfo.InvariantCulture))
+            return
+                rotation.Success && IsQuarterTurn(double.Parse(rotation.Groups[1].Value, CultureInfo.InvariantCulture))
                 ? new PixelSize(size.Height, size.Width)
                 : size;
         }
@@ -152,15 +172,33 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
         if (head.Length >= 4 && head[0] == 0xFF && head[1] == 0xD8 && head[2] == 0xFF)
             return ReadJpeg(stream);
         if (head.Length >= 24 && head[..8].SequenceEqual<byte>([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]))
-            return Checked(BinaryPrimitives.ReadInt32BigEndian(head[16..]), BinaryPrimitives.ReadInt32BigEndian(head[20..]));
+        {
+            return Checked(
+                BinaryPrimitives.ReadInt32BigEndian(head[16..]),
+                BinaryPrimitives.ReadInt32BigEndian(head[20..])
+            );
+        }
+
         if (head.Length >= 10 && head[..3].SequenceEqual("GIF"u8))
-            return Checked(BinaryPrimitives.ReadUInt16LittleEndian(head[6..]), BinaryPrimitives.ReadUInt16LittleEndian(head[8..]));
+        {
+            return Checked(
+                BinaryPrimitives.ReadUInt16LittleEndian(head[6..]),
+                BinaryPrimitives.ReadUInt16LittleEndian(head[8..])
+            );
+        }
+
         if (head.Length >= 26 && head[..2].SequenceEqual("BM"u8))
         {
             // BITMAPCOREHEADER (12 bytes) has 16-bit sizes; the later headers 32-bit ones, negative heights for top-down rows.
             return BinaryPrimitives.ReadUInt32LittleEndian(head[14..]) == 12
-                ? Checked(BinaryPrimitives.ReadUInt16LittleEndian(head[18..]), BinaryPrimitives.ReadUInt16LittleEndian(head[20..]))
-                : Checked(BinaryPrimitives.ReadInt32LittleEndian(head[18..]), Math.Abs(BinaryPrimitives.ReadInt32LittleEndian(head[22..])));
+                ? Checked(
+                    BinaryPrimitives.ReadUInt16LittleEndian(head[18..]),
+                    BinaryPrimitives.ReadUInt16LittleEndian(head[20..])
+                )
+                : Checked(
+                    BinaryPrimitives.ReadInt32LittleEndian(head[18..]),
+                    Math.Abs(BinaryPrimitives.ReadInt32LittleEndian(head[22..]))
+                );
         }
 
         if (head.Length >= 30 && head[..4].SequenceEqual("RIFF"u8) && head[8..12].SequenceEqual("WEBP"u8))
@@ -169,13 +207,21 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
     }
 
     private static PixelSize Checked(long width, long height) =>
-        width is > 0 and <= int.MaxValue && height is > 0 and <= int.MaxValue ? new PixelSize((int)width, (int)height) : PixelSize.Unknown;
+        width is > 0 and <= int.MaxValue && height is > 0 and <= int.MaxValue
+            ? new PixelSize((int)width, (int)height)
+            : PixelSize.Unknown;
 
     private static PixelSize ReadWebP(ReadOnlySpan<byte> head)
     {
         var chunk = head[12..16];
         if (chunk.SequenceEqual("VP8 "u8))
-            return Checked(BinaryPrimitives.ReadUInt16LittleEndian(head[26..]) & 0x3FFF, BinaryPrimitives.ReadUInt16LittleEndian(head[28..]) & 0x3FFF);
+        {
+            return Checked(
+                BinaryPrimitives.ReadUInt16LittleEndian(head[26..]) & 0x3FFF,
+                BinaryPrimitives.ReadUInt16LittleEndian(head[28..]) & 0x3FFF
+            );
+        }
+
         if (chunk.SequenceEqual("VP8L"u8))
         {
             var bits = BinaryPrimitives.ReadUInt32LittleEndian(head[21..]);
@@ -250,7 +296,9 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
         var little = tiff[0] == (byte)'I';
         if (!little && tiff[0] != (byte)'M')
             return 0;
-        var ifd = little ? BinaryPrimitives.ReadUInt32LittleEndian(tiff[4..]) : BinaryPrimitives.ReadUInt32BigEndian(tiff[4..]);
+        var ifd = little
+            ? BinaryPrimitives.ReadUInt32LittleEndian(tiff[4..])
+            : BinaryPrimitives.ReadUInt32BigEndian(tiff[4..]);
         if (ifd > (uint)tiff.Length - 2)
             return 0;
         var count = UInt16(tiff, (int)ifd, little);

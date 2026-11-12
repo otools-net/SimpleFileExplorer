@@ -77,7 +77,11 @@ public static partial class Changelog
     /// The versions after <paramref name="from"/> (null = every one: the install's version is unknown) up to
     /// <paramref name="to"/>, newest first.
     /// </summary>
-    public static IReadOnlyList<ChangelogEntry> Between(IEnumerable<ChangelogEntry> entries, SemanticVersion? from, SemanticVersion to) =>
+    public static IReadOnlyList<ChangelogEntry> Between(
+        IEnumerable<ChangelogEntry> entries,
+        SemanticVersion? from,
+        SemanticVersion to
+    ) =>
         entries
             .Select(e => (Entry: e, Version: SemanticVersion.TryParse(e.Version, out var v) ? v : null))
             .Where(e => e.Version is not null && (from is null || e.Version > from) && e.Version <= to)

@@ -13,8 +13,23 @@ public static class NetworkFolders
     /// <summary>File system types of <c>/proc/self/mountinfo</c> served by another computer.</summary>
     private static readonly HashSet<string> NetworkTypes = new(StringComparer.Ordinal)
     {
-        "cifs", "smb3", "smbfs", "nfs", "nfs4", "9p", "afs", "ncpfs", "ceph", "glusterfs", "davfs",
-        "fuse.sshfs", "fuse.rclone", "fuse.davfs2", "fuse.glusterfs", "fuse.ceph", "fuse.s3fs",
+        "cifs",
+        "smb3",
+        "smbfs",
+        "nfs",
+        "nfs4",
+        "9p",
+        "afs",
+        "ncpfs",
+        "ceph",
+        "glusterfs",
+        "davfs",
+        "fuse.sshfs",
+        "fuse.rclone",
+        "fuse.davfs2",
+        "fuse.glusterfs",
+        "fuse.ceph",
+        "fuse.s3fs",
     };
 
     public static bool IsNetwork(string path)
@@ -30,7 +45,11 @@ public static class NetworkFolders
     /// <summary><c>\\server\share</c> or <c>\\?\UNC\server\share</c>; not <c>\\?\C:\</c> nor the device namespace <c>\\.\</c>.</summary>
     internal static bool IsUncPath(string path) =>
         path.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase)
-        || (path.StartsWith(@"\\", StringComparison.Ordinal) && !path.StartsWith(@"\\?\", StringComparison.Ordinal) && !path.StartsWith(@"\\.\", StringComparison.Ordinal));
+        || (
+            path.StartsWith(@"\\", StringComparison.Ordinal)
+            && !path.StartsWith(@"\\?\", StringComparison.Ordinal)
+            && !path.StartsWith(@"\\.\", StringComparison.Ordinal)
+        );
 
     /// <summary>The file system type of the mount holding <paramref name="path"/> (the deepest mount point containing it).</summary>
     /// <param name="mountInfo">The text of <c>/proc/self/mountinfo</c>.</param>
@@ -98,7 +117,13 @@ public static class NetworkFolders
         var text = new StringBuilder(field.Length);
         for (var i = 0; i < field.Length; i++)
         {
-            if (field[i] == '\\' && i + 3 < field.Length && IsOctal(field[i + 1]) && IsOctal(field[i + 2]) && IsOctal(field[i + 3]))
+            if (
+                field[i] == '\\'
+                && i + 3 < field.Length
+                && IsOctal(field[i + 1])
+                && IsOctal(field[i + 2])
+                && IsOctal(field[i + 3])
+            )
             {
                 text.Append((char)((field[i + 1] - '0') * 64 + (field[i + 2] - '0') * 8 + (field[i + 3] - '0')));
                 i += 3;

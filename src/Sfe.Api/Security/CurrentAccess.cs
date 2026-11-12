@@ -7,6 +7,7 @@ namespace Sfe.Api.Security;
 public sealed record AccessState(TenantInfo? Tenant, SessionUser? User, EffectiveAccess Access)
 {
     public int TenantId => Tenant?.Id ?? 0;
+
     public bool Has(string right) => Access.Has(right);
 }
 
@@ -35,7 +36,9 @@ public sealed class CurrentAccess(IHttpContextAccessor accessor, AccessService a
         var context = accessor.HttpContext ?? throw new InvalidOperationException("No request.");
         var cancellationToken = context.RequestAborted;
         var tenants = await accounts.GetCachedTenantsAsync(cancellationToken);
-        var user = context.User.UserId() is { } userId ? await accounts.GetSessionUserAsync(userId, cancellationToken) : null;
+        var user = context.User.UserId() is { } userId
+            ? await accounts.GetSessionUserAsync(userId, cancellationToken)
+            : null;
         if (user is { Disabled: true })
             user = null;
 
@@ -43,7 +46,10 @@ public sealed class CurrentAccess(IHttpContextAccessor accessor, AccessService a
         if (user is not null)
         {
             var reachable = await rights.GetTenantIdsAsync(user.Id, cancellationToken);
-            var wanted = context.User.TenantId() is { } chosen && reachable.Contains(chosen) ? chosen : reachable.FirstOrDefault();
+            var wanted =
+                context.User.TenantId() is { } chosen && reachable.Contains(chosen)
+                    ? chosen
+                    : reachable.FirstOrDefault();
             tenant = tenants.FirstOrDefault(t => t.Id == wanted) ?? tenants.FirstOrDefault(t => t.IsDefault);
         }
         else
@@ -53,7 +59,9 @@ public sealed class CurrentAccess(IHttpContextAccessor accessor, AccessService a
                 ?? tenants.FirstOrDefault(t => t.IsDefault);
         }
 
-        var access = tenant is null ? EffectiveAccess.None : await rights.GetAsync(new AccessSubject(tenant.Id, user?.Id), cancellationToken);
+        var access = tenant is null
+            ? EffectiveAccess.None
+            : await rights.GetAsync(new AccessSubject(tenant.Id, user?.Id), cancellationToken);
         return new AccessState(tenant, user, access);
     }
 }

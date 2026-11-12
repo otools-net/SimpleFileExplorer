@@ -28,7 +28,10 @@ public static class TextCodec
     /// <summary>How many bytes at the start are looked at for a NUL (as git and grep do).</summary>
     public const int BinaryProbe = 8 * 1024;
 
-    private static readonly UTF8Encoding StrictUtf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+    private static readonly UTF8Encoding StrictUtf8 = new(
+        encoderShouldEmitUTF8Identifier: false,
+        throwOnInvalidBytes: true
+    );
     private static readonly Encoding Ansi;
     private static readonly Encoding StrictAnsi;
 
@@ -76,7 +79,13 @@ public static class TextCodec
     }
 
     /// <summary>The encodings a file can be read with on request (Reopen with encoding); a byte order mark is skipped.</summary>
-    public static readonly IReadOnlySet<string> ReadEncodings = new HashSet<string> { Utf8, Windows1252, Utf16Le, Utf16Be };
+    public static readonly IReadOnlySet<string> ReadEncodings = new HashSet<string>
+    {
+        Utf8,
+        Windows1252,
+        Utf16Le,
+        Utf16Be,
+    };
 
     /// <summary>
     /// The text of <paramref name="bytes"/> read with <paramref name="encoding"/> (one of <see cref="ReadEncodings"/>)
@@ -106,20 +115,28 @@ public static class TextCodec
         : (null, 0);
 
     /// <summary>Bytes without a mark as text in <paramref name="encoding"/>, what isn't valid replaced (a part of a file cut anywhere).</summary>
-    public static string Read(ReadOnlySpan<byte> bytes, string encoding) => encoding switch
-    {
-        Utf8 or Utf8Bom => Encoding.UTF8.GetString(bytes),
-        Utf16Le => Encoding.Unicode.GetString(bytes),
-        Utf16Be => Encoding.BigEndianUnicode.GetString(bytes),
-        Windows1252 => Ansi.GetString(bytes),
-        _ => throw new ArgumentException($"Unknown encoding {encoding}.", nameof(encoding)),
-    };
+    public static string Read(ReadOnlySpan<byte> bytes, string encoding) =>
+        encoding switch
+        {
+            Utf8 or Utf8Bom => Encoding.UTF8.GetString(bytes),
+            Utf16Le => Encoding.Unicode.GetString(bytes),
+            Utf16Be => Encoding.BigEndianUnicode.GetString(bytes),
+            Windows1252 => Ansi.GetString(bytes),
+            _ => throw new ArgumentException($"Unknown encoding {encoding}.", nameof(encoding)),
+        };
 
     /// <summary>Valid UTF-8 (what a file without a mark is read as; else windows-1252).</summary>
     public static bool IsUtf8(ReadOnlySpan<byte> bytes) => System.Text.Unicode.Utf8.IsValid(bytes);
 
     /// <summary>The encodings <see cref="Encode"/> writes.</summary>
-    public static readonly IReadOnlySet<string> Encodings = new HashSet<string> { Utf8, Utf8Bom, Utf16Le, Utf16Be, Windows1252 };
+    public static readonly IReadOnlySet<string> Encodings = new HashSet<string>
+    {
+        Utf8,
+        Utf8Bom,
+        Utf16Le,
+        Utf16Be,
+        Windows1252,
+    };
 
     /// <summary>The line endings <see cref="Encode"/> writes.</summary>
     public static readonly IReadOnlySet<string> LineEndings = new HashSet<string> { "lf", "crlf", "cr" };
@@ -181,7 +198,9 @@ public static class TextCodec
     /// <summary>The line ending most lines of <paramref name="text"/> end with (<c>crlf</c> on a tie); <c>lf</c> without any.</summary>
     public static string DominantLineEnding(string text)
     {
-        int lf = 0, crlf = 0, cr = 0;
+        int lf = 0,
+            crlf = 0,
+            cr = 0;
         for (var i = 0; i < text.Length; i++)
         {
             if (text[i] == '\n')
@@ -203,13 +222,17 @@ public static class TextCodec
         }
         if (lf + crlf + cr == 0)
             return "lf";
-        return crlf >= lf && crlf >= cr ? "crlf" : lf >= cr ? "lf" : "cr";
+        return crlf >= lf && crlf >= cr ? "crlf"
+            : lf >= cr ? "lf"
+            : "cr";
     }
 
     /// <summary>The line ending used by <paramref name="text"/>: <c>lf</c>, <c>crlf</c>, <c>cr</c> or <c>mixed</c>.</summary>
     public static string LineEndingOf(string text)
     {
-        int lf = 0, crlf = 0, cr = 0;
+        int lf = 0,
+            crlf = 0,
+            cr = 0;
         for (var i = 0; i < text.Length; i++)
         {
             if (text[i] == '\n')

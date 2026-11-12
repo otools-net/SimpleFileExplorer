@@ -23,8 +23,8 @@ public sealed class LibraryLinks(IOptionsMonitor<SecurityOptions> security)
             return false;
 
         var real = LibraryPaths.RealPath(fullPath);
-        return !options.LinkTargets
-            .Where(target => !string.IsNullOrWhiteSpace(target))
+        return !options
+            .LinkTargets.Where(target => !string.IsNullOrWhiteSpace(target))
             .Select(target => LibraryPaths.RealPath(LibraryPaths.NormalizeRoot(target)))
             .Any(target => LibraryPaths.IsSameOrInside(real, target));
     }

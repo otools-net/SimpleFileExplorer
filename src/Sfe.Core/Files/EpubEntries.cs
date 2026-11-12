@@ -77,7 +77,9 @@ public static class EpubEntries
         if (name.Length == 0 || name.EndsWith('/'))
             return null;
         var entry = archive.GetEntry(name)
-            ?? archive.Entries.FirstOrDefault(candidate => string.Equals(candidate.FullName, name, StringComparison.OrdinalIgnoreCase));
+            ?? archive.Entries.FirstOrDefault(candidate =>
+                string.Equals(candidate.FullName, name, StringComparison.OrdinalIgnoreCase)
+            );
         return entry is null || entry.Length > MaxEntryBytes || entry.FullName.EndsWith('/') ? null : entry;
     }
 }

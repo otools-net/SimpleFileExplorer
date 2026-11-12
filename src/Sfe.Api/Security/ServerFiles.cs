@@ -46,10 +46,25 @@ public sealed class ServerFiles
         List<string> folders =
         [
             contentRoot,
-            Full(Setting($"{section}:{nameof(SfeOptions.Security)}:{nameof(SecurityOptions.KeysDirectory)}", new SecurityOptions().KeysDirectory)),
-            Full(Setting($"{section}:{nameof(SfeOptions.Logs)}:{nameof(LogOptions.Directory)}", new LogOptions().Directory)),
+            Full(
+                Setting(
+                    $"{section}:{nameof(SfeOptions.Security)}:{nameof(SecurityOptions.KeysDirectory)}",
+                    new SecurityOptions().KeysDirectory
+                )
+            ),
+            Full(
+                Setting(
+                    $"{section}:{nameof(SfeOptions.Logs)}:{nameof(LogOptions.Directory)}",
+                    new LogOptions().Directory
+                )
+            ),
         ];
-        var codeFile = Full(Setting($"{section}:{nameof(SfeOptions.Setup)}:{nameof(SetupOptions.CodeFile)}", new SetupOptions().CodeFile));
+        var codeFile = Full(
+            Setting(
+                $"{section}:{nameof(SfeOptions.Setup)}:{nameof(SetupOptions.CodeFile)}",
+                new SetupOptions().CodeFile
+            )
+        );
         List<string> files =
         [
             codeFile,
@@ -59,8 +74,16 @@ public sealed class ServerFiles
             Full(Setting($"{section}:{nameof(SfeOptions.SettingsFile)}", new SfeOptions().SettingsFile)),
         ];
 
-        var provider = configuration.GetSection($"{section}:{nameof(SfeOptions.Database)}").Get<DatabaseOptions>()?.Provider ?? DatabaseProvider.SqlServer;
-        if (provider == DatabaseProvider.Sqlite && configuration.GetConnectionString(ServiceCollectionExtensions.ConnectionStringName) is { Length: > 0 } main)
+        var provider = configuration
+            .GetSection($"{section}:{nameof(SfeOptions.Database)}")
+            .Get<DatabaseOptions>()
+            ?.Provider
+            ?? DatabaseProvider.SqlServer;
+        if (
+            provider == DatabaseProvider.Sqlite
+            && configuration.GetConnectionString(ServiceCollectionExtensions.ConnectionStringName)
+                is { Length: > 0 } main
+        )
         {
             var database = new SqliteConnectionStringBuilder(SfeDatabase.PrepareSqlite(main, contentRoot)).DataSource;
             if (!string.IsNullOrEmpty(database) && database != ":memory:")

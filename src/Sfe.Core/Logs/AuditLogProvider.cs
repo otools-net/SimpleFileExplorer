@@ -24,9 +24,8 @@ public sealed class AuditLogProvider(TimeProvider time) : ILoggerProvider
     private int _count;
     private long _dropped;
 
-    public AuditLogProvider() : this(TimeProvider.System)
-    {
-    }
+    public AuditLogProvider()
+        : this(TimeProvider.System) { }
 
     public ILogger CreateLogger(string categoryName) => new AuditLogger(this, categoryName, null);
 
@@ -62,15 +61,17 @@ public sealed class AuditLogProvider(TimeProvider time) : ILoggerProvider
 
     internal void Add(string category, int? tenantId, LogEntryLevel level, string message, Exception? exception)
     {
-        _queue.Enqueue(new LogEntry
-        {
-            Timestamp = time.GetUtcNow().UtcDateTime,
-            Level = level,
-            Category = Truncate(category, AccessDbContext.MaxLogCategoryLength),
-            Message = Truncate(message, MaxMessageLength),
-            Exception = exception is null ? null : Truncate(exception.ToString(), MaxExceptionLength),
-            TenantId = tenantId,
-        });
+        _queue.Enqueue(
+            new LogEntry
+            {
+                Timestamp = time.GetUtcNow().UtcDateTime,
+                Level = level,
+                Category = Truncate(category, AccessDbContext.MaxLogCategoryLength),
+                Message = Truncate(message, MaxMessageLength),
+                Exception = exception is null ? null : Truncate(exception.ToString(), MaxExceptionLength),
+                TenantId = tenantId,
+            }
+        );
         if (Interlocked.Increment(ref _count) <= MaxQueued)
             return;
         if (_queue.TryDequeue(out _))
@@ -80,23 +81,34 @@ public sealed class AuditLogProvider(TimeProvider time) : ILoggerProvider
         }
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
     private static string Truncate(string text, int length) => text.Length > length ? text[..(length - 1)] + "…" : text;
 
     private sealed class AuditLogger(AuditLogProvider provider, string category, int? tenantId) : ILogger
     {
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
 
         public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None && !SuppressedFlow.Value;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter
+        )
         {
             if (!IsEnabled(logLevel))
                 return;
-            provider.Add(category, tenantId, SecurityLog.LevelOf(logLevel, eventId), formatter(state, exception), exception);
+            provider.Add(
+                category,
+                tenantId,
+                SecurityLog.LevelOf(logLevel, eventId),
+                formatter(state, exception),
+                exception
+            );
         }
     }
 
@@ -105,9 +117,7 @@ public sealed class AuditLogProvider(TimeProvider time) : ILoggerProvider
     {
         public ILogger CreateLogger(string categoryName) => new AuditLogger(provider, categoryName, tenantId);
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
     private sealed class Restore(bool previous) : IDisposable

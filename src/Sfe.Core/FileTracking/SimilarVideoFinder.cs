@@ -29,7 +29,14 @@ public enum SimilarVideoState
 /// <param name="Checked">Videos whose fingerprint the comparison running (or the last one) has read.</param>
 /// <param name="Total">Indexed videos that comparison looks at.</param>
 /// <param name="Message">Why the last comparison failed.</param>
-public sealed record SimilarVideoStatus(SimilarVideoState State, int Checked, int Total, DateTimeOffset? Started, DateTimeOffset? Finished, string? Message);
+public sealed record SimilarVideoStatus(
+    SimilarVideoState State,
+    int Checked,
+    int Total,
+    DateTimeOffset? Started,
+    DateTimeOffset? Finished,
+    string? Message
+);
 
 /// <param name="Match">Matching frames with the first video of the group, in percent of the longer one; null for that first video.</param>
 /// <param name="Duration">Seconds, as seen by the trickplay (frames × interval).</param>
@@ -44,7 +51,14 @@ public sealed record SimilarVideoGroup(int Count, long WastedBytes, IReadOnlyLis
 /// <param name="Videos">Indexed videos in the whole library when the comparison ran.</param>
 /// <param name="Compared">Of those, the videos that had a fingerprint (trickplay) and were compared.</param>
 /// <param name="MinimumPercent">Match the comparison listed groups from.</param>
-public sealed record SimilarVideoSummary(int Groups, int Files, long WastedBytes, int Videos, int Compared, int MinimumPercent);
+public sealed record SimilarVideoSummary(
+    int Groups,
+    int Files,
+    long WastedBytes,
+    int Videos,
+    int Compared,
+    int MinimumPercent
+);
 
 /// <param name="Summary">Totals of the last comparison; only on the first page, null before any comparison.</param>
 /// <param name="Next">Value of the <c>after</c> parameter that requests the next page; null on the last page.</param>
@@ -56,7 +70,8 @@ public sealed record SimilarVideoResults(
     IReadOnlyList<SimilarVideoGroup> Groups,
     bool HasMore,
     string? Next,
-    bool TrickplayEnabled);
+    bool TrickplayEnabled
+);
 
 /// <summary>
 /// Videos with the same pictures but other bytes: copies at another resolution, bitrate or codec, or trimmed, that
@@ -74,7 +89,8 @@ public sealed class SimilarVideoFinder(
     DuplicateFinder duplicates,
     IOptionsMonitor<SfeOptions> options,
     TaskHistory history,
-    ILogger<SimilarVideoFinder> logger) : IDisposable
+    ILogger<SimilarVideoFinder> logger
+) : IDisposable
 {
     /// <summary>Under this, videos of one recording or of a still scene start to look alike.</summary>
     public const int LowestMinimumPercent = 50;
@@ -94,7 +110,13 @@ public sealed class SimilarVideoFinder(
     private Snapshot? _snapshot;
 
     /// <summary>The groups of a completed comparison; <see cref="Run"/> tells comparisons apart in page cursors.</summary>
-    private sealed record Snapshot(int Run, IReadOnlyList<StoredGroup> Groups, int Videos, int Compared, int MinimumPercent);
+    private sealed record Snapshot(
+        int Run,
+        IReadOnlyList<StoredGroup> Groups,
+        int Videos,
+        int Compared,
+        int MinimumPercent
+    );
 
     private sealed record StoredVideo(int Id, string FullName, long Size, int? Match, int Duration);
 
@@ -163,53 +185,93 @@ public sealed class SimilarVideoFinder(
             List<(int Id, string FullName, long Size)> videos;
             await using (var db = await dbFactory.CreateDbContextAsync(cancellationToken))
             {
-                var rows = await db.Files.AsNoTracking()
+                var rows = await db
+                    .Files.AsNoTracking()
                     .Where(SearchPredicateBuilder.HasExtension(settings.FileTypes.Videos))
-                    .Select(f => new { f.Id, f.FullName, f.Size })
+                    .Select(f => new
+                    {
+                        f.Id,
+                        f.FullName,
+                        f.Size,
+                    })
                     .ToListAsync(cancellationToken);
                 // Rows of another root (the setting changed) are left out.
-                videos = [.. rows.Where(r => paths.ToRelative(r.FullName) is not null).Select(r => (r.Id, r.FullName, r.Size))];
+                videos =
+                [
+                    .. rows.Where(r => paths.ToRelative(r.FullName) is not null)
+                        .Select(r => (r.Id, r.FullName, r.Size)),
+                ];
             }
 
             lock (_gate)
                 _total = videos.Count;
 
             var fingerprints = new VideoFingerprint?[videos.Count];
-            Parallel.For(0, videos.Count, new ParallelOptions { MaxDegreeOfParallelism = ReadParallelism, CancellationToken = cancellationToken }, i =>
-            {
-                fingerprints[i] = trickplay.GetFingerprint(videos[i].FullName);
-                Interlocked.Increment(ref _checked);
-            });
+            Parallel.For(
+                0,
+                videos.Count,
+                new ParallelOptions { MaxDegreeOfParallelism = ReadParallelism, CancellationToken = cancellationToken },
+                i =>
+                {
+                    fingerprints[i] = trickplay.GetFingerprint(videos[i].FullName);
+                    Interlocked.Increment(ref _checked);
+                }
+            );
 
             var groups = new List<StoredGroup>();
             var compared = 0;
             // Frames of different intervals don't line up: only videos of one interval are compared.
-            foreach (var interval in Enumerable.Range(0, videos.Count).Where(i => fingerprints[i] is not null).GroupBy(i => fingerprints[i]!.Interval))
+            foreach (
+                var interval in Enumerable
+                    .Range(0, videos.Count)
+                    .Where(i => fingerprints[i] is not null)
+                    .GroupBy(i => fingerprints[i]!.Interval)
+            )
             {
                 List<int> indexes = [.. interval];
                 compared += indexes.Count;
                 var found = VideoMatcher.FindGroups(
-                    [.. indexes.Select(i => fingerprints[i]!)], [.. indexes.Select(i => videos[i].Size)], minimumPercent, cancellationToken);
+                    [.. indexes.Select(i => fingerprints[i]!)],
+                    [.. indexes.Select(i => videos[i].Size)],
+                    minimumPercent,
+                    cancellationToken
+                );
                 foreach (var group in found)
                 {
-                    List<StoredVideo> members = [.. group.Members.Select(m =>
-                    {
-                        var i = indexes[m.Video];
-                        var fingerprint = fingerprints[i]!;
-                        return new StoredVideo(videos[i].Id, videos[i].FullName, videos[i].Size, m.Percent, fingerprint.Count * fingerprint.Interval);
-                    })];
+                    List<StoredVideo> members =
+                    [
+                        .. group.Members.Select(m =>
+                        {
+                            var i = indexes[m.Video];
+                            var fingerprint = fingerprints[i]!;
+                            return new StoredVideo(
+                                videos[i].Id,
+                                videos[i].FullName,
+                                videos[i].Size,
+                                m.Percent,
+                                fingerprint.Count * fingerprint.Interval
+                            );
+                        }),
+                    ];
                     groups.Add(new StoredGroup(members, members.Sum(v => v.Size) - members.Max(v => v.Size)));
                 }
             }
 
             // Most space to win back first, like the duplicates.
-            groups.Sort((a, b) => b.WastedBytes != a.WastedBytes
-                ? b.WastedBytes.CompareTo(a.WastedBytes)
-                : string.CompareOrdinal(a.Videos[0].FullName, b.Videos[0].FullName));
+            groups.Sort(
+                (a, b) =>
+                    b.WastedBytes != a.WastedBytes
+                        ? b.WastedBytes.CompareTo(a.WastedBytes)
+                        : string.CompareOrdinal(a.Videos[0].FullName, b.Videos[0].FullName)
+            );
             _snapshot = new Snapshot(run, groups, videos.Count, compared, minimumPercent);
             outcome = SimilarVideoState.Completed;
-            logger.LogInformation("Comparison of the videos finished: {Compared} of {Videos} videos compared, {Groups} groups of similar videos",
-                compared, videos.Count, groups.Count);
+            logger.LogInformation(
+                "Comparison of the videos finished: {Compared} of {Videos} videos compared, {Groups} groups of similar videos",
+                compared,
+                videos.Count,
+                groups.Count
+            );
             summary = $"{compared:N0} of {videos.Count:N0} videos compared, {groups.Count:N0} groups of similar videos";
         }
         catch (OperationCanceledException) when (!_shutdown.IsCancellationRequested)
@@ -236,13 +298,16 @@ public sealed class SimilarVideoFinder(
             _finished = DateTimeOffset.Now;
         }
 
-        await record.CompleteAsync(outcome switch
-        {
-            SimilarVideoState.Completed => TaskOutcome.Completed,
-            SimilarVideoState.Cancelled => TaskOutcome.Cancelled,
-            SimilarVideoState.Failed => TaskOutcome.Failed,
-            _ => TaskOutcome.Interrupted,
-        }, summary ?? message);
+        await record.CompleteAsync(
+            outcome switch
+            {
+                SimilarVideoState.Completed => TaskOutcome.Completed,
+                SimilarVideoState.Cancelled => TaskOutcome.Cancelled,
+                SimilarVideoState.Failed => TaskOutcome.Failed,
+                _ => TaskOutcome.Interrupted,
+            },
+            summary ?? message
+        );
     }
 
     /// <param name="relativeDirectory">Only groups with a video in this folder (or below) are listed; empty for all.</param>
@@ -252,8 +317,13 @@ public sealed class SimilarVideoFinder(
     /// fewer than two left out of the list; null = everywhere.
     /// </param>
     /// <returns>null when <paramref name="relativeDirectory"/> is invalid, or <paramref name="after"/> is not a page of the last comparison.</returns>
-    public async Task<SimilarVideoResults?> FindAsync(string? relativeDirectory, string? after, int? limit, CancellationToken cancellationToken = default,
-        PathFilter? visible = null)
+    public async Task<SimilarVideoResults?> FindAsync(
+        string? relativeDirectory,
+        string? after,
+        int? limit,
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         if (!paths.TryResolve(relativeDirectory, out var directory))
             return null;
@@ -263,15 +333,22 @@ public sealed class SimilarVideoFinder(
         var path = paths.ToRelative(directory) ?? string.Empty;
         var trickplayEnabled = options.CurrentValue.Trickplay.Enabled;
         if (snapshot is null)
-            return after is null ? new SimilarVideoResults(path, status, null, [], false, null, trickplayEnabled) : null;
+        {
+            return after is null
+                ? new SimilarVideoResults(path, status, null, [], false, null, trickplayEnabled)
+                : null;
+        }
 
         var start = 0;
         if (after is not null)
         {
             var colon = after.IndexOf(':');
-            if (colon <= 0
-                || !int.TryParse(after.AsSpan(0, colon), NumberStyles.None, CultureInfo.InvariantCulture, out var run) || run != snapshot.Run
-                || !int.TryParse(after.AsSpan(colon + 1), NumberStyles.None, CultureInfo.InvariantCulture, out start))
+            if (
+                colon <= 0
+                || !int.TryParse(after.AsSpan(0, colon), NumberStyles.None, CultureInfo.InvariantCulture, out var run)
+                || run != snapshot.Run
+                || !int.TryParse(after.AsSpan(colon + 1), NumberStyles.None, CultureInfo.InvariantCulture, out start)
+            )
             {
                 return null;
             }
@@ -280,14 +357,30 @@ public sealed class SimilarVideoFinder(
         var prefix = Path.TrimEndingDirectorySeparator(directory) + Path.DirectorySeparatorChar;
         var groups = path is ""
             ? snapshot.Groups
-            : [.. snapshot.Groups.Where(g => g.Videos.Any(v => v.FullName.StartsWith(prefix, LibraryPaths.PathComparison)))];
+            :
+            [
+                .. snapshot.Groups.Where(g =>
+                    g.Videos.Any(v => v.FullName.StartsWith(prefix, LibraryPaths.PathComparison))
+                ),
+            ];
         if (visible is { IsEverything: false })
             groups = [.. groups.Select(g => Visible(g, visible)).OfType<StoredGroup>()];
-        var pageSize = Math.Clamp(limit ?? options.CurrentValue.FileTracking.Duplicates.GroupsPerPage, 1, DuplicateFinder.MaxGroupsPerPage);
+        var pageSize = Math.Clamp(
+            limit ?? options.CurrentValue.FileTracking.Duplicates.GroupsPerPage,
+            1,
+            DuplicateFinder.MaxGroupsPerPage
+        );
         var page = groups.Skip(start).Take(pageSize).ToList();
 
         var summary = after is null
-            ? new SimilarVideoSummary(groups.Count, groups.Sum(g => g.Videos.Count), groups.Sum(g => g.WastedBytes), snapshot.Videos, snapshot.Compared, snapshot.MinimumPercent)
+            ? new SimilarVideoSummary(
+                groups.Count,
+                groups.Sum(g => g.Videos.Count),
+                groups.Sum(g => g.WastedBytes),
+                snapshot.Videos,
+                snapshot.Compared,
+                snapshot.MinimumPercent
+            )
             : null;
         var results = await LoadAsync(page, cancellationToken);
         var hasMore = start + page.Count < groups.Count;
@@ -298,13 +391,16 @@ public sealed class SimilarVideoFinder(
             Groups: results,
             HasMore: hasMore,
             Next: hasMore ? $"{snapshot.Run}:{start + page.Count}" : null,
-            TrickplayEnabled: trickplayEnabled);
+            TrickplayEnabled: trickplayEnabled
+        );
     }
 
     /// <summary>The group with only the videos the asker may see; null when fewer than two are left.</summary>
     private StoredGroup? Visible(StoredGroup group, PathFilter visible)
     {
-        var videos = group.Videos.Where(v => paths.ToRelative(v.FullName) is { } relative && visible.Includes(relative)).ToList();
+        var videos = group
+            .Videos.Where(v => paths.ToRelative(v.FullName) is { } relative && visible.Includes(relative))
+            .ToList();
         if (videos.Count == group.Videos.Count)
             return group;
         return videos.Count < 2 ? null : new StoredGroup(videos, videos.Sum(v => v.Size) - videos.Max(v => v.Size));
@@ -315,9 +411,18 @@ public sealed class SimilarVideoFinder(
     {
         List<int> ids = [.. page.SelectMany(g => g.Videos.Take(DuplicateFinder.MaxFilesPerGroup)).Select(v => v.Id)];
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var rows = await db.Files.AsNoTracking()
+        var rows = await db
+            .Files.AsNoTracking()
             .Where(f => ids.Contains(f.Id))
-            .Select(f => new { f.Id, f.FullName, f.Extension, f.Size, f.LastWriteTime, TagIds = f.TagLinks.Select(l => l.TagId).ToList() })
+            .Select(f => new
+            {
+                f.Id,
+                f.FullName,
+                f.Extension,
+                f.Size,
+                f.LastWriteTime,
+                TagIds = f.TagLinks.Select(l => l.TagId).ToList(),
+            })
             .ToDictionaryAsync(r => r.Id, cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
 
@@ -327,9 +432,18 @@ public sealed class SimilarVideoFinder(
             List<SimilarVideo> videos = [];
             foreach (var video in group.Videos.Take(DuplicateFinder.MaxFilesPerGroup))
             {
-                if (rows.TryGetValue(video.Id, out var row)
+                if (
+                    rows.TryGetValue(video.Id, out var row)
                     && string.Equals(row.FullName, video.FullName, LibraryPaths.PathComparison)
-                    && duplicates.ToItem(row.FullName, row.Extension, row.Size, row.LastWriteTime, TagService.Summaries(graph, row.TagIds)) is { } item)
+                    && duplicates.ToItem(
+                        row.FullName,
+                        row.Extension,
+                        row.Size,
+                        row.LastWriteTime,
+                        TagService.Summaries(graph, row.TagIds)
+                    )
+                        is { } item
+                )
                 {
                     videos.Add(new SimilarVideo(item, video.Match, video.Duration));
                 }

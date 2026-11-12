@@ -29,7 +29,9 @@ internal static class WindowsServiceSetup
 
         if (!OperatingSystem.IsWindows())
         {
-            Console.Error.WriteLine("Windows services exist on Windows only. On Linux, run SFE as a systemd service (see docs/installation.md).");
+            Console.Error.WriteLine(
+                "Windows services exist on Windows only. On Linux, run SFE as a systemd service (see docs/installation.md)."
+            );
             return 1;
         }
 
@@ -48,8 +50,14 @@ internal static class WindowsServiceSetup
         var exe = Environment.ProcessPath ?? throw new InvalidOperationException("The program's path is unknown.");
         if (!allowOpenFolder && FolderIsOpen(Path.GetDirectoryName(exe)!))
             return 1;
-        if (Sc($"create \"{name}\" binPath= \"\\\"{exe}\\\"\" start= auto DisplayName= \"Simple File Explorer\"") is not 0)
+        if (
+            Sc($"create \"{name}\" binPath= \"\\\"{exe}\\\"\" start= auto DisplayName= \"Simple File Explorer\"")
+            is not 0
+        )
+        {
             return 1;
+        }
+
         Sc($"description \"{name}\" \"SFE - Simple File Explorer: the web file explorer of the media library.\"");
         // Started again a minute after a crash, at most once a day.
         Sc($"failure \"{name}\" reset= 86400 actions= restart/60000");
@@ -58,7 +66,9 @@ internal static class WindowsServiceSetup
 
         Console.WriteLine();
         Console.WriteLine($"SFE now runs as the Windows service \"{name}\" and starts with the computer.");
-        Console.WriteLine("It runs as the Local System account: it can read the local drives, not the network drives mapped by a user.");
+        Console.WriteLine(
+            "It runs as the Local System account: it can read the local drives, not the network drives mapped by a user."
+        );
         Console.WriteLine("Open http://localhost:5080 (or the port you chose). Remove it with uninstall-service.cmd.");
         return 0;
     }
@@ -78,7 +88,9 @@ internal static class WindowsServiceSetup
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SystemException)
         {
-            Console.Error.WriteLine($"Cannot read who may change {folder} ({ex.Message}): the service is not installed.");
+            Console.Error.WriteLine(
+                $"Cannot read who may change {folder} ({ex.Message}): the service is not installed."
+            );
             Console.Error.WriteLine($"To install it anyway, add {OpenFolderArgument}.");
             return true;
         }
@@ -86,7 +98,8 @@ internal static class WindowsServiceSetup
         if (accounts.Count == 0)
             return false;
 
-        Console.Error.WriteLine($"""
+        Console.Error.WriteLine(
+            $"""
             The service is not installed: {string.Join(", ", accounts)} may change the files in
               {folder}
             A service runs as Local System, which can do anything on this computer: whoever can replace SFE's program
@@ -99,7 +112,8 @@ internal static class WindowsServiceSetup
 
             (only Administrators and the system keep access; add /grant "name:(OI)(CI)RX" for who must read it).
             Then run this again. To install it as it is, at your own risk, add {OpenFolderArgument}.
-            """);
+            """
+        );
         return true;
     }
 
@@ -117,11 +131,14 @@ internal static class WindowsServiceSetup
     }
 
     [SupportedOSPlatform("windows")]
-    private static bool IsAdministrator() => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+    private static bool IsAdministrator() =>
+        new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
     private static int NeedsAdministrator()
     {
-        Console.Error.WriteLine("Installing or removing a service needs administrator rights: run install-service.cmd, or this command from a console opened as administrator.");
+        Console.Error.WriteLine(
+            "Installing or removing a service needs administrator rights: run install-service.cmd, or this command from a console opened as administrator."
+        );
         return 1;
     }
 

@@ -32,9 +32,16 @@ public sealed class Ffmpeg
     /// <summary>Runs ffmpeg with <paramref name="arguments"/>; standard output is copied to <paramref name="output"/>.</summary>
     /// <returns>The exit code and the error output.</returns>
     /// <exception cref="TimeoutException">ffmpeg ran longer than <paramref name="timeout"/> (it is killed).</exception>
-    public async Task<(int ExitCode, string Errors)> RunAsync(IEnumerable<string> arguments, TimeSpan timeout, Stream? output = null, CancellationToken cancellationToken = default)
+    public async Task<(int ExitCode, string Errors)> RunAsync(
+        IEnumerable<string> arguments,
+        TimeSpan timeout,
+        Stream? output = null,
+        CancellationToken cancellationToken = default
+    )
     {
-        var start = new ProcessStartInfo(ExecutablePath ?? throw new InvalidOperationException("ffmpeg is not available."))
+        var start = new ProcessStartInfo(
+            ExecutablePath ?? throw new InvalidOperationException("ffmpeg is not available.")
+        )
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -102,10 +109,21 @@ public sealed class Ffmpeg
             await RunAsync(["-hide_banner", "-demuxers"], TimeSpan.FromSeconds(10), output);
             var allowed = FfmpegDemuxers.AllowedList(System.Text.Encoding.UTF8.GetString(output.ToArray()));
             if (allowed is null)
-                _logger.LogWarning("ffmpeg does not list its formats (-demuxers): library files are opened by any of them");
+            {
+                _logger.LogWarning(
+                    "ffmpeg does not list its formats (-demuxers): library files are opened by any of them"
+                );
+            }
+
             return allowed;
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or System.ComponentModel.Win32Exception)
+        catch (Exception ex)
+            when (ex
+                    is IOException
+                        or InvalidOperationException
+                        or TimeoutException
+                        or System.ComponentModel.Win32Exception
+            )
         {
             _logger.LogWarning(ex, "Cannot read the formats of ffmpeg: library files are opened by any of them");
             return null;
@@ -127,7 +145,13 @@ public sealed class Ffmpeg
             await RunAsync(["-hide_banner", "-version"], TimeSpan.FromSeconds(10), output);
             return ParseVersion(System.Text.Encoding.UTF8.GetString(output.ToArray()));
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or System.ComponentModel.Win32Exception)
+        catch (Exception ex)
+            when (ex
+                    is IOException
+                        or InvalidOperationException
+                        or TimeoutException
+                        or System.ComponentModel.Win32Exception
+            )
         {
             _logger.LogWarning(ex, "Cannot read the version of ffmpeg");
             return null;
@@ -139,7 +163,9 @@ public sealed class Ffmpeg
     {
         const string Prefix = "ffmpeg version ";
         var line = output.Split('\n', 2)[0].Trim();
-        return line.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase) && line[Prefix.Length..].Split(' ', 2)[0] is { Length: > 0 } version
+        return
+            line.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase)
+            && line[Prefix.Length..].Split(' ', 2)[0] is { Length: > 0 } version
             ? version
             : null;
     }
@@ -158,7 +184,10 @@ public sealed class Ffmpeg
     /// <summary>The file is named as ffmpeg's program (<c>ffmpeg</c>, <c>ffmpeg.exe</c> on Windows), whatever the case.</summary>
     public static bool IsFfmpegName(string path) =>
         Path.GetFileName(path) is var name
-        && (name.Equals("ffmpeg", StringComparison.OrdinalIgnoreCase) || (OperatingSystem.IsWindows() && name.Equals("ffmpeg.exe", StringComparison.OrdinalIgnoreCase)));
+        && (
+            name.Equals("ffmpeg", StringComparison.OrdinalIgnoreCase)
+            || (OperatingSystem.IsWindows() && name.Equals("ffmpeg.exe", StringComparison.OrdinalIgnoreCase))
+        );
 
     /// <summary>
     /// The executable <paramref name="configured"/> names: a file path, a folder holding it (or its <c>bin</c>), or a
@@ -171,17 +200,26 @@ public sealed class Ffmpeg
         configured = configured.Trim();
         var names = OperatingSystem.IsWindows() ? ["ffmpeg.exe", "ffmpeg"] : new[] { "ffmpeg" };
 
-        if (Path.IsPathRooted(configured) || configured.Contains(Path.DirectorySeparatorChar) || configured.Contains(Path.AltDirectorySeparatorChar))
+        if (
+            Path.IsPathRooted(configured)
+            || configured.Contains(Path.DirectorySeparatorChar)
+            || configured.Contains(Path.AltDirectorySeparatorChar)
+        )
         {
             if (File.Exists(configured))
                 return configured;
             // A folder, as picked on the installation page: ffmpeg's own folder or the one of its download.
             return Directory.Exists(configured)
-                ? new[] { configured, Path.Combine(configured, "bin") }.SelectMany(dir => names.Select(name => Path.Combine(dir, name))).FirstOrDefault(File.Exists)
+                ? new[] { configured, Path.Combine(configured, "bin") }
+                    .SelectMany(dir => names.Select(name => Path.Combine(dir, name)))
+                    .FirstOrDefault(File.Exists)
                 : null;
         }
 
-        var candidates = OperatingSystem.IsWindows() && !Path.HasExtension(configured) ? [configured + ".exe", configured] : new[] { configured };
+        var candidates =
+            OperatingSystem.IsWindows() && !Path.HasExtension(configured)
+                ? [configured + ".exe", configured]
+                : new[] { configured };
         return (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
             .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
             .SelectMany(dir => candidates.Select(name => Path.Combine(dir, name)))
@@ -189,7 +227,10 @@ public sealed class Ffmpeg
     }
 
     /// <summary>The version an ffmpeg executable reports, for a path not yet configured (the installation page).</summary>
-    public static async Task<string?> ProbeVersionAsync(string executable, CancellationToken cancellationToken = default)
+    public static async Task<string?> ProbeVersionAsync(
+        string executable,
+        CancellationToken cancellationToken = default
+    )
     {
         var start = new ProcessStartInfo(executable)
         {
@@ -221,7 +262,8 @@ public sealed class Ffmpeg
 
             return ParseVersion(output.Result);
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        catch (Exception ex)
+            when (ex is IOException or InvalidOperationException or System.ComponentModel.Win32Exception)
         {
             return null;
         }

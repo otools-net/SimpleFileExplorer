@@ -27,7 +27,8 @@ public static partial class DataServerUrl
 
     /// <summary>An http:// or https:// address once its placeholders are filled.</summary>
     public static bool IsValid(string value) =>
-        Uri.TryCreate(PlaceholderRegex().Replace(value, "x"), UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https";
+        Uri.TryCreate(PlaceholderRegex().Replace(value, "x"), UriKind.Absolute, out var uri)
+        && uri.Scheme is "http" or "https";
 
     [GeneratedRegex(@"\{(url|encodedUrl)\}")]
     private static partial Regex PlaceholderRegex();

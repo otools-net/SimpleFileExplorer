@@ -17,12 +17,14 @@ namespace Sfe.Core.Trickplay;
 public sealed class VideoFingerprint
 {
     /// <summary>Size of the grey picture a frame is shrunk to.</summary>
-    public const int PixelWidth = 9, PixelHeight = 8, FrameBytes = PixelWidth * PixelHeight;
+    public const int PixelWidth = 9,
+        PixelHeight = 8,
+        FrameBytes = PixelWidth * PixelHeight;
 
     /// <summary>Frames whose darkest and brightest pixels are closer than this carry no usable picture.</summary>
     public const int MinimumContrast = 16;
 
-    private const uint Magic = 0x31504653;      // "SFP1"
+    private const uint Magic = 0x31504653; // "SFP1"
     private const int RecordBytes = sizeof(ulong) + 1;
 
     public VideoFingerprint(int interval, ulong[] hashes, byte[] contrast)
@@ -70,7 +72,8 @@ public sealed class VideoFingerprint
             }
 
             hashes[frame] = hash;
-            byte min = 255, max = 0;
+            byte min = 255,
+                max = 0;
             foreach (var value in picture)
             {
                 min = Math.Min(min, value);
@@ -113,8 +116,11 @@ public sealed class VideoFingerprint
             return null;
         }
 
-        if (bytes.Length < sizeof(uint) || BinaryPrimitives.ReadUInt32LittleEndian(bytes) != Magic
-            || (bytes.Length - sizeof(uint)) % RecordBytes != 0)
+        if (
+            bytes.Length < sizeof(uint)
+            || BinaryPrimitives.ReadUInt32LittleEndian(bytes) != Magic
+            || (bytes.Length - sizeof(uint)) % RecordBytes != 0
+        )
         {
             return null;
         }

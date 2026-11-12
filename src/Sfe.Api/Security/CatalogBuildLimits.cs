@@ -12,7 +12,12 @@ public sealed class CatalogBuildLimits : IDisposable
     public const int PerMinute = 30;
 
     private readonly PartitionedRateLimiter<string> _limiter = PartitionedRateLimiter.Create<string, string>(caller =>
-        RateLimitPartition.GetFixedWindowLimiter(caller, _ => new FixedWindowRateLimiterOptions { PermitLimit = PerMinute, Window = TimeSpan.FromMinutes(1) }));
+        RateLimitPartition.GetFixedWindowLimiter(caller, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = PerMinute,
+            Window = TimeSpan.FromMinutes(1),
+        })
+    );
 
     /// <summary>For <c>ArchiveCatalogs.Get</c>: may this request's caller start a read now (counted when it says yes).</summary>
     public Func<bool> For(HttpContext context)

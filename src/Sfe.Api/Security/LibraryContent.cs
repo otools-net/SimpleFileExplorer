@@ -11,7 +11,17 @@ public static class LibraryContent
 
     /// <summary>What a browser says it loads a script, a worker or a plug-in for (<c>Sec-Fetch-Dest</c>).</summary>
     private static readonly string[] Running =
-        ["script", "worker", "sharedworker", "serviceworker", "audioworklet", "paintworklet", "embed", "object", "xslt"];
+    [
+        "script",
+        "worker",
+        "sharedworker",
+        "serviceworker",
+        "audioworklet",
+        "paintworklet",
+        "embed",
+        "object",
+        "xslt",
+    ];
 
     private static readonly string[] RunningOrStyling = [.. Running, "style"];
 
@@ -21,7 +31,8 @@ public static class LibraryContent
     /// </summary>
     public static string SafeType(string contentType)
     {
-        var runs = contentType.Contains("javascript", StringComparison.OrdinalIgnoreCase)
+        var runs =
+            contentType.Contains("javascript", StringComparison.OrdinalIgnoreCase)
             || contentType.Contains("ecmascript", StringComparison.OrdinalIgnoreCase)
             || contentType.Contains("jscript", StringComparison.OrdinalIgnoreCase)
             || contentType.Contains("livescript", StringComparison.OrdinalIgnoreCase)
@@ -31,17 +42,21 @@ public static class LibraryContent
     }
 
     /// <summary>Answers 404 when a page loads the route's file as a script, a worker, a plug-in or a style sheet.</summary>
-    public static RouteHandlerBuilder NeverRunByPages(this RouteHandlerBuilder route) => route.Refusing(RunningOrStyling);
+    public static RouteHandlerBuilder NeverRunByPages(this RouteHandlerBuilder route) =>
+        route.Refusing(RunningOrStyling);
 
     /// <summary>As <see cref="NeverRunByPages"/>, but style sheets load: a book's own styles (EPUB).</summary>
-    public static RouteHandlerBuilder NeverRunByPagesButStyled(this RouteHandlerBuilder route) => route.Refusing(Running);
+    public static RouteHandlerBuilder NeverRunByPagesButStyled(this RouteHandlerBuilder route) =>
+        route.Refusing(Running);
 
     private static RouteHandlerBuilder Refusing(this RouteHandlerBuilder route, string[] destinations) =>
-        route.AddEndpointFilter(async (invocation, next) =>
-        {
-            var destination = invocation.HttpContext.Request.Headers["Sec-Fetch-Dest"].ToString();
-            if (destinations.Contains(destination, StringComparer.OrdinalIgnoreCase))
-                return Results.NotFound();
-            return await next(invocation);
-        });
+        route.AddEndpointFilter(
+            async (invocation, next) =>
+            {
+                var destination = invocation.HttpContext.Request.Headers["Sec-Fetch-Dest"].ToString();
+                if (destinations.Contains(destination, StringComparer.OrdinalIgnoreCase))
+                    return Results.NotFound();
+                return await next(invocation);
+            }
+        );
 }

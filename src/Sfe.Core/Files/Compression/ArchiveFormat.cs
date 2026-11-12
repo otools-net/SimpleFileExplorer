@@ -12,6 +12,7 @@ public enum ArchiveFormat
     TarGzip,
     TarBzip2,
     TarXz,
+
     /// <summary>One file compressed alone (<c>.gz</c>, <c>.bz2</c>, <c>.xz</c>): extracted, never explored.</summary>
     Single,
 }
@@ -31,14 +32,20 @@ public static class ArchiveFormats
 
     private static readonly (string Suffix, ArchiveFormat Format)[] Suffixes =
     [
-        (".tar.gz", ArchiveFormat.TarGzip), (".tgz", ArchiveFormat.TarGzip),
-        (".tar.bz2", ArchiveFormat.TarBzip2), (".tbz2", ArchiveFormat.TarBzip2), (".tbz", ArchiveFormat.TarBzip2),
-        (".tar.xz", ArchiveFormat.TarXz), (".txz", ArchiveFormat.TarXz),
+        (".tar.gz", ArchiveFormat.TarGzip),
+        (".tgz", ArchiveFormat.TarGzip),
+        (".tar.bz2", ArchiveFormat.TarBzip2),
+        (".tbz2", ArchiveFormat.TarBzip2),
+        (".tbz", ArchiveFormat.TarBzip2),
+        (".tar.xz", ArchiveFormat.TarXz),
+        (".txz", ArchiveFormat.TarXz),
         (".tar", ArchiveFormat.Tar),
         (".zip", ArchiveFormat.Zip),
         (".7z", ArchiveFormat.SevenZip),
         (".rar", ArchiveFormat.Rar),
-        (".gz", ArchiveFormat.Single), (".bz2", ArchiveFormat.Single), (".xz", ArchiveFormat.Single),
+        (".gz", ArchiveFormat.Single),
+        (".bz2", ArchiveFormat.Single),
+        (".xz", ArchiveFormat.Single),
     ];
 
     /// <summary>The format a name claims; null for a name of no archive.</summary>
@@ -58,13 +65,14 @@ public static class ArchiveFormats
     /// compressed alone, and a compressed tar only up to <see cref="ArchiveOptions.MaxCompressedTarMegabytes"/>
     /// (it has no list of entries: listing it decompresses all of it).
     /// </summary>
-    public static bool IsExplorable(ArchiveFormat format, long size, ArchiveOptions options) => format switch
-    {
-        ArchiveFormat.Single => false,
-        ArchiveFormat.TarGzip or ArchiveFormat.TarBzip2 or ArchiveFormat.TarXz =>
-            size <= options.MaxCompressedTarMegabytes * 1024L * 1024,
-        _ => true,
-    };
+    public static bool IsExplorable(ArchiveFormat format, long size, ArchiveOptions options) =>
+        format switch
+        {
+            ArchiveFormat.Single => false,
+            ArchiveFormat.TarGzip or ArchiveFormat.TarBzip2 or ArchiveFormat.TarXz => size
+                <= options.MaxCompressedTarMegabytes * 1024L * 1024,
+            _ => true,
+        };
 
     /// <summary>
     /// The format of the file at <paramref name="fullPath"/>: its first bytes decide the family, its name tells a
@@ -75,8 +83,18 @@ public static class ArchiveFormats
     {
         Span<byte> header = stackalloc byte[HeaderBytes];
         int read;
-        using (var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+        using (
+            var stream = new FileStream(
+                fullPath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete
+            )
+        )
+        {
             read = stream.ReadAtLeast(header, HeaderBytes, throwOnEndOfStream: false);
+        }
+
         return Detect(header[..read], Path.GetFileName(fullPath), new FileInfo(fullPath).Length);
     }
 

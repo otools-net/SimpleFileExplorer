@@ -61,9 +61,13 @@ public sealed class SettingsStore : IOptionsChangeTokenSource<SfeOptions>
     }
 
     /// <summary>The settings the server's settings page locked for the libraries and users (keys, see <see cref="SettingCatalog"/>).</summary>
-    public IReadOnlyList<string> Locked => _saved?[LockedKey] is JsonArray locked
-        ? locked.Select(n => n?.GetValueKind() == JsonValueKind.String ? n.GetValue<string>() : null).OfType<string>().ToList()
-        : [];
+    public IReadOnlyList<string> Locked =>
+        _saved?[LockedKey] is JsonArray locked
+            ? locked
+                .Select(n => n?.GetValueKind() == JsonValueKind.String ? n.GetValue<string>() : null)
+                .OfType<string>()
+                .ToList()
+            : [];
 
     /// <summary>The values saved, by key (without the locks).</summary>
     public IReadOnlyDictionary<string, JsonNode?> Values
@@ -88,7 +92,11 @@ public sealed class SettingsStore : IOptionsChangeTokenSource<SfeOptions>
     /// Saves the server level of the layered settings: the values that differ from the configuration, and the locks.
     /// Nothing to save removes the file, so that the configuration applies again.
     /// </summary>
-    public async Task SaveLayerAsync(IReadOnlyDictionary<string, JsonNode?> values, IReadOnlyCollection<string> locked, CancellationToken cancellationToken = default)
+    public async Task SaveLayerAsync(
+        IReadOnlyDictionary<string, JsonNode?> values,
+        IReadOnlyCollection<string> locked,
+        CancellationToken cancellationToken = default
+    )
     {
         if (values.Count == 0 && locked.Count == 0)
         {
@@ -100,7 +108,12 @@ public sealed class SettingsStore : IOptionsChangeTokenSource<SfeOptions>
         foreach (var (key, value) in values.OrderBy(v => v.Key, StringComparer.Ordinal))
             SettingKeys.Set(node, key, value);
         if (locked.Count > 0)
-            node[LockedKey] = new JsonArray(locked.Order(StringComparer.Ordinal).Select(k => (JsonNode?)JsonValue.Create(k)).ToArray());
+        {
+            node[LockedKey] = new JsonArray(
+                locked.Order(StringComparer.Ordinal).Select(k => (JsonNode?)JsonValue.Create(k)).ToArray()
+            );
+        }
+
         await WriteAsync(node, cancellationToken);
     }
 

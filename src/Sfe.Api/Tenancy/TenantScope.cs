@@ -14,7 +14,11 @@ public sealed class TenantScope(TenantRegistry registry, CurrentAccess current)
 {
     private TenantHost? _host;
 
-    public TenantHost Host => _host ?? throw new InvalidOperationException("The request's library is not known (it is unavailable, or the request is not an API one).");
+    public TenantHost Host =>
+        _host
+        ?? throw new InvalidOperationException(
+            "The request's library is not known (it is unavailable, or the request is not an API one)."
+        );
 
     public async Task<TenantHost?> InitializeAsync(CancellationToken cancellationToken)
     {
@@ -36,25 +40,41 @@ public sealed class TenantMiddleware(RequestDelegate next)
     public async Task InvokeAsync(HttpContext context, TenantScope scope, CurrentAccess current)
     {
         var path = context.Request.Path;
-        if (!path.StartsWithSegments("/api") && !path.StartsWithSegments("/openapi")
-            || path.StartsWithSegments("/api/setup") || path.StartsWithSegments("/api/session") || path.StartsWithSegments("/api/docs")
-            || path.StartsWithSegments("/api/migration") || path.StartsWithSegments("/api/installation"))
+        if (
+            !path.StartsWithSegments("/api") && !path.StartsWithSegments("/openapi")
+            || path.StartsWithSegments("/api/setup")
+            || path.StartsWithSegments("/api/session")
+            || path.StartsWithSegments("/api/docs")
+            || path.StartsWithSegments("/api/migration")
+            || path.StartsWithSegments("/api/installation")
+        )
         {
             await next(context);
             return;
         }
 
         var state = await current.GetAsync();
-        if (context.Request.Headers.TryGetValue(Header, out var shown) && int.TryParse(shown, out var shownId) && shownId != state.TenantId)
+        if (
+            context.Request.Headers.TryGetValue(Header, out var shown)
+            && int.TryParse(shown, out var shownId)
+            && shownId != state.TenantId
+        )
         {
-            await TypedResults.Problem("The session is in another space now: reload the page.", statusCode: StatusCodes.Status409Conflict, type: TenantChangedType)
+            await TypedResults
+                .Problem(
+                    "The session is in another space now: reload the page.",
+                    statusCode: StatusCodes.Status409Conflict,
+                    type: TenantChangedType
+                )
                 .ExecuteAsync(context);
             return;
         }
 
         if (await scope.InitializeAsync(context.RequestAborted) is not { } host)
         {
-            await TypedResults.Problem("This space is not available.", statusCode: StatusCodes.Status503ServiceUnavailable).ExecuteAsync(context);
+            await TypedResults
+                .Problem("This space is not available.", statusCode: StatusCodes.Status503ServiceUnavailable)
+                .ExecuteAsync(context);
             return;
         }
 
@@ -76,16 +96,22 @@ public sealed class TenantMiddleware(RequestDelegate next)
 /// The request's services, with the Core's own (<see cref="TenancyServiceCollectionExtensions.LibraryTypes"/>) taken
 /// from the request's library.
 /// </summary>
-internal sealed class TenantRequestServices(IServiceProvider request, IServiceProvider library) : IKeyedServiceProvider, ISupportRequiredService
+internal sealed class TenantRequestServices(IServiceProvider request, IServiceProvider library)
+    : IKeyedServiceProvider,
+        ISupportRequiredService
 {
     public object? GetService(Type serviceType) =>
-        TenancyServiceCollectionExtensions.LibraryTypes.Contains(serviceType) ? library.GetService(serviceType) : request.GetService(serviceType);
+        TenancyServiceCollectionExtensions.LibraryTypes.Contains(serviceType)
+            ? library.GetService(serviceType)
+            : request.GetService(serviceType);
 
     public object GetRequiredService(Type serviceType) =>
-        GetService(serviceType) ?? throw new InvalidOperationException($"No service for type '{serviceType}' has been registered.");
+        GetService(serviceType)
+        ?? throw new InvalidOperationException($"No service for type '{serviceType}' has been registered.");
 
     // Keyed services (OpenAPI's documents...) are never a library's.
-    public object? GetKeyedService(Type serviceType, object? serviceKey) => ((IKeyedServiceProvider)request).GetKeyedService(serviceType, serviceKey);
+    public object? GetKeyedService(Type serviceType, object? serviceKey) =>
+        ((IKeyedServiceProvider)request).GetKeyedService(serviceType, serviceKey);
 
     public object GetRequiredKeyedService(Type serviceType, object? serviceKey) =>
         ((IKeyedServiceProvider)request).GetRequiredKeyedService(serviceType, serviceKey);
@@ -101,7 +127,11 @@ public static class TenancyServiceCollectionExtensions
     /// <c>LibraryBrowser</c>, the <c>SfeOptions</c>...): <see cref="TenantMiddleware"/> resolves each one in the request's
     /// library. They are registered here too, so that the routes know them as services, but never resolved here.
     /// </summary>
-    public static IServiceCollection AddSfeTenancy(this IServiceCollection services, IConfiguration configuration, string contentRootPath)
+    public static IServiceCollection AddSfeTenancy(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string contentRootPath
+    )
     {
         services.AddSingleton<FfmpegLimits>();
         services.AddSingleton<VideoStreams>();
@@ -124,13 +154,24 @@ public static class TenancyServiceCollectionExtensions
         var forwarded = library
             .Select(d => d.ServiceType)
             .Where(t => t.Assembly == typeof(SfeOptions).Assembly && !t.IsGenericTypeDefinition)
-            .Concat([typeof(IOptionsMonitor<SfeOptions>), typeof(IOptions<SfeOptions>), typeof(IDbContextFactory<SfeDbContext>)])
+            .Concat([
+                typeof(IOptionsMonitor<SfeOptions>),
+                typeof(IOptions<SfeOptions>),
+                typeof(IDbContextFactory<SfeDbContext>),
+            ])
             .Distinct()
             .Where(t => services.All(d => d.ServiceType != t))
             .ToHashSet();
         LibraryTypes = forwarded;
         foreach (var type in forwarded)
-            services.AddScoped(type, _ => throw new InvalidOperationException($"{type.Name} belongs to a library: ask for it in a request of the API (TenantMiddleware)."));
+        {
+            services.AddScoped(type, _ =>
+                throw new InvalidOperationException(
+                    $"{type.Name} belongs to a library: ask for it in a request of the API (TenantMiddleware)."
+                )
+            );
+        }
+
         return services;
     }
 }

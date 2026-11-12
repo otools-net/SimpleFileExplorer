@@ -35,7 +35,17 @@ public sealed class ArchiveUnlocks(TimeProvider time)
             _unlocks.TryRemove(old.Key, out _);
         var id = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
         var file = new FileInfo(fullPath);
-        _unlocks[id] = new Unlock(tenant, owner, Path.GetFullPath(fullPath), file.Length, file.LastWriteTimeUtc, password) { Used = time.GetUtcNow() };
+        _unlocks[id] = new Unlock(
+            tenant,
+            owner,
+            Path.GetFullPath(fullPath),
+            file.Length,
+            file.LastWriteTimeUtc,
+            password
+        )
+        {
+            Used = time.GetUtcNow(),
+        };
         return id;
     }
 
@@ -53,8 +63,15 @@ public sealed class ArchiveUnlocks(TimeProvider time)
             _unlocks.TryRemove(id, out _);
             return null;
         }
-        if (unlock.Tenant != tenant || unlock.Owner != owner || !string.Equals(unlock.Path, Path.GetFullPath(fullPath), StringComparison.Ordinal))
+        if (
+            unlock.Tenant != tenant
+            || unlock.Owner != owner
+            || !string.Equals(unlock.Path, Path.GetFullPath(fullPath), StringComparison.Ordinal)
+        )
+        {
             return null;
+        }
+
         var file = new FileInfo(fullPath);
         if (!file.Exists || file.Length != unlock.Size || file.LastWriteTimeUtc != unlock.Modified)
         {

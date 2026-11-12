@@ -13,7 +13,11 @@ internal sealed class WindowStream(Stream inner, long start, long length, IDispo
     public override bool CanSeek => false;
     public override bool CanWrite => false;
     public override long Length => length;
-    public override long Position { get => _position; set => throw new NotSupportedException(); }
+    public override long Position
+    {
+        get => _position;
+        set => throw new NotSupportedException();
+    }
 
     public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
 
@@ -33,8 +37,11 @@ internal sealed class WindowStream(Stream inner, long start, long length, IDispo
     }
 
     public override void Flush() { }
+
     public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
     public override void SetLength(long value) => throw new NotSupportedException();
+
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
     protected override void Dispose(bool disposing)
@@ -80,15 +87,18 @@ internal sealed class SliceStream(Stream file, long start, long length) : Stream
         return read;
     }
 
-    public override long Seek(long offset, SeekOrigin origin) => Position = origin switch
-    {
-        SeekOrigin.Begin => offset,
-        SeekOrigin.Current => _position + offset,
-        _ => length + offset,
-    };
+    public override long Seek(long offset, SeekOrigin origin) =>
+        Position = origin switch
+        {
+            SeekOrigin.Begin => offset,
+            SeekOrigin.Current => _position + offset,
+            _ => length + offset,
+        };
 
     public override void Flush() { }
+
     public override void SetLength(long value) => throw new NotSupportedException();
+
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
     protected override void Dispose(bool disposing)
@@ -112,7 +122,11 @@ internal sealed class DeclaredSizeStream(Stream inner, long size, IDisposable? o
     public override bool CanSeek => false;
     public override bool CanWrite => false;
     public override long Length => size >= 0 ? size : throw new NotSupportedException();
-    public override long Position { get => _position; set => throw new NotSupportedException(); }
+    public override long Position
+    {
+        get => _position;
+        set => throw new NotSupportedException();
+    }
 
     public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
 
@@ -141,8 +155,11 @@ internal sealed class DeclaredSizeStream(Stream inner, long size, IDisposable? o
     }
 
     public override void Flush() { }
+
     public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
     public override void SetLength(long value) => throw new NotSupportedException();
+
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
     protected override void Dispose(bool disposing)

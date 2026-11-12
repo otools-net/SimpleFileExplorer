@@ -134,7 +134,10 @@ public sealed partial class PlayerOptions
         return scheme.Success && !BlockedSchemes.Contains(scheme.Groups[1].Value);
     }
 
-    private static readonly HashSet<string> BlockedSchemes = new(["javascript", "vbscript", "data", "blob", "file", "about"], StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<string> BlockedSchemes = new(
+        ["javascript", "vbscript", "data", "blob", "file", "about"],
+        StringComparer.OrdinalIgnoreCase
+    );
 
     [GeneratedRegex(@"^([a-zA-Z][a-zA-Z0-9+.-]*):")]
     private static partial Regex SchemeRegex();
@@ -223,36 +226,54 @@ public sealed class ReadingOptions
     public string CustomFont { get; set; } = string.Empty;
 
     /// <summary>Code, logs and settings files: monospace, line numbers, long lines kept whole.</summary>
-    public ReadingProfileOptions Code { get; set; } = new()
-    {
-        Font = "system-mono",
-        Size = 14,
-        LineHeight = 1.5,
-        Width = 0,
-        Padding = 8,
-        Wrap = false,
-        LineNumbers = true,
-    };
+    public ReadingProfileOptions Code { get; set; } =
+        new()
+        {
+            Font = "system-mono",
+            Size = 14,
+            LineHeight = 1.5,
+            Width = 0,
+            Padding = 8,
+            Wrap = false,
+            LineNumbers = true,
+        };
 
     /// <summary>Notes and documents (<c>.txt</c>, <c>.md</c>, <c>README</c>...): wrapped, in a reading font.</summary>
-    public ReadingProfileOptions Prose { get; set; } = new()
-    {
-        Font = "literata",
-        Size = 17,
-        LineHeight = 1.65,
-        Width = 72,
-        Padding = 32,
-        Wrap = true,
-        LineNumbers = false,
-    };
+    public ReadingProfileOptions Prose { get; set; } =
+        new()
+        {
+            Font = "literata",
+            Size = 17,
+            LineHeight = 1.65,
+            Width = 72,
+            Padding = 32,
+            Wrap = true,
+            LineNumbers = false,
+        };
 
-    public ReadingOptions Copy() => new() { Theme = Theme, CustomFont = CustomFont, Code = Code.Copy(), Prose = Prose.Copy() };
+    public ReadingOptions Copy() =>
+        new()
+        {
+            Theme = Theme,
+            CustomFont = CustomFont,
+            Code = Code.Copy(),
+            Prose = Prose.Copy(),
+        };
 }
 
 /// <summary>The reading settings of one kind of text (<see cref="ReadingOptions"/>).</summary>
 public sealed class ReadingProfileOptions
 {
-    public static readonly IReadOnlyList<string> Fonts = ["literata", "atkinson", "jetbrains-mono", "system-serif", "system-sans", "system-mono", "custom"];
+    public static readonly IReadOnlyList<string> Fonts =
+    [
+        "literata",
+        "atkinson",
+        "jetbrains-mono",
+        "system-serif",
+        "system-sans",
+        "system-mono",
+        "custom",
+    ];
     public static readonly IReadOnlyList<double> LineHeights = [1.2, 1.35, 1.5, 1.65, 1.8, 2];
     public static readonly IReadOnlyList<int> Widths = [0, 60, 72, 80, 100, 120];
     public static readonly IReadOnlyList<int> Paddings = [0, 8, 16, 24, 32, 48, 64];
@@ -626,7 +647,21 @@ public sealed class ScanOptions
 public sealed class FileTypeOptions
 {
     public static readonly string[] DefaultImages = ["bmp", "gif", "jpeg", "jpg", "png", "tif", "tiff", "webp", "avif"];
-    public static readonly string[] DefaultVideos = ["3gp", "avi", "flv", "m4v", "mkv", "mov", "mp4", "mpeg", "mpg", "ts", "webm", "wmv"];
+    public static readonly string[] DefaultVideos =
+    [
+        "3gp",
+        "avi",
+        "flv",
+        "m4v",
+        "mkv",
+        "mov",
+        "mp4",
+        "mpeg",
+        "mpg",
+        "ts",
+        "webm",
+        "wmv",
+    ];
     public static readonly string[] DefaultAudio = ["aac", "flac", "m4a", "mp3", "ogg", "opus", "wav"];
 
     public List<string> Images { get; set; } = [];

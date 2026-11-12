@@ -28,9 +28,14 @@ public sealed class SignInService(
     AccessService accounts,
     AccessChanges changes,
     IOptionsMonitor<SecurityOptions> security,
-    ILogger<SignInService> logger)
+    ILogger<SignInService> logger
+)
 {
-    public async Task<SignInResult> SignInAsync(string? userName, string? password, CancellationToken cancellationToken = default)
+    public async Task<SignInResult> SignInAsync(
+        string? userName,
+        string? password,
+        CancellationToken cancellationToken = default
+    )
     {
         if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrEmpty(password))
             return new SignInResult(SignInStatus.Invalid);
@@ -48,9 +53,10 @@ public sealed class SignInService(
                     return new SignInResult(SignInStatus.LockedOut, LockedUntil: result.LockedUntil);
             }
 
-            var userId = result.User!.Source == UserAccount.LocalSource
-                ? int.Parse(result.User.ExternalId, CultureInfo.InvariantCulture)
-                : await ProvisionAsync(result.User, cancellationToken);
+            var userId =
+                result.User!.Source == UserAccount.LocalSource
+                    ? int.Parse(result.User.ExternalId, CultureInfo.InvariantCulture)
+                    : await ProvisionAsync(result.User, cancellationToken);
             if (userId is null)
                 return new SignInResult(SignInStatus.Invalid);
 
@@ -74,8 +80,15 @@ public sealed class SignInService(
         if (names.Count == 0)
             return all.Where(d => d.Source == UserAccount.LocalSource);
 
-        foreach (var missing in names.Where(n => all.All(d => !string.Equals(d.Source, n, StringComparison.OrdinalIgnoreCase))))
+        foreach (
+            var missing in names.Where(n =>
+                all.All(d => !string.Equals(d.Source, n, StringComparison.OrdinalIgnoreCase))
+            )
+        )
+        {
             logger.LogWarning("Sfe:Security:Directories names {Directory}, which this server doesn't have", missing);
+        }
+
         return names
             .Select(n => all.FirstOrDefault(d => string.Equals(d.Source, n, StringComparison.OrdinalIgnoreCase)))
             .OfType<IUserDirectory>();
@@ -88,13 +101,22 @@ public sealed class SignInService(
     private async Task<int?> ProvisionAsync(DirectoryUser external, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var user = await db.Users.Include(u => u.Groups).ThenInclude(m => m.Group)
-            .FirstOrDefaultAsync(u => u.Source == external.Source && u.ExternalId == external.ExternalId, cancellationToken);
+        var user = await db
+            .Users.Include(u => u.Groups)
+                .ThenInclude(m => m.Group)
+            .FirstOrDefaultAsync(
+                u => u.Source == external.Source && u.ExternalId == external.ExternalId,
+                cancellationToken
+            );
         if (user is null)
         {
             if (await db.Users.AnyAsync(u => u.UserName == external.UserName, cancellationToken))
             {
-                logger.LogWarning("The {Directory} account {User} cannot sign in: another account has that name", external.Source, external.UserName);
+                logger.LogWarning(
+                    "The {Directory} account {User} cannot sign in: another account has that name",
+                    external.Source,
+                    external.UserName
+                );
                 return null;
             }
 
@@ -111,7 +133,10 @@ public sealed class SignInService(
 
         user.DisplayName = external.DisplayName ?? user.DisplayName;
         var mapped = await db.Groups.Where(g => g.ExternalName != null).ToListAsync(cancellationToken);
-        var wanted = mapped.Where(g => external.Groups.Contains(g.ExternalName!, StringComparer.OrdinalIgnoreCase)).Select(g => g.Id).ToHashSet();
+        var wanted = mapped
+            .Where(g => external.Groups.Contains(g.ExternalName!, StringComparer.OrdinalIgnoreCase))
+            .Select(g => g.Id)
+            .ToHashSet();
         user.Groups.RemoveAll(m => m.Group?.ExternalName is not null && !wanted.Contains(m.GroupId));
         foreach (var groupId in wanted.Where(id => user.Groups.All(m => m.GroupId != id)))
             user.Groups.Add(new GroupMember { GroupId = groupId });

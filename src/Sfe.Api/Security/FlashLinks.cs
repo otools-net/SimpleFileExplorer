@@ -23,15 +23,25 @@ public sealed class FlashLinks(IDataProtectionProvider protection)
     public static readonly TimeSpan Lifetime = TimeSpan.FromHours(12);
 
     // A purpose of its own: an external player's link (one file) can't stand for a folder here, nor the reverse.
-    private readonly ITimeLimitedDataProtector _protector = protection.CreateProtector("Sfe.FlashLinks.v1").ToTimeLimitedDataProtector();
+    private readonly ITimeLimitedDataProtector _protector = protection
+        .CreateProtector("Sfe.FlashLinks.v1")
+        .ToTimeLimitedDataProtector();
 
     /// <summary>A link to the movie at <paramref name="path"/>, opening its folder to the movie.</summary>
     public FlashLink Create(int tenantId, SessionUser? user, string path)
     {
         var slash = path.LastIndexOf('/');
-        var claims = new FileLinkClaims(tenantId, user?.Id, user?.SecurityStamp, slash < 0 ? string.Empty : path[..slash]);
+        var claims = new FileLinkClaims(
+            tenantId,
+            user?.Id,
+            user?.SecurityStamp,
+            slash < 0 ? string.Empty : path[..slash]
+        );
         var token = _protector.Protect(JsonSerializer.Serialize(claims), Lifetime);
-        return new FlashLink($"api/files/flash/{token}/{Uri.EscapeDataString(path[(slash + 1)..])}", DateTimeOffset.UtcNow + Lifetime);
+        return new FlashLink(
+            $"api/files/flash/{token}/{Uri.EscapeDataString(path[(slash + 1)..])}",
+            DateTimeOffset.UtcNow + Lifetime
+        );
     }
 
     /// <summary>The claims of a token that is genuine and not expired; null otherwise.</summary>

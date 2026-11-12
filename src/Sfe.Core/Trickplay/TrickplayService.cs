@@ -44,7 +44,8 @@ public sealed record TrickplayStatus(
     IReadOnlyList<string> Current,
     DateTimeOffset? LastPassFinished,
     DateTimeOffset? PassStarted = null,
-    DateTimeOffset? NextPass = null);
+    DateTimeOffset? NextPass = null
+);
 
 /// <summary>Where a video stands in the background job; videos with nothing to do have no state.</summary>
 public enum TrickplayFileState
@@ -62,7 +63,13 @@ public sealed record TrickplayRunning(string Path, DateTimeOffset Started);
 /// <summary>A video the job finished with.</summary>
 /// <param name="Error">Why there is no trickplay, when <paramref name="Succeeded"/> is false.</param>
 /// <param name="Seconds">Time ffmpeg took.</param>
-public sealed record TrickplayResult(string Path, bool Succeeded, string? Error, DateTimeOffset Finished, double Seconds);
+public sealed record TrickplayResult(
+    string Path,
+    bool Succeeded,
+    string? Error,
+    DateTimeOffset Finished,
+    double Seconds
+);
 
 /// <summary>Detailed progress of the background job, for the activity dialog.</summary>
 /// <param name="Queued">The first videos opened in the player and waiting (they go first); the total is in the status.</param>
@@ -73,7 +80,8 @@ public sealed record TrickplayActivity(
     IReadOnlyList<TrickplayRunning> Running,
     IReadOnlyList<string> Queued,
     IReadOnlyList<string> Pending,
-    IReadOnlyList<TrickplayResult> Recent);
+    IReadOnlyList<TrickplayResult> Recent
+);
 
 /// <summary>Trickplay of a video: <see cref="Count"/> frames, one every <see cref="Interval"/> seconds, tiled on sheets.</summary>
 /// <param name="Interval">Seconds between two frames; frame <c>n</c> shows second <c>n × Interval</c>.</param>
@@ -81,7 +89,16 @@ public sealed record TrickplayActivity(
 /// <param name="TileWidth">Size of one frame in pixels.</param>
 /// <param name="Sheets">Sheet images, numbered from 0. The last one can be partly empty.</param>
 /// <param name="Version">Changes when the trickplay is generated again: sheet URLs carry it, so browsers may cache them.</param>
-public sealed record TrickplayManifest(int Interval, int Count, int Columns, int Rows, int TileWidth, int TileHeight, int Sheets, long Version);
+public sealed record TrickplayManifest(
+    int Interval,
+    int Count,
+    int Columns,
+    int Rows,
+    int TileWidth,
+    int TileHeight,
+    int Sheets,
+    long Version
+);
 
 /// <summary>
 /// Generates trickplay in the background for the videos of the configured folders, and serves it.
@@ -131,8 +148,8 @@ public sealed class TrickplayService : IDisposable
 
     private readonly SemaphoreSlim _passSignal = new(0);
     private readonly SemaphoreSlim _queueSignal = new(0);
-    private readonly PendingVideos _requested = new();      // opened in the player
-    private readonly PendingVideos _pending = new();        // found by the current pass
+    private readonly PendingVideos _requested = new(); // opened in the player
+    private readonly PendingVideos _pending = new(); // found by the current pass
     private readonly ConcurrentDictionary<string, DateTimeOffset> _running = new(LibraryPaths.PathComparer);
     private readonly Queue<TrickplayResult> _recent = new();
     private volatile bool _passRequested = true;
@@ -161,7 +178,8 @@ public sealed class TrickplayService : IDisposable
         IOptionsMonitor<SfeOptions> options,
         TaskHistory history,
         FfmpegLimits limits,
-        ILogger<TrickplayService> logger)
+        ILogger<TrickplayService> logger
+    )
     {
         _history = history;
         _limits = limits;
@@ -183,21 +201,23 @@ public sealed class TrickplayService : IDisposable
     /// <summary>Enabled and ffmpeg found.</summary>
     public bool IsAvailable => Options.Enabled && _ffmpeg.IsAvailable;
 
-    public TrickplayStatus Status => new(
-        !Options.Enabled ? TrickplayState.Disabled
-            : !_ffmpeg.IsAvailable ? TrickplayState.Unavailable
-            : _pass is not null || !_running.IsEmpty || _requested.Count > 0 ? TrickplayState.Running
-            : TrickplayState.Idle,
-        _checked,
-        _generated,
-        _failed,
-        _requested.Count,
-        _pending.Count,
-        _discovering,
-        [.. _running.Keys.Select(Relative).Order(StringComparer.Ordinal)],
-        _lastPassFinished,
-        _pass is not null ? _passStarted : null,
-        IsAvailable ? _nextPass : null);
+    public TrickplayStatus Status =>
+        new(
+            !Options.Enabled ? TrickplayState.Disabled
+                : !_ffmpeg.IsAvailable ? TrickplayState.Unavailable
+                : _pass is not null || !_running.IsEmpty || _requested.Count > 0 ? TrickplayState.Running
+                : TrickplayState.Idle,
+            _checked,
+            _generated,
+            _failed,
+            _requested.Count,
+            _pending.Count,
+            _discovering,
+            [.. _running.Keys.Select(Relative).Order(StringComparer.Ordinal)],
+            _lastPassFinished,
+            _pass is not null ? _passStarted : null,
+            IsAvailable ? _nextPass : null
+        );
 
     /// <summary>Status with the videos being processed and the first <paramref name="limit"/> waiting ones.</summary>
     public TrickplayActivity GetActivity(int limit)
@@ -210,7 +230,8 @@ public sealed class TrickplayService : IDisposable
             [.. _running.Select(r => new TrickplayRunning(Relative(r.Key), r.Value)).OrderBy(r => r.Started)],
             [.. _requested.First(limit).Select(Relative)],
             [.. _pending.First(limit).Select(Relative)],
-            recent);
+            recent
+        );
     }
 
     /// <summary>
@@ -319,7 +340,11 @@ public sealed class TrickplayService : IDisposable
     }
 
     public string GetCacheFolder(string sourceFullPath) =>
-        Path.Combine(_options.CurrentValue.Thumbnails.CacheDirectory, FolderName, ThumbnailService.ShardedPath(ThumbnailService.CacheKey(sourceFullPath)));
+        Path.Combine(
+            _options.CurrentValue.Thumbnails.CacheDirectory,
+            FolderName,
+            ThumbnailService.ShardedPath(ThumbnailService.CacheKey(sourceFullPath))
+        );
 
     /// <summary>Background work, until <paramref name="stoppingToken"/> is cancelled (application shutdown).</summary>
     public async Task RunAsync(CancellationToken stoppingToken)
@@ -328,9 +353,7 @@ public sealed class TrickplayService : IDisposable
         {
             await Task.WhenAll(PassLoopAsync(stoppingToken), QueueLoopAsync(stoppingToken));
         }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-        {
-        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
     }
 
     private void Enqueue(string source)
@@ -358,7 +381,9 @@ public sealed class TrickplayService : IDisposable
 
             if (_passRequested || DateTimeOffset.UtcNow >= nextPass)
             {
-                var (trigger, scheduleId) = _passRequested ? (_passTrigger, _passScheduleId) : (TaskTrigger.Automatic, null);
+                var (trigger, scheduleId) = _passRequested
+                    ? (_passTrigger, _passScheduleId)
+                    : (TaskTrigger.Automatic, null);
                 _passRequested = false;
                 _passTrigger = TaskTrigger.Automatic;
                 _passScheduleId = null;
@@ -370,7 +395,8 @@ public sealed class TrickplayService : IDisposable
                 continue;
             }
 
-            var wait = nextPass == DateTimeOffset.MaxValue ? Timeout.InfiniteTimeSpan : nextPass - DateTimeOffset.UtcNow;
+            var wait =
+                nextPass == DateTimeOffset.MaxValue ? Timeout.InfiniteTimeSpan : nextPass - DateTimeOffset.UtcNow;
             if (wait == Timeout.InfiniteTimeSpan || wait > TimeSpan.Zero)
                 await _passSignal.WaitAsync(wait > TimeSpan.FromDays(1) ? TimeSpan.FromDays(1) : wait, stoppingToken);
         }
@@ -398,9 +424,17 @@ public sealed class TrickplayService : IDisposable
         {
             // One task lists the videos to do (cheap: only their info.json is read), the workers take them in order.
             var discovery = Task.Run(() => Discover(settings, found, workers, pass.Token), pass.Token);
-            await Task.WhenAll([discovery, .. Enumerable.Range(0, workers).Select(_ => WorkAsync(settings, found, pass.Token))]);
+            await Task.WhenAll([
+                discovery,
+                .. Enumerable.Range(0, workers).Select(_ => WorkAsync(settings, found, pass.Token)),
+            ]);
             _lastPassFinished = DateTimeOffset.Now;
-            _logger.LogInformation("Trickplay pass finished: {Checked} videos checked, {Generated} generated, {Failed} failed", _checked, _generated, _failed);
+            _logger.LogInformation(
+                "Trickplay pass finished: {Checked} videos checked, {Generated} generated, {Failed} failed",
+                _checked,
+                _generated,
+                _failed
+            );
             outcome = TaskOutcome.Completed;
         }
         catch (OperationCanceledException) when (!stoppingToken.IsCancellationRequested && _cancelRequested)
@@ -432,7 +466,12 @@ public sealed class TrickplayService : IDisposable
     }
 
     /// <summary>Adds the videos of the pass without (current) trickplay to <see cref="_pending"/>, one signal each.</summary>
-    private void Discover(TrickplayOptions settings, SemaphoreSlim found, int workers, CancellationToken cancellationToken)
+    private void Discover(
+        TrickplayOptions settings,
+        SemaphoreSlim found,
+        int workers,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -442,10 +481,12 @@ public sealed class TrickplayService : IDisposable
                 var source = video.FullName;
                 var folder = GetCacheFolder(source);
                 var info = ReadInfo(folder);
-                if (!IsFresh(info, video, settings)
+                if (
+                    !IsFresh(info, video, settings)
                     && !_running.ContainsKey(source)
                     && !_requested.Contains(source)
-                    && _pending.Add(source))
+                    && _pending.Add(source)
+                )
                 {
                     found.Release();
                 }
@@ -504,9 +545,7 @@ public sealed class TrickplayService : IDisposable
                 {
                     await TryEnsureAsync(source, Options, work.Token);
                 }
-                catch (OperationCanceledException) when (!stoppingToken.IsCancellationRequested)
-                {
-                }
+                catch (OperationCanceledException) when (!stoppingToken.IsCancellationRequested) { }
             }
         }
     }
@@ -533,9 +572,14 @@ public sealed class TrickplayService : IDisposable
     /// </summary>
     private IEnumerable<FileInfo> EnumerateVideos(TrickplayOptions settings, CancellationToken cancellationToken)
     {
-        var ignored = new HashSet<string>(_options.CurrentValue.Scan.IgnoredDirectories, StringComparer.OrdinalIgnoreCase);
+        var ignored = new HashSet<string>(
+            _options.CurrentValue.Scan.IgnoredDirectories,
+            StringComparer.OrdinalIgnoreCase
+        );
         var exclusions = FolderExclusions.Of(_options.CurrentValue);
-        var roots = RootFolders(settings).Where(f => !exclusions.IsExcluded(ExclusionKind.Trickplay, _paths, f)).ToList();
+        var roots = RootFolders(settings)
+            .Where(f => !exclusions.IsExcluded(ExclusionKind.Trickplay, _paths, f))
+            .ToList();
         roots.Reverse();
         var pending = new Stack<string>(roots);
         while (pending.TryPop(out var folder))
@@ -553,9 +597,14 @@ public sealed class TrickplayService : IDisposable
             }
 
             // Sub-folders pushed in reverse so they are visited in name order, after this folder's videos.
-            foreach (var child in entries.OfType<DirectoryInfo>()
-                         .Where(d => !ignored.Contains(d.Name) && !exclusions.IsExcluded(ExclusionKind.Trickplay, _paths, d.FullName))
-                         .OrderByDescending(d => d.Name, NaturalComparer.Instance))
+            foreach (
+                var child in entries
+                    .OfType<DirectoryInfo>()
+                    .Where(d =>
+                        !ignored.Contains(d.Name) && !exclusions.IsExcluded(ExclusionKind.Trickplay, _paths, d.FullName)
+                    )
+                    .OrderByDescending(d => d.Name, NaturalComparer.Instance)
+            )
             {
                 pending.Push(child.FullName);
             }
@@ -574,18 +623,28 @@ public sealed class TrickplayService : IDisposable
         if (settings.Folders.Count == 0)
             return [Path.TrimEndingDirectorySeparator(_paths.Root)];
 
-        var folders = settings.Folders
-            .Select(f => _paths.TryResolve(f, out var full) ? full : null)
+        var folders = settings
+            .Folders.Select(f => _paths.TryResolve(f, out var full) ? full : null)
             .OfType<string>()
             .Where(Directory.Exists)
             .Distinct(LibraryPaths.PathComparer)
             .ToList();
-        return [.. folders.Where(f => !folders.Any(other => !LibraryPaths.PathComparer.Equals(f, other) && IsWithin(f, other)))];
+        return
+        [
+            .. folders.Where(f =>
+                !folders.Any(other => !LibraryPaths.PathComparer.Equals(f, other) && IsWithin(f, other))
+            ),
+        ];
     }
 
     private bool IsInFolders(string source, TrickplayOptions settings) =>
-        (settings.Folders.Count == 0 || settings.Folders.Any(f => _paths.TryResolve(f, out var folder) && IsWithin(source, folder)))
-        && !FolderExclusions.Of(_options.CurrentValue).IsExcluded(ExclusionKind.Trickplay, _paths, Path.GetDirectoryName(source)!);
+        (
+            settings.Folders.Count == 0
+            || settings.Folders.Any(f => _paths.TryResolve(f, out var folder) && IsWithin(source, folder))
+        )
+        && !FolderExclusions
+            .Of(_options.CurrentValue)
+            .IsExcluded(ExclusionKind.Trickplay, _paths, Path.GetDirectoryName(source)!);
 
     private static bool IsWithin(string path, string folder)
     {
@@ -608,12 +667,15 @@ public sealed class TrickplayService : IDisposable
                 Interlocked.Increment(ref _generated);
             else
                 Interlocked.Increment(ref _failed);
-            Remember(new TrickplayResult(
-                Relative(video.FullName),
-                error is null,
-                error is { Length: > MaxErrorLength } ? error[..MaxErrorLength] + "…" : error,
-                DateTimeOffset.Now,
-                Stopwatch.GetElapsedTime(started).TotalSeconds));
+            Remember(
+                new TrickplayResult(
+                    Relative(video.FullName),
+                    error is null,
+                    error is { Length: > MaxErrorLength } ? error[..MaxErrorLength] + "…" : error,
+                    DateTimeOffset.Now,
+                    Stopwatch.GetElapsedTime(started).TotalSeconds
+                )
+            );
         }
         finally
         {
@@ -636,7 +698,12 @@ public sealed class TrickplayService : IDisposable
     /// sheets. Built in a temporary folder that replaces the previous trickplay when complete.
     /// </summary>
     /// <returns>null when the trickplay was made, otherwise why not.</returns>
-    private async Task<string?> GenerateAsync(FileInfo video, string folder, TrickplayOptions settings, CancellationToken cancellationToken)
+    private async Task<string?> GenerateAsync(
+        FileInfo video,
+        string folder,
+        TrickplayOptions settings,
+        CancellationToken cancellationToken
+    )
     {
         var temp = folder + ".tmp";
         var frames = Path.Combine(temp, "frames");
@@ -652,9 +719,13 @@ public sealed class TrickplayService : IDisposable
             // round=up: frame n is the picture at n × interval (the default rounding would take it half an interval early).
             extract.AddRange(await _ffmpeg.LibraryInputAsync(video.FullName));
             extract.AddRange([
-                "-an", "-sn", "-dn",
-                "-vf", $"fps=1/{settings.IntervalSeconds}:round=up,scale='min({settings.Width},iw)':-2",
-                "-q:v", "5",
+                "-an",
+                "-sn",
+                "-dn",
+                "-vf",
+                $"fps=1/{settings.IntervalSeconds}:round=up,scale='min({settings.Width},iw)':-2",
+                "-q:v",
+                "5",
                 Path.Combine(frames, "%05d.jpg"),
             ]);
             var (exitCode, errors) = await _ffmpeg.RunAsync(extract, timeout, cancellationToken: cancellationToken);
@@ -664,11 +735,21 @@ public sealed class TrickplayService : IDisposable
 
             List<string> tile =
             [
-                "-hide_banner", "-loglevel", "error", "-nostdin",
-                "-framerate", "1", "-i", Path.Combine(frames, "%05d.jpg"),
-                "-vf", $"tile={settings.Columns}x{settings.Rows}",
-                "-q:v", "5",
-                "-start_number", "0", Path.Combine(temp, "%d.jpg"),
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-nostdin",
+                "-framerate",
+                "1",
+                "-i",
+                Path.Combine(frames, "%05d.jpg"),
+                "-vf",
+                $"tile={settings.Columns}x{settings.Rows}",
+                "-q:v",
+                "5",
+                "-start_number",
+                "0",
+                Path.Combine(temp, "%d.jpg"),
             ];
             (exitCode, errors) = await _ffmpeg.RunAsync(tile, timeout, cancellationToken: cancellationToken);
             var sheets = (pictures.Length + settings.Columns * settings.Rows - 1) / (settings.Columns * settings.Rows);
@@ -677,7 +758,15 @@ public sealed class TrickplayService : IDisposable
 
             DeleteFolder(frames);
             var manifest = new TrickplayManifest(
-                settings.IntervalSeconds, pictures.Length, settings.Columns, settings.Rows, tileWidth, tileHeight, sheets, DateTime.UtcNow.Ticks);
+                settings.IntervalSeconds,
+                pictures.Length,
+                settings.Columns,
+                settings.Rows,
+                tileWidth,
+                tileHeight,
+                sheets,
+                DateTime.UtcNow.Ticks
+            );
             // A failure only costs the fingerprint: the trickplay is fine for the player.
             await FingerprintAsync(temp, manifest, settings, cancellationToken);
             WriteInfo(temp, new StoredInfo(video.Length, video.LastWriteTimeUtc.Ticks, ImageKey(settings), manifest));
@@ -689,7 +778,12 @@ public sealed class TrickplayService : IDisposable
                 return cacheError.Message;
             }
 
-            _logger.LogDebug("Trickplay of {File}: {Count} frames on {Sheets} sheets", video.FullName, pictures.Length, sheets);
+            _logger.LogDebug(
+                "Trickplay of {File}: {Count} frames on {Sheets} sheets",
+                video.FullName,
+                pictures.Length,
+                sheets
+            );
             return null;
         }
         catch (OperationCanceledException)
@@ -713,7 +807,10 @@ public sealed class TrickplayService : IDisposable
                 Directory.CreateDirectory(folder);
                 foreach (var sheet in Directory.EnumerateFiles(folder, "*.jpg"))
                     File.Delete(sheet);
-                WriteInfo(folder, new StoredInfo(video.Length, video.LastWriteTimeUtc.Ticks, FailureKey(settings), null));
+                WriteInfo(
+                    folder,
+                    new StoredInfo(video.Length, video.LastWriteTimeUtc.Ticks, FailureKey(settings), null)
+                );
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -726,7 +823,14 @@ public sealed class TrickplayService : IDisposable
 
     /// <summary>Waits between attempts to put new trickplay in place of the old one; the last one gives up.</summary>
     private static readonly TimeSpan[] ReplaceDelays =
-        [TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)];
+    [
+        TimeSpan.FromMilliseconds(50),
+        TimeSpan.FromMilliseconds(100),
+        TimeSpan.FromMilliseconds(250),
+        TimeSpan.FromMilliseconds(500),
+        TimeSpan.FromSeconds(1),
+        TimeSpan.FromSeconds(2),
+    ];
 
     /// <summary>
     /// Puts <paramref name="temp"/> in place of <paramref name="folder"/>. On Windows a file of either one held open a
@@ -759,7 +863,12 @@ public sealed class TrickplayService : IDisposable
     /// the trickplay itself: only a few JPEG sheets are decoded. A failure only costs the fingerprint: the video is
     /// left out of similar-video comparisons until its trickplay is made again.
     /// </summary>
-    private async Task FingerprintAsync(string folder, TrickplayManifest manifest, TrickplayOptions settings, CancellationToken cancellationToken)
+    private async Task FingerprintAsync(
+        string folder,
+        TrickplayManifest manifest,
+        TrickplayOptions settings,
+        CancellationToken cancellationToken
+    )
     {
         var path = Path.Combine(folder, FingerprintFile);
         string error;
@@ -767,21 +876,41 @@ public sealed class TrickplayService : IDisposable
         {
             List<string> arguments =
             [
-                "-hide_banner", "-loglevel", "error", "-nostdin",
-                "-start_number", "0", "-i", Path.Combine(folder, "%d.jpg"),
-                "-vf", $"format=gray,untile={manifest.Columns}x{manifest.Rows},scale={VideoFingerprint.PixelWidth}:{VideoFingerprint.PixelHeight}:flags=area",
-                "-frames:v", manifest.Count.ToString(),
-                "-f", "rawvideo", "-pix_fmt", "gray", "pipe:1",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-nostdin",
+                "-start_number",
+                "0",
+                "-i",
+                Path.Combine(folder, "%d.jpg"),
+                "-vf",
+                $"format=gray,untile={manifest.Columns}x{manifest.Rows},scale={VideoFingerprint.PixelWidth}:{VideoFingerprint.PixelHeight}:flags=area",
+                "-frames:v",
+                manifest.Count.ToString(),
+                "-f",
+                "rawvideo",
+                "-pix_fmt",
+                "gray",
+                "pipe:1",
             ];
             using var output = new MemoryStream();
-            var (exitCode, errors) = await _ffmpeg.RunAsync(arguments, TimeSpan.FromMinutes(Math.Max(1, settings.TimeoutMinutes)), output, cancellationToken);
+            var (exitCode, errors) = await _ffmpeg.RunAsync(
+                arguments,
+                TimeSpan.FromMinutes(Math.Max(1, settings.TimeoutMinutes)),
+                output,
+                cancellationToken
+            );
             if (exitCode == 0 && output.Length == (long)manifest.Count * VideoFingerprint.FrameBytes)
             {
-                VideoFingerprint.FromGreyFrames(manifest.Interval, output.GetBuffer().AsSpan(0, (int)output.Length), manifest.Count).Write(path);
+                VideoFingerprint
+                    .FromGreyFrames(manifest.Interval, output.GetBuffer().AsSpan(0, (int)output.Length), manifest.Count)
+                    .Write(path);
                 return;
             }
 
-            error = $"ffmpeg could not read the frames back ({exitCode}, {output.Length / VideoFingerprint.FrameBytes} of {manifest.Count}): {errors.Trim()}";
+            error =
+                $"ffmpeg could not read the frames back ({exitCode}, {output.Length / VideoFingerprint.FrameBytes} of {manifest.Count}): {errors.Trim()}";
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -801,7 +930,11 @@ public sealed class TrickplayService : IDisposable
         var folder = GetCacheFolder(sourceFullPath);
         if (!video.Exists || ReadInfo(folder) is not { Manifest: { } manifest } info || !SameSource(info, video))
             return null;
-        return VideoFingerprint.Read(Path.Combine(folder, FingerprintFile), manifest.Interval) is { Count: > 0 } fingerprint ? fingerprint : null;
+        return
+            VideoFingerprint.Read(Path.Combine(folder, FingerprintFile), manifest.Interval)
+                is { Count: > 0 } fingerprint
+            ? fingerprint
+            : null;
     }
 
     /// <summary>Contents of <c>info.json</c>; <see cref="Manifest"/> is null when generation failed.</summary>
@@ -812,7 +945,12 @@ public sealed class TrickplayService : IDisposable
         try
         {
             // Shared for deletes: a reader doesn't stop new trickplay from replacing this one.
-            using var stream = new FileStream(Path.Combine(folder, InfoFile), FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var stream = new FileStream(
+                Path.Combine(folder, InfoFile),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete
+            );
             return JsonSerializer.Deserialize<StoredInfo>(stream, Json);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
@@ -838,19 +976,23 @@ public sealed class TrickplayService : IDisposable
         && info.Key == (info.Manifest is null ? FailureKey(settings) : ImageKey(settings));
 
     /// <summary>Settings that change the pictures: trickplay made with other values is made again.</summary>
-    private static string ImageKey(TrickplayOptions s) => $"{s.IntervalSeconds}|{s.Width}|{s.Columns}|{s.Rows}|{s.KeyFramesOnly}";
+    private static string ImageKey(TrickplayOptions s) =>
+        $"{s.IntervalSeconds}|{s.Width}|{s.Columns}|{s.Rows}|{s.KeyFramesOnly}";
 
     /// <summary>A failed video is tried again when any setting that could help changes (e.g. a longer time limit).</summary>
     private static string FailureKey(TrickplayOptions s) => $"{ImageKey(s)}|{s.TimeoutMinutes}";
 
     /// <summary>Settings that decide which videos a pass handles, and how.</summary>
-    private static string PassSettings(SfeOptions o) => JsonSerializer.Serialize(new
-    {
-        o.Trickplay,
-        o.FileTypes.Videos,
-        o.Scan.IgnoredDirectories,
-        o.ShowHiddenItems,
-    });
+    private static string PassSettings(SfeOptions o) =>
+        JsonSerializer.Serialize(
+            new
+            {
+                o.Trickplay,
+                o.FileTypes.Videos,
+                o.Scan.IgnoredDirectories,
+                o.ShowHiddenItems,
+            }
+        );
 
     private void OnOptionsChanged(SfeOptions options, string? name)
     {
@@ -887,8 +1029,7 @@ public sealed class TrickplayService : IDisposable
             do
             {
                 marker = stream.ReadByte();
-            }
-            while (marker == 0xFF);
+            } while (marker == 0xFF);
 
             if (marker < 0)
                 return null;
@@ -901,7 +1042,7 @@ public sealed class TrickplayService : IDisposable
             // SOF0-SOF15, except DHT (C4), JPG (C8) and DAC (CC).
             if (marker is >= 0xC0 and <= 0xCF and not (0xC4 or 0xC8 or 0xCC))
             {
-                stream.ReadByte();      // precision
+                stream.ReadByte(); // precision
                 var height = (stream.ReadByte() << 8) | stream.ReadByte();
                 var width = (stream.ReadByte() << 8) | stream.ReadByte();
                 return width > 0 && height > 0 ? (width, height) : null;

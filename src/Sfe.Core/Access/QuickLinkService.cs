@@ -26,7 +26,11 @@ public sealed class QuickLinkService(IDbContextFactory<AccessDbContext> dbFactor
     /// <summary>A sidebar list, not a bookmark store: every list is read and checked on the disk at each page load.</summary>
     public const int MaxLinks = 100;
 
-    public async Task<IReadOnlyList<QuickLinkEntry>> GetAsync(int userId, int tenantId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<QuickLinkEntry>> GetAsync(
+        int userId,
+        int tenantId,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         return [.. (await LoadAsync(db, userId, tenantId, cancellationToken)).Select(ToEntry)];
@@ -38,7 +42,12 @@ public sealed class QuickLinkService(IDbContextFactory<AccessDbContext> dbFactor
     /// otherwise; their kind stays the one recorded.
     /// </summary>
     public async Task<(QuickLinkAddStatus Status, IReadOnlyList<QuickLinkEntry> Links)> AddAsync(
-        int userId, int tenantId, IReadOnlyList<QuickLinkEntry> links, int? position, CancellationToken cancellationToken = default)
+        int userId,
+        int tenantId,
+        IReadOnlyList<QuickLinkEntry> links,
+        int? position,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var rows = await LoadAsync(db, userId, tenantId, cancellationToken);
@@ -49,7 +58,9 @@ public sealed class QuickLinkService(IDbContextFactory<AccessDbContext> dbFactor
 
         // The links moved, and the first link from `position` on that stays: the others go before it.
         var moved = position is null ? [] : wanted.Select(l => Find(rows, l.Path)).OfType<QuickLink>().ToHashSet();
-        var anchor = position is { } index ? rows.Skip(Math.Max(index, 0)).FirstOrDefault(r => !moved.Contains(r)) : null;
+        var anchor = position is { } index
+            ? rows.Skip(Math.Max(index, 0)).FirstOrDefault(r => !moved.Contains(r))
+            : null;
         var placed = new List<QuickLink>();
         foreach (var link in wanted)
         {
@@ -62,7 +73,13 @@ public sealed class QuickLinkService(IDbContextFactory<AccessDbContext> dbFactor
             }
             else
             {
-                var row = new QuickLink { UserId = userId, TenantId = tenantId, Path = link.Path, IsFolder = link.IsFolder };
+                var row = new QuickLink
+                {
+                    UserId = userId,
+                    TenantId = tenantId,
+                    Path = link.Path,
+                    IsFolder = link.IsFolder,
+                };
                 db.QuickLinks.Add(row);
                 placed.Add(row);
             }
@@ -76,7 +93,12 @@ public sealed class QuickLinkService(IDbContextFactory<AccessDbContext> dbFactor
     }
 
     /// <summary>Removes the link to <paramref name="path"/>; the list as it is afterwards.</summary>
-    public async Task<IReadOnlyList<QuickLinkEntry>> RemoveAsync(int userId, int tenantId, string path, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<QuickLinkEntry>> RemoveAsync(
+        int userId,
+        int tenantId,
+        string path,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var rows = await LoadAsync(db, userId, tenantId, cancellationToken);
@@ -96,7 +118,12 @@ public sealed class QuickLinkService(IDbContextFactory<AccessDbContext> dbFactor
     /// file or folder renamed or moved in the library; root-relative paths).
     /// </summary>
     /// <returns>Links changed.</returns>
-    public async Task<int> MovePathsAsync(int tenantId, string from, string to, CancellationToken cancellationToken = default)
+    public async Task<int> MovePathsAsync(
+        int tenantId,
+        string from,
+        string to,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         // A hundred links per user at most: read the library's and compare as the host's file system does.
@@ -110,11 +137,17 @@ public sealed class QuickLinkService(IDbContextFactory<AccessDbContext> dbFactor
     }
 
     /// <summary>The user's rows in order, tracked; duplicates left by two concurrent adds are dropped.</summary>
-    private static async Task<List<QuickLink>> LoadAsync(AccessDbContext db, int userId, int tenantId, CancellationToken cancellationToken)
+    private static async Task<List<QuickLink>> LoadAsync(
+        AccessDbContext db,
+        int userId,
+        int tenantId,
+        CancellationToken cancellationToken
+    )
     {
-        var rows = await db.QuickLinks
-            .Where(l => l.UserId == userId && l.TenantId == tenantId)
-            .OrderBy(l => l.Position).ThenBy(l => l.Id)
+        var rows = await db
+            .QuickLinks.Where(l => l.UserId == userId && l.TenantId == tenantId)
+            .OrderBy(l => l.Position)
+            .ThenBy(l => l.Id)
             .ToListAsync(cancellationToken);
         var seen = new HashSet<string>(LibraryPaths.PathComparer);
         var duplicates = rows.Where(r => !seen.Add(r.Path)).ToList();

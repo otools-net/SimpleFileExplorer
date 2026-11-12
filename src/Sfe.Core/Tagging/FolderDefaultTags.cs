@@ -13,7 +13,11 @@ namespace Sfe.Core.Tagging;
 public sealed record InheritedDefaultTag(string Path, TagSummary Tag);
 
 /// <summary>The default tags of a folder: its own, and those of its parents, which apply to it too.</summary>
-public sealed record FolderDefaults(string Path, IReadOnlyList<TagSummary> Own, IReadOnlyList<InheritedDefaultTag> Inherited)
+public sealed record FolderDefaults(
+    string Path,
+    IReadOnlyList<TagSummary> Own,
+    IReadOnlyList<InheritedDefaultTag> Inherited
+)
 {
     public bool IsEmpty => Own.Count == 0 && Inherited.Count == 0;
 }
@@ -39,7 +43,11 @@ public enum DefaultTagChangeStatus
 /// A library has a few of them: the rows are read once into memory and read again after a change, so that a scan asks
 /// for the tags of each folder it visits without a round trip (a walk up the path, O(depth)).
 /// </remarks>
-public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory, LibraryPaths paths, ILogger<FolderDefaultTags> logger)
+public sealed class FolderDefaultTags(
+    IDbContextFactory<SfeDbContext> dbFactory,
+    LibraryPaths paths,
+    ILogger<FolderDefaultTags> logger
+)
 {
     private volatile Snapshot? _snapshot;
     private int _version;
@@ -79,10 +87,14 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
             return snapshot;
         var version = Volatile.Read(ref _version);
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var rows = await db.FolderDefaultTags.AsNoTracking().Select(d => new { d.Path, d.TagId }).ToListAsync(cancellationToken);
-        snapshot = new Snapshot(rows
-            .GroupBy(r => r.Path, LibraryPaths.PathComparer)
-            .ToDictionary(g => g.Key, g => g.Select(r => r.TagId).Distinct().ToArray(), LibraryPaths.PathComparer));
+        var rows = await db
+            .FolderDefaultTags.AsNoTracking()
+            .Select(d => new { d.Path, d.TagId })
+            .ToListAsync(cancellationToken);
+        snapshot = new Snapshot(
+            rows.GroupBy(r => r.Path, LibraryPaths.PathComparer)
+                .ToDictionary(g => g.Key, g => g.Select(r => r.TagId).Distinct().ToArray(), LibraryPaths.PathComparer)
+        );
         // Changed while reading: this one may miss the change, keep it for this call only.
         if (Volatile.Read(ref _version) == version)
             _snapshot = snapshot;
@@ -112,25 +124,44 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
         var own = Summaries(graph, snapshot.Own(folder));
         var seen = own.Select(t => t.Id).ToHashSet();
         var inherited = new List<InheritedDefaultTag>();
-        foreach (var (parent, tags) in snapshot.Through(folder).Where(f => !LibraryPaths.PathComparer.Equals(f.Folder, folder)))
-            inherited.AddRange(Summaries(graph, tags).Where(t => seen.Add(t.Id)).Select(t => new InheritedDefaultTag(parent, t)));
+        foreach (
+            var (parent, tags) in snapshot
+                .Through(folder)
+                .Where(f => !LibraryPaths.PathComparer.Equals(f.Folder, folder))
+        )
+        {
+            inherited.AddRange(
+                Summaries(graph, tags).Where(t => seen.Add(t.Id)).Select(t => new InheritedDefaultTag(parent, t))
+            );
+        }
+
         return new FolderDefaults(folder, own, inherited);
     }
 
     private static List<TagSummary> Summaries(TagGraph graph, IEnumerable<int> tagIds) =>
-        [.. tagIds.Select(graph.Summary).OfType<TagSummary>().OrderBy(t => t.DisplayName, StringComparer.CurrentCultureIgnoreCase)];
+        [
+            .. tagIds
+                .Select(graph.Summary)
+                .OfType<TagSummary>()
+                .OrderBy(t => t.DisplayName, StringComparer.CurrentCultureIgnoreCase),
+        ];
 
     /// <summary>
     /// A listing with the default tags of its folder (<see cref="DirectoryListing.DefaultTags"/>) and the own ones of
     /// its folders (<see cref="LibraryItem.DefaultTags"/>): O(page), one lookup per folder of the page.
     /// </summary>
-    public async Task<DirectoryListing> MarkAsync(DirectoryListing listing, CancellationToken cancellationToken = default)
+    public async Task<DirectoryListing> MarkAsync(
+        DirectoryListing listing,
+        CancellationToken cancellationToken = default
+    )
     {
         var snapshot = await SnapshotAsync(cancellationToken);
         if (snapshot.IsEmpty)
             return listing;
         var here = snapshot.Through(listing.Path).Any();
-        var folders = listing.Items.Where(i => i.Kind == ItemKind.Directory && snapshot.Own(i.Path).Length > 0).ToList();
+        var folders = listing
+            .Items.Where(i => i.Kind == ItemKind.Directory && snapshot.Own(i.Path).Length > 0)
+            .ToList();
         if (!here && folders.Count == 0)
             return listing;
 
@@ -139,15 +170,30 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
         return listing with
         {
             DefaultTags = here ? Describe(graph, snapshot, listing.Path) : null,
-            Items = folders.Count == 0 ? listing.Items : [.. listing.Items.Select(item => item.Kind == ItemKind.Directory && snapshot.Own(item.Path) is { Length: > 0 } own
-                ? item with { DefaultTags = Summaries(graph, own) }
-                : item)],
+            Items =
+                folders.Count == 0
+                    ? listing.Items
+                    :
+                    [
+                        .. listing.Items.Select(item =>
+                            item.Kind == ItemKind.Directory && snapshot.Own(item.Path) is { Length: > 0 } own
+                                ? item with
+                                {
+                                    DefaultTags = Summaries(graph, own),
+                                }
+                                : item
+                        ),
+                    ],
         };
     }
 
     /// <summary>Adds and removes default tags of a folder (root-relative; it must exist).</summary>
     public async Task<(DefaultTagChangeStatus Status, string? Error)> ChangeAsync(
-        string folder, IReadOnlyCollection<int> add, IReadOnlyCollection<int> remove, CancellationToken cancellationToken = default)
+        string folder,
+        IReadOnlyCollection<int> add,
+        IReadOnlyCollection<int> remove,
+        CancellationToken cancellationToken = default
+    )
     {
         if (!paths.TryResolve(folder, out var full) || !Directory.Exists(full))
             return (DefaultTagChangeStatus.NotFound, null);
@@ -159,12 +205,30 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
         try
         {
             if (remove.Count > 0)
-                await db.FolderDefaultTags.Where(d => d.Path == folder && remove.Contains(d.TagId)).ExecuteDeleteAsync(cancellationToken);
+            {
+                await db
+                    .FolderDefaultTags.Where(d => d.Path == folder && remove.Contains(d.TagId))
+                    .ExecuteDeleteAsync(cancellationToken);
+            }
+
             if (add.Count > 0)
             {
-                var existing = await db.FolderDefaultTags.Where(d => d.Path == folder).Select(d => d.TagId).ToListAsync(cancellationToken);
+                var existing = await db
+                    .FolderDefaultTags.Where(d => d.Path == folder)
+                    .Select(d => d.TagId)
+                    .ToListAsync(cancellationToken);
                 foreach (var tagId in add.Except(existing).Except(remove))
-                    db.FolderDefaultTags.Add(new FolderDefaultTag { Path = folder, TagId = tagId, Created = DateTime.UtcNow });
+                {
+                    db.FolderDefaultTags.Add(
+                        new FolderDefaultTag
+                        {
+                            Path = folder,
+                            TagId = tagId,
+                            Created = DateTime.UtcNow,
+                        }
+                    );
+                }
+
                 await db.SaveChangesAsync(cancellationToken);
             }
         }
@@ -184,7 +248,9 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         // A few rows per library: read them all and compare as the file system does.
         var rows = await db.FolderDefaultTags.ToListAsync(cancellationToken);
-        var taken = rows.Where(r => !FolderPolicy.IsSameOrBelow(r.Path, from)).Select(r => (r.Path, r.TagId)).ToHashSet(PathTagComparer.Instance);
+        var taken = rows.Where(r => !FolderPolicy.IsSameOrBelow(r.Path, from))
+            .Select(r => (r.Path, r.TagId))
+            .ToHashSet(PathTagComparer.Instance);
         var moved = 0;
         foreach (var row in rows.Where(r => FolderPolicy.IsSameOrBelow(r.Path, from)))
         {
@@ -207,11 +273,23 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
     /// folder changes nothing.
     /// </summary>
     /// <returns>Links added.</returns>
-    public async Task<int> ApplyAfterMoveAsync(string fromFull, string toFull, bool isFolder, CancellationToken cancellationToken = default)
+    public async Task<int> ApplyAfterMoveAsync(
+        string fromFull,
+        string toFull,
+        bool isFolder,
+        CancellationToken cancellationToken = default
+    )
     {
         var snapshot = await SnapshotAsync(cancellationToken);
-        if (snapshot.IsEmpty || paths.ToRelative(fromFull) is not { Length: > 0 } from || paths.ToRelative(toFull) is not { Length: > 0 } to)
+        if (
+            snapshot.IsEmpty
+            || paths.ToRelative(fromFull) is not { Length: > 0 } from
+            || paths.ToRelative(toFull) is not { Length: > 0 } to
+        )
+        {
             return 0;
+        }
+
         var tags = snapshot.At(Parent(to)).Except(snapshot.At(Parent(from))).ToList();
         if (tags.Count == 0)
             return 0;
@@ -227,12 +305,17 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
     /// Takes the default tags of a folder and below it off the table (it goes to the trash, or for good): returned to be
     /// kept with it and given back by <see cref="PutBackAsync"/>.
     /// </summary>
-    public async Task<IReadOnlyList<KeptDefaultTag>> TakeTreeAsync(string folder, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<KeptDefaultTag>> TakeTreeAsync(
+        string folder,
+        CancellationToken cancellationToken = default
+    )
     {
         if (folder.Length == 0)
             return [];
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var rows = (await db.FolderDefaultTags.ToListAsync(cancellationToken)).Where(r => FolderPolicy.IsSameOrBelow(r.Path, folder)).ToList();
+        var rows = (await db.FolderDefaultTags.ToListAsync(cancellationToken))
+            .Where(r => FolderPolicy.IsSameOrBelow(r.Path, folder))
+            .ToList();
         if (rows.Count == 0)
             return [];
         db.FolderDefaultTags.RemoveRange(rows);
@@ -243,7 +326,11 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
 
     /// <summary>Gives back tags taken by <see cref="TakeTreeAsync"/> to the folder now at <paramref name="folder"/> (restored).</summary>
     /// <returns>Rows put back (tags deleted meanwhile are dropped).</returns>
-    public async Task<int> PutBackAsync(string folder, IReadOnlyList<KeptDefaultTag> kept, CancellationToken cancellationToken = default)
+    public async Task<int> PutBackAsync(
+        string folder,
+        IReadOnlyList<KeptDefaultTag> kept,
+        CancellationToken cancellationToken = default
+    )
     {
         if (kept.Count == 0 || folder.Length == 0)
             return 0;
@@ -256,7 +343,16 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
         {
             var path = row.Path.Length == 0 ? folder : $"{folder}/{row.Path}";
             if (existing.Add((path, row.TagId)))
-                db.FolderDefaultTags.Add(new FolderDefaultTag { Path = path, TagId = row.TagId, Created = row.Created });
+            {
+                db.FolderDefaultTags.Add(
+                    new FolderDefaultTag
+                    {
+                        Path = path,
+                        TagId = row.TagId,
+                        Created = row.Created,
+                    }
+                );
+            }
         }
         var added = await db.SaveChangesAsync(cancellationToken);
         if (added > 0)
@@ -264,7 +360,8 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
         return added;
     }
 
-    private static string Parent(string path) => path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
+    private static string Parent(string path) =>
+        path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
 
     private sealed class PathTagComparer : IEqualityComparer<(string Path, int TagId)>
     {
@@ -273,6 +370,7 @@ public sealed class FolderDefaultTags(IDbContextFactory<SfeDbContext> dbFactory,
         public bool Equals((string Path, int TagId) x, (string Path, int TagId) y) =>
             x.TagId == y.TagId && LibraryPaths.PathComparer.Equals(x.Path, y.Path);
 
-        public int GetHashCode((string Path, int TagId) obj) => HashCode.Combine(LibraryPaths.PathComparer.GetHashCode(obj.Path), obj.TagId);
+        public int GetHashCode((string Path, int TagId) obj) =>
+            HashCode.Combine(LibraryPaths.PathComparer.GetHashCode(obj.Path), obj.TagId);
     }
 }

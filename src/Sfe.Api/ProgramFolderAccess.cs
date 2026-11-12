@@ -14,15 +14,24 @@ internal static class ProgramFolderAccess
 {
     /// <summary>Rights that let their holder replace or add a file, or give themselves the right to.</summary>
     private const FileSystemRights Changing =
-        FileSystemRights.WriteData | FileSystemRights.AppendData | FileSystemRights.WriteExtendedAttributes
-        | FileSystemRights.WriteAttributes | FileSystemRights.Delete | FileSystemRights.DeleteSubdirectoriesAndFiles
-        | FileSystemRights.ChangePermissions | FileSystemRights.TakeOwnership;
+        FileSystemRights.WriteData
+        | FileSystemRights.AppendData
+        | FileSystemRights.WriteExtendedAttributes
+        | FileSystemRights.WriteAttributes
+        | FileSystemRights.Delete
+        | FileSystemRights.DeleteSubdirectoriesAndFiles
+        | FileSystemRights.ChangePermissions
+        | FileSystemRights.TakeOwnership;
 
     /// <summary>The groups every ordinary account of the computer belongs to.</summary>
     private static readonly WellKnownSidType[] Everybody =
     [
-        WellKnownSidType.WorldSid, WellKnownSidType.AuthenticatedUserSid, WellKnownSidType.BuiltinUsersSid,
-        WellKnownSidType.InteractiveSid, WellKnownSidType.NetworkSid, WellKnownSidType.BuiltinGuestsSid,
+        WellKnownSidType.WorldSid,
+        WellKnownSidType.AuthenticatedUserSid,
+        WellKnownSidType.BuiltinUsersSid,
+        WellKnownSidType.InteractiveSid,
+        WellKnownSidType.NetworkSid,
+        WellKnownSidType.BuiltinGuestsSid,
         WellKnownSidType.AnonymousSid,
     ];
 
@@ -37,7 +46,8 @@ internal static class ProgramFolderAccess
     internal static IReadOnlyList<string> OrdinaryAccountsThatMayChange(DirectorySecurity security)
     {
         var everybody = Everybody.Select(type => new SecurityIdentifier(type, null)).ToList();
-        return security.GetAccessRules(includeExplicit: true, includeInherited: true, typeof(SecurityIdentifier))
+        return security
+            .GetAccessRules(includeExplicit: true, includeInherited: true, typeof(SecurityIdentifier))
             .Cast<FileSystemAccessRule>()
             .Where(rule => rule.AccessControlType == AccessControlType.Allow && (rule.FileSystemRights & Changing) != 0)
             .Select(rule => (SecurityIdentifier)rule.IdentityReference)

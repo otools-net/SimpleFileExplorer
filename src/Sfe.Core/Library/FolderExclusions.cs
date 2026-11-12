@@ -30,12 +30,13 @@ public sealed record FolderExclusionState(string? Scan, string? Trickplay, strin
     [JsonIgnore]
     public bool IsNone => Scan is null && Trickplay is null && Thumbnails is null;
 
-    public string? Of(ExclusionKind kind) => kind switch
-    {
-        ExclusionKind.Scan => Scan,
-        ExclusionKind.Trickplay => Trickplay,
-        _ => Thumbnails,
-    };
+    public string? Of(ExclusionKind kind) =>
+        kind switch
+        {
+            ExclusionKind.Scan => Scan,
+            ExclusionKind.Trickplay => Trickplay,
+            _ => Thumbnails,
+        };
 }
 
 /// <summary>
@@ -56,15 +57,19 @@ public sealed class FolderExclusions
         _folders = _sources
             .Select(list => new HashSet<string>(
                 list.Select(LibraryPaths.NormalizeRelative).OfType<string>().Where(f => f.Length > 0),
-                LibraryPaths.PathComparer))
+                LibraryPaths.PathComparer
+            ))
             .ToArray();
     }
 
     /// <summary>The lists of <paramref name="options"/> (compiled again when a list was replaced).</summary>
     public static FolderExclusions Of(SfeOptions options)
     {
-        if (Cache.TryGetValue(options, out var cached)
-            && Enum.GetValues<ExclusionKind>().All(kind => ReferenceEquals(cached._sources[(int)kind], List(options, kind))))
+        if (
+            Cache.TryGetValue(options, out var cached)
+            && Enum.GetValues<ExclusionKind>()
+                .All(kind => ReferenceEquals(cached._sources[(int)kind], List(options, kind)))
+        )
         {
             return cached;
         }
@@ -75,26 +80,29 @@ public sealed class FolderExclusions
     }
 
     /// <summary>The setting key of a kind's list.</summary>
-    public static string Key(ExclusionKind kind) => kind switch
-    {
-        ExclusionKind.Scan => "scan.excludedFolders",
-        ExclusionKind.Trickplay => "trickplay.excludedFolders",
-        _ => "thumbnails.excludedFolders",
-    };
+    public static string Key(ExclusionKind kind) =>
+        kind switch
+        {
+            ExclusionKind.Scan => "scan.excludedFolders",
+            ExclusionKind.Trickplay => "trickplay.excludedFolders",
+            _ => "thumbnails.excludedFolders",
+        };
 
-    public static List<string> List(SfeOptions options, ExclusionKind kind) => kind switch
-    {
-        ExclusionKind.Scan => options.Scan.ExcludedFolders,
-        ExclusionKind.Trickplay => options.Trickplay.ExcludedFolders,
-        _ => options.Thumbnails.ExcludedFolders,
-    };
+    public static List<string> List(SfeOptions options, ExclusionKind kind) =>
+        kind switch
+        {
+            ExclusionKind.Scan => options.Scan.ExcludedFolders,
+            ExclusionKind.Trickplay => options.Trickplay.ExcludedFolders,
+            _ => options.Thumbnails.ExcludedFolders,
+        };
 
-    public static List<string> List(EditableSettings settings, ExclusionKind kind) => kind switch
-    {
-        ExclusionKind.Scan => settings.Scan.ExcludedFolders,
-        ExclusionKind.Trickplay => settings.Trickplay.ExcludedFolders,
-        _ => settings.Thumbnails.ExcludedFolders,
-    };
+    public static List<string> List(EditableSettings settings, ExclusionKind kind) =>
+        kind switch
+        {
+            ExclusionKind.Scan => settings.Scan.ExcludedFolders,
+            ExclusionKind.Trickplay => settings.Trickplay.ExcludedFolders,
+            _ => settings.Thumbnails.ExcludedFolders,
+        };
 
     /// <summary>No folder is excluded from anything (the fast path of listings).</summary>
     public bool IsEmpty => _folders.All(f => f.Count == 0);
@@ -140,30 +148,43 @@ public sealed class FolderExclusions
         return listing with
         {
             Exclusions = here.IsNone ? null : here,
-            Items = [.. listing.Items.Select(item => item.Kind == ItemKind.Directory && Child(here, item.Path) is { IsNone: false } state
-                ? item with { Excluded = state }
-                : item)],
+            Items =
+            [
+                .. listing.Items.Select(item =>
+                    item.Kind == ItemKind.Directory && Child(here, item.Path) is { IsNone: false } state
+                        ? item with
+                        {
+                            Excluded = state,
+                        }
+                        : item
+                ),
+            ],
         };
     }
 
     /// <summary>Every kind at once, for a folder (root-relative, canonical).</summary>
-    public FolderExclusionState At(string relativePath) => IsEmpty
-        ? FolderExclusionState.None
-        : new FolderExclusionState(
-            Through(ExclusionKind.Scan, relativePath),
-            Through(ExclusionKind.Trickplay, relativePath),
-            Through(ExclusionKind.Thumbnails, relativePath));
+    public FolderExclusionState At(string relativePath) =>
+        IsEmpty
+            ? FolderExclusionState.None
+            : new FolderExclusionState(
+                Through(ExclusionKind.Scan, relativePath),
+                Through(ExclusionKind.Trickplay, relativePath),
+                Through(ExclusionKind.Thumbnails, relativePath)
+            );
 
     /// <summary>
     /// The state of a child of a folder whose own state is <paramref name="parent"/>: what the parent has, or the
     /// child itself when listed. O(1), for the folders of a listing.
     /// </summary>
-    public FolderExclusionState Child(FolderExclusionState parent, string childPath) => IsEmpty
-        ? FolderExclusionState.None
-        : new FolderExclusionState(
-            parent.Scan ?? (Lists(ExclusionKind.Scan, childPath) ? childPath : null),
-            parent.Trickplay ?? (Lists(ExclusionKind.Trickplay, childPath) ? childPath : null),
-            parent.Thumbnails ?? (Lists(ExclusionKind.Thumbnails, childPath) ? childPath : null));
+    public FolderExclusionState Child(FolderExclusionState parent, string childPath) =>
+        IsEmpty
+            ? FolderExclusionState.None
+            : new FolderExclusionState(
+                parent.Scan ?? (Lists(ExclusionKind.Scan, childPath) ? childPath : null),
+                parent.Trickplay ?? (Lists(ExclusionKind.Trickplay, childPath) ? childPath : null),
+                parent.Thumbnails ?? (Lists(ExclusionKind.Thumbnails, childPath) ? childPath : null)
+            );
 
-    private static string Parent(string path) => path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
+    private static string Parent(string path) =>
+        path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
 }

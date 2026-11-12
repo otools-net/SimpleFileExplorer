@@ -71,7 +71,8 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.Property(g => g.BuiltIn).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
             entity.Property(g => g.ExternalName).HasMaxLength(400);
             entity.HasIndex(g => new { g.TenantId, g.Name }).IsUnique();
-            entity.HasOne(g => g.Tenant)
+            entity
+                .HasOne(g => g.Tenant)
                 .WithMany(t => t.Groups)
                 .HasForeignKey(g => g.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -84,11 +85,13 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.ToTable("GroupMembers");
             entity.HasKey(m => new { m.GroupId, m.UserId });
             entity.HasIndex(m => m.UserId);
-            entity.HasOne(m => m.Group)
+            entity
+                .HasOne(m => m.Group)
                 .WithMany(g => g.Members)
                 .HasForeignKey(m => m.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(m => m.User)
+            entity
+                .HasOne(m => m.User)
                 .WithMany(u => u.Groups)
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -99,7 +102,8 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.ToTable("GroupRights");
             entity.HasKey(r => new { r.GroupId, r.Right });
             entity.Property(r => r.Right).HasMaxLength(MaxRightLength).IsUnicode(false);
-            entity.HasOne(r => r.Group)
+            entity
+                .HasOne(r => r.Group)
                 .WithMany(g => g.Rights)
                 .HasForeignKey(r => r.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -110,7 +114,8 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.ToTable("TenantDisabledRights");
             entity.HasKey(r => new { r.TenantId, r.Right });
             entity.Property(r => r.Right).HasMaxLength(MaxRightLength).IsUnicode(false);
-            entity.HasOne(r => r.Tenant)
+            entity
+                .HasOne(r => r.Tenant)
                 .WithMany(t => t.DisabledRights)
                 .HasForeignKey(r => r.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -122,10 +127,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.HasKey(s => new { s.TenantId, s.Key });
             entity.Property(s => s.Key).HasMaxLength(MaxSettingKeyLength).IsUnicode(false);
             entity.Property(s => s.Value).IsRequired();
-            entity.HasOne<Tenant>()
-                .WithMany()
-                .HasForeignKey(s => s.TenantId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Tenant>().WithMany().HasForeignKey(s => s.TenantId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<UserSetting>(entity =>
@@ -134,10 +136,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.HasKey(s => new { s.UserId, s.Key });
             entity.Property(s => s.Key).HasMaxLength(MaxSettingKeyLength).IsUnicode(false);
             entity.Property(s => s.Value).IsRequired();
-            entity.HasOne<UserAccount>()
-                .WithMany()
-                .HasForeignKey(s => s.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<UserAccount>().WithMany().HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<ServerProperty>(entity =>
@@ -156,21 +155,19 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             // collation doesn't; QuickLinkService keeps one row per path.
             entity.HasIndex(l => new { l.UserId, l.TenantId });
             entity.HasIndex(l => l.TenantId);
-            entity.HasOne<UserAccount>()
-                .WithMany()
-                .HasForeignKey(l => l.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne<Tenant>()
-                .WithMany()
-                .HasForeignKey(l => l.TenantId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<UserAccount>().WithMany().HasForeignKey(l => l.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Tenant>().WithMany().HasForeignKey(l => l.TenantId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<FolderRule>(entity =>
         {
             // A rule is for a group or for an account, never both nor neither.
-            entity.ToTable("FolderRules", table => table.HasCheckConstraint(
-                "CK_FolderRules_Principal", "(GroupId IS NULL AND UserId IS NOT NULL) OR (GroupId IS NOT NULL AND UserId IS NULL)"));
+            entity.ToTable("FolderRules", table =>
+                table.HasCheckConstraint(
+                    "CK_FolderRules_Principal",
+                    "(GroupId IS NULL AND UserId IS NOT NULL) OR (GroupId IS NOT NULL AND UserId IS NULL)"
+                )
+            );
             entity.Property(r => r.Path).HasMaxLength(SfeDbContext.MaxPathLength).IsRequired();
             entity.Property(r => r.Level).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
             // Not unique by path: paths compare as the host file system does (see QuickLinks); FolderRuleService keeps
@@ -178,20 +175,15 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.HasIndex(r => r.TenantId);
             entity.HasIndex(r => r.GroupId);
             entity.HasIndex(r => r.UserId);
-            entity.HasOne<Tenant>()
-                .WithMany()
-                .HasForeignKey(r => r.TenantId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Tenant>().WithMany().HasForeignKey(r => r.TenantId).OnDelete(DeleteBehavior.Cascade);
             // Tenants → Groups → FolderRules next to Tenants → FolderRules would be two cascade paths, which SQL
             // Server refuses: AccessService.DeleteGroupAsync deletes the group's rules itself.
-            entity.HasOne(r => r.Group)
+            entity
+                .HasOne(r => r.Group)
                 .WithMany()
                 .HasForeignKey(r => r.GroupId)
                 .OnDelete(DeleteBehavior.ClientCascade);
-            entity.HasOne<UserAccount>()
-                .WithMany()
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<UserAccount>().WithMany().HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<LogEntry>(entity =>

@@ -64,7 +64,8 @@ public sealed record LibraryItem(
     bool? Indexed = null,
     int? IndexedItems = null,
     FolderExclusionState? Excluded = null,
-    IReadOnlyList<TagSummary>? DefaultTags = null);
+    IReadOnlyList<TagSummary>? DefaultTags = null
+);
 
 public sealed record Breadcrumb(string Name, string Path);
 
@@ -84,24 +85,24 @@ public sealed record DirectoryListing(
     int FileCount,
     FolderAccessView? Access = null,
     FolderExclusionState? Exclusions = null,
-    FolderDefaults? DefaultTags = null);
+    FolderDefaults? DefaultTags = null
+);
 
 /// <summary>What folder rules let the asker do in a folder (agents/docs/features/folder-access.md).</summary>
 /// <param name="Rights">The rights it has here.</param>
 /// <param name="PathOnly">It doesn't see the folder: the folder only leads to what it sees below.</param>
 /// <param name="Children">The entries whose access differs from the folder's, by name; the others have the folder's.</param>
-public sealed record FolderAccessView(IReadOnlyList<string> Rights, bool PathOnly, IReadOnlyDictionary<string, FolderAccessView>? Children = null);
+public sealed record FolderAccessView(
+    IReadOnlyList<string> Rights,
+    bool PathOnly,
+    IReadOnlyDictionary<string, FolderAccessView>? Children = null
+);
 
 /// <param name="Previous">The folder listed before this one in its parent; null for the first one or the root.</param>
 /// <param name="Next">The folder listed after this one; null for the last one or the root.</param>
 /// <param name="Position">1-based place of the folder among its parent's folders; 0 when not listed there (root).</param>
 /// <param name="Count">Number of folders in the parent.</param>
-public sealed record FolderSiblings(
-    string Path,
-    LibraryItem? Previous,
-    LibraryItem? Next,
-    int Position,
-    int Count);
+public sealed record FolderSiblings(string Path, LibraryItem? Previous, LibraryItem? Next, int Position, int Count);
 
 /// <param name="Path">The folder, relative to the library root.</param>
 /// <param name="Items">Its first pictures (images, videos with thumbnails) in name order; empty when it has none.</param>
@@ -121,4 +122,5 @@ public sealed record SearchResults(
     bool HasMore,
     string? Next,
     int? Total = null,
-    bool TotalCapped = false);
+    bool TotalCapped = false
+);

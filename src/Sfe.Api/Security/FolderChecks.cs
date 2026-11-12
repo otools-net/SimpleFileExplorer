@@ -27,12 +27,12 @@ public enum PathVerdict
 public static class FolderChecks
 {
     /// <summary>The route checks its library paths against the folder rules itself; <paramref name="how"/> says how.</summary>
-    public static TBuilder FolderScoped<TBuilder>(this TBuilder builder, string how) where TBuilder : IEndpointConventionBuilder =>
-        builder.WithMetadata(new FolderMetadata(how));
+    public static TBuilder FolderScoped<TBuilder>(this TBuilder builder, string how)
+        where TBuilder : IEndpointConventionBuilder => builder.WithMetadata(new FolderMetadata(how));
 
     /// <summary>The route's paths are folders of the server, not of the library: folder rules don't apply.</summary>
-    public static TBuilder NotLibraryPaths<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder =>
-        builder.WithMetadata(new FolderMetadata(null));
+    public static TBuilder NotLibraryPaths<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder => builder.WithMetadata(new FolderMetadata(null));
 
     /// <summary>
     /// What the subject may do at <paramref name="path"/> (root-relative, as the client sends it); null when it is
@@ -58,7 +58,9 @@ public static class FolderChecks
         {
             real = null;
         }
-        return real is not null && !LibraryPaths.PathComparer.Equals(real, relative) ? access.And(state.Access.At(real)) : access;
+        return real is not null && !LibraryPaths.PathComparer.Equals(real, relative)
+            ? access.And(state.Access.At(real))
+            : access;
     }
 
     /// <summary>Whether the subject may use <paramref name="right"/> at <paramref name="path"/>.</summary>
@@ -70,7 +72,8 @@ public static class FolderChecks
 
     /// <summary>The subject may use <paramref name="right"/> at every path of <paramref name="list"/>.</summary>
     public static bool AllowsAll(this AccessState state, LibraryPaths paths, IEnumerable<string?> list, string right) =>
-        state.Access.FolderPolicy.IsUnrestricted || list.All(path => state.Check(paths, path, right) == PathVerdict.Allowed);
+        state.Access.FolderPolicy.IsUnrestricted
+        || list.All(path => state.Check(paths, path, right) == PathVerdict.Allowed);
 
     /// <summary>Where the subject may see files, for the queries over the index; null when everywhere (no condition to add).</summary>
     public static PathFilter? Visible(this AccessState state) =>
@@ -88,7 +91,13 @@ public static class FolderChecks
         var children = state.Access.FolderPolicy.ChildrenWithRules(folder, state.Access.Rights);
         var hidden = children.Where(c => !c.Value.IsVisible).Select(c => c.Key).ToHashSet(LibraryPaths.PathComparer);
         if (access.PathOnly)
-            return new ListingFilter(hidden, children.Where(c => c.Value.IsVisible).Select(c => c.Key).ToHashSet(LibraryPaths.PathComparer));
+        {
+            return new ListingFilter(
+                hidden,
+                children.Where(c => c.Value.IsVisible).Select(c => c.Key).ToHashSet(LibraryPaths.PathComparer)
+            );
+        }
+
         return hidden.Count == 0 ? null : new ListingFilter(hidden);
     }
 
@@ -97,8 +106,11 @@ public static class FolderChecks
     /// index row's path can lead through a link into a folder the subject doesn't see: the query's filter can't tell,
     /// this check can (one look at the disk per item, for subjects folder rules restrict only).
     /// </summary>
-    public static IReadOnlyList<LibraryItem> Seen(this AccessState state, LibraryPaths paths, IReadOnlyList<LibraryItem> items) =>
-        state.Access.FolderPolicy.IsUnrestricted ? items : [.. items.Where(item => state.Sees(paths, item.Path))];
+    public static IReadOnlyList<LibraryItem> Seen(
+        this AccessState state,
+        LibraryPaths paths,
+        IReadOnlyList<LibraryItem> items
+    ) => state.Access.FolderPolicy.IsUnrestricted ? items : [.. items.Where(item => state.Sees(paths, item.Path))];
 
     /// <summary>The subject may see the file or folder at <paramref name="relativePath"/> itself (not only pass through it).</summary>
     public static bool Sees(this AccessState state, LibraryPaths paths, string relativePath) =>

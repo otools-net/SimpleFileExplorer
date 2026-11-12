@@ -18,7 +18,8 @@ public sealed class TaskScheduleService(
     IDbContextFactory<SfeDbContext> dbFactory,
     BackgroundTasks tasks,
     TaskHistory history,
-    ILogger<TaskScheduleService> logger) : IDisposable
+    ILogger<TaskScheduleService> logger
+) : IDisposable
 {
     public const int MaxSchedules = 100;
 
@@ -41,7 +42,8 @@ public sealed class TaskScheduleService(
     internal TimeZoneInfo Zone { get; set; } = TimeZoneInfo.Local;
 
     /// <summary>The server's time zone, as an IANA id (like the browsers') when there is one.</summary>
-    public string TimeZoneId => Zone.HasIanaId ? Zone.Id
+    public string TimeZoneId =>
+        Zone.HasIanaId ? Zone.Id
         : TimeZoneInfo.TryConvertWindowsIdToIanaId(Zone.Id, out var iana) ? iana
         : Zone.Id;
 
@@ -53,7 +55,10 @@ public sealed class TaskScheduleService(
         return [.. schedules.Select(s => View(s, now))];
     }
 
-    public async Task<(TaskScheduleView? View, Dictionary<string, string[]>? Errors)> CreateAsync(TaskScheduleInput input, CancellationToken cancellationToken = default)
+    public async Task<(TaskScheduleView? View, Dictionary<string, string[]>? Errors)> CreateAsync(
+        TaskScheduleInput input,
+        CancellationToken cancellationToken = default
+    )
     {
         var now = DateTime.UtcNow;
         var (schedule, errors) = Validate(input, null, now);
@@ -73,7 +78,11 @@ public sealed class TaskScheduleService(
     }
 
     /// <returns>Found false when there is no such schedule.</returns>
-    public async Task<(bool Found, TaskScheduleView? View, Dictionary<string, string[]>? Errors)> UpdateAsync(int id, TaskScheduleInput input, CancellationToken cancellationToken = default)
+    public async Task<(bool Found, TaskScheduleView? View, Dictionary<string, string[]>? Errors)> UpdateAsync(
+        int id,
+        TaskScheduleInput input,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var schedule = await db.TaskSchedules.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
@@ -114,7 +123,15 @@ public sealed class TaskScheduleService(
         var (schedule, errors) = Validate(input, null, now, requireFuture: false);
         if (errors.Count > 0)
             return (null, errors);
-        var runs = ScheduleCalculator.NextRuns(schedule!.Kind, schedule.Start, schedule.IntervalMinutes, schedule.Days, now, Zone, PreviewCount);
+        var runs = ScheduleCalculator.NextRuns(
+            schedule!.Kind,
+            schedule.Start,
+            schedule.IntervalMinutes,
+            schedule.Days,
+            now,
+            Zone,
+            PreviewCount
+        );
         return ([.. runs.Select(Utc)], null);
     }
 
@@ -192,22 +209,43 @@ public sealed class TaskScheduleService(
         var result = tasks.Start(schedule.Task, schedule.Path, TaskTrigger.Schedule, schedule.Id);
         logger.LogInformation("Schedule {Id} came due: {Task} {Result}", schedule.Id, schedule.Task, result);
         // A trickplay pass asked for while one runs starts when it ends.
-        if (result == TaskStartResult.Started || (result == TaskStartResult.AlreadyRunning && schedule.Task == BackgroundTaskKind.Trickplay))
+        if (
+            result == TaskStartResult.Started
+            || (result == TaskStartResult.AlreadyRunning && schedule.Task == BackgroundTaskKind.Trickplay)
+        )
+        {
             return;
+        }
 
-        var reason = result == TaskStartResult.AlreadyRunning
-            ? "Skipped: the task was already running."
-            : "Skipped: the task is turned off or ffmpeg can't be found.";
-        await history.RecordSkippedAsync(schedule.Task, schedule.Path ?? string.Empty, schedule.Id, reason, cancellationToken);
+        var reason =
+            result == TaskStartResult.AlreadyRunning
+                ? "Skipped: the task was already running."
+                : "Skipped: the task is turned off or ffmpeg can't be found.";
+        await history.RecordSkippedAsync(
+            schedule.Task,
+            schedule.Path ?? string.Empty,
+            schedule.Id,
+            reason,
+            cancellationToken
+        );
     }
 
     private DateTime? Next(TaskSchedule s, DateTime afterUtc) =>
         ScheduleCalculator.Next(s.Kind, s.Start, s.IntervalMinutes, s.Days, afterUtc, Zone);
 
-    private TaskScheduleView View(TaskSchedule s, DateTime now) => new(
-        s.Id, s.Task, s.Path, s.Kind, Utc(s.Start), s.IntervalMinutes, s.Days, s.Enabled,
-        s.Enabled && Next(s, Latest(now, now, s.LastRun)) is { } next ? Utc(next) : null,
-        s.LastRun is { } last ? Utc(last) : null);
+    private TaskScheduleView View(TaskSchedule s, DateTime now) =>
+        new(
+            s.Id,
+            s.Task,
+            s.Path,
+            s.Kind,
+            Utc(s.Start),
+            s.IntervalMinutes,
+            s.Days,
+            s.Enabled,
+            s.Enabled && Next(s, Latest(now, now, s.LastRun)) is { } next ? Utc(next) : null,
+            s.LastRun is { } last ? Utc(last) : null
+        );
 
     /// <summary>
     /// The schedule <paramref name="input"/> describes, normalized: fields its kind and task don't use are cleared.
@@ -215,7 +253,11 @@ public sealed class TaskScheduleService(
     /// <param name="existing">The schedule being changed; a one-off whose time is kept needn't be in the future.</param>
     /// <param name="requireFuture">A one-off must not be in the past (unless off).</param>
     private static (TaskSchedule? Schedule, Dictionary<string, string[]> Errors) Validate(
-        TaskScheduleInput input, TaskSchedule? existing, DateTime now, bool requireFuture = true)
+        TaskScheduleInput input,
+        TaskSchedule? existing,
+        DateTime now,
+        bool requireFuture = true
+    )
     {
         var errors = new Dictionary<string, string[]>();
         void Check(bool valid, string key, string message)
@@ -224,18 +266,33 @@ public sealed class TaskScheduleService(
                 errors[key] = [message];
         }
 
-        Check(Enum.IsDefined(input.Task) && BackgroundTasks.CanSchedule(input.Task), "task", "This task can't be scheduled.");
+        Check(
+            Enum.IsDefined(input.Task) && BackgroundTasks.CanSchedule(input.Task),
+            "task",
+            "This task can't be scheduled."
+        );
         Check(Enum.IsDefined(input.Kind), "kind", "Choose when the task runs.");
         string? path = null;
         if (input.Task == BackgroundTaskKind.Scan)
         {
             path = LibraryPaths.NormalizeRelative(input.Path);
-            Check(path is not null, "path", "Enter a folder of the library, like Movies/Series, or leave it empty for the whole library.");
+            Check(
+                path is not null,
+                "path",
+                "Enter a folder of the library, like Movies/Series, or leave it empty for the whole library."
+            );
         }
 
         var start = input.Start.UtcDateTime;
         if (input.Kind == ScheduleKind.Interval)
-            Check(input.IntervalMinutes is >= 1 and <= MaxIntervalMinutes, "intervalMinutes", $"The interval must be between 1 minute and {MaxIntervalMinutes / (24 * 60)} days.");
+        {
+            Check(
+                input.IntervalMinutes is >= 1 and <= MaxIntervalMinutes,
+                "intervalMinutes",
+                $"The interval must be between 1 minute and {MaxIntervalMinutes / (24 * 60)} days."
+            );
+        }
+
         if (input.Kind == ScheduleKind.Weekly)
             Check((input.Days & ScheduleCalculator.AllDays) != 0, "days", "Choose at least one day.");
         // A minute's grace: the time picked in the form may have just passed.
@@ -246,16 +303,19 @@ public sealed class TaskScheduleService(
         if (errors.Count > 0)
             return (null, errors);
 
-        return (new TaskSchedule
-        {
-            Task = input.Task,
-            Path = string.IsNullOrEmpty(path) ? null : path,
-            Kind = input.Kind,
-            Start = start,
-            IntervalMinutes = input.Kind == ScheduleKind.Interval ? input.IntervalMinutes : 0,
-            Days = input.Kind == ScheduleKind.Weekly ? input.Days & ScheduleCalculator.AllDays : 0,
-            Enabled = input.Enabled,
-        }, errors);
+        return (
+            new TaskSchedule
+            {
+                Task = input.Task,
+                Path = string.IsNullOrEmpty(path) ? null : path,
+                Kind = input.Kind,
+                Start = start,
+                IntervalMinutes = input.Kind == ScheduleKind.Interval ? input.IntervalMinutes : 0,
+                Days = input.Kind == ScheduleKind.Weekly ? input.Days & ScheduleCalculator.AllDays : 0,
+                Enabled = input.Enabled,
+            },
+            errors
+        );
     }
 
     private static DateTime Latest(DateTime first, DateTime second, DateTime? third = null)

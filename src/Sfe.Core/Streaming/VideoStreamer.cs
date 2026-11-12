@@ -27,13 +27,21 @@ public sealed record VideoStream(string FullPath, double Start, bool Transcoded,
 /// the player seeks by asking again from another position.
 /// </summary>
 public sealed partial class VideoStreamer(
-    LibraryPaths paths, MediaClassifier classifier, Ffmpeg ffmpeg, MediaDimensions media, VideoStreams streams,
-    IOptionsMonitor<SfeOptions> options, ILogger<VideoStreamer> logger)
+    LibraryPaths paths,
+    MediaClassifier classifier,
+    Ffmpeg ffmpeg,
+    MediaDimensions media,
+    VideoStreams streams,
+    IOptionsMonitor<SfeOptions> options,
+    ILogger<VideoStreamer> logger
+)
 {
     /// <summary>Probes kept, by file: a player asks for each video once, then again at every seek.</summary>
     private const int ProbeCacheSize = 256;
 
-    private readonly ConcurrentDictionary<string, (long Size, DateTime Modified, VideoProbe Probe)> _probes = new(LibraryPaths.PathComparer);
+    private readonly ConcurrentDictionary<string, (long Size, DateTime Modified, VideoProbe Probe)> _probes = new(
+        LibraryPaths.PathComparer
+    );
 
     /// <summary>ffmpeg was found and streaming isn't turned off.</summary>
     public bool IsAvailable => Mode != StreamingMode.Off && ffmpeg.IsAvailable;
@@ -47,8 +55,14 @@ public sealed partial class VideoStreamer(
             return null;
 
         var file = new FileInfo(fullPath);
-        if (_probes.TryGetValue(fullPath, out var cached) && cached.Size == file.Length && cached.Modified == file.LastWriteTimeUtc)
+        if (
+            _probes.TryGetValue(fullPath, out var cached)
+            && cached.Size == file.Length
+            && cached.Modified == file.LastWriteTimeUtc
+        )
+        {
             return cached.Probe;
+        }
 
         var probe = Parse(await media.ProbeAsync(fullPath, cancellationToken));
         if (_probes.Count >= ProbeCacheSize)
@@ -70,7 +84,14 @@ public sealed partial class VideoStreamer(
         var settings = options.CurrentValue.Streaming;
         var transcoded = !(settings.CopyVideo && probe.BrowserPictures);
         start = Math.Max(0, probe.Duration is { } duration ? Math.Min(start, duration) : start);
-        var lease = streams.TryBegin(client, settings.MaxStreams, LibraryPaths.NormalizeRelative(path) ?? path, viewer, start, transcoded);
+        var lease = streams.TryBegin(
+            client,
+            settings.MaxStreams,
+            LibraryPaths.NormalizeRelative(path) ?? path,
+            viewer,
+            start,
+            transcoded
+        );
         return lease is null ? null : new VideoStream(fullPath, start, transcoded, lease);
     }
 
@@ -87,9 +108,21 @@ public sealed partial class VideoStreamer(
         try
         {
             // No time limit: a film plays for hours. The viewer leaving ends it.
-            var (exitCode, errors) = await ffmpeg.RunAsync(arguments, Timeout.InfiniteTimeSpan, new CountingStream(output, lease), stop.Token);
+            var (exitCode, errors) = await ffmpeg.RunAsync(
+                arguments,
+                Timeout.InfiniteTimeSpan,
+                new CountingStream(output, lease),
+                stop.Token
+            );
             if (exitCode != 0)
-                logger.LogWarning("ffmpeg could not convert {File} (exit code {ExitCode}): {Errors}", stream.FullPath, exitCode, errors.Trim());
+            {
+                logger.LogWarning(
+                    "ffmpeg could not convert {File} (exit code {ExitCode}): {Errors}",
+                    stream.FullPath,
+                    exitCode,
+                    errors.Trim()
+                );
+            }
         }
         catch (OperationCanceledException)
         {
@@ -106,14 +139,30 @@ public sealed partial class VideoStreamer(
     /// from <paramref name="start"/> seconds to standard output.
     /// </summary>
     internal static List<string> Arguments(
-        IReadOnlyList<string> input, double start, VideoProbe probe, bool transcoded, StreamingOptions settings)
+        IReadOnlyList<string> input,
+        double start,
+        VideoProbe probe,
+        bool transcoded,
+        StreamingOptions settings
+    )
     {
         List<string> arguments = ["-hide_banner", "-nostdin", "-loglevel", "error"];
         // Before the input: a fast seek (to the key frame before when copying, exact when encoding).
         if (start > 0)
             arguments.AddRange(["-ss", start.ToString("0.###", CultureInfo.InvariantCulture)]);
         arguments.AddRange(input);
-        arguments.AddRange(["-map", "0:v:0?", "-map", "0:a:0?", "-sn", "-dn", "-map_metadata", "-1", "-map_chapters", "-1"]);
+        arguments.AddRange([
+            "-map",
+            "0:v:0?",
+            "-map",
+            "0:a:0?",
+            "-sn",
+            "-dn",
+            "-map_metadata",
+            "-1",
+            "-map_chapters",
+            "-1",
+        ]);
 
         if (probe.VideoCodec is null)
         {
@@ -125,9 +174,18 @@ public sealed partial class VideoStreamer(
             // that the player gets its first pictures soon.
             var height = settings.MaxHeight > 0 ? $"min({settings.MaxHeight}\\,trunc(ih/2)*2)" : "trunc(ih/2)*2";
             arguments.AddRange([
-                "-vf", $"scale=-2:{height}", "-c:v", "libx264", "-preset", "veryfast",
-                "-crf", Math.Clamp(settings.Quality, 0, 51).ToString(CultureInfo.InvariantCulture),
-                "-pix_fmt", "yuv420p", "-force_key_frames", "expr:gte(t,n_forced*2)",
+                "-vf",
+                $"scale=-2:{height}",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "veryfast",
+                "-crf",
+                Math.Clamp(settings.Quality, 0, 51).ToString(CultureInfo.InvariantCulture),
+                "-pix_fmt",
+                "yuv420p",
+                "-force_key_frames",
+                "expr:gte(t,n_forced*2)",
             ]);
         }
         else
@@ -144,11 +202,16 @@ public sealed partial class VideoStreamer(
     internal static VideoProbe Parse(string output)
     {
         var duration = MediaDimensions.ParseDuration(output);
-        string? video = null, audio = null;
+        string? video = null,
+            audio = null;
         var browserPictures = false;
         foreach (Match stream in StreamLine().Matches(output))
         {
-            var (kind, codec, details) = (stream.Groups["kind"].Value, stream.Groups["codec"].Value, stream.Groups["details"].Value);
+            var (kind, codec, details) = (
+                stream.Groups["kind"].Value,
+                stream.Groups["codec"].Value,
+                stream.Groups["details"].Value
+            );
             if (kind == "Video" && video is null && !details.Contains("(attached pic)", StringComparison.Ordinal))
             {
                 video = codec;
@@ -173,8 +236,15 @@ public sealed partial class VideoStreamer(
     private bool Resolve(string path, out string fullPath)
     {
         fullPath = string.Empty;
-        if (!paths.TryResolve(path, out var resolved) || !File.Exists(resolved) || classifier.Classify(Path.GetExtension(resolved)) != ItemKind.Video)
+        if (
+            !paths.TryResolve(path, out var resolved)
+            || !File.Exists(resolved)
+            || classifier.Classify(Path.GetExtension(resolved)) != ItemKind.Video
+        )
+        {
             return false;
+        }
+
         fullPath = resolved;
         return true;
     }
@@ -186,9 +256,16 @@ public sealed partial class VideoStreamer(
         public override bool CanSeek => false;
         public override bool CanWrite => true;
         public override long Length => throw new NotSupportedException();
-        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
 
-        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        public override async ValueTask WriteAsync(
+            ReadOnlyMemory<byte> buffer,
+            CancellationToken cancellationToken = default
+        )
         {
             await inner.WriteAsync(buffer, cancellationToken);
             lease.Sent(buffer.Length);
@@ -204,9 +281,13 @@ public sealed partial class VideoStreamer(
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken) => inner.FlushAsync(cancellationToken);
+
         public override void Flush() => inner.Flush();
+
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
         public override void SetLength(long value) => throw new NotSupportedException();
     }
 }

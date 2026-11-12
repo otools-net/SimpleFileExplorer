@@ -27,8 +27,14 @@ public sealed class ThumbnailService
     private CancellationTokenSource _cancel = new();
     private int _rendering;
 
-    public ThumbnailService(LibraryPaths paths, MediaClassifier classifier, Ffmpeg ffmpeg, IOptionsMonitor<SfeOptions> options, FfmpegLimits limits,
-        ILogger<ThumbnailService> logger)
+    public ThumbnailService(
+        LibraryPaths paths,
+        MediaClassifier classifier,
+        Ffmpeg ffmpeg,
+        IOptionsMonitor<SfeOptions> options,
+        FfmpegLimits limits,
+        ILogger<ThumbnailService> logger
+    )
     {
         _paths = paths;
         _classifier = classifier;
@@ -64,8 +70,15 @@ public sealed class ThumbnailService
             return new FileInfo(cacheFile).Length > 0 ? cacheFile : null;
 
         // Folders excluded from thumbnails keep the ones already made, and get no new ones.
-        if (!IsAvailable || FolderExclusions.Of(_options.CurrentValue).IsExcluded(ExclusionKind.Thumbnails, _paths, sourceInfo.DirectoryName!))
+        if (
+            !IsAvailable
+            || FolderExclusions
+                .Of(_options.CurrentValue)
+                .IsExcluded(ExclusionKind.Thumbnails, _paths, sourceInfo.DirectoryName!)
+        )
+        {
             return null;
+        }
 
         // Concurrent requests for the same file share a single ffmpeg run.
         Job job;
@@ -183,7 +196,8 @@ public sealed class ThumbnailService
         }
     }
 
-    public string GetCachePath(string sourceFullPath) => Path.Combine(Options.CacheDirectory, ShardedPath(CacheKey(sourceFullPath)) + ".bin");
+    public string GetCachePath(string sourceFullPath) =>
+        Path.Combine(Options.CacheDirectory, ShardedPath(CacheKey(sourceFullPath)) + ".bin");
 
     private static bool IsFresh(string cacheFile, FileInfo source)
     {
@@ -191,11 +205,20 @@ public sealed class ThumbnailService
         return cache.Exists && cache.LastWriteTimeUtc >= source.LastWriteTimeUtc;
     }
 
-    private async Task<bool> GenerateAsync(string source, ItemKind kind, string cacheFile, CancellationToken cancellationToken)
+    private async Task<bool> GenerateAsync(
+        string source,
+        ItemKind kind,
+        string cacheFile,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
-            var image = await RenderAsync(source, kind == ItemKind.Video ? Options.VideoSeekSeconds : null, cancellationToken);
+            var image = await RenderAsync(
+                source,
+                kind == ItemKind.Video ? Options.VideoSeekSeconds : null,
+                cancellationToken
+            );
             // Clips shorter than the seek position produce no frame: fall back to the first one.
             if (image.Length == 0 && kind == ItemKind.Video && Options.VideoSeekSeconds > 0)
                 image = await RenderAsync(source, 0, cancellationToken);
@@ -224,14 +247,26 @@ public sealed class ThumbnailService
             arguments.AddRange(["-ss", seekSeconds.Value.ToString()]);
         arguments.AddRange(await _ffmpeg.LibraryInputAsync(source));
         arguments.AddRange([
-            "-frames:v", "1",
-            "-vf", $"scale='min({Options.Width},iw)':-2",
-            "-q:v", "5",
-            "-f", "image2", "-c:v", "mjpeg", "pipe:1",
+            "-frames:v",
+            "1",
+            "-vf",
+            $"scale='min({Options.Width},iw)':-2",
+            "-q:v",
+            "5",
+            "-f",
+            "image2",
+            "-c:v",
+            "mjpeg",
+            "pipe:1",
         ]);
 
         using var output = new MemoryStream();
-        var (exitCode, errors) = await _ffmpeg.RunAsync(arguments, TimeSpan.FromSeconds(Math.Max(1, Options.TimeoutSeconds)), output, cancellationToken);
+        var (exitCode, errors) = await _ffmpeg.RunAsync(
+            arguments,
+            TimeSpan.FromSeconds(Math.Max(1, Options.TimeoutSeconds)),
+            output,
+            cancellationToken
+        );
         if (exitCode != 0)
         {
             _logger.LogDebug("ffmpeg exited with {Code} on {File}: {Error}", exitCode, source, errors);

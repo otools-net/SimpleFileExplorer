@@ -23,7 +23,11 @@ internal sealed class SqliteOpenGate : DbConnectionInterceptor
 
     private static readonly Lock Gate = new();
 
-    public override InterceptionResult ConnectionOpening(DbConnection connection, ConnectionEventData eventData, InterceptionResult result)
+    public override InterceptionResult ConnectionOpening(
+        DbConnection connection,
+        ConnectionEventData eventData,
+        InterceptionResult result
+    )
     {
         if (result.IsSuppressed)
             return result;
@@ -31,8 +35,12 @@ internal sealed class SqliteOpenGate : DbConnectionInterceptor
         return InterceptionResult.Suppress();
     }
 
-    public override ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection, ConnectionEventData eventData,
-        InterceptionResult result, CancellationToken cancellationToken = default)
+    public override ValueTask<InterceptionResult> ConnectionOpeningAsync(
+        DbConnection connection,
+        ConnectionEventData eventData,
+        InterceptionResult result,
+        CancellationToken cancellationToken = default
+    )
     {
         if (result.IsSuppressed)
             return ValueTask.FromResult(result);

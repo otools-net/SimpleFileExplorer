@@ -20,7 +20,13 @@ public static class PasswordHashing
     public static string Hash(string password)
     {
         var salt = RandomNumberGenerator.GetBytes(SaltBytes);
-        var hash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, Iterations, HashAlgorithmName.SHA512, HashBytes);
+        var hash = Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(password),
+            salt,
+            Iterations,
+            HashAlgorithmName.SHA512,
+            HashBytes
+        );
         return $"{Prefix}${Iterations}${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
     }
 
@@ -29,14 +35,26 @@ public static class PasswordHashing
     {
         outdated = false;
         var parts = stored?.Split('$');
-        if (parts is not [Prefix, var count, var saltText, var hashText] || !int.TryParse(count, out var iterations) || iterations <= 0)
+        if (
+            parts is not [Prefix, var count, var saltText, var hashText]
+            || !int.TryParse(count, out var iterations)
+            || iterations <= 0
+        )
+        {
             return false;
+        }
 
         try
         {
             var salt = Convert.FromBase64String(saltText);
             var expected = Convert.FromBase64String(hashText);
-            var actual = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, HashAlgorithmName.SHA512, expected.Length);
+            var actual = Rfc2898DeriveBytes.Pbkdf2(
+                Encoding.UTF8.GetBytes(password),
+                salt,
+                iterations,
+                HashAlgorithmName.SHA512,
+                expected.Length
+            );
             if (!CryptographicOperations.FixedTimeEquals(actual, expected))
                 return false;
         }
@@ -56,5 +74,6 @@ public static class PasswordHashing
     public static bool SameSecret(string given, string expected) =>
         CryptographicOperations.FixedTimeEquals(
             SHA256.HashData(Encoding.UTF8.GetBytes(given)),
-            SHA256.HashData(Encoding.UTF8.GetBytes(expected)));
+            SHA256.HashData(Encoding.UTF8.GetBytes(expected))
+        );
 }

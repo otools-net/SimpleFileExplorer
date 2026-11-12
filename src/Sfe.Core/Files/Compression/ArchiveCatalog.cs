@@ -15,7 +15,8 @@ public sealed record ArchiveCatalogSummary(
     long LeftOut,
     bool Complete,
     string? Stopped,
-    bool NeedsPassword = false);
+    bool NeedsPassword = false
+);
 
 /// <param name="Folders">Folders right inside it.</param>
 /// <param name="Files">Entries right inside it (files, links…).</param>
@@ -30,13 +31,18 @@ public sealed record ArchiveFolder(
     long Files,
     long AllFiles,
     long Size,
-    long Packed);
+    long Packed
+);
 
 /// <summary>An entry of the catalog: where it is (folder, name) and what is needed to open it.</summary>
 public sealed record ArchiveFile(long Id, long FolderId, string Name, ArchiveEntry Entry);
 
 /// <summary>A folder's page: its folders first, then its files, by name.</summary>
-public sealed record ArchivePage(IReadOnlyList<ArchiveFolder> Folders, IReadOnlyList<ArchiveFile> Files, ArchiveCursor? Next);
+public sealed record ArchivePage(
+    IReadOnlyList<ArchiveFolder> Folders,
+    IReadOnlyList<ArchiveFile> Files,
+    ArchiveCursor? Next
+);
 
 /// <summary>Where a page stopped: in the folders or the files, after this name and id (keyset, never an offset).</summary>
 public sealed record ArchiveCursor(bool InFiles, string Name, long Id);
@@ -46,7 +52,10 @@ public sealed record ArchiveCursor(bool InFiles, string Name, long Id);
 /// the path of the folder it is in. <c>Next</c> is null once the whole catalog was looked through.
 /// </summary>
 public sealed record ArchiveSearchPage(
-    IReadOnlyList<(ArchiveFolder Folder, string Where)> Folders, IReadOnlyList<(ArchiveFile File, string Where)> Files, ArchiveSearchCursor? Next);
+    IReadOnlyList<(ArchiveFolder Folder, string Where)> Folders,
+    IReadOnlyList<(ArchiveFile File, string Where)> Files,
+    ArchiveSearchCursor? Next
+);
 
 /// <summary>Where a search stopped: in the folders or the files, after this id (what was looked through, not only found).</summary>
 public sealed record ArchiveSearchCursor(bool InFiles, long Id);
@@ -97,7 +106,8 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         string catalogPath,
         ArchiveOptions options,
         IProgress<long>? progress = null,
-        CancellationToken cancel = default)
+        CancellationToken cancel = default
+    )
     {
         var building = catalogPath + ".building";
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(catalogPath)!);
@@ -127,7 +137,8 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         ArchiveOptions options,
         out SqliteConnection keeper,
         IProgress<long>? progress = null,
-        CancellationToken cancel = default)
+        CancellationToken cancel = default
+    )
     {
         var name = "sfe-archive-" + Guid.NewGuid().ToString("N");
         keeper = Connect(name, SqliteOpenMode.Memory, inMemory: true);
@@ -143,10 +154,19 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         }
     }
 
-    private static void Fill(SqliteConnection connection, string archivePath, ArchiveFormat format, ArchiveOptions options, string? password,
-        IProgress<long>? progress, CancellationToken cancel)
+    private static void Fill(
+        SqliteConnection connection,
+        string archivePath,
+        ArchiveFormat format,
+        ArchiveOptions options,
+        string? password,
+        IProgress<long>? progress,
+        CancellationToken cancel
+    )
     {
-        Execute(connection, """
+        Execute(
+            connection,
+            """
             PRAGMA journal_mode = OFF;
             PRAGMA synchronous = OFF;
             PRAGMA cache_size = -16000;
@@ -164,17 +184,27 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
                 Crc INTEGER NOT NULL, Cipher INTEGER NOT NULL, CipherInfo INTEGER NOT NULL);
             CREATE TABLE LeftOut (Name TEXT NOT NULL, Reason TEXT NOT NULL);
             INSERT INTO Folders (Id, ParentId, Name, Depth) VALUES (1, 0, '', 0);
-            """);
+            """
+        );
         var writer = new Writer(connection, options.MaxDepth);
         string? stopped = null;
         var needsPassword = false;
         try
         {
-            foreach (var entry in ArchiveReader.ReadEntries(archivePath, format, cancel, password, options.MaxSevenZipListMegabytes * 1024L * 1024))
+            foreach (
+                var entry in ArchiveReader.ReadEntries(
+                    archivePath,
+                    format,
+                    cancel,
+                    password,
+                    options.MaxSevenZipListMegabytes * 1024L * 1024
+                )
+            )
             {
                 if (writer.Entries >= options.MaxEntries)
                 {
-                    stopped = $"The archive holds more than {options.MaxEntries:N0} entries: only the first are listed.";
+                    stopped =
+                        $"The archive holds more than {options.MaxEntries:N0} entries: only the first are listed.";
                     break;
                 }
                 writer.Add(entry);
@@ -212,7 +242,8 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             long.Parse(info["leftOut"]!, CultureInfo.InvariantCulture),
             info["complete"] == "1",
             info.GetValueOrDefault("stopped"),
-            info.GetValueOrDefault("needsPassword") == "1");
+            info.GetValueOrDefault("needsPassword") == "1"
+        );
     }
 
     /// <summary>Whether the file at <paramref name="catalogPath"/> is a whole catalog of this <see cref="Version"/>.</summary>
@@ -245,8 +276,14 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     public long? FindFolder(string folderPath)
     {
         using var connection = Open();
-        using var exact = Command(connection, "SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name COLLATE BINARY LIMIT 1");
-        using var anyCase = Command(connection, "SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name ORDER BY Id LIMIT 1");
+        using var exact = Command(
+            connection,
+            "SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name COLLATE BINARY LIMIT 1"
+        );
+        using var anyCase = Command(
+            connection,
+            "SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name ORDER BY Id LIMIT 1"
+        );
         var id = RootId;
         foreach (var segment in folderPath.Split('/', StringSplitOptions.RemoveEmptyEntries))
         {
@@ -279,7 +316,10 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         using var connection = Open();
         foreach (var match in new[] { "COLLATE BINARY", "ORDER BY Id" })
         {
-            using var command = Command(connection, $"SELECT {FileColumns} FROM Entries WHERE FolderId = $folder AND Name = $name {match} LIMIT 1");
+            using var command = Command(
+                connection,
+                $"SELECT {FileColumns} FROM Entries WHERE FolderId = $folder AND Name = $name {match} LIMIT 1"
+            );
             command.Parameters.AddWithValue("$folder", folder);
             command.Parameters.AddWithValue("$name", name);
             using var reader = command.ExecuteReader();
@@ -338,11 +378,14 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         var files = new List<ArchiveFile>();
         if (after is null || !after.InFiles)
         {
-            using var command = Command(connection, $"""
+            using var command = Command(
+                connection,
+                $"""
                 SELECT {FolderColumns} FROM Folders
                 WHERE ParentId = $parent AND (Name, Id) > ($name, $id)
                 ORDER BY Name, Id LIMIT $limit
-                """);
+                """
+            );
             command.Parameters.AddWithValue("$parent", folderId);
             command.Parameters.AddWithValue("$name", after?.Name ?? "");
             command.Parameters.AddWithValue("$id", after?.Id ?? 0);
@@ -358,11 +401,16 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             after = null;
         }
 
-        using (var command = Command(connection, $"""
-            SELECT {FileColumns} FROM Entries
-            WHERE FolderId = $folder AND (Name, Id) > ($name, $id)
-            ORDER BY Name, Id LIMIT $limit
-            """))
+        using (
+            var command = Command(
+                connection,
+                $"""
+                SELECT {FileColumns} FROM Entries
+                WHERE FolderId = $folder AND (Name, Id) > ($name, $id)
+                ORDER BY Name, Id LIMIT $limit
+                """
+            )
+        )
         {
             command.Parameters.AddWithValue("$folder", folderId);
             command.Parameters.AddWithValue("$name", after?.Name ?? "");
@@ -376,7 +424,10 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         {
             files.RemoveAt(files.Count - 1);
             // The folders filled the page: the next one starts at the first file.
-            var next = files.Count == 0 ? new ArchiveCursor(true, "", 0) : new ArchiveCursor(true, files[^1].Name, files[^1].Id);
+            var next =
+                files.Count == 0
+                    ? new ArchiveCursor(true, "", 0)
+                    : new ArchiveCursor(true, files[^1].Name, files[^1].Id);
             return new ArchivePage(folders, files, next);
         }
         return new ArchivePage(folders, files, null);
@@ -391,7 +442,13 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     /// archive holds; a page cut short by it has fewer than <paramref name="limit"/> and a <c>Next</c> to go on.
     /// <paramref name="chunk"/>: ids per query (tests make it small).
     /// </summary>
-    public ArchiveSearchPage Search(string text, ArchiveSearchCursor? after, int limit, TimeSpan budget, int chunk = SearchChunk)
+    public ArchiveSearchPage Search(
+        string text,
+        ArchiveSearchCursor? after,
+        int limit,
+        TimeSpan budget,
+        int chunk = SearchChunk
+    )
     {
         using var connection = Open();
         AddHolds(connection);
@@ -414,11 +471,16 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             }
             var to = Math.Min(from + chunk, last);
             var room = limit - folders.Count - files.Count;
-            using (var command = Command(connection, $"""
-                SELECT {(inFiles ? FileColumns : FolderColumns)} FROM {table}
-                WHERE Id > $from AND Id <= $to AND holds(Name, $text)
-                ORDER BY Id LIMIT $room
-                """))
+            using (
+                var command = Command(
+                    connection,
+                    $"""
+                    SELECT {(inFiles ? FileColumns : FolderColumns)} FROM {table}
+                    WHERE Id > $from AND Id <= $to AND holds(Name, $text)
+                    ORDER BY Id LIMIT $room
+                    """
+                )
+            )
             {
                 command.Parameters.AddWithValue("$from", from);
                 command.Parameters.AddWithValue("$to", to);
@@ -451,7 +513,8 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         return new ArchiveSearchPage(
             [.. folders.Select(folder => (folder, PathOf(connection, folder.ParentId, paths)))],
             [.. files.Select(file => (file, PathOf(connection, file.FolderId, paths)))],
-            next);
+            next
+        );
     }
 
     /// <summary>
@@ -460,7 +523,14 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     /// through by ranges of <paramref name="chunk"/> names, so a page costs <paramref name="budget"/> at most however
     /// big the folder; a page cut short by it has fewer than <paramref name="limit"/> and a <c>Next</c> to go on.
     /// </summary>
-    public ArchivePage FindIn(long folderId, string text, ArchiveCursor? after, int limit, TimeSpan budget, int chunk = SearchChunk)
+    public ArchivePage FindIn(
+        long folderId,
+        string text,
+        ArchiveCursor? after,
+        int limit,
+        TimeSpan budget,
+        int chunk = SearchChunk
+    )
     {
         using var connection = Open();
         AddHolds(connection);
@@ -474,10 +544,15 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             var (table, parent) = inFiles ? ("Entries", "FolderId") : ("Folders", "ParentId");
             // The range's end: the chunk-th name after the cursor (on the index alone); none, the folder's end.
             (string Name, long Id)? end = null;
-            using (var command = Command(connection, $"""
-                SELECT Name, Id FROM {table} WHERE {parent} = $folder AND (Name, Id) > ($name, $id)
-                ORDER BY Name, Id LIMIT 1 OFFSET $skip
-                """))
+            using (
+                var command = Command(
+                    connection,
+                    $"""
+                    SELECT Name, Id FROM {table} WHERE {parent} = $folder AND (Name, Id) > ($name, $id)
+                    ORDER BY Name, Id LIMIT 1 OFFSET $skip
+                    """
+                )
+            )
             {
                 command.Parameters.AddWithValue("$folder", folderId);
                 command.Parameters.AddWithValue("$name", name);
@@ -487,12 +562,19 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
                 if (reader.Read())
                     end = (reader.GetString(0), reader.GetInt64(1));
             }
-            using (var command = Command(connection, $"""
-                SELECT {(inFiles ? FileColumns : FolderColumns)} FROM {table}
-                WHERE {parent} = $folder AND (Name, Id) > ($name, $id) {(end is null ? "" : "AND (Name, Id) <= ($endName, $endId)")}
-                    AND holds(Name, $text)
-                ORDER BY Name, Id LIMIT $room
-                """))
+            using (
+                var command = Command(
+                    connection,
+                    $"""
+                    SELECT {(inFiles ? FileColumns : FolderColumns)} FROM {table}
+                    WHERE {parent} = $folder AND (Name, Id) > ($name, $id) {(
+                        end is null ? "" : "AND (Name, Id) <= ($endName, $endId)"
+                    )}
+                        AND holds(Name, $text)
+                    ORDER BY Name, Id LIMIT $room
+                    """
+                )
+            )
             {
                 command.Parameters.AddWithValue("$folder", folderId);
                 command.Parameters.AddWithValue("$name", name);
@@ -513,7 +595,9 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             if (folders.Count + files.Count >= limit)
             {
                 // Full: the next page starts after the last one found.
-                var next = inFiles ? new ArchiveCursor(true, files[^1].Name, files[^1].Id) : new ArchiveCursor(false, folders[^1].Name, folders[^1].Id);
+                var next = inFiles
+                    ? new ArchiveCursor(true, files[^1].Name, files[^1].Id)
+                    : new ArchiveCursor(false, folders[^1].Name, folders[^1].Id);
                 return new ArchivePage(folders, files, next);
             }
             if (end is { } reached)
@@ -529,7 +613,11 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
 
     /// <summary><c>holds(name, part)</c>: any case, any letters (SQLite's NOCASE folds A–Z only).</summary>
     private static void AddHolds(SqliteConnection connection) =>
-        connection.CreateFunction("holds", (string name, string part) => name.Contains(part, StringComparison.OrdinalIgnoreCase), isDeterministic: true);
+        connection.CreateFunction(
+            "holds",
+            (string name, string part) => name.Contains(part, StringComparison.OrdinalIgnoreCase),
+            isDeterministic: true
+        );
 
     private static long MaxId(SqliteConnection connection, string table)
     {
@@ -550,8 +638,15 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             return cached;
         var names = new List<string>();
         var folder = FolderOf(connection, id);
-        for (; folder is not null && folder.Id != RootId && names.Count < WhereLevels; folder = FolderOf(connection, folder.ParentId))
+        for (
+            ;
+            folder is not null && folder.Id != RootId && names.Count < WhereLevels;
+            folder = FolderOf(connection, folder.ParentId)
+        )
+        {
             names.Add(folder.Name);
+        }
+
         names.Reverse();
         var path = string.Join('/', names);
         if (folder is not null && folder.Id != RootId)
@@ -572,7 +667,10 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     public ArchiveFile? SmallestEncrypted()
     {
         using var connection = Open();
-        using var command = Command(connection, $"SELECT {FileColumns} FROM Entries WHERE Encrypted = 1 AND Kind = 0 ORDER BY Size, Id LIMIT 1");
+        using var command = Command(
+            connection,
+            $"SELECT {FileColumns} FROM Entries WHERE Encrypted = 1 AND Kind = 0 ORDER BY Size, Id LIMIT 1"
+        );
         using var reader = command.ExecuteReader();
         return reader.Read() ? ReadFile(reader) : null;
     }
@@ -589,7 +687,8 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     }
 
     private const string FolderColumns = "Id, ParentId, Name, Depth, Time, Folders, Files, AllFiles, Size, Packed";
-    private const string FileColumns = "Id, FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method, Crc, Cipher, CipherInfo";
+    private const string FileColumns =
+        "Id, FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method, Crc, Cipher, CipherInfo";
 
     private static ArchiveFolder? FolderOf(SqliteConnection connection, long id)
     {
@@ -599,17 +698,36 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         return reader.Read() ? ReadFolder(reader) : null;
     }
 
-    private static ArchiveFolder ReadFolder(SqliteDataReader reader) => new(
-        reader.GetInt64(0), reader.GetInt64(1), reader.GetString(2), reader.GetInt32(3), TimeOf(reader, 4),
-        reader.GetInt64(5), reader.GetInt64(6), reader.GetInt64(7), ToLong(reader.GetDouble(8)), ToLong(reader.GetDouble(9)));
+    private static ArchiveFolder ReadFolder(SqliteDataReader reader) =>
+        new(
+            reader.GetInt64(0),
+            reader.GetInt64(1),
+            reader.GetString(2),
+            reader.GetInt32(3),
+            TimeOf(reader, 4),
+            reader.GetInt64(5),
+            reader.GetInt64(6),
+            reader.GetInt64(7),
+            ToLong(reader.GetDouble(8)),
+            ToLong(reader.GetDouble(9))
+        );
 
     private static ArchiveFile ReadFile(SqliteDataReader reader)
     {
         var name = reader.GetString(2);
         var entry = new ArchiveEntry(
-            name, (ArchiveEntryKind)reader.GetInt32(3), reader.GetInt64(4), reader.GetInt64(5), TimeOf(reader, 6),
-            reader.GetInt64(7) != 0, reader.GetInt64(8), reader.GetInt32(9), (uint)reader.GetInt64(10), (ZipCipher)reader.GetInt32(11),
-            reader.GetInt32(12));
+            name,
+            (ArchiveEntryKind)reader.GetInt32(3),
+            reader.GetInt64(4),
+            reader.GetInt64(5),
+            TimeOf(reader, 6),
+            reader.GetInt64(7) != 0,
+            reader.GetInt64(8),
+            reader.GetInt32(9),
+            (uint)reader.GetInt64(10),
+            (ZipCipher)reader.GetInt32(11),
+            reader.GetInt32(12)
+        );
         return new ArchiveFile(reader.GetInt64(0), reader.GetInt64(1), name, entry);
     }
 
@@ -619,18 +737,21 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     /// <summary>Totals are kept as REAL: sizes a hostile directory claims can't overflow a sum.</summary>
     private static long ToLong(double value) => value >= long.MaxValue ? long.MaxValue : (long)value;
 
-    private SqliteConnection Open() => Connect(Path, InMemory ? SqliteOpenMode.Memory : SqliteOpenMode.ReadOnly, InMemory);
+    private SqliteConnection Open() =>
+        Connect(Path, InMemory ? SqliteOpenMode.Memory : SqliteOpenMode.ReadOnly, InMemory);
 
     private static SqliteConnection Connect(string source, SqliteOpenMode mode, bool inMemory)
     {
         // Not pooled: a catalog is opened per question, and a pooled handle would keep the file locked for its eviction.
-        var connection = new SqliteConnection(new SqliteConnectionStringBuilder
-        {
-            DataSource = source,
-            Mode = mode,
-            Cache = inMemory ? SqliteCacheMode.Shared : SqliteCacheMode.Default,
-            Pooling = false,
-        }.ToString());
+        var connection = new SqliteConnection(
+            new SqliteConnectionStringBuilder
+            {
+                DataSource = source,
+                Mode = mode,
+                Cache = inMemory ? SqliteCacheMode.Shared : SqliteCacheMode.Default,
+                Pooling = false,
+            }.ToString()
+        );
         connection.Open();
         return connection;
     }
@@ -653,8 +774,13 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     {
         private readonly SqliteConnection _connection;
         private readonly int _maxDepth;
-        private readonly SqliteCommand _insertFolder, _findFolder, _folderTime, _insertEntry, _insertLeftOut;
+        private readonly SqliteCommand _insertFolder,
+            _findFolder,
+            _folderTime,
+            _insertEntry,
+            _insertLeftOut;
         private readonly Dictionary<(long Parent, string Name), long> _folders = [];
+
         // The _folders of the last entry's path: archives list entries folder by folder, so most entries reuse it.
         private readonly List<string> _stackNames = [];
         private readonly List<long> _stackIds = [];
@@ -668,15 +794,36 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             _connection = connection;
             _maxDepth = maxDepth;
             _transaction = _connection.BeginTransaction();
-            _insertFolder = Prepare("INSERT INTO Folders (ParentId, Name, Depth) VALUES ($parent, $name, $depth) RETURNING Id",
-                "$parent", "$name", "$depth");
-            _findFolder = Prepare("SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name COLLATE BINARY LIMIT 1",
-                "$parent", "$name");
+            _insertFolder = Prepare(
+                "INSERT INTO Folders (ParentId, Name, Depth) VALUES ($parent, $name, $depth) RETURNING Id",
+                "$parent",
+                "$name",
+                "$depth"
+            );
+            _findFolder = Prepare(
+                "SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name COLLATE BINARY LIMIT 1",
+                "$parent",
+                "$name"
+            );
             _folderTime = Prepare("UPDATE Folders SET Time = $time WHERE Id = $id", "$time", "$id");
-            _insertEntry = Prepare("""
+            _insertEntry = Prepare(
+                """
                 INSERT INTO Entries (FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method, Crc, Cipher, CipherInfo)
                 VALUES ($folder, $name, $kind, $size, $packed, $time, $encrypted, $locator, $method, $crc, $cipher, $cipherInfo)
-                """, "$folder", "$name", "$kind", "$size", "$packed", "$time", "$encrypted", "$locator", "$method", "$crc", "$cipher", "$cipherInfo");
+                """,
+                "$folder",
+                "$name",
+                "$kind",
+                "$size",
+                "$packed",
+                "$time",
+                "$encrypted",
+                "$locator",
+                "$method",
+                "$crc",
+                "$cipher",
+                "$cipherInfo"
+            );
             _insertLeftOut = Prepare("INSERT INTO LeftOut (Name, Reason) VALUES ($name, $reason)", "$name", "$reason");
         }
 
@@ -701,8 +848,21 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
                 return;
             }
             var folder = ResolveFolder(segments, segments.Length - 1);
-            Run(_insertEntry, folder, segments[^1], (int)entry.Kind, Math.Max(entry.Size, 0), Math.Max(entry.Packed, 0),
-                entry.Time?.Ticks, entry.Encrypted ? 1 : 0, entry.Locator, entry.Method, (long)entry.Crc, (int)entry.Cipher, entry.CipherInfo);
+            Run(
+                _insertEntry,
+                folder,
+                segments[^1],
+                (int)entry.Kind,
+                Math.Max(entry.Size, 0),
+                Math.Max(entry.Packed, 0),
+                entry.Time?.Ticks,
+                entry.Encrypted ? 1 : 0,
+                entry.Locator,
+                entry.Method,
+                (long)entry.Crc,
+                (int)entry.Cipher,
+                entry.CipherInfo
+            );
         }
 
         public void Commit()
@@ -715,7 +875,8 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         /// <summary>Indexes, then the totals bottom-up one depth at a time (each level's sums are final when its parents add them).</summary>
         public void Finish(ArchiveFormat format, string? stopped, bool needsPassword)
         {
-            Execute("""
+            Execute(
+                """
                 CREATE INDEX FoldersByParent ON Folders (ParentId, Name, Id);
                 CREATE INDEX FoldersByDepth ON Folders (Depth);
                 CREATE INDEX EntriesByFolder ON Entries (FolderId, Name, Id);
@@ -725,16 +886,20 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
                         total(CASE WHEN Kind = 0 THEN Size END) AS Size, total(CASE WHEN Kind = 0 THEN Packed END) AS Packed
                       FROM Entries GROUP BY FolderId) AS c
                 WHERE Folders.Id = c.FolderId;
-                """);
+                """
+            );
             var deepest = Convert.ToInt32(Scalar("SELECT max(Depth) FROM Folders"), CultureInfo.InvariantCulture);
-            using var roll = Prepare("""
+            using var roll = Prepare(
+                """
                 UPDATE Folders SET Folders = Folders.Folders + c.ChildCount, AllFiles = Folders.AllFiles + c.ChildFiles,
                     Size = Folders.Size + c.ChildSize, Packed = Folders.Packed + c.ChildPacked
                 FROM (SELECT ParentId, count(*) AS ChildCount, sum(AllFiles) AS ChildFiles, total(Size) AS ChildSize,
                         total(Packed) AS ChildPacked
                       FROM Folders WHERE Depth = $depth GROUP BY ParentId) AS c
                 WHERE Folders.Id = c.ParentId
-                """, "$depth");
+                """,
+                "$depth"
+            );
             for (var depth = deepest; depth >= 1; depth--)
                 Run(roll, depth);
 
@@ -742,7 +907,11 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             Run(info, "version", Version.ToString(CultureInfo.InvariantCulture));
             Run(info, "format", format.ToString());
             Run(info, "entries", Entries.ToString(CultureInfo.InvariantCulture));
-            Run(info, "folders", Convert.ToString(Scalar("SELECT count(*) - 1 FROM Folders"), CultureInfo.InvariantCulture));
+            Run(
+                info,
+                "folders",
+                Convert.ToString(Scalar("SELECT count(*) - 1 FROM Folders"), CultureInfo.InvariantCulture)
+            );
             Run(info, "leftOut", LeftOut.ToString(CultureInfo.InvariantCulture));
             Run(info, "complete", stopped is null ? "1" : "0");
             Run(info, "stopped", stopped);
@@ -760,8 +929,15 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         private long ResolveFolder(string[] segments, int count)
         {
             var common = 0;
-            while (common < count && common < _stackNames.Count && string.Equals(segments[common], _stackNames[common], StringComparison.Ordinal))
+            while (
+                common < count
+                && common < _stackNames.Count
+                && string.Equals(segments[common], _stackNames[common], StringComparison.Ordinal)
+            )
+            {
                 common++;
+            }
+
             _stackNames.RemoveRange(common, _stackNames.Count - common);
             _stackIds.RemoveRange(common, _stackIds.Count - common);
             var id = common == 0 ? RootId : _stackIds[common - 1];

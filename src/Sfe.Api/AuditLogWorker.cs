@@ -8,7 +8,8 @@ namespace Sfe.Api;
 /// old entries every <see cref="PurgeInterval"/>. Until the update of an install is confirmed nothing goes to the
 /// database: the entries wait in memory, the daily files still get them.
 /// </summary>
-public sealed class AuditLogWorker(AuditLogService log, MigrationCoordinator migration, ILogger<AuditLogWorker> logger) : BackgroundService
+public sealed class AuditLogWorker(AuditLogService log, MigrationCoordinator migration, ILogger<AuditLogWorker> logger)
+    : BackgroundService
 {
     public static readonly TimeSpan FlushInterval = TimeSpan.FromSeconds(2);
     public static readonly TimeSpan PurgeInterval = TimeSpan.FromHours(1);
@@ -35,12 +36,9 @@ public sealed class AuditLogWorker(AuditLogService log, MigrationCoordinator mig
                 {
                     logger.LogError(ex, "Cannot write the server's log");
                 }
-            }
-            while (await timer.WaitForNextTickAsync(stoppingToken));
+            } while (await timer.WaitForNextTickAsync(stoppingToken));
         }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-        {
-        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

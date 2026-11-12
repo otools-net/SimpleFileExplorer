@@ -13,8 +13,17 @@ namespace Sfe.Core.Files;
 /// <param name="Hidden">Hidden by the system: a name starting with a dot, or the hidden attribute (Windows).</param>
 /// <param name="IsLink">A symbolic link or junction (its target is not told: it may be outside the library).</param>
 public sealed record ItemDetails(
-    string Path, string Name, bool IsFolder, long? Size, DateTimeOffset? Created, DateTimeOffset Modified, DateTimeOffset? Accessed,
-    bool Hidden, bool ReadOnly, bool IsLink);
+    string Path,
+    string Name,
+    bool IsFolder,
+    long? Size,
+    DateTimeOffset? Created,
+    DateTimeOffset Modified,
+    DateTimeOffset? Accessed,
+    bool Hidden,
+    bool ReadOnly,
+    bool IsLink
+);
 
 /// <summary>What the index knows below a folder (the files and folders the asker may see).</summary>
 /// <param name="Indexed">The folder itself is in the index (else the counts are those of what was indexed below it, if anything).</param>
@@ -42,8 +51,20 @@ public enum ChecksumAlgorithm
 /// <param name="Capped">The count stopped at <see cref="PropertyJobs.MaxCountedEntries"/>: the folder holds more.</param>
 /// <param name="Checksum">The checksum, in lowercase hex, once done.</param>
 public sealed record PropertyJobView(
-    string Id, PropertyJobKind Kind, string Path, ChecksumAlgorithm? Algorithm, bool Done, long Files, long Folders, long Bytes, long? Total,
-    long LeftOut, bool Capped, string? Checksum, string? Error);
+    string Id,
+    PropertyJobKind Kind,
+    string Path,
+    ChecksumAlgorithm? Algorithm,
+    bool Done,
+    long Files,
+    long Folders,
+    long Bytes,
+    long? Total,
+    long LeftOut,
+    bool Capped,
+    string? Checksum,
+    string? Error
+);
 
 /// <summary>The access of the person asking, while a folder is counted.</summary>
 public interface IPropertyAccess
@@ -70,30 +91,52 @@ public sealed class Properties(IDbContextFactory<SfeDbContext> dbFactory, Librar
             return null;
         var name = path.Length == 0 ? paths.RootName : info.Name;
         return new ItemDetails(
-            path, name, info is DirectoryInfo, (info as FileInfo)?.Length,
-            Known(info.CreationTimeUtc), new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero), Known(info.LastAccessTimeUtc),
-            name.StartsWith('.') || info.Attributes.HasFlag(FileAttributes.Hidden), info.Attributes.HasFlag(FileAttributes.ReadOnly),
-            info.LinkTarget is not null);
+            path,
+            name,
+            info is DirectoryInfo,
+            (info as FileInfo)?.Length,
+            Known(info.CreationTimeUtc),
+            new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero),
+            Known(info.LastAccessTimeUtc),
+            name.StartsWith('.') || info.Attributes.HasFlag(FileAttributes.Hidden),
+            info.Attributes.HasFlag(FileAttributes.ReadOnly),
+            info.LinkTarget is not null
+        );
     }
 
     /// <summary>
     /// The files, folders and bytes the index has below <paramref name="fullPath"/>, only where
     /// <paramref name="visible"/> lets the asker see (folder rules).
     /// </summary>
-    public async Task<FolderTotals> IndexedTotalsAsync(string fullPath, PathFilter? visible, CancellationToken cancellationToken = default)
+    public async Task<FolderTotals> IndexedTotalsAsync(
+        string fullPath,
+        PathFilter? visible,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var self = Path.TrimEndingDirectorySeparator(fullPath);
         var indexed = await db.Directories.AnyAsync(d => d.FullName == self, cancellationToken);
-        var files = db.Files.AsNoTracking().Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, fullPath)).WhereVisible(visible, f => f.FullName, paths);
-        var folders = db.Directories.AsNoTracking().Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, fullPath))
-            .Where(d => d.FullName != self).WhereVisible(visible, d => d.FullName, paths);
-        return new FolderTotals(indexed, await files.LongCountAsync(cancellationToken), await folders.LongCountAsync(cancellationToken),
-            await files.SumAsync(f => (long?)f.Size, cancellationToken) ?? 0);
+        var files = db
+            .Files.AsNoTracking()
+            .Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, fullPath))
+            .WhereVisible(visible, f => f.FullName, paths);
+        var folders = db
+            .Directories.AsNoTracking()
+            .Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, fullPath))
+            .Where(d => d.FullName != self)
+            .WhereVisible(visible, d => d.FullName, paths);
+        return new FolderTotals(
+            indexed,
+            await files.LongCountAsync(cancellationToken),
+            await folders.LongCountAsync(cancellationToken),
+            await files.SumAsync(f => (long?)f.Size, cancellationToken) ?? 0
+        );
     }
 
     /// <summary>A file system without the date answers 1601 (Windows) or 1970: told as unknown.</summary>
-    private static DateTimeOffset? Known(DateTime utc) => utc.Year <= 1970 ? null : new DateTimeOffset(utc, TimeSpan.Zero);
+    private static DateTimeOffset? Known(DateTime utc) =>
+        utc.Year <= 1970 ? null : new DateTimeOffset(utc, TimeSpan.Zero);
 }
 
 /// <summary>
@@ -147,15 +190,23 @@ public sealed class PropertyJobs(ILogger<PropertyJobs> logger)
         {
             try
             {
-                await using var input = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, ReadBuffer,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan);
+                await using var input = new FileStream(
+                    fullPath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete,
+                    ReadBuffer,
+                    FileOptions.Asynchronous | FileOptions.SequentialScan
+                );
                 job.Total = input.Length;
-                using var hash = IncrementalHash.CreateHash(algorithm switch
-                {
-                    ChecksumAlgorithm.Sha1 => HashAlgorithmName.SHA1,
-                    ChecksumAlgorithm.Md5 => HashAlgorithmName.MD5,
-                    _ => HashAlgorithmName.SHA256,
-                });
+                using var hash = IncrementalHash.CreateHash(
+                    algorithm switch
+                    {
+                        ChecksumAlgorithm.Sha1 => HashAlgorithmName.SHA1,
+                        ChecksumAlgorithm.Md5 => HashAlgorithmName.MD5,
+                        _ => HashAlgorithmName.SHA256,
+                    }
+                );
                 var buffer = new byte[ReadBuffer];
                 int read;
                 while ((read = await input.ReadAsync(buffer, job.Token)) > 0)
@@ -295,13 +346,24 @@ public sealed class PropertyJobs(ILogger<PropertyJobs> logger)
             {
                 _cancel.Cancel();
             }
-            catch (ObjectDisposedException)
-            {
-            }
+            catch (ObjectDisposedException) { }
         }
 
-        public PropertyJobView View() => new(
-            Id, Kind, path, algorithm, Ended is not null, Interlocked.Read(ref Files), Interlocked.Read(ref Folders), Interlocked.Read(ref Bytes), Total,
-            Interlocked.Read(ref LeftOut), Capped, Checksum, Error);
+        public PropertyJobView View() =>
+            new(
+                Id,
+                Kind,
+                path,
+                algorithm,
+                Ended is not null,
+                Interlocked.Read(ref Files),
+                Interlocked.Read(ref Folders),
+                Interlocked.Read(ref Bytes),
+                Total,
+                Interlocked.Read(ref LeftOut),
+                Capped,
+                Checksum,
+                Error
+            );
     }
 }

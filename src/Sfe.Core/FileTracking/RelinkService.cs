@@ -31,7 +31,8 @@ public sealed class RelinkService(
     ThumbnailService thumbnails,
     TrickplayService trickplay,
     IOptionsMonitor<SfeOptions> options,
-    ILogger<RelinkService> logger)
+    ILogger<RelinkService> logger
+)
 {
     public const int MaxPageSize = 500;
     public const int DefaultPageSize = 100;
@@ -64,7 +65,9 @@ public sealed class RelinkService(
             if (settings.RetentionDays > 0)
             {
                 var limit = DateTime.Now.AddDays(-settings.RetentionDays);
-                forgotten = await db.MissingFiles.Where(m => m.MissingSince < limit).ExecuteDeleteAsync(cancellationToken);
+                forgotten = await db
+                    .MissingFiles.Where(m => m.MissingSince < limit)
+                    .ExecuteDeleteAsync(cancellationToken);
             }
 
             var relinked = 0;
@@ -72,8 +75,8 @@ public sealed class RelinkService(
             var lastId = 0;
             while (true)
             {
-                var batch = await db.MissingFiles
-                    .AsNoTracking()
+                var batch = await db
+                    .MissingFiles.AsNoTracking()
                     .Where(m => m.Id > lastId)
                     .OrderBy(m => m.Id)
                     .Take(BatchSize)
@@ -95,7 +98,15 @@ public sealed class RelinkService(
 
             var remaining = await db.MissingFiles.CountAsync(cancellationToken);
             if (relinked + forgotten > 0)
-                logger.LogInformation("Relinked {Relinked} moved files, forgot {Forgotten} missing for too long; {Remaining} still missing", relinked, forgotten, remaining);
+            {
+                logger.LogInformation(
+                    "Relinked {Relinked} moved files, forgot {Forgotten} missing for too long; {Remaining} still missing",
+                    relinked,
+                    forgotten,
+                    remaining
+                );
+            }
+
             return new RelinkPassResult(relinked, forgotten, remaining);
         }
         finally
@@ -122,7 +133,12 @@ public sealed class RelinkService(
     /// Where the asker may see files (folder rules): only the missing files that were there, and the candidates that
     /// are there, are listed (a missing file outside the library's folder is never listed then); null = everywhere.
     /// </param>
-    public async Task<MissingFileResults> ListAsync(int? after, int? limit, CancellationToken cancellationToken = default, PathFilter? visible = null)
+    public async Task<MissingFileResults> ListAsync(
+        int? after,
+        int? limit,
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         var pageSize = Math.Clamp(limit ?? DefaultPageSize, 1, MaxPageSize);
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -130,37 +146,47 @@ public sealed class RelinkService(
         var total = after is null ? await query.CountAsync(cancellationToken) : (int?)null;
         if (after is { } afterId)
             query = query.Where(m => m.Id > afterId);
-        var page = await query
-            .OrderBy(m => m.Id)
-            .Take(pageSize + 1)
-            .ToListAsync(cancellationToken);
+        var page = await query.OrderBy(m => m.Id).Take(pageSize + 1).ToListAsync(cancellationToken);
         var files = page.Take(pageSize).ToList();
 
         var ids = files.Select(m => m.Id).ToList();
-        var links = (await db.MissingFileTags
-                .Where(l => ids.Contains(l.MissingFileId))
+        var links = (
+            await db
+                .MissingFileTags.Where(l => ids.Contains(l.MissingFileId))
                 .Select(l => new { l.MissingFileId, l.TagId })
-                .ToListAsync(cancellationToken))
-            .ToLookup(l => l.MissingFileId, l => l.TagId);
+                .ToListAsync(cancellationToken)
+        ).ToLookup(l => l.MissingFileId, l => l.TagId);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
         var candidates = await CandidatesAsync(db, files, Settings.MatchByName, cancellationToken);
 
-        var items = files.Select(m => new MissingFileInfo(
-            m.Id,
-            paths.ToRelative(m.FullName) ?? m.FullName,
-            Path.GetFileName(m.FullName),
-            m.Size,
-            new DateTimeOffset(DateTime.SpecifyKind(m.LastWriteTime, DateTimeKind.Local)),
-            new DateTimeOffset(DateTime.SpecifyKind(m.MissingSince, DateTimeKind.Local)),
-            TagService.Summaries(graph, links[m.Id]),
-            candidates[m.Id]
-                .Where(c => visible is null || (paths.ToRelative(c.FullName) is { } relative && visible.Includes(relative)))
-                .OrderByDescending(c => c.SameName)
-                .ThenBy(c => c.FullName, StringComparer.CurrentCultureIgnoreCase)
-                .Take(MaxCandidates)
-                .Select(c => finder.ToItem(c.FullName, c.Extension, c.Size, c.LastWriteTime, TagService.Summaries(graph, c.TagIds)))
-                .OfType<LibraryItem>()
-                .ToList()))
+        var items = files
+            .Select(m => new MissingFileInfo(
+                m.Id,
+                paths.ToRelative(m.FullName) ?? m.FullName,
+                Path.GetFileName(m.FullName),
+                m.Size,
+                new DateTimeOffset(DateTime.SpecifyKind(m.LastWriteTime, DateTimeKind.Local)),
+                new DateTimeOffset(DateTime.SpecifyKind(m.MissingSince, DateTimeKind.Local)),
+                TagService.Summaries(graph, links[m.Id]),
+                candidates[m.Id]
+                    .Where(c =>
+                        visible is null || (paths.ToRelative(c.FullName) is { } relative && visible.Includes(relative))
+                    )
+                    .OrderByDescending(c => c.SameName)
+                    .ThenBy(c => c.FullName, StringComparer.CurrentCultureIgnoreCase)
+                    .Take(MaxCandidates)
+                    .Select(c =>
+                        finder.ToItem(
+                            c.FullName,
+                            c.Extension,
+                            c.Size,
+                            c.LastWriteTime,
+                            TagService.Summaries(graph, c.TagIds)
+                        )
+                    )
+                    .OfType<LibraryItem>()
+                    .ToList()
+            ))
             .ToList();
 
         var hasMore = page.Count > pageSize;
@@ -170,14 +196,25 @@ public sealed class RelinkService(
     /// <summary>Gives the tags of a missing file to a file of the library chosen by the user, and forgets the missing file.</summary>
     /// <param name="relativePath">Any existing file: it is indexed if needed.</param>
     /// <param name="visible">Where the asker may see files: a missing file that was elsewhere is not found.</param>
-    public async Task<RelinkStatus> RelinkAsync(int missingId, string? relativePath, CancellationToken cancellationToken = default, PathFilter? visible = null)
+    public async Task<RelinkStatus> RelinkAsync(
+        int missingId,
+        string? relativePath,
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         if (!paths.TryResolve(relativePath, out var fullPath) || !File.Exists(fullPath))
             return RelinkStatus.InvalidPath;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        if (!await db.MissingFiles.WhereVisible(visible, m => m.FullName, paths).AnyAsync(m => m.Id == missingId, cancellationToken))
+        if (
+            !await db
+                .MissingFiles.WhereVisible(visible, m => m.FullName, paths)
+                .AnyAsync(m => m.Id == missingId, cancellationToken)
+        )
+        {
             return RelinkStatus.NotFound;
+        }
 
         var ids = await indexer.IndexFilesAsync([fullPath], cancellationToken);
         if (!ids.TryGetValue(fullPath, out var fileId))
@@ -186,13 +223,29 @@ public sealed class RelinkService(
         await _gate.WaitAsync(cancellationToken);
         try
         {
-            var target = await db.Files
-                .Where(f => f.Id == fileId)
-                .Select(f => new Candidate(f.Id, f.FullName, f.Extension, f.Size, f.LastWriteTime, f.RegisterTime, f.Sha1, true, new List<int>()))
+            var target = await db
+                .Files.Where(f => f.Id == fileId)
+                .Select(f => new Candidate(
+                    f.Id,
+                    f.FullName,
+                    f.Extension,
+                    f.Size,
+                    f.LastWriteTime,
+                    f.RegisterTime,
+                    f.Sha1,
+                    true,
+                    new List<int>()
+                ))
                 .FirstAsync(cancellationToken);
             // A pass may have relinked it in the meantime.
-            if (await db.MissingFiles.AsNoTracking().FirstOrDefaultAsync(m => m.Id == missingId, cancellationToken) is not { } missing)
+            if (
+                await db.MissingFiles.AsNoTracking().FirstOrDefaultAsync(m => m.Id == missingId, cancellationToken)
+                is not { } missing
+            )
+            {
                 return RelinkStatus.NotFound;
+            }
+
             await RelinkAsync(db, missing, target, cancellationToken);
             return RelinkStatus.Relinked;
         }
@@ -205,10 +258,18 @@ public sealed class RelinkService(
     /// <summary>Forgets a missing file and its tags (all of them when <paramref name="missingId"/> is null).</summary>
     /// <param name="visible">Where the asker may see files: only the missing files that were there are forgotten.</param>
     /// <returns>Missing files forgotten.</returns>
-    public async Task<int> ForgetAsync(int? missingId, CancellationToken cancellationToken = default, PathFilter? visible = null)
+    public async Task<int> ForgetAsync(
+        int? missingId,
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var query = (missingId is { } id ? db.MissingFiles.Where(m => m.Id == id) : db.MissingFiles).WhereVisible(visible, m => m.FullName, paths);
+        var query = (missingId is { } id ? db.MissingFiles.Where(m => m.Id == id) : db.MissingFiles).WhereVisible(
+            visible,
+            m => m.FullName,
+            paths
+        );
         return await query.ExecuteDeleteAsync(cancellationToken);
     }
 
@@ -219,7 +280,12 @@ public sealed class RelinkService(
     }
 
     /// <summary>Moves the tags of the missing file to <paramref name="target"/>, with its cached previews, and forgets it.</summary>
-    private async Task RelinkAsync(SfeDbContext db, MissingFile missing, Candidate target, CancellationToken cancellationToken)
+    private async Task RelinkAsync(
+        SfeDbContext db,
+        MissingFile missing,
+        Candidate target,
+        CancellationToken cancellationToken
+    )
     {
         var missingId = missing.Id;
         var strategy = db.Database.CreateExecutionStrategy();
@@ -228,8 +294,14 @@ public sealed class RelinkService(
             await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                var tagIds = await db.MissingFileTags.Where(l => l.MissingFileId == missingId).Select(l => l.TagId).ToListAsync(cancellationToken);
-                var existing = await db.FileTags.Where(l => l.FileId == target.Id).Select(l => l.TagId).ToListAsync(cancellationToken);
+                var tagIds = await db
+                    .MissingFileTags.Where(l => l.MissingFileId == missingId)
+                    .Select(l => l.TagId)
+                    .ToListAsync(cancellationToken);
+                var existing = await db
+                    .FileTags.Where(l => l.FileId == target.Id)
+                    .Select(l => l.TagId)
+                    .ToListAsync(cancellationToken);
                 foreach (var tagId in tagIds.Except(existing))
                     db.FileTags.Add(new FileTag { FileId = target.Id, TagId = tagId });
                 await db.SaveChangesAsync(cancellationToken);
@@ -281,32 +353,81 @@ public sealed class RelinkService(
 
     /// <summary>An indexed file that may be where a missing file went.</summary>
     /// <param name="SameName">Same file name (and extension) as the missing file.</param>
-    private sealed record Candidate(int Id, string FullName, string? Extension, long Size, DateTime LastWriteTime, DateTime RegisterTime, string? Sha1, bool SameName, List<int> TagIds);
+    private sealed record Candidate(
+        int Id,
+        string FullName,
+        string? Extension,
+        long Size,
+        DateTime LastWriteTime,
+        DateTime RegisterTime,
+        string? Sha1,
+        bool SameName,
+        List<int> TagIds
+    );
 
     /// <summary>
     /// Indexed files of the library that may be each missing file: same size and fingerprint, or, when either has no
     /// fingerprint and <paramref name="matchByName"/> is set, same name, extension, size and modification time.
     /// </summary>
-    private async Task<ILookup<int, Candidate>> CandidatesAsync(SfeDbContext db, IReadOnlyCollection<MissingFile> missing, bool matchByName, CancellationToken cancellationToken)
+    private async Task<ILookup<int, Candidate>> CandidatesAsync(
+        SfeDbContext db,
+        IReadOnlyCollection<MissingFile> missing,
+        bool matchByName,
+        CancellationToken cancellationToken
+    )
     {
         var sha1s = missing.Where(m => m.Sha1 is not null).Select(m => m.Sha1!).Distinct().ToList();
         var names = matchByName ? missing.Select(m => m.Name).Distinct().ToList() : [];
         if (sha1s.Count == 0 && names.Count == 0)
             return Array.Empty<Candidate>().ToLookup(_ => 0);
 
-        var rows = await db.Files
-            .AsNoTracking()
+        var rows = await db
+            .Files.AsNoTracking()
             .Where(f => (f.Sha1 != null && sha1s.Contains(f.Sha1)) || names.Contains(f.Name))
-            .Select(f => new { f.Id, f.FullName, f.Name, f.Extension, f.Size, f.LastWriteTime, f.RegisterTime, f.Sha1, TagIds = f.TagLinks.Select(l => l.TagId).ToList() })
+            .Select(f => new
+            {
+                f.Id,
+                f.FullName,
+                f.Name,
+                f.Extension,
+                f.Size,
+                f.LastWriteTime,
+                f.RegisterTime,
+                f.Sha1,
+                TagIds = f.TagLinks.Select(l => l.TagId).ToList(),
+            })
             .ToListAsync(cancellationToken);
         rows = rows.Where(r => paths.ToRelative(r.FullName) is not null).ToList();
 
         return missing
-            .SelectMany(m => rows
-                .Where(r => r.Size == m.Size && (r.Sha1 is not null && m.Sha1 is not null
-                    ? string.Equals(r.Sha1, m.Sha1, StringComparison.OrdinalIgnoreCase)
-                    : matchByName && SameName(r.Name, r.Extension, m) && SameTimestamp(r.LastWriteTime, m.LastWriteTime)))
-                .Select(r => (m.Id, Candidate: new Candidate(r.Id, r.FullName, r.Extension, r.Size, r.LastWriteTime, r.RegisterTime, r.Sha1, SameName(r.Name, r.Extension, m), r.TagIds))))
+            .SelectMany(m =>
+                rows.Where(r =>
+                        r.Size == m.Size
+                        && (
+                            r.Sha1 is not null && m.Sha1 is not null
+                                ? string.Equals(r.Sha1, m.Sha1, StringComparison.OrdinalIgnoreCase)
+                                : matchByName
+                                    && SameName(r.Name, r.Extension, m)
+                                    && SameTimestamp(r.LastWriteTime, m.LastWriteTime)
+                        )
+                    )
+                    .Select(r =>
+                        (
+                            m.Id,
+                            Candidate: new Candidate(
+                                r.Id,
+                                r.FullName,
+                                r.Extension,
+                                r.Size,
+                                r.LastWriteTime,
+                                r.RegisterTime,
+                                r.Sha1,
+                                SameName(r.Name, r.Extension, m),
+                                r.TagIds
+                            )
+                        )
+                    )
+            )
             .ToLookup(x => x.Id, x => x.Candidate);
     }
 
@@ -333,12 +454,19 @@ public sealed record MissingFileInfo(
     DateTimeOffset Modified,
     DateTimeOffset MissingSince,
     IReadOnlyList<TagSummary> Tags,
-    IReadOnlyList<LibraryItem> Candidates);
+    IReadOnlyList<LibraryItem> Candidates
+);
 
 /// <param name="Total">Missing files in all; only on the first page.</param>
 /// <param name="Next">Value of the <c>after</c> parameter that requests the next page; null on the last page.</param>
 /// <param name="Enabled">Relinking is on (<c>FileTracking:Relink:Enabled</c>).</param>
-public sealed record MissingFileResults(IReadOnlyList<MissingFileInfo> Items, int? Total, bool HasMore, int? Next, bool Enabled);
+public sealed record MissingFileResults(
+    IReadOnlyList<MissingFileInfo> Items,
+    int? Total,
+    bool HasMore,
+    int? Next,
+    bool Enabled
+);
 
 public enum RelinkStatus
 {

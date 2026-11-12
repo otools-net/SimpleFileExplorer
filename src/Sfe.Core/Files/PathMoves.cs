@@ -36,7 +36,8 @@ public sealed class PathMoves(
     SettingsService settings,
     TenantBinding tenant,
     ILogger<PathMoves> logger,
-    QuickLinkService? quickLinks = null)
+    QuickLinkService? quickLinks = null
+)
 {
     /// <summary>Index rows read per round trip when the caches of a folder's files move.</summary>
     private const int CacheBatchSize = 1000;
@@ -65,7 +66,8 @@ public sealed class PathMoves(
     {
         from = Path.TrimEndingDirectorySeparator(Path.GetFullPath(from));
         to = Path.TrimEndingDirectorySeparator(Path.GetFullPath(to));
-        var fromRelative = paths.ToRelative(from) ?? throw new ArgumentException("Not a path of the library.", nameof(from));
+        var fromRelative = paths.ToRelative(from)
+            ?? throw new ArgumentException("Not a path of the library.", nameof(from));
         var toRelative = paths.ToRelative(to) ?? throw new ArgumentException("Not a path of the library.", nameof(to));
 
         await Step("index rows", () => MoveIndexAsync(from, to, isFolder, cancellationToken));
@@ -73,20 +75,46 @@ public sealed class PathMoves(
         {
             await Step("settings", async () =>
             {
-                if ((await settings.MoveFolderPathsAsync(fromRelative, toRelative, cancellationToken: cancellationToken)) is { Count: > 0 } keys)
-                    logger.LogInformation("Settings {Keys} follow {From} to {To}", string.Join(", ", keys), fromRelative, toRelative);
+                if (
+                    (
+                        await settings.MoveFolderPathsAsync(
+                            fromRelative,
+                            toRelative,
+                            cancellationToken: cancellationToken
+                        )
+                    ) is
+                    { Count: > 0 } keys
+                )
+                {
+                    logger.LogInformation(
+                        "Settings {Keys} follow {From} to {To}",
+                        string.Join(", ", keys),
+                        fromRelative,
+                        toRelative
+                    );
+                }
             });
             await Step("task schedules", () => MoveSchedulesAsync(fromRelative, toRelative, cancellationToken));
             await Step("default tags", () => defaultTags.MoveAsync(fromRelative, toRelative, cancellationToken));
         }
         // Moved into another folder: its files get the default tags of their new place.
-        await Step("default tags of the new place", () => defaultTags.ApplyAfterMoveAsync(from, to, isFolder, cancellationToken));
+        await Step("default tags of the new place", () =>
+            defaultTags.ApplyAfterMoveAsync(from, to, isFolder, cancellationToken)
+        );
         if (quickLinks is not null && tenant.TenantId is { } tenantId)
-            await Step("quick links", () => quickLinks.MovePathsAsync(tenantId, fromRelative, toRelative, cancellationToken));
+        {
+            await Step("quick links", () =>
+                quickLinks.MovePathsAsync(tenantId, fromRelative, toRelative, cancellationToken)
+            );
+        }
 
         tags.InvalidateFileCounts();
-        foreach (var folder in new[] { Path.GetDirectoryName(from), Path.GetDirectoryName(to), from, to }.OfType<string>())
+        foreach (
+            var folder in new[] { Path.GetDirectoryName(from), Path.GetDirectoryName(to), from, to }.OfType<string>()
+        )
+        {
             browser.Invalidate(folder);
+        }
 
         if (isFolder)
             QueueCacheMoves(from, to);
@@ -101,7 +129,13 @@ public sealed class PathMoves(
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                logger.LogWarning(ex, "The {What} of {From} could not follow it to {To}", what, fromRelative, toRelative);
+                logger.LogWarning(
+                    ex,
+                    "The {What} of {From} could not follow it to {To}",
+                    what,
+                    fromRelative,
+                    toRelative
+                );
             }
         }
     }
@@ -127,28 +161,48 @@ public sealed class PathMoves(
             var cut = from.Length;
             if (isFolder)
             {
-                var parentId = parent is null ? null : await indexer.FolderIdAsync(db, parent, create: false, cancellationToken);
-                await db.Directories.Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, from))
-                    .ExecuteUpdateAsync(s => s.SetProperty(d => d.FullName, d => to + d.FullName.Substring(cut, PathRest)), cancellationToken);
-                await db.Directories.Where(d => d.FullName == to)
-                    .ExecuteUpdateAsync(s => s.SetProperty(d => d.Name, name).SetProperty(d => d.ParentId, parentId), cancellationToken);
-                await db.Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, from))
-                    .ExecuteUpdateAsync(s => s.SetProperty(f => f.FullName, f => to + f.FullName.Substring(cut, PathRest)), cancellationToken);
+                var parentId = parent is null
+                    ? null
+                    : await indexer.FolderIdAsync(db, parent, create: false, cancellationToken);
+                await db
+                    .Directories.Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, from))
+                    .ExecuteUpdateAsync(
+                        s => s.SetProperty(d => d.FullName, d => to + d.FullName.Substring(cut, PathRest)),
+                        cancellationToken
+                    );
+                await db
+                    .Directories.Where(d => d.FullName == to)
+                    .ExecuteUpdateAsync(
+                        s => s.SetProperty(d => d.Name, name).SetProperty(d => d.ParentId, parentId),
+                        cancellationToken
+                    );
+                await db
+                    .Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, from))
+                    .ExecuteUpdateAsync(
+                        s => s.SetProperty(f => f.FullName, f => to + f.FullName.Substring(cut, PathRest)),
+                        cancellationToken
+                    );
             }
             else
             {
                 var file = db.Files.Where(f => f.FullName == from);
                 // A file's row needs its folder's: made when the folder has none yet (a file moved into a folder never scanned).
-                if (parent is not null && await file.AnyAsync(cancellationToken)
-                    && await indexer.FolderIdAsync(db, parent, create: true, cancellationToken) is { } folderId)
+                if (
+                    parent is not null
+                    && await file.AnyAsync(cancellationToken)
+                    && await indexer.FolderIdAsync(db, parent, create: true, cancellationToken) is { } folderId
+                )
                 {
                     var stem = Path.GetFileNameWithoutExtension(name);
                     var extension = Path.GetExtension(name);
-                    await file.ExecuteUpdateAsync(s => s
-                        .SetProperty(f => f.FullName, to)
-                        .SetProperty(f => f.Name, stem)
-                        .SetProperty(f => f.Extension, extension)
-                        .SetProperty(f => f.DirectoryId, folderId), cancellationToken);
+                    await file.ExecuteUpdateAsync(
+                        s =>
+                            s.SetProperty(f => f.FullName, to)
+                                .SetProperty(f => f.Name, stem)
+                                .SetProperty(f => f.Extension, extension)
+                                .SetProperty(f => f.DirectoryId, folderId),
+                        cancellationToken
+                    );
                 }
                 else
                 {
@@ -165,11 +219,18 @@ public sealed class PathMoves(
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         // A few schedules per library: read them all and compare as the file system does.
-        var schedules = await db.TaskSchedules.Where(s => s.Path != null && s.Path != "").ToListAsync(cancellationToken);
+        var schedules = await db
+            .TaskSchedules.Where(s => s.Path != null && s.Path != "")
+            .ToListAsync(cancellationToken);
         foreach (var schedule in schedules)
         {
-            if (LibraryPaths.NormalizeRelative(schedule.Path) is { Length: > 0 } path && FolderPolicy.IsSameOrBelow(path, from))
+            if (
+                LibraryPaths.NormalizeRelative(schedule.Path) is { Length: > 0 } path
+                && FolderPolicy.IsSameOrBelow(path, from)
+            )
+            {
                 schedule.Path = to + path[from.Length..];
+            }
         }
         if (await db.SaveChangesAsync(cancellationToken) is var changed and > 0)
             logger.LogInformation("{Count} task schedules follow {From} to {To}", changed, from, to);
@@ -178,7 +239,16 @@ public sealed class PathMoves(
     private void QueueCacheMoves(string from, string to)
     {
         lock (_cacheGate)
-            _cacheMoves = _cacheMoves.ContinueWith(_ => MoveCachesAsync(from, to), CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).Unwrap();
+        {
+            _cacheMoves = _cacheMoves
+                .ContinueWith(
+                    _ => MoveCachesAsync(from, to),
+                    CancellationToken.None,
+                    TaskContinuationOptions.None,
+                    TaskScheduler.Default
+                )
+                .Unwrap();
+        }
     }
 
     /// <summary>
@@ -194,7 +264,8 @@ public sealed class PathMoves(
             while (true)
             {
                 await using var db = await dbFactory.CreateDbContextAsync();
-                var batch = await db.Files.AsNoTracking()
+                var batch = await db
+                    .Files.AsNoTracking()
                     .Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, to))
                     .Where(f => f.Id > lastId)
                     .OrderBy(f => f.Id)

@@ -13,7 +13,14 @@ public static class FileFingerprint
 
     public static async Task<string> ComputeAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, bufferSize: 1, FileOptions.Asynchronous);
+        await using var stream = new FileStream(
+            filePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            bufferSize: 1,
+            FileOptions.Asynchronous
+        );
         var buffer = new byte[ChunkSize];
         var read = await stream.ReadAtLeastAsync(buffer, ChunkSize, throwOnEndOfStream: false, cancellationToken);
         return Convert.ToHexString(SHA1.HashData(buffer.AsSpan(0, read)));

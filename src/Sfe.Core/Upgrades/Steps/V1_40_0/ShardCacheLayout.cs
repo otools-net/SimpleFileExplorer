@@ -32,20 +32,30 @@ public sealed partial class ShardCacheLayout : IUpgradeStep
 
     public string Description => "Moving the thumbnails and trickplay into the new folder layout";
 
-    public Task RunAsync(UpgradeContext context, CancellationToken cancellationToken) => Task.Run(() =>
-    {
-        foreach (var cache in context.CacheDirectories.Distinct(StringComparer.OrdinalIgnoreCase))
-        {
-            if (!Directory.Exists(cache))
-                continue;
-            var result = Move(cache, context, cancellationToken);
-            if (result.Thumbnails + result.Trickplays + result.Failed > 0)
+    public Task RunAsync(UpgradeContext context, CancellationToken cancellationToken) =>
+        Task.Run(
+            () =>
             {
-                context.Note($"{cache}: moved {result.Thumbnails} thumbnails and {result.Trickplays} trickplays"
-                    + (result.Failed > 0 ? $"; {result.Failed} could not be moved and stay in the old layout." : "."));
-            }
-        }
-    }, cancellationToken);
+                foreach (var cache in context.CacheDirectories.Distinct(StringComparer.OrdinalIgnoreCase))
+                {
+                    if (!Directory.Exists(cache))
+                        continue;
+                    var result = Move(cache, context, cancellationToken);
+                    if (result.Thumbnails + result.Trickplays + result.Failed > 0)
+                    {
+                        context.Note(
+                            $"{cache}: moved {result.Thumbnails} thumbnails and {result.Trickplays} trickplays"
+                                + (
+                                    result.Failed > 0
+                                        ? $"; {result.Failed} could not be moved and stay in the old layout."
+                                        : "."
+                                )
+                        );
+                    }
+                }
+            },
+            cancellationToken
+        );
 
     internal readonly record struct Result(int Thumbnails, int Trickplays, int Failed);
 
@@ -61,9 +71,18 @@ public sealed partial class ShardCacheLayout : IUpgradeStep
                 cancellationToken.ThrowIfCancellationRequested();
                 var name = Path.GetFileName(file);
                 if (name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase))
+                {
                     progress.Try(file, () => File.Delete(file), counts: false);
+                }
                 else if (name.EndsWith(".bin", StringComparison.OrdinalIgnoreCase) && IsOldHash(name[..^4]))
-                    progress.Try(file, () => MoveFile(file, Path.Combine(cache, ThumbnailService.ShardedPath(Key(folder.Hash, name[..^4]))) + ".bin"));
+                {
+                    progress.Try(file, () =>
+                        MoveFile(
+                            file,
+                            Path.Combine(cache, ThumbnailService.ShardedPath(Key(folder.Hash, name[..^4]))) + ".bin"
+                        )
+                    );
+                }
             }
 
             DeleteIfEmpty(folder.Path);
@@ -79,7 +98,17 @@ public sealed partial class ShardCacheLayout : IUpgradeStep
                     cancellationToken.ThrowIfCancellationRequested();
                     var name = Path.GetFileName(video);
                     if (IsOldHash(name))
-                        progress.Try(video, () => MoveFolder(video, Path.Combine(trickplay, ThumbnailService.ShardedPath(Key(folder.Hash, name)))), trickplay: true);
+                    {
+                        progress.Try(
+                            video,
+                            () =>
+                                MoveFolder(
+                                    video,
+                                    Path.Combine(trickplay, ThumbnailService.ShardedPath(Key(folder.Hash, name)))
+                                ),
+                            trickplay: true
+                        );
+                    }
                 }
 
                 DeleteIfEmpty(folder.Path);
@@ -91,7 +120,8 @@ public sealed partial class ShardCacheLayout : IUpgradeStep
     }
 
     private static IEnumerable<(string Path, string Hash)> OldFolders(string parent) =>
-        Directory.EnumerateDirectories(parent)
+        Directory
+            .EnumerateDirectories(parent)
             .Select(path => (Path: path, Hash: Path.GetFileName(path)))
             .Where(folder => IsOldHash(folder.Hash))
             .ToList();
@@ -186,7 +216,12 @@ public sealed partial class ShardCacheLayout : IUpgradeStep
         public void ReportFailures()
         {
             foreach (var path in _failures.Take(ListedFailures))
-                context.Note($"Could not move {path} (it stays in the old layout, unused: rendered again when needed).");
+            {
+                context.Note(
+                    $"Could not move {path} (it stays in the old layout, unused: rendered again when needed)."
+                );
+            }
+
             if (_failures.Count > ListedFailures)
                 context.Note($"… and {_failures.Count - ListedFailures} more (see the log).");
         }

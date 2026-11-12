@@ -30,8 +30,13 @@ public sealed class TenantHost : IAsyncDisposable
     public TenantInfo Tenant { get; }
     public ServiceProvider Services { get; }
 
-    public static async Task<TenantHost> StartAsync(TenantInfo tenant, IServiceProvider application, IConfiguration configuration, string contentRootPath,
-        CancellationToken cancellationToken)
+    public static async Task<TenantHost> StartAsync(
+        TenantInfo tenant,
+        IServiceProvider application,
+        IConfiguration configuration,
+        string contentRootPath,
+        CancellationToken cancellationToken
+    )
     {
         var tenantConfiguration = new ConfigurationBuilder()
             .AddConfiguration(configuration)
@@ -61,15 +66,24 @@ public sealed class TenantHost : IAsyncDisposable
 
         try
         {
-            var migrate = configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Database)}").Get<DatabaseOptions>()?.MigrateOnStartup ?? true;
+            var migrate = configuration
+                .GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Database)}")
+                .Get<DatabaseOptions>()
+                ?.MigrateOnStartup
+                ?? true;
             if (migrate)
                 await provider.GetRequiredService<DatabaseInitializer>().InitializeAsync(cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Browsing works without the index: keep serving and let search/scan report the problem.
-            provider.GetRequiredService<ILogger<TenantHost>>().LogError(ex,
-                "The index of the library {Library} cannot be initialized; search and scan will be unavailable there until it is fixed", tenant.Name);
+            provider
+                .GetRequiredService<ILogger<TenantHost>>()
+                .LogError(
+                    ex,
+                    "The index of the library {Library} cannot be initialized; search and scan will be unavailable there until it is fixed",
+                    tenant.Name
+                );
         }
 
         var workers = provider.GetServices<IHostedService>().ToList();
@@ -82,19 +96,25 @@ public sealed class TenantHost : IAsyncDisposable
     /// What a library changes in the configuration: nothing for the first one (the configuration's own library); the
     /// root, the index's connection string and the cache folder for the others.
     /// </summary>
-    internal static Dictionary<string, string?> Overrides(TenantInfo tenant, IConfiguration configuration, string contentRootPath)
+    internal static Dictionary<string, string?> Overrides(
+        TenantInfo tenant,
+        IConfiguration configuration,
+        string contentRootPath
+    )
     {
         if (tenant.IsDefault)
             return [];
 
         var section = configuration.GetSection(SfeOptions.SectionName);
-        var cache = section.GetSection(nameof(SfeOptions.Thumbnails)).Get<ThumbnailOptions>()?.CacheDirectory ?? new ThumbnailOptions().CacheDirectory;
+        var cache = section.GetSection(nameof(SfeOptions.Thumbnails)).Get<ThumbnailOptions>()?.CacheDirectory
+            ?? new ThumbnailOptions().CacheDirectory;
         return new Dictionary<string, string?>
         {
             [$"{SfeOptions.SectionName}:{nameof(SfeOptions.Root)}"] = tenant.Root,
-            [$"ConnectionStrings:{ServiceCollectionExtensions.ConnectionStringName}"] =
-                tenant.ConnectionString ?? ConnectionString(tenant.Slug, configuration, contentRootPath),
-            [$"{SfeOptions.SectionName}:{nameof(SfeOptions.Thumbnails)}:{nameof(ThumbnailOptions.CacheDirectory)}"] = Path.Combine(cache, "tenants", tenant.Slug),
+            [$"ConnectionStrings:{ServiceCollectionExtensions.ConnectionStringName}"] = tenant.ConnectionString
+                ?? ConnectionString(tenant.Slug, configuration, contentRootPath),
+            [$"{SfeOptions.SectionName}:{nameof(SfeOptions.Thumbnails)}:{nameof(ThumbnailOptions.CacheDirectory)}"] =
+                Path.Combine(cache, "tenants", tenant.Slug),
         };
     }
 
@@ -115,16 +135,26 @@ public sealed class TenantHost : IAsyncDisposable
     public static string ConnectionString(string slug, IConfiguration configuration, string contentRootPath)
     {
         var section = configuration.GetSection(SfeOptions.SectionName);
-        if (section.GetSection(nameof(SfeOptions.Tenants)).Get<TenantOptions>()?.ConnectionString is { Length: > 0 } template)
+        if (
+            section.GetSection(nameof(SfeOptions.Tenants)).Get<TenantOptions>()?.ConnectionString is
+            { Length: > 0 } template
+        )
+        {
             return template.Replace("{tenant}", slug, StringComparison.OrdinalIgnoreCase);
+        }
 
         var main = configuration.GetConnectionString(ServiceCollectionExtensions.ConnectionStringName)
-            ?? throw new InvalidOperationException($"Connection string '{ServiceCollectionExtensions.ConnectionStringName}' is not configured.");
-        var provider = section.GetSection(nameof(SfeOptions.Database)).Get<DatabaseOptions>()?.Provider ?? DatabaseProvider.SqlServer;
+            ?? throw new InvalidOperationException(
+                $"Connection string '{ServiceCollectionExtensions.ConnectionStringName}' is not configured."
+            );
+        var provider = section.GetSection(nameof(SfeOptions.Database)).Get<DatabaseOptions>()?.Provider
+            ?? DatabaseProvider.SqlServer;
         if (provider == DatabaseProvider.Sqlite)
         {
             var sqlite = new SqliteConnectionStringBuilder(SfeDatabase.PrepareSqlite(main, contentRootPath));
-            var folder = Path.GetDirectoryName(sqlite.DataSource) is { Length: > 0 } directory ? directory : contentRootPath;
+            var folder = Path.GetDirectoryName(sqlite.DataSource) is { Length: > 0 } directory
+                ? directory
+                : contentRootPath;
             sqlite.DataSource = Path.Combine(folder, "tenants", slug + ".db");
             return sqlite.ToString();
         }
@@ -143,9 +173,7 @@ public sealed class TenantHost : IAsyncDisposable
             {
                 await worker.StopAsync(timeout.Token);
             }
-            catch (OperationCanceledException)
-            {
-            }
+            catch (OperationCanceledException) { }
         }
 
         await Services.DisposeAsync();

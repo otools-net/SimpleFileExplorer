@@ -23,7 +23,13 @@ public interface IUserDirectory
 
 /// <param name="ExternalId">The directory's own id of the account (for local accounts, the row's id).</param>
 /// <param name="Groups">The directory groups it belongs to, matched to <see cref="UserGroup.ExternalName"/>.</param>
-public sealed record DirectoryUser(string Source, string ExternalId, string UserName, string? DisplayName, IReadOnlyList<string> Groups);
+public sealed record DirectoryUser(
+    string Source,
+    string ExternalId,
+    string UserName,
+    string? DisplayName,
+    IReadOnlyList<string> Groups
+);
 
 public enum DirectoryStatus
 {
@@ -46,15 +52,26 @@ public sealed record DirectoryResult(DirectoryStatus Status, DirectoryUser? User
 /// a stronger hash when the password was hashed with fewer iterations than today's.
 /// </summary>
 public sealed class LocalUserDirectory(
-    IDbContextFactory<AccessDbContext> dbFactory, AccessChanges changes, IOptionsMonitor<SecurityOptions> security, ILogger<LocalUserDirectory> logger) : IUserDirectory
+    IDbContextFactory<AccessDbContext> dbFactory,
+    AccessChanges changes,
+    IOptionsMonitor<SecurityOptions> security,
+    ILogger<LocalUserDirectory> logger
+) : IUserDirectory
 {
     public string Source => UserAccount.LocalSource;
 
-    public async Task<DirectoryResult> ValidateAsync(string userName, string password, CancellationToken cancellationToken)
+    public async Task<DirectoryResult> ValidateAsync(
+        string userName,
+        string password,
+        CancellationToken cancellationToken
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var name = userName.Trim();
-        var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == name && u.Source == UserAccount.LocalSource, cancellationToken);
+        var user = await db.Users.FirstOrDefaultAsync(
+            u => u.UserName == name && u.Source == UserAccount.LocalSource,
+            cancellationToken
+        );
         if (user is null)
         {
             // As long as a real check, so that the time taken doesn't tell which accounts exist.
@@ -81,8 +98,12 @@ public sealed class LocalUserDirectory(
             {
                 user.FailedSignIns = 0;
                 user.LockedUntil = now.AddMinutes(Math.Max(1, options.LockoutMinutes));
-                logger.LogSecurityWarning("The account {User} is locked until {Until:u}: {Failures} wrong passwords in a row, from all addresses",
-                    user.UserName, user.LockedUntil, options.AccountLockoutFailures);
+                logger.LogSecurityWarning(
+                    "The account {User} is locked until {Until:u}: {Failures} wrong passwords in a row, from all addresses",
+                    user.UserName,
+                    user.LockedUntil,
+                    options.AccountLockoutFailures
+                );
             }
 
             await db.SaveChangesAsync(cancellationToken);
@@ -97,7 +118,16 @@ public sealed class LocalUserDirectory(
         if (outdated)
             user.PasswordHash = PasswordHashing.Hash(password);
         await db.SaveChangesAsync(cancellationToken);
-        return new DirectoryResult(DirectoryStatus.Ok, new DirectoryUser(Source, user.Id.ToString(System.Globalization.CultureInfo.InvariantCulture), user.UserName, user.DisplayName, []));
+        return new DirectoryResult(
+            DirectoryStatus.Ok,
+            new DirectoryUser(
+                Source,
+                user.Id.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                user.UserName,
+                user.DisplayName,
+                []
+            )
+        );
     }
 
     private static readonly string DummyHash = PasswordHashing.Hash(Guid.NewGuid().ToString());

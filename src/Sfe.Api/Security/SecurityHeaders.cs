@@ -32,8 +32,11 @@ public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPol
     /// <summary><c>scheme://host[:port]</c> of an http(s) address, placeholders filled; null when it has none.</summary>
     private static string? OriginOf(string address)
     {
-        var filled = address.Replace("{url}", "x", StringComparison.Ordinal).Replace("{encodedUrl}", "x", StringComparison.Ordinal);
-        var known = Uri.TryCreate(filled, UriKind.Absolute, out var uri)
+        var filled = address
+            .Replace("{url}", "x", StringComparison.Ordinal)
+            .Replace("{encodedUrl}", "x", StringComparison.Ordinal);
+        var known =
+            Uri.TryCreate(filled, UriKind.Absolute, out var uri)
             && uri.Scheme is "http" or "https"
             && address.StartsWith(uri.GetLeftPart(UriPartial.Authority), StringComparison.OrdinalIgnoreCase);
         return known ? uri!.GetLeftPart(UriPartial.Authority) : null;
@@ -41,8 +44,8 @@ public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPol
 
     /// <summary>Swagger UI (<c>api/docs</c>, which needs a right) has scripts of its own inline.</summary>
     public const string DocsPolicy =
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
-        "object-src 'none'; base-uri 'self'; frame-ancestors 'none'";
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+        + "object-src 'none'; base-uri 'self'; frame-ancestors 'none'";
 
     /// <summary>
     /// A file of the library opened by itself: its content is anyone's (a page or an SVG dropped in the library), so it
@@ -63,8 +66,8 @@ public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPol
     /// app's files; only the app may frame it.
     /// </summary>
     public const string FlashPolicy =
-        "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; " +
-        "font-src 'self' data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts allow-pointer-lock";
+        "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; "
+        + "font-src 'self' data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts allow-pointer-lock";
 
     public Task InvokeAsync(HttpContext context)
     {

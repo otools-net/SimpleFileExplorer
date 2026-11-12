@@ -35,7 +35,12 @@ public enum MigrationStatus
 /// started, every request but the update page's refused by <see cref="Security.RequestGuard"/>) until someone with
 /// the setup code confirms the update on that page.
 /// </summary>
-public sealed class MigrationCoordinator(IServiceProvider services, InstalledVersion installed, IConfiguration configuration, ILogger<MigrationCoordinator> logger)
+public sealed class MigrationCoordinator(
+    IServiceProvider services,
+    InstalledVersion installed,
+    IConfiguration configuration,
+    ILogger<MigrationCoordinator> logger
+)
 {
     private static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(10);
 
@@ -69,7 +74,11 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
     }
 
     private bool MigrateOnStartup =>
-        configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Database)}").Get<DatabaseOptions>()?.MigrateOnStartup ?? true;
+        configuration
+            .GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Database)}")
+            .Get<DatabaseOptions>()
+            ?.MigrateOnStartup
+        ?? true;
 
     /// <summary>At start-up, before the libraries start (<see cref="TenantRegistry"/> waits for it).</summary>
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
@@ -91,8 +100,15 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
     /// </summary>
     public async Task RetryIfUnavailableAsync(CancellationToken cancellationToken = default)
     {
-        if (Status != MigrationStatus.Unavailable || DateTime.UtcNow < _nextCheck || !await _gate.WaitAsync(0, cancellationToken))
+        if (
+            Status != MigrationStatus.Unavailable
+            || DateTime.UtcNow < _nextCheck
+            || !await _gate.WaitAsync(0, cancellationToken)
+        )
+        {
             return;
+        }
+
         try
         {
             if (Status == MigrationStatus.Unavailable && DateTime.UtcNow >= _nextCheck)
@@ -128,11 +144,19 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
 
     private async Task RunAsync()
     {
-        logger.LogWarning("Updating the install from SFE {From} to {To}", DatabaseVersion ?? "(before 1.37.0)", AppVersion);
+        logger.LogWarning(
+            "Updating the install from SFE {From} to {To}",
+            DatabaseVersion ?? "(before 1.37.0)",
+            AppVersion
+        );
         try
         {
             await UpdateAsync(strict: true, CancellationToken.None);
-            await RunStepsAsync(SemanticVersion.TryParse(DatabaseVersion, out var from) ? from : null, strict: true, CancellationToken.None);
+            await RunStepsAsync(
+                SemanticVersion.TryParse(DatabaseVersion, out var from) ? from : null,
+                strict: true,
+                CancellationToken.None
+            );
             await StartLibrariesAsync(strict: true, CancellationToken.None);
             await installed.RecordAsync(AppVersion.ToString());
             Note($"The install now belongs to SFE {AppVersion}.");
@@ -169,7 +193,14 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             if (Status != MigrationStatus.Unavailable || Error != ex.Message)
-                logger.LogError(ex, "Cannot read the database; SFE stays closed until it can (checked again every {Seconds} s)", RetryInterval.TotalSeconds);
+            {
+                logger.LogError(
+                    ex,
+                    "Cannot read the database; SFE stays closed until it can (checked again every {Seconds} s)",
+                    RetryInterval.TotalSeconds
+                );
+            }
+
             Status = MigrationStatus.Unavailable;
             Error = ex.Message;
             _nextCheck = DateTime.UtcNow + RetryInterval;
@@ -226,7 +257,10 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
             }
             catch (Exception ex) when (!strict && ex is not OperationCanceledException)
             {
-                logger.LogError(ex, "The accounts' database cannot be created or updated; nobody can sign in until it is fixed");
+                logger.LogError(
+                    ex,
+                    "The accounts' database cannot be created or updated; nobody can sign in until it is fixed"
+                );
             }
         }
 
@@ -238,7 +272,10 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
             // Rights added by this version reach the groups of the spaces created before (once).
             if (await access.GrantNewRightsAsync(cancellationToken) is > 0 and var updated)
             {
-                logger.LogInformation("Granted the rights added by this version to the built-in groups of {Count} spaces", updated);
+                logger.LogInformation(
+                    "Granted the rights added by this version to the built-in groups of {Count} spaces",
+                    updated
+                );
                 Note($"Gave the new rights to the built-in groups of {updated} spaces.");
             }
             var layers = services.GetRequiredService<SettingLayers>();
@@ -247,7 +284,10 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
         }
         catch (Exception ex) when (!strict && ex is not OperationCanceledException)
         {
-            logger.LogError(ex, "Cannot read the accounts and libraries; nobody can sign in until the database is fixed");
+            logger.LogError(
+                ex,
+                "Cannot read the accounts and libraries; nobody can sign in until the database is fixed"
+            );
         }
     }
 
@@ -271,7 +311,8 @@ public sealed class MigrationCoordinator(IServiceProvider services, InstalledVer
                 logger,
                 services.GetRequiredService<GeneratedSetupCode>(),
                 services.GetRequiredService<SettingLayers>(),
-                [.. tenants.Select(tenant => tenant.Id)]);
+                [.. tenants.Select(tenant => tenant.Id)]
+            );
             foreach (var step in steps)
             {
                 Note($"{step.Version}: {step.Description}…");

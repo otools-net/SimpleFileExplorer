@@ -11,14 +11,21 @@ internal static class FileTagRows
 
     /// <summary>Gives <paramref name="tagIds"/> to the files <paramref name="fileIds"/> (one batch) that lack them.</summary>
     /// <returns>Links added.</returns>
-    public static async Task<int> AddAsync(SfeDbContext db, IReadOnlyCollection<int> fileIds, IReadOnlyCollection<int> tagIds, CancellationToken cancellationToken)
+    public static async Task<int> AddAsync(
+        SfeDbContext db,
+        IReadOnlyCollection<int> fileIds,
+        IReadOnlyCollection<int> tagIds,
+        CancellationToken cancellationToken
+    )
     {
         if (fileIds.Count == 0 || tagIds.Count == 0)
             return 0;
-        var existing = (await db.FileTags
-                .Where(l => fileIds.Contains(l.FileId) && tagIds.Contains(l.TagId))
+        var existing = (
+            await db
+                .FileTags.Where(l => fileIds.Contains(l.FileId) && tagIds.Contains(l.TagId))
                 .Select(l => new { l.FileId, l.TagId })
-                .ToListAsync(cancellationToken))
+                .ToListAsync(cancellationToken)
+        )
             .Select(l => (l.FileId, l.TagId))
             .ToHashSet();
         var added = 0;
@@ -41,7 +48,12 @@ internal static class FileTagRows
     /// their index id (each read after the previous one is written).
     /// </summary>
     /// <returns>Links added.</returns>
-    public static async Task<int> AddToAllAsync(SfeDbContext db, IQueryable<FileEntry> files, IReadOnlyCollection<int> tagIds, CancellationToken cancellationToken)
+    public static async Task<int> AddToAllAsync(
+        SfeDbContext db,
+        IQueryable<FileEntry> files,
+        IReadOnlyCollection<int> tagIds,
+        CancellationToken cancellationToken
+    )
     {
         var added = 0;
         var lastId = 0;

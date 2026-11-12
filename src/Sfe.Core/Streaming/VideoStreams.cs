@@ -13,7 +13,15 @@ public sealed record StreamViewer(string Library, string? User, string? Address)
 /// <param name="Start">Position in the video (seconds) the conversion started from.</param>
 /// <param name="Transcoded">The pictures are encoded again (false: H.264 copied, only repackaged).</param>
 /// <param name="Bytes">Sent to the viewer so far.</param>
-public sealed record StreamActivity(Guid Id, string Path, StreamViewer Viewer, double Start, bool Transcoded, DateTimeOffset Started, long Bytes);
+public sealed record StreamActivity(
+    Guid Id,
+    string Path,
+    StreamViewer Viewer,
+    double Start,
+    bool Transcoded,
+    DateTimeOffset Started,
+    long Bytes
+);
 
 /// <summary>
 /// The videos the server converts at the moment, for every library together: one instance for the whole server, as
@@ -24,9 +32,8 @@ public sealed class VideoStreams(TimeProvider time)
     private readonly ConcurrentDictionary<Guid, Lease> _streams = new();
     private readonly Lock _gate = new();
 
-    public VideoStreams() : this(TimeProvider.System)
-    {
-    }
+    public VideoStreams()
+        : this(TimeProvider.System) { }
 
     /// <summary>Running now, oldest first.</summary>
     public IReadOnlyList<StreamActivity> List() =>
@@ -64,7 +71,15 @@ public sealed class VideoStreams(TimeProvider time)
         private readonly StreamActivity _activity;
         private long _bytes;
 
-        internal Lease(VideoStreams owner, string? client, string path, StreamViewer viewer, double start, bool transcoded, DateTimeOffset started)
+        internal Lease(
+            VideoStreams owner,
+            string? client,
+            string path,
+            StreamViewer viewer,
+            double start,
+            bool transcoded,
+            DateTimeOffset started
+        )
         {
             _owner = owner;
             Client = client;

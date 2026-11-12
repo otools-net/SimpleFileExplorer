@@ -14,23 +14,27 @@ public sealed class LibraryPaths
     /// How the host file system compares paths: case-insensitive on Windows and macOS, case-sensitive elsewhere
     /// (Linux), where "photo.jpg" and "Photo.jpg" are two different files.
     /// </summary>
-    public static readonly StringComparison PathComparison =
-        IsCaseInsensitiveFileSystem ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+    public static readonly StringComparison PathComparison = IsCaseInsensitiveFileSystem
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
 
-    public static readonly StringComparer PathComparer =
-        IsCaseInsensitiveFileSystem ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+    public static readonly StringComparer PathComparer = IsCaseInsensitiveFileSystem
+        ? StringComparer.OrdinalIgnoreCase
+        : StringComparer.Ordinal;
 
     public static bool IsCaseInsensitiveFileSystem => OperatingSystem.IsWindows() || OperatingSystem.IsMacOS();
 
     public LibraryPaths(IOptions<SfeOptions> options)
-        : this(options.Value.Root)
-    {
-    }
+        : this(options.Value.Root) { }
 
     public LibraryPaths(string root)
     {
         if (string.IsNullOrWhiteSpace(root))
-            throw new InvalidOperationException($"'{SfeOptions.SectionName}:{nameof(SfeOptions.Root)}' is not configured.");
+        {
+            throw new InvalidOperationException(
+                $"'{SfeOptions.SectionName}:{nameof(SfeOptions.Root)}' is not configured."
+            );
+        }
 
         Root = NormalizeRoot(root);
         _realRoot = new Lazy<string>(() => RealPath(Root));
@@ -42,9 +46,10 @@ public sealed class LibraryPaths
     public string Root { get; }
 
     /// <summary>Display name of the root folder.</summary>
-    public string RootName => Path.GetFileName(Path.TrimEndingDirectorySeparator(Root)) is { Length: > 0 } name
-        ? name
-        : Path.TrimEndingDirectorySeparator(Root);
+    public string RootName =>
+        Path.GetFileName(Path.TrimEndingDirectorySeparator(Root)) is { Length: > 0 } name
+            ? name
+            : Path.TrimEndingDirectorySeparator(Root);
 
     /// <summary>Resolves an API path to a physical path inside the root.</summary>
     /// <remarks>The root itself resolves without its trailing separator (unless it is a drive or file system root).</remarks>
@@ -56,7 +61,8 @@ public sealed class LibraryPaths
             return false;
 
         var candidate = Path.TrimEndingDirectorySeparator(
-            Path.GetFullPath(Path.Combine(Root, normalized.Replace('/', Path.DirectorySeparatorChar))));
+            Path.GetFullPath(Path.Combine(Root, normalized.Replace('/', Path.DirectorySeparatorChar)))
+        );
         if (!IsInsideRoot(candidate) || IsWorkFolder(candidate))
             return false;
 
@@ -85,7 +91,11 @@ public sealed class LibraryPaths
     /// <remarks>Called for every entry of a listing: no allocation.</remarks>
     public static bool IsWorkFolderRelative(string relative) =>
         relative.StartsWith(WorkFolderName, PathComparison)
-        && (relative.Length == WorkFolderName.Length || relative[WorkFolderName.Length] == '/' || relative[WorkFolderName.Length] == Path.DirectorySeparatorChar);
+        && (
+            relative.Length == WorkFolderName.Length
+            || relative[WorkFolderName.Length] == '/'
+            || relative[WorkFolderName.Length] == Path.DirectorySeparatorChar
+        );
 
     public string Resolve(string? relativePath) =>
         TryResolve(relativePath, out var fullPath)
@@ -115,7 +125,10 @@ public sealed class LibraryPaths
         if (!IsSameOrInside(real, root))
             return null;
         var trimmed = Path.TrimEndingDirectorySeparator(root);
-        return real.Length <= trimmed.Length + 1 ? string.Empty : real[(trimmed.Length + (Path.EndsInDirectorySeparator(trimmed) ? 0 : 1))..].Replace(Path.DirectorySeparatorChar, '/');
+        return real.Length <= trimmed.Length + 1
+            ? string.Empty
+            : real[(trimmed.Length + (Path.EndsInDirectorySeparator(trimmed) ? 0 : 1))..]
+                .Replace(Path.DirectorySeparatorChar, '/');
     }
 
     public bool IsInsideRoot(string fullPath) =>
@@ -168,7 +181,13 @@ public sealed class LibraryPaths
         var full = Path.GetFullPath(path);
         var root = Path.GetPathRoot(full) ?? string.Empty;
         var current = root;
-        foreach (var part in full[root.Length..].Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries))
+        foreach (
+            var part in full[root.Length..]
+                .Split(
+                    [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+                    StringSplitOptions.RemoveEmptyEntries
+                )
+        )
         {
             current = Path.Join(current, part);
             FileSystemInfo info = new FileInfo(current);
@@ -179,7 +198,7 @@ public sealed class LibraryPaths
             try
             {
                 if (info.ResolveLinkTarget(returnFinalTarget: true) is { } target)
-                    current = RealPath(target.FullName, depth + 1);   // the target's own folders can be links too
+                    current = RealPath(target.FullName, depth + 1); // the target's own folders can be links too
             }
             catch (IOException)
             {
@@ -202,12 +221,18 @@ public sealed class LibraryPaths
             existing = parent;
         var buffer = new char[32768];
         var length = NativeMethods.GetLongPathNameW(existing, buffer, (uint)buffer.Length);
-        return length == 0 || length > buffer.Length ? path : new string(buffer, 0, (int)length) + path[existing.Length..];
+        return length == 0 || length > buffer.Length
+            ? path
+            : new string(buffer, 0, (int)length) + path[existing.Length..];
     }
 
     private static class NativeMethods
     {
-        [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+        [System.Runtime.InteropServices.DllImport(
+            "kernel32.dll",
+            CharSet = System.Runtime.InteropServices.CharSet.Unicode,
+            SetLastError = true
+        )]
         public static extern uint GetLongPathNameW(string shortPath, char[] longPath, uint bufferLength);
     }
 
@@ -217,7 +242,8 @@ public sealed class LibraryPaths
         // A drive or file system root keeps its separator.
         var trimmed = Path.TrimEndingDirectorySeparator(folder);
         var prefix = Path.EndsInDirectorySeparator(trimmed) ? trimmed : trimmed + Path.DirectorySeparatorChar;
-        return string.Equals(Path.TrimEndingDirectorySeparator(path), trimmed, PathComparison) || path.StartsWith(prefix, PathComparison);
+        return string.Equals(Path.TrimEndingDirectorySeparator(path), trimmed, PathComparison)
+            || path.StartsWith(prefix, PathComparison);
     }
 
     /// <summary>Expands a leading <c>~</c> to the user's home folder (e.g. <c>~/Videos</c>).</summary>
@@ -226,7 +252,9 @@ public sealed class LibraryPaths
         if (path == "~")
             return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-        return path.StartsWith("~/", StringComparison.Ordinal) || (OperatingSystem.IsWindows() && path.StartsWith(@"~\", StringComparison.Ordinal))
+        return
+            path.StartsWith("~/", StringComparison.Ordinal)
+            || (OperatingSystem.IsWindows() && path.StartsWith(@"~\", StringComparison.Ordinal))
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), path[2..])
             : path;
     }

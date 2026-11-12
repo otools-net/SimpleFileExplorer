@@ -11,18 +11,20 @@ internal static class StartupLogo
     public const string NoLogoArgument = "--no-logo";
 
     /// <summary>The arguments without <see cref="NoLogoArgument"/>.</summary>
-    public static string[] TakeNoLogo(string[] args, out bool noLogo) => CommandLine.TakeSwitch(args, "no-logo", out noLogo);
+    public static string[] TakeNoLogo(string[] args, out bool noLogo) =>
+        CommandLine.TakeSwitch(args, "no-logo", out noLogo);
 
     /// <summary>The logo, ASCII only (any console code page shows it).</summary>
-    public static string Text(string version) => $"""
+    public static string Text(string version) =>
+        $"""
 
-         ____   _____  _____
-        / ___| |  ___|| ____|
-        \___ \ | |_   |  _|
-         ___) ||  _|  | |___
-        |____/ |_|    |_____|   Simple File Explorer {version}
+             ____   _____  _____
+            / ___| |  ___|| ____|
+            \___ \ | |_   |  _|
+             ___) ||  _|  | |___
+            |____/ |_|    |_____|   Simple File Explorer {version}
 
-        """;
+            """;
 
     public static void ShowIfWanted(bool noLogo)
     {

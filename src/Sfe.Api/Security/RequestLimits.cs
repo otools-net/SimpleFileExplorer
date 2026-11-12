@@ -34,34 +34,44 @@ public static class RequestLimits
 
     public static void AddPolicies(RateLimiterOptions options)
     {
-        options.AddPolicy(Media, context => RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions
-        {
-            PermitLimit = MediaConcurrency,
-            QueueLimit = MediaQueue,
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-        }));
-        options.AddPolicy(Search, context => RateLimitPartition.GetFixedWindowLimiter(Caller(context), _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = SearchesPerMinute,
-            Window = TimeSpan.FromMinutes(1),
-        }));
-        options.AddPolicy(Unlock, context => RateLimitPartition.GetFixedWindowLimiter(Caller(context), _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = UnlocksPerMinute,
-            Window = TimeSpan.FromMinutes(1),
-        }));
-        options.AddPolicy(Chunks, context => RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions
-        {
-            PermitLimit = 4,
-            QueueLimit = 32,
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-        }));
-        options.AddPolicy(Upload, context => RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions
-        {
-            PermitLimit = 1,
-            QueueLimit = 2,
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-        }));
+        options.AddPolicy(Media, context =>
+            RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions
+            {
+                PermitLimit = MediaConcurrency,
+                QueueLimit = MediaQueue,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            })
+        );
+        options.AddPolicy(Search, context =>
+            RateLimitPartition.GetFixedWindowLimiter(Caller(context), _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = SearchesPerMinute,
+                Window = TimeSpan.FromMinutes(1),
+            })
+        );
+        options.AddPolicy(Unlock, context =>
+            RateLimitPartition.GetFixedWindowLimiter(Caller(context), _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = UnlocksPerMinute,
+                Window = TimeSpan.FromMinutes(1),
+            })
+        );
+        options.AddPolicy(Chunks, context =>
+            RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions
+            {
+                PermitLimit = 4,
+                QueueLimit = 32,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            })
+        );
+        options.AddPolicy(Upload, context =>
+            RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions
+            {
+                PermitLimit = 1,
+                QueueLimit = 2,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            })
+        );
     }
 
     /// <summary>The account when signed in (wherever it connects from), else the address (<see cref="AddressKeys"/>).</summary>

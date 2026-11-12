@@ -9,7 +9,14 @@ using Sfe.Core.Options;
 namespace Sfe.Api.Endpoints;
 
 /// <param name="Local">A local account: its password can be changed here (a directory account's is changed in the directory).</param>
-public sealed record SessionAccount(int Id, string UserName, string? DisplayName, UserKind Kind, bool IsServerAdmin, bool Local);
+public sealed record SessionAccount(
+    int Id,
+    string UserName,
+    string? DisplayName,
+    UserKind Kind,
+    bool IsServerAdmin,
+    bool Local
+);
 
 public sealed record SessionTenant(int Id, string Slug, string Name);
 
@@ -21,8 +28,14 @@ public sealed record SessionTenant(int Id, string Slug, string Name);
 /// <param name="SetupAvailable">The setup page can be used (also to recover an administrator, <c>Sfe:Setup:Recover</c>).</param>
 /// <param name="CanBrowse">The library can be browsed in this session (otherwise the client shows the sign-in page).</param>
 public sealed record SessionInfo(
-    SessionAccount? User, SessionTenant? Tenant, IReadOnlyList<SessionTenant> Tenants, IReadOnlyList<SessionTenant> GuestTenants,
-    bool SetupRequired, bool SetupAvailable, bool CanBrowse);
+    SessionAccount? User,
+    SessionTenant? Tenant,
+    IReadOnlyList<SessionTenant> Tenants,
+    IReadOnlyList<SessionTenant> GuestTenants,
+    bool SetupRequired,
+    bool SetupAvailable,
+    bool CanBrowse
+);
 
 public sealed record SignInRequest(string? UserName, string? Password, bool Remember = false);
 
@@ -45,74 +58,94 @@ public static class SessionEndpoints
 
     /// <summary>The problem type of a sign-in refused because a Local server lets only administrators in.</summary>
     public const string LocalAdministratorsOnlyType = "local-administrators-only";
-    private const string LocalAdministratorsOnly = "SFE is in Local mode: only its administrators sign in. Ask one to set it to External to let others in.";
+    private const string LocalAdministratorsOnly =
+        "SFE is in Local mode: only its administrators sign in. Ask one to set it to External to let others in.";
 
     public static RouteGroupBuilder MapSessionEndpoints(this RouteGroupBuilder api)
     {
         var session = api.MapGroup("/session").WithTags("Session");
 
-        session.MapGet("/", async (HttpContext context, CancellationToken _) => TypedResults.Ok(await DescribeAsync(context)))
+        session
+            .MapGet("/", async (HttpContext context, CancellationToken _) =>
+                TypedResults.Ok(await DescribeAsync(context))
+            )
             .AllowAnonymous()
             .WithName("GetSession")
             .WithSummary("Who is signed in, in which space, and what the sign-in page offers.");
 
-        session.MapPost("/login", SignIn)
+        session
+            .MapPost("/login", SignIn)
             .AllowAnonymous()
             .RequireRateLimiting(SignInRateLimit)
             .WithName("SignIn")
             .WithSummary("Signs in with a name and password.")
-            .WithDescription("""
+            .WithDescription(
+                """
                 `remember` keeps the session after the browser closes (for `Sfe:Security:SessionDays` without use). A Local
                 server (`Sfe:Mode`) lets only administrators in (server administrators, members of a space's Administrators
                 group): others get 400 `local-administrators-only`.
-                """);
+                """
+            );
 
-        session.MapPost("/logout", SignOut)
-            .AllowAnonymous()
-            .WithName("SignOut")
-            .WithSummary("Signs out.");
+        session.MapPost("/logout", SignOut).AllowAnonymous().WithName("SignOut").WithSummary("Signs out.");
 
-        session.MapPost("/guest", ChooseGuestTenant)
+        session
+            .MapPost("/guest", ChooseGuestTenant)
             .AllowAnonymous()
             .WithName("BrowseAsGuest")
-            .WithSummary("Picks the space a visitor without an account browses, among those open to guests (signs out first).");
+            .WithSummary(
+                "Picks the space a visitor without an account browses, among those open to guests (signs out first)."
+            );
 
-        session.MapPost("/tenant", SwitchTenant)
+        session
+            .MapPost("/tenant", SwitchTenant)
             .AllowAnonymous()
             .WithName("SwitchTenant")
             .WithSummary("Switches the signed-in account to another of its spaces.");
 
-        session.MapGet("/start", StartWithLink)
+        session
+            .MapGet("/start", StartWithLink)
             .AllowAnonymous()
             .RequireRateLimiting(SignInRateLimit)
             .WithName("FastSignIn")
-            .WithSummary("Signs the server's only administrator in with the one-time link of the browser SFE opened at start, then opens the app.")
-            .WithDescription($"""
+            .WithSummary(
+                "Signs the server's only administrator in with the one-time link of the browser SFE opened at start, then opens the app."
+            )
+            .WithDescription(
+                $"""
                 Only with `Sfe:FastSignIn` (Administration › System › Start-up), from the server's own computer, while the
                 server has a single enabled administrator. The link (`token`) is made when SFE starts, works once and for
                 {FastSignIn.Lifetime.TotalMinutes:0} minute. Whatever happens, the answer sends the browser to the app.
-                """);
+                """
+            );
 
-        session.MapPost("/recovery", RequestRecovery)
+        session
+            .MapPost("/recovery", RequestRecovery)
             .AllowAnonymous()
             .RequireRateLimiting(SignInRateLimit)
             .WithName("RequestAccountRecovery")
-            .WithSummary("Asks for a one-time code to recover a server administrator's account; the server shows it only where it runs.")
-            .WithDescription($"""
+            .WithSummary(
+                "Asks for a one-time code to recover a server administrator's account; the server shows it only where it runs."
+            )
+            .WithDescription(
+                $"""
                 For a server administrator locked out (wrong passwords from someone else) or who forgot the password. The
                 code appears in the server's console and in `recovery-code.txt` beside the setup code file, for
                 {AccountRecovery.Lifetime.TotalMinutes:0} minutes; asking again shows the same code. The answer is the same
                 whatever the name, so it doesn't tell which accounts exist.
-                """);
+                """
+            );
 
-        session.MapPost("/recovery/complete", CompleteRecovery)
+        session
+            .MapPost("/recovery/complete", CompleteRecovery)
             .AllowAnonymous()
             .RequireRateLimiting(SignInRateLimit)
             .WithName("CompleteAccountRecovery")
             .WithSummary("Sets a new password with the recovery code, unlocks the account and signs it in.")
             .WithDescription("The account's other sessions end. The code works once.");
 
-        session.MapPut("/password", ChangePassword)
+        session
+            .MapPut("/password", ChangePassword)
             .RequireRight(Rights.OwnPassword)
             .RequireRateLimiting(SignInRateLimit)
             .WithName("ChangeOwnPassword")
@@ -130,26 +163,45 @@ public static class SessionEndpoints
         var reachable = state.User is { } user
             ? await services.GetRequiredService<RightsEvaluator>().GetTenantIdsAsync(user.Id, context.RequestAborted)
             : [];
-        var guestsAllowed = services.GetRequiredService<IOptionsMonitor<SecurityOptions>>().CurrentValue.AnonymousGuests;
+        var guestsAllowed = services
+            .GetRequiredService<IOptionsMonitor<SecurityOptions>>()
+            .CurrentValue.AnonymousGuests;
         var setup = await services.GetRequiredService<SetupService>().GetStateAsync(context.RequestAborted);
 
         return new SessionInfo(
             state.User is { } account
-                ? new SessionAccount(account.Id, account.UserName, account.DisplayName, account.Kind, account.IsServerAdmin, account.IsLocal)
+                ? new SessionAccount(
+                    account.Id,
+                    account.UserName,
+                    account.DisplayName,
+                    account.Kind,
+                    account.IsServerAdmin,
+                    account.IsLocal
+                )
                 : null,
             state.Tenant is { } tenant ? ToSession(tenant) : null,
             tenants.Where(t => reachable.Contains(t.Id)).Select(ToSession).ToList(),
-            state.User is null && guestsAllowed ? tenants.Where(t => t.GuestAccess && !t.Disabled).Select(ToSession).ToList() : [],
+            state.User is null && guestsAllowed
+                ? tenants.Where(t => t.GuestAccess && !t.Disabled).Select(ToSession).ToList()
+                : [],
             setup.Required,
             setup.Available,
-            state.Has(Rights.Browse));
+            state.Has(Rights.Browse)
+        );
     }
 
     private static SessionTenant ToSession(TenantInfo tenant) => new(tenant.Id, tenant.Slug, tenant.Name);
 
     private static async Task<Results<Ok<SessionInfo>, ProblemHttpResult>> SignIn(
-        HttpContext context, SignInService signIn, SignInThrottle throttle, AccessService accounts, IConfiguration configuration, ILoggerFactory loggers,
-        SignInRequest request, CancellationToken cancellationToken)
+        HttpContext context,
+        SignInService signIn,
+        SignInThrottle throttle,
+        AccessService accounts,
+        IConfiguration configuration,
+        ILoggerFactory loggers,
+        SignInRequest request,
+        CancellationToken cancellationToken
+    )
     {
         // Counted per name and address (SignInThrottle): a stranger's failures don't lock the account's owner out.
         // An IPv6 visitor counts as its /64 (AddressKeys); the log keeps the address whole.
@@ -159,7 +211,11 @@ public static class SessionEndpoints
         var name = request.UserName?.Trim();
         if (throttle.LockedUntil(request.UserName, caller) is { } waiting)
         {
-            logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: that address is blocked for that account after wrong passwords", name, address);
+            logger.LogSecurityWarning(
+                "Sign-in refused for {User} from {Address}: that address is blocked for that account after wrong passwords",
+                name,
+                address
+            );
             return LockedOut(waiting.UtcDateTime);
         }
 
@@ -167,28 +223,55 @@ public static class SessionEndpoints
         switch (result.Status)
         {
             case SignInStatus.LockedOut:
-                logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: the account is locked", name, address);
+                logger.LogSecurityWarning(
+                    "Sign-in refused for {User} from {Address}: the account is locked",
+                    name,
+                    address
+                );
                 return LockedOut(result.LockedUntil);
             case SignInStatus.Disabled:
-                logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: the account is disabled", name, address);
+                logger.LogSecurityWarning(
+                    "Sign-in refused for {User} from {Address}: the account is disabled",
+                    name,
+                    address
+                );
                 return TypedResults.Problem("This account is disabled.", statusCode: StatusCodes.Status400BadRequest);
             case not SignInStatus.Ok:
                 if (throttle.Failed(request.UserName, caller) is { } until)
                 {
-                    logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: wrong name or password; that address is now blocked for that account until {Until:u}",
-                        name, address, until);
+                    logger.LogSecurityWarning(
+                        "Sign-in refused for {User} from {Address}: wrong name or password; that address is now blocked for that account until {Until:u}",
+                        name,
+                        address,
+                        until
+                    );
                     return LockedOut(until.UtcDateTime);
                 }
 
-                logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: wrong name or password", name, address);
+                logger.LogSecurityWarning(
+                    "Sign-in refused for {User} from {Address}: wrong name or password",
+                    name,
+                    address
+                );
                 return TypedResults.Problem("Wrong name or password.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         throttle.Succeeded(request.UserName, caller);
-        if (ServerModes.IsLocal(configuration) && !await accounts.IsAdministratorAsync(result.User!.Id, cancellationToken))
+        if (
+            ServerModes.IsLocal(configuration)
+            && !await accounts.IsAdministratorAsync(result.User!.Id, cancellationToken)
+        )
         {
-            logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: SFE is in Local mode, only administrators sign in", name, address);
-            return TypedResults.Problem(LocalAdministratorsOnly, statusCode: StatusCodes.Status400BadRequest, type: LocalAdministratorsOnlyType);
+            logger.LogSecurityWarning(
+                "Sign-in refused for {User} from {Address}: SFE is in Local mode, only administrators sign in",
+                name,
+                address
+            );
+            return TypedResults.Problem(
+                LocalAdministratorsOnly,
+                statusCode: StatusCodes.Status400BadRequest,
+                type: LocalAdministratorsOnlyType
+            );
         }
 
         await SfeSession.SignInAsync(context, result.User!, context.User.TenantId(), request.Remember);
@@ -197,41 +280,66 @@ public static class SessionEndpoints
     }
 
     private static async Task<RedirectHttpResult> StartWithLink(
-        HttpContext context, FastSignIn fastSignIn, AccessService accounts, ILoggerFactory loggers, string? token = null, CancellationToken cancellationToken = default)
+        HttpContext context,
+        FastSignIn fastSignIn,
+        AccessService accounts,
+        ILoggerFactory loggers,
+        string? token = null,
+        CancellationToken cancellationToken = default
+    )
     {
         var home = context.Request.PathBase.HasValue ? context.Request.PathBase.Value + "/" : "/";
         var logger = loggers.CreateLogger(typeof(SessionEndpoints));
         var address = context.Connection.RemoteIpAddress?.ToString();
         if (!LocalVisitor.IsOnThisComputer(context))
         {
-            logger.LogSecurityWarning("Fast sign-in refused from {Address}: only a browser on the server's own computer may use it", address);
+            logger.LogSecurityWarning(
+                "Fast sign-in refused from {Address}: only a browser on the server's own computer may use it",
+                address
+            );
             return TypedResults.Redirect(home);
         }
 
         if (await fastSignIn.RedeemAsync(token, cancellationToken) is not { Disabled: false } user)
         {
-            logger.LogSecurityWarning("Fast sign-in refused from {Address}: the link is used, expired or no longer valid", address);
+            logger.LogSecurityWarning(
+                "Fast sign-in refused from {Address}: the link is used, expired or no longer valid",
+                address
+            );
             return TypedResults.Redirect(home);
         }
 
         await SfeSession.SignInAsync(context, user, null, persistent: false);
         context.Response.Cookies.Delete(SfeSession.GuestTenantCookieName(context.Request));
         await accounts.RecordSignInAsync(user.Id, cancellationToken);
-        logger.LogSecurityWarning("Fast sign-in: {User} signed in with the link of the browser SFE opened at start", user.UserName);
+        logger.LogSecurityWarning(
+            "Fast sign-in: {User} signed in with the link of the browser SFE opened at start",
+            user.UserName
+        );
         return TypedResults.Redirect(home);
     }
 
     private static async Task<Ok<RecoveryRequested>> RequestRecovery(
-        HttpContext context, AccountRecovery recovery, ILoggerFactory loggers, RecoveryRequest request, CancellationToken cancellationToken)
+        HttpContext context,
+        AccountRecovery recovery,
+        ILoggerFactory loggers,
+        RecoveryRequest request,
+        CancellationToken cancellationToken
+    )
     {
         var logger = loggers.CreateLogger(typeof(SessionEndpoints));
         var address = context.Connection.RemoteIpAddress?.ToString();
         if (await recovery.RequestAsync(request.UserName, cancellationToken) is { } pending)
         {
             // Never through the logger: the server's log is kept and read by administrators (AuditLogProvider).
-            logger.LogSecurityWarning("Account recovery asked for {User} from {Address}: the code is shown in the console and kept in {File}",
-                pending.Code.UserName, address, recovery.FilePath);
-            Console.Out.WriteLine($"""
+            logger.LogSecurityWarning(
+                "Account recovery asked for {User} from {Address}: the code is shown in the console and kept in {File}",
+                pending.Code.UserName,
+                address,
+                recovery.FilePath
+            );
+            Console.Out.WriteLine(
+                $"""
 
                 ==============================================================
                   Recovery code for the account {pending.Code.UserName}
@@ -242,12 +350,17 @@ public static class SessionEndpoints
                   Enter it on the sign-in page with a new password before
                   {pending.Code.Expires:HH:mm} UTC. Not you? Ignore it.
                 ==============================================================
-                """);
+                """
+            );
             Console.Out.Flush();
         }
         else
         {
-            logger.LogSecurityWarning("Account recovery asked for {User} from {Address}: not a local server administrator, no code made", request.UserName, address);
+            logger.LogSecurityWarning(
+                "Account recovery asked for {User} from {Address}: not a local server administrator, no code made",
+                request.UserName,
+                address
+            );
         }
 
         // The same answer for every name: it doesn't tell which accounts exist.
@@ -255,11 +368,24 @@ public static class SessionEndpoints
     }
 
     private static async Task<Results<Ok<SessionInfo>, ValidationProblem>> CompleteRecovery(
-        HttpContext context, AccountRecovery recovery, SignInThrottle throttle, RecoveryCompletion input, CancellationToken cancellationToken)
+        HttpContext context,
+        AccountRecovery recovery,
+        SignInThrottle throttle,
+        RecoveryCompletion input,
+        CancellationToken cancellationToken
+    )
     {
         var result = await recovery.CompleteAsync(input.UserName, input.Code, input.Password, cancellationToken);
         if (result.Status != AccessStatus.Ok)
-            return TypedResults.ValidationProblem(result.Errors ?? new Dictionary<string, string[]> { ["code"] = [result.Problem ?? "The account cannot be recovered."] });
+        {
+            return TypedResults.ValidationProblem(
+                result.Errors
+                    ?? new Dictionary<string, string[]>
+                    {
+                        ["code"] = [result.Problem ?? "The account cannot be recovered."],
+                    }
+            );
+        }
 
         throttle.Succeeded(input.UserName, AddressKeys.Of(context));
         await SfeSession.SignInAsync(context, result.Value!, context.User.TenantId(), input.Remember);
@@ -270,7 +396,10 @@ public static class SessionEndpoints
     private static ProblemHttpResult LockedOut(DateTime? until)
     {
         var minutes = Math.Max(1, (int)Math.Ceiling(((until ?? DateTime.UtcNow) - DateTime.UtcNow).TotalMinutes));
-        return TypedResults.Problem($"Too many failed attempts: try again in {minutes} minute{(minutes == 1 ? "" : "s")}.", statusCode: StatusCodes.Status400BadRequest);
+        return TypedResults.Problem(
+            $"Too many failed attempts: try again in {minutes} minute{(minutes == 1 ? "" : "s")}.",
+            statusCode: StatusCodes.Status400BadRequest
+        );
     }
 
     private static async Task<Ok<SessionInfo>> SignOut(HttpContext context, CancellationToken cancellationToken)
@@ -280,48 +409,82 @@ public static class SessionEndpoints
     }
 
     private static async Task<Results<Ok<SessionInfo>, ProblemHttpResult>> ChooseGuestTenant(
-        HttpContext context, AccessService accounts, CurrentAccess current, IOptionsMonitor<SecurityOptions> security, TenantChoice choice,
-        CancellationToken cancellationToken)
+        HttpContext context,
+        AccessService accounts,
+        CurrentAccess current,
+        IOptionsMonitor<SecurityOptions> security,
+        TenantChoice choice,
+        CancellationToken cancellationToken
+    )
     {
         var tenants = await accounts.GetCachedTenantsAsync(cancellationToken);
-        var tenant = tenants.FirstOrDefault(t => string.Equals(t.Slug, choice.Tenant?.Trim(), StringComparison.OrdinalIgnoreCase));
+        var tenant = tenants.FirstOrDefault(t =>
+            string.Equals(t.Slug, choice.Tenant?.Trim(), StringComparison.OrdinalIgnoreCase)
+        );
         if (tenant is null || !tenant.GuestAccess || tenant.Disabled || !security.CurrentValue.AnonymousGuests)
             return TypedResults.Problem("This space is not open to guests.", statusCode: StatusCodes.Status404NotFound);
 
         // As a visitor without an account: a signed-in account browsing as a guest signs out first.
         await SfeSession.SignOutAsync(context);
-        context.Response.Cookies.Append(SfeSession.GuestTenantCookieName(context.Request), tenant.Slug, new CookieOptions
-        {
-            HttpOnly = true,
-            SameSite = SameSiteMode.Lax,
-            IsEssential = true,
-            Path = context.Request.PathBase.HasValue ? context.Request.PathBase.Value : "/",
-            Expires = DateTimeOffset.UtcNow.AddYears(1),
-        });
+        context.Response.Cookies.Append(
+            SfeSession.GuestTenantCookieName(context.Request),
+            tenant.Slug,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax,
+                IsEssential = true,
+                Path = context.Request.PathBase.HasValue ? context.Request.PathBase.Value : "/",
+                Expires = DateTimeOffset.UtcNow.AddYears(1),
+            }
+        );
         current.Reset(tenant.Slug);
         return TypedResults.Ok(await DescribeAsync(context));
     }
 
     private static async Task<Results<Ok<SessionInfo>, UnauthorizedHttpResult, ProblemHttpResult>> SwitchTenant(
-        HttpContext context, AccessService accounts, RightsEvaluator rights, CurrentAccess current, TenantChoice choice, CancellationToken cancellationToken)
+        HttpContext context,
+        AccessService accounts,
+        RightsEvaluator rights,
+        CurrentAccess current,
+        TenantChoice choice,
+        CancellationToken cancellationToken
+    )
     {
         if ((await current.GetAsync()).User is not { } user)
             return TypedResults.Unauthorized();
 
         var tenants = await accounts.GetCachedTenantsAsync(cancellationToken);
-        var tenant = tenants.FirstOrDefault(t => string.Equals(t.Slug, choice.Tenant?.Trim(), StringComparison.OrdinalIgnoreCase));
+        var tenant = tenants.FirstOrDefault(t =>
+            string.Equals(t.Slug, choice.Tenant?.Trim(), StringComparison.OrdinalIgnoreCase)
+        );
         if (tenant is null || !(await rights.GetTenantIdsAsync(user.Id, cancellationToken)).Contains(tenant.Id))
-            return TypedResults.Problem("This account has no access to that space.", statusCode: StatusCodes.Status404NotFound);
+        {
+            return TypedResults.Problem(
+                "This account has no access to that space.",
+                statusCode: StatusCodes.Status404NotFound
+            );
+        }
 
         await SfeSession.RenewAsync(context, user, tenant.Id);
         return TypedResults.Ok(await DescribeAsync(context));
     }
 
     private static async Task<Results<Ok<SessionInfo>, ValidationProblem, NotFound>> ChangePassword(
-        HttpContext context, AccessService accounts, CurrentAccess current, PasswordChange change, CancellationToken cancellationToken)
+        HttpContext context,
+        AccessService accounts,
+        CurrentAccess current,
+        PasswordChange change,
+        CancellationToken cancellationToken
+    )
     {
         var state = await current.GetAsync();
-        var result = await accounts.ChangeOwnPasswordAsync(state.User!.Id, change.Current, change.Password, cancellationToken);
+        var result = await accounts.ChangeOwnPasswordAsync(
+            state.User!.Id,
+            change.Current,
+            change.Password,
+            cancellationToken
+        );
         if (result.Status == AccessStatus.NotFound)
             return TypedResults.NotFound();
         if (result.Status != AccessStatus.Ok)

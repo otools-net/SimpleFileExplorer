@@ -18,18 +18,23 @@ public static class SecurityServiceCollectionExtensions
     /// Sign-in cookie, rights, and the keys signing both the cookie and the external players' links. Media are loaded
     /// by <c>&lt;img&gt;</c> and <c>&lt;video&gt;</c>, which send cookies but no other credentials: hence a cookie.
     /// </summary>
-    public static IServiceCollection AddSfeSecurity(this IServiceCollection services, IConfiguration configuration, string contentRootPath)
+    public static IServiceCollection AddSfeSecurity(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string contentRootPath
+    )
     {
-        var security = configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Security)}").Get<SecurityOptions>() ?? new SecurityOptions();
+        var security = configuration
+            .GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Security)}")
+            .Get<SecurityOptions>()
+            ?? new SecurityOptions();
 
         // Kept on the disk: otherwise every restart (and every service account without a profile) signs everyone out.
         var keys = KeysDirectory(security, contentRootPath);
         // Made here, for the server's account only, rather than by Data Protection with the process's default mode:
         // whoever reads a key forges an administrator's cookie. One that exists is left alone (WarnIfKeysAreOpen).
         TryCreatePrivate(keys);
-        services.AddDataProtection()
-            .SetApplicationName("SFE")
-            .PersistKeysToFileSystem(new DirectoryInfo(keys));
+        services.AddDataProtection().SetApplicationName("SFE").PersistKeysToFileSystem(new DirectoryInfo(keys));
 
         services.AddHttpContextAccessor();
         services.AddScoped<CurrentAccess>();
@@ -39,7 +44,8 @@ public static class SecurityServiceCollectionExtensions
         services.AddSingleton<LibraryLinks>();
         services.AddSingleton<ServerFiles>();
 
-        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        services
+            .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
                 options.Cookie.Name = SfeSession.CookieName;
@@ -48,7 +54,9 @@ public static class SecurityServiceCollectionExtensions
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.Lax;
                 // Plain http on a home network has to work; behind https (or a trusted proxy's) the cookie is marked secure.
-                options.Cookie.SecurePolicy = security.RequireHttps ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
+                options.Cookie.SecurePolicy = security.RequireHttps
+                    ? CookieSecurePolicy.Always
+                    : CookieSecurePolicy.SameAsRequest;
                 options.ExpireTimeSpan = TimeSpan.FromDays(Math.Max(1, security.SessionDays));
                 options.SlidingExpiration = true;
                 // An API answers with a status, the client shows its own sign-in page.
@@ -73,14 +81,24 @@ public static class SecurityServiceCollectionExtensions
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            foreach (var proxy in security.TrustedProxies.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => p.Trim()))
+            foreach (
+                var proxy in security.TrustedProxies.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => p.Trim())
+            )
             {
                 if (System.Net.IPNetwork.TryParse(proxy, out var network))
+                {
                     options.KnownIPNetworks.Add(network);
+                }
                 else if (System.Net.IPAddress.TryParse(proxy, out var address))
+                {
                     options.KnownProxies.Add(address);
+                }
                 else
-                    throw new InvalidOperationException($"Sfe:Security:TrustedProxies: “{proxy}” is not an address or a network (like 10.0.0.0/8).");
+                {
+                    throw new InvalidOperationException(
+                        $"Sfe:Security:TrustedProxies: “{proxy}” is not an address or a network (like 10.0.0.0/8)."
+                    );
+                }
             }
         });
         services.AddSingleton<SignInThrottle>();
@@ -94,9 +112,13 @@ public static class SecurityServiceCollectionExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             RequestLimits.AddPolicies(options);
-            options.AddPolicy(SessionEndpoints.SignInRateLimit, context => RateLimitPartition.GetFixedWindowLimiter(
-                AddressKeys.Of(context),
-                _ => new FixedWindowRateLimiterOptions { PermitLimit = Math.Max(1, security.SignInsPerMinute), Window = TimeSpan.FromMinutes(1) }));
+            options.AddPolicy(SessionEndpoints.SignInRateLimit, context =>
+                RateLimitPartition.GetFixedWindowLimiter(AddressKeys.Of(context), _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = Math.Max(1, security.SignInsPerMinute),
+                    Window = TimeSpan.FromMinutes(1),
+                })
+            );
         });
 
         return services;
@@ -114,8 +136,10 @@ public static class SecurityServiceCollectionExtensions
             return;
         app.Logger.LogWarning(
             "Other accounts of this computer may read {Keys}, which holds the keys signing the sign-in cookies: "
-            + "whoever reads them signs in as anyone. Unless that is meant, run: chmod -R go-rwx \"{Keys}\"",
-            keys, keys);
+                + "whoever reads them signs in as anyone. Unless that is meant, run: chmod -R go-rwx \"{Keys}\"",
+            keys,
+            keys
+        );
     }
 
     private static string KeysDirectory(SecurityOptions security, string contentRootPath) =>
@@ -128,8 +152,6 @@ public static class SecurityServiceCollectionExtensions
         {
             SecretFiles.CreatePrivateDirectory(directory);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
 }

@@ -11,7 +11,14 @@ public static class ScheduleCalculator
     /// past, a weekly schedule without days).
     /// </summary>
     /// <param name="zone">Time zone whose clock weekly schedules follow (the server's).</param>
-    public static DateTime? Next(ScheduleKind kind, DateTime startUtc, int intervalMinutes, int days, DateTime afterUtc, TimeZoneInfo zone)
+    public static DateTime? Next(
+        ScheduleKind kind,
+        DateTime startUtc,
+        int intervalMinutes,
+        int days,
+        DateTime afterUtc,
+        TimeZoneInfo zone
+    )
     {
         startUtc = DateTime.SpecifyKind(startUtc, DateTimeKind.Utc);
         afterUtc = DateTime.SpecifyKind(afterUtc, DateTimeKind.Utc);
@@ -38,7 +45,15 @@ public static class ScheduleCalculator
     }
 
     /// <summary>The next <paramref name="count"/> occurrences after <paramref name="afterUtc"/>.</summary>
-    public static List<DateTime> NextRuns(ScheduleKind kind, DateTime startUtc, int intervalMinutes, int days, DateTime afterUtc, TimeZoneInfo zone, int count)
+    public static List<DateTime> NextRuns(
+        ScheduleKind kind,
+        DateTime startUtc,
+        int intervalMinutes,
+        int days,
+        DateTime afterUtc,
+        TimeZoneInfo zone,
+        int count
+    )
     {
         var runs = new List<DateTime>(count);
         var after = afterUtc;
@@ -82,7 +97,9 @@ public static class ScheduleCalculator
         if (zone.IsInvalidTime(local))
         {
             var gap = zone.GetAdjustmentRules()
-                .FirstOrDefault(r => r.DateStart <= local && local <= r.DateEnd)?.DaylightDelta ?? TimeSpan.FromHours(1);
+                .FirstOrDefault(r => r.DateStart <= local && local <= r.DateEnd)
+                ?.DaylightDelta
+                ?? TimeSpan.FromHours(1);
             local += gap;
         }
 

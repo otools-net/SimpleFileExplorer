@@ -18,7 +18,12 @@ public sealed record RecoveryCode(int UserId, string UserName, string Code, Date
 /// code lives <see cref="Lifetime"/>, works once, and exists only while someone recovers: no lasting secret, unlike the
 /// setup code. Other accounts are unlocked by an administrator; a disabled administrator needs <c>Sfe:Setup:Recover</c>.
 /// </summary>
-public sealed class AccountRecovery(IDbContextFactory<AccessDbContext> dbFactory, AccessService accounts, string filePath, ILogger<AccountRecovery> logger)
+public sealed class AccountRecovery(
+    IDbContextFactory<AccessDbContext> dbFactory,
+    AccessService accounts,
+    string filePath,
+    ILogger<AccountRecovery> logger
+)
 {
     public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(15);
 
@@ -34,7 +39,10 @@ public sealed class AccountRecovery(IDbContextFactory<AccessDbContext> dbFactory
     /// local server administrator (the caller answers the same either way).
     /// </summary>
     /// <returns>The code, and whether it was just made.</returns>
-    public async Task<(RecoveryCode Code, bool New)?> RequestAsync(string? userName, CancellationToken cancellationToken = default)
+    public async Task<(RecoveryCode Code, bool New)?> RequestAsync(
+        string? userName,
+        CancellationToken cancellationToken = default
+    )
     {
         if (await FindAsync(userName, cancellationToken) is not { } user)
             return null;
@@ -53,25 +61,54 @@ public sealed class AccountRecovery(IDbContextFactory<AccessDbContext> dbFactory
     /// Gives <paramref name="userName"/> the password <paramref name="password"/> with its pending code: unlocks it and
     /// ends its other sessions (a new security stamp). The code is used up only when it works.
     /// </summary>
-    public async Task<AccessResult<SessionUser>> CompleteAsync(string? userName, string? code, string? password, CancellationToken cancellationToken = default)
+    public async Task<AccessResult<SessionUser>> CompleteAsync(
+        string? userName,
+        string? code,
+        string? password,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await FindAsync(userName, cancellationToken);
-        if (user is null || !_codes.TryGetValue(user.Id, out var pending) || pending.Expires <= DateTime.UtcNow
-            || !PasswordHashing.SameSecret(GeneratedSetupCode.Normalize(code), GeneratedSetupCode.Normalize(pending.Code)))
+        if (
+            user is null
+            || !_codes.TryGetValue(user.Id, out var pending)
+            || pending.Expires <= DateTime.UtcNow
+            || !PasswordHashing.SameSecret(
+                GeneratedSetupCode.Normalize(code),
+                GeneratedSetupCode.Normalize(pending.Code)
+            )
+        )
         {
             logger.LogSecurityWarning("Account recovery refused for {User}: wrong or expired code", userName);
-            return AccessResult<SessionUser>.Invalid("code", "This recovery code is wrong or has expired: ask for a new one.");
+            return AccessResult<SessionUser>.Invalid(
+                "code",
+                "This recovery code is wrong or has expired: ask for a new one."
+            );
         }
 
-        var result = await accounts.UpdateUserAsync(user.Id,
-            new UserInput(user.UserName, user.DisplayName, password ?? string.Empty, user.Kind, IsServerAdmin: true, Disabled: false, Unlock: true),
-            null, cancellationToken);
+        var result = await accounts.UpdateUserAsync(
+            user.Id,
+            new UserInput(
+                user.UserName,
+                user.DisplayName,
+                password ?? string.Empty,
+                user.Kind,
+                IsServerAdmin: true,
+                Disabled: false,
+                Unlock: true
+            ),
+            null,
+            cancellationToken
+        );
         if (result.Status != AccessStatus.Ok)
             return result.As<SessionUser>();
 
         _codes.TryRemove(user.Id, out _);
         WriteFile();
-        logger.LogSecurityWarning("Account recovery: {User} has a new password and is unlocked; its other sessions ended", user.UserName);
+        logger.LogSecurityWarning(
+            "Account recovery: {User} has a new password and is unlocked; its other sessions ended",
+            user.UserName
+        );
         return AccessResult<SessionUser>.Ok((await accounts.GetSessionUserAsync(user.Id, cancellationToken))!);
     }
 
@@ -81,8 +118,12 @@ public sealed class AccountRecovery(IDbContextFactory<AccessDbContext> dbFactory
         if (string.IsNullOrEmpty(name))
             return null;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        return await db.Users.AsNoTracking()
-            .FirstOrDefaultAsync(u => u.UserName == name && u.Source == UserAccount.LocalSource && u.IsServerAdmin && !u.Disabled, cancellationToken);
+        return await db
+            .Users.AsNoTracking()
+            .FirstOrDefaultAsync(
+                u => u.UserName == name && u.Source == UserAccount.LocalSource && u.IsServerAdmin && !u.Disabled,
+                cancellationToken
+            );
     }
 
     /// <summary>The pending codes, one per line; no file when there is none.</summary>
@@ -91,8 +132,11 @@ public sealed class AccountRecovery(IDbContextFactory<AccessDbContext> dbFactory
         lock (_fileLock)
         {
             var now = DateTime.UtcNow;
-            var lines = _codes.Values.Where(c => c.Expires > now).OrderBy(c => c.UserName, StringComparer.Ordinal)
-                .Select(c => $"{c.UserName}: {c.Code} (until {c.Expires:HH:mm} UTC)").ToList();
+            var lines = _codes
+                .Values.Where(c => c.Expires > now)
+                .OrderBy(c => c.UserName, StringComparer.Ordinal)
+                .Select(c => $"{c.UserName}: {c.Code} (until {c.Expires:HH:mm} UTC)")
+                .ToList();
             try
             {
                 if (lines.Count == 0)
@@ -102,12 +146,20 @@ public sealed class AccountRecovery(IDbContextFactory<AccessDbContext> dbFactory
                 }
 
                 SecretFiles.CreatePrivateDirectory(Path.GetDirectoryName(FilePath)!);
-                string[] content = ["Codes to recover an administrator's account on the sign-in page, each usable once:", .. lines];
+                string[] content =
+                [
+                    "Codes to recover an administrator's account on the sign-in page, each usable once:",
+                    .. lines,
+                ];
                 SecretFiles.WriteAllText(FilePath, string.Join(Environment.NewLine, content) + Environment.NewLine);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                logger.LogWarning(ex, "Cannot write the recovery codes to {Path}: they are only in the console", FilePath);
+                logger.LogWarning(
+                    ex,
+                    "Cannot write the recovery codes to {Path}: they are only in the console",
+                    FilePath
+                );
             }
         }
     }

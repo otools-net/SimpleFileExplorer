@@ -13,7 +13,13 @@ namespace Sfe.Api.Security;
 /// (<see cref="LocalVisitor.IsOnThisComputer"/>), and only while that account is still the only enabled administrator
 /// and the server is Local (<see cref="ServerModes"/>): an External server is used by others.
 /// </summary>
-public sealed class FastSignIn(AccessService accounts, SettingLayers settings, TimeProvider time, IConfiguration configuration, ILogger<FastSignIn> logger)
+public sealed class FastSignIn(
+    AccessService accounts,
+    SettingLayers settings,
+    TimeProvider time,
+    IConfiguration configuration,
+    ILogger<FastSignIn> logger
+)
 {
     public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(1);
 
@@ -40,7 +46,10 @@ public sealed class FastSignIn(AccessService accounts, SettingLayers settings, T
         var admins = await accounts.GetServerAdminIdsAsync(cancellationToken);
         if (admins.Count != 1)
         {
-            logger.LogInformation("Fast sign-in skipped: it needs a single enabled server administrator, there are {Count}", admins.Count == 0 ? "none" : "several");
+            logger.LogInformation(
+                "Fast sign-in skipped: it needs a single enabled server administrator, there are {Count}",
+                admins.Count == 0 ? "none" : "several"
+            );
             return null;
         }
 
@@ -67,8 +76,16 @@ public sealed class FastSignIn(AccessService accounts, SettingLayers settings, T
         }
 
         // Still on, still Local, and still the only administrator: the setting, the mode or the accounts may have changed since the start.
-        if (!settings.ServerLevel().FastSignIn || !ServerModes.IsLocal(configuration) || await accounts.GetServerAdminIdsAsync(cancellationToken) is not [var only] || only != userId)
+        if (
+            !settings.ServerLevel().FastSignIn
+            || !ServerModes.IsLocal(configuration)
+            || await accounts.GetServerAdminIdsAsync(cancellationToken) is not [var only]
+            || only != userId
+        )
+        {
             return null;
+        }
+
         return await accounts.GetSessionUserAsync(userId, cancellationToken);
     }
 

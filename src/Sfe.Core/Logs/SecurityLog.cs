@@ -20,5 +20,7 @@ public static class SecurityLog
 
     /// <summary>The level an entry is kept with.</summary>
     public static LogEntryLevel LevelOf(LogLevel level, EventId eventId) =>
-        level == LogLevel.Warning && eventId.Id == Event.Id && eventId.Name == Event.Name ? LogEntryLevel.SecurityWarning : (LogEntryLevel)level;
+        level == LogLevel.Warning && eventId.Id == Event.Id && eventId.Name == Event.Name
+            ? LogEntryLevel.SecurityWarning
+            : (LogEntryLevel)level;
 }

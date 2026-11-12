@@ -11,15 +11,26 @@ namespace Sfe.Api.Security;
 /// runs, long after the request that started it.
 /// </summary>
 public sealed class FileJobAccess(
-    AccessService accounts, RightsEvaluator rights, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, TenantInfo tenant, int? userId) : IFileJobAccess
+    AccessService accounts,
+    RightsEvaluator rights,
+    LibraryPaths paths,
+    ServerFiles serverFiles,
+    WorkFolder work,
+    TenantInfo tenant,
+    int? userId
+) : IFileJobAccess
 {
     public async Task<bool> MayAsync(string path, string right) =>
         await StateAsync() is { } state && state.Check(paths, path, right) == PathVerdict.Allowed;
 
     public async Task<bool> MayThroughoutAsync(string path, string right) =>
-        await StateAsync() is { } state && state.Check(paths, path, right) == PathVerdict.Allowed
-        && (!paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { } canonical
-            || state.Access.FolderPolicy.AllowsThroughout(canonical, right, state.Access.Rights));
+        await StateAsync() is { } state
+        && state.Check(paths, path, right) == PathVerdict.Allowed
+        && (
+            !paths.TryResolve(path, out var full)
+            || paths.ToRelative(full) is not { } canonical
+            || state.Access.FolderPolicy.AllowsThroughout(canonical, right, state.Access.Rights)
+        );
 
     public bool IsProtected(string fullPath) => FileEndpoints.Protected(fullPath, serverFiles, work);
 
@@ -32,8 +43,18 @@ public sealed class FileJobAccess(
     private async Task<AccessState?> StateAsync()
     {
         SessionUser? user = null;
-        if (userId is { } id && (user = await accounts.GetSessionUserAsync(id, CancellationToken.None)) is null or { Disabled: true })
+        if (
+            userId is { } id
+            && (user = await accounts.GetSessionUserAsync(id, CancellationToken.None)) is null or { Disabled: true }
+        )
+        {
             return null;
-        return new AccessState(tenant, user, await rights.GetAsync(new AccessSubject(tenant.Id, userId), CancellationToken.None));
+        }
+
+        return new AccessState(
+            tenant,
+            user,
+            await rights.GetAsync(new AccessSubject(tenant.Id, userId), CancellationToken.None)
+        );
     }
 }

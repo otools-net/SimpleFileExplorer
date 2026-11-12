@@ -90,21 +90,30 @@ public sealed class TaskLogProvider : ILoggerProvider
         set => CurrentLog.Value = value;
     }
 
-    public ILogger CreateLogger(string categoryName) => categoryName.StartsWith("Sfe.", StringComparison.Ordinal) ? RunLogger.Instance : Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+    public ILogger CreateLogger(string categoryName) =>
+        categoryName.StartsWith("Sfe.", StringComparison.Ordinal)
+            ? RunLogger.Instance
+            : Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
     private sealed class RunLogger : ILogger
     {
         public static readonly RunLogger Instance = new();
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
 
-        public bool IsEnabled(LogLevel logLevel) => logLevel is >= LogLevel.Debug and < LogLevel.None && Current is not null;
+        public bool IsEnabled(LogLevel logLevel) =>
+            logLevel is >= LogLevel.Debug and < LogLevel.None && Current is not null;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter
+        )
         {
             if (!IsEnabled(logLevel))
                 return;

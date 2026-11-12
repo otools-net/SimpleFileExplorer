@@ -15,9 +15,23 @@ internal static class ZipEncryption
     public const int AesAuthCode = 10;
     public const int AesIterations = 1000;
 
-    public static int SaltLength(int strength) => strength switch { 1 => 8, 2 => 12, 3 => 16, _ => throw Broken() };
+    public static int SaltLength(int strength) =>
+        strength switch
+        {
+            1 => 8,
+            2 => 12,
+            3 => 16,
+            _ => throw Broken(),
+        };
 
-    public static int KeyLength(int strength) => strength switch { 1 => 16, 2 => 24, 3 => 32, _ => throw Broken() };
+    public static int KeyLength(int strength) =>
+        strength switch
+        {
+            1 => 16,
+            2 => 24,
+            3 => 32,
+            _ => throw Broken(),
+        };
 
     /// <summary>
     /// The entry's compressed data, decrypted from <paramref name="packed"/> (its whole packed data): checked against the
@@ -60,7 +74,13 @@ internal static class ZipEncryption
         packed.ReadExactly(salt);
         Span<byte> verifier = stackalloc byte[AesVerifier];
         packed.ReadExactly(verifier);
-        var keys = Rfc2898DeriveBytes.Pbkdf2(secret, salt, AesIterations, HashAlgorithmName.SHA1, keyLength * 2 + AesVerifier);
+        var keys = Rfc2898DeriveBytes.Pbkdf2(
+            secret,
+            salt,
+            AesIterations,
+            HashAlgorithmName.SHA1,
+            keyLength * 2 + AesVerifier
+        );
         if (!CryptographicOperations.FixedTimeEquals(keys.AsSpan(keyLength * 2, AesVerifier), verifier))
             throw WrongPassword();
         return new AesCtrStream(packed, keys[..keyLength], keys[keyLength..(keyLength * 2)], data);
@@ -74,7 +94,9 @@ internal static class ZipEncryption
     /// <summary>The traditional cipher's three keys, as PKWARE's APPNOTE describes them.</summary>
     internal sealed class ZipCryptoKeys
     {
-        private uint _k0 = 0x12345678, _k1 = 0x23456789, _k2 = 0x34567890;
+        private uint _k0 = 0x12345678,
+            _k1 = 0x23456789,
+            _k2 = 0x34567890;
 
         public ZipCryptoKeys(ReadOnlySpan<byte> password)
         {
@@ -125,7 +147,8 @@ internal static class ZipEncryption
         private int _used = 16;
         private long _left;
 
-        public AesCtrStream(Stream inner, byte[] key, byte[] macKey, long length) : base(inner)
+        public AesCtrStream(Stream inner, byte[] key, byte[] macKey, long length)
+            : base(inner)
         {
             _aes = System.Security.Cryptography.Aes.Create();
             _aes.Key = key;
@@ -156,9 +179,7 @@ internal static class ZipEncryption
 
         private void Next()
         {
-            for (var i = 0; i < 16 && ++_counter[i] == 0; i++)
-            {
-            }
+            for (var i = 0; i < 16 && ++_counter[i] == 0; i++) { }
             _aes.EncryptEcb(_counter, _keystream, PaddingMode.None);
             _used = 0;
         }
@@ -169,8 +190,10 @@ internal static class ZipEncryption
             Inner.ReadExactly(code);
             if (!CryptographicOperations.FixedTimeEquals(_mac.GetHashAndReset().AsSpan(0, AesAuthCode), code))
             {
-                throw new ArchiveException("An encrypted entry doesn't match its authentication: the password is wrong or the archive is damaged.",
-                    needsPassword: true);
+                throw new ArchiveException(
+                    "An encrypted entry doesn't match its authentication: the password is wrong or the archive is damaged.",
+                    needsPassword: true
+                );
             }
         }
 
@@ -217,13 +240,22 @@ internal abstract class ReadOnlyStream(Stream inner) : Stream
     public override bool CanSeek => false;
     public override bool CanWrite => false;
     public override long Length => throw new NotSupportedException();
-    public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+    public override long Position
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
+    }
 
     public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
+
     public abstract override int Read(Span<byte> buffer);
+
     public override void Flush() { }
+
     public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
     public override void SetLength(long value) => throw new NotSupportedException();
+
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
     protected override void Dispose(bool disposing)
@@ -249,7 +281,10 @@ internal sealed class CrcCheckStream(Stream inner, uint expected, bool encrypted
         if (read == 0 && buffer.Length > 0 && _crc.GetCurrentHashAsUInt32() != expected)
         {
             throw encrypted
-                ? new ArchiveException("An entry doesn't match its checksum: the password is wrong or the archive is damaged.", needsPassword: true)
+                ? new ArchiveException(
+                    "An entry doesn't match its checksum: the password is wrong or the archive is damaged.",
+                    needsPassword: true
+                )
                 : new ArchiveException("An entry doesn't match its checksum: the archive is damaged.");
         }
 

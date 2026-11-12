@@ -43,7 +43,12 @@ public enum EditedImageOutcome
 public sealed record EditedImage(string Path, int Width, int Height, long Size);
 
 /// <param name="Written">Saved over the original: what <see cref="FileContent.OverwriteAsync"/> answered.</param>
-public sealed record EditedImageResult(EditedImageOutcome Outcome, EditedImage? Image = null, string? Message = null, OverwriteResult? Written = null);
+public sealed record EditedImageResult(
+    EditedImageOutcome Outcome,
+    EditedImage? Image = null,
+    string? Message = null,
+    OverwriteResult? Written = null
+);
 
 /// <summary>
 /// Saves the pictures made by the web client's editor. The browser applies the edits (crop...) itself and sends the
@@ -54,7 +59,13 @@ public sealed record EditedImageResult(EditedImageOutcome Outcome, EditedImage? 
 /// <see cref="FileContent"/> as text files are: same version check, previous version in the trash.
 /// </summary>
 public sealed class EditedImages(
-    LibraryPaths paths, MediaClassifier classifier, DirectoryIndexer indexer, FileContent files, IOptionsMonitor<SfeOptions> options, ILogger<EditedImages> logger)
+    LibraryPaths paths,
+    MediaClassifier classifier,
+    DirectoryIndexer indexer,
+    FileContent files,
+    IOptionsMonitor<SfeOptions> options,
+    ILogger<EditedImages> logger
+)
 {
     /// <summary>200 MB: a lossless PNG of a 50-megapixel photo.</summary>
     public const long MaxBytes = 200L * 1024 * 1024;
@@ -70,7 +81,11 @@ public sealed class EditedImages(
 
     /// <summary>Saves <paramref name="content"/> as the edited version of the picture <paramref name="sourcePath"/>.</summary>
     /// <param name="sourcePath">The original, relative to the library root.</param>
-    public async Task<EditedImageResult> SaveAsync(string? sourcePath, Stream content, CancellationToken cancellationToken = default)
+    public async Task<EditedImageResult> SaveAsync(
+        string? sourcePath,
+        Stream content,
+        CancellationToken cancellationToken = default
+    )
     {
         if (Source(sourcePath) is not { } found)
             return new(EditedImageOutcome.SourceNotFound, Message: "The original picture was not found.");
@@ -84,18 +99,32 @@ public sealed class EditedImages(
 
         var folder = TargetFolder(source);
         if (folder is null || !paths.TryResolve(folder, out var folderFull))
-            return new(EditedImageOutcome.CannotWrite, Message: "The folder for edited pictures is not a folder of the library: check the editor's settings.");
+        {
+            return new(
+                EditedImageOutcome.CannotWrite,
+                Message: "The folder for edited pictures is not a folder of the library: check the editor's settings."
+            );
+        }
 
         string target;
         try
         {
             Directory.CreateDirectory(folderFull);
-            target = await WriteNewAsync(folderFull, BaseName(source, folder), Extension(sourceFull, format), buffer, cancellationToken);
+            target = await WriteNewAsync(
+                folderFull,
+                BaseName(source, folder),
+                Extension(sourceFull, format),
+                buffer,
+                cancellationToken
+            );
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             logger.LogWarning(ex, "Cannot save the edited version of {Path} in {Folder}", source, folder);
-            return new(EditedImageOutcome.CannotWrite, Message: $"The edited picture cannot be saved in “{(folder.Length == 0 ? paths.RootName : folder)}”: {ex.Message}");
+            return new(
+                EditedImageOutcome.CannotWrite,
+                Message: $"The edited picture cannot be saved in “{(folder.Length == 0 ? paths.RootName : folder)}”: {ex.Message}"
+            );
         }
 
         try
@@ -119,7 +148,14 @@ public sealed class EditedImages(
     /// editing <paramref name="session"/> (<see cref="FileContent.OverwriteAsync"/>). The routes check the rights.
     /// </summary>
     public async Task<EditedImageResult> SaveOverAsync(
-        string? path, Stream content, string ifMatch, string session, bool keepPrevious, FileActor actor, CancellationToken cancellationToken = default)
+        string? path,
+        Stream content,
+        string ifMatch,
+        string session,
+        bool keepPrevious,
+        FileActor actor,
+        CancellationToken cancellationToken = default
+    )
     {
         if (Source(path) is not { } found)
             return new(EditedImageOutcome.SourceNotFound, Message: "The picture was not found.");
@@ -129,13 +165,30 @@ public sealed class EditedImages(
             return problem;
         var (format, size) = (Detect(buffer)!.Value, ReadSize(buffer)!.Value);
         if (!KeepsExtension(Path.GetExtension(full), format))
-            return new(EditedImageOutcome.OtherFormat, Message: "The edited picture is not in the original's format: save a copy instead.");
+        {
+            return new(
+                EditedImageOutcome.OtherFormat,
+                Message: "The edited picture is not in the original's format: save a copy instead."
+            );
+        }
 
-        var written = await files.OverwriteAsync(source, buffer.ToArray(), ifMatch, session, keepPrevious, actor, cancellationToken);
+        var written = await files.OverwriteAsync(
+            source,
+            buffer.ToArray(),
+            ifMatch,
+            session,
+            keepPrevious,
+            actor,
+            cancellationToken
+        );
         if (written.Status != OverwriteStatus.Done)
             return new(EditedImageOutcome.NotWritten, Message: written.Message, Written: written);
         logger.LogInformation("Saved the edited picture over {Path}", source);
-        return new(EditedImageOutcome.Saved, new EditedImage(source, size.Width, size.Height, buffer.Length), Written: written);
+        return new(
+            EditedImageOutcome.Saved,
+            new EditedImage(source, size.Width, size.Height, buffer.Length),
+            Written: written
+        );
     }
 
     /// <summary>The picture can be saved over with what the editor makes: JPEG, PNG and WebP files.</summary>
@@ -146,8 +199,12 @@ public sealed class EditedImages(
     private (string Path, string Full)? Source(string? path)
     {
         var source = LibraryPaths.NormalizeRelative(path);
-        if (string.IsNullOrEmpty(source) || !paths.TryResolve(source, out var full) || !File.Exists(full)
-            || classifier.Classify(Path.GetExtension(full)) != ItemKind.Image)
+        if (
+            string.IsNullOrEmpty(source)
+            || !paths.TryResolve(source, out var full)
+            || !File.Exists(full)
+            || classifier.Classify(Path.GetExtension(full)) != ItemKind.Image
+        )
         {
             return null;
         }
@@ -156,12 +213,28 @@ public sealed class EditedImages(
     }
 
     /// <summary>Reads what was sent into <paramref name="buffer"/>: the problem when it is too large or not a picture of a known size.</summary>
-    private static async Task<EditedImageResult?> ReadAsync(Stream content, MemoryStream buffer, CancellationToken cancellationToken)
+    private static async Task<EditedImageResult?> ReadAsync(
+        Stream content,
+        MemoryStream buffer,
+        CancellationToken cancellationToken
+    )
     {
         if (!await CopyLimitedAsync(content, buffer, cancellationToken))
-            return new(EditedImageOutcome.TooLarge, Message: $"The edited picture is larger than {MaxBytes / 1024 / 1024} MB.");
+        {
+            return new(
+                EditedImageOutcome.TooLarge,
+                Message: $"The edited picture is larger than {MaxBytes / 1024 / 1024} MB."
+            );
+        }
+
         if (Detect(buffer) is null || ReadSize(buffer) is not { IsKnown: true })
-            return new(EditedImageOutcome.InvalidImage, Message: "The edited picture is not a JPEG, PNG or WebP image.");
+        {
+            return new(
+                EditedImageOutcome.InvalidImage,
+                Message: "The edited picture is not a JPEG, PNG or WebP image."
+            );
+        }
+
         return null;
     }
 
@@ -196,25 +269,34 @@ public sealed class EditedImages(
     private static string Extension(string sourceFull, EditedImageFormat format)
     {
         var original = Path.GetExtension(sourceFull);
-        return KeepsExtension(original, format) ? original : format switch
-        {
-            EditedImageFormat.Jpeg => ".jpg",
-            EditedImageFormat.Png => ".png",
-            _ => ".webp",
-        };
+        return KeepsExtension(original, format)
+            ? original
+            : format switch
+            {
+                EditedImageFormat.Jpeg => ".jpg",
+                EditedImageFormat.Png => ".png",
+                _ => ".webp",
+            };
     }
 
     /// <summary>The extension names the format.</summary>
-    private static bool KeepsExtension(string extension, EditedImageFormat format) => extension.TrimStart('.').ToLowerInvariant() switch
-    {
-        "jpg" or "jpeg" or "jpe" => format == EditedImageFormat.Jpeg,
-        "png" => format == EditedImageFormat.Png,
-        "webp" => format == EditedImageFormat.WebP,
-        _ => false,
-    };
+    private static bool KeepsExtension(string extension, EditedImageFormat format) =>
+        extension.TrimStart('.').ToLowerInvariant() switch
+        {
+            "jpg" or "jpeg" or "jpe" => format == EditedImageFormat.Jpeg,
+            "png" => format == EditedImageFormat.Png,
+            "webp" => format == EditedImageFormat.WebP,
+            _ => false,
+        };
 
     /// <summary>Writes to the first free name; <see cref="FileMode.CreateNew"/> keeps two saves at once from sharing one.</summary>
-    private static async Task<string> WriteNewAsync(string folder, string baseName, string extension, MemoryStream content, CancellationToken cancellationToken)
+    private static async Task<string> WriteNewAsync(
+        string folder,
+        string baseName,
+        string extension,
+        MemoryStream content,
+        CancellationToken cancellationToken
+    )
     {
         for (var attempt = 1; attempt <= MaxNameAttempts; attempt++)
         {
@@ -253,7 +335,11 @@ public sealed class EditedImages(
         throw new IOException($"No free name for {baseName}{extension}.");
     }
 
-    private static async Task<bool> CopyLimitedAsync(Stream content, MemoryStream buffer, CancellationToken cancellationToken)
+    private static async Task<bool> CopyLimitedAsync(
+        Stream content,
+        MemoryStream buffer,
+        CancellationToken cancellationToken
+    )
     {
         var chunk = new byte[81920];
         int read;
@@ -286,14 +372,17 @@ public sealed class EditedImages(
         {
             return MediaDimensions.ReadImageHeader(content);
         }
-        catch (Exception ex) when (ex is IOException or ArgumentException or IndexOutOfRangeException or EndOfStreamException)
+        catch (Exception ex)
+            when (ex is IOException or ArgumentException or IndexOutOfRangeException or EndOfStreamException)
         {
             return null;
         }
     }
 
-    private static string ParentOf(string path) => path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
+    private static string ParentOf(string path) =>
+        path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
 
     private static bool IsWithin(string folder, string ancestor) =>
-        string.Equals(folder, ancestor, LibraryPaths.PathComparison) || folder.StartsWith(ancestor + "/", LibraryPaths.PathComparison);
+        string.Equals(folder, ancestor, LibraryPaths.PathComparison)
+        || folder.StartsWith(ancestor + "/", LibraryPaths.PathComparison);
 }

@@ -10,8 +10,18 @@ namespace Sfe.Api.Endpoints;
 /// <param name="Root">Full path of the space's library folder on the server.</param>
 /// <param name="Members">Accounts with a group in the space.</param>
 /// <param name="Groups">Groups of the space, the built-in ones included.</param>
-public sealed record TenantDetails(int Id, string Slug, string Name, bool GuestAccess, bool IsDefault, bool Disabled, string Root,
-    IReadOnlyList<string> DisabledRights, int Members, int Groups);
+public sealed record TenantDetails(
+    int Id,
+    string Slug,
+    string Name,
+    bool GuestAccess,
+    bool IsDefault,
+    bool Disabled,
+    string Root,
+    IReadOnlyList<string> DisabledRights,
+    int Members,
+    int Groups
+);
 
 public sealed record FolderChoice(string Name, string Path);
 
@@ -25,37 +35,54 @@ public static class TenantEndpoints
     {
         var tenants = api.MapGroup("/tenants").WithTags("Spaces").RequireRight(Rights.ManageTenants);
 
-        tenants.MapGet("/", List)
+        tenants
+            .MapGet("/", List)
             .WithName("GetTenants")
             .WithSummary("Every space (tenant), with its library folder and its numbers of accounts and groups.");
 
-        tenants.MapGet("/folders", Folders)
+        tenants
+            .MapGet("/folders", Folders)
             .NotLibraryPaths()
             .WithName("GetTenantFolders")
-            .WithSummary("Folders a space's library folder can be chosen in (`Sfe:Tenants:AllowedRoots`, else the configured root).")
+            .WithSummary(
+                "Folders a space's library folder can be chosen in (`Sfe:Tenants:AllowedRoots`, else the configured root)."
+            )
             .WithDescription("Without `path`, the allowed roots; with one, its sub-folders (hidden ones left out).");
 
-        tenants.MapPost("/", Create)
+        tenants
+            .MapPost("/", Create)
             .WithName("CreateTenant")
-            .WithSummary("Creates a space on a folder inside the allowed roots, with its own index, tags, settings and groups.")
-            .WithDescription("""
+            .WithSummary(
+                "Creates a space on a folder inside the allowed roots, with its own index, tags, settings and groups."
+            )
+            .WithDescription(
+                """
                 The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name), else next to the first
                 space's (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database `{database}_{slug}` on the same
                 server, which the server's account must be allowed to create). Its caches go under `{CacheDirectory}/tenants/{slug}`.
-                """);
+                """
+            );
 
-        tenants.MapPut("/{id:int}", Update)
+        tenants
+            .MapPut("/{id:int}", Update)
             .WithName("UpdateTenant")
-            .WithSummary("Renames a space, opens or closes it to guests, disables it, and sets the rights nobody gets there.");
+            .WithSummary(
+                "Renames a space, opens or closes it to guests, disables it, and sets the rights nobody gets there."
+            );
 
-        tenants.MapDelete("/{id:int}", Delete)
+        tenants
+            .MapDelete("/{id:int}", Delete)
             .WithName("DeleteTenant")
             .WithSummary("Deletes a space's groups and settings; its index database and caches stay on the disk.");
 
         return api;
     }
 
-    private static async Task<Ok<List<TenantDetails>>> List(AccessService accounts, IConfiguration configuration, CancellationToken cancellationToken)
+    private static async Task<Ok<List<TenantDetails>>> List(
+        AccessService accounts,
+        IConfiguration configuration,
+        CancellationToken cancellationToken
+    )
     {
         var details = new List<TenantDetails>();
         foreach (var tenant in await accounts.GetTenantsAsync(cancellationToken))
@@ -67,30 +94,58 @@ public static class TenantEndpoints
     {
         var roots = AllowedRoots(configuration);
         if (string.IsNullOrWhiteSpace(path))
-            return TypedResults.Ok(new FolderPicker(null, null, roots.Where(Directory.Exists).Select(r => new FolderChoice(r, r)).ToList()));
+        {
+            return TypedResults.Ok(
+                new FolderPicker(null, null, roots.Where(Directory.Exists).Select(r => new FolderChoice(r, r)).ToList())
+            );
+        }
 
         var folder = Full(path);
         if (folder is null || !roots.Any(root => IsInside(root, folder)) || !Directory.Exists(folder))
             return TypedResults.NotFound();
 
         var parent = Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(folder));
-        var folders = new DirectoryInfo(folder).EnumerateDirectories()
+        var folders = new DirectoryInfo(folder)
+            .EnumerateDirectories()
             .Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden) && !d.Name.StartsWith('.'))
             .OrderBy(d => d.Name, StringComparer.CurrentCultureIgnoreCase)
             .Select(d => new FolderChoice(d.Name, d.FullName))
             .ToList();
-        return TypedResults.Ok(new FolderPicker(folder, parent is not null && roots.Any(root => IsInside(root, parent)) ? parent : null, folders));
+        return TypedResults.Ok(
+            new FolderPicker(
+                folder,
+                parent is not null && roots.Any(root => IsInside(root, parent)) ? parent : null,
+                folders
+            )
+        );
     }
 
     private static async Task<Results<Created<TenantDetails>, ValidationProblem, ProblemHttpResult>> Create(
-        AccessService accounts, TenantRegistry registry, IConfiguration configuration, ILoggerFactory loggers, TenantInput input,
-        CancellationToken cancellationToken)
+        AccessService accounts,
+        TenantRegistry registry,
+        IConfiguration configuration,
+        ILoggerFactory loggers,
+        TenantInput input,
+        CancellationToken cancellationToken
+    )
     {
         var root = Full(input.Root);
         if (root is null || !Directory.Exists(root))
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["root"] = ["Choose an existing folder of the server."] });
+        {
+            return TypedResults.ValidationProblem(
+                new Dictionary<string, string[]> { ["root"] = ["Choose an existing folder of the server."] }
+            );
+        }
+
         if (!AllowedRoots(configuration).Any(allowed => IsInside(allowed, root)))
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["root"] = ["This folder is outside the folders spaces may use (Sfe:Tenants:AllowedRoots)."] });
+        {
+            return TypedResults.ValidationProblem(
+                new Dictionary<string, string[]>
+                {
+                    ["root"] = ["This folder is outside the folders spaces may use (Sfe:Tenants:AllowedRoots)."],
+                }
+            );
+        }
 
         var result = await accounts.CreateTenantAsync(input, root, cancellationToken);
         if (result.Status != AccessStatus.Ok)
@@ -109,10 +164,13 @@ public static class TenantEndpoints
         {
             await accounts.DeleteTenantAsync(result.Value!.Id, cancellationToken);
             // The reason names database servers and files: in the log, which its administrators read.
-            loggers.CreateLogger(typeof(TenantEndpoints)).LogError(ex, "The index of the new space {Space} cannot be created", result.Value!.Slug);
+            loggers
+                .CreateLogger(typeof(TenantEndpoints))
+                .LogError(ex, "The index of the new space {Space} cannot be created", result.Value!.Slug);
             return TypedResults.Problem(
                 "The index of the space's library cannot be created: the reason is in the server's log (Administration › Logs).",
-                statusCode: StatusCodes.Status409Conflict);
+                statusCode: StatusCodes.Status409Conflict
+            );
         }
 
         var details = await DetailsAsync(accounts, configuration, result.Value!, cancellationToken);
@@ -120,7 +178,13 @@ public static class TenantEndpoints
     }
 
     private static async Task<Results<Ok<TenantDetails>, ValidationProblem, NotFound, ProblemHttpResult>> Update(
-        AccessService accounts, TenantRegistry registry, IConfiguration configuration, int id, TenantInput input, CancellationToken cancellationToken)
+        AccessService accounts,
+        TenantRegistry registry,
+        IConfiguration configuration,
+        int id,
+        TenantInput input,
+        CancellationToken cancellationToken
+    )
     {
         var result = await accounts.UpdateTenantAsync(id, input, cancellationToken);
         switch (result.Status)
@@ -139,7 +203,11 @@ public static class TenantEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound, ProblemHttpResult>> Delete(
-        AccessService accounts, TenantRegistry registry, int id, CancellationToken cancellationToken)
+        AccessService accounts,
+        TenantRegistry registry,
+        int id,
+        CancellationToken cancellationToken
+    )
     {
         var result = await accounts.DeleteTenantAsync(id, cancellationToken);
         if (result.Status == AccessStatus.NotFound)
@@ -151,15 +219,33 @@ public static class TenantEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<TenantDetails> DetailsAsync(AccessService accounts, IConfiguration configuration, TenantInfo tenant, CancellationToken cancellationToken) =>
-        new(tenant.Id, tenant.Slug, tenant.Name, tenant.GuestAccess, tenant.IsDefault, tenant.Disabled,
-            tenant.Root ?? ConfiguredRoot(configuration) ?? string.Empty, tenant.DisabledRights,
-            (await accounts.GetUsersAsync(tenant.Id, cancellationToken)).Count, (await accounts.GetGroupsAsync(tenant.Id, cancellationToken)).Count);
+    private static async Task<TenantDetails> DetailsAsync(
+        AccessService accounts,
+        IConfiguration configuration,
+        TenantInfo tenant,
+        CancellationToken cancellationToken
+    ) =>
+        new(
+            tenant.Id,
+            tenant.Slug,
+            tenant.Name,
+            tenant.GuestAccess,
+            tenant.IsDefault,
+            tenant.Disabled,
+            tenant.Root ?? ConfiguredRoot(configuration) ?? string.Empty,
+            tenant.DisabledRights,
+            (await accounts.GetUsersAsync(tenant.Id, cancellationToken)).Count,
+            (await accounts.GetGroupsAsync(tenant.Id, cancellationToken)).Count
+        );
 
     /// <summary><c>Sfe:Tenants:AllowedRoots</c>, else the configured root: full paths.</summary>
     private static List<string> AllowedRoots(IConfiguration configuration)
     {
-        var allowed = configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Tenants)}").Get<TenantOptions>()?.AllowedRoots ?? [];
+        var allowed = configuration
+            .GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Tenants)}")
+            .Get<TenantOptions>()
+            ?.AllowedRoots
+            ?? [];
         return (allowed.Count > 0 ? allowed : [ConfiguredRoot(configuration) ?? string.Empty])
             .Select(Full)
             .OfType<string>()
@@ -192,6 +278,9 @@ public static class TenantEndpoints
     private static bool IsInside(string root, string folder)
     {
         var relative = Path.GetRelativePath(LibraryPaths.RealPath(root), LibraryPaths.RealPath(folder));
-        return relative == "." || !Path.IsPathRooted(relative) && relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+        return relative == "."
+            || !Path.IsPathRooted(relative)
+                && relative != ".."
+                && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
     }
 }

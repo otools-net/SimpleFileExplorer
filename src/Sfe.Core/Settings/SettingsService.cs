@@ -12,14 +12,23 @@ namespace Sfe.Core.Settings;
 /// <param name="Values">New values by setting key (<c>player.seekSeconds</c>); a value equal to the inherited one follows the levels above again.</param>
 /// <param name="Lock">Settings this level locks for the levels below.</param>
 /// <param name="Unlock">Settings this level stops locking.</param>
-public sealed record SettingChanges(IReadOnlyDictionary<string, JsonNode?>? Values = null, IReadOnlyList<string>? Lock = null, IReadOnlyList<string>? Unlock = null);
+public sealed record SettingChanges(
+    IReadOnlyDictionary<string, JsonNode?>? Values = null,
+    IReadOnlyList<string>? Lock = null,
+    IReadOnlyList<string>? Unlock = null
+);
 
 /// <summary>
 /// Reads and changes the settings exposed to the web client (see <see cref="EditableSettings"/>), by level
 /// (<see cref="SettingLevel"/>). Without the accounts' database (<paramref name="layers"/> null: the Core alone, in
 /// tests) there is only the server level, saved whole as before levels existed.
 /// </summary>
-public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, SettingsStore store, SettingLayers? layers = null, TenantBinding? binding = null)
+public sealed class SettingsService(
+    IOptionsMonitor<SfeOptions> options,
+    SettingsStore store,
+    SettingLayers? layers = null,
+    TenantBinding? binding = null
+)
 {
     public const int MaxPageSize = 10_000;
 
@@ -43,6 +52,7 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
 
     /// <summary>Leaves room under SQL Server's 260 characters for the originals' folders and names.</summary>
     public const int MaxEditorFolderLength = 100;
+
     /// <summary>Longest name of a font of the reader's device (<c>reading.customFont</c>).</summary>
     public const int MaxCustomFontLength = 100;
 
@@ -50,10 +60,12 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     public const int MaxStreams = 32;
 
     /// <summary>Range of x264's constant rate factor (<c>Streaming:Quality</c>): beyond it, files grow for nothing or look bad.</summary>
-    public const int MinStreamQuality = 15, MaxStreamQuality = 40;
+    public const int MinStreamQuality = 15,
+        MaxStreamQuality = 40;
 
     /// <summary>Range of <c>Streaming:MaxHeight</c> (besides 0, the video's own).</summary>
-    public const int MinStreamHeight = 144, MaxStreamHeight = 4320;
+    public const int MinStreamHeight = 144,
+        MaxStreamHeight = 4320;
 
     /// <summary>The server level: the configuration with the server settings page's values over it.</summary>
     public SettingsView Get()
@@ -61,7 +73,14 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         if (layers is null)
             return new(EditableSettings.From(options.CurrentValue), store.IsCustomized);
 
-        var sources = new SettingSources(Environment(out var locks), locks, store.Values, store.Locked, new Dictionary<string, StoredSetting>(), new Dictionary<string, JsonNode?>());
+        var sources = new SettingSources(
+            Environment(out var locks),
+            locks,
+            store.Values,
+            store.Locked,
+            new Dictionary<string, StoredSetting>(),
+            new Dictionary<string, JsonNode?>()
+        );
         return View(SettingLevel.Server, sources, null);
     }
 
@@ -69,18 +88,38 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     /// <param name="tenantId">The library (tenant and user levels); null = the first library.</param>
     /// <param name="userId">The user (user level).</param>
     /// <param name="canChange">Whether the person may change a setting (their rights); null = every one.</param>
-    public async Task<SettingsView> GetAsync(SettingLevel level, int? tenantId, int? userId, Func<SettingDefinition, bool>? canChange = null,
-        CancellationToken cancellationToken = default)
+    public async Task<SettingsView> GetAsync(
+        SettingLevel level,
+        int? tenantId,
+        int? userId,
+        Func<SettingDefinition, bool>? canChange = null,
+        CancellationToken cancellationToken = default
+    )
     {
         if (layers is null || level == SettingLevel.Server)
-            return Get() with { Keys = layers is null ? null : SettingLayers.States(SettingLayers.Resolve(ServerSources(), SettingLevel.Server), SettingLevel.Server, canChange) };
+        {
+            return Get() with
+            {
+                Keys = layers is null
+                    ? null
+                    : SettingLayers.States(
+                        SettingLayers.Resolve(ServerSources(), SettingLevel.Server),
+                        SettingLevel.Server,
+                        canChange
+                    ),
+            };
+        }
 
         var sources = await layers.LoadAsync(Tenant(tenantId), userId, cancellationToken);
         return View(level, sources, canChange);
     }
 
     /// <summary>The settings a user's web client works with: the library's, with the user's preferences over them.</summary>
-    public async Task<EditableSettings> GetEffectiveAsync(int? tenantId, int? userId, CancellationToken cancellationToken = default)
+    public async Task<EditableSettings> GetEffectiveAsync(
+        int? tenantId,
+        int? userId,
+        CancellationToken cancellationToken = default
+    )
     {
         if (layers is null)
             return EditableSettings.From(options.CurrentValue);
@@ -91,7 +130,10 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
 
     /// <summary>Normalizes and validates <paramref name="settings"/>, then saves them at the server level; they apply right away.</summary>
     /// <returns>The settings in effect, or the validation errors keyed by setting (e.g. <c>browse.maxPageSize</c>).</returns>
-    public async Task<(SettingsView? View, Dictionary<string, string[]>? Errors)> SaveAsync(EditableSettings settings, CancellationToken cancellationToken = default)
+    public async Task<(SettingsView? View, Dictionary<string, string[]>? Errors)> SaveAsync(
+        EditableSettings settings,
+        CancellationToken cancellationToken = default
+    )
     {
         if (layers is not null)
             return await SaveAsync(SettingLevel.Server, null, null, settings, null, cancellationToken);
@@ -111,8 +153,13 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     /// error, keyed by the setting.
     /// </summary>
     public async Task<(SettingsView? View, Dictionary<string, string[]>? Errors)> SaveAsync(
-        SettingLevel level, int? tenantId, int? userId, EditableSettings settings, Func<SettingDefinition, bool>? canChange,
-        CancellationToken cancellationToken = default)
+        SettingLevel level,
+        int? tenantId,
+        int? userId,
+        EditableSettings settings,
+        Func<SettingDefinition, bool>? canChange,
+        CancellationToken cancellationToken = default
+    )
     {
         Normalize(settings);
         var errors = Validate(settings);
@@ -121,7 +168,10 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         if (layers is null)
             throw new InvalidOperationException("Settings by level need the accounts' database.");
 
-        var sources = level == SettingLevel.Server ? ServerSources() : await layers.LoadAsync(Tenant(tenantId), userId, cancellationToken);
+        var sources =
+            level == SettingLevel.Server
+                ? ServerSources()
+                : await layers.LoadAsync(Tenant(tenantId), userId, cancellationToken);
         var resolved = SettingLayers.Resolve(sources, level);
         var states = SettingLayers.States(resolved, level, canChange);
         var submitted = SettingKeys.Flatten(SettingKeys.ToJson(settings));
@@ -146,8 +196,14 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         }
 
         // Settings the person may not change keep the value this level gave them.
-        foreach (var (key, state) in states.Where(s => !s.Value.Editable && resolved[s.Key].Source == level && s.Value.LockedBy is null))
+        foreach (
+            var (key, state) in states.Where(s =>
+                !s.Value.Editable && resolved[s.Key].Source == level && s.Value.LockedBy is null
+            )
+        )
+        {
             kept[key] = resolved[key].Value;
+        }
 
         if (errors.Count > 0)
             return (null, errors);
@@ -164,13 +220,21 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     /// in effect (a page size against the largest page), and nothing is written when any check fails.
     /// </summary>
     public async Task<(SettingsView? View, Dictionary<string, string[]>? Errors)> SaveChangesAsync(
-        SettingLevel level, int? tenantId, int? userId, SettingChanges changes, Func<SettingDefinition, bool>? canChange,
-        CancellationToken cancellationToken = default)
+        SettingLevel level,
+        int? tenantId,
+        int? userId,
+        SettingChanges changes,
+        Func<SettingDefinition, bool>? canChange,
+        CancellationToken cancellationToken = default
+    )
     {
         if (layers is null || level is not (SettingLevel.Server or SettingLevel.Tenant or SettingLevel.User))
             throw new InvalidOperationException("Settings by level need the accounts' database.");
 
-        var sources = level == SettingLevel.Server ? ServerSources() : await layers.LoadAsync(Tenant(tenantId), userId, cancellationToken);
+        var sources =
+            level == SettingLevel.Server
+                ? ServerSources()
+                : await layers.LoadAsync(Tenant(tenantId), userId, cancellationToken);
         var resolved = SettingLayers.Resolve(sources, level);
         var states = SettingLayers.States(resolved, level, canChange);
         var submitted = changes.Values ?? new Dictionary<string, JsonNode?>();
@@ -180,11 +244,20 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
 
         foreach (var key in submitted.Keys.Where(k => SettingCatalog.Find(k) is null))
             errors[key] = ["There is no such setting."];
-        foreach (var key in toLock.Concat(toUnlock).Where(k => level == SettingLevel.User || !states.TryGetValue(k, out var state) || !state.Lockable))
+        foreach (
+            var key in toLock
+                .Concat(toUnlock)
+                .Where(k => level == SettingLevel.User || !states.TryGetValue(k, out var state) || !state.Lockable)
+        )
+        {
             errors[key] = ["This setting cannot be locked here."];
+        }
+
         foreach (var key in toLock.Intersect(toUnlock))
             errors[key] = ["A setting cannot be locked and unlocked at once."];
-        var known = submitted.Where(s => SettingCatalog.Find(s.Key) is not null).ToDictionary(s => s.Key, s => s.Value, StringComparer.Ordinal);
+        var known = submitted
+            .Where(s => SettingCatalog.Find(s.Key) is not null)
+            .ToDictionary(s => s.Key, s => s.Value, StringComparer.Ordinal);
 
         // The values in effect with the changes over them, checked and normalized together.
         var candidate = new JsonObject();
@@ -245,7 +318,11 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         switch (level)
         {
             case SettingLevel.Server:
-                await store.SaveLayerAsync(layer, toLock.Count + toUnlock.Count > 0 ? locked : store.Locked, cancellationToken);
+                await store.SaveLayerAsync(
+                    layer,
+                    toLock.Count + toUnlock.Count > 0 ? locked : store.Locked,
+                    cancellationToken
+                );
                 layers.NotifyChanged();
                 break;
             case SettingLevel.Tenant:
@@ -253,13 +330,26 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
                 // A newly locked setting pins the value in effect; an unlocked one with the inherited value needs no row.
                 foreach (var key in toLock.Where(k => !layer.ContainsKey(k)))
                     layer[key] = normalized[key];
-                var rows = layer.ToDictionary(v => v.Key, v => new StoredSetting(v.Value, locked.Contains(v.Key)), StringComparer.Ordinal);
-                foreach (var key in toUnlock.Where(k => rows.ContainsKey(k) && SettingKeys.Same(rows[k].Value, inherited[k])))
+                var rows = layer.ToDictionary(
+                    v => v.Key,
+                    v => new StoredSetting(v.Value, locked.Contains(v.Key)),
+                    StringComparer.Ordinal
+                );
+                foreach (
+                    var key in toUnlock.Where(k => rows.ContainsKey(k) && SettingKeys.Same(rows[k].Value, inherited[k]))
+                )
+                {
                     rows.Remove(key);
+                }
+
                 await layers.Rows.SaveTenantAsync(tenant, rows, cancellationToken);
                 break;
             default:
-                await layers.Rows.SaveUserAsync(userId ?? throw new InvalidOperationException("No user."), layer, cancellationToken);
+                await layers.Rows.SaveUserAsync(
+                    userId ?? throw new InvalidOperationException("No user."),
+                    layer,
+                    cancellationToken
+                );
                 break;
         }
 
@@ -289,24 +379,39 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     /// lock. A newly locked setting keeps the value in effect.
     /// </summary>
     public async Task<(SettingsView? View, Dictionary<string, string[]>? Errors)> SaveLocksAsync(
-        SettingLevel level, int? tenantId, IReadOnlyCollection<string> keys, Func<SettingDefinition, bool>? canChange,
-        CancellationToken cancellationToken = default)
+        SettingLevel level,
+        int? tenantId,
+        IReadOnlyCollection<string> keys,
+        Func<SettingDefinition, bool>? canChange,
+        CancellationToken cancellationToken = default
+    )
     {
         if (layers is null || level is not (SettingLevel.Server or SettingLevel.Tenant))
             throw new InvalidOperationException("Only the server and library levels lock settings.");
 
-        var sources = level == SettingLevel.Server ? ServerSources() : await layers.LoadAsync(Tenant(tenantId), null, cancellationToken);
+        var sources =
+            level == SettingLevel.Server
+                ? ServerSources()
+                : await layers.LoadAsync(Tenant(tenantId), null, cancellationToken);
         var resolved = SettingLayers.Resolve(sources, level);
         var states = SettingLayers.States(resolved, level, canChange);
         var wanted = keys.ToHashSet(StringComparer.Ordinal);
         var errors = new Dictionary<string, string[]>();
-        foreach (var key in wanted.Where(k => !states.TryGetValue(k, out var state) || !state.Lockable && !state.Locked))
+        foreach (
+            var key in wanted.Where(k => !states.TryGetValue(k, out var state) || !state.Lockable && !state.Locked)
+        )
+        {
             errors[key] = ["This setting cannot be locked here."];
+        }
+
         if (errors.Count > 0)
             return (null, errors);
 
         // Locks the person may not change stay as they are.
-        var locked = states.Where(s => s.Value.Lockable ? wanted.Contains(s.Key) : s.Value.Locked).Select(s => s.Key).ToHashSet(StringComparer.Ordinal);
+        var locked = states
+            .Where(s => s.Value.Lockable ? wanted.Contains(s.Key) : s.Value.Locked)
+            .Select(s => s.Key)
+            .ToHashSet(StringComparer.Ordinal);
         if (level == SettingLevel.Server)
         {
             await store.SaveLayerAsync(store.Values, locked, cancellationToken);
@@ -315,12 +420,25 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         else
         {
             var tenant = Tenant(tenantId) ?? throw new InvalidOperationException("No library yet.");
-            var rows = sources.Tenant.ToDictionary(r => r.Key, r => r.Value with { Locked = locked.Contains(r.Key) }, StringComparer.Ordinal);
+            var rows = sources.Tenant.ToDictionary(
+                r => r.Key,
+                r => r.Value with { Locked = locked.Contains(r.Key) },
+                StringComparer.Ordinal
+            );
             foreach (var key in locked.Where(k => !rows.ContainsKey(k)))
                 rows[key] = new StoredSetting(resolved[key].Value, true);
             // An unlocked setting with the inherited value needs no row any more.
-            foreach (var key in rows.Where(r => !r.Value.Locked && SettingKeys.Same(r.Value.Value, resolved[r.Key].Inherited)).Select(r => r.Key).ToList())
+            foreach (
+                var key in rows.Where(r =>
+                        !r.Value.Locked && SettingKeys.Same(r.Value.Value, resolved[r.Key].Inherited)
+                    )
+                    .Select(r => r.Key)
+                    .ToList()
+            )
+            {
                 rows.Remove(key);
+            }
+
             await layers.Rows.SaveTenantAsync(tenant, rows, cancellationToken);
         }
 
@@ -328,8 +446,17 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     }
 
     /// <summary>Adds a library folder to <see cref="ScanOptions.ExcludedFolders"/> (saved like the other settings, for the library).</summary>
-    public Task ExcludeFolderAsync(string relativePath, int? tenantId = null, CancellationToken cancellationToken = default) =>
-        SetExclusionsAsync(relativePath, new Dictionary<ExclusionKind, bool> { [ExclusionKind.Scan] = true }, tenantId, cancellationToken);
+    public Task ExcludeFolderAsync(
+        string relativePath,
+        int? tenantId = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        SetExclusionsAsync(
+            relativePath,
+            new Dictionary<ExclusionKind, bool> { [ExclusionKind.Scan] = true },
+            tenantId,
+            cancellationToken
+        );
 
     /// <summary>
     /// Puts a library folder (root-relative, canonical) on the folder lists of <paramref name="changes"/> (true) or
@@ -338,7 +465,11 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     /// </summary>
     /// <returns>The keys changed.</returns>
     public async Task<IReadOnlyList<string>> SetExclusionsAsync(
-        string relativePath, IReadOnlyDictionary<ExclusionKind, bool> changes, int? tenantId = null, CancellationToken cancellationToken = default)
+        string relativePath,
+        IReadOnlyDictionary<ExclusionKind, bool> changes,
+        int? tenantId = null,
+        CancellationToken cancellationToken = default
+    )
     {
         if (layers is null)
         {
@@ -369,7 +500,11 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     }
 
     /// <returns>The keys of the settings changed.</returns>
-    private static List<string> SetExclusions(EditableSettings settings, string relativePath, IReadOnlyDictionary<ExclusionKind, bool> changes)
+    private static List<string> SetExclusions(
+        EditableSettings settings,
+        string relativePath,
+        IReadOnlyDictionary<ExclusionKind, bool> changes
+    )
     {
         var changed = new List<string>();
         foreach (var (kind, excluded) in changes)
@@ -379,9 +514,16 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
             if (present == excluded)
                 continue;
             if (excluded)
+            {
                 list.Add(relativePath);
+            }
             else
-                list.RemoveAll(f => LibraryPaths.PathComparer.Equals(LibraryPaths.NormalizeRelative(f) ?? f, relativePath));
+            {
+                list.RemoveAll(f =>
+                    LibraryPaths.PathComparer.Equals(LibraryPaths.NormalizeRelative(f) ?? f, relativePath)
+                );
+            }
+
             changed.Add(FolderExclusions.Key(kind));
         }
         return changed;
@@ -394,7 +536,12 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     /// <see cref="ExcludeFolderAsync"/>.
     /// </summary>
     /// <returns>The keys changed.</returns>
-    public async Task<IReadOnlyList<string>> MoveFolderPathsAsync(string from, string to, int? tenantId = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<string>> MoveFolderPathsAsync(
+        string from,
+        string to,
+        int? tenantId = null,
+        CancellationToken cancellationToken = default
+    )
     {
         if (layers is null)
         {
@@ -487,17 +634,36 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
     /// Forgets a level's values (and locks): the levels above apply again. Settings the person may not change keep
     /// their value.
     /// </summary>
-    public async Task<SettingsView> ResetAsync(SettingLevel level, int? tenantId, int? userId, Func<SettingDefinition, bool>? canChange,
-        CancellationToken cancellationToken = default)
+    public async Task<SettingsView> ResetAsync(
+        SettingLevel level,
+        int? tenantId,
+        int? userId,
+        Func<SettingDefinition, bool>? canChange,
+        CancellationToken cancellationToken = default
+    )
     {
         if (layers is null || level == SettingLevel.Server)
-            return Reset() with { Keys = layers is null ? null : SettingLayers.States(SettingLayers.Resolve(ServerSources(), SettingLevel.Server), SettingLevel.Server, canChange) };
+        {
+            return Reset() with
+            {
+                Keys = layers is null
+                    ? null
+                    : SettingLayers.States(
+                        SettingLayers.Resolve(ServerSources(), SettingLevel.Server),
+                        SettingLevel.Server,
+                        canChange
+                    ),
+            };
+        }
 
         var sources = await layers.LoadAsync(Tenant(tenantId), userId, cancellationToken);
         if (level == SettingLevel.Tenant)
         {
             var tenant = Tenant(tenantId) ?? throw new InvalidOperationException("No library yet.");
-            var kept = sources.Tenant.Where(r => SettingCatalog.Find(r.Key) is { } definition && canChange?.Invoke(definition) == false)
+            var kept = sources
+                .Tenant.Where(r =>
+                    SettingCatalog.Find(r.Key) is { } definition && canChange?.Invoke(definition) == false
+                )
                 .ToDictionary(r => r.Key, r => r.Value, StringComparer.Ordinal);
             await layers.Rows.SaveTenantAsync(tenant, kept, cancellationToken);
         }
@@ -509,7 +675,10 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         return await GetAsync(level, tenantId, userId, canChange, cancellationToken);
     }
 
-    private static Dictionary<string, JsonNode?> Normalized(Dictionary<string, ResolvedSetting> resolved, Func<ResolvedSetting, JsonNode?> pick)
+    private static Dictionary<string, JsonNode?> Normalized(
+        Dictionary<string, ResolvedSetting> resolved,
+        Func<ResolvedSetting, JsonNode?> pick
+    )
     {
         var json = new JsonObject();
         foreach (var (key, setting) in resolved)
@@ -532,11 +701,23 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
             SettingLevel.User => sources.User.Count > 0,
             _ => false,
         };
-        return new SettingsView(SettingLayers.ToSettings(resolved), customized, level, SettingLayers.States(resolved, level, canChange));
+        return new SettingsView(
+            SettingLayers.ToSettings(resolved),
+            customized,
+            level,
+            SettingLayers.States(resolved, level, canChange)
+        );
     }
 
     private SettingSources ServerSources() =>
-        new(Environment(out var locks), locks, store.Values, store.Locked, new Dictionary<string, StoredSetting>(), new Dictionary<string, JsonNode?>());
+        new(
+            Environment(out var locks),
+            locks,
+            store.Values,
+            store.Locked,
+            new Dictionary<string, StoredSetting>(),
+            new Dictionary<string, JsonNode?>()
+        );
 
     private IReadOnlyDictionary<string, JsonNode?> Environment(out IReadOnlyCollection<string> locks)
     {
@@ -545,8 +726,14 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         return SettingKeys.Flatten(SettingKeys.ToJson(EditableSettings.From(configured)));
     }
 
-    private async Task WriteAsync(SettingLevel level, int? tenantId, int? userId, Dictionary<string, JsonNode?> values, SettingSources sources,
-        CancellationToken cancellationToken)
+    private async Task WriteAsync(
+        SettingLevel level,
+        int? tenantId,
+        int? userId,
+        Dictionary<string, JsonNode?> values,
+        SettingSources sources,
+        CancellationToken cancellationToken
+    )
     {
         switch (level)
         {
@@ -557,35 +744,49 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
             case SettingLevel.Tenant:
                 var tenant = Tenant(tenantId) ?? throw new InvalidOperationException("No library yet.");
                 // Locked settings keep their row (the lock pins the value) even when it equals the inherited one.
-                var rows = values.ToDictionary(v => v.Key, v => new StoredSetting(v.Value, sources.Tenant.GetValueOrDefault(v.Key)?.Locked ?? false), StringComparer.Ordinal);
+                var rows = values.ToDictionary(
+                    v => v.Key,
+                    v => new StoredSetting(v.Value, sources.Tenant.GetValueOrDefault(v.Key)?.Locked ?? false),
+                    StringComparer.Ordinal
+                );
                 await layers!.Rows.SaveTenantAsync(tenant, rows, cancellationToken);
                 break;
             case SettingLevel.User:
-                await layers!.Rows.SaveUserAsync(userId ?? throw new InvalidOperationException("No user."), values, cancellationToken);
+                await layers!.Rows.SaveUserAsync(
+                    userId ?? throw new InvalidOperationException("No user."),
+                    values,
+                    cancellationToken
+                );
                 break;
             default:
                 throw new InvalidOperationException("The environment level is set in the configuration only.");
         }
     }
 
-    private static string Unchangeable(SettingDefinition definition, SettingState state, SettingLevel level) => state.LockedBy switch
-    {
-        SettingLevel.Environment => "Set by the server's configuration: it cannot be changed here.",
-        SettingLevel.Server => "Locked by the server's settings: it cannot be changed here.",
-        SettingLevel.Tenant => "Locked by the library's settings: it cannot be changed here.",
-        _ when definition.PerLibrary && level == SettingLevel.Server => "Set for each library, in its own settings.",
-        _ when level > definition.Scope => definition.Scope == SettingLevel.Server
-            ? "A setting of the whole server: only server administrators change it."
-            : "A setting of the library: only its administrators change it.",
-        _ => "You don't have the right to change this setting.",
-    };
+    private static string Unchangeable(SettingDefinition definition, SettingState state, SettingLevel level) =>
+        state.LockedBy switch
+        {
+            SettingLevel.Environment => "Set by the server's configuration: it cannot be changed here.",
+            SettingLevel.Server => "Locked by the server's settings: it cannot be changed here.",
+            SettingLevel.Tenant => "Locked by the library's settings: it cannot be changed here.",
+            _ when definition.PerLibrary && level == SettingLevel.Server =>
+                "Set for each library, in its own settings.",
+            _ when level > definition.Scope => definition.Scope == SettingLevel.Server
+                ? "A setting of the whole server: only server administrators change it."
+                : "A setting of the library: only its administrators change it.",
+            _ => "You don't have the right to change this setting.",
+        };
 
     private static void Normalize(EditableSettings settings)
     {
         settings.DataServer = DataServerUrl.Normalize(settings.DataServer);
         settings.Reading.CustomFont = settings.Reading.CustomFont?.Trim() ?? string.Empty;
-        settings.Player.ExternalName = string.IsNullOrWhiteSpace(settings.Player.ExternalName) ? null : settings.Player.ExternalName.Trim();
-        settings.Player.ExternalUrl = string.IsNullOrWhiteSpace(settings.Player.ExternalUrl) ? null : settings.Player.ExternalUrl.Trim();
+        settings.Player.ExternalName = string.IsNullOrWhiteSpace(settings.Player.ExternalName)
+            ? null
+            : settings.Player.ExternalName.Trim();
+        settings.Player.ExternalUrl = string.IsNullOrWhiteSpace(settings.Player.ExternalUrl)
+            ? null
+            : settings.Player.ExternalUrl.Trim();
         settings.Scan.IgnoredDirectories = Names(settings.Scan.IgnoredDirectories);
         settings.Scan.IgnoredFiles = Names(settings.Scan.IgnoredFiles);
         settings.FileTypes.Images = Extensions(settings.FileTypes.Images);
@@ -599,24 +800,27 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         settings.KeepAlive.Folders = Folders(settings.KeepAlive.Folders);
         settings.Editor.OutputFolder = string.IsNullOrWhiteSpace(settings.Editor.OutputFolder)
             ? null
-            : LibraryPaths.NormalizeRelative(settings.Editor.OutputFolder.Trim()) ?? settings.Editor.OutputFolder.Trim();
+            : LibraryPaths.NormalizeRelative(settings.Editor.OutputFolder.Trim())
+                ?? settings.Editor.OutputFolder.Trim();
 
-        static List<string> Names(IEnumerable<string>? names) => (names ?? [])
-            .Select(n => n?.Trim())
-            .OfType<string>()
-            .Where(n => n.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        static List<string> Names(IEnumerable<string>? names) =>
+            (names ?? [])
+                .Select(n => n?.Trim())
+                .OfType<string>()
+                .Where(n => n.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
         // Kept as typed when invalid, so that the error shows next to the value.
-        static List<string> Folders(IEnumerable<string>? folders) => Names(folders)
-            .Select(f => LibraryPaths.NormalizeRelative(f) ?? f)
-            .Where(f => f.Length > 0)
-            .Distinct(LibraryPaths.PathComparer)
-            .ToList();
+        static List<string> Folders(IEnumerable<string>? folders) =>
+            Names(folders)
+                .Select(f => LibraryPaths.NormalizeRelative(f) ?? f)
+                .Where(f => f.Length > 0)
+                .Distinct(LibraryPaths.PathComparer)
+                .ToList();
 
-        static List<string> Extensions(IEnumerable<string>? extensions) => Names((extensions ?? [])
-            .Select(e => e?.Trim().TrimStart('.').ToLowerInvariant() ?? string.Empty));
+        static List<string> Extensions(IEnumerable<string>? extensions) =>
+            Names((extensions ?? []).Select(e => e?.Trim().TrimStart('.').ToLowerInvariant() ?? string.Empty));
     }
 
     private static Dictionary<string, string[]> Validate(EditableSettings s)
@@ -631,8 +835,11 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         void Range(int value, int min, int max, string key, string what) =>
             Check(value >= min && value <= max, key, $"{what} must be between {min} and {max}.");
 
-        Check(s.DataServer is null || DataServerUrl.IsValid(s.DataServer),
-            "dataServer", "The data server must be an http:// or https:// address (optionally with {url} or {encodedUrl}), or empty.");
+        Check(
+            s.DataServer is null || DataServerUrl.IsValid(s.DataServer),
+            "dataServer",
+            "The data server must be an http:// or https:// address (optionally with {url} or {encodedUrl}), or empty."
+        );
 
         foreach (var (pages, key) in new (PageSettings, string)[] { (s.Browse, "browse"), (s.Search, "search") })
         {
@@ -640,9 +847,27 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
             Range(pages.DefaultPageSize, 1, Math.Max(1, pages.MaxPageSize), $"{key}.defaultPageSize", "The page size");
         }
 
-        Range(s.Browse.FolderPictures, 0, LibraryBrowser.MaxFolderPictures, "browse.folderPictures", "Pictures per folder");
-        Range(s.Browse.ImageHighResolutionPixels, 1, MaxHighResolutionPixels, "browse.imageHighResolutionPixels", "The high resolution of photos");
-        Range(s.Browse.VideoHighResolutionPixels, 1, MaxHighResolutionPixels, "browse.videoHighResolutionPixels", "The high resolution of videos");
+        Range(
+            s.Browse.FolderPictures,
+            0,
+            LibraryBrowser.MaxFolderPictures,
+            "browse.folderPictures",
+            "Pictures per folder"
+        );
+        Range(
+            s.Browse.ImageHighResolutionPixels,
+            1,
+            MaxHighResolutionPixels,
+            "browse.imageHighResolutionPixels",
+            "The high resolution of photos"
+        );
+        Range(
+            s.Browse.VideoHighResolutionPixels,
+            1,
+            MaxHighResolutionPixels,
+            "browse.videoHighResolutionPixels",
+            "The high resolution of videos"
+        );
         Range(s.Search.HistorySize, 0, MaxSearchHistory, "search.historySize", "Searches remembered");
 
         Range(s.Scan.Parallelism, 1, 64, "scan.parallelism", "Folders scanned at once");
@@ -650,28 +875,66 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
         Check(s.Scan.IgnoredFiles.All(IsName), "scan.ignoredFiles", "Enter file names, not paths.");
         foreach (var kind in Enum.GetValues<ExclusionKind>())
         {
-            var excluded = FolderExclusions.List(s, kind).FirstOrDefault(f => LibraryPaths.NormalizeRelative(f) is null);
-            Check(excluded is null, FolderExclusions.Key(kind), $"“{excluded}” is not a folder of the library: enter paths relative to the library, like Movies/Old.");
+            var excluded = FolderExclusions
+                .List(s, kind)
+                .FirstOrDefault(f => LibraryPaths.NormalizeRelative(f) is null);
+            Check(
+                excluded is null,
+                FolderExclusions.Key(kind),
+                $"“{excluded}” is not a folder of the library: enter paths relative to the library, like Movies/Old."
+            );
         }
 
-        foreach (var (list, key) in new[] { (s.FileTypes.Images, "fileTypes.images"), (s.FileTypes.Videos, "fileTypes.videos"), (s.FileTypes.Audio, "fileTypes.audio"), (s.FileTypes.Text, "fileTypes.text") })
-            Check(list.All(e => e.All(c => char.IsLetterOrDigit(c) || c is '_' or '-')), key, "Extensions can only contain letters, digits, '-' and '_'.");
-        var shared = s.FileTypes.Images.Intersect(s.FileTypes.Videos)
+        foreach (
+            var (list, key) in new[]
+            {
+                (s.FileTypes.Images, "fileTypes.images"),
+                (s.FileTypes.Videos, "fileTypes.videos"),
+                (s.FileTypes.Audio, "fileTypes.audio"),
+                (s.FileTypes.Text, "fileTypes.text"),
+            }
+        )
+        {
+            Check(
+                list.All(e => e.All(c => char.IsLetterOrDigit(c) || c is '_' or '-')),
+                key,
+                "Extensions can only contain letters, digits, '-' and '_'."
+            );
+        }
+
+        var shared = s
+            .FileTypes.Images.Intersect(s.FileTypes.Videos)
             .Concat(s.FileTypes.Images.Intersect(s.FileTypes.Audio))
             .Concat(s.FileTypes.Videos.Intersect(s.FileTypes.Audio))
             .FirstOrDefault();
         Check(shared is null, "fileTypes", $"“{shared}” is in two lists: an extension can only be one kind of media.");
-        var media = s.FileTypes.Text.FirstOrDefault(e => s.FileTypes.Images.Contains(e) || s.FileTypes.Videos.Contains(e) || s.FileTypes.Audio.Contains(e));
-        Check(media is null, "fileTypes.text", $"“{media}” is a kind of media: take it out of its media list first to show it as text.");
+        var media = s.FileTypes.Text.FirstOrDefault(e =>
+            s.FileTypes.Images.Contains(e) || s.FileTypes.Videos.Contains(e) || s.FileTypes.Audio.Contains(e)
+        );
+        Check(
+            media is null,
+            "fileTypes.text",
+            $"“{media}” is a kind of media: take it out of its media list first to show it as text."
+        );
 
         Range(s.Thumbnails.Width, 32, 4096, "thumbnails.width", "The thumbnail width");
-        Range(s.Thumbnails.LargeImageKilobytes, 0, MaxLargeImageKilobytes, "thumbnails.largeImageKilobytes", "The large image size");
+        Range(
+            s.Thumbnails.LargeImageKilobytes,
+            0,
+            MaxLargeImageKilobytes,
+            "thumbnails.largeImageKilobytes",
+            "The large image size"
+        );
         Range(s.Thumbnails.VideoSeekSeconds, 0, 3600, "thumbnails.videoSeekSeconds", "The video position");
         Range(s.Thumbnails.MaxConcurrency, 1, 32, "thumbnails.maxConcurrency", "Thumbnails rendered at once");
         Range(s.Thumbnails.TimeoutSeconds, 1, 600, "thumbnails.timeoutSeconds", "The time limit");
 
         var outside = s.Trickplay.Folders.FirstOrDefault(f => LibraryPaths.NormalizeRelative(f) is null);
-        Check(outside is null, "trickplay.folders", $"“{outside}” is not a folder of the library: enter paths relative to the library, like Movies/Series.");
+        Check(
+            outside is null,
+            "trickplay.folders",
+            $"“{outside}” is not a folder of the library: enter paths relative to the library, like Movies/Series."
+        );
         Range(s.Trickplay.IntervalSeconds, 1, 600, "trickplay.intervalSeconds", "The interval");
         Range(s.Trickplay.Width, 64, 1280, "trickplay.width", "The frame width");
         Range(s.Trickplay.Columns, 1, 20, "trickplay.columns", "Columns");
@@ -682,48 +945,168 @@ public sealed class SettingsService(IOptionsMonitor<SfeOptions> options, Setting
 
         Range(s.Tags.SidebarCount, 1, 20, "tags.sidebarCount", "Tags per section");
         Range(s.Player.SeekSeconds, 1, 600, "player.seekSeconds", "The jump");
-        Check(s.Player.ExternalUrl is null || (s.Player.ExternalUrl.Length <= MaxExternalUrlLength && PlayerOptions.IsAllowedExternalUrl(s.Player.ExternalUrl)),
-            "player.externalUrl", $"Enter a link starting with the player's scheme, like vlc://{{url}} (at most {MaxExternalUrlLength} characters), or leave it empty.");
-        Range(s.Player.LinkLifetimeMinutes, 1, MaxLinkLifetimeMinutes, "player.linkLifetimeMinutes", "The link lifetime");
-        Check(s.Player.ExternalName is null || s.Player.ExternalName.Length <= 50, "player.externalName", "The name can be at most 50 characters.");
+        Check(
+            s.Player.ExternalUrl is null
+                || (
+                    s.Player.ExternalUrl.Length <= MaxExternalUrlLength
+                    && PlayerOptions.IsAllowedExternalUrl(s.Player.ExternalUrl)
+                ),
+            "player.externalUrl",
+            $"Enter a link starting with the player's scheme, like vlc://{{url}} (at most {MaxExternalUrlLength} characters), or leave it empty."
+        );
+        Range(
+            s.Player.LinkLifetimeMinutes,
+            1,
+            MaxLinkLifetimeMinutes,
+            "player.linkLifetimeMinutes",
+            "The link lifetime"
+        );
+        Check(
+            s.Player.ExternalName is null || s.Player.ExternalName.Length <= 50,
+            "player.externalName",
+            "The name can be at most 50 characters."
+        );
         Check(Enum.IsDefined(s.Streaming.Mode), "streaming.mode", "Choose when videos are converted from the list.");
         Range(s.Streaming.MaxStreams, 1, MaxStreams, "streaming.maxStreams", "Videos converted at once");
         Range(s.Streaming.Quality, MinStreamQuality, MaxStreamQuality, "streaming.quality", "The quality");
-        Check(s.Streaming.MaxHeight == 0 || s.Streaming.MaxHeight is >= MinStreamHeight and <= MaxStreamHeight, "streaming.maxHeight",
-            $"The largest height must be between {MinStreamHeight} and {MaxStreamHeight} pixels, or 0 to keep the video's.");
-        Range(s.FileTracking.Duplicates.MinimumKilobytes, 0, MaxLargeImageKilobytes, "fileTracking.duplicates.minimumKilobytes", "The smallest size");
-        Range(s.FileTracking.Duplicates.GroupsPerPage, 1, FileTracking.DuplicateFinder.MaxGroupsPerPage, "fileTracking.duplicates.groupsPerPage", "Groups per page");
-        Range(s.FileTracking.Relink.RetentionDays, 0, MaxRetentionDays, "fileTracking.relink.retentionDays", "The days missing files are kept");
-        Range(s.FileTracking.SimilarVideos.MinimumPercent, FileTracking.SimilarVideoFinder.LowestMinimumPercent, 100, "fileTracking.similarVideos.minimumPercent", "The match");
+        Check(
+            s.Streaming.MaxHeight == 0 || s.Streaming.MaxHeight is >= MinStreamHeight and <= MaxStreamHeight,
+            "streaming.maxHeight",
+            $"The largest height must be between {MinStreamHeight} and {MaxStreamHeight} pixels, or 0 to keep the video's."
+        );
+        Range(
+            s.FileTracking.Duplicates.MinimumKilobytes,
+            0,
+            MaxLargeImageKilobytes,
+            "fileTracking.duplicates.minimumKilobytes",
+            "The smallest size"
+        );
+        Range(
+            s.FileTracking.Duplicates.GroupsPerPage,
+            1,
+            FileTracking.DuplicateFinder.MaxGroupsPerPage,
+            "fileTracking.duplicates.groupsPerPage",
+            "Groups per page"
+        );
+        Range(
+            s.FileTracking.Relink.RetentionDays,
+            0,
+            MaxRetentionDays,
+            "fileTracking.relink.retentionDays",
+            "The days missing files are kept"
+        );
+        Range(
+            s.FileTracking.SimilarVideos.MinimumPercent,
+            FileTracking.SimilarVideoFinder.LowestMinimumPercent,
+            100,
+            "fileTracking.similarVideos.minimumPercent",
+            "The match"
+        );
         Range(s.Tasks.LogRetentionDays, 0, MaxRetentionDays, "tasks.logRetentionDays", "The days task logs are kept");
         Range(s.Logs.RetentionDays, 0, MaxRetentionDays, "logs.retentionDays", "The days log entries are kept");
-        Check(s.Editor.OutputFolder is null || LibraryPaths.NormalizeRelative(s.Editor.OutputFolder) is not null,
-            "editor.outputFolder", $"“{s.Editor.OutputFolder}” is not a folder of the library: enter a path relative to the library, like Edited or Photos/Edited, or leave it empty.");
-        Check(s.Editor.OutputFolder is null || s.Editor.OutputFolder.Length <= MaxEditorFolderLength,
-            "editor.outputFolder", $"The folder can be at most {MaxEditorFolderLength} characters.");
+        Check(
+            s.Editor.OutputFolder is null || LibraryPaths.NormalizeRelative(s.Editor.OutputFolder) is not null,
+            "editor.outputFolder",
+            $"“{s.Editor.OutputFolder}” is not a folder of the library: enter a path relative to the library, like Edited or Photos/Edited, or leave it empty."
+        );
+        Check(
+            s.Editor.OutputFolder is null || s.Editor.OutputFolder.Length <= MaxEditorFolderLength,
+            "editor.outputFolder",
+            $"The folder can be at most {MaxEditorFolderLength} characters."
+        );
         Range(s.Editor.Quality, Editing.EditedImages.MinQuality, 100, "editor.quality", "The quality");
         Range(s.Files.Trash.RetentionDays, 0, MaxRetentionDays, "files.trash.retentionDays", "The days in the trash");
-        Range(s.Files.MinimumFreeSpaceMegabytes, 0, 1_048_576, "files.minimumFreeSpaceMegabytes", "The free space kept");
-        Range(s.Files.Uploads.MaxFileSizeMegabytes, 0, 1_073_741_823, "files.uploads.maxFileSizeMegabytes", "The largest upload");
-        Range(s.Files.Uploads.KeepUnfinishedHours, 1, 8760, "files.uploads.keepUnfinishedHours", "The hours unfinished uploads are kept");
+        Range(
+            s.Files.MinimumFreeSpaceMegabytes,
+            0,
+            1_048_576,
+            "files.minimumFreeSpaceMegabytes",
+            "The free space kept"
+        );
+        Range(
+            s.Files.Uploads.MaxFileSizeMegabytes,
+            0,
+            1_073_741_823,
+            "files.uploads.maxFileSizeMegabytes",
+            "The largest upload"
+        );
+        Range(
+            s.Files.Uploads.KeepUnfinishedHours,
+            1,
+            8760,
+            "files.uploads.keepUnfinishedHours",
+            "The hours unfinished uploads are kept"
+        );
         Range(s.Files.MaxArchiveMegabytes, 0, 1_073_741_823, "files.maxArchiveMegabytes", "The largest zip");
         Check(Enum.IsDefined(s.KeepAlive.Mode), "keepAlive.mode", "Choose which folders are kept alive from the list.");
-        Range(s.KeepAlive.IntervalSeconds, KeepAliveOptions.MinIntervalSeconds, KeepAliveOptions.MaxIntervalSeconds, "keepAlive.intervalSeconds", "The time between pings");
-        Range(s.KeepAlive.TimeoutSeconds, KeepAliveOptions.MinTimeoutSeconds, KeepAliveOptions.MaxTimeoutSeconds, "keepAlive.timeoutSeconds", "The time limit");
-        Check(Enum.IsDefined(s.KeepAlive.Method), "keepAlive.method", "Choose how the library folder is pinged from the list.");
-        var notKept = s.KeepAlive.Folders.FirstOrDefault(f => LibraryPaths.NormalizeRelative(f) is not { Length: > 0 } path || LibraryPaths.IsWorkFolderRelative(path));
-        Check(notKept is null, "keepAlive.folders", $"“{notKept}” is not a folder of the library: enter paths relative to the library, like NAS/Photos.");
+        Range(
+            s.KeepAlive.IntervalSeconds,
+            KeepAliveOptions.MinIntervalSeconds,
+            KeepAliveOptions.MaxIntervalSeconds,
+            "keepAlive.intervalSeconds",
+            "The time between pings"
+        );
+        Range(
+            s.KeepAlive.TimeoutSeconds,
+            KeepAliveOptions.MinTimeoutSeconds,
+            KeepAliveOptions.MaxTimeoutSeconds,
+            "keepAlive.timeoutSeconds",
+            "The time limit"
+        );
+        Check(
+            Enum.IsDefined(s.KeepAlive.Method),
+            "keepAlive.method",
+            "Choose how the library folder is pinged from the list."
+        );
+        var notKept = s.KeepAlive.Folders.FirstOrDefault(f =>
+            LibraryPaths.NormalizeRelative(f) is not { Length: > 0 } path || LibraryPaths.IsWorkFolderRelative(path)
+        );
+        Check(
+            notKept is null,
+            "keepAlive.folders",
+            $"“{notKept}” is not a folder of the library: enter paths relative to the library, like NAS/Photos."
+        );
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
-        Check(s.Reading.Theme is { } readerTheme && ReadingOptions.Themes.Contains(readerTheme), "reading.theme", "Choose colours from the list.");
-        Check(s.Reading.CustomFont.Length <= MaxCustomFontLength && s.Reading.CustomFont.IndexOfAny(['"', '\\', ';', '{', '}', '<', '>']) < 0,
-            "reading.customFont", $"Enter a font's name (at most {MaxCustomFontLength} characters, without quotes or brackets).");
+        Check(
+            s.Reading.Theme is { } readerTheme && ReadingOptions.Themes.Contains(readerTheme),
+            "reading.theme",
+            "Choose colours from the list."
+        );
+        Check(
+            s.Reading.CustomFont.Length <= MaxCustomFontLength
+                && s.Reading.CustomFont.IndexOfAny(['"', '\\', ';', '{', '}', '<', '>']) < 0,
+            "reading.customFont",
+            $"Enter a font's name (at most {MaxCustomFontLength} characters, without quotes or brackets)."
+        );
         foreach (var (profile, key) in new[] { (s.Reading.Code, "reading.code"), (s.Reading.Prose, "reading.prose") })
         {
-            Check(profile.Font is { } font && ReadingProfileOptions.Fonts.Contains(font), $"{key}.font", "Choose a font from the list.");
-            Range(profile.Size, ReadingProfileOptions.MinSize, ReadingProfileOptions.MaxSize, $"{key}.size", "The text size");
-            Check(ReadingProfileOptions.LineHeights.Any(height => Math.Abs(height - profile.LineHeight) < 0.001), $"{key}.lineHeight", "Choose a line height from the list.");
-            Check(ReadingProfileOptions.Widths.Contains(profile.Width), $"{key}.width", "Choose a width from the list.");
-            Check(ReadingProfileOptions.Paddings.Contains(profile.Padding), $"{key}.padding", "Choose margins from the list.");
+            Check(
+                profile.Font is { } font && ReadingProfileOptions.Fonts.Contains(font),
+                $"{key}.font",
+                "Choose a font from the list."
+            );
+            Range(
+                profile.Size,
+                ReadingProfileOptions.MinSize,
+                ReadingProfileOptions.MaxSize,
+                $"{key}.size",
+                "The text size"
+            );
+            Check(
+                ReadingProfileOptions.LineHeights.Any(height => Math.Abs(height - profile.LineHeight) < 0.001),
+                $"{key}.lineHeight",
+                "Choose a line height from the list."
+            );
+            Check(
+                ReadingProfileOptions.Widths.Contains(profile.Width),
+                $"{key}.width",
+                "Choose a width from the list."
+            );
+            Check(
+                ReadingProfileOptions.Paddings.Contains(profile.Padding),
+                $"{key}.padding",
+                "Choose margins from the list."
+            );
         }
         return errors;
 

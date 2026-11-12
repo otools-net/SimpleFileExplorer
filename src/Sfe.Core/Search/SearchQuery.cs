@@ -53,23 +53,28 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
     public bool IsEmpty => Groups.Count == 0;
 
     /// <summary>Names of the tags the query refers to.</summary>
-    public IEnumerable<string> TagNames => Groups.SelectMany(g => g.Tags).Select(t => t.Name).OfType<string>().Distinct();
+    public IEnumerable<string> TagNames =>
+        Groups.SelectMany(g => g.Tags).Select(t => t.Name).OfType<string>().Distinct();
 
     private static readonly Regex SizePattern = new(
         @"^(?<op><=|>=|<|>|=)?(?<num>\d+(?:\.\d+)?)(?<unit>b|kb|mb|gb|tb)?$",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled
+    );
 
     private static readonly Regex PixelsPattern = new(
         @"^(?<op><=|>=|<|>|=)?(?<num>\d{1,9})$",
-        RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        RegexOptions.CultureInvariant | RegexOptions.Compiled
+    );
 
     private static readonly Regex ResolutionPattern = new(
         @"^(?<op><=|>=|<|>|=)?(?<width>\d{1,9})x(?<height>\d{1,9})$",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled
+    );
 
     private static readonly Regex DurationPattern = new(
         @"^(?<op><=|>=|<|>|=)?(?:(?<num>\d{1,9}(?:\.\d+)?)(?<unit>s|m|h)?|(?<clock>\d{1,6}(?::\d{1,2}){1,2}))$",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled
+    );
 
     public static SearchQuery Parse(string? query)
     {
@@ -78,10 +83,7 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
         if (matchFullPath)
             query = query.Replace(FullPathMarker.ToString(), string.Empty);
 
-        var groups = SplitOutsideQuotes(query, Or)
-            .Select(ParseGroup)
-            .Where(g => !g.IsEmpty)
-            .ToList();
+        var groups = SplitOutsideQuotes(query, Or).Select(ParseGroup).Where(g => !g.IsEmpty).ToList();
 
         return new SearchQuery(matchFullPath, groups);
     }
@@ -155,13 +157,27 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
         public List<ResolutionLevel> Levels { get; } = [];
         public List<ItemKind> Kinds { get; } = [];
 
-        public SearchGroup ToGroup(List<string> include, List<string> exclude, List<TagFilter> tags, List<SearchGroup> excludedFilters) =>
-            new(include, exclude, Sizes, Extensions, tags, Dimensions, excludedFilters, Durations, Levels, Kinds);
+        public SearchGroup ToGroup(
+            List<string> include,
+            List<string> exclude,
+            List<TagFilter> tags,
+            List<SearchGroup> excludedFilters
+        ) => new(include, exclude, Sizes, Extensions, tags, Dimensions, excludedFilters, Durations, Levels, Kinds);
     }
 
-    private static readonly string[] FilterPrefixes = [SizePrefix, ExtensionPrefix, WidthPrefix, HeightPrefix, ResolutionPrefix, DurationPrefix, TypePrefix];
+    private static readonly string[] FilterPrefixes =
+    [
+        SizePrefix,
+        ExtensionPrefix,
+        WidthPrefix,
+        HeightPrefix,
+        ResolutionPrefix,
+        DurationPrefix,
+        TypePrefix,
+    ];
 
-    private static bool IsFilter(string token) => FilterPrefixes.Any(p => token.StartsWith(p, StringComparison.OrdinalIgnoreCase));
+    private static bool IsFilter(string token) =>
+        FilterPrefixes.Any(p => token.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Adds a size, resolution, duration, extension or type filter; false when the token is none. Malformed ones are ignored.</summary>
     private static bool AddFilter(string token, Filters filters)
@@ -190,7 +206,10 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
             if (DurationFilter.TryParse(token[DurationPrefix.Length..], out var duration))
                 filters.Durations.Add(duration);
         }
-        else if (token.StartsWith(ResolutionPrefix, StringComparison.OrdinalIgnoreCase) && TryParseLevel(token[ResolutionPrefix.Length..], out var level))
+        else if (
+            token.StartsWith(ResolutionPrefix, StringComparison.OrdinalIgnoreCase)
+            && TryParseLevel(token[ResolutionPrefix.Length..], out var level)
+        )
         {
             filters.Levels.Add(level);
         }
@@ -250,8 +269,11 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
     }
 
     internal static Match MatchSize(string value) => SizePattern.Match(value);
+
     internal static Match MatchPixels(string value) => PixelsPattern.Match(value);
+
     internal static Match MatchResolution(string value) => ResolutionPattern.Match(value);
+
     internal static Match MatchDuration(string value) => DurationPattern.Match(value);
 
     // ',' never reaches here as a decimal separator: it separates alternatives.
@@ -275,10 +297,20 @@ public sealed record SearchGroup(
     IReadOnlyList<SearchGroup> ExcludedFilters,
     IReadOnlyList<DurationFilter> Durations,
     IReadOnlyList<ResolutionLevel> Levels,
-    IReadOnlyList<ItemKind> Kinds)
+    IReadOnlyList<ItemKind> Kinds
+)
 {
-    public bool IsEmpty => Include.Count == 0 && Exclude.Count == 0 && Sizes.Count == 0 && Extensions.Count == 0 && Tags.Count == 0
-        && Dimensions.Count == 0 && ExcludedFilters.Count == 0 && Durations.Count == 0 && Levels.Count == 0 && Kinds.Count == 0;
+    public bool IsEmpty =>
+        Include.Count == 0
+        && Exclude.Count == 0
+        && Sizes.Count == 0
+        && Extensions.Count == 0
+        && Tags.Count == 0
+        && Dimensions.Count == 0
+        && ExcludedFilters.Count == 0
+        && Durations.Count == 0
+        && Levels.Count == 0
+        && Kinds.Count == 0;
 }
 
 /// <summary>An image or video of high or low resolution, as the HR/LR marks say (<c>r:hr</c>, <c>r:lr</c>).</summary>
@@ -299,11 +331,15 @@ public sealed record DurationFilter(SizeComparison Comparison, double Seconds, d
         if (!match.Success)
             return false;
 
-        double seconds, unit;
+        double seconds,
+            unit;
         if (match.Groups["clock"].Success)
         {
             // "1:30" is a minute and a half, "1:30:00" an hour and a half, as players show them.
-            seconds = match.Groups["clock"].Value.Split(':').Aggregate(0d, (total, part) => total * 60 + int.Parse(part, CultureInfo.InvariantCulture));
+            seconds = match
+                .Groups["clock"]
+                .Value.Split(':')
+                .Aggregate(0d, (total, part) => total * 60 + int.Parse(part, CultureInfo.InvariantCulture));
             unit = 1;
         }
         else
@@ -400,15 +436,29 @@ public sealed record DimensionFilter(Dimension Dimension, SizeComparison Compari
         if (prefix == SearchQuery.ResolutionPrefix)
         {
             var match = SearchQuery.MatchResolution(value);
-            if (!match.Success || !TryPixels(match.Groups["width"].Value, out var width) || !TryPixels(match.Groups["height"].Value, out var height))
+            if (
+                !match.Success
+                || !TryPixels(match.Groups["width"].Value, out var width)
+                || !TryPixels(match.Groups["height"].Value, out var height)
+            )
+            {
                 return [];
+            }
+
             var comparison = ToComparison(match.Groups["op"].Value);
             return [new(Dimension.Width, comparison, width), new(Dimension.Height, comparison, height)];
         }
 
         var side = SearchQuery.MatchPixels(value);
         return side.Success && TryPixels(side.Groups["num"].Value, out var pixels)
-            ? [new(prefix == SearchQuery.WidthPrefix ? Dimension.Width : Dimension.Height, ToComparison(side.Groups["op"].Value), pixels)]
+            ?
+            [
+                new(
+                    prefix == SearchQuery.WidthPrefix ? Dimension.Width : Dimension.Height,
+                    ToComparison(side.Groups["op"].Value),
+                    pixels
+                ),
+            ]
             : [];
     }
 
@@ -416,12 +466,13 @@ public sealed record DimensionFilter(Dimension Dimension, SizeComparison Compari
         int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out pixels);
 
     /// <summary>Without an operator, a number of pixels is exact: there is no "about" as for sizes.</summary>
-    private static SizeComparison ToComparison(string op) => op switch
-    {
-        "<" => SizeComparison.LessThan,
-        "<=" => SizeComparison.LessThanOrEqual,
-        ">" => SizeComparison.GreaterThan,
-        ">=" => SizeComparison.GreaterThanOrEqual,
-        _ => SizeComparison.Equal,
-    };
+    private static SizeComparison ToComparison(string op) =>
+        op switch
+        {
+            "<" => SizeComparison.LessThan,
+            "<=" => SizeComparison.LessThanOrEqual,
+            ">" => SizeComparison.GreaterThan,
+            ">=" => SizeComparison.GreaterThanOrEqual,
+            _ => SizeComparison.Equal,
+        };
 }

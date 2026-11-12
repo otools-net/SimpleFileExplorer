@@ -16,7 +16,8 @@ public sealed record TagDetails(
     int? DisambiguationId,
     IReadOnlyList<string> Aliases,
     IReadOnlyList<TagSummary> Parents,
-    int FileCount);
+    int FileCount
+);
 
 /// <summary>Values of a new or edited tag.</summary>
 /// <param name="DisambiguationId">Must be one of <paramref name="ParentIds"/>.</param>
@@ -28,7 +29,8 @@ public sealed record TagInput(
     bool IsHidden = false,
     int? DisambiguationId = null,
     IReadOnlyList<string>? Aliases = null,
-    IReadOnlyList<int>? ParentIds = null);
+    IReadOnlyList<int>? ParentIds = null
+);
 
 /// <param name="Matches">Tags whose name, shorthand or alias contains the text, best matches first.</param>
 /// <param name="Descendants">Tags inheriting from a match (they are found by a search for the match too).</param>
@@ -42,7 +44,11 @@ public sealed record TagGroup(TagSummary? Category, IReadOnlyList<TagSummary> Ta
 public sealed record FileTags(string Path, IReadOnlyList<TagSummary> Tags, IReadOnlyList<TagGroup> Groups);
 
 /// <param name="Paths">Files, relative to the library root.</param>
-public sealed record FileTagChange(IReadOnlyList<string> Paths, IReadOnlyList<int>? Add = null, IReadOnlyList<int>? Remove = null);
+public sealed record FileTagChange(
+    IReadOnlyList<string> Paths,
+    IReadOnlyList<int>? Add = null,
+    IReadOnlyList<int>? Remove = null
+);
 
 public sealed record FileTagChangeResult(int Added, int Removed, IReadOnlyList<FileTags> Files);
 
@@ -60,7 +66,8 @@ public sealed record TagSidebar(
     IReadOnlyList<TagUsage> Searched,
     IReadOnlyList<TagUsage> Viewed,
     IReadOnlyList<TagUsage> Lucky,
-    bool HistoryEnabled);
+    bool HistoryEnabled
+);
 
 public enum TagEditStatus
 {
@@ -69,7 +76,11 @@ public enum TagEditStatus
     Invalid,
 }
 
-public sealed record TagEditResult(TagEditStatus Status, TagDetails? Tag = null, IDictionary<string, string[]>? Errors = null)
+public sealed record TagEditResult(
+    TagEditStatus Status,
+    TagDetails? Tag = null,
+    IDictionary<string, string[]>? Errors = null
+)
 {
     public static TagEditResult NotFound { get; } = new(TagEditStatus.NotFound);
 
@@ -104,7 +115,8 @@ public sealed record ScopeTagChange(
     bool Recursive = false,
     string? Query = null,
     IReadOnlyList<int>? Add = null,
-    IReadOnlyList<int>? Remove = null);
+    IReadOnlyList<int>? Remove = null
+);
 
 /// <param name="Files">Files of the scope (all were given the added tags).</param>
 /// <param name="Added">Tags set on files that didn't have them.</param>
@@ -116,11 +128,16 @@ public enum ScopeTagStatus
     Ok,
     NotFound,
     Invalid,
+
     /// <summary>A folder can't be indexed (to be tagged) while a scan runs.</summary>
     ScanRunning,
 }
 
-public sealed record ScopeTagOutcome(ScopeTagStatus Status, ScopeTagChangeResult? Result = null, IDictionary<string, string[]>? Errors = null)
+public sealed record ScopeTagOutcome(
+    ScopeTagStatus Status,
+    ScopeTagChangeResult? Result = null,
+    IDictionary<string, string[]>? Errors = null
+)
 {
     public static ScopeTagOutcome NotFound { get; } = new(ScopeTagStatus.NotFound);
 
@@ -136,7 +153,8 @@ public sealed record FolderDefaultTagsChange(
     IReadOnlyList<int>? Add = null,
     IReadOnlyList<int>? Remove = null,
     bool AddToFiles = false,
-    bool RemoveFromFiles = false);
+    bool RemoveFromFiles = false
+);
 
 /// <param name="Files">What changed on the files already there; null when that wasn't asked.</param>
 public sealed record FolderDefaultTagsResult(FolderDefaults Defaults, ScopeTagChangeResult? Files);

@@ -15,18 +15,24 @@ public static class SfeDatabase
     /// <param name="migrationsHistoryTable">
     /// The access tables (<see cref="AccessDbContext"/>) share the first library's database and keep their own history.
     /// </param>
-    public static DbContextOptionsBuilder Configure(DbContextOptionsBuilder builder, DatabaseProvider provider, string connectionString,
-        string migrationsHistoryTable = "__EFMigrationsHistory") =>
-        (provider switch
-        {
-            DatabaseProvider.SqlServer => builder.UseSqlServer(connectionString, sql =>
+    public static DbContextOptionsBuilder Configure(
+        DbContextOptionsBuilder builder,
+        DatabaseProvider provider,
+        string connectionString,
+        string migrationsHistoryTable = "__EFMigrationsHistory"
+    ) =>
+        (
+            provider switch
             {
-                sql.MigrationsHistoryTable(migrationsHistoryTable, SfeDbContext.Schema);
-                sql.EnableRetryOnFailure();
-            }),
-            DatabaseProvider.Sqlite => builder.UseSqlite(connectionString).AddInterceptors(SqliteOpenGate.Instance),
-            _ => throw new NotSupportedException($"Database provider '{provider}' is not supported."),
-        }).ConfigureWarnings(w => w.Ignore(CoreEventId.RowLimitingOperationWithoutOrderByWarning));
+                DatabaseProvider.SqlServer => builder.UseSqlServer(connectionString, sql =>
+                {
+                    sql.MigrationsHistoryTable(migrationsHistoryTable, SfeDbContext.Schema);
+                    sql.EnableRetryOnFailure();
+                }),
+                DatabaseProvider.Sqlite => builder.UseSqlite(connectionString).AddInterceptors(SqliteOpenGate.Instance),
+                _ => throw new NotSupportedException($"Database provider '{provider}' is not supported."),
+            }
+        ).ConfigureWarnings(w => w.Ignore(CoreEventId.RowLimitingOperationWithoutOrderByWarning));
 
     /// <summary>
     /// Makes a relative SQLite <c>Data Source</c> relative to <paramref name="basePath"/> instead of the current
@@ -36,8 +42,12 @@ public static class SfeDatabase
     {
         var builder = new SqliteConnectionStringBuilder(connectionString);
         var dataSource = builder.DataSource;
-        if (string.IsNullOrWhiteSpace(dataSource) || dataSource == ":memory:" || builder.Mode == SqliteOpenMode.Memory
-            || dataSource.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+        if (
+            string.IsNullOrWhiteSpace(dataSource)
+            || dataSource == ":memory:"
+            || builder.Mode == SqliteOpenMode.Memory
+            || dataSource.StartsWith("file:", StringComparison.OrdinalIgnoreCase)
+        )
         {
             return connectionString;
         }

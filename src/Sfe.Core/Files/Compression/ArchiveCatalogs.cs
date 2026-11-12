@@ -44,15 +44,23 @@ public sealed class ArchiveBuildGate
 public enum ArchiveCatalogStatus
 {
     Ready,
+
     /// <summary>Being read (or waiting for its turn): <see cref="ArchiveCatalogState.Read"/> entries so far.</summary>
     Building,
+
     /// <summary>Couldn't be read (the disk, the file in use): <see cref="ArchiveCatalogState.Error"/> says so; asked again later.</summary>
     Failed,
+
     /// <summary>Not read yet, and no new read was started for this caller (<c>mayStart</c> said no): ask again later.</summary>
     Limited,
 }
 
-public sealed record ArchiveCatalogState(ArchiveCatalogStatus Status, ArchiveCatalog? Catalog = null, long Read = 0, string? Error = null);
+public sealed record ArchiveCatalogState(
+    ArchiveCatalogStatus Status,
+    ArchiveCatalog? Catalog = null,
+    long Read = 0,
+    string? Error = null
+);
 
 /// <summary>
 /// A library's archive catalogs (agents/docs/features/archive-reading.md): kept in its cache folder, beside the
@@ -60,7 +68,11 @@ public sealed record ArchiveCatalogState(ArchiveCatalogStatus Status, ArchiveCat
 /// however many ask, queued past <see cref="ArchiveOptions.CatalogBuilds"/>; a build nobody asks about for a minute
 /// is dropped; past <see cref="ArchiveOptions.CatalogMegabytes"/> the least recently used catalogs are deleted.
 /// </summary>
-public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, ArchiveBuildGate gate, ILogger<ArchiveCatalogs> logger)
+public sealed class ArchiveCatalogs(
+    IOptionsMonitor<SfeOptions> options,
+    ArchiveBuildGate gate,
+    ILogger<ArchiveCatalogs> logger
+)
 {
     public const string FolderName = "archives";
 
@@ -83,14 +95,21 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
 
     /// <summary>The catalog's name: the archive's path and version. A changed archive is another catalog; the old one ages out.</summary>
     public static string KeyOf(string canonicalPath, long size, DateTime modifiedUtc) =>
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes($"{canonicalPath}\n{size}\n{modifiedUtc.Ticks}")))[..32];
+        Convert.ToHexStringLower(
+            SHA256.HashData(Encoding.UTF8.GetBytes($"{canonicalPath}\n{size}\n{modifiedUtc.Ticks}"))
+        )[..32];
 
     /// <summary>
     /// The catalog of the archive at <paramref name="fullPath"/> when it is ready; otherwise its build, started now if
     /// none runs (asking keeps a build alive). <paramref name="mayStart"/> is asked only before a new build starts (the
     /// caller's limit): no, and the answer is <see cref="ArchiveCatalogStatus.Limited"/>.
     /// </summary>
-    public ArchiveCatalogState Get(string fullPath, string canonicalPath, ArchiveFormat format, Func<bool>? mayStart = null)
+    public ArchiveCatalogState Get(
+        string fullPath,
+        string canonicalPath,
+        ArchiveFormat format,
+        Func<bool>? mayStart = null
+    )
     {
         var info = new FileInfo(fullPath);
         var key = KeyOf(canonicalPath, info.Length, info.LastWriteTimeUtc);
@@ -186,7 +205,13 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
     /// unlock <paramref name="unlock"/>: built in the background as others are (Building), then Ready; Failed with a
     /// wrong password. Never written to disk.
     /// </summary>
-    public ArchiveCatalogState GetInMemory(string fullPath, string canonicalPath, ArchiveFormat format, string unlock, string password)
+    public ArchiveCatalogState GetInMemory(
+        string fullPath,
+        string canonicalPath,
+        ArchiveFormat format,
+        string unlock,
+        string password
+    )
     {
         var info = new FileInfo(fullPath);
         var key = unlock + ":" + KeyOf(canonicalPath, info.Length, info.LastWriteTimeUtc);
@@ -224,8 +249,15 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
                 MaxEntries = Math.Min(settings.MaxEntries, settings.MaxEncryptedListEntries),
                 MaxDepth = settings.MaxDepth,
             };
-            var catalog = ArchiveCatalog.BuildInMemory(fullPath, format, password, limited, out var keeper,
-                new Progress(read => list.Read = read), list.Cancel.Token);
+            var catalog = ArchiveCatalog.BuildInMemory(
+                fullPath,
+                format,
+                password,
+                limited,
+                out var keeper,
+                new Progress(read => list.Read = read),
+                list.Cancel.Token
+            );
             lock (_inMemory)
             {
                 if (list.Cancel.IsCancellationRequested)
@@ -241,9 +273,7 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
                     list.Catalog = catalog;
             }
         }
-        catch (OperationCanceledException)
-        {
-        }
+        catch (OperationCanceledException) { }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or SqliteException)
         {
             logger.LogWarning(error, "Couldn't read the list of {Archive} with its password.", fullPath);
@@ -258,8 +288,15 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
 
     private void DropIdle()
     {
-        foreach (var key in _inMemory.Where(pair => DateTime.UtcNow - pair.Value.Used > InMemoryIdle).Select(pair => pair.Key).ToList())
+        foreach (
+            var key in _inMemory
+                .Where(pair => DateTime.UtcNow - pair.Value.Used > InMemoryIdle)
+                .Select(pair => pair.Key)
+                .ToList()
+        )
+        {
             Drop(key);
+        }
     }
 
     private void Drop(string key)
@@ -312,9 +349,7 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
             if (DateTime.UtcNow - File.GetLastWriteTimeUtc(file) > TouchEvery)
                 File.SetLastWriteTimeUtc(file, DateTime.UtcNow);
         }
-        catch (IOException)
-        {
-        }
+        catch (IOException) { }
     }
 
     /// <summary>Catalogs of another schema are never read: their folders go at the first build after an upgrade.</summary>
@@ -331,9 +366,7 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
             {
                 folder.Delete(recursive: true);
             }
-            catch (IOException)
-            {
-            }
+            catch (IOException) { }
         }
     }
 

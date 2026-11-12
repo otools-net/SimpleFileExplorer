@@ -16,7 +16,12 @@ namespace Sfe.Core.Tagging;
 /// file that is not indexed yet indexes its folder first.
 /// </summary>
 public sealed class TagService(
-    IDbContextFactory<SfeDbContext> dbFactory, LibraryPaths paths, DirectoryIndexer indexer, FolderDefaultTags defaultTags, IOptionsMonitor<SfeOptions> options)
+    IDbContextFactory<SfeDbContext> dbFactory,
+    LibraryPaths paths,
+    DirectoryIndexer indexer,
+    FolderDefaultTags defaultTags,
+    IOptionsMonitor<SfeOptions> options
+)
 {
     public const int MaxFilesPerChange = 1000;
 
@@ -27,7 +32,12 @@ public sealed class TagService(
     /// the text come first (shortest first), and tags inheriting from a match are listed separately.
     /// </summary>
     /// <param name="visible">Where the asker may see files (folder rules): file counts count only those; null = everywhere.</param>
-    public async Task<TagSearchResults> SearchAsync(string? text, int limit, CancellationToken cancellationToken = default, PathFilter? visible = null)
+    public async Task<TagSearchResults> SearchAsync(
+        string? text,
+        int limit,
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
@@ -36,8 +46,8 @@ public sealed class TagService(
 
         if (text.Length == 0)
         {
-            var all = graph.Nodes
-                .OrderBy(n => n.Name, StringComparer.CurrentCultureIgnoreCase)
+            var all = graph
+                .Nodes.OrderBy(n => n.Name, StringComparer.CurrentCultureIgnoreCase)
                 .ThenBy(n => n.Id)
                 .Take(limit)
                 .Select(n => Details(graph, n, counts))
@@ -45,12 +55,18 @@ public sealed class TagService(
             return new TagSearchResults(all, []);
         }
 
-        var matches = graph.Nodes
-            .Select(node => (node, key: TagGraph.Names(node)
-                .Where(name => name.Contains(text, StringComparison.CurrentCultureIgnoreCase))
-                .Select(name => MatchKey(name, text))
-                .DefaultIfEmpty()
-                .Min()))
+        var matches = graph
+            .Nodes.Select(node =>
+                (
+                    node,
+                    key: TagGraph
+                        .Names(node)
+                        .Where(name => name.Contains(text, StringComparison.CurrentCultureIgnoreCase))
+                        .Select(name => MatchKey(name, text))
+                        .DefaultIfEmpty()
+                        .Min()
+                )
+            )
             .Where(m => m.key.Name is not null)
             .OrderBy(m => m.key)
             .ThenBy(m => m.node.Id)
@@ -74,7 +90,8 @@ public sealed class TagService(
                 .OrderBy(n => MatchKey(n.Name, text))
                 .Take(Math.Max(0, limit - matchIds.Count))
                 .Select(n => Details(graph, n, counts))
-                .ToList());
+                .ToList()
+        );
     }
 
     /// <summary>Sort key of a name containing the search text: prefix matches first, shortest first.</summary>
@@ -84,11 +101,17 @@ public sealed class TagService(
             : (1, 0, name.ToLowerInvariant());
 
     /// <param name="visible">Where the asker may see files (folder rules): the file count counts only those.</param>
-    public async Task<TagDetails?> GetAsync(int id, CancellationToken cancellationToken = default, PathFilter? visible = null)
+    public async Task<TagDetails?> GetAsync(
+        int id,
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
-        return graph.Find(id) is { } node ? Details(graph, node, await FileCountsAsync(db, cancellationToken, visible)) : null;
+        return graph.Find(id) is { } node
+            ? Details(graph, node, await FileCountsAsync(db, cancellationToken, visible))
+            : null;
     }
 
     public async Task<TagEditResult> CreateAsync(TagInput input, CancellationToken cancellationToken = default)
@@ -109,8 +132,8 @@ public sealed class TagService(
     public async Task<TagEditResult> UpdateAsync(int id, TagInput input, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var tag = await db.Tags
-            .Include(t => t.Aliases)
+        var tag = await db
+            .Tags.Include(t => t.Aliases)
             .Include(t => t.ParentLinks)
             // One tag with a handful of aliases and parents: the joined rows are few, so a single round trip
             // beats split queries. Stating it explicitly silences EF's MultipleCollectionIncludeWarning.
@@ -146,7 +169,8 @@ public sealed class TagService(
             await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
             await db.TagParents.Where(p => p.ParentId == id || p.ChildId == id).ExecuteDeleteAsync(cancellationToken);
             await db.TagActivity.Where(a => a.TagId == id).ExecuteDeleteAsync(cancellationToken);
-            await db.Tags.Where(t => t.DisambiguationId == id)
+            await db
+                .Tags.Where(t => t.DisambiguationId == id)
                 .ExecuteUpdateAsync(s => s.SetProperty(t => t.DisambiguationId, (int?)null), cancellationToken);
             await db.TagAliases.Where(a => a.TagId == id).ExecuteDeleteAsync(cancellationToken);
             await db.FileTags.Where(l => l.TagId == id).ExecuteDeleteAsync(cancellationToken);
@@ -168,11 +192,29 @@ public sealed class TagService(
         if (string.IsNullOrEmpty(name))
             return TagEditResult.Invalid("name", "A tag needs a name.");
         if (name.Length > SfeDbContext.MaxTagNameLength)
-            return TagEditResult.Invalid("name", $"Tag names are limited to {SfeDbContext.MaxTagNameLength} characters.");
+        {
+            return TagEditResult.Invalid(
+                "name",
+                $"Tag names are limited to {SfeDbContext.MaxTagNameLength} characters."
+            );
+        }
+
         if (input.Shorthand?.Trim().Length > SfeDbContext.MaxTagNameLength)
-            return TagEditResult.Invalid("shorthand", $"Shorthands are limited to {SfeDbContext.MaxTagNameLength} characters.");
+        {
+            return TagEditResult.Invalid(
+                "shorthand",
+                $"Shorthands are limited to {SfeDbContext.MaxTagNameLength} characters."
+            );
+        }
+
         if (input.Aliases?.Any(a => a?.Trim().Length > SfeDbContext.MaxTagNameLength) == true)
-            return TagEditResult.Invalid("aliases", $"Aliases are limited to {SfeDbContext.MaxTagNameLength} characters.");
+        {
+            return TagEditResult.Invalid(
+                "aliases",
+                $"Aliases are limited to {SfeDbContext.MaxTagNameLength} characters."
+            );
+        }
+
         if (!string.IsNullOrWhiteSpace(input.Color) && !TagColors.IsDefined(input.Color))
             return TagEditResult.Invalid("color", $"Unknown color '{input.Color}'.");
 
@@ -186,9 +228,12 @@ public sealed class TagService(
             var descendants = graph.SelfAndDescendants(self);
             foreach (var loop in parents.Where(descendants.Contains))
             {
-                return TagEditResult.Invalid("parentIds", loop == self
-                    ? "A tag cannot be its own parent."
-                    : $"“{graph.DisplayName(graph.Find(loop)!)}” already inherits from this tag, so it cannot also be its parent.");
+                return TagEditResult.Invalid(
+                    "parentIds",
+                    loop == self
+                        ? "A tag cannot be its own parent."
+                        : $"“{graph.DisplayName(graph.Find(loop)!)}” already inherits from this tag, so it cannot also be its parent."
+                );
             }
         }
 
@@ -234,19 +279,21 @@ public sealed class TagService(
             tag.Aliases.Add(new TagAlias { Name = alias });
     }
 
-    private static TagDetails Details(TagGraph graph, TagGraph.Node node, IReadOnlyDictionary<int, int> counts) => new(
-        node.Id,
-        node.Name,
-        node.Shorthand,
-        graph.DisplayName(node),
-        node.Color,
-        node.IsCategory,
-        node.IsHidden,
-        BuiltInTags.IsBuiltIn(node.Id),
-        node.DisambiguationId,
-        node.Aliases.Order(StringComparer.CurrentCultureIgnoreCase).ToList(),
-        TagGraph.Sort(node.Parents.Select(graph.Summary).OfType<TagSummary>()),
-        counts.GetValueOrDefault(node.Id));
+    private static TagDetails Details(TagGraph graph, TagGraph.Node node, IReadOnlyDictionary<int, int> counts) =>
+        new(
+            node.Id,
+            node.Name,
+            node.Shorthand,
+            graph.DisplayName(node),
+            node.Color,
+            node.IsCategory,
+            node.IsHidden,
+            BuiltInTags.IsBuiltIn(node.Id),
+            node.DisambiguationId,
+            node.Aliases.Order(StringComparer.CurrentCultureIgnoreCase).ToList(),
+            TagGraph.Sort(node.Parents.Select(graph.Summary).OfType<TagSummary>()),
+            counts.GetValueOrDefault(node.Id)
+        );
 
     /// <summary>How long file counts per tag are reused: removing files from the index (scan) changes them too.</summary>
     private static readonly TimeSpan FileCountLifetime = TimeSpan.FromSeconds(30);
@@ -266,16 +313,26 @@ public sealed class TagService(
     /// types, so they are kept a short while and dropped when this service changes links. With a
     /// <paramref name="visible"/> filter (folder rules) only those files count, kept per filter.
     /// </summary>
-    private async Task<Dictionary<int, int>> FileCountsAsync(SfeDbContext db, CancellationToken cancellationToken, PathFilter? visible = null)
+    private async Task<Dictionary<int, int>> FileCountsAsync(
+        SfeDbContext db,
+        CancellationToken cancellationToken,
+        PathFilter? visible = null
+    )
     {
         var version = Interlocked.Read(ref _fileCountsVersion);
         if (visible is null || visible.IsEverything)
         {
-            if (_fileCounts is { } cached && cached.Version == version && DateTime.UtcNow - cached.LoadedAt < FileCountLifetime)
+            if (
+                _fileCounts is { } cached
+                && cached.Version == version
+                && DateTime.UtcNow - cached.LoadedAt < FileCountLifetime
+            )
+            {
                 return cached.Counts;
+            }
 
-            var counts = await db.FileTags
-                .GroupBy(l => l.TagId)
+            var counts = await db
+                .FileTags.GroupBy(l => l.TagId)
                 .Select(g => new { TagId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(g => g.TagId, g => g.Count, cancellationToken);
             _fileCounts = new FileCounts(counts, version, DateTime.UtcNow);
@@ -284,11 +341,18 @@ public sealed class TagService(
 
         lock (_filteredCountsGate)
         {
-            if (_filteredCounts.TryGetValue(visible.Key, out var cached) && cached.Version == version && DateTime.UtcNow - cached.LoadedAt < FileCountLifetime)
+            if (
+                _filteredCounts.TryGetValue(visible.Key, out var cached)
+                && cached.Version == version
+                && DateTime.UtcNow - cached.LoadedAt < FileCountLifetime
+            )
+            {
                 return cached.Counts;
+            }
         }
 
-        var filtered = await db.Files.AsNoTracking()
+        var filtered = await db
+            .Files.AsNoTracking()
             .WhereVisible(visible, f => f.FullName, paths)
             .SelectMany(f => f.TagLinks)
             .GroupBy(l => l.TagId)
@@ -315,7 +379,10 @@ public sealed class TagService(
     /// <see cref="TagOptions.SidebarCount"/> of each. The history lists stay empty while history is off.
     /// </summary>
     /// <param name="visible">Where the asker may see files (folder rules): counts, hence the most used tags, count only those.</param>
-    public async Task<TagSidebar> GetSidebarAsync(CancellationToken cancellationToken = default, PathFilter? visible = null)
+    public async Task<TagSidebar> GetSidebarAsync(
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         var count = Math.Max(1, Settings.SidebarCount);
         var history = Settings.RecordHistory;
@@ -332,22 +399,26 @@ public sealed class TagService(
             .Take(count)
             .Select(c => c.Key)
             .ToList();
-        var searched = !history ? [] : await db.TagActivity
-            .Where(a => a.LastSearchedAt != null)
-            .OrderByDescending(a => a.LastSearchedAt)
-            .Select(a => a.TagId)
-            .Take(count)
-            .ToListAsync(cancellationToken);
-        var viewed = !history ? [] : await db.TagActivity
-            .Where(a => a.LastViewedAt != null)
-            .OrderByDescending(a => a.LastViewedAt)
-            .Select(a => a.TagId)
-            .Take(count)
-            .ToListAsync(cancellationToken);
+        var searched = !history
+            ? []
+            : await db
+                .TagActivity.Where(a => a.LastSearchedAt != null)
+                .OrderByDescending(a => a.LastSearchedAt)
+                .Select(a => a.TagId)
+                .Take(count)
+                .ToListAsync(cancellationToken);
+        var viewed = !history
+            ? []
+            : await db
+                .TagActivity.Where(a => a.LastViewedAt != null)
+                .OrderByDescending(a => a.LastViewedAt)
+                .Select(a => a.TagId)
+                .Take(count)
+                .ToListAsync(cancellationToken);
 
         var shown = popular.Concat(searched).Concat(viewed).ToHashSet();
-        var lucky = graph.Nodes
-            .Where(n => !shown.Contains(n.Id))
+        var lucky = graph
+            .Nodes.Where(n => !shown.Contains(n.Id))
             .Select(n => n.Id)
             .OrderBy(_ => Random.Shared.Next())
             .Take(count)
@@ -358,7 +429,8 @@ public sealed class TagService(
             searched.Where(graph.Contains).Select(Usage).ToList(),
             viewed.Where(graph.Contains).Select(Usage).ToList(),
             lucky.Select(Usage).ToList(),
-            history);
+            history
+        );
     }
 
     /// <summary>Forgets the searched and viewed tags.</summary>
@@ -381,22 +453,28 @@ public sealed class TagService(
             return false;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var tagIds = await db.FileTags
-            .Where(l => l.File!.FullName == fullPath)
+        var tagIds = await db
+            .FileTags.Where(l => l.File!.FullName == fullPath)
             .Select(l => l.TagId)
             .ToListAsync(cancellationToken);
         await RecordActivityAsync(tagIds, (activity, now) => activity.LastViewedAt = now, cancellationToken);
         return true;
     }
 
-    private async Task RecordActivityAsync(IReadOnlyCollection<int> tagIds, Action<TagActivity, DateTime> update, CancellationToken cancellationToken)
+    private async Task RecordActivityAsync(
+        IReadOnlyCollection<int> tagIds,
+        Action<TagActivity, DateTime> update,
+        CancellationToken cancellationToken
+    )
     {
         if (tagIds.Count == 0 || !Settings.RecordHistory)
             return;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var ids = tagIds.Distinct().ToList();
-        var existing = await db.TagActivity.Where(a => ids.Contains(a.TagId)).ToDictionaryAsync(a => a.TagId, cancellationToken);
+        var existing = await db
+            .TagActivity.Where(a => ids.Contains(a.TagId))
+            .ToDictionaryAsync(a => a.TagId, cancellationToken);
         var known = await db.Tags.Where(t => ids.Contains(t.Id)).Select(t => t.Id).ToListAsync(cancellationToken);
         var now = DateTime.UtcNow;
         foreach (var id in known)
@@ -425,8 +503,8 @@ public sealed class TagService(
             return null;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var tagIds = await db.FileTags
-            .Where(l => l.File!.FullName == fullPath)
+        var tagIds = await db
+            .FileTags.Where(l => l.File!.FullName == fullPath)
             .Select(l => l.TagId)
             .ToListAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
@@ -435,7 +513,9 @@ public sealed class TagService(
 
     /// <summary>Adds and removes tags on files (TagStudio's add_tags_to_entries/remove_tags_from_entries).</summary>
     public async Task<(FileTagChangeResult? Result, IDictionary<string, string[]>? Errors)> ChangeFileTagsAsync(
-        FileTagChange change, CancellationToken cancellationToken = default)
+        FileTagChange change,
+        CancellationToken cancellationToken = default
+    )
     {
         var add = (change.Add ?? []).Distinct().ToList();
         var remove = (change.Remove ?? []).Distinct().Where(id => !add.Contains(id)).ToList();
@@ -464,7 +544,13 @@ public sealed class TagService(
         if (fileIds.Count < files.Count)
         {
             var missing = files.First(f => !fileIds.ContainsKey(f));
-            return (null, Error("paths", $"“{paths.ToRelative(missing)}” cannot be indexed (ignored, or its path is too long), so it cannot be tagged."));
+            return (
+                null,
+                Error(
+                    "paths",
+                    $"“{paths.ToRelative(missing)}” cannot be indexed (ignored, or its path is too long), so it cannot be tagged."
+                )
+            );
         }
 
         var ids = fileIds.Values.ToList();
@@ -472,10 +558,12 @@ public sealed class TagService(
         var removed = 0;
         if (add.Count > 0)
         {
-            var existing = (await db.FileTags
-                    .Where(l => ids.Contains(l.FileId) && add.Contains(l.TagId))
+            var existing = (
+                await db
+                    .FileTags.Where(l => ids.Contains(l.FileId) && add.Contains(l.TagId))
                     .Select(l => new { l.FileId, l.TagId })
-                    .ToListAsync(cancellationToken))
+                    .ToListAsync(cancellationToken)
+            )
                 .Select(l => (l.FileId, l.TagId))
                 .ToHashSet();
             foreach (var fileId in ids)
@@ -492,22 +580,21 @@ public sealed class TagService(
 
         if (remove.Count > 0)
         {
-            removed = await db.FileTags
-                .Where(l => ids.Contains(l.FileId) && remove.Contains(l.TagId))
+            removed = await db
+                .FileTags.Where(l => ids.Contains(l.FileId) && remove.Contains(l.TagId))
                 .ExecuteDeleteAsync(cancellationToken);
         }
 
         if (added + removed > 0)
             InvalidateFileCounts();
 
-        var links = (await db.FileTags
-                .Where(l => ids.Contains(l.FileId))
+        var links = (
+            await db
+                .FileTags.Where(l => ids.Contains(l.FileId))
                 .Select(l => new { l.FileId, l.TagId })
-                .ToListAsync(cancellationToken))
-            .ToLookup(l => l.FileId, l => l.TagId);
-        var results = files
-            .Select(f => ToFileTags(graph, paths.ToRelative(f)!, links[fileIds[f]]))
-            .ToList();
+                .ToListAsync(cancellationToken)
+        ).ToLookup(l => l.FileId, l => l.TagId);
+        var results = files.Select(f => ToFileTags(graph, paths.ToRelative(f)!, links[fileIds[f]])).ToList();
 
         return (new FileTagChangeResult(added, removed, results), null);
     }
@@ -518,7 +605,10 @@ public sealed class TagService(
     /// alike, whether the index has them (<see cref="LibraryItem.Indexed"/>), and what an indexed folder holds
     /// (<see cref="LibraryItem.IndexedItems"/>).
     /// </summary>
-    public async Task<IReadOnlyList<LibraryItem>> AttachIndexDataAsync(IReadOnlyList<LibraryItem> items, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<LibraryItem>> AttachIndexDataAsync(
+        IReadOnlyList<LibraryItem> items,
+        CancellationToken cancellationToken = default
+    )
     {
         var byFullName = new Dictionary<string, int>(LibraryPaths.PathComparer);
         var folderByFullName = new Dictionary<string, int>(LibraryPaths.PathComparer);
@@ -532,13 +622,17 @@ public sealed class TagService(
             return items;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var result = items.Select(i => i.Kind == ItemKind.Directory ? i with { Indexed = false } : i with { Tags = [], Indexed = false }).ToList();
+        var result = items
+            .Select(i =>
+                i.Kind == ItemKind.Directory ? i with { Indexed = false } : i with { Tags = [], Indexed = false }
+            )
+            .ToList();
 
         if (folderByFullName.Count > 0)
         {
             var folderNames = folderByFullName.Keys.ToList();
-            var indexedFolders = await db.Directories
-                .Where(d => folderNames.Contains(d.FullName))
+            var indexedFolders = await db
+                .Directories.Where(d => folderNames.Contains(d.FullName))
                 .Select(d => new { d.Id, d.FullName })
                 .ToListAsync(cancellationToken);
 
@@ -547,13 +641,13 @@ public sealed class TagService(
             var counts = new Dictionary<int, int>();
             if (ids.Count > 0)
             {
-                var files = await db.Files
-                    .Where(f => ids.Contains(f.DirectoryId))
+                var files = await db
+                    .Files.Where(f => ids.Contains(f.DirectoryId))
                     .GroupBy(f => f.DirectoryId)
                     .Select(g => new { Id = g.Key, Count = g.Count() })
                     .ToListAsync(cancellationToken);
-                var folders = await db.Directories
-                    .Where(d => d.ParentId != null && ids.Contains(d.ParentId.Value))
+                var folders = await db
+                    .Directories.Where(d => d.ParentId != null && ids.Contains(d.ParentId.Value))
                     .GroupBy(d => d.ParentId!.Value)
                     .Select(g => new { Id = g.Key, Count = g.Count() })
                     .ToListAsync(cancellationToken);
@@ -564,7 +658,13 @@ public sealed class TagService(
             foreach (var folder in indexedFolders)
             {
                 if (folderByFullName.TryGetValue(folder.FullName, out var index))
-                    result[index] = result[index] with { Indexed = true, IndexedItems = counts.GetValueOrDefault(folder.Id) };
+                {
+                    result[index] = result[index] with
+                    {
+                        Indexed = true,
+                        IndexedItems = counts.GetValueOrDefault(folder.Id),
+                    };
+                }
             }
         }
 
@@ -572,15 +672,21 @@ public sealed class TagService(
             return result;
 
         var names = byFullName.Keys.ToList();
-        var links = await db.FileTags
-            .Where(l => names.Contains(l.File!.FullName))
+        var links = await db
+            .FileTags.Where(l => names.Contains(l.File!.FullName))
             .Select(l => new { l.File!.FullName, l.TagId })
             .ToListAsync(cancellationToken);
 
         // One row per indexed file (the page's files at most): its presence, and the resolution and duration of media.
-        var rows = await db.Files
-            .Where(f => names.Contains(f.FullName))
-            .Select(f => new { f.FullName, f.Width, f.Height, f.Duration })
+        var rows = await db
+            .Files.Where(f => names.Contains(f.FullName))
+            .Select(f => new
+            {
+                f.FullName,
+                f.Width,
+                f.Height,
+                f.Duration,
+            })
             .ToListAsync(cancellationToken);
         foreach (var row in rows)
         {

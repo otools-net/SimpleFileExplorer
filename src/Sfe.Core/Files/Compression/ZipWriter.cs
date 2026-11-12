@@ -44,8 +44,14 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
             throw new ArgumentException("A zip is written to a seekable stream.", nameof(output));
         _output = output;
         _password = string.IsNullOrEmpty(password) ? null : Encoding.UTF8.GetBytes(password);
-        _directory = new FileStream(Path.Combine(Path.GetTempPath(), $"sfe-zip-{Guid.NewGuid():N}.dir"), FileMode.CreateNew, FileAccess.ReadWrite,
-            FileShare.None, 64 * 1024, FileOptions.DeleteOnClose);
+        _directory = new FileStream(
+            Path.Combine(Path.GetTempPath(), $"sfe-zip-{Guid.NewGuid():N}.dir"),
+            FileMode.CreateNew,
+            FileAccess.ReadWrite,
+            FileShare.None,
+            64 * 1024,
+            FileOptions.DeleteOnClose
+        );
     }
 
     /// <summary>Entries written so far.</summary>
@@ -60,8 +66,31 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         var entryName = Encoding.UTF8.GetBytes(name.TrimEnd('/') + "/");
         var offset = _output.Position;
         var extra = Extras(zip64: false, modified, aes: false, method: 0);
-        WriteLocal(entryName, extra, version: 20, flags: Utf8Flag, method: 0, modified, crc: 0, packed: 0, size: 0, zip64: false);
-        AddCentral(entryName, version: 20, flags: Utf8Flag, method: 0, modified, crc: 0, packed: 0, size: 0, offset, folder: true, aes: false);
+        WriteLocal(
+            entryName,
+            extra,
+            version: 20,
+            flags: Utf8Flag,
+            method: 0,
+            modified,
+            crc: 0,
+            packed: 0,
+            size: 0,
+            zip64: false
+        );
+        AddCentral(
+            entryName,
+            version: 20,
+            flags: Utf8Flag,
+            method: 0,
+            modified,
+            crc: 0,
+            packed: 0,
+            size: 0,
+            offset,
+            folder: true,
+            aes: false
+        );
     }
 
     /// <summary>
@@ -69,7 +98,14 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
     /// when the writer has a password. <paramref name="read"/> is told the bytes read, as they are.
     /// </summary>
     /// <returns>The bytes the entry's data takes in the zip.</returns>
-    public async Task<long> AddFileAsync(string name, DateTime modified, Stream input, int level, Action<int>? read = null, CancellationToken cancel = default)
+    public async Task<long> AddFileAsync(
+        string name,
+        DateTime modified,
+        Stream input,
+        int level,
+        Action<int>? read = null,
+        CancellationToken cancel = default
+    )
     {
         if (level is < 0 or > 9)
             throw new ArgumentOutOfRangeException(nameof(level), "A level is 0 (stored) to 9.");
@@ -78,11 +114,26 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         var aes = _password is not null;
         // Known before writing: the local header has room for the Zip64 sizes only when they may be needed.
         var zip64 = !input.CanSeek || input.Length - input.Position >= Zip64Threshold;
-        var version = (ushort)(aes ? 51 : zip64 ? 45 : 20);
+        var version = (ushort)(
+            aes ? 51
+            : zip64 ? 45
+            : 20
+        );
         var flags = (ushort)(Utf8Flag | (aes ? EncryptedFlag : 0));
         var offset = _output.Position;
         var extra = Extras(zip64, modified, aes, method);
-        WriteLocal(entryName, extra, version, flags, aes ? AesMethod : method, modified, crc: 0, packed: 0, size: 0, zip64);
+        WriteLocal(
+            entryName,
+            extra,
+            version,
+            flags,
+            aes ? AesMethod : method,
+            modified,
+            crc: 0,
+            packed: 0,
+            size: 0,
+            zip64
+        );
         var dataStart = _output.Position;
 
         var crc = new System.IO.Hashing.Crc32();
@@ -93,13 +144,22 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         {
             var salt = RandomNumberGenerator.GetBytes(ZipEncryption.SaltLength(AesStrength));
             var keyLength = ZipEncryption.KeyLength(AesStrength);
-            var keys = Rfc2898DeriveBytes.Pbkdf2(_password!, salt, ZipEncryption.AesIterations, HashAlgorithmName.SHA1, keyLength * 2 + ZipEncryption.AesVerifier);
+            var keys = Rfc2898DeriveBytes.Pbkdf2(
+                _password!,
+                salt,
+                ZipEncryption.AesIterations,
+                HashAlgorithmName.SHA1,
+                keyLength * 2 + ZipEncryption.AesVerifier
+            );
             _output.Write(salt);
             _output.Write(keys.AsSpan(keyLength * 2, ZipEncryption.AesVerifier));
             sink = cipher = new AesCtrWriter(sink, keys[..keyLength], keys[keyLength..(keyLength * 2)]);
         }
         var payloadStart = _output.Position;
-        var deflate = method == 8 ? new DeflateStream(sink, new ZLibCompressionOptions { CompressionLevel = level }, leaveOpen: true) : null;
+        var deflate =
+            method == 8
+                ? new DeflateStream(sink, new ZLibCompressionOptions { CompressionLevel = level }, leaveOpen: true)
+                : null;
         var top = deflate ?? sink;
         try
         {
@@ -149,7 +209,20 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
             _output.Write(large);
         }
         _output.Position = end;
-        AddCentral(entryName, version, flags, aes ? AesMethod : method, modified, stored, packed, size, offset, folder: false, aes, method);
+        AddCentral(
+            entryName,
+            version,
+            flags,
+            aes ? AesMethod : method,
+            modified,
+            stored,
+            packed,
+            size,
+            offset,
+            folder: false,
+            aes,
+            method
+        );
         return packed;
     }
 
@@ -194,7 +267,18 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         _output.Flush();
     }
 
-    private void WriteLocal(byte[] name, byte[] extra, ushort version, ushort flags, ushort method, DateTime modified, uint crc, long packed, long size, bool zip64)
+    private void WriteLocal(
+        byte[] name,
+        byte[] extra,
+        ushort version,
+        ushort flags,
+        ushort method,
+        DateTime modified,
+        uint crc,
+        long packed,
+        long size,
+        bool zip64
+    )
     {
         Span<byte> header = stackalloc byte[30];
         BinaryPrimitives.WriteUInt32LittleEndian(header, LocalSignature);
@@ -214,8 +298,20 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         _output.Write(extra);
     }
 
-    private void AddCentral(byte[] name, ushort version, ushort flags, ushort method, DateTime modified, uint crc, long packed, long size, long offset,
-        bool folder, bool aes, ushort realMethod = 0)
+    private void AddCentral(
+        byte[] name,
+        ushort version,
+        ushort flags,
+        ushort method,
+        DateTime modified,
+        uint crc,
+        long packed,
+        long size,
+        long offset,
+        bool folder,
+        bool aes,
+        ushort realMethod = 0
+    )
     {
         var largeSize = size >= uint.MaxValue || packed >= uint.MaxValue;
         var largeOffset = offset >= uint.MaxValue;
@@ -240,7 +336,7 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
 
         Span<byte> record = stackalloc byte[46];
         BinaryPrimitives.WriteUInt32LittleEndian(record, CentralSignature);
-        BinaryPrimitives.WriteUInt16LittleEndian(record[4..], 63);   // made by: MS-DOS attributes, spec 6.3
+        BinaryPrimitives.WriteUInt16LittleEndian(record[4..], 63); // made by: MS-DOS attributes, spec 6.3
         BinaryPrimitives.WriteUInt16LittleEndian(record[6..], version);
         BinaryPrimitives.WriteUInt16LittleEndian(record[8..], flags);
         BinaryPrimitives.WriteUInt16LittleEndian(record[10..], method);
@@ -271,7 +367,8 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
             extra.AddRange(new byte[16]);
         }
         // Extended timestamp: the modification time, seconds since 1970 in UTC.
-        var seconds = (long)Math.Clamp((modified.ToUniversalTime() - DateTime.UnixEpoch).TotalSeconds, 0, uint.MaxValue);
+        var seconds = (long)
+            Math.Clamp((modified.ToUniversalTime() - DateTime.UnixEpoch).TotalSeconds, 0, uint.MaxValue);
         extra.AddRange(BitConverter.GetBytes((ushort)0x5455));
         extra.AddRange(BitConverter.GetBytes((ushort)5));
         extra.Add(1);
@@ -280,7 +377,7 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         {
             extra.AddRange(BitConverter.GetBytes((ushort)0x9901));
             extra.AddRange(BitConverter.GetBytes((ushort)7));
-            extra.AddRange(BitConverter.GetBytes((ushort)2));   // AE-2
+            extra.AddRange(BitConverter.GetBytes((ushort)2)); // AE-2
             extra.Add((byte)'A');
             extra.Add((byte)'E');
             extra.Add(AesStrength);
@@ -297,7 +394,10 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
             local = new DateTime(1980, 1, 1);
         else if (local.Year > 2107)
             local = new DateTime(2107, 12, 31, 23, 59, 58);
-        return ((ushort)((local.Hour << 11) | (local.Minute << 5) | (local.Second / 2)), (ushort)(((local.Year - 1980) << 9) | (local.Month << 5) | local.Day));
+        return (
+            (ushort)((local.Hour << 11) | (local.Minute << 5) | (local.Second / 2)),
+            (ushort)(((local.Year - 1980) << 9) | (local.Month << 5) | local.Day)
+        );
     }
 
     public void Dispose() => _directory.Dispose();
@@ -311,16 +411,28 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         public override bool CanSeek => false;
         public override bool CanWrite => true;
         public override long Length => throw new NotSupportedException();
-        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
         public override void Flush() => inner.Flush();
+
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
         public override void SetLength(long value) => throw new NotSupportedException();
+
         public override void Write(byte[] buffer, int offset, int count) => inner.Write(buffer, offset, count);
+
         public override void Write(ReadOnlySpan<byte> buffer) => inner.Write(buffer);
 
-        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) =>
-            inner.WriteAsync(buffer, cancellationToken);
+        public override ValueTask WriteAsync(
+            ReadOnlyMemory<byte> buffer,
+            CancellationToken cancellationToken = default
+        ) => inner.WriteAsync(buffer, cancellationToken);
     }
 
     /// <summary>WinZip AES while writing: AES-CTR (a little-endian counter from 1), HMAC-SHA1 of what it writes.</summary>
@@ -346,7 +458,11 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         public override bool CanSeek => false;
         public override bool CanWrite => true;
         public override long Length => throw new NotSupportedException();
-        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
 
         /// <summary>The first 10 bytes of the HMAC of all that was written: what follows the data.</summary>
         public byte[] AuthenticationCode() => _mac.GetHashAndReset()[..ZipEncryption.AesAuthCode];
@@ -376,16 +492,17 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
 
         private void Next()
         {
-            for (var i = 0; i < 16 && ++_counter[i] == 0; i++)
-            {
-            }
+            for (var i = 0; i < 16 && ++_counter[i] == 0; i++) { }
             _aes.EncryptEcb(_counter, _keystream, PaddingMode.None);
             _used = 0;
         }
 
         public override void Flush() => _inner.Flush();
+
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
         public override void SetLength(long value) => throw new NotSupportedException();
 
         protected override void Dispose(bool disposing)

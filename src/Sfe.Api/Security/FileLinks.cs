@@ -16,7 +16,8 @@ public sealed record FileLinkClaims(
     [property: JsonPropertyName("t")] int Tenant,
     [property: JsonPropertyName("u")] int? User,
     [property: JsonPropertyName("s")] string? Stamp,
-    [property: JsonPropertyName("p")] string Path);
+    [property: JsonPropertyName("p")] string Path
+);
 
 /// <summary>
 /// Links for external players (VLC, Infuse...), which fetch the file themselves without the browser's cookie: the
@@ -25,7 +26,9 @@ public sealed record FileLinkClaims(
 /// </summary>
 public sealed class FileLinks(IDataProtectionProvider protection)
 {
-    private readonly ITimeLimitedDataProtector _protector = protection.CreateProtector("Sfe.FileLinks.v1").ToTimeLimitedDataProtector();
+    private readonly ITimeLimitedDataProtector _protector = protection
+        .CreateProtector("Sfe.FileLinks.v1")
+        .ToTimeLimitedDataProtector();
 
     public FileLink Create(int tenantId, SessionUser? user, string path, TimeSpan lifetime)
     {

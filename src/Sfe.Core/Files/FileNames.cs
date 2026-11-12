@@ -19,7 +19,8 @@ public static class FileNames
     /// <summary>Names of devices on Windows, with or without an extension (<c>CON.txt</c> too).</summary>
     private static readonly HashSet<string> ReservedNames = new(
         ["CON", "PRN", "AUX", "NUL", .. Numbered("COM"), .. Numbered("LPT")],
-        StringComparer.OrdinalIgnoreCase);
+        StringComparer.OrdinalIgnoreCase
+    );
 
     /// <summary>Names tried by <see cref="KeepBoth"/> before giving up.</summary>
     public const int MaxKeepBothAttempts = 1000;
@@ -43,9 +44,17 @@ public static class FileNames
         if (windows)
         {
             if (name.IndexOfAny(WindowsInvalidCharacters.ToCharArray()) >= 0)
-                return $"A name can't contain any of {string.Join(' ', WindowsInvalidCharacters.ToCharArray())}" + (OperatingSystem.IsWindows() ? "." : " (Windows refuses them).");
+            {
+                return $"A name can't contain any of {string.Join(' ', WindowsInvalidCharacters.ToCharArray())}"
+                    + (OperatingSystem.IsWindows() ? "." : " (Windows refuses them).");
+            }
+
             if (name.EndsWith('.') || name.EndsWith(' '))
-                return "A name can't end with a dot or a space" + (OperatingSystem.IsWindows() ? "." : " (Windows removes them).");
+            {
+                return "A name can't end with a dot or a space"
+                    + (OperatingSystem.IsWindows() ? "." : " (Windows removes them).");
+            }
+
             if (IsReservedOnWindows(name))
                 return $"“{name}” is the name of a device on Windows: pick another one.";
             if (name.Length > MaxLength)

@@ -17,13 +17,26 @@ namespace Sfe.Api.Endpoints;
 /// <param name="Waiting">A ping is still blocked on the folder (the share does not answer).</param>
 /// <param name="Method">How the last ping was made (a folder read, or a file written in the work folder); null: none yet.</param>
 public sealed record KeepAliveFolderView(
-    string Path, bool IsRoot, bool? IsNetwork, DateTimeOffset? LastPing, double? DurationMilliseconds, string? Error, DateTimeOffset? FailingSince, bool Waiting,
-    KeepAliveMethod? Method);
+    string Path,
+    bool IsRoot,
+    bool? IsNetwork,
+    DateTimeOffset? LastPing,
+    double? DurationMilliseconds,
+    string? Error,
+    DateTimeOffset? FailingSince,
+    bool Waiting,
+    KeepAliveMethod? Method
+);
 
 /// <param name="Mode">The mode in effect for the space.</param>
 /// <param name="Method">How the library folder is to be pinged (the more folders are always read).</param>
 /// <param name="Folders">The folders pinged so far, since the server started: the library folder first.</param>
-public sealed record KeepAliveView(KeepAliveMode Mode, int IntervalSeconds, KeepAliveMethod Method, IReadOnlyList<KeepAliveFolderView> Folders);
+public sealed record KeepAliveView(
+    KeepAliveMode Mode,
+    int IntervalSeconds,
+    KeepAliveMethod Method,
+    IReadOnlyList<KeepAliveFolderView> Folders
+);
 
 public static class KeepAliveEndpoints
 {
@@ -31,33 +44,55 @@ public static class KeepAliveEndpoints
     {
         var keepAlive = api.MapGroup("/keep-alive").WithTags("Keep alive");
 
-        keepAlive.MapGet("/", (KeepAliveService service, LibraryPaths paths, IOptionsMonitor<SfeOptions> options) =>
-                TypedResults.Ok(View(service.Status(), paths, options.CurrentValue)))
+        keepAlive
+            .MapGet("/", (KeepAliveService service, LibraryPaths paths, IOptionsMonitor<SfeOptions> options) =>
+                TypedResults.Ok(View(service.Status(), paths, options.CurrentValue))
+            )
             .RequireRight(Rights.KeepAliveSettings)
             .WithName("GetKeepAlive")
-            .WithSummary("Whether the space's library folder is kept alive on its file server, and what the last pings found.");
+            .WithSummary(
+                "Whether the space's library folder is kept alive on its file server, and what the last pings found."
+            );
 
-        keepAlive.MapPost("/ping", async (KeepAliveService service, LibraryPaths paths, IOptionsMonitor<SfeOptions> options, CancellationToken cancellationToken) =>
-                TypedResults.Ok(View(await service.PingNowAsync(cancellationToken), paths, options.CurrentValue)))
+        keepAlive
+            .MapPost(
+                "/ping",
+                async (
+                    KeepAliveService service,
+                    LibraryPaths paths,
+                    IOptionsMonitor<SfeOptions> options,
+                    CancellationToken cancellationToken
+                ) => TypedResults.Ok(View(await service.PingNowAsync(cancellationToken), paths, options.CurrentValue))
+            )
             .RequireRight(Rights.KeepAliveSettings)
             .WithName("PingKeepAlive")
-            .WithSummary("Pings the space's folders now (also while keep alive is off, as with `Always`), and answers their state.")
-            .WithDescription("Waits for the pings, at most `Sfe:KeepAlive:TimeoutSeconds`; a folder still blocked from an earlier ping is not pinged again.");
+            .WithSummary(
+                "Pings the space's folders now (also while keep alive is off, as with `Always`), and answers their state."
+            )
+            .WithDescription(
+                "Waits for the pings, at most `Sfe:KeepAlive:TimeoutSeconds`; a folder still blocked from an earlier ping is not pinged again."
+            );
 
         return api;
     }
 
     private static KeepAliveView View(IReadOnlyList<KeepAliveFolder> folders, LibraryPaths paths, SfeOptions options) =>
-        new(options.KeepAlive.Mode, options.KeepAlive.IntervalSeconds, options.KeepAlive.Method, folders
-            .Select(f => new KeepAliveFolderView(
-                paths.ToRelative(f.Path) ?? string.Empty,
-                f.IsRoot,
-                f.IsNetwork,
-                f.LastPing,
-                f.Duration?.TotalMilliseconds,
-                f.Error?.Replace(paths.Root, "(library folder)", LibraryPaths.PathComparison),
-                f.FailingSince,
-                f.Waiting,
-                f.Method))
-            .ToList());
+        new(
+            options.KeepAlive.Mode,
+            options.KeepAlive.IntervalSeconds,
+            options.KeepAlive.Method,
+            folders
+                .Select(f => new KeepAliveFolderView(
+                    paths.ToRelative(f.Path) ?? string.Empty,
+                    f.IsRoot,
+                    f.IsNetwork,
+                    f.LastPing,
+                    f.Duration?.TotalMilliseconds,
+                    f.Error?.Replace(paths.Root, "(library folder)", LibraryPaths.PathComparison),
+                    f.FailingSince,
+                    f.Waiting,
+                    f.Method
+                ))
+                .ToList()
+        );
 }

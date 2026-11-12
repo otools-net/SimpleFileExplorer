@@ -6,7 +6,8 @@ namespace Sfe.Core.Upgrades;
 /// <c>major.minor.patch</c> with an optional pre-release (<c>1.3.0-beta.1</c>), as the builds name SFE's versions:
 /// a pre-release comes before its release; build metadata (<c>+sha</c>) is ignored.
 /// </summary>
-public sealed record SemanticVersion(int Major, int Minor, int Patch, string? PreRelease = null) : IComparable<SemanticVersion>
+public sealed record SemanticVersion(int Major, int Minor, int Patch, string? PreRelease = null)
+    : IComparable<SemanticVersion>
 {
     public static bool TryParse(string? text, [NotNullWhen(true)] out SemanticVersion? version)
     {
@@ -18,8 +19,16 @@ public sealed record SemanticVersion(int Major, int Minor, int Patch, string? Pr
         var dash = core.IndexOf('-');
         var numbers = (dash < 0 ? core : core[..dash]).Split('.');
         var preRelease = dash < 0 ? null : core[(dash + 1)..];
-        if (numbers.Length != 3 || preRelease is "" || !int.TryParse(numbers[0], out var major) || !int.TryParse(numbers[1], out var minor)
-            || !int.TryParse(numbers[2], out var patch) || major < 0 || minor < 0 || patch < 0)
+        if (
+            numbers.Length != 3
+            || preRelease is ""
+            || !int.TryParse(numbers[0], out var major)
+            || !int.TryParse(numbers[1], out var minor)
+            || !int.TryParse(numbers[2], out var patch)
+            || major < 0
+            || minor < 0
+            || patch < 0
+        )
         {
             return false;
         }
@@ -45,9 +54,13 @@ public sealed record SemanticVersion(int Major, int Minor, int Patch, string? Pr
     }
 
     public static bool operator <(SemanticVersion a, SemanticVersion b) => a.CompareTo(b) < 0;
+
     public static bool operator >(SemanticVersion a, SemanticVersion b) => a.CompareTo(b) > 0;
+
     public static bool operator <=(SemanticVersion a, SemanticVersion b) => a.CompareTo(b) <= 0;
+
     public static bool operator >=(SemanticVersion a, SemanticVersion b) => a.CompareTo(b) >= 0;
 
-    public override string ToString() => PreRelease is null ? $"{Major}.{Minor}.{Patch}" : $"{Major}.{Minor}.{Patch}-{PreRelease}";
+    public override string ToString() =>
+        PreRelease is null ? $"{Major}.{Minor}.{Patch}" : $"{Major}.{Minor}.{Patch}-{PreRelease}";
 }

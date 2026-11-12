@@ -48,8 +48,14 @@ public sealed class InstanceCookieManager : ICookieManager
     /// </summary>
     public static void RenameShared(CookieValidatePrincipalContext context)
     {
-        if (!context.HttpContext.Items.ContainsKey(SharedRead) || context.Options.CookieManager is not InstanceCookieManager cookies)
+        if (
+            !context.HttpContext.Items.ContainsKey(SharedRead)
+            || context.Options.CookieManager is not InstanceCookieManager cookies
+        )
+        {
             return;
+        }
+
         context.ShouldRenew = true;
         // Where the handler wrote it: the virtual directory's path.
         var options = context.Options.Cookie.Build(context.HttpContext);

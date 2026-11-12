@@ -21,8 +21,19 @@ namespace Sfe.Core.Files;
 /// <param name="Size">Bytes as the index knew them; null when it was not indexed.</param>
 /// <param name="HasRules">A folder that had folder access rules (kept in the entry): its access isn't the parent's.</param>
 /// <param name="PreviousVersion">A copy of a file's content before it was saved over (the file is still where it was).</param>
-public sealed record TrashItem(int Id, string Path, string Name, bool IsFolder, long? Size, int? Files, DateTimeOffset DeletedAt, string? DeletedBy, int? DeletedById,
-    bool HasRules = false, bool PreviousVersion = false);
+public sealed record TrashItem(
+    int Id,
+    string Path,
+    string Name,
+    bool IsFolder,
+    long? Size,
+    int? Files,
+    DateTimeOffset DeletedAt,
+    string? DeletedBy,
+    int? DeletedById,
+    bool HasRules = false,
+    bool PreviousVersion = false
+);
 
 /// <param name="Next">The <c>before</c> of the next page; null on the last.</param>
 /// <param name="RetentionDays">Days things stay in the trash (<see cref="TrashOptions.RetentionDays"/>); 0 = until emptied.</param>
@@ -62,7 +73,8 @@ public sealed class Trash(
     TenantBinding tenant,
     IOptionsMonitor<SfeOptions> options,
     ILogger<Trash> logger,
-    FolderRuleService? rules = null) : IDisposable
+    FolderRuleService? rules = null
+) : IDisposable
 {
     public const string FolderName = "trash";
     public const int MaxPageSize = 200;
@@ -113,7 +125,13 @@ public sealed class Trash(
     /// </summary>
     /// <exception cref="IOException">The disk refused (in use, a folder with links on another drive...).</exception>
     /// <exception cref="UnauthorizedAccessException">The server's account may not change it.</exception>
-    internal async Task<int> MoveInAsync(string full, string relative, bool isFolder, FileActor actor, CancellationToken cancellationToken)
+    internal async Task<int> MoveInAsync(
+        string full,
+        string relative,
+        bool isFolder,
+        FileActor actor,
+        CancellationToken cancellationToken
+    )
     {
         var (size, files) = await MeasureAsync(full, isFolder, cancellationToken);
         var entry = new TrashEntry
@@ -154,7 +172,11 @@ public sealed class Trash(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "The index rows of {Path} could not be moved to the trash: the next scan forgets them", relative);
+            logger.LogWarning(
+                ex,
+                "The index rows of {Path} could not be moved to the trash: the next scan forgets them",
+                relative
+            );
         }
         if (isFolder && rules is not null && tenant.TenantId is { } tenantId)
         {
@@ -164,7 +186,9 @@ public sealed class Trash(
                 if (kept.Count > 0)
                 {
                     await using var db = await dbFactory.CreateDbContextAsync();
-                    await db.TrashEntries.Where(t => t.Id == entry.Id).ExecuteUpdateAsync(s => s.SetProperty(t => t.Rules, JsonSerializer.Serialize(kept)));
+                    await db
+                        .TrashEntries.Where(t => t.Id == entry.Id)
+                        .ExecuteUpdateAsync(s => s.SetProperty(t => t.Rules, JsonSerializer.Serialize(kept)));
                 }
             }
             catch (Exception ex)
@@ -180,7 +204,9 @@ public sealed class Trash(
                 if (kept.Count > 0)
                 {
                     await using var db = await dbFactory.CreateDbContextAsync();
-                    await db.TrashEntries.Where(t => t.Id == entry.Id).ExecuteUpdateAsync(s => s.SetProperty(t => t.DefaultTags, JsonSerializer.Serialize(kept)));
+                    await db
+                        .TrashEntries.Where(t => t.Id == entry.Id)
+                        .ExecuteUpdateAsync(s => s.SetProperty(t => t.DefaultTags, JsonSerializer.Serialize(kept)));
                 }
             }
             catch (Exception ex)
@@ -203,7 +229,12 @@ public sealed class Trash(
     /// </summary>
     /// <exception cref="IOException">The disk refused.</exception>
     /// <exception cref="UnauthorizedAccessException">The server's account may not read it or write to the trash.</exception>
-    internal async Task<int> CopyInAsync(string full, string relative, FileActor actor, CancellationToken cancellationToken)
+    internal async Task<int> CopyInAsync(
+        string full,
+        string relative,
+        FileActor actor,
+        CancellationToken cancellationToken
+    )
     {
         var entry = new TrashEntry
         {
@@ -241,14 +272,23 @@ public sealed class Trash(
     }
 
     /// <summary>Deletes <paramref name="full"/> for good: the disk, then its index rows, folder rules, default tags and cached previews.</summary>
-    internal async Task DeleteForGoodAsync(string full, string relative, bool isFolder, FileActor actor, CancellationToken cancellationToken)
+    internal async Task DeleteForGoodAsync(
+        string full,
+        string relative,
+        bool isFolder,
+        FileActor actor,
+        CancellationToken cancellationToken
+    )
     {
         // The files whose previews go with them, read before their rows go.
         List<string> cached;
         await using (var db = await dbFactory.CreateDbContextAsync(cancellationToken))
         {
             cached = isFolder
-                ? await db.Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, full)).Select(f => f.FullName).ToListAsync(cancellationToken)
+                ? await db
+                    .Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, full))
+                    .Select(f => f.FullName)
+                    .ToListAsync(cancellationToken)
                 : [full];
         }
 
@@ -265,7 +305,11 @@ public sealed class Trash(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "What SFE kept about {Path} could not all be forgotten: the next scan does", relative);
+            logger.LogWarning(
+                ex,
+                "What SFE kept about {Path} could not all be forgotten: the next scan does",
+                relative
+            );
         }
         DeleteCachesLater(cached);
         Changed(full);
@@ -276,7 +320,12 @@ public sealed class Trash(
 
     /// <summary>Newest first, the entries <paramref name="visible"/> lets through.</summary>
     /// <param name="before">The <see cref="TrashPage.Next"/> of the previous page.</param>
-    public async Task<TrashPage> ListAsync(int? before, int? limit, Func<TrashItem, bool> visible, CancellationToken cancellationToken = default)
+    public async Task<TrashPage> ListAsync(
+        int? before,
+        int? limit,
+        Func<TrashItem, bool> visible,
+        CancellationToken cancellationToken = default
+    )
     {
         PurgeWhenDue();
         var size = Math.Clamp(limit ?? 50, 1, MaxPageSize);
@@ -287,7 +336,12 @@ public sealed class Trash(
         // What the person may see is decided per entry: read on until the page is full.
         while (items.Count <= size)
         {
-            var batch = await db.TrashEntries.AsNoTracking().Where(t => t.Id < cursor).OrderByDescending(t => t.Id).Take(size * 2).ToListAsync(cancellationToken);
+            var batch = await db
+                .TrashEntries.AsNoTracking()
+                .Where(t => t.Id < cursor)
+                .OrderByDescending(t => t.Id)
+                .Take(size * 2)
+                .ToListAsync(cancellationToken);
             if (batch.Count == 0)
                 break;
             cursor = batch[^1].Id;
@@ -307,7 +361,10 @@ public sealed class Trash(
     /// How many entries <paramref name="visible"/> lets through, up to <see cref="CountCap"/>: read newest first in
     /// batches, as the pages, and never further than one past the cap.
     /// </summary>
-    public async Task<TrashCount> CountAsync(Func<TrashItem, bool> visible, CancellationToken cancellationToken = default)
+    public async Task<TrashCount> CountAsync(
+        Func<TrashItem, bool> visible,
+        CancellationToken cancellationToken = default
+    )
     {
         const int BatchSize = MaxPageSize;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -315,7 +372,12 @@ public sealed class Trash(
         var count = 0;
         while (count <= CountCap)
         {
-            var batch = await db.TrashEntries.AsNoTracking().Where(t => t.Id < cursor).OrderByDescending(t => t.Id).Take(BatchSize).ToListAsync(cancellationToken);
+            var batch = await db
+                .TrashEntries.AsNoTracking()
+                .Where(t => t.Id < cursor)
+                .OrderByDescending(t => t.Id)
+                .Take(BatchSize)
+                .ToListAsync(cancellationToken);
             if (batch.Count == 0)
                 break;
             cursor = batch[^1].Id;
@@ -329,47 +391,88 @@ public sealed class Trash(
     public async Task<TrashItem?> FindAsync(int id, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        return await db.TrashEntries.AsNoTracking().Where(t => t.Id == id).Select(t => ToItem(t)).FirstOrDefaultAsync(cancellationToken);
+        return await db
+            .TrashEntries.AsNoTracking()
+            .Where(t => t.Id == id)
+            .Select(t => ToItem(t))
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <summary>
     /// Puts an entry back where it was (its folder made again if it is gone; " (2)" added when the name is taken there),
     /// with the tags of its files and a folder's rules; a folder is then scanned to index the rest.
     /// </summary>
-    public async Task<FileOperationResult> RestoreAsync(int id, FileActor actor, CancellationToken cancellationToken = default)
+    public async Task<FileOperationResult> RestoreAsync(
+        int id,
+        FileActor actor,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var entry = await db.TrashEntries.Include(t => t.Tags).AsNoTracking().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var entry = await db
+            .TrashEntries.Include(t => t.Tags)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         if (entry is null)
             return FileOperationResult.Fail(FileOperationStatus.NotFound, "It is no longer in the trash.");
         var stored = StoragePath(entry);
         if (!File.Exists(stored) && !Directory.Exists(stored))
-            return FileOperationResult.Fail(FileOperationStatus.NotFound, $"“{entry.Name}” is no longer in the trash's folder: it can't be restored.");
+        {
+            return FileOperationResult.Fail(
+                FileOperationStatus.NotFound,
+                $"“{entry.Name}” is no longer in the trash's folder: it can't be restored."
+            );
+        }
 
         var parent = ParentOf(entry.Path);
         if (!paths.TryResolve(parent, out var parentFull))
-            return FileOperationResult.Fail(FileOperationStatus.Failed, $"The folder “{parent}” it was in can't be used any more.");
+        {
+            return FileOperationResult.Fail(
+                FileOperationStatus.Failed,
+                $"The folder “{parent}” it was in can't be used any more."
+            );
+        }
+
         string target;
         string targetPath;
         using (var operation = scans.TryBeginOperation(parentFull))
         {
             if (operation is null)
-                return FileOperationResult.Fail(FileOperationStatus.ScanRunning, "A scan is running over the folder it was in: try again when it has finished.");
+            {
+                return FileOperationResult.Fail(
+                    FileOperationStatus.ScanRunning,
+                    "A scan is running over the folder it was in: try again when it has finished."
+                );
+            }
+
             try
             {
                 Directory.CreateDirectory(parentFull);
-                var name = File.Exists(Path.Combine(parentFull, entry.Name)) || Directory.Exists(Path.Combine(parentFull, entry.Name))
-                    ? FileNames.KeepBoth(entry.Name, entry.IsFolder, n => File.Exists(Path.Combine(parentFull, n)) || Directory.Exists(Path.Combine(parentFull, n)))
-                    : entry.Name;
+                var name =
+                    File.Exists(Path.Combine(parentFull, entry.Name))
+                    || Directory.Exists(Path.Combine(parentFull, entry.Name))
+                        ? FileNames.KeepBoth(entry.Name, entry.IsFolder, n =>
+                            File.Exists(Path.Combine(parentFull, n)) || Directory.Exists(Path.Combine(parentFull, n))
+                        )
+                        : entry.Name;
                 if (name is null)
-                    return FileOperationResult.Fail(FileOperationStatus.Exists, $"There is already a file or folder named “{entry.Name}” there.");
+                {
+                    return FileOperationResult.Fail(
+                        FileOperationStatus.Exists,
+                        $"There is already a file or folder named “{entry.Name}” there."
+                    );
+                }
+
                 target = Path.Combine(parentFull, name);
                 targetPath = parent.Length == 0 ? name : $"{parent}/{name}";
                 FileTree.Move(stored, target, entry.IsFolder);
             }
             catch (LinksInsideException ex)
             {
-                return FileOperationResult.Fail(FileOperationStatus.Failed, $"“{entry.Name}” can't be restored: {ex.Message}");
+                return FileOperationResult.Fail(
+                    FileOperationStatus.Failed,
+                    $"“{entry.Name}” can't be restored: {ex.Message}"
+                );
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -383,7 +486,12 @@ public sealed class Trash(
             {
                 try
                 {
-                    await rules.PutBackAsync(tenantId, targetPath, JsonSerializer.Deserialize<List<KeptFolderRule>>(json) ?? [], CancellationToken.None);
+                    await rules.PutBackAsync(
+                        tenantId,
+                        targetPath,
+                        JsonSerializer.Deserialize<List<KeptFolderRule>>(json) ?? [],
+                        CancellationToken.None
+                    );
                 }
                 catch (Exception ex)
                 {
@@ -395,7 +503,11 @@ public sealed class Trash(
             {
                 try
                 {
-                    await defaultTags.PutBackAsync(targetPath, JsonSerializer.Deserialize<List<KeptDefaultTag>>(defaults) ?? [], CancellationToken.None);
+                    await defaultTags.PutBackAsync(
+                        targetPath,
+                        JsonSerializer.Deserialize<List<KeptDefaultTag>>(defaults) ?? [],
+                        CancellationToken.None
+                    );
                 }
                 catch (Exception ex)
                 {
@@ -422,8 +534,16 @@ public sealed class Trash(
         // The rest of a folder is indexed by a scan of it (none starts while another scan runs: the next one does).
         if (entry.IsFolder)
             scans.TryStart(targetPath, TaskTrigger.Automatic);
-        logger.LogInformation("{Account} restored {Path} from the trash as {Target}", actor.Name, entry.Path, targetPath);
-        return new FileOperationResult(FileOperationStatus.Done, browser.ToItem(entry.IsFolder ? new DirectoryInfo(target) : new FileInfo(target)));
+        logger.LogInformation(
+            "{Account} restored {Path} from the trash as {Target}",
+            actor.Name,
+            entry.Path,
+            targetPath
+        );
+        return new FileOperationResult(
+            FileOperationStatus.Done,
+            browser.ToItem(entry.IsFolder ? new DirectoryInfo(target) : new FileInfo(target))
+        );
     }
 
     /// <summary>Deletes an entry for good: its file or folder in the trash, the previews it had, its row.</summary>
@@ -440,9 +560,11 @@ public sealed class Trash(
         // The previews were kept by the original paths (a previous version's are the live file's: they stay).
         if (entry.Kind != TrashEntryKind.PreviousVersion && paths.TryResolve(entry.Path, out var original))
         {
-            DeleteCachesLater(entry.IsFolder
-                ? [.. FileTree.Files(stored).Select(file => original + file[stored.Length..])]
-                : [original]);
+            DeleteCachesLater(
+                entry.IsFolder
+                    ? [.. FileTree.Files(stored).Select(file => original + file[stored.Length..])]
+                    : [original]
+            );
         }
 
         if (File.Exists(stored) || Directory.Exists(stored))
@@ -515,7 +637,14 @@ public sealed class Trash(
                 var limit = DateTime.UtcNow.AddDays(-days);
                 List<int> expired;
                 await using (var db = await dbFactory.CreateDbContextAsync(cancellationToken))
-                    expired = await db.TrashEntries.Where(t => t.DeletedAt < limit).OrderBy(t => t.Id).Select(t => t.Id).ToListAsync(cancellationToken);
+                {
+                    expired = await db
+                        .TrashEntries.Where(t => t.DeletedAt < limit)
+                        .OrderBy(t => t.Id)
+                        .Select(t => t.Id)
+                        .ToListAsync(cancellationToken);
+                }
+
                 var failed = 0;
                 foreach (var id in expired)
                 {
@@ -534,7 +663,9 @@ public sealed class Trash(
                         logger.LogWarning(ex, "Could not purge trash entry {Id}", id);
                     }
                 }
-                summary = $"{_purged:N0} deleted for good after {days} days in the trash" + (failed > 0 ? $", {failed:N0} could not be" : string.Empty);
+                summary =
+                    $"{_purged:N0} deleted for good after {days} days in the trash"
+                    + (failed > 0 ? $", {failed:N0} could not be" : string.Empty);
                 if (_purged > 0)
                     logger.LogInformation("Trash purge: {Summary}", summary);
             }
@@ -572,9 +703,18 @@ public sealed class Trash(
     /* ---------- Parts ---------- */
 
     private string StoragePath(TrashEntry entry) =>
-        Path.Combine(entry.Location == WorkFolderLocation.Server ? work.ServerPath : work.LibraryPath, FolderName, entry.Folder, entry.Name);
+        Path.Combine(
+            entry.Location == WorkFolderLocation.Server ? work.ServerPath : work.LibraryPath,
+            FolderName,
+            entry.Folder,
+            entry.Name
+        );
 
-    private async Task<(long? Size, int? Files)> MeasureAsync(string full, bool isFolder, CancellationToken cancellationToken)
+    private async Task<(long? Size, int? Files)> MeasureAsync(
+        string full,
+        bool isFolder,
+        CancellationToken cancellationToken
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var indexed = db.Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, full));
@@ -595,18 +735,24 @@ public sealed class Trash(
         {
             await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
             // From the links (a join): SQLite can't run the APPLY a SelectMany over the files makes.
-            var tagged = await db.FileTags.AsNoTracking()
+            var tagged = await db
+                .FileTags.AsNoTracking()
                 .Where(SearchPredicateBuilder.InTree<FileTag>(l => l.File!.FullName, full))
                 .Select(l => new { l.File!.FullName, l.TagId })
                 .ToListAsync(cancellationToken);
             foreach (var link in tagged)
             {
-                db.TrashTags.Add(new TrashTag
-                {
-                    TrashEntryId = entryId,
-                    Path = link.FullName.Length <= full.Length ? string.Empty : link.FullName[(full.Length + 1)..].Replace(Path.DirectorySeparatorChar, '/'),
-                    TagId = link.TagId,
-                });
+                db.TrashTags.Add(
+                    new TrashTag
+                    {
+                        TrashEntryId = entryId,
+                        Path =
+                            link.FullName.Length <= full.Length
+                                ? string.Empty
+                                : link.FullName[(full.Length + 1)..].Replace(Path.DirectorySeparatorChar, '/'),
+                        TagId = link.TagId,
+                    }
+                );
             }
             await db.SaveChangesAsync(cancellationToken);
             await ForgetRowsAsync(db, full, cancellationToken);
@@ -618,7 +764,9 @@ public sealed class Trash(
     private static async Task ForgetRowsAsync(SfeDbContext db, string full, CancellationToken cancellationToken)
     {
         // A folder's files go with it (cascade); a file alone by its own row.
-        await db.Directories.Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, full)).ExecuteDeleteAsync(cancellationToken);
+        await db
+            .Directories.Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, full))
+            .ExecuteDeleteAsync(cancellationToken);
         await db.Files.Where(f => f.FullName == full).ExecuteDeleteAsync(cancellationToken);
     }
 
@@ -627,8 +775,14 @@ public sealed class Trash(
     {
         if (entry.Tags.Count == 0)
             return;
-        var byFile = entry.Tags
-            .GroupBy(t => t.Path.Length == 0 ? target : Path.Combine(target, t.Path.Replace('/', Path.DirectorySeparatorChar)), LibraryPaths.PathComparer)
+        var byFile = entry
+            .Tags.GroupBy(
+                t =>
+                    t.Path.Length == 0
+                        ? target
+                        : Path.Combine(target, t.Path.Replace('/', Path.DirectorySeparatorChar)),
+                LibraryPaths.PathComparer
+            )
             .ToDictionary(g => g.Key, g => g.Select(t => t.TagId).Distinct().ToList(), LibraryPaths.PathComparer);
         var ids = await indexer.IndexFilesAsync([.. byFile.Keys], cancellationToken);
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -637,7 +791,10 @@ public sealed class Trash(
         {
             if (!ids.TryGetValue(file, out var fileId))
                 continue;
-            var existing = await db.FileTags.Where(l => l.FileId == fileId).Select(l => l.TagId).ToListAsync(cancellationToken);
+            var existing = await db
+                .FileTags.Where(l => l.FileId == fileId)
+                .Select(l => l.TagId)
+                .ToListAsync(cancellationToken);
             foreach (var tagId in tagIds.Where(known.Contains).Except(existing))
                 db.FileTags.Add(new FileTag { FileId = fileId, TagId = tagId });
         }
@@ -700,32 +857,48 @@ public sealed class Trash(
             return;
         lock (_cacheGate)
         {
-            _cacheDeletes = _cacheDeletes.ContinueWith(_ =>
-            {
-                foreach (var file in files)
+            _cacheDeletes = _cacheDeletes.ContinueWith(
+                _ =>
                 {
-                    try
+                    foreach (var file in files)
                     {
-                        File.Delete(thumbnails.GetCachePath(file));
-                        var folder = trickplay.GetCacheFolder(file);
-                        if (Directory.Exists(folder))
-                            Directory.Delete(folder, recursive: true);
+                        try
+                        {
+                            File.Delete(thumbnails.GetCachePath(file));
+                            var folder = trickplay.GetCacheFolder(file);
+                            if (Directory.Exists(folder))
+                                Directory.Delete(folder, recursive: true);
+                        }
+                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                        {
+                            logger.LogDebug(ex, "Could not delete the cached previews of {File}", file);
+                        }
                     }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                    {
-                        logger.LogDebug(ex, "Could not delete the cached previews of {File}", file);
-                    }
-                }
-            }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.None,
+                TaskScheduler.Default
+            );
         }
     }
 
-    private static TrashItem ToItem(TrashEntry entry) => new(
-        entry.Id, entry.Path, entry.Name, entry.IsFolder, entry.Size, entry.Files,
-        new DateTimeOffset(DateTime.SpecifyKind(entry.DeletedAt, DateTimeKind.Utc)), entry.DeletedBy, entry.DeletedById, entry.Rules is not null,
-        entry.Kind == TrashEntryKind.PreviousVersion);
+    private static TrashItem ToItem(TrashEntry entry) =>
+        new(
+            entry.Id,
+            entry.Path,
+            entry.Name,
+            entry.IsFolder,
+            entry.Size,
+            entry.Files,
+            new DateTimeOffset(DateTime.SpecifyKind(entry.DeletedAt, DateTimeKind.Utc)),
+            entry.DeletedBy,
+            entry.DeletedById,
+            entry.Rules is not null,
+            entry.Kind == TrashEntryKind.PreviousVersion
+        );
 
-    private static string ParentOf(string path) => path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
+    private static string ParentOf(string path) =>
+        path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
 
     public void Dispose()
     {

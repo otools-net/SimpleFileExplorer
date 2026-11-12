@@ -37,10 +37,11 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         private Dictionary<string, int>? _positions;
 
         /// <summary>Where each name is in <see cref="Items"/>: built once, for the listings that folder rules filter.</summary>
-        public Dictionary<string, int> Positions => _positions ??= Items
-            .Select((item, index) => (item.Name, index))
-            .DistinctBy(e => e.Name, LibraryPaths.PathComparer)
-            .ToDictionary(e => e.Name, e => e.index, LibraryPaths.PathComparer);
+        public Dictionary<string, int> Positions =>
+            _positions ??= Items
+                .Select((item, index) => (item.Name, index))
+                .DistinctBy(e => e.Name, LibraryPaths.PathComparer)
+                .ToDictionary(e => e.Name, e => e.index, LibraryPaths.PathComparer);
     }
 
     /// <param name="filter">What folder rules leave out; offsets and counts are those of what is left.</param>
@@ -51,8 +52,14 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
     /// of once per page. Sizes and dates on later pages are those read for the first page. A filter costs what it
     /// names (the few entries folder rules are about), not the size of the folder.
     /// </remarks>
-    public DirectoryListing? List(string? relativePath, int offset, int limit, SortField sort = SortField.Name, bool descending = false,
-        ListingFilter? filter = null)
+    public DirectoryListing? List(
+        string? relativePath,
+        int offset,
+        int limit,
+        SortField sort = SortField.Name,
+        bool descending = false,
+        ListingFilter? filter = null
+    )
     {
         if (!paths.TryResolve(relativePath, out var fullPath))
             return null;
@@ -78,11 +85,17 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
             Limit: limit,
             Total: total,
             DirectoryCount: directories,
-            FileCount: total - directories);
+            FileCount: total - directories
+        );
     }
 
     /// <summary>A page of the listing without what <paramref name="filter"/> leaves out, with the counts of what is left.</summary>
-    private static (List<LibraryItem> Items, int Total, int Directories) Filtered(CachedListing listing, ListingFilter filter, int offset, int limit)
+    private static (List<LibraryItem> Items, int Total, int Directories) Filtered(
+        CachedListing listing,
+        ListingFilter filter,
+        int offset,
+        int limit
+    )
     {
         var entries = listing.Items;
         var positions = listing.Positions;
@@ -95,10 +108,17 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
                 .Order()
                 .Select(index => entries[index])
                 .ToList();
-            return (shown.Skip(offset).Take(limit).ToList(), shown.Count, shown.Count(i => i.Kind == ItemKind.Directory));
+            return (
+                shown.Skip(offset).Take(limit).ToList(),
+                shown.Count,
+                shown.Count(i => i.Kind == ItemKind.Directory)
+            );
         }
 
-        var hidden = filter.Hidden.Select(name => positions.TryGetValue(name, out var index) ? index : -1).Where(index => index >= 0).ToHashSet();
+        var hidden = filter
+            .Hidden.Select(name => positions.TryGetValue(name, out var index) ? index : -1)
+            .Where(index => index >= 0)
+            .ToHashSet();
         var sorted = hidden.Order().ToList();
         // The entry at `offset` once the hidden ones are left out: each hidden one up to it moves it one further.
         var raw = offset;
@@ -115,7 +135,11 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
             if (!hidden.Contains(raw))
                 page.Add(entries[raw]);
         }
-        return (page, entries.Count - hidden.Count, listing.DirectoryCount - sorted.Count(index => index < listing.DirectoryCount));
+        return (
+            page,
+            entries.Count - hidden.Count,
+            listing.DirectoryCount - sorted.Count(index => index < listing.DirectoryCount)
+        );
     }
 
     /// <summary>The folders before and after a folder in its parent, listed with the given sort.</summary>
@@ -125,7 +149,12 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
     /// Reuses the parent's sorted listing while the parent is unchanged: stepping folder after folder through a parent
     /// of many sub-folders lists it once.
     /// </remarks>
-    public FolderSiblings? Siblings(string? relativePath, SortField sort = SortField.Name, bool descending = false, ListingFilter? filter = null)
+    public FolderSiblings? Siblings(
+        string? relativePath,
+        SortField sort = SortField.Name,
+        bool descending = false,
+        ListingFilter? filter = null
+    )
     {
         if (!paths.TryResolve(relativePath, out var fullPath))
             return null;
@@ -140,17 +169,21 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
 
         var listing = GetListing(parent, sort, descending, reuse: true);
         // Folders come first in a listing.
-        var folders = listing.Items.Take(listing.DirectoryCount).Where(i => filter is null || filter.Shows(i.Name)).ToList();
+        var folders = listing
+            .Items.Take(listing.DirectoryCount)
+            .Where(i => filter is null || filter.Shows(i.Name))
+            .ToList();
         var index = folders.FindIndex(i => string.Equals(i.Path, path, LibraryPaths.PathComparison));
         if (index < 0)
-            return new FolderSiblings(path, null, null, 0, folders.Count);   // hidden, or created since the listing
+            return new FolderSiblings(path, null, null, 0, folders.Count); // hidden, or created since the listing
 
         return new FolderSiblings(
             Path: path,
             Previous: index > 0 ? folders[index - 1] : null,
             Next: index < folders.Count - 1 ? folders[index + 1] : null,
             Position: index + 1,
-            Count: folders.Count);
+            Count: folders.Count
+        );
     }
 
     /// <summary>Most pictures a folder card can show (<see cref="BrowseOptions.FolderPictures"/>).</summary>
@@ -268,11 +301,24 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
     {
         var folder = Path.TrimEndingDirectorySeparator(fullPath);
         lock (_cacheGate)
-            _cache.RemoveAll(c => LibraryPaths.PathComparer.Equals(Path.TrimEndingDirectorySeparator(c.Key.FullPath), folder));
+        {
+            _cache.RemoveAll(c =>
+                LibraryPaths.PathComparer.Equals(Path.TrimEndingDirectorySeparator(c.Key.FullPath), folder)
+            );
+        }
+
         lock (_coversGate)
         {
-            foreach (var key in _covers.Keys.Where(k => LibraryPaths.PathComparer.Equals(Path.TrimEndingDirectorySeparator(k.FullPath), folder)).ToList())
+            foreach (
+                var key in _covers
+                    .Keys.Where(k =>
+                        LibraryPaths.PathComparer.Equals(Path.TrimEndingDirectorySeparator(k.FullPath), folder)
+                    )
+                    .ToList()
+            )
+            {
                 _covers.Remove(key);
+            }
         }
         // After the listing is forgotten: whoever listens lists it anew.
         if (paths.ToRelative(folder) is { } changed && FolderChanged is { } handlers)
@@ -284,9 +330,7 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
                 {
                     handler(changed);
                 }
-                catch (Exception ex) when (ex is not OutOfMemoryException)
-                {
-                }
+                catch (Exception ex) when (ex is not OutOfMemoryException) { }
             }
         }
     }
@@ -299,7 +343,11 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         var listing = reuse ? FindCached(key, version) : null;
         if (listing is null)
         {
-            var items = Sort(directory.EnumerateFileSystemInfos("*", EnumerationOptions).Select(ToItem).OfType<LibraryItem>(), sort, descending)
+            var items = Sort(
+                    directory.EnumerateFileSystemInfos("*", EnumerationOptions).Select(ToItem).OfType<LibraryItem>(),
+                    sort,
+                    descending
+                )
                 .ToList();
             listing = new CachedListing(key, version, items, items.Count(e => e.Kind == ItemKind.Directory));
             Store(listing);
@@ -346,7 +394,14 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         return info switch
         {
             DirectoryInfo => new LibraryItem(info.Name, path, ItemKind.Directory, null, null, info.LastWriteTimeUtc),
-            FileInfo file => new LibraryItem(file.Name, path, classifier.Classify(file.Extension), NormalizeExtension(file.Extension), file.Length, file.LastWriteTimeUtc),
+            FileInfo file => new LibraryItem(
+                file.Name,
+                path,
+                classifier.Classify(file.Extension),
+                NormalizeExtension(file.Extension),
+                file.Length,
+                file.LastWriteTimeUtc
+            ),
             _ => null,
         };
     }
@@ -379,21 +434,30 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         var ordered = items.OrderBy(i => i.Kind == ItemKind.Directory ? 0 : 1);
         return (sort, descending) switch
         {
-            (SortField.Modified, false) => ordered.ThenBy(i => i.Modified).ThenBy(i => i.Name, NaturalComparer.Instance),
-            (SortField.Modified, true) => ordered.ThenByDescending(i => i.Modified).ThenBy(i => i.Name, NaturalComparer.Instance),
+            (SortField.Modified, false) => ordered
+                .ThenBy(i => i.Modified)
+                .ThenBy(i => i.Name, NaturalComparer.Instance),
+            (SortField.Modified, true) => ordered
+                .ThenByDescending(i => i.Modified)
+                .ThenBy(i => i.Name, NaturalComparer.Instance),
             (SortField.Size, false) => ordered.ThenBy(i => i.Size).ThenBy(i => i.Name, NaturalComparer.Instance),
-            (SortField.Size, true) => ordered.ThenByDescending(i => i.Size).ThenBy(i => i.Name, NaturalComparer.Instance),
+            (SortField.Size, true) => ordered
+                .ThenByDescending(i => i.Size)
+                .ThenBy(i => i.Name, NaturalComparer.Instance),
             (SortField.Type, false) => ordered.ThenBy(i => i.Extension).ThenBy(i => i.Name, NaturalComparer.Instance),
-            (SortField.Type, true) => ordered.ThenByDescending(i => i.Extension).ThenBy(i => i.Name, NaturalComparer.Instance),
+            (SortField.Type, true) => ordered
+                .ThenByDescending(i => i.Extension)
+                .ThenBy(i => i.Name, NaturalComparer.Instance),
             (_, false) => ordered.ThenBy(i => i.Name, NaturalComparer.Instance),
             (_, true) => ordered.ThenByDescending(i => i.Name, NaturalComparer.Instance),
         };
     }
 
-    private static EnumerationOptions CreateEnumerationOptions(bool showHidden) => new()
-    {
-        IgnoreInaccessible = true,
-        RecurseSubdirectories = false,
-        AttributesToSkip = showHidden ? 0 : FileAttributes.Hidden | FileAttributes.System,
-    };
+    private static EnumerationOptions CreateEnumerationOptions(bool showHidden) =>
+        new()
+        {
+            IgnoreInaccessible = true,
+            RecurseSubdirectories = false,
+            AttributesToSkip = showHidden ? 0 : FileAttributes.Hidden | FileAttributes.System,
+        };
 }

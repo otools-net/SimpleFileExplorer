@@ -93,7 +93,8 @@ public sealed record TaskInfo(
     bool CanSchedule,
     DateTimeOffset? AutomaticNextRun,
     int? AutomaticEvery,
-    TaskRunSummary? LastRun);
+    TaskRunSummary? LastRun
+);
 
 /// <summary>Result of starting a task.</summary>
 public enum TaskStartResult
@@ -118,7 +119,8 @@ public record TaskRunSummary(
     DateTimeOffset Started,
     DateTimeOffset? Finished,
     TaskOutcome Outcome,
-    string? Summary);
+    string? Summary
+);
 
 /// <summary>A line of a run's log: what the task logged (from Debug up) while it ran.</summary>
 public sealed record TaskLogLine(DateTimeOffset Time, string Level, string Message);
@@ -135,8 +137,8 @@ public sealed record TaskRunDetails(
     TaskOutcome Outcome,
     string? Summary,
     IReadOnlyList<TaskLogLine> Log,
-    int Omitted)
-    : TaskRunSummary(Id, Task, Path, Trigger, ScheduleId, Started, Finished, Outcome, Summary);
+    int Omitted
+) : TaskRunSummary(Id, Task, Path, Trigger, ScheduleId, Started, Finished, Outcome, Summary);
 
 /// <param name="Next">Value of <c>before</c> that requests the next (older) page; null on the last one.</param>
 public sealed record TaskRunPage(IReadOnlyList<TaskRunSummary> Runs, long? Next);
@@ -154,7 +156,8 @@ public record TaskScheduleInput(
     DateTimeOffset Start,
     int IntervalMinutes,
     int Days,
-    bool Enabled);
+    bool Enabled
+);
 
 /// <param name="NextRun">When it runs next; null when it is off or a one-off that has run (or was missed).</param>
 /// <param name="LastRun">When it last started its task.</param>
@@ -168,8 +171,8 @@ public sealed record TaskScheduleView(
     int Days,
     bool Enabled,
     DateTimeOffset? NextRun,
-    DateTimeOffset? LastRun)
-    : TaskScheduleInput(Task, Path, Kind, Start, IntervalMinutes, Days, Enabled);
+    DateTimeOffset? LastRun
+) : TaskScheduleInput(Task, Path, Kind, Start, IntervalMinutes, Days, Enabled);
 
 /// <summary>Everything the "Background tasks" dialog shows, refreshed while it is open.</summary>
 /// <param name="TimeZone">The server's time zone (IANA id when known): weekly schedules follow its clock.</param>
@@ -179,4 +182,5 @@ public sealed record TaskOverview(
     IReadOnlyList<TaskScheduleView> Schedules,
     DateTimeOffset ServerTime,
     string TimeZone,
-    int LogRetentionDays);
+    int LogRetentionDays
+);

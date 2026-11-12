@@ -26,7 +26,8 @@ public sealed class AppPolicySource : IDisposable
     }
 
     /// <summary>The <c>Content-Security-Policy</c> of the app's pages.</summary>
-    public string Current => _policy ??= SecurityHeaders.AppPolicyFor(DataServerUrl.Normalize(_settings.ServerLevel().DataServer));
+    public string Current =>
+        _policy ??= SecurityHeaders.AppPolicyFor(DataServerUrl.Normalize(_settings.ServerLevel().DataServer));
 
     public void Dispose()
     {

@@ -13,7 +13,10 @@ namespace Sfe.Core.Access;
 /// administrator, the built-in groups) but not who asks: the Api decides that from the caller's rights.
 /// </summary>
 public sealed partial class AccessService(
-    IDbContextFactory<AccessDbContext> dbFactory, AccessChanges changes, IOptionsMonitor<SecurityOptions> security)
+    IDbContextFactory<AccessDbContext> dbFactory,
+    AccessChanges changes,
+    IOptionsMonitor<SecurityOptions> security
+)
 {
     public const string DefaultTenantSlug = "library";
     public const int MaxNameLength = 200;
@@ -39,14 +42,24 @@ public sealed partial class AccessService(
     public async Task<IReadOnlyList<TenantInfo>> GetTenantsAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var tenants = await db.Tenants.AsNoTracking().Include(t => t.DisabledRights).OrderByDescending(t => t.IsDefault).ThenBy(t => t.Name).ToListAsync(cancellationToken);
+        var tenants = await db
+            .Tenants.AsNoTracking()
+            .Include(t => t.DisabledRights)
+            .OrderByDescending(t => t.IsDefault)
+            .ThenBy(t => t.Name)
+            .ToListAsync(cancellationToken);
         return tenants.Select(ToInfo).ToList();
     }
 
     public async Task<TenantInfo?> GetTenantAsync(int id, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        return await db.Tenants.AsNoTracking().Include(t => t.DisabledRights).FirstOrDefaultAsync(t => t.Id == id, cancellationToken) is { } tenant
+        return
+            await db
+                .Tenants.AsNoTracking()
+                .Include(t => t.DisabledRights)
+                .FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+                is { } tenant
             ? ToInfo(tenant)
             : null;
     }
@@ -55,7 +68,12 @@ public sealed partial class AccessService(
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var lowered = slug.Trim().ToLowerInvariant();
-        return await db.Tenants.AsNoTracking().Include(t => t.DisabledRights).FirstOrDefaultAsync(t => t.Slug == lowered, cancellationToken) is { } tenant
+        return
+            await db
+                .Tenants.AsNoTracking()
+                .Include(t => t.DisabledRights)
+                .FirstOrDefaultAsync(t => t.Slug == lowered, cancellationToken)
+                is { } tenant
             ? ToInfo(tenant)
             : null;
     }
@@ -67,7 +85,10 @@ public sealed partial class AccessService(
     public async Task<TenantInfo> EnsureDefaultTenantAsync(string name, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var existing = await db.Tenants.AsNoTracking().Include(t => t.DisabledRights).FirstOrDefaultAsync(t => t.IsDefault, cancellationToken);
+        var existing = await db
+            .Tenants.AsNoTracking()
+            .Include(t => t.DisabledRights)
+            .FirstOrDefaultAsync(t => t.IsDefault, cancellationToken);
         if (existing is not null)
             return ToInfo(existing);
 
@@ -87,17 +108,21 @@ public sealed partial class AccessService(
     public async Task<int> GrantNewRightsAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var outdated = await db.Tenants
-            .Where(t => (t.RightsRevision ?? 0) < RightCatalog.Revision)
+        var outdated = await db
+            .Tenants.Where(t => (t.RightsRevision ?? 0) < RightCatalog.Revision)
             .Include(t => t.Groups.Where(g => g.BuiltIn != null))
-            .ThenInclude(g => g.Rights)
+                .ThenInclude(g => g.Rights)
             .ToListAsync(cancellationToken);
         foreach (var tenant in outdated)
         {
             var since = tenant.RightsRevision ?? 0;
             foreach (var group in tenant.Groups)
             {
-                foreach (var right in RightCatalog.TenantRights.Where(r => r.Since > since && r.DefaultGroups.Contains(group.BuiltIn!.Value)))
+                foreach (
+                    var right in RightCatalog.TenantRights.Where(r =>
+                        r.Since > since && r.DefaultGroups.Contains(group.BuiltIn!.Value)
+                    )
+                )
                 {
                     if (group.Rights.All(r => r.Right != right.Id))
                         group.Rights.Add(new GroupRight { Right = right.Id });
@@ -114,15 +139,29 @@ public sealed partial class AccessService(
         return outdated.Count;
     }
 
-    public async Task<AccessResult<TenantInfo>> CreateTenantAsync(TenantInput input, string root, CancellationToken cancellationToken = default)
+    public async Task<AccessResult<TenantInfo>> CreateTenantAsync(
+        TenantInput input,
+        string root,
+        CancellationToken cancellationToken = default
+    )
     {
         var name = input.Name?.Trim();
         if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
-            return AccessResult<TenantInfo>.Invalid("name", $"A space needs a name of at most {MaxNameLength} characters.");
+        {
+            return AccessResult<TenantInfo>.Invalid(
+                "name",
+                $"A space needs a name of at most {MaxNameLength} characters."
+            );
+        }
 
         var slug = string.IsNullOrWhiteSpace(input.Slug) ? Slugify(name) : input.Slug.Trim().ToLowerInvariant();
         if (!SlugRegex().IsMatch(slug))
-            return AccessResult<TenantInfo>.Invalid("slug", "The short name can only have lowercase letters, digits and '-' (at most 64), starting with a letter or digit.");
+        {
+            return AccessResult<TenantInfo>.Invalid(
+                "slug",
+                "The short name can only have lowercase letters, digits and '-' (at most 64), starting with a letter or digit."
+            );
+        }
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         if (string.IsNullOrWhiteSpace(input.Slug))
@@ -136,7 +175,10 @@ public sealed partial class AccessService(
         tenant.Disabled = input.Disabled;
         if (DisabledRightsError(input.DisabledRights) is { } error)
             return AccessResult<TenantInfo>.Invalid("disabledRights", error);
-        tenant.DisabledRights = (input.DisabledRights ?? []).Distinct().Select(r => new TenantDisabledRight { Right = r }).ToList();
+        tenant.DisabledRights = (input.DisabledRights ?? [])
+            .Distinct()
+            .Select(r => new TenantDisabledRight { Right = r })
+            .ToList();
         db.Tenants.Add(tenant);
         await db.SaveChangesAsync(cancellationToken);
         changes.Changed();
@@ -144,16 +186,28 @@ public sealed partial class AccessService(
     }
 
     /// <summary>Changes the name, the guest access, the disabled rights and the status of a library (not its slug or root).</summary>
-    public async Task<AccessResult<TenantInfo>> UpdateTenantAsync(int id, TenantInput input, CancellationToken cancellationToken = default)
+    public async Task<AccessResult<TenantInfo>> UpdateTenantAsync(
+        int id,
+        TenantInput input,
+        CancellationToken cancellationToken = default
+    )
     {
         var name = input.Name?.Trim();
         if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
-            return AccessResult<TenantInfo>.Invalid("name", $"A space needs a name of at most {MaxNameLength} characters.");
+        {
+            return AccessResult<TenantInfo>.Invalid(
+                "name",
+                $"A space needs a name of at most {MaxNameLength} characters."
+            );
+        }
+
         if (DisabledRightsError(input.DisabledRights) is { } error)
             return AccessResult<TenantInfo>.Invalid("disabledRights", error);
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var tenant = await db.Tenants.Include(t => t.DisabledRights).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var tenant = await db
+            .Tenants.Include(t => t.DisabledRights)
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         if (tenant is null)
             return AccessResult<TenantInfo>.Missing();
         if (input.Disabled && tenant.IsDefault)
@@ -165,7 +219,9 @@ public sealed partial class AccessService(
         if (input.DisabledRights is { } rights)
         {
             tenant.DisabledRights.Clear();
-            tenant.DisabledRights.AddRange(rights.Distinct().Select(r => new TenantDisabledRight { TenantId = id, Right = r }));
+            tenant.DisabledRights.AddRange(
+                rights.Distinct().Select(r => new TenantDisabledRight { TenantId = id, Right = r })
+            );
         }
 
         await db.SaveChangesAsync(cancellationToken);
@@ -174,10 +230,16 @@ public sealed partial class AccessService(
     }
 
     /// <summary>Lets visitors without an account in, or not (the part of a library its own administrators change).</summary>
-    public async Task<TenantInfo?> SetGuestAccessAsync(int id, bool guestAccess, CancellationToken cancellationToken = default)
+    public async Task<TenantInfo?> SetGuestAccessAsync(
+        int id,
+        bool guestAccess,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var tenant = await db.Tenants.Include(t => t.DisabledRights).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var tenant = await db
+            .Tenants.Include(t => t.DisabledRights)
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         if (tenant is null)
             return null;
 
@@ -191,7 +253,9 @@ public sealed partial class AccessService(
     public async Task<AccessResult<TenantInfo>> DeleteTenantAsync(int id, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var tenant = await db.Tenants.Include(t => t.DisabledRights).FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var tenant = await db
+            .Tenants.Include(t => t.DisabledRights)
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         if (tenant is null)
             return AccessResult<TenantInfo>.Missing();
         if (tenant.IsDefault)
@@ -206,7 +270,10 @@ public sealed partial class AccessService(
     // ---- Accounts ----
 
     /// <param name="tenantId">Only the accounts with a group in this library; null = every account.</param>
-    public async Task<IReadOnlyList<UserInfo>> GetUsersAsync(int? tenantId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<UserInfo>> GetUsersAsync(
+        int? tenantId,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var query = db.Users.AsNoTracking().Include(u => u.Groups).ThenInclude(m => m.Group).AsQueryable();
@@ -219,7 +286,13 @@ public sealed partial class AccessService(
     public async Task<UserInfo?> GetUserAsync(int id, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        return await db.Users.AsNoTracking().Include(u => u.Groups).ThenInclude(m => m.Group).FirstOrDefaultAsync(u => u.Id == id, cancellationToken) is { } user
+        return
+            await db
+                .Users.AsNoTracking()
+                .Include(u => u.Groups)
+                    .ThenInclude(m => m.Group)
+                .FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
+                is { } user
             ? ToInfo(user)
             : null;
     }
@@ -235,8 +308,19 @@ public sealed partial class AccessService(
             return cached.User;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var user = await db.Users.AsNoTracking().Where(u => u.Id == id)
-            .Select(u => new SessionUser(u.Id, u.UserName, u.DisplayName, u.Source, u.Kind, u.IsServerAdmin, u.Disabled, u.SecurityStamp))
+        var user = await db
+            .Users.AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new SessionUser(
+                u.Id,
+                u.UserName,
+                u.DisplayName,
+                u.Source,
+                u.Kind,
+                u.IsServerAdmin,
+                u.Disabled,
+                u.SecurityStamp
+            ))
             .FirstOrDefaultAsync(cancellationToken);
         _sessions[id] = (version, user);
         return user;
@@ -253,8 +337,11 @@ public sealed partial class AccessService(
             return cached.Administrator;
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var administrator = await db.Users.AsNoTracking().AnyAsync(u => u.Id == id && u.IsServerAdmin, cancellationToken)
-                            || await db.GroupMembers.AsNoTracking().AnyAsync(m => m.UserId == id && m.Group!.BuiltIn == BuiltInGroup.Administrators, cancellationToken);
+        var administrator =
+            await db.Users.AsNoTracking().AnyAsync(u => u.Id == id && u.IsServerAdmin, cancellationToken)
+            || await db
+                .GroupMembers.AsNoTracking()
+                .AnyAsync(m => m.UserId == id && m.Group!.BuiltIn == BuiltInGroup.Administrators, cancellationToken);
         _administrators[id] = (version, administrator);
         return administrator;
     }
@@ -263,7 +350,9 @@ public sealed partial class AccessService(
     public async Task RecordSignInAsync(int userId, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        await db.Users.Where(u => u.Id == userId).ExecuteUpdateAsync(u => u.SetProperty(x => x.LastSignIn, DateTime.UtcNow), cancellationToken);
+        await db
+            .Users.Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(u => u.SetProperty(x => x.LastSignIn, DateTime.UtcNow), cancellationToken);
     }
 
     /// <summary>Whether an enabled server administrator exists (the setup is done).</summary>
@@ -277,13 +366,23 @@ public sealed partial class AccessService(
     public async Task<IReadOnlyList<int>> GetServerAdminIdsAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        return await db.Users.AsNoTracking().Where(u => u.IsServerAdmin && !u.Disabled).OrderBy(u => u.Id).Select(u => u.Id).Take(2).ToListAsync(cancellationToken);
+        return await db
+            .Users.AsNoTracking()
+            .Where(u => u.IsServerAdmin && !u.Disabled)
+            .OrderBy(u => u.Id)
+            .Select(u => u.Id)
+            .Take(2)
+            .ToListAsync(cancellationToken);
     }
 
     /// <param name="tenantScope">
     /// The library whose groups <see cref="UserInput.GroupIds"/> may name (a library's own administrator); null = any.
     /// </param>
-    public async Task<AccessResult<UserInfo>> CreateUserAsync(UserInput input, int? tenantScope, CancellationToken cancellationToken = default)
+    public async Task<AccessResult<UserInfo>> CreateUserAsync(
+        UserInput input,
+        int? tenantScope,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var userName = input.UserName?.Trim() ?? string.Empty;
@@ -322,18 +421,28 @@ public sealed partial class AccessService(
     /// A library's own administrator: only the account's groups in that library change, and the server administrator
     /// status stays as it is.
     /// </param>
-    public async Task<AccessResult<UserInfo>> UpdateUserAsync(int id, UserInput input, int? tenantScope, CancellationToken cancellationToken = default)
+    public async Task<AccessResult<UserInfo>> UpdateUserAsync(
+        int id,
+        UserInput input,
+        int? tenantScope,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var user = await db.Users.Include(u => u.Groups).ThenInclude(m => m.Group).FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        var user = await db
+            .Users.Include(u => u.Groups)
+                .ThenInclude(m => m.Group)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
         if (user is null)
             return AccessResult<UserInfo>.Missing();
 
         var userName = input.UserName?.Trim() ?? string.Empty;
         if (UserNameError(userName) is { } nameError)
             return AccessResult<UserInfo>.Invalid("userName", nameError);
-        if (!string.Equals(userName, user.UserName, StringComparison.Ordinal)
-            && await db.Users.AnyAsync(u => u.Id != id && u.UserName == userName, cancellationToken))
+        if (
+            !string.Equals(userName, user.UserName, StringComparison.Ordinal)
+            && await db.Users.AnyAsync(u => u.Id != id && u.UserName == userName, cancellationToken)
+        )
         {
             return AccessResult<UserInfo>.Invalid("userName", $"There is already an account named “{userName}”.");
         }
@@ -349,11 +458,19 @@ public sealed partial class AccessService(
             return AccessResult<UserInfo>.Invalid("displayName", displayError);
 
         var losesAdmin = user.IsServerAdmin && !user.Disabled && (!isServerAdmin || input.Disabled);
-        if (losesAdmin && !await db.Users.AnyAsync(u => u.Id != id && u.IsServerAdmin && !u.Disabled, cancellationToken))
+        if (
+            losesAdmin && !await db.Users.AnyAsync(u => u.Id != id && u.IsServerAdmin && !u.Disabled, cancellationToken)
+        )
+        {
             return AccessResult<UserInfo>.Conflict("This is the last server administrator: make another one first.");
+        }
 
         // A new status or password ends the account's sessions and the links it gave out.
-        var changesAccess = input.Password is not null || input.Disabled != user.Disabled || isServerAdmin != user.IsServerAdmin || input.Kind != user.Kind;
+        var changesAccess =
+            input.Password is not null
+            || input.Disabled != user.Disabled
+            || isServerAdmin != user.IsServerAdmin
+            || input.Kind != user.Kind;
         if (!IsLocal(user))
             userName = user.UserName;
         user.UserName = userName;
@@ -371,8 +488,13 @@ public sealed partial class AccessService(
 
         if (changesAccess)
             user.SecurityStamp = PasswordHashing.NewStamp();
-        if (input.GroupIds is { } groupIds && await ReplaceGroupsAsync(db, user, groupIds, tenantScope, cancellationToken) is { } groupError)
+        if (
+            input.GroupIds is { } groupIds
+            && await ReplaceGroupsAsync(db, user, groupIds, tenantScope, cancellationToken) is { } groupError
+        )
+        {
             return AccessResult<UserInfo>.Invalid("groupIds", groupError);
+        }
 
         await db.SaveChangesAsync(cancellationToken);
         changes.Changed();
@@ -382,11 +504,20 @@ public sealed partial class AccessService(
     public async Task<AccessResult<UserInfo>> DeleteUserAsync(int id, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var user = await db.Users.Include(u => u.Groups).ThenInclude(m => m.Group).FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        var user = await db
+            .Users.Include(u => u.Groups)
+                .ThenInclude(m => m.Group)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
         if (user is null)
             return AccessResult<UserInfo>.Missing();
-        if (user.IsServerAdmin && !user.Disabled && !await db.Users.AnyAsync(u => u.Id != id && u.IsServerAdmin && !u.Disabled, cancellationToken))
+        if (
+            user.IsServerAdmin
+            && !user.Disabled
+            && !await db.Users.AnyAsync(u => u.Id != id && u.IsServerAdmin && !u.Disabled, cancellationToken)
+        )
+        {
             return AccessResult<UserInfo>.Conflict("This is the last server administrator: make another one first.");
+        }
 
         var info = ToInfo(user);
         db.Users.Remove(user);
@@ -396,7 +527,12 @@ public sealed partial class AccessService(
     }
 
     /// <summary>Changes the password of a local account after checking its current one.</summary>
-    public async Task<AccessResult<UserInfo>> ChangeOwnPasswordAsync(int id, string? current, string? password, CancellationToken cancellationToken = default)
+    public async Task<AccessResult<UserInfo>> ChangeOwnPasswordAsync(
+        int id,
+        string? current,
+        string? password,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
@@ -419,7 +555,10 @@ public sealed partial class AccessService(
     // ---- Groups ----
 
     /// <param name="tenantId">The space's groups; null = those of every space (the account editor of server administrators).</param>
-    public async Task<IReadOnlyList<GroupInfo>> GetGroupsAsync(int? tenantId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<GroupInfo>> GetGroupsAsync(
+        int? tenantId,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var query = db.Groups.AsNoTracking().Include(g => g.Rights).Include(g => g.Members).AsQueryable();
@@ -428,7 +567,9 @@ public sealed partial class AccessService(
         var groups = await query.ToListAsync(cancellationToken);
         return groups
             .OrderBy(g => g.TenantId)
-            .ThenBy(g => g.BuiltIn is null).ThenBy(g => g.BuiltIn).ThenBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(g => g.BuiltIn is null)
+            .ThenBy(g => g.BuiltIn)
+            .ThenBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)
             .Select(ToInfo)
             .ToList();
     }
@@ -438,7 +579,11 @@ public sealed partial class AccessService(
     /// <see cref="UpdateGroupAsync"/>).
     /// </param>
     public async Task<AccessResult<GroupInfo>> CreateGroupAsync(
-        int tenantId, GroupInput input, bool membersOfTenantOnly = false, CancellationToken cancellationToken = default)
+        int tenantId,
+        GroupInput input,
+        bool membersOfTenantOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         if (!await db.Tenants.AnyAsync(t => t.Id == tenantId, cancellationToken))
@@ -460,10 +605,18 @@ public sealed partial class AccessService(
     /// change its password.
     /// </param>
     public async Task<AccessResult<GroupInfo>> UpdateGroupAsync(
-        int tenantId, int id, GroupInput input, bool membersOfTenantOnly = false, CancellationToken cancellationToken = default)
+        int tenantId,
+        int id,
+        GroupInput input,
+        bool membersOfTenantOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var group = await db.Groups.Include(g => g.Rights).Include(g => g.Members).FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId, cancellationToken);
+        var group = await db
+            .Groups.Include(g => g.Rights)
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId, cancellationToken);
         if (group is null)
             return AccessResult<GroupInfo>.Missing();
         if (await ApplyGroupAsync(db, group, input, membersOfTenantOnly, cancellationToken) is { } error)
@@ -474,10 +627,17 @@ public sealed partial class AccessService(
         return AccessResult<GroupInfo>.Ok(ToInfo(group));
     }
 
-    public async Task<AccessResult<GroupInfo>> DeleteGroupAsync(int tenantId, int id, CancellationToken cancellationToken = default)
+    public async Task<AccessResult<GroupInfo>> DeleteGroupAsync(
+        int tenantId,
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var group = await db.Groups.Include(g => g.Rights).Include(g => g.Members).FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId, cancellationToken);
+        var group = await db
+            .Groups.Include(g => g.Rights)
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId, cancellationToken);
         if (group is null)
             return AccessResult<GroupInfo>.Missing();
         if (group.BuiltIn is not null)
@@ -498,11 +658,20 @@ public sealed partial class AccessService(
     }
 
     /// <summary>The built-in group of a library (e.g. where the setup puts the first administrator).</summary>
-    public async Task<GroupInfo?> GetBuiltInGroupAsync(int tenantId, BuiltInGroup builtIn, CancellationToken cancellationToken = default)
+    public async Task<GroupInfo?> GetBuiltInGroupAsync(
+        int tenantId,
+        BuiltInGroup builtIn,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        return await db.Groups.AsNoTracking().Include(g => g.Rights).Include(g => g.Members)
-            .FirstOrDefaultAsync(g => g.TenantId == tenantId && g.BuiltIn == builtIn, cancellationToken) is { } group
+        return
+            await db
+                .Groups.AsNoTracking()
+                .Include(g => g.Rights)
+                .Include(g => g.Members)
+                .FirstOrDefaultAsync(g => g.TenantId == tenantId && g.BuiltIn == builtIn, cancellationToken)
+                is { } group
             ? ToInfo(group)
             : null;
     }
@@ -536,20 +705,32 @@ public sealed partial class AccessService(
     }
 
     private static string? DisplayNameError(string? displayName) =>
-        displayName is { Length: > MaxNameLength } ? $"The display name can have at most {MaxNameLength} characters." : null;
+        displayName is { Length: > MaxNameLength }
+            ? $"The display name can have at most {MaxNameLength} characters."
+            : null;
 
     private static string? KindError(UserInput input) =>
-        input.Kind == UserKind.Guest && input.IsServerAdmin ? "A guest account cannot be a server administrator." : null;
+        input.Kind == UserKind.Guest && input.IsServerAdmin
+            ? "A guest account cannot be a server administrator."
+            : null;
 
     private static string? DisabledRightsError(IReadOnlyList<string>? rights) =>
-        rights?.FirstOrDefault(r => !RightCatalog.IsTenantRight(r)) is { } unknown ? $"“{unknown}” is not a right of a space." : null;
+        rights?.FirstOrDefault(r => !RightCatalog.IsTenantRight(r)) is { } unknown
+            ? $"“{unknown}” is not a right of a space."
+            : null;
 
     private static bool IsLocal(UserAccount user) => user.Source == UserAccount.LocalSource;
 
     private static string? Clean(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
 
     /// <summary>Replaces the account's groups among those <paramref name="tenantScope"/> covers; an error for a group outside it.</summary>
-    private static async Task<string?> ReplaceGroupsAsync(AccessDbContext db, UserAccount user, IReadOnlyList<int> groupIds, int? tenantScope, CancellationToken cancellationToken)
+    private static async Task<string?> ReplaceGroupsAsync(
+        AccessDbContext db,
+        UserAccount user,
+        IReadOnlyList<int> groupIds,
+        int? tenantScope,
+        CancellationToken cancellationToken
+    )
     {
         var wanted = groupIds.Distinct().ToList();
         var groups = await db.Groups.Where(g => wanted.Contains(g.Id)).ToListAsync(cancellationToken);
@@ -558,29 +739,68 @@ public sealed partial class AccessService(
         if (tenantScope is { } scope && groups.Any(g => g.TenantId != scope))
             return "Groups of other spaces can only be changed by a server administrator.";
 
-        user.Groups.RemoveAll(m => !wanted.Contains(m.GroupId) && (tenantScope is null || m.Group?.TenantId == tenantScope));
+        user.Groups.RemoveAll(m =>
+            !wanted.Contains(m.GroupId) && (tenantScope is null || m.Group?.TenantId == tenantScope)
+        );
         foreach (var group in groups.Where(g => user.Groups.All(m => m.GroupId != g.Id)))
-            user.Groups.Add(new GroupMember { GroupId = group.Id, Group = group, User = user });
+        {
+            user.Groups.Add(
+                new GroupMember
+                {
+                    GroupId = group.Id,
+                    Group = group,
+                    User = user,
+                }
+            );
+        }
+
         return null;
     }
 
     private static async Task<AccessResult<UserGroup>?> ApplyGroupAsync(
-        AccessDbContext db, UserGroup group, GroupInput input, bool membersOfTenantOnly, CancellationToken cancellationToken)
+        AccessDbContext db,
+        UserGroup group,
+        GroupInput input,
+        bool membersOfTenantOnly,
+        CancellationToken cancellationToken
+    )
     {
         var name = input.Name?.Trim();
         if (string.IsNullOrEmpty(name) || name.Length > 100)
             return AccessResult<UserGroup>.Invalid("name", "A group needs a name of at most 100 characters.");
-        if (await db.Groups.AnyAsync(g => g.TenantId == group.TenantId && g.Id != group.Id && g.Name == name, cancellationToken))
+        if (
+            await db.Groups.AnyAsync(
+                g => g.TenantId == group.TenantId && g.Id != group.Id && g.Name == name,
+                cancellationToken
+            )
+        )
+        {
             return AccessResult<UserGroup>.Invalid("name", $"There is already a group named “{name}”.");
+        }
+
         if (input.ExternalName is { Length: > 400 })
-            return AccessResult<UserGroup>.Invalid("externalName", "The directory group can have at most 400 characters.");
+        {
+            return AccessResult<UserGroup>.Invalid(
+                "externalName",
+                "The directory group can have at most 400 characters."
+            );
+        }
 
         if (input.Rights is { } rights)
         {
             if (rights.FirstOrDefault(r => !RightCatalog.IsTenantRight(r)) is { } unknown)
                 return AccessResult<UserGroup>.Invalid("rights", $"“{unknown}” is not a right of a space.");
-            if (group.BuiltIn == BuiltInGroup.Guests && rights.FirstOrDefault(r => RightCatalog.Find(r) is { GuestAllowed: false }) is { } forbidden)
-                return AccessResult<UserGroup>.Invalid("rights", $"Guests can never have the right “{RightCatalog.Find(forbidden)!.Title}”.");
+            if (
+                group.BuiltIn == BuiltInGroup.Guests
+                && rights.FirstOrDefault(r => RightCatalog.Find(r) is { GuestAllowed: false }) is { } forbidden
+            )
+            {
+                return AccessResult<UserGroup>.Invalid(
+                    "rights",
+                    $"Guests can never have the right “{RightCatalog.Find(forbidden)!.Title}”."
+                );
+            }
+
             group.Rights.RemoveAll(r => !rights.Contains(r.Right));
             foreach (var right in rights.Distinct().Where(r => group.Rights.All(existing => existing.Right != r)))
                 group.Rights.Add(new GroupRight { Right = right });
@@ -592,10 +812,19 @@ public sealed partial class AccessService(
             if (await db.Users.CountAsync(u => wanted.Contains(u.Id), cancellationToken) != wanted.Count)
                 return AccessResult<UserGroup>.Invalid("memberIds", "An account no longer exists: reload the page.");
             var joining = wanted.Where(u => group.Members.All(m => m.UserId != u)).ToList();
-            if (membersOfTenantOnly && joining.Count > 0
-                && await db.Users.AnyAsync(u => joining.Contains(u.Id) && !u.Groups.Any(m => m.Group!.TenantId == group.TenantId), cancellationToken))
+            if (
+                membersOfTenantOnly
+                && joining.Count > 0
+                && await db.Users.AnyAsync(
+                    u => joining.Contains(u.Id) && !u.Groups.Any(m => m.Group!.TenantId == group.TenantId),
+                    cancellationToken
+                )
+            )
             {
-                return AccessResult<UserGroup>.Invalid("memberIds", "Only accounts of this space can join its groups: a server administrator adds the others.");
+                return AccessResult<UserGroup>.Invalid(
+                    "memberIds",
+                    "Only accounts of this space can join its groups: a server administrator adds the others."
+                );
             }
 
             group.Members.RemoveAll(m => !wanted.Contains(m.UserId));
@@ -611,24 +840,31 @@ public sealed partial class AccessService(
     }
 
     /// <summary>A library with its three built-in groups, granted the catalog's default rights.</summary>
-    private static Tenant NewTenant(string name, string slug) => new()
-    {
-        Name = name,
-        Slug = slug,
-        Created = DateTime.UtcNow,
-        RightsRevision = RightCatalog.Revision,
-        Groups = Enum.GetValues<BuiltInGroup>().Select(builtIn => new UserGroup
+    private static Tenant NewTenant(string name, string slug) =>
+        new()
         {
-            Name = builtIn.ToString(),
-            BuiltIn = builtIn,
-            Rights = RightCatalog.TenantRights
-                .Where(r => r.DefaultGroups.Contains(builtIn))
-                .Select(r => new GroupRight { Right = r.Id })
+            Name = name,
+            Slug = slug,
+            Created = DateTime.UtcNow,
+            RightsRevision = RightCatalog.Revision,
+            Groups = Enum.GetValues<BuiltInGroup>()
+                .Select(builtIn => new UserGroup
+                {
+                    Name = builtIn.ToString(),
+                    BuiltIn = builtIn,
+                    Rights = RightCatalog
+                        .TenantRights.Where(r => r.DefaultGroups.Contains(builtIn))
+                        .Select(r => new GroupRight { Right = r.Id })
+                        .ToList(),
+                })
                 .ToList(),
-        }).ToList(),
-    };
+        };
 
-    private static async Task<string> UniqueSlugAsync(AccessDbContext db, string slug, CancellationToken cancellationToken)
+    private static async Task<string> UniqueSlugAsync(
+        AccessDbContext db,
+        string slug,
+        CancellationToken cancellationToken
+    )
     {
         var candidate = slug;
         for (var n = 2; await db.Tenants.AnyAsync(t => t.Slug == candidate, cancellationToken); n++)
@@ -643,9 +879,17 @@ public sealed partial class AccessService(
         foreach (var c in name.Normalize(NormalizationForm.FormD).ToLowerInvariant())
         {
             if (c is >= 'a' and <= 'z' or >= '0' and <= '9')
+            {
                 builder.Append(c);
-            else if (builder.Length > 0 && builder[^1] != '-' && char.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            }
+            else if (
+                builder.Length > 0
+                && builder[^1] != '-'
+                && char.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark
+            )
+            {
                 builder.Append('-');
+            }
         }
 
         var slug = builder.ToString().Trim('-');
@@ -657,13 +901,43 @@ public sealed partial class AccessService(
     private static partial Regex SlugRegex();
 
     private static TenantInfo ToInfo(Tenant t) =>
-        new(t.Id, t.Slug, t.Name, t.GuestAccess, t.IsDefault, t.Disabled, t.Root, t.DisabledRights.Select(r => r.Right).Order(StringComparer.Ordinal).ToList(), t.ConnectionString);
+        new(
+            t.Id,
+            t.Slug,
+            t.Name,
+            t.GuestAccess,
+            t.IsDefault,
+            t.Disabled,
+            t.Root,
+            t.DisabledRights.Select(r => r.Right).Order(StringComparer.Ordinal).ToList(),
+            t.ConnectionString
+        );
 
     private UserInfo ToInfo(UserAccount u) =>
-        new(u.Id, u.UserName, u.DisplayName, u.Source, u.Kind, u.IsServerAdmin, u.Disabled, u.LockedUntil > DateTime.UtcNow, u.Created, u.LastSignIn,
-            u.Groups.Where(m => m.Group is not null).Select(m => new MembershipInfo(m.Group!.TenantId, m.GroupId, m.Group.Name)).ToList());
+        new(
+            u.Id,
+            u.UserName,
+            u.DisplayName,
+            u.Source,
+            u.Kind,
+            u.IsServerAdmin,
+            u.Disabled,
+            u.LockedUntil > DateTime.UtcNow,
+            u.Created,
+            u.LastSignIn,
+            u.Groups.Where(m => m.Group is not null)
+                .Select(m => new MembershipInfo(m.Group!.TenantId, m.GroupId, m.Group.Name))
+                .ToList()
+        );
 
     private static GroupInfo ToInfo(UserGroup g) =>
-        new(g.Id, g.TenantId, g.Name, g.BuiltIn, g.ExternalName, g.Rights.Select(r => r.Right).Order(StringComparer.Ordinal).ToList(),
-            g.Members.Select(m => m.UserId).Order().ToList());
+        new(
+            g.Id,
+            g.TenantId,
+            g.Name,
+            g.BuiltIn,
+            g.ExternalName,
+            g.Rights.Select(r => r.Right).Order(StringComparer.Ordinal).ToList(),
+            g.Members.Select(m => m.UserId).Order().ToList()
+        );
 }

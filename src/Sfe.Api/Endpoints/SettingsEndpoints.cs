@@ -12,7 +12,10 @@ public static class SettingsEndpoints
 {
     /// <summary>Every right that changes some setting: the routes need one of them, each setting its own.</summary>
     private static readonly string[] AnySettingsRight =
-        [Rights.ServerSettings, .. RightCatalog.All.Where(r => r.Id.StartsWith("settings.", StringComparison.Ordinal)).Select(r => r.Id)];
+    [
+        Rights.ServerSettings,
+        .. RightCatalog.All.Where(r => r.Id.StartsWith("settings.", StringComparison.Ordinal)).Select(r => r.Id),
+    ];
 
     public static RouteGroupBuilder MapSettingsEndpoints(this RouteGroupBuilder api)
     {
@@ -23,55 +26,78 @@ public static class SettingsEndpoints
             The library root, the database, ffmpeg and the system commands are only set in the configuration files.
             """;
 
-        settings.MapGet("/", Get)
+        settings
+            .MapGet("/", Get)
             .WithName("GetSettings")
-            .WithSummary("Settings of a level, with the values in effect and, for each, where it comes from and whether it can be changed.")
+            .WithSummary(
+                "Settings of a level, with the values in effect and, for each, where it comes from and whether it can be changed."
+            )
             .WithDescription(LevelDescription);
 
-        settings.MapPut("/", Save)
+        settings
+            .MapPut("/", Save)
             .WithName("SaveSettings")
             .WithSummary("Saves the settings of a level; they apply right away.")
-            .WithDescription(LevelDescription + """
+            .WithDescription(
+                LevelDescription
+                    + """
 
-                Only the settings the level may change are kept, when they differ from what it inherits. Changing one it may
-                not change (locked above, outside its scope, or without the section's right) is a validation error.
-                """);
+                    Only the settings the level may change are kept, when they differ from what it inherits. Changing one it may
+                    not change (locked above, outside its scope, or without the section's right) is a validation error.
+                    """
+            );
 
-        settings.MapPatch("/", SaveChanges)
+        settings
+            .MapPatch("/", SaveChanges)
             .WithName("SaveSettingChanges")
-            .WithSummary("Saves only the settings sent (and lock changes) at a level; the others keep what the level has.")
-            .WithDescription(LevelDescription + """
+            .WithSummary(
+                "Saves only the settings sent (and lock changes) at a level; the others keep what the level has."
+            )
+            .WithDescription(
+                LevelDescription
+                    + """
 
-                `values` maps setting keys (`player.seekSeconds`) to their new value; one equal to what the level inherits
-                follows the levels above again. `lock` / `unlock` list the settings this level starts or stops locking for
-                the levels below. The values are checked with those in effect; nothing is saved when one is refused.
-                """);
+                    `values` maps setting keys (`player.seekSeconds`) to their new value; one equal to what the level inherits
+                    follows the levels above again. `lock` / `unlock` list the settings this level starts or stops locking for
+                    the levels below. The values are checked with those in effect; nothing is saved when one is refused.
+                    """
+            );
 
-        settings.MapPut("/locks", SaveLocks)
+        settings
+            .MapPut("/locks", SaveLocks)
             .WithName("SaveSettingLocks")
             .WithSummary("Locks settings at a level: the levels below (libraries, users) cannot change them.")
             .WithDescription(LevelDescription);
 
-        settings.MapDelete("/", Reset)
+        settings
+            .MapDelete("/", Reset)
             .WithName("ResetSettings")
             .WithSummary("Forgets a level's values: the levels above apply again.")
             .WithDescription(LevelDescription);
 
         var preferences = api.MapGroup("/me/preferences").WithTags("Settings").RequireRight(Rights.OwnPreferences);
 
-        preferences.MapGet("/", GetPreferences)
+        preferences
+            .MapGet("/", GetPreferences)
             .WithName("GetPreferences")
-            .WithSummary("The signed-in user's own preferences (theme, page sizes, player...) over the library's settings.");
+            .WithSummary(
+                "The signed-in user's own preferences (theme, page sizes, player...) over the library's settings."
+            );
 
-        preferences.MapPut("/", SavePreferences)
+        preferences
+            .MapPut("/", SavePreferences)
             .WithName("SavePreferences")
-            .WithSummary("Saves the signed-in user's own preferences; settings locked by the library or the server cannot change.");
+            .WithSummary(
+                "Saves the signed-in user's own preferences; settings locked by the library or the server cannot change."
+            );
 
-        preferences.MapPatch("/", SavePreferenceChanges)
+        preferences
+            .MapPatch("/", SavePreferenceChanges)
             .WithName("SavePreferenceChanges")
             .WithSummary("Saves only the preferences sent (`values` by setting key); the others stay as they are.");
 
-        preferences.MapDelete("/", ResetPreferences)
+        preferences
+            .MapDelete("/", ResetPreferences)
             .WithName("ResetPreferences")
             .WithSummary("Forgets the signed-in user's preferences: the library's settings apply again.");
 
@@ -79,7 +105,10 @@ public static class SettingsEndpoints
     }
 
     /// <summary>The level asked for and who may change what there; null when the caller may not use that level.</summary>
-    private static (SettingLevel Level, Func<SettingDefinition, bool>? CanChange)? Resolve(AccessState state, string? level)
+    private static (SettingLevel Level, Func<SettingDefinition, bool>? CanChange)? Resolve(
+        AccessState state,
+        string? level
+    )
     {
         var server = state.Has(Rights.ServerSettings);
         var chosen = level?.ToLowerInvariant() switch
@@ -91,11 +120,17 @@ public static class SettingsEndpoints
         };
         if (chosen is null || chosen == SettingLevel.Server && !server)
             return null;
-        return chosen == SettingLevel.Server ? (SettingLevel.Server, null) : (SettingLevel.Tenant, definition => state.Has(definition.Right));
+        return chosen == SettingLevel.Server
+            ? (SettingLevel.Server, null)
+            : (SettingLevel.Tenant, definition => state.Has(definition.Right));
     }
 
     private static async Task<Results<Ok<SettingsView>, ForbidHttpResult>> Get(
-        SettingsService service, CurrentAccess current, CancellationToken cancellationToken, string? level = null)
+        SettingsService service,
+        CurrentAccess current,
+        CancellationToken cancellationToken,
+        string? level = null
+    )
     {
         var state = await current.GetAsync();
         if (Resolve(state, level) is not var (chosen, canChange))
@@ -104,45 +139,95 @@ public static class SettingsEndpoints
     }
 
     private static async Task<Results<Ok<SettingsView>, ValidationProblem, ForbidHttpResult>> Save(
-        SettingsService service, CurrentAccess current, EditableSettings values, CancellationToken cancellationToken, string? level = null)
+        SettingsService service,
+        CurrentAccess current,
+        EditableSettings values,
+        CancellationToken cancellationToken,
+        string? level = null
+    )
     {
         var state = await current.GetAsync();
         if (Resolve(state, level) is not var (chosen, canChange))
             return TypedResults.Forbid();
-        var (view, errors) = await service.SaveAsync(chosen, state.Tenant?.Id, null, values, canChange, cancellationToken);
+        var (view, errors) = await service.SaveAsync(
+            chosen,
+            state.Tenant?.Id,
+            null,
+            values,
+            canChange,
+            cancellationToken
+        );
         return view is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Ok(view);
     }
 
     private static async Task<Results<Ok<SettingsView>, ValidationProblem, ForbidHttpResult>> SaveChanges(
-        SettingsService service, CurrentAccess current, SettingChanges changes, CancellationToken cancellationToken, string? level = null)
+        SettingsService service,
+        CurrentAccess current,
+        SettingChanges changes,
+        CancellationToken cancellationToken,
+        string? level = null
+    )
     {
         var state = await current.GetAsync();
         if (Resolve(state, level) is not var (chosen, canChange))
             return TypedResults.Forbid();
-        var (view, errors) = await service.SaveChangesAsync(chosen, state.Tenant?.Id, null, changes, canChange, cancellationToken);
+        var (view, errors) = await service.SaveChangesAsync(
+            chosen,
+            state.Tenant?.Id,
+            null,
+            changes,
+            canChange,
+            cancellationToken
+        );
         return view is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Ok(view);
     }
 
     private static async Task<Results<Ok<SettingsView>, ValidationProblem>> SavePreferenceChanges(
-        SettingsService service, CurrentAccess current, SettingChanges changes, CancellationToken cancellationToken)
+        SettingsService service,
+        CurrentAccess current,
+        SettingChanges changes,
+        CancellationToken cancellationToken
+    )
     {
         var state = await current.GetAsync();
-        var (view, errors) = await service.SaveChangesAsync(SettingLevel.User, state.Tenant?.Id, state.User!.Id, changes, null, cancellationToken);
+        var (view, errors) = await service.SaveChangesAsync(
+            SettingLevel.User,
+            state.Tenant?.Id,
+            state.User!.Id,
+            changes,
+            null,
+            cancellationToken
+        );
         return view is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Ok(view);
     }
 
     private static async Task<Results<Ok<SettingsView>, ValidationProblem, ForbidHttpResult>> SaveLocks(
-        SettingsService service, CurrentAccess current, SettingLocks locks, CancellationToken cancellationToken, string? level = null)
+        SettingsService service,
+        CurrentAccess current,
+        SettingLocks locks,
+        CancellationToken cancellationToken,
+        string? level = null
+    )
     {
         var state = await current.GetAsync();
         if (Resolve(state, level) is not var (chosen, canChange))
             return TypedResults.Forbid();
-        var (view, errors) = await service.SaveLocksAsync(chosen, state.Tenant?.Id, locks.Keys ?? [], canChange, cancellationToken);
+        var (view, errors) = await service.SaveLocksAsync(
+            chosen,
+            state.Tenant?.Id,
+            locks.Keys ?? [],
+            canChange,
+            cancellationToken
+        );
         return view is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Ok(view);
     }
 
     private static async Task<Results<Ok<SettingsView>, ForbidHttpResult>> Reset(
-        SettingsService service, CurrentAccess current, CancellationToken cancellationToken, string? level = null)
+        SettingsService service,
+        CurrentAccess current,
+        CancellationToken cancellationToken,
+        string? level = null
+    )
     {
         var state = await current.GetAsync();
         if (Resolve(state, level) is not var (chosen, canChange))
@@ -150,23 +235,46 @@ public static class SettingsEndpoints
         return TypedResults.Ok(await service.ResetAsync(chosen, state.Tenant?.Id, null, canChange, cancellationToken));
     }
 
-    private static async Task<Ok<SettingsView>> GetPreferences(SettingsService service, CurrentAccess current, CancellationToken cancellationToken)
+    private static async Task<Ok<SettingsView>> GetPreferences(
+        SettingsService service,
+        CurrentAccess current,
+        CancellationToken cancellationToken
+    )
     {
         var state = await current.GetAsync();
-        return TypedResults.Ok(await service.GetAsync(SettingLevel.User, state.Tenant?.Id, state.User!.Id, null, cancellationToken));
+        return TypedResults.Ok(
+            await service.GetAsync(SettingLevel.User, state.Tenant?.Id, state.User!.Id, null, cancellationToken)
+        );
     }
 
     private static async Task<Results<Ok<SettingsView>, ValidationProblem>> SavePreferences(
-        SettingsService service, CurrentAccess current, EditableSettings values, CancellationToken cancellationToken)
+        SettingsService service,
+        CurrentAccess current,
+        EditableSettings values,
+        CancellationToken cancellationToken
+    )
     {
         var state = await current.GetAsync();
-        var (view, errors) = await service.SaveAsync(SettingLevel.User, state.Tenant?.Id, state.User!.Id, values, null, cancellationToken);
+        var (view, errors) = await service.SaveAsync(
+            SettingLevel.User,
+            state.Tenant?.Id,
+            state.User!.Id,
+            values,
+            null,
+            cancellationToken
+        );
         return view is null ? TypedResults.ValidationProblem(errors!) : TypedResults.Ok(view);
     }
 
-    private static async Task<Ok<SettingsView>> ResetPreferences(SettingsService service, CurrentAccess current, CancellationToken cancellationToken)
+    private static async Task<Ok<SettingsView>> ResetPreferences(
+        SettingsService service,
+        CurrentAccess current,
+        CancellationToken cancellationToken
+    )
     {
         var state = await current.GetAsync();
-        return TypedResults.Ok(await service.ResetAsync(SettingLevel.User, state.Tenant?.Id, state.User!.Id, null, cancellationToken));
+        return TypedResults.Ok(
+            await service.ResetAsync(SettingLevel.User, state.Tenant?.Id, state.User!.Id, null, cancellationToken)
+        );
     }
 }

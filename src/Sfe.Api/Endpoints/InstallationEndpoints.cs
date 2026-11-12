@@ -24,7 +24,13 @@ public sealed record ServerFolder(string Name, string Path);
 /// <param name="Parent">Its parent; null at the top of a drive.</param>
 /// <param name="Places">At the top: the home folder, the current library folder and the usual media folders.</param>
 /// <param name="Truncated">More sub-folders than <see cref="InstallationEndpoints.MaxFolders"/>: only the first ones are listed.</param>
-public sealed record ServerFolders(string? Path, string? Parent, IReadOnlyList<ServerFolder> Folders, IReadOnlyList<ServerFolder> Places, bool Truncated);
+public sealed record ServerFolders(
+    string? Path,
+    string? Parent,
+    IReadOnlyList<ServerFolder> Folders,
+    IReadOnlyList<ServerFolder> Places,
+    bool Truncated
+);
 
 /// <summary>
 /// The installation page (setup wizard, Administration › System › Installation): the first library's folder, the
@@ -40,49 +46,72 @@ public static class InstallationEndpoints
     {
         var installation = api.MapGroup("/installation").WithTags("Installation");
 
-        installation.MapPost("/check", Check)
+        installation
+            .MapPost("/check", Check)
             .AllowAnonymous()
             .RequireRateLimiting(SessionEndpoints.SignInRateLimit)
             .WithName("CheckInstallationCode")
-            .WithSummary("Checks the setup code and answers the installation settings with a token for the other installation routes.")
-            .WithDescription("""
+            .WithSummary(
+                "Checks the setup code and answers the installation settings with a token for the other installation routes."
+            )
+            .WithDescription(
+                """
                 The token goes in the `X-SFE-Installation` header; it lasts an hour, and ends when the setup code changes.
                 A new install set up from the server's own computer needs no code (see `CompleteSetup`).
                 Once the server has an administrator, every installation route also needs a signed-in server
                 administrator (401 without a session, 403 for other accounts).
-                """);
+                """
+            );
 
-        installation.MapGet("/", Get)
+        installation
+            .MapGet("/", Get)
             .AllowAnonymous()
             .WithName("GetInstallation")
-            .WithSummary("The library folder, listening address and ffmpeg of the server, and which of them its environment decides.")
+            .WithSummary(
+                "The library folder, listening address and ffmpeg of the server, and which of them its environment decides."
+            )
             .WithDescription("Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header.");
 
-        installation.MapPut("/", Save)
+        installation
+            .MapPut("/", Save)
             .AllowAnonymous()
             .WithName("SaveInstallation")
-            .WithSummary("Saves the library folder, listening address, ffmpeg or the server's mode into the installation file (data/installation.json).")
-            .WithDescription("""
+            .WithSummary(
+                "Saves the library folder, listening address, ffmpeg or the server's mode into the installation file (data/installation.json)."
+            )
+            .WithDescription(
+                """
                 Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. A new folder or ffmpeg starts
                 the libraries again at once; a new address applies after a restart (`restartRequired`). Values set by the
                 server's environment variables or command line cannot be changed here. The mode (`Sfe:Mode`) goes from Local
                 to External here, never back once the server has its administrator; Local is only chosen from a browser on
                 the server's own computer.
-                """);
+                """
+            );
 
-        installation.MapGet("/folders", Folders)
+        installation
+            .MapGet("/folders", Folders)
             .NotLibraryPaths()
             .AllowAnonymous()
             .WithName("ListServerFolders")
             .WithSummary("The folders of the server's disks, to pick the library folder or ffmpeg's folder.")
-            .WithDescription("Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. Without `path`: the drives and usual places.");
+            .WithDescription(
+                "Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. Without `path`: the drives and usual places."
+            );
 
         return api;
     }
 
-    private static async Task<Results<Ok<InstallationGrant>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>> Check(
-        HttpContext context, InstallationAccess access, InstallationSettings settings, ILoggerFactory loggers, InstallationCheck input,
-        CancellationToken cancellationToken)
+    private static async Task<
+        Results<Ok<InstallationGrant>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>
+    > Check(
+        HttpContext context,
+        InstallationAccess access,
+        InstallationSettings settings,
+        ILoggerFactory loggers,
+        InstallationCheck input,
+        CancellationToken cancellationToken
+    )
     {
         switch (await InstallationAccess.CheckVisitorAsync(context))
         {
@@ -93,17 +122,28 @@ public static class InstallationEndpoints
         }
 
         // A new install set up from the server's own computer needs no code (LocalVisitor).
-        if ((await LocalVisitor.SetupCodeWaivedAsync(context) ? access.GrantWithoutCode() : access.Grant(input.Code)) is not { } token)
+        if (
+            (await LocalVisitor.SetupCodeWaivedAsync(context) ? access.GrantWithoutCode() : access.Grant(input.Code))
+            is not { } token
+        )
         {
-            loggers.CreateLogger(typeof(InstallationEndpoints)).LogSecurityWarning("Installation page refused: wrong setup code");
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["This is not the server's setup code."] });
+            loggers
+                .CreateLogger(typeof(InstallationEndpoints))
+                .LogSecurityWarning("Installation page refused: wrong setup code");
+            return TypedResults.ValidationProblem(
+                new Dictionary<string, string[]> { ["code"] = ["This is not the server's setup code."] }
+            );
         }
 
         return TypedResults.Ok(new InstallationGrant(token, await DescribeAsync(context, settings, cancellationToken)));
     }
 
     private static async Task<Results<Ok<InstallationView>, UnauthorizedHttpResult, ForbidHttpResult>> Get(
-        HttpContext context, InstallationAccess access, InstallationSettings settings, CancellationToken cancellationToken) =>
+        HttpContext context,
+        InstallationAccess access,
+        InstallationSettings settings,
+        CancellationToken cancellationToken
+    ) =>
         await CheckAsync(context, access) switch
         {
             InstallationVisitor.NotSignedIn => TypedResults.Unauthorized(),
@@ -111,9 +151,20 @@ public static class InstallationEndpoints
             _ => TypedResults.Ok(await DescribeAsync(context, settings, cancellationToken)),
         };
 
-    private static async Task<Results<Ok<InstallationSaved>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>> Save(
-        HttpContext context, InstallationAccess access, InstallationSettings settings, TenantRegistry libraries, AccessService accounts,
-        SetupService setup, IConfiguration configuration, ILoggerFactory loggers, InstallationInput input, CancellationToken cancellationToken)
+    private static async Task<
+        Results<Ok<InstallationSaved>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>
+    > Save(
+        HttpContext context,
+        InstallationAccess access,
+        InstallationSettings settings,
+        TenantRegistry libraries,
+        AccessService accounts,
+        SetupService setup,
+        IConfiguration configuration,
+        ILoggerFactory loggers,
+        InstallationInput input,
+        CancellationToken cancellationToken
+    )
     {
         switch (await CheckAsync(context, access))
         {
@@ -123,13 +174,28 @@ public static class InstallationEndpoints
                 return TypedResults.Forbid();
         }
 
-        var visitor = new InstallationVisitorInfo(!await setup.IsRequiredAsync(cancellationToken), LocalVisitor.IsOnThisComputer(context));
-        var (errors, changed) = settings.Save(input, await LibraryRootsAsync(accounts, configuration, cancellationToken), visitor);
+        var visitor = new InstallationVisitorInfo(
+            !await setup.IsRequiredAsync(cancellationToken),
+            LocalVisitor.IsOnThisComputer(context)
+        );
+        var (errors, changed) = settings.Save(
+            input,
+            await LibraryRootsAsync(accounts, configuration, cancellationToken),
+            visitor
+        );
         if (errors is not null)
             return TypedResults.ValidationProblem(errors);
 
         if (changed.Count > 0)
-            loggers.CreateLogger(typeof(InstallationEndpoints)).LogSecurityWarning("Installation page: {Keys} saved in {File}", string.Join(", ", changed), settings.FilePath);
+        {
+            loggers
+                .CreateLogger(typeof(InstallationEndpoints))
+                .LogSecurityWarning(
+                    "Installation page: {Keys} saved in {File}",
+                    string.Join(", ", changed),
+                    settings.FilePath
+                );
+        }
         // The libraries' services read the folder and ffmpeg once: start them again over the new values.
         if (changed.Any(key => key is InstallationSettings.RootKey or InstallationSettings.FfmpegKey))
             await libraries.RestartAsync(cancellationToken);
@@ -139,11 +205,19 @@ public static class InstallationEndpoints
     }
 
     /// <summary>The settings, with whether this visitor is on the server's own computer.</summary>
-    private static async Task<InstallationView> DescribeAsync(HttpContext context, InstallationSettings settings, CancellationToken cancellationToken) =>
-        await settings.DescribeAsync(cancellationToken) with { OnThisComputer = LocalVisitor.IsOnThisComputer(context) };
+    private static async Task<InstallationView> DescribeAsync(
+        HttpContext context,
+        InstallationSettings settings,
+        CancellationToken cancellationToken
+    ) =>
+        await settings.DescribeAsync(cancellationToken) with
+        {
+            OnThisComputer = LocalVisitor.IsOnThisComputer(context),
+        };
 
-    private static async Task<Results<Ok<ServerFolders>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>> Folders(
-        HttpContext context, InstallationAccess access, IConfiguration configuration, string? path = null)
+    private static async Task<
+        Results<Ok<ServerFolders>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>
+    > Folders(HttpContext context, InstallationAccess access, IConfiguration configuration, string? path = null)
     {
         switch (await CheckAsync(context, access))
         {
@@ -158,13 +232,22 @@ public static class InstallationEndpoints
 
         var folder = LibraryPaths.NormalizeRoot(path);
         if (!Directory.Exists(folder))
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["path"] = ["This folder does not exist on the server."] });
+        {
+            return TypedResults.ValidationProblem(
+                new Dictionary<string, string[]> { ["path"] = ["This folder does not exist on the server."] }
+            );
+        }
 
-        var options = new EnumerationOptions { IgnoreInaccessible = true, AttributesToSkip = FileAttributes.Hidden | FileAttributes.System };
+        var options = new EnumerationOptions
+        {
+            IgnoreInaccessible = true,
+            AttributesToSkip = FileAttributes.Hidden | FileAttributes.System,
+        };
         List<ServerFolder> folders;
         try
         {
-            folders = Directory.EnumerateDirectories(folder, "*", options)
+            folders = Directory
+                .EnumerateDirectories(folder, "*", options)
                 .Where(dir => !Path.GetFileName(dir).StartsWith('.'))
                 .Take(MaxFolders + 1)
                 .Select(dir => new ServerFolder(Path.GetFileName(dir), dir))
@@ -172,14 +255,25 @@ public static class InstallationEndpoints
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["path"] = ["SFE cannot read this folder."] });
+            return TypedResults.ValidationProblem(
+                new Dictionary<string, string[]> { ["path"] = ["SFE cannot read this folder."] }
+            );
         }
 
         var truncated = folders.Count > MaxFolders;
         folders = folders.Take(MaxFolders).OrderBy(f => f.Name, NaturalComparer.Instance).ToList();
         var parent = Directory.GetParent(Path.TrimEndingDirectorySeparator(folder))?.FullName;
-        return TypedResults.Ok(new ServerFolders(Path.TrimEndingDirectorySeparator(folder) is { Length: > 0 } trimmed && !trimmed.EndsWith(':') ? trimmed : folder,
-            parent, folders, [], truncated));
+        return TypedResults.Ok(
+            new ServerFolders(
+                Path.TrimEndingDirectorySeparator(folder) is { Length: > 0 } trimmed && !trimmed.EndsWith(':')
+                    ? trimmed
+                    : folder,
+                parent,
+                folders,
+                [],
+                truncated
+            )
+        );
     }
 
     /// <summary>
@@ -187,12 +281,17 @@ public static class InstallationEndpoints
     /// missing token answers as not signed in (401), as before the setup.
     /// </summary>
     private static async Task<InstallationVisitor> CheckAsync(HttpContext context, InstallationAccess access) =>
-        await InstallationAccess.CheckVisitorAsync(context) is var visitor && visitor != InstallationVisitor.Allowed ? visitor
+        await InstallationAccess.CheckVisitorAsync(context) is var visitor && visitor != InstallationVisitor.Allowed
+            ? visitor
         : await access.IsGrantedAsync(context) ? InstallationVisitor.Allowed
         : InstallationVisitor.NotSignedIn;
 
     /// <summary>The folders of every library (those without their own use the configured root).</summary>
-    private static async Task<IReadOnlyList<string>> LibraryRootsAsync(AccessService accounts, IConfiguration configuration, CancellationToken cancellationToken)
+    private static async Task<IReadOnlyList<string>> LibraryRootsAsync(
+        AccessService accounts,
+        IConfiguration configuration,
+        CancellationToken cancellationToken
+    )
     {
         var roots = new List<string>();
         if (configuration[InstallationSettings.RootKey] is { Length: > 0 } root)
@@ -205,7 +304,8 @@ public static class InstallationEndpoints
     {
         if (!OperatingSystem.IsWindows())
             return [new ServerFolder("/", "/")];
-        return DriveInfo.GetDrives()
+        return DriveInfo
+            .GetDrives()
             .Where(drive => drive.IsReady)
             .Select(drive => new ServerFolder(Label(drive), drive.RootDirectory.FullName))
             .ToList();
@@ -231,8 +331,14 @@ public static class InstallationEndpoints
 
         void Add(string name, string folder)
         {
-            if (folder.Length > 0 && Directory.Exists(folder) && !places.Any(p => string.Equals(p.Path, folder, LibraryPaths.PathComparison)))
+            if (
+                folder.Length > 0
+                && Directory.Exists(folder)
+                && !places.Any(p => string.Equals(p.Path, folder, LibraryPaths.PathComparison))
+            )
+            {
                 places.Add(new ServerFolder(name, folder));
+            }
         }
     }
 }

@@ -22,7 +22,8 @@ public sealed class KeepWorkFolderInLibraries : IUpgradeStep
 
     public SemanticVersion Version { get; } = new(1, 82, 0);
 
-    public string Description => "Keeping the work folder of the existing libraries in the library (new ones get the server's)";
+    public string Description =>
+        "Keeping the work folder of the existing libraries in the library (new ones get the server's)";
 
     public async Task RunAsync(UpgradeContext context, CancellationToken cancellationToken)
     {
@@ -33,14 +34,24 @@ public sealed class KeepWorkFolderInLibraries : IUpgradeStep
         if (File.Exists(marker))
             return;
 
-        var library = SettingKeys.Flatten(SettingKeys.ToJson(new EditableSettings { Files = new FileSettings { WorkFolder = WorkFolderLocation.Library } }))[Key]!;
+        var library = SettingKeys.Flatten(
+            SettingKeys.ToJson(
+                new EditableSettings { Files = new FileSettings { WorkFolder = WorkFolderLocation.Library } }
+            )
+        )[Key]!;
         var kept = await settings.KeepPreviousDefaultAsync(Key, library, tenants, cancellationToken);
         if (kept > 0)
-            context.Note($"{kept} libraries keep their work folder in the library (Files › Where SFE keeps its work files).");
+        {
+            context.Note(
+                $"{kept} libraries keep their work folder in the library (Files › Where SFE keeps its work files)."
+            );
+        }
 
         Directory.CreateDirectory(Path.GetDirectoryName(marker)!);
-        await File.WriteAllTextAsync(marker,
+        await File.WriteAllTextAsync(
+            marker,
             $"SFE {Version}: the libraries of the install kept their work folder in the library; new ones get the server's default. Delete this file to run it again.{Environment.NewLine}",
-            cancellationToken);
+            cancellationToken
+        );
     }
 }

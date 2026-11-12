@@ -40,132 +40,137 @@ public sealed class EditableSettings
     public FileSettings Files { get; set; } = new();
     public KeepAliveSettings KeepAlive { get; set; } = new();
 
-    public static EditableSettings From(SfeOptions options) => new()
-    {
-        DataServer = options.DataServer,
-        ShowHiddenItems = options.ShowHiddenItems,
-        OpenBrowser = options.OpenBrowser,
-        FastSignIn = options.FastSignIn,
-        Browse = new()
+    public static EditableSettings From(SfeOptions options) =>
+        new()
         {
-            DefaultPageSize = options.Browse.DefaultPageSize,
-            MaxPageSize = options.Browse.MaxPageSize,
-            FolderPictures = options.Browse.FolderPictures,
-            CopyPaths = options.Browse.CopyPaths,
-            ShowResolution = options.Browse.ShowResolution,
-            ShowDuration = options.Browse.ShowDuration,
-            ResolutionMark = options.Browse.ResolutionMark,
-            ImageHighResolutionPixels = options.Browse.ImageHighResolutionPixels,
-            VideoHighResolutionPixels = options.Browse.VideoHighResolutionPixels,
-        },
-        Search = new()
-        {
-            DefaultPageSize = options.Search.DefaultPageSize,
-            MaxPageSize = options.Search.MaxPageSize,
-            Explain = options.Search.Explain,
-            HistorySize = options.Search.HistorySize,
-        },
-        Scan = new()
-        {
-            IgnoredDirectories = [.. options.Scan.IgnoredDirectories],
-            IgnoredFiles = [.. options.Scan.IgnoredFiles],
-            ExcludedFolders = [.. options.Scan.ExcludedFolders],
-            Parallelism = options.Scan.Parallelism,
-            ComputeHashes = options.Scan.ComputeHashes,
-            ReadResolution = options.Scan.ReadResolution,
-        },
-        FileTypes = new()
-        {
-            Images = [.. options.FileTypes.Images],
-            Videos = [.. options.FileTypes.Videos],
-            Audio = [.. options.FileTypes.Audio],
-            Text = [.. options.FileTypes.Text],
-        },
-        Thumbnails = new()
-        {
-            Enabled = options.Thumbnails.Enabled,
-            VideoSeekSeconds = options.Thumbnails.VideoSeekSeconds,
-            Width = options.Thumbnails.Width,
-            LargeImageKilobytes = options.Thumbnails.LargeImageKilobytes,
-            SingleViewOriginals = options.Thumbnails.SingleViewOriginals,
-            AnimatedHover = options.Thumbnails.AnimatedHover,
-            ExcludedFolders = [.. options.Thumbnails.ExcludedFolders],
-            MaxConcurrency = options.Thumbnails.MaxConcurrency,
-            TimeoutSeconds = options.Thumbnails.TimeoutSeconds,
-        },
-        Trickplay = new()
-        {
-            Enabled = options.Trickplay.Enabled,
-            Folders = [.. options.Trickplay.Folders],
-            ExcludedFolders = [.. options.Trickplay.ExcludedFolders],
-            IntervalSeconds = options.Trickplay.IntervalSeconds,
-            Width = options.Trickplay.Width,
-            Columns = options.Trickplay.Columns,
-            Rows = options.Trickplay.Rows,
-            KeyFramesOnly = options.Trickplay.KeyFramesOnly,
-            Parallelism = options.Trickplay.Parallelism,
-            TimeoutMinutes = options.Trickplay.TimeoutMinutes,
-            RecheckHours = options.Trickplay.RecheckHours,
-            HoverPreview = options.Trickplay.HoverPreview,
-        },
-        Tags = new() { RecordHistory = options.Tags.RecordHistory, SidebarCount = options.Tags.SidebarCount },
-        Player = new()
-        {
-            SeekSeconds = options.Player.SeekSeconds,
-            Loop = options.Player.Loop,
-            ExternalName = options.Player.ExternalName,
-            ExternalUrl = options.Player.ExternalUrl,
-            LinkLifetimeMinutes = options.Player.LinkLifetimeMinutes,
-            Flash = options.Player.Flash,
-        },
-        Streaming = new()
-        {
-            Mode = options.Streaming.Mode,
-            MaxStreams = options.Streaming.MaxStreams,
-            Quality = options.Streaming.Quality,
-            MaxHeight = options.Streaming.MaxHeight,
-            CopyVideo = options.Streaming.CopyVideo,
-        },
-        FileTracking = new()
-        {
-            Duplicates = new()
+            DataServer = options.DataServer,
+            ShowHiddenItems = options.ShowHiddenItems,
+            OpenBrowser = options.OpenBrowser,
+            FastSignIn = options.FastSignIn,
+            Browse = new()
             {
-                MinimumKilobytes = options.FileTracking.Duplicates.MinimumKilobytes,
-                GroupsPerPage = options.FileTracking.Duplicates.GroupsPerPage,
-                AllowRemove = options.FileTracking.Duplicates.AllowRemove,
+                DefaultPageSize = options.Browse.DefaultPageSize,
+                MaxPageSize = options.Browse.MaxPageSize,
+                FolderPictures = options.Browse.FolderPictures,
+                CopyPaths = options.Browse.CopyPaths,
+                ShowResolution = options.Browse.ShowResolution,
+                ShowDuration = options.Browse.ShowDuration,
+                ResolutionMark = options.Browse.ResolutionMark,
+                ImageHighResolutionPixels = options.Browse.ImageHighResolutionPixels,
+                VideoHighResolutionPixels = options.Browse.VideoHighResolutionPixels,
             },
-            Relink = new()
+            Search = new()
             {
-                Enabled = options.FileTracking.Relink.Enabled,
-                MatchByName = options.FileTracking.Relink.MatchByName,
-                RetentionDays = options.FileTracking.Relink.RetentionDays,
+                DefaultPageSize = options.Search.DefaultPageSize,
+                MaxPageSize = options.Search.MaxPageSize,
+                Explain = options.Search.Explain,
+                HistorySize = options.Search.HistorySize,
             },
-            SimilarVideos = new() { MinimumPercent = options.FileTracking.SimilarVideos.MinimumPercent },
-        },
-        Appearance = new() { Theme = options.Appearance.Theme },
-        Reading = options.Reading.Copy(),
-        Tasks = new() { LogRetentionDays = options.Tasks.LogRetentionDays },
-        Logs = new() { RetentionDays = options.Logs.RetentionDays, WriteFiles = options.Logs.WriteFiles },
-        Editor = new() { OutputFolder = options.Editor.OutputFolder, Quality = options.Editor.Quality },
-        Files = new()
-        {
-            PortableNames = options.Files.PortableNames,
-            WorkFolder = options.Files.WorkFolder,
-            DeletePermanently = options.Files.DeletePermanently,
-            Trash = new() { RetentionDays = options.Files.Trash.RetentionDays },
-            MinimumFreeSpaceMegabytes = options.Files.MinimumFreeSpaceMegabytes,
-            Uploads = new() { MaxFileSizeMegabytes = options.Files.Uploads.MaxFileSizeMegabytes, KeepUnfinishedHours = options.Files.Uploads.KeepUnfinishedHours },
-            MaxArchiveMegabytes = options.Files.MaxArchiveMegabytes,
-        },
-        KeepAlive = new()
-        {
-            Mode = options.KeepAlive.Mode,
-            IntervalSeconds = options.KeepAlive.IntervalSeconds,
-            TimeoutSeconds = options.KeepAlive.TimeoutSeconds,
-            Folders = [.. options.KeepAlive.Folders],
-            Method = options.KeepAlive.Method,
-        },
-    };
+            Scan = new()
+            {
+                IgnoredDirectories = [.. options.Scan.IgnoredDirectories],
+                IgnoredFiles = [.. options.Scan.IgnoredFiles],
+                ExcludedFolders = [.. options.Scan.ExcludedFolders],
+                Parallelism = options.Scan.Parallelism,
+                ComputeHashes = options.Scan.ComputeHashes,
+                ReadResolution = options.Scan.ReadResolution,
+            },
+            FileTypes = new()
+            {
+                Images = [.. options.FileTypes.Images],
+                Videos = [.. options.FileTypes.Videos],
+                Audio = [.. options.FileTypes.Audio],
+                Text = [.. options.FileTypes.Text],
+            },
+            Thumbnails = new()
+            {
+                Enabled = options.Thumbnails.Enabled,
+                VideoSeekSeconds = options.Thumbnails.VideoSeekSeconds,
+                Width = options.Thumbnails.Width,
+                LargeImageKilobytes = options.Thumbnails.LargeImageKilobytes,
+                SingleViewOriginals = options.Thumbnails.SingleViewOriginals,
+                AnimatedHover = options.Thumbnails.AnimatedHover,
+                ExcludedFolders = [.. options.Thumbnails.ExcludedFolders],
+                MaxConcurrency = options.Thumbnails.MaxConcurrency,
+                TimeoutSeconds = options.Thumbnails.TimeoutSeconds,
+            },
+            Trickplay = new()
+            {
+                Enabled = options.Trickplay.Enabled,
+                Folders = [.. options.Trickplay.Folders],
+                ExcludedFolders = [.. options.Trickplay.ExcludedFolders],
+                IntervalSeconds = options.Trickplay.IntervalSeconds,
+                Width = options.Trickplay.Width,
+                Columns = options.Trickplay.Columns,
+                Rows = options.Trickplay.Rows,
+                KeyFramesOnly = options.Trickplay.KeyFramesOnly,
+                Parallelism = options.Trickplay.Parallelism,
+                TimeoutMinutes = options.Trickplay.TimeoutMinutes,
+                RecheckHours = options.Trickplay.RecheckHours,
+                HoverPreview = options.Trickplay.HoverPreview,
+            },
+            Tags = new() { RecordHistory = options.Tags.RecordHistory, SidebarCount = options.Tags.SidebarCount },
+            Player = new()
+            {
+                SeekSeconds = options.Player.SeekSeconds,
+                Loop = options.Player.Loop,
+                ExternalName = options.Player.ExternalName,
+                ExternalUrl = options.Player.ExternalUrl,
+                LinkLifetimeMinutes = options.Player.LinkLifetimeMinutes,
+                Flash = options.Player.Flash,
+            },
+            Streaming = new()
+            {
+                Mode = options.Streaming.Mode,
+                MaxStreams = options.Streaming.MaxStreams,
+                Quality = options.Streaming.Quality,
+                MaxHeight = options.Streaming.MaxHeight,
+                CopyVideo = options.Streaming.CopyVideo,
+            },
+            FileTracking = new()
+            {
+                Duplicates = new()
+                {
+                    MinimumKilobytes = options.FileTracking.Duplicates.MinimumKilobytes,
+                    GroupsPerPage = options.FileTracking.Duplicates.GroupsPerPage,
+                    AllowRemove = options.FileTracking.Duplicates.AllowRemove,
+                },
+                Relink = new()
+                {
+                    Enabled = options.FileTracking.Relink.Enabled,
+                    MatchByName = options.FileTracking.Relink.MatchByName,
+                    RetentionDays = options.FileTracking.Relink.RetentionDays,
+                },
+                SimilarVideos = new() { MinimumPercent = options.FileTracking.SimilarVideos.MinimumPercent },
+            },
+            Appearance = new() { Theme = options.Appearance.Theme },
+            Reading = options.Reading.Copy(),
+            Tasks = new() { LogRetentionDays = options.Tasks.LogRetentionDays },
+            Logs = new() { RetentionDays = options.Logs.RetentionDays, WriteFiles = options.Logs.WriteFiles },
+            Editor = new() { OutputFolder = options.Editor.OutputFolder, Quality = options.Editor.Quality },
+            Files = new()
+            {
+                PortableNames = options.Files.PortableNames,
+                WorkFolder = options.Files.WorkFolder,
+                DeletePermanently = options.Files.DeletePermanently,
+                Trash = new() { RetentionDays = options.Files.Trash.RetentionDays },
+                MinimumFreeSpaceMegabytes = options.Files.MinimumFreeSpaceMegabytes,
+                Uploads = new()
+                {
+                    MaxFileSizeMegabytes = options.Files.Uploads.MaxFileSizeMegabytes,
+                    KeepUnfinishedHours = options.Files.Uploads.KeepUnfinishedHours,
+                },
+                MaxArchiveMegabytes = options.Files.MaxArchiveMegabytes,
+            },
+            KeepAlive = new()
+            {
+                Mode = options.KeepAlive.Mode,
+                IntervalSeconds = options.KeepAlive.IntervalSeconds,
+                TimeoutSeconds = options.KeepAlive.TimeoutSeconds,
+                Folders = [.. options.KeepAlive.Folders],
+                Method = options.KeepAlive.Method,
+            },
+        };
 
     public void ApplyTo(SfeOptions options)
     {
@@ -398,7 +403,12 @@ public sealed class RelinkSettings
 /// <param name="Customized">The level has values of its own (for the server: the settings file), rather than all inherited.</param>
 /// <param name="Level">The level the values are read at.</param>
 /// <param name="Keys">For each setting, where its value comes from and whether the level may change or lock it; null without levels.</param>
-public sealed record SettingsView(EditableSettings Values, bool Customized, SettingLevel Level = SettingLevel.Server, IReadOnlyDictionary<string, SettingState>? Keys = null);
+public sealed record SettingsView(
+    EditableSettings Values,
+    bool Customized,
+    SettingLevel Level = SettingLevel.Server,
+    IReadOnlyDictionary<string, SettingState>? Keys = null
+);
 
 public sealed class TaskSettings
 {

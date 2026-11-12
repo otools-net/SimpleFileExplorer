@@ -23,8 +23,17 @@ public sealed record UploadStart(string? Target, string? Name, long Size, DateTi
 /// <summary>An upload not finished yet: what the uploader's browser needs to go on (also after a reload).</summary>
 /// <param name="Received">Bytes stored so far: the next chunk starts there.</param>
 public sealed record UploadInfo(
-    string Id, string Target, string Name, long Size, long Received, DateTimeOffset? Modified, int? OwnerId, string OwnerName,
-    DateTimeOffset Started, DateTimeOffset LastActivity);
+    string Id,
+    string Target,
+    string Name,
+    long Size,
+    long Received,
+    DateTimeOffset? Modified,
+    int? OwnerId,
+    string OwnerName,
+    DateTimeOffset Started,
+    DateTimeOffset LastActivity
+);
 
 /// <summary>What a chunk did: the upload as it is now, or why it was refused.</summary>
 public sealed record UploadChunkResult(FileOperationStatus Status, UploadInfo? Upload, string? Message = null);
@@ -55,7 +64,8 @@ public sealed class Uploads(
     ScanCoordinator scans,
     Trash trash,
     IOptionsMonitor<SfeOptions> options,
-    ILogger<Uploads> logger)
+    ILogger<Uploads> logger
+)
 {
     public const string FolderName = "uploads";
 
@@ -80,7 +90,12 @@ public sealed class Uploads(
     private FileManagementOptions Settings => options.CurrentValue.Files;
 
     /// <summary>Checks and starts an upload; nothing is written but its record.</summary>
-    public async Task<UploadChunkResult> StartAsync(UploadStart start, FileActor actor, IUploadAccess access, CancellationToken cancellationToken = default)
+    public async Task<UploadChunkResult> StartAsync(
+        UploadStart start,
+        FileActor actor,
+        IUploadAccess access,
+        CancellationToken cancellationToken = default
+    )
     {
         Sweep();
         if (await PlaceAsync(start.Target, start.Name, access) is { Error: { } error })
@@ -89,23 +104,58 @@ public sealed class Uploads(
             return new UploadChunkResult(FileOperationStatus.Invalid, null, "The size is not valid.");
         var name = Base(start.Name!);
         if (Settings.Uploads.MaxFileSizeMegabytes is > 0 and var max && start.Size > max * 1024L * 1024)
-            return new UploadChunkResult(FileOperationStatus.Invalid, null, $"“{name}” is larger than the {max:N0} MB a file may have here.");
+        {
+            return new UploadChunkResult(
+                FileOperationStatus.Invalid,
+                null,
+                $"“{name}” is larger than the {max:N0} MB a file may have here."
+            );
+        }
+
         if (FreeSpace(work.Get(FolderName)) is { } free && free - start.Size < Margin)
-            return new UploadChunkResult(FileOperationStatus.Failed, null, $"“{name}” can't be uploaded: the drive would keep less than {Margin / 1024 / 1024:N0} MB free.");
+        {
+            return new UploadChunkResult(
+                FileOperationStatus.Failed,
+                null,
+                $"“{name}” can't be uploaded: the drive would keep less than {Margin / 1024 / 1024:N0} MB free."
+            );
+        }
+
         var all = Load();
         if (all.Values.Count(u => u.OwnerId == actor.AccountId) >= MaxPerOwner)
-            return new UploadChunkResult(FileOperationStatus.Conflict, null, $"You have {MaxPerOwner} unfinished uploads: finish or cancel some first.");
+        {
+            return new UploadChunkResult(
+                FileOperationStatus.Conflict,
+                null,
+                $"You have {MaxPerOwner} unfinished uploads: finish or cancel some first."
+            );
+        }
 
         var now = DateTimeOffset.UtcNow;
         if (!paths.TryResolve(start.Target, out var targetFull))
             return new UploadChunkResult(FileOperationStatus.NotFound, null, "The folder was not found.");
-        var upload = new UploadInfo(Guid.NewGuid().ToString("N"), paths.ToRelative(targetFull)!, Clean(start.Name!), start.Size, 0,
-            start.Modified, actor.AccountId, actor.Name, now, now);
-        await using (File.Create(PartPath(upload.Id)))
-        { }
+        var upload = new UploadInfo(
+            Guid.NewGuid().ToString("N"),
+            paths.ToRelative(targetFull)!,
+            Clean(start.Name!),
+            start.Size,
+            0,
+            start.Modified,
+            actor.AccountId,
+            actor.Name,
+            now,
+            now
+        );
+        await using (File.Create(PartPath(upload.Id))) { }
         Save(upload);
         all[upload.Id] = upload;
-        logger.LogInformation("{Account} started uploading {Name} ({Size} bytes) to {Target}", actor.Name, upload.Name, upload.Size, Display(upload.Target));
+        logger.LogInformation(
+            "{Account} started uploading {Name} ({Size} bytes) to {Target}",
+            actor.Name,
+            upload.Name,
+            upload.Size,
+            Display(upload.Target)
+        );
         return new UploadChunkResult(FileOperationStatus.Done, upload);
     }
 
@@ -122,20 +172,47 @@ public sealed class Uploads(
     /// Appends <paramref name="body"/> at <paramref name="offset"/>: refused (<see cref="FileOperationStatus.Conflict"/>,
     /// with the upload) when the server has another offset, or when it would pass the size.
     /// </summary>
-    public async Task<UploadChunkResult> AppendAsync(string id, long offset, Stream body, CancellationToken cancellationToken = default)
+    public async Task<UploadChunkResult> AppendAsync(
+        string id,
+        long offset,
+        Stream body,
+        CancellationToken cancellationToken = default
+    )
     {
         var gate = _gates.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken);
         try
         {
             if (Find(id) is not { } upload || !File.Exists(PartPath(id)))
-                return new UploadChunkResult(FileOperationStatus.NotFound, null, "This upload is not there any more: start it again.");
+            {
+                return new UploadChunkResult(
+                    FileOperationStatus.NotFound,
+                    null,
+                    "This upload is not there any more: start it again."
+                );
+            }
+
             if (offset != upload.Received)
-                return new UploadChunkResult(FileOperationStatus.Conflict, upload, $"The server has {upload.Received} bytes of it.");
+            {
+                return new UploadChunkResult(
+                    FileOperationStatus.Conflict,
+                    upload,
+                    $"The server has {upload.Received} bytes of it."
+                );
+            }
 
             var received = upload.Received;
             var buffer = new byte[81920];
-            await using (var part = new FileStream(PartPath(id), FileMode.Open, FileAccess.Write, FileShare.None, 1, FileOptions.Asynchronous))
+            await using (
+                var part = new FileStream(
+                    PartPath(id),
+                    FileMode.Open,
+                    FileAccess.Write,
+                    FileShare.None,
+                    1,
+                    FileOptions.Asynchronous
+                )
+            )
             {
                 // Bytes past what was stored (a write cut off before the record was saved) are dropped.
                 part.SetLength(received);
@@ -150,8 +227,13 @@ public sealed class Uploads(
                         if (received + read > upload.Size || chunk > MaxChunkBytes)
                         {
                             part.SetLength(upload.Received);
-                            return new UploadChunkResult(FileOperationStatus.Invalid, upload,
-                                chunk > MaxChunkBytes ? $"A chunk may carry {MaxChunkBytes / 1024 / 1024} MB at most." : "More bytes than the size given at the start.");
+                            return new UploadChunkResult(
+                                FileOperationStatus.Invalid,
+                                upload,
+                                chunk > MaxChunkBytes
+                                    ? $"A chunk may carry {MaxChunkBytes / 1024 / 1024} MB at most."
+                                    : "More bytes than the size given at the start."
+                            );
                         }
                         await part.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
                         received += read;
@@ -182,17 +264,33 @@ public sealed class Uploads(
     /// answered as <paramref name="conflicts"/> says (<see cref="ConflictChoice.Ask"/>: <see cref="FileOperationStatus.Exists"/>,
     /// to ask the person and finish again), the file is indexed. A skipped upload is removed.
     /// </summary>
-    public async Task<FileOperationResult> FinishAsync(string id, ConflictChoice conflicts, FileActor actor, IUploadAccess access,
-        CancellationToken cancellationToken = default)
+    public async Task<FileOperationResult> FinishAsync(
+        string id,
+        ConflictChoice conflicts,
+        FileActor actor,
+        IUploadAccess access,
+        CancellationToken cancellationToken = default
+    )
     {
         var gate = _gates.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken);
         try
         {
             if (Find(id) is not { } upload || !File.Exists(PartPath(id)))
-                return FileOperationResult.Fail(FileOperationStatus.NotFound, "This upload is not there any more: start it again.");
+            {
+                return FileOperationResult.Fail(
+                    FileOperationStatus.NotFound,
+                    "This upload is not there any more: start it again."
+                );
+            }
+
             if (upload.Received != upload.Size || new FileInfo(PartPath(id)).Length != upload.Size)
-                return FileOperationResult.Fail(FileOperationStatus.Invalid, $"“{Base(upload.Name)}” is not fully uploaded yet.");
+            {
+                return FileOperationResult.Fail(
+                    FileOperationStatus.Invalid,
+                    $"“{Base(upload.Name)}” is not fully uploaded yet."
+                );
+            }
             // The person's access now (it may have changed since the start), and the place still there.
             if (await PlaceAsync(upload.Target, upload.Name, access) is { Error: { } error })
                 return error;
@@ -207,7 +305,13 @@ public sealed class Uploads(
                 folder = Path.Join(folder, segment);
                 folderPath = Join(folderPath, segment);
                 if (File.Exists(folder))
-                    return FileOperationResult.Fail(FileOperationStatus.Exists, $"There is a file named “{segment}” where its folder would go.");
+                {
+                    return FileOperationResult.Fail(
+                        FileOperationStatus.Exists,
+                        $"There is a file named “{segment}” where its folder would go."
+                    );
+                }
+
                 if (!Directory.Exists(folder))
                     created.Add(folder);
             }
@@ -221,28 +325,51 @@ public sealed class Uploads(
                 {
                     case ConflictChoice.Skip:
                         Remove(upload);
-                        return FileOperationResult.Fail(FileOperationStatus.Skipped, $"“{name}” was left out: there is one of that name there.");
+                        return FileOperationResult.Fail(
+                            FileOperationStatus.Skipped,
+                            $"“{name}” was left out: there is one of that name there."
+                        );
                     case ConflictChoice.KeepBoth:
-                        name = FileNames.KeepBoth(name, false, n => File.Exists(Path.Join(folder, n)) || Directory.Exists(Path.Join(folder, n)))
-                            ?? throw new IOException("No free name.");
+                        name = FileNames.KeepBoth(name, false, n =>
+                            File.Exists(Path.Join(folder, n)) || Directory.Exists(Path.Join(folder, n))
+                        ) ?? throw new IOException("No free name.");
                         destination = Path.Join(folder, name);
                         break;
                     case ConflictChoice.Replace when File.Exists(destination):
                         var right = trash.AlwaysPermanent ? Rights.DeletePermanently : Rights.DeleteFiles;
                         if (!await access.MayAsync(existingPath, right))
-                            return FileOperationResult.Fail(FileOperationStatus.Forbidden, $"You may not replace “{name}” there.");
+                        {
+                            return FileOperationResult.Fail(
+                                FileOperationStatus.Forbidden,
+                                $"You may not replace “{name}” there."
+                            );
+                        }
+
                         using (var hold = scans.TryBeginOperation(destination))
                         {
                             if (hold is null)
                                 return ScanRunning();
                             if (trash.AlwaysPermanent)
-                                await trash.DeleteForGoodAsync(destination, existingPath, false, actor, cancellationToken);
+                            {
+                                await trash.DeleteForGoodAsync(
+                                    destination,
+                                    existingPath,
+                                    false,
+                                    actor,
+                                    cancellationToken
+                                );
+                            }
                             else
+                            {
                                 await trash.MoveInAsync(destination, existingPath, false, actor, cancellationToken);
+                            }
                         }
                         break;
                     default:
-                        return FileOperationResult.Fail(FileOperationStatus.Exists, $"There is already a file or folder named “{name}” here.");
+                        return FileOperationResult.Fail(
+                            FileOperationStatus.Exists,
+                            $"There is already a file or folder named “{name}” here."
+                        );
                 }
             }
             if (await TooLongForTheIndexAsync(destination, cancellationToken) is { } tooLong)
@@ -262,7 +389,13 @@ public sealed class Uploads(
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    logger.LogWarning(ex, "{Account} could not finish uploading {Name} to {Target}", actor.Name, upload.Name, Display(upload.Target));
+                    logger.LogWarning(
+                        ex,
+                        "{Account} could not finish uploading {Name} to {Target}",
+                        actor.Name,
+                        upload.Name,
+                        Display(upload.Target)
+                    );
                     return FileOperations.DiskFailure(ex, $"“{name}” could not be saved");
                 }
             }
@@ -296,14 +429,20 @@ public sealed class Uploads(
         if (Find(id) is not { } upload)
             return false;
         Remove(upload);
-        logger.LogInformation("{Account} cancelled the upload of {Name} to {Target}", actor.Name, upload.Name, Display(upload.Target));
+        logger.LogInformation(
+            "{Account} cancelled the upload of {Name} to {Target}",
+            actor.Name,
+            upload.Name,
+            Display(upload.Target)
+        );
         return true;
     }
 
     /// <summary>Removes the uploads idle for longer than <c>Files:Uploads:KeepUnfinishedHours</c> (at <paramref name="now"/>); how many.</summary>
     public int RemoveAbandoned(DateTimeOffset? now = null)
     {
-        var limit = (now ?? DateTimeOffset.UtcNow) - TimeSpan.FromHours(Math.Max(1, Settings.Uploads.KeepUnfinishedHours));
+        var limit =
+            (now ?? DateTimeOffset.UtcNow) - TimeSpan.FromHours(Math.Max(1, Settings.Uploads.KeepUnfinishedHours));
         var removed = 0;
         foreach (var upload in Load().Values.Where(u => u.LastActivity < limit).ToList())
         {
@@ -311,7 +450,14 @@ public sealed class Uploads(
             removed++;
         }
         if (removed > 0)
-            logger.LogInformation("Removed {Count} uploads not finished for {Hours} hours", removed, Settings.Uploads.KeepUnfinishedHours);
+        {
+            logger.LogInformation(
+                "Removed {Count} uploads not finished for {Hours} hours",
+                removed,
+                Settings.Uploads.KeepUnfinishedHours
+            );
+        }
+
         return removed;
     }
 
@@ -319,11 +465,23 @@ public sealed class Uploads(
     /// Why <paramref name="name"/> can't be uploaded into <paramref name="target"/> by the person: the folder, each
     /// folder on the way and the name are checked (names as new names, no <c>..</c>, the work folder refused).
     /// </summary>
-    private async Task<(FileOperationResult? Error, string? Path)> PlaceAsync(string? target, string? name, IUploadAccess access)
+    private async Task<(FileOperationResult? Error, string? Path)> PlaceAsync(
+        string? target,
+        string? name,
+        IUploadAccess access
+    )
     {
-        var notFound = (FileOperationResult.Fail(FileOperationStatus.NotFound, "The folder was not found."), (string?)null);
-        if (LibraryPaths.NormalizeRelative(target) is not { } normalized || !paths.TryResolve(normalized, out var targetFull)
-            || !Directory.Exists(targetFull) || access.IsProtected(targetFull) || paths.ToRelative(targetFull) is not { } targetPath)
+        var notFound = (
+            FileOperationResult.Fail(FileOperationStatus.NotFound, "The folder was not found."),
+            (string?)null
+        );
+        if (
+            LibraryPaths.NormalizeRelative(target) is not { } normalized
+            || !paths.TryResolve(normalized, out var targetFull)
+            || !Directory.Exists(targetFull)
+            || access.IsProtected(targetFull)
+            || paths.ToRelative(targetFull) is not { } targetPath
+        )
         {
             return notFound;
         }
@@ -334,7 +492,15 @@ public sealed class Uploads(
             return (FileOperationResult.Fail(FileOperationStatus.Invalid, "A name is needed."), null);
         var segments = name.Replace('\\', '/').Split('/');
         if (segments.Length > MaxDepth)
-            return (FileOperationResult.Fail(FileOperationStatus.Invalid, $"“{name}” is more than {MaxDepth} folders deep."), null);
+        {
+            return (
+                FileOperationResult.Fail(
+                    FileOperationStatus.Invalid,
+                    $"“{name}” is more than {MaxDepth} folders deep."
+                ),
+                null
+            );
+        }
 
         var path = targetPath;
         foreach (var segment in segments)
@@ -343,8 +509,20 @@ public sealed class Uploads(
                 return (FileOperationResult.Fail(FileOperationStatus.Invalid, message), null);
             path = Join(path, segment);
             // SFE's work folder at the root, or a name the system would read as another one.
-            if (!paths.TryResolve(path, out var full) || !LibraryPaths.PathComparer.Equals(Path.GetFileName(full), segment) || access.IsProtected(full))
-                return (FileOperationResult.Fail(FileOperationStatus.Invalid, $"“{segment}” is reserved for SFE's own files: pick another name."), null);
+            if (
+                !paths.TryResolve(path, out var full)
+                || !LibraryPaths.PathComparer.Equals(Path.GetFileName(full), segment)
+                || access.IsProtected(full)
+            )
+            {
+                return (
+                    FileOperationResult.Fail(
+                        FileOperationStatus.Invalid,
+                        $"“{segment}” is reserved for SFE's own files: pick another name."
+                    ),
+                    null
+                );
+            }
         }
         // Each folder made on the way, and the folder the file lands in, needs the right to upload there.
         var place = targetPath;
@@ -354,7 +532,15 @@ public sealed class Uploads(
         {
             place = Join(place, segment);
             if (!await access.MayAsync(place, Rights.UploadFiles))
-                return (FileOperationResult.Fail(FileOperationStatus.Forbidden, $"You may not upload files into “{segment}”."), null);
+            {
+                return (
+                    FileOperationResult.Fail(
+                        FileOperationStatus.Forbidden,
+                        $"You may not upload files into “{segment}”."
+                    ),
+                    null
+                );
+            }
         }
         return (null, path);
     }
@@ -380,8 +566,13 @@ public sealed class Uploads(
             {
                 try
                 {
-                    if (JsonSerializer.Deserialize<UploadInfo>(File.ReadAllText(record), Json) is { } upload && upload.Id == Path.GetFileNameWithoutExtension(record))
+                    if (
+                        JsonSerializer.Deserialize<UploadInfo>(File.ReadAllText(record), Json) is { } upload
+                        && upload.Id == Path.GetFileNameWithoutExtension(record)
+                    )
+                    {
                         uploads[upload.Id] = upload;
+                    }
                 }
                 catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
                 {
@@ -431,6 +622,7 @@ public sealed class Uploads(
     private long Margin => Math.Max(0, Settings.MinimumFreeSpaceMegabytes) * 1024L * 1024;
 
     private string PartPath(string id) => Path.Combine(work.Get(FolderName), $"{SafeId(id)}.part");
+
     private string RecordPath(string id) => Path.Combine(work.Get(FolderName), $"{SafeId(id)}.json");
 
     /// <summary>Ids are 32 hexadecimal digits: anything else never names a file.</summary>
@@ -450,10 +642,16 @@ public sealed class Uploads(
     }
 
     private static FileOperationResult ScanRunning() =>
-        FileOperationResult.Fail(FileOperationStatus.ScanRunning, "A scan is running over this folder: try again when it has finished.");
+        FileOperationResult.Fail(
+            FileOperationStatus.ScanRunning,
+            "A scan is running over this folder: try again when it has finished."
+        );
 
     private static string Clean(string name) => string.Join('/', name.Replace('\\', '/').Split('/'));
+
     private static string Base(string name) => name.Replace('\\', '/').Split('/')[^1];
+
     private static string Join(string folder, string name) => folder.Length == 0 ? name : $"{folder}/{name}";
+
     private string Display(string relative) => relative.Length == 0 ? paths.RootName : relative;
 }

@@ -31,12 +31,16 @@ public static class ServerModes
     public const string LocalOnlyType = "local-only";
 
     /// <summary>The mode configured; null when nothing sets it. An unknown word counts as External, the stricter one.</summary>
-    public static ServerMode? Configured(IConfiguration configuration) => configuration[Key]?.Trim() switch
-    {
-        null or "" => null,
-        var word when Enum.TryParse<ServerMode>(word, ignoreCase: true, out var mode) && Enum.IsDefined(mode) && !char.IsDigit(word[0]) => mode,
-        _ => ServerMode.External,
-    };
+    public static ServerMode? Configured(IConfiguration configuration) =>
+        configuration[Key]?.Trim() switch
+        {
+            null or "" => null,
+            var word
+                when Enum.TryParse<ServerMode>(word, ignoreCase: true, out var mode)
+                    && Enum.IsDefined(mode)
+                    && !char.IsDigit(word[0]) => mode,
+            _ => ServerMode.External,
+        };
 
     /// <summary>The mode in effect: an install whose configuration sets none (installs older than the modes) is Local.</summary>
     public static ServerMode InEffect(IConfiguration configuration) => Configured(configuration) ?? ServerMode.Local;

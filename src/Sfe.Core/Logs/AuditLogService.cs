@@ -16,11 +16,25 @@ namespace Sfe.Core.Logs;
 /// <param name="Tenant">Only the entries of this library; 0 = only the server's own (no library).</param>
 /// <param name="Before">The <see cref="LogPage.Next"/> of the previous page.</param>
 public sealed record LogQuery(
-    string? Text = null, IReadOnlyCollection<LogEntryLevel>? Levels = null, DateTimeOffset? From = null, DateTimeOffset? To = null,
-    int? Tenant = null, long? Before = null, int? Limit = null);
+    string? Text = null,
+    IReadOnlyCollection<LogEntryLevel>? Levels = null,
+    DateTimeOffset? From = null,
+    DateTimeOffset? To = null,
+    int? Tenant = null,
+    long? Before = null,
+    int? Limit = null
+);
 
 /// <param name="TenantId">The library whose services logged it; null for the server's own.</param>
-public sealed record LogEntryView(long Id, DateTimeOffset Timestamp, LogEntryLevel Level, string Category, string Message, string? Exception, int? TenantId);
+public sealed record LogEntryView(
+    long Id,
+    DateTimeOffset Timestamp,
+    LogEntryLevel Level,
+    string Category,
+    string Message,
+    string? Exception,
+    int? TenantId
+);
 
 /// <param name="Entries">Newest first.</param>
 /// <param name="Next">The <c>before</c> of the next (older) page; null on the last one.</param>
@@ -35,7 +49,12 @@ public sealed record LogPage(IReadOnlyList<LogEntryView> Entries, long? Next);
 /// (at most <see cref="AuditLogProvider.MaxQueued"/>) while the files still get them.
 /// </summary>
 public sealed class AuditLogService(
-    AuditLogProvider queue, IDbContextFactory<AccessDbContext> dbFactory, SettingLayers settings, string directory, ILogger<AuditLogService> logger)
+    AuditLogProvider queue,
+    IDbContextFactory<AccessDbContext> dbFactory,
+    SettingLayers settings,
+    string directory,
+    ILogger<AuditLogService> logger
+)
 {
     public const int DefaultPageSize = 100;
     public const int MaxPageSize = 500;
@@ -46,6 +65,7 @@ public sealed class AuditLogService(
     private const string FileExtension = ".log";
 
     private readonly SemaphoreSlim _gate = new(1, 1);
+
     /// <summary>Drained, not in the database yet (it couldn't be written, or the update isn't confirmed).</summary>
     private readonly List<LogEntry> _pending = [];
     private bool _databaseFailing;
@@ -121,16 +141,26 @@ public sealed class AuditLogService(
         if (query.Text?.Trim() is { Length: > 0 } text)
         {
             var pattern = "%" + EscapeLike(text.Length > MaxTextLength ? text[..MaxTextLength] : text) + "%";
-            entries = entries.Where(e => EF.Functions.Like(e.Message, pattern, LikeEscape)
+            entries = entries.Where(e =>
+                EF.Functions.Like(e.Message, pattern, LikeEscape)
                 || EF.Functions.Like(e.Category, pattern, LikeEscape)
-                || (e.Exception != null && EF.Functions.Like(e.Exception, pattern, LikeEscape)));
+                || (e.Exception != null && EF.Functions.Like(e.Exception, pattern, LikeEscape))
+            );
         }
         if (query.Before is { } before)
             entries = entries.Where(e => e.Id < before);
 
         var rows = await entries.OrderByDescending(e => e.Id).Take(size + 1).ToListAsync(cancellationToken);
         var page = rows.Take(size)
-            .Select(e => new LogEntryView(e.Id, new DateTimeOffset(DateTime.SpecifyKind(e.Timestamp, DateTimeKind.Utc)), e.Level, e.Category, e.Message, e.Exception, e.TenantId))
+            .Select(e => new LogEntryView(
+                e.Id,
+                new DateTimeOffset(DateTime.SpecifyKind(e.Timestamp, DateTimeKind.Utc)),
+                e.Level,
+                e.Category,
+                e.Message,
+                e.Exception,
+                e.TenantId
+            ))
             .ToList();
         return new LogPage(page, rows.Count > size ? page[^1].Id : null);
     }
@@ -150,10 +180,16 @@ public sealed class AuditLogService(
             // In slices, so that a large backlog (a first purge after raising the level) doesn't hold one long transaction.
             while (true)
             {
-                var last = await db.LogEntries.Where(e => e.Timestamp < limit).OrderBy(e => e.Id).Skip(PurgeBatchSize - 1)
-                    .Select(e => (long?)e.Id).FirstOrDefaultAsync(cancellationToken);
+                var last = await db
+                    .LogEntries.Where(e => e.Timestamp < limit)
+                    .OrderBy(e => e.Id)
+                    .Skip(PurgeBatchSize - 1)
+                    .Select(e => (long?)e.Id)
+                    .FirstOrDefaultAsync(cancellationToken);
                 var count = last is { } bound
-                    ? await db.LogEntries.Where(e => e.Id <= bound && e.Timestamp < limit).ExecuteDeleteAsync(cancellationToken)
+                    ? await db
+                        .LogEntries.Where(e => e.Id <= bound && e.Timestamp < limit)
+                        .ExecuteDeleteAsync(cancellationToken)
                     : await db.LogEntries.Where(e => e.Timestamp < limit).ExecuteDeleteAsync(cancellationToken);
                 deleted += count;
                 if (last is null || count == 0)
@@ -167,20 +203,31 @@ public sealed class AuditLogService(
 
         var files = PurgeFiles(DateOnly.FromDateTime(limit));
         if (deleted > 0 || files > 0)
-            logger.LogInformation("Forgot {Count} log entries and {Files} log files older than {Days} days", deleted, files, days);
+        {
+            logger.LogInformation(
+                "Forgot {Count} log entries and {Files} log files older than {Days} days",
+                deleted,
+                files,
+                days
+            );
+        }
     }
 
     /// <summary>The name of the daily file of <paramref name="day"/> (UTC).</summary>
-    public static string FileName(DateOnly day) => FilePrefix + day.ToString("yyyyMMdd", CultureInfo.InvariantCulture) + FileExtension;
+    public static string FileName(DateOnly day) =>
+        FilePrefix + day.ToString("yyyyMMdd", CultureInfo.InvariantCulture) + FileExtension;
 
     /// <summary>A line of a daily file; the lines of a multi-line message or exception follow, indented.</summary>
     public static string FormatLine(LogEntry entry)
     {
         var line = new StringBuilder()
             .Append(entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture))
-            .Append(' ').Append(ShortLevel(entry.Level))
+            .Append(' ')
+            .Append(ShortLevel(entry.Level))
             .Append(entry.TenantId is { } tenant ? $" [space {tenant}]" : "")
-            .Append(' ').Append(entry.Category).Append(": ")
+            .Append(' ')
+            .Append(entry.Category)
+            .Append(": ")
             .Append(Indent(entry.Message));
         if (entry.Exception is { } exception)
             line.Append("\n    ").Append(Indent(exception));
@@ -209,7 +256,14 @@ public sealed class AuditLogService(
         {
             // Kept for the next try; said once (on the console: the log can't hold it).
             if (!_databaseFailing)
-                logger.LogWarning(ex, "Cannot write the log to the database; {Count} entries wait in memory", _pending.Count);
+            {
+                logger.LogWarning(
+                    ex,
+                    "Cannot write the log to the database; {Count} entries wait in memory",
+                    _pending.Count
+                );
+            }
+
             _databaseFailing = true;
         }
     }
@@ -222,7 +276,12 @@ public sealed class AuditLogService(
             foreach (var day in batch.GroupBy(e => DateOnly.FromDateTime(e.Timestamp)))
             {
                 var text = string.Concat(day.Select(FormatLine));
-                await File.AppendAllTextAsync(Path.Combine(Directory, FileName(day.Key)), text, Encoding.UTF8, cancellationToken);
+                await File.AppendAllTextAsync(
+                    Path.Combine(Directory, FileName(day.Key)),
+                    text,
+                    Encoding.UTF8,
+                    cancellationToken
+                );
             }
 
             _filesFailing = false;
@@ -245,8 +304,20 @@ public sealed class AuditLogService(
             foreach (var path in System.IO.Directory.EnumerateFiles(Directory, FilePrefix + "*" + FileExtension))
             {
                 var name = Path.GetFileNameWithoutExtension(path)[FilePrefix.Length..];
-                if (!DateOnly.TryParseExact(name, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) || day >= before)
+                if (
+                    !DateOnly.TryParseExact(
+                        name,
+                        "yyyyMMdd",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out var day
+                    )
+                    || day >= before
+                )
+                {
                     continue;
+                }
+
                 File.Delete(path);
                 deleted++;
             }
@@ -259,40 +330,43 @@ public sealed class AuditLogService(
         return deleted;
     }
 
-    private static LogEntry Dropped(long count) => new()
-    {
-        Timestamp = DateTime.UtcNow,
-        Level = LogEntryLevel.Warning,
-        Category = typeof(AuditLogService).FullName!,
-        Message = $"{count} log entries were left out: more were logged than the log could keep up with.",
-    };
+    private static LogEntry Dropped(long count) =>
+        new()
+        {
+            Timestamp = DateTime.UtcNow,
+            Level = LogEntryLevel.Warning,
+            Category = typeof(AuditLogService).FullName!,
+            Message = $"{count} log entries were left out: more were logged than the log could keep up with.",
+        };
 
-    private static LogEntry Copy(LogEntry e) => new()
-    {
-        Timestamp = e.Timestamp,
-        Level = e.Level,
-        Category = e.Category,
-        Message = e.Message,
-        Exception = e.Exception,
-        TenantId = e.TenantId,
-    };
+    private static LogEntry Copy(LogEntry e) =>
+        new()
+        {
+            Timestamp = e.Timestamp,
+            Level = e.Level,
+            Category = e.Category,
+            Message = e.Message,
+            Exception = e.Exception,
+            TenantId = e.TenantId,
+        };
 
     private const string LikeEscape = "\\";
 
     private static string EscapeLike(string text) =>
         text.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_").Replace("[", "\\[");
 
-    private static string ShortLevel(LogEntryLevel level) => level switch
-    {
-        LogEntryLevel.Trace => "TRC",
-        LogEntryLevel.Debug => "DBG",
-        LogEntryLevel.Information => "INF",
-        LogEntryLevel.Warning => "WRN",
-        LogEntryLevel.SecurityWarning => "SEC",
-        LogEntryLevel.Error => "ERR",
-        LogEntryLevel.Critical => "CRT",
-        _ => level.ToString().ToUpperInvariant(),
-    };
+    private static string ShortLevel(LogEntryLevel level) =>
+        level switch
+        {
+            LogEntryLevel.Trace => "TRC",
+            LogEntryLevel.Debug => "DBG",
+            LogEntryLevel.Information => "INF",
+            LogEntryLevel.Warning => "WRN",
+            LogEntryLevel.SecurityWarning => "SEC",
+            LogEntryLevel.Error => "ERR",
+            LogEntryLevel.Critical => "CRT",
+            _ => level.ToString().ToUpperInvariant(),
+        };
 
     private static string Indent(string text) => text.ReplaceLineEndings("\n    ");
 }

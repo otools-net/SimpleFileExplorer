@@ -47,7 +47,10 @@ public sealed class SetupOptions
         if (!HasUsableCode)
             return false;
         return CodeIsGenerated
-            ? Access.PasswordHashing.SameSecret(Access.GeneratedSetupCode.Normalize(input), Access.GeneratedSetupCode.Normalize(Code))
+            ? Access.PasswordHashing.SameSecret(
+                Access.GeneratedSetupCode.Normalize(input),
+                Access.GeneratedSetupCode.Normalize(Code)
+            )
             : Access.PasswordHashing.SameSecret(input?.Trim() ?? string.Empty, Code!.Trim());
     }
 }

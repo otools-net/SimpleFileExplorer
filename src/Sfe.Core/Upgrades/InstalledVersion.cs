@@ -28,7 +28,8 @@ public sealed class InstalledVersion(IDbContextFactory<AccessDbContext> dbFactor
             return new InstalledVersionInfo(true, null);
 
         // Only the key and the value: the rest of the model may be ahead of this database.
-        var version = await db.ServerProperties.AsNoTracking()
+        var version = await db
+            .ServerProperties.AsNoTracking()
             .Where(p => p.Key == ServerProperty.VersionKey)
             .Select(p => p.Value)
             .FirstOrDefaultAsync(cancellationToken);
@@ -40,11 +41,21 @@ public sealed class InstalledVersion(IDbContextFactory<AccessDbContext> dbFactor
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         await SetAsync(db, ServerProperty.VersionKey, version, cancellationToken);
-        await SetAsync(db, ServerProperty.UpdatedKey, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture), cancellationToken);
+        await SetAsync(
+            db,
+            ServerProperty.UpdatedKey,
+            DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture),
+            cancellationToken
+        );
         await db.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task SetAsync(AccessDbContext db, string key, string value, CancellationToken cancellationToken)
+    private static async Task SetAsync(
+        AccessDbContext db,
+        string key,
+        string value,
+        CancellationToken cancellationToken
+    )
     {
         if (await db.ServerProperties.FindAsync([key], cancellationToken) is { } existing)
             existing.Value = value;
@@ -53,11 +64,19 @@ public sealed class InstalledVersion(IDbContextFactory<AccessDbContext> dbFactor
     }
 
     /// <summary>The database has <paramref name="table"/> (in schema SFE on SQL Server): asked before querying a table an older install may lack.</summary>
-    public static async Task<bool> HasTableAsync(DbContext db, string table, CancellationToken cancellationToken = default)
+    public static async Task<bool> HasTableAsync(
+        DbContext db,
+        string table,
+        CancellationToken cancellationToken = default
+    )
     {
         var query = db.Database.IsSqlServer()
-            ? db.Database.SqlQuery<int>($"SELECT COUNT(*) AS Value FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = {SfeDbContext.Schema} AND TABLE_NAME = {table}")
-            : db.Database.SqlQuery<int>($"SELECT COUNT(*) AS Value FROM sqlite_master WHERE type = 'table' AND name = {table}");
+            ? db.Database.SqlQuery<int>(
+                $"SELECT COUNT(*) AS Value FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = {SfeDbContext.Schema} AND TABLE_NAME = {table}"
+            )
+            : db.Database.SqlQuery<int>(
+                $"SELECT COUNT(*) AS Value FROM sqlite_master WHERE type = 'table' AND name = {table}"
+            );
         return await query.SingleAsync(cancellationToken) > 0;
     }
 }

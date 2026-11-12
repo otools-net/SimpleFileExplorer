@@ -35,7 +35,11 @@ public sealed class SignInThrottle(IOptionsMonitor<SecurityOptions> security)
 
     /// <summary>When the address may try the name again; null when it may now.</summary>
     public DateTimeOffset? LockedUntil(string? name, string address) =>
-        _entries.TryGetValue(Key(name, address), out var entry) && entry.LockedUntil is { } until && until > DateTimeOffset.UtcNow ? until : null;
+        _entries.TryGetValue(Key(name, address), out var entry)
+        && entry.LockedUntil is { } until
+        && until > DateTimeOffset.UtcNow
+            ? until
+            : null;
 
     /// <summary>Counts a failure; answers when the address may try again if it is now locked out.</summary>
     public DateTimeOffset? Failed(string? name, string address)
@@ -95,5 +99,6 @@ public sealed class SignInThrottle(IOptionsMonitor<SecurityOptions> security)
             _entries.TryRemove(key, out _);
     }
 
-    private static (string, string) Key(string? name, string address) => ((name ?? string.Empty).Trim().ToUpperInvariant(), address);
+    private static (string, string) Key(string? name, string address) =>
+        ((name ?? string.Empty).Trim().ToUpperInvariant(), address);
 }

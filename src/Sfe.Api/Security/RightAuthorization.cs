@@ -15,13 +15,14 @@ public static class RightAuthorization
     /// Visitors without an account pass too when the library's guests have it; otherwise they get 401, and accounts
     /// without the right 403.
     /// </summary>
-    public static TBuilder RequireRight<TBuilder>(this TBuilder builder, params string[] anyOf) where TBuilder : IEndpointConventionBuilder =>
-        builder
-            .WithMetadata(new RightMetadata(anyOf))
-            .RequireAuthorization(PolicyPrefix + string.Join(',', anyOf));
+    public static TBuilder RequireRight<TBuilder>(this TBuilder builder, params string[] anyOf)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.WithMetadata(new RightMetadata(anyOf)).RequireAuthorization(PolicyPrefix + string.Join(',', anyOf));
 
     internal static IReadOnlyList<string>? RightsOf(string policyName) =>
-        policyName.StartsWith(PolicyPrefix, StringComparison.Ordinal) ? policyName[PolicyPrefix.Length..].Split(',') : null;
+        policyName.StartsWith(PolicyPrefix, StringComparison.Ordinal)
+            ? policyName[PolicyPrefix.Length..].Split(',')
+            : null;
 }
 
 public sealed record RightRequirement(IReadOnlyList<string> AnyOf) : IAuthorizationRequirement;
@@ -33,7 +34,9 @@ public sealed class RightPolicyProvider(IOptions<AuthorizationOptions> options) 
 
     public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName) =>
         RightAuthorization.RightsOf(policyName) is { } rights
-            ? Task.FromResult<AuthorizationPolicy?>(new AuthorizationPolicyBuilder().AddRequirements(new RightRequirement(rights)).Build())
+            ? Task.FromResult<AuthorizationPolicy?>(
+                new AuthorizationPolicyBuilder().AddRequirements(new RightRequirement(rights)).Build()
+            )
             : _fallback.GetPolicyAsync(policyName);
 
     public Task<AuthorizationPolicy> GetDefaultPolicyAsync() => _fallback.GetDefaultPolicyAsync();
@@ -43,7 +46,10 @@ public sealed class RightPolicyProvider(IOptions<AuthorizationOptions> options) 
 
 public sealed class RightHandler(CurrentAccess current) : AuthorizationHandler<RightRequirement>
 {
-    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, RightRequirement requirement)
+    protected override async Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        RightRequirement requirement
+    )
     {
         var access = await current.GetAsync();
         if (requirement.AnyOf.Any(access.Has))

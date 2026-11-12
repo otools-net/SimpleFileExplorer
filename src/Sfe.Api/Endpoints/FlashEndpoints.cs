@@ -25,12 +25,16 @@ public static class FlashEndpoints
             .FolderScoped("files.view at the movie")
             .WithName("CreateFlashLink")
             .WithTags("Files")
-            .WithSummary("A link that plays a Flash movie (`.swf`) in the viewer, opening the files of its folder to it, read only.")
-            .WithDescription($$"""
+            .WithSummary(
+                "A link that plays a Flash movie (`.swf`) in the viewer, opening the files of its folder to it, read only."
+            )
+            .WithDescription(
+                $$"""
                 The link (`api/files/flash/{token}/{name}`, relative to the app) works for {{FlashLinks.Lifetime.TotalHours:0}}
                 hours, and stops earlier when the account changes its password, is disabled, or loses the right to view
                 the files. 404 when the library doesn't play Flash movies (`Player:Flash`) or the file isn't a `.swf`.
-                """);
+                """
+            );
 
         api.MapGet("/files/flash/{token}/{**entry}", GetEntry)
             .AllowAnonymous()
@@ -39,21 +43,37 @@ public static class FlashEndpoints
             .FolderScoped("the token's subject: files.view at each file, as the rules are now")
             .WithName("GetFlashFile")
             .WithTags("Files")
-            .WithSummary("A file of a Flash movie's folder (the movie, its levels, music, data), for Ruffle: the token stands for the sign-in.")
-            .WithDescription("""
+            .WithSummary(
+                "A file of a Flash movie's folder (the movie, its levels, music, data), for Ruffle: the token stands for the sign-in."
+            )
+            .WithDescription(
+                """
                 `entry` is relative to the movie's folder; its subfolders are open, nothing above it. Answered to any
                 origin (the player's frame has none) without credentials, sandboxed as the library's files are.
-                """);
+                """
+            );
         return api;
     }
 
     private static async Task<Results<Ok<FlashLink>, NotFound, ForbidHttpResult>> CreateLink(
-        LibraryPaths paths, CurrentAccess current, FlashLinks links, ServerFiles serverFiles, WorkFolder work, SettingsService settings,
-        FlashLinkRequest request, CancellationToken cancellationToken)
+        LibraryPaths paths,
+        CurrentAccess current,
+        FlashLinks links,
+        ServerFiles serverFiles,
+        WorkFolder work,
+        SettingsService settings,
+        FlashLinkRequest request,
+        CancellationToken cancellationToken
+    )
     {
         var path = LibraryPaths.NormalizeRelative(request.Path);
-        if (path is not { Length: > 0 } || !path.EndsWith(".swf", StringComparison.OrdinalIgnoreCase)
-            || !paths.TryResolve(path, out var full) || !File.Exists(full) || FileEndpoints.Protected(full, serverFiles, work))
+        if (
+            path is not { Length: > 0 }
+            || !path.EndsWith(".swf", StringComparison.OrdinalIgnoreCase)
+            || !paths.TryResolve(path, out var full)
+            || !File.Exists(full)
+            || FileEndpoints.Protected(full, serverFiles, work)
+        )
         {
             return TypedResults.NotFound();
         }
@@ -67,8 +87,16 @@ public static class FlashEndpoints
     }
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound, ProblemHttpResult>> GetEntry(
-        HttpContext context, FlashLinks links, AccessService accounts, RightsEvaluator rights, TenantRegistry tenants, ServerFiles serverFiles,
-        SettingsService settings, string token, string? entry)
+        HttpContext context,
+        FlashLinks links,
+        AccessService accounts,
+        RightsEvaluator rights,
+        TenantRegistry tenants,
+        ServerFiles serverFiles,
+        SettingsService settings,
+        string token,
+        string? entry
+    )
     {
         // Whatever the answer, the player's frame (of no origin) may read it: the token is the authority, not a cookie.
         context.Response.Headers.AccessControlAllowOrigin = "*";
@@ -86,18 +114,36 @@ public static class FlashEndpoints
         {
             var user = await accounts.GetSessionUserAsync(userId, context.RequestAborted);
             if (user is null || user.Disabled || user.SecurityStamp != claims.Stamp)
-                return TypedResults.Problem("This movie's link no longer works: open it again.", statusCode: StatusCodes.Status403Forbidden);
+            {
+                return TypedResults.Problem(
+                    "This movie's link no longer works: open it again.",
+                    statusCode: StatusCodes.Status403Forbidden
+                );
+            }
         }
         var access = await rights.GetAsync(new AccessSubject(claims.Tenant, claims.User), context.RequestAborted);
         if (!access.Has(Rights.ViewFiles))
-            return TypedResults.Problem("This movie's link no longer works: open it again.", statusCode: StatusCodes.Status403Forbidden);
+        {
+            return TypedResults.Problem(
+                "This movie's link no longer works: open it again.",
+                statusCode: StatusCodes.Status403Forbidden
+            );
+        }
+
         if (!(await settings.GetEffectiveAsync(claims.Tenant, null, context.RequestAborted)).Player.Flash)
             return TypedResults.NotFound();
 
         var library = (await tenants.GetAsync(claims.Tenant, context.RequestAborted))?.Services;
         var paths = library?.GetRequiredService<LibraryPaths>();
-        if (paths is null || !paths.TryResolve(path, out var full) || !File.Exists(full) || FileEndpoints.Protected(full, serverFiles, library!.GetRequiredService<WorkFolder>()))
+        if (
+            paths is null
+            || !paths.TryResolve(path, out var full)
+            || !File.Exists(full)
+            || FileEndpoints.Protected(full, serverFiles, library!.GetRequiredService<WorkFolder>())
+        )
+        {
             return TypedResults.NotFound();
+        }
         // The folder rules as they are now, at the file asked for: a hidden subfolder stays hidden from the movie.
         if (new AccessState(null, null, access).Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
             return TypedResults.NotFound();

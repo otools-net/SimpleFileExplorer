@@ -48,7 +48,14 @@ public static class SevenZipList
             stream.ReadExactly(description);
             return EncodedSize(new Reader(description));
         }
-        catch (Exception ex) when (ex is EndOfStreamException or IndexOutOfRangeException or ArgumentOutOfRangeException or OverflowException or IOException)
+        catch (Exception ex)
+            when (ex
+                    is EndOfStreamException
+                        or IndexOutOfRangeException
+                        or ArgumentOutOfRangeException
+                        or OverflowException
+                        or IOException
+            )
         {
             return null;
         }
@@ -64,8 +71,9 @@ public static class SevenZipList
         if (UnpackedSize(stream) is { } size && size > maxBytes)
         {
             throw new ArchiveException(
-                $"This 7z's list of entries is too large to be read by the server ({size / (1024.0 * 1024):N0} MB, at most {maxBytes / (1024 * 1024):N0} MB): " +
-                "download it and open it on your computer, or ask an administrator to raise Files:Archives:MaxSevenZipListMegabytes.");
+                $"This 7z's list of entries is too large to be read by the server ({size / (1024.0 * 1024):N0} MB, at most {maxBytes / (1024 * 1024):N0} MB): "
+                    + "download it and open it on your computer, or ask an administrator to raise Files:Archives:MaxSevenZipListMegabytes."
+            );
         }
     }
 
@@ -78,47 +86,47 @@ public static class SevenZipList
             switch (id)
             {
                 case PackInfo:
+                {
+                    reader.Number();
+                    var packStreams = reader.Number();
+                    for (var part = reader.Byte(); part != End; part = reader.Byte())
                     {
-                        reader.Number();
-                        var packStreams = reader.Number();
-                        for (var part = reader.Byte(); part != End; part = reader.Byte())
+                        if (part == Size)
                         {
-                            if (part == Size)
-                            {
-                                for (var i = 0L; i < packStreams; i++)
-                                    reader.Number();
-                            }
-                            else if (part == Crc)
-                            {
-                                reader.Digests(packStreams);
-                            }
-                            else
-                            {
-                                return null;
-                            }
+                            for (var i = 0L; i < packStreams; i++)
+                                reader.Number();
                         }
-                        break;
+                        else if (part == Crc)
+                        {
+                            reader.Digests(packStreams);
+                        }
+                        else
+                        {
+                            return null;
+                        }
                     }
+                    break;
+                }
                 case UnpackInfo:
+                {
+                    if (reader.Byte() != Folder)
+                        return null;
+                    var folders = reader.Number();
+                    if (reader.Byte() != 0 || folders is < 1 or > 64)
+                        return null;
+                    var outputs = new long[folders];
+                    for (var f = 0; f < folders; f++)
+                        outputs[f] = reader.FolderOutputs();
+                    if (reader.Byte() != CodersUnpackSize)
+                        return null;
+                    foreach (var count in outputs)
                     {
-                        if (reader.Byte() != Folder)
-                            return null;
-                        var folders = reader.Number();
-                        if (reader.Byte() != 0 || folders is < 1 or > 64)
-                            return null;
-                        var outputs = new long[folders];
-                        for (var f = 0; f < folders; f++)
-                            outputs[f] = reader.FolderOutputs();
-                        if (reader.Byte() != CodersUnpackSize)
-                            return null;
-                        foreach (var count in outputs)
-                        {
-                            for (var i = 0L; i < count; i++)
-                                largest = Math.Max(largest ?? 0, reader.Number());
-                        }
-                        // The CRCs and the end follow: not needed.
-                        return largest;
+                        for (var i = 0L; i < count; i++)
+                            largest = Math.Max(largest ?? 0, reader.Number());
                     }
+                    // The CRCs and the end follow: not needed.
+                    return largest;
+                }
                 default:
                     return null;
             }
@@ -179,7 +187,8 @@ public static class SevenZipList
             var coders = Number();
             if (coders is < 1 or > 64)
                 throw new OverflowException();
-            long inputs = 0, outputs = 0;
+            long inputs = 0,
+                outputs = 0;
             for (var c = 0L; c < coders; c++)
             {
                 var flags = Byte();

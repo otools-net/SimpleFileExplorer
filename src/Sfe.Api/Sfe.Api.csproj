@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <ItemGroup>
     <ProjectReference Include="..\Sfe.Core\Sfe.Core.csproj" />
     <InternalsVisibleTo Include="Sfe.Tests" />
@@ -61,13 +60,23 @@
   </ItemGroup>
 
   <!-- Also when package-lock.json changed since the last install (a pull adding packages): npm ci rewrites the copy. -->
-  <Target Name="SfeWebInstall" Condition="'$(SfeSkipWebClient)' != 'true'"
-          Inputs="$(SfeWebRoot)package-lock.json" Outputs="$(SfeWebRoot)node_modules\.package-lock.json">
+  <Target
+    Name="SfeWebInstall"
+    Condition="'$(SfeSkipWebClient)' != 'true'"
+    Inputs="$(SfeWebRoot)package-lock.json"
+    Outputs="$(SfeWebRoot)node_modules\.package-lock.json"
+  >
     <Exec Command="npm ci --no-audit --no-fund" WorkingDirectory="$(SfeWebRoot)" />
   </Target>
 
-  <Target Name="SfeWebBuild" BeforeTargets="BeforeBuild" DependsOnTargets="SfeWebInstall" Condition="'$(SfeSkipWebClient)' != 'true'"
-          Inputs="@(SfeWebSource)" Outputs="wwwroot\index.html">
+  <Target
+    Name="SfeWebBuild"
+    BeforeTargets="BeforeBuild"
+    DependsOnTargets="SfeWebInstall"
+    Condition="'$(SfeSkipWebClient)' != 'true'"
+    Inputs="@(SfeWebSource)"
+    Outputs="wwwroot\index.html"
+  >
     <Exec Command="npm run build" WorkingDirectory="$(SfeWebRoot)" />
   </Target>
 
@@ -81,10 +90,23 @@
 
   <ItemGroup Condition="'$(SfePortable)' == 'true'">
     <AssemblyMetadata Include="SfePortable" Value="true" />
-    <Content Update="appsettings.json;appsettings.Development.json;appsettings.Local.json" CopyToPublishDirectory="Never" />
-    <Content Include="..\..\build\portable\appsettings.json" Link="appsettings.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="PreserveNewest" />
+    <Content
+      Update="appsettings.json;appsettings.Development.json;appsettings.Local.json"
+      CopyToPublishDirectory="Never"
+    />
+    <Content
+      Include="..\..\build\portable\appsettings.json"
+      Link="appsettings.json"
+      CopyToOutputDirectory="Never"
+      CopyToPublishDirectory="PreserveNewest"
+    />
     <!-- Windows: install-service.cmd / uninstall-service.cmd next to the program (Program.cs, WindowsServiceSetup). -->
-    <Content Include="..\..\build\windows\*.cmd" Condition="$(RuntimeIdentifier.StartsWith('win'))" Link="%(Filename)%(Extension)" CopyToOutputDirectory="Never" CopyToPublishDirectory="PreserveNewest" />
+    <Content
+      Include="..\..\build\windows\*.cmd"
+      Condition="$(RuntimeIdentifier.StartsWith('win'))"
+      Link="%(Filename)%(Extension)"
+      CopyToOutputDirectory="Never"
+      CopyToPublishDirectory="PreserveNewest"
+    />
   </ItemGroup>
-
 </Project>

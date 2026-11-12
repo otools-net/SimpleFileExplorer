@@ -16,7 +16,12 @@ namespace Sfe.Core.FileTracking;
 /// covers the first megabyte only, so two files of a group are identical with near certainty, not proof: files that
 /// differ only further in (e.g. edited tags at the end of an audio file of the same size) look alike.
 /// </summary>
-public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, LibraryPaths paths, MediaClassifier classifier, IOptionsMonitor<SfeOptions> options)
+public sealed class DuplicateFinder(
+    IDbContextFactory<SfeDbContext> dbFactory,
+    LibraryPaths paths,
+    MediaClassifier classifier,
+    IOptionsMonitor<SfeOptions> options
+)
 {
     public const int MaxGroupsPerPage = 500;
 
@@ -33,8 +38,13 @@ public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, L
     /// <c>(Size, Sha1)</c> index gives the groups in order, so no page sorts or skips the whole index.
     /// </remarks>
     /// <param name="visible">Where the asker may see files (folder rules): groups count only those; null = everywhere.</param>
-    public async Task<DuplicateResults?> FindAsync(string? relativeDirectory, string? after, int? limit, CancellationToken cancellationToken = default,
-        PathFilter? visible = null)
+    public async Task<DuplicateResults?> FindAsync(
+        string? relativeDirectory,
+        string? after,
+        int? limit,
+        CancellationToken cancellationToken = default,
+        PathFilter? visible = null
+    )
     {
         if (!paths.TryResolve(relativeDirectory, out var directory))
             return null;
@@ -61,7 +71,12 @@ public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, L
         var groups = files
             .GroupBy(f => new { f.Size, f.Sha1 })
             .Where(g => g.Count() > 1)
-            .Select(g => new { g.Key.Size, g.Key.Sha1, Count = g.Count() });
+            .Select(g => new
+            {
+                g.Key.Size,
+                g.Key.Sha1,
+                Count = g.Count(),
+            });
 
         DuplicateSummary? summary = null;
         if (cursor is null)
@@ -69,12 +84,22 @@ public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, L
             // Groups only (few next to the files): the totals are added up here.
             var all = await groups.Select(g => new { g.Size, g.Count }).ToListAsync(cancellationToken);
             var unfingerprinted = await db.Files.CountAsync(f => f.Sha1 == null, cancellationToken);
-            summary = new DuplicateSummary(all.Count, all.Sum(g => g.Count), all.Sum(g => g.Size * (g.Count - 1)), unfingerprinted);
+            summary = new DuplicateSummary(
+                all.Count,
+                all.Sum(g => g.Count),
+                all.Sum(g => g.Size * (g.Count - 1)),
+                unfingerprinted
+            );
         }
 
         var paged = groups;
         if (cursor is var (afterSize, afterSha1))
-            paged = paged.Where(g => g.Size < afterSize || (g.Size == afterSize && string.Compare(g.Sha1, afterSha1) < 0));
+        {
+            paged = paged.Where(g =>
+                g.Size < afterSize || (g.Size == afterSize && string.Compare(g.Sha1, afterSha1) < 0)
+            );
+        }
+
         var page = await paged
             .OrderByDescending(g => g.Size)
             .ThenByDescending(g => g.Sha1)
@@ -89,10 +114,18 @@ public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, L
             var rows = await groupFiles
                 .OrderBy(f => f.FullName)
                 .Take(MaxFilesPerGroup)
-                .Select(f => new { f.FullName, f.Extension, f.Size, f.LastWriteTime, TagIds = f.TagLinks.Select(l => l.TagId).ToList() })
+                .Select(f => new
+                {
+                    f.FullName,
+                    f.Extension,
+                    f.Size,
+                    f.LastWriteTime,
+                    TagIds = f.TagLinks.Select(l => l.TagId).ToList(),
+                })
                 .ToListAsync(cancellationToken);
-            var items = rows
-                .Select(r => ToItem(r.FullName, r.Extension, r.Size, r.LastWriteTime, TagService.Summaries(graph, r.TagIds)))
+            var items = rows.Select(r =>
+                    ToItem(r.FullName, r.Extension, r.Size, r.LastWriteTime, TagService.Summaries(graph, r.TagIds))
+                )
                 .OfType<LibraryItem>()
                 .ToList();
             var count = isRoot ? group.Count - (rows.Count - items.Count) : group.Count;
@@ -110,11 +143,18 @@ public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, L
             Fingerprinting: options.CurrentValue.Scan.ComputeHashes,
             MinimumSize: minimumSize,
             CanRemove: Settings.AllowRemove,
-            RemovesPermanently: options.CurrentValue.Files.DeletePermanently);
+            RemovesPermanently: options.CurrentValue.Files.DeletePermanently
+        );
     }
 
     /// <summary>A file of the index as a listing item; null when it is outside the library.</summary>
-    internal LibraryItem? ToItem(string fullName, string? extension, long size, DateTime lastWriteTime, IReadOnlyList<TagSummary> tags)
+    internal LibraryItem? ToItem(
+        string fullName,
+        string? extension,
+        long size,
+        DateTime lastWriteTime,
+        IReadOnlyList<TagSummary> tags
+    )
     {
         var path = paths.ToRelative(fullName);
         if (path is null)
@@ -128,26 +168,35 @@ public sealed class DuplicateFinder(IDbContextFactory<SfeDbContext> dbFactory, L
             Size: size,
             Modified: new DateTimeOffset(DateTime.SpecifyKind(lastWriteTime, DateTimeKind.Local)),
             Directory: slash < 0 ? string.Empty : path[..slash],
-            Tags: tags);
+            Tags: tags
+        );
     }
 
-    private static string FormatCursor(long size, string sha1) => $"{size.ToString(CultureInfo.InvariantCulture)}:{sha1}";
+    private static string FormatCursor(long size, string sha1) =>
+        $"{size.ToString(CultureInfo.InvariantCulture)}:{sha1}";
 
     private static (long Size, string Sha1)? ParseCursor(string value)
     {
         var colon = value.IndexOf(':');
-        return colon > 0
+        return
+            colon > 0
             && long.TryParse(value.AsSpan(0, colon), NumberStyles.None, CultureInfo.InvariantCulture, out var size)
             && value.Length - colon - 1 is > 0 and <= 40
-                ? (size, value[(colon + 1)..])
-                : null;
+            ? (size, value[(colon + 1)..])
+            : null;
     }
 }
 
 /// <param name="Fingerprint">The files' partial SHA1 (see <see cref="Indexing.FileFingerprint"/>).</param>
 /// <param name="Count">Files in the group; <paramref name="Files"/> lists at most <see cref="DuplicateFinder.MaxFilesPerGroup"/>.</param>
 /// <param name="WastedBytes">Space taken by all copies but one.</param>
-public sealed record DuplicateGroup(long Size, string Fingerprint, int Count, long WastedBytes, IReadOnlyList<LibraryItem> Files);
+public sealed record DuplicateGroup(
+    long Size,
+    string Fingerprint,
+    int Count,
+    long WastedBytes,
+    IReadOnlyList<LibraryItem> Files
+);
 
 /// <param name="Groups">Groups of two or more identical files.</param>
 /// <param name="Files">Files in those groups.</param>
@@ -170,4 +219,5 @@ public sealed record DuplicateResults(
     bool Fingerprinting,
     long MinimumSize,
     bool CanRemove,
-    bool RemovesPermanently = false);
+    bool RemovesPermanently = false
+);

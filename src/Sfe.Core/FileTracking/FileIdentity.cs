@@ -35,16 +35,33 @@ internal static class FileIdentity
         var bufferB = new byte[CompareChunk];
         while (true)
         {
-            var readA = await first.ReadAtLeastAsync(bufferA, CompareChunk, throwOnEndOfStream: false, cancellationToken);
-            var readB = await second.ReadAtLeastAsync(bufferB, CompareChunk, throwOnEndOfStream: false, cancellationToken);
+            var readA = await first.ReadAtLeastAsync(
+                bufferA,
+                CompareChunk,
+                throwOnEndOfStream: false,
+                cancellationToken
+            );
+            var readB = await second.ReadAtLeastAsync(
+                bufferB,
+                CompareChunk,
+                throwOnEndOfStream: false,
+                cancellationToken
+            );
             if (readA != readB || !bufferA.AsSpan(0, readA).SequenceEqual(bufferB.AsSpan(0, readB)))
                 return false;
             if (readA < CompareChunk)
                 return true;
         }
 
-        static FileStream Open(string path) => new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete,
-            bufferSize: 1, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        static FileStream Open(string path) =>
+            new(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete,
+                bufferSize: 1,
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
     }
 
     /// <inheritdoc cref="LibraryPaths.RealPath"/>
@@ -54,7 +71,12 @@ internal static class FileIdentity
     {
         try
         {
-            using var handle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var handle = File.OpenHandle(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete
+            );
             return GetFileInformationByHandle(handle, out var info)
                 ? (info.VolumeSerialNumber, ((ulong)info.FileIndexHigh << 32) | info.FileIndexLow)
                 : null;
@@ -74,12 +96,17 @@ internal static class FileIdentity
     private struct ByHandleFileInformation
     {
         public uint FileAttributes;
-        public uint CreationTimeLow, CreationTimeHigh;
-        public uint LastAccessTimeLow, LastAccessTimeHigh;
-        public uint LastWriteTimeLow, LastWriteTimeHigh;
+        public uint CreationTimeLow,
+            CreationTimeHigh;
+        public uint LastAccessTimeLow,
+            LastAccessTimeHigh;
+        public uint LastWriteTimeLow,
+            LastWriteTimeHigh;
         public uint VolumeSerialNumber;
-        public uint FileSizeHigh, FileSizeLow;
+        public uint FileSizeHigh,
+            FileSizeLow;
         public uint NumberOfLinks;
-        public uint FileIndexHigh, FileIndexLow;
+        public uint FileIndexHigh,
+            FileIndexLow;
     }
 }

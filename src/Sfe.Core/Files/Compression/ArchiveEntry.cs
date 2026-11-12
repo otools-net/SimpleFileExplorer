@@ -4,8 +4,10 @@ public enum ArchiveEntryKind
 {
     File = 0,
     Folder = 1,
+
     /// <summary>A symbolic or hard link: listed, never created on extraction.</summary>
     Link = 2,
+
     /// <summary>A device, a FIFO, a socket: listed, never created.</summary>
     Other = 3,
 }
@@ -14,8 +16,10 @@ public enum ArchiveEntryKind
 public enum ZipCipher
 {
     None = 0,
+
     /// <summary>The traditional PKWARE cipher: read (old archives), never written.</summary>
     ZipCrypto = 1,
+
     /// <summary>WinZip AES (method 99, extra field <c>0x9901</c>).</summary>
     Aes = 2,
 }
@@ -43,4 +47,5 @@ public sealed record ArchiveEntry(
     int Method = 0,
     uint Crc = 0,
     ZipCipher Cipher = ZipCipher.None,
-    int CipherInfo = 0);
+    int CipherInfo = 0
+);

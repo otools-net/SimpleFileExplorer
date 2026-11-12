@@ -20,38 +20,84 @@ namespace Sfe.Api.Maintenance;
 /// the libraries' services, so that it works while the install waits for its update too.
 /// </summary>
 public sealed class BackupSources(
-    IConfiguration configuration, IWebHostEnvironment environment, IDbContextFactory<AccessDbContext> dbFactory, SettingsStore settings, BackupWriter writer,
-    InstallationSettings installation, ILogger<BackupSources> logger)
+    IConfiguration configuration,
+    IWebHostEnvironment environment,
+    IDbContextFactory<AccessDbContext> dbFactory,
+    SettingsStore settings,
+    BackupWriter writer,
+    InstallationSettings installation,
+    ILogger<BackupSources> logger
+)
 {
     /// <param name="installedVersion">The version the databases belong to (<see cref="MigrationCoordinator.DatabaseVersion"/>).</param>
     public async Task<BackupArchive> WriteAsync(string? installedVersion, CancellationToken cancellationToken = default)
     {
         var contentRoot = environment.ContentRootPath;
-        var provider = configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Database)}").Get<DatabaseOptions>()?.Provider ?? DatabaseProvider.SqlServer;
+        var provider = configuration
+            .GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Database)}")
+            .Get<DatabaseOptions>()
+            ?.Provider
+            ?? DatabaseProvider.SqlServer;
         var main = configuration.GetConnectionString(ServiceCollectionExtensions.ConnectionStringName)
-            ?? throw new InvalidOperationException($"Connection string '{ServiceCollectionExtensions.ConnectionStringName}' is not configured.");
+            ?? throw new InvalidOperationException(
+                $"Connection string '{ServiceCollectionExtensions.ConnectionStringName}' is not configured."
+            );
         var notes = new List<string>();
         var databases = new List<BackupDatabase>
         {
-            new(Entry(provider, Resolve(provider, main, contentRoot), "databases"), "Accounts, spaces, settings and the index of the first library", provider,
-                Resolve(provider, main, contentRoot)),
+            new(
+                Entry(provider, Resolve(provider, main, contentRoot), "databases"),
+                "Accounts, spaces, settings and the index of the first library",
+                provider,
+                Resolve(provider, main, contentRoot)
+            ),
         };
 
         foreach (var (slug, name, connectionString) in await OtherLibrariesAsync(notes, cancellationToken))
         {
-            var resolved = Resolve(provider, connectionString ?? TenantHost.ConnectionString(slug, configuration, contentRoot), contentRoot);
-            databases.Add(new BackupDatabase(Entry(provider, resolved, "databases/tenants"), $"Index of the space {name} ({slug})", provider, resolved));
+            var resolved = Resolve(
+                provider,
+                connectionString ?? TenantHost.ConnectionString(slug, configuration, contentRoot),
+                contentRoot
+            );
+            databases.Add(
+                new BackupDatabase(
+                    Entry(provider, resolved, "databases/tenants"),
+                    $"Index of the space {name} ({slug})",
+                    provider,
+                    resolved
+                )
+            );
         }
 
-        var files = new List<BackupFile> { new("config/settings.json", settings.FilePath), new("config/installation.json", installation.FilePath) };
-        foreach (var name in new[] { "appsettings.json", "appsettings.Local.json", $"appsettings.{environment.EnvironmentName}.json" }.Distinct())
+        var files = new List<BackupFile>
+        {
+            new("config/settings.json", settings.FilePath),
+            new("config/installation.json", installation.FilePath),
+        };
+        foreach (
+            var name in new[]
+            {
+                "appsettings.json",
+                "appsettings.Local.json",
+                $"appsettings.{environment.EnvironmentName}.json",
+            }.Distinct()
+        )
+        {
             files.Add(new BackupFile("config/" + name, Path.Combine(contentRoot, name)));
+        }
 
-        return await writer.WriteAsync(new BackupContents(installedVersion, Api.AppVersion.Version, databases, files, notes), cancellationToken);
+        return await writer.WriteAsync(
+            new BackupContents(installedVersion, Api.AppVersion.Version, databases, files, notes),
+            cancellationToken
+        );
     }
 
     /// <summary>The libraries but the first; none before 1.34.0 (no such table).</summary>
-    private async Task<List<(string Slug, string Name, string? ConnectionString)>> OtherLibrariesAsync(List<string> notes, CancellationToken cancellationToken)
+    private async Task<List<(string Slug, string Name, string? ConnectionString)>> OtherLibrariesAsync(
+        List<string> notes,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -59,15 +105,26 @@ public sealed class BackupSources(
             if (!await InstalledVersion.HasTableAsync(db, "Tenants", cancellationToken))
                 return [];
             // Only the columns needed: the model may be ahead of an install waiting for its update.
-            return (await db.Tenants.AsNoTracking().Where(t => !t.IsDefault).OrderBy(t => t.Slug)
-                    .Select(t => new { t.Slug, t.Name, t.ConnectionString }).ToListAsync(cancellationToken))
-                .Select(t => (t.Slug, t.Name, t.ConnectionString))
-                .ToList();
+            return (
+                await db
+                    .Tenants.AsNoTracking()
+                    .Where(t => !t.IsDefault)
+                    .OrderBy(t => t.Slug)
+                    .Select(t => new
+                    {
+                        t.Slug,
+                        t.Name,
+                        t.ConnectionString,
+                    })
+                    .ToListAsync(cancellationToken)
+            ).Select(t => (t.Slug, t.Name, t.ConnectionString)).ToList();
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogWarning(ex, "Backup: cannot list the spaces; only the first library's database is included");
-            notes.Add("The other spaces could not be listed: only the first library's database is included. " + ex.Message);
+            notes.Add(
+                "The other spaces could not be listed: only the first library's database is included. " + ex.Message
+            );
             return [];
         }
     }
@@ -78,15 +135,23 @@ public sealed class BackupSources(
         if (provider != DatabaseProvider.Sqlite)
             return connectionString;
         var builder = new SqliteConnectionStringBuilder(connectionString);
-        if (string.IsNullOrWhiteSpace(builder.DataSource) || builder.DataSource == ":memory:" || builder.DataSource.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+        if (
+            string.IsNullOrWhiteSpace(builder.DataSource)
+            || builder.DataSource == ":memory:"
+            || builder.DataSource.StartsWith("file:", StringComparison.OrdinalIgnoreCase)
+        )
+        {
             return connectionString;
+        }
+
         builder.DataSource = Path.GetFullPath(builder.DataSource, contentRoot);
         return builder.ToString();
     }
 
-    private static string Entry(DatabaseProvider provider, string connectionString, string folder) => provider == DatabaseProvider.Sqlite
-        ? $"{folder}/{Path.GetFileName(new SqliteConnectionStringBuilder(connectionString).DataSource)}"
-        : $"{folder}/{(new SqlConnectionStringBuilder(connectionString).InitialCatalog is { Length: > 0 } name ? name : "database")}";
+    private static string Entry(DatabaseProvider provider, string connectionString, string folder) =>
+        provider == DatabaseProvider.Sqlite
+            ? $"{folder}/{Path.GetFileName(new SqliteConnectionStringBuilder(connectionString).DataSource)}"
+            : $"{folder}/{(new SqlConnectionStringBuilder(connectionString).InitialCatalog is { Length: > 0 } name ? name : "database")}";
 }
 
 /// <summary>

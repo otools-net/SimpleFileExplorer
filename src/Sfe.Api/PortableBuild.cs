@@ -9,9 +9,10 @@ namespace Sfe.Api;
 /// </summary>
 internal static class PortableBuild
 {
-    public static bool IsPortable { get; } = typeof(PortableBuild).Assembly
-        .GetCustomAttributes<AssemblyMetadataAttribute>()
-        .Any(a => a.Key == "SfePortable" && a.Value == "true");
+    public static bool IsPortable { get; } =
+        typeof(PortableBuild)
+            .Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Any(a => a.Key == "SfePortable" && a.Value == "true");
 
     public static WebApplicationOptions CreateOptions(string[] args)
     {

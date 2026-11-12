@@ -7,8 +7,14 @@ namespace Sfe.Core.Files.Compression;
 /// <param name="MaxCompressionRatio">A file claiming more than this many times its packed size is left out.</param>
 /// <param name="PortableNames">Names Windows refuses are left out on other systems too (<see cref="FileNames.Check"/>).</param>
 /// <param name="MaxFullPath">Longest full path written (the index's limit), or none.</param>
-public sealed record ExtractLimits(int MaxDepth, long MaxEntries, double MaxCompressionRatio, bool PortableNames, int? MaxFullPath = null,
-    long MaxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024);
+public sealed record ExtractLimits(
+    int MaxDepth,
+    long MaxEntries,
+    double MaxCompressionRatio,
+    bool PortableNames,
+    int? MaxFullPath = null,
+    long MaxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024
+);
 
 /// <summary>An entry not extracted, and why.</summary>
 public sealed record ExtractLeftOut(string Name, string Reason);
@@ -62,8 +68,18 @@ public static class ArchiveExtractor
     /// <param name="reserve">Told each file's declared size before it is written: throws when the disk can't take it.</param>
     /// <param name="read">How far into the archive's file the pass is.</param>
     /// <param name="written">Bytes written, as they are.</param>
-    public static ExtractResult Extract(string archive, ArchiveFormat format, string? password, string into, IReadOnlyCollection<string>? chosen,
-        ExtractLimits limits, Action<long>? reserve = null, Action<long>? read = null, Action<long>? written = null, CancellationToken cancel = default)
+    public static ExtractResult Extract(
+        string archive,
+        ArchiveFormat format,
+        string? password,
+        string into,
+        IReadOnlyCollection<string>? chosen,
+        ExtractLimits limits,
+        Action<long>? reserve = null,
+        Action<long>? read = null,
+        Action<long>? written = null,
+        CancellationToken cancel = default
+    )
     {
         var root = Path.GetFullPath(into).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         var picked = chosen is null ? null : new HashSet<string>(chosen, StringComparer.OrdinalIgnoreCase);
@@ -73,26 +89,39 @@ public static class ArchiveExtractor
         long seen = 0;
         try
         {
-            ArchiveReader.ReadThrough(archive, format, password, (entry, open) =>
-            {
-                if (++seen > limits.MaxEntries)
-                    throw new Stop($"The archive holds more than {limits.MaxEntries:N0} entries: the extraction stopped there.");
-                // A .gz (or .bz2, .xz) of one file: the file is the archive's name without its extension.
-                string? refused = null;
-                var segments = format == ArchiveFormat.Single
-                    ? [Path.GetFileNameWithoutExtension(archive)]
-                    : ArchiveEntryNames.Split(entry.Name, limits.MaxDepth, out refused);
-                if (segments is null)
+            ArchiveReader.ReadThrough(
+                archive,
+                format,
+                password,
+                (entry, open) =>
                 {
-                    if (picked is null)
-                        result.Leave(entry.Name, refused ?? "the name is refused");
-                    return;
-                }
-                var start = 0;
-                if (picked is not null && (start = PickedAt(segments, picked, pickedDepth)) < 0)
-                    return;
-                Write(entry, segments, start, open);
-            }, read, cancel, limits.MaxSevenZipList);
+                    if (++seen > limits.MaxEntries)
+                    {
+                        throw new Stop(
+                            $"The archive holds more than {limits.MaxEntries:N0} entries: the extraction stopped there."
+                        );
+                    }
+                    // A .gz (or .bz2, .xz) of one file: the file is the archive's name without its extension.
+                    string? refused = null;
+                    var segments =
+                        format == ArchiveFormat.Single
+                            ? [Path.GetFileNameWithoutExtension(archive)]
+                            : ArchiveEntryNames.Split(entry.Name, limits.MaxDepth, out refused);
+                    if (segments is null)
+                    {
+                        if (picked is null)
+                            result.Leave(entry.Name, refused ?? "the name is refused");
+                        return;
+                    }
+                    var start = 0;
+                    if (picked is not null && (start = PickedAt(segments, picked, pickedDepth)) < 0)
+                        return;
+                    Write(entry, segments, start, open);
+                },
+                read,
+                cancel,
+                limits.MaxSevenZipList
+            );
         }
         catch (Stop stop)
         {

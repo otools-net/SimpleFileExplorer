@@ -15,12 +15,23 @@ namespace Sfe.Core.Files;
 public sealed record FileVersion(string Token, long Size, DateTime Modified)
 {
     public static FileVersion Of(ReadOnlySpan<byte> bytes, DateTime modified) =>
-        new($"{bytes.Length:x}-{modified.Ticks:x}-{Convert.ToHexStringLower(SHA256.HashData(bytes))[..16]}", bytes.Length, modified);
+        new(
+            $"{bytes.Length:x}-{modified.Ticks:x}-{Convert.ToHexStringLower(SHA256.HashData(bytes))[..16]}",
+            bytes.Length,
+            modified
+        );
 
     /// <summary>The version of the file as it is now on the disk (read whole, without holding it in memory).</summary>
     public static async Task<FileVersion> OfFileAsync(string full, CancellationToken cancellationToken)
     {
-        await using var stream = new FileStream(full, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 64 * 1024, useAsync: true);
+        await using var stream = new FileStream(
+            full,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            64 * 1024,
+            useAsync: true
+        );
         var modified = File.GetLastWriteTimeUtc(full);
         var hash = Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, cancellationToken))[..16];
         return new FileVersion($"{stream.Length:x}-{modified.Ticks:x}-{hash}", stream.Length, modified);
@@ -114,7 +125,10 @@ public static class TextParts
         }
         if (i < 0 || bytes[i] < 0xC0)
             return bytes.Length;
-        var needed = bytes[i] >= 0xF0 ? 4 : bytes[i] >= 0xE0 ? 3 : 2;
+        var needed =
+            bytes[i] >= 0xF0 ? 4
+            : bytes[i] >= 0xE0 ? 3
+            : 2;
         return back + 1 >= needed ? bytes.Length : i;
     }
 }
@@ -143,7 +157,12 @@ public enum OverwriteStatus
 /// <param name="Version">The new version (Done), or the one on the disk now (Changed).</param>
 /// <param name="TrashId">The previous version's trash entry, when this save kept one.</param>
 /// <param name="Message">Why it was not done, for the person (never a server path).</param>
-public sealed record OverwriteResult(OverwriteStatus Status, FileVersion? Version = null, int? TrashId = null, string? Message = null);
+public sealed record OverwriteResult(
+    OverwriteStatus Status,
+    FileVersion? Version = null,
+    int? TrashId = null,
+    string? Message = null
+);
 
 /// <summary>
 /// Reads and writes the content of the library's files for the viewers and editors of the web client
@@ -156,7 +175,8 @@ public sealed class FileContent(
     Trash trash,
     DirectoryIndexer indexer,
     LibraryBrowser browser,
-    ILogger<FileContent> logger)
+    ILogger<FileContent> logger
+)
 {
     /// <summary>Tries of a replace refused because the file is in use (an editor or a scan reading it), and the wait between them.</summary>
     private const int InUseAttempts = 3;
@@ -180,7 +200,14 @@ public sealed class FileContent(
         FileStream stream;
         try
         {
-            stream = new FileStream(full, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 64 * 1024, useAsync: true);
+            stream = new FileStream(
+                full,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete,
+                64 * 1024,
+                useAsync: true
+            );
         }
         catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
@@ -196,8 +223,13 @@ public sealed class FileContent(
             var buffer = new byte[Math.Min(length + 1, maxBytes + 1)];
             var read = 0;
             int count;
-            while (read < buffer.Length && (count = await stream.ReadAsync(buffer.AsMemory(read), cancellationToken)) > 0)
+            while (
+                read < buffer.Length && (count = await stream.ReadAsync(buffer.AsMemory(read), cancellationToken)) > 0
+            )
+            {
                 read += count;
+            }
+
             if (read > maxBytes)
                 return new FileRead(null, null, read, modified);
             var bytes = read == buffer.Length ? buffer : buffer[..read];
@@ -212,12 +244,25 @@ public sealed class FileContent(
     /// says, or as UTF-8 when the part is valid UTF-8 and else windows-1252. Null when the file is not there; a part
     /// with null text when it is binary.
     /// </summary>
-    public async Task<TextPart?> ReadPartAsync(string full, long offset, int length, string? encoding, CancellationToken cancellationToken)
+    public async Task<TextPart?> ReadPartAsync(
+        string full,
+        long offset,
+        int length,
+        string? encoding,
+        CancellationToken cancellationToken
+    )
     {
         FileStream stream;
         try
         {
-            stream = new FileStream(full, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 64 * 1024, useAsync: true);
+            stream = new FileStream(
+                full,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete,
+                64 * 1024,
+                useAsync: true
+            );
         }
         catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
@@ -259,11 +304,23 @@ public sealed class FileContent(
             stream.Position = start;
             var read = 0;
             int count;
-            while (read < buffer.Length && (count = await stream.ReadAsync(buffer.AsMemory(read), cancellationToken)) > 0)
+            while (
+                read < buffer.Length && (count = await stream.ReadAsync(buffer.AsMemory(read), cancellationToken)) > 0
+            )
+            {
                 read += count;
-            var (from, to) = TextParts.Cut(buffer.AsSpan(0, read), atStart: lineStart, atEnd: start + read >= size, encoding ?? mark);
+            }
+
+            var (from, to) = TextParts.Cut(
+                buffer.AsSpan(0, read),
+                atStart: lineStart,
+                atEnd: start + read >= size,
+                encoding ?? mark
+            );
             var bytes = buffer.AsSpan(from, to - from);
-            var name = encoding ?? (mark is TextCodec.Utf8Bom ? TextCodec.Utf8 : mark) ?? (TextCodec.IsUtf8(bytes) ? TextCodec.Utf8 : TextCodec.Windows1252);
+            var name = encoding
+                ?? (mark is TextCodec.Utf8Bom ? TextCodec.Utf8 : mark)
+                ?? (TextCodec.IsUtf8(bytes) ? TextCodec.Utf8 : TextCodec.Windows1252);
             return new TextPart(TextCodec.Read(bytes, name), start + from, start + to, size, name, modified);
         }
     }
@@ -277,8 +334,14 @@ public sealed class FileContent(
         var info = new FileInfo(full);
         if (!info.Exists)
             return null;
-        if (known is not null && known.StartsWith($"{info.Length:x}-{info.LastWriteTimeUtc.Ticks:x}-", StringComparison.Ordinal))
+        if (
+            known is not null
+            && known.StartsWith($"{info.Length:x}-{info.LastWriteTimeUtc.Ticks:x}-", StringComparison.Ordinal)
+        )
+        {
             return new FileVersion(known, info.Length, info.LastWriteTimeUtc);
+        }
+
         try
         {
             return await FileVersion.OfFileAsync(full, cancellationToken);
@@ -297,28 +360,64 @@ public sealed class FileContent(
     /// index row and the listings refreshed. The file keeps its tags, attributes and permissions.
     /// </summary>
     public async Task<OverwriteResult> OverwriteAsync(
-        string relative, byte[] content, string ifMatch, string session, bool keepPrevious, FileActor actor, CancellationToken cancellationToken = default)
+        string relative,
+        byte[] content,
+        string ifMatch,
+        string session,
+        bool keepPrevious,
+        FileActor actor,
+        CancellationToken cancellationToken = default
+    )
     {
-        if (!paths.TryResolve(relative, out var full) || paths.ToRelative(full) is not { Length: > 0 } canonical || !File.Exists(full))
+        if (
+            !paths.TryResolve(relative, out var full)
+            || paths.ToRelative(full) is not { Length: > 0 } canonical
+            || !File.Exists(full)
+        )
+        {
             return new OverwriteResult(OverwriteStatus.NotFound, Message: "The file is not there any more.");
+        }
+
         var info = new FileInfo(full);
         if (info.LinkTarget is not null)
-            return new OverwriteResult(OverwriteStatus.IsLink, Message: "This file is a link to another one: it can't be saved here. Save a copy instead.");
+        {
+            return new OverwriteResult(
+                OverwriteStatus.IsLink,
+                Message: "This file is a link to another one: it can't be saved here. Save a copy instead."
+            );
+        }
+
         if (info.IsReadOnly)
-            return new OverwriteResult(OverwriteStatus.ReadOnly, Message: "This file is marked read-only on the server: it can't be saved over. Save a copy instead.");
+        {
+            return new OverwriteResult(
+                OverwriteStatus.ReadOnly,
+                Message: "This file is marked read-only on the server: it can't be saved over. Save a copy instead."
+            );
+        }
 
         await _writing.WaitAsync(cancellationToken);
         try
         {
             using var operation = scans.TryBeginOperation(full);
             if (operation is null)
-                return new OverwriteResult(OverwriteStatus.ScanRunning, Message: "A scan is running over this folder: save again when it has finished.");
+            {
+                return new OverwriteResult(
+                    OverwriteStatus.ScanRunning,
+                    Message: "A scan is running over this folder: save again when it has finished."
+                );
+            }
 
             if (ifMatch != "*")
             {
                 var current = await FileVersion.OfFileAsync(full, cancellationToken);
                 if (current.Token != ifMatch)
-                    return new OverwriteResult(OverwriteStatus.Changed, current, Message: "The file was changed elsewhere since it was opened.");
+                {
+                    return new OverwriteResult(
+                        OverwriteStatus.Changed,
+                        current,
+                        Message: "The file was changed elsewhere since it was opened."
+                    );
+                }
             }
 
             ForgetOldSessions();
@@ -332,15 +431,35 @@ public sealed class FileContent(
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    logger.LogWarning(ex, "{Account} could not save {Path}: its previous version could not be kept in the trash", actor.Name, canonical);
-                    return new OverwriteResult(OverwriteStatus.Failed, Message: "The file was not saved: its previous version could not be kept in the trash.");
+                    logger.LogWarning(
+                        ex,
+                        "{Account} could not save {Path}: its previous version could not be kept in the trash",
+                        actor.Name,
+                        canonical
+                    );
+                    return new OverwriteResult(
+                        OverwriteStatus.Failed,
+                        Message: "The file was not saved: its previous version could not be kept in the trash."
+                    );
                 }
             }
 
-            var temporary = Path.Combine(Path.GetDirectoryName(full)!, $".{Path.GetFileName(full)}.{Guid.NewGuid():N}.sfe-tmp");
+            var temporary = Path.Combine(
+                Path.GetDirectoryName(full)!,
+                $".{Path.GetFileName(full)}.{Guid.NewGuid():N}.sfe-tmp"
+            );
             try
             {
-                await using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 64 * 1024, useAsync: true))
+                await using (
+                    var stream = new FileStream(
+                        temporary,
+                        FileMode.CreateNew,
+                        FileAccess.Write,
+                        FileShare.None,
+                        64 * 1024,
+                        useAsync: true
+                    )
+                )
                 {
                     await stream.WriteAsync(content, cancellationToken);
                     await stream.FlushAsync(cancellationToken);
@@ -356,9 +475,12 @@ public sealed class FileContent(
                 if (trashId is { } id)
                     await ForgetPreviousAsync(id);
                 logger.LogWarning(ex, "{Account} could not save {Path}", actor.Name, canonical);
-                return new OverwriteResult(OverwriteStatus.Failed, Message: ex is UnauthorizedAccessException
-                    ? "The file was not saved: the server may not write it."
-                    : "The file was not saved: it is in use, or the disk refused. Try again in a moment.");
+                return new OverwriteResult(
+                    OverwriteStatus.Failed,
+                    Message: ex is UnauthorizedAccessException
+                        ? "The file was not saved: the server may not write it."
+                        : "The file was not saved: it is in use, or the disk refused. Try again in a moment."
+                );
             }
             if (keepPrevious)
                 _kept[key] = DateTime.UtcNow;
@@ -370,7 +492,11 @@ public sealed class FileContent(
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "The index could not take the new content of {Path}: the next scan does", canonical);
+                logger.LogWarning(
+                    ex,
+                    "The index could not take the new content of {Path}: the next scan does",
+                    canonical
+                );
             }
             browser.Invalidate(Path.GetDirectoryName(full)!);
             logger.LogInformation("{Account} saved {Path}", actor.Name, canonical);

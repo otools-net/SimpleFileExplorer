@@ -20,16 +20,21 @@ public static class LocalVisitor
     public static bool IsOnThisComputer(HttpContext context)
     {
         var request = context.Request;
-        if (context.Connection.RemoteIpAddress is not { } address || !IPAddress.IsLoopback(address)
-            || request.Headers.ContainsKey("X-Forwarded-For") || request.Headers.ContainsKey("X-Original-For") || request.Headers.ContainsKey("Forwarded"))
+        if (
+            context.Connection.RemoteIpAddress is not { } address
+            || !IPAddress.IsLoopback(address)
+            || request.Headers.ContainsKey("X-Forwarded-For")
+            || request.Headers.ContainsKey("X-Original-For")
+            || request.Headers.ContainsKey("Forwarded")
+        )
         {
             return false;
         }
 
         var host = request.Host.Host;
         return string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase)
-               || host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase)
-               || (IPAddress.TryParse(host.Trim('[', ']'), out var named) && IPAddress.IsLoopback(named));
+            || host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase)
+            || (IPAddress.TryParse(host.Trim('[', ']'), out var named) && IPAddress.IsLoopback(named));
     }
 
     /// <summary>
@@ -43,10 +48,10 @@ public static class LocalVisitor
     {
         var services = context.RequestServices;
         return services.GetRequiredService<IOptionsMonitor<SetupOptions>>().CurrentValue.LocalWithoutCode
-               && IsOnThisComputer(context)
-               && services.GetRequiredService<LocalSetupLink>().IsCarriedBy(context.Request)
-               && !ExternalByConfiguration(services)
-               && await services.GetRequiredService<SetupService>().IsFreshAsync(context.RequestAborted);
+            && IsOnThisComputer(context)
+            && services.GetRequiredService<LocalSetupLink>().IsCarriedBy(context.Request)
+            && !ExternalByConfiguration(services)
+            && await services.GetRequiredService<SetupService>().IsFreshAsync(context.RequestAborted);
     }
 
     /// <summary>The mode is External and set by the configuration (appsettings, environment, command line), not the setup page.</summary>

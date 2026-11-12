@@ -14,7 +14,11 @@ namespace Sfe.Core.Tasks;
 /// log lives in memory. The tasks work without the index: when the database can't be written, runs are only kept in
 /// memory while they run.
 /// </summary>
-public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOptionsMonitor<SfeOptions> options, ILogger<TaskHistory> logger)
+public sealed class TaskHistory(
+    IDbContextFactory<SfeDbContext> dbFactory,
+    IOptionsMonitor<SfeOptions> options,
+    ILogger<TaskHistory> logger
+)
 {
     public const int DefaultPageSize = 50;
     public const int MaxPageSize = 500;
@@ -32,7 +36,17 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
     public Run Begin(BackgroundTaskKind task, string? path, TaskTrigger trigger, int? scheduleId = null)
     {
         var started = DateTime.UtcNow;
-        var id = Insert(new TaskRun { Task = task, Path = path, Trigger = trigger, ScheduleId = scheduleId, Started = started, Outcome = TaskOutcome.Running });
+        var id = Insert(
+            new TaskRun
+            {
+                Task = task,
+                Path = path,
+                Trigger = trigger,
+                ScheduleId = scheduleId,
+                Started = started,
+                Outcome = TaskOutcome.Running,
+            }
+        );
         var run = new Run(this, id, task, path, trigger, scheduleId, started);
         _active[id] = run;
         _last[task] = run.Summary(TaskOutcome.Running, null, null);
@@ -41,7 +55,13 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
     }
 
     /// <summary>Records a schedule that came due while its task could not start.</summary>
-    public async Task RecordSkippedAsync(BackgroundTaskKind task, string? path, int scheduleId, string reason, CancellationToken cancellationToken = default)
+    public async Task RecordSkippedAsync(
+        BackgroundTaskKind task,
+        string? path,
+        int scheduleId,
+        string reason,
+        CancellationToken cancellationToken = default
+    )
     {
         var now = DateTime.UtcNow;
         var row = new TaskRun
@@ -68,7 +88,12 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
     }
 
     /// <summary>Runs newest first, of one task or all; <paramref name="before"/>: <see cref="TaskRunPage.Next"/> of the previous page.</summary>
-    public async Task<TaskRunPage> ListAsync(BackgroundTaskKind? task, long? before, int? limit, CancellationToken cancellationToken = default)
+    public async Task<TaskRunPage> ListAsync(
+        BackgroundTaskKind? task,
+        long? before,
+        int? limit,
+        CancellationToken cancellationToken = default
+    )
     {
         var size = Math.Clamp(limit ?? DefaultPageSize, 1, MaxPageSize);
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -80,10 +105,31 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
         var rows = await query
             .OrderByDescending(r => r.Id)
             .Take(size + 1)
-            .Select(r => new { r.Id, r.Task, r.Path, r.Trigger, r.ScheduleId, r.Started, r.Finished, r.Outcome, r.Summary })
+            .Select(r => new
+            {
+                r.Id,
+                r.Task,
+                r.Path,
+                r.Trigger,
+                r.ScheduleId,
+                r.Started,
+                r.Finished,
+                r.Outcome,
+                r.Summary,
+            })
             .ToListAsync(cancellationToken);
         var runs = rows.Take(size)
-            .Select(r => new TaskRunSummary(r.Id, r.Task, r.Path, r.Trigger, r.ScheduleId, Utc(r.Started), Utc(r.Finished), r.Outcome, r.Summary))
+            .Select(r => new TaskRunSummary(
+                r.Id,
+                r.Task,
+                r.Path,
+                r.Trigger,
+                r.ScheduleId,
+                Utc(r.Started),
+                Utc(r.Finished),
+                r.Outcome,
+                r.Summary
+            ))
             .ToList();
         return new TaskRunPage(runs, rows.Count > size ? runs[^1].Id : null);
     }
@@ -101,11 +147,25 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
         if (row is null)
             return null;
         var (lines, omitted) = TaskRunLog.Deserialize(row.Log);
-        return new TaskRunDetails(row.Id, row.Task, row.Path, row.Trigger, row.ScheduleId, Utc(row.Started), Utc(row.Finished), row.Outcome, row.Summary, lines, omitted);
+        return new TaskRunDetails(
+            row.Id,
+            row.Task,
+            row.Path,
+            row.Trigger,
+            row.ScheduleId,
+            Utc(row.Started),
+            Utc(row.Finished),
+            row.Outcome,
+            row.Summary,
+            lines,
+            omitted
+        );
     }
 
     /// <summary>The last run of each task that ran (or runs), for the task list.</summary>
-    public async Task<IReadOnlyDictionary<BackgroundTaskKind, TaskRunSummary>> LastRunsAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyDictionary<BackgroundTaskKind, TaskRunSummary>> LastRunsAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         if (!_lastLoaded)
         {
@@ -114,12 +174,28 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
                 await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
                 foreach (var kind in Enum.GetValues<BackgroundTaskKind>())
                 {
-                    var row = await db.TaskRuns.AsNoTracking()
+                    var row = await db
+                        .TaskRuns.AsNoTracking()
                         .Where(r => r.Task == kind && r.Outcome != TaskOutcome.Skipped)
                         .OrderByDescending(r => r.Id)
                         .FirstOrDefaultAsync(cancellationToken);
                     if (row is not null)
-                        _last.TryAdd(kind, new TaskRunSummary(row.Id, row.Task, row.Path, row.Trigger, row.ScheduleId, Utc(row.Started), Utc(row.Finished), row.Outcome, row.Summary));
+                    {
+                        _last.TryAdd(
+                            kind,
+                            new TaskRunSummary(
+                                row.Id,
+                                row.Task,
+                                row.Path,
+                                row.Trigger,
+                                row.ScheduleId,
+                                Utc(row.Started),
+                                Utc(row.Finished),
+                                row.Outcome,
+                                row.Summary
+                            )
+                        );
+                    }
                 }
 
                 _lastLoaded = true;
@@ -137,7 +213,9 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
     public async Task<int> ClearAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var deleted = await db.TaskRuns.Where(r => r.Outcome != TaskOutcome.Running).ExecuteDeleteAsync(cancellationToken);
+        var deleted = await db
+            .TaskRuns.Where(r => r.Outcome != TaskOutcome.Running)
+            .ExecuteDeleteAsync(cancellationToken);
         foreach (var (kind, last) in _last)
         {
             if (last.Outcome != TaskOutcome.Running)
@@ -157,7 +235,9 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
         {
             var limit = DateTime.UtcNow.AddDays(-days);
             await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-            var deleted = await db.TaskRuns.Where(r => r.Finished != null && r.Finished < limit).ExecuteDeleteAsync(cancellationToken);
+            var deleted = await db
+                .TaskRuns.Where(r => r.Finished != null && r.Finished < limit)
+                .ExecuteDeleteAsync(cancellationToken);
             if (deleted > 0)
                 logger.LogInformation("Forgot {Count} task runs older than {Days} days", deleted, days);
         }
@@ -174,12 +254,15 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
         {
             await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
             var active = _active.Keys.ToList();
-            await db.TaskRuns
-                .Where(r => r.Outcome == TaskOutcome.Running && !active.Contains(r.Id))
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(r => r.Outcome, TaskOutcome.Interrupted)
-                    .SetProperty(r => r.Finished, r => r.Started)
-                    .SetProperty(r => r.Summary, "The server stopped while it ran."), cancellationToken);
+            await db
+                .TaskRuns.Where(r => r.Outcome == TaskOutcome.Running && !active.Contains(r.Id))
+                .ExecuteUpdateAsync(
+                    s =>
+                        s.SetProperty(r => r.Outcome, TaskOutcome.Interrupted)
+                            .SetProperty(r => r.Finished, r => r.Started)
+                            .SetProperty(r => r.Summary, "The server stopped while it ran."),
+                    cancellationToken
+                );
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -212,11 +295,14 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
             try
             {
                 await using var db = await dbFactory.CreateDbContextAsync();
-                await db.TaskRuns.Where(r => r.Id == run.Id).ExecuteUpdateAsync(s => s
-                    .SetProperty(r => r.Finished, finished)
-                    .SetProperty(r => r.Outcome, outcome)
-                    .SetProperty(r => r.Summary, summary)
-                    .SetProperty(r => r.Log, run.Log.Serialize()));
+                await db
+                    .TaskRuns.Where(r => r.Id == run.Id)
+                    .ExecuteUpdateAsync(s =>
+                        s.SetProperty(r => r.Finished, finished)
+                            .SetProperty(r => r.Outcome, outcome)
+                            .SetProperty(r => r.Summary, summary)
+                            .SetProperty(r => r.Log, run.Log.Serialize())
+                    );
             }
             catch (Exception ex)
             {
@@ -229,7 +315,8 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
         await PurgeAsync();
     }
 
-    private static string Truncate(string text) => text.Length > MaxSummaryLength ? text[..MaxSummaryLength] + "…" : text;
+    private static string Truncate(string text) =>
+        text.Length > MaxSummaryLength ? text[..MaxSummaryLength] + "…" : text;
 
     private static DateTimeOffset Utc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
 
@@ -241,7 +328,15 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
         private readonly TaskHistory _history;
         private int _completed;
 
-        internal Run(TaskHistory history, long id, BackgroundTaskKind task, string? path, TaskTrigger trigger, int? scheduleId, DateTime started)
+        internal Run(
+            TaskHistory history,
+            long id,
+            BackgroundTaskKind task,
+            string? path,
+            TaskTrigger trigger,
+            int? scheduleId,
+            DateTime started
+        )
         {
             _history = history;
             Id = id;
@@ -267,7 +362,9 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
         {
             if (TaskLogProvider.Current == Log)
                 TaskLogProvider.Current = null;
-            return Interlocked.Exchange(ref _completed, 1) == 0 ? _history.CompleteAsync(this, outcome, summary) : System.Threading.Tasks.Task.CompletedTask;
+            return Interlocked.Exchange(ref _completed, 1) == 0
+                ? _history.CompleteAsync(this, outcome, summary)
+                : System.Threading.Tasks.Task.CompletedTask;
         }
 
         internal TaskRunSummary Summary(TaskOutcome outcome, string? summary, DateTime? finished) =>
@@ -276,7 +373,19 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
         internal TaskRunDetails Details()
         {
             var (lines, omitted) = Log.Snapshot();
-            return new TaskRunDetails(Id, Task, Path, Trigger, ScheduleId, Utc(Started), null, TaskOutcome.Running, null, lines, omitted);
+            return new TaskRunDetails(
+                Id,
+                Task,
+                Path,
+                Trigger,
+                ScheduleId,
+                Utc(Started),
+                null,
+                TaskOutcome.Running,
+                null,
+                lines,
+                omitted
+            );
         }
     }
 }

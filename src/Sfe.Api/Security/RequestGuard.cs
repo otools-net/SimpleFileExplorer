@@ -23,7 +23,13 @@ public sealed class RequestGuard(RequestDelegate next)
     public const string SetupRequiredType = "setup-required";
     public const string MigrationRequiredType = "migration-required";
 
-    public async Task InvokeAsync(HttpContext context, SetupService setup, CurrentAccess current, MigrationCoordinator migration, IConfiguration configuration)
+    public async Task InvokeAsync(
+        HttpContext context,
+        SetupService setup,
+        CurrentAccess current,
+        MigrationCoordinator migration,
+        IConfiguration configuration
+    )
     {
         var path = context.Request.Path;
         var api = path.StartsWithSegments("/api");
@@ -33,10 +39,19 @@ public sealed class RequestGuard(RequestDelegate next)
             return;
         }
 
-        if (api && !HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method)
-            && !HttpMethods.IsOptions(context.Request.Method) && !context.Request.Headers.ContainsKey(Header))
+        if (
+            api
+            && !HttpMethods.IsGet(context.Request.Method)
+            && !HttpMethods.IsHead(context.Request.Method)
+            && !HttpMethods.IsOptions(context.Request.Method)
+            && !context.Request.Headers.ContainsKey(Header)
+        )
         {
-            await TypedResults.Problem($"Requests changing something need the {Header} header.", statusCode: StatusCodes.Status400BadRequest)
+            await TypedResults
+                .Problem(
+                    $"Requests changing something need the {Header} header.",
+                    statusCode: StatusCodes.Status400BadRequest
+                )
                 .ExecuteAsync(context);
             return;
         }
@@ -44,22 +59,30 @@ public sealed class RequestGuard(RequestDelegate next)
         await migration.RetryIfUnavailableAsync(context.RequestAborted);
         if (migration.IsBlocking && !path.StartsWithSegments("/api/migration"))
         {
-            await TypedResults.Problem(
+            await TypedResults
+                .Problem(
                     "SFE is waiting for its update: open the app to update it.",
                     statusCode: StatusCodes.Status503ServiceUnavailable,
-                    type: MigrationRequiredType)
+                    type: MigrationRequiredType
+                )
                 .ExecuteAsync(context);
             return;
         }
 
-        if (!path.StartsWithSegments("/api/setup") && !path.StartsWithSegments("/api/installation") && !path.StartsWithSegments("/api/session")
+        if (
+            !path.StartsWithSegments("/api/setup")
+            && !path.StartsWithSegments("/api/installation")
+            && !path.StartsWithSegments("/api/session")
             && !path.StartsWithSegments("/api/migration")
-            && await setup.IsRequiredAsync(context.RequestAborted))
+            && await setup.IsRequiredAsync(context.RequestAborted)
+        )
         {
-            await TypedResults.Problem(
+            await TypedResults
+                .Problem(
                     "The server has no administrator yet: open the app to set it up.",
                     statusCode: StatusCodes.Status503ServiceUnavailable,
-                    type: SetupRequiredType)
+                    type: SetupRequiredType
+                )
                 .ExecuteAsync(context);
             return;
         }
@@ -67,14 +90,21 @@ public sealed class RequestGuard(RequestDelegate next)
         // A Local server answers its own computer only. The setup, the session (to sign in as the server's
         // administrator), the installation page (with the setup code, to switch to External) and the update page stay
         // open: an install upgraded to Local while used from elsewhere is set to External from there.
-        if (ServerModes.IsLocal(configuration) && !LocalVisitor.IsOnThisComputer(context)
-            && !path.StartsWithSegments("/api/setup") && !path.StartsWithSegments("/api/installation") && !path.StartsWithSegments("/api/session")
-            && !path.StartsWithSegments("/api/migration"))
+        if (
+            ServerModes.IsLocal(configuration)
+            && !LocalVisitor.IsOnThisComputer(context)
+            && !path.StartsWithSegments("/api/setup")
+            && !path.StartsWithSegments("/api/installation")
+            && !path.StartsWithSegments("/api/session")
+            && !path.StartsWithSegments("/api/migration")
+        )
         {
-            await TypedResults.Problem(
+            await TypedResults
+                .Problem(
                     "SFE is in Local mode: it only answers its own computer (http://localhost).",
                     statusCode: StatusCodes.Status403Forbidden,
-                    type: ServerModes.LocalOnlyType)
+                    type: ServerModes.LocalOnlyType
+                )
                 .ExecuteAsync(context);
             return;
         }

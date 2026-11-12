@@ -19,13 +19,22 @@ public static class ArchiveReader
     /// opens a 7z or rar whose list is encrypted (a zip's names are never encrypted). A 7z whose list is larger than
     /// <paramref name="maxSevenZipList"/> bytes is refused before it is read (<see cref="SevenZipList"/>).
     /// </summary>
-    public static IEnumerable<ArchiveEntry> ReadEntries(string fullPath, ArchiveFormat format, CancellationToken cancel = default, string? password = null,
-        long maxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024) =>
+    public static IEnumerable<ArchiveEntry> ReadEntries(
+        string fullPath,
+        ArchiveFormat format,
+        CancellationToken cancel = default,
+        string? password = null,
+        long maxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024
+    ) =>
         format switch
         {
             ArchiveFormat.Zip => ReadZip(fullPath, cancel),
             ArchiveFormat.SevenZip => ReadSevenZip(fullPath, cancel, password, maxSevenZipList),
-            ArchiveFormat.TarGzip or ArchiveFormat.TarBzip2 or ArchiveFormat.TarXz => ReadCompressedTar(fullPath, format, cancel),
+            ArchiveFormat.TarGzip or ArchiveFormat.TarBzip2 or ArchiveFormat.TarXz => ReadCompressedTar(
+                fullPath,
+                format,
+                cancel
+            ),
             _ => ReadForward(fullPath, format, cancel, password),
         };
 
@@ -35,8 +44,14 @@ public static class ArchiveReader
     /// tar, unpacks the entries before it to reach it: past <paramref name="maxSkipped"/> bytes of those (as declared,
     /// which is what the decoder produces), it is refused (<see cref="ArchiveException.TooFar"/>), before any is unpacked.
     /// </summary>
-    public static Stream OpenEntry(string fullPath, ArchiveFormat format, ArchiveEntry entry, string? password = null, long maxSkipped = long.MaxValue,
-        long maxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024)
+    public static Stream OpenEntry(
+        string fullPath,
+        ArchiveFormat format,
+        ArchiveEntry entry,
+        string? password = null,
+        long maxSkipped = long.MaxValue,
+        long maxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024
+    )
     {
         if (entry.Kind != ArchiveEntryKind.File)
             throw new ArchiveException("Only files of an archive have data.");
@@ -47,9 +62,11 @@ public static class ArchiveReader
         {
             if (format == ArchiveFormat.Zip)
                 return ZipDirectory.Locate(stream).OpenEntry(stream, entry, password);
-            return Wrap(() => format == ArchiveFormat.SevenZip
-                ? OpenSevenZip(stream, entry, password, maxSkipped, maxSevenZipList)
-                : OpenForward(stream, format, entry, password, maxSkipped));
+            return Wrap(() =>
+                format == ArchiveFormat.SevenZip
+                    ? OpenSevenZip(stream, entry, password, maxSkipped, maxSevenZipList)
+                    : OpenForward(stream, format, entry, password, maxSkipped)
+            );
         }
         catch
         {
@@ -89,8 +106,15 @@ public static class ArchiveReader
     /// reads the stream it is given (or not) before returning: the stream ends with the visit. <paramref name="read"/>
     /// is told how far into the archive's file the pass is, after each entry.
     /// </summary>
-    public static void ReadThrough(string fullPath, ArchiveFormat format, string? password, Action<ArchiveEntry, Func<Stream>> visit,
-        Action<long>? read = null, CancellationToken cancel = default, long maxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024)
+    public static void ReadThrough(
+        string fullPath,
+        ArchiveFormat format,
+        string? password,
+        Action<ArchiveEntry, Func<Stream>> visit,
+        Action<long>? read = null,
+        CancellationToken cancel = default,
+        long maxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024
+    )
     {
         switch (format)
         {
@@ -98,43 +122,49 @@ public static class ArchiveReader
                 ReadThroughZip(fullPath, password, visit, read, cancel);
                 break;
             case ArchiveFormat.SevenZip:
-                {
-                    using var stream = Open(fullPath);
-                    SevenZipList.Check(stream, maxSevenZipList);
-                    using var archive = Wrap(() => SevenZipArchive.OpenArchive(stream, Options(password)));
-                    using var reader = Wrap(archive.ExtractAllEntries);
-                    ReadThroughReader(reader, password, visit, () => read?.Invoke(stream.Position), cancel);
-                    break;
-                }
+            {
+                using var stream = Open(fullPath);
+                SevenZipList.Check(stream, maxSevenZipList);
+                using var archive = Wrap(() => SevenZipArchive.OpenArchive(stream, Options(password)));
+                using var reader = Wrap(archive.ExtractAllEntries);
+                ReadThroughReader(reader, password, visit, () => read?.Invoke(stream.Position), cancel);
+                break;
+            }
             case ArchiveFormat.TarGzip or ArchiveFormat.TarBzip2 or ArchiveFormat.TarXz:
+            {
+                using var file = Open(fullPath);
+                using var tail = new TailStream(Decompress(file, format));
+                using var reader = Wrap(() => ReaderFactory.OpenReader(tail, Options()));
+                ReadThroughReader(reader, password, visit, () => read?.Invoke(file.Position), cancel);
+                Wrap(() =>
                 {
-                    using var file = Open(fullPath);
-                    using var tail = new TailStream(Decompress(file, format));
-                    using var reader = Wrap(() => ReaderFactory.OpenReader(tail, Options()));
-                    ReadThroughReader(reader, password, visit, () => read?.Invoke(file.Position), cancel);
-                    Wrap(() =>
-                    {
-                        tail.CopyTo(Stream.Null);
-                        return 0;
-                    });
-                    if (!tail.EndsWithTarMark)
-                        throw CutOff();
-                    break;
-                }
+                    tail.CopyTo(Stream.Null);
+                    return 0;
+                });
+                if (!tail.EndsWithTarMark)
+                    throw CutOff();
+                break;
+            }
             default:
-                {
-                    using var stream = Open(fullPath);
-                    using var reader = Wrap(() => ReaderFactory.OpenReader(stream, Options(password)));
-                    ReadThroughReader(reader, password, visit, () => read?.Invoke(stream.Position), cancel);
-                    if (format == ArchiveFormat.Tar && !EndsWithTarMark(stream))
-                        throw CutOff();
-                    break;
-                }
+            {
+                using var stream = Open(fullPath);
+                using var reader = Wrap(() => ReaderFactory.OpenReader(stream, Options(password)));
+                ReadThroughReader(reader, password, visit, () => read?.Invoke(stream.Position), cancel);
+                if (format == ArchiveFormat.Tar && !EndsWithTarMark(stream))
+                    throw CutOff();
+                break;
+            }
         }
     }
 
     /// <summary>A zip: its directory read from one handle, the entries' data from another (no seeking back and forth).</summary>
-    private static void ReadThroughZip(string fullPath, string? password, Action<ArchiveEntry, Func<Stream>> visit, Action<long>? read, CancellationToken cancel)
+    private static void ReadThroughZip(
+        string fullPath,
+        string? password,
+        Action<ArchiveEntry, Func<Stream>> visit,
+        Action<long>? read,
+        CancellationToken cancel
+    )
     {
         using var list = Open(fullPath);
         using var data = Open(fullPath);
@@ -149,7 +179,9 @@ public static class ArchiveReader
             Stream? opened = null;
             try
             {
-                visit(entry, () => opened ??= Locked(entry, password) ?? directory.OpenEntry(new KeptOpen(data), entry, password));
+                visit(entry, () =>
+                    opened ??= Locked(entry, password) ?? directory.OpenEntry(new KeptOpen(data), entry, password)
+                );
             }
             finally
             {
@@ -159,7 +191,13 @@ public static class ArchiveReader
         }
     }
 
-    private static void ReadThroughReader(IReader reader, string? password, Action<ArchiveEntry, Func<Stream>> visit, Action read, CancellationToken cancel)
+    private static void ReadThroughReader(
+        IReader reader,
+        string? password,
+        Action<ArchiveEntry, Func<Stream>> visit,
+        Action read,
+        CancellationToken cancel
+    )
     {
         for (var index = 0L; Wrap(reader.MoveToNextEntry); index++)
         {
@@ -174,7 +212,10 @@ public static class ArchiveReader
             try
             {
                 // Errors of the data (a wrong password, a damaged block) come out of SharpCompress as it is read.
-                visit(entry, () => opened ??= Locked(entry, password) ?? Bounded(new WrappedErrors(Wrap(reader.OpenEntryStream)), entry, null));
+                visit(entry, () =>
+                    opened ??= Locked(entry, password)
+                        ?? Bounded(new WrappedErrors(Wrap(reader.OpenEntryStream)), entry, null)
+                );
             }
             finally
             {
@@ -188,7 +229,9 @@ public static class ArchiveReader
 
     /// <summary>An encrypted entry opened without a password: refused (only when it is taken, not when it is passed).</summary>
     private static Stream? Locked(ArchiveEntry entry, string? password) =>
-        entry.Encrypted && string.IsNullOrEmpty(password) ? throw new ArchiveException("This entry is protected by a password.", needsPassword: true) : null;
+        entry.Encrypted && string.IsNullOrEmpty(password)
+            ? throw new ArchiveException("This entry is protected by a password.", needsPassword: true)
+            : null;
 
     private static IEnumerable<ArchiveEntry> ReadZip(string fullPath, CancellationToken cancel)
     {
@@ -198,7 +241,12 @@ public static class ArchiveReader
             yield return entry;
     }
 
-    private static IEnumerable<ArchiveEntry> ReadSevenZip(string fullPath, CancellationToken cancel, string? password, long maxList)
+    private static IEnumerable<ArchiveEntry> ReadSevenZip(
+        string fullPath,
+        CancellationToken cancel,
+        string? password,
+        long maxList
+    )
     {
         using var stream = Open(fullPath);
         SevenZipList.Check(stream, maxList);
@@ -211,7 +259,12 @@ public static class ArchiveReader
         }
     }
 
-    private static IEnumerable<ArchiveEntry> ReadForward(string fullPath, ArchiveFormat format, CancellationToken cancel, string? password)
+    private static IEnumerable<ArchiveEntry> ReadForward(
+        string fullPath,
+        ArchiveFormat format,
+        CancellationToken cancel,
+        string? password
+    )
     {
         using var stream = Open(fullPath);
         using var reader = Wrap(() => ReaderFactory.OpenReader(stream, Options(password)));
@@ -229,7 +282,11 @@ public static class ArchiveReader
     /// checked 2026-10-26), so the tar's own end mark, seen through <see cref="TailStream"/>, tells a whole list from
     /// the first part of one.
     /// </summary>
-    private static IEnumerable<ArchiveEntry> ReadCompressedTar(string fullPath, ArchiveFormat format, CancellationToken cancel)
+    private static IEnumerable<ArchiveEntry> ReadCompressedTar(
+        string fullPath,
+        ArchiveFormat format,
+        CancellationToken cancel
+    )
     {
         using var file = Open(fullPath);
         using var tail = new TailStream(Decompress(file, format));
@@ -249,13 +306,22 @@ public static class ArchiveReader
             throw CutOff();
     }
 
-    private static Stream Decompress(FileStream file, ArchiveFormat format) => format switch
-    {
-        ArchiveFormat.TarGzip => new System.IO.Compression.GZipStream(file, System.IO.Compression.CompressionMode.Decompress),
-        ArchiveFormat.TarBzip2 => SharpCompress.Compressors.BZip2.BZip2Stream.Create(file,
-            SharpCompress.Compressors.CompressionMode.Decompress, decompressConcatenated: true, leaveOpen: false, tolerateTruncatedStream: false),
-        _ => new SharpCompress.Compressors.Xz.XZStream(file),
-    };
+    private static Stream Decompress(FileStream file, ArchiveFormat format) =>
+        format switch
+        {
+            ArchiveFormat.TarGzip => new System.IO.Compression.GZipStream(
+                file,
+                System.IO.Compression.CompressionMode.Decompress
+            ),
+            ArchiveFormat.TarBzip2 => SharpCompress.Compressors.BZip2.BZip2Stream.Create(
+                file,
+                SharpCompress.Compressors.CompressionMode.Decompress,
+                decompressConcatenated: true,
+                leaveOpen: false,
+                tolerateTruncatedStream: false
+            ),
+            _ => new SharpCompress.Compressors.Xz.XZStream(file),
+        };
 
     /// <summary>A whole tar ends with two zero blocks (then zeros to its record size): its length is whole blocks.</summary>
     private static bool EndsWithTarMark(FileStream stream)
@@ -274,15 +340,26 @@ public static class ArchiveReader
         if (skipped > maxSkipped)
         {
             throw new ArchiveException(
-                $"To reach this file the archive would unpack {skipped / (1024 * 1024):N0} MB before it (it is packed together with them): extract it, or download the archive.")
-            { TooFar = true };
+                $"To reach this file the archive would unpack {skipped / (1024 * 1024):N0} MB before it (it is packed together with them): extract it, or download the archive."
+            )
+            {
+                TooFar = true,
+            };
         }
     }
 
     private static ArchiveException CutOff() =>
-        new("The archive ends without its end mark: it is cut off or broken. Only the entries before the break are listed.");
+        new(
+            "The archive ends without its end mark: it is cut off or broken. Only the entries before the break are listed."
+        );
 
-    private static Stream OpenSevenZip(FileStream stream, ArchiveEntry entry, string? password, long maxSkipped, long maxList)
+    private static Stream OpenSevenZip(
+        FileStream stream,
+        ArchiveEntry entry,
+        string? password,
+        long maxSkipped,
+        long maxList
+    )
     {
         SevenZipList.Check(stream, maxList);
         var archive = SevenZipArchive.OpenArchive(stream, Options(password));
@@ -319,13 +396,20 @@ public static class ArchiveReader
     /// Rar and tars have no index: the reader walks to the entry, skipping the others' data (unpacked in a compressed tar
     /// and a solid rar, passed over in a plain tar and another rar).
     /// </summary>
-    private static Stream OpenForward(FileStream stream, ArchiveFormat format, ArchiveEntry entry, string? password, long maxSkipped)
+    private static Stream OpenForward(
+        FileStream stream,
+        ArchiveFormat format,
+        ArchiveEntry entry,
+        string? password,
+        long maxSkipped
+    )
     {
         var reader = ReaderFactory.OpenReader(stream, Options(password));
         try
         {
             // The reader marks every file of a solid rar solid, the first too.
-            bool Unpacked(SharpCompress.Common.IEntry current) => format == ArchiveFormat.Rar ? current.IsSolid : format != ArchiveFormat.Tar;
+            bool Unpacked(SharpCompress.Common.IEntry current) =>
+                format == ArchiveFormat.Rar ? current.IsSolid : format != ArchiveFormat.Tar;
             var skipped = 0L;
             for (var index = 0L; ; index++)
             {
@@ -354,17 +438,33 @@ public static class ArchiveReader
 
     private static ArchiveEntry Map(SharpCompress.Common.IEntry entry, long index)
     {
-        var kind = entry.IsDirectory ? ArchiveEntryKind.Folder
+        var kind =
+            entry.IsDirectory ? ArchiveEntryKind.Folder
             : !string.IsNullOrEmpty(entry.LinkTarget) ? ArchiveEntryKind.Link
             : ArchiveEntryKind.File;
-        return new ArchiveEntry(entry.Key ?? "", kind, entry.Size, entry.CompressedSize, entry.LastModifiedTime, entry.IsEncrypted, index);
+        return new ArchiveEntry(
+            entry.Key ?? "",
+            kind,
+            entry.Size,
+            entry.CompressedSize,
+            entry.LastModifiedTime,
+            entry.IsEncrypted,
+            index
+        );
     }
 
     private static ReaderOptions Options(string? password = null) =>
         new() { LeaveStreamOpen = true, Password = string.IsNullOrEmpty(password) ? null : password };
 
     private static FileStream Open(string fullPath) =>
-        new(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, BufferSize, FileOptions.SequentialScan);
+        new(
+            fullPath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            BufferSize,
+            FileOptions.SequentialScan
+        );
 
     /// <summary>SharpCompress' own errors (format, password, cut-off file) as one <see cref="ArchiveException"/>.</summary>
     private static T Wrap<T>(Func<T> read)
@@ -373,14 +473,20 @@ public static class ArchiveReader
         {
             return read();
         }
-        catch (Exception error) when (error is not (ArchiveException or OperationCanceledException or OutOfMemoryException))
+        catch (Exception error)
+            when (error is not (ArchiveException or OperationCanceledException or OutOfMemoryException))
         {
-            var password = error.GetType().Name.Contains("Password", StringComparison.OrdinalIgnoreCase)
+            var password =
+                error.GetType().Name.Contains("Password", StringComparison.OrdinalIgnoreCase)
                 || error.GetType().Name.Contains("Crypt", StringComparison.OrdinalIgnoreCase)
                 || error.Message.Contains("password", StringComparison.OrdinalIgnoreCase);
             throw new ArchiveException(
-                password ? "The archive is protected by a password." : "The archive can't be read: it is broken, cut off or of a kind SFE doesn't read.",
-                error, password);
+                password
+                    ? "The archive is protected by a password."
+                    : "The archive can't be read: it is broken, cut off or of a kind SFE doesn't read.",
+                error,
+                password
+            );
         }
     }
 
@@ -397,7 +503,11 @@ public static class ArchiveReader
         public override bool CanSeek => false;
         public override bool CanWrite => false;
         public override long Length => throw new NotSupportedException();
-        public override long Position { get => _length; set => throw new NotSupportedException(); }
+        public override long Position
+        {
+            get => _length;
+            set => throw new NotSupportedException();
+        }
 
         public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
 
@@ -419,8 +529,11 @@ public static class ArchiveReader
         }
 
         public override void Flush() { }
+
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
         public override void SetLength(long value) => throw new NotSupportedException();
+
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
         protected override void Dispose(bool disposing)
@@ -436,13 +549,17 @@ public static class ArchiveReader
     {
         public override bool CanSeek => true;
         public override long Length => Inner.Length;
-        public override long Position { get => Inner.Position; set => Inner.Position = value; }
+        public override long Position
+        {
+            get => Inner.Position;
+            set => Inner.Position = value;
+        }
+
         public override long Seek(long offset, SeekOrigin origin) => Inner.Seek(offset, origin);
+
         public override int Read(Span<byte> buffer) => Inner.Read(buffer);
 
-        protected override void Dispose(bool disposing)
-        {
-        }
+        protected override void Dispose(bool disposing) { }
     }
 
     /// <summary>SharpCompress' errors while an entry's data is read (a wrong password, a damaged block), as <see cref="ArchiveException"/>.</summary>
@@ -454,7 +571,8 @@ public static class ArchiveReader
             {
                 return Inner.Read(buffer);
             }
-            catch (Exception error) when (error is not (ArchiveException or OperationCanceledException or OutOfMemoryException))
+            catch (Exception error)
+                when (error is not (ArchiveException or OperationCanceledException or OutOfMemoryException))
             {
                 return Wrap<int>(() => throw error);
             }

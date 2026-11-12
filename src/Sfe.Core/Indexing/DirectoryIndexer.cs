@@ -23,7 +23,8 @@ public sealed class DirectoryIndexer(
     LibraryPaths paths,
     IOptionsMonitor<SfeOptions> options,
     FolderDefaultTags defaultTags,
-    ILogger<DirectoryIndexer> logger)
+    ILogger<DirectoryIndexer> logger
+)
 {
     // Settings can change between (and during) scans: read them when used. The name sets are rebuilt only when the
     // lists change (a new options instance comes with new lists).
@@ -44,7 +45,12 @@ public sealed class DirectoryIndexer(
     /// </param>
     private sealed record PendingDirectory(string Path, string RealPath, string[] LinkParents);
 
-    public async Task IndexAsync(string fullPath, bool recursive, ScanProgress progress, CancellationToken cancellationToken = default)
+    public async Task IndexAsync(
+        string fullPath,
+        bool recursive,
+        ScanProgress progress,
+        CancellationToken cancellationToken = default
+    )
     {
         // "D:\Media\" and "D:\Media" are the same folder: store it the way enumeration reports it (no trailing
         // separator), otherwise its sub-folders cannot find their parent. Drive roots keep theirs.
@@ -93,7 +99,11 @@ public sealed class DirectoryIndexer(
     }
 
     /// <summary>Synchronizes one folder and its files; returns the sub-folders to visit.</summary>
-    private async Task<IReadOnlyList<PendingDirectory>> IndexDirectoryAsync(PendingDirectory pending, ScanProgress progress, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<PendingDirectory>> IndexDirectoryAsync(
+        PendingDirectory pending,
+        ScanProgress progress,
+        CancellationToken cancellationToken
+    )
     {
         var directoryInfo = new DirectoryInfo(pending.Path);
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -113,7 +123,15 @@ public sealed class DirectoryIndexer(
         await db.SaveChangesAsync(cancellationToken);
 
         var defaults = await defaultTags.ForFolderAsync(directoryInfo.FullName, cancellationToken);
-        await SynchronizeFilesAsync(db, directory.Id, directoryInfo, defaults, maxPathLength, progress, cancellationToken);
+        await SynchronizeFilesAsync(
+            db,
+            directory.Id,
+            directoryInfo,
+            defaults,
+            maxPathLength,
+            progress,
+            cancellationToken
+        );
 
         var subDirectories = new List<PendingDirectory>();
         // Folders excluded from scans: not visited, and what the index has of them stays.
@@ -132,8 +150,8 @@ public sealed class DirectoryIndexer(
         }
 
         var onDisk = subDirectories.Select(d => d.Path).Concat(kept).ToHashSet(LibraryPaths.PathComparer);
-        var obsolete = await db.Directories
-            .Where(d => d.ParentId == directory.Id)
+        var obsolete = await db
+            .Directories.Where(d => d.ParentId == directory.Id)
             .Select(d => d.FullName)
             .ToListAsync(cancellationToken);
         foreach (var removed in obsolete.Where(d => !onDisk.Contains(d)))
@@ -147,7 +165,10 @@ public sealed class DirectoryIndexer(
     /// of their folders: tagging a file of a folder holding a million files must not index the whole folder.
     /// </summary>
     /// <returns>Index id of each file that is (now) indexed; ignored files and too long paths are left out.</returns>
-    public async Task<Dictionary<string, int>> IndexFilesAsync(IReadOnlyCollection<string> fullPaths, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, int>> IndexFilesAsync(
+        IReadOnlyCollection<string> fullPaths,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var ids = await FileIdsAsync(db, fullPaths, cancellationToken);
@@ -191,14 +212,25 @@ public sealed class DirectoryIndexer(
         var file = new FileInfo(fullPath);
         if (entry is null || !file.Exists)
             return;
-        await CopyAsync(file, entry, fingerprint: Scan.ComputeHashes, resolution: ReadsResolution(file), cancellationToken);
+        await CopyAsync(
+            file,
+            entry,
+            fingerprint: Scan.ComputeHashes,
+            resolution: ReadsResolution(file),
+            cancellationToken
+        );
         // The old content's fingerprint would group it with its former duplicates.
         if (!Scan.ComputeHashes)
             entry.Sha1 = null;
         await db.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task AddFilesAsync(SfeDbContext db, DirectoryInfo folder, List<string> files, CancellationToken cancellationToken)
+    private async Task AddFilesAsync(
+        SfeDbContext db,
+        DirectoryInfo folder,
+        List<string> files,
+        CancellationToken cancellationToken
+    )
     {
         var maxPathLength = db.PathLengthLimit;
         if (!folder.Exists || IsIgnoredDirectory(folder) || !IsStorable(folder.FullName, maxPathLength))
@@ -215,19 +247,30 @@ public sealed class DirectoryIndexer(
             if (!file.Exists || IsIgnoredFile(file) || !IsStorable(file.FullName, maxPathLength))
                 continue;
             var entry = NewEntry(file.FullName, directory.Id, defaults);
-            await CopyAsync(file, entry, fingerprint: Scan.ComputeHashes, resolution: ReadsResolution(file), cancellationToken);
+            await CopyAsync(
+                file,
+                entry,
+                fingerprint: Scan.ComputeHashes,
+                resolution: ReadsResolution(file),
+                cancellationToken
+            );
             db.Files.Add(entry);
         }
 
         await db.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task<Dictionary<string, int>> FileIdsAsync(SfeDbContext db, IReadOnlyCollection<string> fullPaths, CancellationToken cancellationToken) =>
-        (await db.Files
-            .Where(f => fullPaths.Contains(f.FullName))
-            .Select(f => new { f.FullName, f.Id })
-            .ToListAsync(cancellationToken))
-        .ToDictionary(f => f.FullName, f => f.Id, LibraryPaths.PathComparer);
+    private static async Task<Dictionary<string, int>> FileIdsAsync(
+        SfeDbContext db,
+        IReadOnlyCollection<string> fullPaths,
+        CancellationToken cancellationToken
+    ) =>
+        (
+            await db
+                .Files.Where(f => fullPaths.Contains(f.FullName))
+                .Select(f => new { f.FullName, f.Id })
+                .ToListAsync(cancellationToken)
+        ).ToDictionary(f => f.FullName, f => f.Id, LibraryPaths.PathComparer);
 
     /// <summary>
     /// Describes a sub-folder to visit, or returns null when it is a symbolic link (or junction) leading back to a
@@ -241,7 +284,9 @@ public sealed class DirectoryIndexer(
         string target;
         try
         {
-            target = Path.TrimEndingDirectorySeparator(child.ResolveLinkTarget(returnFinalTarget: true)?.FullName ?? child.FullName);
+            target = Path.TrimEndingDirectorySeparator(
+                child.ResolveLinkTarget(returnFinalTarget: true)?.FullName ?? child.FullName
+            );
         }
         catch (IOException ex)
         {
@@ -251,7 +296,11 @@ public sealed class DirectoryIndexer(
 
         if (IsSameOrAncestor(target, parent.RealPath) || parent.LinkParents.Any(p => IsSameOrAncestor(target, p)))
         {
-            logger.LogInformation("Skipping {Directory}: it links back to {Target}, which is already being indexed", child.FullName, target);
+            logger.LogInformation(
+                "Skipping {Directory}: it links back to {Target}, which is already being indexed",
+                child.FullName,
+                target
+            );
             return null;
         }
 
@@ -260,9 +309,16 @@ public sealed class DirectoryIndexer(
 
     private static bool IsSameOrAncestor(string candidate, string path) =>
         string.Equals(candidate, path, LibraryPaths.PathComparison)
-        || path.StartsWith(Path.EndsInDirectorySeparator(candidate) ? candidate : candidate + Path.DirectorySeparatorChar, LibraryPaths.PathComparison);
+        || path.StartsWith(
+            Path.EndsInDirectorySeparator(candidate) ? candidate : candidate + Path.DirectorySeparatorChar,
+            LibraryPaths.PathComparison
+        );
 
-    private static async Task<DirectoryEntry> FindOrCreateDirectoryAsync(SfeDbContext db, DirectoryInfo info, CancellationToken cancellationToken)
+    private static async Task<DirectoryEntry> FindOrCreateDirectoryAsync(
+        SfeDbContext db,
+        DirectoryInfo info,
+        CancellationToken cancellationToken
+    )
     {
         var fullName = info.FullName;
         var entity = await db.Directories.FirstOrDefaultAsync(d => d.FullName == fullName, cancellationToken);
@@ -278,8 +334,8 @@ public sealed class DirectoryIndexer(
 
         if (entity.ParentId is null && info.Parent is not null)
         {
-            entity.ParentId = await db.Directories
-                .Where(d => d.FullName == info.Parent.FullName)
+            entity.ParentId = await db
+                .Directories.Where(d => d.FullName == info.Parent.FullName)
                 .Select(d => (int?)d.Id)
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -288,21 +344,38 @@ public sealed class DirectoryIndexer(
     }
 
     /// <summary>A file entering the index: with the default tags of its folder (<see cref="FolderDefaultTags"/>).</summary>
-    private static FileEntry NewEntry(string fullName, int directoryId, int[] defaults) => new()
-    {
-        FullName = fullName,
-        DirectoryId = directoryId,
-        TagLinks = [.. defaults.Select(tagId => new FileTag { TagId = tagId })],
-    };
+    private static FileEntry NewEntry(string fullName, int directoryId, int[] defaults) =>
+        new()
+        {
+            FullName = fullName,
+            DirectoryId = directoryId,
+            TagLinks = [.. defaults.Select(tagId => new FileTag { TagId = tagId })],
+        };
 
     private async Task SynchronizeFilesAsync(
-        SfeDbContext db, int directoryId, DirectoryInfo info, int[] defaults, int? maxPathLength, ScanProgress progress, CancellationToken cancellationToken)
+        SfeDbContext db,
+        int directoryId,
+        DirectoryInfo info,
+        int[] defaults,
+        int? maxPathLength,
+        ScanProgress progress,
+        CancellationToken cancellationToken
+    )
     {
         // Only what the comparison needs, untracked: a folder can hold a million files.
-        var indexed = await db.Files
-            .AsNoTracking()
+        var indexed = await db
+            .Files.AsNoTracking()
             .Where(f => f.DirectoryId == directoryId)
-            .Select(f => new IndexedFile(f.Id, f.FullName, f.Size, f.LastWriteTime, f.Sha1, f.Width, f.Height, f.Duration))
+            .Select(f => new IndexedFile(
+                f.Id,
+                f.FullName,
+                f.Size,
+                f.LastWriteTime,
+                f.Sha1,
+                f.Width,
+                f.Height,
+                f.Duration
+            ))
             .ToDictionaryAsync(f => f.FullName, LibraryPaths.PathComparer, cancellationToken);
 
         var pending = 0;
@@ -322,10 +395,17 @@ public sealed class DirectoryIndexer(
             seen.Add(file.FullName);
             indexed.TryGetValue(file.FullName, out var known);
 
-            var changed = known is null || known.Size != file.Length || !SameTimestamp(known.LastWriteTime, file.LastWriteTime);
+            var changed =
+                known is null || known.Size != file.Length || !SameTimestamp(known.LastWriteTime, file.LastWriteTime);
             var resolution = ReadsResolution(file);
-            if (!changed && (known!.Sha1 is not null || !Scan.ComputeHashes) && (!LacksMediaProperties(file, known.Width, known.Duration) || !resolution))
+            if (
+                !changed
+                && (known!.Sha1 is not null || !Scan.ComputeHashes)
+                && (!LacksMediaProperties(file, known.Width, known.Duration) || !resolution)
+            )
+            {
                 continue;
+            }
 
             FileEntry entry;
             if (known is null)
@@ -359,8 +439,13 @@ public sealed class DirectoryIndexer(
                 entry.Duration = null;
             }
 
-            await CopyAsync(file, entry, fingerprint: Scan.ComputeHashes && (changed || entry.Sha1 is null),
-                resolution: resolution && LacksMediaProperties(file, entry.Width, entry.Duration), cancellationToken);
+            await CopyAsync(
+                file,
+                entry,
+                fingerprint: Scan.ComputeHashes && (changed || entry.Sha1 is null),
+                resolution: resolution && LacksMediaProperties(file, entry.Width, entry.Duration),
+                cancellationToken
+            );
             progress.AddFile();
 
             // Saved in batches: the work done on a huge folder is kept as it goes, and the change tracker stays small.
@@ -379,34 +464,59 @@ public sealed class DirectoryIndexer(
         foreach (var batch in removed.Chunk(SaveBatchSize))
         {
             var files = db.Files.Where(f => batch.Contains(f.Id));
-            progress.AddRemoved(await MissingFileRecorder.DeleteAsync(db, files, files.ExecuteDeleteAsync, RememberMissing, cancellationToken));
+            progress.AddRemoved(
+                await MissingFileRecorder.DeleteAsync(
+                    db,
+                    files,
+                    files.ExecuteDeleteAsync,
+                    RememberMissing,
+                    cancellationToken
+                )
+            );
         }
     }
 
     /// <summary>Tagged files no longer found are kept for relinking (<see cref="FileTracking.RelinkService"/>).</summary>
     private bool RememberMissing => options.CurrentValue.FileTracking.Relink.Enabled;
 
-    private sealed record IndexedFile(int Id, string FullName, long Size, DateTime LastWriteTime, string? Sha1, int? Width, int? Height, double? Duration);
+    private sealed record IndexedFile(
+        int Id,
+        string FullName,
+        long Size,
+        DateTime LastWriteTime,
+        string? Sha1,
+        int? Width,
+        int? Height,
+        double? Duration
+    );
 
     /// <summary>
     /// The resolution and duration of this file are wanted and can be read now (videos and audio need ffmpeg).
     /// </summary>
-    private bool ReadsResolution(FileInfo file) => Scan.ReadResolution && dimensions.CanRead(classifier.Classify(file.Extension));
+    private bool ReadsResolution(FileInfo file) =>
+        Scan.ReadResolution && dimensions.CanRead(classifier.Classify(file.Extension));
 
     /// <summary>
     /// The index has not read what it keeps of this file yet: the resolution of an image, the resolution and duration
     /// of a video, the duration of an audio file. Videos and audio indexed by a version that did not read durations
     /// get theirs from the next scan.
     /// </summary>
-    private bool LacksMediaProperties(FileInfo file, int? width, double? duration) => classifier.Classify(file.Extension) switch
-    {
-        ItemKind.Video => width is null || duration is null,
-        ItemKind.Audio => duration is null,
-        _ => width is null,
-    };
+    private bool LacksMediaProperties(FileInfo file, int? width, double? duration) =>
+        classifier.Classify(file.Extension) switch
+        {
+            ItemKind.Video => width is null || duration is null,
+            ItemKind.Audio => duration is null,
+            _ => width is null,
+        };
 
     /// <summary>Copies the file's properties to its index entry, and its fingerprint and resolution when asked to.</summary>
-    private async Task CopyAsync(FileInfo file, FileEntry entry, bool fingerprint, bool resolution, CancellationToken cancellationToken)
+    private async Task CopyAsync(
+        FileInfo file,
+        FileEntry entry,
+        bool fingerprint,
+        bool resolution,
+        CancellationToken cancellationToken
+    )
     {
         entry.Name = Path.GetFileNameWithoutExtension(file.Name);
         entry.Extension = file.Extension;
@@ -416,7 +526,11 @@ public sealed class DirectoryIndexer(
         entry.LastWriteTime = file.LastWriteTime;
         if (fingerprint)
             entry.Sha1 = await TryFingerprintAsync(file.FullName, cancellationToken);
-        if (resolution && await dimensions.ReadAsync(file.FullName, classifier.Classify(file.Extension), cancellationToken) is { } media)
+        if (
+            resolution
+            && await dimensions.ReadAsync(file.FullName, classifier.Classify(file.Extension), cancellationToken)
+                is { } media
+        )
         {
             entry.Width = media.Size?.Width;
             entry.Height = media.Size?.Height;
@@ -445,13 +559,19 @@ public sealed class DirectoryIndexer(
         await MissingFileRecorder.DeleteAsync(
             db,
             db.Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, fullName)),
-            db.Directories.Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, fullName)).ExecuteDeleteAsync,
+            db.Directories.Where(
+                SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, fullName)
+            ).ExecuteDeleteAsync,
             RememberMissing,
-            cancellationToken);
+            cancellationToken
+        );
 
     /// <summary>Removes a folder and everything below it from the index (see <see cref="DeleteTreeAsync"/>).</summary>
     /// <returns>What the index held of the folder.</returns>
-    public async Task<IndexedFolderStats> RemoveTreeAsync(string fullPath, CancellationToken cancellationToken = default)
+    public async Task<IndexedFolderStats> RemoveTreeAsync(
+        string fullPath,
+        CancellationToken cancellationToken = default
+    )
     {
         var stats = await GetStatsAsync(fullPath, cancellationToken);
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -471,21 +591,41 @@ public sealed class DirectoryIndexer(
         await MissingFileRecorder.DeleteAsync(
             db,
             db.Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, path)),
-            async ct => await db.Directories.Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, path)).ExecuteDeleteAsync(ct)
-                + await db.Files.Where(f => f.FullName == path).ExecuteDeleteAsync(ct),
+            async ct =>
+                await db
+                    .Directories.Where(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, path))
+                    .ExecuteDeleteAsync(ct) + await db.Files.Where(f => f.FullName == path).ExecuteDeleteAsync(ct),
             RememberMissing,
-            cancellationToken);
+            cancellationToken
+        );
     }
 
     /// <summary>The index row of the folder <paramref name="fullPath"/>, made (with its own parent's link) when <paramref name="create"/> and missing.</summary>
     /// <returns>null when it has none (and none was made: not asked, ignored, too long a path).</returns>
-    internal async Task<int?> FolderIdAsync(SfeDbContext db, string fullPath, bool create, CancellationToken cancellationToken = default)
+    internal async Task<int?> FolderIdAsync(
+        SfeDbContext db,
+        string fullPath,
+        bool create,
+        CancellationToken cancellationToken = default
+    )
     {
         var path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(fullPath));
-        var id = await db.Directories.Where(d => d.FullName == path).Select(d => (int?)d.Id).FirstOrDefaultAsync(cancellationToken);
+        var id = await db
+            .Directories.Where(d => d.FullName == path)
+            .Select(d => (int?)d.Id)
+            .FirstOrDefaultAsync(cancellationToken);
         var folder = new DirectoryInfo(path);
-        if (id is not null || !create || !folder.Exists || IsIgnoredDirectory(folder) || !IsStorable(folder.FullName, db.PathLengthLimit))
+        if (
+            id is not null
+            || !create
+            || !folder.Exists
+            || IsIgnoredDirectory(folder)
+            || !IsStorable(folder.FullName, db.PathLengthLimit)
+        )
+        {
             return id;
+        }
+
         var entry = await FindOrCreateDirectoryAsync(db, folder, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         db.ChangeTracker.Clear();
@@ -500,20 +640,28 @@ public sealed class DirectoryIndexer(
         var files = db.Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, folder));
         return new IndexedFolderStats(
             await db.Directories.AnyAsync(d => d.FullName == folder, cancellationToken),
-            await db.Directories.CountAsync(SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, folder), cancellationToken),
+            await db.Directories.CountAsync(
+                SearchPredicateBuilder.InTree<DirectoryEntry>(d => d.FullName, folder),
+                cancellationToken
+            ),
             await files.CountAsync(cancellationToken),
-            await files.CountAsync(f => f.TagLinks.Any(), cancellationToken));
+            await files.CountAsync(f => f.TagLinks.Any(), cancellationToken)
+        );
     }
 
     private bool IsIgnoredDirectory(DirectoryInfo directory) =>
         NameSet(ref _ignoredDirectories, Scan.IgnoredDirectories).Contains(directory.Name)
         || IsExcludedFolder(directory)
         // SFE's work folder (the trash...) is never indexed.
-        || (directory.Name.Length == LibraryPaths.WorkFolderName.Length && paths.ToRelative(directory.FullName) is { } relative
-            && LibraryPaths.IsWorkFolderRelative(relative));
+        || (
+            directory.Name.Length == LibraryPaths.WorkFolderName.Length
+            && paths.ToRelative(directory.FullName) is { } relative
+            && LibraryPaths.IsWorkFolderRelative(relative)
+        );
 
     /// <summary>The folder itself is on <see cref="ScanOptions.ExcludedFolders"/>.</summary>
-    private bool IsExcludedFolder(DirectoryInfo directory) => ExcludedSet().Contains(Path.TrimEndingDirectorySeparator(directory.FullName));
+    private bool IsExcludedFolder(DirectoryInfo directory) =>
+        ExcludedSet().Contains(Path.TrimEndingDirectorySeparator(directory.FullName));
 
     /// <summary>Full paths of <see cref="ScanOptions.ExcludedFolders"/>, without trailing separator.</summary>
     private HashSet<string> ExcludedSet()
@@ -522,8 +670,11 @@ public sealed class DirectoryIndexer(
         if (_excludedFolders is { } cached && ReferenceEquals(cached.Source, folders))
             return cached.Names;
         var set = new HashSet<string>(
-            folders.Select(f => paths.TryResolve(f, out var full) ? Path.TrimEndingDirectorySeparator(full) : null).OfType<string>(),
-            LibraryPaths.PathComparer);
+            folders
+                .Select(f => paths.TryResolve(f, out var full) ? Path.TrimEndingDirectorySeparator(full) : null)
+                .OfType<string>(),
+            LibraryPaths.PathComparer
+        );
         _excludedFolders = new NameCache(folders, set);
         return set;
     }
@@ -542,7 +693,8 @@ public sealed class DirectoryIndexer(
         return set;
     }
 
-    private static bool IsStorable(string fullName, int? maxPathLength) => maxPathLength is null || fullName.Length <= maxPathLength;
+    private static bool IsStorable(string fullName, int? maxPathLength) =>
+        maxPathLength is null || fullName.Length <= maxPathLength;
 
     // SQL Server DATETIME has a ~3 ms resolution: a sub-second difference is a rounding artifact, not a change.
     private static bool SameTimestamp(DateTime stored, DateTime actual) => Math.Abs((stored - actual).TotalSeconds) < 1;
