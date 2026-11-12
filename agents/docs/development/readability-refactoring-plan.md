@@ -92,8 +92,8 @@ then by hand for what they leave: comments and long strings. One commit per step
 - [x] `Sfe.Core/Options` (`SfeOptions.cs` by section) and `Settings` (5, `EditableSettings`): 67 types;
   `EditableSettingsModels.cs` 184 lines, `SfeOptions.cs` 817 -> 86
 - [x] `Sfe.Core/Data` (5; `has-pending-model-changes` checked), `FileTracking` (5): 23 types, no model change
-- [ ] Rest of the server (about 25 files in 14 folders)
-- [ ] OpenAPI document identical to phase 0's reference
+- [x] Rest of the server (about 25 files in 14 folders): 61 types
+- [x] OpenAPI document identical to phase 0's reference (checked after each commit; EF models unchanged too)
 - [ ] Client: `core/models.ts` split by area, re-exported
 - [ ] Client: importers moved to the new files, area by area (one item each when started), then re-exports removed
 

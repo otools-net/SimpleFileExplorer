@@ -5,23 +5,6 @@ using Sfe.Core.Library;
 
 namespace Sfe.Core.Search;
 
-/// <summary>What makes an image or video high resolution (<c>r:hr</c>, <c>r:lr</c>, the HR/LR marks).</summary>
-/// <param name="ImageExtensions">Extensions classified as images (without dot).</param>
-/// <param name="ImagePixels">Smallest shorter side of a high-resolution image.</param>
-public sealed record HighResolution(
-    IReadOnlyCollection<string> ImageExtensions,
-    int ImagePixels,
-    IReadOnlyCollection<string> VideoExtensions,
-    int VideoPixels
-);
-
-/// <summary>The extensions (without dot) the listing classifies as each kind of media (<c>type:</c>).</summary>
-public sealed record MediaKinds(
-    IReadOnlyCollection<string> Images,
-    IReadOnlyCollection<string> Videos,
-    IReadOnlyCollection<string> Audio
-);
-
 /// <summary>Translates a <see cref="SearchQuery"/> into an EF Core predicate over <see cref="FileEntry"/>.</summary>
 public static class SearchPredicateBuilder
 {

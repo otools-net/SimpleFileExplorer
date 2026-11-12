@@ -8,31 +8,6 @@ using Sfe.Core.Search;
 
 namespace Sfe.Core.Tagging;
 
-/// <summary>A default tag a folder gets from one of its parents.</summary>
-/// <param name="Path">The parent folder it is set on (root-relative; empty for the root).</param>
-public sealed record InheritedDefaultTag(string Path, TagSummary Tag);
-
-/// <summary>The default tags of a folder: its own, and those of its parents, which apply to it too.</summary>
-public sealed record FolderDefaults(
-    string Path,
-    IReadOnlyList<TagSummary> Own,
-    IReadOnlyList<InheritedDefaultTag> Inherited
-)
-{
-    public bool IsEmpty => Own.Count == 0 && Inherited.Count == 0;
-}
-
-/// <summary>A default tag of a folder taken with it to the trash (<see cref="TrashEntry.DefaultTags"/>).</summary>
-/// <param name="Path">The folder it is set on, relative to the folder deleted (empty: that folder itself).</param>
-public sealed record KeptDefaultTag(string Path, int TagId, DateTime Created);
-
-public enum DefaultTagChangeStatus
-{
-    Ok,
-    Invalid,
-    NotFound,
-}
-
 /// <summary>
 /// The default tags of folders (agents/docs/features/default-tags.md): every file entering a folder, or one of its
 /// sub-folders, gets them once, when it enters the index there (a scan, a new file, an upload, a copy:

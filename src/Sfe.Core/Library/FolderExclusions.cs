@@ -1,43 +1,9 @@
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Settings;
 
 namespace Sfe.Core.Library;
-
-/// <summary>What a folder of the library can be kept out of.</summary>
-public enum ExclusionKind
-{
-    /// <summary>Scans (<see cref="ScanOptions.ExcludedFolders"/>): what is indexed there stays as it is.</summary>
-    Scan,
-
-    /// <summary>Trickplay (<see cref="TrickplayOptions.ExcludedFolders"/>): no new sheets.</summary>
-    Trickplay,
-
-    /// <summary>Thumbnails (<see cref="ThumbnailOptions.ExcludedFolders"/>): no new thumbnails.</summary>
-    Thumbnails,
-}
-
-/// <summary>
-/// For each kind, the listed folder (root-relative) a folder is excluded through: itself or the nearest of its
-/// ancestors on the list; null when not excluded.
-/// </summary>
-public sealed record FolderExclusionState(string? Scan, string? Trickplay, string? Thumbnails)
-{
-    public static readonly FolderExclusionState None = new(null, null, null);
-
-    [JsonIgnore]
-    public bool IsNone => Scan is null && Trickplay is null && Thumbnails is null;
-
-    public string? Of(ExclusionKind kind) =>
-        kind switch
-        {
-            ExclusionKind.Scan => Scan,
-            ExclusionKind.Trickplay => Trickplay,
-            _ => Thumbnails,
-        };
-}
 
 /// <summary>
 /// The folder lists of a library's settings that keep folders, with their sub-folders, out of scans, trickplay and

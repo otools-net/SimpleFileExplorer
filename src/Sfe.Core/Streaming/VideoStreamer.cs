@@ -11,21 +11,6 @@ using Sfe.Core.Thumbnails;
 
 namespace Sfe.Core.Streaming;
 
-/// <summary>What ffmpeg tells about a video, to convert it.</summary>
-/// <param name="Duration">Seconds; null when the container doesn't say.</param>
-/// <param name="VideoCodec">The first picture stream's codec (<c>h264</c>, <c>hevc</c>...), null without
-/// pictures.</param>
-/// <param name="BrowserPictures">That stream is H.264 in a pixel format browsers play (8-bit 4:2:0), so it can be
-/// copied.</param>
-/// <param name="AudioCodec">The first sound stream's codec (<c>aac</c>, <c>ac3</c>...), null without sound.</param>
-public sealed record VideoProbe(double? Duration, string? VideoCodec, bool BrowserPictures, string? AudioCodec);
-
-/// <summary>
-/// A video ready to be converted (<see cref="VideoStreamer.TryBegin"/>): run it with
-/// <see cref="VideoStreamer.RunAsync"/>.
-/// </summary>
-public sealed record VideoStream(string FullPath, double Start, bool Transcoded, VideoStreams.Lease Lease);
-
 /// <summary>
 /// Plays videos through ffmpeg for browsers that cannot play the file (<see cref="StreamingOptions"/>): H.264 and AAC
 /// in fragmented MP4, written while it is made, from the position asked for. The response has no length and no ranges:

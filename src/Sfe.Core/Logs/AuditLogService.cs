@@ -8,38 +8,6 @@ using Sfe.Core.Settings;
 
 namespace Sfe.Core.Logs;
 
-/// <summary>A search of the log. Every filter is optional.</summary>
-/// <param name="Text">Found in the message, the logger's name or the exception (ignoring case).</param>
-/// <param name="Levels">Only these levels.</param>
-/// <param name="From">From this moment on.</param>
-/// <param name="To">Before this moment.</param>
-/// <param name="Tenant">Only the entries of this library; 0 = only the server's own (no library).</param>
-/// <param name="Before">The <see cref="LogPage.Next"/> of the previous page.</param>
-public sealed record LogQuery(
-    string? Text = null,
-    IReadOnlyCollection<LogEntryLevel>? Levels = null,
-    DateTimeOffset? From = null,
-    DateTimeOffset? To = null,
-    int? Tenant = null,
-    long? Before = null,
-    int? Limit = null
-);
-
-/// <param name="TenantId">The library whose services logged it; null for the server's own.</param>
-public sealed record LogEntryView(
-    long Id,
-    DateTimeOffset Timestamp,
-    LogEntryLevel Level,
-    string Category,
-    string Message,
-    string? Exception,
-    int? TenantId
-);
-
-/// <param name="Entries">Newest first.</param>
-/// <param name="Next">The <c>before</c> of the next (older) page; null on the last one.</param>
-public sealed record LogPage(IReadOnlyList<LogEntryView> Entries, long? Next);
-
 /// <summary>
 /// The server's log: what <see cref="AuditLogProvider"/> collects, written in batches to the accounts' database
 /// (<see cref="AccessDbContext.LogEntries"/>) and, when <see cref="LogOptions.WriteFiles"/>, appended to a file per day

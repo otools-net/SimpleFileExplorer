@@ -9,38 +9,6 @@ using Sfe.Core.Options;
 
 namespace Sfe.Core.Backup;
 
-/// <param name="Entry">Path in the zip file, without extension for SQL Server (<c>.bak</c> is added).</param>
-/// <param name="Description">What it holds, for the manifest (e.g. "Accounts, spaces and the index of
-/// Library").</param>
-public sealed record BackupDatabase(
-    string Entry,
-    string Description,
-    DatabaseProvider Provider,
-    string ConnectionString
-);
-
-/// <param name="Entry">Path in the zip file.</param>
-/// <param name="Path">Full path of the file on this computer.</param>
-public sealed record BackupFile(string Entry, string Path);
-
-/// <param name="Version">
-/// The version the databases belong to, which a restore needs (before an update, the earlier one); null = an install
-/// from before 1.37.0, which recorded none.
-/// </param>
-/// <param name="MadeBy">The version of SFE making the backup.</param>
-/// <param name="Notes">Said in the manifest and the readme (e.g. a library whose database could not be found).</param>
-public sealed record BackupContents(
-    string? Version,
-    string MadeBy,
-    IReadOnlyList<BackupDatabase> Databases,
-    IReadOnlyList<BackupFile> Files,
-    IReadOnlyList<string> Notes
-);
-
-/// <param name="Path">The zip file, in the temporary folder: whoever serves it deletes it.</param>
-/// <param name="FileName">Name to download it as.</param>
-public sealed record BackupArchive(string Path, string FileName, long Size);
-
 /// <summary>
 /// A zip file with the databases (accounts, spaces and every library's index) and the configuration files, plus a
 /// manifest saying where each came from. SQLite databases are copied with SQLite's online backup, consistent while

@@ -3,29 +3,6 @@ using System.Collections.Concurrent;
 namespace Sfe.Core.Streaming;
 
 /// <summary>
-/// Who watches a converted video: shown to the server's administrators (<see cref="VideoStreams.List"/>).
-/// </summary>
-/// <param name="Library">Name of the library the video is in.</param>
-/// <param name="User">The account's name; null for a visitor without one.</param>
-/// <param name="Address">The viewer's network address, when known.</param>
-public sealed record StreamViewer(string Library, string? User, string? Address);
-
-/// <summary>A video being converted for a viewer.</summary>
-/// <param name="Path">The video, relative to its library's root.</param>
-/// <param name="Start">Position in the video (seconds) the conversion started from.</param>
-/// <param name="Transcoded">The pictures are encoded again (false: H.264 copied, only repackaged).</param>
-/// <param name="Bytes">Sent to the viewer so far.</param>
-public sealed record StreamActivity(
-    Guid Id,
-    string Path,
-    StreamViewer Viewer,
-    double Start,
-    bool Transcoded,
-    DateTimeOffset Started,
-    long Bytes
-);
-
-/// <summary>
 /// The videos the server converts at the moment, for every library together: one instance for the whole server, as
 /// <see cref="Options.StreamingOptions.MaxStreams"/> counts them all (like <see cref="Thumbnails.FfmpegLimits"/>).
 /// </summary>

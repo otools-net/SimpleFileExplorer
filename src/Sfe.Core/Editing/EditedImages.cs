@@ -8,55 +8,6 @@ using Sfe.Core.Paths;
 
 namespace Sfe.Core.Editing;
 
-/// <summary>The encodings a browser's canvas writes, which are the only ones the editor saves.</summary>
-public enum EditedImageFormat
-{
-    Jpeg,
-    Png,
-    WebP,
-}
-
-public enum EditedImageOutcome
-{
-    Saved,
-
-    /// <summary>The original is not a picture of the library (missing, outside the root, not an image type).</summary>
-    SourceNotFound,
-
-    /// <summary>What was sent is not a JPEG, PNG or WebP picture whose size can be read.</summary>
-    InvalidImage,
-
-    /// <summary>What was sent is larger than <see cref="EditedImages.MaxBytes"/>.</summary>
-    TooLarge,
-
-    /// <summary>
-    /// <see cref="EditorOptions.OutputFolder"/> is not a folder of the library, or the file cannot be written there.
-    /// </summary>
-    CannotWrite,
-
-    /// <summary>
-    /// Saved over the original: the edited picture is not in the original's format (a GIF made a PNG...).
-    /// </summary>
-    OtherFormat,
-
-    /// <summary>
-    /// Saved over the original: <see cref="FileContent.OverwriteAsync"/> did not (see
-    /// <see cref="EditedImageResult.Written"/>).
-    /// </summary>
-    NotWritten,
-}
-
-/// <param name="Path">The new file, relative to the library root.</param>
-public sealed record EditedImage(string Path, int Width, int Height, long Size);
-
-/// <param name="Written">Saved over the original: what <see cref="FileContent.OverwriteAsync"/> answered.</param>
-public sealed record EditedImageResult(
-    EditedImageOutcome Outcome,
-    EditedImage? Image = null,
-    string? Message = null,
-    OverwriteResult? Written = null
-);
-
 /// <summary>
 /// Saves the pictures made by the web client's editor. The browser applies the edits (crop...) itself and sends the
 /// encoded result: the server needs no image library, and a new kind of edit needs no change here. The result is

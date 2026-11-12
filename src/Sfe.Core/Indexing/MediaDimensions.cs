@@ -7,24 +7,6 @@ using Sfe.Core.Thumbnails;
 
 namespace Sfe.Core.Indexing;
 
-/// <summary>Width and height in pixels, as the picture is shown (rotated by its orientation metadata).</summary>
-public readonly record struct PixelSize(int Width, int Height)
-{
-    /// <summary>
-    /// Stored for a file whose size could not be read, so that it is not read again until it changes.
-    /// </summary>
-    public static readonly PixelSize Unknown = new(0, 0);
-
-    public bool IsKnown => Width > 0 && Height > 0;
-}
-
-/// <summary>What a scan reads of an image, video or audio file.</summary>
-/// <param name="Size">The picture of an image or video; null for audio, which has none (a cover is not its
-/// picture).</param>
-/// <param name="Duration">Seconds of a video or audio file; 0 when ffmpeg does not tell (a broken file); null for
-/// images.</param>
-public readonly record struct MediaProperties(PixelSize? Size, double? Duration = null);
-
 /// <summary>
 /// Reads the resolution of images and videos, and the duration of videos and audio files, for the index. Common image
 /// formats (JPEG, PNG, GIF, BMP, WebP) are read from their first bytes, without decoding; videos, audio and other

@@ -2,12 +2,6 @@ using System.Text.RegularExpressions;
 
 namespace Sfe.Core.Upgrades;
 
-/// <param name="Title">The heading: Added, Changed, Fixed.</param>
-/// <param name="Items">One line per change, in the changelog's Markdown (<c>`code`</c>, <c>**bold**</c>).</param>
-public sealed record ChangelogSection(string Title, IReadOnlyList<string> Items);
-
-public sealed record ChangelogEntry(string Version, IReadOnlyList<ChangelogSection> Sections);
-
 /// <summary>
 /// The versions of <c>CHANGELOG.md</c> (built into the application): <c>## x.y.z</c>, then <c>### Added</c>... and
 /// <c>- </c> items, whose indented lines continue them. What the update page shows before it changes anything.

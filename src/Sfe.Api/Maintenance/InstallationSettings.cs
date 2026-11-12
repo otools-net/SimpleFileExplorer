@@ -10,60 +10,6 @@ using Sfe.Core.Thumbnails;
 
 namespace Sfe.Api.Maintenance;
 
-/// <param name="Value">The value the server uses now (from whichever source gives it).</param>
-/// <param name="Locked">A source after the installation file gives it (an environment variable, the command line...):
-/// the page can't change it.</param>
-/// <param name="LockedBy">That source, in words.</param>
-public sealed record InstallationField(string? Value, bool Locked, string? LockedBy);
-
-/// <param name="Root">The first library's folder (<c>Sfe:Root</c>).</param>
-/// <param name="RootExists">That folder exists on the server.</param>
-/// <param name="Urls">The listening addresses (<c>Urls</c>).</param>
-/// <param name="Port">The port of the first address.</param>
-/// <param name="Network">The first address listens on every network interface, not only this computer's.</param>
-/// <param name="FfmpegPath">ffmpeg as configured (<c>Sfe:Thumbnails:FfmpegPath</c>).</param>
-/// <param name="FfmpegFound">The executable found for it; null when there is none.</param>
-/// <param name="FfmpegVersion">The version it reports.</param>
-/// <param name="RestartRequired">The addresses saved differ from those the server listens on since it started.</param>
-/// <param name="Mode"><c>Sfe:Mode</c> as configured; a null value = not chosen yet (the server then works as
-/// Local).</param>
-/// <param name="ModeInEffect">The mode the server works in (<see cref="ServerModes.InEffect"/>).</param>
-/// <param name="OnThisComputer">The visitor is on the server's own computer (<see cref="LocalVisitor"/>): only they may
-/// choose Local.</param>
-public sealed record InstallationView(
-    InstallationField Root,
-    bool RootExists,
-    InstallationField Urls,
-    int Port,
-    bool Network,
-    InstallationField FfmpegPath,
-    string? FfmpegFound,
-    string? FfmpegVersion,
-    bool RestartRequired,
-    InstallationField Mode,
-    ServerMode ModeInEffect,
-    bool OnThisComputer = false
-);
-
-/// <param name="Root">The first library's folder; null keeps it.</param>
-/// <param name="Network">Listen on every network interface (true) or on this computer only (false); null keeps
-/// it.</param>
-/// <param name="Port">The port; null keeps it.</param>
-/// <param name="FfmpegPath">ffmpeg's executable or folder; empty = look for it on PATH; null keeps it.</param>
-/// <param name="Mode">How the server is used; null keeps it.</param>
-public sealed record InstallationInput(
-    string? Root = null,
-    bool? Network = null,
-    int? Port = null,
-    string? FfmpegPath = null,
-    ServerMode? Mode = null
-);
-
-/// <param name="SetupDone">The server has its administrator: the mode no longer goes back from External to Local
-/// here.</param>
-/// <param name="OnThisComputer">The visitor is on the server's own computer (<see cref="LocalVisitor"/>).</param>
-public sealed record InstallationVisitorInfo(bool SetupDone, bool OnThisComputer);
-
 /// <summary>
 /// The few settings of the installation that a person setting SFE up needs, written from the web (with the setup code)
 /// into an app-managed configuration file (<see cref="FileKey"/>, default <c>data/installation.json</c>), so that
