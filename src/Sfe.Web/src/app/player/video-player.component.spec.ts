@@ -32,12 +32,12 @@ describe('VideoPlayerComponent', () => {
     beforeEach(() => {
         // jsdom doesn't play media.
         vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
-        vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => { });
-        vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => { });
+        vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+        vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
     });
 
     afterEach(() => {
-        TestBed.resetTestingModule();      // destroys the players while the media methods are still stubbed
+        TestBed.resetTestingModule(); // destroys the players while the media methods are still stubbed
         vi.restoreAllMocks();
     });
 
@@ -70,9 +70,9 @@ describe('VideoPlayerComponent', () => {
     it('gives its controls to a context menu: play, speed, loop, mute, frame, full screen', async () => {
         await create(false);
         const entries = () => player().menuEntries();
-        const entry = (id: string) => entries().find(e => e.id === id)!;
+        const entry = (id: string) => entries().find((e) => e.id === id)!;
 
-        expect(entries().map(e => e.id)).toEqual(['play', 'speed', 'loop', 'mute', 'saveFrame', 'fullscreen']);
+        expect(entries().map((e) => e.id)).toEqual(['play', 'speed', 'loop', 'mute', 'saveFrame', 'fullscreen']);
         expect(entry('play')).toMatchObject({ label: 'Play', shortcut: 'K' });
         entry('play').run!();
         expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe('VideoPlayerComponent', () => {
         expect(entry('loop').label).toBe('Stop looping');
 
         const rates = entry('speed').submenu!();
-        expect(rates.map(rate => rate.label)).toEqual(['0.5×', '0.75×', '1×', '1.25×', '1.5×', '2×']);
+        expect(rates.map((rate) => rate.label)).toEqual(['0.5×', '0.75×', '1×', '1.25×', '1.5×', '2×']);
         expect(rates[2].icon).toBe('check');
         rates[4].run!();
         expect(video().playbackRate).toBe(1.5);
@@ -101,8 +101,12 @@ describe('VideoPlayerComponent', () => {
 
             speedButton().click();
             await settle();
-            expect(rates().map(rate => rate.textContent)).toEqual(['0.5×', '0.75×', '1×', '1.25×', '1.5×', '2×']);
-            expect(rates().filter(rate => rate.classList.contains('on')).map(rate => rate.textContent)).toEqual(['1×']);
+            expect(rates().map((rate) => rate.textContent)).toEqual(['0.5×', '0.75×', '1×', '1.25×', '1.5×', '2×']);
+            expect(
+                rates()
+                    .filter((rate) => rate.classList.contains('on'))
+                    .map((rate) => rate.textContent),
+            ).toEqual(['1×']);
             expect(speedButton().getAttribute('aria-expanded')).toBe('true');
         });
 
@@ -188,7 +192,17 @@ describe('VideoPlayerComponent', () => {
 
         async function createPlaying(): Promise<void> {
             await create(false);
-            surface().getBoundingClientRect = () => ({ left: 0, top: 0, width: 1000, height: 500, right: 1000, bottom: 500, x: 0, y: 0, toJSON: () => ({}) });
+            surface().getBoundingClientRect = () => ({
+                left: 0,
+                top: 0,
+                width: 1000,
+                height: 500,
+                right: 1000,
+                bottom: 500,
+                x: 0,
+                y: 0,
+                toJSON: () => ({}),
+            });
             Object.defineProperty(video(), 'paused', { configurable: true, value: false });
             vi.useFakeTimers();
         }
@@ -211,7 +225,7 @@ describe('VideoPlayerComponent', () => {
             fixture.detectChanges();
             expect(video().playbackRate).toBe(1);
             expect(host().classList).not.toContain('fast');
-            expect(host().classList).toContain('controls-visible');      // the lift was not taken for a tap
+            expect(host().classList).toContain('controls-visible'); // the lift was not taken for a tap
         });
 
         it('goes back to the rate of the speed button', async () => {
@@ -272,7 +286,10 @@ describe('VideoPlayerComponent', () => {
         const element = () => host.nativeElement.querySelector('video') as HTMLVideoElement;
         const component = () => host.debugElement.children[0].componentInstance as VideoPlayerComponent;
         const convertButton = () => host.nativeElement.querySelector('.player-convert') as HTMLButtonElement | null;
-        const timeText = () => [...host.nativeElement.querySelectorAll('.player-time, .player-time-length')].map(part => (part as HTMLElement).textContent).join(' ');
+        const timeText = () =>
+            [...host.nativeElement.querySelectorAll('.player-time, .player-time-length')]
+                .map((part) => (part as HTMLElement).textContent)
+                .join(' ');
 
         function fakeStream(always = false, probe: StreamProbe | null = { duration: 600, transcoded: true }) {
             return {
@@ -285,10 +302,18 @@ describe('VideoPlayerComponent', () => {
         /** jsdom's media elements neither seek nor know what they can seek in. */
         function fakeMedia(seekable: [number, number][] = []): void {
             let time = 0;
-            Object.defineProperty(element(), 'currentTime', { configurable: true, get: () => time, set: (value: number) => time = value });
+            Object.defineProperty(element(), 'currentTime', {
+                configurable: true,
+                get: () => time,
+                set: (value: number) => (time = value),
+            });
             Object.defineProperty(element(), 'seekable', {
                 configurable: true,
-                value: { length: seekable.length, start: (i: number) => seekable[i][0], end: (i: number) => seekable[i][1] },
+                value: {
+                    length: seekable.length,
+                    start: (i: number) => seekable[i][0],
+                    end: (i: number) => seekable[i][1],
+                },
             });
         }
 
@@ -299,7 +324,7 @@ describe('VideoPlayerComponent', () => {
             await settle();
         }
 
-        it('says the browser can\'t play the video when the server converts none', async () => {
+        it("says the browser can't play the video when the server converts none", async () => {
             await createWith(null);
             expect(convertButton()).toBeNull();
             element().dispatchEvent(new Event('error'));
@@ -325,14 +350,14 @@ describe('VideoPlayerComponent', () => {
             element().dispatchEvent(new Event('loadedmetadata'));
             await settle();
             expect(component().currentTime()).toBe(30);
-            expect(timeText()).toBe('0:30 / 10:00');      // the length comes from the server
+            expect(timeText()).toBe('0:30 / 10:00'); // the length comes from the server
 
             element().dispatchEvent(new Event('error'));
             await settle();
             expect(host.componentInstance.failures).toEqual([true]);
         });
 
-        it('converts a video whose pictures the browser can\'t decode', async () => {
+        it("converts a video whose pictures the browser can't decode", async () => {
             const stream = fakeStream();
             await createWith(stream);
             Object.defineProperty(element(), 'videoWidth', { configurable: true, value: 0 });
@@ -341,7 +366,7 @@ describe('VideoPlayerComponent', () => {
             expect(element().getAttribute('src')).toBe('api/streaming/play?t=0');
         });
 
-        it('gives up when the server can\'t convert it either', async () => {
+        it("gives up when the server can't convert it either", async () => {
             await createWith(fakeStream(false, null));
             element().dispatchEvent(new Event('error'));
             await settle();
@@ -382,7 +407,7 @@ describe('VideoPlayerComponent', () => {
             imports: [VideoPlayerComponent, ContextMenuComponent],
             template: `<sfe-video-player src="api/files/raw?path=clip.webm" /><sfe-context-menu />`,
         })
-        class NarrowHost { }
+        class NarrowHost {}
 
         let host: ComponentFixture<NarrowHost>;
         let rowWidth = 1000;
@@ -393,8 +418,7 @@ describe('VideoPlayerComponent', () => {
 
         /** jsdom has no layout: every button and the position 40 px wide, the length 60, the row `rowWidth`. */
         function width(this: HTMLElement): number {
-            if (this.classList.contains('player-row'))
-                return rowWidth;
+            if (this.classList.contains('player-row')) return rowWidth;
             return this.classList.contains('player-time-length') ? 60 : 40;
         }
 
@@ -409,9 +433,15 @@ describe('VideoPlayerComponent', () => {
             Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, get: width });
             Object.defineProperty(Element.prototype, 'clientWidth', { configurable: true, get: width });
             (window as { ResizeObserver?: unknown }).ResizeObserver = class {
-                observe(): void { /* measured by update() */ }
-                unobserve(): void { /* nothing observed */ }
-                disconnect(): void { /* nothing observed */ }
+                observe(): void {
+                    /* measured by update() */
+                }
+                unobserve(): void {
+                    /* nothing observed */
+                }
+                disconnect(): void {
+                    /* nothing observed */
+                }
             };
             host = TestBed.createComponent(NarrowHost);
             await settle();
@@ -432,22 +462,37 @@ describe('VideoPlayerComponent', () => {
         it('shortens the time first, with no "⋯" for it', async () => {
             // 9 × 40 + 60 = 420 (no gaps: no styles in the tests); without the length, 360 + the "⋯" 40 fit.
             await measure(410);
-            expect([...row().querySelectorAll('[data-overflowed]')].map(item => item.className)).toEqual(['player-time-length']);
+            expect([...row().querySelectorAll('[data-overflowed]')].map((item) => item.className)).toEqual([
+                'player-time-length',
+            ]);
             expect(more().classList).not.toContain('shown');
         });
 
         it('then moves the buttons into "⋯" from the right; play, mute and fullscreen stay', async () => {
             await measure(230);
             const gone = [...row().querySelectorAll<HTMLElement>(':scope > [data-overflowed]')];
-            expect(gone.length).toBe(6);       // back, forward, length, speed, loop, frame
-            const stayed = [...row().querySelectorAll<HTMLElement>(':scope > :not([data-overflowed]):not(.overflow-more)')];
-            expect(stayed.map(item => item.getAttribute('title') ?? item.className)).toEqual(['Play (K)', 'player-time', 'Mute (M)', 'Fullscreen (F)']);
+            expect(gone.length).toBe(6); // back, forward, length, speed, loop, frame
+            const stayed = [
+                ...row().querySelectorAll<HTMLElement>(':scope > :not([data-overflowed]):not(.overflow-more)'),
+            ];
+            expect(stayed.map((item) => item.getAttribute('title') ?? item.className)).toEqual([
+                'Play (K)',
+                'player-time',
+                'Mute (M)',
+                'Fullscreen (F)',
+            ]);
             expect(more().classList).toContain('shown');
 
             more().click();
             await settle();
             const entries = [...document.querySelectorAll<HTMLElement>('.item-menu-entry')];
-            expect(entries.map(entry => entry.dataset['entry'])).toEqual(['back', 'forward', 'speed', 'loop', 'saveFrame']);
+            expect(entries.map((entry) => entry.dataset['entry'])).toEqual([
+                'back',
+                'forward',
+                'speed',
+                'loop',
+                'saveFrame',
+            ]);
             expect(document.querySelector('[data-entry="loop"]')?.getAttribute('aria-checked')).toBe('false');
             (document.querySelector('[data-entry="loop"]') as HTMLElement).click();
             await settle();
@@ -460,7 +505,9 @@ describe('VideoPlayerComponent', () => {
             await settle();
             (document.querySelector('[data-entry="speed"]') as HTMLElement).click();
             await settle();
-            const rates = [...document.querySelectorAll<HTMLElement>('.item-menu-entry')].map(entry => entry.dataset['entry']);
+            const rates = [...document.querySelectorAll<HTMLElement>('.item-menu-entry')].map(
+                (entry) => entry.dataset['entry'],
+            );
             expect(rates).toEqual(['back', 'speed-0.5', 'speed-0.75', 'speed-1', 'speed-1.25', 'speed-1.5', 'speed-2']);
         });
     });
@@ -494,7 +541,7 @@ describe('VideoPlayerComponent', () => {
             host.componentInstance.cinema.set(true);
             await settle();
             expect(cinemaButton()).not.toBeNull();
-            expect(minWidth()).toBe(without);     // the others go into the "⋯" menu when it is narrow
+            expect(minWidth()).toBe(without); // the others go into the "⋯" menu when it is narrow
         });
 
         it('switches cinema mode with its button and remembers it in this browser', async () => {
@@ -533,7 +580,8 @@ describe('VideoPlayerComponent', () => {
         let orientation: EventTarget & { type: string };
         let fullscreenElement: Element | null;
 
-        const fullscreenButton = () => fixture.nativeElement.querySelector('button[aria-label="Fullscreen (F)"]') as HTMLButtonElement;
+        const fullscreenButton = () =>
+            fixture.nativeElement.querySelector('button[aria-label="Fullscreen (F)"]') as HTMLButtonElement;
         const host = () => fixture.nativeElement.querySelector('sfe-video-player') as HTMLElement;
 
         async function goFullscreen(width: number, height: number): Promise<void> {

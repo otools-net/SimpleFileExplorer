@@ -1,14 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    signal,
+} from '@angular/core';
 import { formatElapsed } from '../../core/format';
 import { visibleInterval } from '../../core/visible-interval';
 import { IconComponent } from '../../shared/icon.component';
 import { describeScan, ScanService } from './scan.service';
 
 const TITLES: Record<string, (where: string) => string> = {
-    running: where => `Scanning ${where}…`,
-    completed: where => `Scan of ${where} finished`,
-    cancelled: where => `Scan of ${where} cancelled`,
-    failed: where => `Scan of ${where} failed`,
+    running: (where) => `Scanning ${where}…`,
+    completed: (where) => `Scan of ${where} finished`,
+    cancelled: (where) => `Scan of ${where} cancelled`,
+    failed: (where) => `Scan of ${where} failed`,
 };
 
 /** Progress of the scan under the top bar, then its result until dismissed. */
@@ -47,20 +56,18 @@ export class ScanPanelComponent {
 
     protected readonly title = computed(() => {
         const status = this.scan.status();
-        return status ? TITLES[status.state]?.(status.path ? `“${status.path}”` : 'the library') ?? '' : '';
+        return status ? (TITLES[status.state]?.(status.path ? `“${status.path}”` : 'the library') ?? '') : '';
     });
     protected readonly elapsed = computed(() => {
         const status = this.scan.status();
-        if (!status?.startedAt)
-            return '';
+        if (!status?.startedAt) return '';
         const end = status.finishedAt ? Date.parse(status.finishedAt) : this.now();
         return formatElapsed((end - Date.parse(status.startedAt)) / 1000);
     });
 
     constructor() {
-        effect(onCleanup => {
-            if (this.scan.running())
-                onCleanup(visibleInterval(() => this.now.set(Date.now()), 1000));
+        effect((onCleanup) => {
+            if (this.scan.running()) onCleanup(visibleInterval(() => this.now.set(Date.now()), 1000));
         });
         const destroyRef = inject(DestroyRef);
         this.scan.watch();
@@ -71,11 +78,11 @@ export class ScanPanelComponent {
             const listingTop = () => document.querySelector('sfe-listing')?.getBoundingClientRect().top ?? null;
             let height = 0;
             let top = listingTop();
-            const scrolled = () => top = listingTop();
+            const scrolled = () => (top = listingTop());
             const panel = inject(ElementRef<HTMLElement>).nativeElement;
             // The panel's size, and the page's (the listing coming in): where the listing is before the panel moves it.
-            const observer = new ResizeObserver(entries => {
-                const entry = entries.find(each => each.target === panel);
+            const observer = new ResizeObserver((entries) => {
+                const entry = entries.find((each) => each.target === panel);
                 if (entry) {
                     const next = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
                     root.setProperty('--scan-panel-h', `${next}px`);

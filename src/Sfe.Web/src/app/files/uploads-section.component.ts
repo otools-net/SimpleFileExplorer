@@ -82,30 +82,43 @@ export class UploadsSectionComponent implements OnInit {
     }
 
     protected describe(item: UploadInfo): string {
-        const percent = item.size ? Math.floor(item.received * 100 / item.size) : 100;
+        const percent = item.size ? Math.floor((item.received * 100) / item.size) : 100;
         return `${formatSize(item.received)} of ${formatSize(item.size)} (${percent}%) · by ${item.ownerName} · last received ${formatDate(item.lastActivity)}`;
     }
 
     /** An upload's menu (a right click): Cancel, then the folder it goes into. */
     protected uploadMenu(item: UploadInfo): MenuTarget {
         return {
-            kind: 'job', key: `upload-info:${item.id}`, name: baseName(item.name),
+            kind: 'job',
+            key: `upload-info:${item.id}`,
+            name: baseName(item.name),
             entries: () => {
-                const entries: MenuEntry[] = this.busy() === null
-                    ? [{ id: 'cancel', label: 'Cancel', icon: 'close', title: 'Stop it and remove what it received (asks first)', run: () => void this.cancel(item) }]
-                    : [];
+                const entries: MenuEntry[] =
+                    this.busy() === null
+                        ? [
+                              {
+                                  id: 'cancel',
+                                  label: 'Cancel',
+                                  icon: 'close',
+                                  title: 'Stop it and remove what it received (asks first)',
+                                  run: () => void this.cancel(item),
+                              },
+                          ]
+                        : [];
                 return [...entries, ...this.folders.targetEntries(item.target)];
             },
         };
     }
 
     protected async cancel(item: UploadInfo): Promise<void> {
-        if (!confirm(`Cancel the upload of “${baseName(item.name)}” by ${item.ownerName}? What it received is removed.`))
+        if (
+            !confirm(`Cancel the upload of “${baseName(item.name)}” by ${item.ownerName}? What it received is removed.`)
+        )
             return;
         try {
             this.busy.set(item.id);
             await this.api.cancelUpload(item.id);
-            this.items.update(items => items.filter(i => i.id !== item.id));
+            this.items.update((items) => items.filter((i) => i.id !== item.id));
         } catch (error) {
             this.toasts.error(`Could not cancel: ${(error as Error).message}`);
         } finally {

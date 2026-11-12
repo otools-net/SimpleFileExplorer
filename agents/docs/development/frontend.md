@@ -7,6 +7,8 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   (`@if`/`@for`/`@switch`), 4-space indents (root `.editorconfig`), `strict` + `strictTemplates`.
 - Sizes (lines, functions, files, inline templates), order of a class's members, what belongs in a template:
   [readability.md](readability.md).
+- Layout is Prettier's (root `.prettierrc.json`, 120 columns): `npm run format`, checked by `npm run format:check`.
+  It leaves inline templates alone (`embeddedLanguageFormatting: off`: its template formatting changes text nodes).
 - Only `core/api.service.ts` makes HTTP requests (promises; an `AbortSignal` cancels); URLs stay relative (virtual
   directory).
 - Styling is global CSS in `src/styles/` by class name (`styles.css` imports one partial per area), no component

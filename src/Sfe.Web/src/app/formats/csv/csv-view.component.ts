@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    input,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { copyText } from '../../core/copy-path.service';
@@ -19,7 +31,17 @@ import { findEntry, lineNumbersEntry, modesEntry, readingEntry } from '../toolba
 import { TextSession } from '../text/text-session';
 import { VirtualRows } from '../virtual-rows';
 import {
-    columnsOf, CsvDelimiter, CsvTable, delimiterFor, delimiterName, DELIMITERS, filterRecords, parseCsv, shownCell, SortDirection, sortRecords,
+    columnsOf,
+    CsvDelimiter,
+    CsvTable,
+    delimiterFor,
+    delimiterName,
+    DELIMITERS,
+    filterRecords,
+    parseCsv,
+    shownCell,
+    SortDirection,
+    sortRecords,
 } from './csv-table';
 import { FILE_SOURCE } from '../file-source';
 
@@ -49,7 +71,15 @@ interface CellPosition {
  */
 @Component({
     selector: 'sfe-csv-view',
-    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
+    imports: [
+        IconComponent,
+        ReadingPanelComponent,
+        TextEditActionsComponent,
+        TextEditBarComponent,
+        OverflowRowDirective,
+        OverflowItemDirective,
+        OverflowMoreComponent,
+    ],
     providers: [TextSession],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -212,18 +242,38 @@ export class CsvViewComponent {
     protected readonly own = computed(() => this.reading.preferences().code);
     /** The toolbar's buttons in its "⋯" menu, when they don't fit (the editing actions and the fields stay). */
     protected readonly more = {
-        mode: (): MenuEntry => modesEntry(this.modes, this.mode(), mode => this.setMode(mode)),
-        header: (): MenuEntry => ({ id: 'header', label: 'Header', icon: 'rows', title: 'The first row names the columns', checked: this.header(), run: () => this.toggleHeader() }),
+        mode: (): MenuEntry => modesEntry(this.modes, this.mode(), (mode) => this.setMode(mode)),
+        header: (): MenuEntry => ({
+            id: 'header',
+            label: 'Header',
+            icon: 'rows',
+            title: 'The first row names the columns',
+            checked: this.header(),
+            run: () => this.toggleHeader(),
+        }),
         separator: (): MenuEntry => ({
-            id: 'separator', label: 'Separator', icon: 'rows', title: 'What separates the cells',
-            submenu: () => this.delimiters.map(choice => ({
-                id: 'separator-' + choice.label.toLowerCase(), label: choice.id === 'auto' ? 'Guess' : choice.label, icon: 'rows', title: 'Cells separated by: ' + choice.label,
-                checked: choice.id === this.delimiter(), run: () => this.setDelimiter(choice.id),
-            })),
+            id: 'separator',
+            label: 'Separator',
+            icon: 'rows',
+            title: 'What separates the cells',
+            submenu: () =>
+                this.delimiters.map((choice) => ({
+                    id: 'separator-' + choice.label.toLowerCase(),
+                    label: choice.id === 'auto' ? 'Guess' : choice.label,
+                    icon: 'rows',
+                    title: 'Cells separated by: ' + choice.label,
+                    checked: choice.id === this.delimiter(),
+                    run: () => this.setDelimiter(choice.id),
+                })),
         }),
         lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggleLineNumbers()),
         find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.sourceEditor()?.find()),
-        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen()), "Reading settings: font, size, colours"),
+        reading: (): MenuEntry =>
+            readingEntry(
+                this.panelOpen(),
+                () => this.panelOpen.set(!this.panelOpen()),
+                'Reading settings: font, size, colours',
+            ),
     };
     protected readonly style = computed(() => this.reading.style('code'));
     protected readonly table = computed<CsvTable | null>(() => {
@@ -232,7 +282,7 @@ export class CsvViewComponent {
     });
     protected readonly problems = computed(() => this.table()?.problems ?? []);
     /** The first record that isn't the header. */
-    protected readonly first = computed(() => this.header() && this.table()?.rows.length ? 1 : 0);
+    protected readonly first = computed(() => (this.header() && this.table()?.rows.length ? 1 : 0));
     protected readonly columns = computed(() => {
         const table = this.table();
         return table ? columnsOf(table.rows, this.header()) : [];
@@ -240,8 +290,7 @@ export class CsvViewComponent {
     /** The records shown, in the order shown: filtered, then sorted. */
     protected readonly order = computed(() => {
         const table = this.table();
-        if (!table)
-            return [];
+        if (!table) return [];
         const records = filterRecords(table.rows, this.first(), this.applied());
         const sort = this.sort();
         const column = sort ? this.columns()[sort.column] : null;
@@ -250,15 +299,19 @@ export class CsvViewComponent {
     protected readonly template = computed(() => {
         const digits = String(this.table()?.rows.length ?? 0).length;
         // Characters, plus the cells' padding (16px) and border.
-        return [`calc(${digits + 1}ch + 17px)`, ...this.columns().map(column => `calc(${column.width}ch + 17px)`)].join(' ');
+        return [
+            `calc(${digits + 1}ch + 17px)`,
+            ...this.columns().map((column) => `calc(${column.width}ch + 17px)`),
+        ].join(' ');
     });
     protected readonly counts = computed(() => {
         const table = this.table();
-        if (!table)
-            return '';
+        if (!table) return '';
         const total = table.rows.length - this.first();
         const shown = this.order().length;
-        const rows = this.applied().trim() ? `${shown.toLocaleString()} of ${total.toLocaleString()} rows` : `${total.toLocaleString()} ${total === 1 ? 'row' : 'rows'}`;
+        const rows = this.applied().trim()
+            ? `${shown.toLocaleString()} of ${total.toLocaleString()} rows`
+            : `${total.toLocaleString()} ${total === 1 ? 'row' : 'rows'}`;
         const columns = this.columns().length;
         return `${rows} × ${columns} ${columns === 1 ? 'column' : 'columns'} · ${delimiterName(table.delimiter)}`;
     });
@@ -266,13 +319,16 @@ export class CsvViewComponent {
         const position = this.selected();
         const table = this.table();
         const column = position ? this.columns()[position.column] : null;
-        if (!position || !table || !column || position.record >= table.rows.length)
-            return null;
+        if (!position || !table || !column || position.record >= table.rows.length) return null;
         const text = table.rows[position.record][position.column] ?? '';
-        return { text, label: `Row ${(position.record - this.first() + 1).toLocaleString()} · ${column.name}: ${shownCell(text).slice(0, 60)}` };
+        return {
+            text,
+            label: `Row ${(position.record - this.first() + 1).toLocaleString()} · ${column.name}: ${shownCell(text).slice(0, 60)}`,
+        };
     });
     protected readonly downloadUrl = computed(() =>
-        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
+        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,
+    );
     protected readonly details = computed(() => {
         const file = this.session.file();
         return file ? textDetails(file, extensionOf(this.item()) === 'tsv' ? 'TSV' : 'CSV') : '';
@@ -297,8 +353,7 @@ export class CsvViewComponent {
             const ready = this.state() === 'ready';
             untracked(() => {
                 this.virtual.setCount(count);
-                if (ready)
-                    this.virtual.mount();
+                if (ready) this.virtual.mount();
             });
         });
         // The source's editor, once it is shown, and the code preferences on it.
@@ -307,25 +362,21 @@ export class CsvViewComponent {
             const mode = this.mode();
             const { wrap, lineNumbers } = this.own();
             untracked(() => {
-                if (ready && mode !== 'table')
-                    this.editor()?.configure({ wrap, lineNumbers });
+                if (ready && mode !== 'table') this.editor()?.configure({ wrap, lineNumbers });
             });
         });
         // Editing needs the source: beside the table, when only the table was shown.
         effect(() => {
-            if (this.session.editing() && untracked(this.mode) === 'table')
-                untracked(() => this.mode.set('split'));
+            if (this.session.editing() && untracked(this.mode) === 'table') untracked(() => this.mode.set('split'));
         });
         // The table follows the source as it is typed, once typing pauses.
         effect(() => {
-            if (!this.session.revision())
-                return;
+            if (!this.session.revision()) return;
             clearTimeout(this.parseLater);
             this.parseLater = setTimeout(() => {
                 // The source as typed; read again (changed elsewhere) without the source shown: the file's.
                 const text = this.sourceEditor()?.text() ?? this.session.file()?.text;
-                if (text !== undefined)
-                    this.text.set(text);
+                if (text !== undefined) this.text.set(text);
             }, PARSE_DELAY_MS);
         });
         // The font, size or spacing: the editor and the rows measured again.
@@ -340,40 +391,40 @@ export class CsvViewComponent {
     }
 
     private async load(item: LibraryItem, cancel: AbortSignal): Promise<void> {
-        if (this.state() !== 'loading' || this.session.file())
-            return;
+        if (this.state() !== 'loading' || this.session.file()) return;
         let file: TextFile;
         try {
             file = await this.fileSource.textFile(item, cancel);
         } catch (error) {
-            if (cancel.aborted)
-                return;
+            if (cancel.aborted) return;
             const failure = textFailure(error);
             this.offerDownload.set(failure.offerDownload);
             this.message.set(failure.message);
             this.state.set('failed');
             return;
         }
-        if (cancel.aborted)
-            return;
+        if (cancel.aborted) return;
         this.session.attach(item, file);
         this.delimiter.set(delimiterFor(extensionOf(item)));
         this.text.set(file.text);
         this.state.set('ready');
-        if (this.mode() !== 'table')
-            this.editor();
-        if (untracked(this.edit))
-            this.session.startEdit();
+        if (this.mode() !== 'table') this.editor();
+        if (untracked(this.edit)) this.session.startEdit();
     }
 
     /** The source's editor, made now when it isn't yet. */
     private editor(): TextEditor | null {
         const existing = this.sourceEditor();
         const file = this.session.file();
-        if (existing || !file)
-            return existing;
+        if (existing || !file) return existing;
         const { wrap, lineNumbers } = this.own();
-        const created = new TextEditor(this.source().nativeElement, { text: file.text, name: this.item().name, wrap, lineNumbers, ...this.session.editorOptions() });
+        const created = new TextEditor(this.source().nativeElement, {
+            text: file.text,
+            name: this.item().name,
+            wrap,
+            lineNumbers,
+            ...this.session.editorOptions(),
+        });
         this.session.setEditor(created);
         this.sourceEditor.set(created);
         return created;
@@ -391,19 +442,24 @@ export class CsvViewComponent {
     /** Sorts by `column`: ascending, then descending, then as in the file. */
     protected sortBy(column: number): void {
         const current = this.sortOf(column);
-        this.sort.set(current === null ? { column, direction: 'ascending' } : current === 'ascending' ? { column, direction: 'descending' } : null);
+        this.sort.set(
+            current === null
+                ? { column, direction: 'ascending' }
+                : current === 'ascending'
+                  ? { column, direction: 'descending' }
+                  : null,
+        );
         this.virtual.scrollTo(0, 'start');
     }
 
     protected setMode(mode: CsvMode): void {
         this.mode.set(mode);
         writePreference(CSV_MODE_KEY, mode);
-        if (mode !== 'table' && this.state() === 'ready')
-            this.editor();
+        if (mode !== 'table' && this.state() === 'ready') this.editor();
     }
 
     protected toggleHeader(): void {
-        this.header.update(header => !header);
+        this.header.update((header) => !header);
         writePreference(CSV_HEADER_KEY, this.header() ? '1' : '0');
         this.sort.set(null);
         this.selected.set(null);
@@ -442,15 +498,13 @@ export class CsvViewComponent {
             event.preventDefault();
             this.scroller()?.nativeElement.focus();
             const first = this.order()[0];
-            if (!this.selected() && first !== undefined)
-                this.selected.set({ record: first, column: 0 });
+            if (!this.selected() && first !== undefined) this.selected.set({ record: first, column: 0 });
         }
     }
 
     protected async copyCell(): Promise<void> {
         const value = this.selectedValue();
-        if (!value)
-            return;
+        if (!value) return;
         await copyText(value.text);
         this.toasts.show('Cell copied');
     }
@@ -459,8 +513,7 @@ export class CsvViewComponent {
     protected onTableKeydown(event: KeyboardEvent): void {
         const order = this.order();
         const columns = this.columns().length;
-        if (!order.length || !columns || event.altKey)
-            return;
+        if (!order.length || !columns || event.altKey) return;
         const key = event.key;
         if ((event.ctrlKey || event.metaKey) && key.toLowerCase() === 'c') {
             if (this.selectedValue() && !window.getSelection()?.toString()) {
@@ -472,18 +525,40 @@ export class CsvViewComponent {
         const current = this.selected();
         let row = current ? Math.max(0, order.indexOf(current.record)) : 0;
         let column = current?.column ?? 0;
-        const page = Math.max(1, Math.floor((this.scroller()?.nativeElement.clientHeight ?? 0) / this.virtual.height) - 1);
+        const page = Math.max(
+            1,
+            Math.floor((this.scroller()?.nativeElement.clientHeight ?? 0) / this.virtual.height) - 1,
+        );
         const ctrl = event.ctrlKey || event.metaKey;
         switch (key) {
-            case 'ArrowDown': row++; break;
-            case 'ArrowUp': row--; break;
-            case 'ArrowRight': column++; break;
-            case 'ArrowLeft': column--; break;
-            case 'PageDown': row += page; break;
-            case 'PageUp': row -= page; break;
-            case 'Home': if (ctrl) row = 0; column = 0; break;
-            case 'End': if (ctrl) row = order.length - 1; column = columns - 1; break;
-            default: return;
+            case 'ArrowDown':
+                row++;
+                break;
+            case 'ArrowUp':
+                row--;
+                break;
+            case 'ArrowRight':
+                column++;
+                break;
+            case 'ArrowLeft':
+                column--;
+                break;
+            case 'PageDown':
+                row += page;
+                break;
+            case 'PageUp':
+                row -= page;
+                break;
+            case 'Home':
+                if (ctrl) row = 0;
+                column = 0;
+                break;
+            case 'End':
+                if (ctrl) row = order.length - 1;
+                column = columns - 1;
+                break;
+            default:
+                return;
         }
         event.preventDefault();
         // Nothing selected yet: the arrows and pages start at the first cell.
@@ -496,26 +571,32 @@ export class CsvViewComponent {
         this.selected.set({ record: order[row], column });
         this.virtual.scrollTo(row);
         setTimeout(() => {
-            const cell = this.scroller()?.nativeElement.querySelector(`[data-record="${order[row]}"] [data-column="${column}"]`);
+            const cell = this.scroller()?.nativeElement.querySelector(
+                `[data-record="${order[row]}"] [data-column="${column}"]`,
+            );
             cell?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
         });
     }
 
     /** Ctrl+= / Ctrl+− / Ctrl+0 inside the view: the text's size, rather than the whole page's zoom. */
     protected onKeydown(event: KeyboardEvent): void {
-        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented)
-            return;
-        const step = event.key === '=' || event.key === '+' ? 1 : event.key === '-' || event.key === '_' ? -1 : event.key === '0' ? 0 : null;
-        if (step === null)
-            return;
+        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented) return;
+        const step =
+            event.key === '=' || event.key === '+'
+                ? 1
+                : event.key === '-' || event.key === '_'
+                  ? -1
+                  : event.key === '0'
+                    ? 0
+                    : null;
+        if (step === null) return;
         event.preventDefault();
         this.reading.changeSize('code', step);
     }
 
     /** Ctrl+F filters the table when only it is shown, finds in the source otherwise; Ctrl+Alt+G goes to a line. */
     protected onWindowKeydown(event: KeyboardEvent): void {
-        if (this.session.handleKey(event))
-            return;
+        if (this.session.handleKey(event)) return;
         if (event.defaultPrevented || this.state() !== 'ready' || !(event.ctrlKey || event.metaKey) || event.shiftKey)
             return;
         const key = event.key.toLowerCase();
@@ -525,8 +606,7 @@ export class CsvViewComponent {
             if (this.mode() === 'table' || !editor) {
                 this.filterBox()?.nativeElement.focus();
                 this.filterBox()?.nativeElement.select();
-            } else
-                editor.find();
+            } else editor.find();
         } else if (key === 'g' && event.altKey && editor && this.mode() !== 'table') {
             event.preventDefault();
             editor.goToLine();

@@ -4,7 +4,21 @@ import { FileTags, TagSummary } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
-import { ApiMock, applyChange, buttonNamed, deferred, fileTags, item, limitedConfig, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    applyChange,
+    buttonNamed,
+    deferred,
+    fileTags,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    summary,
+    tag,
+    testProviders,
+} from '../../testing/fakes';
 import { Rights } from '../core/rights';
 import { FileTagsDialog } from './file-tags.dialog';
 import { TagEditorDialog } from './tag-editor.dialog';
@@ -24,10 +38,11 @@ describe('FileTagsDialog', () => {
     const known: TagSummary[] = [character, shrek, swamp];
     let current: Map<string, TagSummary[]>;
 
-    const groups = () => [...element.querySelectorAll('.tag-group')].map(group => ({
-        heading: group.querySelector('h3')!.textContent,
-        tags: [...group.querySelectorAll('.tag-name')].map(chip => chip.textContent!.trim()),
-    }));
+    const groups = () =>
+        [...element.querySelectorAll('.tag-group')].map((group) => ({
+            heading: group.querySelector('h3')!.textContent,
+            tags: [...group.querySelectorAll('.tag-name')].map((chip) => chip.textContent!.trim()),
+        }));
     const picker = () => element.querySelector<HTMLInputElement>('sfe-tag-picker input')!;
     const options = () => [...element.querySelectorAll<HTMLLIElement>('.tag-options li')];
     const muted = () => element.querySelector('.tag-groups .muted')?.textContent ?? null;
@@ -39,7 +54,7 @@ describe('FileTagsDialog', () => {
         toasts = TestBed.inject(ToastService);
         store = TestBed.inject(ListingStore);
         current = new Map();
-        api.changeFileTags.mockImplementation(async change => applyChange(current, known, change));
+        api.changeFileTags.mockImplementation(async (change) => applyChange(current, known, change));
         api.tags.mockResolvedValue({ matches: [], descendants: [] });
         fixture = TestBed.createComponent(FileTagsDialog);
         element = fixture.nativeElement;
@@ -56,7 +71,7 @@ describe('FileTagsDialog', () => {
     }
 
     it('shows a spinner while the tags load, named after the file', async () => {
-        api.fileTags.mockReturnValue(new Promise(() => { }));
+        api.fileTags.mockReturnValue(new Promise(() => {}));
         void fixture.componentInstance.open(photo);
         await settle();
 
@@ -78,7 +93,10 @@ describe('FileTagsDialog', () => {
         await open({
             path: photo.path,
             tags: [character, shrek, swamp],
-            groups: [{ category: character, tags: [character, shrek] }, { category: null, tags: [swamp] }],
+            groups: [
+                { category: character, tags: [character, shrek] },
+                { category: null, tags: [swamp] },
+            ],
         });
 
         expect(groups()).toEqual([
@@ -98,7 +116,7 @@ describe('FileTagsDialog', () => {
 
     it('does not show the tags of the file opened before while loading', async () => {
         await open(fileTags(photo.path, [shrek]));
-        api.fileTags.mockReturnValue(new Promise(() => { }));
+        api.fileTags.mockReturnValue(new Promise(() => {}));
 
         void fixture.componentInstance.open(item('other.jpg'));
         await settle();
@@ -126,14 +144,17 @@ describe('FileTagsDialog', () => {
 
     it('does not offer the tags the file already has', async () => {
         await open(fileTags(photo.path, [shrek]));
-        api.tags.mockResolvedValue({ matches: [tag('Shrek', { id: shrek.id }), tag('Swamp', { id: swamp.id })], descendants: [] });
+        api.tags.mockResolvedValue({
+            matches: [tag('Shrek', { id: shrek.id }), tag('Swamp', { id: swamp.id })],
+            descendants: [],
+        });
 
         // Focused when opened: focus it again to load the suggestions.
         picker().blur();
         picker().focus();
         await settle();
 
-        expect(options().map(li => li.textContent!.trim())).toEqual(['Swamp']);
+        expect(options().map((li) => li.textContent!.trim())).toEqual(['Swamp']);
     });
 
     it('creates a tag typed by name, then adds it', async () => {
@@ -195,7 +216,7 @@ describe('FileTagsDialog', () => {
         expect(groups()).toEqual([{ heading: 'Tags', tags: ['Shrek'] }]);
     });
 
-    it('edits a tag from its chip, then shows the file\'s tags again', async () => {
+    it("edits a tag from its chip, then shows the file's tags again", async () => {
         const editor = { open: vi.fn(() => Promise.resolve(null)) };
         TestBed.inject(Dialogs).tagEditor.set(editor as unknown as TagEditorDialog);
         await open(fileTags(photo.path, [shrek]));
@@ -227,7 +248,9 @@ describe('FileTagsDialog', () => {
         TestBed.inject(Dialogs).tagManager.set(manager as unknown as TagManagerDialog);
         await open();
 
-        [...element.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent!.trim() === 'Manage tags')!.click();
+        [...element.querySelectorAll<HTMLButtonElement>('button')]
+            .find((b) => b.textContent!.trim() === 'Manage tags')!
+            .click();
 
         expect(manager.open).toHaveBeenCalled();
     });

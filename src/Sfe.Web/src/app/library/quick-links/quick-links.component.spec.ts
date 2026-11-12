@@ -3,7 +3,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { QuickLink } from '../../core/models';
 import { Rights } from '../../core/rights';
 import { ToastService } from '../../core/toast.service';
-import { ALL_RIGHTS, ApiMock, item, limitedConfig, loadConfig, mockApi, settle, setMediaQuery, testProviders } from '../../../testing/fakes';
+import {
+    ALL_RIGHTS,
+    ApiMock,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    setMediaQuery,
+    testProviders,
+} from '../../../testing/fakes';
 import { ListingStore } from '../listing.store';
 import { SelectionBarComponent } from '../selection-bar.component';
 import { PinButtonComponent } from './pin-button.component';
@@ -66,7 +76,7 @@ describe('Quick links', () => {
     let store: ListingStore;
 
     const section = () => element.querySelector<HTMLElement>('.quick-links')!;
-    const names = () => [...element.querySelectorAll('.quick-link-name')].map(name => name.textContent);
+    const names = () => [...element.querySelectorAll('.quick-link-name')].map((name) => name.textContent);
     const rows = () => [...element.querySelectorAll<HTMLElement>('li.quick-link')];
 
     async function create(links: QuickLink[], rights: string[] = ALL_RIGHTS): Promise<void> {
@@ -82,7 +92,7 @@ describe('Quick links', () => {
         api = mockApi();
         TestBed.configureTestingModule({ providers: testProviders(api) });
         store = TestBed.inject(ListingStore);
-        vi.spyOn(TestBed.inject(ToastService), 'show').mockImplementation(() => { });
+        vi.spyOn(TestBed.inject(ToastService), 'show').mockImplementation(() => {});
     });
 
     afterEach(() => vi.restoreAllMocks());
@@ -97,16 +107,27 @@ describe('Quick links', () => {
         expect(rows()[1].dataset['kind']).toBe('image');
     });
 
-    it('has a menu on each link: its folder\'s or file\'s entries, then moving and removing it', async () => {
+    it("has a menu on each link: its folder's or file's entries, then moving and removing it", async () => {
         await create([link('Media'), link('Media/photo.jpg'), link('Old', { exists: false })]);
         const menu = TestBed.inject(ContextMenu);
         const service = TestBed.inject(QuickLinksService);
         const move = vi.spyOn(service, 'move').mockResolvedValue(true);
         const remove = vi.spyOn(service, 'remove').mockResolvedValue(true);
         const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => undefined);
-        const ids = () => menu.open()!.target.entries().map(entry => entry.id);
-        const entry = (id: string) => menu.open()!.target.entries().find(e => e.id === id)!;
-        const rightClick = (row: HTMLElement) => row.querySelector('.quick-link-name')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        const ids = () =>
+            menu
+                .open()!
+                .target.entries()
+                .map((entry) => entry.id);
+        const entry = (id: string) =>
+            menu
+                .open()!
+                .target.entries()
+                .find((e) => e.id === id)!;
+        const rightClick = (row: HTMLElement) =>
+            row
+                .querySelector('.quick-link-name')!
+                .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
 
         rightClick(rows()[0]);
         expect(menu.open()!.target.kind).toBe('folderLink');
@@ -136,7 +157,10 @@ describe('Quick links', () => {
     });
 
     it('is hidden, and asks nothing, without the right', async () => {
-        await create([link('Media')], ALL_RIGHTS.filter(right => right !== Rights.quickLinks));
+        await create(
+            [link('Media')],
+            ALL_RIGHTS.filter((right) => right !== Rights.quickLinks),
+        );
 
         expect(section().hidden).toBe(true);
         expect(api.quickLinks).not.toHaveBeenCalled();
@@ -144,7 +168,7 @@ describe('Quick links', () => {
     });
 
     it('shows a file in its folder on a plain click', async () => {
-        const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => { });
+        const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => {});
         await create([link('Media/photo.jpg')]);
 
         const click = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
@@ -155,14 +179,16 @@ describe('Quick links', () => {
     });
 
     it('keeps a link whose target is gone, and says so when it is clicked', async () => {
-        const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => { });
+        const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => {});
         await create([link('Media/gone.jpg', { exists: false })]);
 
         element.querySelector<HTMLElement>('.quick-link-target')!.click();
 
         expect(rows()[0].classList).toContain('missing');
         expect(reveal).not.toHaveBeenCalled();
-        expect(TestBed.inject(ToastService).show).toHaveBeenCalledWith(expect.stringContaining('“gone.jpg” is not there any more'));
+        expect(TestBed.inject(ToastService).show).toHaveBeenCalledWith(
+            expect.stringContaining('“gone.jpg” is not there any more'),
+        );
     });
 
     it('removes a link with its × button', async () => {
@@ -198,7 +224,9 @@ describe('Quick links', () => {
     describe('drag and drop', () => {
         /** Puts the links one under the other, 30 px each from the top. */
         function layOut(): void {
-            rows().forEach((row, i) => vi.spyOn(row, 'getBoundingClientRect').mockReturnValue({ top: i * 30, height: 30 } as DOMRect));
+            rows().forEach((row, i) =>
+                vi.spyOn(row, 'getBoundingClientRect').mockReturnValue({ top: i * 30, height: 30 } as DOMRect),
+            );
         }
 
         it('adds a listed folder or file where it is dropped', async () => {
@@ -263,7 +291,11 @@ describe('Quick links', () => {
             const data = new FakeDataTransfer();
             data.setData('text/plain', 'hello');
 
-            drag(element.querySelector('.quick-link-target')!.parentElement!.parentElement!, 'dragstart', new FakeDataTransfer());
+            drag(
+                element.querySelector('.quick-link-target')!.parentElement!.parentElement!,
+                'dragstart',
+                new FakeDataTransfer(),
+            );
             const over = drag(section(), 'dragover', data);
             drag(section(), 'drop', data);
 
@@ -310,13 +342,17 @@ describe('Quick links', () => {
 
         it('say what went wrong', async () => {
             await create([]);
-            const error = vi.spyOn(TestBed.inject(ToastService), 'error').mockImplementation(() => { });
-            api.addQuickLinks.mockRejectedValue(new Error('Quick links hold at most 100 folders and files: remove some first.'));
+            const error = vi.spyOn(TestBed.inject(ToastService), 'error').mockImplementation(() => {});
+            api.addQuickLinks.mockRejectedValue(
+                new Error('Quick links hold at most 100 folders and files: remove some first.'),
+            );
 
             element.querySelector<HTMLButtonElement>('button[sfePin]')!.click();
             await settle();
 
-            expect(error).toHaveBeenCalledWith('Quick links: Quick links hold at most 100 folders and files: remove some first.');
+            expect(error).toHaveBeenCalledWith(
+                'Quick links: Quick links hold at most 100 folders and files: remove some first.',
+            );
         });
     });
 });

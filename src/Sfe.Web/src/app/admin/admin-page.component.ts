@@ -1,5 +1,21 @@
 import { Location, NgTemplateOutlet } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, Directive, effect, ElementRef, inject, Injector, input, OnInit, signal, untracked, viewChild } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    Directive,
+    effect,
+    ElementRef,
+    inject,
+    Injector,
+    input,
+    OnInit,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -27,7 +43,17 @@ import { KeepAliveStatusComponent } from './keep-alive-status.component';
 import { AccountSectionComponent } from '../account/account-section.component';
 import { AccessSectionComponent } from '../access/access-section.component';
 import { ADMIN_SEARCH_LIMIT, AdminSearchResult, markWords, searchAdmin, searchWords } from './admin-search';
-import { ADMIN_SECTIONS, AdminSubpage, findSection, findSubpage, groupId, groupsOf, locateSettings, movedPage, visibleSections } from './admin-sections';
+import {
+    ADMIN_SECTIONS,
+    AdminSubpage,
+    findSection,
+    findSubpage,
+    groupId,
+    groupsOf,
+    locateSettings,
+    movedPage,
+    visibleSections,
+} from './admin-sections';
 import { SystemSectionComponent } from './system-section.component';
 import { TrashSectionComponent } from '../files/trash-section.component';
 import { UploadsSectionComponent } from '../files/uploads-section.component';
@@ -72,9 +98,28 @@ export class ChipInViewDirective {
 
 @Component({
     selector: 'sfe-admin-page',
-    imports: [ChipInViewDirective, RouterLink, NgTemplateOutlet, IconComponent, EmptyStateComponent, SettingsPanelComponent, TagListComponent, TagEditorDialog,
-        TrackingSectionComponent, TasksSectionComponent, TrickplayActivityComponent, KeepAliveStatusComponent, SystemSectionComponent, AccessSectionComponent,
-        AccountSectionComponent, LogsSectionComponent, VideoStreamsComponent, TrashSectionComponent, UploadsSectionComponent, ExclusionsSectionComponent],
+    imports: [
+        ChipInViewDirective,
+        RouterLink,
+        NgTemplateOutlet,
+        IconComponent,
+        EmptyStateComponent,
+        SettingsPanelComponent,
+        TagListComponent,
+        TagEditorDialog,
+        TrackingSectionComponent,
+        TasksSectionComponent,
+        TrickplayActivityComponent,
+        KeepAliveStatusComponent,
+        SystemSectionComponent,
+        AccessSectionComponent,
+        AccountSectionComponent,
+        LogsSectionComponent,
+        VideoStreamsComponent,
+        TrashSectionComponent,
+        UploadsSectionComponent,
+        ExclusionsSectionComponent,
+    ],
     providers: [SettingsForm],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'admin-page', '(window:beforeunload)': 'onBeforeUnload($event)' },
@@ -391,12 +436,12 @@ export class AdminPageComponent implements OnInit {
 
     /** The sections and sub-pages the session has rights for (all of them until the configuration is loaded). */
     private readonly sections = computed(() => {
-        const visible = visibleSections(rights => this.config.canAny(rights));
+        const visible = visibleSections((rights) => this.config.canAny(rights));
         return visible.length ? visible : ADMIN_SECTIONS;
     });
     protected readonly groups = computed(() => groupsOf(this.sections()));
     /** Nothing here for this session (a visitor without an account). */
-    protected readonly empty = computed(() => visibleSections(rights => this.config.canAny(rights)).length === 0);
+    protected readonly empty = computed(() => visibleSections((rights) => this.config.canAny(rights)).length === 0);
     protected readonly ready = signal(false);
     protected readonly unreachable = signal<string | null>(null);
 
@@ -409,7 +454,9 @@ export class AdminPageComponent implements OnInit {
 
     private readonly location = inject(Location);
     /** Opened from the listing page: kept in the entries this page replaces, so that "back" still returns there. */
-    private readonly fromLibrary = Boolean((this.location.getState() as Record<string, unknown> | null)?.[FROM_LIBRARY]);
+    private readonly fromLibrary = Boolean(
+        (this.location.getState() as Record<string, unknown> | null)?.[FROM_LIBRARY],
+    );
     protected readonly historyState = { [FROM_LIBRARY]: this.fromLibrary };
 
     /**
@@ -419,12 +466,20 @@ export class AdminPageComponent implements OnInit {
     protected readonly phone = signal(false);
     protected readonly sectionList = computed(() => this.phone() && !this.params().has('section'));
     /** Computers, without a section: the sections as cards, by group (a session seeing one section gets it instead). */
-    protected readonly overview = computed(() => !this.phone() && !this.params().has('section') && this.sections().length > 1);
+    protected readonly overview = computed(
+        () => !this.phone() && !this.params().has('section') && this.sections().length > 1,
+    );
     protected readonly groupId = groupId;
-    protected readonly linkState = computed(() => this.sectionList() ? { ...this.historyState, [FROM_LIST]: true } : this.historyState);
-    protected readonly backHint = computed(() => this.phone() && !this.sectionList() ? 'Back to the sections' : 'Back to the library');
+    protected readonly linkState = computed(() =>
+        this.sectionList() ? { ...this.historyState, [FROM_LIST]: true } : this.historyState,
+    );
+    protected readonly backHint = computed(() =>
+        this.phone() && !this.sectionList() ? 'Back to the sections' : 'Back to the library',
+    );
     /** The settings tab of settings-schema.ts on screen, if any. */
-    protected readonly settingsShown = computed(() => this.sectionList() || this.overview() ? undefined : this.subpage().settings);
+    protected readonly settingsShown = computed(() =>
+        this.sectionList() || this.overview() ? undefined : this.subpage().settings,
+    );
 
     /** The search box's text, and what it finds among the sections the session sees. */
     protected readonly query = signal('');
@@ -434,42 +489,50 @@ export class AdminPageComponent implements OnInit {
     protected readonly shownResults = computed(() => this.results().slice(0, ADMIN_SEARCH_LIMIT));
     protected readonly resultsCount = computed(() => {
         const count = this.results().length;
-        return count === 0 ? 'Nothing found'
-            : count > ADMIN_SEARCH_LIMIT ? `The first ${ADMIN_SEARCH_LIMIT} of ${count} found: add words to narrow them`
-                : count === 1 ? '1 found' : `${count} found`;
+        return count === 0
+            ? 'Nothing found'
+            : count > ADMIN_SEARCH_LIMIT
+              ? `The first ${ADMIN_SEARCH_LIMIT} of ${count} found: add words to narrow them`
+              : count === 1
+                ? '1 found'
+                : `${count} found`;
     });
     /** The setting picked among the results, brought into view once its sub-page shows it. */
     private readonly reveal = signal<string | null>(null);
     protected readonly valueOf = valueOf;
 
     protected readonly saveStatus = computed(() => {
-        const changed = [...this.form.changedTabs()].map(id => this.titleOfSettings(id)).filter(Boolean);
-        const others = [...this.form.changedLevels()].filter(level => level !== this.form.level()).map(level => LEVEL_TITLES[level]);
+        const changed = [...this.form.changedTabs()].map((id) => this.titleOfSettings(id)).filter(Boolean);
+        const others = [...this.form.changedLevels()]
+            .filter((level) => level !== this.form.level())
+            .map((level) => LEVEL_TITLES[level]);
         if (changed.length)
             return `Not saved yet: ${changed.join(', ')}${others.length ? `; also in ${others.join(', ')}` : ''}`;
-        if (others.length)
-            return `Not saved yet in ${others.join(', ')}`;
+        if (others.length) return `Not saved yet in ${others.join(', ')}`;
         // Servers without levels answer without states: their settings are the server's.
         if (this.form.states() && this.form.level() === 'tenant')
-            return this.form.customized() ? 'This space has settings of its own' : 'Following the server\'s settings';
-        return this.form.customized() ? 'Using saved settings' : 'Using the server\'s configuration';
+            return this.form.customized() ? 'This space has settings of its own' : "Following the server's settings";
+        return this.form.customized() ? 'Using saved settings' : "Using the server's configuration";
     });
-    protected readonly resetHint = computed(() => this.form.states() && this.form.level() === 'tenant'
-        ? 'Forget the space\'s own settings and follow the server\'s again (asks first)'
-        : 'Forget the saved settings and go back to the server\'s configuration (asks first)');
-    protected readonly saveHint = computed(() => this.form.changedLevels().size > 1
-        ? 'Save and apply the settings changed in both tabs: the whole server\'s, then this space\'s'
-        : this.form.states() && this.form.level() === 'tenant'
-            ? 'Save and apply the settings of every page, for everyone using this space'
-            : 'Save and apply the settings of every page, for everyone using this server');
+    protected readonly resetHint = computed(() =>
+        this.form.states() && this.form.level() === 'tenant'
+            ? "Forget the space's own settings and follow the server's again (asks first)"
+            : "Forget the saved settings and go back to the server's configuration (asks first)",
+    );
+    protected readonly saveHint = computed(() =>
+        this.form.changedLevels().size > 1
+            ? "Save and apply the settings changed in both tabs: the whole server's, then this space's"
+            : this.form.states() && this.form.level() === 'tenant'
+              ? 'Save and apply the settings of every page, for everyone using this space'
+              : 'Save and apply the settings of every page, for everyone using this server',
+    );
 
     constructor() {
         // A right click on the page (not on a link, a field or a menu of its own): back, reload, its address.
         usePageMenu(inject(ContextMenu).pageTarget('Administration'));
         const title = inject(Title);
         effect(() => {
-            if (this.overview() || this.sectionList())
-                return title.setTitle('Administration – SFE');
+            if (this.overview() || this.sectionList()) return title.setTitle('Administration – SFE');
             const section = this.section();
             const page = section.subpages.length > 1 ? `${this.subpage().title} – ` : '';
             title.setTitle(`${page}${section.title} – Administration – SFE`);
@@ -478,21 +541,20 @@ export class AdminPageComponent implements OnInit {
         effect(() => {
             const params = this.params();
             const moved = movedPage(params.get('section'), params.get('page'));
-            if (moved)
-                untracked(() => void this.go(moved.section, moved.page));
+            if (moved) untracked(() => void this.go(moved.section, moved.page));
         });
         // The overview opens at its top, or at the group of the breadcrumbs' link.
         effect(() => {
-            if (!this.overview())
-                return;
+            if (!this.overview()) return;
             const fragment = this.fragment();
-            afterNextRender(() => {
-                const group = fragment && document.getElementById(fragment);
-                if (group)
-                    group.scrollIntoView({ block: 'start' });
-                else
-                    window.scrollTo({ top: 0 });
-            }, { injector: this.injector });
+            afterNextRender(
+                () => {
+                    const group = fragment && document.getElementById(fragment);
+                    if (group) group.scrollIntoView({ block: 'start' });
+                    else window.scrollTo({ top: 0 });
+                },
+                { injector: this.injector },
+            );
         });
         const phoneQuery = matchMedia(PHONE);
         const onPhoneChange = () => this.phone.set(phoneQuery.matches);
@@ -503,8 +565,7 @@ export class AdminPageComponent implements OnInit {
         effect(() => {
             this.section();
             this.sectionList();
-            if (untracked(this.phone))
-                window.scrollTo({ top: 0 });
+            if (untracked(this.phone)) window.scrollTo({ top: 0 });
         });
         // A setting picked in the search: once its sub-page and the settings are shown, it is scrolled to and focused.
         effect(() => {
@@ -522,16 +583,14 @@ export class AdminPageComponent implements OnInit {
     async ngOnInit(): Promise<void> {
         window.scrollTo({ top: 0 });
         try {
-            this.theme.setDefault((this.config.config() ?? await this.config.load()).theme);
+            this.theme.setDefault((this.config.config() ?? (await this.config.load())).theme);
         } catch (error) {
-            if (!redirected(error))
-                this.unreachable.set((error as Error).message);
+            if (!redirected(error)) this.unreachable.set((error as Error).message);
             return;
         }
         this.ready.set(true);
         // A user who may change no settings (My account only: its own form) asks nothing: the space's were refused (403).
-        if (this.form.levels().length)
-            void this.form.load();
+        if (this.form.levels().length) void this.form.load();
     }
 
     /** False when the user would rather stay, to save the settings changed. */
@@ -542,13 +601,13 @@ export class AdminPageComponent implements OnInit {
     /** Some settings of `pages` need fixing. */
     protected faulty(pages: AdminSubpage[]): boolean {
         const faulty = this.form.faultyTabs();
-        return pages.some(page => page.settings && faulty.has(page.settings));
+        return pages.some((page) => page.settings && faulty.has(page.settings));
     }
 
     /** Some settings of `pages` are changed and not saved yet. */
     protected changed(pages: AdminSubpage[]): boolean {
         const changed = this.form.changedTabs();
-        return pages.some(page => page.settings && changed.has(page.settings));
+        return pages.some((page) => page.settings && changed.has(page.settings));
     }
 
     protected badge(page: string): string {
@@ -565,16 +624,17 @@ export class AdminPageComponent implements OnInit {
     }
 
     protected resultParams(result: AdminSearchResult): Record<string, string | null> {
-        return { section: result.section.id, page: result.subpage.id === result.section.subpages[0].id ? null : result.subpage.id };
+        return {
+            section: result.section.id,
+            page: result.subpage.id === result.section.subpages[0].id ? null : result.subpage.id,
+        };
     }
 
     /** A result is opened: a setting is brought into view, in the full view when the simple one hides it. */
     protected found(result: AdminSearchResult): void {
-        if (!result.setting)
-            return;
+        if (!result.setting) return;
         // As for an error on a hidden setting: shown without remembering the choice.
-        if (!SIMPLE_SETTINGS.has(result.setting))
-            this.form.showAll.set(true);
+        if (!SIMPLE_SETTINGS.has(result.setting)) this.form.showAll.set(true);
         this.reveal.set(result.setting);
     }
 
@@ -586,10 +646,13 @@ export class AdminPageComponent implements OnInit {
         } else if (event.key === 'Enter') {
             event.preventDefault();
             const first = this.results()[0];
-            if (!first)
-                return;
+            if (!first) return;
             this.found(first);
-            void this.router.navigate(['/admin'], { queryParams: this.resultParams(first), state: this.linkState(), replaceUrl: !this.phone() });
+            void this.router.navigate(['/admin'], {
+                queryParams: this.resultParams(first),
+                state: this.linkState(),
+                replaceUrl: !this.phone(),
+            });
         }
     }
 
@@ -597,8 +660,7 @@ export class AdminPageComponent implements OnInit {
     private revealSetting(key: string): void {
         const control = this.host.querySelector<HTMLElement>(`#${settingFieldId(key)}`);
         const field = control?.closest<HTMLElement>('.field, .setting-check');
-        if (!control || !field || this.reveal() !== key)
-            return;
+        if (!control || !field || this.reveal() !== key) return;
         this.reveal.set(null);
         field.scrollIntoView({ block: 'center' });
         control.focus({ preventScroll: true });
@@ -612,14 +674,21 @@ export class AdminPageComponent implements OnInit {
     /** "Section › Sub-page" of the tab `settings` of settings-schema.ts, the section alone when it has one sub-page. */
     private titleOfSettings(settings: string): string | undefined {
         const found = locateSettings(settings);
-        return found && (found.section.subpages.length > 1 ? `${found.section.title} › ${found.subpage.title}` : found.section.title);
+        return (
+            found &&
+            (found.section.subpages.length > 1
+                ? `${found.section.title} › ${found.subpage.title}`
+                : found.section.title)
+        );
     }
 
     /** Shows the sub-page `page` of the current section. */
     protected select(page: string, { focus = false } = {}): void {
         void this.go(this.section().id, page).then(() => {
             if (focus)
-                afterNextRender(() => document.getElementById(`admin-chip-${page}`)?.focus(), { injector: this.injector });
+                afterNextRender(() => document.getElementById(`admin-chip-${page}`)?.focus(), {
+                    injector: this.injector,
+                });
         });
     }
 
@@ -649,23 +718,20 @@ export class AdminPageComponent implements OnInit {
     protected back(): void {
         if (this.phone() && !this.sectionList()) {
             // A section on a phone: back to the list of sections, through history when it was opened from there.
-            if (this.openedFromList())
-                history.back();
-            else
-                void this.router.navigate(['/admin'], { replaceUrl: true, state: this.historyState });
-        } else if (this.fromLibrary)
-            history.back();
-        else
-            void this.router.navigate(['/'], { queryParams: routeParams(this.store.route()) });
+            if (this.openedFromList()) history.back();
+            else void this.router.navigate(['/admin'], { replaceUrl: true, state: this.historyState });
+        } else if (this.fromLibrary) history.back();
+        else void this.router.navigate(['/'], { queryParams: routeParams(this.store.route()) });
     }
 
     /** Arrow keys move between the chips (the WAI-ARIA tabs pattern); Tab goes into the panel. */
     protected onChipKey(event: KeyboardEvent): void {
-        const ids = this.section().subpages.map(page => page.id);
+        const ids = this.section().subpages.map((page) => page.id);
         const index = ids.indexOf(this.subpage().id);
-        const target = ({ ArrowLeft: index - 1, ArrowRight: index + 1, Home: 0, End: ids.length - 1 } as Record<string, number>)[event.key];
-        if (target === undefined)
-            return;
+        const target = (
+            { ArrowLeft: index - 1, ArrowRight: index + 1, Home: 0, End: ids.length - 1 } as Record<string, number>
+        )[event.key];
+        if (target === undefined) return;
         event.preventDefault();
         this.select(ids[(target + ids.length) % ids.length], { focus: true });
     }
@@ -674,9 +740,10 @@ export class AdminPageComponent implements OnInit {
     protected onLevelKey(event: KeyboardEvent): void {
         const levels = this.form.levels();
         const index = levels.indexOf(this.form.level());
-        const target = ({ ArrowLeft: index - 1, ArrowRight: index + 1, Home: 0, End: levels.length - 1 } as Record<string, number>)[event.key];
-        if (target === undefined)
-            return;
+        const target = (
+            { ArrowLeft: index - 1, ArrowRight: index + 1, Home: 0, End: levels.length - 1 } as Record<string, number>
+        )[event.key];
+        if (target === undefined) return;
         event.preventDefault();
         const level = levels[(target + levels.length) % levels.length];
         void this.form.useLevel(level);
@@ -688,37 +755,36 @@ export class AdminPageComponent implements OnInit {
      * sub-page with errors opens; the first error is brought into view.
      */
     protected async save(): Promise<void> {
-        if (await this.form.save() !== 'invalid')
-            return;
+        if ((await this.form.save()) !== 'invalid') return;
         const faulty = this.form.faultyTabs();
         const shown = this.settingsShown();
         if (faulty.size && !(shown && faulty.has(shown))) {
-            const first = locateSettings(TABS.find(tab => faulty.has(tab.id))!.id)!;
+            const first = locateSettings(TABS.find((tab) => faulty.has(tab.id))!.id)!;
             await this.go(first.section.id, first.subpage.id);
         }
-        afterNextRender(() => {
-            const first = this.host.querySelector('.admin-panel .field-error')?.closest('.field, .check')
-                ?? this.host.querySelector('.admin-panel .settings-group .form-error')
-                ?? this.host.querySelector('.settings-summary');
-            first?.scrollIntoView({ block: 'center' });
-        }, { injector: this.injector });
+        afterNextRender(
+            () => {
+                const first =
+                    this.host.querySelector('.admin-panel .field-error')?.closest('.field, .check') ??
+                    this.host.querySelector('.admin-panel .settings-group .form-error') ??
+                    this.host.querySelector('.settings-summary');
+                first?.scrollIntoView({ block: 'center' });
+            },
+            { injector: this.injector },
+        );
     }
 
     protected onBeforeUnload(event: BeforeUnloadEvent): void {
-        if (this.form.changed())
-            event.preventDefault();
+        if (this.form.changed()) event.preventDefault();
     }
 }
 
 /** Scrolls the line of chips (phones) so that `chip` is fully in view, with a little room beside it. */
 export function showChip(chip: HTMLElement | null): void {
     const strip = chip?.parentElement;
-    if (!chip || !strip)
-        return;
+    if (!chip || !strip) return;
     const box = strip.getBoundingClientRect();
     const own = chip.getBoundingClientRect();
-    if (own.left < box.left)
-        strip.scrollLeft += own.left - box.left - 12;
-    else if (own.right > box.right)
-        strip.scrollLeft += own.right - box.right + 12;
+    if (own.left < box.left) strip.scrollLeft += own.left - box.left - 12;
+    else if (own.right > box.right) strip.scrollLeft += own.right - box.right + 12;
 }

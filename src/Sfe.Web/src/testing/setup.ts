@@ -12,11 +12,9 @@ if (!HTMLDialogElement.prototype.showModal) {
     };
     HTMLDialogElement.prototype.show = HTMLDialogElement.prototype.showModal;
     HTMLDialogElement.prototype.close = function (this: HTMLDialogElement, returnValue?: string) {
-        if (!this.open)
-            return;
+        if (!this.open) return;
         this.open = false;
-        if (returnValue !== undefined)
-            this.returnValue = returnValue;
+        if (returnValue !== undefined) this.returnValue = returnValue;
         this.dispatchEvent(new Event('close'));
     };
 }
@@ -26,8 +24,7 @@ const mediaQueries = new Map<string, { matches: boolean; listeners: Set<(event: 
 
 function mediaQuery(query: string) {
     let entry = mediaQueries.get(query);
-    if (!entry)
-        mediaQueries.set(query, entry = { matches: false, listeners: new Set() });
+    if (!entry) mediaQueries.set(query, (entry = { matches: false, listeners: new Set() }));
     return entry;
 }
 
@@ -35,10 +32,13 @@ window.matchMedia = (query: string): MediaQueryList => {
     const entry = mediaQuery(query);
     return {
         media: query,
-        get matches() { return entry.matches; },
+        get matches() {
+            return entry.matches;
+        },
         onchange: null,
         addEventListener: (_: string, listener: (event: MediaQueryListEvent) => void) => entry.listeners.add(listener),
-        removeEventListener: (_: string, listener: (event: MediaQueryListEvent) => void) => entry.listeners.delete(listener),
+        removeEventListener: (_: string, listener: (event: MediaQueryListEvent) => void) =>
+            entry.listeners.delete(listener),
         addListener: (listener: (event: MediaQueryListEvent) => void) => entry.listeners.add(listener),
         removeListener: (listener: (event: MediaQueryListEvent) => void) => entry.listeners.delete(listener),
         dispatchEvent: () => true,
@@ -48,12 +48,15 @@ window.matchMedia = (query: string): MediaQueryList => {
 (globalThis as { setMediaQuery?: (query: string, matches: boolean) => void }).setMediaQuery = (query, matches) => {
     const entry = mediaQuery(query);
     entry.matches = matches;
-    for (const listener of entry.listeners)
-        listener({ matches, media: query } as MediaQueryListEvent);
+    for (const listener of entry.listeners) listener({ matches, media: query } as MediaQueryListEvent);
 };
 
-Element.prototype.scrollIntoView ??= function () { /* nothing to scroll in jsdom */ };
-window.scrollTo = () => { /* nothing to scroll in jsdom */ };
+Element.prototype.scrollIntoView ??= function () {
+    /* nothing to scroll in jsdom */
+};
+window.scrollTo = () => {
+    /* nothing to scroll in jsdom */
+};
 
 // CodeMirror measures its text through ranges, a frame after a change: jsdom has no layout, so nothing to measure.
 const noRect = { x: 0, y: 0, width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0, toJSON: () => ({}) } as DOMRect;
@@ -63,15 +66,23 @@ Range.prototype.getBoundingClientRect = () => noRect;
 // jsdom doesn't play media: its play() logs "Not implemented" and returns no promise, which broke the player's
 // `play().catch` in every spec that opens a video (viewer, picture editor). Specs can still spy on these.
 HTMLMediaElement.prototype.play = () => Promise.resolve();
-HTMLMediaElement.prototype.pause = () => { /* nothing playing in jsdom */ };
-HTMLMediaElement.prototype.load = () => { /* nothing to load in jsdom */ };
+HTMLMediaElement.prototype.pause = () => {
+    /* nothing playing in jsdom */
+};
+HTMLMediaElement.prototype.load = () => {
+    /* nothing to load in jsdom */
+};
 
 // media-captions (the subtitles view) extends the browser's VTTCue when it loads: jsdom has none.
 class TestVTTCue extends EventTarget {
     id = '';
     pauseOnExit = false;
 
-    constructor(public startTime: number, public endTime: number, public text: string) {
+    constructor(
+        public startTime: number,
+        public endTime: number,
+        public text: string,
+    ) {
         super();
     }
 }
@@ -86,18 +97,27 @@ class TestIntersectionObserver {
         TestIntersectionObserver.instances.add(this);
     }
 
-    observe(element: Element): void { this.observed.add(element); }
-    unobserve(element: Element): void { this.observed.delete(element); }
+    observe(element: Element): void {
+        this.observed.add(element);
+    }
+    unobserve(element: Element): void {
+        this.observed.delete(element);
+    }
     disconnect(): void {
         this.observed.clear();
         TestIntersectionObserver.instances.delete(this);
     }
-    takeRecords(): IntersectionObserverEntry[] { return []; }
+    takeRecords(): IntersectionObserverEntry[] {
+        return [];
+    }
 
     report(elements: Element[]): void {
-        const watched = elements.filter(element => this.observed.has(element));
+        const watched = elements.filter((element) => this.observed.has(element));
         if (watched.length)
-            this.callback(watched.map(target => ({ target, isIntersecting: true }) as IntersectionObserverEntry), this as unknown as IntersectionObserver);
+            this.callback(
+                watched.map((target) => ({ target, isIntersecting: true }) as IntersectionObserverEntry),
+                this as unknown as IntersectionObserver,
+            );
     }
 }
 
@@ -105,8 +125,7 @@ class TestIntersectionObserver {
 // `instances`, so it reached no observer (CoversService, LocationComponent failed depending on the file order).
 window.IntersectionObserver = TestIntersectionObserver as unknown as typeof IntersectionObserver;
 (globalThis as { intersect?: (...elements: Element[]) => void }).intersect = (...elements) => {
-    for (const observer of TestIntersectionObserver.instances)
-        observer.report(elements);
+    for (const observer of TestIntersectionObserver.instances) observer.report(elements);
 };
 
 /**
@@ -129,9 +148,7 @@ beforeEach(() => {
 afterEach(() => {
     patchedGlobals.forEach(([target, key], index) => {
         const saved = savedGlobals[index];
-        if (saved)
-            Object.defineProperty(target, key, saved);
-        else
-            delete (target as Record<PropertyKey, unknown>)[key];
+        if (saved) Object.defineProperty(target, key, saved);
+        else delete (target as Record<PropertyKey, unknown>)[key];
     });
 });

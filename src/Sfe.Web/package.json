@@ -11,7 +11,9 @@
     "prewatch": "npm run boot",
     "watch": "ng build --watch --configuration development",
     "boot": "tsc -p tsconfig.boot.json",
-    "test": "ng test --watch=false"
+    "test": "ng test --watch=false",
+    "format": "prettier --write \"src/**/*.{ts,html,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,css}\""
   },
   "private": true,
   "dependencies": {

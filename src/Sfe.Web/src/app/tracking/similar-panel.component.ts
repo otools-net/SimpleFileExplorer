@@ -94,11 +94,9 @@ export class SimilarPanelComponent {
     protected readonly running = computed(() => this.result()?.status.state === 'running');
     protected readonly status = computed(() => {
         const failure = this.failure();
-        if (failure)
-            return { state: 'unavailable', text: `Could not read the similar videos: ${failure}`, detail: '' };
+        if (failure) return { state: 'unavailable', text: `Could not read the similar videos: ${failure}`, detail: '' };
         const result = this.result();
-        if (!result)
-            return { state: null, text: '…', detail: '' };
+        if (!result) return { state: null, text: '…', detail: '' };
         const { status: run, summary } = result;
         const running = run.state === 'running';
         const where = result.path ? `with a video in “${result.path}”` : 'in the library';
@@ -106,21 +104,32 @@ export class SimilarPanelComponent {
             state: running ? 'running' : run.state === 'failed' ? 'unavailable' : summary?.groups ? 'found' : 'idle',
             text: running
                 ? `Comparing videos… ${run.total ? `${run.checked.toLocaleString()} of ${plural(run.total, 'video')} read` : ''}`
-                : run.state === 'failed' ? `The comparison failed: ${run.message}`
-                    : !summary ? 'The videos have not been compared since SFE started.'
-                        : summary.groups ? `${plural(summary.groups, 'group')} of similar videos ${where}: ${formatSize(summary.wastedBytes)} more than the biggest of each`
-                            : `No similar videos ${where}.`,
+                : run.state === 'failed'
+                  ? `The comparison failed: ${run.message}`
+                  : !summary
+                    ? 'The videos have not been compared since SFE started.'
+                    : summary.groups
+                      ? `${plural(summary.groups, 'group')} of similar videos ${where}: ${formatSize(summary.wastedBytes)} more than the biggest of each`
+                      : `No similar videos ${where}.`,
             detail: joinParts([
-                summary ? `${summary.compared.toLocaleString()} of ${plural(summary.videos, 'indexed video')} compared${summary.compared < summary.videos ? ' (the others have no trickplay yet)' : ''}` : null,
+                summary
+                    ? `${summary.compared.toLocaleString()} of ${plural(summary.videos, 'indexed video')} compared${summary.compared < summary.videos ? ' (the others have no trickplay yet)' : ''}`
+                    : null,
                 summary ? `listed from ${summary.minimumPercent}% match` : null,
-                run.state === 'cancelled' ? 'the last comparison was cancelled: these are the groups of the one before' : null,
+                run.state === 'cancelled'
+                    ? 'the last comparison was cancelled: these are the groups of the one before'
+                    : null,
                 summary && run.state === 'completed' && run.finished ? `compared ${formatDate(run.finished)}` : null,
-                !result.trickplayEnabled ? 'trickplay is off (Trickplay › Settings): videos get no new fingerprints' : null,
+                !result.trickplayEnabled
+                    ? 'trickplay is off (Trickplay › Settings): videos get no new fingerprints'
+                    : null,
             ]),
         };
     });
     /** For the tab. */
-    readonly badge = computed(() => this.result()?.summary?.groups ? this.result()!.summary!.groups.toLocaleString() : '');
+    readonly badge = computed(() =>
+        this.result()?.summary?.groups ? this.result()!.summary!.groups.toLocaleString() : '',
+    );
 
     protected readonly size = formatSize;
     protected readonly duration = formatDuration;
@@ -142,26 +151,25 @@ export class SimilarPanelComponent {
             this.next = null;
         }
         try {
-            const result = await this.api.similarVideos({ path: this.folderOnly() ? this.folder() : '', after: append ? this.next : null });
-            if (current !== this.generation)
-                return;
+            const result = await this.api.similarVideos({
+                path: this.folderOnly() ? this.folder() : '',
+                after: append ? this.next : null,
+            });
+            if (current !== this.generation) return;
             const running = result.status.state === 'running';
-            if (running && this.isOpen())
-                this.poll = setTimeout(() => this.load({ quiet: true }), POLL_MS);
+            if (running && this.isOpen()) this.poll = setTimeout(() => this.load({ quiet: true }), POLL_MS);
             if (append) {
-                this.groups.update(groups => [...groups, ...result.groups]);
+                this.groups.update((groups) => [...groups, ...result.groups]);
             } else {
                 this.result.set(result);
                 this.failure.set(null);
-                if (quiet && running)
-                    return;
+                if (quiet && running) return;
                 this.groups.set(result.groups);
             }
             this.next = result.next;
             this.hasMore.set(result.hasMore);
         } catch (error) {
-            if (current !== this.generation)
-                return;
+            if (current !== this.generation) return;
             if (append) {
                 // The page of an older comparison: start over with the new one.
                 this.toasts.error(`Could not load more: ${(error as Error).message}`);
@@ -171,8 +179,7 @@ export class SimilarPanelComponent {
             this.groups.set([]);
             this.failure.set((error as Error).message);
         } finally {
-            if (current === this.generation)
-                this.loading.set(false);
+            if (current === this.generation) this.loading.set(false);
         }
     }
 

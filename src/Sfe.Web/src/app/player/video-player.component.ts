@@ -1,4 +1,17 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, input, linkedSignal, output, signal, viewChild } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    ElementRef,
+    inject,
+    input,
+    linkedSignal,
+    output,
+    signal,
+    viewChild,
+} from '@angular/core';
 import { formatDuration as formatTime } from '../core/format';
 import { VideoStream } from '../core/config.service';
 import { StreamProbe, TrickplayManifest } from '../core/models';
@@ -7,13 +20,13 @@ import { MenuEntry } from '../menus/context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../menus/overflow-row';
 import { IconComponent } from '../shared/icon.component';
 
-const DOUBLE_TAP_MS = 300;      // max delay between the two taps of a double tap
-const STREAK_MS = 700;          // further taps within this delay add another step
+const DOUBLE_TAP_MS = 300; // max delay between the two taps of a double tap
+const STREAK_MS = 700; // further taps within this delay add another step
 const HIDE_CONTROLS_MS = 2500;
 const HINT_MS = 650;
-const HOLD_FAST_MS = 1500;      // holding a finger on the right third this long plays at FAST_RATE until it lifts
+const HOLD_FAST_MS = 1500; // holding a finger on the right third this long plays at FAST_RATE until it lifts
 const FAST_RATE = 2;
-const HOLD_SLOP_PX = 20;        // a finger moving further than this is not holding
+const HOLD_SLOP_PX = 20; // a finger moving further than this is not holding
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 const CINEMA_KEY = 'sfe.player.cinema';
 // Room the control row needs at least: each button that stays with its gap, the position, the controls' side padding.
@@ -180,8 +193,7 @@ export class VideoPlayerComponent {
     private orientationLocked = false;
     /** Locks it sideways again when something else let it turn back (a seek reloading the video, the browser). */
     private readonly keepLandscape = () => {
-        if (screen.orientation?.type?.startsWith('portrait'))
-            this.turnToLandscape();
+        if (screen.orientation?.type?.startsWith('portrait')) this.turnToLandscape();
     };
     protected readonly muted = signal(false);
     protected readonly speed = signal(1);
@@ -206,28 +218,72 @@ export class VideoPlayerComponent {
     protected readonly timeText = signal('0:00 / 0:00');
     /** The position and the length, apart: the length leaves the row first when it is narrow. */
     protected readonly timeParts = computed(() => this.timeText().split(' / '));
-    protected readonly playLabel = computed(() => this.paused() ? 'Play (K)' : 'Pause (K)');
-    protected readonly muteLabel = computed(() => this.muted() ? 'Unmute (M)' : 'Mute (M)');
-    protected readonly loopLabel = computed(() => this.looping() ? 'Stop looping (R)' : 'Loop (R)');
+    protected readonly playLabel = computed(() => (this.paused() ? 'Play (K)' : 'Pause (K)'));
+    protected readonly muteLabel = computed(() => (this.muted() ? 'Unmute (M)' : 'Mute (M)'));
+    protected readonly loopLabel = computed(() => (this.looping() ? 'Stop looping (R)' : 'Loop (R)'));
     /** Cinema mode: the player spans the whole width (when `cinemaButton`). */
     protected readonly cinema = signal(readPreference(CINEMA_KEY) === '1');
-    protected readonly cinemaLabel = computed(() => this.cinema() ? 'Default view (C)' : 'Cinema mode (C)');
+    protected readonly cinemaLabel = computed(() => (this.cinema() ? 'Default view (C)' : 'Cinema mode (C)'));
     /**
      * Narrowest player showing the controls that never leave the row (play, mute, fullscreen, the "⋯" and the
      * position): a video smaller than that is letterboxed to it. The others go into the "⋯" menu when it is narrow.
      */
     protected readonly minWidth = computed(() =>
-        Math.ceil(CONTROLS_PADDING + 4 * BUTTON_WIDTH + 8 + this.timeParts()[0].length * TIME_CHAR_WIDTH));
+        Math.ceil(CONTROLS_PADDING + 4 * BUTTON_WIDTH + 8 + this.timeParts()[0].length * TIME_CHAR_WIDTH),
+    );
 
     /** What the buttons that may leave the row are in its "⋯" menu (on/off ones with a check mark). */
     protected readonly more = {
-        back: (): MenuEntry => ({ id: 'back', label: `Back ${this.seekStep()} s`, icon: 'rewind', shortcut: 'J', title: `Back ${this.seekStep()} s (J)`, run: () => this.stepSeek(-1) }),
-        forward: (): MenuEntry => ({ id: 'forward', label: `Forward ${this.seekStep()} s`, icon: 'forward', shortcut: 'L', title: `Forward ${this.seekStep()} s (L)`, run: () => this.stepSeek(1) }),
+        back: (): MenuEntry => ({
+            id: 'back',
+            label: `Back ${this.seekStep()} s`,
+            icon: 'rewind',
+            shortcut: 'J',
+            title: `Back ${this.seekStep()} s (J)`,
+            run: () => this.stepSeek(-1),
+        }),
+        forward: (): MenuEntry => ({
+            id: 'forward',
+            label: `Forward ${this.seekStep()} s`,
+            icon: 'forward',
+            shortcut: 'L',
+            title: `Forward ${this.seekStep()} s (L)`,
+            run: () => this.stepSeek(1),
+        }),
         speed: (): MenuEntry => this.speedEntry(),
-        convert: (): MenuEntry => ({ id: 'convert', label: 'Play converted', icon: 'refresh', title: 'Play it converted by the server (for a video without picture or sound here)', run: () => void this.useStream() }),
-        loop: (): MenuEntry => ({ id: 'loop', label: 'Loop', icon: 'loop', shortcut: 'R', title: this.loopLabel(), checked: this.looping(), run: () => this.toggleLoop() }),
-        saveFrame: (): MenuEntry => ({ id: 'saveFrame', label: 'Save this frame', icon: 'camera', shortcut: 'S', title: 'Save this frame as a picture (S)', run: () => this.saveFrame() }),
-        cinema: (): MenuEntry => ({ id: 'cinema', label: 'Cinema mode', icon: 'cinema', shortcut: 'C', title: this.cinemaLabel(), checked: this.cinema(), run: () => this.toggleCinema() }),
+        convert: (): MenuEntry => ({
+            id: 'convert',
+            label: 'Play converted',
+            icon: 'refresh',
+            title: 'Play it converted by the server (for a video without picture or sound here)',
+            run: () => void this.useStream(),
+        }),
+        loop: (): MenuEntry => ({
+            id: 'loop',
+            label: 'Loop',
+            icon: 'loop',
+            shortcut: 'R',
+            title: this.loopLabel(),
+            checked: this.looping(),
+            run: () => this.toggleLoop(),
+        }),
+        saveFrame: (): MenuEntry => ({
+            id: 'saveFrame',
+            label: 'Save this frame',
+            icon: 'camera',
+            shortcut: 'S',
+            title: 'Save this frame as a picture (S)',
+            run: () => this.saveFrame(),
+        }),
+        cinema: (): MenuEntry => ({
+            id: 'cinema',
+            label: 'Cinema mode',
+            icon: 'cinema',
+            shortcut: 'C',
+            title: this.cinemaLabel(),
+            checked: this.cinema(),
+            run: () => this.toggleCinema(),
+        }),
     };
 
     protected pointerType = 'mouse';
@@ -240,7 +296,11 @@ export class VideoPlayerComponent {
     private streak: { direction: number; total: number; until: number } | null = null;
     private readonly hintTimers = new Map<HTMLElement, number>();
     /** Once the video's trickplay is known. */
-    private trickplay: { info: TrickplayManifest; sheetUrl: (index: number) => string; sheets: HTMLImageElement[] | null } | null = null;
+    private trickplay: {
+        info: TrickplayManifest;
+        sheetUrl: (index: number) => string;
+        sheets: HTMLImageElement[] | null;
+    } | null = null;
     private errored = false;
     private started = false;
     /** Length of a converted video, from the server (the conversion has none while it is made). */
@@ -260,7 +320,9 @@ export class VideoPlayerComponent {
         afterNextRender(() => {
             this.updateVolume();
             if (this.playback().streamed)
-                void this.stream()!.probe().then(probe => this.setStreamLength(probe));
+                void this.stream()!
+                    .probe()
+                    .then((probe) => this.setStreamLength(probe));
             // Start playing right away; browsers that refuse autoplay leave it paused with the big play button.
             this.video.play().catch(() => this.updatePlayState());
         });
@@ -269,28 +331,40 @@ export class VideoPlayerComponent {
 
     /** Player shortcuts; returns true when the key was handled. */
     handleKey(event: KeyboardEvent): boolean {
-        if (event.ctrlKey || event.metaKey || event.altKey)
-            return false;
+        if (event.ctrlKey || event.metaKey || event.altKey) return false;
         switch (event.key.toLowerCase()) {
             case 'escape':
-                if (!this.speedMenu())
-                    return false;
+                if (!this.speedMenu()) return false;
                 this.speedMenu.set(false);
                 break;
             case ' ':
-            case 'k': this.togglePlay(); break;
-            case 'j': this.stepSeek(-1); break;
-            case 'l': this.stepSeek(1); break;
-            case 'f': void this.toggleFullscreen(); break;
-            case 'm': this.toggleMute(); break;
-            case 's': this.saveFrame(); break;
-            case 'r': this.toggleLoop(); break;
+            case 'k':
+                this.togglePlay();
+                break;
+            case 'j':
+                this.stepSeek(-1);
+                break;
+            case 'l':
+                this.stepSeek(1);
+                break;
+            case 'f':
+                void this.toggleFullscreen();
+                break;
+            case 'm':
+                this.toggleMute();
+                break;
+            case 's':
+                this.saveFrame();
+                break;
+            case 'r':
+                this.toggleLoop();
+                break;
             case 'c':
-                if (!this.cinemaButton())
-                    return false;
+                if (!this.cinemaButton()) return false;
                 this.toggleCinema();
                 break;
-            default: return false;
+            default:
+                return false;
         }
         this.showControls();
         return true;
@@ -300,20 +374,55 @@ export class VideoPlayerComponent {
     menuEntries(): MenuEntry[] {
         const fullscreen = this.fullscreen();
         const entries: MenuEntry[] = [
-            { id: 'play', label: this.paused() ? 'Play' : 'Pause', icon: this.paused() ? 'play' : 'pause', shortcut: 'K', title: this.playLabel(), run: () => this.togglePlay() },
-            this.speedEntry(),
-            { id: 'loop', label: this.looping() ? 'Stop looping' : 'Loop', icon: 'loop', shortcut: 'R', title: this.loopLabel(), run: () => this.toggleLoop() },
-            { id: 'mute', label: this.muted() ? 'Unmute' : 'Mute', icon: this.muted() ? 'volume' : 'muted', shortcut: 'M', title: this.muteLabel(), run: () => this.toggleMute() },
-            { id: 'saveFrame', label: 'Save this frame', icon: 'camera', shortcut: 'S', title: 'Save this frame as a picture (S)', run: () => this.saveFrame() },
             {
-                id: 'fullscreen', label: fullscreen ? 'Exit full screen' : 'Full screen', icon: fullscreen ? 'exit-fullscreen' : 'fullscreen', shortcut: 'F',
-                title: fullscreen ? 'Leave full screen (F)' : 'Full screen (F)', run: () => void this.toggleFullscreen(),
+                id: 'play',
+                label: this.paused() ? 'Play' : 'Pause',
+                icon: this.paused() ? 'play' : 'pause',
+                shortcut: 'K',
+                title: this.playLabel(),
+                run: () => this.togglePlay(),
+            },
+            this.speedEntry(),
+            {
+                id: 'loop',
+                label: this.looping() ? 'Stop looping' : 'Loop',
+                icon: 'loop',
+                shortcut: 'R',
+                title: this.loopLabel(),
+                run: () => this.toggleLoop(),
+            },
+            {
+                id: 'mute',
+                label: this.muted() ? 'Unmute' : 'Mute',
+                icon: this.muted() ? 'volume' : 'muted',
+                shortcut: 'M',
+                title: this.muteLabel(),
+                run: () => this.toggleMute(),
+            },
+            {
+                id: 'saveFrame',
+                label: 'Save this frame',
+                icon: 'camera',
+                shortcut: 'S',
+                title: 'Save this frame as a picture (S)',
+                run: () => this.saveFrame(),
+            },
+            {
+                id: 'fullscreen',
+                label: fullscreen ? 'Exit full screen' : 'Full screen',
+                icon: fullscreen ? 'exit-fullscreen' : 'fullscreen',
+                shortcut: 'F',
+                title: fullscreen ? 'Leave full screen (F)' : 'Full screen (F)',
+                run: () => void this.toggleFullscreen(),
             },
         ];
         if (typeof document !== 'undefined' && document.pictureInPictureEnabled)
             entries.push({
-                id: 'pictureInPicture', label: 'Picture in picture', icon: 'window',
-                title: 'Keep it playing in a small window, above the other windows', run: () => void this.togglePictureInPicture(),
+                id: 'pictureInPicture',
+                label: 'Picture in picture',
+                icon: 'window',
+                title: 'Keep it playing in a small window, above the other windows',
+                run: () => void this.togglePictureInPicture(),
             });
         return entries;
     }
@@ -321,19 +430,25 @@ export class VideoPlayerComponent {
     /** Speed › the rates, the one playing checked. */
     private speedEntry(): MenuEntry {
         return {
-            id: 'speed', label: `Speed: ${this.speed()}×`, icon: 'fast', title: 'How fast it plays',
-            submenu: () => this.speeds.map(rate => ({
-                id: `speed-${rate}`, label: `${rate}×`, icon: rate === this.speed() ? 'check' : 'fast', title: `Play at ${rate}×`, run: () => this.setSpeed(rate),
-            })),
+            id: 'speed',
+            label: `Speed: ${this.speed()}×`,
+            icon: 'fast',
+            title: 'How fast it plays',
+            submenu: () =>
+                this.speeds.map((rate) => ({
+                    id: `speed-${rate}`,
+                    label: `${rate}×`,
+                    icon: rate === this.speed() ? 'check' : 'fast',
+                    title: `Play at ${rate}×`,
+                    run: () => this.setSpeed(rate),
+                })),
         };
     }
 
     private async togglePictureInPicture(): Promise<void> {
         try {
-            if (document.pictureInPictureElement)
-                await document.exitPictureInPicture();
-            else
-                await this.video.requestPictureInPicture();
+            if (document.pictureInPictureElement) await document.exitPictureInPicture();
+            else await this.video.requestPictureInPicture();
         } catch {
             // Refused (no video yet, or not allowed here): stay as is.
         }
@@ -352,7 +467,7 @@ export class VideoPlayerComponent {
     private length(): number {
         const own = Number.isFinite(this.video.duration) ? this.video.duration : 0;
         const playback = this.playback();
-        return playback.streamed ? this.streamLength ?? playback.offset + own : own;
+        return playback.streamed ? (this.streamLength ?? playback.offset + own) : own;
     }
 
     focus(): void {
@@ -362,18 +477,16 @@ export class VideoPlayerComponent {
     /* ---------- Playback ---------- */
 
     protected togglePlay(): void {
-        if (this.video.paused || this.video.ended)
-            this.video.play().catch(() => { });
-        else
-            this.video.pause();
+        if (this.video.paused || this.video.ended) this.video.play().catch(() => {});
+        else this.video.pause();
     }
 
     protected toggleLoop(): void {
-        this.looping.update(on => !on);
+        this.looping.update((on) => !on);
     }
 
     protected toggleCinema(): void {
-        this.cinema.update(on => !on);
+        this.cinema.update((on) => !on);
         writePreference(CINEMA_KEY, this.cinema() ? '1' : '0');
     }
 
@@ -383,7 +496,7 @@ export class VideoPlayerComponent {
 
     protected toggleSpeedMenu(): void {
         this.speedMenuHeight = Math.max(80, this.host.clientHeight - 64);
-        this.speedMenu.update(open => !open);
+        this.speedMenu.update((open) => !open);
         this.showControls();
     }
 
@@ -396,8 +509,7 @@ export class VideoPlayerComponent {
 
     /** A press anywhere but on the list or its button closes it. */
     protected closeSpeedMenu(event: Event): void {
-        if (this.speedMenu() && !(event.target as Element).closest?.('.player-speed-wrap'))
-            this.speedMenu.set(false);
+        if (this.speedMenu() && !(event.target as Element).closest?.('.player-speed-wrap')) this.speedMenu.set(false);
     }
 
     private seekBy(seconds: number): void {
@@ -407,23 +519,19 @@ export class VideoPlayerComponent {
     /** Goes to `seconds` into the video: within a conversion when it got there, else by asking for one from there. */
     private seekTo(seconds: number): void {
         const target = Math.min(Math.max(0, seconds), this.length() || Infinity);
-        if (this.canSeekTo(target))
-            this.video.currentTime = target - this.playback().offset;
-        else
-            this.restartStream(target);
+        if (this.canSeekTo(target)) this.video.currentTime = target - this.playback().offset;
+        else this.restartStream(target);
         this.updateTime();
     }
 
     /** The file seeks anywhere; a conversion within what the browser can seek in (what arrived). */
     private canSeekTo(target: number): boolean {
         const playback = this.playback();
-        if (!playback.streamed)
-            return true;
+        if (!playback.streamed) return true;
         const local = target - playback.offset;
         const seekable = this.video.seekable;
         for (let i = 0; i < seekable.length; i++) {
-            if (local >= seekable.start(i) && local <= seekable.end(i))
-                return true;
+            if (local >= seekable.start(i) && local <= seekable.end(i)) return true;
         }
         return false;
     }
@@ -431,8 +539,7 @@ export class VideoPlayerComponent {
     /** Asks the server for the conversion from `start` seconds on, playing on if it was playing. */
     private restartStream(start: number): void {
         const stream = this.stream();
-        if (!stream)
-            return;
+        if (!stream) return;
         this.resume ||= !this.video.paused;
         this.playback.set({ url: stream.url(start), offset: start, streamed: true });
         this.waiting.set(true);
@@ -441,8 +548,7 @@ export class VideoPlayerComponent {
     /** Plays the server's conversion instead of the file, from where it is (or was to start). */
     protected async useStream(): Promise<void> {
         const stream = this.stream();
-        if (!stream || this.switching || this.playback().streamed)
-            return;
+        if (!stream || this.switching || this.playback().streamed) return;
         this.switching = true;
         const start = this.started || this.video.currentTime > 0 ? this.video.currentTime : this.startAt();
         const playing = !this.video.paused || !this.started;
@@ -467,20 +573,27 @@ export class VideoPlayerComponent {
     private showHint(target: HTMLElement, text: string): void {
         target.textContent = text;
         target.classList.remove('show');
-        void target.offsetWidth;    // restart the fade-out animation
+        void target.offsetWidth; // restart the fade-out animation
         target.classList.add('show');
         clearTimeout(this.hintTimers.get(target));
-        this.hintTimers.set(target, setTimeout(() => target.classList.remove('show'), HINT_MS));
+        this.hintTimers.set(
+            target,
+            setTimeout(() => target.classList.remove('show'), HINT_MS),
+        );
     }
 
     /** Jumps one step; repeated taps on the same side within STREAK_MS add up ("−30 s"). */
     protected stepSeek(direction: number, now = performance.now()): void {
         const step = this.seekStep();
-        this.streak = this.streak && this.streak.direction === direction && now < this.streak.until
-            ? { direction, total: this.streak.total + step, until: now + STREAK_MS }
-            : { direction, total: step, until: now + STREAK_MS };
+        this.streak =
+            this.streak && this.streak.direction === direction && now < this.streak.until
+                ? { direction, total: this.streak.total + step, until: now + STREAK_MS }
+                : { direction, total: step, until: now + STREAK_MS };
         this.seekBy(direction * step);
-        this.showHint((direction < 0 ? this.hintBackRef() : this.hintForwardRef()).nativeElement, `${direction < 0 ? '−' : '+'}${this.streak.total} s`);
+        this.showHint(
+            (direction < 0 ? this.hintBackRef() : this.hintForwardRef()).nativeElement,
+            `${direction < 0 ? '−' : '+'}${this.streak.total} s`,
+        );
     }
 
     /**
@@ -489,14 +602,15 @@ export class VideoPlayerComponent {
      */
     protected saveFrame(): void {
         const video = this.video;
-        if (!video.videoWidth || video.readyState < 2)
-            return;     // no frame decoded yet
-        const canvas = Object.assign(document.createElement('canvas'), { width: video.videoWidth, height: video.videoHeight });
+        if (!video.videoWidth || video.readyState < 2) return; // no frame decoded yet
+        const canvas = Object.assign(document.createElement('canvas'), {
+            width: video.videoWidth,
+            height: video.videoHeight,
+        });
         canvas.getContext('2d')!.drawImage(video, 0, 0);
         const fileName = `${this.name().replace(/\.[^./]+$/, '')} ${formatTime(this.currentTime()).replaceAll(':', '-')}.png`;
-        canvas.toBlob(blob => {
-            if (!blob)
-                return;
+        canvas.toBlob((blob) => {
+            if (!blob) return;
             const url = URL.createObjectURL(blob);
             const link = Object.assign(document.createElement('a'), { href: url, download: fileName });
             this.host.append(link);
@@ -506,20 +620,18 @@ export class VideoPlayerComponent {
         }, 'image/png');
         const flash = this.flashRef().nativeElement;
         flash.classList.remove('show');
-        void flash.offsetWidth;     // restart the animation
+        void flash.offsetWidth; // restart the animation
         flash.classList.add('show');
     }
 
     protected async toggleFullscreen(): Promise<void> {
         const video = this.video as HTMLVideoElement & { webkitEnterFullscreen?: () => void };
         try {
-            if (document.fullscreenElement)
-                await document.exitFullscreen();
+            if (document.fullscreenElement) await document.exitFullscreen();
             else if (this.host.requestFullscreen) {
                 await this.host.requestFullscreen({ navigationUI: 'hide' });
                 this.turnToLandscape();
-            } else
-                video.webkitEnterFullscreen?.();      // iPhone: only the video element itself can go fullscreen
+            } else video.webkitEnterFullscreen?.(); // iPhone: only the video element itself can go fullscreen
         } catch {
             // Refused (e.g. not triggered by a user gesture): stay as is.
         }
@@ -527,8 +639,7 @@ export class VideoPlayerComponent {
 
     protected onFullscreenChange(): void {
         this.fullscreen.set(document.fullscreenElement === this.host);
-        if (!document.fullscreenElement)
-            this.releaseOrientation();
+        if (!document.fullscreenElement) this.releaseOrientation();
     }
 
     /**
@@ -540,19 +651,22 @@ export class VideoPlayerComponent {
      */
     private turnToLandscape(): void {
         const orientation = screen.orientation as LockableOrientation | undefined;
-        if (!orientation?.lock || document.fullscreenElement !== this.host || !matchMedia('(pointer: coarse)').matches
-            || this.video.videoWidth <= this.video.videoHeight)
+        if (
+            !orientation?.lock ||
+            document.fullscreenElement !== this.host ||
+            !matchMedia('(pointer: coarse)').matches ||
+            this.video.videoWidth <= this.video.videoHeight
+        )
             return;
         if (!this.orientationLocked) {
             this.orientationLocked = true;
             orientation.addEventListener?.('change', this.keepLandscape);
         }
-        orientation.lock('landscape').catch(() => { });
+        orientation.lock('landscape').catch(() => {});
     }
 
     private releaseOrientation(): void {
-        if (!this.orientationLocked)
-            return;
+        if (!this.orientationLocked) return;
         this.orientationLocked = false;
         screen.orientation?.removeEventListener?.('change', this.keepLandscape);
         try {
@@ -564,8 +678,7 @@ export class VideoPlayerComponent {
 
     /** The file can't be played: the server's conversion takes over when it offers one. */
     protected failed(): void {
-        if (this.errored || this.switching)
-            return;
+        if (this.errored || this.switching) return;
         if (this.stream() && !this.playback().streamed) {
             void this.useStream();
             return;
@@ -600,8 +713,7 @@ export class VideoPlayerComponent {
         if (this.playback().streamed && this.looping()) {
             this.resume = true;
             this.seekTo(0);
-            if (this.canSeekTo(0))
-                this.video.play().catch(() => { });
+            if (this.canSeekTo(0)) this.video.play().catch(() => {});
         }
         this.updatePlayState();
     }
@@ -614,14 +726,12 @@ export class VideoPlayerComponent {
     }
 
     private hideControls(): void {
-        if (!this.video.paused && !this.speedMenu())
-            this.controlsVisible.set(false);
+        if (!this.video.paused && !this.speedMenu()) this.controlsVisible.set(false);
     }
 
     private scheduleHide(): void {
         clearTimeout(this.hideTimer);
-        if (!this.video.paused)
-            this.hideTimer = setTimeout(() => this.hideControls(), HIDE_CONTROLS_MS);
+        if (!this.video.paused) this.hideTimer = setTimeout(() => this.hideControls(), HIDE_CONTROLS_MS);
     }
 
     private toggleControls(): void {
@@ -645,7 +755,8 @@ export class VideoPlayerComponent {
             seek.max = String(duration);
             seek.value = String(position);
         }
-        const buffered = this.playback().offset + (video.buffered.length ? video.buffered.end(video.buffered.length - 1) : 0);
+        const buffered =
+            this.playback().offset + (video.buffered.length ? video.buffered.end(video.buffered.length - 1) : 0);
         seek.style.setProperty('--played', duration ? `${(position / duration) * 100}%` : '0%');
         seek.style.setProperty('--buffered', duration ? `${(buffered / duration) * 100}%` : '0%');
     }
@@ -653,10 +764,8 @@ export class VideoPlayerComponent {
     protected updatePlayState(): void {
         const paused = this.video.paused || this.video.ended;
         this.paused.set(paused);
-        if (paused)
-            this.showControls();
-        else
-            this.scheduleHide();
+        if (paused) this.showControls();
+        else this.scheduleHide();
     }
 
     protected updateVolume(): void {
@@ -667,10 +776,8 @@ export class VideoPlayerComponent {
 
     /** Touch handles single and double taps itself; the mouse uses click and dblclick. */
     protected onTap(event: PointerEvent): void {
-        if (event.pointerType === 'mouse')
-            return;
-        if (this.endHold())
-            return;     // lifting the finger after a hold is not a tap
+        if (event.pointerType === 'mouse') return;
+        if (this.endHold()) return; // lifting the finger after a hold is not a tap
 
         const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -687,10 +794,8 @@ export class VideoPlayerComponent {
         if (now - this.lastTap.time < DOUBLE_TAP_MS && Math.abs(x - this.lastTap.x) < 80) {
             clearTimeout(this.singleTapTimer);
             this.lastTap = { time: 0, x: 0 };
-            if (direction)
-                this.stepSeek(direction, now);
-            else
-                this.togglePlay();
+            if (direction) this.stepSeek(direction, now);
+            else this.togglePlay();
             return;
         }
 
@@ -703,15 +808,12 @@ export class VideoPlayerComponent {
     protected onPointerDown(event: PointerEvent): void {
         this.pointerType = event.pointerType;
         this.endHold();
-        if (event.pointerType === 'mouse')
-            return;
+        if (event.pointerType === 'mouse') return;
         const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-        if (event.clientX - rect.left <= rect.width * 0.65)
-            return;
+        if (event.clientX - rect.left <= rect.width * 0.65) return;
         this.holdStart = { x: event.clientX, y: event.clientY };
         this.holdTimer = setTimeout(() => {
-            if (this.video.paused || this.video.ended)
-                return;
+            if (this.video.paused || this.video.ended) return;
             clearTimeout(this.singleTapTimer);
             this.video.playbackRate = FAST_RATE;
             this.fast.set(true);
@@ -719,8 +821,11 @@ export class VideoPlayerComponent {
     }
 
     protected onPointerMove(event: PointerEvent): void {
-        if (this.holdTimer && !this.fast()
-            && Math.hypot(event.clientX - this.holdStart.x, event.clientY - this.holdStart.y) > HOLD_SLOP_PX) {
+        if (
+            this.holdTimer &&
+            !this.fast() &&
+            Math.hypot(event.clientX - this.holdStart.x, event.clientY - this.holdStart.y) > HOLD_SLOP_PX
+        ) {
             clearTimeout(this.holdTimer);
             this.holdTimer = 0;
         }
@@ -730,8 +835,7 @@ export class VideoPlayerComponent {
     protected endHold(): boolean {
         clearTimeout(this.holdTimer);
         this.holdTimer = 0;
-        if (!this.fast())
-            return false;
+        if (!this.fast()) return false;
         this.fast.set(false);
         this.video.playbackRate = this.speed();
         return true;
@@ -739,22 +843,19 @@ export class VideoPlayerComponent {
 
     /** Phones open a menu on a long press, which would interrupt the hold. */
     protected onContextMenu(event: Event): void {
-        if (this.pointerType !== 'mouse')
-            event.preventDefault();
+        if (this.pointerType !== 'mouse') event.preventDefault();
     }
 
     // Taps also produce click/dblclick events, and older Safari doesn't say they came from a touch: the pointer type
     // is remembered from pointerdown instead.
     protected onClick(): void {
-        if (this.pointerType !== 'mouse')
-            return;
+        if (this.pointerType !== 'mouse') return;
         this.togglePlay();
         this.showControls();
     }
 
     protected onDoubleClick(): void {
-        if (this.pointerType === 'mouse')
-            void this.toggleFullscreen();
+        if (this.pointerType === 'mouse') void this.toggleFullscreen();
     }
 
     /* ---------- Seek bar and its preview ---------- */
@@ -777,13 +878,11 @@ export class VideoPlayerComponent {
 
     /** Hover with a mouse or pen; touch shows the preview while dragging (the input event). */
     protected onSeekHover(event: PointerEvent): void {
-        if (event.pointerType !== 'touch')
-            this.showPreview(this.seekFraction(event));
+        if (event.pointerType !== 'touch') this.showPreview(this.seekFraction(event));
     }
 
     protected onSeekLeave(): void {
-        if (!this.seekRef().nativeElement.matches(':active'))
-            this.hidePreview();
+        if (!this.seekRef().nativeElement.matches(':active')) this.hidePreview();
     }
 
     protected endSeekPreview(event: Event): void {
@@ -792,22 +891,19 @@ export class VideoPlayerComponent {
             this.pendingSeek = null;
             this.seekTo(target);
         }
-        if ((event as PointerEvent).pointerType !== 'mouse')
-            this.hidePreview();
+        if ((event as PointerEvent).pointerType !== 'mouse') this.hidePreview();
     }
 
     /** Shows the time at `fraction` of the seek bar above it, with the trickplay frame of that moment if any. */
     private showPreview(fraction: number): void {
         const duration = this.length();
-        if (!Number.isFinite(duration) || duration <= 0)
-            return;
+        if (!Number.isFinite(duration) || duration <= 0) return;
         fraction = Math.min(Math.max(fraction, 0), 1);
         const seconds = fraction * duration;
         const preview = this.previewRef().nativeElement;
         this.previewTimeRef().nativeElement.textContent = formatTime(seconds);
         preview.classList.toggle('has-frame', Boolean(this.trickplay));
-        if (this.trickplay)
-            this.showFrame(seconds);
+        if (this.trickplay) this.showFrame(seconds);
 
         // Centred on the position, but kept within the bar.
         const barWidth = this.seekRef().nativeElement.clientWidth;
@@ -821,13 +917,15 @@ export class VideoPlayerComponent {
         const trickplay = this.trickplay!;
         const { info, sheetUrl } = trickplay;
         // Every sheet is requested on the first preview, and the images kept, so moving along the bar doesn't wait.
-        trickplay.sheets ??= Array.from({ length: info.sheets }, (_, index) => Object.assign(new Image(), { src: sheetUrl(index) }));
+        trickplay.sheets ??= Array.from({ length: info.sheets }, (_, index) =>
+            Object.assign(new Image(), { src: sheetUrl(index) }),
+        );
         const frame = Math.min(Math.round(seconds / info.interval), info.count - 1);
         const perSheet = info.columns * info.rows;
         const cell = frame % perSheet;
         // At most a third of the player, so it doesn't cover the picture on a phone.
         const width = Math.round(Math.min(info.tileWidth, 240, this.host.clientWidth / 3));
-        const height = Math.round(width * info.tileHeight / info.tileWidth);
+        const height = Math.round((width * info.tileHeight) / info.tileWidth);
         const style = this.frameRef().nativeElement.style;
         style.width = `${width}px`;
         style.height = `${height}px`;
@@ -851,13 +949,12 @@ export class VideoPlayerComponent {
         clearTimeout(this.hideTimer);
         clearTimeout(this.singleTapTimer);
         clearTimeout(this.holdTimer);
-        this.hintTimers.forEach(timer => clearTimeout(timer));
-        if (document.fullscreenElement === this.host)
-            document.exitFullscreen().catch(() => { });
+        this.hintTimers.forEach((timer) => clearTimeout(timer));
+        if (document.fullscreenElement === this.host) document.exitFullscreen().catch(() => {});
         this.releaseOrientation();
         const video = this.video;
         video.pause();
         video.removeAttribute('src');
-        video.load();       // stops the download
+        video.load(); // stops the download
     }
 }

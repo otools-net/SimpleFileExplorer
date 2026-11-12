@@ -39,9 +39,24 @@ export interface ReaderFont {
 
 export const READER_FONTS: readonly ReaderFont[] = [
     { id: 'literata', label: 'Literata (serif, for reading)', family: '"Literata", Georgia, serif', bundled: true },
-    { id: 'atkinson', label: 'Atkinson Hyperlegible (sans-serif, very legible)', family: '"Atkinson Hyperlegible", system-ui, sans-serif', bundled: true },
-    { id: 'jetbrains-mono', label: 'JetBrains Mono (monospace)', family: '"JetBrains Mono", ui-monospace, monospace', bundled: true },
-    { id: 'system-serif', label: 'Serif of this device', family: '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif', bundled: false },
+    {
+        id: 'atkinson',
+        label: 'Atkinson Hyperlegible (sans-serif, very legible)',
+        family: '"Atkinson Hyperlegible", system-ui, sans-serif',
+        bundled: true,
+    },
+    {
+        id: 'jetbrains-mono',
+        label: 'JetBrains Mono (monospace)',
+        family: '"JetBrains Mono", ui-monospace, monospace',
+        bundled: true,
+    },
+    {
+        id: 'system-serif',
+        label: 'Serif of this device',
+        family: '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif',
+        bundled: false,
+    },
     { id: 'system-sans', label: 'Sans-serif of this device', family: 'var(--font)', bundled: false },
     { id: 'system-mono', label: 'Monospace of this device', family: 'var(--mono)', bundled: false },
     { id: 'custom', label: 'Another font of this device…', family: 'var(--mono)', bundled: false },
@@ -67,29 +82,30 @@ export const DEFAULT_READING: ReadingPreferences = {
 };
 
 export function fontOf(id: string): ReaderFont {
-    return READER_FONTS.find(font => font.id === id) ?? READER_FONTS.find(font => font.id === 'system-mono')!;
+    return READER_FONTS.find((font) => font.id === id) ?? READER_FONTS.find((font) => font.id === 'system-mono')!;
 }
 
 /** The CSS font family of a profile's font: a custom name quoted first, then the profile's usual font. */
 export function fontFamily(profile: ReadingProfile, preferences: ProfilePreferences, customFont: string): string {
     const font = fontOf(preferences.font);
-    if (font.id !== 'custom')
-        return font.family;
+    if (font.id !== 'custom') return font.family;
     const usual = fontOf(DEFAULT_READING[profile].font).family;
     const name = customFont.replace(/["\\;{}<>]/g, '').trim();
     return name ? `"${name}", ${usual}` : usual;
 }
 
 function pick<T>(value: unknown, allowed: readonly T[], fallback: T): T {
-    return allowed.includes(value as T) ? value as T : fallback;
+    return allowed.includes(value as T) ? (value as T) : fallback;
 }
 
 function sanitizeProfile(value: unknown, fallback: ProfilePreferences): ProfilePreferences {
     const raw = (value && typeof value === 'object' ? value : {}) as Partial<Record<keyof ProfilePreferences, unknown>>;
     const size = Number(raw.size);
     return {
-        font: READER_FONTS.some(font => font.id === raw.font) ? raw.font as string : fallback.font,
-        size: Number.isFinite(size) ? Math.min(FONT_SIZES.max, Math.max(FONT_SIZES.min, Math.round(size))) : fallback.size,
+        font: READER_FONTS.some((font) => font.id === raw.font) ? (raw.font as string) : fallback.font,
+        size: Number.isFinite(size)
+            ? Math.min(FONT_SIZES.max, Math.max(FONT_SIZES.min, Math.round(size)))
+            : fallback.size,
         lineHeight: pick(raw.lineHeight, LINE_HEIGHTS, fallback.lineHeight),
         width: pick(raw.width, WIDTHS, fallback.width),
         padding: pick(raw.padding, PADDINGS, fallback.padding),
@@ -102,7 +118,11 @@ function sanitizeProfile(value: unknown, fallback: ProfilePreferences): ProfileP
 export function sanitizeReading(value: unknown, fallback: ReadingPreferences = DEFAULT_READING): ReadingPreferences {
     const raw = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>;
     return {
-        theme: pick(raw['theme'], READER_THEMES.map(theme => theme.id), fallback.theme),
+        theme: pick(
+            raw['theme'],
+            READER_THEMES.map((theme) => theme.id),
+            fallback.theme,
+        ),
         customFont: typeof raw['customFont'] === 'string' ? raw['customFont'].slice(0, 100) : fallback.customFont,
         code: sanitizeProfile(raw['code'], fallback.code),
         prose: sanitizeProfile(raw['prose'], fallback.prose),

@@ -43,12 +43,20 @@ export class AnimatedHoverService {
      * Hovering `card` plays the image `item()` in `container()` (its preview's box) when `thumbnailShown()` (the
      * preview is the thumbnail, not the original, which the browser animates by itself). Stops with `destroyRef`.
      */
-    attach(card: HTMLElement, container: () => HTMLElement, item: () => LibraryItem, thumbnailShown: () => boolean, destroyRef: DestroyRef): void {
+    attach(
+        card: HTMLElement,
+        container: () => HTMLElement,
+        item: () => LibraryItem,
+        thumbnailShown: () => boolean,
+        destroyRef: DestroyRef,
+    ): void {
         this.hover.attach(card, container, () => item().path, destroyRef, {
-            enabled: () => Boolean(this.config.config()?.animatedHover) && thumbnailShown()
-                && ANIMATABLE.has(item().extension?.toLowerCase() ?? ''),
-            ready: path => this.check(path),
-            isReady: path => this.known.get(path) === true,
+            enabled: () =>
+                Boolean(this.config.config()?.animatedHover) &&
+                thumbnailShown() &&
+                ANIMATABLE.has(item().extension?.toLowerCase() ?? ''),
+            ready: (path) => this.check(path),
+            isReady: (path) => this.known.get(path) === true,
             play: (box, path) => this.play(box, path),
         });
     }
@@ -56,10 +64,16 @@ export class AnimatedHoverService {
     private check(path: string): Promise<boolean> {
         let check = this.checks.get(path);
         if (!check) {
-            check = this.api.imageAnimation(path).then(info => info.animated, () => false).then(animated => {
-                this.known.set(path, animated);
-                return animated;
-            });
+            check = this.api
+                .imageAnimation(path)
+                .then(
+                    (info) => info.animated,
+                    () => false,
+                )
+                .then((animated) => {
+                    this.known.set(path, animated);
+                    return animated;
+                });
             this.checks.set(path, check);
         }
         return check;
@@ -68,12 +82,19 @@ export class AnimatedHoverService {
     private play(container: HTMLElement, path: string): () => void {
         let image = this.originals.get(path);
         let loaded = Boolean(image);
-        const loading = Object.assign(document.createElement('span'), { className: 'trickplay-hover-progress animated-hover-loading' });
+        const loading = Object.assign(document.createElement('span'), {
+            className: 'trickplay-hover-progress animated-hover-loading',
+        });
         loading.appendChild(document.createElement('span'));
 
         if (!image) {
             // Hidden over the thumbnail until it has come, under a bar saying it is coming.
-            const original = image = Object.assign(document.createElement('img'), { className: 'animated-hover', alt: '', decoding: 'async', hidden: true });
+            const original = (image = Object.assign(document.createElement('img'), {
+                className: 'animated-hover',
+                alt: '',
+                decoding: 'async',
+                hidden: true,
+            }));
             original.onload = () => {
                 loaded = true;
                 original.hidden = false;
@@ -106,8 +127,7 @@ export class AnimatedHoverService {
         this.originals.delete(path);
         this.originals.set(path, image);
         for (const old of this.originals.keys()) {
-            if (this.originals.size <= KEPT_ORIGINALS)
-                break;
+            if (this.originals.size <= KEPT_ORIGINALS) break;
             this.originals.delete(old);
         }
     }

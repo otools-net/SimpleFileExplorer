@@ -15,11 +15,22 @@ describe('listing positions', () => {
             </div></sfe-listing>`;
         scrollY = 0;
         Object.defineProperty(window, 'scrollY', { get: () => scrollY, configurable: true });
-        scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(((_x: number, y: number) => { scrollY = y; }) as typeof window.scrollTo);
+        scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(((_x: number, y: number) => {
+            scrollY = y;
+        }) as typeof window.scrollTo);
         vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
             const items = [...document.querySelectorAll('[data-path]')];
             const top = items.indexOf(this) * ITEM_HEIGHT - scrollY;
-            return { top, bottom: top + ITEM_HEIGHT, left: 0, right: 100, width: 100, height: ITEM_HEIGHT, x: 0, y: top } as DOMRect;
+            return {
+                top,
+                bottom: top + ITEM_HEIGHT,
+                left: 0,
+                right: 100,
+                width: 100,
+                height: ITEM_HEIGHT,
+                x: 0,
+                y: top,
+            } as DOMRect;
         });
     });
 
@@ -31,7 +42,7 @@ describe('listing positions', () => {
 
     it('counts the items starting above a line, or entirely above it', () => {
         const files = document.querySelector('.files')!;
-        scrollY = 600;  // the files start at 0 px on screen
+        scrollY = 600; // the files start at 0 px on screen
 
         expect(countAbove(files, 450)).toBe(2);
         expect(countAbove(files, 450, 'bottom')).toBe(1);
@@ -40,7 +51,7 @@ describe('listing positions', () => {
     });
 
     it('remembers the item at the top of the screen and how far it is from the top, a file or a folder', () => {
-        scrollY = 1000;     // the second file (900 px down the page) shows from -100 px
+        scrollY = 1000; // the second file (900 px down the page) shows from -100 px
         expect(currentPosition()).toEqual({ scrollY: 1000, anchor: 'B/f1.jpg', anchorTop: -100 });
 
         scrollY = 100;

@@ -21,10 +21,8 @@ export function countAbove(container: Element, y: number, edge: 'top' | 'bottom'
     while (low < high) {
         const middle = (low + high) >> 1;
         const value = items[middle].getBoundingClientRect()[edge];
-        if (edge === 'top' ? value < y : value <= y)
-            low = middle + 1;
-        else
-            high = middle;
+        if (edge === 'top' ? value < y : value <= y) low = middle + 1;
+        else high = middle;
     }
     return low;
 }
@@ -56,30 +54,32 @@ const USER_SCROLL = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
  * until the user scrolls.
  */
 export function restorePosition(restore: RestoreState): void {
-    const anchor = restore.anchor === undefined ? undefined
-        : [...document.querySelectorAll('sfe-listing [data-path]')].find(element => element.getAttribute('data-path') === restore.anchor);
+    const anchor =
+        restore.anchor === undefined
+            ? undefined
+            : [...document.querySelectorAll('sfe-listing [data-path]')].find(
+                  (element) => element.getAttribute('data-path') === restore.anchor,
+              );
     if (!anchor) {
         window.scrollTo(0, restore.scrollY ?? 0);
         return;
     }
 
-    const place = () => window.scrollTo(0, window.scrollY + anchor.getBoundingClientRect().top - (restore.anchorTop ?? 0));
+    const place = () =>
+        window.scrollTo(0, window.scrollY + anchor.getBoundingClientRect().top - (restore.anchorTop ?? 0));
     let frame = 0;
     const hold = () => {
-        if (!anchor.isConnected)
-            return stop();
+        if (!anchor.isConnected) return stop();
         place();
         frame = requestAnimationFrame(hold);
     };
     const stop = () => {
         cancelAnimationFrame(frame);
         clearTimeout(timer);
-        for (const type of USER_SCROLL)
-            window.removeEventListener(type, stop, true);
+        for (const type of USER_SCROLL) window.removeEventListener(type, stop, true);
     };
     const timer = setTimeout(stop, HOLD_MS);
-    for (const type of USER_SCROLL)
-        window.addEventListener(type, stop, { capture: true, passive: true });
+    for (const type of USER_SCROLL) window.addEventListener(type, stop, { capture: true, passive: true });
     place();
     frame = requestAnimationFrame(hold);
 }

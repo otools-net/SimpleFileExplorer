@@ -5,8 +5,8 @@ import { readPreference, writePreference } from './preferences';
 // Light or dark colors, as `data-theme` on <html> (see styles/base.css). This browser's pick (System section) wins over the
 // server default (`config.theme`: system | light | dark), and "system" follows the device's mode, live.
 // src/theme-boot.ts applies the same keys before the page is drawn: keep them in step.
-const CHOICE = 'sfe.theme';                     // light | dark; empty = the server default
-const SERVER_DEFAULT = 'sfe.theme.default';     // last default seen, for theme-boot.ts
+const CHOICE = 'sfe.theme'; // light | dark; empty = the server default
+const SERVER_DEFAULT = 'sfe.theme.default'; // last default seen, for theme-boot.ts
 export type ThemeChoice = '' | 'light' | 'dark';
 
 @Injectable({ providedIn: 'root' })

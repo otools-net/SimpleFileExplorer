@@ -16,12 +16,17 @@ describe('ViewPageComponent', () => {
 
     async function open(query: Record<string, string>): Promise<HTMLElement> {
         TestBed.configureTestingModule({
-            providers: testProviders(api, { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(query) } } }),
+            providers: testProviders(api, {
+                provide: ActivatedRoute,
+                useValue: { snapshot: { queryParamMap: convertToParamMap(query) } },
+            }),
         });
         await loadConfig(api);
         const fixture = TestBed.createComponent(ViewPageComponent);
         await fixture.whenStable();
-        await vi.waitFor(() => expect(fixture.nativeElement.querySelector('.view-page-stage')!.children.length).toBeGreaterThan(0));
+        await vi.waitFor(() =>
+            expect(fixture.nativeElement.querySelector('.view-page-stage')!.children.length).toBeGreaterThan(0),
+        );
         await settle();
         await fixture.whenStable();
         return fixture.nativeElement;
@@ -30,7 +35,14 @@ describe('ViewPageComponent', () => {
     beforeEach(() => {
         localStorage.removeItem(READING_KEY);
         api = mockApi();
-        api.textFile.mockImplementation(async (path: string) => ({ text: `Text of ${path}`, encoding: 'utf-8', lineEnding: 'lf', version: 'v', size: 20, modified: '2026-10-18T10:00:00Z' }));
+        api.textFile.mockImplementation(async (path: string) => ({
+            text: `Text of ${path}`,
+            encoding: 'utf-8',
+            lineEnding: 'lf',
+            version: 'v',
+            size: 20,
+            modified: '2026-10-18T10:00:00Z',
+        }));
     });
 
     afterEach(() => {
@@ -44,10 +56,14 @@ describe('ViewPageComponent', () => {
         const element = await open({ path: 'Docs/Trip/notes.txt' });
 
         expect(api.properties).toHaveBeenCalledWith('Docs/Trip/notes.txt');
-        await vi.waitFor(() => expect(element.querySelector('.cm-content')?.textContent).toContain('Text of Docs/Trip/notes.txt'));
+        await vi.waitFor(() =>
+            expect(element.querySelector('.cm-content')?.textContent).toContain('Text of Docs/Trip/notes.txt'),
+        );
         expect(element.querySelector('.text-view')!.classList).toContain('prose');
         expect(element.querySelector('.view-page-title strong')!.textContent).toBe('notes.txt');
-        expect(element.querySelector('a[aria-label="Open its folder"]')!.getAttribute('href')).toBe('./?path=Docs%2FTrip');
+        expect(element.querySelector('a[aria-label="Open its folder"]')!.getAttribute('href')).toBe(
+            './?path=Docs%2FTrip',
+        );
         expect(element.querySelector('a[aria-label="Download"]')).not.toBeNull();
         expect(TestBed.inject(Title).getTitle()).toBe('notes.txt – SFE');
     });
@@ -60,7 +76,9 @@ describe('ViewPageComponent', () => {
 
         element = await open({ path: 'Docs/backup.zip', asText: '1' });
 
-        await vi.waitFor(() => expect(element.querySelector('.cm-content')?.textContent).toContain('Text of Docs/backup.zip'));
+        await vi.waitFor(() =>
+            expect(element.querySelector('.cm-content')?.textContent).toContain('Text of Docs/backup.zip'),
+        );
     });
 
     it('says when the file is not there or not visible', async () => {

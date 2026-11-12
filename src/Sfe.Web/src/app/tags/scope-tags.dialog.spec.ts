@@ -1,10 +1,27 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FolderDefaults, FolderDefaultTagsResult, ScopeTagChangeResult, ScopeTags, TagScope, TagSummary } from '../core/models';
+import {
+    FolderDefaults,
+    FolderDefaultTagsResult,
+    ScopeTagChangeResult,
+    ScopeTags,
+    TagScope,
+    TagSummary,
+} from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
-import { ApiMock, buttonNamed, limitedConfig, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    summary,
+    tag,
+    testProviders,
+} from '../../testing/fakes';
 import { ScopeTagsDialog } from './scope-tags.dialog';
 
 describe('ScopeTagsDialog', () => {
@@ -18,13 +35,16 @@ describe('ScopeTagsDialog', () => {
     const sun = summary(tag('sun'));
     const folder: TagScope = { path: 'Media', recursive: false, query: null };
 
-    const section = (heading: string) => [...element.querySelectorAll('.tag-group')].find(g => g.querySelector('h3')!.textContent === heading);
-    const chips = (heading: string) => [...section(heading)?.querySelectorAll('.tag-name') ?? []].map(chip => chip.textContent!.trim());
+    const section = (heading: string) =>
+        [...element.querySelectorAll('.tag-group')].find((g) => g.querySelector('h3')!.textContent === heading);
+    const chips = (heading: string) =>
+        [...(section(heading)?.querySelectorAll('.tag-name') ?? [])].map((chip) => chip.textContent!.trim());
     const picker = () => element.querySelector<HTMLInputElement>('sfe-tag-picker:not(.default-picker) input');
     const defaultPicker = () => element.querySelector<HTMLInputElement>('sfe-tag-picker.default-picker input');
     const defaultSection = () => element.querySelector<HTMLElement>('.default-tags');
     const defaultConfirm = () => element.querySelector<HTMLElement>('.default-confirm');
-    const defaultChips = () => [...defaultSection()!.querySelectorAll('.tag-name')].map(chip => chip.textContent!.trim());
+    const defaultChips = () =>
+        [...defaultSection()!.querySelectorAll('.tag-name')].map((chip) => chip.textContent!.trim());
     const noDefaults = (path = 'Media'): FolderDefaults => ({ path, own: [], inherited: [] });
     const options = () => [...element.querySelectorAll<HTMLLIElement>('.tag-options li')];
     const confirmBox = () => element.querySelector<HTMLElement>('.scope-confirm');
@@ -114,7 +134,7 @@ describe('ScopeTagsDialog', () => {
     it('adds the confirmed tag to every file of the folder tree, then counts again', async () => {
         const tree = { ...folder, recursive: true };
         await open(tree, tags(tree, 4));
-        const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => { });
+        const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => {});
         const show = vi.spyOn(toasts, 'show');
         api.changeScopeTags.mockResolvedValue(changed(tree, 4, 4, 0));
 
@@ -133,7 +153,7 @@ describe('ScopeTagsDialog', () => {
 
     it('asks before removing a tag from the files having it', async () => {
         await open(folder, tags(folder, 3, [sun, 2]));
-        const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => { });
+        const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => {});
         api.changeScopeTags.mockResolvedValue(changed(folder, 3, 0, 2));
 
         section('On some of these files')!.querySelector<HTMLButtonElement>('.tag-remove')!.click();
@@ -166,7 +186,7 @@ describe('ScopeTagsDialog', () => {
         const created = tag('Holiday');
         api.createTag.mockResolvedValue(created);
         api.changeScopeTags.mockResolvedValue(changed(folder, 1, 1, 0));
-        vi.spyOn(store, 'applyScopeTags').mockImplementation(() => { });
+        vi.spyOn(store, 'applyScopeTags').mockImplementation(() => {});
 
         picker()!.focus();
         picker()!.value = 'Holiday';
@@ -212,7 +232,11 @@ describe('ScopeTagsDialog', () => {
         }
 
         it('lists the own default tags of the folder and those of its parents', async () => {
-            api.folderDefaultTags.mockResolvedValue({ path: 'Media/Holidays', own: [beach], inherited: [{ path: 'Media', tag: sun }] });
+            api.folderDefaultTags.mockResolvedValue({
+                path: 'Media/Holidays',
+                own: [beach],
+                inherited: [{ path: 'Media', tag: sun }],
+            });
             await open({ ...folder, path: 'Media/Holidays' }, tags(folder, 0));
 
             expect(api.folderDefaultTags).toHaveBeenCalledWith('Media/Holidays', expect.any(AbortSignal));
@@ -223,40 +247,57 @@ describe('ScopeTagsDialog', () => {
         it('adds a default tag for the new files only, or for the files already there too', async () => {
             await open(folder, tags(folder, 3));
             const refresh = vi.spyOn(store, 'refresh').mockResolvedValue();
-            const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => { });
+            const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => {});
             const show = vi.spyOn(toasts, 'show');
             api.changeFolderDefaultTags.mockResolvedValue(saved({ ...noDefaults(), own: [beach] }));
 
             await pickDefault(beach);
-            expect(defaultConfirm()!.textContent).toContain('Give “Beach” to every file put into “Media” or its sub-folders from now on?');
+            expect(defaultConfirm()!.textContent).toContain(
+                'Give “Beach” to every file put into “Media” or its sub-folders from now on?',
+            );
             expect(api.changeFolderDefaultTags).not.toHaveBeenCalled();
             buttonNamed(defaultConfirm()!, 'New files only')!.click();
             await settle();
 
-            expect(api.changeFolderDefaultTags).toHaveBeenCalledWith({ path: 'Media', add: [beach.id], addToFiles: false });
+            expect(api.changeFolderDefaultTags).toHaveBeenCalledWith({
+                path: 'Media',
+                add: [beach.id],
+                addToFiles: false,
+            });
             expect(show).toHaveBeenCalledWith('“Beach” is a default tag of “Media”: new files there get it.');
             expect(applied).not.toHaveBeenCalled();
             expect(refresh).toHaveBeenCalled();
             expect(defaultConfirm()).toBeNull();
             expect(defaultChips()).toEqual(['Beach']);
 
-            api.changeFolderDefaultTags.mockResolvedValue(saved({ ...noDefaults(), own: [beach, sun] }, changed({ ...folder, recursive: true }, 3, 3, 0)));
+            api.changeFolderDefaultTags.mockResolvedValue(
+                saved({ ...noDefaults(), own: [beach, sun] }, changed({ ...folder, recursive: true }, 3, 3, 0)),
+            );
             await pickDefault(sun);
             buttonNamed(defaultConfirm()!, 'Existing files too')!.click();
             await settle();
 
-            expect(api.changeFolderDefaultTags).toHaveBeenLastCalledWith({ path: 'Media', add: [sun.id], addToFiles: true });
+            expect(api.changeFolderDefaultTags).toHaveBeenLastCalledWith({
+                path: 'Media',
+                add: [sun.id],
+                addToFiles: true,
+            });
             expect(show).toHaveBeenLastCalledWith('“sun” is a default tag of “Media”: added to 3 files.');
-            expect(applied).toHaveBeenCalledWith({ path: 'Media', recursive: true, query: null }, { add: expect.objectContaining({ id: sun.id }) });
+            expect(applied).toHaveBeenCalledWith(
+                { path: 'Media', recursive: true, query: null },
+                { add: expect.objectContaining({ id: sun.id }) },
+            );
         });
 
         it('asks whether the files already there keep a default tag taken off the folder', async () => {
             api.folderDefaultTags.mockResolvedValue({ ...noDefaults(), own: [beach] });
             await open(folder, tags(folder, 3, [beach, 3]));
             vi.spyOn(store, 'refresh').mockResolvedValue();
-            const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => { });
+            const applied = vi.spyOn(store, 'applyScopeTags').mockImplementation(() => {});
             const show = vi.spyOn(toasts, 'show');
-            api.changeFolderDefaultTags.mockResolvedValue(saved(noDefaults(), changed({ ...folder, recursive: true }, 3, 0, 3)));
+            api.changeFolderDefaultTags.mockResolvedValue(
+                saved(noDefaults(), changed({ ...folder, recursive: true }, 3, 0, 3)),
+            );
 
             defaultSection()!.querySelector<HTMLButtonElement>('.tag-remove')!.click();
             await settle();
@@ -266,7 +307,11 @@ describe('ScopeTagsDialog', () => {
             buttonNamed(defaultConfirm()!, 'Remove it from the files too')!.click();
             await settle();
 
-            expect(api.changeFolderDefaultTags).toHaveBeenCalledWith({ path: 'Media', remove: [beach.id], removeFromFiles: true });
+            expect(api.changeFolderDefaultTags).toHaveBeenCalledWith({
+                path: 'Media',
+                remove: [beach.id],
+                removeFromFiles: true,
+            });
             expect(show).toHaveBeenCalledWith('“Beach” is no longer a default tag of “Media”: removed from 3 files.');
             expect(applied).toHaveBeenCalledWith({ path: 'Media', recursive: true, query: null }, { remove: beach.id });
             expect(defaultSection()!.textContent).toContain('This folder has no default tags.');
@@ -275,7 +320,9 @@ describe('ScopeTagsDialog', () => {
         it('keeps the change waiting when a scan is running', async () => {
             await open(folder, tags(folder, 1));
             const error = vi.spyOn(toasts, 'error');
-            api.changeFolderDefaultTags.mockResolvedValue({ detail: 'A scan is running: try again when it has finished.' });
+            api.changeFolderDefaultTags.mockResolvedValue({
+                detail: 'A scan is running: try again when it has finished.',
+            });
 
             await pickDefault(sun);
             buttonNamed(defaultConfirm()!, 'Existing files too')!.click();

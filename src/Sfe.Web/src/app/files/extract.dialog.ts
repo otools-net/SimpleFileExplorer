@@ -84,14 +84,17 @@ export class ExtractDialog {
     });
     /** Why the folder chosen can't be used; null when it can. */
     protected readonly refusal = computed(() => {
-        if (!this.browser.listing())
-            return 'Pick a folder.';
-        return this.browser.allows(Rights.extractFiles) ? null : 'You may not extract archives into this folder: open another.';
+        if (!this.browser.listing()) return 'Pick a folder.';
+        return this.browser.allows(Rights.extractFiles)
+            ? null
+            : 'You may not extract archives into this folder: open another.';
     });
-    protected readonly targetName = computed(() => baseName(this.target()) || this.config.config()?.rootName || 'the library');
+    protected readonly targetName = computed(
+        () => baseName(this.target()) || this.config.config()?.rootName || 'the library',
+    );
 
     constructor() {
-        registerDialog(dialogs => dialogs.extract, this);
+        registerDialog((dialogs) => dialogs.extract, this);
     }
 
     /** Extract…: the folder is picked, starting with the archive's. */
@@ -115,17 +118,18 @@ export class ExtractDialog {
 
     protected async confirm(): Promise<void> {
         const choice = this.choice();
-        if (!choice)
-            return;
-        const started = await whileBusy(this.busy, () => this.transfers.extract({
-            archive: choice.path,
-            target: this.target(),
-            newFolder: this.newFolder(),
-            folders: choice.folders,
-            files: choice.files,
-            unlock: choice.unlock ?? null,
-            password: choice.unlock ? null : this.password() || null,
-        }));
+        if (!choice) return;
+        const started = await whileBusy(this.busy, () =>
+            this.transfers.extract({
+                archive: choice.path,
+                target: this.target(),
+                newFolder: this.newFolder(),
+                folders: choice.folders,
+                files: choice.files,
+                unlock: choice.unlock ?? null,
+                password: choice.unlock ? null : this.password() || null,
+            }),
+        );
         // The password isn't kept: the job has it while it runs.
         this.password.set('');
         if (started) {
@@ -139,8 +143,7 @@ export class ExtractDialog {
 export function stemOf(name: string): string {
     const lower = name.toLowerCase();
     for (const suffix of ['.tar.gz', '.tar.bz2', '.tar.xz'])
-        if (lower.endsWith(suffix) && name.length > suffix.length)
-            return name.slice(0, -suffix.length);
+        if (lower.endsWith(suffix) && name.length > suffix.length) return name.slice(0, -suffix.length);
     const dot = name.lastIndexOf('.');
     return dot > 0 ? name.slice(0, dot) : name;
 }

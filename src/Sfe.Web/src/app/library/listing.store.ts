@@ -57,15 +57,15 @@ export class ListingStore {
 
     /** The loaded files that have a viewer (media, text...), in order: what the viewer steps through. */
     readonly viewable = computed(() => this.items().filter(isViewable));
-    readonly folders = computed(() => this.items().filter(item => item.kind === 'directory'));
+    readonly folders = computed(() => this.items().filter((item) => item.kind === 'directory'));
     /** The loaded files (not folders), in listing order. */
-    readonly files = computed(() => this.items().filter(item => item.kind !== 'directory'));
+    readonly files = computed(() => this.items().filter((item) => item.kind !== 'directory'));
     readonly searching = computed(() => Boolean(this.route().q));
     readonly sort = computed(() => currentSort(this.route()));
     /** What folder rules let the session do in the folder listed; null when none apply to it, and for searches. */
     readonly folderAccess = computed(() => {
         const page = this.listing();
-        return page && 'directoryCount' in page ? page.access ?? null : null;
+        return page && 'directoryCount' in page ? (page.access ?? null) : null;
     });
 
     /**
@@ -73,13 +73,14 @@ export class ListingStore {
      * let through there. The server checks again: this only hides what would be refused.
      */
     can(right: string, item?: LibraryItem | null): boolean {
-        if (!this.config.can(right))
-            return false;
+        if (!this.config.can(right)) return false;
         const access = this.folderAccess();
-        if (!access)
-            return true;
+        if (!access) return true;
         const children = access.children ?? {};
-        const own = item ? children[item.name] ?? Object.entries(children).find(([name]) => name.toLowerCase() === item.name.toLowerCase())?.[1] : undefined;
+        const own = item
+            ? (children[item.name] ??
+              Object.entries(children).find(([name]) => name.toLowerCase() === item.name.toLowerCase())?.[1])
+            : undefined;
         return (own ?? access).rights.includes(right);
     }
 
@@ -116,7 +117,9 @@ export class ListingStore {
      * `href` (what RouterLink makes: under the app's base, so it holds under a virtual directory).
      */
     pageUrl(params: ReturnType<typeof routeParams>): string {
-        return this.locations.prepareExternalUrl(this.router.serializeUrl(this.router.createUrlTree(['/'], { queryParams: params })));
+        return this.locations.prepareExternalUrl(
+            this.router.serializeUrl(this.router.createUrlTree(['/'], { queryParams: params })),
+        );
     }
 
     setView(view: View): void {
@@ -147,31 +150,25 @@ export class ListingStore {
         try {
             const minimum = Math.max(this.pageSize(), restore.loaded || 0);
             const page = await this.fetchPage(null, minimum);
-            if (generation !== this.generation())
-                return;
+            if (generation !== this.generation()) return;
             this.accept(page);
             // The server caps a page (`MaxPageSize`): coming back to more items than that takes the next pages too,
             // or the scroll position below them couldn't be restored.
             while (restore.loaded && this.items().length < restore.loaded && this.hasMore()) {
                 const loaded = await this.loadMore();
-                if (generation !== this.generation())
-                    return;
-                if (!loaded)
-                    break;
+                if (generation !== this.generation()) return;
+                if (!loaded) break;
             }
             this.status.set('ready');
             this.loadSiblings(generation);
             // A search naming tags makes them the "last searched" ones.
-            if (/(^|[\s,-])(t|tag):/i.test(route.q))
-                this.sidebar.refresh();
+            if (/(^|[\s,-])(t|tag):/i.test(route.q)) this.sidebar.refresh();
             afterNextRender(() => restorePosition(restore), { injector: this.injector });
             const reveal = this.revealing;
             this.revealing = null;
-            if (reveal !== null && !route.q && parentPath(reveal) === route.path)
-                void this.show(reveal, generation);
+            if (reveal !== null && !route.q && parentPath(reveal) === route.path) void this.show(reveal, generation);
         } catch (error) {
-            if (generation !== this.generation())
-                return;
+            if (generation !== this.generation()) return;
             this.error.set(error instanceof ApiError ? error : new ApiError(0, String(error)));
             this.status.set('error');
         }
@@ -192,22 +189,25 @@ export class ListingStore {
     }
 
     private async show(path: string, generation: number): Promise<void> {
-        while (!this.items().some(item => item.path === path) && this.hasMore() && this.items().length < REVEAL_LIMIT) {
-            if (!await this.loadMore() || generation !== this.generation())
-                return;
+        while (
+            !this.items().some((item) => item.path === path) &&
+            this.hasMore() &&
+            this.items().length < REVEAL_LIMIT
+        ) {
+            if (!(await this.loadMore()) || generation !== this.generation()) return;
         }
-        const item = this.items().find(candidate => candidate.path === path);
-        if (generation !== this.generation())
-            return;
+        const item = this.items().find((candidate) => candidate.path === path);
+        if (generation !== this.generation()) return;
         if (!item) {
-            this.toasts.show(this.hasMore()
-                ? `“${baseName(path)}” is not among the first ${REVEAL_LIMIT.toLocaleString()} items of this folder: scroll down to find it.`
-                : `“${baseName(path)}” is not in this folder any more.`);
+            this.toasts.show(
+                this.hasMore()
+                    ? `“${baseName(path)}” is not among the first ${REVEAL_LIMIT.toLocaleString()} items of this folder: scroll down to find it.`
+                    : `“${baseName(path)}” is not in this folder any more.`,
+            );
             return;
         }
         this.highlight(path, () => {
-            if (isViewable(item))
-                this.dialogs.viewer()?.open(item);
+            if (isViewable(item)) this.dialogs.viewer()?.open(item);
         });
     }
 
@@ -216,38 +216,38 @@ export class ListingStore {
         clearTimeout(this.revealTimer);
         this.revealed.set(path);
         this.revealTimer = setTimeout(() => this.revealed.set(null), REVEAL_HIGHLIGHT);
-        afterNextRender(() => {
-            const element = [...document.querySelectorAll('sfe-listing [data-path]')].find(candidate => candidate.getAttribute('data-path') === path);
-            element?.scrollIntoView?.({ block: 'center' });
-            then?.();
-        }, { injector: this.injector });
+        afterNextRender(
+            () => {
+                const element = [...document.querySelectorAll('sfe-listing [data-path]')].find(
+                    (candidate) => candidate.getAttribute('data-path') === path,
+                );
+                element?.scrollIntoView?.({ block: 'center' });
+                then?.();
+            },
+            { injector: this.injector },
+        );
     }
 
     /** Fetches the next page (once at a time) and appends it. Resolves false when nothing more is available. */
     loadMore(): Promise<boolean> {
-        if (!this.hasMore())
-            return Promise.resolve(false);
-        if (this.loading)
-            return this.loading;
+        if (!this.hasMore()) return Promise.resolve(false);
+        if (this.loading) return this.loading;
 
         const generation = this.generation();
         this.loading = this.fetchPage(this.listing())
-            .then(page => {
-                if (generation !== this.generation())
-                    return false;
+            .then((page) => {
+                if (generation !== this.generation()) return false;
                 this.accept(page);
                 return true;
             })
             .catch((error: Error) => {
-                if (generation !== this.generation())
-                    return false;   // cancelled by navigating away
+                if (generation !== this.generation()) return false; // cancelled by navigating away
                 this.toasts.error(`Could not load more items: ${error.message}`);
                 this.hasMore.set(false);
                 return false;
             })
             .finally(() => {
-                if (generation === this.generation())
-                    this.loading = null;
+                if (generation === this.generation()) this.loading = null;
             });
         return this.loading;
     }
@@ -259,8 +259,7 @@ export class ListingStore {
      */
     async refresh(): Promise<void> {
         const route = this.route();
-        if (route.q || this.status() !== 'ready' || this.loading)
-            return;
+        if (route.q || this.status() !== 'ready' || this.loading) return;
         const generation = this.generation();
         const wanted = Math.max(this.pageSize(), this.items().length);
         const items: LibraryItem[] = [];
@@ -268,22 +267,34 @@ export class ListingStore {
         let page: ListingPage;
         try {
             do {
-                page = await this.api.browse({ path: route.path, offset: items.length, limit: wanted - items.length, sort: this.sort(), desc: route.desc }, this.requests.signal);
-                if (generation !== this.generation())
-                    return;
+                page = await this.api.browse(
+                    {
+                        path: route.path,
+                        offset: items.length,
+                        limit: wanted - items.length,
+                        sort: this.sort(),
+                        desc: route.desc,
+                    },
+                    this.requests.signal,
+                );
+                if (generation !== this.generation()) return;
                 for (const item of page.items) {
                     if (!seen.has(item.path)) {
                         seen.add(item.path);
                         items.push(item);
                     }
                 }
-            } while (items.length < wanted && 'offset' in page && page.items.length && page.offset + page.items.length < page.total);
+            } while (
+                items.length < wanted &&
+                'offset' in page &&
+                page.items.length &&
+                page.offset + page.items.length < page.total
+            );
         } catch {
             // Seen at the next change, or the next visit.
             return;
         }
-        if (generation !== this.generation() || this.loading)
-            return;
+        if (generation !== this.generation() || this.loading) return;
         // Browsing pages (searches are not refreshed).
         const last = page as Extract<ListingPage, { offset: number }>;
         this.removedLoaded = 0;
@@ -292,8 +303,8 @@ export class ListingStore {
         this.hasMore.set(last.offset + last.items.length < last.total);
         this.total.set({ count: last.total, capped: false });
         const selection = this.selection();
-        if (selection.size && [...selection].some(path => !seen.has(path)))
-            this.selection.set(new Set([...selection].filter(path => seen.has(path))));
+        if (selection.size && [...selection].some((path) => !seen.has(path)))
+            this.selection.set(new Set([...selection].filter((path) => seen.has(path))));
     }
 
     /* ---------- Selection ---------- */
@@ -310,17 +321,14 @@ export class ListingStore {
         let items = [item];
         if (range && this.anchor && this.anchor !== item.path) {
             const listed = this.items();
-            const from = listed.findIndex(entry => entry.path === this.anchor);
-            const to = listed.findIndex(entry => entry.path === item.path);
-            if (from >= 0 && to >= 0)
-                items = listed.slice(Math.min(from, to), Math.max(from, to) + 1);
+            const from = listed.findIndex((entry) => entry.path === this.anchor);
+            const to = listed.findIndex((entry) => entry.path === item.path);
+            if (from >= 0 && to >= 0) items = listed.slice(Math.min(from, to), Math.max(from, to) + 1);
         }
         const selection = new Set(this.selection());
         for (const file of items) {
-            if (selected)
-                selection.add(file.path);
-            else
-                selection.delete(file.path);
+            if (selected) selection.add(file.path);
+            else selection.delete(file.path);
         }
         this.anchor = item.path;
         this.selection.set(selection);
@@ -328,12 +336,11 @@ export class ListingStore {
 
     /** Every file and folder loaded. */
     selectAll(): void {
-        this.selection.set(new Set(this.items().map(item => item.path)));
+        this.selection.set(new Set(this.items().map((item) => item.path)));
     }
 
     clearSelection(): void {
-        if (!this.selection().size)
-            return;
+        if (!this.selection().size) return;
         this.anchor = null;
         this.selection.set(new Set());
     }
@@ -341,35 +348,50 @@ export class ListingStore {
     /** The selected files, without the folders (what tagging a selection acts on). */
     selectedFiles(): LibraryItem[] {
         const selection = this.selection();
-        return this.files().filter(item => selection.has(item.path));
+        return this.files().filter((item) => selection.has(item.path));
     }
 
     /** The selected files and folders, in listing order. */
     selectedItems(): LibraryItem[] {
         const selection = this.selection();
-        return this.items().filter(item => selection.has(item.path));
+        return this.items().filter((item) => selection.has(item.path));
     }
 
     /* ---------- Tags of the listed files, kept in step with the tag dialogs ---------- */
 
     applyFileTags(files: FileTags[]): void {
-        const byPath = new Map(files.map(file => [file.path, file.tags]));
+        const byPath = new Map(files.map((file) => [file.path, file.tags]));
         // Tagging indexes the files it changes.
-        this.updateItems(item => byPath.has(item.path) ? { ...item, tags: byPath.get(item.path), indexed: item.indexed === false || item.indexed } : item);
+        this.updateItems((item) =>
+            byPath.has(item.path)
+                ? { ...item, tags: byPath.get(item.path), indexed: item.indexed === false || item.indexed }
+                : item,
+        );
         this.sidebar.refresh();
     }
 
     applyTagChanged(tag: TagDetails): void {
-        const summary: TagSummary = { id: tag.id, name: tag.name, displayName: tag.displayName, color: tag.color, isCategory: tag.isCategory, isHidden: tag.isHidden };
+        const summary: TagSummary = {
+            id: tag.id,
+            name: tag.name,
+            displayName: tag.displayName,
+            color: tag.color,
+            isCategory: tag.isCategory,
+            isHidden: tag.isHidden,
+        };
         // The display name of tags disambiguated by this one may change too: their chips are refreshed on next load.
-        this.updateItems(item => item.tags?.some(t => t.id === tag.id)
-            ? { ...item, tags: item.tags.map(t => t.id === tag.id ? summary : t) }
-            : item);
+        this.updateItems((item) =>
+            item.tags?.some((t) => t.id === tag.id)
+                ? { ...item, tags: item.tags.map((t) => (t.id === tag.id ? summary : t)) }
+                : item,
+        );
         this.sidebar.refresh();
     }
 
     applyTagDeleted(id: number): void {
-        this.updateItems(item => item.tags?.some(t => t.id === id) ? { ...item, tags: item.tags.filter(t => t.id !== id) } : item);
+        this.updateItems((item) =>
+            item.tags?.some((t) => t.id === id) ? { ...item, tags: item.tags.filter((t) => t.id !== id) } : item,
+        );
         this.sidebar.refresh();
     }
 
@@ -383,20 +405,21 @@ export class ListingStore {
         const inScope = scope.query
             ? () => route.q.trim() === scope.query && route.path === scope.path
             : (item: LibraryItem) => {
-                const folder = parentPath(item.path);
-                return folder === scope.path || scope.recursive && (scope.path === '' || folder.startsWith(`${scope.path}/`));
-            };
-        this.updateItems(item => {
-            if (item.kind === 'directory' || !inScope(item))
-                return item;
+                  const folder = parentPath(item.path);
+                  return (
+                      folder === scope.path ||
+                      (scope.recursive && (scope.path === '' || folder.startsWith(`${scope.path}/`)))
+                  );
+              };
+        this.updateItems((item) => {
+            if (item.kind === 'directory' || !inScope(item)) return item;
             // A folder scope is indexed before it is tagged.
-            if (item.indexed === false)
-                item = { ...item, indexed: true };
+            if (item.indexed === false) item = { ...item, indexed: true };
             const tags = item.tags ?? [];
-            if (change.add && !tags.some(t => t.id === change.add!.id))
+            if (change.add && !tags.some((t) => t.id === change.add!.id))
                 return { ...item, tags: [...tags, change.add] };
-            if (change.remove !== undefined && tags.some(t => t.id === change.remove))
-                return { ...item, tags: tags.filter(t => t.id !== change.remove) };
+            if (change.remove !== undefined && tags.some((t) => t.id === change.remove))
+                return { ...item, tags: tags.filter((t) => t.id !== change.remove) };
             return item;
         });
         this.sidebar.refresh();
@@ -404,17 +427,19 @@ export class ListingStore {
 
     /** The tags of a viewed file become the sidebar's "last viewed" tags. */
     reportView(item: LibraryItem): void {
-        if (!item.tags?.length)
-            return;
-        this.api.fileViewed(item.path)
+        if (!item.tags?.length) return;
+        this.api
+            .fileViewed(item.path)
             .then(() => this.sidebar.refresh())
-            .catch(() => { /* not worth bothering the user */ });
+            .catch(() => {
+                /* not worth bothering the user */
+            });
     }
 
     private updateItems(change: (item: LibraryItem) => LibraryItem): void {
-        this.items.update(items => {
+        this.items.update((items) => {
             let changed = false;
-            const updated = items.map(item => {
+            const updated = items.map((item) => {
                 const next = change(item);
                 changed ||= next !== item;
                 return next;
@@ -429,10 +454,12 @@ export class ListingStore {
      * A listed file saved over in this tab (the change feed tells only the others): its new size, time and picture
      * size, so that its preview and the viewer show it as it is now (their addresses carry the time).
      */
-    applySaved(path: string, change: Pick<LibraryItem, 'size' | 'modified'> & Partial<Pick<LibraryItem, 'width' | 'height'>>): void {
-        if (change.modified)
-            markSaved(path, change.modified);
-        this.updateItems(item => item.path === path ? { ...item, ...change } : item);
+    applySaved(
+        path: string,
+        change: Pick<LibraryItem, 'size' | 'modified'> & Partial<Pick<LibraryItem, 'width' | 'height'>>,
+    ): void {
+        if (change.modified) markSaved(path, change.modified);
+        this.updateItems((item) => (item.path === path ? { ...item, ...change } : item));
     }
 
     /**
@@ -441,57 +468,76 @@ export class ListingStore {
      */
     applyAdded(item: LibraryItem): void {
         const route = this.route();
-        if (route.q || parentPath(item.path) !== route.path || this.items().some(existing => existing.path === item.path))
+        if (
+            route.q ||
+            parentPath(item.path) !== route.path ||
+            this.items().some((existing) => existing.path === item.path)
+        )
             return;
-        this.items.update(items => {
+        this.items.update((items) => {
             const folder = item.kind === 'directory';
-            const sameKind = items.map((existing, index) => ({ existing, index })).filter(e => (e.existing.kind === 'directory') === folder);
+            const sameKind = items
+                .map((existing, index) => ({ existing, index }))
+                .filter((e) => (e.existing.kind === 'directory') === folder);
             const desc = route.desc;
-            const after = this.sort() === 'name'
-                ? sameKind.find(e => compareNames(item.name, e.existing.name) * (desc ? -1 : 1) < 0)
-                : sameKind[0];
+            const after =
+                this.sort() === 'name'
+                    ? sameKind.find((e) => compareNames(item.name, e.existing.name) * (desc ? -1 : 1) < 0)
+                    : sameKind[0];
             // Folders come first: a folder sorting after every loaded one goes before the first file.
             const index = after?.index ?? (sameKind.length ? sameKind.at(-1)!.index + 1 : folder ? 0 : items.length);
             return [...items.slice(0, index), item, ...items.slice(index)];
         });
-        this.listing.update(page => page && 'directoryCount' in page
-            ? { ...page, total: page.total + 1, ...(item.kind === 'directory' ? { directoryCount: page.directoryCount + 1 } : { fileCount: page.fileCount + 1 }) }
-            : page);
-        this.total.update(total => total && { ...total, count: total.count + 1 });
+        this.listing.update((page) =>
+            page && 'directoryCount' in page
+                ? {
+                      ...page,
+                      total: page.total + 1,
+                      ...(item.kind === 'directory'
+                          ? { directoryCount: page.directoryCount + 1 }
+                          : { fileCount: page.fileCount + 1 }),
+                  }
+                : page,
+        );
+        this.total.update((total) => total && { ...total, count: total.count + 1 });
         this.highlight(item.path);
     }
 
     /** The listed item `oldPath` was renamed to `item`: replaced where it is (selected still if it was), and highlighted. */
     applyRenamed(oldPath: string, item: LibraryItem): void {
-        this.updateItems(existing => existing.path === oldPath ? item : existing);
+        this.updateItems((existing) => (existing.path === oldPath ? item : existing));
         if (this.selection().has(oldPath)) {
             const selection = new Set(this.selection());
             selection.delete(oldPath);
             selection.add(item.path);
             this.selection.set(selection);
         }
-        if (this.anchor === oldPath)
-            this.anchor = item.path;
+        if (this.anchor === oldPath) this.anchor = item.path;
         this.highlight(item.path);
     }
 
     /** Listed items just deleted: taken out of the listing, its counts and the selection, without loading it again. */
     applyRemoved(paths: readonly string[]): void {
         const gone = new Set(paths);
-        const removed = this.items().filter(item => gone.has(item.path));
-        if (!removed.length)
-            return;
-        const folders = removed.filter(item => item.kind === 'directory').length;
-        this.items.update(items => items.filter(item => !gone.has(item.path)));
-        this.listing.update(page => page && 'directoryCount' in page
-            ? { ...page, total: page.total - removed.length, directoryCount: page.directoryCount - folders, fileCount: page.fileCount - (removed.length - folders) }
-            : page);
-        this.total.update(total => total && { ...total, count: Math.max(0, total.count - removed.length) });
+        const removed = this.items().filter((item) => gone.has(item.path));
+        if (!removed.length) return;
+        const folders = removed.filter((item) => item.kind === 'directory').length;
+        this.items.update((items) => items.filter((item) => !gone.has(item.path)));
+        this.listing.update((page) =>
+            page && 'directoryCount' in page
+                ? {
+                      ...page,
+                      total: page.total - removed.length,
+                      directoryCount: page.directoryCount - folders,
+                      fileCount: page.fileCount - (removed.length - folders),
+                  }
+                : page,
+        );
+        this.total.update((total) => total && { ...total, count: Math.max(0, total.count - removed.length) });
         this.removedLoaded += removed.length;
-        if ([...this.selection()].some(path => gone.has(path)))
-            this.selection.set(new Set([...this.selection()].filter(path => !gone.has(path))));
-        if (this.anchor && gone.has(this.anchor))
-            this.anchor = null;
+        if ([...this.selection()].some((path) => gone.has(path)))
+            this.selection.set(new Set([...this.selection()].filter((path) => !gone.has(path))));
+        if (this.anchor && gone.has(this.anchor)) this.anchor = null;
     }
 
     /* ---------- Pages ---------- */
@@ -508,8 +554,14 @@ export class ListingStore {
         const sort = this.sort();
         const signal = this.requests.signal;
         if (q)
-            return this.api.search({ q, path, after: previous && 'next' in previous ? previous.next : null, limit, sort, desc }, signal);
-        const offset = previous && 'offset' in previous ? Math.max(0, previous.offset + previous.items.length - this.removedLoaded) : 0;
+            return this.api.search(
+                { q, path, after: previous && 'next' in previous ? previous.next : null, limit, sort, desc },
+                signal,
+            );
+        const offset =
+            previous && 'offset' in previous
+                ? Math.max(0, previous.offset + previous.items.length - this.removedLoaded)
+                : 0;
         this.removedLoaded = 0;
         return this.api.browse({ path, offset, limit, sort, desc }, signal);
     }
@@ -517,16 +569,14 @@ export class ListingStore {
     private accept(page: ListingPage): void {
         this.listing.set(page);
         // A folder changed since its first page (a new folder, a rename) can list an item again on the next one.
-        this.items.update(items => {
-            const loaded = new Set(items.map(item => item.path));
-            return [...items, ...page.items.filter(item => !loaded.has(item.path))];
+        this.items.update((items) => {
+            const loaded = new Set(items.map((item) => item.path));
+            return [...items, ...page.items.filter((item) => !loaded.has(item.path))];
         });
         this.hasMore.set('hasMore' in page ? page.hasMore : page.offset + page.items.length < page.total);
         // A search counts its matches on its first page only.
-        if (!('hasMore' in page))
-            this.total.set({ count: page.total, capped: false });
-        else if (page.total != null)
-            this.total.set({ count: page.total, capped: Boolean(page.totalCapped) });
+        if (!('hasMore' in page)) this.total.set({ count: page.total, capped: false });
+        else if (page.total != null) this.total.set({ count: page.total, capped: Boolean(page.totalCapped) });
     }
 
     /**
@@ -535,20 +585,21 @@ export class ListingStore {
      */
     private loadSiblings(generation: number): void {
         const { path, q, desc } = this.route();
-        if (q || !path)
-            return;
-        this.api.siblings({ path, sort: this.sort(), desc }, this.requests.signal)
-            .then(siblings => {
-                if (generation === this.generation())
-                    this.siblings.set(siblings);
+        if (q || !path) return;
+        this.api
+            .siblings({ path, sort: this.sort(), desc }, this.requests.signal)
+            .then((siblings) => {
+                if (generation === this.generation()) this.siblings.set(siblings);
             })
-            .catch(() => { /* the previous/next buttons stay disabled */ });
+            .catch(() => {
+                /* the previous/next buttons stay disabled */
+            });
     }
 }
 
 function readView(): View {
     const view = readPreference(VIEW_KEY);
-    return VIEWS.includes(view as View) ? view as View : 'grid';
+    return VIEWS.includes(view as View) ? (view as View) : 'grid';
 }
 
 /** Names as the server sorts them: numbers by value (“Episode 2” before “Episode 10”), case and accents aside. */

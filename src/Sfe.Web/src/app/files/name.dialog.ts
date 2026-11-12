@@ -11,7 +11,8 @@ import { Dialogs, registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
 
-type Mode = { kind: 'folder'; parent: string } | { kind: 'file'; parent: string } | { kind: 'rename'; item: LibraryItem };
+type Mode =
+    { kind: 'folder'; parent: string } | { kind: 'file'; parent: string } | { kind: 'rename'; item: LibraryItem };
 
 const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
 
@@ -65,14 +66,19 @@ export class NameDialog {
     protected readonly heading = computed(() => HEADINGS[this.mode()?.kind ?? 'folder']);
     protected readonly subtitle = computed(() => {
         const mode = this.mode();
-        if (!mode)
-            return null;
-        return mode.kind === 'rename' ? mode.item.name : `In ${mode.parent ? `“${mode.parent}”` : this.config.config()?.rootName ?? 'the library'}`;
+        if (!mode) return null;
+        return mode.kind === 'rename'
+            ? mode.item.name
+            : `In ${mode.parent ? `“${mode.parent}”` : (this.config.config()?.rootName ?? 'the library')}`;
     });
-    protected readonly actionLabel = computed(() => this.mode()?.kind === 'rename' ? 'Rename' : 'Create');
+    protected readonly actionLabel = computed(() => (this.mode()?.kind === 'rename' ? 'Rename' : 'Create'));
     protected readonly actionTitle = computed(() => {
         const kind = this.mode()?.kind;
-        return kind === 'rename' ? 'Give it this name (Enter)' : kind === 'file' ? 'Create the empty file (Enter)' : 'Create the folder (Enter)';
+        return kind === 'rename'
+            ? 'Give it this name (Enter)'
+            : kind === 'file'
+              ? 'Create the empty file (Enter)'
+              : 'Create the folder (Enter)';
     });
     protected readonly hidden = computed(() => this.name().trim().startsWith('.'));
     protected readonly canSave = computed(() => {
@@ -82,7 +88,7 @@ export class NameDialog {
     });
 
     constructor() {
-        registerDialog(dialogs => dialogs.name, this);
+        registerDialog((dialogs) => dialogs.name, this);
     }
 
     /** Asks for the name of a new folder in `parent` (the folder listed by default). */
@@ -108,7 +114,10 @@ export class NameDialog {
         // The name selected up to its extension (a file's), so that typing replaces the name and keeps the type.
         const input = this.input().nativeElement;
         input.value = name;
-        const dot = mode.kind === 'file' || (mode.kind === 'rename' && mode.item.kind !== 'directory') ? name.lastIndexOf('.') : -1;
+        const dot =
+            mode.kind === 'file' || (mode.kind === 'rename' && mode.item.kind !== 'directory')
+                ? name.lastIndexOf('.')
+                : -1;
         input.focus();
         input.setSelectionRange(0, dot > 0 ? dot : name.length);
     }
@@ -121,18 +130,23 @@ export class NameDialog {
     protected async submit(event: Event): Promise<void> {
         event.preventDefault();
         const mode = this.mode();
-        if (!mode || !this.canSave() || this.saving())
-            return;
+        if (!mode || !this.canSave() || this.saving()) return;
         const name = this.name();
         let result: FileOperationResult;
         try {
-            result = await whileBusy(this.saving, () => mode.kind === 'rename'
-                ? this.api.renameItem(mode.item.path, name)
-                : mode.kind === 'file' ? this.api.createFile(mode.parent, name) : this.api.createFolder(mode.parent, name));
+            result = await whileBusy(this.saving, () =>
+                mode.kind === 'rename'
+                    ? this.api.renameItem(mode.item.path, name)
+                    : mode.kind === 'file'
+                      ? this.api.createFile(mode.parent, name)
+                      : this.api.createFolder(mode.parent, name),
+            );
         } catch (error) {
-            this.error.set(error instanceof ApiError && error.status === 404
-                ? 'It is not there any more: it may have been moved or deleted.'
-                : (error as Error).message);
+            this.error.set(
+                error instanceof ApiError && error.status === 404
+                    ? 'It is not there any more: it may have been moved or deleted.'
+                    : (error as Error).message,
+            );
             return;
         }
         if (isFileConflict(result)) {
@@ -145,7 +159,11 @@ export class NameDialog {
             const renamed = result;
             this.toasts.show(`Renamed to “${renamed.name}”.`, {
                 timeout: 8000,
-                action: { label: 'Undo', title: `Give it back its name “${mode.item.name}”`, run: () => void this.undoRename(renamed, mode.item.name) },
+                action: {
+                    label: 'Undo',
+                    title: `Give it back its name “${mode.item.name}”`,
+                    run: () => void this.undoRename(renamed, mode.item.name),
+                },
             });
         } else {
             this.store.applyAdded(result);
@@ -159,7 +177,7 @@ export class NameDialog {
     /** The listing (and the quick links, which the server moved too) take the new name. */
     private renamed(oldPath: string, item: LibraryItem): void {
         this.store.applyRenamed(oldPath, item);
-        if (this.quickLinks.links().some(link => link.path === oldPath || link.path.startsWith(`${oldPath}/`)))
+        if (this.quickLinks.links().some((link) => link.path === oldPath || link.path.startsWith(`${oldPath}/`)))
             void this.quickLinks.load();
     }
 

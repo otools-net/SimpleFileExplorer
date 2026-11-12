@@ -42,11 +42,17 @@ export class ItemActions {
      * the viewer; other clicks open the link (new tab...).
      */
     openFile(event: MouseEvent, item: LibraryItem): void {
-        if (this.selectInstead(event, item))
-            return;
-        if (event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && this.view(item)) {
+        if (this.selectInstead(event, item)) return;
+        if (
+            event.button === 0 &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.shiftKey &&
+            !event.altKey &&
+            this.view(item)
+        ) {
             event.preventDefault();
-            return;     // the viewer reports the view itself
+            return; // the viewer reports the view itself
         }
         this.store.reportView(item);
     }

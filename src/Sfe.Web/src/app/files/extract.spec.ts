@@ -3,7 +3,17 @@ import { DirectoryListing, FileJobView, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { isExtractable } from '../formats/formats';
-import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    fakeConfig,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../testing/fakes';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { SelectionBarComponent } from '../library/selection-bar.component';
@@ -22,14 +32,37 @@ const photo = item('Media/beach.jpg', { size: 2048 });
 const archives = { archives: { maxCompressedTarMegabytes: 2048 } };
 
 function listing(path: string, items: LibraryItem[], access: DirectoryListing['access'] = null): DirectoryListing {
-    const folders = items.filter(i => i.kind === 'directory').length;
-    return { path, name: path.split('/').pop()!, parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: folders, fileCount: items.length - folders, access };
+    const folders = items.filter((i) => i.kind === 'directory').length;
+    return {
+        path,
+        name: path.split('/').pop()!,
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: folders,
+        fileCount: items.length - folders,
+        access,
+    };
 }
 
 function job(overrides: Partial<FileJobView> = {}): FileJobView {
     return {
-        id: 1, kind: 'extract', state: 'running', target: 'Media', total: 1, done: 0, bytesTotal: 4096, bytesDone: 1024, current: zip.path, conflict: null,
-        results: [], started: '2026-10-26T10:00:00Z', finished: null, ...overrides,
+        id: 1,
+        kind: 'extract',
+        state: 'running',
+        target: 'Media',
+        total: 1,
+        done: 0,
+        bytesTotal: 4096,
+        bytesDone: 1024,
+        current: zip.path,
+        conflict: null,
+        results: [],
+        started: '2026-10-26T10:00:00Z',
+        finished: null,
+        ...overrides,
     };
 }
 
@@ -38,7 +71,7 @@ async function setUp(config = fakeConfig(archives)): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: 'Media', previous: null, next: null, position: 1, count: 1 });
     api.browse.mockResolvedValue(listing('Media', [folder, zip, photo]));
     store.route.set({ path: 'Media', q: '', sort: '', desc: false });
@@ -50,17 +83,26 @@ afterEach(() => vi.restoreAllMocks());
 describe('Extracting archives', () => {
     it('knows archives by their names', async () => {
         await setUp();
-        for (const name of ['a.zip', 'a.7z', 'a.rar', 'a.tar', 'a.tar.gz', 'a.tgz', 'a.tar.xz', 'notes.txt.gz', 'a.bz2'])
+        for (const name of [
+            'a.zip',
+            'a.7z',
+            'a.rar',
+            'a.tar',
+            'a.tar.gz',
+            'a.tgz',
+            'a.tar.xz',
+            'notes.txt.gz',
+            'a.bz2',
+        ])
             expect(isExtractable(item(`x/${name}`)), name).toBe(true);
-        for (const name of ['a.txt', '.zip', 'a.zip.txt'])
-            expect(isExtractable(item(`x/${name}`)), name).toBe(false);
+        for (const name of ['a.txt', '.zip', 'a.zip.txt']) expect(isExtractable(item(`x/${name}`)), name).toBe(false);
         expect(isExtractable(item('x/a.zip', { kind: 'directory' }))).toBe(false);
         expect(stemOf('trip.tar.gz')).toBe('trip');
         expect(stemOf('trip.zip')).toBe('trip');
         expect(stemOf('.zip')).toBe('.zip');
     });
 
-    it('offers Extract to “name” and Extract… in an archive\'s menu, by rights', async () => {
+    it("offers Extract to “name” and Extract… in an archive's menu, by rights", async () => {
         await setUp();
         const open = vi.fn();
         TestBed.inject(Dialogs).extract.set({ open } as never);
@@ -69,32 +111,36 @@ describe('Extracting archives', () => {
         api.fileJobs.mockResolvedValue([job()]);
 
         const entries = menu.entries(zip);
-        expect(entries.map(e => e.id)).toContain('extractBeside');
-        expect(entries.find(e => e.id === 'extractBeside')!.label).toBe('Extract to “trip”');
-        expect(menu.entries(photo).map(e => e.id)).not.toContain('extract');
-        entries.find(e => e.id === 'extract')!.run();
+        expect(entries.map((e) => e.id)).toContain('extractBeside');
+        expect(entries.find((e) => e.id === 'extractBeside')!.label).toBe('Extract to “trip”');
+        expect(menu.entries(photo).map((e) => e.id)).not.toContain('extract');
+        entries.find((e) => e.id === 'extract')!.run();
         expect(open).toHaveBeenCalledWith({ path: zip.path, name: zip.name });
-        entries.find(e => e.id === 'extractBeside')!.run();
+        entries.find((e) => e.id === 'extractBeside')!.run();
         await settle();
         expect(api.startExtract).toHaveBeenCalledWith({ archive: zip.path, target: 'Media', newFolder: true });
 
         await loadConfig(api, limitedConfig([Rights.browse, Rights.viewFiles, Rights.download], archives));
-        expect(menu.entries(zip).map(e => e.id)).not.toContain('extract');
+        expect(menu.entries(zip).map((e) => e.id)).not.toContain('extract');
     });
 
     it('says when it is done, with what came out and a way to open it', async () => {
         await setUp();
         const toasts = TestBed.inject(ToastService);
         api.startExtract.mockResolvedValue(job());
-        api.fileJobs.mockResolvedValue([job({
-            state: 'completed', done: 1, finished: '2026-10-26T10:00:01Z',
-            results: [{ path: zip.path, newPath: 'Media/trip', status: 'done', message: '3 files (2 KB).' }],
-        })]);
+        api.fileJobs.mockResolvedValue([
+            job({
+                state: 'completed',
+                done: 1,
+                finished: '2026-10-26T10:00:01Z',
+                results: [{ path: zip.path, newPath: 'Media/trip', status: 'done', message: '3 files (2 KB).' }],
+            }),
+        ]);
 
         await TestBed.inject(FileTransfers).extract({ archive: zip.path, target: 'Media', newFolder: true });
         await settle();
 
-        const done = toasts.toasts().find(t => t.message.includes('extracted'))!;
+        const done = toasts.toasts().find((t) => t.message.includes('extracted'))!;
         expect(done.message).toBe('“trip.zip” extracted to “trip”. 3 files (2 KB).');
         const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => undefined as never);
         toasts.act(done, done.actions[0]);
@@ -105,14 +151,32 @@ describe('Extracting archives', () => {
         await setUp();
         const toasts = TestBed.inject(ToastService);
         api.startExtract.mockResolvedValue(job());
-        api.fileJobs.mockResolvedValue([job({
-            state: 'completed', done: 1, results: [{ path: zip.path, newPath: null, status: 'failed', message: 'That password doesn\'t open “trip.zip”: nothing was extracted.' }],
-        })]);
+        api.fileJobs.mockResolvedValue([
+            job({
+                state: 'completed',
+                done: 1,
+                results: [
+                    {
+                        path: zip.path,
+                        newPath: null,
+                        status: 'failed',
+                        message: "That password doesn't open “trip.zip”: nothing was extracted.",
+                    },
+                ],
+            }),
+        ]);
 
-        await TestBed.inject(FileTransfers).extract({ archive: zip.path, target: 'Media', newFolder: true, password: 'wrong' });
+        await TestBed.inject(FileTransfers).extract({
+            archive: zip.path,
+            target: 'Media',
+            newFolder: true,
+            password: 'wrong',
+        });
         await settle();
 
-        expect(toasts.toasts().map(t => t.message)).toContain('That password doesn\'t open “trip.zip”: nothing was extracted.');
+        expect(toasts.toasts().map((t) => t.message)).toContain(
+            "That password doesn't open “trip.zip”: nothing was extracted.",
+        );
     });
 
     it('asks the password again, as the extraction was asked, when it failed on it', async () => {
@@ -121,7 +185,16 @@ describe('Extracting archives', () => {
         TestBed.inject(Dialogs).extract.set({ open } as never);
         const toasts = TestBed.inject(ToastService);
         const failed = job({
-            state: 'completed', done: 1, results: [{ path: zip.path, newPath: null, status: 'needsPassword', message: "That password doesn't open “trip.zip”: nothing was extracted." }],
+            state: 'completed',
+            done: 1,
+            results: [
+                {
+                    path: zip.path,
+                    newPath: null,
+                    status: 'needsPassword',
+                    message: "That password doesn't open “trip.zip”: nothing was extracted.",
+                },
+            ],
         });
         api.fileJobs.mockResolvedValue([]);
         const fixture = TestBed.createComponent(OperationsPanelComponent);
@@ -131,15 +204,27 @@ describe('Extracting archives', () => {
         api.fileJobs.mockResolvedValue([failed]);
         const transfers = TestBed.inject(FileTransfers);
 
-        await transfers.extract({ archive: zip.path, target: 'Media/Holidays', newFolder: false, files: [4, 5], password: 'wrong' });
+        await transfers.extract({
+            archive: zip.path,
+            target: 'Media/Holidays',
+            newFolder: false,
+            files: [4, 5],
+            password: 'wrong',
+        });
         await settle();
         fixture.detectChanges();
 
-        const toast = toasts.toasts().find(t => t.message.includes("doesn't open"))!;
+        const toast = toasts.toasts().find((t) => t.message.includes("doesn't open"))!;
         expect(toast.error).toBe(true);
         toasts.act(toast, toast.actions[0]);
         expect(open).toHaveBeenCalledWith({
-            path: zip.path, name: 'trip.zip', folders: undefined, files: [4, 5], what: '2 items', target: 'Media/Holidays', newFolder: false,
+            path: zip.path,
+            name: 'trip.zip',
+            folders: undefined,
+            files: [4, 5],
+            what: '2 items',
+            target: 'Media/Holidays',
+            newFolder: false,
         });
         (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('[data-retry-password]')!.click();
         expect(open).toHaveBeenCalledTimes(2);
@@ -156,15 +241,17 @@ describe('Extracting archives', () => {
         const menu = TestBed.inject(ItemMenu);
 
         store.select(zip, true);
-        expect(menu.entries(zip).map(e => e.id)).not.toContain('extractEach');
+        expect(menu.entries(zip).map((e) => e.id)).not.toContain('extractEach');
         store.select(other, true);
-        menu.entries(zip).find(e => e.id === 'extractEach')!.run();
+        menu.entries(zip)
+            .find((e) => e.id === 'extractEach')!
+            .run();
         await settle();
         expect(api.startExtract).toHaveBeenCalledWith({ archive: zip.path, target: 'Media', newFolder: true });
         expect(api.startExtract).toHaveBeenCalledWith({ archive: other.path, target: 'Media', newFolder: true });
 
         store.select(photo, true);
-        expect(menu.entries(zip).map(e => e.id)).not.toContain('extractEach');
+        expect(menu.entries(zip).map((e) => e.id)).not.toContain('extractEach');
     });
 
     it('offers Extract… in the selection bar for one archive, Extract for several', async () => {
@@ -186,7 +273,9 @@ describe('Extracting archives', () => {
 
         store.select(other, true);
         fixture.detectChanges();
-        expect(buttonNamed(element, 'Extract')!.title).toBe('Extract the 2 archives here, each into a new folder named after it');
+        expect(buttonNamed(element, 'Extract')!.title).toBe(
+            'Extract the 2 archives here, each into a new folder named after it',
+        );
         buttonNamed(element, 'Extract')!.click();
         await settle();
         expect(api.startExtract).toHaveBeenCalledTimes(2);
@@ -206,7 +295,7 @@ describe('ExtractDialog', () => {
         return { fixture, element: fixture.nativeElement as HTMLElement };
     }
 
-    it('picks the folder, starting with the archive\'s, and extracts there with the password', async () => {
+    it("picks the folder, starting with the archive's, and extracts there with the password", async () => {
         await setUp();
         const { fixture, element } = create();
         api.startExtract.mockResolvedValue(job());
@@ -226,7 +315,15 @@ describe('ExtractDialog', () => {
         buttonNamed(element, 'Extract here')!.click();
         await settle();
 
-        expect(api.startExtract).toHaveBeenCalledWith({ archive: zip.path, target: 'Media', newFolder: true, folders: undefined, files: undefined, unlock: null, password: 'secret' });
+        expect(api.startExtract).toHaveBeenCalledWith({
+            archive: zip.path,
+            target: 'Media',
+            newFolder: true,
+            folders: undefined,
+            files: undefined,
+            unlock: null,
+            password: 'secret',
+        });
     });
 
     it('takes the entries chosen in the viewer with its unlock, and refuses a folder where the session may not extract', async () => {
@@ -236,7 +333,9 @@ describe('ExtractDialog', () => {
         api.fileJobs.mockResolvedValue([job()]);
         api.browse.mockResolvedValue(listing('Media', [folder], { rights: [Rights.browse], pathOnly: false }));
 
-        TestBed.inject(Dialogs).extract()!.open({ path: zip.path, name: zip.name, folders: [4], what: '“Day 1”', unlock: 'abc' });
+        TestBed.inject(Dialogs)
+            .extract()!
+            .open({ path: zip.path, name: zip.name, folders: [4], what: '“Day 1”', unlock: 'abc' });
         await settle();
         fixture.detectChanges();
 
@@ -245,15 +344,27 @@ describe('ExtractDialog', () => {
         expect(element.textContent).toContain('You may not extract archives into this folder');
         expect(buttonNamed(element, 'Extract here')!.disabled).toBe(true);
 
-        api.browse.mockResolvedValue(listing('Media/Holidays', [], { rights: [Rights.browse, Rights.extractFiles], pathOnly: false }));
-        [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')].find(b => b.textContent!.includes('Holidays'))!.click();
+        api.browse.mockResolvedValue(
+            listing('Media/Holidays', [], { rights: [Rights.browse, Rights.extractFiles], pathOnly: false }),
+        );
+        [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')]
+            .find((b) => b.textContent!.includes('Holidays'))!
+            .click();
         await settle();
         fixture.detectChanges();
         (element.querySelector('[data-new-folder]') as HTMLInputElement).click();
         buttonNamed(element, 'Extract here')!.click();
         await settle();
 
-        expect(api.startExtract).toHaveBeenCalledWith({ archive: zip.path, target: 'Media/Holidays', newFolder: false, folders: [4], files: undefined, unlock: 'abc', password: null });
+        expect(api.startExtract).toHaveBeenCalledWith({
+            archive: zip.path,
+            target: 'Media/Holidays',
+            newFolder: false,
+            folders: [4],
+            files: undefined,
+            unlock: 'abc',
+            password: null,
+        });
     });
 });
 
@@ -270,9 +381,20 @@ describe('OperationsPanelComponent, extractions', () => {
         expect(element.textContent).toContain('Extracting “trip.zip” to “Media”');
         expect(element.textContent).toContain('1 KB of 4 KB read');
 
-        api.fileJobs.mockResolvedValue([job({
-            state: 'completed', done: 1, results: [{ path: zip.path, newPath: 'Media/trip', status: 'done', message: '2 files (1 KB). Left out 1 entry: “../x”: the path goes up.' }],
-        })]);
+        api.fileJobs.mockResolvedValue([
+            job({
+                state: 'completed',
+                done: 1,
+                results: [
+                    {
+                        path: zip.path,
+                        newPath: 'Media/trip',
+                        status: 'done',
+                        message: '2 files (1 KB). Left out 1 entry: “../x”: the path goes up.',
+                    },
+                ],
+            }),
+        ]);
         api.cancelFileJob.mockResolvedValue(undefined);
         await TestBed.inject(FileTransfers).cancel(job());
         await settle();

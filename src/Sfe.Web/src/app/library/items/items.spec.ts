@@ -8,7 +8,19 @@ import { TrickplayMarksService } from '../../trickplay/trickplay-marks.service';
 import { FileTagsDialog } from '../../tags/file-tags.dialog';
 import { FilesTagsDialog } from '../../tags/files-tags.dialog';
 import type { ScopeTagsDialog } from '../../tags/scope-tags.dialog';
-import { ApiMock, deferred, fakeConfig, intersect, item, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../../testing/fakes';
+import {
+    ApiMock,
+    deferred,
+    fakeConfig,
+    intersect,
+    item,
+    loadConfig,
+    mockApi,
+    settle,
+    summary,
+    tag,
+    testProviders,
+} from '../../../testing/fakes';
 import { ContextMenu } from '../../menus/context-menu';
 import { OverflowRowDirective } from '../../menus/overflow-row';
 import { Dialogs } from '../dialogs.service';
@@ -28,7 +40,17 @@ let api: ApiMock;
 let store: ListingStore;
 
 function listing(items: LibraryItem[], hasMore = false): DirectoryListing {
-    return { path: '', name: 'Root', parentPath: null, items, offset: 0, limit: 100, total: items.length + (hasMore ? 1 : 0), directoryCount: 0, fileCount: items.length };
+    return {
+        path: '',
+        name: 'Root',
+        parentPath: null,
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length + (hasMore ? 1 : 0),
+        directoryCount: 0,
+        fileCount: items.length,
+    };
 }
 
 async function setUp(config = fakeConfig()): Promise<void> {
@@ -37,7 +59,7 @@ async function setUp(config = fakeConfig()): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: '', previous: null, next: null, position: 0, count: 0 });
 }
 
@@ -68,7 +90,8 @@ describe('SelectionBarComponent', () => {
         return fixture;
     }
 
-    const button = (element: HTMLElement, label: string) => [...element.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent!.trim() === label)!;
+    const button = (element: HTMLElement, label: string) =>
+        [...element.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent!.trim() === label)!;
 
     it('is hidden without a selection', async () => {
         await list([a, b]);
@@ -164,14 +187,10 @@ describe('SelectionBarComponent on a narrow screen', () => {
     /** jsdom has no layout: the strip `dockWidth`, the long count 200, the short one 90, Select all 80, Tags 60, the others 50. */
     function width(this: HTMLElement): number {
         const has = (name: string) => this.classList.contains(name);
-        if (has('selection-dock'))
-            return dockWidth;
-        if (has('visually-hidden'))
-            return 0;
-        if (has('selection-count'))
-            return has('selection-count-short') ? 90 : 200;
-        if (this.textContent?.trim() === 'Select all')
-            return 80;
+        if (has('selection-dock')) return dockWidth;
+        if (has('visually-hidden')) return 0;
+        if (has('selection-count')) return has('selection-count-short') ? 90 : 200;
+        if (this.textContent?.trim() === 'Select all') return 80;
         return has('primary') ? 60 : 50;
     }
 
@@ -180,9 +199,15 @@ describe('SelectionBarComponent on a narrow screen', () => {
         Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, get: width });
         Object.defineProperty(Element.prototype, 'clientWidth', { configurable: true, get: width });
         (window as { ResizeObserver?: unknown }).ResizeObserver = class {
-            observe(): void { /* measured by update() */ }
-            unobserve(): void { /* nothing observed */ }
-            disconnect(): void { /* nothing observed */ }
+            observe(): void {
+                /* measured by update() */
+            }
+            unobserve(): void {
+                /* nothing observed */
+            }
+            disconnect(): void {
+                /* nothing observed */
+            }
         };
     });
 
@@ -204,13 +229,18 @@ describe('SelectionBarComponent on a narrow screen', () => {
         await Promise.resolve();
         await settle();
         const element: HTMLElement = fixture.nativeElement;
-        const items = [...element.querySelectorAll<HTMLElement>('.selection-bar > :not(.visually-hidden):not(.overflow-more)')];
-        const name = (item: HTMLElement) => item.classList.contains('selection-count') ? item.className : item.textContent!.trim() || item.getAttribute('aria-label');
+        const items = [
+            ...element.querySelectorAll<HTMLElement>('.selection-bar > :not(.visually-hidden):not(.overflow-more)'),
+        ];
+        const name = (item: HTMLElement) =>
+            item.classList.contains('selection-count')
+                ? item.className
+                : item.textContent!.trim() || item.getAttribute('aria-label');
         return {
             row,
             total: items.reduce((sum, item) => sum + width.call(item), 0),
-            gone: items.filter(item => item.hasAttribute('data-overflowed')).map(name),
-            kept: items.filter(item => !item.hasAttribute('data-overflowed')).map(name),
+            gone: items.filter((item) => item.hasAttribute('data-overflowed')).map(name),
+            kept: items.filter((item) => !item.hasAttribute('data-overflowed')).map(name),
             more: element.querySelector('.overflow-more')!.classList.contains('shown'),
         };
     }
@@ -232,11 +262,31 @@ describe('SelectionBarComponent on a narrow screen', () => {
 
     it('then moves the buttons into "⋯" from the right; Clear, the count, Select all and Tags stay', async () => {
         const bar = await barAt(100);
-        expect(bar.kept).toEqual(['Clear the selection', 'selection-count selection-count-short', 'Select all', 'Tags']);
+        expect(bar.kept).toEqual([
+            'Clear the selection',
+            'selection-count selection-count-short',
+            'Select all',
+            'Tags',
+        ]);
         expect(bar.more).toBe(true);
-        expect(bar.row.target().entries().map(entry => entry.id)).toEqual(bar.gone.slice(1).map(label => ({
-            'Quick links': 'quickLinks', Rename: 'rename', Delete: 'delete', Move: 'move', Copy: 'copy', Download: 'download',
-        })[label as string]));
+        expect(
+            bar.row
+                .target()
+                .entries()
+                .map((entry) => entry.id),
+        ).toEqual(
+            bar.gone.slice(1).map(
+                (label) =>
+                    ({
+                        'Quick links': 'quickLinks',
+                        Rename: 'rename',
+                        Delete: 'delete',
+                        Move: 'move',
+                        Copy: 'copy',
+                        Download: 'download',
+                    })[label as string],
+            ),
+        );
         expect(bar.gone.slice(1)).toContain('Download');
     });
 
@@ -324,7 +374,7 @@ describe('ItemActions', () => {
     });
 
     it('searches for a tag clicked on a file', () => {
-        const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => { });
+        const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => {});
 
         TestBed.inject(ItemActions).searchTag(summary(tag('Big "Sky"')));
 
@@ -337,7 +387,10 @@ describe('PreviewsService', () => {
         await setUp(fakeConfig({ largeImageSize: 1000 }));
         const previews = TestBed.inject(PreviewsService);
 
-        expect(previews.sources(item('a b.jpg', { size: 10 }))).toEqual(['api/files/raw/a%20b.jpg', 'api/thumbnails/a%20b.jpg']);
+        expect(previews.sources(item('a b.jpg', { size: 10 }))).toEqual([
+            'api/files/raw/a%20b.jpg',
+            'api/thumbnails/a%20b.jpg',
+        ]);
         expect(previews.sources(item('big.jpg', { size: 5000 }))).toEqual(['api/thumbnails/big.jpg']);
         expect(previews.sources(item('v.mp4'))).toEqual(['api/thumbnails/v.mp4']);
         expect(previews.sources(item('a.txt'))).toEqual([]);
@@ -347,7 +400,10 @@ describe('PreviewsService', () => {
         await setUp(fakeConfig({ largeImageSize: 1000 }));
         const previews = TestBed.inject(PreviewsService);
 
-        expect(previews.sources(item('big.jpg', { size: 5000 }), true)).toEqual(['api/files/raw/big.jpg', 'api/thumbnails/big.jpg']);
+        expect(previews.sources(item('big.jpg', { size: 5000 }), true)).toEqual([
+            'api/files/raw/big.jpg',
+            'api/thumbnails/big.jpg',
+        ]);
         expect(previews.sources(item('v.mp4'), true)).toEqual(['api/thumbnails/v.mp4']);
     });
 
@@ -368,7 +424,7 @@ describe('PreviewsService', () => {
         previews.learn('c.jpg', 40);
 
         previews.scheduleGuess(() => items);
-        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise((resolve) => requestAnimationFrame(resolve));
 
         expect(previews.knownRatio('a.jpg')).toBe(1.5);
         expect(previews.knownRatio('unknown.jpg')).toBeNull();
@@ -391,8 +447,11 @@ describe('PreviewsService', () => {
         await setUp();
         const previews = TestBed.inject(PreviewsService);
 
-        previews.scheduleGuess(() => [item('a.jpg', { width: 4000, height: 3000 }), item('b.jpg', { width: 3000, height: 4000 })]);
-        await new Promise(resolve => requestAnimationFrame(resolve));
+        previews.scheduleGuess(() => [
+            item('a.jpg', { width: 4000, height: 3000 }),
+            item('b.jpg', { width: 3000, height: 4000 }),
+        ]);
+        await new Promise((resolve) => requestAnimationFrame(resolve));
 
         expect(previews.ratioGuess()).toBeCloseTo(1, 3);
     });
@@ -402,7 +461,7 @@ describe('PreviewsService', () => {
         const previews = TestBed.inject(PreviewsService);
 
         previews.scheduleGuess(() => [item('a.jpg')]);
-        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise((resolve) => requestAnimationFrame(resolve));
 
         expect(previews.ratioGuess()).toBeNull();
     });
@@ -461,13 +520,16 @@ describe('FileTileComponent', () => {
     it('shows the duration of a video at the bottom left of its preview, not in its details', async () => {
         const tile = await videoTile({ width: 1280, height: 720, duration: 3725.6 });
         const start = tile.querySelector('.preview .preview-marks.start')!;
-        expect([...start.children].map(child => child.className)).toEqual(['badge duration', 'trickplay-mark']);
+        expect([...start.children].map((child) => child.className)).toEqual(['badge duration', 'trickplay-mark']);
         expect(start.querySelector('.duration')!.textContent).toBe('1:02:05');
         expect(tile.querySelector('.meta')!.textContent).toMatch(/^1280×720 · 2 KB · /);
     });
 
     it('keeps the duration of a video in its details when its preview cannot be shown', async () => {
-        const tile = await videoTile({ duration: 65 }, fakeConfig({ features: { thumbnails: false, trickplay: false } }));
+        const tile = await videoTile(
+            { duration: 65 },
+            fakeConfig({ features: { thumbnails: false, trickplay: false } }),
+        );
         expect(tile.querySelector('.duration')).toBeNull();
         expect(tile.querySelector('.meta')!.textContent).toMatch(/^1:05 · 2 KB · /);
     });
@@ -479,7 +541,7 @@ describe('FileTileComponent', () => {
         await fixture.whenStable();
         const tile = fixture.nativeElement as HTMLElement;
         const start = tile.querySelector('.preview .preview-marks.start')!;
-        expect([...start.children].map(child => child.className)).toEqual(['badge duration']);
+        expect([...start.children].map((child) => child.className)).toEqual(['badge duration']);
         expect(start.textContent).toBe('4:05');
         expect(tile.querySelector('.meta')!.textContent).toMatch(/^2 KB · /);
     });
@@ -504,7 +566,11 @@ describe('FileTileComponent', () => {
         expect(tile.querySelector('.meta')!.textContent).toMatch(/^2 KB · /);
     });
 
-    async function tileMark(resolutionMark: ClientConfig['resolutionMark'], path: string, overrides: Partial<LibraryItem>): Promise<HTMLElement | null> {
+    async function tileMark(
+        resolutionMark: ClientConfig['resolutionMark'],
+        path: string,
+        overrides: Partial<LibraryItem>,
+    ): Promise<HTMLElement | null> {
         await setUp(fakeConfig({ resolutionMark }));
         const fixture = TestBed.createComponent(FileTileComponent);
         fixture.componentRef.setInput('item', item(path, overrides));
@@ -552,7 +618,7 @@ describe('FileTileComponent', () => {
         fixture.componentRef.setInput('item', item('clip.mp4', { width: 3840, height: 2160 }));
         await fixture.whenStable();
         const marks = (fixture.nativeElement as HTMLElement).querySelector('.preview-marks')!;
-        expect([...marks.children].map(child => child.className)).toEqual(['resolution-mark high', 'badge']);
+        expect([...marks.children].map((child) => child.className)).toEqual(['resolution-mark high', 'badge']);
     });
 });
 
@@ -606,7 +672,10 @@ describe('FileRowComponent', () => {
     it('has the line a narrow list shows under the name: type, size, resolution, duration', async () => {
         await setUp(fakeConfig());
         const fixture = TestBed.createComponent(FileRowComponent);
-        fixture.componentRef.setInput('item', item('clip.mp4', { size: 2048, width: 1280, height: 720, duration: 65, extension: 'mp4' }));
+        fixture.componentRef.setInput(
+            'item',
+            item('clip.mp4', { size: 2048, width: 1280, height: 720, duration: 65, extension: 'mp4' }),
+        );
         await fixture.whenStable();
         const meta = (fixture.nativeElement as HTMLElement).querySelector('.row-main > .row-meta')!;
         expect(meta.querySelector('.row-meta-type')?.textContent).toBe('mp4');
@@ -682,10 +751,10 @@ describe('Items not indexed yet', () => {
         const indexed = await make(FileTileComponent, item('b.jpg', { indexed: true }));
         const searched = await make(FileTileComponent, item('c.jpg'));
 
-        expect([tile, row, folder].map(e => e.classList.contains('unindexed'))).toEqual([true, true, true]);
+        expect([tile, row, folder].map((e) => e.classList.contains('unindexed'))).toEqual([true, true, true]);
         expect(tile.querySelector('.item-link')!.getAttribute('title')).toContain('not indexed yet');
         expect(folder.querySelector('.folder')!.getAttribute('title')).toContain('not indexed yet');
-        expect([indexed, searched].map(e => e.classList.contains('unindexed'))).toEqual([false, false]);
+        expect([indexed, searched].map((e) => e.classList.contains('unindexed'))).toEqual([false, false]);
         expect(indexed.querySelector('.item-link')!.getAttribute('title')).toBe('b.jpg');
     });
 
@@ -713,22 +782,28 @@ describe('Items not indexed yet', () => {
 describe('Context menus of listed items', () => {
     beforeEach(() => setUp());
 
-    it('opens the item\'s menu on the card, and the folder\'s menu on a search result\'s folder link', async () => {
+    it("opens the item's menu on the card, and the folder's menu on a search result's folder link", async () => {
         const fixture = TestBed.createComponent(FileTileComponent);
         fixture.componentRef.setInput('item', item('Media/Trips/a.jpg', { directory: 'Media/Trips' }));
         await fixture.whenStable();
         const element: HTMLElement = fixture.nativeElement;
         const menu = TestBed.inject(ContextMenu);
-        const rightClick = (on: Element) => on.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        const rightClick = (on: Element) =>
+            on.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
 
         rightClick(element.querySelector('.item-name')!);
         expect(menu.open()?.target).toMatchObject({ kind: 'file', key: 'item:Media/Trips/a.jpg' });
         rightClick(element.querySelector('.item-folder')!);
         expect(menu.open()?.target).toMatchObject({ kind: 'folderLink', name: 'Trips' });
-        expect(menu.open()?.target.entries().map(entry => entry.id)).toEqual(['open', 'newTab', 'quickLink']);
+        expect(
+            menu
+                .open()
+                ?.target.entries()
+                .map((entry) => entry.id),
+        ).toEqual(['open', 'newTab', 'quickLink']);
     });
 
-    it('opens a tag\'s menu on its chip, not the file\'s', async () => {
+    it("opens a tag's menu on its chip, not the file's", async () => {
         const fixture = TestBed.createComponent(FileTileComponent);
         fixture.componentRef.setInput('item', item('Media/a.jpg', { tags: [tag('Beach')] }));
         await fixture.whenStable();
@@ -754,11 +829,17 @@ describe('Copied paths', () => {
             await fixture.whenStable();
             return fixture.nativeElement as HTMLElement;
         };
-        const buttons = (element: HTMLElement) => [...element.querySelectorAll('button')].map(button => button.className.split(' ').find(c => c.endsWith('-button') && c !== 'icon-button'));
+        const buttons = (element: HTMLElement) =>
+            [...element.querySelectorAll('button')].map((button) =>
+                button.className.split(' ').find((c) => c.endsWith('-button') && c !== 'icon-button'),
+            );
 
         expect(buttons(await make(FileTileComponent, item('a.jpg')))).toEqual(['tag-button', 'item-menu-button']);
         expect(buttons(await make(FileRowComponent, item('a.jpg')))).toEqual(['tag-button', 'item-menu-button']);
-        expect(buttons(await make(FolderItemComponent, item('Films', { kind: 'directory' })))).toEqual(['folder-tags-button', 'item-menu-button']);
+        expect(buttons(await make(FolderItemComponent, item('Films', { kind: 'directory' })))).toEqual([
+            'folder-tags-button',
+            'item-menu-button',
+        ]);
     });
 
     it('outlines the tiles, rows and folders whose path was copied, and only those', async () => {
@@ -775,7 +856,11 @@ describe('Copied paths', () => {
         expect(tile.classList.contains('copied')).toBe(false);
 
         const menu = TestBed.inject(ItemMenu);
-        const copy = (value: LibraryItem) => menu.entries(value).find(entry => entry.id === 'copyPath')!.run();
+        const copy = (value: LibraryItem) =>
+            menu
+                .entries(value)
+                .find((entry) => entry.id === 'copyPath')!
+                .run();
         copy(item('a.jpg'));
         await settle();
         copy(item('Films', { kind: 'directory' }));
@@ -907,7 +992,9 @@ describe('TrickplayMarksService', () => {
 
     it('keeps the marks through a failed request', async () => {
         await setUp(fakeConfig({ features: { thumbnails: true, trickplay: true } }));
-        api.trickplayStates.mockResolvedValueOnce({ running: true, files: { 'v.mp4': 'pending' } }).mockRejectedValue(new ApiError(0, 'offline'));
+        api.trickplayStates
+            .mockResolvedValueOnce({ running: true, files: { 'v.mp4': 'pending' } })
+            .mockRejectedValue(new ApiError(0, 'offline'));
         await list([video]);
         const marks = TestBed.inject(TrickplayMarksService);
         TestBed.tick();

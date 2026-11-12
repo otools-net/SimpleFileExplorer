@@ -73,13 +73,11 @@ export class TagListComponent {
         const request = ++this.sequence;
         try {
             const results = await this.api.tags({ q: this.search().nativeElement.value.trim(), limit: 1000 });
-            if (request !== this.sequence)
-                return;
+            if (request !== this.sequence) return;
             this.results.set(results);
             this.error.set(null);
         } catch (error) {
-            if (request === this.sequence)
-                this.error.set((error as Error).message);
+            if (request === this.sequence) this.error.set((error as Error).message);
         }
     }
 
@@ -92,9 +90,11 @@ export class TagListComponent {
         return [
             tag.shorthand ? `Shorthand: ${tag.shorthand}` : null,
             tag.aliases.length ? `Aliases: ${tag.aliases.join(', ')}` : null,
-            tag.parents.length ? `Parents: ${tag.parents.map(p => p.displayName).join(', ')}` : null,
+            tag.parents.length ? `Parents: ${tag.parents.map((p) => p.displayName).join(', ')}` : null,
             [tag.isCategory ? 'category' : null, tag.isHidden ? 'hidden' : null].filter(Boolean).join(', ') || null,
-        ].filter(Boolean).join(' · ');
+        ]
+            .filter(Boolean)
+            .join(' · ');
     }
 
     protected files(tag: TagDetails): string {
@@ -102,8 +102,7 @@ export class TagListComponent {
     }
 
     protected async edit(tag: TagDetails): Promise<void> {
-        if (await this.dialogs.tagEditor()?.open(tag.id))
-            void this.load();
+        if (await this.dialogs.tagEditor()?.open(tag.id)) void this.load();
     }
 
     protected async create(): Promise<void> {

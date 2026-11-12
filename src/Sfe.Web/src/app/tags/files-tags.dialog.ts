@@ -83,28 +83,28 @@ export class FilesTagsDialog {
         for (const item of this.items()) {
             for (const tag of item.tags ?? []) {
                 const entry = byId.get(tag.id);
-                if (entry)
-                    entry.count++;
-                else
-                    byId.set(tag.id, { tag, count: 1 });
+                if (entry) entry.count++;
+                else byId.set(tag.id, { tag, count: 1 });
             }
         }
-        return [...byId.values()].sort((a, b) => b.count - a.count
-            || a.tag.displayName.localeCompare(b.tag.displayName, undefined, { sensitivity: 'base' }));
+        return [...byId.values()].sort(
+            (a, b) =>
+                b.count - a.count ||
+                a.tag.displayName.localeCompare(b.tag.displayName, undefined, { sensitivity: 'base' }),
+        );
     });
-    protected readonly onAll = computed(() => this.counts().filter(entry => entry.count === this.items().length));
-    protected readonly onSome = computed(() => this.counts().filter(entry => entry.count < this.items().length));
+    protected readonly onAll = computed(() => this.counts().filter((entry) => entry.count === this.items().length));
+    protected readonly onSome = computed(() => this.counts().filter((entry) => entry.count < this.items().length));
 
-    protected readonly excluded = () => new Set(this.onAll().map(entry => entry.tag.id));
+    protected readonly excluded = () => new Set(this.onAll().map((entry) => entry.tag.id));
     protected readonly add = async (option: TagOption) => {
         const tag = option.create ? await this.api.createTag({ name: option.create }) : option.tag!;
-        if (option.create)
-            this.toasts.show(`Tag “${tag.name}” created.`);
+        if (option.create) this.toasts.show(`Tag “${tag.name}” created.`);
         await this.change({ add: [tag.id] });
     };
 
     constructor() {
-        registerDialog(dialogs => dialogs.filesTags, this);
+        registerDialog((dialogs) => dialogs.filesTags, this);
     }
 
     open(selected: LibraryItem[]): void {
@@ -118,15 +118,17 @@ export class FilesTagsDialog {
     }
 
     protected remove(tag: TagSummary): void {
-        const paths = this.items().filter(item => item.tags?.some(t => t.id === tag.id)).map(item => item.path);
+        const paths = this.items()
+            .filter((item) => item.tags?.some((t) => t.id === tag.id))
+            .map((item) => item.path);
         this.report(this.change({ remove: [tag.id] }, paths));
     }
 
     protected async edit(tag: TagSummary): Promise<void> {
         // The store updates the listed items' tags when a tag is edited or deleted.
         await this.dialogs.tagEditor()?.open(tag.id);
-        const listed = new Map(this.store.items().map(item => [item.path, item]));
-        this.items.update(items => items.map(item => listed.get(item.path) ?? item));
+        const listed = new Map(this.store.items().map((item) => [item.path, item]));
+        this.items.update((items) => items.map((item) => listed.get(item.path) ?? item));
     }
 
     private report(promise: Promise<void>): void {
@@ -137,17 +139,21 @@ export class FilesTagsDialog {
      * Applies `delta` to `paths`, `maxFilesPerTagChange` files per request. When a request fails, the parts sent
      * before it stay applied (and shown).
      */
-    private async change(delta: Omit<FileTagChange, 'paths'>, paths = this.items().map(item => item.path)): Promise<void> {
-        if (this.busy)
-            return;
+    private async change(
+        delta: Omit<FileTagChange, 'paths'>,
+        paths = this.items().map((item) => item.path),
+    ): Promise<void> {
+        if (this.busy) return;
         this.busy = true;
         const size = this.config.value.maxFilesPerTagChange || 1000;
         this.progress.set(paths.length > size);
         try {
             for (let start = 0; start < paths.length; start += size) {
                 const result = await this.api.changeFileTags({ paths: paths.slice(start, start + size), ...delta });
-                const byPath = new Map(result.files.map(file => [file.path, file.tags]));
-                this.items.update(items => items.map(item => byPath.has(item.path) ? { ...item, tags: byPath.get(item.path) } : item));
+                const byPath = new Map(result.files.map((file) => [file.path, file.tags]));
+                this.items.update((items) =>
+                    items.map((item) => (byPath.has(item.path) ? { ...item, tags: byPath.get(item.path) } : item)),
+                );
                 this.store.applyFileTags(result.files);
             }
         } finally {

@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    effect,
+    inject,
+    OnInit,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Api, redirected } from '../core/api.service';
@@ -67,40 +77,69 @@ export class PlayerPageComponent implements OnInit {
     protected readonly error = signal('');
     protected readonly urls = this.config.urls;
     /** The server's conversion, once the configuration says it converts videos. */
-    protected readonly stream = computed(() => this.config.config() ? this.config.videoStream(this.path) : null);
+    protected readonly stream = computed(() => (this.config.config() ? this.config.videoStream(this.path) : null));
     /** The server's conversion failed too. */
     protected readonly converted = signal(false);
-    protected readonly poster = computed(() => this.config.config()?.features.thumbnails ? this.urls()!.thumbnail(this.path) : null);
+    protected readonly poster = computed(() =>
+        this.config.config()?.features.thumbnails ? this.urls()!.thumbnail(this.path) : null,
+    );
 
     constructor() {
         // A right click anywhere: the player's controls, then the video's links.
         const copyPaths = inject(CopyPathService);
         usePageMenu({
-            kind: 'page', key: 'player-page', name: this.name, entries: () => {
-                const entries: MenuEntry[] = [...this.player()?.menuEntries() ?? []];
+            kind: 'page',
+            key: 'player-page',
+            name: this.name,
+            entries: () => {
+                const entries: MenuEntry[] = [...(this.player()?.menuEntries() ?? [])];
                 if (this.player())
-                    entries.push({ id: 'copyTimeLink', label: 'Copy link at this time', icon: 'clock', title: 'Copy a link playing it from where it is now', run: () => void this.copyTimeLink() });
+                    entries.push({
+                        id: 'copyTimeLink',
+                        label: 'Copy link at this time',
+                        icon: 'clock',
+                        title: 'Copy a link playing it from where it is now',
+                        run: () => void this.copyTimeLink(),
+                    });
                 if (this.urls()?.externalName)
-                    entries.push({ id: 'external', label: `Open in ${this.urls()!.externalName}`, icon: 'play', title: 'A link working without signing in, for a while', run: () => this.openExternal() });
+                    entries.push({
+                        id: 'external',
+                        label: `Open in ${this.urls()!.externalName}`,
+                        icon: 'play',
+                        title: 'A link working without signing in, for a while',
+                        run: () => this.openExternal(),
+                    });
                 if (this.state() !== 'loading' && this.config.can('files.download'))
-                    entries.push({ id: 'download', label: 'Download', icon: 'download', title: 'Save the video to this device', href: this.urls()!.download(this.path) });
+                    entries.push({
+                        id: 'download',
+                        label: 'Download',
+                        icon: 'download',
+                        title: 'Save the video to this device',
+                        href: this.urls()!.download(this.path),
+                    });
                 if (copyPaths.enabled())
-                    entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => void copyPaths.copy(this.path) });
+                    entries.push({
+                        id: 'copyPath',
+                        label: 'Copy full path',
+                        icon: 'copy',
+                        title: 'Copy where it is on the server',
+                        run: () => void copyPaths.copy(this.path),
+                    });
                 return entries;
             },
         });
         // Scrub previews, waiting for them while the background job has the video queued.
         effect(() => {
             const player = this.player();
-            if (!player)
-                return;
+            if (!player) return;
             untracked(() => {
                 player.focus();
-                if (!this.config.value.features.trickplay)
-                    return;
-                void waitForTrickplay(this.api, this.path, () => this.player() === player).then(trickplay => {
+                if (!this.config.value.features.trickplay) return;
+                void waitForTrickplay(this.api, this.path, () => this.player() === player).then((trickplay) => {
                     if (trickplay && this.player() === player)
-                        player.setTrickplay(trickplay, index => this.urls()!.trickplaySheet(this.path, index, trickplay.version));
+                        player.setTrickplay(trickplay, (index) =>
+                            this.urls()!.trickplaySheet(this.path, index, trickplay.version),
+                        );
                 });
             });
         });
@@ -116,8 +155,7 @@ export class PlayerPageComponent implements OnInit {
             await this.config.load();
         } catch (error) {
             // Not signed in, or the server is not set up: the sign-in or setup page opens instead.
-            if (redirected(error))
-                return;
+            if (redirected(error)) return;
             this.error.set((error as Error).message);
             this.state.set('unreachable');
             return;
@@ -128,7 +166,10 @@ export class PlayerPageComponent implements OnInit {
     /** This page's address, playing from where the video is now. */
     private async copyTimeLink(): Promise<void> {
         try {
-            await copyText(new URL(this.urls()!.player(this.path, Math.floor(this.player()?.currentTime() ?? 0)), document.baseURI).href);
+            await copyText(
+                new URL(this.urls()!.player(this.path, Math.floor(this.player()?.currentTime() ?? 0)), document.baseURI)
+                    .href,
+            );
             this.toasts.show('Link copied.');
         } catch {
             this.toasts.show('The link could not be copied.', { error: true });
@@ -136,17 +177,16 @@ export class PlayerPageComponent implements OnInit {
     }
 
     protected openExternal(): void {
-        this.config.openExternal(this.path).catch((error: Error) => this.toasts.error(`Could not open the video: ${error.message}`));
+        this.config
+            .openExternal(this.path)
+            .catch((error: Error) => this.toasts.error(`Could not open the video: ${error.message}`));
     }
 
     /** Same shortcuts as in the viewer (Space/K, J/L, F, M, S); focused buttons and the seek bar keep their own keys. */
     protected onKeydown(event: KeyboardEvent): void {
         const target = event.target as Element;
-        if ((event.key === ' ' || event.key === 'Enter') && target.closest?.('button, a'))
-            return;
-        if (target.matches?.('input[type="range"]') && event.key.startsWith('Arrow'))
-            return;
-        if (this.player()?.handleKey(event))
-            event.preventDefault();
+        if ((event.key === ' ' || event.key === 'Enter') && target.closest?.('button, a')) return;
+        if (target.matches?.('input[type="range"]') && event.key.startsWith('Arrow')) return;
+        if (this.player()?.handleKey(event)) event.preventDefault();
     }
 }

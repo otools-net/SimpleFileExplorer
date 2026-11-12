@@ -1,5 +1,20 @@
 import { NgComponentOutlet } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injector, input, signal, Type, untracked, viewChild } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    Injector,
+    input,
+    signal,
+    Type,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { Api, ApiError } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { formatDate, formatSize } from '../../core/format';
@@ -75,7 +90,15 @@ interface Shown {
  */
 @Component({
     selector: 'sfe-archive-view',
-    imports: [NgComponentOutlet, VideoPlayerComponent, IconComponent, ContextMenuDirective, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
+    imports: [
+        NgComponentOutlet,
+        VideoPlayerComponent,
+        IconComponent,
+        ContextMenuDirective,
+        OverflowRowDirective,
+        OverflowItemDirective,
+        OverflowMoreComponent,
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'text-view archive-view',
@@ -294,8 +317,7 @@ export class ArchiveViewComponent {
     /** The folder's rows in all (folders and entries right inside it), loaded or not. */
     protected readonly count = computed(() => {
         const found = this.found();
-        if (found)
-            return found.rows.length;
+        if (found) return found.rows.length;
         const folder = this.shown()?.listing.folder;
         return folder ? (folder.folders ?? 0) + (folder.files ?? 0) : 0;
     });
@@ -303,27 +325,67 @@ export class ArchiveViewComponent {
     /** The folder above: from the trail (its last crumb is this folder); the root has none. */
     protected readonly parent = computed<number | null | undefined>(() => {
         const trail = this.shown()?.listing.trail;
-        if (!trail || trail.last.length === 0)
-            return undefined;
+        if (!trail || trail.last.length === 0) return undefined;
         return trail.last.length >= 2 ? trail.last[trail.last.length - 2].id : null;
     });
 
     protected readonly canDownload = computed(() => this.host.can(Rights.download));
     /** Extract… is offered: the right (to view, download and extract), and the dialog of the listing page. */
-    protected readonly canExtract = computed(() => this.canDownload() && this.host.can(Rights.viewFiles) && this.config.can(Rights.extractFiles) && Boolean(this.dialogs.extract()));
-    protected readonly extractTitle = computed(() => this.parent() === undefined
-        ? 'Extract the whole archive into a folder of the library, picked next'
-        : 'Extract this folder of the archive into a folder of the library, picked next');
-    protected readonly extractEntry = (): MenuEntry => ({ id: 'extract', label: 'Extract…', icon: 'extract', title: this.extractTitle(), run: () => this.extractShown() });
+    protected readonly canExtract = computed(
+        () =>
+            this.canDownload() &&
+            this.host.can(Rights.viewFiles) &&
+            this.config.can(Rights.extractFiles) &&
+            Boolean(this.dialogs.extract()),
+    );
+    protected readonly extractTitle = computed(() =>
+        this.parent() === undefined
+            ? 'Extract the whole archive into a folder of the library, picked next'
+            : 'Extract this folder of the archive into a folder of the library, picked next',
+    );
+    protected readonly extractEntry = (): MenuEntry => ({
+        id: 'extract',
+        label: 'Extract…',
+        icon: 'extract',
+        title: this.extractTitle(),
+        run: () => this.extractShown(),
+    });
 
     /** An entry shown in place of the list (Back: the list as it was). */
     protected readonly viewing = signal<Viewing | null>(null);
     /** The video or audio shown can't be played (a format the browser doesn't read, too large unpacked): its download is offered. */
     protected readonly cannotPlay = signal(false);
-    protected readonly previousEntry = (): MenuEntry => ({ id: 'previous', label: 'The file before', icon: 'up', title: 'The file before', disabled: this.neighbour(-1) === null, run: () => this.step(-1) });
-    protected readonly nextEntry = (): MenuEntry => ({ id: 'next', label: 'The file after', icon: 'down', title: 'The file after', disabled: this.neighbour(1) === null, run: () => this.step(1) });
-    protected readonly newTabEntry = (): MenuEntry => ({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Open it in a new tab', href: this.entryUrl(this.viewing()!.entry, false), newTab: true });
-    protected readonly downloadEntry = (): MenuEntry => ({ id: 'download', label: 'Download', icon: 'download', title: 'Save it from the archive', href: this.entryUrl(this.viewing()!.entry, true) });
+    protected readonly previousEntry = (): MenuEntry => ({
+        id: 'previous',
+        label: 'The file before',
+        icon: 'up',
+        title: 'The file before',
+        disabled: this.neighbour(-1) === null,
+        run: () => this.step(-1),
+    });
+    protected readonly nextEntry = (): MenuEntry => ({
+        id: 'next',
+        label: 'The file after',
+        icon: 'down',
+        title: 'The file after',
+        disabled: this.neighbour(1) === null,
+        run: () => this.step(1),
+    });
+    protected readonly newTabEntry = (): MenuEntry => ({
+        id: 'newTab',
+        label: 'Open in new tab',
+        icon: 'external',
+        title: 'Open it in a new tab',
+        href: this.entryUrl(this.viewing()!.entry, false),
+        newTab: true,
+    });
+    protected readonly downloadEntry = (): MenuEntry => ({
+        id: 'download',
+        label: 'Download',
+        icon: 'download',
+        title: 'Save it from the archive',
+        href: this.entryUrl(this.viewing()!.entry, true),
+    });
     private readonly components = new Map<string, Promise<Type<unknown>>>();
 
     /** The unlock the password given answered: kept by this view only (never the password), sent with its requests. */
@@ -335,7 +397,9 @@ export class ArchiveViewComponent {
     protected readonly passwordMessage = signal<string | null>(null);
     protected readonly lockedList = "This archive is protected by a password: its list can't be read without it.";
     protected readonly lockedFiles = 'Its files are protected by a password.';
-    protected readonly archiveDownload = computed(() => this.canDownload() ? this.config.urls()?.download(this.item().path) ?? null : null);
+    protected readonly archiveDownload = computed(() =>
+        this.canDownload() ? (this.config.urls()?.download(this.item().path) ?? null) : null,
+    );
 
     private abort: AbortController | null = null;
     private loadingMore = false;
@@ -367,15 +431,18 @@ export class ArchiveViewComponent {
             const items = this.virtual.items();
             const found = this.found();
             if (found) {
-                if (found.next && !found.searching && items.length > 0 && items[items.length - 1].index >= found.rows.length - AHEAD)
+                if (
+                    found.next &&
+                    !found.searching &&
+                    items.length > 0 &&
+                    items[items.length - 1].index >= found.rows.length - AHEAD
+                )
                     untracked(() => void this.search(found.query, found.next));
                 return;
             }
             const shown = this.shown();
-            if (!shown?.next || items.length === 0)
-                return;
-            if (items[items.length - 1].index >= shown.rows.length - AHEAD)
-                untracked(() => void this.loadMore());
+            if (!shown?.next || items.length === 0) return;
+            if (items[items.length - 1].index >= shown.rows.length - AHEAD) untracked(() => void this.loadMore());
         });
     }
 
@@ -398,19 +465,17 @@ export class ArchiveViewComponent {
 
     /** This folder only, or the whole archive: what is typed is looked for again at once. */
     protected toggleFindHere(text: string): void {
-        this.findHere.update(here => !here);
+        this.findHere.update((here) => !here);
         clearTimeout(this.findTimer);
         const query = text.trim();
-        if (query.length >= FIND_MIN)
-            void this.search(query, null);
+        if (query.length >= FIND_MIN) void this.search(query, null);
     }
 
     /** Back to the folder: the search stops and its box is emptied. */
     protected endFind(): void {
         clearTimeout(this.findTimer);
         const box = this.findBox()?.nativeElement;
-        if (box)
-            box.value = '';
+        if (box) box.value = '';
         this.stopFind();
     }
 
@@ -437,35 +502,47 @@ export class ArchiveViewComponent {
         if (!after) {
             this.findAbort?.abort();
             this.findAbort = new AbortController();
-            this.found.set({ query, folder: this.findHere() ? this.shown()?.listing.folder.id ?? null : null, rows: [], next: null, searching: true });
+            this.found.set({
+                query,
+                folder: this.findHere() ? (this.shown()?.listing.folder.id ?? null) : null,
+                rows: [],
+                next: null,
+                searching: true,
+            });
             this.selected.set(-1);
             this.scroller().nativeElement.scrollTop = 0;
         } else {
-            this.found.update(found => found && { ...found, searching: true });
+            this.found.update((found) => found && { ...found, searching: true });
         }
         const abort = this.findAbort!;
         const folder = this.found()?.folder ?? null;
         try {
             for (let cursor = after; ;) {
-                const answer = await this.api.searchArchive(this.item().path, { q: query, ...(folder === null ? {} : { folder }), after: cursor, unlock: this.unlock() }, abort.signal);
-                if (abort.signal.aborted)
-                    return;
+                const answer = await this.api.searchArchive(
+                    this.item().path,
+                    { q: query, ...(folder === null ? {} : { folder }), after: cursor, unlock: this.unlock() },
+                    abort.signal,
+                );
+                if (abort.signal.aborted) return;
                 if ('read' in answer) {
                     await pause(READING_POLL_MS, abort.signal);
                     continue;
                 }
                 const found = this.found();
-                if (!found || found.query !== query || found.folder !== folder)
-                    return;
-                this.found.set({ query, folder, rows: [...found.rows, ...answer.items], next: answer.next, searching: answer.items.length === 0 && answer.next !== null });
-                if (answer.items.length > 0 || !answer.next)
-                    return;
+                if (!found || found.query !== query || found.folder !== folder) return;
+                this.found.set({
+                    query,
+                    folder,
+                    rows: [...found.rows, ...answer.items],
+                    next: answer.next,
+                    searching: answer.items.length === 0 && answer.next !== null,
+                });
+                if (answer.items.length > 0 || !answer.next) return;
                 cursor = answer.next;
             }
         } catch (error) {
-            if (abort.signal.aborted)
-                return;
-            this.found.update(found => found && { ...found, next: null, searching: false });
+            if (abort.signal.aborted) return;
+            this.found.update((found) => found && { ...found, next: null, searching: false });
             this.toasts.error(error instanceof Error ? error.message : String(error));
         }
     }
@@ -473,8 +550,7 @@ export class ArchiveViewComponent {
     /** A result's folder, short: deep down, its last two folders ("…/Day 2/Notes"); the title has it whole. */
     protected whereOf(entry: ArchiveItem): string {
         const parts = entry.where ? entry.where.split('/') : [];
-        if (parts.length === 0)
-            return this.item().name;
+        if (parts.length === 0) return this.item().name;
         return parts.length > 3 ? `…/${parts.slice(-2).join('/')}` : entry.where!;
     }
 
@@ -488,8 +564,7 @@ export class ArchiveViewComponent {
 
     protected goUp(): void {
         const parent = this.parent();
-        if (parent !== undefined)
-            this.enter(parent);
+        if (parent !== undefined) this.enter(parent);
     }
 
     protected goToPath(path: string): void {
@@ -502,12 +577,10 @@ export class ArchiveViewComponent {
     }
 
     protected activate(entry: ArchiveItem, index = this.rows().indexOf(entry)): void {
-        if (entry.kind === 'folder')
-            this.enter(entry.id);
+        if (entry.kind === 'folder') this.enter(entry.id);
         else if (entry.kind === 'file' && this.canDownload() && entry.encrypted && !this.unlock())
             this.asking.set(true);
-        else if (this.inPlace(entry))
-            void this.show(entry, index);
+        else if (this.inPlace(entry)) void this.show(entry, index);
         else if (entry.kind === 'file' && this.canDownload())
             window.open(this.entryUrl(entry, false), '_blank', 'noopener');
     }
@@ -515,7 +588,14 @@ export class ArchiveViewComponent {
     /** A file's name clicked: shown in place when it can be; a new tab with Ctrl, Shift or the middle button, or for the rest. */
     protected openFromLink(event: MouseEvent, entry: ArchiveItem, index: number): void {
         event.stopPropagation();
-        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || !this.inPlace(entry))
+        if (
+            event.button !== 0 ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.shiftKey ||
+            event.altKey ||
+            !this.inPlace(entry)
+        )
             return;
         event.preventDefault();
         this.select(index);
@@ -527,25 +607,35 @@ export class ArchiveViewComponent {
      * PDF…), or null (a new tab, a download).
      */
     private placeOf(entry: ArchiveItem): FileFormat | Media | null {
-        if (entry.kind !== 'file' || !this.canDownload() || (entry.encrypted && !this.unlock()))
-            return null;
-        if (entry.media)
-            return entry.media === 'image' ? 'picture' : entry.media;
+        if (entry.kind !== 'file' || !this.canDownload() || (entry.encrypted && !this.unlock())) return null;
+        if (entry.media) return entry.media === 'image' ? 'picture' : entry.media;
         const format = formatOf(this.itemOf(entry));
         return format && IN_PLACE.has(format.id) ? format : null;
     }
 
     /** A row's path in the archive: its folder's (the listing's, or a result's `where` when whole) and its name; null when unknown. */
     private pathIn(entry: ArchiveItem): string | null {
-        if (entry.at !== undefined)
-            return entry.at;
-        const folder = this.found() ? (entry.where?.startsWith('…') ? null : entry.where ?? null) : this.shown()?.listing.path ?? null;
+        if (entry.at !== undefined) return entry.at;
+        const folder = this.found()
+            ? entry.where?.startsWith('…')
+                ? null
+                : (entry.where ?? null)
+            : (this.shown()?.listing.path ?? null);
         return folder === null ? null : folder ? `${folder}/${entry.name}` : entry.name;
     }
 
     /** A file of the archive known by its path only (a link of a document): found by the server from it. */
     private linked(path: string): ArchiveItem {
-        return { kind: 'file', id: 0, name: path.slice(path.lastIndexOf('/') + 1), size: 0, packed: 0, modified: null, encrypted: false, at: path };
+        return {
+            kind: 'file',
+            id: 0,
+            name: path.slice(path.lastIndexOf('/') + 1),
+            size: 0,
+            packed: 0,
+            modified: null,
+            encrypted: false,
+            at: path,
+        };
     }
 
     protected inPlace(entry: ArchiveItem): boolean {
@@ -557,16 +647,19 @@ export class ArchiveViewComponent {
         const name = entry.name;
         const extension = extensionOf({ name } as LibraryItem);
         return {
-            name, path: `${this.item().path}#${entry.id > 0 ? entry.id : `at:${entry.at}`}`, kind: entry.media ?? 'file', extension: extension ? `.${extension}` : null,
-            size: entry.size, modified: entry.modified,
+            name,
+            path: `${this.item().path}#${entry.id > 0 ? entry.id : `at:${entry.at}`}`,
+            kind: entry.media ?? 'file',
+            extension: extension ? `.${extension}` : null,
+            size: entry.size,
+            modified: entry.modified,
         };
     }
 
     /** Shows `entry` in place of the list; its format's view loaded on demand, reading it from the archive. */
     private async show(shown: ArchiveItem, index: number, back: Viewing | null = null): Promise<void> {
         const place = this.placeOf(shown);
-        if (!place)
-            return;
+        if (!place) return;
         const entry: ArchiveItem = { ...shown, at: this.pathIn(shown) };
         const item = this.itemOf(entry);
         this.cannotPlay.set(false);
@@ -576,21 +669,21 @@ export class ArchiveViewComponent {
             return;
         }
         const injector = Injector.create({
-            providers: [{ provide: FILE_VIEW_HOST, useValue: this.entryHost }, { provide: FILE_SOURCE, useValue: this.entrySource(entry) }],
+            providers: [
+                { provide: FILE_VIEW_HOST, useValue: this.entryHost },
+                { provide: FILE_SOURCE, useValue: this.entrySource(entry) },
+            ],
             parent: this.injector,
         });
         const viewing: Viewing = { entry, media: null, index, item, format: place, component: null, injector, back };
         this.viewing.set(viewing);
         this.focusEntry();
-        if (!('load' in place.view))
-            return;
+        if (!('load' in place.view)) return;
         let loading = this.components.get(place.id);
-        if (!loading)
-            this.components.set(place.id, loading = place.view.load());
+        if (!loading) this.components.set(place.id, (loading = place.view.load()));
         try {
             const component = await loading;
-            if (this.viewing() === viewing)
-                this.viewing.set({ ...viewing, component });
+            if (this.viewing() === viewing) this.viewing.set({ ...viewing, component });
         } catch {
             this.components.delete(place.id);
             if (this.viewing() === viewing) {
@@ -603,25 +696,31 @@ export class ArchiveViewComponent {
     /** What an entry's view may do: read it (and save it with the right to download); never write. */
     private readonly entryHost: FileViewHost = {
         place: 'viewer',
-        can: right => (right === Rights.viewFiles || right === Rights.download) && this.host.can(right),
+        can: (right) => (right === Rights.viewFiles || right === Rights.download) && this.host.can(right),
         // A link of a document to another file of the archive: shown in its place, Back returning to the document.
-        open: item => void this.show(this.linked(item.path), -1, this.viewing()),
+        open: (item) => void this.show(this.linked(item.path), -1, this.viewing()),
     };
 
     /** Reads `entry` from the archive, with the unlock given (the view's requests and addresses). */
     private entrySource(entry: ArchiveItem): FileSource {
         return {
             library: false,
-            textFile: (_item, signal, encoding) => this.api.archiveText(this.item().path, entry.id > 0 ? entry.id : entry.at!, { encoding, unlock: this.unlock() }, signal),
+            textFile: (_item, signal, encoding) =>
+                this.api.archiveText(
+                    this.item().path,
+                    entry.id > 0 ? entry.id : entry.at!,
+                    { encoding, unlock: this.unlock() },
+                    signal,
+                ),
             original: () => this.entryUrl(entry, false),
-            download: () => this.canDownload() ? this.entryUrl(entry, true) : null,
+            download: () => (this.canDownload() ? this.entryUrl(entry, true) : null),
             documents: {
                 path: entry.at ?? null,
                 links: {
-                    file: path => this.entryUrl(this.linked(path), false),
-                    view: path => this.entryUrl(this.linked(path), false),
-                    folder: path => this.entryUrl(this.linked(path), false),
-                    viewable: path => this.placeOf(this.linked(path)) !== null,
+                    file: (path) => this.entryUrl(this.linked(path), false),
+                    view: (path) => this.entryUrl(this.linked(path), false),
+                    folder: (path) => this.entryUrl(this.linked(path), false),
+                    viewable: (path) => this.placeOf(this.linked(path)) !== null,
                 },
             },
         };
@@ -634,8 +733,7 @@ export class ArchiveViewComponent {
     /** Back to the document whose link opened it, else to the list as it was, the entry's row selected. */
     protected closeEntry(): void {
         const viewing = this.viewing();
-        if (!viewing)
-            return;
+        if (!viewing) return;
         this.cannotPlay.set(false);
         if (viewing.back) {
             this.viewing.set(viewing.back);
@@ -651,14 +749,11 @@ export class ArchiveViewComponent {
     /** The row of the next entry shown in place, before (-1) or after (1) the one shown, among the rows loaded; null at an end. */
     protected neighbour(direction: -1 | 1): number | null {
         const viewing = this.viewing();
-        if (!viewing)
-            return null;
+        if (!viewing) return null;
         const rows = this.rows();
-        if (viewing.index < 0)
-            return null;
+        if (viewing.index < 0) return null;
         for (let index = viewing.index + direction; index >= 0 && index < rows.length; index += direction) {
-            if (rows[index] && this.inPlace(rows[index]))
-                return index;
+            if (rows[index] && this.inPlace(rows[index])) return index;
         }
         return null;
     }
@@ -673,8 +768,7 @@ export class ArchiveViewComponent {
 
     /** Tries `password` on the archive; once it opens, the folder shown is asked again with the unlock. */
     protected async unlockWith(password: string): Promise<void> {
-        if (!password || this.unlocking())
-            return;
+        if (!password || this.unlocking()) return;
         this.unlocking.set(true);
         this.passwordMessage.set(null);
         try {
@@ -683,7 +777,9 @@ export class ArchiveViewComponent {
                 if ('unlock' in answer) {
                     this.unlock.set(answer.unlock);
                     this.asking.set(false);
-                    await this.open({ folder: this.shown()?.listing.needsPassword ? null : this.shown()?.listing.folder.id ?? null });
+                    await this.open({
+                        folder: this.shown()?.listing.needsPassword ? null : (this.shown()?.listing.folder.id ?? null),
+                    });
                     return;
                 }
                 if (!('read' in answer)) {
@@ -693,10 +789,15 @@ export class ArchiveViewComponent {
                 await pause(READING_POLL_MS, new AbortController().signal);
             }
         } catch (error) {
-            this.passwordMessage.set(error instanceof ApiError && error.status === 429
-                ? 'Too many tries: wait a minute before the next one.'
-                : error instanceof ApiError && error.type === 'wrong-password' ? "That password doesn't open this archive."
-                : error instanceof Error ? error.message : String(error));
+            this.passwordMessage.set(
+                error instanceof ApiError && error.status === 429
+                    ? 'Too many tries: wait a minute before the next one.'
+                    : error instanceof ApiError && error.type === 'wrong-password'
+                      ? "That password doesn't open this archive."
+                      : error instanceof Error
+                        ? error.message
+                        : String(error),
+            );
         } finally {
             this.unlocking.set(false);
         }
@@ -718,8 +819,7 @@ export class ArchiveViewComponent {
             }
             return;
         }
-        if (target.closest('input'))
-            return;
+        if (target.closest('input')) return;
         const rows = this.rows();
         if (event.key === 'Backspace' && this.parent() !== undefined) {
             event.preventDefault();
@@ -738,12 +838,13 @@ export class ArchiveViewComponent {
     /** The address of an entry's data: inline in a tab for what the browser shows safely, else (or `download`) a download. */
     protected entryUrl(entry: ArchiveItem, download: boolean): string {
         const query = new URLSearchParams();
-        if (download)
-            query.set('download', 'true');
-        if (this.unlock())
-            query.set('unlock', this.unlock()!);
+        if (download) query.set('download', 'true');
+        if (this.unlock()) query.set('unlock', this.unlock()!);
         const search = query.toString();
-        const which = entry.id > 0 ? `${entry.id}/${encodeURIComponent(entry.name)}` : `at/${(entry.at ?? '').split('/').map(encodeURIComponent).join('/')}`;
+        const which =
+            entry.id > 0
+                ? `${entry.id}/${encodeURIComponent(entry.name)}`
+                : `at/${(entry.at ?? '').split('/').map(encodeURIComponent).join('/')}`;
         return `api/files/explore/entry/${pathToken(this.item().path)}/${which}${search ? '?' + search : ''}`;
     }
 
@@ -751,12 +852,14 @@ export class ArchiveViewComponent {
     protected extractShown(): void {
         const listing = this.shown()?.listing;
         const item = this.item();
-        if (!listing)
-            return;
+        if (!listing) return;
         const top = this.parent() === undefined;
         this.dialogs.extract()?.open({
-            path: item.path, name: item.name, unlock: this.unlock(),
-            folders: top ? undefined : [listing.folder.id], what: top ? undefined : `“${listing.folder.name}”`,
+            path: item.path,
+            name: item.name,
+            unlock: this.unlock(),
+            folders: top ? undefined : [listing.folder.id],
+            what: top ? undefined : `“${listing.folder.name}”`,
         });
     }
 
@@ -764,7 +867,10 @@ export class ArchiveViewComponent {
     protected extractOne(entry: ArchiveItem): void {
         const item = this.item();
         this.dialogs.extract()?.open({
-            path: item.path, name: item.name, unlock: this.unlock(), what: `“${entry.name}”`,
+            path: item.path,
+            name: item.name,
+            unlock: this.unlock(),
+            what: `“${entry.name}”`,
             folders: entry.kind === 'folder' ? [entry.id] : undefined,
             files: entry.kind === 'folder' ? undefined : [entry.id],
         });
@@ -773,40 +879,65 @@ export class ArchiveViewComponent {
     protected menuOf(entry: ArchiveItem): MenuTarget | null {
         const entries: MenuEntry[] = [];
         if (entry.kind === 'folder')
-            entries.push({ id: 'open', label: 'Open', icon: 'folder', title: 'Show this folder of the archive', run: () => this.enter(entry.id) });
+            entries.push({
+                id: 'open',
+                label: 'Open',
+                icon: 'folder',
+                title: 'Show this folder of the archive',
+                run: () => this.enter(entry.id),
+            });
         else if (this.inPlace(entry))
-            entries.push({ id: 'open', label: 'Open', icon: 'file', title: 'Show it here', run: () => this.activate(entry) });
+            entries.push({
+                id: 'open',
+                label: 'Open',
+                icon: 'file',
+                title: 'Show it here',
+                run: () => this.activate(entry),
+            });
         else if (entry.kind === 'file' && this.canDownload() && (!entry.encrypted || this.unlock())) {
-            entries.push({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Open it in a new tab', href: this.entryUrl(entry, false), newTab: true });
-            entries.push({ id: 'download', label: 'Download', icon: 'download', title: 'Save it from the archive', href: this.entryUrl(entry, true) });
+            entries.push({
+                id: 'newTab',
+                label: 'Open in new tab',
+                icon: 'external',
+                title: 'Open it in a new tab',
+                href: this.entryUrl(entry, false),
+                newTab: true,
+            });
+            entries.push({
+                id: 'download',
+                label: 'Download',
+                icon: 'download',
+                title: 'Save it from the archive',
+                href: this.entryUrl(entry, true),
+            });
         }
         if ((entry.kind === 'folder' || entry.kind === 'file') && this.canExtract())
-            entries.push({ id: 'extract', label: 'Extract…', icon: 'extract', title: `Extract ${entry.name} into a folder of the library, picked next`, run: () => this.extractOne(entry) });
-        return entries.length ? { kind: 'file', key: `archive:${this.item().path}:${entry.id}`, name: entry.name, entries: () => entries } : null;
+            entries.push({
+                id: 'extract',
+                label: 'Extract…',
+                icon: 'extract',
+                title: `Extract ${entry.name} into a folder of the library, picked next`,
+                run: () => this.extractOne(entry),
+            });
+        return entries.length
+            ? { kind: 'file', key: `archive:${this.item().path}:${entry.id}`, name: entry.name, entries: () => entries }
+            : null;
     }
 
     protected iconOf(entry: ArchiveItem): string {
-        if (entry.kind === 'folder')
-            return 'folder';
-        if (entry.kind !== 'file')
-            return 'external';
+        if (entry.kind === 'folder') return 'folder';
+        if (entry.kind !== 'file') return 'external';
         const extension = entry.name.slice(entry.name.lastIndexOf('.') + 1).toLowerCase();
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'bmp'].includes(extension))
-            return 'image';
-        if (['mp4', 'webm', 'mkv', 'mov', 'avi'].includes(extension))
-            return 'video';
-        if (['mp3', 'flac', 'ogg', 'wav', 'm4a', 'opus'].includes(extension))
-            return 'audio';
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'bmp'].includes(extension)) return 'image';
+        if (['mp4', 'webm', 'mkv', 'mov', 'avi'].includes(extension)) return 'video';
+        if (['mp3', 'flac', 'ogg', 'wav', 'm4a', 'opus'].includes(extension)) return 'audio';
         return 'file';
     }
 
     protected titleOf(entry: ArchiveItem): string {
-        if (entry.encrypted)
-            return 'Protected by a password';
-        if (entry.kind === 'link')
-            return 'A link: listed, never created when extracting';
-        if (entry.kind === 'other')
-            return 'A device or pipe: listed, never created when extracting';
+        if (entry.encrypted) return 'Protected by a password';
+        if (entry.kind === 'link') return 'A link: listed, never created when extracting';
+        if (entry.kind === 'other') return 'A device or pipe: listed, never created when extracting';
         return entry.name;
     }
 
@@ -830,35 +961,38 @@ export class ArchiveViewComponent {
 
     protected countsOf(listing: ArchiveListing): string {
         const folder = listing.folder;
-        const parts = [`${(folder.folders ?? 0).toLocaleString()} ${folder.folders === 1 ? 'folder' : 'folders'}`,
+        const parts = [
+            `${(folder.folders ?? 0).toLocaleString()} ${folder.folders === 1 ? 'folder' : 'folders'}`,
             `${(folder.files ?? 0).toLocaleString()} ${folder.files === 1 ? 'file' : 'files'} here`,
-            `${formatSize(folder.size)} in ${(folder.allFiles ?? 0).toLocaleString()} ${folder.allFiles === 1 ? 'file' : 'files'} below`];
+            `${formatSize(folder.size)} in ${(folder.allFiles ?? 0).toLocaleString()} ${folder.allFiles === 1 ? 'file' : 'files'} below`,
+        ];
         return `${parts.join(' · ')} · ${listing.format.toUpperCase()}`;
     }
 
     /** Shows a folder (or the root): asks until the archive's list is read, then its first page. */
     private async open(where: { folder?: number | null; at?: string | null }): Promise<void> {
         this.abort?.abort();
-        const abort = this.abort = new AbortController();
+        const abort = (this.abort = new AbortController());
         this.loadingMore = false;
-        if (!this.shown())
-            this.state.set('loading');
+        if (!this.shown()) this.state.set('loading');
         try {
             for (;;) {
-                const answer = await this.api.exploreArchive(this.item().path, { ...where, limit: FIRST_PAGE, unlock: this.unlock() }, abort.signal);
-                if (abort.signal.aborted)
-                    return;
+                const answer = await this.api.exploreArchive(
+                    this.item().path,
+                    { ...where, limit: FIRST_PAGE, unlock: this.unlock() },
+                    abort.signal,
+                );
+                if (abort.signal.aborted) return;
                 if (isListing(answer)) {
                     this.shown.set({ listing: answer, rows: answer.items, next: answer.next });
-                    if (answer.needsPassword)
-                        this.asking.set(true);
+                    if (answer.needsPassword) this.asking.set(true);
                     this.selected.set(-1);
                     this.state.set('ready');
                     this.scroller().nativeElement.scrollTop = 0;
                     return;
                 }
                 if (!isReading(answer)) {
-                    this.fail(answer.detail ?? 'This file can\'t be explored.');
+                    this.fail(answer.detail ?? "This file can't be explored.");
                     return;
                 }
                 this.state.set('reading');
@@ -866,22 +1000,29 @@ export class ArchiveViewComponent {
                 await pause(READING_POLL_MS, abort.signal);
             }
         } catch (error) {
-            if (abort.signal.aborted)
-                return;
-            this.fail(error instanceof ApiError && error.status === 404 ? 'There is no such folder in the archive.' : error instanceof Error ? error.message : String(error));
+            if (abort.signal.aborted) return;
+            this.fail(
+                error instanceof ApiError && error.status === 404
+                    ? 'There is no such folder in the archive.'
+                    : error instanceof Error
+                      ? error.message
+                      : String(error),
+            );
         }
     }
 
     private async loadMore(): Promise<void> {
         const shown = this.shown();
-        if (!shown?.next || this.loadingMore)
-            return;
+        if (!shown?.next || this.loadingMore) return;
         this.loadingMore = true;
         const abort = this.abort;
         try {
-            const answer = await this.api.exploreArchive(this.item().path, { folder: shown.listing.folder.id, after: shown.next, limit: NEXT_PAGE, unlock: this.unlock() }, abort?.signal);
-            if (abort?.signal.aborted || this.shown() !== shown || !isListing(answer))
-                return;
+            const answer = await this.api.exploreArchive(
+                this.item().path,
+                { folder: shown.listing.folder.id, after: shown.next, limit: NEXT_PAGE, unlock: this.unlock() },
+                abort?.signal,
+            );
+            if (abort?.signal.aborted || this.shown() !== shown || !isListing(answer)) return;
             this.shown.set({ listing: shown.listing, rows: [...shown.rows, ...answer.items], next: answer.next });
         } catch {
             // The next scroll asks again.
@@ -912,17 +1053,16 @@ function isReading(answer: ArchiveAnswer): answer is { read: number } {
 
 /** Waits `ms`, longer while the tab is hidden (nothing is asked then: battery). */
 function pause(ms: number, signal: AbortSignal): Promise<void> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         const done = () => {
             document.removeEventListener('visibilitychange', check);
             signal.removeEventListener('abort', done);
             resolve();
         };
         const check = () => {
-            if (!document.hidden)
-                done();
+            if (!document.hidden) done();
         };
         signal.addEventListener('abort', done, { once: true });
-        setTimeout(() => document.hidden ? document.addEventListener('visibilitychange', check) : done(), ms);
+        setTimeout(() => (document.hidden ? document.addEventListener('visibilitychange', check) : done()), ms);
     });
 }

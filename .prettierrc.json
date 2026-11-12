@@ -1,5 +1,7 @@
 {
   "printWidth": 120,
   "tabWidth": 4,
-  "singleQuote": true
+  "singleQuote": true,
+  "embeddedLanguageFormatting": "off",
+  "overrides": [{ "files": "*.html", "options": { "htmlWhitespaceSensitivity": "strict" } }]
 }

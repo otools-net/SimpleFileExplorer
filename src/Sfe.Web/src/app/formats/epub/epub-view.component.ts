@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    input,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { ConfigService } from '../../core/config.service';
 import { formatSize, joinParts } from '../../core/format';
 import { LibraryItem } from '../../core/models';
@@ -20,14 +32,18 @@ const SAVE_PLACE_MS = 500;
 const LINE_PIXELS = 48;
 const MODES: readonly { id: EpubMode; label: string; title: string }[] = [
     { id: 'pages', label: 'Page', title: 'One page at a time, turned with ← →' },
-    { id: 'spread', label: 'Two pages', title: 'Two pages side by side, as an open book (one when the window is narrow)' },
+    {
+        id: 'spread',
+        label: 'Two pages',
+        title: 'Two pages side by side, as an open book (one when the window is narrow)',
+    },
     { id: 'scroll', label: 'Scroll', title: 'The whole book as one long page, scrolled' },
 ];
 
 function readPlaces(): Record<string, string> {
     try {
         const value = JSON.parse(readPreference(EPUB_PLACES_KEY) ?? '{}') as unknown;
-        return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, string> : {};
+        return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, string>) : {};
     } catch {
         return {};
     }
@@ -44,8 +60,7 @@ export function writePlace(path: string, cfi: string): void {
     delete places[path];
     places[path] = cfi;
     const paths = Object.keys(places);
-    for (const old of paths.slice(0, Math.max(0, paths.length - MAX_PLACES)))
-        delete places[old];
+    for (const old of paths.slice(0, Math.max(0, paths.length - MAX_PLACES))) delete places[old];
     writePreference(EPUB_PLACES_KEY, JSON.stringify(places));
 }
 
@@ -161,13 +176,15 @@ export class EpubViewComponent {
     /** The chapter read: the last heading of the contents in the file shown. */
     protected readonly chapter = computed(() => {
         const href = this.currentHref();
-        return href ? this.toc().filter(entry => entry.href.split('#')[0] === href)[0]?.label ?? null : null;
+        return href ? (this.toc().filter((entry) => entry.href.split('#')[0] === href)[0]?.label ?? null) : null;
     });
     protected readonly progress = computed(() => {
         const percentage = this.place()?.percentage;
         return percentage === null || percentage === undefined ? '…' : `${Math.round(percentage * 100)} %`;
     });
-    protected readonly downloadUrl = computed(() => this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
+    protected readonly downloadUrl = computed(() =>
+        this.fileHost.can(Rights.download) ? (this.config.urls()?.download(this.item().path) ?? null) : null,
+    );
     protected readonly details = computed(() => {
         const size = this.item().size;
         return joinParts(['EPUB', this.title(), this.author(), size ? formatSize(size) : null], '  ·  ');
@@ -196,8 +213,7 @@ export class EpubViewComponent {
         effect(() => {
             const frame = this.frame().nativeElement;
             untracked(() => {
-                if (typeof ResizeObserver === 'undefined' || resize)
-                    return;
+                if (typeof ResizeObserver === 'undefined' || resize) return;
                 resize = new ResizeObserver(() => this.handle?.resize());
                 resize.observe(frame);
             });
@@ -205,18 +221,22 @@ export class EpubViewComponent {
     }
 
     private async open(item: LibraryItem, destroyed: () => boolean): Promise<void> {
-        if (this.handle)
-            return;
+        if (this.handle) return;
         try {
-            const handle = await this.load(this.stage().nativeElement, bookUrl(item.path), { mode: this.mode(), start: readPlace(item.path), style: this.bookStyle() }, {
-                relocated: place => {
-                    this.place.set(place);
-                    clearTimeout(this.savePlace);
-                    this.savePlace = setTimeout(() => writePlace(item.path, place.cfi), SAVE_PLACE_MS);
+            const handle = await this.load(
+                this.stage().nativeElement,
+                bookUrl(item.path),
+                { mode: this.mode(), start: readPlace(item.path), style: this.bookStyle() },
+                {
+                    relocated: (place) => {
+                        this.place.set(place);
+                        clearTimeout(this.savePlace);
+                        this.savePlace = setTimeout(() => writePlace(item.path, place.cfi), SAVE_PLACE_MS);
+                    },
+                    key: (event) => this.onKeydown(event),
+                    swipe: (direction) => (direction > 0 ? this.next() : this.previous()),
                 },
-                key: event => this.onKeydown(event),
-                swipe: direction => direction > 0 ? this.next() : this.previous(),
-            });
+            );
             if (destroyed()) {
                 handle.destroy();
                 return;
@@ -229,9 +249,10 @@ export class EpubViewComponent {
             this.toc.set(handle.toc);
             this.state.set('ready');
         } catch (error) {
-            if (destroyed())
-                return;
-            this.message.set(`This book could not be opened: ${(error as Error)?.message ?? error}. It can only be downloaded.`);
+            if (destroyed()) return;
+            this.message.set(
+                `This book could not be opened: ${(error as Error)?.message ?? error}. It can only be downloaded.`,
+            );
             this.state.set('failed');
         }
     }
@@ -246,7 +267,9 @@ export class EpubViewComponent {
         const font = fontOf(preferences.prose.font);
         // From the service, not the host: the host's binding may not be applied yet when the book opens.
         const family = (this.style()['--reader-font'] ?? font.family)
-            .split(/var\((--[\w-]+)\)/).map((part, index) => index % 2 ? variable(part, 'serif') : part).join('');
+            .split(/var\((--[\w-]+)\)/)
+            .map((part, index) => (index % 2 ? variable(part, 'serif') : part))
+            .join('');
         return {
             fontFamily: family,
             fontSize: preferences.prose.size,
@@ -255,7 +278,12 @@ export class EpubViewComponent {
             background,
             link: variable('--tok-link', '#0969da'),
             forceColors: preferences.theme === 'sepia' || isDark(background),
-            fontsUrl: font.bundled ? new URL(`reader-fonts.css?v=${encodeURIComponent(this.config.config()?.version ?? '')}`, document.baseURI).href : null,
+            fontsUrl: font.bundled
+                ? new URL(
+                      `reader-fonts.css?v=${encodeURIComponent(this.config.config()?.version ?? '')}`,
+                      document.baseURI,
+                  ).href
+                : null,
         };
     }
 
@@ -274,7 +302,7 @@ export class EpubViewComponent {
     }
 
     protected toggleToc(): void {
-        this.showToc.update(shown => !shown);
+        this.showToc.update((shown) => !shown);
         writePreference(EPUB_TOC_KEY, this.showToc() ? '1' : '0');
     }
 
@@ -288,20 +316,26 @@ export class EpubViewComponent {
      * Also the keys pressed inside the book's pages. Ctrl+= / Ctrl+− / Ctrl+0: the text's size.
      */
     protected onKeydown(event: KeyboardEvent): void {
-        if (event.defaultPrevented || this.state() !== 'ready' || event.altKey)
-            return;
+        if (event.defaultPrevented || this.state() !== 'ready' || event.altKey) return;
         if (event.ctrlKey || event.metaKey) {
-            const step = event.key === '=' || event.key === '+' ? 1 : event.key === '-' || event.key === '_' ? -1 : event.key === '0' ? 0 : null;
+            const step =
+                event.key === '=' || event.key === '+'
+                    ? 1
+                    : event.key === '-' || event.key === '_'
+                      ? -1
+                      : event.key === '0'
+                        ? 0
+                        : null;
             if (step !== null) {
                 event.preventDefault();
                 this.reading.changeSize('prose', step);
             }
             return;
         }
-        if ((event.target as Element | null)?.closest?.('input, select, textarea, .reading-panel'))
-            return;
+        if ((event.target as Element | null)?.closest?.('input, select, textarea, .reading-panel')) return;
         const scroll = this.mode() === 'scroll';
-        const forward = event.key === 'ArrowRight' || event.key === 'PageDown' || (event.key === ' ' && !event.shiftKey);
+        const forward =
+            event.key === 'ArrowRight' || event.key === 'PageDown' || (event.key === ' ' && !event.shiftKey);
         const back = event.key === 'ArrowLeft' || event.key === 'PageUp' || (event.key === ' ' && event.shiftKey);
         if (scroll && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
             event.preventDefault();
@@ -311,10 +345,8 @@ export class EpubViewComponent {
             this.handle?.scrollBy(forward ? 1 : -1, true);
         } else if (forward || back) {
             event.preventDefault();
-            if (forward)
-                this.next();
-            else
-                this.previous();
+            if (forward) this.next();
+            else this.previous();
         }
     }
 }
@@ -322,8 +354,7 @@ export class EpubViewComponent {
 /** A background dark enough for light text (its colour as the browser gives it: `rgb(r, g, b)`). */
 function isDark(color: string): boolean {
     const match = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(color);
-    if (!match)
-        return false;
+    if (!match) return false;
     const [r, g, b] = match.slice(1, 4).map(Number);
     return 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
 }

@@ -1,5 +1,14 @@
 import { pickedFiles, UploadQueue } from '../../files/uploads';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, viewChild } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    ElementRef,
+    inject,
+    viewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CopyPathService } from '../../core/copy-path.service';
 import { joinParts, plural } from '../../core/format';
@@ -29,7 +38,15 @@ const SORT_OPTIONS: [SortField, string][] = [
 /** Where the listing is: folder navigation, breadcrumbs, the search in words, the counts and the sort. */
 @Component({
     selector: 'section[sfeLocation]',
-    imports: [IconComponent, RouterLink, ContextMenuDirective, SearchExplainComponent, FolderNavComponent, PinButtonComponent, DefaultTagsBadgeComponent],
+    imports: [
+        IconComponent,
+        RouterLink,
+        ContextMenuDirective,
+        SearchExplainComponent,
+        FolderNavComponent,
+        PinButtonComponent,
+        DefaultTagsBadgeComponent,
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'location' },
     template: `
@@ -143,7 +160,11 @@ export class LocationComponent {
     protected readonly uploads = inject(UploadQueue);
     protected readonly folder = inject(FolderMenu);
     private readonly contextMenu = inject(ContextMenu);
-    protected readonly moreTitle = computed(() => this.store.route().q ? 'Actions on this search' : 'Actions on this folder: new folder, upload, tags, quick link…');
+    protected readonly moreTitle = computed(() =>
+        this.store.route().q
+            ? 'Actions on this search'
+            : 'Actions on this folder: new folder, upload, tags, quick link…',
+    );
 
     /** The folder's menu (New folder, Upload…, Tags, quick link, Copy full path, Properties…), under the button. */
     protected openFolderMenu(event: MouseEvent): void {
@@ -163,14 +184,18 @@ export class LocationComponent {
     /** What the folder browsed is kept out of (scans, trickplay, thumbnails): a small note for everyone. */
     private readonly exclusions = computed(() => this.folder.exclusions());
     protected readonly exclusion = computed(() => exclusionChip(this.exclusions()));
-    protected readonly exclusionTitle = computed(() => exclusionTitle(this.exclusions(), this.store.listing()?.path ?? ''));
+    protected readonly exclusionTitle = computed(() =>
+        exclusionTitle(this.exclusions(), this.store.listing()?.path ?? ''),
+    );
     /** The default tags of the folder browsed, its own and its parents': for everyone. */
     protected readonly defaultTags = computed(() => {
         const page = this.store.listing();
-        const defaults = page && !this.store.searching() && 'defaultTags' in page ? page.defaultTags ?? null : null;
+        const defaults = page && !this.store.searching() && 'defaultTags' in page ? (page.defaultTags ?? null) : null;
         return defaults && (defaults.own.length || defaults.inherited.length) ? defaults : null;
     });
-    protected readonly folderLabel = computed(() => this.store.route().path ? `“${this.folderName()}”` : 'the top folder');
+    protected readonly folderLabel = computed(() =>
+        this.store.route().path ? `“${this.folderName()}”` : 'the top folder',
+    );
     protected readonly canExclude = this.folder.canExclude;
 
     protected openExclusions(): void {
@@ -188,7 +213,8 @@ export class LocationComponent {
             const topbar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')) || 60;
             const observer = new IntersectionObserver(
                 ([entry]) => this.links.headHidden.set(!entry.isIntersecting && entry.boundingClientRect.top < topbar),
-                { rootMargin: `-${topbar}px 0px 0px 0px` });
+                { rootMargin: `-${topbar}px 0px 0px 0px` },
+            );
             observer.observe(this.head().nativeElement);
             destroyRef.onDestroy(() => {
                 observer.disconnect();
@@ -199,8 +225,7 @@ export class LocationComponent {
 
     protected readonly summary = computed(() => {
         const page = this.store.listing();
-        if (!page || this.store.status() !== 'ready')
-            return '';
+        if (!page || this.store.status() !== 'ready') return '';
         if (this.store.route().q) {
             const total = this.store.total();
             const count = total?.count ?? this.store.items().length;
@@ -209,18 +234,20 @@ export class LocationComponent {
         }
         return 'directoryCount' in page
             ? joinParts([
-                page.directoryCount ? plural(page.directoryCount, 'folder') : null,
-                page.fileCount ? plural(page.fileCount, 'file') : null,
-            ])
+                  page.directoryCount ? plural(page.directoryCount, 'folder') : null,
+                  page.fileCount ? plural(page.fileCount, 'file') : null,
+              ])
             : '';
     });
 
     /** The folder browsed, named as its breadcrumb (the library's name for the root). */
     protected readonly folderName = computed(() => this.links.crumbs().at(-1)?.name ?? '');
 
-    protected readonly scopeTagsTitle = computed(() => this.store.searching()
-        ? 'Add or remove tags on all the results of this search (asks first)'
-        : 'Add or remove tags on all the files of this folder, or of its sub-folders too (asks first)');
+    protected readonly scopeTagsTitle = computed(() =>
+        this.store.searching()
+            ? 'Add or remove tags on all the results of this search (asks first)'
+            : 'Add or remove tags on all the files of this folder, or of its sub-folders too (asks first)',
+    );
 
     protected newFolder(): void {
         this.folder.newFolder();

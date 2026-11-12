@@ -4,7 +4,15 @@ import { ConfigService } from '../../core/config.service';
 import { Rights } from '../../core/rights';
 import { readPreference, writePreference } from '../../core/preferences';
 import {
-    DEFAULT_READING, fontFamily, fontOf, FONT_SIZES, ProfilePreferences, ReaderTheme, ReadingPreferences, ReadingProfile, sanitizeReading,
+    DEFAULT_READING,
+    fontFamily,
+    fontOf,
+    FONT_SIZES,
+    ProfilePreferences,
+    ReaderTheme,
+    ReadingPreferences,
+    ReadingProfile,
+    sanitizeReading,
 } from './reading';
 
 /** This browser's changes to the reading preferences (a versioned JSON value: only what was changed is in it). */
@@ -22,7 +30,7 @@ interface ReadingOverrides {
 function readOverrides(): ReadingOverrides {
     try {
         const value = JSON.parse(readPreference(READING_KEY) ?? 'null') as Partial<ReadingOverrides> | null;
-        return value && value.version === 1 ? value as ReadingOverrides : { version: 1 };
+        return value && value.version === 1 ? (value as ReadingOverrides) : { version: 1 };
     } catch {
         return { version: 1 };
     }
@@ -41,19 +49,31 @@ export class ReadingService {
     private fontsLinked = false;
 
     /** The defaults this browser's changes go over: the account's (following the config as it loads). */
-    readonly defaults = linkedSignal<ReadingPreferences>(() => sanitizeReading(this.config.config()?.reading ?? DEFAULT_READING));
+    readonly defaults = linkedSignal<ReadingPreferences>(() =>
+        sanitizeReading(this.config.config()?.reading ?? DEFAULT_READING),
+    );
 
     /** This browser changed something the account's defaults don't have. */
     readonly changed = computed(() => JSON.stringify(this.preferences()) !== JSON.stringify(this.defaults()));
 
     /** A signed-in account that may keep its own preferences. */
-    readonly canSaveDefaults = computed(() => Boolean(this.config.config()?.user) && this.config.can(Rights.ownPreferences));
+    readonly canSaveDefaults = computed(
+        () => Boolean(this.config.config()?.user) && this.config.can(Rights.ownPreferences),
+    );
 
     /** The preferences in effect. */
     readonly preferences = computed((): ReadingPreferences => {
         const defaults = this.defaults();
         const overrides = this.overrides();
-        return sanitizeReading({ ...defaults, ...overrides, code: overrides.code ?? defaults.code, prose: overrides.prose ?? defaults.prose }, defaults);
+        return sanitizeReading(
+            {
+                ...defaults,
+                ...overrides,
+                code: overrides.code ?? defaults.code,
+                prose: overrides.prose ?? defaults.prose,
+            },
+            defaults,
+        );
     });
 
     profile(profile: ReadingProfile): ProfilePreferences {
@@ -99,8 +119,7 @@ export class ReadingService {
 
     /** Downloads the bundled fonts (`reader-fonts.css`) the first time a profile uses one of them. */
     linkFonts(profile: ReadingProfile): void {
-        if (this.fontsLinked || !fontOf(this.profile(profile).font).bundled)
-            return;
+        if (this.fontsLinked || !fontOf(this.profile(profile).font).bundled) return;
         this.fontsLinked = true;
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -116,7 +135,10 @@ export class ReadingService {
      */
     async saveAsDefaults(): Promise<void> {
         const preferences = this.preferences();
-        const values: Record<string, unknown> = { 'reading.theme': preferences.theme, 'reading.customFont': preferences.customFont };
+        const values: Record<string, unknown> = {
+            'reading.theme': preferences.theme,
+            'reading.customFont': preferences.customFont,
+        };
         for (const profile of ['code', 'prose'] as const) {
             for (const [key, value] of Object.entries(preferences[profile]))
                 values[`reading.${profile}.${key}`] = value;

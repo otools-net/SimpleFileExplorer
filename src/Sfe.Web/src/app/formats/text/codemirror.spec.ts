@@ -16,8 +16,17 @@ describe('TextEditor: a line going on past the right edge', () => {
     });
 
     /** jsdom has no layout: the scroller's sizes as a browser would give them (a 10 px scroll bar at the bottom). */
-    function layout(scroller: HTMLElement, sizes: { scrollLeft: number; clientWidth: number; scrollWidth: number }): void {
-        const values = { ...sizes, offsetWidth: sizes.clientWidth, offsetHeight: 410, clientHeight: 400, offsetTop: 36 };
+    function layout(
+        scroller: HTMLElement,
+        sizes: { scrollLeft: number; clientWidth: number; scrollWidth: number },
+    ): void {
+        const values = {
+            ...sizes,
+            offsetWidth: sizes.clientWidth,
+            offsetHeight: 410,
+            clientHeight: 400,
+            offsetTop: 36,
+        };
         for (const [name, value] of Object.entries(values))
             Object.defineProperty(scroller, name, { configurable: true, value });
     }
@@ -31,8 +40,12 @@ describe('TextEditor: a line going on past the right edge', () => {
 
     it('fades the right edge while the line goes on, not once scrolled to its end', () => {
         expect(scroll({ scrollLeft: 0, clientWidth: 360, scrollWidth: 760 }).contains('cm-line-continues')).toBe(true);
-        expect(scroll({ scrollLeft: 200, clientWidth: 360, scrollWidth: 760 }).contains('cm-line-continues')).toBe(true);
-        expect(scroll({ scrollLeft: 400, clientWidth: 360, scrollWidth: 760 }).contains('cm-line-continues')).toBe(false);
+        expect(scroll({ scrollLeft: 200, clientWidth: 360, scrollWidth: 760 }).contains('cm-line-continues')).toBe(
+            true,
+        );
+        expect(scroll({ scrollLeft: 400, clientWidth: 360, scrollWidth: 760 }).contains('cm-line-continues')).toBe(
+            false,
+        );
     });
 
     it('does not fade lines that fit', () => {

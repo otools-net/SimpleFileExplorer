@@ -2,7 +2,17 @@ import { TestBed } from '@angular/core/testing';
 import { DirectoryListing, FileJobView, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    fakeConfig,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../testing/fakes';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { DRAG_ITEMS } from '../library/quick-links/quick-links.service';
@@ -21,14 +31,37 @@ const photo = item('Media/beach.jpg', { size: 2048 });
 const clip = item('Media/clip.mp4', { size: 1024 });
 
 function listing(path: string, items: LibraryItem[], access: DirectoryListing['access'] = null): DirectoryListing {
-    const folders = items.filter(i => i.kind === 'directory').length;
-    return { path, name: path.split('/').pop()!, parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: folders, fileCount: items.length - folders, access };
+    const folders = items.filter((i) => i.kind === 'directory').length;
+    return {
+        path,
+        name: path.split('/').pop()!,
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: folders,
+        fileCount: items.length - folders,
+        access,
+    };
 }
 
 function job(overrides: Partial<FileJobView> = {}): FileJobView {
     return {
-        id: 1, kind: 'move', state: 'running', target: 'Media/Holidays', total: 1, done: 0, bytesTotal: 0, bytesDone: 0, current: null, conflict: null,
-        results: [], started: '2026-10-17T10:00:00Z', finished: null, ...overrides,
+        id: 1,
+        kind: 'move',
+        state: 'running',
+        target: 'Media/Holidays',
+        total: 1,
+        done: 0,
+        bytesTotal: 0,
+        bytesDone: 0,
+        current: null,
+        conflict: null,
+        results: [],
+        started: '2026-10-17T10:00:00Z',
+        finished: null,
+        ...overrides,
     };
 }
 
@@ -37,7 +70,7 @@ async function setUp(config = fakeConfig()): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: 'Media', previous: null, next: null, position: 1, count: 1 });
     api.browse.mockResolvedValue(listing('Media', [folder, photo, clip]));
     store.route.set({ path: 'Media', q: '', sort: '', desc: false });
@@ -66,23 +99,34 @@ describe('TransferDialog', () => {
         expect(api.browse.mock.lastCall![0]).toMatchObject({ path: 'Media', sort: 'name' });
         expect(element.textContent).toContain('Move 1 folder and 1 file into:');
         expect(buttonNamed(element, 'Move here')!.disabled).toBe(true);
-        const holidays = [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')].find(b => b.textContent!.includes('Holidays'))!;
+        const holidays = [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')].find((b) =>
+            b.textContent!.includes('Holidays'),
+        )!;
         expect(holidays.disabled).toBe(true);
 
-        api.browse.mockResolvedValue(listing('', [item('Media', { kind: 'directory' }), item('Other', { kind: 'directory' })]));
+        api.browse.mockResolvedValue(
+            listing('', [item('Media', { kind: 'directory' }), item('Other', { kind: 'directory' })]),
+        );
         buttonNamed(element.querySelector('.transfer-crumbs')!, 'Root')!.click();
         await settle();
         api.browse.mockResolvedValue(listing('Other', []));
-        [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')].find(b => b.textContent!.includes('Other'))!.click();
+        [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')]
+            .find((b) => b.textContent!.includes('Other'))!
+            .click();
         await settle();
         expect(element.textContent).toContain('No folders in here.');
         buttonNamed(element, 'Move here')!.click();
         await settle();
 
         expect(api.checkMove).toHaveBeenCalledWith([photo.path, folder.path], 'Other');
-        expect(api.startFileJob).toHaveBeenCalledWith({ kind: 'move', paths: [photo.path, folder.path], target: 'Other', keepAccess: false });
+        expect(api.startFileJob).toHaveBeenCalledWith({
+            kind: 'move',
+            paths: [photo.path, folder.path],
+            target: 'Other',
+            keepAccess: false,
+        });
         expect(element.querySelector('dialog')!.open).toBe(false);
-        expect(transfers.jobs().map(j => j.id)).toEqual([1]);
+        expect(transfers.jobs().map((j) => j.id)).toEqual([1]);
     });
 
     it('says who would gain access, and moves keeping it when asked', async () => {
@@ -90,18 +134,25 @@ describe('TransferDialog', () => {
         const { element } = create();
         api.startFileJob.mockResolvedValue(job());
         api.fileJobs.mockResolvedValue([]);
-        api.checkMove.mockResolvedValue({ gains: [{ folder: 'Media/Holidays', who: 'Visitors', isGroup: true, before: 'hidden', after: 'read' }] });
+        api.checkMove.mockResolvedValue({
+            gains: [{ folder: 'Media/Holidays', who: 'Visitors', isGroup: true, before: 'hidden', after: 'read' }],
+        });
 
         await TestBed.inject(FileTransfers).transfer('move', [folder.path], '');
         await settle();
 
         expect(element.textContent).toContain('Move “Holidays” into “Root”?');
-        expect(element.textContent).toContain('The group Visitors (who don\'t see it now) would see “Holidays”.');
+        expect(element.textContent).toContain("The group Visitors (who don't see it now) would see “Holidays”.");
         expect(api.startFileJob).not.toHaveBeenCalled();
         (element.querySelector('.transfer-gains + label input') as HTMLInputElement).click();
         buttonNamed(element, 'Move')!.click();
         await settle();
-        expect(api.startFileJob).toHaveBeenCalledWith({ kind: 'move', paths: [folder.path], target: '', keepAccess: true });
+        expect(api.startFileJob).toHaveBeenCalledWith({
+            kind: 'move',
+            paths: [folder.path],
+            target: '',
+            keepAccess: true,
+        });
     });
 
     it('refuses folders where the session may not copy, and asks about the tags of a copy', async () => {
@@ -123,7 +174,12 @@ describe('TransferDialog', () => {
         (element.querySelector('input[type="checkbox"]') as HTMLInputElement).click();
         buttonNamed(element, 'Copy')!.click();
         await settle();
-        expect(api.startFileJob).toHaveBeenCalledWith({ kind: 'copy', paths: [photo.path], target: 'Other', keepTags: false });
+        expect(api.startFileJob).toHaveBeenCalledWith({
+            kind: 'copy',
+            paths: [photo.path],
+            target: 'Other',
+            keepTags: false,
+        });
         expect(TestBed.inject(FileTransfers).clipboard(), 'A copy can be pasted again').not.toBeNull();
     });
 });
@@ -134,23 +190,34 @@ describe('FileTransfers', () => {
         const toasts = TestBed.inject(ToastService);
         const transfers = TestBed.inject(FileTransfers);
         api.startFileJob.mockResolvedValue(job({ total: 2 }));
-        api.fileJobs.mockResolvedValue([job({
-            state: 'completed', total: 2, done: 2, finished: '2026-10-17T10:00:01Z', results: [
-                { path: photo.path, newPath: 'Media/Holidays/beach.jpg', status: 'done' },
-                { path: clip.path, newPath: null, status: 'failed', message: '“clip.mp4” could not be moved: it is in use.' },
-            ],
-        })]);
+        api.fileJobs.mockResolvedValue([
+            job({
+                state: 'completed',
+                total: 2,
+                done: 2,
+                finished: '2026-10-17T10:00:01Z',
+                results: [
+                    { path: photo.path, newPath: 'Media/Holidays/beach.jpg', status: 'done' },
+                    {
+                        path: clip.path,
+                        newPath: null,
+                        status: 'failed',
+                        message: '“clip.mp4” could not be moved: it is in use.',
+                    },
+                ],
+            }),
+        ]);
 
         await transfers.start({ kind: 'move', paths: [photo.path, clip.path], target: 'Media/Holidays' });
         await settle();
 
-        expect(store.items().map(i => i.name)).toEqual(['Holidays', 'clip.mp4']);
-        const messages = toasts.toasts().map(t => t.message);
+        expect(store.items().map((i) => i.name)).toEqual(['Holidays', 'clip.mp4']);
+        const messages = toasts.toasts().map((t) => t.message);
         expect(messages).toContain('1 item moved to “Holidays”.');
         expect(messages).toContain('“clip.mp4” could not be moved: it is in use.');
         const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => undefined as never);
-        const moved = toasts.toasts().find(t => t.actions.length)!;
-        expect(moved.actions.map(action => action.label)).toEqual(['Undo', 'Open']);
+        const moved = toasts.toasts().find((t) => t.actions.length)!;
+        expect(moved.actions.map((action) => action.label)).toEqual(['Undo', 'Open']);
         toasts.act(moved, moved.actions[1]);
         expect(navigate).toHaveBeenCalledWith({ path: 'Media/Holidays' });
     });
@@ -174,17 +241,29 @@ describe('ItemMenu, moves and copies', () => {
     it('offers cut, copy, paste into a folder, move to and copy to by rights', async () => {
         await setUp();
         const menu = TestBed.inject(ItemMenu);
-        expect(menu.entries(photo).map(e => e.id)).toEqual(['newTab', 'rename', 'delete', 'cut', 'copy', 'moveTo', 'copyTo', 'download', 'tags', 'quickLink', 'properties']);
+        expect(menu.entries(photo).map((e) => e.id)).toEqual([
+            'newTab',
+            'rename',
+            'delete',
+            'cut',
+            'copy',
+            'moveTo',
+            'copyTo',
+            'download',
+            'tags',
+            'quickLink',
+            'properties',
+        ]);
 
         TestBed.inject(FileTransfers).keep('move', [photo]);
-        const paste = menu.entries(folder).find(e => e.id === 'paste')!;
+        const paste = menu.entries(folder).find((e) => e.id === 'paste')!;
         expect(paste.label).toBe('Paste into Holidays');
         const transfer = vi.spyOn(TestBed.inject(FileTransfers), 'transfer').mockResolvedValue();
         paste.run();
         expect(transfer).toHaveBeenCalledWith('move', [photo.path], folder.path);
 
         await loadConfig(api, limitedConfig([Rights.browse, Rights.viewFiles]));
-        expect(menu.entries(photo).map(e => e.id)).toEqual(['newTab', 'properties']);
+        expect(menu.entries(photo).map((e) => e.id)).toEqual(['newTab', 'properties']);
     });
 
     it('opens the picker for the whole selection', async () => {
@@ -194,7 +273,10 @@ describe('ItemMenu, moves and copies', () => {
         store.select(photo, true);
         store.select(clip, true);
 
-        TestBed.inject(ItemMenu).entries(photo).find(e => e.id === 'copyTo')!.run();
+        TestBed.inject(ItemMenu)
+            .entries(photo)
+            .find((e) => e.id === 'copyTo')!
+            .run();
 
         expect(pick).toHaveBeenCalledWith('copy', [photo, clip]);
     });
@@ -212,8 +294,17 @@ describe('OperationsPanelComponent', () => {
     it('shows the progress, asks about a name clash and closes when done', async () => {
         await setUp();
         const waiting = job({
-            kind: 'copy', state: 'waiting', total: 3, done: 1, bytesTotal: 4096, bytesDone: 1024,
-            conflict: { source: { name: 'beach.jpg', isFolder: false, size: 2048, modified: null }, existing: { name: 'beach.jpg', isFolder: false, size: 1024, modified: null }, canReplace: false },
+            kind: 'copy',
+            state: 'waiting',
+            total: 3,
+            done: 1,
+            bytesTotal: 4096,
+            bytesDone: 1024,
+            conflict: {
+                source: { name: 'beach.jpg', isFolder: false, size: 2048, modified: null },
+                existing: { name: 'beach.jpg', isFolder: false, size: 1024, modified: null },
+                canReplace: false,
+            },
         });
         api.fileJobs.mockResolvedValue([waiting]);
         api.answerFileJob.mockResolvedValue(undefined);
@@ -223,7 +314,15 @@ describe('OperationsPanelComponent', () => {
         expect(element.textContent).toContain('“beach.jpg” is already there.');
         expect(buttonNamed(element, 'Replace')).toBeUndefined();
         (element.querySelector('.operation-conflict input') as HTMLInputElement).click();
-        api.fileJobs.mockResolvedValue([job({ ...waiting, conflict: null, state: 'completed', done: 3, results: [{ path: 'b', newPath: null, status: 'skipped', message: '“b” was left out.' }] })]);
+        api.fileJobs.mockResolvedValue([
+            job({
+                ...waiting,
+                conflict: null,
+                state: 'completed',
+                done: 3,
+                results: [{ path: 'b', newPath: null, status: 'skipped', message: '“b” was left out.' }],
+            }),
+        ]);
         buttonNamed(element, 'Skip')!.click();
         // The answer, then the poll it schedules.
         await settle();
@@ -244,12 +343,17 @@ describe('OperationsPanelComponent', () => {
         const cancel = vi.spyOn(TestBed.inject(FileTransfers), 'cancel').mockResolvedValue();
         const { element } = await panel();
 
-        element.querySelector('[data-job="1"] .operation-title')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        element
+            .querySelector('[data-job="1"] .operation-title')!
+            .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
         const target = TestBed.inject(ContextMenu).open()!.target;
 
         expect(target.kind).toBe('job');
-        expect(target.entries().map(entry => entry.id)).toEqual(['cancel', 'openTarget', 'targetNewTab']);
-        expect(target.entries()[2]).toMatchObject({ newTab: true, href: expect.stringMatching(/\?path=Media%2FHolidays$/) });
+        expect(target.entries().map((entry) => entry.id)).toEqual(['cancel', 'openTarget', 'targetNewTab']);
+        expect(target.entries()[2]).toMatchObject({
+            newTab: true,
+            href: expect.stringMatching(/\?path=Media%2FHolidays$/),
+        });
         target.entries()[0].run!();
         expect(cancel).toHaveBeenCalled();
     });
@@ -264,7 +368,13 @@ describe('OperationsPanelComponent', () => {
 
         const drop = (ctrlKey: boolean, paths: string[]) => {
             const event = new Event('drop', { bubbles: true, cancelable: true });
-            Object.assign(event, { ctrlKey, dataTransfer: { types: [DRAG_ITEMS], getData: (type: string) => type === DRAG_ITEMS ? JSON.stringify(paths) : '' } });
+            Object.assign(event, {
+                ctrlKey,
+                dataTransfer: {
+                    types: [DRAG_ITEMS],
+                    getData: (type: string) => (type === DRAG_ITEMS ? JSON.stringify(paths) : ''),
+                },
+            });
             target.dispatchEvent(event);
             return event;
         };
@@ -272,6 +382,9 @@ describe('OperationsPanelComponent', () => {
         drop(true, [clip.path, folder.path]);
         target.remove();
 
-        expect(transfer.mock.calls).toEqual([['move', [photo.path], folder.path], ['copy', [clip.path], folder.path]]);
+        expect(transfer.mock.calls).toEqual([
+            ['move', [photo.path], folder.path],
+            ['copy', [clip.path], folder.path],
+        ]);
     });
 });

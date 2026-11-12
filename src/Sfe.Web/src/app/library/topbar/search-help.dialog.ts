@@ -22,7 +22,10 @@ export const SEARCH_SYNTAX: SyntaxSection[] = [
             { examples: ['cat dog'], meaning: 'Names containing both words' },
             { examples: ['cat, dog'], meaning: 'Either one' },
             { examples: ['cat -kitten'], meaning: 'Leave out names with a word' },
-            { examples: ['*holiday'], meaning: 'Match the whole path, not just the name (a * at the start applies to the whole search)' },
+            {
+                examples: ['*holiday'],
+                meaning: 'Match the whole path, not just the name (a * at the start applies to the whole search)',
+            },
         ],
     },
     {
@@ -30,28 +33,43 @@ export const SEARCH_SYNTAX: SyntaxSection[] = [
         rows: [
             { examples: ['s:>1gb', 's:<=10mb', 's:700mb'], meaning: 'Size: larger, smaller or about' },
             { examples: ['e:mp4'], meaning: 'Extension; several are either one' },
-            { examples: ['type:image', 'type:video', 'type:audio', 'type:other'], meaning: 'Kind of file, by its extension' },
+            {
+                examples: ['type:image', 'type:video', 'type:audio', 'type:other'],
+                meaning: 'Kind of file, by its extension',
+            },
         ],
     },
     {
         title: 'Photos, videos and audio',
         rows: [
-            { examples: ['w:>=1920', 'h:<720', 'r:1920x1080'], meaning: 'Resolution in pixels: width, height, both sides' },
+            {
+                examples: ['w:>=1920', 'h:<720', 'r:1920x1080'],
+                meaning: 'Resolution in pixels: width, height, both sides',
+            },
             { examples: ['r:hr', 'r:lr'], meaning: 'High or low resolution, as the HR/LR marks say' },
-            { examples: ['d:>10m', 'd:<30s', 'd:1:30'], meaning: 'Duration of videos and audio: longer, shorter or about' },
+            {
+                examples: ['d:>10m', 'd:<30s', 'd:1:30'],
+                meaning: 'Duration of videos and audio: longer, shorter or about',
+            },
         ],
     },
     {
         title: 'Tags',
         rows: [
-            { examples: ['t:beach', 't:"two words"'], meaning: 'Tagged with it, or with a tag inheriting from it; typing t: suggests tags' },
+            {
+                examples: ['t:beach', 't:"two words"'],
+                meaning: 'Tagged with it, or with a tag inheriting from it; typing t: suggests tags',
+            },
             { examples: ['special:untagged'], meaning: 'Files without tags' },
         ],
     },
     {
         title: 'Leaving out',
         rows: [
-            { examples: ['-t:work', '-e:jpg', '-s:>1gb', '-w:1920'], meaning: 'A - before any term finds the files it doesn’t' },
+            {
+                examples: ['-t:work', '-e:jpg', '-s:>1gb', '-w:1920'],
+                meaning: 'A - before any term finds the files it doesn’t',
+            },
         ],
     },
 ];
@@ -111,10 +129,15 @@ export class SearchHelpDialog {
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
     protected readonly sections = SEARCH_SYNTAX;
     private readonly config = inject(ConfigService);
-    protected readonly managesFiles = computed(() => this.config.can(Rights.createFolders) || this.config.can(Rights.renameFiles) || this.config.can(Rights.deleteFiles));
+    protected readonly managesFiles = computed(
+        () =>
+            this.config.can(Rights.createFolders) ||
+            this.config.can(Rights.renameFiles) ||
+            this.config.can(Rights.deleteFiles),
+    );
 
     constructor() {
-        registerDialog(dialogs => dialogs.searchHelp, this);
+        registerDialog((dialogs) => dialogs.searchHelp, this);
     }
 
     open(): void {

@@ -556,7 +556,12 @@ export interface ClientConfig {
      */
     streaming?: { always: boolean } | null;
     /** How deleting works in the space; null without a right to delete (and from older servers). */
-    files?: { deletePermanently: boolean; trashRetentionDays: number; maxUploadMegabytes?: number; keepUnfinishedUploadsHours?: number } | null;
+    files?: {
+        deletePermanently: boolean;
+        trashRetentionDays: number;
+        maxUploadMegabytes?: number;
+        keepUnfinishedUploadsHours?: number;
+    } | null;
     /**
      * The reading settings of text files: the library's, with the account's own over them (`ReadingPreferences` of
      * `formats/reading/reading.ts`, checked there); absent from older servers.
@@ -780,9 +785,27 @@ export type SimilarVideoState = 'idle' | 'running' | 'completed' | 'cancelled' |
 
 export interface SimilarVideoResults {
     path: string;
-    status: { state: SimilarVideoState; checked: number; total: number; started: string | null; finished: string | null; message: string | null };
-    summary: { groups: number; files: number; wastedBytes: number; videos: number; compared: number; minimumPercent: number } | null;
-    groups: { count: number; wastedBytes: number; videos: { file: LibraryItem; match: number | null; duration: number }[] }[];
+    status: {
+        state: SimilarVideoState;
+        checked: number;
+        total: number;
+        started: string | null;
+        finished: string | null;
+        message: string | null;
+    };
+    summary: {
+        groups: number;
+        files: number;
+        wastedBytes: number;
+        videos: number;
+        compared: number;
+        minimumPercent: number;
+    } | null;
+    groups: {
+        count: number;
+        wastedBytes: number;
+        videos: { file: LibraryItem; match: number | null; duration: number }[];
+    }[];
     hasMore: boolean;
     next: string | null;
     trickplayEnabled: boolean;

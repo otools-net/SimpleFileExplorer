@@ -11,17 +11,12 @@ export function changelogParts(item: string): ChangelogPart[] {
     const parts: ChangelogPart[] = [];
     let last = 0;
     for (const match of item.matchAll(INLINE)) {
-        if (match.index > last)
-            parts.push({ text: item.slice(last, match.index), kind: 'text' });
-        if (match[1] !== undefined)
-            parts.push({ text: match[1], kind: 'code' });
-        else if (match[2] !== undefined)
-            parts.push({ text: match[2], kind: 'strong' });
-        else
-            parts.push({ text: match[3], kind: 'text' });
+        if (match.index > last) parts.push({ text: item.slice(last, match.index), kind: 'text' });
+        if (match[1] !== undefined) parts.push({ text: match[1], kind: 'code' });
+        else if (match[2] !== undefined) parts.push({ text: match[2], kind: 'strong' });
+        else parts.push({ text: match[3], kind: 'text' });
         last = match.index + match[0].length;
     }
-    if (last < item.length)
-        parts.push({ text: item.slice(last), kind: 'text' });
+    if (last < item.length) parts.push({ text: item.slice(last), kind: 'text' });
     return parts;
 }

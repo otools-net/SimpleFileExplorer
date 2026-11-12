@@ -5,7 +5,18 @@ import { FolderItemComponent } from '../library/items/folder-item.component';
 import { ListingStore } from '../library/listing.store';
 import { LocationComponent } from '../library/location/location.component';
 import { SidebarService } from '../library/sidebar/sidebar.service';
-import { ApiMock, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    fakeConfig,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    summary,
+    tag,
+    testProviders,
+} from '../../testing/fakes';
 import { DefaultTagsBadgeComponent } from './default-tags-badge.component';
 import { ScopeTagsDialog } from './scope-tags.dialog';
 
@@ -23,18 +34,30 @@ async function setUp(config = fakeConfig()): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: '', previous: null, next: null, position: 0, count: 0 });
 }
 
 async function show(path: string, items: LibraryItem[], defaultTags: FolderDefaults | null = null): Promise<void> {
-    const page: DirectoryListing = { path, name: path.split('/').pop() ?? '', parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: items.length, fileCount: 0, defaultTags };
+    const page: DirectoryListing = {
+        path,
+        name: path.split('/').pop() ?? '',
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: items.length,
+        fileCount: 0,
+        defaultTags,
+    };
     store.route.set({ path, q: '', sort: '', desc: false });
     api.browse.mockResolvedValue(page);
     await store.load();
 }
 
-const chips = (root: ParentNode) => [...root.querySelectorAll('.default-tags-popover .tag-name')].map(chip => chip.textContent!.trim());
+const chips = (root: ParentNode) =>
+    [...root.querySelectorAll('.default-tags-popover .tag-name')].map((chip) => chip.textContent!.trim());
 const pointer = (target: Element, type: string, pointerType: string) =>
     target.dispatchEvent(Object.assign(new Event(type), { pointerType }));
 
@@ -69,14 +92,23 @@ describe('DefaultTagsBadgeComponent', () => {
     });
 
     it('lists every tag in its panel on a tap, the inherited ones under their folder', async () => {
-        await make([family, beach], [{ path: 'Photos', tag: sun }, { path: '', tag: night }]);
+        await make(
+            [family, beach],
+            [
+                { path: 'Photos', tag: sun },
+                { path: '', tag: night },
+            ],
+        );
 
         button().click();
         await settle();
 
         expect(button().getAttribute('aria-expanded')).toBe('true');
         expect(chips(element)).toEqual(['Family', 'Beach', 'Sunset', 'Night']);
-        expect([...panel()!.querySelectorAll('.default-tags-from')].map(p => p.textContent!.trim())).toEqual(['From “Photos”', 'From the top folder']);
+        expect([...panel()!.querySelectorAll('.default-tags-from')].map((p) => p.textContent!.trim())).toEqual([
+            'From “Photos”',
+            'From the top folder',
+        ]);
         expect(panel()!.textContent).toContain('Files put into “Family” or its sub-folders get them.');
 
         button().click();
@@ -175,8 +207,12 @@ describe('Default tags in the listing', () => {
         const plain = await make(item('Films'), false);
 
         // On a card, next to its count over the pictures; on a line, among its buttons (after the count).
-        expect(card.querySelector('.folder-cover-marks .default-tags-badge + .folder-count')!.textContent!.trim()).toBe('4');
-        expect(card.querySelector('.folder-cover-marks .default-tags-button')!.getAttribute('aria-label')).toBe('Default tags: Family');
+        expect(card.querySelector('.folder-cover-marks .default-tags-badge + .folder-count')!.textContent!.trim()).toBe(
+            '4',
+        );
+        expect(card.querySelector('.folder-cover-marks .default-tags-button')!.getAttribute('aria-label')).toBe(
+            'Default tags: Family',
+        );
         expect(card.querySelector('.folder-actions .default-tags-badge')).toBeNull();
         expect(line.querySelector('.folder-actions .default-tags-button')!.textContent!.trim()).toBe('3');
         expect(card.querySelector('.folder .default-tags-badge')).toBeNull();
@@ -185,8 +221,12 @@ describe('Default tags in the listing', () => {
 
     it('show those of the folder browsed in the location bar, whose panel opens its tags for those who may change them', async () => {
         const dialog = TestBed.createComponent(ScopeTagsDialog).componentInstance;
-        const open = vi.spyOn(dialog, 'open').mockImplementation(() => { });
-        await show('Photos/Family', [], { path: 'Photos/Family', own: [family], inherited: [{ path: 'Photos', tag: beach }] });
+        const open = vi.spyOn(dialog, 'open').mockImplementation(() => {});
+        await show('Photos/Family', [], {
+            path: 'Photos/Family',
+            own: [family],
+            inherited: [{ path: 'Photos', tag: beach }],
+        });
         const fixture = TestBed.createComponent(LocationComponent);
         await settle();
         const element = fixture.nativeElement as HTMLElement;

@@ -7,7 +7,11 @@ import { ReadingPanelComponent } from './reading-panel.component';
 
 describe('Reading preferences of the account', () => {
     let api: ApiMock;
-    const accounts = { ...DEFAULT_READING, theme: 'sepia', prose: { ...DEFAULT_READING.prose, size: 20, font: 'atkinson' } };
+    const accounts = {
+        ...DEFAULT_READING,
+        theme: 'sepia',
+        prose: { ...DEFAULT_READING.prose, size: 20, font: 'atkinson' },
+    };
 
     async function setUp(config = fakeConfig({ reading: accounts })): Promise<ReadingService> {
         api = mockApi();
@@ -32,7 +36,9 @@ describe('Reading preferences of the account', () => {
     });
 
     it("starts from the account's defaults, checked, under this browser's changes", async () => {
-        const reading = await setUp(fakeConfig({ reading: { ...accounts, code: { ...DEFAULT_READING.code, lineHeight: 7 } } }));
+        const reading = await setUp(
+            fakeConfig({ reading: { ...accounts, code: { ...DEFAULT_READING.code, lineHeight: 7 } } }),
+        );
 
         expect(reading.preferences().theme).toBe('sepia');
         expect(reading.profile('prose').font).toBe('atkinson');
@@ -57,7 +63,13 @@ describe('Reading preferences of the account', () => {
         await settle();
 
         const values = api.savePreferenceChanges.mock.calls[0][0].values!;
-        expect(values).toMatchObject({ 'reading.theme': 'dark', 'reading.code.wrap': true, 'reading.prose.size': 20, 'reading.prose.lineHeight': 1.65, 'reading.customFont': '' });
+        expect(values).toMatchObject({
+            'reading.theme': 'dark',
+            'reading.code.wrap': true,
+            'reading.prose.size': 20,
+            'reading.prose.lineHeight': 1.65,
+            'reading.customFont': '',
+        });
         expect(Object.keys(values)).toHaveLength(16);
         expect(JSON.parse(localStorage.getItem(READING_KEY)!)).toEqual({ version: 1 });
         expect(reading.preferences().theme).toBe('dark');

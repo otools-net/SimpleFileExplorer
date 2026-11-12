@@ -124,38 +124,35 @@ export class CompressDialog {
     protected readonly showPassword = signal(false);
     protected readonly busy = signal(false);
     /** The page came over plain HTTP from another computer: what is typed crosses the network as is. */
-    protected readonly plainHttp = location.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+    protected readonly plainHttp =
+        location.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 
-    protected readonly targetName = computed(() => baseName(this.target()) || this.config.config()?.rootName || 'the library');
+    protected readonly targetName = computed(
+        () => baseName(this.target()) || this.config.config()?.rootName || 'the library',
+    );
     protected readonly what = computed(() => {
         const items = this.items();
         return items.length === 1 ? `Put “${items[0].name}”` : `Put ${plural(items.length, 'item')}`;
     });
-    protected readonly ascii = computed(() => [...this.password()].every(c => c >= ' ' && c <= '~'));
+    protected readonly ascii = computed(() => [...this.password()].every((c) => c >= ' ' && c <= '~'));
     /** Why it can't start yet; null when it can. */
     protected readonly problem = computed(() => {
         const name = this.name().trim();
-        if (!name)
-            return 'Give the zip a name.';
-        if (/[\\/:*?"<>|]/.test(name))
-            return 'A name can\'t hold \\ / : * ? " < > |.';
-        if (this.password() && this.password() !== this.confirmation())
-            return 'The two passwords differ.';
-        if (!this.browser.listing())
-            return this.browser.loading() ? 'Reading the folder…' : 'Pick a folder.';
-        if (!this.browser.allows(Rights.compressFiles))
-            return 'You may not make a zip in this folder: pick another.';
+        if (!name) return 'Give the zip a name.';
+        if (/[\\/:*?"<>|]/.test(name)) return 'A name can\'t hold \\ / : * ? " < > |.';
+        if (this.password() && this.password() !== this.confirmation()) return 'The two passwords differ.';
+        if (!this.browser.listing()) return this.browser.loading() ? 'Reading the folder…' : 'Pick a folder.';
+        if (!this.browser.allows(Rights.compressFiles)) return 'You may not make a zip in this folder: pick another.';
         return null;
     });
 
     constructor() {
-        registerDialog(dialogs => dialogs.compress, this);
+        registerDialog((dialogs) => dialogs.compress, this);
     }
 
     /** Compress… of `items`: the zip goes into the folder listed (in search results, the first item's). */
     open(items: LibraryItem[]): void {
-        if (!items.length)
-            return;
+        if (!items.length) return;
         this.items.set(items);
         const target = this.transfers.compressTarget(items);
         this.browser.reset(target);
@@ -174,17 +171,16 @@ export class CompressDialog {
     /** The size to read: the files' own, the folders' from the index (those never scanned are said, not guessed). */
     private async measure(items: LibraryItem[]): Promise<void> {
         this.sizeRequest?.abort();
-        const request = this.sizeRequest = new AbortController();
+        const request = (this.sizeRequest = new AbortController());
         this.size.set(null);
-        let bytes = items.filter(item => item.kind !== 'directory').reduce((sum, item) => sum + (item.size ?? 0), 0);
-        let files = items.length - items.filter(item => item.kind === 'directory').length;
+        let bytes = items.filter((item) => item.kind !== 'directory').reduce((sum, item) => sum + (item.size ?? 0), 0);
+        let files = items.length - items.filter((item) => item.kind === 'directory').length;
         let unknown = 0;
-        const folders = items.filter(item => item.kind === 'directory');
+        const folders = items.filter((item) => item.kind === 'directory');
         for (const folder of folders.slice(0, MEASURED_FOLDERS)) {
             try {
                 const totals = await this.api.folderTotals(folder.path, request.signal);
-                if (request.signal.aborted)
-                    return;
+                if (request.signal.aborted) return;
                 if (totals?.indexed) {
                     bytes += totals.bytes;
                     files += totals.files;
@@ -192,14 +188,15 @@ export class CompressDialog {
                     unknown++;
                 }
             } catch {
-                if (request.signal.aborted)
-                    return;
+                if (request.signal.aborted) return;
                 unknown++;
             }
         }
         unknown += Math.max(0, folders.length - MEASURED_FOLDERS);
         const read = `${formatSize(bytes)} in ${plural(files, 'file')} to read`;
-        this.size.set(unknown ? `${read}, and ${plural(unknown, 'folder')} not in the index (not counted).` : `${read}.`);
+        this.size.set(
+            unknown ? `${read}, and ${plural(unknown, 'folder')} not in the index (not counted).` : `${read}.`,
+        );
     }
 
     protected checked(event: Event): boolean {
@@ -211,16 +208,17 @@ export class CompressDialog {
     }
 
     protected async confirm(): Promise<void> {
-        if (this.problem())
-            return;
-        const started = await whileBusy(this.busy, () => this.transfers.compress({
-            paths: this.items().map(item => item.path),
-            target: this.target(),
-            name: this.name().trim(),
-            level: this.level(),
-            skipCompressed: this.skipCompressed(),
-            password: this.password() || null,
-        }));
+        if (this.problem()) return;
+        const started = await whileBusy(this.busy, () =>
+            this.transfers.compress({
+                paths: this.items().map((item) => item.path),
+                target: this.target(),
+                name: this.name().trim(),
+                level: this.level(),
+                skipCompressed: this.skipCompressed(),
+                password: this.password() || null,
+            }),
+        );
         // The password isn't kept: the job has it while it runs.
         this.password.set('');
         this.confirmation.set('');

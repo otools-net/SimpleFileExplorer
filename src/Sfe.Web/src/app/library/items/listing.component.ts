@@ -1,4 +1,15 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injector, viewChild } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    Injector,
+    viewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
 import { highlightPattern } from '../../core/format';
@@ -16,8 +27,14 @@ import { ScrollProgressComponent } from './scroll-progress.component';
  */
 @Component({
     selector: 'sfe-listing',
-    imports: [RouterLink, EmptyStateComponent, FileTileComponent, FileRowComponent, FolderItemComponent,
-        ScrollProgressComponent],
+    imports: [
+        RouterLink,
+        EmptyStateComponent,
+        FileTileComponent,
+        FileRowComponent,
+        FolderItemComponent,
+        ScrollProgressComponent,
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <div class="content" aria-live="polite">
@@ -95,17 +112,23 @@ export class ListingComponent {
     private readonly sentinel = viewChild.required<ElementRef<HTMLElement>>('sentinel');
 
     protected readonly skeleton = Array.from({ length: 12 });
-    protected readonly pattern = computed(() => this.store.route().q ? highlightPattern(this.store.route().q) : null);
+    protected readonly pattern = computed(() => (this.store.route().q ? highlightPattern(this.store.route().q) : null));
     /** Folders are cards with pictures (`config.folderPictures`, 0 = off), except in the list view. */
-    protected readonly folderCards = computed(() => this.store.view() !== 'list' && (this.config.config()?.folderPictures ?? 0) > 0);
+    protected readonly folderCards = computed(
+        () => this.store.view() !== 'list' && (this.config.config()?.folderPictures ?? 0) > 0,
+    );
     /** Server administrators can pick another library folder (System › Installation). */
     protected readonly canInstall = computed(() => this.config.can(Rights.serverSettings));
-    protected readonly folderLayout = computed(() => this.store.view() === 'list' ? 'list' : this.folderCards() ? 'grid covers' : 'grid');
+    protected readonly folderLayout = computed(() =>
+        this.store.view() === 'list' ? 'list' : this.folderCards() ? 'grid covers' : 'grid',
+    );
 
-    private readonly observer = new IntersectionObserver(entries => {
-        if (entries.some(entry => entry.isIntersecting))
-            void this.loadMore();
-    }, { rootMargin: '1200px 0px' });
+    private readonly observer = new IntersectionObserver(
+        (entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) void this.loadMore();
+        },
+        { rootMargin: '1200px 0px' },
+    );
 
     constructor() {
         afterNextRender(() => this.observer.observe(this.sentinel().nativeElement));
@@ -122,11 +145,14 @@ export class ListingComponent {
         // The observer only fires on visibility changes: when a short page leaves the sentinel in view, observing
         // it again (once the page is drawn) reports the current state and keeps loading.
         if (this.store.hasMore()) {
-            afterNextRender(() => {
-                const sentinel = this.sentinel().nativeElement;
-                this.observer.unobserve(sentinel);
-                this.observer.observe(sentinel);
-            }, { injector: this.injector });
+            afterNextRender(
+                () => {
+                    const sentinel = this.sentinel().nativeElement;
+                    this.observer.unobserve(sentinel);
+                    this.observer.observe(sentinel);
+                },
+                { injector: this.injector },
+            );
         }
     }
 }

@@ -52,31 +52,225 @@ export const FILE_VIEW_HOST = new InjectionToken<FileViewHost>('FILE_VIEW_HOST')
  */
 export const TEXT_EXTENSIONS: ReadonlySet<string> = new Set([
     // Plain text, logs, notes
-    'txt', 'text', 'log', 'err', 'nfo', 'diz', 'asc', 'me', '1st',
-    'md', 'markdown', 'mdown', 'mkd', 'rst', 'adoc', 'asciidoc', 'org', 'tex', 'bib',
+    'txt',
+    'text',
+    'log',
+    'err',
+    'nfo',
+    'diz',
+    'asc',
+    'me',
+    '1st',
+    'md',
+    'markdown',
+    'mdown',
+    'mkd',
+    'rst',
+    'adoc',
+    'asciidoc',
+    'org',
+    'tex',
+    'bib',
     // Data and configuration
-    'json', 'jsonc', 'json5', 'jsonl', 'ndjson', 'geojson', 'topojson', 'har', 'webmanifest', 'xml', 'xsd', 'xsl', 'xslt', 'plist', 'svg',
-    'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'config', 'properties', 'env', 'editorconfig', 'reg', 'inf',
-    'csv', 'tsv', 'psv', 'sql', 'graphql', 'gql', 'proto', 'prisma',
+    'json',
+    'jsonc',
+    'json5',
+    'jsonl',
+    'ndjson',
+    'geojson',
+    'topojson',
+    'har',
+    'webmanifest',
+    'xml',
+    'xsd',
+    'xsl',
+    'xslt',
+    'plist',
+    'svg',
+    'yaml',
+    'yml',
+    'toml',
+    'ini',
+    'cfg',
+    'conf',
+    'config',
+    'properties',
+    'env',
+    'editorconfig',
+    'reg',
+    'inf',
+    'csv',
+    'tsv',
+    'psv',
+    'sql',
+    'graphql',
+    'gql',
+    'proto',
+    'prisma',
     // Subtitles and playlists
-    'srt', 'vtt', 'ass', 'ssa', 'lrc', 'cue', 'm3u', 'm3u8', 'pls',
+    'srt',
+    'vtt',
+    'ass',
+    'ssa',
+    'lrc',
+    'cue',
+    'm3u',
+    'm3u8',
+    'pls',
     // Web
-    'html', 'htm', 'xhtml', 'css', 'scss', 'sass', 'less', 'js', 'mjs', 'cjs', 'jsx', 'tsx', 'mts', 'cts', 'vue', 'svelte', 'astro',
+    'html',
+    'htm',
+    'xhtml',
+    'css',
+    'scss',
+    'sass',
+    'less',
+    'js',
+    'mjs',
+    'cjs',
+    'jsx',
+    'tsx',
+    'mts',
+    'cts',
+    'vue',
+    'svelte',
+    'astro',
     // Programming languages
-    'c', 'h', 'cc', 'cpp', 'cxx', 'hpp', 'hxx', 'ino', 'cs', 'csx', 'vb', 'fs', 'fsx', 'fsi', 'java', 'kt', 'kts', 'scala', 'groovy', 'gradle',
-    'go', 'rs', 'swift', 'm', 'mm', 'dart', 'py', 'pyw', 'pyi', 'rb', 'php', 'pl', 'pm', 'lua', 'r', 'jl', 'hs', 'elm', 'erl', 'ex', 'exs',
-    'clj', 'cljs', 'lisp', 'scm', 'ml', 'mli', 'nim', 'zig', 'v', 'sv', 'vhd', 'vhdl', 'asm', 's', 'pas', 'd', 'f', 'f90', 'cob', 'tcl',
+    'c',
+    'h',
+    'cc',
+    'cpp',
+    'cxx',
+    'hpp',
+    'hxx',
+    'ino',
+    'cs',
+    'csx',
+    'vb',
+    'fs',
+    'fsx',
+    'fsi',
+    'java',
+    'kt',
+    'kts',
+    'scala',
+    'groovy',
+    'gradle',
+    'go',
+    'rs',
+    'swift',
+    'm',
+    'mm',
+    'dart',
+    'py',
+    'pyw',
+    'pyi',
+    'rb',
+    'php',
+    'pl',
+    'pm',
+    'lua',
+    'r',
+    'jl',
+    'hs',
+    'elm',
+    'erl',
+    'ex',
+    'exs',
+    'clj',
+    'cljs',
+    'lisp',
+    'scm',
+    'ml',
+    'mli',
+    'nim',
+    'zig',
+    'v',
+    'sv',
+    'vhd',
+    'vhdl',
+    'asm',
+    's',
+    'pas',
+    'd',
+    'f',
+    'f90',
+    'cob',
+    'tcl',
     // Scripts and builds
-    'sh', 'bash', 'zsh', 'fish', 'ksh', 'ps1', 'psm1', 'psd1', 'bat', 'cmd', 'vbs', 'ahk', 'awk', 'sed',
-    'csproj', 'vbproj', 'fsproj', 'props', 'targets', 'sln', 'slnx', 'resx', 'xaml', 'razor', 'cshtml',
-    'cmake', 'mk', 'mak', 'gitignore', 'gitattributes', 'gitmodules', 'dockerignore', 'npmrc', 'nvmrc', 'lock', 'patch', 'diff',
+    'sh',
+    'bash',
+    'zsh',
+    'fish',
+    'ksh',
+    'ps1',
+    'psm1',
+    'psd1',
+    'bat',
+    'cmd',
+    'vbs',
+    'ahk',
+    'awk',
+    'sed',
+    'csproj',
+    'vbproj',
+    'fsproj',
+    'props',
+    'targets',
+    'sln',
+    'slnx',
+    'resx',
+    'xaml',
+    'razor',
+    'cshtml',
+    'cmake',
+    'mk',
+    'mak',
+    'gitignore',
+    'gitattributes',
+    'gitmodules',
+    'dockerignore',
+    'npmrc',
+    'nvmrc',
+    'lock',
+    'patch',
+    'diff',
 ]);
 
 /** Files without an extension, or whose whole name says they are text. */
 export const TEXT_NAMES: ReadonlySet<string> = new Set([
-    'readme', 'license', 'licence', 'copying', 'authors', 'contributors', 'changelog', 'changes', 'news', 'todo', 'notice', 'install',
-    'makefile', 'gnumakefile', 'dockerfile', 'containerfile', 'jenkinsfile', 'vagrantfile', 'gemfile', 'rakefile', 'procfile', 'brewfile',
-    'cmakelists.txt', '.gitignore', '.gitattributes', '.editorconfig', '.env', '.bashrc', '.zshrc', '.profile', '.npmrc', 'hosts',
+    'readme',
+    'license',
+    'licence',
+    'copying',
+    'authors',
+    'contributors',
+    'changelog',
+    'changes',
+    'news',
+    'todo',
+    'notice',
+    'install',
+    'makefile',
+    'gnumakefile',
+    'dockerfile',
+    'containerfile',
+    'jenkinsfile',
+    'vagrantfile',
+    'gemfile',
+    'rakefile',
+    'procfile',
+    'brewfile',
+    'cmakelists.txt',
+    '.gitignore',
+    '.gitattributes',
+    '.editorconfig',
+    '.env',
+    '.bashrc',
+    '.zshrc',
+    '.profile',
+    '.npmrc',
+    'hosts',
 ]);
 
 /**
@@ -93,33 +287,100 @@ export function extensionOf(item: LibraryItem): string {
 const libraryTextExtensions = signal<ReadonlySet<string>>(new Set());
 
 export function setTextExtensions(extensions: readonly string[] | null | undefined): void {
-    libraryTextExtensions.set(new Set((extensions ?? []).map(extension => extension.toLowerCase().replace(/^\./, ''))));
+    libraryTextExtensions.set(
+        new Set((extensions ?? []).map((extension) => extension.toLowerCase().replace(/^\./, ''))),
+    );
 }
 
 export function isTextFile(item: LibraryItem): boolean {
-    if (item.kind !== 'file')
-        return false;
+    if (item.kind !== 'file') return false;
     const extension = extensionOf(item);
-    return TEXT_NAMES.has(item.name.toLowerCase()) || TEXT_EXTENSIONS.has(extension) || libraryTextExtensions().has(extension);
+    return (
+        TEXT_NAMES.has(item.name.toLowerCase()) ||
+        TEXT_EXTENSIONS.has(extension) ||
+        libraryTextExtensions().has(extension)
+    );
 }
 
-export const IMAGE_FORMAT: FileFormat = { id: 'image', label: 'Picture', priority: 0, matches: item => item.kind === 'image', view: { builtin: 'image' } };
-export const VIDEO_FORMAT: FileFormat = { id: 'video', label: 'Video', priority: 0, matches: item => item.kind === 'video', view: { builtin: 'video' } };
-export const AUDIO_FORMAT: FileFormat = { id: 'audio', label: 'Audio', priority: 0, matches: item => item.kind === 'audio', view: { builtin: 'audio' } };
+export const IMAGE_FORMAT: FileFormat = {
+    id: 'image',
+    label: 'Picture',
+    priority: 0,
+    matches: (item) => item.kind === 'image',
+    view: { builtin: 'image' },
+};
+export const VIDEO_FORMAT: FileFormat = {
+    id: 'video',
+    label: 'Video',
+    priority: 0,
+    matches: (item) => item.kind === 'video',
+    view: { builtin: 'video' },
+};
+export const AUDIO_FORMAT: FileFormat = {
+    id: 'audio',
+    label: 'Audio',
+    priority: 0,
+    matches: (item) => item.kind === 'audio',
+    view: { builtin: 'audio' },
+};
 
-const textView = { load: () => import('./text/text-view.component').then(m => m.TextViewComponent) };
+const textView = { load: () => import('./text/text-view.component').then((m) => m.TextViewComponent) };
 
-export const TEXT_FORMAT: FileFormat = { id: 'text', label: 'Text', priority: 10, matches: isTextFile, view: textView, profile: 'code', page: true, edits: true };
+export const TEXT_FORMAT: FileFormat = {
+    id: 'text',
+    label: 'Text',
+    priority: 10,
+    matches: isTextFile,
+    view: textView,
+    profile: 'code',
+    page: true,
+    edits: true,
+};
 
 /** Text files meant to be read rather than run: wrapped, in a reading font (the prose profile). */
-export const PROSE_EXTENSIONS: ReadonlySet<string> = new Set(['txt', 'text', 'md', 'markdown', 'mdown', 'mkd', 'rst', 'adoc', 'asciidoc', 'org']);
-export const PROSE_NAMES: ReadonlySet<string> = new Set(['readme', 'license', 'licence', 'copying', 'authors', 'contributors', 'changelog', 'changes', 'news', 'todo', 'notice', 'install']);
+export const PROSE_EXTENSIONS: ReadonlySet<string> = new Set([
+    'txt',
+    'text',
+    'md',
+    'markdown',
+    'mdown',
+    'mkd',
+    'rst',
+    'adoc',
+    'asciidoc',
+    'org',
+]);
+export const PROSE_NAMES: ReadonlySet<string> = new Set([
+    'readme',
+    'license',
+    'licence',
+    'copying',
+    'authors',
+    'contributors',
+    'changelog',
+    'changes',
+    'news',
+    'todo',
+    'notice',
+    'install',
+]);
 
 export function isProseFile(item: LibraryItem): boolean {
-    return item.kind === 'file' && (PROSE_NAMES.has(item.name.toLowerCase()) || PROSE_EXTENSIONS.has(extensionOf(item)));
+    return (
+        item.kind === 'file' && (PROSE_NAMES.has(item.name.toLowerCase()) || PROSE_EXTENSIONS.has(extensionOf(item)))
+    );
 }
 
-export const PROSE_FORMAT: FileFormat = { id: 'prose', label: 'Text', priority: 11, matches: isProseFile, view: textView, profile: 'prose', page: true, edits: true };
+export const PROSE_FORMAT: FileFormat = {
+    id: 'prose',
+    label: 'Text',
+    priority: 11,
+    matches: isProseFile,
+    view: textView,
+    profile: 'prose',
+    page: true,
+    edits: true,
+};
 
 /** Markdown: read rendered (with its source a click away). */
 export const MARKDOWN_EXTENSIONS: ReadonlySet<string> = new Set(['md', 'markdown', 'mdown', 'mkd', 'mkdn']);
@@ -128,8 +389,8 @@ export const MARKDOWN_FORMAT: FileFormat = {
     id: 'markdown',
     label: 'Markdown',
     priority: 20,
-    matches: item => item.kind === 'file' && MARKDOWN_EXTENSIONS.has(extensionOf(item)),
-    view: { load: () => import('./markdown/markdown-view.component').then(m => m.MarkdownViewComponent) },
+    matches: (item) => item.kind === 'file' && MARKDOWN_EXTENSIONS.has(extensionOf(item)),
+    view: { load: () => import('./markdown/markdown-view.component').then((m) => m.MarkdownViewComponent) },
     profile: 'prose',
     page: true,
     edits: true,
@@ -139,14 +400,21 @@ export const MARKDOWN_FORMAT: FileFormat = {
  * JSON: a tree of its members (with its source a click away). Not JSON5 (unquoted keys) nor JSON Lines (logs, read and
  * followed as text).
  */
-export const JSON_EXTENSIONS: ReadonlySet<string> = new Set(['json', 'jsonc', 'geojson', 'topojson', 'webmanifest', 'har']);
+export const JSON_EXTENSIONS: ReadonlySet<string> = new Set([
+    'json',
+    'jsonc',
+    'geojson',
+    'topojson',
+    'webmanifest',
+    'har',
+]);
 
 export const JSON_FORMAT: FileFormat = {
     id: 'json',
     label: 'JSON',
     priority: 20,
-    matches: item => item.kind === 'file' && JSON_EXTENSIONS.has(extensionOf(item)),
-    view: { load: () => import('./json/json-view.component').then(m => m.JsonViewComponent) },
+    matches: (item) => item.kind === 'file' && JSON_EXTENSIONS.has(extensionOf(item)),
+    view: { load: () => import('./json/json-view.component').then((m) => m.JsonViewComponent) },
     profile: 'code',
     page: true,
     edits: true,
@@ -159,8 +427,8 @@ export const CSV_FORMAT: FileFormat = {
     id: 'csv',
     label: 'Table',
     priority: 20,
-    matches: item => item.kind === 'file' && CSV_EXTENSIONS.has(extensionOf(item)),
-    view: { load: () => import('./csv/csv-view.component').then(m => m.CsvViewComponent) },
+    matches: (item) => item.kind === 'file' && CSV_EXTENSIONS.has(extensionOf(item)),
+    view: { load: () => import('./csv/csv-view.component').then((m) => m.CsvViewComponent) },
     profile: 'code',
     page: true,
     edits: true,
@@ -173,8 +441,8 @@ export const SUBTITLES_FORMAT: FileFormat = {
     id: 'subtitles',
     label: 'Subtitles',
     priority: 20,
-    matches: item => item.kind === 'file' && SUBTITLE_EXTENSIONS.has(extensionOf(item)),
-    view: { load: () => import('./subtitles/subtitles-view.component').then(m => m.SubtitlesViewComponent) },
+    matches: (item) => item.kind === 'file' && SUBTITLE_EXTENSIONS.has(extensionOf(item)),
+    view: { load: () => import('./subtitles/subtitles-view.component').then((m) => m.SubtitlesViewComponent) },
     profile: 'code',
     page: true,
     edits: true,
@@ -185,8 +453,8 @@ export const PDF_FORMAT: FileFormat = {
     id: 'pdf',
     label: 'PDF',
     priority: 20,
-    matches: item => item.kind === 'file' && extensionOf(item) === 'pdf',
-    view: { load: () => import('./pdf/pdf-view.component').then(m => m.PdfViewComponent) },
+    matches: (item) => item.kind === 'file' && extensionOf(item) === 'pdf',
+    view: { load: () => import('./pdf/pdf-view.component').then((m) => m.PdfViewComponent) },
     page: true,
 };
 
@@ -195,8 +463,8 @@ export const EPUB_FORMAT: FileFormat = {
     id: 'epub',
     label: 'Book',
     priority: 20,
-    matches: item => item.kind === 'file' && extensionOf(item) === 'epub',
-    view: { load: () => import('./epub/epub-view.component').then(m => m.EpubViewComponent) },
+    matches: (item) => item.kind === 'file' && extensionOf(item) === 'epub',
+    view: { load: () => import('./epub/epub-view.component').then((m) => m.EpubViewComponent) },
     profile: 'prose',
     page: true,
 };
@@ -213,8 +481,8 @@ export const FLASH_FORMAT: FileFormat = {
     id: 'flash',
     label: 'Flash',
     priority: 20,
-    matches: item => item.kind === 'file' && extensionOf(item) === 'swf' && flashMovies(),
-    view: { load: () => import('./flash/flash-view.component').then(m => m.FlashViewComponent) },
+    matches: (item) => item.kind === 'file' && extensionOf(item) === 'swf' && flashMovies(),
+    view: { load: () => import('./flash/flash-view.component').then((m) => m.FlashViewComponent) },
     page: true,
 };
 
@@ -239,8 +507,7 @@ const COMPRESSED_TAR_SUFFIXES: readonly string[] = ['.tar.gz', '.tgz', '.tar.bz2
  */
 export function isExplorable(item: LibraryItem): boolean {
     const settings = archiveSettings();
-    if (!settings || item.kind !== 'file')
-        return false;
+    if (!settings || item.kind !== 'file') return false;
     const name = item.name.toLowerCase();
     const longer = (suffix: string) => name.endsWith(suffix) && name.length > suffix.length;
     if (COMPRESSED_TAR_SUFFIXES.some(longer))
@@ -256,8 +523,7 @@ const SINGLE_SUFFIXES: readonly string[] = ['.gz', '.bz2', '.xz'];
  * size, and one file compressed alone. Not without `config.archives` (an older server).
  */
 export function isExtractable(item: LibraryItem): boolean {
-    if (!archiveSettings() || item.kind !== 'file')
-        return false;
+    if (!archiveSettings() || item.kind !== 'file') return false;
     const name = item.name.toLowerCase();
     const longer = (suffix: string) => name.endsWith(suffix) && name.length > suffix.length;
     return [...ARCHIVE_SUFFIXES, ...COMPRESSED_TAR_SUFFIXES, ...SINGLE_SUFFIXES].some(longer);
@@ -269,7 +535,7 @@ export const ARCHIVE_FORMAT: FileFormat = {
     label: 'Archive',
     priority: 20,
     matches: isExplorable,
-    view: { load: () => import('./archive/archive-view.component').then(m => m.ArchiveViewComponent) },
+    view: { load: () => import('./archive/archive-view.component').then((m) => m.ArchiveViewComponent) },
     page: true,
 };
 
@@ -278,31 +544,82 @@ export const ARCHIVE_FORMAT: FileFormat = {
  * viewer or none: "Open as archive" explores them. The server reads the bytes, whatever the name.
  */
 export const CONTAINER_EXTENSIONS: ReadonlySet<string> = new Set([
-    'cbz', 'cbr', 'cb7', 'cbt', 'epub', 'docx', 'xlsx', 'pptx', 'docm', 'xlsm', 'pptm', 'odt', 'ods', 'odp', 'odg', 'vsdx',
-    'jar', 'war', 'ear', 'apk', 'aab', 'aar', 'ipa', 'xpi', 'crx', 'vsix', 'nupkg', 'snupkg', 'whl', 'appx', 'msix', 'kmz', '3mf', 'sketch',
+    'cbz',
+    'cbr',
+    'cb7',
+    'cbt',
+    'epub',
+    'docx',
+    'xlsx',
+    'pptx',
+    'docm',
+    'xlsm',
+    'pptm',
+    'odt',
+    'ods',
+    'odp',
+    'odg',
+    'vsdx',
+    'jar',
+    'war',
+    'ear',
+    'apk',
+    'aab',
+    'aar',
+    'ipa',
+    'xpi',
+    'crx',
+    'vsix',
+    'nupkg',
+    'snupkg',
+    'whl',
+    'appx',
+    'msix',
+    'kmz',
+    '3mf',
+    'sketch',
 ]);
 
 /** `item` may be opened as an archive ("Open as archive"): a container by its name, not shown as an archive already. */
 export function isContainer(item: LibraryItem): boolean {
-    return item.kind === 'file' && archiveSettings() !== null && CONTAINER_EXTENSIONS.has(extensionOf(item)) && !isExplorable(item);
+    return (
+        item.kind === 'file' &&
+        archiveSettings() !== null &&
+        CONTAINER_EXTENSIONS.has(extensionOf(item)) &&
+        !isExplorable(item)
+    );
 }
 
 /** Every format, any order (the priority decides). */
-export const FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, TEXT_FORMAT, PROSE_FORMAT, MARKDOWN_FORMAT, JSON_FORMAT, CSV_FORMAT, SUBTITLES_FORMAT, PDF_FORMAT, EPUB_FORMAT, FLASH_FORMAT, ARCHIVE_FORMAT];
+export const FORMATS: readonly FileFormat[] = [
+    IMAGE_FORMAT,
+    VIDEO_FORMAT,
+    AUDIO_FORMAT,
+    TEXT_FORMAT,
+    PROSE_FORMAT,
+    MARKDOWN_FORMAT,
+    JSON_FORMAT,
+    CSV_FORMAT,
+    SUBTITLES_FORMAT,
+    PDF_FORMAT,
+    EPUB_FORMAT,
+    FLASH_FORMAT,
+    ARCHIVE_FORMAT,
+];
 
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text
  * ("Open as text"): the server refuses what isn't; `asArchive` a container as an archive ("Open as archive").
  */
-export function formatOf(item: LibraryItem | null | undefined, options?: { asText?: boolean; asArchive?: boolean }): FileFormat | null {
-    if (!item || item.kind === 'directory')
-        return null;
-    if (options?.asArchive && isContainer(item))
-        return ARCHIVE_FORMAT;
+export function formatOf(
+    item: LibraryItem | null | undefined,
+    options?: { asText?: boolean; asArchive?: boolean },
+): FileFormat | null {
+    if (!item || item.kind === 'directory') return null;
+    if (options?.asArchive && isContainer(item)) return ARCHIVE_FORMAT;
     let best: FileFormat | null = null;
     for (const format of FORMATS) {
-        if ((best === null || format.priority > best.priority) && format.matches(item))
-            best = format;
+        if ((best === null || format.priority > best.priority) && format.matches(item)) best = format;
     }
     return best ?? (options?.asText && item.kind === 'file' ? TEXT_FORMAT : null);
 }

@@ -3,7 +3,17 @@ import { ApiError } from '../core/api.service';
 import { DirectoryListing, LibraryItem, UploadInfo } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    fakeConfig,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../testing/fakes';
 import { ListingStore } from '../library/listing.store';
 import { SidebarService } from '../library/sidebar/sidebar.service';
 import { OperationsPanelComponent } from './operations-panel.component';
@@ -19,13 +29,32 @@ const photo = item('Media/beach.jpg', { size: 2048 });
 const modified = Date.parse('2026-10-01T10:00:00Z');
 
 function listing(items: LibraryItem[]): DirectoryListing {
-    return { path: 'Media', name: 'Media', parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: 0, fileCount: items.length };
+    return {
+        path: 'Media',
+        name: 'Media',
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: 0,
+        fileCount: items.length,
+    };
 }
 
 function upload(overrides: Partial<UploadInfo> = {}): UploadInfo {
     return {
-        id: 'a'.repeat(32), target: 'Media', name: 'new.txt', size: 10, received: 0, modified: null, ownerId: 2, ownerName: 'alice',
-        started: '2026-10-17T10:00:00Z', lastActivity: '2026-10-17T10:00:00Z', ...overrides,
+        id: 'a'.repeat(32),
+        target: 'Media',
+        name: 'new.txt',
+        size: 10,
+        received: 0,
+        modified: null,
+        ownerId: 2,
+        ownerName: 'alice',
+        started: '2026-10-17T10:00:00Z',
+        lastActivity: '2026-10-17T10:00:00Z',
+        ...overrides,
     };
 }
 
@@ -38,7 +67,7 @@ async function setUp(config = fakeConfig()): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: 'Media', previous: null, next: null, position: 1, count: 1 });
     api.browse.mockResolvedValue(listing([photo]));
     store.route.set({ path: 'Media', q: '', sort: '', desc: false });
@@ -55,17 +84,24 @@ describe('UploadQueue', () => {
         api.checkUploads.mockResolvedValue({ existing: [], canReplace: true });
         api.startUpload.mockResolvedValue(upload());
         // The server had only half of the first chunk: the rest is sent from there.
-        api.sendUploadChunk.mockResolvedValueOnce(upload({ received: 4 })).mockResolvedValueOnce(upload({ received: 10 }));
+        api.sendUploadChunk
+            .mockResolvedValueOnce(upload({ received: 4 }))
+            .mockResolvedValueOnce(upload({ received: 10 }));
         api.finishUpload.mockResolvedValue(added);
 
         await queue.add([{ file: file('new.txt'), name: 'new.txt' }], 'Media');
         await settle();
 
-        expect(api.startUpload).toHaveBeenCalledWith({ target: 'Media', name: 'new.txt', size: 10, modified: new Date(modified).toISOString() });
-        expect(api.sendUploadChunk.mock.calls.map(call => call[1])).toEqual([0, 4]);
+        expect(api.startUpload).toHaveBeenCalledWith({
+            target: 'Media',
+            name: 'new.txt',
+            size: 10,
+            modified: new Date(modified).toISOString(),
+        });
+        expect(api.sendUploadChunk.mock.calls.map((call) => call[1])).toEqual([0, 4]);
         expect(await (api.sendUploadChunk.mock.calls[1][2] as Blob).text()).toBe('efghij');
         expect(api.finishUpload).toHaveBeenCalledWith('a'.repeat(32), 'ask');
-        expect(store.items().map(i => i.name)).toContain('new.txt');
+        expect(store.items().map((i) => i.name)).toContain('new.txt');
         expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toBe('1 file uploaded to “Media”.');
         expect(queue.busy()).toBe(false);
     });
@@ -74,11 +110,20 @@ describe('UploadQueue', () => {
         await setUp();
         const queue = TestBed.inject(UploadQueue);
         api.checkUploads.mockResolvedValue({ existing: ['a.txt', 'b.txt'], canReplace: false });
-        api.startUpload.mockImplementation(start => Promise.resolve(upload({ id: start.name[0].repeat(32), name: start.name })));
-        api.sendUploadChunk.mockImplementation(id => Promise.resolve(upload({ id, received: 10 })));
+        api.startUpload.mockImplementation((start) =>
+            Promise.resolve(upload({ id: start.name[0].repeat(32), name: start.name })),
+        );
+        api.sendUploadChunk.mockImplementation((id) => Promise.resolve(upload({ id, received: 10 })));
         api.finishUpload.mockResolvedValue(item('Media/x.txt'));
 
-        await queue.add([{ file: file('a.txt'), name: 'a.txt' }, { file: file('b.txt'), name: 'b.txt' }, { file: file('c.txt'), name: 'c.txt' }], 'Media');
+        await queue.add(
+            [
+                { file: file('a.txt'), name: 'a.txt' },
+                { file: file('b.txt'), name: 'b.txt' },
+                { file: file('c.txt'), name: 'c.txt' },
+            ],
+            'Media',
+        );
         await settle();
         const batch = queue.batches()[0];
         expect(queue.question(batch)!.name).toBe('a.txt');
@@ -86,8 +131,7 @@ describe('UploadQueue', () => {
 
         queue.answer(batch, queue.question(batch)!, 'keepBoth', true);
         await settle();
-        expect(api.finishUpload.mock.calls.map(call => call[1]).sort()).toEqual(['ask', 'keepBoth', 'keepBoth']);
-
+        expect(api.finishUpload.mock.calls.map((call) => call[1]).sort()).toEqual(['ask', 'keepBoth', 'keepBoth']);
     });
 
     it('retries a chunk that failed, and marks the file failed after the last try', async () => {
@@ -96,7 +140,9 @@ describe('UploadQueue', () => {
         const queue = TestBed.inject(UploadQueue);
         api.checkUploads.mockResolvedValue({ existing: [], canReplace: false });
         api.startUpload.mockResolvedValue(upload());
-        api.sendUploadChunk.mockRejectedValueOnce(new ApiError(502, 'Bad gateway')).mockResolvedValueOnce(upload({ received: 10 }));
+        api.sendUploadChunk
+            .mockRejectedValueOnce(new ApiError(502, 'Bad gateway'))
+            .mockResolvedValueOnce(upload({ received: 10 }));
         api.finishUpload.mockResolvedValue(item('Media/new.txt'));
 
         await queue.add([{ file: file('new.txt'), name: 'new.txt' }], 'Media');
@@ -154,9 +200,15 @@ describe('UploadsPanelComponent', () => {
         const queue = TestBed.inject(UploadQueue);
         api.checkUploads.mockResolvedValue({ existing: ['a.txt'], canReplace: true });
         api.startUpload.mockResolvedValue(upload({ name: 'b.txt' }));
-        api.sendUploadChunk.mockReturnValue(new Promise(() => { }));
+        api.sendUploadChunk.mockReturnValue(new Promise(() => {}));
         api.cancelUpload.mockResolvedValue(undefined);
-        await queue.add([{ file: file('a.txt'), name: 'a.txt' }, { file: file('b.txt'), name: 'b.txt' }], 'Media');
+        await queue.add(
+            [
+                { file: file('a.txt'), name: 'a.txt' },
+                { file: file('b.txt'), name: 'b.txt' },
+            ],
+            'Media',
+        );
         const fixture = TestBed.createComponent(UploadsPanelComponent);
         fixture.detectChanges();
         await settle();
@@ -172,8 +224,13 @@ describe('UploadsPanelComponent', () => {
 
         // Its menu: its buttons, then the folder it goes into.
         const rightClick = () => {
-            element.querySelector('.operation-title')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
-            return TestBed.inject(ContextMenu).open()!.target.entries().map(entry => entry.id);
+            element
+                .querySelector('.operation-title')!
+                .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+            return TestBed.inject(ContextMenu)
+                .open()!
+                .target.entries()
+                .map((entry) => entry.id);
         };
         expect(rightClick()).toEqual(['pause', 'cancel', 'openTarget', 'targetNewTab']);
 
@@ -190,7 +247,7 @@ describe('UploadsPanelComponent', () => {
 });
 
 describe('UploadsSectionComponent', () => {
-    it('lists everyone\'s unfinished uploads and cancels one', async () => {
+    it("lists everyone's unfinished uploads and cancels one", async () => {
         await setUp();
         api.uploads.mockResolvedValue([upload({ received: 5, name: 'Trip/clip.mp4' })]);
         api.cancelUpload.mockResolvedValue(undefined);
@@ -204,8 +261,15 @@ describe('UploadsSectionComponent', () => {
         expect(api.uploads).toHaveBeenCalledWith(true);
         expect(element.textContent).toContain('clip.mp4');
         expect(element.textContent).toContain('(50%) · by alice');
-        element.querySelector('[data-id] .tracking-name')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
-        expect(TestBed.inject(ContextMenu).open()!.target.entries().map(entry => entry.id)).toEqual(['cancel', 'openTarget', 'targetNewTab']);
+        element
+            .querySelector('[data-id] .tracking-name')!
+            .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        expect(
+            TestBed.inject(ContextMenu)
+                .open()!
+                .target.entries()
+                .map((entry) => entry.id),
+        ).toEqual(['cancel', 'openTarget', 'targetNewTab']);
         buttonNamed(element, 'Cancel')!.click();
         await settle();
         fixture.detectChanges();
@@ -239,7 +303,10 @@ describe('Dropping files from the computer', () => {
         await settle();
         page.remove();
 
-        expect(add.mock.calls).toEqual([[[{ file: dropped, name: 'a.txt' }], 'Media/Holidays'], [[{ file: dropped, name: 'a.txt' }], 'Media']]);
+        expect(add.mock.calls).toEqual([
+            [[{ file: dropped, name: 'a.txt' }], 'Media/Holidays'],
+            [[{ file: dropped, name: 'a.txt' }], 'Media'],
+        ]);
     });
 });
 
@@ -252,13 +319,15 @@ describe('UploadQueue behind a proxy', () => {
         api.startUpload.mockResolvedValue(upload({ size }));
         api.sendUploadChunk
             .mockRejectedValueOnce(new ApiError(413, 'Request Entity Too Large'))
-            .mockImplementation((_id, offset, chunk) => Promise.resolve(upload({ size, received: offset + chunk.size })));
+            .mockImplementation((_id, offset, chunk) =>
+                Promise.resolve(upload({ size, received: offset + chunk.size })),
+            );
         api.finishUpload.mockResolvedValue(item('Media/big.bin'));
 
         await queue.add([{ file: new File([new Uint8Array(size)], 'big.bin'), name: 'big.bin' }], 'Media');
         await settle();
 
-        const sizes = api.sendUploadChunk.mock.calls.map(call => (call[2] as Blob).size);
+        const sizes = api.sendUploadChunk.mock.calls.map((call) => (call[2] as Blob).size);
         expect(sizes[0]).toBe(8 * 1024 * 1024);
         expect(sizes.slice(1)).toEqual([4 * 1024 * 1024, 4 * 1024 * 1024, 1024 * 1024]);
         expect(queue.batches()[0].items[0].state).toBe('done');

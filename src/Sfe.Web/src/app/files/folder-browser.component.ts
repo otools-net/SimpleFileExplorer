@@ -18,7 +18,7 @@ export class FolderBrowser {
     readonly listing = signal<DirectoryListing | null>(null);
     readonly loading = signal(false);
 
-    readonly folders = computed(() => this.listing()?.items.filter(item => item.kind === 'directory') ?? []);
+    readonly folders = computed(() => this.listing()?.items.filter((item) => item.kind === 'directory') ?? []);
     readonly truncated = computed(() => (this.listing()?.directoryCount ?? 0) > this.folders().length);
     readonly crumbs = computed(() => {
         const root = { path: '', name: this.config.config()?.rootName || 'Library' };
@@ -26,14 +26,18 @@ export class FolderBrowser {
         return [root, ...parts.map((name, index) => ({ path: parts.slice(0, index + 1).join('/'), name }))];
     });
 
-    constructor(private readonly api: Api, private readonly config: ConfigService) { }
+    constructor(
+        private readonly api: Api,
+        private readonly config: ConfigService,
+    ) {}
 
     /** `right` may be used in the folder shown (its folder rules, else the person's rights); false before it is read. */
     allows(right: string): boolean {
         const listing = this.listing();
-        if (!listing)
-            return false;
-        return listing.access ? !listing.access.pathOnly && listing.access.rights.includes(right) : this.config.can(right);
+        if (!listing) return false;
+        return listing.access
+            ? !listing.access.pathOnly && listing.access.rights.includes(right)
+            : this.config.can(right);
     }
 
     /** Forgets the folder read: until the next `browse`, nothing is allowed. */
@@ -47,12 +51,10 @@ export class FolderBrowser {
         this.loading.set(true);
         try {
             const listing = await this.api.browse({ path, offset: 0, limit: FOLDERS_SHOWN, sort: 'name', desc: false });
-            if (this.target() === path)
-                this.listing.set(listing);
+            if (this.target() === path) this.listing.set(listing);
         } catch {
             // A folder gone meanwhile: back to the top.
-            if (path)
-                await this.browse('');
+            if (path) await this.browse('');
         } finally {
             this.loading.set(false);
         }

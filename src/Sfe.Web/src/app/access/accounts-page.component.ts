@@ -13,9 +13,11 @@ import { groupNamesIn, SpaceRef } from './access-parts';
 
 /** The spaces of `groups`, in the order of `known` (the first space, then by name), by their names there. */
 function spacesOf(groups: GroupInfo[], known: SpaceRef[]): SpaceRef[] {
-    const ids = new Set(groups.map(group => group.tenantId));
-    const named = known.filter(space => ids.has(space.id)).map(space => ({ id: space.id, name: space.name }));
-    const unnamed = [...ids].filter(id => !named.some(space => space.id === id)).map(id => ({ id, name: `Space ${id}` }));
+    const ids = new Set(groups.map((group) => group.tenantId));
+    const named = known.filter((space) => ids.has(space.id)).map((space) => ({ id: space.id, name: space.name }));
+    const unnamed = [...ids]
+        .filter((id) => !named.some((space) => space.id === id))
+        .map((id) => ({ id, name: `Space ${id}` }));
     return [...named, ...unnamed];
 }
 
@@ -151,7 +153,9 @@ export class AccountsPageComponent implements OnInit {
     protected readonly shown = computed(() => {
         const filter = this.filter().trim().toLocaleLowerCase();
         return filter
-            ? this.users().filter(user => `${user.userName} ${user.displayName ?? ''}`.toLocaleLowerCase().includes(filter))
+            ? this.users().filter((user) =>
+                  `${user.userName} ${user.displayName ?? ''}`.toLocaleLowerCase().includes(filter),
+              )
             : this.users();
     });
 
@@ -174,7 +178,13 @@ export class AccountsPageComponent implements OnInit {
             this.users.set(users);
             this.groups.set(groups);
             const tenant = this.config.tenant();
-            this.spaces.set(serverWide ? spacesOf(groups, spaces ?? this.config.config()?.tenants ?? []) : tenant ? [{ id: tenant.id, name: tenant.name }] : []);
+            this.spaces.set(
+                serverWide
+                    ? spacesOf(groups, spaces ?? this.config.config()?.tenants ?? [])
+                    : tenant
+                      ? [{ id: tenant.id, name: tenant.name }]
+                      : [],
+            );
             this.error.set(null);
         } catch (error) {
             this.error.set(`Could not load the accounts: ${(error as Error).message}`);
@@ -186,14 +196,14 @@ export class AccountsPageComponent implements OnInit {
     /** The account's spaces among those listed, with its groups in each. */
     protected spaceLines(user: UserInfo): SpaceLine[] {
         return this.spaces()
-            .filter(space => user.groups.some(group => group.tenantId === space.id))
-            .map(space => ({ space: space.name, groups: groupNamesIn(user, space.id, this.groups()) }));
+            .filter((space) => user.groups.some((group) => group.tenantId === space.id))
+            .map((space) => ({ space: space.name, groups: groupNamesIn(user, space.id, this.groups()) }));
     }
 
     /** Its spaces a space's administrator doesn't see. */
     protected otherSpaces(user: UserInfo): number {
-        const listed = new Set(this.spaces().map(space => space.id));
-        return new Set(user.groups.filter(group => !listed.has(group.tenantId)).map(group => group.tenantId)).size;
+        const listed = new Set(this.spaces().map((space) => space.id));
+        return new Set(user.groups.filter((group) => !listed.has(group.tenantId)).map((group) => group.tenantId)).size;
     }
 
     /** A space's administrator takes an account other spaces share out of the space rather than deleting it. */
@@ -209,13 +219,19 @@ export class AccountsPageComponent implements OnInit {
 
     protected async remove(user: UserInfo): Promise<void> {
         const outOnly = this.removesOnly(user);
-        if (!confirm(outOnly
-            ? `Take ${user.userName} out of this space? The account stays in its other spaces.`
-            : `Delete the account ${user.userName}? It can no longer sign in anywhere; its preferences go with it, the tags it set stay.`))
+        if (
+            !confirm(
+                outOnly
+                    ? `Take ${user.userName} out of this space? The account stays in its other spaces.`
+                    : `Delete the account ${user.userName}? It can no longer sign in anywhere; its preferences go with it, the tags it set stay.`,
+            )
+        )
             return;
         try {
             await this.api.deleteUser(user.id);
-            this.toasts.show(outOnly ? `${user.userName} is no longer in this space.` : `Account ${user.userName} deleted.`);
+            this.toasts.show(
+                outOnly ? `${user.userName} is no longer in this space.` : `Account ${user.userName} deleted.`,
+            );
             await this.load();
         } catch (error) {
             this.toasts.error((error as Error).message);

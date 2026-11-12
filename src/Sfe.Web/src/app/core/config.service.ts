@@ -64,7 +64,7 @@ const PLACEHOLDERS = /\{(url|encodedUrl)\}/g;
  */
 export function dataServerUrl(dataServer: string, path: string): string {
     return dataServer.search(PLACEHOLDERS) >= 0
-        ? dataServer.replace(PLACEHOLDERS, (_, name) => name === 'url' ? encodePath(path) : encodeURIComponent(path))
+        ? dataServer.replace(PLACEHOLDERS, (_, name) => (name === 'url' ? encodePath(path) : encodeURIComponent(path)))
         : `${dataServer}/${encodePath(path)}`;
 }
 
@@ -88,26 +88,26 @@ export function withVersion(url: string, item: { path: string }): string {
 
 export function createUrls(config: ClientConfig): Urls {
     const dataServer = config.dataServer;
-    const file = (path: string) => dataServer ? dataServerUrl(dataServer, path) : `api/files/raw/${encodePath(path)}`;
+    const file = (path: string) => (dataServer ? dataServerUrl(dataServer, path) : `api/files/raw/${encodePath(path)}`);
     return {
         file,
-        download: path => `api/files/raw/${encodePath(path)}?download=true`,
-        original: path => `api/files/raw/${encodePath(path)}`,
-        thumbnail: path => `api/thumbnails/${encodePath(path)}`,
+        download: (path) => `api/files/raw/${encodePath(path)}?download=true`,
+        original: (path) => `api/files/raw/${encodePath(path)}`,
+        thumbnail: (path) => `api/thumbnails/${encodePath(path)}`,
         trickplaySheet: (path, index, version) => `api/trickplay/files/${encodePath(path)}?sheet=${index}&v=${version}`,
         player: (path, start = 0) => {
             const query = new URLSearchParams({ path });
-            if (start >= 1)
-                query.set('t', String(Math.floor(start)));
+            if (start >= 1) query.set('t', String(Math.floor(start)));
             return `player?${query}`;
         },
-        view: path => `view?${new URLSearchParams({ path })}`,
-        external: url => {
+        view: (path) => `view?${new URLSearchParams({ path })}`,
+        external: (url) => {
             const template = config.externalPlayer?.url;
-            if (!template)
-                return null;
+            if (!template) return null;
             return /\{(url|encodedUrl)\}/.test(template)
-                ? template.replace(/\{(url|encodedUrl)\}/g, (_, name) => name === 'url' ? url : encodeURIComponent(url))
+                ? template.replace(/\{(url|encodedUrl)\}/g, (_, name) =>
+                      name === 'url' ? url : encodeURIComponent(url),
+                  )
                 : template + url;
         },
         externalName: config.externalPlayer?.name ?? null,
@@ -168,7 +168,7 @@ export class ConfigService {
     /** The session has one of `rights`. */
     canAny(rights: readonly string[]): boolean {
         const granted = this.rights();
-        return rights.some(right => granted.has(right));
+        return rights.some((right) => granted.has(right));
     }
 
     /**
@@ -177,15 +177,13 @@ export class ConfigService {
      */
     async openExternal(path: string): Promise<void> {
         const link = await this.externalLink(path);
-        if (link)
-            window.location.assign(link);
+        if (link) window.location.assign(link);
     }
 
     /** The link opening `path` in the external player app (see `openExternal`); null when there is none. */
     async externalLink(path: string): Promise<string | null> {
         const config = this.value;
-        if (!config.externalPlayer)
-            return null;
+        if (!config.externalPlayer) return null;
         const fileUrl = config.dataServer
             ? new URL(dataServerUrl(config.dataServer, path), document.baseURI).href
             : new URL((await this.api.fileLink(path)).url, document.baseURI).href;
@@ -198,13 +196,12 @@ export class ConfigService {
      */
     videoStream(path: string): VideoStream | null {
         const streaming = this.current()?.streaming;
-        if (!streaming)
-            return null;
+        if (!streaming) return null;
         // Not crypto.randomUUID: plain-http LAN pages aren't secure contexts. It only tells this player's streams apart.
         const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
         return {
             always: streaming.always,
-            url: start => this.links.stream(path, start, id),
+            url: (start) => this.links.stream(path, start, id),
             probe: () => this.api.streamProbe(path).catch(() => null),
         };
     }
@@ -212,8 +209,7 @@ export class ConfigService {
     /** The loaded configuration, for code that only runs once it is there. */
     get value(): ClientConfig {
         const config = this.current();
-        if (!config)
-            throw new Error('The configuration is not loaded yet.');
+        if (!config) throw new Error('The configuration is not loaded yet.');
         return config;
     }
 
@@ -239,15 +235,16 @@ export class ConfigService {
      */
     resolutionMark(item: LibraryItem): ResolutionMark | null {
         const thresholds = this.current()?.resolutionMark;
-        const threshold = item.kind === 'image' ? thresholds?.image : item.kind === 'video' ? thresholds?.video : undefined;
-        if (!threshold || !item.width || !item.height)
-            return null;
+        const threshold =
+            item.kind === 'image' ? thresholds?.image : item.kind === 'video' ? thresholds?.video : undefined;
+        if (!threshold || !item.width || !item.height) return null;
         const high = Math.min(item.width, item.height) >= threshold;
         return {
             label: high ? 'HR' : 'LR',
             high,
-            title: `${high ? 'High' : 'Low'} resolution: ${formatResolution(item.width, item.height)} `
-                + `(${high ? 'at least' : 'under'} ${threshold} pixels on the shorter side)`,
+            title:
+                `${high ? 'High' : 'Low'} resolution: ${formatResolution(item.width, item.height)} ` +
+                `(${high ? 'at least' : 'under'} ${threshold} pixels on the shorter side)`,
         };
     }
 

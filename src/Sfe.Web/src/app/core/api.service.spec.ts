@@ -27,7 +27,7 @@ describe('Api', () => {
 
     it('leaves empty and false values out of the query, as the API defaults apply then', async () => {
         void api.search({ q: 'cat', path: '', after: null, limit: 50, sort: 'path', desc: false });
-        const request = http.expectOne(r => r.url === 'api/search');
+        const request = http.expectOne((r) => r.url === 'api/search');
 
         expect(request.request.params.keys().sort()).toEqual(['limit', 'q', 'sort']);
         expect(request.request.params.get('limit')).toBe('50');
@@ -36,7 +36,7 @@ describe('Api', () => {
 
     it('keeps 0 and true in the query', () => {
         void api.browse({ path: 'a', offset: 0, limit: 100, sort: 'name', desc: true });
-        const request = http.expectOne(r => r.url === 'api/browse');
+        const request = http.expectOne((r) => r.url === 'api/browse');
 
         expect(request.request.params.get('offset')).toBe('0');
         expect(request.request.params.get('desc')).toBe('true');
@@ -55,32 +55,54 @@ describe('Api', () => {
         void api.tagSidebar();
         void api.clearTagHistory();
 
-        const search = http.expectOne(r => r.url === 'api/tags' && r.method === 'GET');
+        const search = http.expectOne((r) => r.url === 'api/tags' && r.method === 'GET');
         expect(search.request.params.get('q')).toBe('sh');
-        expect(http.expectOne(r => r.url === 'api/tags/7' && r.method === 'GET')).toBeTruthy();
-        expect(http.expectOne(r => r.url === 'api/tags' && r.method === 'POST').request.body).toEqual({ name: 'Cat' });
-        expect(http.expectOne(r => r.url === 'api/tags/7' && r.method === 'PUT').request.body).toEqual({ name: 'Kitty' });
-        expect(http.expectOne(r => r.url === 'api/tags/7' && r.method === 'DELETE')).toBeTruthy();
+        expect(http.expectOne((r) => r.url === 'api/tags/7' && r.method === 'GET')).toBeTruthy();
+        expect(http.expectOne((r) => r.url === 'api/tags' && r.method === 'POST').request.body).toEqual({
+            name: 'Cat',
+        });
+        expect(http.expectOne((r) => r.url === 'api/tags/7' && r.method === 'PUT').request.body).toEqual({
+            name: 'Kitty',
+        });
+        expect(http.expectOne((r) => r.url === 'api/tags/7' && r.method === 'DELETE')).toBeTruthy();
         // A query parameter: encoded by HttpParams, not by hand.
-        expect(http.expectOne(r => r.url === 'api/file-tags' && r.method === 'GET').request.params.get('path')).toBe('a/b #1.jpg');
-        expect(http.expectOne(r => r.url === 'api/file-tags' && r.method === 'POST').request.body).toEqual({ paths: ['a.jpg'], add: [1], remove: [2] });
+        expect(http.expectOne((r) => r.url === 'api/file-tags' && r.method === 'GET').request.params.get('path')).toBe(
+            'a/b #1.jpg',
+        );
+        expect(http.expectOne((r) => r.url === 'api/file-tags' && r.method === 'POST').request.body).toEqual({
+            paths: ['a.jpg'],
+            add: [1],
+            remove: [2],
+        });
         expect(http.expectOne('api/file-tags/viewed').request.body).toEqual({ path: 'a.jpg' });
         expect(http.expectOne('api/tags/sidebar')).toBeTruthy();
-        expect(http.expectOne(r => r.url === 'api/tags/history' && r.method === 'DELETE')).toBeTruthy();
+        expect(http.expectOne((r) => r.url === 'api/tags/history' && r.method === 'DELETE')).toBeTruthy();
     });
 
-    it('names another space in the query of the access routes, and none for the session\'s', () => {
+    it("names another space in the query of the access routes, and none for the session's", () => {
         void api.groups(false, 2);
         void api.groups(true);
         void api.createGroup({ name: 'Kids' }, 2);
         void api.updateGroup(5, { name: 'Kids' });
         void api.deleteGroup(5, 2);
 
-        http.expectOne(r => r.url === 'api/access/groups' && r.method === 'GET' && r.params.get('tenant') === '2' && !r.params.has('all')).flush([]);
-        http.expectOne(r => r.url === 'api/access/groups' && r.method === 'GET' && r.params.get('all') === 'true' && !r.params.has('tenant')).flush([]);
-        http.expectOne(r => r.urlWithParams === 'api/access/groups?tenant=2' && r.method === 'POST').flush({});
-        http.expectOne(r => r.urlWithParams === 'api/access/groups/5' && r.method === 'PUT').flush({});
-        http.expectOne(r => r.urlWithParams === 'api/access/groups/5?tenant=2' && r.method === 'DELETE').flush(null);
+        http.expectOne(
+            (r) =>
+                r.url === 'api/access/groups' &&
+                r.method === 'GET' &&
+                r.params.get('tenant') === '2' &&
+                !r.params.has('all'),
+        ).flush([]);
+        http.expectOne(
+            (r) =>
+                r.url === 'api/access/groups' &&
+                r.method === 'GET' &&
+                r.params.get('all') === 'true' &&
+                !r.params.has('tenant'),
+        ).flush([]);
+        http.expectOne((r) => r.urlWithParams === 'api/access/groups?tenant=2' && r.method === 'POST').flush({});
+        http.expectOne((r) => r.urlWithParams === 'api/access/groups/5' && r.method === 'PUT').flush({});
+        http.expectOne((r) => r.urlWithParams === 'api/access/groups/5?tenant=2' && r.method === 'DELETE').flush(null);
     });
 
     it('encodes each segment of a path in the URL', () => {
@@ -89,7 +111,9 @@ describe('Api', () => {
         void api.imageAnimation('a b/c#.gif');
 
         expect(http.expectOne('api/trickplay/files/%C3%91and%C3%BA/a%20%231%3F.mp4')).toBeTruthy();
-        expect(http.expectOne(r => r.url === 'api/trickplay/files/x/y.mp4').request.params.get('queue')).toBe('false');
+        expect(http.expectOne((r) => r.url === 'api/trickplay/files/x/y.mp4').request.params.get('queue')).toBe(
+            'false',
+        );
         expect(http.expectOne('api/files/animated/a%20b/c%23.gif')).toBeTruthy();
     });
 
@@ -97,17 +121,21 @@ describe('Api', () => {
         void api.forgetMissingFiles(3);
         void api.forgetMissingFiles();
 
-        expect(http.expectOne(r => r.url === 'api/missing-files/3' && r.method === 'DELETE')).toBeTruthy();
-        expect(http.expectOne(r => r.url === 'api/missing-files' && r.method === 'DELETE')).toBeTruthy();
+        expect(http.expectOne((r) => r.url === 'api/missing-files/3' && r.method === 'DELETE')).toBeTruthy();
+        expect(http.expectOne((r) => r.url === 'api/missing-files' && r.method === 'DELETE')).toBeTruthy();
     });
 
     it('rejects with the first validation message of a problem', async () => {
         const created = api.createTag({ name: '' });
         http.expectOne('api/tags').flush(
-            { title: 'One or more validation errors occurred.', errors: { name: ['A tag needs a name.'], color: ['Unknown color'] } },
-            { status: 400, statusText: 'Bad Request' });
+            {
+                title: 'One or more validation errors occurred.',
+                errors: { name: ['A tag needs a name.'], color: ['Unknown color'] },
+            },
+            { status: 400, statusText: 'Bad Request' },
+        );
 
-        const error = await created.catch(e => e) as ApiError;
+        const error = (await created.catch((e) => e)) as ApiError;
         expect(error).toBeInstanceOf(ApiError);
         expect(error.status).toBe(400);
         expect(error.message).toBe('A tag needs a name.');
@@ -116,7 +144,10 @@ describe('Api', () => {
 
     it('rejects with the detail, else the title, else the status of a problem', async () => {
         const detail = api.tag(1);
-        http.expectOne('api/tags/1').flush({ title: 'Conflict', detail: 'Built-in tags cannot be deleted.' }, { status: 409, statusText: 'Conflict' });
+        http.expectOne('api/tags/1').flush(
+            { title: 'Conflict', detail: 'Built-in tags cannot be deleted.' },
+            { status: 409, statusText: 'Conflict' },
+        );
         // A 409 resolves with its body (the API's current state).
         expect(await detail).toEqual({ title: 'Conflict', detail: 'Built-in tags cannot be deleted.' });
 
@@ -137,7 +168,7 @@ describe('Api', () => {
         const request = api.config();
         http.expectOne('api/config').error(new ProgressEvent('error'), { status: 0, statusText: '' });
 
-        const error = await request.catch(e => e) as ApiError;
+        const error = (await request.catch((e) => e)) as ApiError;
         expect(error.status).toBe(0);
         expect(error.message).toBe('The server is not reachable');
     });
@@ -152,7 +183,7 @@ describe('Api', () => {
     it('cancels the request when its signal aborts', async () => {
         const controller = new AbortController();
         const page = api.browse({ path: '', offset: 0, limit: 10, sort: 'name', desc: false }, controller.signal);
-        const request = http.expectOne(r => r.url === 'api/browse');
+        const request = http.expectOne((r) => r.url === 'api/browse');
 
         controller.abort();
 
@@ -168,13 +199,15 @@ describe('Api', () => {
         http.expectNone('api/browse/covers');
     });
 
-    it('marks the requests that change something, so that another site cannot send them with this browser\'s session', () => {
+    it("marks the requests that change something, so that another site cannot send them with this browser's session", () => {
         void api.config();
         void api.createTag({ name: 'Cat' });
         void api.deleteTag(7);
 
         expect(http.expectOne('api/config').request.headers.has('X-SFE-Request')).toBe(false);
-        expect(http.expectOne(r => r.url === 'api/tags' && r.method === 'POST').request.headers.get('X-SFE-Request')).toBe('1');
+        expect(
+            http.expectOne((r) => r.url === 'api/tags' && r.method === 'POST').request.headers.get('X-SFE-Request'),
+        ).toBe('1');
         expect(http.expectOne('api/tags/7').request.headers.get('X-SFE-Request')).toBe('1');
     });
 
@@ -197,14 +230,17 @@ describe('Api', () => {
 
         await expect(config).rejects.toMatchObject({ status: 401 });
         expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { return: '/admin?section=tags' } });
-        expect(redirected(await config.catch(error => error))).toBe(true);
+        expect(redirected(await config.catch((error) => error))).toBe(true);
     });
 
     it('opens the setup page while the server has no administrator', async () => {
         const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
         const config = api.config();
-        http.expectOne('api/config').flush({ type: 'setup-required', status: 503 }, { status: 503, statusText: 'Service Unavailable' });
+        http.expectOne('api/config').flush(
+            { type: 'setup-required', status: 503 },
+            { status: 503, statusText: 'Service Unavailable' },
+        );
 
         await expect(config).rejects.toMatchObject({ status: 503, type: 'setup-required' });
         expect(navigate).toHaveBeenCalledWith(['/setup']);
@@ -214,7 +250,10 @@ describe('Api', () => {
         const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
         const setup = api.setupInfo();
-        http.expectOne('api/setup').flush({ type: 'migration-required', status: 503 }, { status: 503, statusText: 'Service Unavailable' });
+        http.expectOne('api/setup').flush(
+            { type: 'migration-required', status: 503 },
+            { status: 503, statusText: 'Service Unavailable' },
+        );
 
         await expect(setup).rejects.toMatchObject({ status: 503, type: 'migration-required' });
         expect(redirected(await setup.catch((error: unknown) => error))).toBe(true);
@@ -225,7 +264,10 @@ describe('Api', () => {
         const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
         const config = api.config();
-        http.expectOne('api/config').flush({ type: 'local-only', status: 403 }, { status: 403, statusText: 'Forbidden' });
+        http.expectOne('api/config').flush(
+            { type: 'local-only', status: 403 },
+            { status: 403, statusText: 'Forbidden' },
+        );
 
         await expect(config).rejects.toMatchObject({ status: 403, type: 'local-only' });
         expect(redirected(await config.catch((error: unknown) => error))).toBe(true);
@@ -274,15 +316,22 @@ describe('Api', () => {
         void api.resetSettings();
         void api.savePreferences({ player: { seekSeconds: 30 } });
 
-        expect(http.expectOne(r => r.url === 'api/settings' && r.method === 'GET').request.params.get('level')).toBe('server');
-        expect(http.expectOne(r => r.url === 'api/settings?level=tenant' && r.method === 'PUT')).toBeTruthy();
-        expect(http.expectOne('api/settings/locks?level=server').request.body).toEqual({ keys: ['player.seekSeconds'] });
-        expect(http.expectOne(r => r.url === 'api/settings' && r.method === 'DELETE')).toBeTruthy();
+        expect(http.expectOne((r) => r.url === 'api/settings' && r.method === 'GET').request.params.get('level')).toBe(
+            'server',
+        );
+        expect(http.expectOne((r) => r.url === 'api/settings?level=tenant' && r.method === 'PUT')).toBeTruthy();
+        expect(http.expectOne('api/settings/locks?level=server').request.body).toEqual({
+            keys: ['player.seekSeconds'],
+        });
+        expect(http.expectOne((r) => r.url === 'api/settings' && r.method === 'DELETE')).toBeTruthy();
         expect(http.expectOne('api/me/preferences').request.method).toBe('PUT');
     });
 
     it('saves only the changes of a level, or of the preferences, with PATCH', () => {
-        void api.saveSettingChanges({ values: { 'player.seekSeconds': 15 }, lock: ['player.loop'], unlock: [] }, 'server');
+        void api.saveSettingChanges(
+            { values: { 'player.seekSeconds': 15 }, lock: ['player.loop'], unlock: [] },
+            'server',
+        );
         void api.savePreferenceChanges({ values: { 'player.loop': true } });
 
         const level = http.expectOne('api/settings?level=server');

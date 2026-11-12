@@ -4,7 +4,9 @@ import { By } from '@angular/platform-browser';
 import { ContextMenuComponent, MenuEntry } from './context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from './overflow-row';
 
-const entry = (id: string, more: Partial<MenuEntry> = {}) => (): MenuEntry => ({ id, label: id.toUpperCase(), icon: 'info', title: id, run: () => ran.push(id), ...more });
+const entry =
+    (id: string, more: Partial<MenuEntry> = {}) =>
+    (): MenuEntry => ({ id, label: id.toUpperCase(), icon: 'info', title: id, run: () => ran.push(id), ...more });
 let ran: string[] = [];
 
 @Component({
@@ -44,7 +46,10 @@ describe('OverflowRow', () => {
     const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth')!;
     const clientWidth = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth')!;
     const at = (selector: string) => element.querySelector<HTMLElement>(selector)!;
-    const shown = () => [...element.querySelectorAll('#row > button[id]')].filter(button => !button.hasAttribute('data-overflowed')).map(button => button.id);
+    const shown = () =>
+        [...element.querySelectorAll('#row > button[id]')]
+            .filter((button) => !button.hasAttribute('data-overflowed'))
+            .map((button) => button.id);
     const more = () => at('.overflow-more');
 
     async function setUp(change: (host: Host) => void = () => {}): Promise<void> {
@@ -63,7 +68,7 @@ describe('OverflowRow', () => {
     }
 
     async function settle(): Promise<void> {
-        await new Promise(resolve => setTimeout(resolve));      // the measuring's microtasks
+        await new Promise((resolve) => setTimeout(resolve)); // the measuring's microtasks
         await fixture.whenStable();
     }
 
@@ -72,9 +77,15 @@ describe('OverflowRow', () => {
         Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, get: width });
         Object.defineProperty(Element.prototype, 'clientWidth', { configurable: true, get: width });
         (window as { ResizeObserver?: unknown }).ResizeObserver = class {
-            observe(): void { /* measured by update() in these tests */ }
-            unobserve(): void { /* nothing observed */ }
-            disconnect(): void { /* nothing observed */ }
+            observe(): void {
+                /* measured by update() in these tests */
+            }
+            unobserve(): void {
+                /* nothing observed */
+            }
+            disconnect(): void {
+                /* nothing observed */
+            }
         };
     });
 
@@ -99,20 +110,20 @@ describe('OverflowRow', () => {
         expect(shown()).toEqual(['a', 'b']);
         expect(more().classList).toContain('shown');
         expect(more().getAttribute('aria-hidden')).toBeNull();
-        expect(row.hidden().map(item => item.element.id)).toEqual(['c', 'd']);
+        expect(row.hidden().map((item) => item.element.id)).toEqual(['c', 'd']);
     });
 
     it('keeps the buttons that stay, however narrow', async () => {
-        await setUp(host => host.stayA = true);
+        await setUp((host) => (host.stayA = true));
         await resize(20);
         expect(shown()).toEqual(['a']);
     });
 
     it('takes a lower priority out before the ones on its right', async () => {
-        await setUp(host => host.priorityB = -1);
+        await setUp((host) => (host.priorityB = -1));
         await resize(150);
         expect(shown()).toEqual(['a', 'c']);
-        expect(row.hidden().map(item => item.element.id)).toEqual(['b', 'd']);
+        expect(row.hidden().map((item) => item.element.id)).toEqual(['b', 'd']);
     });
 
     it('shows everything again once wide enough', async () => {
@@ -146,13 +157,13 @@ describe('OverflowRow', () => {
         expect(shown()).toEqual(['a', 'b', 'c']);
     });
 
-    it('opens the buttons that left as a menu, in the row\'s order, which runs them', async () => {
+    it("opens the buttons that left as a menu, in the row's order, which runs them", async () => {
         await setUp();
         await resize(100);
         more().click();
         await settle();
         const entries = [...document.querySelectorAll<HTMLElement>('.item-menu-entry')];
-        expect(entries.map(entry => entry.dataset['entry'])).toEqual(['b', 'c', 'd']);
+        expect(entries.map((entry) => entry.dataset['entry'])).toEqual(['b', 'c', 'd']);
         expect(document.querySelector('.item-menu-title')?.textContent).toBe('Test row');
         entries[2].click();
         expect(ran).toEqual(['d']);

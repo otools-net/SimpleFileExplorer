@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    input,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { formatSize, joinParts } from '../../core/format';
@@ -93,22 +105,36 @@ export class FlashViewComponent {
     protected readonly muted = signal(readPreference(FLASH_MUTED_KEY) === '1');
     private handle: FlashHandle | null = null;
 
-    protected readonly downloadUrl = computed(() => this.fileHost.can(Rights.download) ? this.config.urls()?.download(this.item().path) ?? null : null);
+    protected readonly downloadUrl = computed(() =>
+        this.fileHost.can(Rights.download) ? (this.config.urls()?.download(this.item().path) ?? null) : null,
+    );
     protected readonly details = computed(() => {
         const metadata = this.metadata();
         const size = this.item().size;
-        return joinParts([
-            'Flash',
-            metadata ? (metadata.isActionScript3 ? 'ActionScript 3' : 'ActionScript 1/2') : null,
-            metadata ? `SWF ${metadata.swfVersion}` : null,
-            metadata?.width && metadata.height ? `${Math.round(metadata.width)} × ${Math.round(metadata.height)}` : null,
-            metadata?.frameRate ? `${Math.round(metadata.frameRate * 10) / 10} fps` : null,
-            size ? formatSize(size) : null,
-        ], '  ·  ');
+        return joinParts(
+            [
+                'Flash',
+                metadata ? (metadata.isActionScript3 ? 'ActionScript 3' : 'ActionScript 1/2') : null,
+                metadata ? `SWF ${metadata.swfVersion}` : null,
+                metadata?.width && metadata.height
+                    ? `${Math.round(metadata.width)} × ${Math.round(metadata.height)}`
+                    : null,
+                metadata?.frameRate ? `${Math.round(metadata.frameRate * 10) / 10} fps` : null,
+                size ? formatSize(size) : null,
+            ],
+            '  ·  ',
+        );
     });
 
     protected readonly more = {
-        restart: (): MenuEntry => ({ id: 'restart', label: 'Play again', icon: 'refresh', title: 'Play again from the start', disabled: this.state() !== 'ready', run: () => this.restart() }),
+        restart: (): MenuEntry => ({
+            id: 'restart',
+            label: 'Play again',
+            icon: 'refresh',
+            title: 'Play again from the start',
+            disabled: this.state() !== 'ready',
+            run: () => this.restart(),
+        }),
     };
 
     constructor() {
@@ -124,18 +150,24 @@ export class FlashViewComponent {
     }
 
     private async open(item: LibraryItem, destroyed: () => boolean): Promise<void> {
-        if (this.handle)
-            return;
+        if (this.handle) return;
         try {
             const link = await this.api.flashLink(item.path);
-            if (destroyed())
-                return;
-            const handle = await this.load(this.stage().nativeElement, new URL(link.url, document.baseURI).href, this.effectiveVolume(), {
-                metadata: metadata => this.metadata.set(metadata),
-                state: playing => this.playing.set(playing),
-                // As a key pressed inside the view: the viewer takes the focus back, the next Esc closes it.
-                escape: () => this.host.nativeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })),
-            });
+            if (destroyed()) return;
+            const handle = await this.load(
+                this.stage().nativeElement,
+                new URL(link.url, document.baseURI).href,
+                this.effectiveVolume(),
+                {
+                    metadata: (metadata) => this.metadata.set(metadata),
+                    state: (playing) => this.playing.set(playing),
+                    // As a key pressed inside the view: the viewer takes the focus back, the next Esc closes it.
+                    escape: () =>
+                        this.host.nativeElement.dispatchEvent(
+                            new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+                        ),
+                },
+            );
             if (destroyed()) {
                 handle.destroy();
                 return;
@@ -144,9 +176,10 @@ export class FlashViewComponent {
             this.state.set('ready');
             handle.focus();
         } catch (error) {
-            if (destroyed())
-                return;
-            this.message.set(`This movie could not be played: ${(error as Error)?.message ?? error}. It can only be downloaded.`);
+            if (destroyed()) return;
+            this.message.set(
+                `This movie could not be played: ${(error as Error)?.message ?? error}. It can only be downloaded.`,
+            );
             this.state.set('failed');
         }
     }
@@ -156,10 +189,8 @@ export class FlashViewComponent {
     }
 
     protected togglePlay(): void {
-        if (this.playing())
-            this.handle?.pause();
-        else
-            this.handle?.play();
+        if (this.playing()) this.handle?.pause();
+        else this.handle?.play();
         this.handle?.focus();
     }
 
@@ -170,14 +201,13 @@ export class FlashViewComponent {
     }
 
     protected toggleMute(): void {
-        this.muted.update(muted => !muted);
+        this.muted.update((muted) => !muted);
         writePreference(FLASH_MUTED_KEY, this.muted() ? '1' : '0');
         this.handle?.setVolume(this.effectiveVolume());
     }
 
     protected setVolume(value: number): void {
-        if (!Number.isFinite(value))
-            return;
+        if (!Number.isFinite(value)) return;
         this.volume.set(Math.min(1, Math.max(0, value)));
         writePreference(FLASH_VOLUME_KEY, String(this.volume()));
         if (this.muted()) {
@@ -189,6 +219,11 @@ export class FlashViewComponent {
 
     /** The movie's frame fills the screen (the frame itself has no say: it may not ask for it). */
     protected fullscreen(): void {
-        void this.stage().nativeElement.requestFullscreen?.().then(() => this.handle?.focus(), () => undefined);
+        void this.stage()
+            .nativeElement.requestFullscreen?.()
+            .then(
+                () => this.handle?.focus(),
+                () => undefined,
+            );
     }
 }

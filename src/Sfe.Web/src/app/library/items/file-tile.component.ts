@@ -1,4 +1,16 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, Directive, ElementRef, inject, input, signal, viewChild } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    Directive,
+    ElementRef,
+    inject,
+    input,
+    signal,
+    viewChild,
+} from '@angular/core';
 import { ConfigService } from '../../core/config.service';
 import { CopyPathService } from '../../core/copy-path.service';
 import { formatDate, formatSize, joinParts, kindIcon } from '../../core/format';
@@ -13,7 +25,13 @@ import { TrickplayMarkComponent } from '../../trickplay/trickplay-mark.component
 import { AnimatedHoverService } from './animated-hover.service';
 import { ListingStore } from '../listing.store';
 import { ItemActions } from './item-actions.service';
-import { ItemFolderComponent, ItemTagsComponent, NOT_INDEXED, SelectBoxComponent, TagButtonComponent } from './item-parts';
+import {
+    ItemFolderComponent,
+    ItemTagsComponent,
+    NOT_INDEXED,
+    SelectBoxComponent,
+    TagButtonComponent,
+} from './item-parts';
 import { PreviewImageDirective } from './preview-image.directive';
 import { PreviewsService } from './previews.service';
 
@@ -40,8 +58,14 @@ abstract class FileItemBase {
     /** Opened by a modified click (new tab...): the file, or its viewer's page for formats that have one. */
     protected readonly url = computed(() => this.actions.fileUrl(this.item()));
     protected readonly icon = computed(() => kindIcon[this.item().kind]);
-    protected readonly sources = computed(() => this.previews.sources(this.item(),
-        this.store.view() === 'single' && Boolean(this.config.config()?.singleViewOriginals)), { equal: sameStrings });
+    protected readonly sources = computed(
+        () =>
+            this.previews.sources(
+                this.item(),
+                this.store.view() === 'single' && Boolean(this.config.config()?.singleViewOriginals),
+            ),
+        { equal: sameStrings },
+    );
     protected readonly previewFailed = signal(false);
     protected readonly hasPreview = computed(() => this.sources().length > 0 && !this.previewFailed());
     protected readonly selected = computed(() => this.store.selection().has(this.item().path));
@@ -65,10 +89,20 @@ abstract class FileItemBase {
         const destroyRef = inject(DestroyRef);
         afterNextRender(() => {
             if (this.isVideo())
-                hover.attach(host, () => this.previewContainer()!, () => this.item().path, destroyRef);
+                hover.attach(
+                    host,
+                    () => this.previewContainer()!,
+                    () => this.item().path,
+                    destroyRef,
+                );
             else if (this.item().kind === 'image')
-                animated.attach(host, () => this.previewContainer()!, () => this.item(),
-                    () => this.hasPreview() && this.sources()[0] !== this.url(), destroyRef);
+                animated.attach(
+                    host,
+                    () => this.previewContainer()!,
+                    () => this.item(),
+                    () => this.hasPreview() && this.sources()[0] !== this.url(),
+                    destroyRef,
+                );
         });
     }
 }
@@ -80,8 +114,17 @@ function sameStrings(a: string[], b: string[]): boolean {
 /** A file in the grid and one-per-row views: its preview (with its HR/LR mark, a video's duration), name, folder (search results), resolution, size, date and tags. */
 @Component({
     selector: 'article[sfeFileTile]',
-    imports: [IconComponent, HighlightComponent, PreviewImageDirective, TrickplayMarkComponent, ItemTagsComponent, SelectBoxComponent,
-        TagButtonComponent, ItemFolderComponent, ItemMenuButtonComponent],
+    imports: [
+        IconComponent,
+        HighlightComponent,
+        PreviewImageDirective,
+        TrickplayMarkComponent,
+        ItemTagsComponent,
+        SelectBoxComponent,
+        TagButtonComponent,
+        ItemFolderComponent,
+        ItemMenuButtonComponent,
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class]': '"tile item kind-" + item().kind',
@@ -143,7 +186,7 @@ export class FileTileComponent extends FileItemBase {
      * the index: `PreviewsService.shapeOf`); without one, the layout's guess (files.css).
      */
     protected readonly ratio = computed(() => {
-        const ratio = this.hasPreview() ? this.learned() ?? this.shapes.shapeOf(this.item()) : null;
+        const ratio = this.hasPreview() ? (this.learned() ?? this.shapes.shapeOf(this.item())) : null;
         return ratio ? ratio.toFixed(4) : null;
     });
     protected readonly duration = computed(() => this.config.duration(this.item()));
@@ -151,10 +194,17 @@ export class FileTileComponent extends FileItemBase {
      * The duration goes on the preview: over a video's thumbnail, and over an audio file's placeholder (or cover) since
      * audio rarely has a picture. A video whose preview can't be shown keeps it in its details.
      */
-    protected readonly durationBadge = computed(() =>
-        Boolean(this.duration()) && (this.item().kind === 'audio' || this.isVideo() && this.hasPreview()));
-    protected readonly meta = computed(() => joinParts([this.config.resolution(this.item()),
-        this.durationBadge() ? '' : this.duration(), formatSize(this.item().size), formatDate(this.item().modified)]));
+    protected readonly durationBadge = computed(
+        () => Boolean(this.duration()) && (this.item().kind === 'audio' || (this.isVideo() && this.hasPreview())),
+    );
+    protected readonly meta = computed(() =>
+        joinParts([
+            this.config.resolution(this.item()),
+            this.durationBadge() ? '' : this.duration(),
+            formatSize(this.item().size),
+            formatDate(this.item().modified),
+        ]),
+    );
 
     protected previewContainer() {
         return this.previewBox()?.nativeElement;
@@ -174,8 +224,17 @@ export class FileTileComponent extends FileItemBase {
  */
 @Component({
     selector: 'div[sfeFileRow]',
-    imports: [IconComponent, HighlightComponent, PreviewImageDirective, TrickplayMarkComponent, ItemTagsComponent, SelectBoxComponent,
-        TagButtonComponent, ItemFolderComponent, ItemMenuButtonComponent],
+    imports: [
+        IconComponent,
+        HighlightComponent,
+        PreviewImageDirective,
+        TrickplayMarkComponent,
+        ItemTagsComponent,
+        SelectBoxComponent,
+        TagButtonComponent,
+        ItemFolderComponent,
+        ItemMenuButtonComponent,
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class]': '"row item kind-" + item().kind',

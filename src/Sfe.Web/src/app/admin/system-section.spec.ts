@@ -1,6 +1,17 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ApiMock, buttonNamed, fakeConfig, installationView, limitedConfig, loadConfig, mockApi, settle, testProviders, type } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    fakeConfig,
+    installationView,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+    type,
+} from '../../testing/fakes';
 import { ApiError } from '../core/api.service';
 import { SystemInfo } from '../core/models';
 import { Rights } from '../core/rights';
@@ -58,7 +69,7 @@ describe('System section', () => {
         expect(fixture.nativeElement.querySelector('.system-ffmpeg').dataset['found']).toBe('no');
     });
 
-    it('keeps the server\'s layout from other administrators', async () => {
+    it("keeps the server's layout from other administrators", async () => {
         await create('about', limitedConfig([Rights.apiDocs]));
         expect(api.systemInfo).not.toHaveBeenCalled();
         expect(text()).not.toContain('Library folder');
@@ -71,7 +82,9 @@ describe('System section', () => {
         const element = fixture.nativeElement as HTMLElement;
         expect(element.querySelector('sfe-installation-form')).toBeNull();
 
-        api.checkInstallation.mockRejectedValueOnce(new ApiError(400, 'x', { code: ['This is not the server\'s setup code.'] }));
+        api.checkInstallation.mockRejectedValueOnce(
+            new ApiError(400, 'x', { code: ["This is not the server's setup code."] }),
+        );
         type(element.querySelector<HTMLInputElement>('#installation-code')!, 'wrong-code-0000');
         await settle();
         buttonNamed(element, 'Unlock')!.click();
@@ -79,7 +92,10 @@ describe('System section', () => {
         expect(element.querySelector('.field-error')!.textContent).toContain('setup code');
 
         api.checkInstallation.mockResolvedValue({ token: 'the-token', settings: installationView() });
-        api.saveInstallation.mockResolvedValue({ settings: installationView({ port: 8080, restartRequired: true }), restartRequired: true });
+        api.saveInstallation.mockResolvedValue({
+            settings: installationView({ port: 8080, restartRequired: true }),
+            restartRequired: true,
+        });
         buttonNamed(element, 'Unlock')!.click();
         await settle();
         expect(element.querySelector('sfe-installation-form')).not.toBeNull();
@@ -95,9 +111,17 @@ describe('System section', () => {
 
     it('shows each page to those with its rights only', () => {
         const pages = (section: string, rights: string[]) =>
-            findSection(section, visibleSections(wanted => wanted.some(r => rights.includes(r)))).subpages.map(p => p.id);
+            findSection(
+                section,
+                visibleSections((wanted) => wanted.some((r) => rights.includes(r))),
+            ).subpages.map((p) => p.id);
         expect(pages('system', [Rights.serverSettings])).toEqual(['about', 'installation', 'startup']);
-        expect(pages('system', [Rights.serverSettings, Rights.backup])).toEqual(['about', 'installation', 'startup', 'maintenance']);
+        expect(pages('system', [Rights.serverSettings, Rights.backup])).toEqual([
+            'about',
+            'installation',
+            'startup',
+            'maintenance',
+        ]);
         expect(pages('system', [Rights.backup])).toEqual(['maintenance']);
         expect(pages('system', [Rights.apiDocs])).toEqual(['about']);
         expect(pages('playback', [Rights.viewStreams])).toEqual(['streams']);

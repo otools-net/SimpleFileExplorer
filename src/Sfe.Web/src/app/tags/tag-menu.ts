@@ -37,24 +37,54 @@ export class TagMenu {
         const term = tagQuery(tag);
         const q = this.store.route().q.trim();
         const entries: MenuEntry[] = [
-            { id: 'search', label: 'Search this tag', icon: 'search', title: `Find the files tagged ${name}`, run: () => this.store.navigate({ q: term }) },
             {
-                id: 'newTab', label: 'Search in new tab', icon: 'external', title: `Find the files tagged ${name}, in a tab of its own`, newTab: true,
+                id: 'search',
+                label: 'Search this tag',
+                icon: 'search',
+                title: `Find the files tagged ${name}`,
+                run: () => this.store.navigate({ q: term }),
+            },
+            {
+                id: 'newTab',
+                label: 'Search in new tab',
+                icon: 'external',
+                title: `Find the files tagged ${name}, in a tab of its own`,
+                newTab: true,
                 href: this.store.pageUrl(routeParams({ ...this.store.route(), q: term })),
             },
         ];
         if (q && !q.includes(term))
-            entries.push({ id: 'addToSearch', label: 'Add to the search', icon: 'plus', title: `Only the results also tagged ${name}`, run: () => this.store.navigate({ q: `${q} ${term}` }) });
+            entries.push({
+                id: 'addToSearch',
+                label: 'Add to the search',
+                icon: 'plus',
+                title: `Only the results also tagged ${name}`,
+                run: () => this.store.navigate({ q: `${q} ${term}` }),
+            });
         if (!q.includes(`-${term}`))
             entries.push({
-                id: 'exclude', label: q ? 'Leave out of the search' : 'Search without this tag', icon: 'close',
+                id: 'exclude',
+                label: q ? 'Leave out of the search' : 'Search without this tag',
+                icon: 'close',
                 title: q ? `The results not tagged ${name}` : `Find the files not tagged ${name}`,
                 run: () => this.store.navigate({ q: q && q !== term ? `${q} -${term}` : `-${term}` }),
             });
         if (file && file.kind !== 'directory' && this.store.can(Rights.assignTags, file))
-            entries.push({ id: 'remove', label: 'Remove from this file', icon: 'close', title: `Take ${name} off ${file.name}`, run: () => void this.removeFrom(tag, file) });
+            entries.push({
+                id: 'remove',
+                label: 'Remove from this file',
+                icon: 'close',
+                title: `Take ${name} off ${file.name}`,
+                run: () => void this.removeFrom(tag, file),
+            });
         if (this.config.can(Rights.manageTags) && this.dialogs.tagEditor())
-            entries.push({ id: 'edit', label: 'Edit the tag…', icon: 'edit', title: 'Its name, color, parents…', run: () => void this.dialogs.tagEditor()?.open(tag.id) });
+            entries.push({
+                id: 'edit',
+                label: 'Edit the tag…',
+                icon: 'edit',
+                title: 'Its name, color, parents…',
+                run: () => void this.dialogs.tagEditor()?.open(tag.id),
+            });
         return entries;
     }
 

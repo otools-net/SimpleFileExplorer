@@ -58,7 +58,7 @@ describe('ThemeService', () => {
         expect(localStorage.getItem('sfe.theme')).toBe('');
     });
 
-    it('keeps this browser\'s pick when the server default changes', () => {
+    it("keeps this browser's pick when the server default changes", () => {
         const service = create();
         service.choose('light');
         expect(theme()).toBe('light');
@@ -78,8 +78,12 @@ describe('ThemeService', () => {
     });
 
     it('still works when storage is unavailable', () => {
-        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('denied'); });
-        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('denied'); });
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw new Error('denied');
+        });
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new Error('denied');
+        });
         const service = create();
 
         service.setDefault('light');

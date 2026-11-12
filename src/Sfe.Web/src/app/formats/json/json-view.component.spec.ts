@@ -7,7 +7,8 @@ import { FILE_VIEW_HOST, JSON_FORMAT } from '../formats';
 import { READING_KEY } from '../reading/reading.service';
 import { JSON_MODE_KEY, JsonViewComponent } from './json-view.component';
 
-const DOCUMENT = '{\n  "name": "Trip",\n  "id": 12345678901234567890,\n  "days": [\n    { "town": "Annecy", "km": 42 },\n    { "town": "Chamonix", "km": 18 }\n  ]\n}\n';
+const DOCUMENT =
+    '{\n  "name": "Trip",\n  "id": 12345678901234567890,\n  "days": [\n    { "town": "Annecy", "km": 42 },\n    { "town": "Chamonix", "km": 18 }\n  ]\n}\n';
 
 describe('JsonViewComponent', () => {
     let api: ApiMock;
@@ -16,13 +17,23 @@ describe('JsonViewComponent', () => {
 
     const ALL: TextAccess = { overwrite: true, saveCopy: true, download: true, permanent: false };
     const text = (overrides: Partial<TextFile> = {}): TextFile => ({
-        text: DOCUMENT, encoding: 'utf-8', lineEnding: 'lf', version: 'v1', size: 140, modified: '2026-10-18T10:00:00Z', access: ALL, ...overrides,
+        text: DOCUMENT,
+        encoding: 'utf-8',
+        lineEnding: 'lf',
+        version: 'v1',
+        size: 140,
+        modified: '2026-10-18T10:00:00Z',
+        access: ALL,
+        ...overrides,
     });
     const tree = () => element.querySelector<HTMLElement>('.json-tree')!;
     const rows = () => [...element.querySelectorAll<HTMLElement>('.json-row[role="treeitem"]')];
     const row = (path: string) => element.querySelector<HTMLElement>(`.json-row[data-path="${path}"]`)!;
-    const keysShown = () => rows().map(shown => shown.querySelector('.json-key')?.textContent ?? '$');
-    const mode = (label: string) => [...element.querySelectorAll<HTMLButtonElement>('.markdown-mode')].find(button => button.textContent === label)!;
+    const keysShown = () => rows().map((shown) => shown.querySelector('.json-key')?.textContent ?? '$');
+    const mode = (label: string) =>
+        [...element.querySelectorAll<HTMLButtonElement>('.markdown-mode')].find(
+            (button) => button.textContent === label,
+        )!;
     const view = () => EditorView.findFromDOM(element.querySelector<HTMLElement>('.json-source .cm-editor')!)!;
 
     async function stable(): Promise<void> {
@@ -46,17 +57,17 @@ describe('JsonViewComponent', () => {
     }
 
     beforeEach(async () => {
-        for (const key of [READING_KEY, JSON_MODE_KEY])
-            localStorage.removeItem(key);
+        for (const key of [READING_KEY, JSON_MODE_KEY]) localStorage.removeItem(key);
         api = mockApi();
         api.textFile.mockResolvedValue(text());
-        TestBed.configureTestingModule({ providers: testProviders(api, { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => true } }) });
+        TestBed.configureTestingModule({
+            providers: testProviders(api, { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => true } }),
+        });
         await loadConfig(api);
     });
 
     afterEach(() => {
-        for (const key of [READING_KEY, JSON_MODE_KEY])
-            localStorage.removeItem(key);
+        for (const key of [READING_KEY, JSON_MODE_KEY]) localStorage.removeItem(key);
         fixture?.destroy();
         TestBed.resetTestingModule();
     });
@@ -133,11 +144,13 @@ describe('JsonViewComponent', () => {
         expect(writeText.mock.calls).toEqual([['$.days[1]'], ['{ "town": "Chamonix", "km": 18 }']]);
     });
 
-    it('tells where it isn\'t JSON and shows that place in the source', async () => {
+    it("tells where it isn't JSON and shows that place in the source", async () => {
         api.textFile.mockResolvedValue(text({ text: '{\n  "a": 1\n  "b": 2\n}' }));
         await show();
 
-        expect(element.querySelector('[data-problem]')!.textContent).toContain('Not JSON at line 3, column 3: A comma is expected');
+        expect(element.querySelector('[data-problem]')!.textContent).toContain(
+            'Not JSON at line 3, column 3: A comma is expected',
+        );
         expect(keysShown()).toEqual(['$', 'a', 'b']);
 
         element.querySelector<HTMLButtonElement>('[data-problem] button')!.click();

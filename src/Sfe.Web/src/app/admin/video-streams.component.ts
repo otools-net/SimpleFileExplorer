@@ -7,8 +7,8 @@ import { visibleInterval } from '../core/visible-interval';
 const REFRESH_MS = 2000;
 
 const MODES: Record<StreamingStatus['mode'], string> = {
-    off: 'Turned off in this space: videos the browser can\'t play are not converted (Playback › Streaming).',
-    fallback: 'Videos the browser can\'t play are converted while they play.',
+    off: "Turned off in this space: videos the browser can't play are not converted (Playback › Streaming).",
+    fallback: "Videos the browser can't play are converted while they play.",
     always: 'Every video is converted while it plays.',
 };
 
@@ -70,30 +70,27 @@ export class VideoStreamsComponent {
 
     protected readonly state = computed(() => {
         const status = this.status();
-        if (this.error())
-            return 'unavailable';
-        if (!status)
-            return null;
-        if (status.streams.length)
-            return 'running';
+        if (this.error()) return 'unavailable';
+        if (!status) return null;
+        if (status.streams.length) return 'running';
         return status.available ? 'idle' : status.mode === 'off' ? 'disabled' : 'unavailable';
     });
     protected readonly stateText = computed(() => {
         const error = this.error();
-        if (error)
-            return `Could not read the streams: ${error}`;
+        if (error) return `Could not read the streams: ${error}`;
         const status = this.status();
-        if (!status)
-            return '…';
+        if (!status) return '…';
         if (!status.available && status.mode !== 'off')
-            return 'ffmpeg can\'t be found: set its path (Thumbnails:FfmpegPath) in the server\'s configuration file. System › About tells where it looks.';
+            return "ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) in the server's configuration file. System › About tells where it looks.";
         return MODES[status.mode];
     });
     protected readonly limitText = computed(() => {
         const status = this.status();
-        return status ? `At most ${plural(status.maxStreams, 'video')} at once on the whole server; more viewers wait for one to end.` : '';
+        return status
+            ? `At most ${plural(status.maxStreams, 'video')} at once on the whole server; more viewers wait for one to end.`
+            : '';
     });
-    protected readonly rows = computed(() => (this.status()?.streams ?? []).map(stream => this.row(stream)));
+    protected readonly rows = computed(() => (this.status()?.streams ?? []).map((stream) => this.row(stream)));
 
     constructor() {
         void this.refresh();

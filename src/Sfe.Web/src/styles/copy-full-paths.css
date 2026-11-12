@@ -1,13 +1,27 @@
 /* ---------- Copy full paths (Browse:CopyPaths) ---------- */
 
-.row-actions { display: flex; gap: 2px; }
+.row-actions {
+    display: flex;
+    gap: 2px;
+}
 
 /* The copy itself is in the item menu (Copy full path). */
 
-.viewer-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-
+.viewer-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+}
 
 /* An item whose path was copied since the page loaded: a dashed outline, apart from the selection's accent, that
    moves nothing (an outline takes no room). */
-.tile.copied, .folder-item.copied .folder { outline: 2px dashed var(--copied); outline-offset: 2px; }
-.row.copied { outline: 2px dashed var(--copied); outline-offset: -2px; }
+.tile.copied,
+.folder-item.copied .folder {
+    outline: 2px dashed var(--copied);
+    outline-offset: 2px;
+}
+.row.copied {
+    outline: 2px dashed var(--copied);
+    outline-offset: -2px;
+}

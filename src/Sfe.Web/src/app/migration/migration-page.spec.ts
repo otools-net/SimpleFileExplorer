@@ -8,11 +8,24 @@ import { MIGRATION_POLL_MS, MigrationPageComponent } from './migration-page.comp
 
 function migration(overrides: Partial<MigrationInfo> = {}): MigrationInfo {
     return {
-        status: 'required', appVersion: '1.37.0', databaseVersion: '1.35.0', log: [], error: null, codeConfigured: true, codeTooShort: false,
-        minimumCodeLength: 12, hosting: 'other',
+        status: 'required',
+        appVersion: '1.37.0',
+        databaseVersion: '1.35.0',
+        log: [],
+        error: null,
+        codeConfigured: true,
+        codeTooShort: false,
+        minimumCodeLength: 12,
+        hosting: 'other',
         changes: [
             { version: '1.37.0', sections: [{ title: 'Added', items: ['An **update** page, with `code`.'] }] },
-            { version: '1.36.0', sections: [{ title: 'Added', items: ['Search by `type:`.'] }, { title: 'Fixed', items: ['A bug.'] }] },
+            {
+                version: '1.36.0',
+                sections: [
+                    { title: 'Added', items: ['Search by `type:`.'] },
+                    { title: 'Fixed', items: ['A bug.'] },
+                ],
+            },
         ],
         ...overrides,
     };
@@ -48,7 +61,10 @@ describe('MigrationPageComponent', () => {
         await create(migration());
 
         expect(element.textContent).toContain('SFE 1.35.0');
-        expect([...element.querySelectorAll('.migration-version h3')].map(h => h.textContent)).toEqual(['SFE 1.37.0', 'SFE 1.36.0']);
+        expect([...element.querySelectorAll('.migration-version h3')].map((h) => h.textContent)).toEqual([
+            'SFE 1.37.0',
+            'SFE 1.36.0',
+        ]);
         expect(element.querySelector('.migration-version li strong')!.textContent).toBe('update');
         expect(element.querySelector('.migration-version li code')!.textContent).toBe('code');
         expect(api.startMigration).not.toHaveBeenCalled();
@@ -59,7 +75,9 @@ describe('MigrationPageComponent', () => {
         await create(migration());
         const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
         api.startMigration.mockResolvedValue(migration({ status: 'running' }));
-        api.migrationInfo.mockResolvedValue(migration({ status: 'running', log: ['Updating the accounts\' database…'] }));
+        api.migrationInfo.mockResolvedValue(
+            migration({ status: 'running', log: ["Updating the accounts' database…"] }),
+        );
 
         typeCode(' the-setup-code ');
         await settle();
@@ -73,7 +91,14 @@ describe('MigrationPageComponent', () => {
         expect(element.querySelector('.migration-running')).not.toBeNull();
         expect(element.querySelector('.migration-log')!.textContent).toContain('Updating the accounts');
 
-        api.migrationInfo.mockResolvedValue(migration({ status: 'none', databaseVersion: '1.37.0', changes: [], log: ['The install now belongs to SFE 1.37.0.'] }));
+        api.migrationInfo.mockResolvedValue(
+            migration({
+                status: 'none',
+                databaseVersion: '1.37.0',
+                changes: [],
+                log: ['The install now belongs to SFE 1.37.0.'],
+            }),
+        );
         await settle(MIGRATION_POLL_MS + 50);
 
         expect(element.querySelector('h1')!.textContent).toBe('SFE is up to date');
@@ -97,20 +122,28 @@ describe('MigrationPageComponent', () => {
     it('shows a wrong code under its field', async () => {
         await create(migration());
         vi.spyOn(window, 'confirm').mockReturnValue(true);
-        api.startMigration.mockRejectedValue(new ApiError(400, 'This is not the server\'s setup code.', { code: ['This is not the server\'s setup code.'] }));
+        api.startMigration.mockRejectedValue(
+            new ApiError(400, "This is not the server's setup code.", {
+                code: ["This is not the server's setup code."],
+            }),
+        );
 
         typeCode('wrong');
         await settle();
         buttonNamed(element, 'Start the update')!.click();
         await settle();
 
-        expect(element.querySelector('.field-error')!.textContent).toContain('not the server\'s setup code');
+        expect(element.querySelector('.field-error')!.textContent).toContain("not the server's setup code");
     });
 
     it('downloads a backup with the setup code', async () => {
         await create(migration());
-        const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { });
-        api.migrationBackup.mockResolvedValue({ url: 'api/migration/backup/abc', fileName: 'SFE-backup-1.35.0.zip', size: 2048 });
+        const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+        api.migrationBackup.mockResolvedValue({
+            url: 'api/migration/backup/abc',
+            fileName: 'SFE-backup-1.35.0.zip',
+            size: 2048,
+        });
 
         typeCode('the-setup-code');
         await settle();

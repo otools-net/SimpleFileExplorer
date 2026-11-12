@@ -1,8 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../core/api.service';
-import { DuplicateGroup, DuplicateResults, MissingFileInfo, MissingFileResults, SimilarVideoResults } from '../core/models';
+import {
+    DuplicateGroup,
+    DuplicateResults,
+    MissingFileInfo,
+    MissingFileResults,
+    SimilarVideoResults,
+} from '../core/models';
 import { ToastService } from '../core/toast.service';
-import { ApiMock, deferred, fileTags, item, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    deferred,
+    fileTags,
+    item,
+    loadConfig,
+    mockApi,
+    settle,
+    summary,
+    tag,
+    testProviders,
+} from '../../testing/fakes';
 import { ContextMenu } from '../menus/context-menu';
 import { DuplicatesPanelComponent } from './duplicates-panel.component';
 import { MissingPanelComponent } from './missing-panel.component';
@@ -21,7 +38,8 @@ beforeEach(async () => {
 
 afterEach(() => vi.restoreAllMocks());
 
-const buttonNamed = (root: HTMLElement, label: string) => [...root.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent!.trim() === label);
+const buttonNamed = (root: HTMLElement, label: string) =>
+    [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent!.trim() === label);
 const statusText = (root: HTMLElement) => root.querySelector('.settings-status-text')!.textContent!;
 
 describe('DuplicatesPanelComponent', () => {
@@ -32,12 +50,26 @@ describe('DuplicatesPanelComponent', () => {
     const MB = 1024 * 1024;
     const sun = summary(tag('Sun'));
     const group = (size: number, ...paths: string[]): DuplicateGroup => ({
-        size, fingerprint: `f${size}`, count: paths.length, wastedBytes: size * (paths.length - 1),
-        files: paths.map(path => item(path, { size, tags: path.includes('tagged') ? [sun] : [] })),
+        size,
+        fingerprint: `f${size}`,
+        count: paths.length,
+        wastedBytes: size * (paths.length - 1),
+        files: paths.map((path) => item(path, { size, tags: path.includes('tagged') ? [sun] : [] })),
     });
     const results = (groups: DuplicateGroup[], overrides: Partial<DuplicateResults> = {}): DuplicateResults => ({
-        path: '', groups, hasMore: false, next: null, fingerprinting: true, minimumSize: 0, canRemove: true,
-        summary: { groups: groups.length, files: groups.reduce((n, g) => n + g.count, 0), wastedBytes: groups.reduce((n, g) => n + g.wastedBytes, 0), unfingerprinted: 0 },
+        path: '',
+        groups,
+        hasMore: false,
+        next: null,
+        fingerprinting: true,
+        minimumSize: 0,
+        canRemove: true,
+        summary: {
+            groups: groups.length,
+            files: groups.reduce((n, g) => n + g.count, 0),
+            wastedBytes: groups.reduce((n, g) => n + g.wastedBytes, 0),
+            unfingerprinted: 0,
+        },
         ...overrides,
     });
     const groupElements = () => [...element.querySelectorAll<HTMLElement>('section.tracking-group:not([hidden])')];
@@ -57,35 +89,47 @@ describe('DuplicatesPanelComponent', () => {
         await create(results([group(2 * MB, 'a/x.jpg', 'b/x.jpg', 'c/x.jpg'), group(MB, 'a/y.jpg', 'b/y.jpg')]));
 
         expect(statusText(element)).toBe('2 groups of identical files in the library: 5 MB could be freed');
-        expect(groupElements().map(g => [...g.querySelectorAll('header > *')].map(part => part.textContent)))
-            .toEqual([['3 copies', '2 MB each · 4 MB extra'], ['2 copies', '1 MB each · 1 MB extra']]);
+        expect(
+            groupElements().map((g) => [...g.querySelectorAll('header > *')].map((part) => part.textContent)),
+        ).toEqual([
+            ['3 copies', '2 MB each · 4 MB extra'],
+            ['2 copies', '1 MB each · 1 MB extra'],
+        ]);
         expect(fixture.componentInstance.badge()).toBe('2');
     });
 
     it('has a menu on each file: in a new tab, its folder, download', async () => {
         await create(results([group(MB, 'a/x.jpg', 'b/x.jpg')]));
         const folders: string[] = [];
-        fixture.componentInstance.openFolder.subscribe(path => folders.push(path));
+        fixture.componentInstance.openFolder.subscribe((path) => folders.push(path));
 
-        element.querySelectorAll('li.tracking-row')[1].querySelector('.tracking-name')!
+        element
+            .querySelectorAll('li.tracking-row')[1]
+            .querySelector('.tracking-name')!
             .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
         const target = TestBed.inject(ContextMenu).open()!.target;
 
         expect(target).toMatchObject({ kind: 'file', name: 'x.jpg' });
-        expect(target.entries().map(entry => entry.id)).toEqual(['newTab', 'openFolder', 'folderNewTab', 'download']);
+        expect(target.entries().map((entry) => entry.id)).toEqual(['newTab', 'openFolder', 'folderNewTab', 'download']);
         expect(target.entries()[2].href).toMatch(/\?path=b$/);
         target.entries()[1].run!();
         expect(folders).toEqual(['b']);
     });
 
     it('says when there are none, and why some files were not compared', async () => {
-        await create(results([], { minimumSize: MB, fingerprinting: false, summary: { groups: 0, files: 0, wastedBytes: 0, unfingerprinted: 3 } }));
+        await create(
+            results([], {
+                minimumSize: MB,
+                fingerprinting: false,
+                summary: { groups: 0, files: 0, wastedBytes: 0, unfingerprinted: 3 },
+            }),
+        );
 
         expect(statusText(element)).toBe('No duplicates in the library.');
         const detail = element.querySelector('sfe-status-box .field-hint')!.textContent!;
         expect(detail).toContain('files under 1 MB are left out');
-        expect(detail).toContain('3 indexed files without a fingerprint can\'t be compared');
-        expect(detail).toContain('scans don\'t fingerprint files');
+        expect(detail).toContain("3 indexed files without a fingerprint can't be compared");
+        expect(detail).toContain("scans don't fingerprint files");
         expect(fixture.componentInstance.badge()).toBe('');
     });
 
@@ -141,9 +185,11 @@ describe('DuplicatesPanelComponent', () => {
         await settle();
 
         const keep = element.querySelector<HTMLSelectElement>('.tracking-keep')!;
-        expect([...keep.options].map(o => o.value)).toEqual(['a/x.jpg', 'c/x.jpg']);
+        expect([...keep.options].map((o) => o.value)).toEqual(['a/x.jpg', 'c/x.jpg']);
         expect(keep.value).toBe('a/x.jpg');
-        expect(element.querySelector('.tracking-confirm')!.textContent).toContain('Move this file to the trash and keep');
+        expect(element.querySelector('.tracking-confirm')!.textContent).toContain(
+            'Move this file to the trash and keep',
+        );
     });
 
     it('names the only other copy, and says where the tags go', async () => {
@@ -172,7 +218,11 @@ describe('DuplicatesPanelComponent', () => {
     it('moves a copy to the trash keeping the chosen one, which gets the tags', async () => {
         const show = vi.spyOn(toasts, 'show');
         await create(results([group(MB, 'a/tagged.jpg', 'b/x.jpg', 'c/x.jpg'), group(MB, 'd', 'e')]));
-        api.removeDuplicate.mockResolvedValue({ removed: 'a/tagged.jpg', kept: fileTags('c/x.jpg', [sun]), trashId: 7 });
+        api.removeDuplicate.mockResolvedValue({
+            removed: 'a/tagged.jpg',
+            kept: fileTags('c/x.jpg', [sun]),
+            trashId: 7,
+        });
 
         groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
         await settle();
@@ -183,9 +233,12 @@ describe('DuplicatesPanelComponent', () => {
         await settle();
 
         expect(api.removeDuplicate).toHaveBeenCalledWith('a/tagged.jpg', 'c/x.jpg');
-        expect(show).toHaveBeenCalledWith('“tagged.jpg” moved to the trash; “c/x.jpg” is kept with its tags.', expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) }));
+        expect(show).toHaveBeenCalledWith(
+            '“tagged.jpg” moved to the trash; “c/x.jpg” is kept with its tags.',
+            expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) }),
+        );
         const rows = [...groupElements()[0].querySelectorAll('li.tracking-row')];
-        expect(rows.map(r => r.querySelector('.tracking-name')!.textContent)).toEqual(['x.jpg', 'x.jpg']);
+        expect(rows.map((r) => r.querySelector('.tracking-name')!.textContent)).toEqual(['x.jpg', 'x.jpg']);
         expect(rows[1].querySelector('.tag-name')!.textContent!.trim()).toBe('Sun');
         expect(groupElements()[0].querySelector('header strong')!.textContent).toBe('2 copies');
         expect(statusText(element)).toBe('2 groups of identical files in the library: 2 MB could be freed');
@@ -294,11 +347,23 @@ describe('MissingPanelComponent', () => {
     let changed: number;
 
     const missing = (id: number, path: string, candidates: string[] = []): MissingFileInfo => ({
-        id, path, name: path.split('/').pop()!, size: 2048, modified: '2026-01-01T00:00:00Z', missingSince: '2026-02-01T00:00:00Z',
-        tags: [summary(tag('Kept'))], candidates: candidates.map(c => item(c)),
+        id,
+        path,
+        name: path.split('/').pop()!,
+        size: 2048,
+        modified: '2026-01-01T00:00:00Z',
+        missingSince: '2026-02-01T00:00:00Z',
+        tags: [summary(tag('Kept'))],
+        candidates: candidates.map((c) => item(c)),
     });
-    const results = (items: MissingFileInfo[], overrides: Partial<MissingFileResults> = {}): MissingFileResults =>
-        ({ items, total: items.length, hasMore: false, next: null, enabled: true, ...overrides });
+    const results = (items: MissingFileInfo[], overrides: Partial<MissingFileResults> = {}): MissingFileResults => ({
+        items,
+        total: items.length,
+        hasMore: false,
+        next: null,
+        enabled: true,
+        ...overrides,
+    });
     const rows = () => [...element.querySelectorAll<HTMLElement>('li.tracking-missing')];
 
     async function create(answer: MissingFileResults): Promise<void> {
@@ -372,7 +437,10 @@ describe('MissingPanelComponent', () => {
         buttonNamed(rows()[0], 'Choose file…')!.click();
         await settle();
 
-        expect(ask).toHaveBeenCalledWith('Give the tags of “a.jpg” to which file? Path from the library root:', 'Old/a.jpg');
+        expect(ask).toHaveBeenCalledWith(
+            'Give the tags of “a.jpg” to which file? Path from the library root:',
+            'Old/a.jpg',
+        );
         expect(api.relinkMissingFile).not.toHaveBeenCalled();
     });
 
@@ -403,12 +471,16 @@ describe('MissingPanelComponent', () => {
 
     it('disables every action of the list while one runs', async () => {
         await create(results([missing(1, 'a.jpg', ['b.jpg']), missing(2, 'c.jpg')]));
-        api.relinkMissingFile.mockReturnValue(new Promise(() => { }));
+        api.relinkMissingFile.mockReturnValue(new Promise(() => {}));
 
         buttonNamed(rows()[0], 'Relink here')!.click();
         await settle();
 
-        expect(rows().flatMap(row => [...row.querySelectorAll<HTMLButtonElement>('.tracking-actions button')]).every(b => b.disabled)).toBe(true);
+        expect(
+            rows()
+                .flatMap((row) => [...row.querySelectorAll<HTMLButtonElement>('.tracking-actions button')])
+                .every((b) => b.disabled),
+        ).toBe(true);
     });
 
     it('forgets a file after asking, also when it was gone already', async () => {
@@ -446,7 +518,9 @@ describe('MissingPanelComponent', () => {
     it('relinks every file with a single likely place, then reloads', async () => {
         const show = vi.spyOn(toasts, 'show');
         await create(results([missing(1, 'a.jpg', ['b.jpg']), missing(2, 'c.jpg')]));
-        api.relinkMissingFiles.mockResolvedValueOnce({ relinked: 1, forgotten: 0, remaining: 1 }).mockResolvedValueOnce({ relinked: 0, forgotten: 0, remaining: 1 });
+        api.relinkMissingFiles
+            .mockResolvedValueOnce({ relinked: 1, forgotten: 0, remaining: 1 })
+            .mockResolvedValueOnce({ relinked: 0, forgotten: 0, remaining: 1 });
         api.missingFiles.mockResolvedValue(results([missing(2, 'c.jpg')]));
 
         buttonNamed(element, 'Relink now')!.click();
@@ -503,12 +577,28 @@ describe('SimilarPanelComponent', () => {
     let fixture: ComponentFixture<SimilarPanelComponent>;
     let element: HTMLElement;
 
-    const run = (state: SimilarVideoResults['status']['state'], overrides: Partial<SimilarVideoResults['status']> = {}) =>
-        ({ state, checked: 0, total: 0, started: null, finished: null, message: null, ...overrides });
+    const run = (
+        state: SimilarVideoResults['status']['state'],
+        overrides: Partial<SimilarVideoResults['status']> = {},
+    ) => ({ state, checked: 0, total: 0, started: null, finished: null, message: null, ...overrides });
     const results = (overrides: Partial<SimilarVideoResults> = {}): SimilarVideoResults => ({
-        path: '', status: run('completed', { finished: '2026-10-10T10:00:00Z' }), summary: { groups: 1, files: 2, wastedBytes: 1024, videos: 10, compared: 8, minimumPercent: 80 },
-        groups: [{ count: 3, wastedBytes: 1024, videos: [{ file: item('a.mp4'), match: null, duration: 65 }, { file: item('b.mp4'), match: 92, duration: 64 }] }],
-        hasMore: false, next: null, trickplayEnabled: true, ...overrides,
+        path: '',
+        status: run('completed', { finished: '2026-10-10T10:00:00Z' }),
+        summary: { groups: 1, files: 2, wastedBytes: 1024, videos: 10, compared: 8, minimumPercent: 80 },
+        groups: [
+            {
+                count: 3,
+                wastedBytes: 1024,
+                videos: [
+                    { file: item('a.mp4'), match: null, duration: 65 },
+                    { file: item('b.mp4'), match: 92, duration: 64 },
+                ],
+            },
+        ],
+        hasMore: false,
+        next: null,
+        trickplayEnabled: true,
+        ...overrides,
     });
 
     async function create(answer: SimilarVideoResults, open = true): Promise<void> {
@@ -526,7 +616,9 @@ describe('SimilarPanelComponent', () => {
     it('sums up the last comparison', async () => {
         await create(results());
 
-        expect(statusText(element)).toBe('1 group of similar videos in the library: 1 KB more than the biggest of each');
+        expect(statusText(element)).toBe(
+            '1 group of similar videos in the library: 1 KB more than the biggest of each',
+        );
         const detail = element.querySelector('sfe-status-box .field-hint')!.textContent!;
         expect(detail).toContain('8 of 10 indexed videos compared (the others have no trickplay yet)');
         expect(detail).toContain('listed from 80% match');
@@ -554,7 +646,9 @@ describe('SimilarPanelComponent', () => {
             await create(results({ status: run('running', { checked: 3, total: 10 }) }));
             expect(statusText(element)).toBe('Comparing videos… 3 of 10 videos read');
 
-            api.similarVideos.mockResolvedValue(results({ status: run('running', { checked: 7, total: 10 }), groups: [] }));
+            api.similarVideos.mockResolvedValue(
+                results({ status: run('running', { checked: 7, total: 10 }), groups: [] }),
+            );
             await vi.advanceTimersByTimeAsync(3000);
             fixture.detectChanges();
             expect(statusText(element)).toBe('Comparing videos… 7 of 10 videos read');

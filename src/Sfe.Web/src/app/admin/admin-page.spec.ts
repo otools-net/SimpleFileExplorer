@@ -3,13 +3,35 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { ApiError } from '../core/api.service';
-import { ClientConfig, KeepAliveFolder, KeepAliveView, SettingLevel, SettingState, SettingsValues, SettingsView, TaskInfo } from '../core/models';
+import {
+    ClientConfig,
+    KeepAliveFolder,
+    KeepAliveView,
+    SettingLevel,
+    SettingState,
+    SettingsValues,
+    SettingsView,
+    TaskInfo,
+} from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { ListingStore } from '../library/listing.store';
 import { ContextMenu } from '../menus/context-menu';
 import { showChip } from './admin-page.component';
-import { ApiMock, buttonNamed, adminPageProviders, deferred, fakeConfig, loadConfig, mockApi, setMediaQuery, settingsValues, settle, tag, type } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    adminPageProviders,
+    deferred,
+    fakeConfig,
+    loadConfig,
+    mockApi,
+    setMediaQuery,
+    settingsValues,
+    settle,
+    tag,
+    type,
+} from '../../testing/fakes';
 import { setValue } from '../settings/settings-schema';
 import { ADMIN_GROUPS, ADMIN_SECTIONS, groupId, visibleSections } from './admin-sections';
 
@@ -37,14 +59,17 @@ async function open(url: string, state?: Record<string, unknown>): Promise<void>
 const url = () => TestBed.inject(Router).url;
 const heading = () => element.querySelector('.admin-head h2')!.textContent;
 /** The breadcrumbs shown (CSS hides the group's on phones, jsdom doesn't). */
-const crumbs = () => [...element.querySelectorAll('.admin-crumbs li')].map(li => li.textContent!.trim());
+const crumbs = () => [...element.querySelectorAll('.admin-crumbs li')].map((li) => li.textContent!.trim());
 /** The section in the breadcrumbs when the page shown is one of its sub-pages. */
 const eyebrow = () => element.querySelector('.admin-crumbs li:nth-child(3) a')?.textContent ?? null;
 /** The links of the sections in the sidebar. */
-const navItem = (title: string) => [...element.querySelectorAll<HTMLAnchorElement>('.admin-nav > ul > li > a')].find(a => a.querySelector('span')!.textContent === title)!;
+const navItem = (title: string) =>
+    [...element.querySelectorAll<HTMLAnchorElement>('.admin-nav > ul > li > a')].find(
+        (a) => a.querySelector('span')!.textContent === title,
+    )!;
 /** The sub-pages listed under the open section. */
 const subItems = () => [...element.querySelectorAll<HTMLAnchorElement>('.admin-subnav a')];
-const subItem = (title: string) => subItems().find(a => a.querySelector('span')!.textContent === title)!;
+const subItem = (title: string) => subItems().find((a) => a.querySelector('span')!.textContent === title)!;
 const currentSubItem = () => element.querySelector<HTMLAnchorElement>('.admin-subnav a[aria-current=page]')!;
 /** The sub-pages as chips (phones). */
 const chips = () => [...element.querySelectorAll<HTMLButtonElement>('.admin-chips [role=tab]')];
@@ -58,22 +83,36 @@ describe('AdminPageComponent', () => {
     it('lists its sections by group, and opens on their overview, as cards with their sub-pages', async () => {
         await open('/admin');
 
-        expect([...element.querySelectorAll('.admin-nav h2')].map(h => h.textContent)).toEqual(ADMIN_GROUPS.map(g => g.title));
-        expect([...element.querySelectorAll('.admin-nav > ul > li > a')].map(a => a.querySelector('span')!.textContent)).toEqual(ADMIN_SECTIONS.map(s => s.title));
+        expect([...element.querySelectorAll('.admin-nav h2')].map((h) => h.textContent)).toEqual(
+            ADMIN_GROUPS.map((g) => g.title),
+        );
+        expect(
+            [...element.querySelectorAll('.admin-nav > ul > li > a')].map((a) => a.querySelector('span')!.textContent),
+        ).toEqual(ADMIN_SECTIONS.map((s) => s.title));
         expect(heading()).toBe('Administration');
         expect(element.querySelector('.admin-crumbs')).toBeNull();
         expect(element.querySelector('.admin-nav a.open, .admin-nav [aria-current]')).toBeNull();
         expect(subItems()).toHaveLength(0);
         expect(document.title).toBe('Administration – SFE');
 
-        expect([...element.querySelectorAll('.admin-overview h3')].map(h => h.id)).toEqual(ADMIN_GROUPS.map(g => groupId(g.title)));
+        expect([...element.querySelectorAll('.admin-overview h3')].map((h) => h.id)).toEqual(
+            ADMIN_GROUPS.map((g) => groupId(g.title)),
+        );
         const cards = [...element.querySelectorAll('.admin-card')];
-        expect(cards.map(c => c.querySelector('.admin-card-title span')!.textContent)).toEqual(ADMIN_SECTIONS.map(s => s.title));
-        const playback = cards.find(c => c.querySelector('.admin-card-title span')!.textContent === 'Playback')!;
-        expect(playback.querySelector('p')!.textContent).toBe(ADMIN_SECTIONS.find(s => s.id === 'playback')!.description);
-        expect([...playback.querySelectorAll('.admin-card-pages a')].map(a => a.textContent!.trim())).toEqual(['Player', 'Streaming', 'Video streams']);
+        expect(cards.map((c) => c.querySelector('.admin-card-title span')!.textContent)).toEqual(
+            ADMIN_SECTIONS.map((s) => s.title),
+        );
+        const playback = cards.find((c) => c.querySelector('.admin-card-title span')!.textContent === 'Playback')!;
+        expect(playback.querySelector('p')!.textContent).toBe(
+            ADMIN_SECTIONS.find((s) => s.id === 'playback')!.description,
+        );
+        expect([...playback.querySelectorAll('.admin-card-pages a')].map((a) => a.textContent!.trim())).toEqual([
+            'Player',
+            'Streaming',
+            'Video streams',
+        ]);
         // A section with one page has no page links.
-        expect(cards.find(c => c.textContent!.includes('Thumbnails'))!.querySelector('.admin-card-pages')).toBeNull();
+        expect(cards.find((c) => c.textContent!.includes('Thumbnails'))!.querySelector('.admin-card-pages')).toBeNull();
 
         [...playback.querySelectorAll<HTMLAnchorElement>('.admin-card-pages a')][1].click();
         await settle();
@@ -86,7 +125,12 @@ describe('AdminPageComponent', () => {
         const menu = TestBed.inject(ContextMenu);
 
         expect(menu.page()).toMatchObject({ kind: 'page', name: 'Administration' });
-        expect(menu.page()!.entries().map(entry => entry.id)).toEqual(['back', 'reload', 'newTab', 'copyLink']);
+        expect(
+            menu
+                .page()!
+                .entries()
+                .map((entry) => entry.id),
+        ).toEqual(['back', 'reload', 'newTab', 'copyLink']);
         // A section's link: the link's menu (the page's menu takes the right clicks nothing else handles).
         const link = navItem(ADMIN_SECTIONS[0].title);
         const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
@@ -103,7 +147,7 @@ describe('AdminPageComponent', () => {
         expect(heading()).toBe('Preferences');
         expect(navItem('My account').classList).toContain('open');
         // Only the open section lists its sub-pages, the current one marked.
-        expect(subItems().map(a => a.textContent!.trim())).toEqual(['Preferences', 'Password']);
+        expect(subItems().map((a) => a.textContent!.trim())).toEqual(['Preferences', 'Password']);
         expect(currentSubItem().textContent!.trim()).toBe('Preferences');
         expect(navItem('My account').getAttribute('aria-current')).toBeNull();
         expect(chips()).toHaveLength(0);
@@ -128,7 +172,7 @@ describe('AdminPageComponent', () => {
 
         expect(eyebrow()).toBe('Tags');
         expect(heading()).toBe('All tags');
-        expect(subItems().map(a => a.textContent!.trim())).toEqual(['All tags', 'Settings']);
+        expect(subItems().map((a) => a.textContent!.trim())).toEqual(['All tags', 'Settings']);
         expect(currentSubItem().textContent!.trim()).toBe('All tags');
         expect(api.tags).toHaveBeenCalledWith({ q: '', limit: 1000 });
         expect(element.querySelector('.tag-row')!.textContent).toContain('Cat');
@@ -155,12 +199,16 @@ describe('AdminPageComponent', () => {
     });
 
     it('describes the sub-page shown, the section when it has a single one', async () => {
-        const system = ADMIN_SECTIONS.find(s => s.id === 'system')!;
+        const system = ADMIN_SECTIONS.find((s) => s.id === 'system')!;
         await open('/admin?section=system&page=maintenance');
-        expect(element.querySelector('.admin-head p')!.textContent).toBe(system.subpages.find(p => p.id === 'maintenance')!.description);
+        expect(element.querySelector('.admin-head p')!.textContent).toBe(
+            system.subpages.find((p) => p.id === 'maintenance')!.description,
+        );
 
         await open('/admin?section=thumbnails');
-        expect(element.querySelector('.admin-head p')!.textContent).toBe(ADMIN_SECTIONS.find(s => s.id === 'thumbnails')!.description);
+        expect(element.querySelector('.admin-head p')!.textContent).toBe(
+            ADMIN_SECTIONS.find((s) => s.id === 'thumbnails')!.description,
+        );
     });
 
     it('moves between sections and sub-pages, keeping "back" to where it was opened from', async () => {
@@ -181,7 +229,7 @@ describe('AdminPageComponent', () => {
         await settle();
         expect(url()).toBe('/admin?section=tasks');
 
-        const back = vi.spyOn(history, 'back').mockImplementation(() => { });
+        const back = vi.spyOn(history, 'back').mockImplementation(() => {});
         element.querySelector<HTMLButtonElement>('[aria-label="Back to the library"]')!.click();
         expect(back).toHaveBeenCalled();
     });
@@ -203,7 +251,7 @@ describe('AdminPageComponent', () => {
         expect(crumbs()).toEqual(['Administration', 'Server', 'Background tasks', 'Tasks']);
         expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true }));
 
-        const scroll = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => { });
+        const scroll = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
         element.querySelector<HTMLAnchorElement>('.admin-crumbs li:nth-child(2) a')!.click();
         await settle();
         expect(url()).toBe('/admin#admin-group-server');
@@ -240,20 +288,31 @@ describe('AdminPageComponent', () => {
         expect(element.querySelector('.admin-savebar')).toBeNull();
         expect(element.querySelector('[aria-current]')).toBeNull();
         expect(subItems()).toHaveLength(0);
-        expect(navItem('Tags').querySelector('.admin-nav-description')!.textContent).toBe(ADMIN_SECTIONS.find(s => s.id === 'tags')!.description);
+        expect(navItem('Tags').querySelector('.admin-nav-description')!.textContent).toBe(
+            ADMIN_SECTIONS.find((s) => s.id === 'tags')!.description,
+        );
 
         navItem('Duplicates & moves').click();
         await settle();
         expect(heading()).toBe('Duplicates');
         expect(element.querySelector('.admin-nav')).toBeNull();
         expect(url()).toBe('/admin?section=tracking');
-        expect(chips().map(c => c.textContent!.trim())).toEqual(['Duplicates', 'Similar videos', 'Moved files', 'Settings']);
-        chips().find(c => c.textContent!.trim() === 'Settings')!.click();
+        expect(chips().map((c) => c.textContent!.trim())).toEqual([
+            'Duplicates',
+            'Similar videos',
+            'Moved files',
+            'Settings',
+        ]);
+        chips()
+            .find((c) => c.textContent!.trim() === 'Settings')!
+            .click();
         await settle();
         expect(url()).toBe('/admin?section=tracking&page=settings');
-        expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true, sfeFromList: true }));
+        expect(TestBed.inject(Location).getState()).toEqual(
+            expect.objectContaining({ sfeFromLibrary: true, sfeFromList: true }),
+        );
 
-        const back = vi.spyOn(history, 'back').mockImplementation(() => { });
+        const back = vi.spyOn(history, 'back').mockImplementation(() => {});
         element.querySelector<HTMLButtonElement>('[aria-label="Back to the sections"]')!.click();
         expect(back).toHaveBeenCalled();
     });
@@ -281,11 +340,13 @@ describe('AdminPageComponent', () => {
 
         navItem('Duplicates & moves').click();
         await settle();
-        chips().find(c => c.textContent!.trim() === 'Moved files')!.click();
+        chips()
+            .find((c) => c.textContent!.trim() === 'Moved files')!
+            .click();
         await settle();
         expect(crumbs()).toEqual(['Administration', 'Library', 'Duplicates & moves', 'Moved files']);
 
-        const back = vi.spyOn(history, 'back').mockImplementation(() => { });
+        const back = vi.spyOn(history, 'back').mockImplementation(() => {});
         element.querySelector<HTMLButtonElement>('.admin-crumbs button')!.click();
         expect(back).toHaveBeenCalled();
     });
@@ -294,7 +355,9 @@ describe('AdminPageComponent', () => {
         setMediaQuery('(max-width: 760px)', true);
         await open('/admin?section=tracking');
         const press = async (key: string) => {
-            element.querySelector('[role=tablist]')!.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+            element
+                .querySelector('[role=tablist]')!
+                .dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
             await settle();
         };
 
@@ -311,12 +374,44 @@ describe('AdminPageComponent', () => {
 
     it('counts the running tasks on their sub-page, and shows the trickplay activity from its card', async () => {
         const running: TaskInfo = {
-            task: 'thumbnails', state: 'running', path: null, startedAt: null, progress: null, detail: '', canStart: false, canCancel: true,
-            canSchedule: false, automaticNextRun: null, automaticEvery: null, lastRun: null,
+            task: 'thumbnails',
+            state: 'running',
+            path: null,
+            startedAt: null,
+            progress: null,
+            detail: '',
+            canStart: false,
+            canCancel: true,
+            canSchedule: false,
+            automaticNextRun: null,
+            automaticEvery: null,
+            lastRun: null,
         };
-        api.tasks.mockResolvedValue({ tasks: [{ ...running, task: 'trickplay', state: 'idle', canStart: true, canSchedule: true }, running], schedules: [], serverTime: '', timeZone: 'UTC', logRetentionDays: 30 });
+        api.tasks.mockResolvedValue({
+            tasks: [{ ...running, task: 'trickplay', state: 'idle', canStart: true, canSchedule: true }, running],
+            schedules: [],
+            serverTime: '',
+            timeZone: 'UTC',
+            logRetentionDays: 30,
+        });
         api.taskRuns.mockResolvedValue({ runs: [], next: null });
-        api.trickplayActivity.mockResolvedValue({ status: { state: 'idle', checked: 0, generated: 0, failed: 0, queued: 0, pending: 0, discovering: false, current: [], lastPassFinished: null }, running: [], queued: [], pending: [], recent: [] });
+        api.trickplayActivity.mockResolvedValue({
+            status: {
+                state: 'idle',
+                checked: 0,
+                generated: 0,
+                failed: 0,
+                queued: 0,
+                pending: 0,
+                discovering: false,
+                current: [],
+                lastPassFinished: null,
+            },
+            running: [],
+            queued: [],
+            pending: [],
+            recent: [],
+        });
         await open('/admin?section=tasks');
 
         expect(currentSubItem().querySelector('.tracking-badge')!.textContent).toBe('1');
@@ -335,7 +430,7 @@ describe('AdminPageComponent search', () => {
 
     const box = () => element.querySelector<HTMLInputElement>('.admin-search input')!;
     const results = () => [...element.querySelectorAll<HTMLAnchorElement>('.admin-search-results a')];
-    const titles = () => results().map(a => a.querySelector('.admin-search-title')!.textContent!.trim());
+    const titles = () => results().map((a) => a.querySelector('.admin-search-title')!.textContent!.trim());
     const count = () => element.querySelector('.admin-search-count')!.textContent!.trim();
     async function search(text: string): Promise<void> {
         type(box(), text);
@@ -352,9 +447,18 @@ describe('AdminPageComponent search', () => {
         await search('high RESOLUTION');
 
         expect(element.querySelector('.admin-nav h2')).toBeNull();
-        expect(titles().slice(0, 3)).toEqual(['Mark high and low resolution', 'Photos are high resolution from (pixels)', 'Videos are high resolution from (pixels)']);
-        expect(results()[0].querySelector('.admin-search-where')!.textContent).toBe('Interface › Browsing › Resolution and duration');
-        expect([...results()[0].querySelectorAll('.admin-search-title mark')].map(m => m.textContent)).toEqual(['high', 'resolution']);
+        expect(titles().slice(0, 3)).toEqual([
+            'Mark high and low resolution',
+            'Photos are high resolution from (pixels)',
+            'Videos are high resolution from (pixels)',
+        ]);
+        expect(results()[0].querySelector('.admin-search-where')!.textContent).toBe(
+            'Interface › Browsing › Resolution and duration',
+        );
+        expect([...results()[0].querySelectorAll('.admin-search-title mark')].map((m) => m.textContent)).toEqual([
+            'high',
+            'resolution',
+        ]);
         expect(count()).toBe(`${results().length} found`);
 
         await search('nothing like this');
@@ -388,7 +492,9 @@ describe('AdminPageComponent search', () => {
         expect(localStorage.getItem('sfe.settings.showAll')).toBeNull();
 
         await search('largest');
-        const largest = results().find(a => a.querySelector('.admin-search-where')!.textContent === 'Interface › Browsing › Listings')!;
+        const largest = results().find(
+            (a) => a.querySelector('.admin-search-where')!.textContent === 'Interface › Browsing › Listings',
+        )!;
         largest.click();
         await settle();
 
@@ -416,7 +522,10 @@ describe('AdminPageComponent search', () => {
 
     it('finds only in the sections the session has rights for', async () => {
         TestBed.resetTestingModule();
-        await setUp({ rights: [Rights.browse, Rights.ownPassword, Rights.ownPreferences], user: { id: 2, userName: 'alice', displayName: null, kind: 'user', isServerAdmin: false, local: true } });
+        await setUp({
+            rights: [Rights.browse, Rights.ownPassword, Rights.ownPreferences],
+            user: { id: 2, userName: 'alice', displayName: null, kind: 'user', isServerAdmin: false, local: true },
+        });
         await open('/admin');
 
         await search('password');
@@ -427,7 +536,10 @@ describe('AdminPageComponent search', () => {
 
     it('asks for no settings a user may not change (My account only: no refused request)', async () => {
         TestBed.resetTestingModule();
-        await setUp({ rights: [Rights.browse, Rights.ownPassword, Rights.ownPreferences], user: { id: 2, userName: 'alice', displayName: null, kind: 'user', isServerAdmin: false, local: true } });
+        await setUp({
+            rights: [Rights.browse, Rights.ownPassword, Rights.ownPreferences],
+            user: { id: 2, userName: 'alice', displayName: null, kind: 'user', isServerAdmin: false, local: true },
+        });
         await open('/admin?section=account');
 
         expect(api.settings).not.toHaveBeenCalled();
@@ -443,12 +555,14 @@ describe('AdminPageComponent search', () => {
         await settle();
 
         expect(url()).toBe('/admin?section=trickplay');
-        expect(TestBed.inject(Location).getState()).toEqual(expect.objectContaining({ sfeFromLibrary: true, sfeFromList: true }));
+        expect(TestBed.inject(Location).getState()).toEqual(
+            expect.objectContaining({ sfeFromLibrary: true, sfeFromList: true }),
+        );
     });
 });
 
 describe('AdminPageComponent opened directly', () => {
-    it('loads the configuration, and says when the server can\'t be reached', async () => {
+    it("loads the configuration, and says when the server can't be reached", async () => {
         api = mockApi();
         TestBed.configureTestingModule({ providers: adminPageProviders(api) });
         api.config.mockRejectedValue(new ApiError(0, 'The server is not reachable'));
@@ -464,7 +578,7 @@ describe('AdminPageComponent opened directly', () => {
 });
 
 describe('Interface › Appearance', () => {
-    it('picks this browser\'s theme next to the default one, right away and without saving', async () => {
+    it("picks this browser's theme next to the default one, right away and without saving", async () => {
         await setUp({ theme: 'dark' });
         await open('/admin?section=interface&page=appearance');
         const theme = element.querySelector<HTMLSelectElement>('#browser-theme')!;
@@ -508,10 +622,24 @@ describe('SystemSectionComponent', () => {
 });
 
 describe('KeepAliveStatusComponent', () => {
-    const view = (overrides: Partial<KeepAliveView> = {}): KeepAliveView => ({ mode: 'auto', intervalSeconds: 240, method: 'list', folders: [], ...overrides });
+    const view = (overrides: Partial<KeepAliveView> = {}): KeepAliveView => ({
+        mode: 'auto',
+        intervalSeconds: 240,
+        method: 'list',
+        folders: [],
+        ...overrides,
+    });
     const folder = (overrides: Partial<KeepAliveFolder> = {}): KeepAliveFolder => ({
-        path: '', isRoot: true, isNetwork: true, lastPing: '2026-10-22T10:00:00Z', durationMilliseconds: 14.4, error: null, failingSince: null, waiting: false,
-        method: 'list', ...overrides,
+        path: '',
+        isRoot: true,
+        isNetwork: true,
+        lastPing: '2026-10-22T10:00:00Z',
+        durationMilliseconds: 14.4,
+        error: null,
+        failingSince: null,
+        waiting: false,
+        method: 'list',
+        ...overrides,
     });
     const text = () => element.querySelector('.keep-alive-status')!.textContent!;
 
@@ -536,7 +664,17 @@ describe('KeepAliveStatusComponent', () => {
 
     it('shows the folders pinged, and those failing with why and since when', async () => {
         await setUp();
-        api.keepAlive.mockResolvedValue(view({ folders: [folder({ error: 'The network name cannot be found.', failingSince: '2026-10-22T09:00:00Z', durationMilliseconds: null })] }));
+        api.keepAlive.mockResolvedValue(
+            view({
+                folders: [
+                    folder({
+                        error: 'The network name cannot be found.',
+                        failingSince: '2026-10-22T09:00:00Z',
+                        durationMilliseconds: null,
+                    }),
+                ],
+            }),
+        );
         await open('/admin?section=keepAlive&page=status');
 
         expect(element.querySelector('.settings-status')!.getAttribute('data-state')).toBe('unavailable');
@@ -555,11 +693,19 @@ describe('KeepAliveStatusComponent', () => {
 
     it('lists more folders after the library folder, and says when a file was written', async () => {
         await setUp();
-        api.keepAlive.mockResolvedValue(view({ method: 'touch', folders: [folder({ method: 'touch' }), folder({ path: 'NAS/Photos', isRoot: false })] }));
+        api.keepAlive.mockResolvedValue(
+            view({
+                method: 'touch',
+                folders: [folder({ method: 'touch' }), folder({ path: 'NAS/Photos', isRoot: false })],
+            }),
+        );
         await open('/admin?section=keepAlive');
 
-        expect([...element.querySelectorAll('.keep-alive-name')].map(n => n.textContent)).toEqual(['Library folder', 'NAS/Photos']);
-        const details = [...element.querySelectorAll('.keep-alive-detail')].map(d => d.textContent!);
+        expect([...element.querySelectorAll('.keep-alive-name')].map((n) => n.textContent)).toEqual([
+            'Library folder',
+            'NAS/Photos',
+        ]);
+        const details = [...element.querySelectorAll('.keep-alive-detail')].map((d) => d.textContent!);
         expect(details[0]).toContain('file written');
         expect(details[1]).not.toContain('file written');
     });
@@ -578,7 +724,9 @@ describe('KeepAliveStatusComponent', () => {
 
     it('is only for those with its right', () => {
         const pages = (rights: string[]) =>
-            visibleSections(wanted => wanted.some(r => rights.includes(r))).find(s => s.id === 'keepAlive')?.subpages.map(p => p.id) ?? [];
+            visibleSections((wanted) => wanted.some((r) => rights.includes(r)))
+                .find((s) => s.id === 'keepAlive')
+                ?.subpages.map((p) => p.id) ?? [];
         expect(pages([Rights.keepAliveSettings])).toEqual(['status', 'settings']);
         expect(pages([Rights.serverSettings])).toEqual(['settings']);
         expect(pages([Rights.scanningSettings])).toEqual([]);
@@ -586,22 +734,43 @@ describe('KeepAliveStatusComponent', () => {
 });
 
 describe('AdminPageComponent by rights and levels', () => {
-    const alice = { id: 2, userName: 'alice', displayName: null, kind: 'user' as const, isServerAdmin: false, local: true };
+    const alice = {
+        id: 2,
+        userName: 'alice',
+        displayName: null,
+        kind: 'user' as const,
+        isServerAdmin: false,
+        local: true,
+    };
 
     /** The settings of a level with the state of some keys (the others editable, from the configuration). */
-    function view(level: SettingLevel, states: Record<string, Partial<SettingState>> = {}, values: SettingsValues = {}): SettingsView {
+    function view(
+        level: SettingLevel,
+        states: Record<string, Partial<SettingState>> = {},
+        values: SettingsValues = {},
+    ): SettingsView {
         const keys: Record<string, SettingState> = {};
         for (const [key, state] of Object.entries(states))
-            keys[key] = { scope: 'user', source: 'environment', editable: true, lockable: false, locked: false, lockedBy: null, inherited: null, ...state };
+            keys[key] = {
+                scope: 'user',
+                source: 'environment',
+                editable: true,
+                lockable: false,
+                locked: false,
+                lockedBy: null,
+                inherited: null,
+                ...state,
+            };
         return { values: { ...settingsValues(), ...values }, customized: false, level, keys };
     }
-
 
     it('shows only the sections the session has rights for', async () => {
         await setUp({ rights: [Rights.browse, Rights.ownPassword], user: alice });
         await open('/admin');
 
-        expect([...element.querySelectorAll('.admin-nav > ul > li > a')].map(a => a.querySelector('span')!.textContent)).toEqual(['My account']);
+        expect(
+            [...element.querySelectorAll('.admin-nav > ul > li > a')].map((a) => a.querySelector('span')!.textContent),
+        ).toEqual(['My account']);
         expect(heading()).toBe('My account');
         expect(element.querySelector('#password-current')).not.toBeNull();
     });
@@ -614,7 +783,7 @@ describe('AdminPageComponent by rights and levels', () => {
         expect(element.querySelector('.admin-nav')).toBeNull();
     });
 
-    it('shows a section\'s settings to whoever has its right, without the level choice', async () => {
+    it("shows a section's settings to whoever has its right, without the level choice", async () => {
         await setUp({ rights: [Rights.browse, Rights.playbackSettings], user: alice });
         api.settings.mockResolvedValue(view('tenant'));
         await open('/admin');
@@ -624,22 +793,24 @@ describe('AdminPageComponent by rights and levels', () => {
         expect(api.settings).toHaveBeenCalledWith('tenant');
     });
 
-    it('lets server administrators edit the library\'s settings or the server\'s', async () => {
+    it("lets server administrators edit the library's settings or the server's", async () => {
         await setUp();
-        api.settings.mockImplementation(async level => view(level ?? 'server'));
+        api.settings.mockImplementation(async (level) => view(level ?? 'server'));
         await open('/admin?section=playback');
         const tabs = () => [...element.querySelectorAll<HTMLButtonElement>('.settings-level [role=tab]')];
 
         expect(element.querySelector('.settings-level')!.getAttribute('role')).toBe('tablist');
-        expect(tabs().map(tab => tab.getAttribute('aria-selected'))).toEqual(['true', 'false']);
+        expect(tabs().map((tab) => tab.getAttribute('aria-selected'))).toEqual(['true', 'false']);
         expect(tabs()[0].textContent).toContain('This space (Library)');
-        expect(element.querySelector('sfe-settings-panel')!.getAttribute('aria-labelledby')).toBe('settings-level-tenant');
+        expect(element.querySelector('sfe-settings-panel')!.getAttribute('aria-labelledby')).toBe(
+            'settings-level-tenant',
+        );
         expect(api.settings).toHaveBeenLastCalledWith('tenant');
 
         tabs()[1].click();
         await settle();
 
-        expect(tabs().map(tab => tab.getAttribute('aria-selected'))).toEqual(['false', 'true']);
+        expect(tabs().map((tab) => tab.getAttribute('aria-selected'))).toEqual(['false', 'true']);
         expect(api.settings).toHaveBeenLastCalledWith('server');
         expect(localStorage.getItem('sfe.settings.level')).toBe('server');
 
@@ -678,12 +849,12 @@ describe('AdminPageComponent by rights and levels', () => {
         beforeEach(async () => {
             await setUp();
             views = { server: view('server', {}, seekOf(10)), tenant: view('tenant', {}, seekOf(12)) };
-            api.settings.mockImplementation(async level => views[level as 'server' | 'tenant']);
+            api.settings.mockImplementation(async (level) => views[level as 'server' | 'tenant']);
             api.saveSettingChanges.mockImplementation(async (_, level) => views[level as 'server' | 'tenant']);
             await open('/admin?section=playback');
         });
 
-        it('keeps a level\'s changes while the other shows, without asking, and loads it again on return', async () => {
+        it("keeps a level's changes while the other shows, without asking, and loads it again on return", async () => {
             const ask = vi.spyOn(window, 'confirm');
             await edit('20');
 
@@ -705,7 +876,7 @@ describe('AdminPageComponent by rights and levels', () => {
             expect(api.saveSettingChanges).not.toHaveBeenCalled();
         });
 
-        it('forgets a level\'s kept changes once it shows them unchanged', async () => {
+        it("forgets a level's kept changes once it shows them unchanged", async () => {
             await edit('20');
             await show('server');
             await show('tenant');
@@ -716,7 +887,7 @@ describe('AdminPageComponent by rights and levels', () => {
             expect(buttonNamed(element, 'Save')!.disabled).toBe(true);
         });
 
-        it('saves the changes of both levels in one go, the server\'s first, sending only what changed', async () => {
+        it("saves the changes of both levels in one go, the server's first, sending only what changed", async () => {
             await edit('20');
             await show('server');
             await edit('15');
@@ -737,8 +908,7 @@ describe('AdminPageComponent by rights and levels', () => {
         it('shows the level whose values are refused, with its errors and changes; the one saved before stays saved', async () => {
             const toast = vi.spyOn(TestBed.inject(ToastService), 'show');
             api.saveSettingChanges.mockImplementation(async (_, level) => {
-                if (level === 'tenant')
-                    throw new ApiError(400, 'x', { 'player.seekSeconds': ['Too long a step.'] });
+                if (level === 'tenant') throw new ApiError(400, 'x', { 'player.seekSeconds': ['Too long a step.'] });
                 return views.server;
             });
             await edit('20');
@@ -753,7 +923,9 @@ describe('AdminPageComponent by rights and levels', () => {
             expect(fieldError()).toBe('Too long a step.');
             expect(marked('server')).toBe(false);
             expect(marked('tenant')).toBe(true);
-            expect(toast).toHaveBeenCalledWith('Saved the settings of the whole server; those of this space need fixing.');
+            expect(toast).toHaveBeenCalledWith(
+                'Saved the settings of the whole server; those of this space need fixing.',
+            );
         });
 
         it('checks the numbers of the other level before sending anything, and shows them', async () => {
@@ -773,7 +945,11 @@ describe('AdminPageComponent by rights and levels', () => {
         it('drops a kept change the level can no longer make (locked above meanwhile)', async () => {
             await edit('20');
             await show('server');
-            views.tenant = view('tenant', { 'player.seekSeconds': { editable: false, lockedBy: 'server' } }, seekOf(10));
+            views.tenant = view(
+                'tenant',
+                { 'player.seekSeconds': { editable: false, lockedBy: 'server' } },
+                seekOf(10),
+            );
             await show('tenant');
 
             expect(seek().value).toBe('10');
@@ -788,7 +964,11 @@ describe('AdminPageComponent by rights and levels', () => {
             await show('tenant');
             element.querySelector<HTMLInputElement>('.settings-show-all input')!.click();
             await settle();
-            const lock = () => element.querySelector('#setting-player-loop')!.closest('.setting-check')!.querySelector<HTMLInputElement>('.setting-lock input');
+            const lock = () =>
+                element
+                    .querySelector('#setting-player-loop')!
+                    .closest('.setting-check')!
+                    .querySelector<HTMLInputElement>('.setting-lock input');
             lock()!.click();
             await settle();
             await show('server');
@@ -827,9 +1007,11 @@ describe('AdminPageComponent by rights and levels', () => {
             expect(unload.defaultPrevented).toBe(true);
         });
 
-        it('ignores a level\'s answer coming after another level was picked', async () => {
+        it("ignores a level's answer coming after another level was picked", async () => {
             const late = deferred<SettingsView>();
-            api.settings.mockImplementation(level => level === 'server' ? late.promise : Promise.resolve(views.tenant));
+            api.settings.mockImplementation((level) =>
+                level === 'server' ? late.promise : Promise.resolve(views.tenant),
+            );
             await show('server');
             await show('tenant');
 
@@ -843,23 +1025,34 @@ describe('AdminPageComponent by rights and levels', () => {
 
     it('says why a setting cannot change at this level, and locks those it may', async () => {
         await setUp();
-        api.settings.mockResolvedValue(view('tenant', {
-            'player.seekSeconds': { editable: false, lockedBy: 'environment' },
-            'player.loop': { lockable: true },
-            'dataServer': { scope: 'server', editable: false },
-        }));
+        api.settings.mockResolvedValue(
+            view('tenant', {
+                'player.seekSeconds': { editable: false, lockedBy: 'environment' },
+                'player.loop': { lockable: true },
+                dataServer: { scope: 'server', editable: false },
+            }),
+        );
         api.saveSettingChanges.mockResolvedValue(view('tenant', { 'player.loop': { lockable: true, locked: true } }));
         await open('/admin?section=playback&page=streaming');
         element.querySelector<HTMLInputElement>('.settings-show-all input')!.click();
         await settle();
-        expect(element.querySelector('#setting-dataServer')!.closest('.field')!.textContent).toContain('A setting of the whole server');
+        expect(element.querySelector('#setting-dataServer')!.closest('.field')!.textContent).toContain(
+            'A setting of the whole server',
+        );
         await open('/admin?section=playback');
 
         const seek = element.querySelector<HTMLInputElement>('#setting-player-seekSeconds')!;
         expect(seek.disabled).toBe(true);
-        expect(seek.closest('.field')!.querySelector('.setting-lock-note')!.textContent).toContain('server\'s configuration');
-        const lock = element.querySelector('#setting-player-loop')!.closest('.setting-check')!.querySelector<HTMLInputElement>('.setting-lock input')!;
-        expect(element.querySelector('#setting-player-loop')!.closest('.setting-check')!.textContent).toContain('Lock for users');
+        expect(seek.closest('.field')!.querySelector('.setting-lock-note')!.textContent).toContain(
+            "server's configuration",
+        );
+        const lock = element
+            .querySelector('#setting-player-loop')!
+            .closest('.setting-check')!
+            .querySelector<HTMLInputElement>('.setting-lock input')!;
+        expect(element.querySelector('#setting-player-loop')!.closest('.setting-check')!.textContent).toContain(
+            'Lock for users',
+        );
 
         lock.click();
         await settle();
@@ -867,9 +1060,12 @@ describe('AdminPageComponent by rights and levels', () => {
         buttonNamed(element, 'Save')!.click();
         await settle();
 
-        expect(api.saveSettingChanges).toHaveBeenCalledWith({ values: {}, lock: ['player.loop'], unlock: [] }, 'tenant');
+        expect(api.saveSettingChanges).toHaveBeenCalledWith(
+            { values: {}, lock: ['player.loop'], unlock: [] },
+            'tenant',
+        );
         expect(lock.checked).toBe(true);
-        expect(element.querySelector('.admin-savebar-status')!.textContent).toBe('Following the server\'s settings');
+        expect(element.querySelector('.admin-savebar-status')!.textContent).toBe("Following the server's settings");
     });
 });
 

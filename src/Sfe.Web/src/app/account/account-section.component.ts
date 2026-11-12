@@ -82,9 +82,11 @@ export class AccountSectionComponent {
     private readonly toasts = inject(ToastService);
 
     /** The tabs of settings-schema.ts holding preferences of users (all of them until the preferences are loaded). */
-    protected readonly tabs = computed(() => TABS
-        .filter(tab => !this.form.loaded() || tab.groups.some(group => !this.form.groupHidden(group)))
-        .map(tab => tab.id));
+    protected readonly tabs = computed(() =>
+        TABS.filter((tab) => !this.form.loaded() || tab.groups.some((group) => !this.form.groupHidden(group))).map(
+            (tab) => tab.id,
+        ),
+    );
 
     protected readonly current = signal('');
     protected readonly password = signal('');
@@ -98,8 +100,7 @@ export class AccountSectionComponent {
     constructor() {
         // The preferences load once shown (the section stays when moving to the password and back).
         effect(() => {
-            if (this.tab() !== 'password' && !untracked(this.form.loaded))
-                untracked(() => void this.form.load());
+            if (this.tab() !== 'password' && !untracked(this.form.loaded)) untracked(() => void this.form.load());
         });
     }
 
@@ -109,8 +110,7 @@ export class AccountSectionComponent {
 
     protected async changePassword(event: Event): Promise<void> {
         event.preventDefault();
-        if (this.mismatch())
-            return;
+        if (this.mismatch()) return;
         this.busy.set(true);
         this.passwordErrors.set({});
         try {
@@ -121,9 +121,12 @@ export class AccountSectionComponent {
             this.toasts.show('Password changed.');
         } catch (error) {
             if (error instanceof ApiError && error.errors)
-                this.passwordErrors.set(Object.fromEntries(Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')])));
-            else
-                this.toasts.error(`Could not change the password: ${(error as Error).message}`);
+                this.passwordErrors.set(
+                    Object.fromEntries(
+                        Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')]),
+                    ),
+                );
+            else this.toasts.error(`Could not change the password: ${(error as Error).message}`);
         } finally {
             this.busy.set(false);
         }

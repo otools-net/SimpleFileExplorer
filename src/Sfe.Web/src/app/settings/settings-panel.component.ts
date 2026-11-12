@@ -1,5 +1,17 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, inject, Injector, input, output, untracked, viewChild } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    effect,
+    inject,
+    Injector,
+    input,
+    output,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { ThemeChoice, ThemeService } from '../core/theme.service';
 import { checkedOf, valueOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
@@ -174,13 +186,19 @@ export class SettingsPanelComponent {
     private readonly injector = inject(Injector);
     private readonly trickplayStatus = viewChild(TrickplayStatusComponent);
 
-    protected readonly schema = computed(() => TABS.find(tab => tab.id === this.tab())!);
+    protected readonly schema = computed(() => TABS.find((tab) => tab.id === this.tab())!);
     /** In the simple view, a tab without any of its settings shows a way to the full view instead. */
-    protected readonly onlyAdvanced = computed(() => this.form.level() !== 'user' && !this.form.showAll() && !this.schema().groups.some(isSimpleGroup));
-    protected readonly lockLabel = computed(() => this.form.level() === 'server' ? 'Lock for spaces and users' : 'Lock for users');
-    protected readonly lockHint = computed(() => this.form.level() === 'server'
-        ? 'Spaces and users cannot change it: the value above applies everywhere'
-        : 'Users of the space cannot change it for themselves');
+    protected readonly onlyAdvanced = computed(
+        () => this.form.level() !== 'user' && !this.form.showAll() && !this.schema().groups.some(isSimpleGroup),
+    );
+    protected readonly lockLabel = computed(() =>
+        this.form.level() === 'server' ? 'Lock for spaces and users' : 'Lock for users',
+    );
+    protected readonly lockHint = computed(() =>
+        this.form.level() === 'server'
+            ? 'Spaces and users cannot change it: the value above applies everywhere'
+            : 'Users of the space cannot change it for themselves',
+    );
 
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;

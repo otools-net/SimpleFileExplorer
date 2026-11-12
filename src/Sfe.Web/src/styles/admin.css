@@ -1,12 +1,31 @@
 /* ---------- Administration page: sections sidebar and their sub-pages, save bar ---------- */
 
-sfe-admin-page { display: block; }
-sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sfe-video-streams { display: flex; flex-direction: column; gap: 14px; }
+sfe-admin-page {
+    display: block;
+}
+sfe-settings-panel,
+sfe-tag-list,
+sfe-trickplay-activity,
+sfe-system-section,
+sfe-video-streams {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
 
-.admin-topbar { gap: 8px; }
-.admin-title { margin: 0 0 0 6px; font-size: 16px; font-weight: 600; }
+.admin-topbar {
+    gap: 8px;
+}
+.admin-title {
+    margin: 0 0 0 6px;
+    font-size: 16px;
+    font-weight: 600;
+}
 
-.admin-layout { display: flex; align-items: flex-start; }
+.admin-layout {
+    display: flex;
+    align-items: flex-start;
+}
 
 .admin-nav {
     position: sticky;
@@ -25,11 +44,20 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
-.admin-search + h2 { margin-top: 0; }
-.admin-nav ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.admin-search + h2 {
+    margin-top: 0;
+}
+.admin-nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
 
 .admin-nav a {
     display: flex;
@@ -39,22 +67,57 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     border-radius: var(--radius-sm);
     color: var(--text-muted);
     font-weight: 600;
-    transition: background .15s, color .15s;
+    transition:
+        background 0.15s,
+        color 0.15s;
 }
-.admin-nav a .icon { width: 18px; height: 18px; }
-.admin-nav a:hover { background: var(--surface-2); color: var(--text); }
-.admin-nav a[aria-current="page"] { background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); color: var(--text); }
-.admin-nav a[aria-current="page"] .icon { color: var(--accent); }
-.admin-nav a.has-error { color: var(--danger); }
-.admin-nav a.open:not([aria-current]) { color: var(--text); }
-.admin-nav a.open:not([aria-current]) .icon { color: var(--accent); }
+.admin-nav a .icon {
+    width: 18px;
+    height: 18px;
+}
+.admin-nav a:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+.admin-nav a[aria-current='page'] {
+    background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+    color: var(--text);
+}
+.admin-nav a[aria-current='page'] .icon {
+    color: var(--accent);
+}
+.admin-nav a.has-error {
+    color: var(--danger);
+}
+.admin-nav a.open:not([aria-current]) {
+    color: var(--text);
+}
+.admin-nav a.open:not([aria-current]) .icon {
+    color: var(--accent);
+}
 
 /* The sub-pages of the open section, under it. */
-.admin-nav .admin-subnav { gap: 1px; margin: 2px 0 6px 19px; padding-left: 10px; border-left: 1px solid var(--border); }
-.admin-nav .admin-subnav a { gap: 8px; padding: 6px 10px; font-size: 13.5px; font-weight: 500; }
-.admin-nav .admin-subnav a[aria-current="page"] { font-weight: 600; }
-.admin-nav .admin-subnav .tracking-badge { margin-left: auto; }
-.admin-nav .admin-subnav .tracking-badge + .admin-mark { margin-left: 0; }
+.admin-nav .admin-subnav {
+    gap: 1px;
+    margin: 2px 0 6px 19px;
+    padding-left: 10px;
+    border-left: 1px solid var(--border);
+}
+.admin-nav .admin-subnav a {
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+}
+.admin-nav .admin-subnav a[aria-current='page'] {
+    font-weight: 600;
+}
+.admin-nav .admin-subnav .tracking-badge {
+    margin-left: auto;
+}
+.admin-nav .admin-subnav .tracking-badge + .admin-mark {
+    margin-left: 0;
+}
 
 /* The search box above the sections, and what it finds in their place. */
 .admin-search {
@@ -67,18 +130,61 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     background: var(--surface-2);
-    transition: border-color .15s, box-shadow .15s;
+    transition:
+        border-color 0.15s,
+        box-shadow 0.15s;
 }
-.admin-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
-.admin-search .icon { flex: none; width: 16px; height: 16px; }
-.admin-search input { flex: 1; min-width: 0; height: 100%; padding: 0 4px; border: 0; background: transparent; outline: none; }
+.admin-search:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.admin-search .icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+}
+.admin-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    outline: none;
+}
 /* Its own clear button, in every browser: the native one is hidden. */
-.admin-search input::-webkit-search-cancel-button { display: none; }
-.admin-search-clear { flex: none; width: 26px; height: 26px; color: var(--text-muted); }
-.admin-search-clear .icon { width: 14px; height: 14px; }
-.admin-search-count { margin: 0 10px 8px; color: var(--text-muted); font-size: 12.5px; }
-.admin-nav .admin-search-results a { display: flex; flex-direction: column; align-items: stretch; gap: 1px; min-height: 0; color: var(--text); font-weight: 600; }
-.admin-search-where { color: var(--text-muted); font-size: 11.5px; font-weight: 500; }
+.admin-search input::-webkit-search-cancel-button {
+    display: none;
+}
+.admin-search-clear {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    color: var(--text-muted);
+}
+.admin-search-clear .icon {
+    width: 14px;
+    height: 14px;
+}
+.admin-search-count {
+    margin: 0 10px 8px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+}
+.admin-nav .admin-search-results a {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1px;
+    min-height: 0;
+    color: var(--text);
+    font-weight: 600;
+}
+.admin-search-where {
+    color: var(--text-muted);
+    font-size: 11.5px;
+    font-weight: 500;
+}
 .admin-search-text {
     display: -webkit-box;
     overflow: hidden;
@@ -89,18 +195,40 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
 }
-.admin-search-results mark { border-radius: 2px; background: color-mix(in srgb, var(--accent) 28%, transparent); color: inherit; }
+.admin-search-results mark {
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
+    color: inherit;
+}
 
 /* The setting opened from the search flashes once. */
 @keyframes setting-found {
-    from { background: color-mix(in srgb, var(--accent) 22%, transparent); box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 22%, transparent); }
-    to { background: transparent; box-shadow: 0 0 0 8px transparent; }
+    from {
+        background: color-mix(in srgb, var(--accent) 22%, transparent);
+        box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+    to {
+        background: transparent;
+        box-shadow: 0 0 0 8px transparent;
+    }
 }
-.setting-found { border-radius: var(--radius-sm); animation: setting-found 2s ease-out; }
+.setting-found {
+    border-radius: var(--radius-sm);
+    animation: setting-found 2s ease-out;
+}
 
 /* A section with settings changed and not saved yet (or needing fixing). */
-.admin-mark { flex: none; width: 7px; height: 7px; margin-left: auto; border-radius: 50%; background: var(--accent); }
-.admin-mark.error { background: var(--danger); }
+.admin-mark {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    margin-left: auto;
+    border-radius: 50%;
+    background: var(--accent);
+}
+.admin-mark.error {
+    background: var(--danger);
+}
 
 .admin-main {
     display: flex;
@@ -113,30 +241,88 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     padding: 24px 32px 0;
 }
 
-.admin-head h2 { margin: 0; font-size: 22px; }
+.admin-head h2 {
+    margin: 0;
+    font-size: 22px;
+}
 /* Breadcrumbs: Administration, group, section, sub-page; the last one is the page shown. */
-.admin-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; margin: 0 0 4px; padding: 0; list-style: none; font-size: 12.5px; color: var(--text-muted); }
-.admin-crumbs li { display: flex; align-items: center; min-width: 0; }
-.admin-crumbs li + li::before { content: "\203A"; margin: 0 7px; opacity: .7; }
-.admin-crumbs a, .admin-crumb-link { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-decoration: none; cursor: pointer; }
-.admin-crumbs a:hover, .admin-crumb-link:hover { color: var(--accent); text-decoration: underline; }
-.admin-crumbs [aria-current="page"] { overflow: hidden; color: var(--accent); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.admin-head p { margin: 4px 0 0; color: var(--text-muted); }
+.admin-crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 0 0 4px;
+    padding: 0;
+    list-style: none;
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+.admin-crumbs li {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+.admin-crumbs li + li::before {
+    content: '\203A';
+    margin: 0 7px;
+    opacity: 0.7;
+}
+.admin-crumbs a,
+.admin-crumb-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+.admin-crumbs a:hover,
+.admin-crumb-link:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+.admin-crumbs [aria-current='page'] {
+    overflow: hidden;
+    color: var(--accent);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.admin-head p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+}
 
-.admin-panel { display: flex; flex: 1; flex-direction: column; gap: 14px; padding-bottom: 28px; }
+.admin-panel {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 28px;
+}
 
 /* The overview (no section open): the sections as cards, by group, each with links to its sub-pages. */
-.admin-overview { display: flex; flex: 1; flex-direction: column; gap: 22px; padding-bottom: 28px; }
+.admin-overview {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 22px;
+    padding-bottom: 28px;
+}
 .admin-overview-group h3 {
     margin: 0 0 10px;
     scroll-margin-top: calc(var(--topbar-h) + 16px);
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
-.admin-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.admin-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
 .admin-card {
     display: flex;
     flex-direction: column;
@@ -145,15 +331,46 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
-    transition: border-color .15s;
+    transition: border-color 0.15s;
 }
-.admin-card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
-.admin-card-title { display: flex; align-items: center; gap: 10px; color: var(--text); font-size: 15px; font-weight: 600; text-decoration: none; }
-.admin-card-title:hover { color: var(--accent); }
-.admin-card-title .icon { flex: none; width: 20px; height: 20px; color: var(--accent); }
-.admin-card.has-error .admin-card-title { color: var(--danger); }
-.admin-card p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.4; }
-.admin-card-pages { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; padding: 0; list-style: none; }
+.admin-card:hover {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.admin-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.admin-card-title:hover {
+    color: var(--accent);
+}
+.admin-card-title .icon {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    color: var(--accent);
+}
+.admin-card.has-error .admin-card-title {
+    color: var(--danger);
+}
+.admin-card p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.4;
+}
+.admin-card-pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
 .admin-card-pages a {
     display: inline-block;
     padding: 3px 10px;
@@ -163,10 +380,20 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     font-size: 12.5px;
     font-weight: 500;
     text-decoration: none;
-    transition: border-color .15s, color .15s, background .15s;
+    transition:
+        border-color 0.15s,
+        color 0.15s,
+        background 0.15s;
 }
-.admin-card-pages a:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface-2)); color: var(--text); }
-.admin-card-pages a.has-error { border-color: var(--danger); color: var(--danger); }
+.admin-card-pages a:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+    color: var(--text);
+}
+.admin-card-pages a.has-error {
+    border-color: var(--danger);
+    color: var(--danger);
+}
 
 .admin-savebar {
     position: sticky;
@@ -182,28 +409,74 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
     background: color-mix(in srgb, var(--surface-2) 92%, transparent);
     backdrop-filter: saturate(1.4) blur(14px);
 }
-.admin-savebar .settings-summary { flex-basis: 100%; }
-.admin-savebar-status { color: var(--text-muted); font-size: 13px; }
-.admin-savebar.changed .admin-savebar-status { color: var(--accent); font-weight: 600; }
+.admin-savebar .settings-summary {
+    flex-basis: 100%;
+}
+.admin-savebar-status {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+.admin-savebar.changed .admin-savebar-status {
+    color: var(--accent);
+    font-weight: 600;
+}
 
 /* System: the server's facts. */
-.system-facts { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; font-size: 13px; }
-.system-facts > div { display: contents; }
-.system-facts dt { color: var(--text-muted); }
-.system-facts dd { margin: 0; overflow-wrap: anywhere; }
-.system-ffmpeg { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
-.system-ffmpeg .field-hint { flex-basis: 100%; }
-.system-badge { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
-.system-badge .icon { width: 14px; height: 14px; stroke-width: 2.4; }
-.system-badge.found { color: #4caf7d; }
-.system-badge.missing { color: var(--danger); }
+.system-facts {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 16px;
+    margin: 0;
+    font-size: 13px;
+}
+.system-facts > div {
+    display: contents;
+}
+.system-facts dt {
+    color: var(--text-muted);
+}
+.system-facts dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.system-ffmpeg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+}
+.system-ffmpeg .field-hint {
+    flex-basis: 100%;
+}
+.system-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+.system-badge .icon {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.4;
+}
+.system-badge.found {
+    color: #4caf7d;
+}
+.system-badge.missing {
+    color: var(--danger);
+}
 
 /* Shown on phones only. */
-.admin-nav-description, .admin-nav-chevron { display: none; }
+.admin-nav-description,
+.admin-nav-chevron {
+    display: none;
+}
 
 @media (max-width: 760px) {
     /* The page without a section lists the sections (with what each holds); a section is a page of its own. */
-    .admin-layout { display: block; }
+    .admin-layout {
+        display: block;
+    }
     .admin-nav {
         position: static;
         width: auto;
@@ -213,10 +486,20 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
         border-right: 0;
         background: none;
     }
-    .admin-nav h2 { margin: 20px 4px 8px; }
-    .admin-search { height: 42px; margin: 0; background: var(--surface); }
-    .admin-search-count { margin: 14px 4px 8px; }
-    .admin-nav .admin-search-results a { padding: 10px 14px; }
+    .admin-nav h2 {
+        margin: 20px 4px 8px;
+    }
+    .admin-search {
+        height: 42px;
+        margin: 0;
+        background: var(--surface);
+    }
+    .admin-search-count {
+        margin: 14px 4px 8px;
+    }
+    .admin-nav .admin-search-results a {
+        padding: 10px 14px;
+    }
     .admin-nav ul {
         gap: 0;
         overflow: hidden;
@@ -224,7 +507,9 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
         border-radius: var(--radius);
         background: var(--surface);
     }
-    .admin-nav li + li { border-top: 1px solid var(--border); }
+    .admin-nav li + li {
+        border-top: 1px solid var(--border);
+    }
     .admin-nav a {
         display: grid;
         grid-template-columns: auto 1fr auto auto;
@@ -235,8 +520,15 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
         border-radius: 0;
         color: var(--text);
     }
-    .admin-nav a > .icon:first-child { grid-row: 1 / span 2; width: 20px; height: 20px; color: var(--accent); }
-    .admin-nav a > span:not(.admin-mark) { grid-column: 2; }
+    .admin-nav a > .icon:first-child {
+        grid-row: 1 / span 2;
+        width: 20px;
+        height: 20px;
+        color: var(--accent);
+    }
+    .admin-nav a > span:not(.admin-mark) {
+        grid-column: 2;
+    }
     .admin-nav-description {
         display: block;
         grid-column: 2;
@@ -245,15 +537,38 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
         font-weight: 400;
         line-height: 1.35;
     }
-    .admin-nav .admin-mark { grid-column: 3; grid-row: 1 / span 2; margin: 0; }
-    .admin-nav-chevron { display: block; grid-column: 4; grid-row: 1 / span 2; width: 18px; height: 18px; color: var(--text-muted); }
-    .admin-nav a.has-error > span:not(.admin-mark) { color: var(--danger); }
+    .admin-nav .admin-mark {
+        grid-column: 3;
+        grid-row: 1 / span 2;
+        margin: 0;
+    }
+    .admin-nav-chevron {
+        display: block;
+        grid-column: 4;
+        grid-row: 1 / span 2;
+        width: 18px;
+        height: 18px;
+        color: var(--text-muted);
+    }
+    .admin-nav a.has-error > span:not(.admin-mark) {
+        color: var(--danger);
+    }
 
-    .admin-layout.section-list .admin-main { min-height: 0; padding-top: 0; }
-    .admin-main { min-height: calc(100dvh - var(--topbar-h)); padding: 16px 12px 0; }
-    .admin-head h2 { font-size: 19px; }
+    .admin-layout.section-list .admin-main {
+        min-height: 0;
+        padding-top: 0;
+    }
+    .admin-main {
+        min-height: calc(100dvh - var(--topbar-h));
+        padding: 16px 12px 0;
+    }
+    .admin-head h2 {
+        font-size: 19px;
+    }
     /* No room for the group, which the list of sections shows anyway. */
-    .admin-crumbs .admin-crumb-group { display: none; }
+    .admin-crumbs .admin-crumb-group {
+        display: none;
+    }
     /* No sidebar: the sub-pages are chips above the page, one line that scrolls sideways (the one shown brought into
        view), from edge to edge of the screen: a chip cut at the edge shows there are more. */
     .admin-chips {
@@ -265,8 +580,12 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
         scrollbar-width: none;
         overscroll-behavior-x: contain;
     }
-    .admin-chips::-webkit-scrollbar { display: none; }
-    .admin-chips .settings-tab { white-space: nowrap; }
+    .admin-chips::-webkit-scrollbar {
+        display: none;
+    }
+    .admin-chips .settings-tab {
+        white-space: nowrap;
+    }
     .admin-chips .settings-tab {
         padding: 6px 12px;
         border: 1px solid var(--border);
@@ -274,28 +593,85 @@ sfe-settings-panel, sfe-tag-list, sfe-trickplay-activity, sfe-system-section, sf
         border-radius: 999px;
         background: var(--surface);
     }
-    .admin-chips .settings-tab[aria-selected="true"] {
+    .admin-chips .settings-tab[aria-selected='true'] {
         border-color: var(--accent);
         background: color-mix(in srgb, var(--accent) 16%, var(--surface-2));
     }
-    .admin-savebar { margin: 0 -12px; padding-inline: 12px; }
+    .admin-savebar {
+        margin: 0 -12px;
+        padding-inline: 12px;
+    }
 }
 
 /* ---------- Scanning › Excluded folders (exclusions-section.component.ts) ---------- */
 
-.exclusions-head { display: flex; align-items: flex-start; gap: 16px; }
-.exclusions-head .settings-intro { flex: 1; margin-top: 0; }
-.exclusions-head .button { flex: none; }
-.exclusions-form { display: grid; gap: 12px; margin-bottom: 16px; }
-.exclusions-kinds { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; padding: 0; border: 0; }
-.exclusions-kinds legend { margin-bottom: 6px; }
-.exclusions-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
-.exclusions-table { overflow-x: auto; }
-.exclusions-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.exclusions-table th, .exclusions-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
-.exclusions-table th { color: var(--text-muted); font-size: 12px; font-weight: 600; }
-.exclusions-table td:not(:first-child), .exclusions-table th:not(:first-child) { width: 1%; text-align: center; white-space: nowrap; }
-.exclusions-table td:first-child { overflow-wrap: anywhere; }
-.exclusions-table tr.missing td:first-child > span:first-child { color: var(--text-muted); }
-.exclusions-table .exclusion-chip { margin-left: 8px; }
-.exclusions-empty { margin: 8px 0; }
+.exclusions-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+.exclusions-head .settings-intro {
+    flex: 1;
+    margin-top: 0;
+}
+.exclusions-head .button {
+    flex: none;
+}
+.exclusions-form {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.exclusions-kinds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.exclusions-kinds legend {
+    margin-bottom: 6px;
+}
+.exclusions-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.exclusions-table {
+    overflow-x: auto;
+}
+.exclusions-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.exclusions-table th,
+.exclusions-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+}
+.exclusions-table th {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+.exclusions-table td:not(:first-child),
+.exclusions-table th:not(:first-child) {
+    width: 1%;
+    text-align: center;
+    white-space: nowrap;
+}
+.exclusions-table td:first-child {
+    overflow-wrap: anywhere;
+}
+.exclusions-table tr.missing td:first-child > span:first-child {
+    color: var(--text-muted);
+}
+.exclusions-table .exclusion-chip {
+    margin-left: 8px;
+}
+.exclusions-empty {
+    margin: 8px 0;
+}

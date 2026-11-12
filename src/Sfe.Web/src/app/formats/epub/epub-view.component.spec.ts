@@ -3,7 +3,14 @@ import { ApiMock, item, loadConfig, mockApi, settle, testProviders } from '../..
 import { EPUB_FORMAT, FILE_VIEW_HOST } from '../formats';
 import { READING_KEY } from '../reading/reading.service';
 import { bookToken, EPUB_LOADER, EpubEvents, EpubMode, EpubOptions, EpubStyle } from './epub-document';
-import { EPUB_MODE_KEY, EPUB_PLACES_KEY, EPUB_TOC_KEY, EpubViewComponent, readPlace, writePlace } from './epub-view.component';
+import {
+    EPUB_MODE_KEY,
+    EPUB_PLACES_KEY,
+    EPUB_TOC_KEY,
+    EpubViewComponent,
+    readPlace,
+    writePlace,
+} from './epub-view.component';
 
 /** A book as the view sees it, its moves recorded. */
 function fakeHandle() {
@@ -59,8 +66,7 @@ describe('EpubViewComponent', () => {
     }
 
     beforeEach(async () => {
-        for (const key of KEYS)
-            localStorage.removeItem(key);
+        for (const key of KEYS) localStorage.removeItem(key);
         api = mockApi();
         opened = [];
         failure = null;
@@ -68,21 +74,21 @@ describe('EpubViewComponent', () => {
         const loader = async (stage: HTMLElement, url: string, options: EpubOptions, given: EpubEvents) => {
             events = given;
             opened.push({ stage, url, options });
-            if (failure)
-                throw failure;
+            if (failure) throw failure;
             return handle;
         };
         TestBed.configureTestingModule({
-            providers: testProviders(api,
+            providers: testProviders(
+                api,
                 { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => true } },
-                { provide: EPUB_LOADER, useValue: loader }),
+                { provide: EPUB_LOADER, useValue: loader },
+            ),
         });
         await loadConfig(api);
     });
 
     afterEach(() => {
-        for (const key of KEYS)
-            localStorage.removeItem(key);
+        for (const key of KEYS) localStorage.removeItem(key);
         fixture?.destroy();
         TestBed.resetTestingModule();
     });
@@ -146,7 +152,13 @@ describe('EpubViewComponent', () => {
     it('shows how far, the chapter, and opens again where it was read', async () => {
         await show();
 
-        events.relocated({ cfi: 'epubcfi(/6/4!/4/2/1:0)', href: 'Text/two.xhtml', percentage: 0.42, atStart: false, atEnd: false });
+        events.relocated({
+            cfi: 'epubcfi(/6/4!/4/2/1:0)',
+            href: 'Text/two.xhtml',
+            percentage: 0.42,
+            atStart: false,
+            atEnd: false,
+        });
         await stable();
         expect(element.querySelector('[data-progress]')!.textContent).toBe('42 %');
         expect(element.querySelector('[data-chapter]')!.textContent).toBe('Night at the hut');
@@ -163,7 +175,7 @@ describe('EpubViewComponent', () => {
         element.querySelector<HTMLButtonElement>('[data-toc]')!.click();
         await stable();
         const links = [...element.querySelectorAll<HTMLAnchorElement>('.epub-toc a')];
-        expect(links.map(link => link.textContent)).toEqual(['The climb', 'Night at the hut', 'Storm']);
+        expect(links.map((link) => link.textContent)).toEqual(['The climb', 'Night at the hut', 'Storm']);
         links[2].click();
 
         expect(handle.display).toHaveBeenCalledWith('Text/two.xhtml#storm');
@@ -179,8 +191,7 @@ describe('EpubViewComponent', () => {
     });
 
     it('remembers the latest hundred books only', () => {
-        for (let index = 0; index < 101; index++)
-            writePlace(`Books/${index}.epub`, `epubcfi(/6/${index})`);
+        for (let index = 0; index < 101; index++) writePlace(`Books/${index}.epub`, `epubcfi(/6/${index})`);
 
         expect(readPlace('Books/0.epub')).toBeNull();
         expect(readPlace('Books/100.epub')).toBe('epubcfi(/6/100)');
@@ -195,7 +206,7 @@ describe('EpubViewComponent', () => {
         expect(element.querySelector('.text-message a')!.getAttribute('href')).toContain('download=true');
     });
 
-    it('writes the book\'s path as the server reads it', () => {
+    it("writes the book's path as the server reads it", () => {
         expect(bookToken('Books/Hut stories.epub')).toBe('Qm9va3MvSHV0IHN0b3JpZXMuZXB1Yg');
         expect(bookToken('Libros/Año?.epub')).not.toMatch(/[+/=]/);
     });

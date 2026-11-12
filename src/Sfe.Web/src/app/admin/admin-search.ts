@@ -29,38 +29,63 @@ export const searchWords = (query: string) => normalize(query).split(/\s+/).filt
 
 /** Everything of a setting a search looks in, besides its title. */
 function fieldText(field: SettingField, group: SettingGroup): string[] {
-    const choices = field.type === 'select' ? field.options.map(option => option[1])
-        : field.type === 'preset' ? field.presets.map(preset => preset[0]) : [];
+    const choices =
+        field.type === 'select'
+            ? field.options.map((option) => option[1])
+            : field.type === 'preset'
+              ? field.presets.map((preset) => preset[0])
+              : [];
     return [field.hint, field.key, group.title, group.hint ?? '', ...choices];
 }
 
 /** Matches of `query` among `sections` (those the session sees), best first; the page lists `ADMIN_SEARCH_LIMIT` of them. */
 export function searchAdmin(query: string, sections: AdminSection[]): AdminSearchResult[] {
     const words = searchWords(query);
-    if (!words.length)
-        return [];
+    if (!words.length) return [];
     const titled: AdminSearchResult[] = [];
     const others: AdminSearchResult[] = [];
     const add = (result: AdminSearchResult, ...more: string[]) => {
         const title = normalize(result.title);
         const all = normalize([result.title, result.where, ...more].join('\n'));
-        if (words.every(word => title.includes(word)))
-            titled.push(result);
-        else if (words.every(word => all.includes(word)))
-            others.push(result);
+        if (words.every((word) => title.includes(word))) titled.push(result);
+        else if (words.every((word) => all.includes(word))) others.push(result);
     };
     for (const section of sections) {
         const single = section.subpages.length === 1;
-        add({ section, subpage: section.subpages[0], title: section.title, where: section.group, text: section.description }, section.description);
+        add(
+            {
+                section,
+                subpage: section.subpages[0],
+                title: section.title,
+                where: section.group,
+                text: section.description,
+            },
+            section.description,
+        );
         for (const subpage of section.subpages) {
             const where = single ? section.title : `${section.title} › ${subpage.title}`;
             if (!single)
-                add({ section, subpage, title: subpage.title, where: section.title, text: subpage.description ?? section.description });
-            const tab = subpage.settings ? TABS.find(t => t.id === subpage.settings) : undefined;
+                add({
+                    section,
+                    subpage,
+                    title: subpage.title,
+                    where: section.title,
+                    text: subpage.description ?? section.description,
+                });
+            const tab = subpage.settings ? TABS.find((t) => t.id === subpage.settings) : undefined;
             for (const group of tab?.groups ?? [])
                 for (const field of group.fields)
-                    add({ section, subpage, setting: field.key, title: field.label, where: `${where} › ${group.title}`, text: field.hint },
-                        ...fieldText(field, group));
+                    add(
+                        {
+                            section,
+                            subpage,
+                            setting: field.key,
+                            title: field.label,
+                            where: `${where} › ${group.title}`,
+                            text: field.hint,
+                        },
+                        ...fieldText(field, group),
+                    );
         }
     }
     return [...titled, ...others];
@@ -69,23 +94,22 @@ export function searchAdmin(query: string, sections: AdminSection[]): AdminSearc
 /** `text` cut into the parts matching one of `words` and the others, to mark the first ones. */
 export function markWords(text: string, words: string[]): { text: string; match: boolean }[] {
     // Normalizing keeps the length of the usual letters (é becomes e plus a mark, removed): compare letter by letter.
-    const plain = [...text].map(letter => normalize(letter));
+    const plain = [...text].map((letter) => normalize(letter));
     const matched = new Array<boolean>(plain.length).fill(false);
     const joined = plain.join('');
     // Positions in `joined` back to letters of `text`.
     const letterAt: number[] = [];
-    plain.forEach((part, index) => { for (let i = 0; i < part.length; i++) letterAt.push(index); });
+    plain.forEach((part, index) => {
+        for (let i = 0; i < part.length; i++) letterAt.push(index);
+    });
     for (const word of words)
         for (let at = joined.indexOf(word); at >= 0; at = joined.indexOf(word, at + word.length))
-            for (let i = at; i < at + word.length; i++)
-                matched[letterAt[i]] = true;
+            for (let i = at; i < at + word.length; i++) matched[letterAt[i]] = true;
     const parts: { text: string; match: boolean }[] = [];
     [...text].forEach((letter, index) => {
         const last = parts[parts.length - 1];
-        if (last && last.match === matched[index])
-            last.text += letter;
-        else
-            parts.push({ text: letter, match: matched[index] });
+        if (last && last.match === matched[index]) last.text += letter;
+        else parts.push({ text: letter, match: matched[index] });
     });
     return parts;
 }

@@ -20,70 +20,258 @@
     background: var(--surface);
     box-shadow: var(--shadow);
 }
-.account-card.wide { max-width: 560px; }
+.account-card.wide {
+    max-width: 560px;
+}
 
-.account-head { display: flex; flex-direction: column; gap: 10px; }
-.account-head h1 { margin: 0; font-size: 22px; font-weight: 600; }
+.account-head {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.account-head h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+}
 
-.account-form { display: flex; flex-direction: column; gap: 14px; }
-.account-form p, .account-steps p { margin: 0; line-height: 1.5; }
-.account-submit { align-self: flex-start; }
+.account-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.account-form p,
+.account-steps p {
+    margin: 0;
+    line-height: 1.5;
+}
+.account-submit {
+    align-self: flex-start;
+}
 
-.account-guest { display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border); }
-.account-guest h2 { margin: 0; color: var(--text-muted); font-size: 13px; font-weight: 600; }
-.account-guest-list { display: flex; flex-wrap: wrap; gap: 8px; }
-.account-guest-list .button .icon { fill: var(--folder); stroke: none; }
+.account-guest {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+.account-guest h2 {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+.account-guest-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.account-guest-list .button .icon {
+    fill: var(--folder);
+    stroke: none;
+}
 
-.account-foot { margin: 0; }
-.account-foot a { color: var(--accent); }
+.account-foot {
+    margin: 0;
+}
+.account-foot a {
+    color: var(--accent);
+}
 
-.account-steps { display: flex; flex-direction: column; gap: 12px; }
-.account-steps h2 { margin: 6px 0 0; font-size: 15px; font-weight: 600; }
-.account-steps details { color: var(--text-muted); font-size: 13px; }
-.account-steps summary { cursor: pointer; }
-.account-steps dl { margin: 10px 0 0; }
-.account-steps dt { margin-top: 8px; color: var(--text); font-weight: 600; }
-.account-steps dd { margin: 2px 0 0; line-height: 1.5; }
-.account-steps .button { align-self: flex-start; }
+.account-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.account-steps h2 {
+    margin: 6px 0 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+.account-steps details {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+.account-steps summary {
+    cursor: pointer;
+}
+.account-steps dl {
+    margin: 10px 0 0;
+}
+.account-steps dt {
+    margin-top: 8px;
+    color: var(--text);
+    font-weight: 600;
+}
+.account-steps dd {
+    margin: 2px 0 0;
+    line-height: 1.5;
+}
+.account-steps .button {
+    align-self: flex-start;
+}
 /* The steps of the setup code: laid out by the page's .account-steps. */
-.setup-code-steps { display: contents; }
+.setup-code-steps {
+    display: contents;
+}
 
 /* The setup's steps: which one of how many, and Back / Next under each. */
-.setup-progress { margin: 0; color: var(--text-muted); font-size: 13px; }
-.setup-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+.setup-progress {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+.setup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+}
 
 /* ---------- Installation settings (setup page, Administration > System > Installation) ---------- */
 
-.installation-form { display: flex; flex-direction: column; gap: 14px; }
-.installation-form fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
-.installation-form legend { padding: 0; }
-.installation-form .field-hint code, .installation-locked code { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
-.installation-network, .installation-mode { display: flex; flex-direction: column; gap: 8px; }
-.installation-mode .check:has(input:disabled) { opacity: .6; }
-.installation-port { max-width: 160px; }
-.installation-locked, .installation-local { display: flex; flex-direction: column; gap: 2px; margin: 0; }
-.installation-ffmpeg { display: flex; flex-direction: column; gap: 6px; }
-.installation-ffmpeg .system-ffmpeg { margin: 0; font-size: 13px; }
-.installation-ffmpeg-path { display: flex; gap: 8px; }
-.installation-ffmpeg-path input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 12px; }
-.folder-picker-place .link-button { font-weight: 600; }
-.installation-unlock { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
-.installation-unlock .field { flex: 1 1 220px; max-width: 320px; }
-.installation-warning, .installation-restart { margin: 0 0 12px; }
-.installation-restart { color: var(--accent); }
+.installation-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.installation-form fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+.installation-form legend {
+    padding: 0;
+}
+.installation-form .field-hint code,
+.installation-locked code {
+    font-family: var(--mono);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+.installation-network,
+.installation-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.installation-mode .check:has(input:disabled) {
+    opacity: 0.6;
+}
+.installation-port {
+    max-width: 160px;
+}
+.installation-locked,
+.installation-local {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+}
+.installation-ffmpeg {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.installation-ffmpeg .system-ffmpeg {
+    margin: 0;
+    font-size: 13px;
+}
+.installation-ffmpeg-path {
+    display: flex;
+    gap: 8px;
+}
+.installation-ffmpeg-path input {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--mono);
+    font-size: 12px;
+}
+.folder-picker-place .link-button {
+    font-weight: 600;
+}
+.installation-unlock {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px;
+}
+.installation-unlock .field {
+    flex: 1 1 220px;
+    max-width: 320px;
+}
+.installation-warning,
+.installation-restart {
+    margin: 0 0 12px;
+}
+.installation-restart {
+    color: var(--accent);
+}
 
 /* ---------- Update page (after an upgrade): the changes since the installed version, a backup, the update ---------- */
 
-.migration-card { max-width: 680px; }
-.migration-card > p { margin: 0; line-height: 1.5; }
-.migration-card .form-error p { margin: 0; }
-.migration-changes { display: flex; flex-direction: column; gap: 4px; max-height: 50vh; overflow: auto; padding: 12px 14px;
-    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
-.migration-changes h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
-.migration-version h3 { margin: 10px 0 0; font-size: 14px; font-weight: 600; }
-.migration-version h4 { margin: 6px 0 0; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-.migration-version ul, .migration-log { margin: 4px 0 0; padding-left: 20px; line-height: 1.5; }
-.migration-version code { font-size: 12px; }
-.migration-backup { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-.migration-running { display: flex; align-items: center; gap: 10px; }
-.migration-log { color: var(--text-muted); font-size: 13px; }
+.migration-card {
+    max-width: 680px;
+}
+.migration-card > p {
+    margin: 0;
+    line-height: 1.5;
+}
+.migration-card .form-error p {
+    margin: 0;
+}
+.migration-changes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 50vh;
+    overflow: auto;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+}
+.migration-changes h2 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 600;
+}
+.migration-version h3 {
+    margin: 10px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+.migration-version h4 {
+    margin: 6px 0 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.migration-version ul,
+.migration-log {
+    margin: 4px 0 0;
+    padding-left: 20px;
+    line-height: 1.5;
+}
+.migration-version code {
+    font-size: 12px;
+}
+.migration-backup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+.migration-running {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.migration-log {
+    color: var(--text-muted);
+    font-size: 13px;
+}

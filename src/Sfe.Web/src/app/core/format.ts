@@ -6,8 +6,7 @@ const numberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1
 const units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
 export function formatSize(bytes: number | null | undefined): string {
-    if (bytes === null || bytes === undefined)
-        return '';
+    if (bytes === null || bytes === undefined) return '';
     let value = bytes;
     let unit = 0;
     while (value >= 1024 && unit < units.length - 1) {
@@ -32,8 +31,7 @@ export function formatTime(value: string): string {
 
 /** Media position or length: "1:05", "1:02:03". */
 export function formatDuration(seconds: number): string {
-    if (!Number.isFinite(seconds) || seconds < 0)
-        return '0:00';
+    if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
     const total = Math.floor(seconds);
     const hours = Math.floor(total / 3600);
     const minutes = Math.floor(total / 60) % 60;
@@ -46,7 +44,11 @@ export function formatElapsed(seconds: number): string {
     const total = Math.max(0, Math.round(seconds));
     const hours = Math.floor(total / 3600);
     const minutes = Math.floor(total / 60) % 60;
-    return hours ? `${hours}h ${minutes}m` : minutes ? `${minutes}m ${String(total % 60).padStart(2, '0')}s` : `${total}s`;
+    return hours
+        ? `${hours}h ${minutes}m`
+        : minutes
+          ? `${minutes}m ${String(total % 60).padStart(2, '0')}s`
+          : `${total}s`;
 }
 
 export function plural(count: number, singular: string, pluralForm = `${singular}s`): string {
@@ -66,7 +68,6 @@ export const kindIcon: Record<ItemKind, string> = {
     file: 'file',
 };
 
-
 /**
  * Regex matching the plain terms of a search query: "," (OR) and " " (AND) separate terms,
  * except inside double quotes. Exclusions ("-x"), properties ("s:<1mb", "e:mp4", "t:tag") and the "*" marker are
@@ -74,10 +75,10 @@ export const kindIcon: Record<ItemKind, string> = {
  */
 export function highlightPattern(query: string | null | undefined): RegExp | null {
     const terms = ((query || '').replaceAll('*', '').match(/(?:[^\s,"]+|"[^"]*"?)+/g) || [])
-        .filter(term => !term.startsWith('-') && !term.includes(':'))
-        .map(term => term.replaceAll('"', ''))
+        .filter((term) => !term.startsWith('-') && !term.includes(':'))
+        .map((term) => term.replaceAll('"', ''))
         .filter(Boolean)
-        .map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        .map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     return terms.length ? new RegExp(`(${terms.join('|')})`, 'gi') : null;
 }
 
@@ -88,10 +89,10 @@ export interface TextPart {
 
 /** `text` cut into the parts matching `pattern` (marked) and the others. */
 export function highlightParts(text: string, pattern: RegExp | null): TextPart[] {
-    if (!pattern)
-        return [{ text, mark: false }];
+    if (!pattern) return [{ text, mark: false }];
     // split() with a capture group keeps the matches at the odd indexes
-    return text.split(pattern)
+    return text
+        .split(pattern)
         .map((part, index) => ({ text: part, mark: index % 2 === 1 }))
-        .filter(part => part.text);
+        .filter((part) => part.text);
 }

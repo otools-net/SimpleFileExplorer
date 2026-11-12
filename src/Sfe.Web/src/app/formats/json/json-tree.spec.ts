@@ -1,8 +1,19 @@
 import {
-    CHUNK, expandAll, filterTree, formatted, indentOf, parseJson, pathLabel, previewOf, rowsOf, sizeOf, sourceOf,
+    CHUNK,
+    expandAll,
+    filterTree,
+    formatted,
+    indentOf,
+    parseJson,
+    pathLabel,
+    previewOf,
+    rowsOf,
+    sizeOf,
+    sourceOf,
 } from './json-tree';
 
-const keys = (rows: ReturnType<typeof rowsOf>) => rows.map(row => row.more ? `more:${row.more.shown}/${row.more.total}` : row.key ?? '$');
+const keys = (rows: ReturnType<typeof rowsOf>) =>
+    rows.map((row) => (row.more ? `more:${row.more.shown}/${row.more.total}` : (row.key ?? '$')));
 
 describe('json-tree', () => {
     it('keeps members in the order written and numbers as written', () => {
@@ -24,7 +35,7 @@ describe('json-tree', () => {
         expect(keys(rowsOf(document.root, { expanded: new Set(['']) }))).toEqual(['$', 'port']);
     });
 
-    it('tells where it isn\'t JSON, and keeps what parses', () => {
+    it("tells where it isn't JSON, and keeps what parses", () => {
         const document = parseJson('{\n  "a": 1\n  "b": 2\n}');
 
         expect(document.problems[0]).toMatchObject({ message: 'A comma is expected', line: 3, column: 3 });
@@ -58,7 +69,9 @@ describe('json-tree', () => {
     });
 
     it('filters on keys and values, keeping the containers that hold the matches', () => {
-        const document = parseJson('{"people": [{"name": "Ann", "age": 30}, {"name": "Bob", "age": 41}], "town": {"name": "Annecy"}}');
+        const document = parseJson(
+            '{"people": [{"name": "Ann", "age": 30}, {"name": "Bob", "age": 41}], "town": {"name": "Annecy"}}',
+        );
         const filter = filterTree(document.root, 'ann');
 
         expect(filter.count).toBe(2);
@@ -67,7 +80,11 @@ describe('json-tree', () => {
 
         // A container matching by its key shows all it holds when opened.
         const byKey = filterTree(document.root, 'town');
-        expect(keys(rowsOf(document.root, { expanded: new Set(['/town']), keep: byKey.keep }))).toEqual(['$', 'town', 'name']);
+        expect(keys(rowsOf(document.root, { expanded: new Set(['/town']), keep: byKey.keep }))).toEqual([
+            '$',
+            'town',
+            'name',
+        ]);
     });
 
     it('writes paths as code does, and previews closed containers', () => {
@@ -84,6 +101,8 @@ describe('json-tree', () => {
     it('lays the source out again as it is indented, comments kept', () => {
         expect(indentOf('{\n    "a": 1\n}')).toEqual({ insertSpaces: true, tabSize: 4 });
         expect(indentOf('{\n\t"a": 1\n}')).toEqual({ insertSpaces: false, tabSize: 4 });
-        expect(formatted('{"a":1,\n  // note\n"b":[1,2]}')).toBe('{\n  "a": 1,\n  // note\n  "b": [\n    1,\n    2\n  ]\n}');
+        expect(formatted('{"a":1,\n  // note\n"b":[1,2]}')).toBe(
+            '{\n  "a": 1,\n  // note\n  "b": [\n    1,\n    2\n  ]\n}',
+        );
     });
 });

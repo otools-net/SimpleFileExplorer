@@ -14,20 +14,21 @@ export function matchedParts(entry: string, text: string): TextPart[] {
     const lower = entry.toLocaleLowerCase();
     // Lower-casing can change the length of a few letters (e.g. İ): the positions would then be wrong, mark nothing.
     const start = typed && lower.length === entry.length ? lower.indexOf(typed) : -1;
-    if (start < 0)
-        return [{ text: entry, mark: false }];
+    if (start < 0) return [{ text: entry, mark: false }];
     const end = start + typed.length;
     return [
         { text: entry.slice(0, start), mark: false },
         { text: entry.slice(start, end), mark: true },
         { text: entry.slice(end), mark: false },
-    ].filter(part => part.text);
+    ].filter((part) => part.text);
 }
 
 function load(): string[] {
     try {
         const stored: unknown = JSON.parse(readPreference(KEY, '[]'));
-        return Array.isArray(stored) ? stored.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0) : [];
+        return Array.isArray(stored)
+            ? stored.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
+            : [];
     } catch {
         return [];
     }
@@ -50,13 +51,12 @@ export class SearchHistory {
     record(query: string): void {
         const q = query.trim();
         const size = this.size();
-        if (!q || !size)
-            return;
-        this.save([q, ...this.stored().filter(entry => entry !== q)].slice(0, size));
+        if (!q || !size) return;
+        this.save([q, ...this.stored().filter((entry) => entry !== q)].slice(0, size));
     }
 
     remove(query: string): void {
-        this.save(this.stored().filter(entry => entry !== query));
+        this.save(this.stored().filter((entry) => entry !== query));
     }
 
     clear(): void {
@@ -70,9 +70,8 @@ export class SearchHistory {
     suggest(text: string): string[] {
         const typed = text.trim().toLocaleLowerCase();
         const entries = this.entries();
-        if (!typed)
-            return entries;
-        const lower = entries.map(entry => entry.toLocaleLowerCase());
+        if (!typed) return entries;
+        const lower = entries.map((entry) => entry.toLocaleLowerCase());
         const starting = entries.filter((_, i) => lower[i] !== typed && lower[i].startsWith(typed));
         const containing = entries.filter((_, i) => !lower[i].startsWith(typed) && lower[i].includes(typed));
         return [...starting, ...containing];

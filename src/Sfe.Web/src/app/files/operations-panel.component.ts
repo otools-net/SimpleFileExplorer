@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, OnInit, signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    OnInit,
+    signal,
+} from '@angular/core';
 import { formatDate, formatSize, joinParts, plural } from '../core/format';
 import { ClashSide, FileJobView, LibraryItem } from '../core/models';
 import { baseName } from '../core/paths';
@@ -123,13 +132,15 @@ export class OperationsPanelComponent implements OnInit {
 
     constructor() {
         // Toasts show above the panel (styles/toasts.css): how far its top is from the window's bottom, 0 while hidden.
-        if (typeof ResizeObserver === 'undefined')
-            return;
+        if (typeof ResizeObserver === 'undefined') return;
         const host = inject(ElementRef<HTMLElement>).nativeElement;
         const root = document.documentElement.style;
         const place = () => {
             const rect = host.getBoundingClientRect();
-            root.setProperty('--operations-clearance', `${rect.height > 0 ? Math.max(0, Math.round(window.innerHeight - rect.top)) : 0}px`);
+            root.setProperty(
+                '--operations-clearance',
+                `${rect.height > 0 ? Math.max(0, Math.round(window.innerHeight - rect.top)) : 0}px`,
+            );
         };
         const observer = new ResizeObserver(place);
         observer.observe(host);
@@ -153,9 +164,9 @@ export class OperationsPanelComponent implements OnInit {
 
     protected clipboardText(): string {
         const clipboard = this.transfers.clipboard();
-        if (!clipboard)
-            return '';
-        const what = clipboard.items.length === 1 ? `“${clipboard.items[0].name}”` : plural(clipboard.items.length, 'item');
+        if (!clipboard) return '';
+        const what =
+            clipboard.items.length === 1 ? `“${clipboard.items[0].name}”` : plural(clipboard.items.length, 'item');
         return `${what} ${clipboard.kind === 'move' ? 'cut' : 'copied'}: open a folder to paste ${clipboard.items.length === 1 ? 'it' : 'them'} into`;
     }
 
@@ -166,11 +177,29 @@ export class OperationsPanelComponent implements OnInit {
     /** A job's menu (a right click): its button (Cancel, or Close once done), then the folder it puts things into. */
     protected jobMenu(job: FileJobView): MenuTarget {
         return {
-            kind: 'job', key: `job:${job.id}`, name: this.title(job),
+            kind: 'job',
+            key: `job:${job.id}`,
+            name: this.title(job),
             entries: () => {
                 const entries: MenuEntry[] = this.isDone(job)
-                    ? [{ id: 'close', label: 'Close', icon: 'close', title: 'Take it off the list', run: () => this.transfers.dismiss(job) }]
-                    : [{ id: 'cancel', label: 'Cancel', icon: 'close', title: 'Stop: what is done stays, nothing half copied does', run: () => void this.transfers.cancel(job) }];
+                    ? [
+                          {
+                              id: 'close',
+                              label: 'Close',
+                              icon: 'close',
+                              title: 'Take it off the list',
+                              run: () => this.transfers.dismiss(job),
+                          },
+                      ]
+                    : [
+                          {
+                              id: 'cancel',
+                              label: 'Cancel',
+                              icon: 'close',
+                              title: 'Stop: what is done stays, nothing half copied does',
+                              run: () => void this.transfers.cancel(job),
+                          },
+                      ];
                 return [...entries, ...this.folders.targetEntries(job.target)];
             },
         };
@@ -185,24 +214,22 @@ export class OperationsPanelComponent implements OnInit {
         const count = plural(job.total, 'item');
         if (job.kind === 'compress') {
             const zip = job.results[0]?.newPath;
-            if (job.state === 'cancelled')
-                return `Stopped: no zip made in ${where}`;
-            if (job.state === 'completed')
-                return zip ? `“${baseName(zip)}” made in ${where}` : 'No zip made';
+            if (job.state === 'cancelled') return `Stopped: no zip made in ${where}`;
+            if (job.state === 'completed') return zip ? `“${baseName(zip)}” made in ${where}` : 'No zip made';
             return `Compressing into ${where}`;
         }
         if (job.kind === 'extract') {
             const archive = `“${baseName(job.results[0]?.path ?? job.current ?? '')}”`;
-            if (job.state === 'cancelled')
-                return `Stopped: nothing extracted to ${where}`;
+            if (job.state === 'cancelled') return `Stopped: nothing extracted to ${where}`;
             if (job.state === 'completed')
-                return job.results[0]?.status === 'done' ? `${archive} extracted to ${where}` : `${archive} not extracted`;
+                return job.results[0]?.status === 'done'
+                    ? `${archive} extracted to ${where}`
+                    : `${archive} not extracted`;
             return `Extracting ${job.current ? `“${baseName(job.current)}”` : ''} to ${where}`;
         }
-        if (job.state === 'cancelled')
-            return `Stopped: ${job.done} of ${count} ${pastOf(job.kind)} to ${where}`;
+        if (job.state === 'cancelled') return `Stopped: ${job.done} of ${count} ${pastOf(job.kind)} to ${where}`;
         if (job.state === 'completed') {
-            const done = job.results.filter(result => result.status === 'done').length;
+            const done = job.results.filter((result) => result.status === 'done').length;
             return `${plural(done, 'item')} ${pastOf(job.kind)} to ${where}`;
         }
         return `${job.kind === 'move' ? 'Moving' : 'Copying'} ${count} to ${where}`;
@@ -217,36 +244,51 @@ export class OperationsPanelComponent implements OnInit {
     }
 
     protected status(job: FileJobView): string {
-        if (job.state === 'waiting')
-            return 'Waiting for your answer…';
+        if (job.state === 'waiting') return 'Waiting for your answer…';
         if (job.kind === 'extract')
-            return job.bytesTotal ? joinParts([`${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} read`, this.left(job)]) : 'Reading the archive…';
+            return job.bytesTotal
+                ? joinParts([`${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} read`, this.left(job)])
+                : 'Reading the archive…';
         if (job.kind === 'compress')
-            return job.bytesDone ? joinParts([`${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} compressed`, this.left(job)]) : 'Waiting for its turn…';
+            return job.bytesDone
+                ? joinParts([
+                      `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} compressed`,
+                      this.left(job),
+                  ])
+                : 'Waiting for its turn…';
         return joinParts([
             `${job.done} of ${job.total}`,
-            job.kind === 'copy' && job.bytesTotal ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)}` : null,
+            job.kind === 'copy' && job.bytesTotal
+                ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)}`
+                : null,
             job.current ? baseName(job.current) : null,
         ]);
     }
 
     /** The time left of a job measured in bytes, from when its bytes started moving (a queue's wait left out). */
     private left(job: FileJobView): string | null {
-        if (job.state !== 'running' || !job.bytesDone)
-            return null;
+        if (job.state !== 'running' || !job.bytesDone) return null;
         let start = this.moving.get(job.id);
-        if (!start)
-            this.moving.set(job.id, start = { at: Date.now(), bytes: job.bytesDone });
+        if (!start) this.moving.set(job.id, (start = { at: Date.now(), bytes: job.bytesDone }));
         return timeLeft(start, Date.now(), job.bytesDone, job.bytesTotal);
     }
 
     protected side(side: ClashSide): string {
-        return joinParts([side.isFolder ? 'folder' : formatSize(side.size), side.modified ? `modified ${formatDate(side.modified)}` : null], ', ');
+        return joinParts(
+            [
+                side.isFolder ? 'folder' : formatSize(side.size),
+                side.modified ? `modified ${formatDate(side.modified)}` : null,
+            ],
+            ', ',
+        );
     }
 
     /** What was not done, skipped included; an extraction's result whatever it is (what it left out). */
     protected problems(job: FileJobView) {
-        return job.results.filter(result => result.status !== 'done' || ((job.kind === 'extract' || job.kind === 'compress') && result.message));
+        return job.results.filter(
+            (result) =>
+                result.status !== 'done' || ((job.kind === 'extract' || job.kind === 'compress') && result.message),
+        );
     }
 
     protected answer(job: FileJobView, choice: 'replace' | 'skip' | 'keepBoth'): void {
@@ -262,13 +304,12 @@ export class OperationsPanelComponent implements OnInit {
 
     /** Dragged items may be moved as well as copied (the quick links set the data). */
     protected onDragStart(event: DragEvent): void {
-        const element = event.target instanceof Element ? event.target.closest<HTMLElement>('sfe-listing [data-path]') : null;
-        if (!element || !event.dataTransfer)
-            return;
+        const element =
+            event.target instanceof Element ? event.target.closest<HTMLElement>('sfe-listing [data-path]') : null;
+        if (!element || !event.dataTransfer) return;
         const path = element.getAttribute('data-path')!;
-        const paths = this.store.isSelected(path) ? this.store.selectedItems().map(item => item.path) : [path];
-        if (!event.dataTransfer.getData(DRAG_ITEMS))
-            event.dataTransfer.setData(DRAG_ITEMS, JSON.stringify(paths));
+        const paths = this.store.isSelected(path) ? this.store.selectedItems().map((item) => item.path) : [path];
+        if (!event.dataTransfer.getData(DRAG_ITEMS)) event.dataTransfer.setData(DRAG_ITEMS, JSON.stringify(paths));
         event.dataTransfer.effectAllowed = 'all';
     }
 
@@ -284,11 +325,9 @@ export class OperationsPanelComponent implements OnInit {
         }
         const target = this.dropTarget(event);
         this.highlight(target);
-        if (!target || !event.dataTransfer?.types.includes(DRAG_ITEMS))
-            return;
+        if (!target || !event.dataTransfer?.types.includes(DRAG_ITEMS)) return;
         const copy = event.ctrlKey || event.metaKey;
-        if (!this.allowed(target, copy ? 'copy' : 'move'))
-            return;
+        if (!this.allowed(target, copy ? 'copy' : 'move')) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = copy ? 'copy' : 'move';
     }
@@ -305,22 +344,19 @@ export class OperationsPanelComponent implements OnInit {
             if (place && event.dataTransfer) {
                 event.preventDefault();
                 // The items are read at once: the browser empties them once the event is over.
-                void droppedFiles(event.dataTransfer).then(files => this.uploads.add(files, place.path));
+                void droppedFiles(event.dataTransfer).then((files) => this.uploads.add(files, place.path));
             }
             return;
         }
         const target = this.dropTarget(event);
         const data = event.dataTransfer?.getData(DRAG_ITEMS);
         this.endDrag();
-        if (!target || !data)
-            return;
+        if (!target || !data) return;
         const kind = event.ctrlKey || event.metaKey ? 'copy' : 'move';
-        if (!this.allowed(target, kind))
-            return;
+        if (!this.allowed(target, kind)) return;
         const into = target.getAttribute('data-drop')!;
-        const paths = parsePaths(data).filter(path => path !== into && !into.startsWith(`${path}/`));
-        if (!paths.length)
-            return;
+        const paths = parsePaths(data).filter((path) => path !== into && !into.startsWith(`${path}/`));
+        if (!paths.length) return;
         event.preventDefault();
         void this.transfers.transfer(kind, paths, into);
     }
@@ -340,8 +376,10 @@ export class OperationsPanelComponent implements OnInit {
         const target = this.dropTarget(event);
         if (target) {
             const path = target.getAttribute('data-drop')!;
-            const folder = this.store.items().find(item => item.path === path && item.kind === 'directory');
-            return (folder ? this.uploads.canUploadInto(folder) : this.config.can(Rights.uploadFiles)) ? { path, element: target } : null;
+            const folder = this.store.items().find((item) => item.path === path && item.kind === 'directory');
+            return (folder ? this.uploads.canUploadInto(folder) : this.config.can(Rights.uploadFiles))
+                ? { path, element: target }
+                : null;
         }
         const page = event.target instanceof Element ? event.target.closest<HTMLElement>('main.page') : null;
         return page && this.uploads.canUploadInto() ? { path: this.store.route().path, element: page } : null;
@@ -357,13 +395,14 @@ export class OperationsPanelComponent implements OnInit {
      */
     private allowed(target: HTMLElement, kind: 'move' | 'copy'): boolean {
         const path = target.getAttribute('data-drop')!;
-        const folder: LibraryItem | undefined = this.store.items().find(item => item.path === path && item.kind === 'directory');
+        const folder: LibraryItem | undefined = this.store
+            .items()
+            .find((item) => item.path === path && item.kind === 'directory');
         return folder ? this.transfers.canInto(kind, folder) : this.transfers.allows(kind);
     }
 
     private highlight(target: HTMLElement | null): void {
-        if (this.over === target)
-            return;
+        if (this.over === target) return;
         this.over?.classList.remove('drop-over');
         target?.classList.add('drop-over');
         this.over = target;
@@ -383,14 +422,19 @@ function parsePaths(json: string): string[] {
  * "about 4 min left", from the speed since `start` (when and how many bytes were done then); null for the first 10
  * seconds, or while nothing moves.
  */
-export function timeLeft(start: { at: number; bytes: number }, now: number, done: number, total: number): string | null {
+export function timeLeft(
+    start: { at: number; bytes: number },
+    now: number,
+    done: number,
+    total: number,
+): string | null {
     const seconds = (now - start.at) / 1000;
     const speed = (done - start.bytes) / seconds;
-    if (seconds < 10 || speed <= 0 || done >= total)
-        return null;
+    if (seconds < 10 || speed <= 0 || done >= total) return null;
     const left = (total - done) / speed;
-    if (left < 60)
-        return 'less than a minute left';
+    if (left < 60) return 'less than a minute left';
     const minutes = Math.round(left / 60);
-    return minutes < 60 ? `about ${minutes} min left` : `about ${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, '0')} min left`;
+    return minutes < 60
+        ? `about ${minutes} min left`
+        : `about ${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, '0')} min left`;
 }

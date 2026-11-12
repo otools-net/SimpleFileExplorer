@@ -3,7 +3,19 @@ import { TAB_ID } from '../core/api.service';
 import { DirectoryListing, FileJobView, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, setHidden, settle, testProviders, type } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    fakeConfig,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    setHidden,
+    settle,
+    testProviders,
+    type,
+} from '../../testing/fakes';
 import { ChangeFeed, HIDDEN_GRACE } from '../library/change-feed.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
@@ -24,7 +36,18 @@ const notes = item('Media/notes.txt');
 const holidays = item('Media/Holidays', { kind: 'directory' });
 
 function listing(items: LibraryItem[], overrides: Partial<DirectoryListing> = {}): DirectoryListing {
-    return { path: 'Media', name: 'Media', parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: 0, fileCount: items.length, ...overrides };
+    return {
+        path: 'Media',
+        name: 'Media',
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: 0,
+        fileCount: items.length,
+        ...overrides,
+    };
 }
 
 async function setUp(items: LibraryItem[] = [holidays, a, b, notes], config = fakeConfig()): Promise<void> {
@@ -32,15 +55,22 @@ async function setUp(items: LibraryItem[] = [holidays, a, b, notes], config = fa
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: 'Media', previous: null, next: null, position: 1, count: 1 });
     api.browse.mockResolvedValue(listing(items));
     store.route.set({ path: 'Media', q: '', sort: '', desc: false });
     await store.load();
 }
 
-const rule = (overrides: Partial<BatchRenameRule>): BatchRenameRule =>
-    ({ mode: 'replace', find: '', replace: '', matchCase: false, pattern: '', start: 1, ...overrides });
+const rule = (overrides: Partial<BatchRenameRule>): BatchRenameRule => ({
+    mode: 'replace',
+    find: '',
+    replace: '',
+    matchCase: false,
+    pattern: '',
+    start: 1,
+    ...overrides,
+});
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -48,25 +78,38 @@ describe('planRenames', () => {
     it('finds and replaces in the names, keeping extensions', () => {
         const plans = planRenames([a, b], rule({ find: 'img_', replace: 'Beach ' }), []);
 
-        expect(plans.map(p => p.name)).toEqual(['Beach 001.jpg', 'Beach 002.jpg']);
-        expect(plans.every(p => p.problem === null)).toBe(true);
+        expect(plans.map((p) => p.name)).toEqual(['Beach 001.jpg', 'Beach 002.jpg']);
+        expect(plans.every((p) => p.problem === null)).toBe(true);
         expect(planRenames([a], rule({ find: 'img_', replace: 'x', matchCase: true }), [])[0].name).toBe('IMG_001.jpg');
     });
 
     it('numbers names with as many digits as #', () => {
-        expect(planRenames([a, b, holidays], rule({ mode: 'number', pattern: 'Trip ##', start: 9 }), []).map(p => p.name))
-            .toEqual(['Trip 09.jpg', 'Trip 10.jpg', 'Trip 11']);
+        expect(
+            planRenames([a, b, holidays], rule({ mode: 'number', pattern: 'Trip ##', start: 9 }), []).map(
+                (p) => p.name,
+            ),
+        ).toEqual(['Trip 09.jpg', 'Trip 10.jpg', 'Trip 11']);
         expect(planRenames([a], rule({ mode: 'number', pattern: 'Trip', start: 1 }), [])[0].name).toBe('Trip 1.jpg');
     });
 
     it('says what keeps a name from being given', () => {
-        expect(planRenames([a, b], rule({ find: 'IMG_00', replace: '' }), []).map(p => p.problem)).toEqual([null, null]);
-        expect(planRenames([a, b], rule({ find: 'IMG_00', replace: 'x' }), ['x1.jpg'])[0].problem).toBe('Already taken in this folder');
+        expect(planRenames([a, b], rule({ find: 'IMG_00', replace: '' }), []).map((p) => p.problem)).toEqual([
+            null,
+            null,
+        ]);
+        expect(planRenames([a, b], rule({ find: 'IMG_00', replace: 'x' }), ['x1.jpg'])[0].problem).toBe(
+            'Already taken in this folder',
+        );
         expect(planRenames([a, b], rule({ find: 'IMG_001', replace: '' }), [])[0].problem).toBe('No name left');
         expect(planRenames([a, b], rule({ find: 'IMG_00', replace: 'a/' }), [])[0].problem).toContain('/');
         const alike = planRenames([item('Media/x.jpg'), item('Media/X.jpg')], rule({ find: 'x', replace: 'y' }), []);
-        expect(alike.map(p => p.problem)).toEqual(['Two items would have this name', 'Two items would have this name']);
-        expect(planRenames([a, b], rule({ mode: 'number', pattern: 'IMG_00#', start: 2 }), [])[0].problem).toContain('two steps');
+        expect(alike.map((p) => p.problem)).toEqual([
+            'Two items would have this name',
+            'Two items would have this name',
+        ]);
+        expect(planRenames([a, b], rule({ mode: 'number', pattern: 'IMG_00#', start: 2 }), [])[0].problem).toContain(
+            'two steps',
+        );
     });
 });
 
@@ -88,14 +131,20 @@ describe('BatchRenameDialog', () => {
         buttonNamed(element, 'Rename 2')!.click();
         await settle();
 
-        expect(api.renameItem.mock.calls).toEqual([['Media/IMG_001.jpg', 'Beach 001.jpg'], ['Media/IMG_002.jpg', 'Beach 002.jpg']]);
-        expect(store.items().map(i => i.name)).toEqual(['Holidays', 'Beach 001.jpg', 'Beach 002.jpg', 'notes.txt']);
+        expect(api.renameItem.mock.calls).toEqual([
+            ['Media/IMG_001.jpg', 'Beach 001.jpg'],
+            ['Media/IMG_002.jpg', 'Beach 002.jpg'],
+        ]);
+        expect(store.items().map((i) => i.name)).toEqual(['Holidays', 'Beach 001.jpg', 'Beach 002.jpg', 'notes.txt']);
 
         const toasts = TestBed.inject(ToastService);
-        toasts.act(toasts.toasts().find(t => t.message === '2 items renamed.')!);
+        toasts.act(toasts.toasts().find((t) => t.message === '2 items renamed.')!);
         await settle();
-        expect(api.renameItem.mock.calls.slice(2)).toEqual([['Media/Beach 002.jpg', 'IMG_002.jpg'], ['Media/Beach 001.jpg', 'IMG_001.jpg']]);
-        expect(store.items().map(i => i.name)).toEqual(['Holidays', 'IMG_001.jpg', 'IMG_002.jpg', 'notes.txt']);
+        expect(api.renameItem.mock.calls.slice(2)).toEqual([
+            ['Media/Beach 002.jpg', 'IMG_002.jpg'],
+            ['Media/Beach 001.jpg', 'IMG_001.jpg'],
+        ]);
+        expect(store.items().map((i) => i.name)).toEqual(['Holidays', 'IMG_001.jpg', 'IMG_002.jpg', 'notes.txt']);
     });
 
     it('opens from the menu and F2 only for several items that may be renamed', async () => {
@@ -109,7 +158,9 @@ describe('BatchRenameDialog', () => {
         store.select(b, true);
         expect(menu.renameSelection()).toBe(true);
         expect(open).toHaveBeenCalledWith([a, b]);
-        menu.entries(a).find(e => e.id === 'rename')!.run();
+        menu.entries(a)
+            .find((e) => e.id === 'rename')!
+            .run();
         expect(open).toHaveBeenCalledTimes(2);
     });
 });
@@ -125,26 +176,36 @@ describe('Undo of a rename and a move', () => {
         type(input, 'Sunset.jpg');
         (fixture.nativeElement as HTMLElement).querySelector('form')!.dispatchEvent(new Event('submit'));
         await settle();
-        expect(store.items().map(i => i.name)).toContain('Sunset.jpg');
+        expect(store.items().map((i) => i.name)).toContain('Sunset.jpg');
 
         const toasts = TestBed.inject(ToastService);
-        toasts.act(toasts.toasts().find(t => t.message === 'Renamed to “Sunset.jpg”.')!);
+        toasts.act(toasts.toasts().find((t) => t.message === 'Renamed to “Sunset.jpg”.')!);
         await settle();
 
         expect(api.renameItem).toHaveBeenLastCalledWith('Media/Sunset.jpg', 'IMG_001.jpg');
-        expect(store.items().map(i => i.name)).toContain('IMG_001.jpg');
+        expect(store.items().map((i) => i.name)).toContain('IMG_001.jpg');
     });
 
     it('moves moved items back into the folders they came from', async () => {
         await setUp();
         const transfers = TestBed.inject(FileTransfers);
         const job: FileJobView = {
-            id: 4, kind: 'move', state: 'completed', target: 'Media/Holidays', total: 2, done: 2, bytesTotal: 0, bytesDone: 0, current: null, conflict: null,
+            id: 4,
+            kind: 'move',
+            state: 'completed',
+            target: 'Media/Holidays',
+            total: 2,
+            done: 2,
+            bytesTotal: 0,
+            bytesDone: 0,
+            current: null,
+            conflict: null,
             results: [
                 { path: 'Media/IMG_001.jpg', newPath: 'Media/Holidays/IMG_001.jpg', status: 'done' },
                 { path: 'Media/IMG_002.jpg', newPath: 'Media/Holidays/IMG_002.jpg', status: 'done' },
             ],
-            started: '2026-10-17T10:00:00Z', finished: '2026-10-17T10:00:01Z',
+            started: '2026-10-17T10:00:00Z',
+            finished: '2026-10-17T10:00:01Z',
         };
         api.startFileJob.mockResolvedValueOnce({ ...job, state: 'running', results: [] });
         api.fileJobs.mockResolvedValueOnce([job]);
@@ -155,11 +216,18 @@ describe('Undo of a rename and a move', () => {
         api.fileJobs.mockResolvedValue([]);
 
         const toasts = TestBed.inject(ToastService);
-        const moved = toasts.toasts().find(t => t.message === '2 items moved to “Holidays”.')!;
-        toasts.act(moved, moved.actions.find(action => action.label === 'Undo'));
+        const moved = toasts.toasts().find((t) => t.message === '2 items moved to “Holidays”.')!;
+        toasts.act(
+            moved,
+            moved.actions.find((action) => action.label === 'Undo'),
+        );
         await settle();
 
-        expect(api.startFileJob).toHaveBeenLastCalledWith({ kind: 'move', paths: ['Media/Holidays/IMG_001.jpg', 'Media/Holidays/IMG_002.jpg'], target: 'Media' });
+        expect(api.startFileJob).toHaveBeenLastCalledWith({
+            kind: 'move',
+            paths: ['Media/Holidays/IMG_001.jpg', 'Media/Holidays/IMG_002.jpg'],
+            target: 'Media',
+        });
     });
 });
 
@@ -176,7 +244,7 @@ describe('New file', () => {
         await settle();
 
         expect(api.createFile).toHaveBeenCalledWith('Media', 'todo.txt');
-        expect(store.items().map(i => i.name)).toContain('todo.txt');
+        expect(store.items().map((i) => i.name)).toContain('todo.txt');
     });
 
     it('opens a new text file in the viewer, ready to be written; not a picture', async () => {
@@ -221,7 +289,7 @@ describe('ChangeFeed', () => {
         await settle(450);
 
         expect(api.browse).toHaveBeenCalledTimes(2);
-        expect(store.items().map(i => i.name)).toEqual(['Holidays', 'IMG_001.jpg', 'notes.txt', 'new.jpg']);
+        expect(store.items().map((i) => i.name)).toEqual(['Holidays', 'IMG_001.jpg', 'notes.txt', 'new.jpg']);
         expect([...store.selection()]).toEqual([a.path]);
         expect(store.status()).toBe('ready');
     });

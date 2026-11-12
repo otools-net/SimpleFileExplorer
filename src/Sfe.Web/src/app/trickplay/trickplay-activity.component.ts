@@ -103,39 +103,44 @@ export class TrickplayActivityComponent {
 
     protected readonly stateText = computed(() => {
         const error = this.error();
-        if (error)
-            return `Could not read the activity: ${error}`;
+        if (error) return `Could not read the activity: ${error}`;
         const status = this.activity()?.status;
-        if (!status)
-            return '…';
+        if (!status) return '…';
         const left = status.current.length + status.queued + status.pending;
         switch (status.state) {
-            case 'disabled': return 'Turned off: tick “Create trickplay” in the Settings tab and save.';
-            case 'unavailable': return 'ffmpeg can\'t be found: set its path (Thumbnails:FfmpegPath) in the server\'s configuration file.';
-            case 'running': return status.discovering ? 'Looking for videos without trickplay…' : `Creating trickplay: ${plural(left, 'video')} left`;
-            default: return status.lastPassFinished ? 'Up to date.' : 'Waiting.';
+            case 'disabled':
+                return 'Turned off: tick “Create trickplay” in the Settings tab and save.';
+            case 'unavailable':
+                return "ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) in the server's configuration file.";
+            case 'running':
+                return status.discovering
+                    ? 'Looking for videos without trickplay…'
+                    : `Creating trickplay: ${plural(left, 'video')} left`;
+            default:
+                return status.lastPassFinished ? 'Up to date.' : 'Waiting.';
         }
     });
     /** While the pass still looks for videos the total isn't known: the bar sweeps instead. */
     protected readonly progress = computed(() => {
         const status = this.activity()?.status;
-        if (!status)
-            return { indeterminate: true, width: '0%' };
+        if (!status) return { indeterminate: true, width: '0%' };
         const done = status.generated + status.failed;
         const left = status.current.length + status.queued + status.pending;
         return {
             indeterminate: status.discovering || done + left === 0,
-            width: `${done + left ? (100 * done / (done + left)).toFixed(1) : 0}%`,
+            width: `${done + left ? ((100 * done) / (done + left)).toFixed(1) : 0}%`,
         };
     });
     protected readonly counts = computed(() => {
         const status = this.activity()?.status;
-        return status ? joinParts([
-            plural(status.checked, 'video') + ' checked',
-            plural(status.generated, 'created', 'created'),
-            status.failed ? plural(status.failed, 'failed', 'failed') : null,
-            status.lastPassFinished ? `last complete check ${formatDate(status.lastPassFinished)}` : null,
-        ]) : '';
+        return status
+            ? joinParts([
+                  plural(status.checked, 'video') + ' checked',
+                  plural(status.generated, 'created', 'created'),
+                  status.failed ? plural(status.failed, 'failed', 'failed') : null,
+                  status.lastPassFinished ? `last complete check ${formatDate(status.lastPassFinished)}` : null,
+              ])
+            : '';
     });
     protected readonly cannotCheck = computed(() => {
         const state = this.activity()?.status.state;
@@ -143,28 +148,36 @@ export class TrickplayActivityComponent {
     });
     protected readonly sections = computed((): Section[] => {
         const activity = this.activity();
-        if (!activity)
-            return [];
+        if (!activity) return [];
         const { status } = activity;
         return [
             {
                 title: 'Working on',
-                rows: activity.running.map(r => row(r.path, 'running', formatElapsed((Date.now() - Date.parse(r.started)) / 1000))),
+                rows: activity.running.map((r) =>
+                    row(r.path, 'running', formatElapsed((Date.now() - Date.parse(r.started)) / 1000)),
+                ),
                 total: activity.running.length,
                 empty: 'Nothing right now.',
             },
             {
                 title: 'Waiting',
                 rows: [
-                    ...activity.queued.map(path => row(path, 'pending', 'opened in the player')),
-                    ...activity.pending.map(path => row(path, 'pending', null)),
+                    ...activity.queued.map((path) => row(path, 'pending', 'opened in the player')),
+                    ...activity.pending.map((path) => row(path, 'pending', null)),
                 ],
                 total: status.queued + status.pending,
                 empty: status.discovering ? 'Looking for videos…' : 'No video is waiting.',
             },
             {
                 title: 'Recently finished',
-                rows: activity.recent.map(r => row(r.path, r.succeeded ? 'done' : 'failed', `${formatElapsed(r.seconds)} · ${formatTime(r.finished)}`, r.succeeded ? null : r.error)),
+                rows: activity.recent.map((r) =>
+                    row(
+                        r.path,
+                        r.succeeded ? 'done' : 'failed',
+                        `${formatElapsed(r.seconds)} · ${formatTime(r.finished)}`,
+                        r.succeeded ? null : r.error,
+                    ),
+                ),
                 total: activity.recent.length,
                 empty: 'No video processed since the server started.',
             },

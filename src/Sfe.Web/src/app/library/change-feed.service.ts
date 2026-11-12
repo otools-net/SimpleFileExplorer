@@ -64,16 +64,14 @@ export class ChangeFeed {
             this.stop();
         };
         const shown = () => {
-            if (this.parked)
-                this.start();
+            if (this.parked) this.start();
             this.parked = false;
         };
         // Hidden for a while: closed too. What changed meanwhile wasn't told: the folder and the trash are read again.
         const visibility = () => {
             clearTimeout(this.hiddenTimer);
             if (!document.hidden) {
-                if (this.parked && this.missed)
-                    shown();
+                if (this.parked && this.missed) shown();
             } else if (this.source) {
                 this.hiddenTimer = setTimeout(() => {
                     this.missed = true;
@@ -100,8 +98,7 @@ export class ChangeFeed {
 
     /** Opens the feed (once), where the browser has EventSource and the session may browse. */
     start(): void {
-        if (this.source || typeof EventSource === 'undefined' || !this.config.can(Rights.browse))
-            return;
+        if (this.source || typeof EventSource === 'undefined' || !this.config.can(Rights.browse)) return;
         this.open();
     }
 
@@ -117,19 +114,19 @@ export class ChangeFeed {
     }
 
     private open(): void {
-        const source = this.source = new EventSource('api/files/changes');
+        const source = (this.source = new EventSource('api/files/changes'));
         source.addEventListener('open', () => this.opened());
         source.addEventListener('error', () => this.dropped(source));
         source.addEventListener('ping', () => this.heard());
-        source.addEventListener('changed', event => {
+        source.addEventListener('changed', (event) => {
             this.heard();
             this.changed(JSON.parse((event as MessageEvent<string>).data) as FolderChange);
         });
         source.addEventListener('trash', () => {
             this.heard();
-            this.trashChanges.update(n => n + 1);
+            this.trashChanges.update((n) => n + 1);
         });
-        source.addEventListener('keepAlive', event => {
+        source.addEventListener('keepAlive', (event) => {
             this.heard();
             this.keepAlive.set((JSON.parse((event as MessageEvent<string>).data) as { state: KeepAliveState }).state);
         });
@@ -143,7 +140,7 @@ export class ChangeFeed {
         this.heard();
         if (this.missed) {
             this.missed = false;
-            this.trashChanges.update(n => n + 1);
+            this.trashChanges.update((n) => n + 1);
             void this.store.refresh();
         } else if (this.serverLost()) {
             this.serverLost.set(false);
@@ -186,11 +183,9 @@ export class ChangeFeed {
 
     /** A change of the folder listed, made elsewhere: refreshed once the changes settle. */
     changed(change: FolderChange): void {
-        if (change.origin !== TAB_ID)
-            this.listeners.forEach(listener => listener(change));
+        if (change.origin !== TAB_ID) this.listeners.forEach((listener) => listener(change));
         const route = this.store.route();
-        if (change.origin === TAB_ID || route.q || change.path !== route.path)
-            return;
+        if (change.origin === TAB_ID || route.q || change.path !== route.path) return;
         clearTimeout(this.timer);
         this.timer = setTimeout(() => void this.store.refresh(), SETTLE);
     }

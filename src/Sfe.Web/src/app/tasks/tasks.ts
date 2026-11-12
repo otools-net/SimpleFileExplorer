@@ -1,5 +1,13 @@
 import { formatDate, formatTime, plural } from '../core/format';
-import { ScheduleKind, TaskInfo, TaskKind, TaskOutcome, TaskSchedule, TaskScheduleInput, TaskTrigger } from '../core/models';
+import {
+    ScheduleKind,
+    TaskInfo,
+    TaskKind,
+    TaskOutcome,
+    TaskSchedule,
+    TaskScheduleInput,
+    TaskTrigger,
+} from '../core/models';
 
 /*
  * Wording of the background tasks, their schedules and runs, shared by the "Background tasks" dialog's parts.
@@ -18,7 +26,8 @@ export const TASK_PURPOSES: Record<TaskKind, string> = {
     trickplay: 'Looks for videos without trickplay (the frames shown above the seek bar) and creates it.',
     similarVideos: 'Compares the indexed videos to find copies in other files.',
     thumbnails: 'Rendered as the listings show photos and videos; they can be stopped, not scheduled.',
-    trashPurge: 'Deletes for good what has been in the trash longer than its settings say. Also runs by itself when the trash is used.',
+    trashPurge:
+        'Deletes for good what has been in the trash longer than its settings say. Also runs by itself when the trash is used.',
 };
 
 export const TASK_ICONS: Record<TaskKind, string> = {
@@ -61,11 +70,15 @@ export const ALL_DAYS = 0b111_1111;
 
 /** Short day names in the browser's language, Sunday first (bit 0 of `days`). 4 October 2026 is a Sunday. */
 export const DAY_NAMES: string[] = Array.from({ length: 7 }, (_, day) =>
-    new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(new Date(2026, 9, 4 + day)));
+    new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(new Date(2026, 9, 4 + day)),
+);
 
 /** The week in the order of the browser's locale (Monday first in most places). */
 export const WEEK_ORDER: number[] = (() => {
-    const info = (new Intl.Locale(navigator.language || 'en') as Intl.Locale & { weekInfo?: { firstDay: number }; getWeekInfo?: () => { firstDay: number } });
+    const info = new Intl.Locale(navigator.language || 'en') as Intl.Locale & {
+        weekInfo?: { firstDay: number };
+        getWeekInfo?: () => { firstDay: number };
+    };
     const first = (info.getWeekInfo?.() ?? info.weekInfo)?.firstDay ?? 1;
     return Array.from({ length: 7 }, (_, i) => (first + i) % 7);
 })();
@@ -77,30 +90,35 @@ export function target(task: TaskKind, path: string | null | undefined): string 
 
 /** "Every 6 hours", "every 2 days", "every 90 minutes". */
 export function formatInterval(minutes: number): string {
-    if (minutes % 1440 === 0)
-        return minutes === 1440 ? 'every day' : `every ${plural(minutes / 1440, 'day')}`;
-    if (minutes % 60 === 0)
-        return minutes === 60 ? 'every hour' : `every ${plural(minutes / 60, 'hour')}`;
+    if (minutes % 1440 === 0) return minutes === 1440 ? 'every day' : `every ${plural(minutes / 1440, 'day')}`;
+    if (minutes % 60 === 0) return minutes === 60 ? 'every hour' : `every ${plural(minutes / 60, 'hour')}`;
     return `every ${plural(minutes, 'minute')}`;
 }
 
 /** "Mon, Wed, Fri", or "every day". */
 export function formatDays(days: number): string {
-    if ((days & ALL_DAYS) === ALL_DAYS)
-        return 'every day';
-    if (days === 0b011_1110)
-        return 'on weekdays';
-    if (days === 0b100_0001)
-        return 'at weekends';
-    return 'on ' + WEEK_ORDER.filter(day => days & (1 << day)).map(day => DAY_NAMES[day]).join(', ');
+    if ((days & ALL_DAYS) === ALL_DAYS) return 'every day';
+    if (days === 0b011_1110) return 'on weekdays';
+    if (days === 0b100_0001) return 'at weekends';
+    return (
+        'on ' +
+        WEEK_ORDER.filter((day) => days & (1 << day))
+            .map((day) => DAY_NAMES[day])
+            .join(', ')
+    );
 }
 
 /** When a schedule runs, in words: "Every day at 03:00", "Once, 12 Oct 2026, 22:00". */
-export function describeSchedule(schedule: Pick<TaskScheduleInput, 'kind' | 'start' | 'intervalMinutes' | 'days'>): string {
+export function describeSchedule(
+    schedule: Pick<TaskScheduleInput, 'kind' | 'start' | 'intervalMinutes' | 'days'>,
+): string {
     switch (schedule.kind) {
-        case 'once': return `Once, ${formatDate(schedule.start)}`;
-        case 'interval': return `${capitalize(formatInterval(schedule.intervalMinutes))}, from ${formatDate(schedule.start)}`;
-        default: return `${capitalize(formatDays(schedule.days))} at ${formatTime(schedule.start)}`;
+        case 'once':
+            return `Once, ${formatDate(schedule.start)}`;
+        case 'interval':
+            return `${capitalize(formatInterval(schedule.intervalMinutes))}, from ${formatDate(schedule.start)}`;
+        default:
+            return `${capitalize(formatDays(schedule.days))} at ${formatTime(schedule.start)}`;
     }
 }
 
@@ -115,12 +133,9 @@ const weekday = new Intl.DateTimeFormat(undefined, { weekday: 'long' });
 export function formatRelative(value: string, now = Date.now()): string {
     const seconds = (Date.parse(value) - now) / 1000;
     const size = Math.abs(seconds);
-    if (size < 45)
-        return seconds >= 0 ? 'in a few seconds' : 'just now';
-    if (size < 90 * 60)
-        return relative.format(Math.round(seconds / 60), 'minute');
-    if (size < 36 * 3600)
-        return relative.format(Math.round(seconds / 3600), 'hour');
+    if (size < 45) return seconds >= 0 ? 'in a few seconds' : 'just now';
+    if (size < 90 * 60) return relative.format(Math.round(seconds / 60), 'minute');
+    if (size < 36 * 3600) return relative.format(Math.round(seconds / 3600), 'hour');
     return relative.format(Math.round(seconds / 86400), 'day');
 }
 
@@ -131,14 +146,10 @@ export function formatMoment(value: string, now = Date.now()): string {
     today.setHours(0, 0, 0, 0);
     const days = Math.round((new Date(date).setHours(0, 0, 0, 0) - today.getTime()) / 86_400_000);
     const time = formatTime(value);
-    if (days === 0)
-        return `today ${time}`;
-    if (days === 1)
-        return `tomorrow ${time}`;
-    if (days === -1)
-        return `yesterday ${time}`;
-    if (days > 1 && days < 7)
-        return `${weekday.format(date)} ${time}`;
+    if (days === 0) return `today ${time}`;
+    if (days === 1) return `tomorrow ${time}`;
+    if (days === -1) return `yesterday ${time}`;
+    if (days > 1 && days < 7) return `${weekday.format(date)} ${time}`;
     return formatDate(value);
 }
 
@@ -152,7 +163,11 @@ export interface NextRun {
 export function nextRunOf(task: TaskInfo, schedules: TaskSchedule[]): NextRun | null {
     let next: NextRun | null = task.automaticNextRun ? { at: task.automaticNextRun, schedule: null } : null;
     for (const schedule of schedules) {
-        if (schedule.task === task.task && schedule.nextRun && (!next || Date.parse(schedule.nextRun) < Date.parse(next.at)))
+        if (
+            schedule.task === task.task &&
+            schedule.nextRun &&
+            (!next || Date.parse(schedule.nextRun) < Date.parse(next.at))
+        )
             next = { at: schedule.nextRun, schedule };
     }
     return next;
@@ -160,8 +175,7 @@ export function nextRunOf(task: TaskInfo, schedules: TaskSchedule[]): NextRun | 
 
 /** Where a schedule stands when it has no next run. */
 export function scheduleStatus(schedule: TaskSchedule, now = Date.now()): string {
-    if (!schedule.enabled)
-        return 'Off';
+    if (!schedule.enabled) return 'Off';
     if (schedule.kind === 'once')
         return schedule.lastRun ? 'Done' : Date.parse(schedule.start) <= now ? 'Missed (the server was off)' : '';
     return '';
@@ -179,8 +193,7 @@ export function toLocalInputs(value: string): { date: string; time: string } {
 
 /** The ISO moment of a local date and time typed in inputs; null when incomplete. */
 export function fromLocalInputs(date: string, time: string): string | null {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time))
-        return null;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return null;
     const moment = new Date(`${date}T${time}`);
     return Number.isNaN(moment.getTime()) ? null : moment.toISOString();
 }

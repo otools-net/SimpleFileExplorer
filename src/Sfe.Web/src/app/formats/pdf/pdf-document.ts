@@ -38,23 +38,33 @@ export interface PdfHandle {
     destroy(): void;
 }
 
-export type PdfLoader = (container: HTMLDivElement, url: string, events: PdfEvents, start: number | null) => Promise<PdfHandle>;
+export type PdfLoader = (
+    container: HTMLDivElement,
+    url: string,
+    events: PdfEvents,
+    start: number | null,
+) => Promise<PdfHandle>;
 
 /** How the view opens a document: pdf.js (`openPdf`), a fake in the specs (jsdom has no canvas). */
 export const PDF_LOADER = new InjectionToken<PdfLoader>('PDF_LOADER', { providedIn: 'root', factory: () => openPdf });
 
 /** Thrown when the file isn't a PDF pdf.js can read. */
-export class NotPdfError extends Error { }
+export class NotPdfError extends Error {}
 
 /** The password was asked for and not given. */
-export class PdfLockedError extends Error { }
+export class PdfLockedError extends Error {}
 
 /**
  * Opens `url` with pdf.js (agents/docs/features/pdf-viewer.md): its worker, character maps and standard fonts served
  * by the app (`pdfjs/`, angular.json assets), no WebAssembly (the app's CSP doesn't allow it; pdf.js 6 has no eval),
  * no scripts of the document, links of other sites in a new tab without referrer.
  */
-export async function openPdf(container: HTMLDivElement, url: string, events: PdfEvents, start: number | null): Promise<PdfHandle> {
+export async function openPdf(
+    container: HTMLDivElement,
+    url: string,
+    events: PdfEvents,
+    start: number | null,
+): Promise<PdfHandle> {
     const pdfjs = await import('pdfjs-dist');
     // The viewer's components read the library from the global (pdfjs-dist/web/pdf_viewer.mjs).
     (globalThis as unknown as { pdfjsLib: unknown }).pdfjsLib = pdfjs;
@@ -62,7 +72,11 @@ export async function openPdf(container: HTMLDivElement, url: string, events: Pd
     const viewer = await import('pdfjs-dist/web/pdf_viewer.mjs');
 
     const eventBus = new viewer.EventBus();
-    const linkService = new viewer.PDFLinkService({ eventBus, externalLinkTarget: viewer.LinkTarget.BLANK, externalLinkRel: 'noopener noreferrer nofollow' });
+    const linkService = new viewer.PDFLinkService({
+        eventBus,
+        externalLinkTarget: viewer.LinkTarget.BLANK,
+        externalLinkRel: 'noopener noreferrer nofollow',
+    });
     const findController = new viewer.PDFFindController({ eventBus, linkService });
     const pages = new viewer.PDFViewer({
         container,
@@ -86,11 +100,9 @@ export async function openPdf(container: HTMLDivElement, url: string, events: Pd
     let wrong = false;
     task.onPassword = (update: (password: string) => void, reason: number) => {
         wrong = reason === pdfjs.PasswordResponses.INCORRECT_PASSWORD;
-        void events.password(wrong).then(password => {
-            if (password === null)
-                void task.destroy();
-            else
-                update(password);
+        void events.password(wrong).then((password) => {
+            if (password === null) void task.destroy();
+            else update(password);
         });
     };
     let document_;
@@ -98,17 +110,14 @@ export async function openPdf(container: HTMLDivElement, url: string, events: Pd
         document_ = await task.promise;
     } catch (error) {
         const name = (error as Error)?.name;
-        if (name === 'InvalidPDFException')
-            throw new NotPdfError((error as Error).message);
-        if (name === 'PasswordException' || task.destroyed)
-            throw new PdfLockedError('locked');
+        if (name === 'InvalidPDFException') throw new NotPdfError((error as Error).message);
+        if (name === 'PasswordException' || task.destroyed) throw new PdfLockedError('locked');
         throw error;
     }
 
     eventBus.on('pagesinit', () => {
         pages.currentScaleValue = 'auto';
-        if (start && start > 1 && start <= document_.numPages)
-            pages.currentPageNumber = start;
+        if (start && start > 1 && start <= document_.numPages) pages.currentPageNumber = start;
     });
     eventBus.on('pagechanging', (event: { pageNumber: number }) => events.page(event.pageNumber));
     eventBus.on('scalechanging', (event: { scale: number }) => events.scale(event.scale));
@@ -123,29 +132,35 @@ export async function openPdf(container: HTMLDivElement, url: string, events: Pd
     ]);
     const title = (metadata?.info as { Title?: unknown } | undefined)?.Title;
     type RawOutline = { title: string; dest: unknown; items: RawOutline[] };
-    const outlineOf = (items: RawOutline[] | null): PdfOutlineItem[] => (items ?? []).map(item => ({
-        title: item.title,
-        items: outlineOf(item.items),
-        go: () => {
-            if (item.dest)
-                void linkService.goToDestination(item.dest as string);
-        },
-    }));
+    const outlineOf = (items: RawOutline[] | null): PdfOutlineItem[] =>
+        (items ?? []).map((item) => ({
+            title: item.title,
+            items: outlineOf(item.items),
+            go: () => {
+                if (item.dest) void linkService.goToDestination(item.dest as string);
+            },
+        }));
 
     return {
         pages: document_.numPages,
         title: typeof title === 'string' && title.trim() ? title.trim() : null,
         outline: outlineOf(outline as RawOutline[] | null),
-        goTo: page => {
+        goTo: (page) => {
             pages.currentPageNumber = Math.min(Math.max(1, Math.round(page)), document_.numPages);
         },
-        setScale: scale => {
+        setScale: (scale) => {
             pages.currentScaleValue = String(scale);
         },
         find: (query, { previous = false, again = false }) => {
             eventBus.dispatch('find', {
-                source: null, type: again ? 'again' : '', query, caseSensitive: false, entireWord: false, highlightAll: true,
-                findPrevious: previous, matchDiacritics: false,
+                source: null,
+                type: again ? 'again' : '',
+                query,
+                caseSensitive: false,
+                entireWord: false,
+                highlightAll: true,
+                findPrevious: previous,
+                matchDiacritics: false,
             });
         },
         refresh: () => pages.update(),

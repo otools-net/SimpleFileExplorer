@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    input,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { ConfigService } from '../../core/config.service';
 import { formatSize, joinParts } from '../../core/format';
 import { LibraryItem } from '../../core/models';
@@ -36,8 +48,7 @@ const STEPS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
  * the version keeps an old copy from being used after an update (the bundle's name isn't hashed).
  */
 function linkViewerStyles(version: string): void {
-    if (document.head.querySelector('link[data-pdf-viewer]'))
-        return;
+    if (document.head.querySelector('link[data-pdf-viewer]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = `pdf-viewer.css?v=${encodeURIComponent(version)}`;
@@ -163,15 +174,40 @@ export class PdfViewComponent {
     protected readonly more = {
         zoom: (): MenuEntry => {
             const current = this.scaleValue();
-            const choices = [...SCALES, ...this.customScale() ? [this.customScale()!] : []];
+            const choices = [...SCALES, ...(this.customScale() ? [this.customScale()!] : [])];
             return {
-                id: 'zoom', label: `Zoom: ${choices.find(choice => choice.value === current)?.label ?? current}`, icon: 'zoom-in', title: 'The size of the pages',
+                id: 'zoom',
+                label: `Zoom: ${choices.find((choice) => choice.value === current)?.label ?? current}`,
+                icon: 'zoom-in',
+                title: 'The size of the pages',
                 disabled: this.state() !== 'ready',
-                submenu: () => choices.map(choice => ({ id: 'zoom-' + choice.value, label: choice.label, icon: 'zoom-in', title: 'Pages at ' + choice.label, checked: choice.value === current, run: () => this.setScale(choice.value) })),
+                submenu: () =>
+                    choices.map((choice) => ({
+                        id: 'zoom-' + choice.value,
+                        label: choice.label,
+                        icon: 'zoom-in',
+                        title: 'Pages at ' + choice.label,
+                        checked: choice.value === current,
+                        run: () => this.setScale(choice.value),
+                    })),
             };
         },
-        outline: (): MenuEntry => ({ id: 'outline', label: 'Outline', icon: 'list', title: "Outline: the document's headings", checked: this.showOutline(), run: () => this.toggleOutline() }),
-        dark: (): MenuEntry => ({ id: 'dark', label: 'Dark pages', icon: 'theme', title: 'Dark pages, for reading at night', checked: this.dark(), run: () => this.toggleDark() }),
+        outline: (): MenuEntry => ({
+            id: 'outline',
+            label: 'Outline',
+            icon: 'list',
+            title: "Outline: the document's headings",
+            checked: this.showOutline(),
+            run: () => this.toggleOutline(),
+        }),
+        dark: (): MenuEntry => ({
+            id: 'dark',
+            label: 'Dark pages',
+            icon: 'theme',
+            title: 'Dark pages, for reading at night',
+            checked: this.dark(),
+            run: () => this.toggleDark(),
+        }),
     };
     protected readonly state = signal<'loading' | 'locked' | 'ready' | 'failed'>('loading');
     protected readonly message = signal('');
@@ -206,12 +242,24 @@ export class PdfViewComponent {
     /** A zoom not in the list (Ctrl+= from 300 %, a number typed): shown as its percentage. */
     protected readonly customScale = computed(() => {
         const value = this.scaleValue();
-        return SCALES.some(choice => choice.value === value) ? null : { value, label: `${Math.round(Number(value) * 100)} %` };
+        return SCALES.some((choice) => choice.value === value)
+            ? null
+            : { value, label: `${Math.round(Number(value) * 100)} %` };
     });
-    protected readonly downloadUrl = computed(() => this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
+    protected readonly downloadUrl = computed(() =>
+        this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,
+    );
     protected readonly details = computed(() => {
         const size = this.item().size;
-        return joinParts(['PDF', `${this.pages().toLocaleString()} ${this.pages() === 1 ? 'page' : 'pages'}`, size ? formatSize(size) : null, this.title()], '  ·  ');
+        return joinParts(
+            [
+                'PDF',
+                `${this.pages().toLocaleString()} ${this.pages() === 1 ? 'page' : 'pages'}`,
+                size ? formatSize(size) : null,
+                this.title(),
+            ],
+            '  ·  ',
+        );
     });
 
     constructor() {
@@ -233,11 +281,9 @@ export class PdfViewComponent {
         effect(() => {
             const frame = this.frame().nativeElement;
             untracked(() => {
-                if (typeof ResizeObserver === 'undefined' || resize)
-                    return;
+                if (typeof ResizeObserver === 'undefined' || resize) return;
                 resize = new ResizeObserver(() => {
-                    if (this.handle && Number.isNaN(Number(this.scaleValue())))
-                        this.handle.setScale(this.scaleValue());
+                    if (this.handle && Number.isNaN(Number(this.scaleValue()))) this.handle.setScale(this.scaleValue());
                 });
                 resize.observe(frame);
             });
@@ -245,24 +291,29 @@ export class PdfViewComponent {
     }
 
     private async open(item: LibraryItem, destroyed: () => boolean): Promise<void> {
-        if (!this.config.urls() || this.handle)
-            return;
+        if (!this.config.urls() || this.handle) return;
         try {
-            const handle = await this.load(this.container().nativeElement, this.fileSource.original(item), {
-                page: page => {
-                    this.page.set(page);
-                    clearTimeout(this.savePage);
-                    this.savePage = setTimeout(() => writePosition(item.path, page, PDF_PAGES_KEY), SAVE_PAGE_MS);
+            const handle = await this.load(
+                this.container().nativeElement,
+                this.fileSource.original(item),
+                {
+                    page: (page) => {
+                        this.page.set(page);
+                        clearTimeout(this.savePage);
+                        this.savePage = setTimeout(() => writePosition(item.path, page, PDF_PAGES_KEY), SAVE_PAGE_MS);
+                    },
+                    scale: (scale) => this.scale.set(scale),
+                    matches: (matches) => this.matches.set(matches),
+                    password: (wrong) =>
+                        new Promise<string | null>((resolve) => {
+                            this.wrongPassword.set(wrong);
+                            this.answer = resolve;
+                            this.state.set('locked');
+                            setTimeout(() => this.passwordBox()?.nativeElement.focus());
+                        }),
                 },
-                scale: scale => this.scale.set(scale),
-                matches: matches => this.matches.set(matches),
-                password: wrong => new Promise<string | null>(resolve => {
-                    this.wrongPassword.set(wrong);
-                    this.answer = resolve;
-                    this.state.set('locked');
-                    setTimeout(() => this.passwordBox()?.nativeElement.focus());
-                }),
-            }, readPosition(item.path, PDF_PAGES_KEY));
+                readPosition(item.path, PDF_PAGES_KEY),
+            );
             if (destroyed()) {
                 handle.destroy();
                 return;
@@ -273,11 +324,14 @@ export class PdfViewComponent {
             this.outline.set(handle.outline);
             this.state.set('ready');
         } catch (error) {
-            if (destroyed())
-                return;
-            this.message.set(error instanceof NotPdfError ? 'This file is not a PDF that can be shown: it can only be downloaded.'
-                : error instanceof PdfLockedError ? 'This document is protected by a password: it can only be downloaded.'
-                    : `It could not be shown: ${(error as Error)?.message ?? error}`);
+            if (destroyed()) return;
+            this.message.set(
+                error instanceof NotPdfError
+                    ? 'This file is not a PDF that can be shown: it can only be downloaded.'
+                    : error instanceof PdfLockedError
+                      ? 'This document is protected by a password: it can only be downloaded.'
+                      : `It could not be shown: ${(error as Error)?.message ?? error}`,
+            );
             this.state.set('failed');
         }
     }
@@ -292,8 +346,7 @@ export class PdfViewComponent {
 
     protected goTo(page: number | string): void {
         const number = Number(page);
-        if (this.handle && Number.isFinite(number))
-            this.handle.goTo(number);
+        if (this.handle && Number.isFinite(number)) this.handle.goTo(number);
     }
 
     protected setScale(value: string): void {
@@ -304,17 +357,20 @@ export class PdfViewComponent {
     /** One step larger or smaller than the scale shown now (whatever chose it). */
     protected zoom(direction: 1 | -1): void {
         const current = this.scale();
-        const next = direction > 0 ? STEPS.find(step => step > current + 0.01) ?? STEPS.at(-1)! : [...STEPS].reverse().find(step => step < current - 0.01) ?? STEPS[0];
+        const next =
+            direction > 0
+                ? (STEPS.find((step) => step > current + 0.01) ?? STEPS.at(-1)!)
+                : ([...STEPS].reverse().find((step) => step < current - 0.01) ?? STEPS[0]);
         this.setScale(String(next));
     }
 
     protected toggleOutline(): void {
-        this.showOutline.update(shown => !shown);
+        this.showOutline.update((shown) => !shown);
         writePreference(PDF_OUTLINE_KEY, this.showOutline() ? '1' : '0');
     }
 
     protected toggleDark(): void {
-        this.dark.update(dark => !dark);
+        this.dark.update((dark) => !dark);
         writePreference(PDF_DARK_KEY, this.dark() ? '1' : '0');
     }
 
@@ -347,8 +403,7 @@ export class PdfViewComponent {
     /** The magnifier of a phone: shows the find field under the bar (focused), or hides it. */
     protected toggleFind(): void {
         this.findOpen.set(!this.findOpen());
-        if (this.findOpen())
-            this.focusFind();
+        if (this.findOpen()) this.focusFind();
     }
 
     /** Once the field shows (a phone's is hidden until the magnifier opens it). */
@@ -361,19 +416,27 @@ export class PdfViewComponent {
 
     /** ← / → turn the pages (not while typing); Ctrl+= / Ctrl+− / Ctrl+0 zoom, rather than the whole page's. */
     protected onKeydown(event: KeyboardEvent): void {
-        if (event.defaultPrevented || this.state() !== 'ready')
-            return;
+        if (event.defaultPrevented || this.state() !== 'ready') return;
         const typing = (event.target as Element).closest?.('input, select, textarea');
         if ((event.ctrlKey || event.metaKey) && !event.altKey) {
-            const step = event.key === '=' || event.key === '+' ? 1 : event.key === '-' || event.key === '_' ? -1 : event.key === '0' ? 0 : null;
-            if (step === null)
-                return;
+            const step =
+                event.key === '=' || event.key === '+'
+                    ? 1
+                    : event.key === '-' || event.key === '_'
+                      ? -1
+                      : event.key === '0'
+                        ? 0
+                        : null;
+            if (step === null) return;
             event.preventDefault();
-            if (step === 0)
-                this.setScale('auto');
-            else
-                this.zoom(step as 1 | -1);
-        } else if (!typing && !event.altKey && !event.shiftKey && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+            if (step === 0) this.setScale('auto');
+            else this.zoom(step as 1 | -1);
+        } else if (
+            !typing &&
+            !event.altKey &&
+            !event.shiftKey &&
+            (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+        ) {
             event.preventDefault();
             this.goTo(this.page() + (event.key === 'ArrowRight' ? 1 : -1));
         }
@@ -381,7 +444,14 @@ export class PdfViewComponent {
 
     /** Ctrl+F finds in the document, rather than the browser in the page around it. */
     protected onWindowKeydown(event: KeyboardEvent): void {
-        if (event.defaultPrevented || this.state() !== 'ready' || !(event.ctrlKey || event.metaKey) || event.shiftKey || event.altKey || event.key.toLowerCase() !== 'f')
+        if (
+            event.defaultPrevented ||
+            this.state() !== 'ready' ||
+            !(event.ctrlKey || event.metaKey) ||
+            event.shiftKey ||
+            event.altKey ||
+            event.key.toLowerCase() !== 'f'
+        )
             return;
         event.preventDefault();
         this.findOpen.set(true);

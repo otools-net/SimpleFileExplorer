@@ -24,7 +24,7 @@ export class TagManagerDialog {
     private readonly list = viewChild.required(TagListComponent);
 
     constructor() {
-        registerDialog(dialogs => dialogs.tagManager, this);
+        registerDialog((dialogs) => dialogs.tagManager, this);
     }
 
     open(): void {

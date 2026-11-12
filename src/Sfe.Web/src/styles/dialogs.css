@@ -12,9 +12,16 @@
     box-shadow: var(--shadow);
 }
 
-.sheet.wide { width: min(760px, calc(100vw - 24px)); }
-.sheet[open] { display: flex; flex-direction: column; }
-.sheet::backdrop { background: rgb(0 0 0 / .55); }
+.sheet.wide {
+    width: min(760px, calc(100vw - 24px));
+}
+.sheet[open] {
+    display: flex;
+    flex-direction: column;
+}
+.sheet::backdrop {
+    background: rgb(0 0 0 / 0.55);
+}
 
 .sheet-head {
     display: flex;
@@ -24,11 +31,25 @@
     padding: 16px 16px 10px 20px;
 }
 
-.sheet-title { min-width: 0; }
+.sheet-title {
+    min-width: 0;
+}
 /* A long title shrinks, not the Close button (squeezed to 22 px wide on a phone). */
-.sheet-head > .icon-button { flex-shrink: 0; }
-.sheet-head h2 { margin: 0; font-size: 17px; }
-.sheet-subtitle { margin: 2px 0 0; overflow: hidden; color: var(--text-muted); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-head > .icon-button {
+    flex-shrink: 0;
+}
+.sheet-head h2 {
+    margin: 0;
+    font-size: 17px;
+}
+.sheet-subtitle {
+    margin: 2px 0 0;
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 .sheet-body {
     display: flex;
@@ -49,25 +70,50 @@
     background: var(--surface-2);
 }
 
-.spacer { flex: 1; }
-.muted { margin: 0; color: var(--text-muted); }
-.tag-loading { display: grid; place-items: center; padding: 18px; }
+.spacer {
+    flex: 1;
+}
+.muted {
+    margin: 0;
+    color: var(--text-muted);
+}
+.tag-loading {
+    display: grid;
+    place-items: center;
+    padding: 18px;
+}
 
-.tag-groups { display: flex; flex-direction: column; gap: 12px; }
-.tag-group h3, .tag-table-heading, .default-tags h3 {
+.tag-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.tag-group h3,
+.tag-table-heading,
+.default-tags h3 {
     margin: 0 0 7px;
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
-.tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
 
 /* Tags of a folder or of a search (ScopeTagsDialog): every change is confirmed in this box first. */
-.scope-recursive { margin-bottom: 4px; }
-.scope-count { margin: 0; color: var(--text-muted); font-size: 13px; }
+.scope-recursive {
+    margin-bottom: 4px;
+}
+.scope-count {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
 .scope-confirm {
     display: flex;
     flex-direction: column;
@@ -79,16 +125,41 @@
     font-size: 14px;
 }
 
-.scope-confirm p { margin: 0; overflow-wrap: anywhere; }
-.scope-confirm-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.scope-confirm p {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.scope-confirm-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
 
 /* The folder's default tags, under its files' tags (ScopeTagsDialog). */
-.default-tags { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
-.default-tags h3 { margin: 0; }
-.default-tags .field-hint, .default-tags .muted { margin: 0; }
-.tag-chip.inherited { opacity: .75; }
+.default-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.default-tags h3 {
+    margin: 0;
+}
+.default-tags .field-hint,
+.default-tags .muted {
+    margin: 0;
+}
+.tag-chip.inherited {
+    opacity: 0.75;
+}
 
-.tag-picker { display: flex; flex-direction: column; gap: 6px; }
+.tag-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
 
 .tag-input-wrap {
     display: flex;
@@ -101,9 +172,22 @@
     background: var(--bg);
 }
 
-.tag-input-wrap:focus-within { border-color: var(--accent); }
-.tag-input-wrap .icon { width: 17px; height: 17px; color: var(--text-muted); }
-.tag-input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; outline: none; }
+.tag-input-wrap:focus-within {
+    border-color: var(--accent);
+}
+.tag-input-wrap .icon {
+    width: 17px;
+    height: 17px;
+    color: var(--text-muted);
+}
+.tag-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    outline: none;
+}
 
 .tag-options {
     max-height: 240px;
@@ -126,8 +210,13 @@
     cursor: pointer;
 }
 
-.tag-options li[aria-selected="true"] { background: var(--surface-3); }
-.tag-options li.empty { color: var(--text-muted); cursor: default; }
+.tag-options li[aria-selected='true'] {
+    background: var(--surface-3);
+}
+.tag-options li.empty {
+    color: var(--text-muted);
+    cursor: default;
+}
 
 /* Tag suggestions under the search box. */
 .search-tag-options {
@@ -138,22 +227,67 @@
     padding: 6px;
     border-radius: var(--radius);
 }
-.tag-options li.create .icon { width: 16px; height: 16px; color: var(--accent); }
-.tag-option-detail { overflow: hidden; color: var(--text-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.tag-options li.create .icon {
+    width: 16px;
+    height: 16px;
+    color: var(--accent);
+}
+.tag-option-detail {
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 /* Searches made before, in the same list (SearchHistory). */
-.search-history-option { padding-block: 2px; }
-.search-history-option > .icon { flex: none; width: 16px; height: 16px; color: var(--text-muted); }
-.search-history-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.search-history-option .icon-button { flex: none; color: var(--text-muted); }
-.search-history-option .icon-button .icon { width: 14px; height: 14px; }
+.search-history-option {
+    padding-block: 2px;
+}
+.search-history-option > .icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+}
+.search-history-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.search-history-option .icon-button {
+    flex: none;
+    color: var(--text-muted);
+}
+.search-history-option .icon-button .icon {
+    width: 14px;
+    height: 14px;
+}
 
-.tag-form { display: flex; flex-direction: column; gap: 14px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field-label { font-size: 13px; font-weight: 600; }
-.field-hint { color: var(--text-muted); font-size: 12px; font-weight: 400; }
+.tag-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.field-label {
+    font-size: 13px;
+    font-weight: 600;
+}
+.field-hint {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 400;
+}
 
-:is(.tag-form, .settings-form, .system-section, .account-form, .access-form) :is(input[type="text"], input[type="number"], input[type="password"], textarea, select) {
+:is(.tag-form, .settings-form, .system-section, .account-form, .access-form)
+    :is(input[type='text'], input[type='number'], input[type='password'], textarea, select) {
     width: 100%;
     padding: 8px 10px;
     border: 1px solid var(--border);
@@ -162,8 +296,18 @@
     outline: none;
 }
 
-:is(.tag-form, .settings-form) textarea { resize: vertical; }
-:is(.tag-form, .settings-form, .system-section, .account-form, .access-form) :is(input[type="text"], input[type="number"], input[type="password"], textarea, select):focus { border-color: var(--accent); }
-.tag-form .tag-input-wrap input { padding: 0; border: 0; background: transparent; }
-.tag-form select:disabled { opacity: .6; }
-
+:is(.tag-form, .settings-form) textarea {
+    resize: vertical;
+}
+:is(.tag-form, .settings-form, .system-section, .account-form, .access-form)
+    :is(input[type='text'], input[type='number'], input[type='password'], textarea, select):focus {
+    border-color: var(--accent);
+}
+.tag-form .tag-input-wrap input {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+.tag-form select:disabled {
+    opacity: 0.6;
+}

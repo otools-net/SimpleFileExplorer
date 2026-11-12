@@ -77,9 +77,12 @@ export class TransferDialog {
 
     protected readonly what = computed(() => {
         const items = this.items();
-        const folders = items.filter(item => item.kind === 'directory').length;
+        const folders = items.filter((item) => item.kind === 'directory').length;
         const files = items.length - folders;
-        const counted = joinParts([folders ? plural(folders, 'folder') : null, files ? plural(files, 'file') : null], ' and ');
+        const counted = joinParts(
+            [folders ? plural(folders, 'folder') : null, files ? plural(files, 'file') : null],
+            ' and ',
+        );
         const what = items.length === 1 ? `“${items[0].name}”` : counted || plural(this.paths().length, 'item');
         return `${this.kind() === 'move' ? 'Move' : 'Copy'} ${what}`;
     });
@@ -89,33 +92,46 @@ export class TransferDialog {
         return `${this.kind() === 'move' ? 'Move' : 'Copy'} ${what} into “${this.targetName()}”?`;
     });
     protected readonly gainedFolders = computed(() => {
-        const folders = new Set(this.gains().map(gain => gain.folder));
+        const folders = new Set(this.gains().map((gain) => gain.folder));
         return folders.size === 1 ? `“${baseName([...folders][0])}”` : plural(folders.size, 'folder');
     });
     /** Why the folder chosen can't be used; null when it can. */
     protected readonly refusal = computed(() => {
         const listing = this.browser.listing();
-        if (!listing)
-            return 'Pick a folder.';
+        if (!listing) return 'Pick a folder.';
         if (!this.browser.allows(this.kind() === 'move' ? Rights.moveFiles : Rights.copyFiles))
             return `You may not ${this.kind()} files into this folder: open another.`;
-        if (this.kind() === 'move' && this.paths().every(path => parentPath(path) === listing.path))
+        if (this.kind() === 'move' && this.paths().every((path) => parentPath(path) === listing.path))
             return 'They are in this folder already: open another.';
         return null;
     });
     protected readonly confirmLabel = computed(() =>
-        this.step() === 'pick' ? (this.kind() === 'move' ? 'Move here' : 'Copy here') : (this.kind() === 'move' ? 'Move' : 'Copy'));
-    protected readonly confirmTitle = computed(() =>
-        `${this.kind() === 'move' ? 'Move' : 'Copy'} into “${this.targetName()}”: it goes on in the background`);
-    private readonly targetName = computed(() => baseName(this.target()) || this.config.config()?.rootName || 'the library');
+        this.step() === 'pick'
+            ? this.kind() === 'move'
+                ? 'Move here'
+                : 'Copy here'
+            : this.kind() === 'move'
+              ? 'Move'
+              : 'Copy',
+    );
+    protected readonly confirmTitle = computed(
+        () => `${this.kind() === 'move' ? 'Move' : 'Copy'} into “${this.targetName()}”: it goes on in the background`,
+    );
+    private readonly targetName = computed(
+        () => baseName(this.target()) || this.config.config()?.rootName || 'the library',
+    );
 
     constructor() {
-        registerDialog(dialogs => dialogs.transfer, this);
+        registerDialog((dialogs) => dialogs.transfer, this);
     }
 
     /** Move to… / Copy to…: the folder is picked, starting from the one listed. */
     pick(kind: FileJobKind, items: LibraryItem[]): void {
-        this.reset(kind, items.map(item => item.path), 'pick');
+        this.reset(
+            kind,
+            items.map((item) => item.path),
+            'pick',
+        );
         this.items.set(items);
         const route = this.store.route();
         void this.browser.browse(route.q ? parentPath(items[0]?.path ?? '') : route.path);
@@ -143,10 +159,12 @@ export class TransferDialog {
 
     /** A folder moved can't take itself. */
     protected readonly closedBecause = (path: string): string | null =>
-        this.kind() === 'move' && this.paths().some(moved => path === moved || path.startsWith(`${moved}/`)) ? 'It is moved itself' : null;
+        this.kind() === 'move' && this.paths().some((moved) => path === moved || path.startsWith(`${moved}/`))
+            ? 'It is moved itself'
+            : null;
 
     protected gainText(gain: AccessGain): string {
-        const now = gain.before === 'hidden' ? 'who don\'t see it now' : 'who may only look now';
+        const now = gain.before === 'hidden' ? "who don't see it now" : 'who may only look now';
         const then = gain.after === 'write' ? 'could change' : 'would see';
         return `${gain.isGroup ? `The group ${gain.who}` : gain.who} (${now}) ${then} “${baseName(gain.folder)}”.`;
     }
@@ -159,18 +177,15 @@ export class TransferDialog {
         const request: FileJobRequest = { kind: this.kind(), paths: this.paths(), target: this.target() };
         if (this.step() === 'pick' && request.kind === 'move') {
             const gains = await whileBusy(this.busy, () => this.transfers.gains(request.paths, request.target));
-            if (gains === null)
-                return;
+            if (gains === null) return;
             if (gains.length) {
                 this.gains.set(gains);
                 this.step.set('confirm');
                 return;
             }
         }
-        if (request.kind === 'move')
-            request.keepAccess = this.keepAccess();
-        else
-            request.keepTags = this.keepTags();
+        if (request.kind === 'move') request.keepAccess = this.keepAccess();
+        else request.keepTags = this.keepTags();
         const started = await whileBusy(this.busy, () => this.transfers.start(request));
         if (started) {
             this.store.clearSelection();

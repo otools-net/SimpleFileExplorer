@@ -66,10 +66,18 @@ export interface EpubOptions {
     readonly style: EpubStyle;
 }
 
-export type EpubLoader = (stage: HTMLElement, url: string, options: EpubOptions, events: EpubEvents) => Promise<EpubHandle>;
+export type EpubLoader = (
+    stage: HTMLElement,
+    url: string,
+    options: EpubOptions,
+    events: EpubEvents,
+) => Promise<EpubHandle>;
 
 /** How the view opens a book: epub.js (`openEpub`), a fake in the specs (jsdom lays nothing out). */
-export const EPUB_LOADER = new InjectionToken<EpubLoader>('EPUB_LOADER', { providedIn: 'root', factory: () => openEpub });
+export const EPUB_LOADER = new InjectionToken<EpubLoader>('EPUB_LOADER', {
+    providedIn: 'root',
+    factory: () => openEpub,
+});
 
 /** The book's path as one URL segment, as the server reads it (`EpubEntries.Token`). */
 export const bookToken = pathToken;
@@ -92,11 +100,18 @@ function rulesOf(style: EpubStyle): Record<string, Record<string, string>> {
             'line-height': `${style.lineHeight} !important`,
         },
         // The reader's font and spacing in the text, as e-readers do; headings keep their size.
-        'p, li, dd, dt, blockquote, td, th, span, div': { 'font-family': 'inherit !important', 'line-height': 'inherit !important' },
+        'p, li, dd, dt, blockquote, td, th, span, div': {
+            'font-family': 'inherit !important',
+            'line-height': 'inherit !important',
+        },
         img: { 'max-width': '100% !important', height: 'auto !important' },
     };
     if (style.forceColors) {
-        rules['body *'] = { color: 'inherit !important', 'background-color': 'transparent !important', 'border-color': 'currentColor !important' };
+        rules['body *'] = {
+            color: 'inherit !important',
+            'background-color': 'transparent !important',
+            'border-color': 'currentColor !important',
+        };
         rules['a, a *'] = { color: `${style.link} !important` };
     }
     return rules;
@@ -106,11 +121,19 @@ function rulesOf(style: EpubStyle): Record<string, Record<string, string>> {
  * Opens the book at `url` (a folder: its files are served by the app) with epub.js (`@likecoin/epub-ts`,
  * agents/docs/features/epub-reader.md): chapters in frames sandboxed without scripts, under the app's own policy.
  */
-export async function openEpub(stage: HTMLElement, url: string, options: EpubOptions, events: EpubEvents): Promise<EpubHandle> {
+export async function openEpub(
+    stage: HTMLElement,
+    url: string,
+    options: EpubOptions,
+    events: EpubEvents,
+): Promise<EpubHandle> {
     const { default: ePub } = await import('@likecoin/epub-ts');
     const book = ePub(url);
     await book.opened;
-    const [metadata, navigation] = await Promise.all([book.loaded.metadata.catch(() => null), book.loaded.navigation.catch(() => null)]);
+    const [metadata, navigation] = await Promise.all([
+        book.loaded.metadata.catch(() => null),
+        book.loaded.navigation.catch(() => null),
+    ]);
 
     let style = options.style;
     let mode = options.mode;
@@ -126,10 +149,18 @@ export async function openEpub(stage: HTMLElement, url: string, options: EpubOpt
         atEnd: !!location.atEnd,
     });
 
-    const linkFonts = (contents: { document: Document; addStylesheet(src: string, key?: string): Promise<boolean> }) => {
+    const linkFonts = (contents: {
+        document: Document;
+        addStylesheet(src: string, key?: string): Promise<boolean>;
+    }) => {
         if (style.fontsUrl && !contents.document.querySelector('link[data-reader-fonts]'))
-            void contents.addStylesheet(style.fontsUrl, 'reader-fonts').then(() =>
-                contents.document.querySelector(`link[href="${CSS.escape(style.fontsUrl!)}"]`)?.setAttribute('data-reader-fonts', ''));
+            void contents
+                .addStylesheet(style.fontsUrl, 'reader-fonts')
+                .then(() =>
+                    contents.document
+                        .querySelector(`link[href="${CSS.escape(style.fontsUrl!)}"]`)
+                        ?.setAttribute('data-reader-fonts', ''),
+                );
     };
 
     const make = (layout: EpubMode): Rendition => {
@@ -137,9 +168,11 @@ export async function openEpub(stage: HTMLElement, url: string, options: EpubOpt
             width: '100%',
             height: '100%',
             allowScriptedContent: false,
-            ...(layout === 'scroll' ? { flow: 'scrolled', manager: 'continuous' }
-                : layout === 'spread' ? { flow: 'paginated', spread: 'auto', minSpreadWidth: 800 }
-                    : { flow: 'paginated', spread: 'none' }),
+            ...(layout === 'scroll'
+                ? { flow: 'scrolled', manager: 'continuous' }
+                : layout === 'spread'
+                  ? { flow: 'paginated', spread: 'auto', minSpreadWidth: 800 }
+                  : { flow: 'paginated', spread: 'none' }),
         });
         rendition.hooks.content.register(linkFonts);
         rendition.themes.register({ sfe: rulesOf(style) });
@@ -152,7 +185,12 @@ export async function openEpub(stage: HTMLElement, url: string, options: EpubOpt
         });
         rendition.on('touchend', (event: TouchEvent) => {
             const end = event.changedTouches[0];
-            if (touch && end && Math.abs(end.screenX - touch.x) > SWIPE_PIXELS && Math.abs(end.screenX - touch.x) > Math.abs(end.screenY - touch.y))
+            if (
+                touch &&
+                end &&
+                Math.abs(end.screenX - touch.x) > SWIPE_PIXELS &&
+                Math.abs(end.screenX - touch.x) > Math.abs(end.screenY - touch.y)
+            )
                 events.swipe(end.screenX < touch.x ? 1 : -1);
             touch = null;
         });
@@ -162,14 +200,20 @@ export async function openEpub(stage: HTMLElement, url: string, options: EpubOpt
     let rendition = make(mode);
     await rendition.display(options.start ?? undefined).catch(() => rendition.display());
     // How far through the book: counted once every chapter has been read (in the background).
-    void book.locations.generate(1600).then(() => {
-        located = true;
-        const location = rendition.currentLocation();
-        if (location?.start)
-            events.relocated(placeOf(location));
-    }, () => undefined);
+    void book.locations.generate(1600).then(
+        () => {
+            located = true;
+            const location = rendition.currentLocation();
+            if (location?.start) events.relocated(placeOf(location));
+        },
+        () => undefined,
+    );
 
-    const flatten = (items: readonly { label: string; href: string; subitems?: unknown[] }[], depth: number, into: EpubTocItem[]) => {
+    const flatten = (
+        items: readonly { label: string; href: string; subitems?: unknown[] }[],
+        depth: number,
+        into: EpubTocItem[],
+    ) => {
         for (const item of items) {
             into.push({ label: item.label.trim(), href: item.href, depth });
             flatten((item.subitems ?? []) as typeof items, depth + 1, into);
@@ -183,36 +227,32 @@ export async function openEpub(stage: HTMLElement, url: string, options: EpubOpt
         toc: flatten(navigation?.toc ?? [], 0, []),
         next: () => void rendition.next(),
         prev: () => void rendition.prev(),
-        display: target => void rendition.display(target),
-        setMode: async layout => {
-            if (layout === mode)
-                return;
+        display: (target) => void rendition.display(target),
+        setMode: async (layout) => {
+            if (layout === mode) return;
             const place = rendition.currentLocation()?.start?.cfi;
             rendition.destroy();
             mode = layout;
             rendition = make(layout);
             await rendition.display(place);
         },
-        setStyle: next => {
+        setStyle: (next) => {
             style = next;
             rendition.themes.register({ sfe: rulesOf(style) });
             rendition.themes.select('sfe');
-            for (const contents of rendition.getContents())
-                linkFonts(contents);
+            for (const contents of rendition.getContents()) linkFonts(contents);
         },
         scrollBy: (pixels, pages = false) => {
             const container = rendition.manager?.container;
             container?.scrollBy({ top: pages ? pixels * container.clientHeight * 0.9 : pixels });
         },
         resize: () => {
-            if (!stage.clientWidth || !stage.clientHeight)
-                return;
+            if (!stage.clientWidth || !stage.clientHeight) return;
             const place = rendition.currentLocation()?.start?.cfi ?? options.start ?? undefined;
             rendition.resize();
             // epub.js clears its pages on a new size and shows them again only once it knows where it is: a resize before
             // that (the loading message going away, a phone's bar) left the book blank (e2e documents.spec.ts).
-            if (!rendition.getContents().length)
-                void rendition.display(place).catch(() => rendition.display());
+            if (!rendition.getContents().length) void rendition.display(place).catch(() => rendition.display());
         },
         destroy: () => {
             rendition.destroy();

@@ -15,8 +15,7 @@ export function parentPath(path: string): string {
  */
 export function pathToken(path: string): string {
     let binary = '';
-    for (const byte of new TextEncoder().encode(path))
-        binary += String.fromCharCode(byte);
+    for (const byte of new TextEncoder().encode(path)) binary += String.fromCharCode(byte);
     return btoa(binary).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 

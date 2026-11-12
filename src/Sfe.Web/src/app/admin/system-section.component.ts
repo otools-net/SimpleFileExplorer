@@ -93,8 +93,9 @@ export class SystemSectionComponent {
     constructor() {
         if (this.configService.can(Rights.serverSettings)) {
             this.api.systemInfo().then(
-                info => this.info.set(info),
-                (error: Error) => this.infoError.set(error.message));
+                (info) => this.info.set(info),
+                (error: Error) => this.infoError.set(error.message),
+            );
         }
     }
 }

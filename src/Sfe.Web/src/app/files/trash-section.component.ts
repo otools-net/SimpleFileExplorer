@@ -89,11 +89,17 @@ export class TrashSectionComponent implements OnInit {
     protected readonly rootName = computed(() => this.config.config()?.rootName ?? 'the library');
     protected readonly intro = computed(() => {
         const days = this.retention();
-        const keeps = days === null ? '' : days === 0
-            ? ' It keeps them until they are restored or deleted for good.'
-            : ` Each is deleted for good ${plural(days, 'day')} after it was deleted.`;
-        return 'You see what you deleted, and what was deleted in folders where you may delete. '
-            + 'Restoring puts an item back where it was, with its tags and folder access.' + keeps;
+        const keeps =
+            days === null
+                ? ''
+                : days === 0
+                  ? ' It keeps them until they are restored or deleted for good.'
+                  : ` Each is deleted for good ${plural(days, 'day')} after it was deleted.`;
+        return (
+            'You see what you deleted, and what was deleted in folders where you may delete. ' +
+            'Restoring puts an item back where it was, with its tags and folder access.' +
+            keeps
+        );
     });
 
     async ngOnInit(): Promise<void> {
@@ -116,11 +122,10 @@ export class TrashSectionComponent implements OnInit {
 
     protected async more(): Promise<void> {
         const next = this.next();
-        if (next === null)
-            return;
+        if (next === null) return;
         try {
             const page = await whileBusy(this.loadingMore, () => this.api.trash(next));
-            this.items.update(items => [...items, ...page.items]);
+            this.items.update((items) => [...items, ...page.items]);
             this.next.set(page.hasMore ? page.next : null);
         } catch (error) {
             this.toasts.error(`Could not read the trash: ${(error as Error).message}`);
@@ -144,15 +149,40 @@ export class TrashSectionComponent implements OnInit {
     private rowEntries(item: TrashItem): MenuEntry[] {
         const entries: MenuEntry[] = [];
         if (this.canRestore() && this.busy() === null)
-            entries.push({ id: 'restore', label: 'Restore', icon: 'undo', title: 'Put it back where it was (a number is added to its name if that is taken)', run: () => void this.restore(item) });
+            entries.push({
+                id: 'restore',
+                label: 'Restore',
+                icon: 'undo',
+                title: 'Put it back where it was (a number is added to its name if that is taken)',
+                run: () => void this.restore(item),
+            });
         if (this.canPurge() && this.busy() === null)
-            entries.push({ id: 'purge', label: 'Delete for good…', icon: 'trash', title: 'Delete it for good (asks first)', run: () => void this.purge(item) });
+            entries.push({
+                id: 'purge',
+                label: 'Delete for good…',
+                icon: 'trash',
+                title: 'Delete it for good (asks first)',
+                run: () => void this.purge(item),
+            });
         const folder = this.folderOf(item);
         const params = { path: folder || null };
         const name = folder || this.rootName();
         entries.push(
-            { id: 'openFolder', label: 'Open its folder', icon: 'folder', title: `List ${name}, where it was`, run: () => void this.router.navigate(['/'], { queryParams: params }) },
-            { id: 'folderNewTab', label: 'Open its folder in new tab', icon: 'external', title: `List ${name} in a tab of its own`, href: this.store.pageUrl(params), newTab: true },
+            {
+                id: 'openFolder',
+                label: 'Open its folder',
+                icon: 'folder',
+                title: `List ${name}, where it was`,
+                run: () => void this.router.navigate(['/'], { queryParams: params }),
+            },
+            {
+                id: 'folderNewTab',
+                label: 'Open its folder in new tab',
+                icon: 'external',
+                title: `List ${name} in a tab of its own`,
+                href: this.store.pageUrl(params),
+                newTab: true,
+            },
         );
         return entries;
     }
@@ -170,7 +200,9 @@ export class TrashSectionComponent implements OnInit {
                 return;
             }
             this.remove(item.id);
-            this.toasts.show(result.path === item.path ? `“${item.name}” is back.` : `“${item.name}” is back, as “${result.path}”.`);
+            this.toasts.show(
+                result.path === item.path ? `“${item.name}” is back.` : `“${item.name}” is back, as “${result.path}”.`,
+            );
         } catch (error) {
             this.toasts.error((error as Error).message);
         } finally {
@@ -179,8 +211,7 @@ export class TrashSectionComponent implements OnInit {
     }
 
     protected async purge(item: TrashItem): Promise<void> {
-        if (!confirm(`Delete “${item.name}” for good? This can't be undone.`))
-            return;
+        if (!confirm(`Delete “${item.name}” for good? This can't be undone.`)) return;
         this.busy.set(`${item.id}:purge`);
         try {
             await this.api.purgeFromTrash(item.id);
@@ -193,8 +224,7 @@ export class TrashSectionComponent implements OnInit {
     }
 
     protected async empty(): Promise<void> {
-        if (!confirm('Delete for good everything of the trash you may? This can\'t be undone.'))
-            return;
+        if (!confirm("Delete for good everything of the trash you may? This can't be undone.")) return;
         try {
             const result = await whileBusy(this.emptying, () => this.api.emptyTrash());
             this.toasts.show(`${plural(result.purged, 'item')} deleted for good.`);
@@ -205,6 +235,6 @@ export class TrashSectionComponent implements OnInit {
     }
 
     private remove(id: number): void {
-        this.items.update(items => items.filter(item => item.id !== id));
+        this.items.update((items) => items.filter((item) => item.id !== id));
     }
 }

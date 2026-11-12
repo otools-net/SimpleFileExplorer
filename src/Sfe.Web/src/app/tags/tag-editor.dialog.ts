@@ -119,11 +119,18 @@ export class TagEditorDialog {
     protected readonly saving = signal(false);
     protected readonly subtitle = computed(() => {
         const tag = this.tag();
-        return tag ? [tag.isBuiltIn ? 'Built-in tag' : null, plural(tag.fileCount, 'file')].filter(Boolean).join(' · ') : null;
+        return tag
+            ? [tag.isBuiltIn ? 'Built-in tag' : null, plural(tag.fileCount, 'file')].filter(Boolean).join(' · ')
+            : null;
     });
     protected readonly swatches = computed(() => [
         { slug: '', name: 'None', hex: null as string | null, text: null as string | null },
-        ...(this.config.config()?.tagColors ?? []).map(color => ({ slug: color.slug, name: color.name, hex: color.hex as string | null, text: textOn(color.hex) as string | null })),
+        ...(this.config.config()?.tagColors ?? []).map((color) => ({
+            slug: color.slug,
+            name: color.name,
+            hex: color.hex as string | null,
+            text: textOn(color.hex) as string | null,
+        })),
     ]);
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;
@@ -131,14 +138,14 @@ export class TagEditorDialog {
     private result: TagEditResult = null;
     private resolveOpen: ((result: TagEditResult) => void) | null = null;
 
-    protected readonly excludeFromParents = () => new Set([...(this.tag() ? [this.tag()!.id] : []), ...this.parents().map(p => p.id)]);
+    protected readonly excludeFromParents = () =>
+        new Set([...(this.tag() ? [this.tag()!.id] : []), ...this.parents().map((p) => p.id)]);
     protected readonly addParent = async (option: TagOption) => {
-        if (option.tag)
-            this.parents.update(parents => [...parents, option.tag!]);
+        if (option.tag) this.parents.update((parents) => [...parents, option.tag!]);
     };
 
     constructor() {
-        registerDialog(dialogs => dialogs.tagEditor, this);
+        registerDialog((dialogs) => dialogs.tagEditor, this);
     }
 
     /** Opens the editor for a tag id, or for a new tag; resolves when it closes, with what it did. */
@@ -157,7 +164,9 @@ export class TagEditorDialog {
         this.sheet().open();
         // After the fields are drawn with the tag's values.
         setTimeout(() => this.nameInput().nativeElement.focus());
-        return new Promise(resolve => { this.resolveOpen = resolve; });
+        return new Promise((resolve) => {
+            this.resolveOpen = resolve;
+        });
     }
 
     private fill(details: TagDetails | null, defaults: { name?: string }): void {
@@ -174,9 +183,8 @@ export class TagEditorDialog {
     }
 
     protected removeParent(parent: TagSummary): void {
-        this.parents.update(parents => parents.filter(p => p.id !== parent.id));
-        if (this.disambiguation() === String(parent.id))
-            this.disambiguation.set('');
+        this.parents.update((parents) => parents.filter((p) => p.id !== parent.id));
+        if (this.disambiguation() === String(parent.id)) this.disambiguation.set('');
     }
 
     protected async save(event: Event): Promise<void> {
@@ -185,8 +193,11 @@ export class TagEditorDialog {
         const input: TagInput = {
             name: this.name().trim(),
             shorthand: this.shorthand().trim() || null,
-            aliases: this.aliases().split('\n').map(a => a.trim()).filter(Boolean),
-            parentIds: this.parents().map(p => p.id),
+            aliases: this.aliases()
+                .split('\n')
+                .map((a) => a.trim())
+                .filter(Boolean),
+            parentIds: this.parents().map((p) => p.id),
             disambiguationId: this.disambiguation() ? Number(this.disambiguation()) : null,
             color: this.color() || null,
             isCategory: this.isCategory(),
@@ -213,8 +224,7 @@ export class TagEditorDialog {
     protected async delete(): Promise<void> {
         const tag = this.tag()!;
         const uses = tag.fileCount ? ` It is removed from ${plural(tag.fileCount, 'file')}.` : '';
-        if (!confirm(`Delete the tag “${tag.displayName}”?${uses}`))
-            return;
+        if (!confirm(`Delete the tag “${tag.displayName}”?${uses}`)) return;
         try {
             await this.api.deleteTag(tag.id);
             this.store.applyTagDeleted(tag.id);
@@ -227,8 +237,7 @@ export class TagEditorDialog {
 
     protected find(): void {
         const tag = this.tag()!;
-        if (!this.dialogs.closeAll())
-            return;
+        if (!this.dialogs.closeAll()) return;
         this.store.navigate({ q: tagQuery(tag) });
     }
 

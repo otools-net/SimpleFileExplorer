@@ -127,10 +127,9 @@ export class TaskHistoryComponent {
 
     /** The first page again (and the open log), unless older runs were loaded. */
     async refresh(): Promise<void> {
-        if (this.paged)
-            return;
+        if (this.paged) return;
         await this.load();
-        const open = this.runs().find(run => run.id === this.openId());
+        const open = this.runs().find((run) => run.id === this.openId());
         // A finished run's log doesn't change any more.
         if (open && (open.outcome === 'running' || this.details()?.outcome === 'running'))
             void this.loadDetails(open.id);
@@ -164,12 +163,11 @@ export class TaskHistoryComponent {
 
     protected async loadMore(): Promise<void> {
         const before = this.next();
-        if (before === null)
-            return;
+        if (before === null) return;
         try {
             const page = await whileBusy(this.loading, () => this.api.taskRuns({ task: this.filter(), before }));
             this.paged = true;
-            this.runs.update(runs => [...runs, ...page.runs]);
+            this.runs.update((runs) => [...runs, ...page.runs]);
             this.next.set(page.next);
         } catch (error) {
             this.error.set((error as Error).message);
@@ -177,8 +175,7 @@ export class TaskHistoryComponent {
     }
 
     protected async clear(): Promise<void> {
-        if (!confirm('Delete the history of the finished runs, with their logs?'))
-            return;
+        if (!confirm('Delete the history of the finished runs, with their logs?')) return;
         try {
             await whileBusy(this.clearing, () => this.api.clearTaskRuns());
             this.paged = false;
@@ -214,8 +211,7 @@ export class TaskHistoryComponent {
         const filter = this.filter();
         try {
             const page = await this.api.taskRuns({ task: filter, before: null });
-            if (filter !== this.filter() || this.paged)
-                return;
+            if (filter !== this.filter() || this.paged) return;
             this.runs.set(page.runs);
             this.next.set(page.next);
             this.error.set(null);
@@ -229,11 +225,9 @@ export class TaskHistoryComponent {
     private async loadDetails(id: number): Promise<void> {
         try {
             const details = await this.api.taskRun(id);
-            if (this.openId() === id)
-                this.details.set(details);
+            if (this.openId() === id) this.details.set(details);
         } catch (error) {
-            if (this.openId() === id)
-                this.toasts.error(`Could not read the log: ${(error as Error).message}`);
+            if (this.openId() === id) this.toasts.error(`Could not read the log: ${(error as Error).message}`);
         }
     }
 }

@@ -17,17 +17,27 @@ beforeEach(async () => {
 
 afterEach(() => {
     localStorage.removeItem(READING_KEY);
-    document.head.querySelectorAll('link[data-reader-fonts]').forEach(link => link.remove());
+    document.head.querySelectorAll('link[data-reader-fonts]').forEach((link) => link.remove());
     TestBed.resetTestingModule();
 });
 
 describe('reading preferences', () => {
     it('takes what is valid and the defaults for the rest', () => {
-        const read = sanitizeReading({ theme: 'neon', customFont: 'Fira Code', code: { size: 99, lineHeight: 1.65, width: 33, wrap: 'yes', font: 'jetbrains-mono' }, prose: null });
+        const read = sanitizeReading({
+            theme: 'neon',
+            customFont: 'Fira Code',
+            code: { size: 99, lineHeight: 1.65, width: 33, wrap: 'yes', font: 'jetbrains-mono' },
+            prose: null,
+        });
 
         expect(read.theme).toBe('app');
         expect(read.customFont).toBe('Fira Code');
-        expect(read.code).toEqual({ ...DEFAULT_READING.code, size: FONT_SIZES.max, lineHeight: 1.65, font: 'jetbrains-mono' });
+        expect(read.code).toEqual({
+            ...DEFAULT_READING.code,
+            size: FONT_SIZES.max,
+            lineHeight: 1.65,
+            font: 'jetbrains-mono',
+        });
         expect(read.prose).toEqual(DEFAULT_READING.prose);
         expect(sanitizeReading('garbage')).toEqual(DEFAULT_READING);
     });
@@ -97,7 +107,11 @@ describe('ReadingService', () => {
         service().update('code', { width: 0, padding: 16, lineHeight: 1.8 });
 
         expect(service().style('code')).toEqual({
-            '--reader-font': 'var(--mono)', '--reader-size': '14px', '--reader-line-height': '1.8', '--reader-width': 'none', '--reader-padding': '16px',
+            '--reader-font': 'var(--mono)',
+            '--reader-size': '14px',
+            '--reader-line-height': '1.8',
+            '--reader-width': 'none',
+            '--reader-padding': '16px',
         });
         expect(service().style('prose')['--reader-width']).toBe('72ch');
     });
@@ -142,7 +156,11 @@ describe('ReadingPanelComponent', () => {
         await settle();
         await fixture.whenStable();
 
-        expect(service().profile('prose')).toMatchObject({ font: 'atkinson', width: 100, size: DEFAULT_READING.prose.size + 1 });
+        expect(service().profile('prose')).toMatchObject({
+            font: 'atkinson',
+            width: 100,
+            size: DEFAULT_READING.prose.size + 1,
+        });
         expect(service().profile('code')).toEqual(DEFAULT_READING.code);
         expect(service().preferences().theme).toBe('sepia');
         expect(element.querySelector('output')!.textContent).toContain(`${DEFAULT_READING.prose.size + 1} px`);

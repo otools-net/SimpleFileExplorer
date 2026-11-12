@@ -47,7 +47,7 @@ export class TagChipComponent {
     protected readonly text = computed(() => this.label() ?? (this.tag().displayName || this.tag().name));
     protected readonly color = computed(() => {
         const slug = this.tag().color;
-        return slug ? this.config.config()?.tagColors.find(color => color.slug === slug) ?? null : null;
+        return slug ? (this.config.config()?.tagColors.find((color) => color.slug === slug) ?? null) : null;
     });
     protected readonly textOn = textOn;
     protected readonly Boolean = Boolean;

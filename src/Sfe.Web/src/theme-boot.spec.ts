@@ -24,7 +24,7 @@ describe('theme boot script', () => {
         expect(await boot()).toBe('light');
     });
 
-    it('prefers this browser\'s pick over the last server default', async () => {
+    it("prefers this browser's pick over the last server default", async () => {
         localStorage.setItem('sfe.theme.default', 'dark');
         expect(await boot()).toBe('dark');
         localStorage.setItem('sfe.theme', 'light');
@@ -52,7 +52,9 @@ describe('theme boot script', () => {
     });
 
     it('still sets a theme when storage is unavailable', async () => {
-        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new DOMException('denied', 'SecurityError'); });
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw new DOMException('denied', 'SecurityError');
+        });
         setMediaQuery('(prefers-color-scheme: light)', true);
         expect(await boot()).toBe('light');
     });

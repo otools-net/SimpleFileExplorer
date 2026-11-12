@@ -1,4 +1,17 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, computed, DestroyRef, Directive, ElementRef, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+    booleanAttribute,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    Directive,
+    ElementRef,
+    inject,
+    input,
+    OnDestroy,
+    OnInit,
+    signal,
+} from '@angular/core';
 import { createOverflowManager, OverflowManager } from '@fluentui/priority-overflow';
 import { IconComponent } from '../shared/icon.component';
 import { ContextMenu, MenuEntry, MenuTarget } from './context-menu';
@@ -28,7 +41,7 @@ export class OverflowRowDirective implements OnInit {
     /** The items in the menu, in the row's order. */
     readonly hidden = signal<readonly OverflowItemDirective[]>([]);
     /** Some of the items that left have an entry: the "⋯" shows (a part of a text leaving alone doesn't need it). */
-    readonly hasMenu = computed(() => this.hidden().some(item => item.sfeOverflowItem()));
+    readonly hasMenu = computed(() => this.hidden().some((item) => item.sfeOverflowItem()));
     private readonly manager: OverflowManager | null;
     /** An item whose width changes (a label) changes what fits, as the row's own width does. */
     private readonly resizes: ResizeObserver | null;
@@ -40,18 +53,25 @@ export class OverflowRowDirective implements OnInit {
     constructor() {
         // No ResizeObserver (jsdom): nothing leaves.
         const supported = typeof window.ResizeObserver === 'function';
-        this.manager = supported ? createOverflowManager({
-            padding: 0,
-            onUpdateItemVisibility: ({ item, visible }) => item.element.toggleAttribute('data-overflowed', !visible),
-            onUpdateOverflow: ({ invisibleItems }) => {
-                this.hidden.set(invisibleItems
-                    .map(item => item.element)
-                    .sort((a, b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
-                    .map(element => [...this.items.values()].find(item => item.element === element)!)
-                    .filter(Boolean));
-                this.fitGaps();
-            },
-        }) : null;
+        this.manager = supported
+            ? createOverflowManager({
+                  padding: 0,
+                  onUpdateItemVisibility: ({ item, visible }) =>
+                      item.element.toggleAttribute('data-overflowed', !visible),
+                  onUpdateOverflow: ({ invisibleItems }) => {
+                      this.hidden.set(
+                          invisibleItems
+                              .map((item) => item.element)
+                              .sort((a, b) =>
+                                  a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+                              )
+                              .map((element) => [...this.items.values()].find((item) => item.element === element)!)
+                              .filter(Boolean),
+                      );
+                      this.fitGaps();
+                  },
+              })
+            : null;
         this.resizes = supported ? new ResizeObserver(() => this.manager?.update()) : null;
         inject(DestroyRef).onDestroy(() => {
             this.resizes?.disconnect();
@@ -67,7 +87,12 @@ export class OverflowRowDirective implements OnInit {
 
     add(item: OverflowItemDirective): void {
         this.items.set(item.id, item);
-        this.manager?.addItem({ id: item.id, element: item.element, priority: item.overflowPriority(), pinned: item.overflowStay() });
+        this.manager?.addItem({
+            id: item.id,
+            element: item.element,
+            priority: item.overflowPriority(),
+            pinned: item.overflowStay(),
+        });
         this.resizes?.observe(item.element);
         this.measuredWidth = -1;
         this.manager?.update();
@@ -82,10 +107,8 @@ export class OverflowRowDirective implements OnInit {
     }
 
     setMore(button: HTMLElement | null): void {
-        if (button)
-            this.manager?.addOverflowMenu(button);
-        else
-            this.manager?.removeOverflowMenu();
+        if (button) this.manager?.addOverflowMenu(button);
+        else this.manager?.removeOverflowMenu();
     }
 
     /** Measures again now (tests; a change the observers can't see). */
@@ -95,7 +118,12 @@ export class OverflowRowDirective implements OnInit {
 
     /** The "⋯" menu: the entries of the items that left, computed now (rights, states, labels). */
     target(): MenuTarget {
-        return { kind: 'overflow', key: this.key, name: this.sfeOverflowRow(), entries: () => this.hidden().flatMap(item => item.sfeOverflowItem()?.() ?? []) };
+        return {
+            kind: 'overflow',
+            key: this.key,
+            name: this.sfeOverflowRow(),
+            entries: () => this.hidden().flatMap((item) => item.sfeOverflowItem()?.() ?? []),
+        };
     }
 
     /**
@@ -106,19 +134,22 @@ export class OverflowRowDirective implements OnInit {
      * removed) starts again from the gaps always there: the items that stay, and the "⋯" or an item that may leave.
      */
     private fitGaps(): void {
-        if (!this.manager)
-            return;
+        if (!this.manager) return;
         const style = getComputedStyle(this.element);
         const px = (value: string) => parseFloat(value) || 0;
         const gap = px(style.columnGap);
         // clientWidth holds the row's padding (not its border): room taken too; measured in `overflowIn`, its border as well.
-        const chrome = px(style.paddingLeft) + px(style.paddingRight)
-            + (this.overflowIn() ? px(style.borderLeftWidth) + px(style.borderRightWidth) : 0);
+        const chrome =
+            px(style.paddingLeft) +
+            px(style.paddingRight) +
+            (this.overflowIn() ? px(style.borderLeftWidth) + px(style.borderRightWidth) : 0);
         const room = (count: number) => chrome + gap * Math.max(count - 1, 0);
         const width = (this.overflowIn() ?? this.element).clientWidth;
         if (width !== this.measuredWidth) {
             this.measuredWidth = width;
-            const staying = [...this.items.values()].filter(item => item.overflowStay() && item.element.offsetWidth > 0).length;
+            const staying = [...this.items.values()].filter(
+                (item) => item.overflowStay() && item.element.offsetWidth > 0,
+            ).length;
             const floor = room(staying + (this.items.size > staying ? 1 : 0));
             if (floor !== this.padding) {
                 // Measured again with it first; then grown from what fits (the library may not report an unchanged row).
@@ -128,16 +159,17 @@ export class OverflowRowDirective implements OnInit {
             }
         }
         const snapshot = this.manager.getSnapshot();
-        const shown = [...this.items.values()].filter(item => snapshot.itemVisibility[item.id] !== false && item.element.offsetWidth > 0).length;
+        const shown = [...this.items.values()].filter(
+            (item) => snapshot.itemVisibility[item.id] !== false && item.element.offsetWidth > 0,
+        ).length;
         const padding = Math.max(this.padding, room(shown + (snapshot.invisibleItemCount ? 1 : 0)));
-        if (padding !== this.padding)
-            this.setPadding(padding);
+        if (padding !== this.padding) this.setPadding(padding);
     }
 
     private setPadding(padding: number): void {
         this.padding = padding;
         this.manager?.setOptions({ padding });
-        this.manager?.update();     // setOptions doesn't for a padding of 0
+        this.manager?.update(); // setOptions doesn't for a padding of 0
     }
 }
 

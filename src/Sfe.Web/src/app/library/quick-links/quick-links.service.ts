@@ -29,7 +29,7 @@ export class QuickLinksService {
     readonly enabled = computed(() => this.config.rights().has(Rights.quickLinks));
     readonly links = signal<QuickLink[]>([]);
     readonly loaded = signal(false);
-    readonly paths = computed(() => new Set(this.links().map(link => link.path)));
+    readonly paths = computed(() => new Set(this.links().map((link) => link.path)));
     /** Folders or files of the page are being dragged: the quick links show they take them. */
     readonly dragging = signal(false);
 
@@ -38,17 +38,20 @@ export class QuickLinksService {
     }
 
     async load(): Promise<void> {
-        if (!this.enabled())
-            return;
+        if (!this.enabled()) return;
         await this.change(() => this.api.quickLinks(), null);
         this.loaded.set(true);
     }
 
     /** Adds `paths` before the link at `position` (at the end without one); those already there move. */
     add(paths: string[], position: number | null = null): Promise<boolean> {
-        const added = paths.filter(path => !this.has(path));
-        const message = added.length === 1 ? `Added “${this.nameOf(added[0])}” to the quick links`
-            : added.length ? `Added ${plural(added.length, 'item')} to the quick links` : null;
+        const added = paths.filter((path) => !this.has(path));
+        const message =
+            added.length === 1
+                ? `Added “${this.nameOf(added[0])}” to the quick links`
+                : added.length
+                  ? `Added ${plural(added.length, 'item')} to the quick links`
+                  : null;
         return this.change(() => this.api.addQuickLinks(paths, position), message);
     }
 
@@ -73,15 +76,19 @@ export class QuickLinksService {
      */
     dragPaths(target: EventTarget | null): string[] | null {
         const element = target instanceof Element ? target.closest<HTMLElement>('[data-path]') : null;
-        if (!element || element.closest('.quick-links'))
-            return null;
+        if (!element || element.closest('.quick-links')) return null;
         const path = element.getAttribute('data-path')!;
-        return this.store.isSelected(path) ? this.store.selectedItems().map(item => item.path) : [path];
+        return this.store.isSelected(path) ? this.store.selectedItems().map((item) => item.path) : [path];
     }
 
     /** The name shown for `path`: the link's, else the last segment (the library's name for the root). */
     private nameOf(path: string): string {
-        return this.links().find(link => link.path === path)?.name || baseName(path) || this.config.config()?.rootName || '';
+        return (
+            this.links().find((link) => link.path === path)?.name ||
+            baseName(path) ||
+            this.config.config()?.rootName ||
+            ''
+        );
     }
 
     /** Runs a request answering the list; only the last one sent sets it. Says `done` once done, the error otherwise. */
@@ -89,10 +96,8 @@ export class QuickLinksService {
         const sequence = ++this.sequence;
         try {
             const links = await request();
-            if (sequence === this.sequence)
-                this.links.set(links);
-            if (done)
-                this.toasts.show(done);
+            if (sequence === this.sequence) this.links.set(links);
+            if (done) this.toasts.show(done);
             return true;
         } catch (error) {
             this.toasts.error(`Quick links: ${(error as Error).message}`);

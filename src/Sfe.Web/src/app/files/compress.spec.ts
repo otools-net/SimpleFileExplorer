@@ -2,7 +2,17 @@ import { TestBed } from '@angular/core/testing';
 import { DirectoryListing, FileJobView, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    fakeConfig,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../testing/fakes';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { SidebarService } from '../library/sidebar/sidebar.service';
@@ -19,14 +29,37 @@ const photo = item('Media/beach.jpg', { size: 2048 });
 const notes = item('Media/notes.txt', { size: 100 });
 
 function listing(path: string, items: LibraryItem[]): DirectoryListing {
-    const folders = items.filter(i => i.kind === 'directory').length;
-    return { path, name: path.split('/').pop()!, parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: folders, fileCount: items.length - folders, access: null };
+    const folders = items.filter((i) => i.kind === 'directory').length;
+    return {
+        path,
+        name: path.split('/').pop()!,
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: folders,
+        fileCount: items.length - folders,
+        access: null,
+    };
 }
 
 function job(overrides: Partial<FileJobView> = {}): FileJobView {
     return {
-        id: 1, kind: 'compress', state: 'running', target: 'Media', total: 1, done: 0, bytesTotal: 4096, bytesDone: 1024, current: null, conflict: null,
-        results: [], started: '2026-10-26T10:00:00Z', finished: null, ...overrides,
+        id: 1,
+        kind: 'compress',
+        state: 'running',
+        target: 'Media',
+        total: 1,
+        done: 0,
+        bytesTotal: 4096,
+        bytesDone: 1024,
+        current: null,
+        conflict: null,
+        results: [],
+        started: '2026-10-26T10:00:00Z',
+        finished: null,
+        ...overrides,
     };
 }
 
@@ -35,7 +68,7 @@ async function setUp(config = fakeConfig()): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: 'Media', previous: null, next: null, position: 1, count: 1 });
     api.browse.mockResolvedValue(listing('Media', [folder, photo, notes]));
     store.route.set({ path: 'Media', q: '', sort: '', desc: false });
@@ -60,25 +93,44 @@ describe('Compressing', () => {
         store.select(photo, true);
         store.select(notes, true);
 
-        menu.entries(photo).find(e => e.id === 'compress')!.run();
+        menu.entries(photo)
+            .find((e) => e.id === 'compress')!
+            .run();
         expect(open).toHaveBeenCalledWith([photo, notes]);
 
         await loadConfig(api, limitedConfig([Rights.browse, Rights.viewFiles, Rights.download]));
-        expect(menu.entries(photo).map(e => e.id)).not.toContain('compress');
+        expect(menu.entries(photo).map((e) => e.id)).not.toContain('compress');
     });
 
     it('says the ratio when it is done, and shows the zip in its folder', async () => {
         await setUp();
         const toasts = TestBed.inject(ToastService);
         api.startCompress.mockResolvedValue(job());
-        api.fileJobs.mockResolvedValue([job({
-            state: 'completed', done: 1, results: [{ path: 'Media', newPath: 'Media/trip.zip', status: 'done', message: '3 files: 4 KB → 1 KB (25 %).' }],
-        })]);
+        api.fileJobs.mockResolvedValue([
+            job({
+                state: 'completed',
+                done: 1,
+                results: [
+                    {
+                        path: 'Media',
+                        newPath: 'Media/trip.zip',
+                        status: 'done',
+                        message: '3 files: 4 KB → 1 KB (25 %).',
+                    },
+                ],
+            }),
+        ]);
 
-        await TestBed.inject(FileTransfers).compress({ paths: [photo.path], target: 'Media', name: 'trip', level: 6, skipCompressed: true });
+        await TestBed.inject(FileTransfers).compress({
+            paths: [photo.path],
+            target: 'Media',
+            name: 'trip',
+            level: 6,
+            skipCompressed: true,
+        });
         await settle();
 
-        const done = toasts.toasts().find(t => t.message.includes('made in'))!;
+        const done = toasts.toasts().find((t) => t.message.includes('made in'))!;
         expect(done.message).toBe('“trip.zip” made in “Media”. 3 files: 4 KB → 1 KB (25 %).');
         const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => undefined);
         toasts.act(done, done.actions[0]);
@@ -111,7 +163,12 @@ describe('CompressDialog', () => {
         expect(element.textContent).toContain('Put 2 items into a zip in “Media”.');
         expect(element.querySelector('[data-compress-size]')!.textContent).toBe('2.1 KB in 2 files to read.');
         expect(element.querySelector<HTMLInputElement>('[data-zip-name]')!.value).toBe('Media');
-        expect([...element.querySelectorAll('option')].map(o => o.textContent!.split(':')[0])).toEqual(['Store', 'Fastest', 'Normal', 'Maximum']);
+        expect([...element.querySelectorAll('option')].map((o) => o.textContent!.split(':')[0])).toEqual([
+            'Store',
+            'Fastest',
+            'Normal',
+            'Maximum',
+        ]);
         expect(element.querySelector<HTMLSelectElement>('[data-level]')!.value).toBe('6');
 
         type(element, '[data-zip-name]', 'holiday');
@@ -130,7 +187,14 @@ describe('CompressDialog', () => {
         buttonNamed(element, 'Compress')!.click();
         await settle();
 
-        expect(api.startCompress).toHaveBeenCalledWith({ paths: [photo.path, notes.path], target: 'Media', name: 'holiday', level: 9, skipCompressed: true, password: 'pässwort' });
+        expect(api.startCompress).toHaveBeenCalledWith({
+            paths: [photo.path, notes.path],
+            target: 'Media',
+            name: 'holiday',
+            level: 9,
+            skipCompressed: true,
+            password: 'pässwort',
+        });
     });
 
     it('puts the zip in another folder picked, where one may compress, and says the size to read', async () => {
@@ -138,9 +202,11 @@ describe('CompressDialog', () => {
         const { fixture, element } = create();
         api.folderTotals.mockResolvedValue({ indexed: true, files: 40, folders: 2, bytes: 3 * 1024 * 1024 });
         const trips = item('Media/Trips', { kind: 'directory' });
-        api.browse.mockImplementation(async ({ path }: { path: string }) => path === 'Media/Trips'
-            ? { ...listing('Media/Trips', []), access: { pathOnly: false, rights: [Rights.browse] } }
-            : listing(path, [folder, trips]));
+        api.browse.mockImplementation(async ({ path }: { path: string }) =>
+            path === 'Media/Trips'
+                ? { ...listing('Media/Trips', []), access: { pathOnly: false, rights: [Rights.browse] } }
+                : listing(path, [folder, trips]),
+        );
         api.startCompress.mockResolvedValue(job());
         api.fileJobs.mockResolvedValue([job()]);
 
@@ -152,18 +218,26 @@ describe('CompressDialog', () => {
 
         element.querySelector<HTMLButtonElement>('[data-pick-folder]')!.click();
         fixture.detectChanges();
-        [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')].find(b => b.textContent!.includes('Trips'))!.click();
+        [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')]
+            .find((b) => b.textContent!.includes('Trips'))!
+            .click();
         await settle();
         fixture.detectChanges();
-        expect(element.querySelector('[data-compress-problem]')!.textContent).toContain('You may not make a zip in this folder');
+        expect(element.querySelector('[data-compress-problem]')!.textContent).toContain(
+            'You may not make a zip in this folder',
+        );
         expect(buttonNamed(element, 'Compress')!.disabled).toBe(true);
 
-        [...element.querySelectorAll<HTMLButtonElement>('.transfer-crumbs button')].find(b => b.textContent!.includes('Media'))!.click();
+        [...element.querySelectorAll<HTMLButtonElement>('.transfer-crumbs button')]
+            .find((b) => b.textContent!.includes('Media'))!
+            .click();
         await settle();
         fixture.detectChanges();
         buttonNamed(element, 'Compress')!.click();
         await settle();
-        expect(api.startCompress).toHaveBeenCalledWith(expect.objectContaining({ target: 'Media', paths: [folder.path, photo.path] }));
+        expect(api.startCompress).toHaveBeenCalledWith(
+            expect.objectContaining({ target: 'Media', paths: [folder.path, photo.path] }),
+        );
     });
 
     it('says which folders the index has not counted', async () => {
@@ -173,7 +247,9 @@ describe('CompressDialog', () => {
         TestBed.inject(Dialogs).compress()!.open([folder, notes]);
         await settle();
         fixture.detectChanges();
-        expect(element.querySelector('[data-compress-size]')!.textContent).toBe('100 B in 1 file to read, and 1 folder not in the index (not counted).');
+        expect(element.querySelector('[data-compress-size]')!.textContent).toBe(
+            '100 B in 1 file to read, and 1 folder not in the index (not counted).',
+        );
     });
 
     it('needs a name the system takes', async () => {
@@ -206,12 +282,24 @@ describe('timeLeft', () => {
 describe('OperationsPanelComponent and the toasts', () => {
     it('keeps the toasts above the panel while it shows', async () => {
         await setUp();
-        let resized: () => void = () => { };
-        vi.stubGlobal('ResizeObserver', class { constructor(callback: () => void) { resized = callback; } observe() { } disconnect() { } });
+        let resized: () => void = () => {};
+        vi.stubGlobal(
+            'ResizeObserver',
+            class {
+                constructor(callback: () => void) {
+                    resized = callback;
+                }
+                observe() {}
+                disconnect() {}
+            },
+        );
         try {
             const fixture = TestBed.createComponent(OperationsPanelComponent);
             const host = fixture.nativeElement as HTMLElement;
-            vi.spyOn(host, 'getBoundingClientRect').mockReturnValue({ top: window.innerHeight - 136, height: 120 } as DOMRect);
+            vi.spyOn(host, 'getBoundingClientRect').mockReturnValue({
+                top: window.innerHeight - 136,
+                height: 120,
+            } as DOMRect);
             resized();
             expect(document.documentElement.style.getPropertyValue('--operations-clearance')).toBe('136px');
 
@@ -239,7 +327,20 @@ describe('OperationsPanelComponent, compressions', () => {
         expect(element.textContent).toContain('Compressing into “Media”');
         expect(element.textContent).toContain('1 KB of 4 KB compressed');
 
-        api.fileJobs.mockResolvedValue([job({ state: 'completed', done: 1, results: [{ path: 'Media', newPath: 'Media/trip.zip', status: 'done', message: '3 files: 4 KB → 1 KB (25 %).' }] })]);
+        api.fileJobs.mockResolvedValue([
+            job({
+                state: 'completed',
+                done: 1,
+                results: [
+                    {
+                        path: 'Media',
+                        newPath: 'Media/trip.zip',
+                        status: 'done',
+                        message: '3 files: 4 KB → 1 KB (25 %).',
+                    },
+                ],
+            }),
+        ]);
         api.cancelFileJob.mockResolvedValue(undefined);
         await TestBed.inject(FileTransfers).cancel(job());
         await settle();

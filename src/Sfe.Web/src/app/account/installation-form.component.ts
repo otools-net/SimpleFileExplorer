@@ -168,9 +168,11 @@ export class InstallationFormComponent implements OnInit {
     protected readonly localNote = computed(() => {
         const view = this.settings();
         if (this.localAllowed())
-            return view.mode?.value == null && !this.setup() ? 'Not chosen yet: until it is, SFE works as Local.' : null;
+            return view.mode?.value == null && !this.setup()
+                ? 'Not chosen yet: until it is, SFE works as Local.'
+                : null;
         return view.onThisComputer
-            ? 'SFE is External: it goes back to Local only in the server\'s configuration (Sfe:Mode).'
+            ? "SFE is External: it goes back to Local only in the server's configuration (Sfe:Mode)."
             : 'Local is chosen from a browser on the server itself, at http://localhost.';
     });
 
@@ -185,7 +187,8 @@ export class InstallationFormComponent implements OnInit {
     protected readonly valueOf = valueOf;
 
     /** The folder picker's source: the server's disks, through the token. */
-    protected readonly folders = (path: string | null): Promise<FolderPicker> => this.api.serverFolders(this.token(), path);
+    protected readonly folders = (path: string | null): Promise<FolderPicker> =>
+        this.api.serverFolders(this.token(), path);
 
     ngOnInit(): void {
         this.reset(this.initial());
@@ -226,9 +229,12 @@ export class InstallationFormComponent implements OnInit {
             return result;
         } catch (error) {
             if (error instanceof ApiError && error.errors)
-                this.errors.set(Object.fromEntries(Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')])));
-            else
-                this.problem.set((error as Error).message);
+                this.errors.set(
+                    Object.fromEntries(
+                        Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')]),
+                    ),
+                );
+            else this.problem.set((error as Error).message);
             return null;
         }
     }
@@ -240,6 +246,8 @@ export class InstallationFormComponent implements OnInit {
         this.ffmpeg.set(view.ffmpegPath.value ?? '');
         this.pickFfmpeg.set(false);
         // Not chosen yet: Local for whoever is on the server's own computer, External for the others.
-        this.chosenMode.set(view.mode?.value == null ? (view.onThisComputer ? 'local' : 'external') : view.modeInEffect ?? 'local');
+        this.chosenMode.set(
+            view.mode?.value == null ? (view.onThisComputer ? 'local' : 'external') : (view.modeInEffect ?? 'local'),
+        );
     }
 }

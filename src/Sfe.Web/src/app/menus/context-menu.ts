@@ -1,4 +1,20 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, Directive, effect, ElementRef, inject, Injectable, Injector, input, signal, untracked, viewChild } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    Directive,
+    effect,
+    ElementRef,
+    inject,
+    Injectable,
+    Injector,
+    input,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { copyText } from '../core/copy-path.service';
 import { LibraryItem } from '../core/models';
@@ -27,7 +43,19 @@ export interface MenuEntry {
 }
 
 /** What a menu is about (see agents/docs/development/context-menu-plan.md for which menu shows where). */
-export type MenuTargetKind = 'file' | 'folder' | 'folderLink' | 'fileLink' | 'tag' | 'background' | 'page' | 'job' | 'trash' | 'historyEntry' | 'appLink' | 'overflow';
+export type MenuTargetKind =
+    | 'file'
+    | 'folder'
+    | 'folderLink'
+    | 'fileLink'
+    | 'tag'
+    | 'background'
+    | 'page'
+    | 'job'
+    | 'trash'
+    | 'historyEntry'
+    | 'appLink'
+    | 'overflow';
 
 /** Something with a context menu: it brings its own entries, so the pages, the viewer or the administration add theirs. */
 export interface MenuTarget {
@@ -70,7 +98,13 @@ export class ContextMenu {
      * The open menu: its target, where, what opened it (focus goes back there), and whether a finger did (`touch`: the
      * focus stays where it is, nothing to move between entries with).
      */
-    readonly open = signal<{ target: MenuTarget; x: number; y: number; trigger: HTMLElement | null; touch: boolean } | null>(null);
+    readonly open = signal<{
+        target: MenuTarget;
+        x: number;
+        y: number;
+        trigger: HTMLElement | null;
+        touch: boolean;
+    } | null>(null);
     /** The menu of the page shown, for a right click on nothing with a menu of its own; set by the page. */
     readonly page = signal<MenuTarget | null>(null);
     private readonly elements = new WeakMap<Element, () => MenuTarget | null>();
@@ -79,7 +113,14 @@ export class ContextMenu {
     /** The pointer of the last press: a menu opened right after a finger's is a touch one. */
     private lastPointer = '';
     /** A finger held on an element with a menu: where, since when; `fired` once the menu event was sent for it. */
-    private hold: { pointer: number; x: number; y: number; target: Element; timer: ReturnType<typeof setTimeout>; fired: boolean } | null = null;
+    private hold: {
+        pointer: number;
+        x: number;
+        y: number;
+        target: Element;
+        timer: ReturnType<typeof setTimeout>;
+        fired: boolean;
+    } | null = null;
     /** Sending the held finger's own menu event (not to be taken for the browser's). */
     private holding = false;
     /** The click of a finger lifted after its hold opened something: swallowed (the lift is not a tap). */
@@ -89,43 +130,61 @@ export class ContextMenu {
 
     constructor() {
         const capture = { capture: true, passive: true };
-        addEventListener('pointerdown', event => {
-            this.lastPointer = event.pointerType;
-            this.holdStart(event);
-        }, capture);
-        addEventListener('pointermove', event => {
-            if (this.hold && this.hold.pointer === event.pointerId && Math.hypot(event.clientX - this.hold.x, event.clientY - this.hold.y) > HOLD_SLOP_PX)
-                this.holdEnd();
-        }, capture);
-        addEventListener('pointerup', event => this.holdLift(event), capture);
+        addEventListener(
+            'pointerdown',
+            (event) => {
+                this.lastPointer = event.pointerType;
+                this.holdStart(event);
+            },
+            capture,
+        );
+        addEventListener(
+            'pointermove',
+            (event) => {
+                if (
+                    this.hold &&
+                    this.hold.pointer === event.pointerId &&
+                    Math.hypot(event.clientX - this.hold.x, event.clientY - this.hold.y) > HOLD_SLOP_PX
+                )
+                    this.holdEnd();
+            },
+            capture,
+        );
+        addEventListener('pointerup', (event) => this.holdLift(event), capture);
         addEventListener('pointercancel', () => this.holdEnd(), capture);
         addEventListener('scroll', () => this.holdEnd(), capture);
         // The browser's own menu event for the hold: before ours, it is the one (Android); after, a second one (a
         // Windows touch screen sends it on the lift, a slow phone late), dropped, up to `HELD_ECHO_MS` after the lift.
-        addEventListener('contextmenu', event => {
-            if (this.holding)
-                return;
-            if (!this.hold) {
-                if (performance.now() < this.heldUntil) {
+        addEventListener(
+            'contextmenu',
+            (event) => {
+                if (this.holding) return;
+                if (!this.hold) {
+                    if (performance.now() < this.heldUntil) {
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                    }
+                    return;
+                }
+                if (this.hold.fired) {
                     event.preventDefault();
                     event.stopImmediatePropagation();
+                } else {
+                    this.holdEnd();
                 }
-                return;
-            }
-            if (this.hold.fired) {
+            },
+            { capture: true },
+        );
+        addEventListener(
+            'click',
+            (event) => {
+                if (!this.swallowClick) return;
+                this.swallowClick = false;
                 event.preventDefault();
                 event.stopImmediatePropagation();
-            } else {
-                this.holdEnd();
-            }
-        }, { capture: true });
-        addEventListener('click', event => {
-            if (!this.swallowClick)
-                return;
-            this.swallowClick = false;
-            event.preventDefault();
-            event.stopImmediatePropagation();
-        }, { capture: true });
+            },
+            { capture: true },
+        );
     }
 
     /** `element` has the menu of `target` (for the keyboard: the focused element's menu). */
@@ -144,25 +203,30 @@ export class ContextMenu {
         this.holdEnd();
         this.swallowClick = false;
         this.heldUntil = -Infinity;
-        if (event.pointerType !== 'touch' || !event.isPrimary || !(event.target instanceof Element))
-            return;
+        if (event.pointerType !== 'touch' || !event.isPrimary || !(event.target instanceof Element)) return;
         const [element] = this.targetOf(event.target as HTMLElement);
-        if (!element)
-            return;
+        if (!element) return;
         const { pointerId: pointer, clientX: x, clientY: y, target } = event;
         this.hold = { pointer, x, y, target, fired: false, timer: setTimeout(() => this.holdFire(), HOLD_MS) };
     }
 
     private holdFire(): void {
         const hold = this.hold;
-        if (!hold || !hold.target.isConnected)
-            return;
+        if (!hold || !hold.target.isConnected) return;
         hold.fired = true;
         this.holding = true;
         try {
-            hold.target.dispatchEvent(new PointerEvent('contextmenu', {
-                bubbles: true, cancelable: true, composed: true, clientX: hold.x, clientY: hold.y, pointerType: 'touch', isPrimary: true,
-            }));
+            hold.target.dispatchEvent(
+                new PointerEvent('contextmenu', {
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true,
+                    clientX: hold.x,
+                    clientY: hold.y,
+                    pointerType: 'touch',
+                    isPrimary: true,
+                }),
+            );
         } finally {
             this.holding = false;
         }
@@ -170,16 +234,14 @@ export class ContextMenu {
 
     private holdLift(event: PointerEvent): void {
         const hold = this.hold;
-        if (!hold || hold.pointer !== event.pointerId)
-            return;
+        if (!hold || hold.pointer !== event.pointerId) return;
         this.swallowClick = hold.fired;
         this.heldUntil = hold.fired ? performance.now() + HELD_ECHO_MS : -Infinity;
         this.holdEnd();
     }
 
     private holdEnd(): void {
-        if (this.hold)
-            clearTimeout(this.hold.timer);
+        if (this.hold) clearTimeout(this.hold.timer);
         this.hold = null;
     }
 
@@ -188,15 +250,17 @@ export class ContextMenu {
      * already showed its own, or the browser's menu is kept (Shift, text, nothing to offer). A long press on a touch
      * screen does the target's `touch` instead, when it has one (listed items: selected, as phone file managers do).
      */
-    fromEvent(event: MouseEvent, target: MenuTarget | null, element: HTMLElement | null = event.currentTarget as HTMLElement | null): void {
-        if (event.defaultPrevented)
-            return;
+    fromEvent(
+        event: MouseEvent,
+        target: MenuTarget | null,
+        element: HTMLElement | null = event.currentTarget as HTMLElement | null,
+    ): void {
+        if (event.defaultPrevented) return;
         if (this.keyboardEcho()) {
             event.preventDefault();
             return;
         }
-        if (!target || keepsBrowserMenu(event) || target.entries().length === 0)
-            return;
+        if (!target || keepsBrowserMenu(event) || target.entries().length === 0) return;
         event.preventDefault();
         if (target.touch && fromTouch(event)) {
             target.touch();
@@ -213,15 +277,12 @@ export class ContextMenu {
      * readers and editors) keeps its own right click, or the browser's.
      */
     fromPage(event: MouseEvent): void {
-        if (event.defaultPrevented)
-            return;
+        if (event.defaultPrevented) return;
         const area = event.target instanceof Element ? event.target.closest('[data-context-menu], dialog') : null;
-        if (area?.getAttribute('data-context-menu') === 'own')
-            return;
+        if (area?.getAttribute('data-context-menu') === 'own') return;
         const link = linkAt(event.target, 'a[href]');
         if (!link && area) {
-            if (this.keyboardEcho() || !keepsBrowserMenu(event))
-                event.preventDefault();
+            if (this.keyboardEcho() || !keepsBrowserMenu(event)) event.preventDefault();
             return;
         }
         this.fromEvent(event, link ? this.linkTarget(link) : this.page(), link);
@@ -236,8 +297,21 @@ export class ContextMenu {
             name: link.textContent?.trim() || link.getAttribute('aria-label') || href,
             entries: () => [
                 { id: 'open', label: 'Open', icon: 'right', title: 'Follow this link', run: () => link.click() },
-                { id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Follow this link in a tab of its own', href, newTab: true },
-                { id: 'copyLink', label: 'Copy link address', icon: 'copy', title: 'Copy where this link goes', run: () => void this.copyLink(href) },
+                {
+                    id: 'newTab',
+                    label: 'Open in new tab',
+                    icon: 'external',
+                    title: 'Follow this link in a tab of its own',
+                    href,
+                    newTab: true,
+                },
+                {
+                    id: 'copyLink',
+                    label: 'Copy link address',
+                    icon: 'copy',
+                    title: 'Copy where this link goes',
+                    run: () => void this.copyLink(href),
+                },
             ],
         };
     }
@@ -249,10 +323,35 @@ export class ContextMenu {
             key: `page:${name}`,
             name,
             entries: () => [
-                { id: 'back', label: 'Back', icon: 'left', title: 'The page before this one', run: () => history.back() },
-                { id: 'reload', label: 'Reload', icon: 'refresh', title: 'Load this page again', run: () => location.reload() },
-                { id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'This page in a tab of its own', href: location.href, newTab: true },
-                { id: 'copyLink', label: 'Copy page link', icon: 'copy', title: 'Copy the address of this page', run: () => void this.copyLink(location.href) },
+                {
+                    id: 'back',
+                    label: 'Back',
+                    icon: 'left',
+                    title: 'The page before this one',
+                    run: () => history.back(),
+                },
+                {
+                    id: 'reload',
+                    label: 'Reload',
+                    icon: 'refresh',
+                    title: 'Load this page again',
+                    run: () => location.reload(),
+                },
+                {
+                    id: 'newTab',
+                    label: 'Open in new tab',
+                    icon: 'external',
+                    title: 'This page in a tab of its own',
+                    href: location.href,
+                    newTab: true,
+                },
+                {
+                    id: 'copyLink',
+                    label: 'Copy page link',
+                    icon: 'copy',
+                    title: 'Copy the address of this page',
+                    run: () => void this.copyLink(location.href),
+                },
             ],
         };
     }
@@ -268,18 +367,28 @@ export class ContextMenu {
 
     /** The ContextMenu key or Shift+F10: the menu of the focused element (or of the page), under it. */
     fromKey(event: KeyboardEvent): void {
-        if (event.key !== 'ContextMenu' && !(event.key === 'F10' && event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey))
+        if (
+            event.key !== 'ContextMenu' &&
+            !(event.key === 'F10' && event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey)
+        )
             return;
-        const focused = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
-        if (focused && isTextField(focused))
-            return;
+        const focused =
+            document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+                ? document.activeElement
+                : null;
+        if (focused && isTextField(focused)) return;
         const [element, target] = this.targetOf(focused);
-        if (!target || target.entries().length === 0)
-            return;
+        if (!target || target.entries().length === 0) return;
         event.preventDefault();
         this.keyboardAt = performance.now();
         const box = element?.getBoundingClientRect();
-        this.show(target, box ? box.left : window.innerWidth / 2, box ? box.bottom + 4 : window.innerHeight / 3, element ?? focused, false);
+        this.show(
+            target,
+            box ? box.left : window.innerWidth / 2,
+            box ? box.bottom + 4 : window.innerHeight / 3,
+            element ?? focused,
+            false,
+        );
     }
 
     /** Opens the menu of `target` under `trigger` (a ⋮ button). */
@@ -290,10 +399,8 @@ export class ContextMenu {
 
     /** The ⋮ button of `target`: opens its menu, or closes it when it's the one open. */
     toggle(target: MenuTarget, trigger: HTMLElement): void {
-        if (this.open()?.target.key === target.key)
-            this.close();
-        else
-            this.showAt(target, trigger);
+        if (this.open()?.target.key === target.key) this.close();
+        else this.showAt(target, trigger);
     }
 
     close(): void {
@@ -302,11 +409,16 @@ export class ContextMenu {
 
     /** Closes the menu if it is the one of `key` (what opened it is going away). */
     closeIf(key: string): void {
-        if (this.open()?.target.key === key)
-            this.close();
+        if (this.open()?.target.key === key) this.close();
     }
 
-    private show(target: MenuTarget, x: number, y: number, trigger: HTMLElement | null, touch = this.lastPointer === 'touch'): void {
+    private show(
+        target: MenuTarget,
+        x: number,
+        y: number,
+        trigger: HTMLElement | null,
+        touch = this.lastPointer === 'touch',
+    ): void {
         this.open.set({ target, x, y, trigger, touch });
     }
 
@@ -314,8 +426,7 @@ export class ContextMenu {
     private targetOf(element: HTMLElement | null): [HTMLElement | null, MenuTarget | null] {
         for (let node: HTMLElement | null = element; node; node = node.parentElement) {
             const target = this.elements.get(node)?.();
-            if (target)
-                return [node, target];
+            if (target) return [node, target];
         }
         const link = linkAt(element, 'a[href]');
         return link ? [link, this.linkTarget(link)] : [null, this.page()];
@@ -332,16 +443,12 @@ export class ContextMenu {
  * (copy it).
  */
 export function keepsBrowserMenu(event: MouseEvent): boolean {
-    if (event.shiftKey)
-        return true;
+    if (event.shiftKey) return true;
     const target = event.target instanceof Element ? event.target : null;
-    if (target && isTextField(target))
-        return true;
+    if (target && isTextField(target)) return true;
     const selection = typeof getSelection === 'function' ? getSelection() : null;
     if (target && selection && !selection.isCollapsed && selection.toString().trim())
-        for (let i = 0; i < selection.rangeCount; i++)
-            if (selection.getRangeAt(i).intersectsNode(target))
-                return true;
+        for (let i = 0; i < selection.rangeCount; i++) if (selection.getRangeAt(i).intersectsNode(target)) return true;
     return false;
 }
 
@@ -358,24 +465,34 @@ function linkAt(target: EventTarget | null, selector: string): HTMLAnchorElement
 }
 
 /** Inputs taking text (not check boxes or buttons), text areas and editable content (CodeMirror). */
-const textInputs = new Set(['', 'text', 'search', 'url', 'email', 'password', 'number', 'tel', 'date', 'datetime-local', 'month', 'week', 'time']);
+const textInputs = new Set([
+    '',
+    'text',
+    'search',
+    'url',
+    'email',
+    'password',
+    'number',
+    'tel',
+    'date',
+    'datetime-local',
+    'month',
+    'week',
+    'time',
+]);
 
 export function isTextField(element: Element): boolean {
     const field = element.closest('input, textarea, [contenteditable]');
-    if (!field)
-        return false;
-    if (field instanceof HTMLInputElement)
-        return textInputs.has((field.getAttribute('type') ?? '').toLowerCase());
-    if (field instanceof HTMLTextAreaElement)
-        return true;
+    if (!field) return false;
+    if (field instanceof HTMLInputElement) return textInputs.has((field.getAttribute('type') ?? '').toLowerCase());
+    if (field instanceof HTMLTextAreaElement) return true;
     return field.getAttribute('contenteditable') !== 'false';
 }
 
 /** Puts the menu's layer in the top layer; browsers without the popover API (and jsdom) keep it in place, above the page by its z-index. */
 function showLayer(layer: HTMLElement | undefined): void {
     try {
-        if (layer && typeof layer.showPopover === 'function' && !layer.matches(':popover-open'))
-            layer.showPopover();
+        if (layer && typeof layer.showPopover === 'function' && !layer.matches(':popover-open')) layer.showPopover();
     } catch {
         // no popovers here
     }
@@ -384,13 +501,12 @@ function showLayer(layer: HTMLElement | undefined): void {
 /** The open modal dialog `trigger` is in, else the last one opened (the viewer, a sheet, the picture editor); null when none. */
 function openDialog(trigger: HTMLElement | null): HTMLDialogElement | null {
     const own = trigger?.closest<HTMLDialogElement>('dialog[open]');
-    if (own)
-        return own;
-    const modal = [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].filter(dialog => {
+    if (own) return own;
+    const modal = [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].filter((dialog) => {
         try {
             return dialog.matches(':modal');
         } catch {
-            return false;   // no :modal (jsdom)
+            return false; // no :modal (jsdom)
         }
     });
     return modal.at(-1) ?? null;
@@ -410,8 +526,7 @@ function isSheet(): boolean {
 /** The menu event comes from a finger: a long press (Chrome tells it; others, by a screen without a mouse). */
 export function fromTouch(event: MouseEvent): boolean {
     const pointer = (event as Partial<PointerEvent>).pointerType;
-    if (pointer)
-        return pointer === 'touch';
+    if (pointer) return pointer === 'touch';
     return typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches;
 }
 
@@ -430,8 +545,7 @@ export function usePageMenu(target: MenuTarget): void {
     const menu = inject(ContextMenu);
     menu.page.set(target);
     inject(DestroyRef).onDestroy(() => {
-        if (menu.page() === target)
-            menu.page.set(null);
+        if (menu.page() === target) menu.page.set(null);
     });
 }
 
@@ -539,27 +653,25 @@ export class ContextMenuComponent {
             untracked(() => this.submenu.set(null));
             this.home ??= this.host.parentNode;
             // Inside the modal dialog the menu belongs to (the rest of the page is inert while one is open), else home.
-            const parent = open ? openDialog(open.trigger) ?? this.home : this.home;
-            if (parent && this.host.parentNode !== parent)
-                parent.appendChild(this.host);
+            const parent = open ? (openDialog(open.trigger) ?? this.home) : this.home;
+            if (parent && this.host.parentNode !== parent) parent.appendChild(this.host);
             untracked(() => this.watch(!!open));
-            if (!open)
-                return;
+            if (!open) return;
             untracked(() => this.position.set({ x: open.x, y: open.y }));
-            afterNextRender(() => {
-                showLayer(this.layer()?.nativeElement);
-                // A phone's sheet is placed by its CSS (phone-sheets.css): measuring it forced a layout of the menu inside
-                // this frame (~50 ms of a phone's opening it, e2e menu-profile.spec.ts) for a position it doesn't use.
-                if (!isSheet())
-                    this.place(open.x, open.y);
-                // A finger has no keys to move between the entries: the focus stays (no ring, no work); keys and mouse get it.
-                if (!open.touch)
-                    this.focusFirst();
-            }, { injector: this.injector });
+            afterNextRender(
+                () => {
+                    showLayer(this.layer()?.nativeElement);
+                    // A phone's sheet is placed by its CSS (phone-sheets.css): measuring it forced a layout of the menu inside
+                    // this frame (~50 ms of a phone's opening it, e2e menu-profile.spec.ts) for a position it doesn't use.
+                    if (!isSheet()) this.place(open.x, open.y);
+                    // A finger has no keys to move between the entries: the focus stays (no ring, no work); keys and mouse get it.
+                    if (!open.touch) this.focusFirst();
+                },
+                { injector: this.injector },
+            );
         });
-        const navigations = inject(Router, { optional: true })?.events.subscribe(event => {
-            if (event instanceof NavigationStart)
-                this.menu.close();
+        const navigations = inject(Router, { optional: true })?.events.subscribe((event) => {
+            if (event instanceof NavigationStart) this.menu.close();
         });
         // Esc closes the menu wherever the focus is: one a finger opened leaves it outside (a tablet's keyboard). Caught
         // before a dialog's own Esc, which would close the viewer under the menu.
@@ -584,20 +696,17 @@ export class ContextMenuComponent {
         this.watcher?.destroy();
         this.watcher = null;
         const Watcher = (globalThis as { CloseWatcher?: new () => CloseWatcherLike }).CloseWatcher;
-        if (!open || !Watcher)
-            return;
+        if (!open || !Watcher) return;
         const watcher = new Watcher();
         watcher.onclose = () => {
-            if (this.watcher === watcher)
-                this.menu.close();
+            if (this.watcher === watcher) this.menu.close();
         };
         this.watcher = watcher;
     }
 
     private place(x: number, y: number): void {
         const box = this.box()?.nativeElement;
-        if (!box)
-            return;
+        if (!box) return;
         const width = box.offsetWidth;
         const height = box.offsetHeight;
         // Below the point, else above it; always inside the window (a turned phone can leave the button off screen).
@@ -614,8 +723,7 @@ export class ContextMenuComponent {
 
     protected run(entry: MenuEntry): void {
         // Still focusable (the arrows go through it), but does nothing, as its disabled button.
-        if (entry.disabled)
-            return;
+        if (entry.disabled) return;
         if (entry.submenu) {
             this.submenu.set(entry.submenu());
             afterNextRender(() => this.focusFirst(), { injector: this.injector });
@@ -641,12 +749,9 @@ export class ContextMenuComponent {
      * it. The scroll a resize makes (a turned phone's page laid out again) is part of the resize.
      */
     protected onScroll(): void {
-        if (isSheet())
-            return;
-        if (performance.now() - this.resizedAt < RESIZE_SCROLL_MS)
-            this.onResize();
-        else
-            this.menu.close();
+        if (isSheet()) return;
+        if (performance.now() - this.resizedAt < RESIZE_SCROLL_MS) this.onResize();
+        else this.menu.close();
     }
 
     /**
@@ -657,13 +762,10 @@ export class ContextMenuComponent {
     protected onResize(): void {
         this.resizedAt = performance.now();
         const open = this.menu.open();
-        if (!open || isSheet())
-            return;
+        if (!open || isSheet()) return;
         const trigger = open.touch && open.trigger?.isConnected ? open.trigger.getBoundingClientRect() : null;
-        if (trigger)
-            this.place(trigger.left, trigger.bottom + 4);
-        else
-            this.menu.close();
+        if (trigger) this.place(trigger.left, trigger.bottom + 4);
+        else this.menu.close();
     }
 
     protected outside(event: PointerEvent): void {
@@ -671,17 +773,21 @@ export class ContextMenuComponent {
         const target = event.target as Node;
         // The ⋮ button that opened it closes it itself (a toggle); the sheet's backdrop on its click: closed at the
         // press, the tap's click would land on what is under it.
-        if (open && !this.box()?.nativeElement.contains(target) && !open.trigger?.contains(target) && target !== this.backdrop()?.nativeElement)
+        if (
+            open &&
+            !this.box()?.nativeElement.contains(target) &&
+            !open.trigger?.contains(target) &&
+            target !== this.backdrop()?.nativeElement
+        )
             this.menu.close();
     }
 
     /** Arrows move between the entries (Right opens a submenu, Left goes back); Esc closes and goes back to what opened the menu. */
     protected keydown(event: KeyboardEvent): void {
-        const entries = [...this.box()?.nativeElement.querySelectorAll<HTMLElement>('.item-menu-entry') ?? []];
+        const entries = [...(this.box()?.nativeElement.querySelectorAll<HTMLElement>('.item-menu-entry') ?? [])];
         const index = entries.indexOf(document.activeElement as HTMLElement);
         // The menu's keys stay in it (a dialog it is in has keys of its own: the viewer's arrows, Esc).
-        if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Escape'].includes(event.key))
-            event.stopPropagation();
+        if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Escape'].includes(event.key)) event.stopPropagation();
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault();
             const step = event.key === 'ArrowDown' ? 1 : -1;

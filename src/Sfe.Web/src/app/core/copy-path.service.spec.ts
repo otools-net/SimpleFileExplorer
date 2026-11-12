@@ -26,7 +26,7 @@ describe('CopyPathService', () => {
         expect(service.enabled()).toBe(true);
     });
 
-    it('joins the path with the server\'s separator', async () => {
+    it("joins the path with the server's separator", async () => {
         await loadConfig(api, fakeConfig({ rootPath: 'D:\\Media\\' }));
         expect(service.fullPath('Films/2020/a b.mkv')).toBe('D:\\Media\\Films\\2020\\a b.mkv');
 
@@ -88,7 +88,10 @@ describe('CopyPathService', () => {
     it('also falls back when the clipboard refuses', async () => {
         await loadConfig(api, fakeConfig({ rootPath: '/m/' }));
         secure(true);
-        Object.defineProperty(navigator, 'clipboard', { value: { writeText: () => Promise.reject(new Error('no focus')) }, configurable: true });
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText: () => Promise.reject(new Error('no focus')) },
+            configurable: true,
+        });
         document.execCommand = vi.fn(() => true);
 
         await service.copy('x.jpg');

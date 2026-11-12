@@ -12,8 +12,7 @@
     } catch {
         // Storage unavailable (private mode): follow the device.
     }
-    if (/\/player$/.test(location.pathname))
-        theme = 'dark';
+    if (/\/player$/.test(location.pathname)) theme = 'dark';
     else if (theme !== 'light' && theme !== 'dark')
         theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     document.documentElement.dataset['theme'] = theme;

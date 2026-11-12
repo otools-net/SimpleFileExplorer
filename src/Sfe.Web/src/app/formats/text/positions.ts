@@ -9,7 +9,7 @@ export const MAX_POSITIONS = 100;
 function read(key: string): Record<string, number> {
     try {
         const value = JSON.parse(readPreference(key) ?? '{}') as unknown;
-        return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, number> : {};
+        return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, number>) : {};
     } catch {
         return {};
     }
@@ -25,10 +25,8 @@ export function readPosition(path: string, key = POSITIONS_KEY): number | null {
 export function writePosition(path: string, line: number, key = POSITIONS_KEY): void {
     const positions = read(key);
     delete positions[path];
-    if (line > 1)
-        positions[path] = line;
+    if (line > 1) positions[path] = line;
     const paths = Object.keys(positions);
-    for (const old of paths.slice(0, Math.max(0, paths.length - MAX_POSITIONS)))
-        delete positions[old];
+    for (const old of paths.slice(0, Math.max(0, paths.length - MAX_POSITIONS))) delete positions[old];
     writePreference(key, JSON.stringify(positions));
 }

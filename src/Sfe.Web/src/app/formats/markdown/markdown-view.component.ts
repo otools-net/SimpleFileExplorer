@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    input,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { LibraryItem, TextFile } from '../../core/models';
@@ -34,7 +46,14 @@ const MODES: readonly { id: MarkdownMode; label: string; title: string }[] = [
 function itemAt(path: string): LibraryItem {
     const name = baseName(path);
     const dot = name.lastIndexOf('.');
-    return { name, path, kind: 'file', extension: dot > 0 ? name.slice(dot + 1).toLowerCase() : null, size: null, modified: null };
+    return {
+        name,
+        path,
+        kind: 'file',
+        extension: dot > 0 ? name.slice(dot + 1).toLowerCase() : null,
+        size: null,
+        modified: null,
+    };
 }
 
 /**
@@ -45,7 +64,15 @@ function itemAt(path: string): LibraryItem {
  */
 @Component({
     selector: 'sfe-markdown-view',
-    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
+    imports: [
+        IconComponent,
+        ReadingPanelComponent,
+        TextEditActionsComponent,
+        TextEditBarComponent,
+        OverflowRowDirective,
+        OverflowItemDirective,
+        OverflowMoreComponent,
+    ],
     providers: [TextSession],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -158,15 +185,29 @@ export class MarkdownViewComponent {
     protected readonly own = computed(() => this.reading.preferences().prose);
     /** The toolbar's buttons in its "⋯" menu, when they don't fit (the editing actions and the fields stay). */
     protected readonly more = {
-        mode: (): MenuEntry => modesEntry(this.modes, this.mode(), mode => this.setMode(mode)),
-        outline: (): MenuEntry => ({ id: 'outline', label: 'Outline', icon: 'list', title: 'Outline: the headings', checked: this.outline(), disabled: !this.headings().length, run: () => this.toggleOutline() }),
+        mode: (): MenuEntry => modesEntry(this.modes, this.mode(), (mode) => this.setMode(mode)),
+        outline: (): MenuEntry => ({
+            id: 'outline',
+            label: 'Outline',
+            icon: 'list',
+            title: 'Outline: the headings',
+            checked: this.outline(),
+            disabled: !this.headings().length,
+            run: () => this.toggleOutline(),
+        }),
         lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggleLineNumbers()),
         find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.sourceEditor()?.find()),
-        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen()), "Reading settings: font, size, width, colours"),
+        reading: (): MenuEntry =>
+            readingEntry(
+                this.panelOpen(),
+                () => this.panelOpen.set(!this.panelOpen()),
+                'Reading settings: font, size, width, colours',
+            ),
     };
     protected readonly style = computed(() => this.reading.style('prose'));
     protected readonly downloadUrl = computed(() =>
-        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
+        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,
+    );
     protected readonly details = computed(() => {
         const file = this.session.file() ?? this.file();
         return file ? textDetails(file, 'Markdown') : '';
@@ -175,11 +216,11 @@ export class MarkdownViewComponent {
     private readonly links: MarkdownLinks = this.fileSource.documents
         ? { ...this.fileSource.documents.links, relative: this.fileSource.documents.path !== null }
         : {
-            file: path => this.config.urls()!.file(path),
-            view: path => this.config.urls()!.view(path),
-            folder: path => `./?${new URLSearchParams({ path })}`,
-            viewable: path => formatOf(itemAt(path)) !== null,
-        };
+              file: (path) => this.config.urls()!.file(path),
+              view: (path) => this.config.urls()!.view(path),
+              folder: (path) => `./?${new URLSearchParams({ path })}`,
+              viewable: (path) => formatOf(itemAt(path)) !== null,
+          };
 
     /** The path its relative links are resolved from: its own, or its place in its archive. */
     private documentPath(item: LibraryItem): string {
@@ -203,13 +244,17 @@ export class MarkdownViewComponent {
             const mode = this.mode();
             const { wrap, lineNumbers } = this.own();
             untracked(() => {
-                if (!file || mode === 'rendered')
-                    return;
+                if (!file || mode === 'rendered') return;
                 const editor = this.sourceEditor();
-                if (editor)
-                    editor.configure({ wrap, lineNumbers });
+                if (editor) editor.configure({ wrap, lineNumbers });
                 else {
-                    const created = new TextEditor(this.source().nativeElement, { text: file.text, name: 'source.md', wrap, lineNumbers, ...this.session.editorOptions() });
+                    const created = new TextEditor(this.source().nativeElement, {
+                        text: file.text,
+                        name: 'source.md',
+                        wrap,
+                        lineNumbers,
+                        ...this.session.editorOptions(),
+                    });
                     this.session.setEditor(created);
                     this.sourceEditor.set(created);
                     void created.setLanguage('source.md').catch(() => undefined);
@@ -218,19 +263,16 @@ export class MarkdownViewComponent {
         });
         // Editing needs the source: beside the document, when only the document was shown.
         effect(() => {
-            if (this.session.editing() && untracked(this.mode) === 'rendered')
-                untracked(() => this.mode.set('split'));
+            if (this.session.editing() && untracked(this.mode) === 'rendered') untracked(() => this.mode.set('split'));
         });
         // The document follows the source as it is typed, once typing pauses.
         effect(() => {
-            if (!this.session.revision())
-                return;
+            if (!this.session.revision()) return;
             clearTimeout(this.renderLater);
             this.renderLater = setTimeout(() => {
                 // The source as typed; read again (changed elsewhere) without the source shown: the file's.
                 const text = this.sourceEditor()?.text() ?? this.session.file()?.text;
-                if (text !== undefined)
-                    void this.render(text, this.documentPath(this.item()));
+                if (text !== undefined) void this.render(text, this.documentPath(this.item()));
             }, RENDER_DELAY_MS);
         });
         effect(() => {
@@ -241,29 +283,25 @@ export class MarkdownViewComponent {
     }
 
     private async load(item: LibraryItem, cancel: AbortSignal): Promise<void> {
-        if (this.state() !== 'loading' || this.file())
-            return;
+        if (this.state() !== 'loading' || this.file()) return;
         let file: TextFile;
         try {
             file = await this.fileSource.textFile(item, cancel);
         } catch (error) {
-            if (cancel.aborted)
-                return;
+            if (cancel.aborted) return;
             const failure = textFailure(error);
             this.offerDownload.set(failure.offerDownload);
             this.message.set(failure.message);
             this.state.set('failed');
             return;
         }
-        if (cancel.aborted)
-            return;
+        if (cancel.aborted) return;
         this.session.attach(item, file);
         const rendered = this.render(file.text, this.documentPath(item));
         this.file.set(file);
         this.state.set('ready');
         await rendered;
-        if (untracked(this.edit))
-            this.session.startEdit();
+        if (untracked(this.edit)) this.session.startEdit();
     }
 
     /** The document from its source (as loaded, or as typed). */
@@ -282,7 +320,7 @@ export class MarkdownViewComponent {
     }
 
     protected toggleOutline(): void {
-        this.outline.update(shown => !shown);
+        this.outline.update((shown) => !shown);
         writePreference(MARKDOWN_OUTLINE_KEY, this.outline() ? '1' : '0');
     }
 
@@ -305,14 +343,21 @@ export class MarkdownViewComponent {
     /** Links of the document: its own headings, and other documents shown here (a modified click opens a new tab). */
     protected onArticleClick(event: MouseEvent): void {
         const anchor = (event.target as Element).closest?.('a');
-        if (!anchor)
-            return;
+        if (!anchor) return;
         if (anchor.dataset['anchor']) {
             this.goTo(event, anchor.dataset['anchor']);
             return;
         }
         const path = anchor.dataset['path'];
-        if (path && this.fileHost.open && event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+        if (
+            path &&
+            this.fileHost.open &&
+            event.button === 0 &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.shiftKey &&
+            !event.altKey
+        ) {
             event.preventDefault();
             this.fileHost.open(itemAt(path));
         }
@@ -320,21 +365,31 @@ export class MarkdownViewComponent {
 
     /** Ctrl+= / Ctrl+− / Ctrl+0 inside the view: the text's size, rather than the whole page's zoom. */
     protected onKeydown(event: KeyboardEvent): void {
-        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented)
-            return;
-        const step = event.key === '=' || event.key === '+' ? 1 : event.key === '-' || event.key === '_' ? -1 : event.key === '0' ? 0 : null;
-        if (step === null)
-            return;
+        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented) return;
+        const step =
+            event.key === '=' || event.key === '+'
+                ? 1
+                : event.key === '-' || event.key === '_'
+                  ? -1
+                  : event.key === '0'
+                    ? 0
+                    : null;
+        if (step === null) return;
         event.preventDefault();
         this.reading.changeSize('prose', step);
     }
 
     /** Ctrl+F finds in the source when it is shown; in the document alone, the browser's own find does. */
     protected onWindowKeydown(event: KeyboardEvent): void {
-        if (this.session.handleKey(event))
-            return;
+        if (this.session.handleKey(event)) return;
         const editor = this.sourceEditor();
-        if (event.defaultPrevented || !editor || this.mode() === 'rendered' || !(event.ctrlKey || event.metaKey) || event.shiftKey)
+        if (
+            event.defaultPrevented ||
+            !editor ||
+            this.mode() === 'rendered' ||
+            !(event.ctrlKey || event.metaKey) ||
+            event.shiftKey
+        )
             return;
         const key = event.key.toLowerCase();
         if (key === 'f' && !event.altKey) {

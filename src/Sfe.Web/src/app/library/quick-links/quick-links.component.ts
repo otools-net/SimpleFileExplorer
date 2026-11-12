@@ -135,8 +135,7 @@ export class QuickLinksComponent implements OnInit {
     }
 
     protected openFolder(event: MouseEvent, link: QuickLink): void {
-        if (!this.plainClick(event))
-            return;
+        if (!this.plainClick(event)) return;
         if (!link.exists) {
             event.preventDefault();
             this.notFound(link);
@@ -147,8 +146,7 @@ export class QuickLinksComponent implements OnInit {
 
     /** A plain click shows the file in its folder (media in the viewer); others (new tab...) follow the link. */
     protected openFile(event: MouseEvent, link: QuickLink): void {
-        if (!this.plainClick(event))
-            return;
+        if (!this.plainClick(event)) return;
         event.preventDefault();
         if (!link.exists) {
             this.notFound(link);
@@ -173,30 +171,91 @@ export class QuickLinksComponent implements OnInit {
 
     private targetEntries(link: QuickLink): MenuEntry[] {
         if (link.kind === 'directory')
-            return this.folders.linkEntries(link.path).filter(entry => entry.id !== 'quickLink').map(entry => entry.id === 'open'
-                ? { ...entry, run: () => { this.sidebar.closeIfOverlay(); entry.run?.(); } }
-                : entry);
-        const item: LibraryItem = { name: link.name, path: link.path, kind: link.kind, extension: link.extension, size: null, modified: null };
+            return this.folders
+                .linkEntries(link.path)
+                .filter((entry) => entry.id !== 'quickLink')
+                .map((entry) =>
+                    entry.id === 'open'
+                        ? {
+                              ...entry,
+                              run: () => {
+                                  this.sidebar.closeIfOverlay();
+                                  entry.run?.();
+                              },
+                          }
+                        : entry,
+                );
+        const item: LibraryItem = {
+            name: link.name,
+            path: link.path,
+            kind: link.kind,
+            extension: link.extension,
+            size: null,
+            modified: null,
+        };
         const entries: MenuEntry[] = [
-            { id: 'open', label: 'Show in its folder', icon: 'folder', title: `List the folder ${link.name} is in, and show it there`, run: () => { this.sidebar.closeIfOverlay(); this.store.reveal(link.path); } },
-            { id: 'newTab', label: 'Open in new tab', icon: 'external', title: `Open ${link.name} in a tab of its own`, href: this.actions.fileUrl(item), newTab: true },
+            {
+                id: 'open',
+                label: 'Show in its folder',
+                icon: 'folder',
+                title: `List the folder ${link.name} is in, and show it there`,
+                run: () => {
+                    this.sidebar.closeIfOverlay();
+                    this.store.reveal(link.path);
+                },
+            },
+            {
+                id: 'newTab',
+                label: 'Open in new tab',
+                icon: 'external',
+                title: `Open ${link.name} in a tab of its own`,
+                href: this.actions.fileUrl(item),
+                newTab: true,
+            },
         ];
         if (this.copyPaths.enabled())
-            entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => void this.copyPaths.copy(link.path) });
+            entries.push({
+                id: 'copyPath',
+                label: 'Copy full path',
+                icon: 'copy',
+                title: 'Copy where it is on the server',
+                run: () => void this.copyPaths.copy(link.path),
+            });
         if (this.dialogs.properties())
-            entries.push({ id: 'properties', label: 'Properties', icon: 'info', title: 'Its size, dates and what the index knows of it', run: () => void this.dialogs.properties()?.open(item) });
+            entries.push({
+                id: 'properties',
+                label: 'Properties',
+                icon: 'info',
+                title: 'Its size, dates and what the index knows of it',
+                run: () => void this.dialogs.properties()?.open(item),
+            });
         return entries;
     }
 
     private listEntries(link: QuickLink, index: number): MenuEntry[] {
         const entries: MenuEntry[] = [];
         if (index > 0)
-            entries.push({ id: 'moveUp', label: 'Move up', icon: 'up', title: `Move “${link.name}” up in the quick links`, run: () => void this.links.move(link.path, index - 1) });
+            entries.push({
+                id: 'moveUp',
+                label: 'Move up',
+                icon: 'up',
+                title: `Move “${link.name}” up in the quick links`,
+                run: () => void this.links.move(link.path, index - 1),
+            });
         if (index < this.links.links().length - 1)
-            entries.push({ id: 'moveDown', label: 'Move down', icon: 'down', title: `Move “${link.name}” down in the quick links`, run: () => void this.links.move(link.path, index + 2) });
+            entries.push({
+                id: 'moveDown',
+                label: 'Move down',
+                icon: 'down',
+                title: `Move “${link.name}” down in the quick links`,
+                run: () => void this.links.move(link.path, index + 2),
+            });
         entries.push({
-            id: 'remove', label: 'Remove from quick links', icon: 'close',
-            title: `Take “${link.name}” out of the quick links (the ${this.kindWord(link)} stays)`, run: () => void this.links.remove(link.path),
+            id: 'remove',
+            label: 'Remove from quick links',
+            icon: 'close',
+            title: `Take “${link.name}” out of the quick links (the ${this.kindWord(link)} stays)`,
+            run: () => void this.links.remove(link.path),
         });
         return entries;
     }
@@ -206,15 +265,17 @@ export class QuickLinksComponent implements OnInit {
     /** A drag started on the page: a folder or file (or the selection) can be dropped here. */
     protected onPageDragStart(event: DragEvent): void {
         // A finger drags nothing (a long press selects): Move to… and Copy to… do it there.
-        if (typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches) {
+        if (
+            typeof matchMedia === 'function' &&
+            matchMedia('(hover: none) and (pointer: coarse)').matches &&
+            !matchMedia('(any-pointer: fine)').matches
+        ) {
             event.preventDefault();
             return;
         }
-        if (!this.links.enabled() || !event.dataTransfer)
-            return;
+        if (!this.links.enabled() || !event.dataTransfer) return;
         const paths = this.links.dragPaths(event.target);
-        if (!paths?.length)
-            return;
+        if (!paths?.length) return;
         event.dataTransfer.setData(DRAG_ITEMS, JSON.stringify(paths));
         // Every effect: dropping a file's link elsewhere (another tab, the desktop) keeps working, and on a folder of
         // the page it is moved or copied (OperationsPanelComponent).
@@ -223,8 +284,7 @@ export class QuickLinksComponent implements OnInit {
     }
 
     protected startMove(event: DragEvent, link: QuickLink): void {
-        if (this.editing() || !event.dataTransfer)
-            return;
+        if (this.editing() || !event.dataTransfer) return;
         event.dataTransfer.setData(DRAG_LINK, link.path);
         event.dataTransfer.effectAllowed = 'move';
         this.moving.set(link.path);
@@ -233,8 +293,7 @@ export class QuickLinksComponent implements OnInit {
     protected onDragOver(event: DragEvent): void {
         const types = event.dataTransfer?.types ?? [];
         const moving = types.includes(DRAG_LINK);
-        if (!moving && !types.includes(DRAG_ITEMS))
-            return;
+        if (!moving && !types.includes(DRAG_ITEMS)) return;
         event.preventDefault();
         event.dataTransfer!.dropEffect = moving ? 'move' : 'link';
         this.dropIndex.set(this.indexAt(event.clientY));
@@ -249,20 +308,17 @@ export class QuickLinksComponent implements OnInit {
         const index = this.dropIndex() ?? this.indexAt(event.clientY);
         const data = event.dataTransfer;
         this.endDrag();
-        if (!data)
-            return;
+        if (!data) return;
         const moved = data.getData(DRAG_LINK);
         const items = data.getData(DRAG_ITEMS);
-        if (!moved && !items)
-            return;
+        if (!moved && !items) return;
         event.preventDefault();
         if (moved) {
             void this.links.move(moved, index);
             return;
         }
         const paths = parsePaths(items);
-        if (paths.length)
-            void this.links.add(paths, index);
+        if (paths.length) void this.links.add(paths, index);
     }
 
     protected endDrag(): void {
@@ -274,7 +330,7 @@ export class QuickLinksComponent implements OnInit {
     /** The link a drop at `y` goes before: the first whose middle is below it (the list's length after the last). */
     private indexAt(y: number): number {
         const items = [...this.host.querySelectorAll<HTMLElement>('li.quick-link')];
-        const index = items.findIndex(item => {
+        const index = items.findIndex((item) => {
             const box = item.getBoundingClientRect();
             return y < box.top + box.height / 2;
         });

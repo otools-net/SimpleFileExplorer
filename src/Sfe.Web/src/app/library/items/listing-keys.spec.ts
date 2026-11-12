@@ -4,7 +4,17 @@ import { neighbour } from './listing-keys';
 function laidOut(...boxes: [number, number, number, number][]): HTMLElement[] {
     return boxes.map(([left, top, width, height]) => {
         const element = document.createElement('div');
-        element.getBoundingClientRect = () => ({ left, top, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON: () => ({}) });
+        element.getBoundingClientRect = () => ({
+            left,
+            top,
+            width,
+            height,
+            right: left + width,
+            bottom: top + height,
+            x: left,
+            y: top,
+            toJSON: () => ({}),
+        });
         return element;
     });
 }
@@ -12,8 +22,11 @@ function laidOut(...boxes: [number, number, number, number][]): HTMLElement[] {
 describe('neighbour', () => {
     // Two rows of tiles of different widths, then a short last row.
     const items = laidOut(
-        [0, 0, 100, 80], [110, 0, 200, 80], [320, 0, 100, 80],
-        [0, 90, 250, 80], [260, 90, 160, 80],
+        [0, 0, 100, 80],
+        [110, 0, 200, 80],
+        [320, 0, 100, 80],
+        [0, 90, 250, 80],
+        [260, 90, 160, 80],
         [0, 180, 100, 80],
     );
 

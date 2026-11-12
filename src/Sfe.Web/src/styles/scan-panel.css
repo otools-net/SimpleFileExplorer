@@ -15,7 +15,9 @@
 /* Indeterminate: the number of folders is only known once the scan has found them all. */
 .scan-bar {
     position: absolute;
-    left: 0; right: 0; bottom: -1px;
+    left: 0;
+    right: 0;
+    bottom: -1px;
     height: 4px;
     overflow: hidden;
     background: color-mix(in srgb, var(--accent) 18%, transparent);
@@ -30,19 +32,46 @@
     animation: indeterminate 1.4s ease-in-out infinite;
 }
 
-.scan-panel.running { padding-bottom: 13px; }
-.scan-panel.running strong { color: var(--accent); }
-.scan-elapsed { font-variant-numeric: tabular-nums; font-weight: 600; }
+.scan-panel.running {
+    padding-bottom: 13px;
+}
+.scan-panel.running strong {
+    color: var(--accent);
+}
+.scan-elapsed {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
 
-.scan-panel:not(.running) .scan-bar { display: none; }
-.scan-text { flex: 1; min-width: 0; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-.scan-text span { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-.scan-panel.failed strong { color: var(--danger); }
+.scan-panel:not(.running) .scan-bar {
+    display: none;
+}
+.scan-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+.scan-text span {
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+.scan-panel.failed strong {
+    color: var(--danger);
+}
 
 /* Moved by transform, not `left`: `left` laid the whole page out again on each frame for as long as a scan ran (the
    bar is 30% wide: -100% to 333% of itself is -30% to 100% of the track). */
 @keyframes indeterminate {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(333.34%); }
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(333.34%);
+    }
 }
-

@@ -14,7 +14,7 @@ async function tile(file: LibraryItem, config: Partial<ClientConfig> = {}): Prom
     const fixture = TestBed.createComponent(FileTileComponent);
     fixture.componentRef.setInput('item', file);
     await fixture.whenStable();
-    vi.useFakeTimers();     // for the hover delay; after the set-up, which waits on real ones
+    vi.useFakeTimers(); // for the hover delay; after the set-up, which waits on real ones
     return fixture.nativeElement as HTMLElement;
 }
 
@@ -28,7 +28,8 @@ async function hover(card: HTMLElement): Promise<void> {
     await vi.advanceTimersByTimeAsync(400);
 }
 
-const gif = (overrides: Partial<LibraryItem> = {}) => item('fun.gif', { kind: 'image', extension: 'gif', size: 5000, ...overrides });
+const gif = (overrides: Partial<LibraryItem> = {}) =>
+    item('fun.gif', { kind: 'image', extension: 'gif', size: 5000, ...overrides });
 
 describe('AnimatedHoverService', () => {
     afterEach(() => {

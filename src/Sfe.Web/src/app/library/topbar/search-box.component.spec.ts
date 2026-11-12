@@ -24,7 +24,7 @@ describe('SearchBoxComponent', () => {
     const input = () => element.querySelector<HTMLInputElement>('input')!;
     const list = () => element.querySelector<HTMLElement>('.search-tag-options')!;
     const options = () => [...list().querySelectorAll<HTMLLIElement>('li[role=option]')];
-    const active = () => options().findIndex(li => li.getAttribute('aria-selected') === 'true');
+    const active = () => options().findIndex((li) => li.getAttribute('aria-selected') === 'true');
 
     /** Types `text` as a user would; `|` marks the caret (at the end without it). */
     async function typeText(text: string, wait = 150): Promise<void> {
@@ -49,7 +49,7 @@ describe('SearchBoxComponent', () => {
         TestBed.configureTestingModule({ providers: testProviders(api) });
         await loadConfig(api);
         store = TestBed.inject(ListingStore);
-        navigate = vi.spyOn(store, 'navigate').mockImplementation(() => { });
+        navigate = vi.spyOn(store, 'navigate').mockImplementation(() => {});
         api.tags.mockResolvedValue(results(shrek, scifi));
         fixture = TestBed.createComponent(SearchBoxComponent);
         element = fixture.nativeElement;
@@ -351,7 +351,10 @@ describe('SearchBoxComponent', () => {
 
         it('shows at most 12 suggestions, matches first', async () => {
             const many = Array.from({ length: 10 }, (_, i) => tag(`Tag ${i}`));
-            api.tags.mockResolvedValue({ matches: many, descendants: [tag('Child 1'), tag('Child 2'), tag('Child 3')] });
+            api.tags.mockResolvedValue({
+                matches: many,
+                descendants: [tag('Child 1'), tag('Child 2'), tag('Child 3')],
+            });
 
             await typeText('t:tag');
 
@@ -377,15 +380,17 @@ describe('SearchBoxComponent', () => {
         });
 
         it('shows every example of the syntax as a button', () => {
-            const all = SEARCH_SYNTAX.flatMap(section => section.rows.flatMap(row => row.examples));
-            expect(examples().map(button => button.textContent!.trim())).toEqual(all);
+            const all = SEARCH_SYNTAX.flatMap((section) => section.rows.flatMap((row) => row.examples));
+            expect(examples().map((button) => button.textContent!.trim())).toEqual(all);
             expect(all).toContain('r:hr');
         });
 
         it('adds a picked example to the box, closes and searches it', async () => {
             await typeText('cat ', 0);
             TestBed.inject(Dialogs).searchHelp()!.open();
-            examples().find(button => button.textContent!.trim() === 's:>1gb')!.click();
+            examples()
+                .find((button) => button.textContent!.trim() === 's:>1gb')!
+                .click();
             await settle(400);
 
             expect(dialog().open).toBe(false);
@@ -397,14 +402,14 @@ describe('SearchBoxComponent', () => {
 
     describe('search history', () => {
         let history: SearchHistory;
-        const texts = () => options().map(li => li.querySelector('.search-history-text')!.textContent);
+        const texts = () => options().map((li) => li.querySelector('.search-history-text')!.textContent);
 
         function submit(text: string): void {
             input().value = text;
             element.dispatchEvent(new Event('submit', { cancelable: true }));
         }
 
-        beforeEach(() => history = TestBed.inject(SearchHistory));
+        beforeEach(() => (history = TestBed.inject(SearchHistory)));
 
         it('keeps the submitted searches and suggests them when the box gets the focus, newest first', async () => {
             submit('cats');
@@ -420,16 +425,16 @@ describe('SearchBoxComponent', () => {
         });
 
         it('has a menu on each search: search it, in a new tab too, or remove it', async () => {
-            ['cats', 'dogs'].forEach(q => history.record(q));
+            ['cats', 'dogs'].forEach((q) => history.record(q));
             await typeText('');
             const menu = TestBed.inject(ContextMenu);
 
             options()[0].dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
             const target = menu.open()!.target;
-            const entry = (id: string) => target.entries().find(e => e.id === id)!;
+            const entry = (id: string) => target.entries().find((e) => e.id === id)!;
 
             expect(target).toMatchObject({ kind: 'historyEntry', name: 'dogs' });
-            expect(target.entries().map(e => e.id)).toEqual(['search', 'newTab', 'remove']);
+            expect(target.entries().map((e) => e.id)).toEqual(['search', 'newTab', 'remove']);
             expect(entry('newTab').href).toMatch(/\?q=dogs$/);
             entry('remove').run!();
             expect(JSON.parse(localStorage.getItem('sfe.searchHistory')!)).toEqual(['cats']);
@@ -438,7 +443,7 @@ describe('SearchBoxComponent', () => {
         });
 
         it('suggests the searches starting with the text first, then those containing it, without the text itself', async () => {
-            ['big cat', 'dog', 'Cats', 'cat'].forEach(q => history.record(q));
+            ['big cat', 'dog', 'Cats', 'cat'].forEach((q) => history.record(q));
 
             await typeText('cat');
 
@@ -448,8 +453,8 @@ describe('SearchBoxComponent', () => {
         });
 
         it('shows the typed characters in bold where they match, wherever they are', async () => {
-            ['Big Cat', 'cats'].forEach(q => history.record(q));
-            const bold = () => options().map(li => [...li.querySelectorAll('b')].map(b => b.textContent));
+            ['Big Cat', 'cats'].forEach((q) => history.record(q));
+            const bold = () => options().map((li) => [...li.querySelectorAll('b')].map((b) => b.textContent));
 
             await typeText('CA');
 
@@ -461,7 +466,7 @@ describe('SearchBoxComponent', () => {
         });
 
         it('leaves Enter to the box until a search is highlighted, then searches that one', async () => {
-            ['one', 'two'].forEach(q => history.record(q));
+            ['one', 'two'].forEach((q) => history.record(q));
             await typeText('');
             expect(active()).toBe(-1);
 
@@ -493,7 +498,7 @@ describe('SearchBoxComponent', () => {
         });
 
         it('forgets a search with its remove button, keeping the others open', async () => {
-            ['one', 'two'].forEach(q => history.record(q));
+            ['one', 'two'].forEach((q) => history.record(q));
             await typeText('');
 
             options()[0].querySelector('button')!.click();
@@ -524,7 +529,7 @@ describe('SearchBoxComponent', () => {
 
         it('keeps only as many searches as configured, and none when off', async () => {
             await loadConfig(api, fakeConfig({ searchHistory: 2 }));
-            ['a', 'b', 'c'].forEach(q => history.record(q));
+            ['a', 'b', 'c'].forEach((q) => history.record(q));
             expect(history.entries()).toEqual(['c', 'b']);
 
             await loadConfig(api, fakeConfig({ searchHistory: 0 }));

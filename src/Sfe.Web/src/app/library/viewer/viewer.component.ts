@@ -1,5 +1,19 @@
 import { NgComponentOutlet } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injector, signal, Type, untracked, viewChild } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    Injector,
+    signal,
+    Type,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { PinchGesture } from '@use-gesture/vanilla';
 import { ConfigService, withVersion } from '../../core/config.service';
 import { copyText, CopyPathService } from '../../core/copy-path.service';
@@ -145,32 +159,35 @@ export class ViewerComponent {
      * The file shown, by path: a refresh of the listing in place keeps it (with its new tags...), even when the files
      * around it change. `asText`: opened with "Open as text"; `edit`: ready to be changed (a new file).
      */
-    private readonly opened = signal<{ item: LibraryItem; asText: boolean; edit: boolean; asArchive?: boolean } | null>(null);
+    private readonly opened = signal<{ item: LibraryItem; asText: boolean; edit: boolean; asArchive?: boolean } | null>(
+        null,
+    );
     protected readonly editRequested = computed(() => this.opened()?.edit ?? false);
     protected readonly item = computed((): LibraryItem | null => {
         const opened = this.opened();
-        return opened ? this.store.items().find(item => item.path === opened.item.path) ?? opened.item : null;
+        return opened ? (this.store.items().find((item) => item.path === opened.item.path) ?? opened.item) : null;
     });
     /** Its place among the files the viewer steps through; -1 when it isn't one of them (opened as text). */
     protected readonly index = computed(() => {
         const path = this.item()?.path;
-        return path === undefined ? -1 : this.store.viewable().findIndex(item => item.path === path);
+        return path === undefined ? -1 : this.store.viewable().findIndex((item) => item.path === path);
     });
     /** The viewable files loaded before and after the one shown, in listing order. */
     protected readonly neighbours = computed(() => {
         const items = this.store.items();
         const path = this.item()?.path;
-        const at = items.findIndex(item => item.path === path);
+        const at = items.findIndex((item) => item.path === path);
         const find = (step: number): LibraryItem | null => {
             for (let i = at + step; at >= 0 && i >= 0 && i < items.length; i += step) {
-                if (formatOf(items[i]))
-                    return items[i];
+                if (formatOf(items[i])) return items[i];
             }
             return null;
         };
         return { previous: find(-1), next: find(1) };
     });
-    protected readonly format = computed(() => formatOf(this.item(), { asText: this.opened()?.asText, asArchive: this.opened()?.asArchive }));
+    protected readonly format = computed(() =>
+        formatOf(this.item(), { asText: this.opened()?.asText, asArchive: this.opened()?.asArchive }),
+    );
     /** The viewer's own markup for media; null for a format with a component. */
     protected readonly builtin = computed(() => {
         const view = this.format()?.view;
@@ -183,19 +200,25 @@ export class ViewerComponent {
     private readonly guards = new Set<() => boolean>();
     private readonly host: FileViewHost = {
         place: 'viewer',
-        can: right => this.can(right),
+        can: (right) => this.can(right),
         open: (item, options) => this.open(item, { edit: options?.edit }),
-        guard: canLeave => {
+        guard: (canLeave) => {
             this.guards.add(canLeave);
             return () => this.guards.delete(canLeave);
         },
     };
-    protected readonly viewInjector = Injector.create({ providers: [{ provide: FILE_VIEW_HOST, useValue: this.host }], parent: this.injector });
+    protected readonly viewInjector = Injector.create({
+        providers: [{ provide: FILE_VIEW_HOST, useValue: this.host }],
+        parent: this.injector,
+    });
     /** The item on the stage, as a list of one (or none) so that each item gets elements of its own. */
-    protected readonly shownItem = computed(() => {
-        const item = this.item();
-        return item ? [item] : [];
-    }, { equal: (a, b) => a[0]?.path === b[0]?.path });
+    protected readonly shownItem = computed(
+        () => {
+            const item = this.item();
+            return item ? [item] : [];
+        },
+        { equal: (a, b) => a[0]?.path === b[0]?.path },
+    );
     protected readonly unsupported = signal(false);
     /** The server's conversion failed too. */
     protected readonly converted = signal(false);
@@ -205,22 +228,32 @@ export class ViewerComponent {
         return item?.kind === 'video' ? this.config.videoStream(item.path) : null;
     });
     private readonly loadingMore = signal(false);
-    protected readonly nextDisabled = computed(() => this.loadingMore() || (!this.neighbours().next && !this.store.hasMore()));
+    protected readonly nextDisabled = computed(
+        () => this.loadingMore() || (!this.neighbours().next && !this.store.hasMore()),
+    );
     protected readonly meta = computed(() => {
         const item = this.item();
-        if (!item)
-            return '';
+        if (!item) return '';
         const index = this.index();
-        const position = index < 0 ? null : `${index + 1} / ${this.store.viewable().length}${this.store.hasMore() ? '+' : ''}`;
-        return joinParts([position, this.config.resolution(item), this.config.duration(item), formatSize(item.size), formatDate(item.modified), item.directory], '  ·  ');
+        const position =
+            index < 0 ? null : `${index + 1} / ${this.store.viewable().length}${this.store.hasMore() ? '+' : ''}`;
+        return joinParts(
+            [
+                position,
+                this.config.resolution(item),
+                this.config.duration(item),
+                formatSize(item.size),
+                formatDate(item.modified),
+                item.directory,
+            ],
+            '  ·  ',
+        );
     });
     /** "Open in new tab": the file itself, or its viewer's page for formats that have one. */
     protected readonly fileUrl = computed(() => {
         const item = this.item();
-        if (!item)
-            return null;
-        if (!this.format()?.page)
-            return this.urls()!.file(item.path);
+        if (!item) return null;
+        if (!this.format()?.page) return this.urls()!.file(item.path);
         return this.opened()?.asArchive ? `${this.urls()!.view(item.path)}&asArchive=1` : this.urls()!.view(item.path);
     });
     /** The picture shown and its thumbnail, marked with its time: one saved over (the picture editor) shows again. */
@@ -231,12 +264,16 @@ export class ViewerComponent {
             ? { file: withVersion(urls.file(item.path), item), thumbnail: withVersion(urls.thumbnail(item.path), item) }
             : { file: null, thumbnail: null };
     });
-    protected readonly downloadUrl = computed(() => this.item() ? this.urls()!.download(this.item()!.path) : null);
+    protected readonly downloadUrl = computed(() => (this.item() ? this.urls()!.download(this.item()!.path) : null));
     /** The item can be opened in the external player (videos and audio, when the server has one for this session). */
-    protected readonly external = computed(() => Boolean((this.item()?.kind === 'video' || this.item()?.kind === 'audio') && this.urls()?.externalName));
+    protected readonly external = computed(() =>
+        Boolean((this.item()?.kind === 'video' || this.item()?.kind === 'audio') && this.urls()?.externalName),
+    );
 
     /** The picture can be edited (the right, and a server with the editor). */
-    protected readonly editable = computed(() => this.item()?.kind === 'image' && this.can('files.edit') && Boolean(this.config.config()?.editor));
+    protected readonly editable = computed(
+        () => this.item()?.kind === 'image' && this.can('files.edit') && Boolean(this.config.config()?.editor),
+    );
 
     /**
      * The menu of the file shown (the ⋮ of the bar, a right click on the stage): what the viewer does with it (zoom,
@@ -244,63 +281,135 @@ export class ViewerComponent {
      */
     protected readonly menuTarget = computed((): MenuTarget | null => {
         const item = this.item();
-        return item ? { kind: 'file', key: `viewer:${item.path}`, name: item.name, item, entries: () => this.menuEntries() } : null;
+        return item
+            ? { kind: 'file', key: `viewer:${item.path}`, name: item.name, item, entries: () => this.menuEntries() }
+            : null;
     });
     /** A right click on a picture or a video: the same menu. Documents (text, PDF, EPUB...) keep the browser's. */
-    protected readonly stageMenu = computed(() => this.builtin() === 'image' || this.builtin() === 'video' ? this.menuTarget() : null);
+    protected readonly stageMenu = computed(() =>
+        this.builtin() === 'image' || this.builtin() === 'video' ? this.menuTarget() : null,
+    );
     protected readonly menuOpen = computed(() => this.contextMenu.open()?.target.key === this.menuTarget()?.key);
     protected readonly menuEntries = computed((): MenuEntry[] => {
         const item = this.item();
-        if (!item)
-            return [];
+        if (!item) return [];
         // A video: the player's controls first (a right click on it), then what the viewer does with the file.
-        const entries: MenuEntry[] = item.kind === 'video' ? this.player()?.menuEntries() ?? [] : [];
+        const entries: MenuEntry[] = item.kind === 'video' ? (this.player()?.menuEntries() ?? []) : [];
         if (this.zoomed())
-            entries.push({ id: 'fit', label: 'Fit to the screen', icon: 'zoom-out', shortcut: 'Z', title: 'Fit to the screen (Z, or click the picture)', run: () => this.zoomOut() });
+            entries.push({
+                id: 'fit',
+                label: 'Fit to the screen',
+                icon: 'zoom-out',
+                shortcut: 'Z',
+                title: 'Fit to the screen (Z, or click the picture)',
+                run: () => this.zoomOut(),
+            });
         else if (this.zoomable())
-            entries.push({ id: 'actualSize', label: 'Actual size', icon: 'zoom-in', shortcut: 'Z', title: 'Actual size, 100% (Z, or click the picture)', run: () => this.zoomIn() });
+            entries.push({
+                id: 'actualSize',
+                label: 'Actual size',
+                icon: 'zoom-in',
+                shortcut: 'Z',
+                title: 'Actual size, 100% (Z, or click the picture)',
+                run: () => this.zoomIn(),
+            });
         if (this.editable())
-            entries.push({ id: 'crop', label: 'Crop…', icon: 'crop', shortcut: 'E', title: 'Edit: crop, then save a copy (E)', run: () => this.edit() });
+            entries.push({
+                id: 'crop',
+                label: 'Crop…',
+                icon: 'crop',
+                shortcut: 'E',
+                title: 'Edit: crop, then save a copy (E)',
+                run: () => this.edit(),
+            });
         if (this.quickLinks.enabled()) {
             const pinned = this.quickLinks.paths().has(item.path);
             entries.push({
-                id: 'quickLink', label: pinned ? 'Remove from quick links' : 'Add to quick links', icon: 'pin',
-                title: pinned ? `Take ${item.name} out of your quick links` : `Show ${item.name} in your quick links, in the sidebar`,
+                id: 'quickLink',
+                label: pinned ? 'Remove from quick links' : 'Add to quick links',
+                icon: 'pin',
+                title: pinned
+                    ? `Take ${item.name} out of your quick links`
+                    : `Show ${item.name} in your quick links, in the sidebar`,
                 run: () => void this.quickLinks.toggle(item.path),
             });
         }
         if (this.copyPaths.enabled())
-            entries.push({ id: 'copyPath', label: 'Copy full path', icon: 'copy', title: 'Copy where it is on the server', run: () => this.copyPath() });
+            entries.push({
+                id: 'copyPath',
+                label: 'Copy full path',
+                icon: 'copy',
+                title: 'Copy where it is on the server',
+                run: () => this.copyPath(),
+            });
         if (item.kind === 'video')
-            entries.push({ id: 'popOut', label: 'Open in a new window', icon: 'window', shortcut: 'W', title: 'Play it in a window of its own, from here (W)', run: () => this.popOut() });
+            entries.push({
+                id: 'popOut',
+                label: 'Open in a new window',
+                icon: 'window',
+                shortcut: 'W',
+                title: 'Play it in a window of its own, from here (W)',
+                run: () => this.popOut(),
+            });
         if (item.kind === 'video' && this.player())
-            entries.push({ id: 'copyTimeLink', label: 'Copy link at this time', icon: 'clock', title: 'Copy a link playing it from where it is now', run: () => void this.copyTimeLink() });
+            entries.push({
+                id: 'copyTimeLink',
+                label: 'Copy link at this time',
+                icon: 'clock',
+                title: 'Copy a link playing it from where it is now',
+                run: () => void this.copyTimeLink(),
+            });
         if (this.external())
-            entries.push({ id: 'external', label: `Open in ${this.urls()?.externalName}`, icon: 'play', title: 'A link working without signing in, for a while', run: () => this.openExternal() });
-        entries.push({ id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'Open it in a tab of its own', href: this.fileUrl() ?? undefined, newTab: true });
+            entries.push({
+                id: 'external',
+                label: `Open in ${this.urls()?.externalName}`,
+                icon: 'play',
+                title: 'A link working without signing in, for a while',
+                run: () => this.openExternal(),
+            });
+        entries.push({
+            id: 'newTab',
+            label: 'Open in new tab',
+            icon: 'external',
+            title: 'Open it in a tab of its own',
+            href: this.fileUrl() ?? undefined,
+            newTab: true,
+        });
         if (this.can('files.download'))
-            entries.push({ id: 'download', label: 'Download', icon: 'download', title: 'Save this file to this device', href: this.downloadUrl() ?? undefined });
+            entries.push({
+                id: 'download',
+                label: 'Download',
+                icon: 'download',
+                title: 'Save this file to this device',
+                href: this.downloadUrl() ?? undefined,
+            });
         // Not what would change or take away the file shown (rename, delete, move): the viewer doesn't follow them.
         const kept = new Set(['copy', 'copyTo', 'properties']);
         // Their keys are the listing's (Ctrl+C, Alt+Enter), not the viewer's.
-        entries.push(...this.itemMenu.entries(item, true).filter(entry => kept.has(entry.id)).map(entry => ({ ...entry, shortcut: undefined })));
+        entries.push(
+            ...this.itemMenu
+                .entries(item, true)
+                .filter((entry) => kept.has(entry.id))
+                .map((entry) => ({ ...entry, shortcut: undefined })),
+        );
         return entries;
     });
 
     protected toggleMenu(): void {
         const target = this.menuTarget();
         const button = this.menuButton()?.nativeElement;
-        if (target && button)
-            this.contextMenu.toggle(target, button);
+        if (target && button) this.contextMenu.toggle(target, button);
     }
 
     /** The address of the player page playing the video shown from where it is now. */
     private async copyTimeLink(): Promise<void> {
         const item = this.item();
-        if (!item)
-            return;
+        if (!item) return;
         try {
-            await copyText(new URL(this.urls()!.player(item.path, Math.floor(this.player()?.currentTime() ?? 0)), document.baseURI).href);
+            await copyText(
+                new URL(this.urls()!.player(item.path, Math.floor(this.player()?.currentTime() ?? 0)), document.baseURI)
+                    .href,
+            );
             this.toasts.show('Link copied.');
         } catch {
             this.toasts.show('The link could not be copied.', { error: true });
@@ -309,8 +418,7 @@ export class ViewerComponent {
 
     /** The viewer's menu closes with the file it was for. */
     private closeMenu(): void {
-        if (this.menuOpen())
-            this.contextMenu.close();
+        if (this.menuOpen()) this.contextMenu.close();
     }
 
     /** The session may use `right` on the item shown (a right of the space that the folder rules let through there). */
@@ -339,7 +447,14 @@ export class ViewerComponent {
     /** The zoomed picture's top-left corner, relative to the stage. */
     protected readonly pan = signal({ x: 0, y: 0 });
     protected readonly dragging = signal(false);
-    private drag: { pointerId: number; startX: number; startY: number; panX: number; panY: number; moved: boolean } | null = null;
+    private drag: {
+        pointerId: number;
+        startX: number;
+        startY: number;
+        panX: number;
+        panY: number;
+        moved: boolean;
+    } | null = null;
 
     private touchStart: Touch | null = null;
     private readonly destroyRef = inject(DestroyRef);
@@ -347,11 +462,13 @@ export class ViewerComponent {
     private wheelBlockedUntil = 0;
 
     constructor() {
-        registerDialog(dialogs => dialogs.viewer, this);
+        registerDialog((dialogs) => dialogs.viewer, this);
         // Two fingers zoom a picture (@use-gesture: touch, pointer and Safari's gesture events alike). Not the wheel with
         // Ctrl: the browser's own zoom, as over a video or a document.
         afterNextRender(() => {
-            const pinch = new PinchGesture(this.stage().nativeElement, state => this.onPinch(state), { pinchOnWheel: false });
+            const pinch = new PinchGesture(this.stage().nativeElement, (state) => this.onPinch(state), {
+                pinchOnWheel: false,
+            });
             this.destroyRef.onDestroy(() => pinch.destroy());
         });
         // The component of a format, loaded the first time one of its files is shown.
@@ -364,26 +481,30 @@ export class ViewerComponent {
                     this.viewComponent.set(null);
                     return;
                 }
-                void view.load().then(component => {
-                    if (this.format() === format)
-                        this.viewComponent.set(component);
-                }, () => {
-                    if (this.format() === format)
-                        this.viewFailed.set(true);
-                });
+                void view.load().then(
+                    (component) => {
+                        if (this.format() === format) this.viewComponent.set(component);
+                    },
+                    () => {
+                        if (this.format() === format) this.viewFailed.set(true);
+                    },
+                );
             });
         });
         // Scrub previews once the trickplay is there, if the player is still showing this video.
         effect(() => {
             const player = this.player();
             const item = untracked(() => this.item());
-            if (!player || item?.kind !== 'video')
-                return;
+            if (!player || item?.kind !== 'video') return;
             untracked(() => {
-                void this.marks.load(item.path, () => this.player() === player).then(trickplay => {
-                    if (trickplay && this.player() === player)
-                        player.setTrickplay(trickplay, index => this.urls()!.trickplaySheet(item.path, index, trickplay.version));
-                });
+                void this.marks
+                    .load(item.path, () => this.player() === player)
+                    .then((trickplay) => {
+                        if (trickplay && this.player() === player)
+                            player.setTrickplay(trickplay, (index) =>
+                                this.urls()!.trickplaySheet(item.path, index, trickplay.version),
+                            );
+                    });
             });
         });
     }
@@ -393,21 +514,17 @@ export class ViewerComponent {
      * Nothing happens for a file without a viewer, nor when the file shown has changes the person keeps.
      */
     open(item: LibraryItem, options?: { asText?: boolean; asArchive?: boolean; edit?: boolean }): void {
-        if (!formatOf(item, options))
-            return;
+        if (!formatOf(item, options)) return;
         const dialog = this.dialog().nativeElement;
-        if (dialog.open && this.item()?.path !== item.path && !this.confirmLeave())
-            return;
-        if (!dialog.open)
-            dialog.showModal();
+        if (dialog.open && this.item()?.path !== item.path && !this.confirmLeave()) return;
+        if (!dialog.open) dialog.showModal();
         this.show(item, options?.asText ?? false, options?.edit ?? false, options?.asArchive ?? false);
     }
 
     /** Closes the viewer, unless the file shown has changes the person keeps; false then. */
     close(): boolean {
         const dialog = this.dialog().nativeElement;
-        if (dialog.open && !this.confirmLeave())
-            return false;
+        if (dialog.open && !this.confirmLeave()) return false;
         dialog.close();
         return true;
     }
@@ -415,16 +532,14 @@ export class ViewerComponent {
     /** The file shown may be left: nothing unsaved in it, or the person agrees to lose it. */
     confirmLeave(): boolean {
         for (const canLeave of this.guards) {
-            if (!canLeave())
-                return false;
+            if (!canLeave()) return false;
         }
         return true;
     }
 
     /** Esc closes the dialog by itself: not over unsaved changes the person keeps. */
     protected onCancel(event: Event): void {
-        if (!this.confirmLeave())
-            event.preventDefault();
+        if (!this.confirmLeave()) event.preventDefault();
     }
 
     private show(item: LibraryItem, asText = false, edit = false, asArchive = false): void {
@@ -437,8 +552,7 @@ export class ViewerComponent {
         this.thumbnailFailed.set(false);
         this.originalReady.set(false);
         this.progressive.set(this.config.isLargeImage(item));
-        if (this.progressive())
-            this.loadOriginal(item);
+        if (this.progressive()) this.loadOriginal(item);
         this.store.reportView(item);
     }
 
@@ -448,15 +562,17 @@ export class ViewerComponent {
         this.pending = original;
         original.src = this.urls()!.file(item.path);
         // Rejected when the original can't be shown, or when the viewer moved on (see stopPending).
-        original.decode().then(() => {
-            if (this.pending === original) {
-                this.pending = null;
-                this.originalReady.set(true);
-            }
-        }, () => {
-            if (this.pending === original)
-                this.pending = null;
-        });
+        original.decode().then(
+            () => {
+                if (this.pending === original) {
+                    this.pending = null;
+                    this.originalReady.set(true);
+                }
+            },
+            () => {
+                if (this.pending === original) this.pending = null;
+            },
+        );
     }
 
     /** Moving on: stop downloading the original nobody will see. */
@@ -477,12 +593,10 @@ export class ViewerComponent {
             } finally {
                 this.loadingMore.set(false);
             }
-            if (!loaded || this.item()?.path !== from)
-                return;
+            if (!loaded || this.item()?.path !== from) return;
             target = this.neighbours().next;
         }
-        if (target && this.confirmLeave())
-            this.show(target);
+        if (target && this.confirmLeave()) this.show(target);
     }
 
     protected onClose(): void {
@@ -503,25 +617,21 @@ export class ViewerComponent {
     /** Once the original is drawn, and when the window changes size: is it shown smaller than it is? */
     protected measure(): void {
         const picture = this.picture()?.nativeElement;
-        if (!picture || this.zoomed())
-            return;
+        if (!picture || this.zoomed()) return;
         const box = picture.getBoundingClientRect();
         this.fitSize = { width: box.width, height: box.height };
         this.zoomable.set(picture.naturalWidth > box.width + 1 || picture.naturalHeight > box.height + 1);
     }
 
     protected onResize(): void {
-        if (this.zoomed())
-            this.pan.update(pan => this.clampPan(pan.x, pan.y));
-        else
-            this.measure();
+        if (this.zoomed()) this.pan.update((pan) => this.clampPan(pan.x, pan.y));
+        else this.measure();
     }
 
     /** Shows the picture at its actual size, keeping the point clicked (else the centre) where it is on the screen. */
     protected zoomIn(clientX?: number, clientY?: number): void {
         const picture = this.picture()?.nativeElement;
-        if (!picture || this.zoomed() || !this.zoomable())
-            return;
+        if (!picture || this.zoomed() || !this.zoomable()) return;
         this.zoomTo(picture, picture.naturalWidth, picture.naturalHeight, clientX, clientY);
     }
 
@@ -533,9 +643,12 @@ export class ViewerComponent {
         const y = clientY ?? box.top + box.height / 2;
         this.actualSize.set({ width, height });
         this.zoomed.set(true);
-        this.pan.set(this.clampPan(
-            x - stage.left - (box.width ? (x - box.left) / box.width : 0.5) * width,
-            y - stage.top - (box.height ? (y - box.top) / box.height : 0.5) * height));
+        this.pan.set(
+            this.clampPan(
+                x - stage.left - (box.width ? (x - box.left) / box.width : 0.5) * width,
+                y - stage.top - (box.height ? (y - box.top) / box.height : 0.5) * height,
+            ),
+        );
     }
 
     /**
@@ -543,27 +656,34 @@ export class ViewerComponent {
      * screen up to `PINCH_MAX_FIT` times it (or its actual size, if larger); let go near the fitted size, it fits again.
      * A finger moving it once zoomed is the drag of `onPicturePointerMove`.
      */
-    private onPinch({ first, last, movement: [scale], origin: [x, y], memo }: { first: boolean; last: boolean; movement: [number, number]; origin: [number, number]; memo?: { width: number; height: number } }): { width: number; height: number } | undefined {
+    private onPinch({
+        first,
+        last,
+        movement: [scale],
+        origin: [x, y],
+        memo,
+    }: {
+        first: boolean;
+        last: boolean;
+        movement: [number, number];
+        origin: [number, number];
+        memo?: { width: number; height: number };
+    }): { width: number; height: number } | undefined {
         const picture = this.picture()?.nativeElement;
-        if (!picture || this.builtin() !== 'image')
-            return undefined;
+        if (!picture || this.builtin() !== 'image') return undefined;
         if (first || !memo) {
             // Not a drag nor a tap any more (nor a swipe: `onTouchStart` sees the two fingers).
             this.endDrag();
-            if (!this.zoomed())
-                this.measure();
+            if (!this.zoomed()) this.measure();
             memo = this.zoomed() ? this.actualSize() : { ...this.fitSize };
         }
         const fit = this.fitSize;
-        if (!fit.width || !fit.height)
-            return memo;
+        if (!fit.width || !fit.height) return memo;
         const largest = Math.max(picture.naturalWidth, fit.width * PINCH_MAX_FIT);
         const width = Math.min(largest, Math.max(fit.width, memo.width * scale));
-        const height = width * fit.height / fit.width;
-        if (last && width <= fit.width * PINCH_FIT_SLACK)
-            this.zoomOut();
-        else if (width > fit.width + 0.5 || this.zoomed())
-            this.zoomTo(picture, width, height, x, y);
+        const height = (width * fit.height) / fit.width;
+        if (last && width <= fit.width * PINCH_FIT_SLACK) this.zoomOut();
+        else if (width > fit.width + 0.5 || this.zoomed()) this.zoomTo(picture, width, height, x, y);
         return memo;
     }
 
@@ -579,10 +699,16 @@ export class ViewerComponent {
     }
 
     protected onPicturePointerDown(event: PointerEvent): void {
-        if (event.button !== 0 || !(this.zoomed() || this.zoomable()))
-            return;
+        if (event.button !== 0 || !(this.zoomed() || this.zoomable())) return;
         const pan = this.pan();
-        this.drag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, panX: pan.x, panY: pan.y, moved: false };
+        this.drag = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            panX: pan.x,
+            panY: pan.y,
+            moved: false,
+        };
         if (this.zoomed()) {
             // Keeps the moves coming when the pointer leaves the picture, and stops the browser selecting it.
             (event.target as Element).setPointerCapture?.(event.pointerId);
@@ -592,12 +718,10 @@ export class ViewerComponent {
 
     protected onPicturePointerMove(event: PointerEvent): void {
         const drag = this.drag;
-        if (!drag || event.pointerId !== drag.pointerId)
-            return;
+        if (!drag || event.pointerId !== drag.pointerId) return;
         const dx = event.clientX - drag.startX;
         const dy = event.clientY - drag.startY;
-        if (!drag.moved && Math.abs(dx) <= CLICK_SLOP && Math.abs(dy) <= CLICK_SLOP)
-            return;
+        if (!drag.moved && Math.abs(dx) <= CLICK_SLOP && Math.abs(dy) <= CLICK_SLOP) return;
         drag.moved = true;
         if (this.zoomed()) {
             this.dragging.set(true);
@@ -608,15 +732,11 @@ export class ViewerComponent {
     /** A press that didn't move is a click: actual size, or back to fitting the screen. */
     protected onPicturePointerUp(event: PointerEvent): void {
         const drag = this.drag;
-        if (!drag || event.pointerId !== drag.pointerId)
-            return;
+        if (!drag || event.pointerId !== drag.pointerId) return;
         this.endDrag();
-        if (drag.moved)
-            return;
-        if (this.zoomed())
-            this.zoomOut();
-        else
-            this.zoomIn(event.clientX, event.clientY);
+        if (drag.moved) return;
+        if (this.zoomed()) this.zoomOut();
+        else this.zoomIn(event.clientX, event.clientY);
     }
 
     protected endDrag(): void {
@@ -626,46 +746,48 @@ export class ViewerComponent {
 
     protected openTags(): void {
         const item = this.item();
-        if (item && this.can('tags.view'))
-            this.dialogs.fileTags()?.open(item);
+        if (item && this.can('tags.view')) this.dialogs.fileTags()?.open(item);
     }
 
     /** Opens the picture in the editor, over the viewer. */
     protected edit(): void {
         const item = this.item();
-        if (item && this.editable())
-            void this.dialogs.imageEditor()?.open(item);
+        if (item && this.editable()) void this.dialogs.imageEditor()?.open(item);
     }
 
     protected openExternal(): void {
         const item = this.item();
         if (item)
-            this.config.openExternal(item.path).catch((error: Error) => this.toasts.error(`Could not open it in ${this.urls()?.externalName}: ${error.message}`));
+            this.config
+                .openExternal(item.path)
+                .catch((error: Error) =>
+                    this.toasts.error(`Could not open it in ${this.urls()?.externalName}: ${error.message}`),
+                );
     }
 
     protected copyPath(): void {
         const item = this.item();
-        if (item)
-            void this.copyPaths.copy(item.path);
+        if (item) void this.copyPaths.copy(item.path);
     }
 
     protected searchTag(tag: TagSummary): void {
-        if (!this.close())
-            return;
+        if (!this.close()) return;
         this.store.navigate({ q: tagQuery(tag) });
     }
 
     /** Plays the current video in a window of its own, from where it is now; the viewer closes. */
     protected popOut(): void {
         const item = this.item();
-        if (!item || item.kind !== 'video')
-            return;
+        if (!item || item.kind !== 'video') return;
         const width = Math.min(1280, Math.round(screen.availWidth * 0.8));
-        const height = Math.min(Math.round(width * 9 / 16), Math.round(screen.availHeight * 0.8));
-        const opened = window.open(this.urls()!.player(item.path, this.player()?.currentTime() ?? 0), '_blank', `popup,width=${width},height=${height}`);
+        const height = Math.min(Math.round((width * 9) / 16), Math.round(screen.availHeight * 0.8));
+        const opened = window.open(
+            this.urls()!.player(item.path, this.player()?.currentTime() ?? 0),
+            '_blank',
+            `popup,width=${width},height=${height}`,
+        );
         // A blocked pop-up leaves the video playing here.
-        if (opened)
-            this.close();
+        if (opened) this.close();
     }
 
     protected onKeydown(event: KeyboardEvent): void {
@@ -678,13 +800,10 @@ export class ViewerComponent {
             }
             return;
         }
-        if (target instanceof HTMLMediaElement && event.key === ' ')
-            return;
+        if (target instanceof HTMLMediaElement && event.key === ' ') return;
         // A focused button or link handles Space/Enter itself; the seek bar handles the arrows itself.
-        if ((event.key === ' ' || event.key === 'Enter') && target.closest?.('button, a'))
-            return;
-        if (target.matches?.('input[type="range"]') && event.key.startsWith('Arrow'))
-            return;
+        if ((event.key === ' ' || event.key === 'Enter') && target.closest?.('button, a')) return;
+        if (target.matches?.('input[type="range"]') && event.key.startsWith('Arrow')) return;
         const player = this.player();
         if (player?.handleKey(event)) {
             event.preventDefault();
@@ -697,10 +816,8 @@ export class ViewerComponent {
             this.zoomOut();
         } else if (event.key.toLowerCase() === 'z' && plain && (this.zoomed() || this.zoomable())) {
             event.preventDefault();
-            if (this.zoomed())
-                this.zoomOut();
-            else
-                this.zoomIn();
+            if (this.zoomed()) this.zoomOut();
+            else this.zoomIn();
         } else if (event.key === 'ArrowLeft') {
             event.preventDefault();
             void this.go(-1);
@@ -728,27 +845,24 @@ export class ViewerComponent {
     }
 
     protected onTouchEnd(event: TouchEvent): void {
-        if (!this.touchStart)
-            return;
+        if (!this.touchStart) return;
         const touch = event.changedTouches[0];
         const dx = touch.clientX - this.touchStart.clientX;
         const dy = touch.clientY - this.touchStart.clientY;
         this.touchStart = null;
-        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5)
-            void this.go(dx < 0 ? 1 : -1);
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) void this.go(dx < 0 ? 1 : -1);
     }
 
     protected onWheel(event: WheelEvent): void {
         // Ctrl+wheel is the browser zoom; the player's controls (seek bar) keep the wheel to themselves.
-        if (event.ctrlKey || (event.target as Element).closest?.(`.player-controls, ${OWNS_KEYS}`))
-            return;
+        if (event.ctrlKey || (event.target as Element).closest?.(`.player-controls, ${OWNS_KEYS}`)) return;
         event.preventDefault();
         if (this.zoomed()) {
             // A picture at its actual size scrolls instead, as a page would (Shift: sideways).
             const lines = event.deltaMode === 0 ? 1 : WHEEL_STEP;
             const dx = (event.shiftKey ? event.deltaY : event.deltaX) * lines;
             const dy = (event.shiftKey ? 0 : event.deltaY) * lines;
-            this.pan.update(pan => this.clampPan(pan.x - dx, pan.y - dy));
+            this.pan.update((pan) => this.clampPan(pan.x - dx, pan.y - dy));
             return;
         }
         const raw = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
@@ -756,13 +870,11 @@ export class ViewerComponent {
         const delta = event.deltaMode === 0 ? raw : Math.sign(raw) * WHEEL_STEP;
         const now = performance.now();
         if (now < this.wheelBlockedUntil) {
-            if (Math.abs(delta) < WHEEL_STEP)
-                this.wheelBlockedUntil = now + WHEEL_PAUSE_MS;
+            if (Math.abs(delta) < WHEEL_STEP) this.wheelBlockedUntil = now + WHEEL_PAUSE_MS;
             return;
         }
         this.wheelDelta += delta;
-        if (Math.abs(this.wheelDelta) < WHEEL_STEP)
-            return;
+        if (Math.abs(this.wheelDelta) < WHEEL_STEP) return;
         const step = this.wheelDelta > 0 ? 1 : -1;
         this.wheelDelta = 0;
         this.wheelBlockedUntil = now + WHEEL_PAUSE_MS;

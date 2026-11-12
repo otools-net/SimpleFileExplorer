@@ -4,7 +4,19 @@ import { FileTagChangeResult, LibraryItem, TagSummary } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
-import { ApiMock, applyChange, deferred, fakeConfig, item, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    applyChange,
+    deferred,
+    fakeConfig,
+    item,
+    loadConfig,
+    mockApi,
+    settle,
+    summary,
+    tag,
+    testProviders,
+} from '../../testing/fakes';
 import { FilesTagsDialog } from './files-tags.dialog';
 import { TagEditorDialog } from './tag-editor.dialog';
 
@@ -21,8 +33,10 @@ describe('FilesTagsDialog', () => {
     const sea = summary(tag('Sea'));
     const known = [beach, sun, sea];
 
-    const section = (heading: string) => [...element.querySelectorAll('.tag-group')].find(g => g.querySelector('h3')!.textContent === heading);
-    const chips = (heading: string) => [...section(heading)?.querySelectorAll('.tag-name') ?? []].map(chip => chip.textContent!.trim());
+    const section = (heading: string) =>
+        [...element.querySelectorAll('.tag-group')].find((g) => g.querySelector('h3')!.textContent === heading);
+    const chips = (heading: string) =>
+        [...(section(heading)?.querySelectorAll('.tag-name') ?? [])].map((chip) => chip.textContent!.trim());
     const picker = () => element.querySelector<HTMLInputElement>('sfe-tag-picker input')!;
     const options = () => [...element.querySelectorAll<HTMLLIElement>('.tag-options li')];
 
@@ -33,7 +47,7 @@ describe('FilesTagsDialog', () => {
         toasts = TestBed.inject(ToastService);
         store = TestBed.inject(ListingStore);
         current = new Map();
-        api.changeFileTags.mockImplementation(async change => applyChange(current, known, change));
+        api.changeFileTags.mockImplementation(async (change) => applyChange(current, known, change));
         api.tags.mockResolvedValue({ matches: [], descendants: [] });
         fixture = TestBed.createComponent(FilesTagsDialog);
         element = fixture.nativeElement;
@@ -68,7 +82,9 @@ describe('FilesTagsDialog', () => {
         it('says when none of the files has tags (also when their tags are unknown)', async () => {
             await open(files([], null));
 
-            expect(element.querySelector('.tag-groups .muted')!.textContent).toContain('None of these files has tags yet');
+            expect(element.querySelector('.tag-groups .muted')!.textContent).toContain(
+                'None of these files has tags yet',
+            );
         });
 
         it('splits the tags on all the files from those on some, with how many have them', async () => {
@@ -81,7 +97,7 @@ describe('FilesTagsDialog', () => {
             expect(title).toBe('On 2 of 3 files. Click to add it to all of them.');
         });
 
-        it('treats a single file\'s tags as on all of them', async () => {
+        it("treats a single file's tags as on all of them", async () => {
             await open(files([sun]));
 
             expect(chips('On all these files')).toEqual(['sun']);
@@ -101,7 +117,7 @@ describe('FilesTagsDialog', () => {
             options()[0].click();
             await settle();
 
-            expect(api.changeFileTags).toHaveBeenCalledWith({ paths: selection.map(f => f.path), add: [sea.id] });
+            expect(api.changeFileTags).toHaveBeenCalledWith({ paths: selection.map((f) => f.path), add: [sea.id] });
             expect(chips('On all these files')).toEqual(['Sea']);
             expect(chips('On some of these files')).toEqual(['Beach · 1']);
             expect(applied).toHaveBeenCalledTimes(1);
@@ -109,14 +125,17 @@ describe('FilesTagsDialog', () => {
 
         it('offers the tags on only some of the files, but not those on all', async () => {
             await open(files([beach, sun], [beach]));
-            api.tags.mockResolvedValue({ matches: [tag('Beach', { id: beach.id }), tag('sun', { id: sun.id })], descendants: [] });
+            api.tags.mockResolvedValue({
+                matches: [tag('Beach', { id: beach.id }), tag('sun', { id: sun.id })],
+                descendants: [],
+            });
 
             // Focused when opened: focus it again to load the suggestions.
             picker().blur();
             picker().focus();
             await settle();
 
-            expect(options().map(li => li.textContent!.trim())).toEqual(['sun']);
+            expect(options().map((li) => li.textContent!.trim())).toEqual(['sun']);
         });
 
         it('adds a tag on some files to all of them with a click', async () => {
@@ -126,7 +145,7 @@ describe('FilesTagsDialog', () => {
             section('On some of these files')!.querySelector<HTMLButtonElement>('button.tag-name')!.click();
             await settle();
 
-            expect(api.changeFileTags).toHaveBeenCalledWith({ paths: selection.map(f => f.path), add: [sun.id] });
+            expect(api.changeFileTags).toHaveBeenCalledWith({ paths: selection.map((f) => f.path), add: [sun.id] });
             expect(chips('On all these files')).toEqual(['sun']);
             expect(section('On some of these files')).toBeUndefined();
         });
@@ -135,10 +154,15 @@ describe('FilesTagsDialog', () => {
             const selection = files([sun, beach], [beach], [sun]);
             await open(selection);
 
-            section('On some of these files')!.querySelector<HTMLButtonElement>('[aria-label="Remove sun · 2"]')!.click();
+            section('On some of these files')!
+                .querySelector<HTMLButtonElement>('[aria-label="Remove sun · 2"]')!
+                .click();
             await settle();
 
-            expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [selection[0].path, selection[2].path], remove: [sun.id] });
+            expect(api.changeFileTags).toHaveBeenCalledWith({
+                paths: [selection[0].path, selection[2].path],
+                remove: [sun.id],
+            });
             expect(chips('On some of these files')).toEqual(['Beach · 2']);
         });
 
@@ -252,11 +276,13 @@ describe('FilesTagsDialog', () => {
         it('keeps the parts sent before a failure applied and shown', async () => {
             const selection = files([], [], [], []);
             api.changeFileTags
-                .mockImplementationOnce(async change => applyChange(current, known, change))
+                .mockImplementationOnce(async (change) => applyChange(current, known, change))
                 .mockRejectedValueOnce(new ApiError(0, 'The server is not reachable'));
             await open(selection);
 
-            await expect(fixture.componentInstance['change']({ add: [sea.id] })).rejects.toThrow('The server is not reachable');
+            await expect(fixture.componentInstance['change']({ add: [sea.id] })).rejects.toThrow(
+                'The server is not reachable',
+            );
             await settle();
 
             expect(api.changeFileTags).toHaveBeenCalledTimes(2);

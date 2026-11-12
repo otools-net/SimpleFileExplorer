@@ -19,8 +19,13 @@ describe('TagPickerComponent', () => {
 
     const input = () => element.querySelector<HTMLInputElement>('input')!;
     const options = () => [...element.querySelectorAll<HTMLLIElement>('.tag-options li')];
-    const labels = () => options().map(li => li.classList.contains('create') ? `+${li.querySelector('strong')!.textContent}` : li.querySelector('.tag-name')!.textContent!.trim());
-    const active = () => options().findIndex(li => li.getAttribute('aria-selected') === 'true');
+    const labels = () =>
+        options().map((li) =>
+            li.classList.contains('create')
+                ? `+${li.querySelector('strong')!.textContent}`
+                : li.querySelector('.tag-name')!.textContent!.trim(),
+        );
+    const active = () => options().findIndex((li) => li.getAttribute('aria-selected') === 'true');
     const key = async (name: string) => {
         const event = new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true });
         input().dispatchEvent(event);
@@ -111,7 +116,7 @@ describe('TagPickerComponent', () => {
         expect(input().getAttribute('aria-expanded')).toBe('false');
     });
 
-    it('offers to create a tag named like another one\'s alias (aliases are not names)', async () => {
+    it("offers to create a tag named like another one's alias (aliases are not names)", async () => {
         fixture.componentRef.setInput('allowCreate', true);
         api.tags.mockResolvedValue(results([cat], []));
 

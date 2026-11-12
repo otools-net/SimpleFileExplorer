@@ -1,7 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TagSidebar } from '../../core/models';
 import { TagManagerDialog } from '../../tags/tag-manager.dialog';
-import { ApiMock, fakeConfig, loadConfig, mockApi, settle, setMediaQuery, summary, tag, testProviders } from '../../../testing/fakes';
+import {
+    ApiMock,
+    fakeConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    setMediaQuery,
+    summary,
+    tag,
+    testProviders,
+} from '../../../testing/fakes';
 import { ChangeFeed } from '../change-feed.service';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
@@ -17,17 +27,24 @@ describe('SidebarComponent', () => {
     const sun = summary(tag('Sun'));
     const scifi = summary(tag('Science "Fiction"'));
     const data = (overrides: Partial<TagSidebar> = {}): TagSidebar => ({
-        popular: [{ tag: sun, fileCount: 1234 }, { tag: scifi, fileCount: 1 }],
+        popular: [
+            { tag: sun, fileCount: 1234 },
+            { tag: scifi, fileCount: 1 },
+        ],
         searched: [],
         viewed: [{ tag: sun, fileCount: 1234 }],
         lucky: [],
         historyEnabled: true,
         ...overrides,
     });
-    const section = (title: string) => [...element.querySelectorAll<HTMLElement>('.sidebar-section')].find(s => s.querySelector('h2')!.textContent!.trim() === title)!;
+    const section = (title: string) =>
+        [...element.querySelectorAll<HTMLElement>('.sidebar-section')].find(
+            (s) => s.querySelector('h2')!.textContent!.trim() === title,
+        )!;
     const fold = (title: string) => section(title).querySelector<HTMLButtonElement>('.sidebar-fold')!;
     const folded = (title: string) => section(title).querySelector<HTMLElement>('.sidebar-tags')!.hidden;
-    const names = (title: string) => [...section(title).querySelectorAll('.tag-name')].map(n => n.textContent!.trim());
+    const names = (title: string) =>
+        [...section(title).querySelectorAll('.tag-name')].map((n) => n.textContent!.trim());
 
     async function create(answer: TagSidebar = data()): Promise<void> {
         api.tagSidebar.mockResolvedValue(answer);
@@ -42,7 +59,7 @@ describe('SidebarComponent', () => {
         api = mockApi();
         TestBed.configureTestingModule({ providers: testProviders(api) });
         await loadConfig(api);
-        navigate = vi.spyOn(TestBed.inject(ListingStore), 'navigate').mockImplementation(() => { });
+        navigate = vi.spyOn(TestBed.inject(ListingStore), 'navigate').mockImplementation(() => {});
     });
 
     afterEach(() => vi.restoreAllMocks());
@@ -52,12 +69,14 @@ describe('SidebarComponent', () => {
 
         expect(names('Most popular')).toEqual(['Sun', 'Science "Fiction"']);
         expect(section('Most popular').querySelector('.tag-count')!.textContent).toBe((1234).toLocaleString());
-        expect(section('Most popular').querySelector('.tag-count')!.getAttribute('title')).toBe(`${(1234).toLocaleString()} files`);
+        expect(section('Most popular').querySelector('.tag-count')!.getAttribute('title')).toBe(
+            `${(1234).toLocaleString()} files`,
+        );
         expect(names('Last viewed')).toEqual(['Sun']);
     });
 
     it('explains the empty sections once loaded, not before', async () => {
-        api.tagSidebar.mockReturnValue(new Promise(() => { }));
+        api.tagSidebar.mockReturnValue(new Promise(() => {}));
         fixture = TestBed.createComponent(SidebarComponent);
         element = fixture.nativeElement;
         await settle();
@@ -195,9 +214,9 @@ describe('SidebarComponent', () => {
 
             api.trashCount.mockResolvedValue({ count: 2, more: false });
             const feed = TestBed.inject(ChangeFeed);
-            feed.trashChanges.update(n => n + 1);
+            feed.trashChanges.update((n) => n + 1);
             await settle();
-            feed.trashChanges.update(n => n + 1);
+            feed.trashChanges.update((n) => n + 1);
             await settle(350);
 
             expect(api.trashCount).toHaveBeenCalledTimes(2);

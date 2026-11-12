@@ -3,7 +3,17 @@ import { ApiError } from '../core/api.service';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    fakeConfig,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../testing/fakes';
 import { ListingStore } from '../library/listing.store';
 import { SelectionBarComponent } from '../library/selection-bar.component';
 import { SidebarService } from '../library/sidebar/sidebar.service';
@@ -20,7 +30,18 @@ const clip = item('Media/clip.mp4');
 const folder = item('Media/Holidays', { kind: 'directory' });
 
 function listing(items: LibraryItem[], overrides: Partial<DirectoryListing> = {}): DirectoryListing {
-    return { path: 'Media', name: 'Media', parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: 1, fileCount: items.length - 1, ...overrides };
+    return {
+        path: 'Media',
+        name: 'Media',
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: 1,
+        fileCount: items.length - 1,
+        ...overrides,
+    };
 }
 
 async function setUp(config = fakeConfig()): Promise<void> {
@@ -28,7 +49,7 @@ async function setUp(config = fakeConfig()): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: 'Media', previous: null, next: null, position: 1, count: 1 });
     api.browse.mockResolvedValue(listing([folder, photo, clip]));
     store.route.set({ path: 'Media', q: '', sort: '', desc: false });
@@ -60,25 +81,38 @@ describe('FileDownloads', () => {
         await downloads.download([folder]);
 
         expect(api.createArchive.mock.calls).toEqual([[['Media/beach.jpg', 'Media/clip.mp4']], [['Media/Holidays']]]);
-        expect(saved).toEqual([['api/files/archive/' + 'a'.repeat(48), 'Media.zip'], ['api/files/archive/' + 'a'.repeat(48), 'Media.zip']]);
+        expect(saved).toEqual([
+            ['api/files/archive/' + 'a'.repeat(48), 'Media.zip'],
+            ['api/files/archive/' + 'a'.repeat(48), 'Media.zip'],
+        ]);
         expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toContain('Downloading Media.zip');
     });
 
     it('says why a zip is refused', async () => {
         await setUp();
-        api.createArchive.mockRejectedValue(new ApiError(400, 'This is 5 MB: a zip may hold at most 1 MB here. Choose fewer files.'));
+        api.createArchive.mockRejectedValue(
+            new ApiError(400, 'This is 5 MB: a zip may hold at most 1 MB here. Choose fewer files.'),
+        );
 
         await TestBed.inject(FileDownloads).download([folder]);
 
         expect(saved).toEqual([]);
-        expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toBe('Could not download: This is 5 MB: a zip may hold at most 1 MB here. Choose fewer files.');
+        expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toBe(
+            'Could not download: This is 5 MB: a zip may hold at most 1 MB here. Choose fewer files.',
+        );
     });
 
     it('leaves out what folder rules keep from downloading', async () => {
         await setUp();
-        api.browse.mockResolvedValue(listing([folder, photo, clip], {
-            access: { rights: [Rights.browse, Rights.viewFiles, Rights.download], pathOnly: false, children: { 'clip.mp4': { rights: [Rights.browse, Rights.viewFiles], pathOnly: false } } },
-        }));
+        api.browse.mockResolvedValue(
+            listing([folder, photo, clip], {
+                access: {
+                    rights: [Rights.browse, Rights.viewFiles, Rights.download],
+                    pathOnly: false,
+                    children: { 'clip.mp4': { rights: [Rights.browse, Rights.viewFiles], pathOnly: false } },
+                },
+            }),
+        );
         await store.load();
         const downloads = TestBed.inject(FileDownloads);
 
@@ -126,14 +160,14 @@ describe('Download in the selection bar and the item menu', () => {
         expect(buttonNamed(fixture.nativeElement, 'Download')).toBeUndefined();
     });
 
-    it('names a folder\'s download a zip in its menu, and acts on the whole selection', async () => {
+    it("names a folder's download a zip in its menu, and acts on the whole selection", async () => {
         await setUp();
         const menu = TestBed.inject(ItemMenu);
 
-        expect(menu.entries(folder).find(entry => entry.id === 'download')!.label).toBe('Download as zip');
-        expect(menu.entries(photo).find(entry => entry.id === 'download')!.label).toBe('Download');
+        expect(menu.entries(folder).find((entry) => entry.id === 'download')!.label).toBe('Download as zip');
+        expect(menu.entries(photo).find((entry) => entry.id === 'download')!.label).toBe('Download');
         store.select(photo, true);
         store.select(clip, true);
-        expect(menu.entries(photo).find(entry => entry.id === 'download')!.label).toBe('Download as zip');
+        expect(menu.entries(photo).find((entry) => entry.id === 'download')!.label).toBe('Download as zip');
     });
 });

@@ -43,10 +43,9 @@ export class FileActions {
      * trash). False when none may be deleted.
      */
     delete(items: LibraryItem[], permanent = false): boolean {
-        const forGood = this.alwaysPermanent || (permanent && items.every(item => this.canDeletePermanently(item)));
-        const allowed = items.filter(item => forGood ? this.canDeletePermanently(item) : this.canDelete(item));
-        if (!allowed.length)
-            return false;
+        const forGood = this.alwaysPermanent || (permanent && items.every((item) => this.canDeletePermanently(item)));
+        const allowed = items.filter((item) => (forGood ? this.canDeletePermanently(item) : this.canDelete(item)));
+        if (!allowed.length) return false;
         this.dialogs.delete()?.open(allowed, forGood);
         return true;
     }

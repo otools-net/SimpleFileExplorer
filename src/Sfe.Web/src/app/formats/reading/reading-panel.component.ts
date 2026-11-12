@@ -2,7 +2,16 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input
 import { ToastService } from '../../core/toast.service';
 import { BusyDirective, whileBusy } from '../../shared/busy.directive';
 import { IconComponent } from '../../shared/icon.component';
-import { FONT_SIZES, LINE_HEIGHTS, PADDINGS, READER_FONTS, READER_THEMES, ReaderTheme, ReadingProfile, WIDTHS } from './reading';
+import {
+    FONT_SIZES,
+    LINE_HEIGHTS,
+    PADDINGS,
+    READER_FONTS,
+    READER_THEMES,
+    ReaderTheme,
+    ReadingProfile,
+    WIDTHS,
+} from './reading';
 import { ReadingService } from './reading.service';
 
 /**
@@ -112,7 +121,10 @@ export class ReadingPanelComponent {
     protected readonly themes = READER_THEMES;
     protected readonly own = computed(() => this.reading.preferences()[this.profile()]);
 
-    protected set<K extends 'font' | 'lineHeight' | 'width' | 'padding' | 'wrap' | 'lineNumbers'>(key: K, value: unknown): void {
+    protected set<K extends 'font' | 'lineHeight' | 'width' | 'padding' | 'wrap' | 'lineNumbers'>(
+        key: K,
+        value: unknown,
+    ): void {
         this.reading.update(this.profile(), { [key]: value });
     }
 
@@ -137,7 +149,6 @@ export class ReadingPanelComponent {
     /** A press outside closes it (the "Aa" button toggles it itself). */
     protected onDocumentPointerDown(event: Event): void {
         const target = event.target as Element | null;
-        if (target && !this.element.contains(target) && !target.closest?.('[data-reading-toggle]'))
-            this.closed.emit();
+        if (target && !this.element.contains(target) && !target.closest?.('[data-reading-toggle]')) this.closed.emit();
     }
 }

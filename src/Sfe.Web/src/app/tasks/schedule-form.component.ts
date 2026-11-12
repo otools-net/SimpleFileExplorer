@@ -1,12 +1,31 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    inject,
+    input,
+    output,
+    signal,
+} from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
 import { formatDate } from '../core/format';
 import { TaskKind, TaskSchedule, TaskScheduleInput } from '../core/models';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
 import {
-    ALL_DAYS, DAY_NAMES, formatMoment, formatRelative, fromLocalInputs, RepeatChoice, repeatOf, SCHEDULABLE, TASK_NAMES,
-    toLocalInputs, WEEK_ORDER,
+    ALL_DAYS,
+    DAY_NAMES,
+    formatMoment,
+    formatRelative,
+    fromLocalInputs,
+    RepeatChoice,
+    repeatOf,
+    SCHEDULABLE,
+    TASK_NAMES,
+    toLocalInputs,
+    WEEK_ORDER,
 } from './tasks';
 
 const PREVIEW_DELAY_MS = 300;
@@ -177,10 +196,10 @@ export class ScheduleFormComponent {
     protected readonly value = computed((): TaskScheduleInput | null => {
         const repeat = this.repeat();
         // Weekly schedules only use the time of day: today's date carries it.
-        const date = repeat === 'once' || repeat === 'interval' ? this.date() : toLocalInputs(new Date().toISOString()).date;
+        const date =
+            repeat === 'once' || repeat === 'interval' ? this.date() : toLocalInputs(new Date().toISOString()).date;
         const start = fromLocalInputs(date, this.time());
-        if (!start)
-            return null;
+        if (!start) return null;
         return {
             task: this.task(),
             path: this.task() === 'scan' ? this.path().trim() : null,
@@ -212,7 +231,9 @@ export class ScheduleFormComponent {
 
     private fill(draft: ScheduleDraft): void {
         const schedule = draft.schedule;
-        const start = schedule ? toLocalInputs(schedule.start) : toLocalInputs(new Date(Date.now() + 3600_000).toISOString());
+        const start = schedule
+            ? toLocalInputs(schedule.start)
+            : toLocalInputs(new Date(Date.now() + 3600_000).toISOString());
         this.task.set(schedule?.task ?? draft.task ?? 'scan');
         this.path.set(schedule?.path ?? draft.path ?? '');
         this.repeat.set(schedule ? repeatOf(schedule.kind, schedule.days) : 'daily');
@@ -232,35 +253,40 @@ export class ScheduleFormComponent {
     }
 
     protected toggleDay(day: number): void {
-        this.days.update(days => days ^ (1 << day));
+        this.days.update((days) => days ^ (1 << day));
     }
 
     protected async save(): Promise<void> {
         const value = this.value();
-        if (!value)
-            return;
+        if (!value) return;
         try {
             const id = this.draft().schedule?.id;
-            const saved = await whileBusy(this.saving, () => id === undefined ? this.api.createSchedule(value) : this.api.updateSchedule(id, value));
+            const saved = await whileBusy(this.saving, () =>
+                id === undefined ? this.api.createSchedule(value) : this.api.updateSchedule(id, value),
+            );
             this.saved.emit(saved);
         } catch (error) {
-            this.errors.set(error instanceof ApiError && error.errors ? error.errors : { schedule: [(error as Error).message] });
+            this.errors.set(
+                error instanceof ApiError && error.errors ? error.errors : { schedule: [(error as Error).message] },
+            );
         }
     }
 
     private async loadPreview(value: TaskScheduleInput): Promise<void> {
         try {
             const { runs } = await this.api.previewSchedule(value);
-            if (this.value() !== value)
-                return;
+            if (this.value() !== value) return;
             this.preview.set(runs);
             this.previewError.set(null);
         } catch (error) {
-            if (this.value() !== value)
-                return;
+            if (this.value() !== value) return;
             this.preview.set([]);
             // The fields' own errors show next to them on saving; the preview says why it can't tell.
-            this.previewError.set(error instanceof ApiError && error.errors ? Object.values(error.errors).flat()[0] : (error as Error).message);
+            this.previewError.set(
+                error instanceof ApiError && error.errors
+                    ? Object.values(error.errors).flat()[0]
+                    : (error as Error).message,
+            );
         }
     }
 

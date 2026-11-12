@@ -4,7 +4,10 @@ function view(search: string, hash = ''): { location: Location; history: History
     const replaced: string[] = [];
     return {
         location: { search, pathname: '/sfe/', hash } as Location,
-        history: { state: null, replaceState: (_state: unknown, _title: string, url: string) => replaced.push(url) } as unknown as History,
+        history: {
+            state: null,
+            replaceState: (_state: unknown, _title: string, url: string) => replaced.push(url),
+        } as unknown as History,
         replaced,
     };
 }

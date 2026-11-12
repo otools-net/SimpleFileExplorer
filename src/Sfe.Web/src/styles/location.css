@@ -6,24 +6,62 @@
     padding: 16px max(12px, env(safe-area-inset-right)) 48px max(12px, env(safe-area-inset-left));
 }
 
-.location { margin-bottom: 18px; }
-
-.location-head { display: flex; align-items: flex-start; gap: 8px; }
-.location-head .crumbs { flex: 1; min-width: 0; }
-/* Phones: the breadcrumbs keep the line; the folder's buttons give way to one "⋯", its menu (agents/docs/features/overflow-menus.md). */
-.location-head .location-more { display: none; flex: none; color: var(--text-muted); }
-@media (max-width: 640px) {
-    .location-head .location-action { display: none; }
-    .location-head .location-more { display: grid; }
+.location {
+    margin-bottom: 18px;
 }
-.location-head .copy-folder-path, .location-head .scope-tags-button { flex: none; color: var(--text-muted); }
-.location-head .copy-folder-path:hover, .location-head .scope-tags-button:hover { color: var(--text); }
 
-.folder-nav { display: flex; flex: none; gap: 2px; padding-top: 1px; }
-.folder-nav[hidden] { display: none; }
-.folder-nav .icon-button { color: var(--text-muted); }
-.folder-nav .icon-button:hover { color: var(--text); }
-.folder-nav [aria-disabled="true"] { opacity: .35; pointer-events: none; }
+.location-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+.location-head .crumbs {
+    flex: 1;
+    min-width: 0;
+}
+/* Phones: the breadcrumbs keep the line; the folder's buttons give way to one "⋯", its menu (agents/docs/features/overflow-menus.md). */
+.location-head .location-more {
+    display: none;
+    flex: none;
+    color: var(--text-muted);
+}
+@media (max-width: 640px) {
+    .location-head .location-action {
+        display: none;
+    }
+    .location-head .location-more {
+        display: grid;
+    }
+}
+.location-head .copy-folder-path,
+.location-head .scope-tags-button {
+    flex: none;
+    color: var(--text-muted);
+}
+.location-head .copy-folder-path:hover,
+.location-head .scope-tags-button:hover {
+    color: var(--text);
+}
+
+.folder-nav {
+    display: flex;
+    flex: none;
+    gap: 2px;
+    padding-top: 1px;
+}
+.folder-nav[hidden] {
+    display: none;
+}
+.folder-nav .icon-button {
+    color: var(--text-muted);
+}
+.folder-nav .icon-button:hover {
+    color: var(--text);
+}
+.folder-nav [aria-disabled='true'] {
+    opacity: 0.35;
+    pointer-events: none;
+}
 
 .crumbs {
     display: flex;
@@ -35,16 +73,30 @@
     line-height: 1.3;
 }
 
-.crumbs a, .crumbs span.current {
+.crumbs a,
+.crumbs span.current {
     padding: 2px 6px;
     border-radius: 6px;
     word-break: break-word;
 }
 
-.crumbs a { color: var(--text-muted); }
-.crumbs a:hover { background: var(--surface-2); color: var(--text); }
-.crumbs .sep { width: 16px; height: 16px; color: var(--text-muted); opacity: .6; }
-.crumbs .search-label { color: var(--text-muted); font-weight: 500; }
+.crumbs a {
+    color: var(--text-muted);
+}
+.crumbs a:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+.crumbs .sep {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+.crumbs .search-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
 
 .location-bar {
     display: flex;
@@ -56,16 +108,46 @@
 }
 
 /* A long folder name breaks anywhere: unbroken, it pushed the sort past the screen's edge on a phone. */
-.summary { min-width: 0; margin: 0; color: var(--text-muted); overflow-wrap: anywhere; }
+.summary {
+    min-width: 0;
+    margin: 0;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+}
 /* What the folder browsed is kept out of (folders.css › .exclusion-chip); a button for those who may change it. */
-.summary .exclusion-chip { margin-left: 8px; vertical-align: 1px; }
-button.exclusion-chip { background: none; font-family: inherit; cursor: pointer; }
-button.exclusion-chip:hover, button.exclusion-chip:focus-visible { color: var(--text); border-style: solid; }
-.summary .default-tags-badge { margin-left: 8px; vertical-align: middle; }
-.summary .default-tags-button { height: 22px; min-width: 22px; }
-.summary .default-tags-button .icon { width: 15px; height: 15px; }
+.summary .exclusion-chip {
+    margin-left: 8px;
+    vertical-align: 1px;
+}
+button.exclusion-chip {
+    background: none;
+    font-family: inherit;
+    cursor: pointer;
+}
+button.exclusion-chip:hover,
+button.exclusion-chip:focus-visible {
+    color: var(--text);
+    border-style: solid;
+}
+.summary .default-tags-badge {
+    margin-left: 8px;
+    vertical-align: middle;
+}
+.summary .default-tags-button {
+    height: 22px;
+    min-width: 22px;
+}
+.summary .default-tags-button .icon {
+    width: 15px;
+    height: 15px;
+}
 
-.sort { display: flex; flex-shrink: 0; align-items: center; gap: 6px; }
+.sort {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+}
 
 .sort select {
     height: 30px;
@@ -76,8 +158,9 @@ button.exclusion-chip:hover, button.exclusion-chip:focus-visible { color: var(--
     cursor: pointer;
 }
 
-.sort-direction.desc .icon { transform: rotate(180deg); }
-
+.sort-direction.desc .icon {
+    transform: rotate(180deg);
+}
 
 /* The compact location bar: sticky without height, so its bar lies over the listing and showing it moves nothing. */
 .location-strip {
@@ -107,11 +190,23 @@ button.exclusion-chip:hover, button.exclusion-chip:focus-visible { color: var(--
     opacity: 0;
     translate: 0 -6px;
     visibility: hidden;
-    transition: opacity .15s, translate .15s, visibility 0s .15s;
+    transition:
+        opacity 0.15s,
+        translate 0.15s,
+        visibility 0s 0.15s;
 }
 
-.location-strip-bar.shown { opacity: 1; translate: 0; visibility: visible; transition: opacity .15s, translate .15s; }
-.location-strip-bar .folder-nav { padding-top: 0; }
+.location-strip-bar.shown {
+    opacity: 1;
+    translate: 0;
+    visibility: visible;
+    transition:
+        opacity 0.15s,
+        translate 0.15s;
+}
+.location-strip-bar .folder-nav {
+    padding-top: 0;
+}
 
 .location-strip-title {
     display: flex;
@@ -129,10 +224,31 @@ button.exclusion-chip:hover, button.exclusion-chip:focus-visible { color: var(--
     white-space: nowrap;
 }
 
-.location-strip-title:hover { background: var(--surface-2); }
-.location-strip-title > span { overflow: hidden; text-overflow: ellipsis; }
+.location-strip-title:hover {
+    background: var(--surface-2);
+}
+.location-strip-title > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 /* The current folder keeps its name longest; the parent and the search give way first. */
-.location-strip-title .current { flex: 0 1 auto; min-width: 3em; font-weight: 700; }
-.location-strip-title .parent { flex: 0 100 auto; min-width: 0; color: var(--text-muted); }
-.location-strip-title .sep { flex: none; color: var(--text-muted); opacity: .6; }
-.location-strip-title .search-label { flex: 0 10 auto; min-width: 0; color: var(--text-muted); }
+.location-strip-title .current {
+    flex: 0 1 auto;
+    min-width: 3em;
+    font-weight: 700;
+}
+.location-strip-title .parent {
+    flex: 0 100 auto;
+    min-width: 0;
+    color: var(--text-muted);
+}
+.location-strip-title .sep {
+    flex: none;
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+.location-strip-title .search-label {
+    flex: 0 10 auto;
+    min-width: 0;
+    color: var(--text-muted);
+}

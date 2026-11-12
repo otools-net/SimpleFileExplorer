@@ -7,7 +7,8 @@
 export function trackScrollbarWidth(): () => void {
     const measure = () => {
         const probe = document.createElement('div');
-        probe.style.cssText = 'position: absolute; top: -9999px; width: 100px; height: 100px; overflow: scroll; visibility: hidden;';
+        probe.style.cssText =
+            'position: absolute; top: -9999px; width: 100px; height: 100px; overflow: scroll; visibility: hidden;';
         document.body.appendChild(probe);
         const width = probe.offsetWidth - probe.clientWidth;
         probe.remove();

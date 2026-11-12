@@ -3,7 +3,16 @@ import { Api, ApiError } from '../core/api.service';
 import { ScanStatus, TagSidebar } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { waitForTrickplay } from '../trickplay/trickplay';
-import { ApiMock, deferred, loadConfig, mockApi, setHidden, settle, setMediaQuery, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    deferred,
+    loadConfig,
+    mockApi,
+    setHidden,
+    settle,
+    setMediaQuery,
+    testProviders,
+} from '../../testing/fakes';
 import { Dialogs } from './dialogs.service';
 import { ListingStore } from './listing.store';
 import { describeScan, ScanService } from './scan/scan.service';
@@ -13,7 +22,13 @@ const NARROW = '(max-width: 760px)';
 
 describe('SidebarService', () => {
     let api: ApiMock;
-    const data = (count: number): TagSidebar => ({ popular: Array(count).fill(null), searched: [], viewed: [], lucky: [], historyEnabled: true });
+    const data = (count: number): TagSidebar => ({
+        popular: Array(count).fill(null),
+        searched: [],
+        viewed: [],
+        lucky: [],
+        historyEnabled: true,
+    });
 
     beforeEach(() => {
         localStorage.clear();
@@ -79,7 +94,10 @@ describe('SidebarService', () => {
 
     it('keeps the last answer asked for, and what it showed when the server fails', async () => {
         const slow = deferred<TagSidebar>();
-        api.tagSidebar.mockReturnValueOnce(slow.promise).mockResolvedValueOnce(data(2)).mockRejectedValueOnce(new ApiError(500, 'Boom'));
+        api.tagSidebar
+            .mockReturnValueOnce(slow.promise)
+            .mockResolvedValueOnce(data(2))
+            .mockRejectedValueOnce(new ApiError(500, 'Boom'));
         const sidebar = TestBed.inject(SidebarService);
 
         const first = sidebar.reload();
@@ -95,33 +113,70 @@ describe('SidebarService', () => {
 
 describe('describeScan', () => {
     const status = (overrides: Partial<ScanStatus>): ScanStatus => ({
-        state: 'completed', path: '', startedAt: 'x', finishedAt: null, directoriesScanned: 1, directoriesQueued: 0, filesIndexed: 1,
-        removed: 0, errors: 0, currentDirectory: null, message: null, relinked: 0, missing: null, ...overrides,
+        state: 'completed',
+        path: '',
+        startedAt: 'x',
+        finishedAt: null,
+        directoriesScanned: 1,
+        directoriesQueued: 0,
+        filesIndexed: 1,
+        removed: 0,
+        errors: 0,
+        currentDirectory: null,
+        message: null,
+        relinked: 0,
+        missing: null,
+        ...overrides,
     });
 
     it('gives the counts, leaving out the zero ones', () => {
         expect(describeScan(status({}))).toBe('1 folder scanned · 1 file indexed');
-        expect(describeScan(status({ directoriesScanned: 3, filesIndexed: 0 }))).toBe('3 folders scanned · 0 files indexed');
+        expect(describeScan(status({ directoriesScanned: 3, filesIndexed: 0 }))).toBe(
+            '3 folders scanned · 0 files indexed',
+        );
     });
 
     it('adds the waiting folders of a running scan, and where it is', () => {
-        expect(describeScan(status({ state: 'running', directoriesQueued: 4, currentDirectory: 'Media/2020' })))
-            .toBe('1 folder scanned · 4 waiting · 1 file indexed — Media/2020');
+        expect(describeScan(status({ state: 'running', directoriesQueued: 4, currentDirectory: 'Media/2020' }))).toBe(
+            '1 folder scanned · 4 waiting · 1 file indexed — Media/2020',
+        );
         expect(describeScan(status({ state: 'completed', directoriesQueued: 4 }))).not.toContain('waiting');
     });
 
     it('adds what was removed, relinked, missing and failed', () => {
-        expect(describeScan(status({ removed: 2, relinked: 1, missing: 3, errors: 1 })))
-            .toBe('1 folder scanned · 1 file indexed · 2 removed · 1 moved file relinked · 3 tagged files missing · 1 error');
+        expect(describeScan(status({ removed: 2, relinked: 1, missing: 3, errors: 1 }))).toBe(
+            '1 folder scanned · 1 file indexed · 2 removed · 1 moved file relinked · 3 tagged files missing · 1 error',
+        );
     });
 });
 
 describe('ScanService', () => {
     let api: ApiMock;
     let scan: ScanService;
-    const idle: ScanStatus = { state: 'idle', path: null, startedAt: null, finishedAt: null, directoriesScanned: 0, directoriesQueued: 0, filesIndexed: 0, removed: 0, errors: 0, currentDirectory: null, message: null, relinked: 0, missing: null };
+    const idle: ScanStatus = {
+        state: 'idle',
+        path: null,
+        startedAt: null,
+        finishedAt: null,
+        directoriesScanned: 0,
+        directoriesQueued: 0,
+        filesIndexed: 0,
+        removed: 0,
+        errors: 0,
+        currentDirectory: null,
+        message: null,
+        relinked: 0,
+        missing: null,
+    };
     const running = (path = ''): ScanStatus => ({ ...idle, state: 'running', path, startedAt: '2026-10-10T10:00:00Z' });
-    const completed: ScanStatus = { ...idle, state: 'completed', path: '', startedAt: '2026-10-10T10:00:00Z', directoriesScanned: 2, filesIndexed: 5 };
+    const completed: ScanStatus = {
+        ...idle,
+        state: 'completed',
+        path: '',
+        startedAt: '2026-10-10T10:00:00Z',
+        directoriesScanned: 2,
+        filesIndexed: 5,
+    };
 
     beforeEach(async () => {
         localStorage.clear();
@@ -265,14 +320,13 @@ describe('Dialogs', () => {
         TestBed.configureTestingModule({});
         const open = [document.createElement('dialog'), document.createElement('dialog')];
         const closed = document.createElement('dialog');
-        for (const dialog of [...open, closed])
-            document.body.append(dialog);
-        open.forEach(dialog => dialog.showModal());
+        for (const dialog of [...open, closed]) document.body.append(dialog);
+        open.forEach((dialog) => dialog.showModal());
 
         TestBed.inject(Dialogs).closeAll();
 
         expect(document.querySelectorAll('dialog[open]')).toHaveLength(0);
-        [...open, closed].forEach(dialog => dialog.remove());
+        [...open, closed].forEach((dialog) => dialog.remove());
     });
 });
 
@@ -305,7 +359,10 @@ describe('waitForTrickplay', () => {
 
     it('asks again while the video waits, telling each time', async () => {
         const waiting = vi.fn();
-        api.trickplay.mockRejectedValueOnce(new ApiError(404, 'x')).mockRejectedValueOnce(new ApiError(404, 'x')).mockResolvedValueOnce(manifest);
+        api.trickplay
+            .mockRejectedValueOnce(new ApiError(404, 'x'))
+            .mockRejectedValueOnce(new ApiError(404, 'x'))
+            .mockResolvedValueOnce(manifest);
         api.trickplayStates.mockResolvedValue({ running: true, files: { 'a.mp4': 'pending' } });
 
         const result = waitForTrickplay(api as unknown as Api, 'a.mp4', () => true, waiting);

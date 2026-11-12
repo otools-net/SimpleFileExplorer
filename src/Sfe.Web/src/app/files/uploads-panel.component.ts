@@ -109,40 +109,66 @@ export class UploadsPanelComponent {
     /** An upload's menu (a right click): its buttons (Pause / Resume, Cancel, or Close once done), then the folder it goes into. */
     protected batchMenu(batch: UploadBatch): MenuTarget {
         return {
-            kind: 'job', key: `upload:${batch.key}`, name: this.title(batch),
+            kind: 'job',
+            key: `upload:${batch.key}`,
+            name: this.title(batch),
             entries: () => {
                 const entries: MenuEntry[] = [];
                 if (this.active(batch)) {
                     if (this.paused(batch))
-                        entries.push({ id: 'resume', label: 'Resume', icon: 'play', title: 'Go on sending them', run: () => this.queue.resumeAll(batch) });
+                        entries.push({
+                            id: 'resume',
+                            label: 'Resume',
+                            icon: 'play',
+                            title: 'Go on sending them',
+                            run: () => this.queue.resumeAll(batch),
+                        });
                     else if (this.sending(batch))
-                        entries.push({ id: 'pause', label: 'Pause', icon: 'pause', title: 'Stop sending for now: they go on where they stopped', run: () => this.queue.pauseAll(batch) });
-                    entries.push({ id: 'cancel', label: 'Cancel', icon: 'close', title: 'Stop: what was not finished is removed from the server', run: () => void this.queue.cancelAll(batch) });
+                        entries.push({
+                            id: 'pause',
+                            label: 'Pause',
+                            icon: 'pause',
+                            title: 'Stop sending for now: they go on where they stopped',
+                            run: () => this.queue.pauseAll(batch),
+                        });
+                    entries.push({
+                        id: 'cancel',
+                        label: 'Cancel',
+                        icon: 'close',
+                        title: 'Stop: what was not finished is removed from the server',
+                        run: () => void this.queue.cancelAll(batch),
+                    });
                 } else
-                    entries.push({ id: 'close', label: 'Close', icon: 'close', title: 'Take it off the list', run: () => this.queue.dismiss(batch) });
+                    entries.push({
+                        id: 'close',
+                        label: 'Close',
+                        icon: 'close',
+                        title: 'Take it off the list',
+                        run: () => this.queue.dismiss(batch),
+                    });
                 return [...entries, ...this.folders.targetEntries(batch.target)];
             },
         };
     }
 
     protected active(batch: UploadBatch): boolean {
-        return batch.items.some(item => !['done', 'skipped', 'cancelled', 'failed'].includes(item.state));
+        return batch.items.some((item) => !['done', 'skipped', 'cancelled', 'failed'].includes(item.state));
     }
 
     protected sending(batch: UploadBatch): boolean {
-        return batch.items.some(item => item.state === 'uploading' || item.state === 'queued');
+        return batch.items.some((item) => item.state === 'uploading' || item.state === 'queued');
     }
 
     protected paused(batch: UploadBatch): boolean {
-        return !this.sending(batch) && batch.items.some(item => item.state === 'paused');
+        return !this.sending(batch) && batch.items.some((item) => item.state === 'paused');
     }
 
     protected interrupted(batch: UploadBatch): boolean {
-        return batch.items.some(item => item.state === 'interrupted');
+        return batch.items.some((item) => item.state === 'interrupted');
     }
 
     protected asking(batch: UploadBatch): number {
-        return batch.items.filter(item => item.state === 'asking').length;
+        return batch.items.filter((item) => item.state === 'asking').length;
     }
 
     protected total(batch: UploadBatch): number {
@@ -155,31 +181,40 @@ export class UploadsPanelComponent {
 
     protected title(batch: UploadBatch): string {
         const where = `“${baseName(batch.target) || this.config.config()?.rootName || 'the library'}”`;
-        const done = batch.items.filter(item => item.state === 'done').length;
-        if (this.active(batch))
-            return `Uploading ${plural(this.counted(batch).length, 'file')} to ${where}`;
-        const failed = batch.items.filter(item => item.state === 'failed').length;
+        const done = batch.items.filter((item) => item.state === 'done').length;
+        if (this.active(batch)) return `Uploading ${plural(this.counted(batch).length, 'file')} to ${where}`;
+        const failed = batch.items.filter((item) => item.state === 'failed').length;
         return joinParts([`${plural(done, 'file')} uploaded to ${where}`, failed ? `${failed} failed` : null], ', ');
     }
 
     protected status(batch: UploadBatch): string {
         const counted = this.counted(batch);
-        const done = counted.filter(item => item.state === 'done').length;
+        const done = counted.filter((item) => item.state === 'done').length;
         const seconds = (Date.now() - batch.started) / 1000;
         const speed = seconds > 1 && batch.sentHere ? `${formatSize(batch.sentHere / seconds)}/s` : null;
-        return joinParts([`${done} of ${counted.length}`, `${formatSize(this.sent(batch))} of ${formatSize(this.total(batch))}`,
-            this.paused(batch) ? 'paused' : speed]);
+        return joinParts([
+            `${done} of ${counted.length}`,
+            `${formatSize(this.sent(batch))} of ${formatSize(this.total(batch))}`,
+            this.paused(batch) ? 'paused' : speed,
+        ]);
     }
 
     protected stateText(item: UploadItem): string {
         switch (item.state) {
-            case 'uploading': return item.size ? `${Math.floor(item.sent * 100 / item.size)}%` : '…';
-            case 'queued': return 'waiting';
-            case 'asking': return 'name taken';
-            case 'paused': return `paused at ${item.size ? Math.floor(item.sent * 100 / item.size) : 0}%`;
-            case 'interrupted': return `${item.size ? Math.floor(item.sent * 100 / item.size) : 0}%, interrupted`;
-            case 'failed': return item.message ?? 'failed';
-            default: return item.state;
+            case 'uploading':
+                return item.size ? `${Math.floor((item.sent * 100) / item.size)}%` : '…';
+            case 'queued':
+                return 'waiting';
+            case 'asking':
+                return 'name taken';
+            case 'paused':
+                return `paused at ${item.size ? Math.floor((item.sent * 100) / item.size) : 0}%`;
+            case 'interrupted':
+                return `${item.size ? Math.floor((item.sent * 100) / item.size) : 0}%, interrupted`;
+            case 'failed':
+                return item.message ?? 'failed';
+            default:
+                return item.state;
         }
     }
 
@@ -203,11 +238,13 @@ export class UploadsPanelComponent {
 
     private lines(batch: UploadBatch): UploadItem[] {
         const order = ['uploading', 'failed', 'paused', 'interrupted', 'asking', 'queued'];
-        return batch.items.filter(item => order.includes(item.state)).sort((a, b) => order.indexOf(a.state) - order.indexOf(b.state));
+        return batch.items
+            .filter((item) => order.includes(item.state))
+            .sort((a, b) => order.indexOf(a.state) - order.indexOf(b.state));
     }
 
     /** What the progress counts: the files not left out. */
     private counted(batch: UploadBatch): UploadItem[] {
-        return batch.items.filter(item => item.state !== 'skipped' && item.state !== 'cancelled');
+        return batch.items.filter((item) => item.state !== 'skipped' && item.state !== 'cancelled');
     }
 }

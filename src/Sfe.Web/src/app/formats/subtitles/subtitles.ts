@@ -67,14 +67,29 @@ export async function parseSubtitles(text: string, type: SubtitleType): Promise<
         }
         const overlaps = cue.startTime < previousEnd - 0.0005;
         previousEnd = Math.max(previousEnd, cue.endTime);
-        return { index, id: cue.id ?? '', start: cue.startTime, end: cue.endTime, plain: plainOf(cue), runs: runsOf(cue), line, overlaps };
+        return {
+            index,
+            id: cue.id ?? '',
+            start: cue.startTime,
+            end: cue.endTime,
+            plain: plainOf(cue),
+            runs: runsOf(cue),
+            line,
+            overlaps,
+        };
     });
-    const problems = result.errors.map(error => ({ message: error.message, line: error.line }));
+    const problems = result.errors.map((error) => ({ message: error.message, line: error.line }));
     return { cues, problems };
 }
 
 function plainOf(cue: VTTCue): string {
-    return cue.text.replace(/<[^>]*>/g, '').replace(/\s*\n\s*/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').trim();
+    return cue.text
+        .replace(/<[^>]*>/g, '')
+        .replace(/\s*\n\s*/g, ' ')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .trim();
 }
 
 /** The cue's text as runs (tags not known to WebVTT, such as SRT's `<font>`, keep their text only). */
@@ -82,11 +97,9 @@ function runsOf(cue: VTTCue): CueRun[] {
     const runs: CueRun[] = [];
     const visit = (nodes: readonly VTTNode[], style: Omit<CueRun, 'text'>) => {
         for (const node of nodes) {
-            if (node.type === 'text')
-                runs.push({ text: node.data.replace(/\s*\n\s*/g, ' / '), ...style });
+            if (node.type === 'text') runs.push({ text: node.data.replace(/\s*\n\s*/g, ' / '), ...style });
             else if (node.type === 'v') {
-                if (node.voice)
-                    runs.push({ text: `${node.voice}: `, voice: node.voice });
+                if (node.voice) runs.push({ text: `${node.voice}: `, voice: node.voice });
                 visit(node.children, style);
             } else if (node.type !== 'rt' && node.type !== 'timestamp')
                 visit(node.children, {
@@ -118,10 +131,8 @@ export function formatTime(seconds: number, hours = false): string {
 
 /** A length of time in words: `2.5 s`, `1 min 4 s`, `1 h 32 min`. */
 export function formatSpan(seconds: number): string {
-    if (seconds < 60)
-        return `${Math.round(seconds * 10) / 10} s`;
-    if (seconds < 3600)
-        return `${Math.floor(seconds / 60)} min ${Math.round(seconds % 60)} s`;
+    if (seconds < 60) return `${Math.round(seconds * 10) / 10} s`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} min ${Math.round(seconds % 60)} s`;
     return `${Math.floor(seconds / 3600)} h ${Math.floor((seconds % 3600) / 60)} min`;
 }
 
@@ -140,8 +151,16 @@ export function shiftEdits(text: string, milliseconds: number): { offset: number
         const timing = TIMING_TIMES.exec(line);
         if (timing) {
             const [, indent, start, arrow, end] = timing;
-            edits.push({ offset: offset + indent.length, length: start.length, content: shiftTime(start, milliseconds) });
-            edits.push({ offset: offset + indent.length + start.length + arrow.length, length: end.length, content: shiftTime(end, milliseconds) });
+            edits.push({
+                offset: offset + indent.length,
+                length: start.length,
+                content: shiftTime(start, milliseconds),
+            });
+            edits.push({
+                offset: offset + indent.length + start.length + arrow.length,
+                length: end.length,
+                content: shiftTime(end, milliseconds),
+            });
         }
         offset += line.length;
     }
@@ -167,8 +186,7 @@ function writeTimestamp(milliseconds: number, withHours: boolean, separator: str
 /** A shift typed by a person, in seconds (`-2.5`, `+1,2`, `0.75`), as milliseconds; null when it isn't one. */
 export function parseShift(value: string): number | null {
     const match = /^\s*([+-]?)\s*(\d+(?:[.,]\d{1,3})?)\s*s?\s*$/.exec(value);
-    if (!match)
-        return null;
+    if (!match) return null;
     const milliseconds = Math.round(Number(match[2].replace(',', '.')) * 1000);
     return match[1] === '-' ? -milliseconds : milliseconds;
 }

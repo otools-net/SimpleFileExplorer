@@ -29,8 +29,7 @@ export class ToastsComponent {
         effect(() => {
             const shown = this.toasts().length;
             if (shown > count && host.showPopover) {
-                if (host.matches(':popover-open'))
-                    host.hidePopover();
+                if (host.matches(':popover-open')) host.hidePopover();
                 host.showPopover();
             }
             count = shown;

@@ -29,15 +29,12 @@ export class PreviewImageDirective {
 
     protected onLoad(event: Event): void {
         const image = event.target as HTMLImageElement;
-        if (image.naturalWidth && image.naturalHeight)
-            this.shape.emit(image.naturalWidth / image.naturalHeight);
+        if (image.naturalWidth && image.naturalHeight) this.shape.emit(image.naturalWidth / image.naturalHeight);
         this.loaded.set(true);
     }
 
     protected onError(): void {
-        if (this.index() + 1 < this.sfePreview().length)
-            this.index.update(index => index + 1);
-        else
-            this.failed.emit();
+        if (this.index() + 1 < this.sfePreview().length) this.index.update((index) => index + 1);
+        else this.failed.emit();
     }
 }

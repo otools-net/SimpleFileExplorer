@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, viewChild, WritableSignal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    inject,
+    signal,
+    viewChild,
+    WritableSignal,
+} from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { copyText, CopyPathService } from '../core/copy-path.service';
@@ -14,7 +23,11 @@ import { TagChipComponent } from '../tags/tag-chip.component';
 /** How often (ms) a running count or checksum is asked for. */
 const POLL = 400;
 
-const ALGORITHMS: [ChecksumAlgorithm, string][] = [['sha256', 'SHA-256'], ['sha1', 'SHA-1'], ['md5', 'MD5']];
+const ALGORITHMS: [ChecksumAlgorithm, string][] = [
+    ['sha256', 'SHA-256'],
+    ['sha1', 'SHA-1'],
+    ['md5', 'MD5'],
+];
 
 /**
  * Properties of a file or folder (Alt+Enter, or its menu): what the disk says (size, dates, attributes), what the index
@@ -138,10 +151,8 @@ export class PropertiesDialog {
 
     protected readonly kind = computed(() => {
         const p = this.properties();
-        if (!p)
-            return '';
-        if (p.details.isFolder)
-            return 'Folder';
+        if (!p) return '';
+        if (p.details.isFolder) return 'Folder';
         const extension = p.item.extension ? `${p.item.extension.replace(/^\./, '').toUpperCase()} ` : '';
         const kinds: Record<string, string> = { image: 'image', video: 'video', audio: 'audio', document: 'document' };
         return `${extension}${kinds[p.item.kind] ?? 'file'}`;
@@ -149,45 +160,61 @@ export class PropertiesDialog {
     protected readonly folder = computed(() => {
         const path = this.properties()?.details.path ?? '';
         const root = this.config.config()?.rootName ?? 'the library';
-        return !path ? '(the library itself)' : parentPath(path) ? `${root} / ${parentPath(path).split('/').join(' / ')}` : root;
+        return !path
+            ? '(the library itself)'
+            : parentPath(path)
+              ? `${root} / ${parentPath(path).split('/').join(' / ')}`
+              : root;
     });
     protected readonly attributes = computed(() => {
         const details = this.properties()?.details;
-        return details ? joinParts([details.hidden && 'hidden', details.readOnly && 'read-only', details.isLink && 'a link to another place'], ', ') : '';
+        return details
+            ? joinParts(
+                  [
+                      details.hidden && 'hidden',
+                      details.readOnly && 'read-only',
+                      details.isLink && 'a link to another place',
+                  ],
+                  ', ',
+              )
+            : '';
     });
     protected readonly media = computed(() => {
         const item = this.properties()?.item;
-        return item ? joinParts([formatResolution(item.width, item.height), item.duration ? formatDuration(item.duration) : null]) : '';
+        return item
+            ? joinParts([
+                  formatResolution(item.width, item.height),
+                  item.duration ? formatDuration(item.duration) : null,
+              ])
+            : '';
     });
     protected readonly totalsText = computed(() => {
         const totals = this.totals();
-        if (!totals)
-            return 'In the index: …';
-        if (!totals.indexed && !totals.files && !totals.folders)
-            return 'Not in the index yet: count it on the disk.';
+        if (!totals) return 'In the index: …';
+        if (!totals.indexed && !totals.files && !totals.folders) return 'Not in the index yet: count it on the disk.';
         return `In the index: ${this.holds(totals.files, totals.folders, totals.bytes)}, as of the last scan.`;
     });
     protected readonly countText = computed(() => {
         const job = this.count();
-        if (!job)
-            return '';
-        if (job.error && job.error !== 'Stopped.')
-            return job.error;
+        if (!job) return '';
+        if (job.error && job.error !== 'Stopped.') return job.error;
         const holds = this.holds(job.files, job.folders, job.bytes);
-        if (!job.done)
-            return `On the disk: ${holds} so far…`;
-        return joinParts([
-            `On the disk: ${job.capped ? 'more than ' : ''}${holds}${job.error ? ' (stopped)' : ''}.`,
-            job.leftOut ? `${plural(job.leftOut, 'link or unreadable folder', 'links or unreadable folders')} left out.` : null,
-        ], ' ');
+        if (!job.done) return `On the disk: ${holds} so far…`;
+        return joinParts(
+            [
+                `On the disk: ${job.capped ? 'more than ' : ''}${holds}${job.error ? ' (stopped)' : ''}.`,
+                job.leftOut
+                    ? `${plural(job.leftOut, 'link or unreadable folder', 'links or unreadable folders')} left out.`
+                    : null,
+            ],
+            ' ',
+        );
     });
     protected readonly checksumText = computed(() => {
         const job = this.checksum();
-        if (!job)
-            return '';
-        if (job.error)
-            return job.error;
-        const percent = job.total ? Math.floor(job.bytes * 100 / job.total) : 0;
+        if (!job) return '';
+        if (job.error) return job.error;
+        const percent = job.total ? Math.floor((job.bytes * 100) / job.total) : 0;
         return `Reading the file… ${percent}% (${formatSize(job.bytes)} of ${formatSize(job.total)})`;
     });
 
@@ -197,7 +224,7 @@ export class PropertiesDialog {
     private totalsRequest: AbortController | undefined;
 
     constructor() {
-        registerDialog(dialogs => dialogs.properties, this);
+        registerDialog((dialogs) => dialogs.properties, this);
         inject(DestroyRef).onDestroy(() => this.closed());
     }
 
@@ -213,11 +240,9 @@ export class PropertiesDialog {
         this.sheet().open();
         try {
             const properties = await this.api.properties(item.path);
-            if (generation !== this.generation)
-                return;
+            if (generation !== this.generation) return;
             this.properties.set(properties);
-            if (properties.details.isFolder)
-                void this.loadTotals(item.path, generation);
+            if (properties.details.isFolder) void this.loadTotals(item.path, generation);
         } catch (error) {
             if (generation === this.generation)
                 this.error.set(`The properties could not be read: ${(error as Error).message}`);
@@ -225,7 +250,11 @@ export class PropertiesDialog {
     }
 
     protected size(bytes: number | null): string {
-        return bytes === null ? '' : bytes < 1024 ? plural(bytes, 'byte') : `${formatSize(bytes)} (${bytes.toLocaleString()} bytes)`;
+        return bytes === null
+            ? ''
+            : bytes < 1024
+              ? plural(bytes, 'byte')
+              : `${formatSize(bytes)} (${bytes.toLocaleString()} bytes)`;
     }
 
     protected date(value: string): string {
@@ -241,8 +270,7 @@ export class PropertiesDialog {
     }
 
     protected stop(job: PropertyJob | null): void {
-        if (job && !job.done)
-            void this.api.cancelPropertyJob(job.id).catch(() => { });
+        if (job && !job.done) void this.api.cancelPropertyJob(job.id).catch(() => {});
     }
 
     protected async copy(text: string): Promise<void> {
@@ -271,11 +299,9 @@ export class PropertiesDialog {
         this.totalsRequest = new AbortController();
         try {
             const totals = await this.api.folderTotals(path, this.totalsRequest.signal);
-            if (generation === this.generation)
-                this.totals.set(totals);
+            if (generation === this.generation) this.totals.set(totals);
         } catch {
-            if (generation === this.generation)
-                this.totals.set({ indexed: false, files: 0, folders: 0, bytes: 0 });
+            if (generation === this.generation) this.totals.set({ indexed: false, files: 0, folders: 0, bytes: 0 });
         }
     }
 
@@ -300,19 +326,16 @@ export class PropertiesDialog {
         this.timer = setTimeout(async () => {
             for (const target of [this.count, this.checksum]) {
                 const job = target();
-                if (!job || job.done)
-                    continue;
+                if (!job || job.done) continue;
                 try {
                     const now = await this.api.propertyJob(job.id);
-                    if (generation === this.generation)
-                        target.set(now);
+                    if (generation === this.generation) target.set(now);
                 } catch {
                     if (generation === this.generation)
                         target.set({ ...job, done: true, error: 'The server forgot it: start it again.' });
                 }
             }
-            if (generation === this.generation && (this.counting() || this.summing()))
-                this.follow(generation);
+            if (generation === this.generation && (this.counting() || this.summing())) this.follow(generation);
         }, POLL);
     }
 }

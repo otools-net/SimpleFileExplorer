@@ -210,8 +210,7 @@ export class MigrationPageComponent implements OnInit {
             }
             if (info.status === 'running' || info.status === 'unavailable')
                 this.timer = setTimeout(() => void this.load(), MIGRATION_POLL_MS);
-            if (info.status === 'running')
-                this.started.set(true);
+            if (info.status === 'running') this.started.set(true);
         } catch (error) {
             this.loadError.set((error as Error).message);
         }
@@ -220,9 +219,14 @@ export class MigrationPageComponent implements OnInit {
     protected async start(event: Event): Promise<void> {
         event.preventDefault();
         const info = this.info();
-        if (!info || !confirm(`Update the databases and settings to SFE ${info.appVersion}? Earlier versions cannot use them afterwards.`))
+        if (
+            !info ||
+            !confirm(
+                `Update the databases and settings to SFE ${info.appVersion}? Earlier versions cannot use them afterwards.`,
+            )
+        )
             return;
-        await this.send(async code => {
+        await this.send(async (code) => {
             this.info.set(await this.api.startMigration(code));
             this.started.set(true);
             await this.load();
@@ -230,7 +234,7 @@ export class MigrationPageComponent implements OnInit {
     }
 
     protected async backup(): Promise<void> {
-        await this.send(async code => {
+        await this.send(async (code) => {
             const link = await this.api.migrationBackup(code);
             this.backedUp.set(link);
             // The browser downloads it as any file, from a link that works once.
@@ -256,18 +260,15 @@ export class MigrationPageComponent implements OnInit {
         try {
             await action(this.code().trim());
         } catch (error) {
-            if (error instanceof ApiError && error.errors?.['code'])
-                this.codeError.set(error.errors['code'].join(' '));
-            else
-                this.error.set((error as Error).message);
+            if (error instanceof ApiError && error.errors?.['code']) this.codeError.set(error.errors['code'].join(' '));
+            else this.error.set((error as Error).message);
         } finally {
             this.busy.set(false);
         }
     }
 
     private stopPolling(): void {
-        if (this.timer !== null)
-            clearTimeout(this.timer);
+        if (this.timer !== null) clearTimeout(this.timer);
         this.timer = null;
     }
 }

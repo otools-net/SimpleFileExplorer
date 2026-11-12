@@ -27,7 +27,9 @@ describe('createUrls', () => {
         const query = createUrls(fakeConfig({ dataServer: 'http://nas/get?file={encodedUrl}&also={url}' }));
 
         expect(plain.file('Movies/a b#1.mp4')).toBe('http://nas/files/Movies/a%20b%231.mp4?raw=1');
-        expect(query.file('Movies/a b&c.mp4')).toBe('http://nas/get?file=Movies%2Fa%20b%26c.mp4&also=Movies/a%20b%26c.mp4');
+        expect(query.file('Movies/a b&c.mp4')).toBe(
+            'http://nas/get?file=Movies%2Fa%20b%26c.mp4&also=Movies/a%20b%26c.mp4',
+        );
         expect(query.download('a.mp4')).toBe('api/files/raw/a.mp4?download=true');
     });
 
@@ -46,10 +48,17 @@ describe('createUrls', () => {
         expect(urls.externalName).toBeNull();
     });
 
-    it('fills {url} and {encodedUrl} with the file\'s full address', () => {
+    it("fills {url} and {encodedUrl} with the file's full address", () => {
         const address = 'http://nas:5080/api/files/shared/TOKEN/a%20b.mp4';
         const vlc = createUrls(fakeConfig({ externalPlayer: { name: 'VLC', url: 'vlc://{url}' } }));
-        const encoded = createUrls(fakeConfig({ externalPlayer: { name: 'Infuse', url: 'infuse://x-callback-url/play?url={encodedUrl}&again={encodedUrl}' } }));
+        const encoded = createUrls(
+            fakeConfig({
+                externalPlayer: {
+                    name: 'Infuse',
+                    url: 'infuse://x-callback-url/play?url={encodedUrl}&again={encodedUrl}',
+                },
+            }),
+        );
 
         expect(vlc.external(address)).toBe(`vlc://${address}`);
         expect(vlc.externalName).toBe('VLC');
@@ -121,8 +130,11 @@ describe('ConfigService', () => {
         expect(config.isLargeImage(item('a.jpg', { size: 5000 }))).toBe(false);
     });
 
-    it('knows the session\'s rights, and names its library in every request', async () => {
-        await loadConfig(api, limitedConfig([Rights.browse, Rights.viewTags], { tenant: { id: 7, slug: 'films', name: 'Films' } }));
+    it("knows the session's rights, and names its library in every request", async () => {
+        await loadConfig(
+            api,
+            limitedConfig([Rights.browse, Rights.viewTags], { tenant: { id: 7, slug: 'films', name: 'Films' } }),
+        );
 
         expect(config.can(Rights.browse)).toBe(true);
         expect(config.can(Rights.assignTags)).toBe(false);
@@ -137,7 +149,7 @@ describe('ConfigService', () => {
         expect(TestBed.inject(Api).tenantId).toBeNull();
     });
 
-    it('opens external players through a link of their own, which works without the browser\'s session', async () => {
+    it("opens external players through a link of their own, which works without the browser's session", async () => {
         await loadConfig(api, fakeConfig({ externalPlayer: { name: 'VLC', url: 'vlc://{url}' } }));
         api.fileLink.mockResolvedValue({ url: 'api/files/shared/TOKEN/a%20b.mkv', expires: '2026-01-01T00:00:00Z' });
 
@@ -147,8 +159,11 @@ describe('ConfigService', () => {
         expect(link).toBe(`vlc://${new URL('api/files/shared/TOKEN/a%20b.mkv', document.baseURI).href}`);
     });
 
-    it('gives external players the data server\'s address as it is: that server has no sessions', async () => {
-        await loadConfig(api, fakeConfig({ externalPlayer: { name: 'VLC', url: 'vlc://{url}' }, dataServer: 'http://nas/x/{url}/' }));
+    it("gives external players the data server's address as it is: that server has no sessions", async () => {
+        await loadConfig(
+            api,
+            fakeConfig({ externalPlayer: { name: 'VLC', url: 'vlc://{url}' }, dataServer: 'http://nas/x/{url}/' }),
+        );
 
         expect(await config.externalLink('a/b.mkv')).toBe('vlc://http://nas/x/a/b.mkv/');
         expect(api.fileLink).not.toHaveBeenCalled();

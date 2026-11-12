@@ -1,5 +1,12 @@
 import { signal } from '@angular/core';
-import { elementScroll, observeElementOffset, observeElementRect, VirtualItem, Virtualizer, VirtualizerOptions } from '@tanstack/virtual-core';
+import {
+    elementScroll,
+    observeElementOffset,
+    observeElementRect,
+    VirtualItem,
+    Virtualizer,
+    VirtualizerOptions,
+} from '@tanstack/virtual-core';
 
 /** Before the element is measured (and in jsdom, where everything measures 0): this tall. */
 const FALLBACK_HEIGHT = 600;
@@ -16,7 +23,11 @@ export class VirtualRows {
     private options: VirtualizerOptions<HTMLElement, Element>;
     private unmount: (() => void) | null = null;
 
-    constructor(getScrollElement: () => HTMLElement | null, private rowHeight = 28, overscan = 12) {
+    constructor(
+        getScrollElement: () => HTMLElement | null,
+        private rowHeight = 28,
+        overscan = 12,
+    ) {
         this.options = {
             count: 0,
             getScrollElement,
@@ -25,17 +36,18 @@ export class VirtualRows {
             scrollToFn: elementScroll,
             observeElementOffset,
             observeElementRect: (instance, notify) =>
-                observeElementRect(instance, rect => notify(rect.height ? rect : { width: rect.width, height: FALLBACK_HEIGHT })),
+                observeElementRect(instance, (rect) =>
+                    notify(rect.height ? rect : { width: rect.width, height: FALLBACK_HEIGHT }),
+                ),
             initialRect: { width: 0, height: FALLBACK_HEIGHT },
-            onChange: instance => this.publish(instance),
+            onChange: (instance) => this.publish(instance),
         };
         this.virtualizer = new Virtualizer(this.options);
     }
 
     /** Starts following the scroll element (once it is in the page). */
     mount(): void {
-        if (this.unmount)
-            return;
+        if (this.unmount) return;
         this.unmount = this.virtualizer._didMount();
         this.virtualizer._willUpdate();
         this.publish(this.virtualizer);
@@ -48,8 +60,7 @@ export class VirtualRows {
 
     /** The rows' height changed (font, size): measured again. */
     setRowHeight(height: number): void {
-        if (height <= 0 || height === this.rowHeight)
-            return;
+        if (height <= 0 || height === this.rowHeight) return;
         this.rowHeight = height;
         this.virtualizer.measure();
         this.publish(this.virtualizer);

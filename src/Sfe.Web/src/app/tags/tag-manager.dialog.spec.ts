@@ -10,12 +10,17 @@ describe('TagManagerDialog', () => {
     let api: ApiMock;
     let fixture: ComponentFixture<TagManagerDialog>;
     let element: HTMLElement;
-    let editor: { open: ReturnType<typeof vi.fn<(id?: number | null, defaults?: { name?: string }) => Promise<TagEditResult>>> };
+    let editor: {
+        open: ReturnType<typeof vi.fn<(id?: number | null, defaults?: { name?: string }) => Promise<TagEditResult>>>;
+    };
 
-    const results = (matches: TagSearchResults['matches'], descendants: TagSearchResults['descendants'] = []): TagSearchResults => ({ matches, descendants });
+    const results = (
+        matches: TagSearchResults['matches'],
+        descendants: TagSearchResults['descendants'] = [],
+    ): TagSearchResults => ({ matches, descendants });
     const search = () => element.querySelector<HTMLInputElement>('input[type=search]')!;
     const rows = () => [...element.querySelectorAll<HTMLButtonElement>('.tag-row')];
-    const rowNames = () => rows().map(row => row.querySelector('.tag-name')!.textContent!.trim());
+    const rowNames = () => rows().map((row) => row.querySelector('.tag-name')!.textContent!.trim());
     const text = () => element.querySelector('.tag-table')!.textContent!.replace(/\s+/g, ' ').trim();
 
     beforeEach(async () => {
@@ -55,14 +60,21 @@ describe('TagManagerDialog', () => {
 
     it('describes each tag: shorthand, aliases, parents, properties and file count', async () => {
         const parent = tag('League of Legends', { shorthand: 'LoL' });
-        await open(results([
-            tag('Jinx Piltover', { shorthand: 'Jinx', aliases: ['Jinxy', 'Powder'], parents: [parent], fileCount: 1 }),
-            tag('Character', { isCategory: true, isHidden: true, fileCount: 1234 }),
-            tag('Bare'),
-        ]));
+        await open(
+            results([
+                tag('Jinx Piltover', {
+                    shorthand: 'Jinx',
+                    aliases: ['Jinxy', 'Powder'],
+                    parents: [parent],
+                    fileCount: 1,
+                }),
+                tag('Character', { isCategory: true, isHidden: true, fileCount: 1234 }),
+                tag('Bare'),
+            ]),
+        );
 
-        const details = rows().map(row => row.querySelector('.tag-row-detail')!.textContent!.trim());
-        const counts = rows().map(row => row.querySelector('.tag-row-count')!.textContent!.trim());
+        const details = rows().map((row) => row.querySelector('.tag-row-detail')!.textContent!.trim());
+        const counts = rows().map((row) => row.querySelector('.tag-row-count')!.textContent!.trim());
         expect(details).toEqual([
             'Shorthand: Jinx · Aliases: Jinxy, Powder · Parents: League of Legends',
             'category, hidden',
@@ -258,7 +270,9 @@ describe('TagManagerDialog', () => {
 
     it('closes from its Close button, and loads fresh tags when opened again', async () => {
         await open(results([tag('Old')]));
-        const close = [...element.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent!.trim() === 'Close')!;
+        const close = [...element.querySelectorAll<HTMLButtonElement>('button')].find(
+            (b) => b.textContent!.trim() === 'Close',
+        )!;
 
         close.click();
         expect(element.querySelector('dialog')!.open).toBe(false);

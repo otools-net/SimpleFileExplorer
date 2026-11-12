@@ -14,7 +14,9 @@
     line-height: 22px;
 }
 
-.tag-chip:not(.colored) { box-shadow: inset 0 0 0 1px var(--border); }
+.tag-chip:not(.colored) {
+    box-shadow: inset 0 0 0 1px var(--border);
+}
 
 .tag-name {
     overflow: hidden;
@@ -28,12 +30,21 @@
     white-space: nowrap;
 }
 
-button.tag-name { cursor: pointer; }
-button.tag-name:hover { text-decoration: underline; }
-.tag-name:has(+ .tag-remove) { padding-right: 2px; }
+button.tag-name {
+    cursor: pointer;
+}
+button.tag-name:hover {
+    text-decoration: underline;
+}
+.tag-name:has(+ .tag-remove) {
+    padding-right: 2px;
+}
 /* A finger's target: 24 px (WCAG 2.5.8; e2e fixtures/test.ts, the final screen's check). */
 @media (pointer: coarse) {
-    .tag-chip { height: 24px; line-height: 24px; }
+    .tag-chip {
+        height: 24px;
+        line-height: 24px;
+    }
 }
 
 .tag-remove {
@@ -48,15 +59,32 @@ button.tag-name:hover { text-decoration: underline; }
     background: none;
     color: inherit;
     cursor: pointer;
-    opacity: .7;
+    opacity: 0.7;
 }
 
-.tag-remove:hover { opacity: 1; background: rgb(0 0 0 / .14); }
-.tag-remove .icon { width: 12px; height: 12px; stroke-width: 2.4; }
+.tag-remove:hover {
+    opacity: 1;
+    background: rgb(0 0 0 / 0.14);
+}
+.tag-remove .icon {
+    width: 12px;
+    height: 12px;
+    stroke-width: 2.4;
+}
 
-.item-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; min-width: 0; }
-.row .item-tags { margin-top: 3px; }
-.row-main { min-width: 0; }
+.item-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 5px;
+    min-width: 0;
+}
+.row .item-tags {
+    margin-top: 3px;
+}
+.row-main {
+    min-width: 0;
+}
 
 .tile .tag-button {
     position: absolute;
@@ -64,19 +92,37 @@ button.tag-name:hover { text-decoration: underline; }
     right: 8px;
     z-index: 2;
     border-color: transparent;
-    background: rgb(0 0 0 / .55);
+    background: rgb(0 0 0 / 0.55);
     color: #fff;
     opacity: 0;
-    transition: opacity .15s, background .15s;
+    transition:
+        opacity 0.15s,
+        background 0.15s;
 }
 
-.tile .tag-button:hover { background: rgb(0 0 0 / .75); }
-.tile:hover .tag-button, .tile:focus-within .tag-button { opacity: 1; }
-.row .tag-button { border-color: transparent; background: transparent; color: var(--text-muted); }
-.row .tag-button:hover { background: var(--surface-3); color: var(--text); }
-.tag-button .icon { width: 17px; height: 17px; }
+.tile .tag-button:hover {
+    background: rgb(0 0 0 / 0.75);
+}
+.tile:hover .tag-button,
+.tile:focus-within .tag-button {
+    opacity: 1;
+}
+.row .tag-button {
+    border-color: transparent;
+    background: transparent;
+    color: var(--text-muted);
+}
+.row .tag-button:hover {
+    background: var(--surface-3);
+    color: var(--text);
+}
+.tag-button .icon {
+    width: 17px;
+    height: 17px;
+}
 
 @media (hover: none) {
-    .tile .tag-button { opacity: 1; }
+    .tile .tag-button {
+        opacity: 1;
+    }
 }
-

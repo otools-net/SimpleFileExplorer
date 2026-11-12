@@ -54,14 +54,12 @@ export class TopbarComponent {
 
     protected switchView(view: View): void {
         // On narrow screens only the active button is shown: pressing it moves on to the next layout.
-        if (view === this.store.view())
-            view = VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length];
+        if (view === this.store.view()) view = VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length];
         this.store.setView(view);
     }
 
     /** A click outside the popovers and the buttons opening them closes them. */
     protected closePopovers(event: PointerEvent): void {
-        if (!(event.target as Element).closest?.('.popover, [aria-expanded]'))
-            this.popovers.close();
+        if (!(event.target as Element).closest?.('.popover, [aria-expanded]')) this.popovers.close();
     }
 }

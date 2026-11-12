@@ -1,6 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { formatDuration, formatElapsed, formatSize, highlightParts, highlightPattern, joinParts, plural } from '../core/format';
+import {
+    formatDuration,
+    formatElapsed,
+    formatSize,
+    highlightParts,
+    highlightPattern,
+    joinParts,
+    plural,
+} from '../core/format';
 import { deferred, settle } from '../../testing/fakes';
 import { BusyDirective, whileBusy } from './busy.directive';
 import { HighlightComponent } from './highlight.component';
@@ -154,7 +162,7 @@ describe('HighlightComponent', () => {
     it('marks the searched words, whatever their case', async () => {
         const element = await render('Sunny Sunday', 'sun');
 
-        expect([...element.querySelectorAll('mark')].map(m => m.textContent)).toEqual(['Sun', 'Sun']);
+        expect([...element.querySelectorAll('mark')].map((m) => m.textContent)).toEqual(['Sun', 'Sun']);
         expect(element.textContent).toBe('Sunny Sunday');
     });
 
@@ -204,14 +212,26 @@ describe('format', () => {
     it('highlights words holding regex characters literally', () => {
         const pattern = highlightPattern('a.b (x) [1]');
 
-        expect(highlightParts('a.b and axb', pattern).filter(p => p.mark).map(p => p.text)).toEqual(['a.b']);
-        expect(highlightParts('(x) [1]', pattern).filter(p => p.mark).map(p => p.text)).toEqual(['(x)', '[1]']);
+        expect(
+            highlightParts('a.b and axb', pattern)
+                .filter((p) => p.mark)
+                .map((p) => p.text),
+        ).toEqual(['a.b']);
+        expect(
+            highlightParts('(x) [1]', pattern)
+                .filter((p) => p.mark)
+                .map((p) => p.text),
+        ).toEqual(['(x)', '[1]']);
     });
 
     it('highlights a quoted phrase as one, and ignores the full-path marker', () => {
         const pattern = highlightPattern('*"big sky", sun');
 
-        expect(highlightParts('a big sky at sunset', pattern).filter(p => p.mark).map(p => p.text)).toEqual(['big sky', 'sun']);
+        expect(
+            highlightParts('a big sky at sunset', pattern)
+                .filter((p) => p.mark)
+                .map((p) => p.text),
+        ).toEqual(['big sky', 'sun']);
     });
 
     it('has nothing to highlight for an empty search', () => {

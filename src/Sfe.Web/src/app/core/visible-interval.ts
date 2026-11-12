@@ -10,8 +10,7 @@ export function visibleInterval(tick: () => void, ms: number): () => void {
         timer = document.hidden ? undefined : setInterval(tick, ms);
     };
     const changed = () => {
-        if (!document.hidden)
-            tick();
+        if (!document.hidden) tick();
         schedule();
     };
     document.addEventListener('visibilitychange', changed);

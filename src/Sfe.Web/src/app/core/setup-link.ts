@@ -8,15 +8,21 @@ const STORAGE_KEY = 'sfe-setup-link';
  * address the browser was opened with, then removed from it (the address bar, the history and a copied link no
  * longer hold it) and kept for this tab, so that a reload still has it. Null when the page was opened without it.
  */
-export function takeSetupLink(view: Pick<Window, 'location' | 'history'> = window, storage: Storage | null = tabStorage()): string | null {
+export function takeSetupLink(
+    view: Pick<Window, 'location' | 'history'> = window,
+    storage: Storage | null = tabStorage(),
+): string | null {
     const query = new URLSearchParams(view.location.search);
     const given = query.get(SETUP_LINK_PARAMETER);
-    if (!given)
-        return read(storage);
+    if (!given) return read(storage);
 
     query.delete(SETUP_LINK_PARAMETER);
     const rest = query.toString();
-    view.history.replaceState(view.history.state, '', view.location.pathname + (rest ? `?${rest}` : '') + view.location.hash);
+    view.history.replaceState(
+        view.history.state,
+        '',
+        view.location.pathname + (rest ? `?${rest}` : '') + view.location.hash,
+    );
     write(storage, given);
     return given;
 }

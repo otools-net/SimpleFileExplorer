@@ -65,20 +65,23 @@ const PROBLEMS: Readonly<Record<string, string>> = {
 
 function problemsOf(text: string, errors: readonly ParseError[]): JsonProblem[] {
     const starts = [0];
-    for (let at = text.indexOf('\n'); at >= 0; at = text.indexOf('\n', at + 1))
-        starts.push(at + 1);
-    return errors.map(error => {
+    for (let at = text.indexOf('\n'); at >= 0; at = text.indexOf('\n', at + 1)) starts.push(at + 1);
+    return errors.map((error) => {
         let low = 0;
         let high = starts.length - 1;
         while (low < high) {
             const middle = (low + high + 1) >> 1;
-            if (starts[middle] <= error.offset)
-                low = middle;
-            else
-                high = middle - 1;
+            if (starts[middle] <= error.offset) low = middle;
+            else high = middle - 1;
         }
         const code = printParseErrorCode(error.error);
-        return { message: PROBLEMS[code] ?? code, offset: error.offset, length: error.length, line: low + 1, column: error.offset - starts[low] + 1 };
+        return {
+            message: PROBLEMS[code] ?? code,
+            offset: error.offset,
+            length: error.length,
+            line: low + 1,
+            column: error.offset - starts[low] + 1,
+        };
     });
 }
 
@@ -89,8 +92,7 @@ function problemsOf(text: string, errors: readonly ParseError[]): JsonProblem[] 
 export function parseJson(text: string): JsonDocument {
     const strictErrors: ParseError[] = [];
     const strictRoot = parseTree(text, strictErrors, { disallowComments: true, allowTrailingComma: false }) ?? null;
-    if (!strictErrors.length)
-        return { text, root: strictRoot, problems: [], strict: true };
+    if (!strictErrors.length) return { text, root: strictRoot, problems: [], strict: true };
     const errors: ParseError[] = [];
     const root = parseTree(text, errors, { disallowComments: false, allowTrailingComma: true }) ?? null;
     return { text, root, problems: problemsOf(text, errors), strict: false };
@@ -105,13 +107,11 @@ export function membersOf(node: Node): { key: string; index: boolean; node: Node
     const children = node.children ?? [];
     if (node.type === 'array')
         return children.map((child, index) => ({ key: String(index), index: true, node: child }));
-    if (node.type !== 'object')
-        return [];
+    if (node.type !== 'object') return [];
     const members: { key: string; index: boolean; node: Node }[] = [];
     for (const property of children) {
         const [name, value] = property.children ?? [];
-        if (name && value)
-            members.push({ key: String(name.value), index: false, node: value });
+        if (name && value) members.push({ key: String(name.value), index: false, node: value });
     }
     return members;
 }
@@ -132,8 +132,7 @@ export interface RowOptions {
 /** The rows shown: only open containers' members, `CHUNK` at a time; nothing proportional to what is closed. */
 export function rowsOf(root: Node | null, options: RowOptions): JsonRow[] {
     const rows: JsonRow[] = [];
-    if (!root)
-        return rows;
+    if (!root) return rows;
     const { expanded, shown, keep } = options;
     // `filtered`: only kept members; below a match that holds none, all of them (what the match is).
     const visit = (node: Node, id: string, key: string | null, index: boolean, depth: number, filtered: boolean) => {
@@ -141,15 +140,13 @@ export function rowsOf(root: Node | null, options: RowOptions): JsonRow[] {
         const holds = filtered && !!keep && holdsKept(id, keep);
         const open = container && (expanded.has(id) || holds);
         rows.push({ id, depth, node, key, index, container, expanded: open });
-        if (!open)
-            return;
+        if (!open) return;
         const limit = shown?.get(id) ?? CHUNK;
         let count = 0;
         let total = 0;
         for (const member of membersOf(node)) {
             const memberId = childId(id, member.key);
-            if (holds && !keep!.has(memberId))
-                continue;
+            if (holds && !keep!.has(memberId)) continue;
             total++;
             if (count < limit) {
                 count++;
@@ -157,7 +154,16 @@ export function rowsOf(root: Node | null, options: RowOptions): JsonRow[] {
             }
         }
         if (total > count)
-            rows.push({ id: `${id}#more`, depth: depth + 1, node, key: null, index: false, container: false, expanded: false, more: { shown: count, total } });
+            rows.push({
+                id: `${id}#more`,
+                depth: depth + 1,
+                node,
+                key: null,
+                index: false,
+                container: false,
+                expanded: false,
+                more: { shown: count, total },
+            });
     };
     visit(root, '', null, false, 0, !!keep);
     return rows;
@@ -174,27 +180,23 @@ function holdsKept(id: string, keep: ReadonlySet<string>): boolean {
  */
 export function expandAll(root: Node | null, limit = EXPAND_LIMIT, from = ''): Set<string> {
     const open = new Set<string>();
-    if (!root)
-        return open;
+    if (!root) return open;
     let start: Node | null = root;
     for (const key of from ? from.slice(1).split('/') : []) {
         const name = key.replaceAll('~1', '/').replaceAll('~0', '~');
-        start = start ? membersOf(start).find(member => member.key === name)?.node ?? null : null;
+        start = start ? (membersOf(start).find((member) => member.key === name)?.node ?? null) : null;
     }
-    if (!start)
-        return open;
+    if (!start) return open;
     let rows = 1;
     let level: { node: Node; id: string }[] = [{ node: start, id: from }];
     while (level.length && rows < limit) {
         const next: { node: Node; id: string }[] = [];
         for (const { node, id } of level) {
-            if (!isContainer(node) || rows >= limit)
-                continue;
+            if (!isContainer(node) || rows >= limit) continue;
             open.add(id);
             const members = membersOf(node);
             rows += Math.min(members.length, CHUNK);
-            for (const member of members.slice(0, CHUNK))
-                next.push({ node: member.node, id: childId(id, member.key) });
+            for (const member of members.slice(0, CHUNK)) next.push({ node: member.node, id: childId(id, member.key) });
         }
         level = next;
     }
@@ -209,25 +211,18 @@ export function filterTree(root: Node | null, query: string): { keep: Set<string
     const keep = new Set<string>();
     const needle = query.trim().toLowerCase();
     let count = 0;
-    if (!root || !needle)
-        return { keep, count, limited: false };
+    if (!root || !needle) return { keep, count, limited: false };
     const visit = (node: Node, id: string, key: string | null): boolean => {
-        if (count >= MATCH_LIMIT)
-            return false;
+        if (count >= MATCH_LIMIT) return false;
         let found = key !== null && key.toLowerCase().includes(needle);
-        if (!found && !isContainer(node))
-            found = String(node.value).toLowerCase().includes(needle);
-        if (found)
-            count++;
+        if (!found && !isContainer(node)) found = String(node.value).toLowerCase().includes(needle);
+        if (found) count++;
         let holds = false;
         for (const member of membersOf(node)) {
-            if (visit(member.node, childId(id, member.key), member.key))
-                holds = true;
+            if (visit(member.node, childId(id, member.key), member.key)) holds = true;
         }
-        if (holds)
-            keep.add(`${id}\u0000holds`);
-        if (found || holds)
-            keep.add(id);
+        if (holds) keep.add(`${id}\u0000holds`);
+        if (found || holds) keep.add(id);
         return found || holds;
     };
     visit(root, '', null);
@@ -238,11 +233,9 @@ const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 
 /** The member's path as code writes it: `$.store.books[0]["first name"]`. */
 export function pathLabel(id: string): string {
-    if (id.endsWith('#more'))
-        id = id.slice(0, -5);
+    if (id.endsWith('#more')) id = id.slice(0, -5);
     let label = '$';
-    if (!id)
-        return label;
+    if (!id) return label;
     for (const part of id.slice(1).split('/')) {
         const key = part.replaceAll('~1', '/').replaceAll('~0', '~');
         label += /^\d+$/.test(key) ? `[${key}]` : IDENTIFIER.test(key) ? `.${key}` : `[${JSON.stringify(key)}]`;
@@ -261,7 +254,11 @@ export function previewOf(node: Node, text: string, max = PREVIEW_LENGTH): strin
     const array = node.type === 'array';
     let preview = '';
     for (const member of membersOf(node)) {
-        const value = isContainer(member.node) ? (member.node.type === 'array' ? '[…]' : '{…}') : sourceOf(member.node, text, 30);
+        const value = isContainer(member.node)
+            ? member.node.type === 'array'
+                ? '[…]'
+                : '{…}'
+            : sourceOf(member.node, text, 30);
         const part = array ? value : `${JSON.stringify(member.key)}: ${value}`;
         if (preview.length + part.length > max) {
             preview += preview ? ', …' : '…';
@@ -274,7 +271,7 @@ export function previewOf(node: Node, text: string, max = PREVIEW_LENGTH): strin
 
 /** How many members, in words: `3 keys`, `1 item`. */
 export function sizeOf(node: Node): string {
-    const count = node.type === 'array' ? node.children?.length ?? 0 : membersOf(node).length;
+    const count = node.type === 'array' ? (node.children?.length ?? 0) : membersOf(node).length;
     const word = node.type === 'array' ? 'item' : 'key';
     return `${count.toLocaleString()} ${word}${count === 1 ? '' : 's'}`;
 }
@@ -282,19 +279,23 @@ export function sizeOf(node: Node): string {
 /** The colour class of a value (`tok-*`, as the source's highlighting). */
 export function valueClass(node: Node): string {
     switch (node.type) {
-        case 'string': return 'tok-string';
-        case 'number': return 'tok-number';
-        case 'boolean': return 'tok-bool';
-        case 'null': return 'tok-keyword';
-        default: return 'json-punctuation';
+        case 'string':
+            return 'tok-string';
+        case 'number':
+            return 'tok-number';
+        case 'boolean':
+            return 'tok-bool';
+        case 'null':
+            return 'tok-keyword';
+        default:
+            return 'json-punctuation';
     }
 }
 
 /** The indentation the source uses (a tab, or its first indented line's spaces; two when none). */
 export function indentOf(text: string): { insertSpaces: boolean; tabSize: number } {
     const match = /\n([ \t]+)\S/.exec(text);
-    if (match?.[1].startsWith('\t'))
-        return { insertSpaces: false, tabSize: 4 };
+    if (match?.[1].startsWith('\t')) return { insertSpaces: false, tabSize: 4 };
     const size = match ? match[1].length : 2;
     return { insertSpaces: true, tabSize: size >= 1 && size <= 8 ? size : 2 };
 }

@@ -169,7 +169,7 @@ export class SpaceEditorComponent {
     protected readonly problem = signal<string | null>(null);
     protected readonly saving = signal(false);
 
-    protected readonly rights = computed(() => this.catalog().filter(right => right.scope === 'tenant'));
+    protected readonly rights = computed(() => this.catalog().filter((right) => right.scope === 'tenant'));
 
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;
@@ -191,24 +191,24 @@ export class SpaceEditorComponent {
         this.errors.set({});
         this.problem.set(null);
         this.picker.set(null);
-        if (space)
-            void this.loadRights();
-        else
-            void this.browse(null);
+        if (space) void this.loadRights();
+        else void this.browse(null);
         this.sheet().open();
     }
 
     protected change(changes: Partial<SpaceDraft>): void {
-        this.draft.update(draft => draft && { ...draft, ...changes });
+        this.draft.update((draft) => draft && { ...draft, ...changes });
     }
 
     protected toggleRight(id: string, disabled: boolean): void {
-        this.draft.update(draft => draft && { ...draft, disabledRights: toggled(draft.disabledRights, id, disabled) });
+        this.draft.update(
+            (draft) => draft && { ...draft, disabledRights: toggled(draft.disabledRights, id, disabled) },
+        );
     }
 
     /** Ticks `ids` too, keeping the rights already ticked. */
     protected switchOff(ids: string[]): void {
-        this.draft.update(draft => draft && { ...draft, disabledRights: new Set([...draft.disabledRights, ...ids]) });
+        this.draft.update((draft) => draft && { ...draft, disabledRights: new Set([...draft.disabledRights, ...ids]) });
     }
 
     /** Opens a folder of the picker (the allowed roots for null); a folder opened is the one chosen. */
@@ -216,8 +216,7 @@ export class SpaceEditorComponent {
         try {
             const picker = await this.api.tenantFolders(path);
             this.picker.set(picker);
-            if (picker.path)
-                this.change({ root: picker.path });
+            if (picker.path) this.change({ root: picker.path });
         } catch (error) {
             this.problem.set(`Could not list the folders: ${(error as Error).message}`);
         }
@@ -226,8 +225,7 @@ export class SpaceEditorComponent {
     protected async save(event?: Event): Promise<void> {
         event?.preventDefault();
         const draft = this.draft();
-        if (!draft)
-            return;
+        if (!draft) return;
         this.saving.set(true);
         this.errors.set({});
         this.problem.set(null);
@@ -240,7 +238,8 @@ export class SpaceEditorComponent {
             disabledRights: [...draft.disabledRights],
         };
         try {
-            const space = draft.id === null ? await this.api.createTenant(input) : await this.api.updateTenant(draft.id, input);
+            const space =
+                draft.id === null ? await this.api.createTenant(input) : await this.api.updateTenant(draft.id, input);
             this.sheet().close();
             this.toasts.show(draft.id === null ? `Space ${space.name} created.` : `Space ${space.name} saved.`);
             this.saved.emit(space);
@@ -248,10 +247,8 @@ export class SpaceEditorComponent {
             await this.config.load();
         } catch (error) {
             const errors = fieldErrors(error);
-            if (errors)
-                this.errors.set(errors);
-            else
-                this.problem.set((error as Error).message);
+            if (errors) this.errors.set(errors);
+            else this.problem.set((error as Error).message);
         } finally {
             this.saving.set(false);
         }

@@ -13,22 +13,37 @@ import { PlayerPageComponent } from './player/player-page.component';
  */
 export const routes: Routes = [
     // Its query changes ask too, as the viewer may hold unsaved changes.
-    { path: '', component: LibraryPageComponent, canDeactivate: [leaveViewer], runGuardsAndResolvers: 'paramsOrQueryParamsChange' },
+    {
+        path: '',
+        component: LibraryPageComponent,
+        canDeactivate: [leaveViewer],
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange',
+    },
     {
         path: 'admin',
-        loadComponent: () => import('./admin/admin-page.component').then(m => m.AdminPageComponent),
+        loadComponent: () => import('./admin/admin-page.component').then((m) => m.AdminPageComponent),
         canDeactivate: [leaveAdminPage],
     },
     // Its earlier address, still in bookmarks.
     { path: 'config', redirectTo: 'admin' },
     { path: 'player', component: PlayerPageComponent },
     // A file in its viewer, on a page of its own (text...): loaded when first opened.
-    { path: 'view', loadComponent: () => import('./formats/view-page.component').then(m => m.ViewPageComponent), canDeactivate: [leaveViewPage] },
-    { path: 'login', loadComponent: () => import('./account/login-page.component').then(m => m.LoginPageComponent) },
-    { path: 'setup', loadComponent: () => import('./account/setup-page.component').then(m => m.SetupPageComponent) },
+    {
+        path: 'view',
+        loadComponent: () => import('./formats/view-page.component').then((m) => m.ViewPageComponent),
+        canDeactivate: [leaveViewPage],
+    },
+    { path: 'login', loadComponent: () => import('./account/login-page.component').then((m) => m.LoginPageComponent) },
+    { path: 'setup', loadComponent: () => import('./account/setup-page.component').then((m) => m.SetupPageComponent) },
     // The update of an install to this version: the only page working until it is done.
-    { path: 'migration', loadComponent: () => import('./migration/migration-page.component').then(m => m.MigrationPageComponent) },
+    {
+        path: 'migration',
+        loadComponent: () => import('./migration/migration-page.component').then((m) => m.MigrationPageComponent),
+    },
     // A Local server opened from another computer: where to open it, and the way to External for its administrator.
-    { path: 'local-only', loadComponent: () => import('./account/local-only-page.component').then(m => m.LocalOnlyPageComponent) },
+    {
+        path: 'local-only',
+        loadComponent: () => import('./account/local-only-page.component').then((m) => m.LocalOnlyPageComponent),
+    },
     { path: '**', redirectTo: '' },
 ];

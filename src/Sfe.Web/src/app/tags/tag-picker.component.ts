@@ -10,9 +10,27 @@ import { describeTag } from './tags';
 export type TagOption = { tag: TagDetails; create?: undefined } | { create: string; tag?: undefined };
 
 let pointerPressed = false;
-addEventListener('pointerdown', () => { pointerPressed = true; }, true);
-addEventListener('pointerup', () => { pointerPressed = false; }, true);
-addEventListener('pointercancel', () => { pointerPressed = false; }, true);
+addEventListener(
+    'pointerdown',
+    () => {
+        pointerPressed = true;
+    },
+    true,
+);
+addEventListener(
+    'pointerup',
+    () => {
+        pointerPressed = false;
+    },
+    true,
+);
+addEventListener(
+    'pointercancel',
+    () => {
+        pointerPressed = false;
+    },
+    true,
+);
 
 let nextId = 0;
 
@@ -90,21 +108,20 @@ export class TagPickerComponent {
             this.toasts.error(`Could not load tags: ${(error as Error).message}`);
             return;
         }
-        if (request !== this.sequence || document.activeElement !== input)
-            return;
+        if (request !== this.sequence || document.activeElement !== input) return;
 
         const skip = this.exclude()();
-        const options: TagOption[] = [...results.matches, ...results.descendants].filter(tag => !skip.has(tag.id)).map(tag => ({ tag }));
-        const exact = results.matches.some(tag => tag.name.toLocaleLowerCase() === text.toLocaleLowerCase());
-        if (this.allowCreate() && text && !exact)
-            options.push({ create: text });
+        const options: TagOption[] = [...results.matches, ...results.descendants]
+            .filter((tag) => !skip.has(tag.id))
+            .map((tag) => ({ tag }));
+        const exact = results.matches.some((tag) => tag.name.toLocaleLowerCase() === text.toLocaleLowerCase());
+        if (this.allowCreate() && text && !exact) options.push({ create: text });
         this.options.set(options);
         this.setActive(options.length ? 0 : -1);
     }
 
     protected async choose(option: TagOption): Promise<void> {
-        if (this.busy)
-            return;
+        if (this.busy) return;
         this.busy = true;
         try {
             await this.pick()(option);
@@ -127,12 +144,15 @@ export class TagPickerComponent {
         // When a press elsewhere takes the focus, collapsing the list right away would move what is under the
         // pointer before the release, and the click would miss its button: wait until the click is over.
         if (pointerPressed)
-            addEventListener('pointerup', () => setTimeout(() => {
-                if (document.activeElement !== this.input().nativeElement)
-                    this.close();
-            }), { once: true, capture: true });
-        else
-            this.close();
+            addEventListener(
+                'pointerup',
+                () =>
+                    setTimeout(() => {
+                        if (document.activeElement !== this.input().nativeElement) this.close();
+                    }),
+                { once: true, capture: true },
+            );
+        else this.close();
     }
 
     protected onKeydown(event: KeyboardEvent): void {
@@ -147,8 +167,7 @@ export class TagPickerComponent {
             this.setActive((this.active() + step + options.length) % options.length);
         } else if (event.key === 'Enter') {
             event.preventDefault();
-            if (this.active() >= 0)
-                void this.choose(options[this.active()]);
+            if (this.active() >= 0) void this.choose(options[this.active()]);
         } else if (event.key === 'Escape' && options.length) {
             // Close the suggestions, not the dialog.
             event.preventDefault();

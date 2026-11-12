@@ -24,10 +24,18 @@ export class ToastService {
     private readonly list = signal<Toast[]>([]);
     readonly toasts = this.list.asReadonly();
 
-    show(message: string, { error = false, timeout = 4500, action, actions = [] }: { error?: boolean; timeout?: number; action?: ToastAction; actions?: ToastAction[] } = {}): void {
+    show(
+        message: string,
+        {
+            error = false,
+            timeout = 4500,
+            action,
+            actions = [],
+        }: { error?: boolean; timeout?: number; action?: ToastAction; actions?: ToastAction[] } = {},
+    ): void {
         const all = action ? [action, ...actions] : actions;
         const toast: Toast = { id: ++this.nextId, message, error, action: all[0], actions: all };
-        this.list.update(list => [...list, toast]);
+        this.list.update((list) => [...list, toast]);
         setTimeout(() => this.dismiss(toast.id), timeout);
     }
 
@@ -36,7 +44,7 @@ export class ToastService {
     }
 
     dismiss(id: number): void {
-        this.list.update(list => list.filter(t => t.id !== id));
+        this.list.update((list) => list.filter((t) => t.id !== id));
     }
 
     /** Runs one of the toast's actions (its first by default) and closes it. */

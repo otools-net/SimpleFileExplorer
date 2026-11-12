@@ -18,13 +18,24 @@ describe('CsvViewComponent', () => {
 
     const ALL: TextAccess = { overwrite: true, saveCopy: true, download: true, permanent: false };
     const text = (overrides: Partial<TextFile> = {}): TextFile => ({
-        text: TABLE, encoding: 'utf-8', lineEnding: 'lf', version: 'v1', size: 90, modified: '2026-10-18T10:00:00Z', access: ALL, ...overrides,
+        text: TABLE,
+        encoding: 'utf-8',
+        lineEnding: 'lf',
+        version: 'v1',
+        size: 90,
+        modified: '2026-10-18T10:00:00Z',
+        access: ALL,
+        ...overrides,
     });
     const scroller = () => element.querySelector<HTMLElement>('.csv-scroller')!;
-    const headers = () => [...element.querySelectorAll('.csv-head .csv-name')].map(name => name.textContent);
-    const column = (index: number) => [...element.querySelectorAll(`.csv-body [data-column="${index}"]`)].map(cell => cell.textContent);
+    const headers = () => [...element.querySelectorAll('.csv-head .csv-name')].map((name) => name.textContent);
+    const column = (index: number) =>
+        [...element.querySelectorAll(`.csv-body [data-column="${index}"]`)].map((cell) => cell.textContent);
     const status = () => element.querySelector('[data-counts]')!.textContent;
-    const mode = (label: string) => [...element.querySelectorAll<HTMLButtonElement>('.markdown-mode')].find(button => button.textContent === label)!;
+    const mode = (label: string) =>
+        [...element.querySelectorAll<HTMLButtonElement>('.markdown-mode')].find(
+            (button) => button.textContent === label,
+        )!;
     const view = () => EditorView.findFromDOM(element.querySelector<HTMLElement>('.json-source .cm-editor')!)!;
 
     async function stable(): Promise<void> {
@@ -48,17 +59,17 @@ describe('CsvViewComponent', () => {
     }
 
     beforeEach(async () => {
-        for (const key of [READING_KEY, CSV_MODE_KEY, CSV_HEADER_KEY])
-            localStorage.removeItem(key);
+        for (const key of [READING_KEY, CSV_MODE_KEY, CSV_HEADER_KEY]) localStorage.removeItem(key);
         api = mockApi();
         api.textFile.mockResolvedValue(text());
-        TestBed.configureTestingModule({ providers: testProviders(api, { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => true } }) });
+        TestBed.configureTestingModule({
+            providers: testProviders(api, { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => true } }),
+        });
         await loadConfig(api);
     });
 
     afterEach(() => {
-        for (const key of [READING_KEY, CSV_MODE_KEY, CSV_HEADER_KEY])
-            localStorage.removeItem(key);
+        for (const key of [READING_KEY, CSV_MODE_KEY, CSV_HEADER_KEY]) localStorage.removeItem(key);
         fixture?.destroy();
         TestBed.resetTestingModule();
     });
@@ -155,8 +166,7 @@ describe('CsvViewComponent', () => {
 
     it('draws only the rows shown of a long table', async () => {
         const lines = ['n,square'];
-        for (let n = 1; n <= 5000; n++)
-            lines.push(`${n},${n * n}`);
+        for (let n = 1; n <= 5000; n++) lines.push(`${n},${n * n}`);
         api.textFile.mockResolvedValue(text({ text: lines.join('\n') }));
         await show('squares.csv');
 
@@ -218,19 +228,34 @@ describe('CsvViewComponent', () => {
         const clientWidth = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth')!;
         /** jsdom has no layout: the toolbar `rowWidth`, its items as below, the rest 0. */
         function width(this: HTMLElement): number {
-            const widths: [string, number][] = [['text-toolbar', rowWidth], ['text-edit-actions', 60], ['markdown-modes', 150], ['json-filter', 110],
-                ['csv-header-toggle', 70], ['csv-delimiter', 120], ['reading-toggle', 32], ['overflow-more', 32]];
+            const widths: [string, number][] = [
+                ['text-toolbar', rowWidth],
+                ['text-edit-actions', 60],
+                ['markdown-modes', 150],
+                ['json-filter', 110],
+                ['csv-header-toggle', 70],
+                ['csv-delimiter', 120],
+                ['reading-toggle', 32],
+                ['overflow-more', 32],
+            ];
             return widths.find(([name]) => this.classList.contains(name))?.[1] ?? 0;
         }
-        const row = () => fixture.debugElement.query(By.directive(OverflowRowDirective)).injector.get(OverflowRowDirective);
+        const row = () =>
+            fixture.debugElement.query(By.directive(OverflowRowDirective)).injector.get(OverflowRowDirective);
 
         beforeEach(() => {
             Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, get: width });
             Object.defineProperty(Element.prototype, 'clientWidth', { configurable: true, get: width });
             (window as { ResizeObserver?: unknown }).ResizeObserver = class {
-                observe(): void { /* measured by update() */ }
-                unobserve(): void { /* nothing observed */ }
-                disconnect(): void { /* nothing observed */ }
+                observe(): void {
+                    /* measured by update() */
+                }
+                unobserve(): void {
+                    /* nothing observed */
+                }
+                disconnect(): void {
+                    /* nothing observed */
+                }
             };
         });
 
@@ -247,17 +272,21 @@ describe('CsvViewComponent', () => {
             await stable();
 
             // 60 + 150 + 110 + 70 + 120 + 32 = 542: Aa, the separator, then Header leave (with the "⋯": 352).
-            const gone = [...element.querySelectorAll<HTMLElement>('.text-toolbar [data-overflowed]')].map(item => ['csv-header-toggle', 'csv-delimiter', 'reading-toggle', 'markdown-modes'].find(name => item.classList.contains(name)));
+            const gone = [...element.querySelectorAll<HTMLElement>('.text-toolbar [data-overflowed]')].map((item) =>
+                ['csv-header-toggle', 'csv-delimiter', 'reading-toggle', 'markdown-modes'].find((name) =>
+                    item.classList.contains(name),
+                ),
+            );
             expect(gone).toEqual(['csv-header-toggle', 'csv-delimiter', 'reading-toggle']);
             expect(element.querySelector('.json-filter')!.hasAttribute('data-overflowed')).toBe(false);
             expect(element.querySelector('.overflow-more')!.classList).toContain('shown');
 
             const entries = row().target().entries();
-            expect(entries.map(entry => entry.id)).toEqual(['header', 'separator', 'reading']);
+            expect(entries.map((entry) => entry.id)).toEqual(['header', 'separator', 'reading']);
             expect(entries[0].checked).toBe(true);
             const separators = entries[1].submenu!();
-            expect(separators.find(entry => entry.checked)?.id).toBe('separator-guess');
-            separators.find(entry => entry.id === 'separator-semicolon')!.run!();
+            expect(separators.find((entry) => entry.checked)?.id).toBe('separator-guess');
+            separators.find((entry) => entry.id === 'separator-semicolon')!.run!();
             await stable();
             expect(status()).toContain('semicolon');
         });

@@ -10,11 +10,20 @@ import { ListingStore } from '../listing.store';
 
 const KINDS: { kind: ExclusionKind; label: string; hint: string }[] = [
     {
-        kind: 'scan', label: 'Skip in scans',
+        kind: 'scan',
+        label: 'Skip in scans',
         hint: 'Scans of the folders above leave it out. What the index already has of it (files, tags) stays as it is, never refreshed: Remove from index forgets it.',
     },
-    { kind: 'trickplay', label: 'No trickplay', hint: 'Its videos get no new timeline pictures; those already made are still shown.' },
-    { kind: 'thumbnails', label: 'No thumbnails', hint: 'Its photos and videos get no new thumbnails; those already made are still shown.' },
+    {
+        kind: 'trickplay',
+        label: 'No trickplay',
+        hint: 'Its videos get no new timeline pictures; those already made are still shown.',
+    },
+    {
+        kind: 'thumbnails',
+        label: 'No thumbnails',
+        hint: 'Its photos and videos get no new thumbnails; those already made are still shown.',
+    },
 ];
 
 const NONE: FolderExclusions = { scan: null, trickplay: null, thumbnails: null };
@@ -66,10 +75,12 @@ export class FolderExclusionsDialog {
     protected readonly error = signal<string | null>(null);
 
     protected readonly name = computed(() => `“${this.path()}”`);
-    protected readonly changed = computed(() => Object.entries(this.edits()).some(([kind, value]) => value !== this.listed(kind as ExclusionKind)));
+    protected readonly changed = computed(() =>
+        Object.entries(this.edits()).some(([kind, value]) => value !== this.listed(kind as ExclusionKind)),
+    );
 
     constructor() {
-        registerDialog(dialogs => dialogs.folderExclusions, this);
+        registerDialog((dialogs) => dialogs.folderExclusions, this);
     }
 
     /** Opens on a folder (not the library itself) with what it is kept out of now. */
@@ -97,11 +108,13 @@ export class FolderExclusionsDialog {
     }
 
     protected set(kind: ExclusionKind, value: boolean): void {
-        this.edits.update(edits => ({ ...edits, [kind]: value }));
+        this.edits.update((edits) => ({ ...edits, [kind]: value }));
     }
 
     protected async save(): Promise<void> {
-        const changes = Object.fromEntries(Object.entries(this.edits()).filter(([kind, value]) => value !== this.listed(kind as ExclusionKind)));
+        const changes = Object.fromEntries(
+            Object.entries(this.edits()).filter(([kind, value]) => value !== this.listed(kind as ExclusionKind)),
+        );
         this.error.set(null);
         try {
             const state = await whileBusy(this.saving, () => this.api.setFolderExclusions(this.path(), changes));
@@ -114,7 +127,10 @@ export class FolderExclusionsDialog {
     }
 
     private message(state: FolderExclusions): string {
-        const kept = joinParts([state.scan ? 'scans' : null, state.trickplay ? 'trickplay' : null, state.thumbnails ? 'thumbnails' : null], ', ');
+        const kept = joinParts(
+            [state.scan ? 'scans' : null, state.trickplay ? 'trickplay' : null, state.thumbnails ? 'thumbnails' : null],
+            ', ',
+        );
         return kept ? `${this.name()} is kept out of ${kept}.` : `${this.name()} is no longer excluded.`;
     }
 

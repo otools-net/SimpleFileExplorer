@@ -57,8 +57,7 @@ function markdownIt(): MarkdownIt {
  */
 export function resolveLibraryPath(documentPath: string, href: string): string | null {
     const target = href.split(/[?#]/)[0];
-    if (!target)
-        return null;
+    if (!target) return null;
     let decoded: string;
     try {
         decoded = decodeURIComponent(target);
@@ -67,21 +66,22 @@ export function resolveLibraryPath(documentPath: string, href: string): string |
     }
     const parts = decoded.startsWith('/') ? [] : documentPath.split('/').slice(0, -1);
     for (const segment of decoded.split(/[\\/]/)) {
-        if (segment === '' || segment === '.')
-            continue;
+        if (segment === '' || segment === '.') continue;
         if (segment === '..') {
-            if (!parts.length)
-                return null;
+            if (!parts.length) return null;
             parts.pop();
-        } else
-            parts.push(segment);
+        } else parts.push(segment);
     }
     return parts.join('/');
 }
 
 /** GitHub's way of naming a heading's anchor: lower case, letters and digits, spaces as dashes. */
 export function slugify(text: string): string {
-    return text.trim().toLowerCase().replace(/[^\p{L}\p{N}\s_-]/gu, '').replace(/\s/g, '-');
+    return text
+        .trim()
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s_-]/gu, '')
+        .replace(/\s/g, '-');
 }
 
 const SCHEME = /^([a-z][a-z0-9+.-]*):/i;
@@ -122,16 +122,12 @@ export function renderMarkdown(text: string, documentPath: string, links: Markdo
         if (isExternal(src)) {
             externalImages++;
             image.replaceWith(blockedImage(image, src));
-        } else if (src.startsWith('data:image/'))
-            continue;
-        else if (SCHEME.test(src) || !src)
-            image.removeAttribute('src');
+        } else if (src.startsWith('data:image/')) continue;
+        else if (SCHEME.test(src) || !src) image.removeAttribute('src');
         else {
             const path = links.relative === false ? null : resolveLibraryPath(documentPath, src);
-            if (path === null)
-                image.removeAttribute('src');
-            else
-                image.setAttribute('src', links.file(path));
+            if (path === null) image.removeAttribute('src');
+            else image.setAttribute('src', links.file(path));
         }
     }
     return { fragment, headings, externalImages };
@@ -163,8 +159,7 @@ function rewriteLink(anchor: HTMLAnchorElement, documentPath: string, links: Mar
         anchor.removeAttribute('href');
         return;
     }
-    if (/[\\/]$/.test(href.split(/[?#]/)[0]))
-        anchor.setAttribute('href', links.folder(path));
+    if (/[\\/]$/.test(href.split(/[?#]/)[0])) anchor.setAttribute('href', links.folder(path));
     else if (links.viewable(path)) {
         anchor.setAttribute('href', links.view(path));
         anchor.dataset['path'] = path;
@@ -207,30 +202,37 @@ export function showExternalImages(root: ParentNode): void {
 /** Highlights the code blocks of `root` whose language is named (```js), each language loaded on demand. */
 export async function highlightFences(root: ParentNode): Promise<void> {
     const blocks = [...root.querySelectorAll<HTMLElement>('pre > code[class*="language-"]')];
-    await Promise.all(blocks.map(async code => {
-        const name = /language-(\S+)/.exec(code.className)?.[1] ?? '';
-        const description = languageForName(name);
-        if (!description)
-            return;
-        let support;
-        try {
-            support = await description.load();
-        } catch {
-            return;     // plain, as it is
-        }
-        const text = code.textContent ?? '';
-        const tree = support.language.parser.parse(text);
-        const highlighted = document.createDocumentFragment();
-        highlightCode(text, tree, classHighlighter, (part, classes) => {
-            if (!classes) {
-                highlighted.append(part);
-                return;
+    await Promise.all(
+        blocks.map(async (code) => {
+            const name = /language-(\S+)/.exec(code.className)?.[1] ?? '';
+            const description = languageForName(name);
+            if (!description) return;
+            let support;
+            try {
+                support = await description.load();
+            } catch {
+                return; // plain, as it is
             }
-            const span = document.createElement('span');
-            span.className = classes;
-            span.textContent = part;
-            highlighted.append(span);
-        }, () => highlighted.append('\n'));
-        code.replaceChildren(highlighted);
-    }));
+            const text = code.textContent ?? '';
+            const tree = support.language.parser.parse(text);
+            const highlighted = document.createDocumentFragment();
+            highlightCode(
+                text,
+                tree,
+                classHighlighter,
+                (part, classes) => {
+                    if (!classes) {
+                        highlighted.append(part);
+                        return;
+                    }
+                    const span = document.createElement('span');
+                    span.className = classes;
+                    span.textContent = part;
+                    highlighted.append(span);
+                },
+                () => highlighted.append('\n'),
+            );
+            code.replaceChildren(highlighted);
+        }),
+    );
 }

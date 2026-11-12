@@ -35,7 +35,7 @@ export class CopyPathService {
         const text = this.fullPath(path);
         try {
             await copyText(text);
-            this.copiedPaths.update(paths => new Set(paths).add(path));
+            this.copiedPaths.update((paths) => new Set(paths).add(path));
             this.toasts.show(`Copied ${text}`);
         } catch {
             this.toasts.error(`Could not copy ${text}`);
@@ -64,8 +64,7 @@ export async function copyText(text: string): Promise<void> {
     (document.querySelector('dialog[open]') ?? document.body).append(box);
     try {
         box.select();
-        if (!document.execCommand('copy'))
-            throw new Error('Copy refused');
+        if (!document.execCommand('copy')) throw new Error('Copy refused');
     } finally {
         box.remove();
     }

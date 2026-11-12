@@ -53,8 +53,8 @@ export function parseCsv(text: string, delimiter: CsvDelimiter = 'auto'): CsvTab
     });
     const problems = result.errors
         // One column (or nothing to guess from): read with commas, nothing is wrong.
-        .filter(error => error.code !== 'UndetectableDelimiter')
-        .map(error => ({ message: error.message, record: (error.row ?? 0) + 1 }));
+        .filter((error) => error.code !== 'UndetectableDelimiter')
+        .map((error) => ({ message: error.message, record: (error.row ?? 0) + 1 }));
     return { rows: result.data, delimiter: result.meta.delimiter, problems };
 }
 
@@ -75,8 +75,7 @@ export function isNumber(cell: string): boolean {
 
 /** A cell's value as a number, for sorting (`1,234.5` → 1234.5, `1.234,5` → 1234.5); NaN when it isn't one. */
 export function numberOf(cell: string): number {
-    if (!isNumber(cell))
-        return NaN;
+    if (!isNumber(cell)) return NaN;
     let text = cell.trim().replace(/%$/, '').replace(/[ ' ]/g, '');
     const comma = text.lastIndexOf(',');
     const dot = text.lastIndexOf('.');
@@ -98,16 +97,14 @@ export function numberOf(cell: string): number {
  */
 export function columnsOf(rows: readonly (readonly string[])[], header: boolean): CsvColumn[] {
     let count = 0;
-    for (const row of rows)
-        count = Math.max(count, row.length);
-    const names = header ? rows[0] ?? [] : [];
+    for (const row of rows) count = Math.max(count, row.length);
+    const names = header ? (rows[0] ?? []) : [];
     const records = rows.slice(header ? 1 : 0, (header ? 1 : 0) + SAMPLE_ROWS);
     const seen = new Set<string>();
     const columns: CsvColumn[] = [];
     for (let index = 0; index < count; index++) {
         let name = (names[index] ?? '').trim();
-        if (!name || seen.has(name))
-            name = columnLetters(index);
+        if (!name || seen.has(name)) name = columnLetters(index);
         seen.add(name);
         let longest = name.length + 2;
         let filled = 0;
@@ -117,11 +114,14 @@ export function columnsOf(rows: readonly (readonly string[])[], header: boolean)
             longest = Math.max(longest, cell.length);
             if (cell.trim()) {
                 filled++;
-                if (isNumber(cell))
-                    numbers++;
+                if (isNumber(cell)) numbers++;
             }
         }
-        columns.push({ name, width: Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, longest)) + 1, numeric: filled > 0 && numbers >= filled * 0.9 });
+        columns.push({
+            name,
+            width: Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, longest)) + 1,
+            numeric: filled > 0 && numbers >= filled * 0.9,
+        });
     }
     return columns;
 }
@@ -131,8 +131,7 @@ export function filterRecords(rows: readonly (readonly string[])[], first: numbe
     const needle = query.trim().toLowerCase();
     const found: number[] = [];
     for (let index = first; index < rows.length; index++) {
-        if (!needle || rows[index].some(cell => cell.toLowerCase().includes(needle)))
-            found.push(index);
+        if (!needle || rows[index].some((cell) => cell.toLowerCase().includes(needle))) found.push(index);
     }
     return found;
 }
@@ -143,37 +142,38 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
  * `records` sorted by `column` (numbers as numbers in a numeric column, text as people sort it, empty cells last
  * either way); equal ones keep the file's order.
  */
-export function sortRecords(records: readonly number[], rows: readonly (readonly string[])[], column: number, numeric: boolean, direction: SortDirection): number[] {
+export function sortRecords(
+    records: readonly number[],
+    rows: readonly (readonly string[])[],
+    column: number,
+    numeric: boolean,
+    direction: SortDirection,
+): number[] {
     const sign = direction === 'ascending' ? 1 : -1;
     const keys = new Map<number, number>();
-    if (numeric)
-        for (const index of records)
-            keys.set(index, numberOf(rows[index][column] ?? ''));
+    if (numeric) for (const index of records) keys.set(index, numberOf(rows[index][column] ?? ''));
     return [...records].sort((a, b) => {
         const left = rows[a][column] ?? '';
         const right = rows[b][column] ?? '';
-        if (!left.trim() || !right.trim())
-            return !left.trim() && !right.trim() ? a - b : !left.trim() ? 1 : -1;
+        if (!left.trim() || !right.trim()) return !left.trim() && !right.trim() ? a - b : !left.trim() ? 1 : -1;
         let order = 0;
         if (numeric) {
             const x = keys.get(a)!;
             const y = keys.get(b)!;
             order = Number.isNaN(x) || Number.isNaN(y) ? collator.compare(left, right) : x - y;
-        } else
-            order = collator.compare(left, right);
+        } else order = collator.compare(left, right);
         return order === 0 ? a - b : order * sign;
     });
 }
 
 /** A cell as shown: at most `CELL_LENGTH` characters, line breaks inside it as ↵. */
 export function shownCell(cell: string | undefined): string {
-    if (!cell)
-        return '';
+    if (!cell) return '';
     const short = cell.length > CELL_LENGTH ? `${cell.slice(0, CELL_LENGTH)}…` : cell;
     return short.replace(/\r?\n/g, ' ↵ ');
 }
 
 /** The separator in words (the status bar). */
 export function delimiterName(delimiter: string): string {
-    return DELIMITERS.find(choice => choice.id === delimiter)?.label.toLowerCase() ?? JSON.stringify(delimiter);
+    return DELIMITERS.find((choice) => choice.id === delimiter)?.label.toLowerCase() ?? JSON.stringify(delimiter);
 }

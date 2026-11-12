@@ -43,8 +43,7 @@ export function flipAspect(id: string): string | null {
 
 /** Width / height of the choice `id` for a picture of `size`; null without a ratio. */
 export function aspectRatio(id: string, size: Size): number | null {
-    if (id === 'original')
-        return size.width / size.height;
+    if (id === 'original') return size.width / size.height;
     const match = /^(\d+):(\d+)$/.exec(id);
     return match ? Number(match[1]) / Number(match[2]) : null;
 }
@@ -71,11 +70,14 @@ export function clampRect(rect: Rect, bounds: Size): Rect {
 
 /** The largest part of `rect` with the aspect `ratio`, around its center (a new ratio picked for the current frame). */
 export function fitAspect(rect: Rect, ratio: number | null, bounds: Size): Rect {
-    if (!ratio)
-        return clampRect(rect, bounds);
+    if (!ratio) return clampRect(rect, bounds);
     const width = Math.min(rect.width, rect.height * ratio);
     const height = width / ratio;
-    return withRatio({ x: rect.x + (rect.width - width) / 2, y: rect.y + (rect.height - height) / 2, width, height }, ratio, bounds);
+    return withRatio(
+        { x: rect.x + (rect.width - width) / 2, y: rect.y + (rect.height - height) / 2, width, height },
+        ratio,
+        bounds,
+    );
 }
 
 /**
@@ -83,14 +85,16 @@ export function fitAspect(rect: Rect, ratio: number | null, bounds: Size): Rect 
  * would cross an edge): picking a ratio, or turning it between landscape and portrait. Without a ratio, `rect` itself.
  */
 export function largestAround(rect: Rect, ratio: number | null, bounds: Size): Rect {
-    if (!ratio)
-        return clampRect(rect, bounds);
+    if (!ratio) return clampRect(rect, bounds);
     const largest = fitAspect(fullRect(bounds), ratio, bounds);
-    return clampRect({
-        ...largest,
-        x: rect.x + rect.width / 2 - largest.width / 2,
-        y: rect.y + rect.height / 2 - largest.height / 2,
-    }, bounds);
+    return clampRect(
+        {
+            ...largest,
+            x: rect.x + rect.width / 2 - largest.width / 2,
+            y: rect.y + rect.height / 2 - largest.height / 2,
+        },
+        bounds,
+    );
 }
 
 /**
@@ -98,9 +102,15 @@ export function largestAround(rect: Rect, ratio: number | null, bounds: Size): R
  * opposite one stays (a side keeps the frame centred across, with a ratio); the frame stays inside `bounds`, and keeps
  * `ratio` when there is one.
  */
-export function dragRect(start: Rect, handle: Handle, dx: number, dy: number, bounds: Size, ratio: number | null): Rect {
-    if (handle === 'move')
-        return clampRect({ ...start, x: start.x + dx, y: start.y + dy }, bounds);
+export function dragRect(
+    start: Rect,
+    handle: Handle,
+    dx: number,
+    dy: number,
+    bounds: Size,
+    ratio: number | null,
+): Rect {
+    if (handle === 'move') return clampRect({ ...start, x: start.x + dx, y: start.y + dy }, bounds);
 
     const horizontal = handle.includes('w') ? 'w' : handle.includes('e') ? 'e' : null;
     const vertical = handle.includes('n') ? 'n' : handle.includes('s') ? 's' : null;
@@ -108,30 +118,33 @@ export function dragRect(start: Rect, handle: Handle, dx: number, dy: number, bo
     let right = start.x + start.width;
     let top = start.y;
     let bottom = start.y + start.height;
-    if (horizontal === 'w')
-        left = clamp(left + dx, 0, right - 1);
-    else if (horizontal === 'e')
-        right = clamp(right + dx, left + 1, bounds.width);
-    if (vertical === 'n')
-        top = clamp(top + dy, 0, bottom - 1);
-    else if (vertical === 's')
-        bottom = clamp(bottom + dy, top + 1, bounds.height);
-    if (!ratio)
-        return clampRect({ x: left, y: top, width: right - left, height: bottom - top }, bounds);
+    if (horizontal === 'w') left = clamp(left + dx, 0, right - 1);
+    else if (horizontal === 'e') right = clamp(right + dx, left + 1, bounds.width);
+    if (vertical === 'n') top = clamp(top + dy, 0, bottom - 1);
+    else if (vertical === 's') bottom = clamp(bottom + dy, top + 1, bounds.height);
+    if (!ratio) return clampRect({ x: left, y: top, width: right - left, height: bottom - top }, bounds);
 
     // With a ratio, the side dragged decides; a corner follows the side that grew the most.
     let width = right - left;
     let height = bottom - top;
-    if (!vertical || horizontal && width / ratio >= height)
-        height = width / ratio;
-    else
-        width = height * ratio;
+    if (!vertical || (horizontal && width / ratio >= height)) height = width / ratio;
+    else width = height * ratio;
 
     // Room from the side or corner that stays (from the centre, for a side dragged alone).
     const centerX = start.x + start.width / 2;
     const centerY = start.y + start.height / 2;
-    const roomX = horizontal === 'w' ? right : horizontal === 'e' ? bounds.width - left : 2 * Math.min(centerX, bounds.width - centerX);
-    const roomY = vertical === 'n' ? bottom : vertical === 's' ? bounds.height - top : 2 * Math.min(centerY, bounds.height - centerY);
+    const roomX =
+        horizontal === 'w'
+            ? right
+            : horizontal === 'e'
+              ? bounds.width - left
+              : 2 * Math.min(centerX, bounds.width - centerX);
+    const roomY =
+        vertical === 'n'
+            ? bottom
+            : vertical === 's'
+              ? bounds.height - top
+              : 2 * Math.min(centerY, bounds.height - centerY);
     const scale = Math.min(1, roomX / width, roomY / height);
     width *= scale;
     height *= scale;
@@ -145,7 +158,12 @@ export function dragRect(start: Rect, handle: Handle, dx: number, dy: number, bo
  * The frame dragged out from the point `from` to `to` (a new frame drawn outside the current one), with the corner
  * under the pointer following it.
  */
-export function rectFromPoints(from: { x: number; y: number }, to: { x: number; y: number }, bounds: Size, ratio: number | null): Rect {
+export function rectFromPoints(
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    bounds: Size,
+    ratio: number | null,
+): Rect {
     const handle = `${to.y < from.y ? 'n' : 's'}${to.x < from.x ? 'w' : 'e'}` as Handle;
     const start = { x: clamp(from.x, 0, bounds.width), y: clamp(from.y, 0, bounds.height), width: 0, height: 0 };
     return dragRect(start, handle, to.x - start.x, to.y - start.y, bounds, ratio);
@@ -155,7 +173,10 @@ export function rectFromPoints(from: { x: number; y: number }, to: { x: number; 
 function withRatio(rect: Rect, ratio: number, bounds: Size): Rect {
     const width = clamp(Math.round(rect.width), 1, bounds.width);
     const height = clamp(Math.round(width / ratio), 1, bounds.height);
-    return clampRect({ ...rect, width: height === Math.round(width / ratio) ? width : Math.round(height * ratio), height }, bounds);
+    return clampRect(
+        { ...rect, width: height === Math.round(width / ratio) ? width : Math.round(height * ratio), height },
+        bounds,
+    );
 }
 
 function clamp(value: number, min: number, max: number): number {

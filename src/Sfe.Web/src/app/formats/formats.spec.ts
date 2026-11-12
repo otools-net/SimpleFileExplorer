@@ -1,5 +1,24 @@
 import { item } from '../../testing/fakes';
-import { ARCHIVE_FORMAT, CSV_FORMAT, EPUB_FORMAT, extensionOf, FLASH_FORMAT, isContainer, isExplorable, setArchives, setFlashMovies, formatOf, FORMATS, isViewable, JSON_FORMAT, PDF_FORMAT, SUBTITLES_FORMAT, MARKDOWN_FORMAT, PROSE_FORMAT, TEXT_FORMAT } from './formats';
+import {
+    ARCHIVE_FORMAT,
+    CSV_FORMAT,
+    EPUB_FORMAT,
+    extensionOf,
+    FLASH_FORMAT,
+    isContainer,
+    isExplorable,
+    setArchives,
+    setFlashMovies,
+    formatOf,
+    FORMATS,
+    isViewable,
+    JSON_FORMAT,
+    PDF_FORMAT,
+    SUBTITLES_FORMAT,
+    MARKDOWN_FORMAT,
+    PROSE_FORMAT,
+    TEXT_FORMAT,
+} from './formats';
 
 describe('formats', () => {
     it('keeps the viewer of the media the server classified', () => {
@@ -11,7 +30,16 @@ describe('formats', () => {
     });
 
     it('shows text files by extension or by their whole name, whatever the case', () => {
-        for (const name of ['server.log', 'Program.cs', 'app.JS', 'Dockerfile', '.gitignore', 'settings.yaml', 'film.ass', 'build.ps1'])
+        for (const name of [
+            'server.log',
+            'Program.cs',
+            'app.JS',
+            'Dockerfile',
+            '.gitignore',
+            'settings.yaml',
+            'film.ass',
+            'build.ps1',
+        ])
             expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(TEXT_FORMAT);
         // The server's extensions have no dot; the name decides anyway.
         expect(formatOf({ ...item('a/server.log', { kind: 'file' }), extension: 'log' })).toBe(TEXT_FORMAT);
@@ -42,7 +70,14 @@ describe('formats', () => {
         for (const name of ['events.jsonl', 'events.ndjson', 'config.json5'])
             expect(formatOf(item(`a/${name}`, { kind: 'file' })), name).toBe(TEXT_FORMAT);
         expect(JSON_FORMAT.profile).toBe('code');
-        expect(FORMATS.filter(format => format.edits).map(format => format.id)).toEqual(['text', 'prose', 'markdown', 'json', 'csv', 'subtitles']);
+        expect(FORMATS.filter((format) => format.edits).map((format) => format.id)).toEqual([
+            'text',
+            'prose',
+            'markdown',
+            'json',
+            'csv',
+            'subtitles',
+        ]);
     });
 
     it('shows comma, tab and pipe separated files as a table', () => {
@@ -98,12 +133,26 @@ describe('formats', () => {
 
         setArchives({ maxCompressedTarMegabytes: 10 });
         try {
-            for (const name of ['backup.zip', 'Photos.7Z', 'old.rar', 'src.tar', 'src.tar.gz', 'src.TGZ', 'logs.tar.xz', 'logs.tbz2'])
+            for (const name of [
+                'backup.zip',
+                'Photos.7Z',
+                'old.rar',
+                'src.tar',
+                'src.tar.gz',
+                'src.TGZ',
+                'logs.tar.xz',
+                'logs.tbz2',
+            ])
                 expect(formatOf(item(`a/${name}`, { kind: 'file', size: 1024 })), name).toBe(ARCHIVE_FORMAT);
             for (const name of ['dump.gz', 'dump.xz', 'dump.bz2', 'zip', '.zip', 'notes.txt'])
                 expect(isExplorable(item(`a/${name}`, { kind: 'file', size: 1024 })), name).toBe(false);
-            expect(isExplorable(item('a/big.tar.gz', { kind: 'file', size: 10 * 1024 * 1024 + 1 })), 'listing it would decompress all of it').toBe(false);
-            expect(isExplorable(item('a/ten.tar.gz', { kind: 'file', size: 10 * 1024 * 1024 })), 'up to the size').toBe(true);
+            expect(
+                isExplorable(item('a/big.tar.gz', { kind: 'file', size: 10 * 1024 * 1024 + 1 })),
+                'listing it would decompress all of it',
+            ).toBe(false);
+            expect(isExplorable(item('a/ten.tar.gz', { kind: 'file', size: 10 * 1024 * 1024 })), 'up to the size').toBe(
+                true,
+            );
             expect(isExplorable(item('a/folder.zip', { kind: 'directory' })), 'a folder named so').toBe(false);
             expect(ARCHIVE_FORMAT.page).toBe(true);
             expect(ARCHIVE_FORMAT.edits).toBeFalsy();
@@ -117,12 +166,17 @@ describe('formats', () => {
             expect(formatOf(report, { asArchive: true })).toBe(ARCHIVE_FORMAT);
             expect([book, report, item('a/comic.cbz', { kind: 'file' })].every(isContainer)).toBe(true);
             expect(isContainer(zip), 'an archive already').toBe(false);
-            expect(formatOf(item('a/notes.txt', { kind: 'file' }), { asArchive: true }), 'not a container').toBe(PROSE_FORMAT);
+            expect(formatOf(item('a/notes.txt', { kind: 'file' }), { asArchive: true }), 'not a container').toBe(
+                PROSE_FORMAT,
+            );
         } finally {
             setArchives(null);
         }
         expect(formatOf(zip)).toBeNull();
-        expect(formatOf(item('a/report.docx', { kind: 'file' }), { asArchive: true }), 'nor without the configuration').toBeNull();
+        expect(
+            formatOf(item('a/report.docx', { kind: 'file' }), { asArchive: true }),
+            'nor without the configuration',
+        ).toBeNull();
     });
 
     it('has no viewer for folders and other files, unless opened as text', () => {

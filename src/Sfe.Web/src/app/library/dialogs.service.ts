@@ -52,10 +52,8 @@ export class Dialogs {
      * changes the person keeps (false then).
      */
     closeAll(): boolean {
-        if (this.viewer()?.confirmLeave() === false)
-            return false;
-        for (const dialog of document.querySelectorAll('dialog[open]'))
-            (dialog as HTMLDialogElement).close();
+        if (this.viewer()?.confirmLeave() === false) return false;
+        for (const dialog of document.querySelectorAll('dialog[open]')) (dialog as HTMLDialogElement).close();
         return true;
     }
 }
@@ -65,7 +63,6 @@ export function registerDialog<T>(slot: (dialogs: Dialogs) => WritableSignal<T |
     const target = slot(inject(Dialogs));
     target.set(dialog);
     inject(DestroyRef).onDestroy(() => {
-        if (target() === dialog)
-            target.set(null);
+        if (target() === dialog) target.set(null);
     });
 }

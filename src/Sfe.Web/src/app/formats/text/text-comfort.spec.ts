@@ -16,11 +16,24 @@ describe('Text files: large files, following, encodings, changes elsewhere, posi
 
     const ALL: TextAccess = { overwrite: true, saveCopy: true, download: true, permanent: false };
     const text = (overrides: Partial<TextFile> = {}): TextFile => ({
-        text: 'one\ntwo\n', encoding: 'utf-8', lineEnding: 'lf', saveLineEnding: 'lf', version: 'v1', size: 8,
-        modified: '2026-10-18T10:00:00Z', access: ALL, ...overrides,
+        text: 'one\ntwo\n',
+        encoding: 'utf-8',
+        lineEnding: 'lf',
+        saveLineEnding: 'lf',
+        version: 'v1',
+        size: 8,
+        modified: '2026-10-18T10:00:00Z',
+        access: ALL,
+        ...overrides,
     });
     const part = (overrides: Partial<TextPart> = {}): TextPart => ({
-        text: 'middle\n', offset: 0, end: 7, size: 50_000_000, encoding: 'utf-8', modified: '2026-10-18T10:00:00Z', ...overrides,
+        text: 'middle\n',
+        offset: 0,
+        end: 7,
+        size: 50_000_000,
+        encoding: 'utf-8',
+        modified: '2026-10-18T10:00:00Z',
+        ...overrides,
     });
     const doc = () => EditorView.findFromDOM(element.querySelector<HTMLElement>('.cm-editor')!)!.state.doc.toString();
     const button = (selector: string) => element.querySelector<HTMLButtonElement>(selector)!;
@@ -48,7 +61,9 @@ describe('Text files: large files, following, encodings, changes elsewhere, posi
     beforeEach(async () => {
         localStorage.removeItem(POSITIONS_KEY);
         api = mockApi();
-        TestBed.configureTestingModule({ providers: testProviders(api, { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => true } }) });
+        TestBed.configureTestingModule({
+            providers: testProviders(api, { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => true } }),
+        });
         await loadConfig(api);
     });
 
@@ -63,12 +78,19 @@ describe('Text files: large files, following, encodings, changes elsewhere, posi
 
     it('reads a file too large to be read whole in parts at whole lines; a log from its end', async () => {
         api.textFile.mockRejectedValue(new ApiError(413, 'too large', null, 'too-large'));
-        api.textPart.mockResolvedValueOnce(part({ text: 'first\n', offset: 0, end: 262_000 }))
+        api.textPart
+            .mockResolvedValueOnce(part({ text: 'first\n', offset: 0, end: 262_000 }))
             .mockResolvedValueOnce(part({ text: 'second\n', offset: 262_000, end: 524_000 }))
             .mockResolvedValueOnce(part({ text: 'last\n', offset: 49_800_000, end: 50_000_000 }));
         await show('huge.txt');
 
-        expect(api.textPart).toHaveBeenLastCalledWith('Docs/huge.txt', 0, PART_BYTES, undefined, expect.any(AbortSignal));
+        expect(api.textPart).toHaveBeenLastCalledWith(
+            'Docs/huge.txt',
+            0,
+            PART_BYTES,
+            undefined,
+            expect.any(AbortSignal),
+        );
         expect(doc()).toBe('first\n');
         expect(element.querySelector('[data-part-range]')!.textContent).toContain('of 47.7 MB');
         expect(element.querySelector('sfe-text-edit-actions')).toBeNull();
@@ -76,7 +98,13 @@ describe('Text files: large files, following, encodings, changes elsewhere, posi
 
         button('[data-part="next"]').click();
         await stable();
-        expect(api.textPart).toHaveBeenLastCalledWith('Docs/huge.txt', 262_000, PART_BYTES, 'utf-8', expect.any(AbortSignal));
+        expect(api.textPart).toHaveBeenLastCalledWith(
+            'Docs/huge.txt',
+            262_000,
+            PART_BYTES,
+            'utf-8',
+            expect.any(AbortSignal),
+        );
         expect(doc()).toBe('second\n');
 
         button('[data-part="end"]').click();
@@ -96,10 +124,13 @@ describe('Text files: large files, following, encodings, changes elsewhere, posi
     });
 
     it('follows what is added to the end of a file, then reads it whole again', async () => {
-        api.textFile.mockResolvedValueOnce(text()).mockResolvedValue(text({ text: 'one\ntwo\nthree\nfour\n', version: 'v3', size: 19 }));
+        api.textFile
+            .mockResolvedValueOnce(text())
+            .mockResolvedValue(text({ text: 'one\ntwo\nthree\nfour\n', version: 'v3', size: 19 }));
         await show('app.log');
         vi.useFakeTimers({ shouldAdvanceTime: true });
-        api.textPart.mockResolvedValueOnce(part({ text: 'three\n', offset: 8, end: 14, size: 14 }))
+        api.textPart
+            .mockResolvedValueOnce(part({ text: 'three\n', offset: 8, end: 14, size: 14 }))
             .mockResolvedValueOnce(part({ text: '', offset: 14, end: 14, size: 14 }));
 
         button('[data-follow]').click();
@@ -123,7 +154,9 @@ describe('Text files: large files, following, encodings, changes elsewhere, posi
     });
 
     it('reads a file again in another encoding, and saves in the encoding and line endings chosen', async () => {
-        api.textFile.mockResolvedValueOnce(text({ text: 'cafÃ©\n' })).mockResolvedValueOnce(text({ text: 'café\n', encoding: 'windows-1252' }));
+        api.textFile
+            .mockResolvedValueOnce(text({ text: 'cafÃ©\n' }))
+            .mockResolvedValueOnce(text({ text: 'café\n', encoding: 'windows-1252' }));
         api.saveText.mockResolvedValue({ version: 'v2', size: 6, modified: '2026-10-18T11:00:00Z' });
         await show();
 
@@ -160,7 +193,9 @@ describe('Text files: large files, following, encodings, changes elsewhere, posi
         await stable();
         expect(element.querySelector<HTMLElement>('[data-bar]')!.dataset['bar']).toBe('disk');
 
-        [...element.querySelectorAll<HTMLButtonElement>('[data-bar] button')].find(b => b.textContent === 'Reload')!.click();
+        [...element.querySelectorAll<HTMLButtonElement>('[data-bar] button')]
+            .find((b) => b.textContent === 'Reload')!
+            .click();
         await stable();
         expect(doc()).toBe('theirs\n');
         expect(element.querySelector('[data-bar]')).toBeNull();
@@ -173,7 +208,9 @@ describe('Text files: large files, following, encodings, changes elsewhere, posi
         TestBed.inject(ChangeFeed).changed({ path: 'Docs', origin: 'another-tab' });
         await stable();
 
-        [...element.querySelectorAll<HTMLButtonElement>('[data-bar] button')].find(b => b.textContent === 'Keep this one')!.click();
+        [...element.querySelectorAll<HTMLButtonElement>('[data-bar] button')]
+            .find((b) => b.textContent === 'Keep this one')!
+            .click();
         await stable();
         TestBed.inject(ChangeFeed).changed({ path: 'Docs', origin: 'another-tab' });
         await stable();
@@ -184,20 +221,21 @@ describe('Text files: large files, following, encodings, changes elsewhere, posi
 
     it('opens a file where it was last read, remembering a hundred files at most', async () => {
         writePosition('Docs/notes.txt', 40);
-        api.textFile.mockResolvedValue(text({ text: Array.from({ length: 80 }, (_, i) => `line ${i + 1}`).join('\n') }));
+        api.textFile.mockResolvedValue(
+            text({ text: Array.from({ length: 80 }, (_, i) => `line ${i + 1}`).join('\n') }),
+        );
         await show();
 
         expect(element.querySelector('.text-status')!.textContent).toContain('Ln 40, Col 1');
 
-        for (let i = 0; i < 100; i++)
-            writePosition(`Docs/${i}.txt`, 2);
+        for (let i = 0; i < 100; i++) writePosition(`Docs/${i}.txt`, 2);
         expect(readPosition('Docs/notes.txt')).toBeNull();
         expect(readPosition('Docs/99.txt')).toBe(2);
         writePosition('Docs/99.txt', 1);
         expect(readPosition('Docs/99.txt')).toBeNull();
     });
 
-    it('shows the library\'s own extensions as text', () => {
+    it("shows the library's own extensions as text", () => {
         expect(isTextFile(item('Data/run.out', { kind: 'file' }))).toBe(false);
         setTextExtensions(['out', '.DAT']);
         expect(isTextFile(item('Data/run.out', { kind: 'file' }))).toBe(true);

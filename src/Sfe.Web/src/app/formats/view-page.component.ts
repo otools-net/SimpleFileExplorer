@@ -69,28 +69,34 @@ export class ViewPageComponent implements OnInit {
     protected readonly format = signal<FileFormat | null>(null);
     protected readonly component = signal<Type<unknown> | null>(null);
     protected readonly folderUrl = computed(() => `./?${new URLSearchParams({ path: parentPath(this.path) })}`);
-    protected readonly folderName = computed(() => baseName(parentPath(this.path)) || this.config.config()?.rootName || 'the root');
+    protected readonly folderName = computed(
+        () => baseName(parentPath(this.path)) || this.config.config()?.rootName || 'the root',
+    );
     protected readonly meta = computed(() => {
         const item = this.item();
-        return item ? joinParts([formatSize(item.size), formatDate(item.modified), parentPath(this.path)], '  ·  ') : '';
+        return item
+            ? joinParts([formatSize(item.size), formatDate(item.modified), parentPath(this.path)], '  ·  ')
+            : '';
     });
 
     private readonly guards = new Set<() => boolean>();
     private readonly host: FileViewHost = {
         place: 'page',
-        can: right => this.config.can(right),
-        guard: canLeave => {
+        can: (right) => this.config.can(right),
+        guard: (canLeave) => {
             this.guards.add(canLeave);
             return () => this.guards.delete(canLeave);
         },
     };
-    protected readonly viewInjector = Injector.create({ providers: [{ provide: FILE_VIEW_HOST, useValue: this.host }], parent: inject(Injector) });
+    protected readonly viewInjector = Injector.create({
+        providers: [{ provide: FILE_VIEW_HOST, useValue: this.host }],
+        parent: inject(Injector),
+    });
 
     /** The route's question: the file shown may be left (nothing unsaved, or the person agrees). */
     canLeave(): boolean {
         for (const canLeave of this.guards) {
-            if (!canLeave())
-                return false;
+            if (!canLeave()) return false;
         }
         return true;
     }
@@ -107,8 +113,7 @@ export class ViewPageComponent implements OnInit {
             item = (await this.api.properties(this.path)).item;
         } catch (error) {
             // Not signed in, or the server is not set up: the sign-in or setup page opens instead.
-            if (redirected(error))
-                return;
+            if (redirected(error)) return;
             if (error instanceof ApiError && (error.status === 404 || error.status === 403)) {
                 this.state.set('missing');
                 return;
@@ -117,7 +122,9 @@ export class ViewPageComponent implements OnInit {
             this.state.set('unreachable');
             return;
         }
-        const format = this.config.can(Rights.viewFiles) ? formatOf(item, { asText: this.asText, asArchive: this.asArchive }) : null;
+        const format = this.config.can(Rights.viewFiles)
+            ? formatOf(item, { asText: this.asText, asArchive: this.asArchive })
+            : null;
         if (!format) {
             this.state.set('unviewable');
             return;

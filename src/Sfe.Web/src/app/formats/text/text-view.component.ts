@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    input,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { Api, ApiError } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { formatSize } from '../../core/format';
@@ -47,7 +59,15 @@ interface Part {
  */
 @Component({
     selector: 'sfe-text-view',
-    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
+    imports: [
+        IconComponent,
+        ReadingPanelComponent,
+        TextEditActionsComponent,
+        TextEditBarComponent,
+        OverflowRowDirective,
+        OverflowItemDirective,
+        OverflowMoreComponent,
+    ],
     providers: [TextSession],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -176,21 +196,86 @@ export class TextViewComponent {
             const first = !shown || shown.offset === 0 || this.loadingPart();
             const last = !shown || shown.end >= shown.size || this.loadingPart();
             return {
-                id: 'parts', label: 'Parts of the file', icon: 'rows', title: 'Another part of the file (too large to be read whole)',
+                id: 'parts',
+                label: 'Parts of the file',
+                icon: 'rows',
+                title: 'Another part of the file (too large to be read whole)',
                 submenu: () => [
-                    { id: 'part-start', label: 'Start', icon: 'up', title: 'The start of the file', disabled: first, run: () => void this.openPart(0) },
-                    { id: 'part-previous', label: 'Earlier', icon: 'left', title: 'The part before', disabled: first, run: () => this.previousPart() },
-                    { id: 'part-next', label: 'Later', icon: 'right', title: 'The part after', disabled: last, run: () => void this.openPart(shown!.end) },
-                    { id: 'part-end', label: 'End', icon: 'down', title: 'The end of the file', disabled: last, run: () => void this.openPart(-1) },
+                    {
+                        id: 'part-start',
+                        label: 'Start',
+                        icon: 'up',
+                        title: 'The start of the file',
+                        disabled: first,
+                        run: () => void this.openPart(0),
+                    },
+                    {
+                        id: 'part-previous',
+                        label: 'Earlier',
+                        icon: 'left',
+                        title: 'The part before',
+                        disabled: first,
+                        run: () => this.previousPart(),
+                    },
+                    {
+                        id: 'part-next',
+                        label: 'Later',
+                        icon: 'right',
+                        title: 'The part after',
+                        disabled: last,
+                        run: () => void this.openPart(shown!.end),
+                    },
+                    {
+                        id: 'part-end',
+                        label: 'End',
+                        icon: 'down',
+                        title: 'The end of the file',
+                        disabled: last,
+                        run: () => void this.openPart(-1),
+                    },
                 ],
             };
         },
-        follow: (): MenuEntry => ({ id: 'follow', label: 'Follow', icon: 'down', title: 'Show what is added to the end of the file as it grows (a log being written)', checked: this.following(), run: () => this.toggleFollow() }),
-        wrap: (): MenuEntry => ({ id: 'wrap', label: 'Wrap long lines', icon: 'wrap', title: 'Wrap long lines', checked: this.own().wrap, run: () => this.toggle('wrap') }),
-        lineNumbers: (): MenuEntry => ({ id: 'lineNumbers', label: 'Line numbers', icon: 'line-numbers', title: 'Line numbers', checked: this.own().lineNumbers, run: () => this.toggle('lineNumbers') }),
+        follow: (): MenuEntry => ({
+            id: 'follow',
+            label: 'Follow',
+            icon: 'down',
+            title: 'Show what is added to the end of the file as it grows (a log being written)',
+            checked: this.following(),
+            run: () => this.toggleFollow(),
+        }),
+        wrap: (): MenuEntry => ({
+            id: 'wrap',
+            label: 'Wrap long lines',
+            icon: 'wrap',
+            title: 'Wrap long lines',
+            checked: this.own().wrap,
+            run: () => this.toggle('wrap'),
+        }),
+        lineNumbers: (): MenuEntry => ({
+            id: 'lineNumbers',
+            label: 'Line numbers',
+            icon: 'line-numbers',
+            title: 'Line numbers',
+            checked: this.own().lineNumbers,
+            run: () => this.toggle('lineNumbers'),
+        }),
         find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.editor?.find(), 'Find (Ctrl+F)'),
-        goToLine: (): MenuEntry => ({ id: 'goToLine', label: 'Go to line', icon: 'goto-line', shortcut: 'Ctrl+Alt+G', title: 'Go to line (Ctrl+Alt+G)', disabled: this.state() !== 'ready', run: () => this.editor?.goToLine() }),
-        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen()), 'Reading settings: font, size, width, colours'),
+        goToLine: (): MenuEntry => ({
+            id: 'goToLine',
+            label: 'Go to line',
+            icon: 'goto-line',
+            shortcut: 'Ctrl+Alt+G',
+            title: 'Go to line (Ctrl+Alt+G)',
+            disabled: this.state() !== 'ready',
+            run: () => this.editor?.goToLine(),
+        }),
+        reading: (): MenuEntry =>
+            readingEntry(
+                this.panelOpen(),
+                () => this.panelOpen.set(!this.panelOpen()),
+                'Reading settings: font, size, width, colours',
+            ),
     };
     private cancel: AbortSignal | null = null;
     private followTimer: ReturnType<typeof setTimeout> | undefined;
@@ -208,7 +293,8 @@ export class TextViewComponent {
     protected readonly style = computed(() => this.reading.style(this.profile()));
 
     protected readonly downloadUrl = computed(() =>
-        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
+        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,
+    );
     protected readonly partRange = computed(() => {
         const part = this.part();
         return part ? `${formatSize(part.offset)} – ${formatSize(part.end)} of ${formatSize(part.size)}` : '';
@@ -234,26 +320,22 @@ export class TextViewComponent {
             const { wrap, lineNumbers } = this.own();
             this.reading.linkFonts(this.profile());
             const editor = this.editor;
-            if (this.state() === 'ready' && editor)
-                untracked(() => editor.configure({ wrap, lineNumbers }));
+            if (this.state() === 'ready' && editor) untracked(() => editor.configure({ wrap, lineNumbers }));
         });
         // A new font, size or spacing changes the height of the lines: the editor measures them again.
         effect(() => {
             this.style();
-            if (this.state() === 'ready')
-                untracked(() => this.editor?.remeasure());
+            if (this.state() === 'ready') untracked(() => this.editor?.remeasure());
         });
     }
 
     private async load(item: LibraryItem, cancel: AbortSignal): Promise<void> {
-        if (this.editor || this.state() !== 'loading')
-            return;
+        if (this.editor || this.state() !== 'loading') return;
         let file: TextFile;
         try {
             file = await this.fileSource.textFile(item, cancel);
         } catch (error) {
-            if (cancel.aborted)
-                return;
+            if (cancel.aborted) return;
             if (error instanceof ApiError && error.status === 413 && this.fileSource.library) {
                 // Too large to be read whole: in parts, a log from its end.
                 await this.openPart(extensionOf(item) === 'log' ? -1 : 0);
@@ -262,18 +344,15 @@ export class TextViewComponent {
             this.fail(error);
             return;
         }
-        if (cancel.aborted)
-            return;
+        if (cancel.aborted) return;
         this.session.attach(item, file);
         this.editor = this.createEditor(file.text, true);
         this.session.setEditor(this.editor);
         this.state.set('ready');
-        if (untracked(this.edit))
-            this.session.startEdit();
+        if (untracked(this.edit)) this.session.startEdit();
         // Where it was last read in this browser (not a new file, opened to be written).
         const line = untracked(this.edit) ? null : readPosition(item.path);
-        if (line)
-            this.editor.scrollToLine(line);
+        if (line) this.editor.scrollToLine(line);
         await this.highlight(item);
     }
 
@@ -314,26 +393,26 @@ export class TextViewComponent {
         const item = this.item();
         this.loadingPart.set(true);
         try {
-            const part = await this.api.textPart(item.path, offset, length, this.part()?.encoding, this.cancel ?? undefined);
+            const part = await this.api.textPart(
+                item.path,
+                offset,
+                length,
+                this.part()?.encoding,
+                this.cancel ?? undefined,
+            );
             this.part.set({ offset: part.offset, end: part.end, size: part.size, encoding: part.encoding });
-            if (this.editor)
-                this.editor.replace(part.text);
+            if (this.editor) this.editor.replace(part.text);
             else {
                 this.editor = this.createEditor(part.text, false);
                 this.state.set('ready');
                 void this.highlight(item);
             }
-            if (offset < 0)
-                this.editor.scrollToEnd();
-            else
-                this.editor.scrollToLine(1);
+            if (offset < 0) this.editor.scrollToEnd();
+            else this.editor.scrollToLine(1);
         } catch (error) {
-            if (this.cancel?.aborted)
-                return;
-            if (!this.editor)
-                this.fail(error);
-            else
-                this.message.set((error as Error).message);
+            if (this.cancel?.aborted) return;
+            if (!this.editor) this.fail(error);
+            else this.message.set((error as Error).message);
         } finally {
             this.loadingPart.set(false);
         }
@@ -342,28 +421,23 @@ export class TextViewComponent {
     /** The part ending where the one shown starts. */
     protected previousPart(): void {
         const part = this.part();
-        if (!part)
-            return;
+        if (!part) return;
         const from = Math.max(0, part.offset - PART_BYTES);
         void this.openPart(from, part.offset - from);
     }
 
     protected toggleFollow(): void {
-        if (this.following())
-            this.stopFollowing();
-        else
-            void this.startFollowing();
+        if (this.following()) this.stopFollowing();
+        else void this.startFollowing();
     }
 
     /** Shows what is added to the end of the file every few seconds (tail -f); read only meanwhile. */
     private async startFollowing(): Promise<void> {
-        if (this.session.dirty() || this.session.editing())
-            return;
+        if (this.session.dirty() || this.session.editing()) return;
         this.following.set(true);
         this.session.following.set(true);
         const part = this.part();
-        if (part && part.end < part.size)
-            await this.openPart(-1);
+        if (part && part.end < part.size) await this.openPart(-1);
         this.followFrom = this.part()?.end ?? this.session.file()?.size ?? 0;
         this.editor?.scrollToEnd();
         this.followTimer = setTimeout(() => void this.follow(), FOLLOW_MS);
@@ -374,40 +448,39 @@ export class TextViewComponent {
         this.following.set(false);
         this.session.following.set(false);
         // Read whole: its text and version as they are now, for a save.
-        if (!this.part())
-            void this.session.reload().then(() => this.editor?.scrollToEnd());
+        if (!this.part()) void this.session.reload().then(() => this.editor?.scrollToEnd());
     }
 
     private async follow(): Promise<void> {
-        if (!this.following())
-            return;
+        if (!this.following()) return;
         let next = FOLLOW_MS;
         try {
             const encoding = this.part()?.encoding ?? readEncoding(this.session.file()?.encoding);
-            const added = await this.api.textPart(this.item().path, this.followFrom, PART_BYTES, encoding, this.cancel ?? undefined);
-            if (!this.following())
-                return;
+            const added = await this.api.textPart(
+                this.item().path,
+                this.followFrom,
+                PART_BYTES,
+                encoding,
+                this.cancel ?? undefined,
+            );
+            if (!this.following()) return;
             if (added.size < this.followFrom) {
                 // Emptied or started anew (a log rotated): from its new end, or read whole again.
-                if (this.part())
-                    await this.openPart(-1);
-                else
-                    await this.session.reload();
+                if (this.part()) await this.openPart(-1);
+                else await this.session.reload();
                 this.followFrom = this.part()?.end ?? this.session.file()?.size ?? 0;
                 this.editor?.scrollToEnd();
             } else if (added.end > this.followFrom) {
                 this.editor?.append(added.text, this.part() ? FOLLOW_LIMIT : Infinity);
                 this.followFrom = added.end;
-                this.part.update(part => part && { ...part, end: added.end, size: added.size });
+                this.part.update((part) => part && { ...part, end: added.end, size: added.size });
                 // More waiting than a part holds: the next one at once.
-                if (added.end < added.size)
-                    next = 0;
+                if (added.end < added.size) next = 0;
             }
         } catch {
             // Not reachable for a moment, or gone: tried again (opening it again tells what happened).
         }
-        if (this.following())
-            this.followTimer = setTimeout(() => void this.follow(), next);
+        if (this.following()) this.followTimer = setTimeout(() => void this.follow(), next);
     }
 
     private fail(error: unknown): void {
@@ -443,11 +516,16 @@ export class TextViewComponent {
 
     /** Ctrl+= / Ctrl+− / Ctrl+0 inside the view: the text's size, rather than the whole page's zoom. */
     protected onKeydown(event: KeyboardEvent): void {
-        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented)
-            return;
-        const step = event.key === '=' || event.key === '+' ? 1 : event.key === '-' || event.key === '_' ? -1 : event.key === '0' ? 0 : null;
-        if (step === null)
-            return;
+        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented) return;
+        const step =
+            event.key === '=' || event.key === '+'
+                ? 1
+                : event.key === '-' || event.key === '_'
+                  ? -1
+                  : event.key === '0'
+                    ? 0
+                    : null;
+        if (step === null) return;
         event.preventDefault();
         this.reading.changeSize(this.profile(), step);
     }
@@ -457,10 +535,8 @@ export class TextViewComponent {
      * E edits.
      */
     protected onWindowKeydown(event: KeyboardEvent): void {
-        if (this.session.handleKey(event))
-            return;
-        if (event.defaultPrevented || !this.editor || !(event.ctrlKey || event.metaKey) || event.shiftKey)
-            return;
+        if (this.session.handleKey(event)) return;
+        if (event.defaultPrevented || !this.editor || !(event.ctrlKey || event.metaKey) || event.shiftKey) return;
         const key = event.key.toLowerCase();
         if (key === 'f' && !event.altKey) {
             event.preventDefault();

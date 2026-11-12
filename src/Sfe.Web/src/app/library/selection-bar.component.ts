@@ -111,22 +111,32 @@ export class SelectionBarComponent {
 
     protected readonly count = computed(() => this.store.selection().size);
     private readonly selected = computed(() => this.store.selectedItems());
-    protected readonly files = computed(() => this.selected().filter(item => item.kind !== 'directory').length);
+    protected readonly files = computed(() => this.selected().filter((item) => item.kind !== 'directory').length);
     private readonly folders = computed(() => this.selected().length - this.files());
     protected readonly loaded = computed(() => this.store.items().length);
     protected readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     /** The count when the bar is narrow: "15 selected". */
     protected readonly shortCountText = computed(() => `${this.count()} selected`);
     protected readonly countText = computed(() => {
-        const parts = joinParts([this.folders() ? plural(this.folders(), 'folder') : null, this.files() ? plural(this.files(), 'file') : null], ' and ');
+        const parts = joinParts(
+            [
+                this.folders() ? plural(this.folders(), 'folder') : null,
+                this.files() ? plural(this.files(), 'file') : null,
+            ],
+            ' and ',
+        );
         return `${parts || plural(this.count(), 'item')} selected`;
     });
-    protected readonly allTitle = computed(() => this.store.hasMore()
-        ? `Select the ${plural(this.loaded(), 'item')} loaded so far (Ctrl+A). Scroll down to load more.`
-        : 'Select every file and folder listed (Ctrl+A)');
-    protected readonly tagsTitle = computed(() => this.folders()
-        ? 'Add or remove tags on the selected files (the folders selected are left out)'
-        : 'Add or remove tags on the selected files');
+    protected readonly allTitle = computed(() =>
+        this.store.hasMore()
+            ? `Select the ${plural(this.loaded(), 'item')} loaded so far (Ctrl+A). Scroll down to load more.`
+            : 'Select every file and folder listed (Ctrl+A)',
+    );
+    protected readonly tagsTitle = computed(() =>
+        this.folders()
+            ? 'Add or remove tags on the selected files (the folders selected are left out)'
+            : 'Add or remove tags on the selected files',
+    );
     /** The only item selected, when it may be renamed. */
     protected readonly renamable = computed(() => {
         const selected = this.selected();
@@ -134,53 +144,122 @@ export class SelectionBarComponent {
     });
 
     /** Several selected that may be renamed (in a folder, not a search: names are compared with the folder's). */
-    protected readonly renamableTogether = computed(() =>
-        !this.store.searching() && this.selected().filter(item => this.menu.canRename(item)).length > 1);
+    protected readonly renamableTogether = computed(
+        () => !this.store.searching() && this.selected().filter((item) => this.menu.canRename(item)).length > 1,
+    );
 
-    protected readonly movable = computed(() => this.selected().some(item => this.transfers.canMove(item)));
-    protected readonly copyable = computed(() => this.selected().some(item => this.transfers.canCopy(item)));
+    protected readonly movable = computed(() => this.selected().some((item) => this.transfers.canMove(item)));
+    protected readonly copyable = computed(() => this.selected().some((item) => this.transfers.canCopy(item)));
     /** Some of the selection may go in a zip (only those do), and the dialog is there. */
-    protected readonly compressible = computed(() => Boolean(this.dialogs.compress()) && this.selected().some(item => this.transfers.canCompress(item)));
+    protected readonly compressible = computed(
+        () => Boolean(this.dialogs.compress()) && this.selected().some((item) => this.transfers.canCompress(item)),
+    );
 
     /** Extract: one archive selected, its dialog; several (all archives), each beside it; null otherwise. */
     protected readonly extractable = computed(() => {
         const selected = this.selected();
         if (selected.length === 1 && this.transfers.canExtract(selected[0]) && this.dialogs.extract())
-            return { label: 'Extract…', title: `Extract ${selected[0].name} into a folder picked next, with its password if it has one` };
+            return {
+                label: 'Extract…',
+                title: `Extract ${selected[0].name} into a folder picked next, with its password if it has one`,
+            };
         if (this.transfers.canExtractEach(selected))
-            return { label: 'Extract', title: `Extract the ${selected.length} archives here, each into a new folder named after it` };
+            return {
+                label: 'Extract',
+                title: `Extract the ${selected.length} archives here, each into a new folder named after it`,
+            };
         return null;
     });
 
     /** Some of the selection may be deleted (only those are, the confirmation names them). */
-    protected readonly deletable = computed(() => this.selected().some(item => this.fileActions.canDelete(item)));
-    protected readonly deleteTitle = computed(() => this.fileActions.alwaysPermanent
-        ? 'Delete the selected items for good (Delete)'
-        : 'Move the selected items to the trash (Delete; Shift+Delete: for good)');
+    protected readonly deletable = computed(() => this.selected().some((item) => this.fileActions.canDelete(item)));
+    protected readonly deleteTitle = computed(() =>
+        this.fileActions.alwaysPermanent
+            ? 'Delete the selected items for good (Delete)'
+            : 'Move the selected items to the trash (Delete; Shift+Delete: for good)',
+    );
 
     /** Some of the selection may be downloaded (only those are). */
-    protected readonly downloadable = computed(() => this.selected().some(item => this.downloads.canDownload(item)));
-    protected readonly downloadTitle = computed(() => this.downloads.isZip(this.selected())
-        ? 'Save the selected items to this device, in one zip file (folders with everything in them)'
-        : 'Save the selected file to this device');
+    protected readonly downloadable = computed(() => this.selected().some((item) => this.downloads.canDownload(item)));
+    protected readonly downloadTitle = computed(() =>
+        this.downloads.isZip(this.selected())
+            ? 'Save the selected items to this device, in one zip file (folders with everything in them)'
+            : 'Save the selected file to this device',
+    );
 
     /** What the buttons that may leave the bar are in its "⋯" menu: the same actions, titles and keys. */
     protected readonly more = {
-        quickLinks: (): MenuEntry => ({ id: 'quickLinks', label: 'Add to quick links', icon: 'pin', title: 'Add the selected items to the quick links (or drag them onto the sidebar)', run: () => this.pinSelection() }),
-        rename: (): MenuEntry => ({ id: 'rename', label: 'Rename…', icon: 'edit', shortcut: 'F2', title: `Give ${this.renamable()?.name} another name (F2)`, run: () => this.renameOne() }),
-        renameTogether: (): MenuEntry => ({ id: 'rename', label: 'Rename…', icon: 'edit', shortcut: 'F2', title: 'Rename the selected items together: find and replace, or numbered names (F2)', run: () => this.menu.renameSelection() }),
-        delete: (): MenuEntry => ({ id: 'delete', label: this.fileActions.alwaysPermanent ? 'Delete permanently…' : 'Delete…', icon: 'trash', shortcut: 'Del', title: this.deleteTitle(), run: () => this.deleteSelection() }),
-        move: (): MenuEntry => ({ id: 'move', label: 'Move to…', icon: 'move', title: 'Move the selected items to another folder (Ctrl+X, then Ctrl+V there; or drag them onto a folder)', run: () => this.transfers.pick('move', this.store.selectedItems()) }),
-        copy: (): MenuEntry => ({ id: 'copy', label: 'Copy to…', icon: 'copy', title: 'Copy the selected items into another folder (Ctrl+C, then Ctrl+V there; or drag them onto a folder with Ctrl)', run: () => this.transfers.pick('copy', this.store.selectedItems()) }),
-        download: (): MenuEntry => ({ id: 'download', label: 'Download', icon: 'download', title: this.downloadTitle(), run: () => this.downloadSelection() }),
-        extract: (): MenuEntry => ({ id: 'extract', label: this.extractable()?.label ?? 'Extract', icon: 'extract', title: this.extractable()?.title ?? '', run: () => this.extractSelection() }),
-        compress: (): MenuEntry => ({ id: 'compress', label: 'Compress…', icon: 'compress', title: 'Put the selected items in a zip in this folder', run: () => this.compressSelection() }),
+        quickLinks: (): MenuEntry => ({
+            id: 'quickLinks',
+            label: 'Add to quick links',
+            icon: 'pin',
+            title: 'Add the selected items to the quick links (or drag them onto the sidebar)',
+            run: () => this.pinSelection(),
+        }),
+        rename: (): MenuEntry => ({
+            id: 'rename',
+            label: 'Rename…',
+            icon: 'edit',
+            shortcut: 'F2',
+            title: `Give ${this.renamable()?.name} another name (F2)`,
+            run: () => this.renameOne(),
+        }),
+        renameTogether: (): MenuEntry => ({
+            id: 'rename',
+            label: 'Rename…',
+            icon: 'edit',
+            shortcut: 'F2',
+            title: 'Rename the selected items together: find and replace, or numbered names (F2)',
+            run: () => this.menu.renameSelection(),
+        }),
+        delete: (): MenuEntry => ({
+            id: 'delete',
+            label: this.fileActions.alwaysPermanent ? 'Delete permanently…' : 'Delete…',
+            icon: 'trash',
+            shortcut: 'Del',
+            title: this.deleteTitle(),
+            run: () => this.deleteSelection(),
+        }),
+        move: (): MenuEntry => ({
+            id: 'move',
+            label: 'Move to…',
+            icon: 'move',
+            title: 'Move the selected items to another folder (Ctrl+X, then Ctrl+V there; or drag them onto a folder)',
+            run: () => this.transfers.pick('move', this.store.selectedItems()),
+        }),
+        copy: (): MenuEntry => ({
+            id: 'copy',
+            label: 'Copy to…',
+            icon: 'copy',
+            title: 'Copy the selected items into another folder (Ctrl+C, then Ctrl+V there; or drag them onto a folder with Ctrl)',
+            run: () => this.transfers.pick('copy', this.store.selectedItems()),
+        }),
+        download: (): MenuEntry => ({
+            id: 'download',
+            label: 'Download',
+            icon: 'download',
+            title: this.downloadTitle(),
+            run: () => this.downloadSelection(),
+        }),
+        extract: (): MenuEntry => ({
+            id: 'extract',
+            label: this.extractable()?.label ?? 'Extract',
+            icon: 'extract',
+            title: this.extractable()?.title ?? '',
+            run: () => this.extractSelection(),
+        }),
+        compress: (): MenuEntry => ({
+            id: 'compress',
+            label: 'Compress…',
+            icon: 'compress',
+            title: 'Put the selected items in a zip in this folder',
+            run: () => this.compressSelection(),
+        }),
     };
 
     protected extractSelection(): void {
         const selected = this.selected();
-        if (selected.length === 1)
-            this.dialogs.extract()?.open({ path: selected[0].path, name: selected[0].name });
+        if (selected.length === 1) this.dialogs.extract()?.open({ path: selected[0].path, name: selected[0].name });
         else if (this.transfers.canExtractEach(selected)) {
             void this.transfers.extractEach(selected);
             this.store.clearSelection();
@@ -188,13 +267,12 @@ export class SelectionBarComponent {
     }
 
     protected compressSelection(): void {
-        this.dialogs.compress()?.open(this.store.selectedItems().filter(item => this.transfers.canCompress(item)));
+        this.dialogs.compress()?.open(this.store.selectedItems().filter((item) => this.transfers.canCompress(item)));
     }
 
     private renameOne(): void {
         const item = this.renamable();
-        if (item)
-            this.rename(item);
+        if (item) this.rename(item);
     }
 
     protected downloadSelection(): void {
@@ -206,7 +284,7 @@ export class SelectionBarComponent {
     }
 
     protected pinSelection(): void {
-        void this.quickLinks.add(this.store.selectedItems().map(item => item.path));
+        void this.quickLinks.add(this.store.selectedItems().map((item) => item.path));
     }
 
     protected rename(item: LibraryItem): void {
@@ -215,9 +293,7 @@ export class SelectionBarComponent {
 
     protected tagSelection(): void {
         const items = this.store.selectedFiles();
-        if (items.length === 1)
-            this.dialogs.fileTags()?.open(items[0]);
-        else if (items.length)
-            this.dialogs.filesTags()?.open(items);
+        if (items.length === 1) this.dialogs.fileTags()?.open(items[0]);
+        else if (items.length) this.dialogs.filesTags()?.open(items);
     }
 }

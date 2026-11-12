@@ -14,23 +14,43 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    transition: background .15s, border-color .15s, transform .15s;
+    transition:
+        background 0.15s,
+        border-color 0.15s,
+        transform 0.15s;
 }
 
-.folder:hover { background: var(--surface-2); border-color: color-mix(in srgb, var(--folder) 45%, var(--border)); }
-.folder .icon { fill: color-mix(in srgb, var(--folder) 85%, transparent); stroke: none; width: 22px; height: 22px; }
-.folder .item-name { font-weight: 600; line-height: 1.25; }
+.folder:hover {
+    background: var(--surface-2);
+    border-color: color-mix(in srgb, var(--folder) 45%, var(--border));
+}
+.folder .icon {
+    fill: color-mix(in srgb, var(--folder) 85%, transparent);
+    stroke: none;
+    width: 22px;
+    height: 22px;
+}
+.folder .item-name {
+    font-weight: 600;
+    line-height: 1.25;
+}
 
 /*
  * Grid and one-per-row views: folders are cards showing their first pictures (`Browse:FolderPictures`), like a
  * Windows media folder, in as square a grid as the count allows (2×2 for 4; FolderCoverComponent sets `--cover-columns` and
  * `--cover-rows`). A folder without pictures keeps the same size, with its icon in the picture area.
  */
-.folders.covers { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.folders.covers {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 14px;
+}
 
 /* Two cards side by side on a phone. */
 @media (max-width: 760px) {
-    .folders.covers { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+    .folders.covers {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
 }
 
 .folders.covers .folder {
@@ -42,7 +62,10 @@
     border-radius: var(--radius);
 }
 
-.folders.covers .folder:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.folders.covers .folder:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+}
 
 .folder-cover {
     position: relative;
@@ -64,8 +87,14 @@
     margin: auto;
 }
 
-.folder-cover.has-media > .icon { display: none; }
-.folder-cover .cell { position: relative; overflow: hidden; background: var(--surface-3); }
+.folder-cover.has-media > .icon {
+    display: none;
+}
+.folder-cover .cell {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface-3);
+}
 
 .folder-cover .cell img {
     position: absolute;
@@ -74,13 +103,25 @@
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    transition: opacity .25s;
+    transition: opacity 0.25s;
 }
 
-.folder-cover .cell img.loaded { opacity: 1; }
+.folder-cover .cell img.loaded {
+    opacity: 1;
+}
 
-.folder-caption { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 9px 11px 11px; }
-.folder-caption .icon { flex: none; width: 18px; height: 18px; }
+.folder-caption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 9px 11px 11px;
+}
+.folder-caption .icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+}
 .folder-caption .item-name {
     display: -webkit-box;
     overflow: hidden;
@@ -106,12 +147,21 @@
     padding: 0 8px 8px;
     box-sizing: border-box;
     pointer-events: none;
-    transition: translate .15s;
+    transition: translate 0.15s;
 }
-.folders.covers .folder-item:hover .folder-cover-marks { translate: 0 -2px; }
-.folder-cover-marks .badge { position: static; }
-.folder-cover-marks .default-tags-badge { pointer-events: auto; }
-.folder-cover-marks .folder-count { font-variant-numeric: tabular-nums; text-transform: none; }
+.folders.covers .folder-item:hover .folder-cover-marks {
+    translate: 0 -2px;
+}
+.folder-cover-marks .badge {
+    position: static;
+}
+.folder-cover-marks .default-tags-badge {
+    pointer-events: auto;
+}
+.folder-cover-marks .folder-count {
+    font-variant-numeric: tabular-nums;
+    text-transform: none;
+}
 .folder > .folder-count {
     flex: none;
     margin-left: auto;
@@ -135,53 +185,108 @@
     line-height: 16px;
     white-space: nowrap;
 }
-.folder > .exclusion-chip { margin-left: 4px; }
-.folder-caption .exclusion-chip { margin-left: auto; }
-
+.folder > .exclusion-chip {
+    margin-left: 4px;
+}
+.folder-caption .exclusion-chip {
+    margin-left: auto;
+}
 
 /* ---------- A folder's buttons (tags, ⋮) ---------- */
 
 /* A folder and its buttons share a box: a button can't be inside the link. */
-.folder-item { position: relative; display: grid; }
+.folder-item {
+    position: relative;
+    display: grid;
+}
 .folder-actions {
     position: absolute;
     z-index: 2;
     display: flex;
     gap: 4px;
-    transition: translate .15s;
+    transition: translate 0.15s;
 }
 
 /* Shown on hover, but for the default tags' icon, always there. */
-.folder-actions > :not(.default-tags-badge) { opacity: 0; transition: opacity .15s; }
-.folder-item:hover .folder-actions > *, .folder-item:focus-within .folder-actions > * { opacity: 1; }
-.folder-actions .icon-button { border-color: transparent; background: transparent; color: var(--text-muted); transition: background .15s; }
-.folder-actions .icon-button:hover { background: var(--surface-3); color: var(--text); }
-.folder-actions .icon { width: 16px; height: 16px; }
-
-/* At the end of a line. */
-.folder-item:not(:has(.card)) .folder-actions { top: 50%; right: 7px; translate: 0 -50%; }
-/* Room for its buttons (tags, ⋮: those it has). */
-.folder-item:not(:has(.card)) .folder { padding-right: 44px; }
-.folder-item:not(:has(.card)):has(.folder-actions > :not([hidden]):nth-of-type(2)) .folder { padding-right: 80px; }
-.folder-item:not(:has(.card)):has(.default-tags-badge) .folder { padding-right: 80px; }
-.folder-item:not(:has(.card)):has(.default-tags-badge):has(.folder-actions > button:nth-of-type(2)) .folder { padding-right: 116px; }
-
-/* Over a card's pictures: dark like a file tile's buttons. */
-.folders.covers .folder-actions { top: 8px; right: 8px; }
-.folders.covers .folder-actions .icon-button { background: rgb(0 0 0 / .55); color: #fff; }
-.folders.covers .folder-actions .icon-button:hover { background: rgb(0 0 0 / .75); color: #fff; }
-.folders.covers .folder-item:hover .folder { box-shadow: var(--shadow); transform: translateY(-2px); }
-.folders.covers .folder-item:hover .folder-actions { translate: 0 -2px; }
-.folders.list .folder-item:not(:last-child) .folder { border-bottom: 1px solid var(--border); }
-
-@media (hover: none) {
-    .folder-actions > * { opacity: 1; }
+.folder-actions > :not(.default-tags-badge) {
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+.folder-item:hover .folder-actions > *,
+.folder-item:focus-within .folder-actions > * {
+    opacity: 1;
+}
+.folder-actions .icon-button {
+    border-color: transparent;
+    background: transparent;
+    color: var(--text-muted);
+    transition: background 0.15s;
+}
+.folder-actions .icon-button:hover {
+    background: var(--surface-3);
+    color: var(--text);
+}
+.folder-actions .icon {
+    width: 16px;
+    height: 16px;
 }
 
+/* At the end of a line. */
+.folder-item:not(:has(.card)) .folder-actions {
+    top: 50%;
+    right: 7px;
+    translate: 0 -50%;
+}
+/* Room for its buttons (tags, ⋮: those it has). */
+.folder-item:not(:has(.card)) .folder {
+    padding-right: 44px;
+}
+.folder-item:not(:has(.card)):has(.folder-actions > :not([hidden]):nth-of-type(2)) .folder {
+    padding-right: 80px;
+}
+.folder-item:not(:has(.card)):has(.default-tags-badge) .folder {
+    padding-right: 80px;
+}
+.folder-item:not(:has(.card)):has(.default-tags-badge):has(.folder-actions > button:nth-of-type(2)) .folder {
+    padding-right: 116px;
+}
+
+/* Over a card's pictures: dark like a file tile's buttons. */
+.folders.covers .folder-actions {
+    top: 8px;
+    right: 8px;
+}
+.folders.covers .folder-actions .icon-button {
+    background: rgb(0 0 0 / 0.55);
+    color: #fff;
+}
+.folders.covers .folder-actions .icon-button:hover {
+    background: rgb(0 0 0 / 0.75);
+    color: #fff;
+}
+.folders.covers .folder-item:hover .folder {
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+}
+.folders.covers .folder-item:hover .folder-actions {
+    translate: 0 -2px;
+}
+.folders.list .folder-item:not(:last-child) .folder {
+    border-bottom: 1px solid var(--border);
+}
+
+@media (hover: none) {
+    .folder-actions > * {
+        opacity: 1;
+    }
+}
 
 /* ---------- Default tags (tags/default-tags-badge.component.ts) ---------- */
 
-.default-tags-badge { position: relative; display: inline-flex; }
+.default-tags-badge {
+    position: relative;
+    display: inline-flex;
+}
 .default-tags-button {
     display: inline-flex;
     align-items: center;
@@ -197,8 +302,16 @@
     font: 600 11px/1 var(--mono);
     cursor: pointer;
 }
-.default-tags-button .icon { width: 16px; height: 16px; }
-.default-tags-button:hover, .default-tags-button.open, .default-tags-button:focus-visible { border-color: var(--accent); background: var(--surface-2); }
+.default-tags-button .icon {
+    width: 16px;
+    height: 16px;
+}
+.default-tags-button:hover,
+.default-tags-button.open,
+.default-tags-button:focus-visible {
+    border-color: var(--accent);
+    background: var(--surface-2);
+}
 /* Over a card's pictures: dark like the other buttons there. */
 /* On a card, a pill like the count next to it (files.css › .badge), lit on hover. */
 .folder-cover-marks .default-tags-button {
@@ -207,12 +320,18 @@
     gap: 3px;
     padding: 2px 7px;
     border: 0;
-    background: rgb(0 0 0 / .62);
+    background: rgb(0 0 0 / 0.62);
     color: #fff;
     font: 700 11px var(--mono);
 }
-.folder-cover-marks .default-tags-button .icon { width: 15px; height: 15px; }
-.folder-cover-marks .default-tags-button:is(:hover, .open, :focus-visible) { background: var(--accent); color: #000; }
+.folder-cover-marks .default-tags-button .icon {
+    width: 15px;
+    height: 15px;
+}
+.folder-cover-marks .default-tags-button:is(:hover, .open, :focus-visible) {
+    background: var(--accent);
+    color: #000;
+}
 
 /*
  * The panel's layer is in the top layer (popover="manual"): never cut by a card's overflow nor moved by its transform.
@@ -255,8 +374,20 @@
     cursor: auto;
     pointer-events: auto;
 }
-.default-tags-popover-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.default-tags-popover .field-hint, .default-tags-from { margin: 0; }
-.default-tags-from { color: var(--text-muted); font-size: 12px; }
-.default-tags-edit { align-self: flex-end; }
-
+.default-tags-popover-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.default-tags-popover .field-hint,
+.default-tags-from {
+    margin: 0;
+}
+.default-tags-from {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+.default-tags-edit {
+    align-self: flex-end;
+}

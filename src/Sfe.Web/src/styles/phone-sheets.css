@@ -14,7 +14,9 @@
  * that must escape a transformed or clipping ancestor goes in the top layer (popover="manual") with its backdrop
  * inside it (DefaultTagsBadgeComponent). Modal dialogs (`dialog.sheet`) do the same below 761 px (trickplay.css).
  */
-.sheet-backdrop { display: none; }
+.sheet-backdrop {
+    display: none;
+}
 
 @media (max-width: 640px) {
     .sheet-backdrop {
@@ -22,7 +24,7 @@
         inset: 0;
         z-index: 59;
         display: block;
-        background: rgb(0 0 0 / .45);
+        background: rgb(0 0 0 / 0.45);
         pointer-events: auto;
         touch-action: none;
     }
@@ -47,5 +49,9 @@
 }
 
 @media (max-width: 640px) and (any-pointer: fine) {
-    html:has(.sheet-backdrop) { overflow: hidden; scrollbar-gutter: auto; padding-right: var(--scrollbar-w, 0px); }
+    html:has(.sheet-backdrop) {
+        overflow: hidden;
+        scrollbar-gutter: auto;
+        padding-right: var(--scrollbar-w, 0px);
+    }
 }

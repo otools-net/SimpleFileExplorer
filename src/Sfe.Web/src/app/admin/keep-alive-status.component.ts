@@ -63,26 +63,27 @@ export class KeepAliveStatusComponent {
 
     protected readonly state = computed((): State => {
         const view = this.view();
-        if (!view || view.mode === 'off')
-            return null;
-        if (view.folders.some(f => f.error))
-            return 'unavailable';
-        return view.folders.some(f => f.lastPing) ? 'idle' : null;
+        if (!view || view.mode === 'off') return null;
+        if (view.folders.some((f) => f.error)) return 'unavailable';
+        return view.folders.some((f) => f.lastPing) ? 'idle' : null;
     });
 
     protected readonly summary = computed(() => {
         const error = this.error();
-        if (error)
-            return `Could not read the status: ${error}`;
+        if (error) return `Could not read the status: ${error}`;
         const view = this.view();
-        if (!view)
-            return '…';
+        if (!view) return '…';
         const every = `every ${plural(view.intervalSeconds, 'second')}`;
-        const failing = view.folders.filter(f => f.error).length;
+        const failing = view.folders.filter((f) => f.error).length;
         switch (view.mode) {
-            case 'off': return 'Off: the library folder is not pinged. Turn it on in Settings.';
-            case 'auto': return failing ? `${plural(failing, 'folder')} not answering` : `On for folders on a network share, ${every}.`;
-            default: return failing ? `${plural(failing, 'folder')} not answering` : `On, ${every}.`;
+            case 'off':
+                return 'Off: the library folder is not pinged. Turn it on in Settings.';
+            case 'auto':
+                return failing
+                    ? `${plural(failing, 'folder')} not answering`
+                    : `On for folders on a network share, ${every}.`;
+            default:
+                return failing ? `${plural(failing, 'folder')} not answering` : `On, ${every}.`;
         }
     });
 
@@ -92,11 +93,11 @@ export class KeepAliveStatusComponent {
     }
 
     protected network(folder: KeepAliveFolder): string {
-        if (folder.isNetwork === null)
-            return 'Not looked at yet';
-        if (folder.isNetwork)
-            return 'On a network share';
-        return this.view()?.mode === 'auto' ? 'Not on a network share: not pinged (choose “Always” to ping it anyway)' : 'Not on a network share';
+        if (folder.isNetwork === null) return 'Not looked at yet';
+        if (folder.isNetwork) return 'On a network share';
+        return this.view()?.mode === 'auto'
+            ? 'Not on a network share: not pinged (choose “Always” to ping it anyway)'
+            : 'Not on a network share';
     }
 
     protected failure(folder: KeepAliveFolder): string {
@@ -105,11 +106,12 @@ export class KeepAliveStatusComponent {
     }
 
     protected detail(folder: KeepAliveFolder): string {
-        if (folder.waiting)
-            return 'waiting for an answer';
-        if (!folder.lastPing)
-            return '';
-        const took = folder.durationMilliseconds !== null ? ` · ${Math.round(folder.durationMilliseconds).toLocaleString()} ms` : '';
+        if (folder.waiting) return 'waiting for an answer';
+        if (!folder.lastPing) return '';
+        const took =
+            folder.durationMilliseconds !== null
+                ? ` · ${Math.round(folder.durationMilliseconds).toLocaleString()} ms`
+                : '';
         const how = folder.method === 'touch' ? ' · file written' : '';
         return `last ping ${formatDate(folder.lastPing)}${took}${how}`;
     }

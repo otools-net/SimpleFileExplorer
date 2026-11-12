@@ -15,11 +15,13 @@ describe('TagEditorDialog', () => {
     let store: ListingStore;
 
     const dialog = () => element.querySelector('dialog')!;
-    const field = <T extends HTMLElement = HTMLInputElement>(name: string) => element.querySelector<T>(`[name="${name}"]`)!;
+    const field = <T extends HTMLElement = HTMLInputElement>(name: string) =>
+        element.querySelector<T>(`[name="${name}"]`)!;
     const buttons = () => [...element.querySelectorAll<HTMLButtonElement>('.sheet-foot button')];
-    const button = (label: string) => buttons().find(b => b.textContent!.trim() === label);
+    const button = (label: string) => buttons().find((b) => b.textContent!.trim() === label);
     const error = () => element.querySelector('.form-error')?.textContent?.trim() ?? null;
-    const parentChips = () => [...element.querySelectorAll('.tag-list sfe-tag-chip .tag-name')].map(chip => chip.textContent!.trim());
+    const parentChips = () =>
+        [...element.querySelectorAll('.tag-list sfe-tag-chip .tag-name')].map((chip) => chip.textContent!.trim());
     const submit = async () => {
         element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
         await settle();
@@ -38,9 +40,11 @@ describe('TagEditorDialog', () => {
     afterEach(() => vi.restoreAllMocks());
 
     /** Opens the editor; returns the promise of what it did, without waiting for it. */
-    async function open(details: TagDetails | null, defaults?: { name?: string }): Promise<{ result: Promise<TagEditResult> }> {
-        if (details)
-            api.tag.mockResolvedValue(details);
+    async function open(
+        details: TagDetails | null,
+        defaults?: { name?: string },
+    ): Promise<{ result: Promise<TagEditResult> }> {
+        if (details) api.tag.mockResolvedValue(details);
         const result = fixture.componentInstance.open(details?.id ?? null, defaults);
         await settle(10);
         // Wrapped: an async function would wait for the promise it returns.
@@ -72,9 +76,11 @@ describe('TagEditorDialog', () => {
             await open(null);
 
             const swatches = [...element.querySelectorAll<HTMLInputElement>('input[name=color]')];
-            expect(swatches.map(s => s.value)).toEqual(['', 'red', 'yellow', 'blue']);
-            expect(swatches.map(s => s.checked)).toEqual([true, false, false, false]);
-            expect(element.querySelector<HTMLElement>('.swatch[title=Yellow]')!.style.getPropertyValue('--chip-text')).toBe('#16181d');
+            expect(swatches.map((s) => s.value)).toEqual(['', 'red', 'yellow', 'blue']);
+            expect(swatches.map((s) => s.checked)).toEqual([true, false, false, false]);
+            expect(
+                element.querySelector<HTMLElement>('.swatch[title=Yellow]')!.style.getPropertyValue('--chip-text'),
+            ).toBe('#16181d');
         });
 
         it('creates the tag with cleaned up values, then resolves with it', async () => {
@@ -121,12 +127,14 @@ describe('TagEditorDialog', () => {
             expect(document.activeElement).toBe(field('name'));
         });
 
-        it('shows the server\'s refusal and stays open to fix it', async () => {
-            api.createTag.mockRejectedValue(new ApiError(400, 'Unknown color \'plaid\'.', { color: ['Unknown color \'plaid\'.'] }));
+        it("shows the server's refusal and stays open to fix it", async () => {
+            api.createTag.mockRejectedValue(
+                new ApiError(400, "Unknown color 'plaid'.", { color: ["Unknown color 'plaid'."] }),
+            );
             await open(null, { name: 'Cat' });
             await submit();
 
-            expect(error()).toBe('Unknown color \'plaid\'.');
+            expect(error()).toBe("Unknown color 'plaid'.");
             expect(dialog().open).toBe(true);
             expect(button('Save')!.disabled).toBe(false);
 
@@ -154,16 +162,17 @@ describe('TagEditorDialog', () => {
     describe('an existing tag', () => {
         const animal = tag('Animal', { shorthand: 'Ani' });
         const pet = tag('Pet');
-        const cat = () => tag('Cat', {
-            shorthand: 'C',
-            aliases: ['Feline', 'Kitty'],
-            parents: [summary(animal), summary(pet)],
-            disambiguationId: animal.id,
-            displayName: 'Cat (Ani)',
-            color: 'blue',
-            isCategory: true,
-            fileCount: 3,
-        });
+        const cat = () =>
+            tag('Cat', {
+                shorthand: 'C',
+                aliases: ['Feline', 'Kitty'],
+                parents: [summary(animal), summary(pet)],
+                disambiguationId: animal.id,
+                displayName: 'Cat (Ani)',
+                color: 'blue',
+                isCategory: true,
+                fileCount: 3,
+            });
 
         it('loads the tag and fills the form with it', async () => {
             const details = cat();
@@ -178,7 +187,7 @@ describe('TagEditorDialog', () => {
             expect(parentChips()).toEqual(['Animal', 'Pet']);
             const select = field<HTMLSelectElement>('disambiguation');
             expect(select.disabled).toBe(false);
-            expect([...select.options].map(o => o.textContent!.trim())).toEqual(['None', 'Animal', 'Pet']);
+            expect([...select.options].map((o) => o.textContent!.trim())).toEqual(['None', 'Animal', 'Pet']);
             expect(select.value).toBe(String(animal.id));
             expect(element.querySelector<HTMLInputElement>('input[name=color]:checked')!.value).toBe('blue');
             expect(field('isCategory').checked).toBe(true);
@@ -252,7 +261,9 @@ describe('TagEditorDialog', () => {
             const picker = element.querySelector<HTMLInputElement>('sfe-tag-picker input')!;
             picker.focus();
             await settle();
-            const offered = [...element.querySelectorAll('.tag-options li')].map(li => li.querySelector('.tag-name')!.textContent!.trim());
+            const offered = [...element.querySelectorAll('.tag-options li')].map((li) =>
+                li.querySelector('.tag-name')!.textContent!.trim(),
+            );
             expect(offered).toEqual(['Plant']);
             // The picker has no "create" entry here.
             expect(element.querySelector('.tag-options li.create')).toBeNull();
@@ -260,7 +271,9 @@ describe('TagEditorDialog', () => {
             element.querySelector<HTMLElement>('.tag-options li')!.click();
             await settle();
             expect(parentChips()).toEqual(['Animal', 'Pet', 'Plant']);
-            expect([...field<HTMLSelectElement>('disambiguation').options].map(o => o.textContent!.trim())).toContain('Plant');
+            expect([...field<HTMLSelectElement>('disambiguation').options].map((o) => o.textContent!.trim())).toContain(
+                'Plant',
+            );
         });
 
         it('says when a tag is built in, and cannot delete it', async () => {
@@ -314,7 +327,7 @@ describe('TagEditorDialog', () => {
             expect(api.updateTag).not.toHaveBeenCalled();
         });
 
-        it('resolves with null when closed with Esc (the dialog\'s own close)', async () => {
+        it("resolves with null when closed with Esc (the dialog's own close)", async () => {
             const { result } = await open(cat());
 
             dialog().close();
@@ -372,7 +385,10 @@ describe('TagEditorDialog', () => {
             button('Find files')!.click();
 
             expect(closeAll).toHaveBeenCalled();
-            expect(navigate).toHaveBeenCalledWith(['/'], { queryParams: { path: null, q: 't:"Science Fiction"', sort: null, desc: null }, replaceUrl: false });
+            expect(navigate).toHaveBeenCalledWith(['/'], {
+                queryParams: { path: null, q: 't:"Science Fiction"', sort: null, desc: null },
+                replaceUrl: false,
+            });
         });
     });
 });

@@ -29,10 +29,15 @@ export class PreviewsService {
         const config = this.config.value;
         const urls = this.config.links;
         const thumbnail = config.features.thumbnails ? urls.thumbnail(item.path) : null;
-        const sources = item.kind === 'image'
-            ? (this.config.isLargeImage(item) && !original ? [thumbnail] : [urls.file(item.path), thumbnail])
-            : item.kind === 'video' ? [thumbnail] : [];
-        return sources.filter((source): source is string => Boolean(source)).map(source => withVersion(source, item));
+        const sources =
+            item.kind === 'image'
+                ? this.config.isLargeImage(item) && !original
+                    ? [thumbnail]
+                    : [urls.file(item.path), thumbnail]
+                : item.kind === 'video'
+                  ? [thumbnail]
+                  : [];
+        return sources.filter((source): source is string => Boolean(source)).map((source) => withVersion(source, item));
     }
 
     /** Known from an earlier render (other layout, back navigation): sized right away instead of on load. */
@@ -62,7 +67,7 @@ export class PreviewsService {
             for (const item of items()) {
                 const ratio = this.shapeOf(item);
                 if (ratio) {
-                    sum += Math.log(Math.min(Math.max(ratio, 0.25), 4));    // a panorama shouldn't skew the rows
+                    sum += Math.log(Math.min(Math.max(ratio, 0.25), 4)); // a panorama shouldn't skew the rows
                     count++;
                 }
             }

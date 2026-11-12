@@ -8,13 +8,20 @@
     margin: 0;
     padding: 0;
     border: 0;
-    background: rgb(5 6 8 / .96);
+    background: rgb(5 6 8 / 0.96);
     color: #f2f3f5;
 }
 
-.viewer::backdrop { background: rgb(0 0 0 / .7); }
+.viewer::backdrop {
+    background: rgb(0 0 0 / 0.7);
+}
 /* minmax(0, 1fr): an auto column would grow to the whole (unwrapped) file name and push the buttons off screen. */
-.viewer[open] { display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); --viewer-stage-bottom: 24px; }
+.viewer[open] {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    --viewer-stage-bottom: 24px;
+}
 
 .viewer-bar {
     display: flex;
@@ -22,24 +29,42 @@
     justify-content: space-between;
     gap: 16px;
     padding: 10px 14px;
-    background: linear-gradient(rgb(0 0 0 / .6), transparent);
+    background: linear-gradient(rgb(0 0 0 / 0.6), transparent);
 }
 
-.viewer-title { display: flex; flex-direction: column; min-width: 0; }
-.viewer-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.viewer-title span { color: #a9afba; font-size: 12px; }
-.viewer-actions { position: relative; display: flex; flex-shrink: 0; gap: 6px; }
+.viewer-title {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.viewer-title strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.viewer-title span {
+    color: #a9afba;
+    font-size: 12px;
+}
+.viewer-actions {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    gap: 6px;
+}
 
 .viewer .icon-button {
     border-color: transparent;
-    background: rgb(255 255 255 / .08);
+    background: rgb(255 255 255 / 0.08);
     color: #f2f3f5;
 }
 
-.viewer .icon-button:hover { background: rgb(255 255 255 / .18); }
+.viewer .icon-button:hover {
+    background: rgb(255 255 255 / 0.18);
+}
 
 .viewer-stage {
-    grid-area: 2 / 1;     /* shared with the arrows (.viewer-nav), which would otherwise push it to a third row */
+    grid-area: 2 / 1; /* shared with the arrows (.viewer-nav), which would otherwise push it to a third row */
     display: grid;
     place-items: center;
     min-height: 0;
@@ -49,12 +74,13 @@
     container-type: size;
 }
 
-.viewer-stage > img, .viewer-stage > video {
+.viewer-stage > img,
+.viewer-stage > video {
     max-width: 100%;
     max-height: 100cqh;
     border-radius: 6px;
     background: #000;
-    box-shadow: 0 20px 60px rgb(0 0 0 / .6);
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.6);
 }
 
 /* Thumbnail of a large image while its original loads: as big as the original will be (blurry, but not tiny). */
@@ -67,15 +93,27 @@
 }
 
 /* Cinema mode: the player reaches both sides of the window (the arrows sit over it). */
-.viewer-stage:has(> .player.cinema) { padding-left: 0; padding-right: 0; }
+.viewer-stage:has(> .player.cinema) {
+    padding-left: 0;
+    padding-right: 0;
+}
 
-.viewer-stage > audio { width: min(560px, 100%); }
+.viewer-stage > audio {
+    width: min(560px, 100%);
+}
 
 /* A picture shown smaller than it is: a click shows it at its actual size, which can then be dragged around. Two
    fingers zoom it (viewer.component.ts, `onPinch`): the page itself doesn't pinch-zoom behind it. */
-.viewer-stage:has(> img) { touch-action: none; }
-.viewer-stage > img.zoomable { cursor: zoom-in; }
-.viewer-stage.zoomed { position: relative; overflow: hidden; }
+.viewer-stage:has(> img) {
+    touch-action: none;
+}
+.viewer-stage > img.zoomable {
+    cursor: zoom-in;
+}
+.viewer-stage.zoomed {
+    position: relative;
+    overflow: hidden;
+}
 .viewer-stage > img.actual-size {
     position: absolute;
     top: 0;
@@ -85,14 +123,20 @@
     border-radius: 0;
     box-shadow: none;
     cursor: grab;
-    touch-action: none;   /* a finger moves the picture instead of scrolling or swiping */
+    touch-action: none; /* a finger moves the picture instead of scrolling or swiping */
     user-select: none;
 }
-.viewer-stage > img.actual-size.dragging { cursor: grabbing; }
-
+.viewer-stage > img.actual-size.dragging {
+    cursor: grabbing;
+}
 
 /* The dialog takes the focus back from a view (Esc in a text view): no ring around the whole screen. */
-.viewer:focus { outline: none; }
+.viewer:focus {
+    outline: none;
+}
 
 /* A document (text...) fills the stage, between the arrows, rather than being centred at its own size. */
-.viewer-stage.document { place-items: stretch; padding-bottom: 12px; }
+.viewer-stage.document {
+    place-items: stretch;
+    padding-bottom: 12px;
+}

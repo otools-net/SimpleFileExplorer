@@ -51,8 +51,7 @@ export class SheetComponent {
 
     open(): void {
         const dialog = this.dialog().nativeElement;
-        if (!dialog.open)
-            dialog.showModal();
+        if (!dialog.open) dialog.showModal();
         this.openState.set(true);
     }
 
@@ -79,8 +78,7 @@ export class SheetComponent {
      * shrinks (e.g. tag suggestions collapsing) would otherwise end on the backdrop and close it.
      */
     protected backdropClick(event: MouseEvent): void {
-        if (event.target === this.dialog().nativeElement && this.pressedBackdrop)
-            this.close();
+        if (event.target === this.dialog().nativeElement && this.pressedBackdrop) this.close();
         this.pressedBackdrop = false;
     }
 

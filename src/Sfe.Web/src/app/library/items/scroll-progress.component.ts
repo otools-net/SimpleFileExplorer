@@ -1,4 +1,15 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Injector, signal } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    Injector,
+    signal,
+} from '@angular/core';
 import { ListingStore } from '../listing.store';
 import { countAbove, itemContainers } from './listing-position';
 
@@ -34,7 +45,9 @@ export class ScrollProgressComponent {
     /** The folder's items, or the search's matches; `more`: at least that many. */
     private readonly total = computed(() => {
         const total = this.store.total();
-        return total ? { count: total.count, more: total.capped } : { count: this.store.items().length, more: this.store.hasMore() };
+        return total
+            ? { count: total.count, more: total.capped }
+            : { count: this.store.items().length, more: this.store.hasMore() };
     });
 
     protected readonly visible = computed(() => this.scrolled() && this.store.status() === 'ready' && this.seen() > 0);
@@ -48,10 +61,10 @@ export class ScrollProgressComponent {
         const { count, more } = this.total();
         return `${this.seen().toLocaleString()} / ${count.toLocaleString()}${more ? '+' : ''}`;
     });
-    protected readonly percent = computed(() => Math.min(100, 100 * this.seen() / Math.max(1, this.total().count)));
+    protected readonly percent = computed(() => Math.min(100, (100 * this.seen()) / Math.max(1, this.total().count)));
 
     constructor() {
-        const schedule = () => this.frame ||= requestAnimationFrame(() => this.measure());
+        const schedule = () => (this.frame ||= requestAnimationFrame(() => this.measure()));
         window.addEventListener('scroll', schedule, { passive: true });
         window.addEventListener('resize', schedule, { passive: true });
         inject(DestroyRef).onDestroy(() => {

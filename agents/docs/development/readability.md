@@ -75,10 +75,10 @@ what fits a side-by-side diff. Test files get more room because a test reads as 
 ### Lines
 
 - One statement per line; one declaration per line.
-- Code is broken by the formatters (CSharpier for C#, Prettier for TypeScript, templates and CSS), at 120 columns:
+- Code is broken by the formatters (CSharpier for C#, Prettier for TypeScript and CSS), at 120 columns:
   their layout is the rule, even where it differs from the list below (CSharpier puts a closing `)` of a long
   parameter list on its own line). What they leave over 120 is fixed by hand, the same way: comments
-  (`rewrap-comments.mjs`) and long strings.
+  (`rewrap-comments.mjs`), long strings, and Angular inline templates (Prettier leaves them, see below).
 - A line over 120 characters is broken at its structure, not where it happens to reach the margin:
   - arguments: all on one line, or **one per line**, never a ragged mix;
   - a chain of calls (`Where`, `Select`, signals, promises): one call per line, the dot first;

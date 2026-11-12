@@ -96,8 +96,7 @@ export class MissingPanelComponent {
 
     protected readonly status = computed(() => {
         const failure = this.failure();
-        if (failure)
-            return { state: 'unavailable', text: `Could not read the missing files: ${failure}`, detail: '' };
+        if (failure) return { state: 'unavailable', text: `Could not read the missing files: ${failure}`, detail: '' };
         const total = this.total();
         return {
             state: !this.enabled() ? 'unavailable' : total ? 'found' : 'idle',
@@ -108,7 +107,7 @@ export class MissingPanelComponent {
         };
     });
     /** For the tab. */
-    readonly badge = computed(() => this.total() ? this.total().toLocaleString() : '');
+    readonly badge = computed(() => (this.total() ? this.total().toLocaleString() : ''));
 
     protected was(item: MissingFileInfo): string {
         const slash = item.path.lastIndexOf('/');
@@ -125,22 +124,19 @@ export class MissingPanelComponent {
         }
         try {
             const result = await this.api.missingFiles({ after: append ? this.next : null });
-            if (current !== this.generation)
-                return;
+            if (current !== this.generation) return;
             if (!append) {
                 this.total.set(result.total ?? 0);
                 this.enabled.set(result.enabled);
                 this.failure.set(null);
             }
-            this.items.update(items => [...items, ...result.items]);
+            this.items.update((items) => [...items, ...result.items]);
             this.next = result.next;
             this.hasMore.set(result.hasMore);
         } catch (error) {
-            if (current === this.generation)
-                this.failure.set((error as Error).message);
+            if (current === this.generation) this.failure.set((error as Error).message);
         } finally {
-            if (current === this.generation)
-                this.loading.set(false);
+            if (current === this.generation) this.loading.set(false);
         }
     }
 
@@ -149,8 +145,8 @@ export class MissingPanelComponent {
     }
 
     private removeItem(item: MissingFileInfo): void {
-        this.items.update(items => items.filter(other => other !== item));
-        this.total.update(total => Math.max(0, total - 1));
+        this.items.update((items) => items.filter((other) => other !== item));
+        this.total.update((total) => Math.max(0, total - 1));
     }
 
     protected async relink(item: MissingFileInfo, path: string, action = path): Promise<void> {
@@ -162,9 +158,10 @@ export class MissingPanelComponent {
             this.removeItem(item);
         } catch (error) {
             const gone = error instanceof ApiError && error.status === 404;
-            this.toasts.error(gone ? 'This file was already relinked or forgotten.' : `Could not relink: ${(error as Error).message}`);
-            if (gone)
-                this.removeItem(item);
+            this.toasts.error(
+                gone ? 'This file was already relinked or forgotten.' : `Could not relink: ${(error as Error).message}`,
+            );
+            if (gone) this.removeItem(item);
         } finally {
             this.busy.set(null);
         }
@@ -172,13 +169,11 @@ export class MissingPanelComponent {
 
     protected choose(item: MissingFileInfo): void {
         const path = prompt(`Give the tags of “${item.name}” to which file? Path from the library root:`, item.path);
-        if (path?.trim())
-            void this.relink(item, path.trim().replace(/^\/+/, ''), 'choose');
+        if (path?.trim()) void this.relink(item, path.trim().replace(/^\/+/, ''), 'choose');
     }
 
     protected async forget(item: MissingFileInfo): Promise<void> {
-        if (!confirm(`Forget “${item.name}” and its tags?`))
-            return;
+        if (!confirm(`Forget “${item.name}” and its tags?`)) return;
         this.busy.set(`${item.id}:forget`);
         try {
             await this.api.forgetMissingFiles(item.id);
@@ -196,11 +191,12 @@ export class MissingPanelComponent {
     protected async relinkAll(): Promise<void> {
         try {
             const result = await whileBusy(this.relinking, () => this.api.relinkMissingFiles());
-            if (result.relinked)
-                this.changed.emit();
-            this.toasts.show(result.relinked
-                ? `${plural(result.relinked, 'file')} relinked; ${plural(result.remaining, 'file')} still missing.`
-                : 'No missing file has a single likely new place.');
+            if (result.relinked) this.changed.emit();
+            this.toasts.show(
+                result.relinked
+                    ? `${plural(result.relinked, 'file')} relinked; ${plural(result.remaining, 'file')} still missing.`
+                    : 'No missing file has a single likely new place.',
+            );
         } catch (error) {
             this.toasts.error(`Could not relink: ${(error as Error).message}`);
         }
@@ -208,8 +204,7 @@ export class MissingPanelComponent {
     }
 
     protected async forgetAll(): Promise<void> {
-        if (!confirm(`Forget all ${plural(this.total(), 'missing file')} and their tags?`))
-            return;
+        if (!confirm(`Forget all ${plural(this.total(), 'missing file')} and their tags?`)) return;
         try {
             await whileBusy(this.forgettingAll, () => this.api.forgetMissingFiles());
         } catch (error) {

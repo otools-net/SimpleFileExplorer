@@ -129,36 +129,47 @@ export class MainMenuComponent {
     private readonly store = inject(ListingStore);
     protected readonly canExclude = computed(() => {
         const listing = this.store.listing();
-        return !!listing && !this.store.searching() && !!this.store.route().path && this.store.can(Rights.excludeFolders);
+        return (
+            !!listing && !this.store.searching() && !!this.store.route().path && this.store.can(Rights.excludeFolders)
+        );
     });
     protected readonly adminVisible = computed(() => {
         const rights = this.configService.rights();
-        return visibleSections(any => any.some(right => rights.has(right))).length > 0;
+        return visibleSections((any) => any.some((right) => rights.has(right))).length > 0;
     });
     /** The account line links to Administration › My account when signed in with one of its rights. */
     protected readonly accountVisible = computed(() => {
         const rights = this.configService.rights();
-        return !!this.user() && visibleSections(any => any.some(right => rights.has(right))).some(section => section.id === 'account');
+        return (
+            !!this.user() &&
+            visibleSections((any) => any.some((right) => rights.has(right))).some((section) => section.id === 'account')
+        );
     });
     protected readonly otherTenants = computed(() => {
         const config = this.config();
-        return config?.tenants.filter(tenant => tenant.id !== config.tenant?.id) ?? [];
+        return config?.tenants.filter((tenant) => tenant.id !== config.tenant?.id) ?? [];
     });
     /** How keep alive goes (the change feed): a dot on the button, a line in the menu; nothing when it is off. */
     protected readonly keepAlive = inject(ChangeFeed).keepAlive;
     /** The server doesn't answer (the change feed is lost): the yellow ! and a line of its own, for everyone. */
     protected readonly serverLost = inject(ChangeFeed).serverLost;
     protected readonly warning = computed(() => this.serverLost() || this.keepAlive() === 'failing');
-    protected readonly keepAliveText = computed(() => this.keepAlive() === 'failing' ? 'Network folder not answering' : 'Network folder answering');
+    protected readonly keepAliveText = computed(() =>
+        this.keepAlive() === 'failing' ? 'Network folder not answering' : 'Network folder answering',
+    );
     protected readonly canSeeKeepAlive = computed(() => this.configService.rights().has(Rights.keepAliveSettings));
     protected readonly buttonTitle = computed(() => {
         const title = 'Scan this folder, administration, your account and more';
-        if (this.serverLost())
-            return `${title} · Server not answering`;
+        if (this.serverLost()) return `${title} · Server not answering`;
         return this.keepAlive() === 'none' ? title : `${title} · ${this.keepAliveText()}`;
     });
     protected readonly buttonLabel = computed(() =>
-        this.serverLost() ? 'More (server not answering)' : this.keepAlive() === 'failing' ? 'More (network folder not answering)' : 'More');
+        this.serverLost()
+            ? 'More (server not answering)'
+            : this.keepAlive() === 'failing'
+              ? 'More (network folder not answering)'
+              : 'More',
+    );
     protected readonly versionTitle = computed(() => {
         const config = this.config();
         return config?.commit ? `Version ${config.version}, commit ${config.commit}` : `Version ${config?.version}`;
@@ -168,16 +179,12 @@ export class MainMenuComponent {
     protected readonly removeFromIndex = () => this.dialogs.removeFromIndex()?.open();
     protected readonly excludeFolder = () => {
         const listing = this.store.listing();
-        if (listing && 'exclusions' in listing)
-            this.dialogs.folderExclusions()?.open(listing.path, listing.exclusions);
-        else
-            this.dialogs.folderExclusions()?.open(this.store.route().path, null);
+        if (listing && 'exclusions' in listing) this.dialogs.folderExclusions()?.open(listing.path, listing.exclusions);
+        else this.dialogs.folderExclusions()?.open(this.store.route().path, null);
     };
     protected readonly toggleFullscreen = () => {
-        if (document.fullscreenElement)
-            void document.exitFullscreen();
-        else
-            void document.documentElement.requestFullscreen?.();
+        if (document.fullscreenElement) void document.exitFullscreen();
+        else void document.documentElement.requestFullscreen?.();
     };
     protected readonly signOut = async () => {
         try {

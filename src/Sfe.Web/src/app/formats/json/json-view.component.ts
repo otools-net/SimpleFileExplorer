@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    input,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { copyText } from '../../core/copy-path.service';
@@ -18,7 +30,19 @@ import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } fr
 import { findEntry, lineNumbersEntry, modesEntry, readingEntry } from '../toolbar-entries';
 import { TextSession } from '../text/text-session';
 import {
-    CHUNK, expandAll, filterTree, formatEdits, JsonDocument, JsonRow, parseJson, pathLabel, previewOf, rowsOf, sizeOf, sourceOf, valueClass,
+    CHUNK,
+    expandAll,
+    filterTree,
+    formatEdits,
+    JsonDocument,
+    JsonRow,
+    parseJson,
+    pathLabel,
+    previewOf,
+    rowsOf,
+    sizeOf,
+    sourceOf,
+    valueClass,
 } from './json-tree';
 import { FILE_SOURCE } from '../file-source';
 
@@ -45,7 +69,15 @@ let views = 0;
  */
 @Component({
     selector: 'sfe-json-view',
-    imports: [IconComponent, ReadingPanelComponent, TextEditActionsComponent, TextEditBarComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
+    imports: [
+        IconComponent,
+        ReadingPanelComponent,
+        TextEditActionsComponent,
+        TextEditBarComponent,
+        OverflowRowDirective,
+        OverflowItemDirective,
+        OverflowMoreComponent,
+    ],
     providers: [TextSession],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -208,13 +240,39 @@ export class JsonViewComponent {
     protected readonly own = computed(() => this.reading.preferences().code);
     /** The toolbar's buttons in its "⋯" menu, when they don't fit (the editing actions and the fields stay). */
     protected readonly more = {
-        format: (): MenuEntry => ({ id: 'format', label: 'Format', icon: 'format', title: 'Format: lay the source out again, indented (comments kept)', disabled: !this.document()?.root || !!this.problems().length, run: () => this.formatSource() }),
-        mode: (): MenuEntry => modesEntry(this.modes, this.mode(), mode => this.setMode(mode)),
-        openAll: (): MenuEntry => ({ id: 'openAll', label: 'Open all', icon: 'unfold', title: 'Open all', disabled: !this.document()?.root, run: () => this.openAll() }),
-        closeAll: (): MenuEntry => ({ id: 'closeAll', label: 'Close all', icon: 'fold', title: 'Close all', disabled: !this.document()?.root, run: () => this.closeAll() }),
+        format: (): MenuEntry => ({
+            id: 'format',
+            label: 'Format',
+            icon: 'format',
+            title: 'Format: lay the source out again, indented (comments kept)',
+            disabled: !this.document()?.root || !!this.problems().length,
+            run: () => this.formatSource(),
+        }),
+        mode: (): MenuEntry => modesEntry(this.modes, this.mode(), (mode) => this.setMode(mode)),
+        openAll: (): MenuEntry => ({
+            id: 'openAll',
+            label: 'Open all',
+            icon: 'unfold',
+            title: 'Open all',
+            disabled: !this.document()?.root,
+            run: () => this.openAll(),
+        }),
+        closeAll: (): MenuEntry => ({
+            id: 'closeAll',
+            label: 'Close all',
+            icon: 'fold',
+            title: 'Close all',
+            disabled: !this.document()?.root,
+            run: () => this.closeAll(),
+        }),
         lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggleLineNumbers()),
         find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.sourceEditor()?.find()),
-        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen()), "Reading settings: font, size, colours"),
+        reading: (): MenuEntry =>
+            readingEntry(
+                this.panelOpen(),
+                () => this.panelOpen.set(!this.panelOpen()),
+                'Reading settings: font, size, colours',
+            ),
     };
     protected readonly style = computed(() => this.reading.style('code'));
     protected readonly problems = computed(() => this.document()?.problems ?? []);
@@ -224,19 +282,25 @@ export class JsonViewComponent {
     });
     protected readonly selectedRow = computed(() => {
         const id = this.selected();
-        return id === null ? null : this.rows().find(row => row.id === id && !row.more) ?? null;
+        return id === null ? null : (this.rows().find((row) => row.id === id && !row.more) ?? null);
     });
     protected readonly activeId = computed(() => {
         const id = this.selected();
-        const index = id === null ? -1 : this.rows().findIndex(row => row.id === id);
+        const index = id === null ? -1 : this.rows().findIndex((row) => row.id === id);
         return index >= 0 ? this.domId(index) : null;
     });
     protected readonly downloadUrl = computed(() =>
-        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null);
+        this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,
+    );
     protected readonly details = computed(() => {
         const file = this.session.file();
         const document = this.document();
-        return file ? textDetails(file, document && !document.strict && !document.problems.length ? 'JSON with comments' : 'JSON') : '';
+        return file
+            ? textDetails(
+                  file,
+                  document && !document.strict && !document.problems.length ? 'JSON with comments' : 'JSON',
+              )
+            : '';
     });
 
     constructor() {
@@ -257,25 +321,21 @@ export class JsonViewComponent {
             const mode = this.mode();
             const { wrap, lineNumbers } = this.own();
             untracked(() => {
-                if (ready && mode !== 'tree')
-                    this.editor()?.configure({ wrap, lineNumbers });
+                if (ready && mode !== 'tree') this.editor()?.configure({ wrap, lineNumbers });
             });
         });
         // Editing needs the source: beside the tree, when only the tree was shown.
         effect(() => {
-            if (this.session.editing() && untracked(this.mode) === 'tree')
-                untracked(() => this.mode.set('split'));
+            if (this.session.editing() && untracked(this.mode) === 'tree') untracked(() => this.mode.set('split'));
         });
         // The tree follows the source as it is typed, once typing pauses.
         effect(() => {
-            if (!this.session.revision())
-                return;
+            if (!this.session.revision()) return;
             clearTimeout(this.parseLater);
             this.parseLater = setTimeout(() => {
                 // The source as typed; read again (changed elsewhere) without the source shown: the file's.
                 const text = this.sourceEditor()?.text() ?? this.session.file()?.text;
-                if (text !== undefined)
-                    this.parse(text, false);
+                if (text !== undefined) this.parse(text, false);
             }, PARSE_DELAY_MS);
         });
         effect(() => {
@@ -286,39 +346,39 @@ export class JsonViewComponent {
     }
 
     private async load(item: LibraryItem, cancel: AbortSignal): Promise<void> {
-        if (this.state() !== 'loading' || this.session.file())
-            return;
+        if (this.state() !== 'loading' || this.session.file()) return;
         let file: TextFile;
         try {
             file = await this.fileSource.textFile(item, cancel);
         } catch (error) {
-            if (cancel.aborted)
-                return;
+            if (cancel.aborted) return;
             const failure = textFailure(error);
             this.offerDownload.set(failure.offerDownload);
             this.message.set(failure.message);
             this.state.set('failed');
             return;
         }
-        if (cancel.aborted)
-            return;
+        if (cancel.aborted) return;
         this.session.attach(item, file);
         this.parse(file.text, true);
         this.state.set('ready');
-        if (this.mode() !== 'tree')
-            this.editor();
-        if (untracked(this.edit))
-            this.session.startEdit();
+        if (this.mode() !== 'tree') this.editor();
+        if (untracked(this.edit)) this.session.startEdit();
     }
 
     /** The source's editor, made now when it isn't yet. */
     private editor(): TextEditor | null {
         const existing = this.sourceEditor();
         const file = this.session.file();
-        if (existing || !file)
-            return existing;
+        if (existing || !file) return existing;
         const { wrap, lineNumbers } = this.own();
-        const created = new TextEditor(this.source().nativeElement, { text: file.text, name: 'source.json', wrap, lineNumbers, ...this.session.editorOptions() });
+        const created = new TextEditor(this.source().nativeElement, {
+            text: file.text,
+            name: 'source.json',
+            wrap,
+            lineNumbers,
+            ...this.session.editorOptions(),
+        });
         this.session.setEditor(created);
         this.sourceEditor.set(created);
         void created.setLanguage('source.json').catch(() => undefined);
@@ -331,17 +391,19 @@ export class JsonViewComponent {
         this.document.set(document);
         if (first) {
             const open = expandAll(document.root, OPEN_ROWS);
-            if (document.root)
-                open.add('');
+            if (document.root) open.add('');
             this.expanded.set(open);
             this.selected.set(document.root ? '' : null);
         }
-        if (this.query().trim())
-            this.filtered.set(filterTree(document.root, this.query()));
+        if (this.query().trim()) this.filtered.set(filterTree(document.root, this.query()));
     }
 
     private rowsOf(document: JsonDocument): JsonRow[] {
-        return rowsOf(document.root, { expanded: this.expanded(), shown: this.shown(), keep: this.filtered()?.keep ?? null });
+        return rowsOf(document.root, {
+            expanded: this.expanded(),
+            shown: this.shown(),
+            keep: this.filtered()?.keep ?? null,
+        });
     }
 
     protected domId(index: number): string {
@@ -375,8 +437,7 @@ export class JsonViewComponent {
     protected setMode(mode: JsonMode): void {
         this.mode.set(mode);
         writePreference(JSON_MODE_KEY, mode);
-        if (mode !== 'tree' && this.state() === 'ready')
-            this.editor();
+        if (mode !== 'tree' && this.state() === 'ready') this.editor();
     }
 
     protected toggleLineNumbers(): void {
@@ -395,29 +456,26 @@ export class JsonViewComponent {
     }
 
     private setOpen(row: JsonRow, open: boolean): void {
-        this.expanded.update(expanded => {
+        this.expanded.update((expanded) => {
             const next = new Set(expanded);
-            if (open)
-                next.add(row.id);
-            else
-                next.delete(row.id);
+            if (open) next.add(row.id);
+            else next.delete(row.id);
             return next;
         });
     }
 
     protected showMore(row: JsonRow): void {
         const id = row.id.slice(0, -'#more'.length);
-        this.shown.update(shown => new Map(shown).set(id, (row.more?.shown ?? CHUNK) + CHUNK));
+        this.shown.update((shown) => new Map(shown).set(id, (row.more?.shown ?? CHUNK) + CHUNK));
     }
 
     /** Opens everything under the member selected (the whole tree from the root), as far as a few thousand rows. */
     protected openAll(): void {
         const document = this.document();
-        if (!document)
-            return;
+        if (!document) return;
         const from = this.selectedRow()?.container ? this.selected()! : '';
         const open = expandAll(document.root, undefined, from);
-        this.expanded.update(expanded => new Set([...expanded, ...open]));
+        this.expanded.update((expanded) => new Set([...expanded, ...open]));
     }
 
     protected closeAll(): void {
@@ -443,8 +501,7 @@ export class JsonViewComponent {
         } else if (event.key === 'Enter' || event.key === 'ArrowDown') {
             event.preventDefault();
             this.tree()?.nativeElement.focus();
-            if (this.selected() === null && this.rows().length)
-                this.selected.set(this.rows()[0].id);
+            if (this.selected() === null && this.rows().length) this.selected.set(this.rows()[0].id);
         }
     }
 
@@ -455,8 +512,7 @@ export class JsonViewComponent {
     }
 
     protected showOffset(from: number, to: number): void {
-        if (this.mode() === 'tree')
-            this.setMode('split');
+        if (this.mode() === 'tree') this.setMode('split');
         const editor = this.editor();
         // Once shown: a hidden editor has nothing to scroll.
         setTimeout(() => {
@@ -479,46 +535,49 @@ export class JsonViewComponent {
     /** Lays the source out again (an edit: undone with Ctrl+Z). */
     protected formatSource(): void {
         const editor = this.sourceEditor();
-        if (!editor || !this.session.editing())
-            return;
+        if (!editor || !this.session.editing()) return;
         editor.edit(formatEdits(editor.text()));
     }
 
     /** Arrows move and open as in a tree of files; Enter shows the member in the source, `*` opens all under it. */
     protected onTreeKeydown(event: KeyboardEvent): void {
-        if (event.ctrlKey || event.metaKey || event.altKey)
-            return;
-        const rows = this.rows().filter(row => !row.more);
-        if (!rows.length)
-            return;
-        let index = rows.findIndex(row => row.id === this.selected());
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+        const rows = this.rows().filter((row) => !row.more);
+        if (!rows.length) return;
+        let index = rows.findIndex((row) => row.id === this.selected());
         const row = index >= 0 ? rows[index] : null;
         switch (event.key) {
-            case 'ArrowDown': index = Math.min(rows.length - 1, index + 1); break;
-            case 'ArrowUp': index = Math.max(0, index - 1); break;
-            case 'Home': index = 0; break;
-            case 'End': index = rows.length - 1; break;
-            case 'PageDown': index = Math.min(rows.length - 1, index + 20); break;
-            case 'PageUp': index = Math.max(0, index - 20); break;
+            case 'ArrowDown':
+                index = Math.min(rows.length - 1, index + 1);
+                break;
+            case 'ArrowUp':
+                index = Math.max(0, index - 1);
+                break;
+            case 'Home':
+                index = 0;
+                break;
+            case 'End':
+                index = rows.length - 1;
+                break;
+            case 'PageDown':
+                index = Math.min(rows.length - 1, index + 20);
+                break;
+            case 'PageUp':
+                index = Math.max(0, index - 20);
+                break;
             case 'ArrowRight':
-                if (row?.container && !row.expanded)
-                    this.setOpen(row, true);
-                else if (row?.container)
-                    index++;
+                if (row?.container && !row.expanded) this.setOpen(row, true);
+                else if (row?.container) index++;
                 break;
             case 'ArrowLeft':
-                if (row?.container && row.expanded)
-                    this.setOpen(row, false);
-                else if (row)
-                    index = rows.findIndex(other => other.id === row.id.slice(0, row.id.lastIndexOf('/')));
+                if (row?.container && row.expanded) this.setOpen(row, false);
+                else if (row) index = rows.findIndex((other) => other.id === row.id.slice(0, row.id.lastIndexOf('/')));
                 break;
             case ' ':
-                if (row?.container)
-                    this.setOpen(row, !row.expanded);
+                if (row?.container) this.setOpen(row, !row.expanded);
                 break;
             case 'Enter':
-                if (row)
-                    this.showInSource(row);
+                if (row) this.showInSource(row);
                 break;
             case '*':
                 this.openAll();
@@ -527,7 +586,8 @@ export class JsonViewComponent {
                 return;
         }
         event.preventDefault();
-        const next = this.rows().filter(shown => !shown.more)[Math.max(0, Math.min(index, rows.length - 1))] ?? rows[0];
+        const next =
+            this.rows().filter((shown) => !shown.more)[Math.max(0, Math.min(index, rows.length - 1))] ?? rows[0];
         this.selected.set(next.id);
         setTimeout(() => {
             const active = this.activeId();
@@ -538,19 +598,23 @@ export class JsonViewComponent {
 
     /** Ctrl+= / Ctrl+− / Ctrl+0 inside the view: the text's size, rather than the whole page's zoom. */
     protected onKeydown(event: KeyboardEvent): void {
-        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented)
-            return;
-        const step = event.key === '=' || event.key === '+' ? 1 : event.key === '-' || event.key === '_' ? -1 : event.key === '0' ? 0 : null;
-        if (step === null)
-            return;
+        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented) return;
+        const step =
+            event.key === '=' || event.key === '+'
+                ? 1
+                : event.key === '-' || event.key === '_'
+                  ? -1
+                  : event.key === '0'
+                    ? 0
+                    : null;
+        if (step === null) return;
         event.preventDefault();
         this.reading.changeSize('code', step);
     }
 
     /** Ctrl+F filters the tree when only it is shown, finds in the source otherwise; Ctrl+Alt+G goes to a line. */
     protected onWindowKeydown(event: KeyboardEvent): void {
-        if (this.session.handleKey(event))
-            return;
+        if (this.session.handleKey(event)) return;
         if (event.defaultPrevented || this.state() !== 'ready' || !(event.ctrlKey || event.metaKey) || event.shiftKey)
             return;
         const key = event.key.toLowerCase();
@@ -560,8 +624,7 @@ export class JsonViewComponent {
             if (this.mode() === 'tree' || !editor) {
                 this.filterBox()?.nativeElement.focus();
                 this.filterBox()?.nativeElement.select();
-            } else
-                editor.find();
+            } else editor.find();
         } else if (key === 'g' && event.altKey && editor && this.mode() !== 'tree') {
             event.preventDefault();
             editor.goToLine();

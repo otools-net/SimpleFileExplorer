@@ -11,8 +11,16 @@ describe('TagMenu', () => {
     let menu: TagMenu;
     const beach = tag('Beach', { id: 3 });
     const photo = item('Media/beach.jpg');
-    const ids = (file?: typeof photo) => menu.target(beach, file).entries().map(entry => entry.id);
-    const entry = (id: string, file?: typeof photo) => menu.target(beach, file).entries().find(e => e.id === id)!;
+    const ids = (file?: typeof photo) =>
+        menu
+            .target(beach, file)
+            .entries()
+            .map((entry) => entry.id);
+    const entry = (id: string, file?: typeof photo) =>
+        menu
+            .target(beach, file)
+            .entries()
+            .find((e) => e.id === id)!;
 
     async function setUp(rights?: string[]): Promise<void> {
         api = mockApi();
@@ -27,7 +35,7 @@ describe('TagMenu', () => {
 
     it('searches the tag, here or in a new tab, or the files without it', async () => {
         await setUp([Rights.browse, Rights.viewTags]);
-        const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => { });
+        const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => {});
 
         expect(menu.target(beach)).toMatchObject({ kind: 'tag', name: 'Beach' });
         expect(ids()).toEqual(['search', 'newTab', 'exclude']);
@@ -41,7 +49,7 @@ describe('TagMenu', () => {
 
     it('adds the tag to the search, or leaves its files out of it', async () => {
         await setUp([Rights.browse, Rights.viewTags]);
-        const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => { });
+        const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => {});
         store.route.set({ path: 'Media', q: 'sunset', sort: '', desc: false });
 
         expect(ids()).toEqual(['search', 'newTab', 'addToSearch', 'exclude']);

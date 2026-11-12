@@ -81,9 +81,13 @@ export class InstallationSectionComponent {
             this.restartRequired.set(grant.settings.restartRequired);
             this.token.set(grant.token);
         } catch (error) {
-            this.codeError.set(error instanceof ApiError && error.errors?.['code'] ? error.errors['code'].join(' ')
-                : error instanceof ApiError && error.status === 429 ? 'Too many attempts: wait a minute, then try again.'
-                : (error as Error).message);
+            this.codeError.set(
+                error instanceof ApiError && error.errors?.['code']
+                    ? error.errors['code'].join(' ')
+                    : error instanceof ApiError && error.status === 429
+                      ? 'Too many attempts: wait a minute, then try again.'
+                      : (error as Error).message,
+            );
         } finally {
             this.busy.set(false);
         }
@@ -92,8 +96,7 @@ export class InstallationSectionComponent {
     protected async save(event: Event): Promise<void> {
         event.preventDefault();
         const form = this.form();
-        if (!form)
-            return;
+        if (!form) return;
         this.busy.set(true);
         try {
             const saved = await form.save();

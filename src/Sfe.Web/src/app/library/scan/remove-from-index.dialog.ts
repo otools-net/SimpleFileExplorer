@@ -63,7 +63,7 @@ export class RemoveFromIndexDialog {
     protected readonly exclude = signal(true);
     protected readonly removing = signal(false);
 
-    protected readonly name = computed(() => this.path() ? `“${this.path()}”` : 'the whole library');
+    protected readonly name = computed(() => (this.path() ? `“${this.path()}”` : 'the whole library'));
     protected readonly counts = computed(() => {
         const folder = this.folder();
         return folder ? joinParts([plural(folder.directories, 'folder'), plural(folder.files, 'file')], ' and ') : '';
@@ -71,10 +71,12 @@ export class RemoveFromIndexDialog {
     private readonly indexed = computed(() => Boolean(this.folder()?.files || this.folder()?.directories));
     private readonly excluding = computed(() => this.exclude() && !this.folder()?.excluded && this.path() !== '');
     protected readonly canRemove = computed(() => this.indexed() || this.excluding());
-    protected readonly actionLabel = computed(() => !this.indexed() && this.excluding() ? 'Skip in future scans' : 'Remove from index');
+    protected readonly actionLabel = computed(() =>
+        !this.indexed() && this.excluding() ? 'Skip in future scans' : 'Remove from index',
+    );
 
     constructor() {
-        registerDialog(dialogs => dialogs.removeFromIndex, this);
+        registerDialog((dialogs) => dialogs.removeFromIndex, this);
     }
 
     /** Opens on `path` (the folder browsed by default) and counts what the index holds of it. */
@@ -93,7 +95,9 @@ export class RemoveFromIndexDialog {
 
     protected async remove(): Promise<void> {
         try {
-            const result = await whileBusy(this.removing, () => this.api.removeFromIndex(this.path(), this.excluding()));
+            const result = await whileBusy(this.removing, () =>
+                this.api.removeFromIndex(this.path(), this.excluding()),
+            );
             if (!('files' in result)) {
                 this.toasts.error('A scan is running: try again when it has finished.');
                 return;
@@ -101,8 +105,7 @@ export class RemoveFromIndexDialog {
             this.sheet().close();
             this.toasts.show(this.message(result));
             // Search results may have lost files; a folder listing comes from the disk and is unchanged.
-            if (this.store.route().q)
-                void this.store.load();
+            if (this.store.route().q) void this.store.load();
         } catch (error) {
             this.toasts.error(`Could not remove the folder: ${(error as Error).message}`);
         }
@@ -110,10 +113,17 @@ export class RemoveFromIndexDialog {
 
     private message(result: RemovedFromIndex): string {
         const name = result.path ? `“${result.path}”` : 'The library';
-        return joinParts([
-            result.files || result.directories ? `${name} removed from the index (${plural(result.files, 'file')})` : `${name} was not indexed`,
-            result.excluded ? 'scans will skip it' : null,
-        ], '; ') + '.';
+        return (
+            joinParts(
+                [
+                    result.files || result.directories
+                        ? `${name} removed from the index (${plural(result.files, 'file')})`
+                        : `${name} was not indexed`,
+                    result.excluded ? 'scans will skip it' : null,
+                ],
+                '; ',
+            ) + '.'
+        );
     }
 
     protected checkedOf(event: Event): boolean {

@@ -18,8 +18,7 @@ describe('TagChipComponent', () => {
 
     async function show(chip: TagSummary, inputs: Record<string, unknown> = {}): Promise<void> {
         fixture.componentRef.setInput('tag', chip);
-        for (const [name, value] of Object.entries(inputs))
-            fixture.componentRef.setInput(name, value);
+        for (const [name, value] of Object.entries(inputs)) fixture.componentRef.setInput(name, value);
         await fixture.whenStable();
     }
 
@@ -76,8 +75,8 @@ describe('TagChipComponent', () => {
         await show(chip, { clickable: true, removable: true });
         const picked: TagSummary[] = [];
         const removed: TagSummary[] = [];
-        fixture.componentInstance.pick.subscribe(t => picked.push(t));
-        fixture.componentInstance.remove.subscribe(t => removed.push(t));
+        fixture.componentInstance.pick.subscribe((t) => picked.push(t));
+        fixture.componentInstance.remove.subscribe((t) => removed.push(t));
 
         element.querySelector<HTMLButtonElement>('button.tag-name')!.click();
         const remove = element.querySelector<HTMLButtonElement>('button.tag-remove')!;

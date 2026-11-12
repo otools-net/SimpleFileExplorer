@@ -49,9 +49,10 @@ export function planRenames(items: LibraryItem[], rule: BatchRenameRule, taken: 
     const names = items.map((item, index) => {
         const [stem, extension] = split(item);
         if (rule.mode === 'replace') {
-            if (!rule.find)
-                return item.name;
-            return stem.replace(new RegExp(escapeRegExp(rule.find), rule.matchCase ? 'g' : 'gi'), rule.replace) + extension;
+            if (!rule.find) return item.name;
+            return (
+                stem.replace(new RegExp(escapeRegExp(rule.find), rule.matchCase ? 'g' : 'gi'), rule.replace) + extension
+            );
         }
         const number = rule.start + index;
         const hashes = /#+/.exec(rule.pattern);
@@ -62,21 +63,17 @@ export function planRenames(items: LibraryItem[], rule: BatchRenameRule, taken: 
     const key = (name: string) => name.toLowerCase();
     const others = new Set([...taken].map(key));
     const counts = new Map<string, number>();
-    for (const name of names)
-        counts.set(key(name), (counts.get(key(name)) ?? 0) + 1);
-    const current = new Set(items.map(item => key(item.name)));
+    for (const name of names) counts.set(key(name), (counts.get(key(name)) ?? 0) + 1);
+    const current = new Set(items.map((item) => key(item.name)));
     return items.map((item, index) => {
         const name = names[index];
         let problem: string | null = null;
         // Only the extension left (".jpg") is no name either.
         if (!name.trim() || name.trim() === '.' || name.trim() === '..' || (split(item)[1] && name === split(item)[1]))
             problem = 'No name left';
-        else if (FORBIDDEN.test(name))
-            problem = 'A name can\'t hold / or \\';
-        else if (name !== item.name && (counts.get(key(name)) ?? 0) > 1)
-            problem = 'Two items would have this name';
-        else if (name !== item.name && others.has(key(name)))
-            problem = 'Already taken in this folder';
+        else if (FORBIDDEN.test(name)) problem = "A name can't hold / or \\";
+        else if (name !== item.name && (counts.get(key(name)) ?? 0) > 1) problem = 'Two items would have this name';
+        else if (name !== item.name && others.has(key(name))) problem = 'Already taken in this folder';
         else if (name !== item.name && key(name) !== key(item.name) && current.has(key(name)))
             problem = 'The name of another item renamed: rename in two steps';
         return { item, name, problem };
@@ -156,21 +153,35 @@ export class BatchRenameDialog {
     protected readonly subtitle = computed(() => `${plural(this.items().length, 'item')} selected`);
     protected readonly plans = computed(() => {
         const items = this.items();
-        const renamed = new Set(items.map(item => item.path));
-        const taken = this.store.items().filter(item => !renamed.has(item.path)).map(item => item.name);
-        return planRenames(items, {
-            mode: this.mode(), find: this.find(), replace: this.replace(), matchCase: this.matchCase(), pattern: this.pattern(), start: this.start(),
-        }, taken);
+        const renamed = new Set(items.map((item) => item.path));
+        const taken = this.store
+            .items()
+            .filter((item) => !renamed.has(item.path))
+            .map((item) => item.name);
+        return planRenames(
+            items,
+            {
+                mode: this.mode(),
+                find: this.find(),
+                replace: this.replace(),
+                matchCase: this.matchCase(),
+                pattern: this.pattern(),
+                start: this.start(),
+            },
+            taken,
+        );
     });
     /** What will be renamed. */
-    protected readonly changes = computed(() => this.plans().filter(line => !line.problem && line.name !== line.item.name));
+    protected readonly changes = computed(() =>
+        this.plans().filter((line) => !line.problem && line.name !== line.item.name),
+    );
     protected readonly summary = computed(() => {
-        const problems = this.plans().filter(line => line.problem).length;
+        const problems = this.plans().filter((line) => line.problem).length;
         return problems ? `${plural(problems, 'item')} left out` : '';
     });
 
     constructor() {
-        registerDialog(dialogs => dialogs.batchRename, this);
+        registerDialog((dialogs) => dialogs.batchRename, this);
     }
 
     open(items: LibraryItem[]): void {
@@ -200,8 +211,7 @@ export class BatchRenameDialog {
     /** Renames them one after the other; what the server refuses is said, the rest stays done (and can be undone). */
     protected async apply(): Promise<void> {
         const changes = this.changes();
-        if (!changes.length || this.saving())
-            return;
+        if (!changes.length || this.saving()) return;
         this.saving.set(true);
         this.failures.set([]);
         const done: { from: LibraryItem; to: LibraryItem }[] = [];
@@ -227,7 +237,7 @@ export class BatchRenameDialog {
             });
         if (failures.length) {
             // Those left are shown again, under their new names.
-            this.items.update(items => items.map(item => done.find(d => d.from.path === item.path)?.to ?? item));
+            this.items.update((items) => items.map((item) => done.find((d) => d.from.path === item.path)?.to ?? item));
             this.failures.set(failures);
         } else {
             this.sheet().close();
@@ -240,15 +250,12 @@ export class BatchRenameDialog {
         for (const { from, to } of [...done].reverse()) {
             try {
                 const result = await this.api.renameItem(to.path, from.name);
-                if (isFileConflict(result))
-                    failed++;
-                else
-                    this.store.applyRenamed(to.path, result);
+                if (isFileConflict(result)) failed++;
+                else this.store.applyRenamed(to.path, result);
             } catch {
                 failed++;
             }
         }
-        if (failed)
-            this.toasts.error(`${plural(failed, 'item')} could not get their names back.`);
+        if (failed) this.toasts.error(`${plural(failed, 'item')} could not get their names back.`);
     }
 }

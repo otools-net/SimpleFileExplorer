@@ -2,7 +2,17 @@ import { TestBed } from '@angular/core/testing';
 import { DirectoryListing, LibraryItem, TrashPage } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    fakeConfig,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../testing/fakes';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { SidebarService } from '../library/sidebar/sidebar.service';
@@ -20,8 +30,18 @@ const photo = item('Media/beach.jpg', { size: 2048 });
 const clip = item('Media/clip.mp4', { size: 1024 });
 
 function listing(items: LibraryItem[]): DirectoryListing {
-    const folders = items.filter(i => i.kind === 'directory').length;
-    return { path: 'Media', name: 'Media', parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: folders, fileCount: items.length - folders };
+    const folders = items.filter((i) => i.kind === 'directory').length;
+    return {
+        path: 'Media',
+        name: 'Media',
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: folders,
+        fileCount: items.length - folders,
+    };
 }
 
 async function setUp(config = fakeConfig()): Promise<void> {
@@ -29,7 +49,7 @@ async function setUp(config = fakeConfig()): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: 'Media', previous: null, next: null, position: 1, count: 1 });
     api.browse.mockResolvedValue(listing([folder, photo, clip]));
     store.route.set({ path: 'Media', q: '', sort: '', desc: false });
@@ -49,12 +69,20 @@ describe('DeleteDialog', () => {
         await setUp();
         const { dialog, element } = create();
         const toasts = TestBed.inject(ToastService);
-        api.deleteItems.mockResolvedValue({ permanent: false, items: [{ path: folder.path, status: 'done', trashId: 4 }, { path: photo.path, status: 'done', trashId: 5 }] });
-        api.restoreFromTrash.mockImplementation(id => Promise.resolve(id === 4 ? folder : photo));
+        api.deleteItems.mockResolvedValue({
+            permanent: false,
+            items: [
+                { path: folder.path, status: 'done', trashId: 4 },
+                { path: photo.path, status: 'done', trashId: 5 },
+            ],
+        });
+        api.restoreFromTrash.mockImplementation((id) => Promise.resolve(id === 4 ? folder : photo));
         dialog.open([folder, photo], false);
         await settle();
 
-        expect(element.textContent).toContain('Move 1 folder and 1 file (2 KB, and what the folders hold) to the trash?');
+        expect(element.textContent).toContain(
+            'Move 1 folder and 1 file (2 KB, and what the folders hold) to the trash?',
+        );
         buttonNamed(element, 'Delete')!.click();
         await settle();
 
@@ -67,18 +95,18 @@ describe('DeleteDialog', () => {
         api.browse.mockResolvedValue(listing([folder, photo, clip]));
         toasts.act(toast);
         await settle();
-        expect(api.restoreFromTrash.mock.calls.map(call => call[0])).toEqual([4, 5]);
+        expect(api.restoreFromTrash.mock.calls.map((call) => call[0])).toEqual([4, 5]);
         expect(store.items()).toHaveLength(3);
     });
 
-    it('says a permanent delete can\'t be undone, and offers no undo', async () => {
+    it("says a permanent delete can't be undone, and offers no undo", async () => {
         await setUp();
         const { dialog, element } = create();
         api.deleteItems.mockResolvedValue({ permanent: true, items: [{ path: clip.path, status: 'done' }] });
         dialog.open([clip], true);
         await settle();
 
-        expect(element.textContent).toContain('can\'t be undone');
+        expect(element.textContent).toContain("can't be undone");
         buttonNamed(element, 'Delete permanently')!.click();
         await settle();
 
@@ -86,13 +114,16 @@ describe('DeleteDialog', () => {
         expect(TestBed.inject(ToastService).toasts().at(-1)!.action).toBeUndefined();
     });
 
-    it('offers a permanent delete for what can\'t go to the trash, and says what failed', async () => {
+    it("offers a permanent delete for what can't go to the trash, and says what failed", async () => {
         await setUp();
         const { dialog, element } = create();
         const toasts = TestBed.inject(ToastService);
         api.deleteItems.mockResolvedValueOnce({
             permanent: false,
-            items: [{ path: folder.path, status: 'trashUnavailable' }, { path: photo.path, status: 'failed', message: '“beach.jpg” could not be deleted: it is in use.' }],
+            items: [
+                { path: folder.path, status: 'trashUnavailable' },
+                { path: photo.path, status: 'failed', message: '“beach.jpg” could not be deleted: it is in use.' },
+            ],
         });
         dialog.open([folder, photo], false);
         await settle();
@@ -101,14 +132,14 @@ describe('DeleteDialog', () => {
 
         expect(toasts.toasts().at(-1)!.message).toContain('it is in use');
         expect(element.querySelector('dialog')!.open).toBe(true);
-        expect(element.textContent).toContain('can\'t go to the trash');
+        expect(element.textContent).toContain("can't go to the trash");
 
         api.deleteItems.mockResolvedValueOnce({ permanent: true, items: [{ path: folder.path, status: 'done' }] });
         buttonNamed(element, 'Delete permanently')!.click();
         await settle();
 
         expect(api.deleteItems).toHaveBeenLastCalledWith([folder.path], true);
-        expect(store.items().map(i => i.path)).toEqual([photo.path, clip.path]);
+        expect(store.items().map((i) => i.path)).toEqual([photo.path, clip.path]);
         expect(element.querySelector('dialog')!.open).toBe(false);
     });
 });
@@ -122,13 +153,27 @@ describe('FileActions', () => {
 
         expect(actions.delete([photo], true)).toBe(true);
         expect(open).toHaveBeenLastCalledWith([photo], false);
-        expect(TestBed.inject(ItemMenu).entries(photo).find(e => e.id === 'delete')!.label).toBe('Delete…');
+        expect(
+            TestBed.inject(ItemMenu)
+                .entries(photo)
+                .find((e) => e.id === 'delete')!.label,
+        ).toBe('Delete…');
 
-        await loadConfig(api, limitedConfig([Rights.browse, Rights.deleteFiles], { files: { deletePermanently: true, trashRetentionDays: 30 } }));
+        await loadConfig(
+            api,
+            limitedConfig([Rights.browse, Rights.deleteFiles], {
+                files: { deletePermanently: true, trashRetentionDays: 30 },
+            }),
+        );
         expect(actions.canDelete(photo)).toBe(false);
         expect(actions.delete([photo])).toBe(false);
 
-        await loadConfig(api, limitedConfig([Rights.browse, Rights.deletePermanently], { files: { deletePermanently: true, trashRetentionDays: 30 } }));
+        await loadConfig(
+            api,
+            limitedConfig([Rights.browse, Rights.deletePermanently], {
+                files: { deletePermanently: true, trashRetentionDays: 30 },
+            }),
+        );
         expect(actions.delete([photo])).toBe(true);
         expect(open).toHaveBeenLastCalledWith([photo], true);
     });
@@ -140,7 +185,10 @@ describe('FileActions', () => {
         store.select(photo, true);
         store.select(clip, true);
 
-        TestBed.inject(ItemMenu).entries(photo).find(e => e.id === 'delete')!.run();
+        TestBed.inject(ItemMenu)
+            .entries(photo)
+            .find((e) => e.id === 'delete')!
+            .run();
 
         expect(open).toHaveBeenCalledWith([photo, clip], false);
     });
@@ -159,14 +207,27 @@ describe('ListingStore.applyRemoved', () => {
 
         expect(store.selection().size).toBe(0);
         expect(api.browse.mock.lastCall![0]).toMatchObject({ offset: 1 });
-        expect(store.items().map(i => i.name)).toEqual(['Holidays', 'clip.mp4', 'z.txt']);
+        expect(store.items().map((i) => i.name)).toEqual(['Holidays', 'clip.mp4', 'z.txt']);
     });
 });
 
 describe('TrashSectionComponent', () => {
-    const page = (items: TrashPage['items'], next: number | null = null): TrashPage => ({ items, hasMore: next !== null, next, retentionDays: 30 });
+    const page = (items: TrashPage['items'], next: number | null = null): TrashPage => ({
+        items,
+        hasMore: next !== null,
+        next,
+        retentionDays: 30,
+    });
     const entry = (id: number, path: string, isFolder = false) => ({
-        id, path, name: path.split('/').pop()!, isFolder, size: 2048, files: isFolder ? 3 : null, deletedAt: '2026-10-17T10:00:00Z', deletedBy: 'Sam', deletedById: 2,
+        id,
+        path,
+        name: path.split('/').pop()!,
+        isFolder,
+        size: 2048,
+        files: isFolder ? 3 : null,
+        deletedAt: '2026-10-17T10:00:00Z',
+        deletedBy: 'Sam',
+        deletedById: 2,
     });
 
     async function section() {
@@ -196,7 +257,9 @@ describe('TrashSectionComponent', () => {
         buttonNamed(element.querySelector('[data-id="9"]')!, 'Restore')!.click();
         await settle();
         expect(api.restoreFromTrash).toHaveBeenCalledWith(9);
-        expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toBe('“beach.jpg” is back, as “Media/beach (2).jpg”.');
+        expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toBe(
+            '“beach.jpg” is back, as “Media/beach (2).jpg”.',
+        );
         expect(element.querySelector('[data-id="9"]')).toBeNull();
 
         buttonNamed(element.querySelector('[data-id="8"]')!, 'Delete')!.click();
@@ -211,11 +274,13 @@ describe('TrashSectionComponent', () => {
         api.restoreFromTrash.mockResolvedValue(item('Media/beach.jpg'));
         const element = await section();
 
-        element.querySelector('[data-id="9"] .tracking-name')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+        element
+            .querySelector('[data-id="9"] .tracking-name')!
+            .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
         const target = TestBed.inject(ContextMenu).open()!.target;
 
         expect(target).toMatchObject({ kind: 'trash', name: 'beach.jpg' });
-        expect(target.entries().map(e => e.id)).toEqual(['restore', 'purge', 'openFolder', 'folderNewTab']);
+        expect(target.entries().map((e) => e.id)).toEqual(['restore', 'purge', 'openFolder', 'folderNewTab']);
         expect(target.entries()[3].href).toMatch(/\?path=Media$/);
         target.entries()[0].run!();
         await settle();
@@ -234,7 +299,9 @@ describe('TrashSectionComponent', () => {
 
     it('tells a previous version of a file saved over from what was deleted', async () => {
         await setUp();
-        api.trash.mockResolvedValue(page([{ ...entry(2, 'Docs/notes.txt'), previousVersion: true }, entry(1, 'a.txt')]));
+        api.trash.mockResolvedValue(
+            page([{ ...entry(2, 'Docs/notes.txt'), previousVersion: true }, entry(1, 'a.txt')]),
+        );
         const element = await section();
 
         expect(element.querySelector('[data-id="2"] .trash-version')!.textContent).toBe('previous version');

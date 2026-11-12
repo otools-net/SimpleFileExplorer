@@ -57,14 +57,15 @@ describe('FlashViewComponent', () => {
         const loader = async (container: HTMLElement, url: string, volume: number, given: FlashEvents) => {
             events = given;
             opened.push({ container, url, volume });
-            if (failure)
-                throw failure;
+            if (failure) throw failure;
             return handle;
         };
         TestBed.configureTestingModule({
-            providers: testProviders(api,
+            providers: testProviders(
+                api,
                 { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => canDownload } },
-                { provide: FLASH_LOADER, useValue: loader }),
+                { provide: FLASH_LOADER, useValue: loader },
+            ),
         });
         await loadConfig(api);
     });
@@ -95,11 +96,21 @@ describe('FlashViewComponent', () => {
     it('tells what the movie is once Ruffle has read it', async () => {
         await show();
 
-        events.metadata({ width: 550, height: 400, frameRate: 24, numFrames: 1, swfVersion: 10, isActionScript3: true, backgroundColor: '#000000' });
+        events.metadata({
+            width: 550,
+            height: 400,
+            frameRate: 24,
+            numFrames: 1,
+            swfVersion: 10,
+            isActionScript3: true,
+            backgroundColor: '#000000',
+        });
         events.state(true);
         await stable();
 
-        expect(element.querySelector('.text-status')!.textContent).toContain('Flash  ·  ActionScript 3  ·  SWF 10  ·  550 × 400  ·  24 fps');
+        expect(element.querySelector('.text-status')!.textContent).toContain(
+            'Flash  ·  ActionScript 3  ·  SWF 10  ·  550 × 400  ·  24 fps',
+        );
         expect(element.querySelector('[data-playing]')!.textContent).toBe('Playing');
     });
 
@@ -147,7 +158,7 @@ describe('FlashViewComponent', () => {
     it('passes Esc pressed inside the movie on to the viewer', async () => {
         await show();
         const heard = vi.fn();
-        element.parentElement!.addEventListener('keydown', event => heard(event.key));
+        element.parentElement!.addEventListener('keydown', (event) => heard(event.key));
 
         events.escape();
 
@@ -158,7 +169,9 @@ describe('FlashViewComponent', () => {
         failure = new Error('not a SWF');
         await show();
 
-        expect(element.querySelector('.text-message')!.textContent).toContain('This movie could not be played: not a SWF');
+        expect(element.querySelector('.text-message')!.textContent).toContain(
+            'This movie could not be played: not a SWF',
+        );
         expect(element.querySelector('a.button')).not.toBeNull();
         expect(element.querySelector<HTMLElement>('.flash-stage')!.hidden).toBe(true);
     });

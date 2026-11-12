@@ -24,21 +24,20 @@ export class FileDownloads {
 
     /** What a download of `items` gets: a file as it is, else a zip. */
     isZip(items: LibraryItem[]): boolean {
-        const allowed = items.filter(item => this.canDownload(item));
-        return allowed.length > 1 || allowed.some(item => item.kind === 'directory');
+        const allowed = items.filter((item) => this.canDownload(item));
+        return allowed.length > 1 || allowed.some((item) => item.kind === 'directory');
     }
 
     /** Downloads those of `items` the session may download. False when none may be. */
     async download(items: LibraryItem[]): Promise<boolean> {
-        const allowed = items.filter(item => this.canDownload(item));
-        if (!allowed.length)
-            return false;
+        const allowed = items.filter((item) => this.canDownload(item));
+        if (!allowed.length) return false;
         if (!this.isZip(allowed)) {
             save(this.config.links.download(allowed[0].path), allowed[0].name);
             return true;
         }
         try {
-            const link = await this.api.createArchive(allowed.map(item => item.path));
+            const link = await this.api.createArchive(allowed.map((item) => item.path));
             save(link.url, link.fileName);
             this.toasts.show(`Downloading ${link.fileName}: your browser shows its progress.`);
         } catch (error) {

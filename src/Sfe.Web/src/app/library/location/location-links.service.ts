@@ -37,8 +37,7 @@ export class LocationLinks {
     /** Parent, previous and next folder links, while browsing below the root; a null path is disabled. */
     readonly folderNav = computed((): FolderLink[] | null => {
         const { path, q } = this.store.route();
-        if (q || !path)
-            return null;
+        if (q || !path) return null;
         const parent = parentPath(path);
         const siblings = this.store.siblings();
         const where = siblings?.position ? ` (${siblings.position} of ${siblings.count})` : '';
@@ -46,11 +45,19 @@ export class LocationLinks {
             { path: parent, title: `Parent folder: ${baseName(parent) || this.config.config()?.rootName} (Backspace)` },
             {
                 path: siblings?.previous?.path ?? null,
-                title: siblings?.previous ? `Previous folder: ${siblings.previous.name}${where}` : siblings ? 'First folder' : 'Previous folder',
+                title: siblings?.previous
+                    ? `Previous folder: ${siblings.previous.name}${where}`
+                    : siblings
+                      ? 'First folder'
+                      : 'Previous folder',
             },
             {
                 path: siblings?.next?.path ?? null,
-                title: siblings?.next ? `Next folder: ${siblings.next.name}${where}` : siblings ? 'Last folder' : 'Next folder',
+                title: siblings?.next
+                    ? `Next folder: ${siblings.next.name}${where}`
+                    : siblings
+                      ? 'Last folder'
+                      : 'Next folder',
             },
         ];
     });

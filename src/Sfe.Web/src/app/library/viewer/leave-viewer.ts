@@ -9,4 +9,4 @@ import { Dialogs } from '../dialogs.service';
 export const leaveViewer: CanDeactivateFn<unknown> = () => inject(Dialogs).viewer()?.confirmLeave() ?? true;
 
 /** Asks before the page of a file (`view?path=`) goes elsewhere in the app with unsaved changes. */
-export const leaveViewPage: CanDeactivateFn<{ canLeave(): boolean }> = page => page.canLeave();
+export const leaveViewPage: CanDeactivateFn<{ canLeave(): boolean }> = (page) => page.canLeave();

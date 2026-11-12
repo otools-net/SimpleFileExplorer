@@ -17,7 +17,9 @@
     color: inherit;
     pointer-events: none;
 }
-.context-menu-layer .item-menu { pointer-events: auto; }
+.context-menu-layer .item-menu {
+    pointer-events: auto;
+}
 
 .item-menu {
     position: fixed;
@@ -48,14 +50,36 @@
     cursor: pointer;
 }
 
-a.item-menu-entry { text-decoration: none; }
-.item-menu-entry:is(:hover, :focus-visible) { background: var(--surface-2); outline: none; }
-.item-menu-entry .icon { flex: none; width: 17px; height: 17px; color: var(--text-muted); }
-.item-menu-entry span { flex: 1; }
-.item-menu-entry kbd { color: var(--text-muted); font-size: 11px; }
-.item-menu-entry .icon.item-menu-check { color: var(--accent); }
-.item-menu-entry[aria-disabled="true"] { opacity: .5; cursor: default; }
-.item-menu-entry[aria-disabled="true"]:hover { background: none; }
+a.item-menu-entry {
+    text-decoration: none;
+}
+.item-menu-entry:is(:hover, :focus-visible) {
+    background: var(--surface-2);
+    outline: none;
+}
+.item-menu-entry .icon {
+    flex: none;
+    width: 17px;
+    height: 17px;
+    color: var(--text-muted);
+}
+.item-menu-entry span {
+    flex: 1;
+}
+.item-menu-entry kbd {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+.item-menu-entry .icon.item-menu-check {
+    color: var(--accent);
+}
+.item-menu-entry[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: default;
+}
+.item-menu-entry[aria-disabled='true']:hover {
+    background: none;
+}
 
 /* Over a tile's picture, where the tag button was: the tag button moves one place left. */
 .tile .item-menu-button {
@@ -64,39 +88,93 @@ a.item-menu-entry { text-decoration: none; }
     right: 8px;
     z-index: 2;
     border-color: transparent;
-    background: rgb(0 0 0 / .55);
+    background: rgb(0 0 0 / 0.55);
     color: #fff;
     opacity: 0;
-    transition: opacity .15s, background .15s;
+    transition:
+        opacity 0.15s,
+        background 0.15s;
 }
 
-.tile .item-menu-button:hover { background: rgb(0 0 0 / .75); }
-.tile:hover .item-menu-button, .tile:focus-within .item-menu-button { opacity: 1; }
-.tile:has(.item-menu-button:not([hidden])) .tag-button { right: 44px; }
-.row .item-menu-button { border-color: transparent; background: transparent; color: var(--text-muted); }
-.row .item-menu-button:hover { background: var(--surface-3); color: var(--text); }
-.item-menu-button .icon { width: 17px; height: 17px; }
+.tile .item-menu-button:hover {
+    background: rgb(0 0 0 / 0.75);
+}
+.tile:hover .item-menu-button,
+.tile:focus-within .item-menu-button {
+    opacity: 1;
+}
+.tile:has(.item-menu-button:not([hidden])) .tag-button {
+    right: 44px;
+}
+.row .item-menu-button {
+    border-color: transparent;
+    background: transparent;
+    color: var(--text-muted);
+}
+.row .item-menu-button:hover {
+    background: var(--surface-3);
+    color: var(--text);
+}
+.item-menu-button .icon {
+    width: 17px;
+    height: 17px;
+}
 
 @media (hover: none) {
-    .tile .item-menu-button { opacity: 1; }
+    .tile .item-menu-button {
+        opacity: 1;
+    }
 }
 
 /* Just made or renamed. */
-.folder-item.revealed .folder { outline: 2px solid var(--accent); outline-offset: 2px; }
+.folder-item.revealed .folder {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
 
 /* The delete confirmation's names. */
-.delete-names { margin: 0; padding-left: 20px; color: var(--text-muted); overflow-wrap: anywhere; }
+.delete-names {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+}
 
-.location-head :is(.new-folder-button, .new-file-button) { flex: none; color: var(--text-muted); }
-.location-head :is(.new-folder-button, .new-file-button):hover { color: var(--text); }
+.location-head :is(.new-folder-button, .new-file-button) {
+    flex: none;
+    color: var(--text-muted);
+}
+.location-head :is(.new-folder-button, .new-file-button):hover {
+    color: var(--text);
+}
 
 /* ---------- Moves and copies: the folder picker, the operations panel, drops ---------- */
 
-.transfer-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 0 0 8px; overflow-wrap: anywhere; }
-.transfer-crumbs strong { display: inline-flex; align-items: center; gap: 6px; }
-.transfer-crumbs .icon { width: 16px; height: 16px; color: var(--text-muted); }
+.transfer-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    margin: 0 0 8px;
+    overflow-wrap: anywhere;
+}
+.transfer-crumbs strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.transfer-crumbs .icon {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+}
 /* A finger's size on touch screens (20 px tall as a line of text). */
-@media (pointer: coarse) { .transfer-crumbs .link-button { min-height: 32px; align-items: center; } }
+@media (pointer: coarse) {
+    .transfer-crumbs .link-button {
+        min-height: 32px;
+        align-items: center;
+    }
+}
 .transfer-folders {
     max-height: min(320px, 45vh);
     margin: 0 0 12px;
@@ -106,7 +184,9 @@ a.item-menu-entry { text-decoration: none; }
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
 }
-.transfer-folders .muted { padding: 8px 10px; }
+.transfer-folders .muted {
+    padding: 8px 10px;
+}
 .transfer-folder {
     display: flex;
     align-items: center;
@@ -120,16 +200,45 @@ a.item-menu-entry { text-decoration: none; }
     text-align: left;
     cursor: pointer;
 }
-.transfer-folder:is(:hover, :focus-visible):not(:disabled) { background: var(--surface-2); outline: none; }
-.transfer-folder:disabled { opacity: .5; cursor: default; }
-.transfer-folder .icon { flex: none; width: 17px; height: 17px; color: var(--text-muted); }
-.transfer-folder span { overflow-wrap: anywhere; }
-.transfer-gains { margin: 0 0 12px; padding-left: 20px; }
+.transfer-folder:is(:hover, :focus-visible):not(:disabled) {
+    background: var(--surface-2);
+    outline: none;
+}
+.transfer-folder:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+.transfer-folder .icon {
+    flex: none;
+    width: 17px;
+    height: 17px;
+    color: var(--text-muted);
+}
+.transfer-folder span {
+    overflow-wrap: anywhere;
+}
+.transfer-gains {
+    margin: 0 0 12px;
+    padding-left: 20px;
+}
 /* Compress: where the zip goes, with "Another folder…" beside it; the password notes close under the boxes. */
-.compress-where { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 4px; }
-.compress-size { margin: 0 0 12px; }
-.compress-notes { margin: 4px 0 0; padding-left: 20px; }
-.transfer-dialog .check { margin-top: 6px; }
+.compress-where {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    margin-bottom: 4px;
+}
+.compress-size {
+    margin: 0 0 12px;
+}
+.compress-notes {
+    margin: 4px 0 0;
+    padding-left: 20px;
+}
+.transfer-dialog .check {
+    margin-top: 6px;
+}
 
 .operations-panel {
     position: fixed;
@@ -144,58 +253,188 @@ a.item-menu-entry { text-decoration: none; }
     overflow-y: auto;
 }
 /* Above the selection bar while it shows. */
-.selecting .operations-panel { bottom: max(76px, env(safe-area-inset-bottom)); }
+.selecting .operations-panel {
+    bottom: max(76px, env(safe-area-inset-bottom));
+}
 .operation {
     padding: 10px 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
     box-shadow: var(--shadow);
-    animation: toast-in .2s ease-out;
+    animation: toast-in 0.2s ease-out;
 }
-.operation-head { display: flex; align-items: center; gap: 8px; }
-.operation-head > .icon { flex: none; width: 18px; height: 18px; color: var(--text-muted); }
-.operation-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.operation progress { width: 100%; height: 6px; margin-top: 8px; accent-color: var(--accent); }
-.operation-status { margin: 4px 0 0; color: var(--text-muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.operation-conflict { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-.operation-conflict p { margin: 0 0 6px; overflow-wrap: anywhere; }
-.operation-conflict dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0 0 8px; font-size: 12px; }
-.operation-conflict dt { color: var(--text-muted); }
-.operation-conflict dd { margin: 0; }
-.operation-choices { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
-.operation-problems { margin: 8px 0 0; padding-left: 20px; color: var(--danger); font-size: 12px; overflow-wrap: anywhere; }
-.operation-problems .skipped { color: var(--text-muted); }
+.operation-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.operation-head > .icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+}
+.operation-title {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.operation progress {
+    width: 100%;
+    height: 6px;
+    margin-top: 8px;
+    accent-color: var(--accent);
+}
+.operation-status {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.operation-conflict {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+.operation-conflict p {
+    margin: 0 0 6px;
+    overflow-wrap: anywhere;
+}
+.operation-conflict dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 10px;
+    margin: 0 0 8px;
+    font-size: 12px;
+}
+.operation-conflict dt {
+    color: var(--text-muted);
+}
+.operation-conflict dd {
+    margin: 0;
+}
+.operation-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+.operation-problems {
+    margin: 8px 0 0;
+    padding-left: 20px;
+    color: var(--danger);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+.operation-problems .skipped {
+    color: var(--text-muted);
+}
 
 /* A folder that dragged items would be moved or copied into. */
-.folder-item.drop-over .folder, .location a.drop-over { outline: 2px dashed var(--accent); outline-offset: 2px; background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.folder-item.drop-over .folder,
+.location a.drop-over {
+    outline: 2px dashed var(--accent);
+    outline-offset: 2px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
 
 /* Cut (Ctrl+X), until pasted. */
-:is(.tile, .row, .folder-item).cut { opacity: .5; }
+:is(.tile, .row, .folder-item).cut {
+    opacity: 0.5;
+}
 
 /* ---------- Uploads: the panel's files, the page as a drop target ---------- */
 
-.uploads-panel { display: contents; }
-.upload-files { margin: 8px 0 0; padding: 0; list-style: none; font-size: 12px; }
-.upload-file { display: flex; align-items: center; gap: 6px; min-height: 28px; }
-.upload-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.upload-state { flex: none; max-width: 55%; color: var(--text-muted); overflow-wrap: anywhere; text-align: right; }
-.upload-file[data-state="failed"] .upload-state { color: var(--danger); }
-.upload-file .button.small { padding: 2px 8px; }
-main.page.drop-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
-.location-head :is(.upload-button, .upload-folder-button) { flex: none; color: var(--text-muted); }
-.location-head :is(.upload-button, .upload-folder-button):hover { color: var(--text); }
+.uploads-panel {
+    display: contents;
+}
+.upload-files {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+}
+.upload-file {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+}
+.upload-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.upload-state {
+    flex: none;
+    max-width: 55%;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+    text-align: right;
+}
+.upload-file[data-state='failed'] .upload-state {
+    color: var(--danger);
+}
+.upload-file .button.small {
+    padding: 2px 8px;
+}
+main.page.drop-over {
+    outline: 2px dashed var(--accent);
+    outline-offset: -6px;
+}
+.location-head :is(.upload-button, .upload-folder-button) {
+    flex: none;
+    color: var(--text-muted);
+}
+.location-head :is(.upload-button, .upload-folder-button):hover {
+    color: var(--text);
+}
 
 /* Properties of a file or folder. */
-.properties { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; }
-.properties dt { color: var(--text-muted); }
-.properties dd { margin: 0; overflow-wrap: anywhere; }
-.properties-name { font-weight: 600; }
-.properties-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-.properties-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
-.properties-section h3 { margin: 0 0 8px; font-size: 14px; }
-.properties-section p { margin: 0 0 8px; }
-.properties-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.properties {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 6px 16px;
+    margin: 0;
+}
+.properties dt {
+    color: var(--text-muted);
+}
+.properties dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.properties-name {
+    font-weight: 600;
+}
+.properties-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.properties-section {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+.properties-section h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+}
+.properties-section p {
+    margin: 0 0 8px;
+}
+.properties-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
 /* The app's colours, not the browser's own select: Linux Chromium's was light text on its grey (a11y.spec.ts, contrast). */
 .properties-actions select {
     height: 32px;
@@ -205,14 +444,29 @@ main.page.drop-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
     background: var(--surface-2);
     color: var(--text);
 }
-.properties-checksum { display: flex; align-items: center; gap: 8px; margin-top: 8px !important; }
-.properties-checksum code { min-width: 0; overflow-wrap: anywhere; font-size: 12px; user-select: all; }
+.properties-checksum {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px !important;
+}
+.properties-checksum code {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 12px;
+    user-select: all;
+}
 
 /* The item menu's title: only on phones, where the menu is a sheet at the bottom (phone-sheets.css). */
-.item-menu-title { display: none; }
+.item-menu-title {
+    display: none;
+}
 
 @media (max-width: 640px) {
-    .item-menu { padding-top: 8px; padding-inline: 8px; }
+    .item-menu {
+        padding-top: 8px;
+        padding-inline: 8px;
+    }
     .item-menu-title {
         display: block;
         margin: 2px 10px 6px;
@@ -222,20 +476,64 @@ main.page.drop-over { outline: 2px dashed var(--accent); outline-offset: -6px; }
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-    .item-menu-entry { min-height: 46px; font-size: 15px; }
-    .item-menu-entry kbd { display: none; }
+    .item-menu-entry {
+        min-height: 46px;
+        font-size: 15px;
+    }
+    .item-menu-entry kbd {
+        display: none;
+    }
 }
 
 /* Several items renamed at once. */
-.batch-rename-modes { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
-.batch-rename-fields { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-bottom: 12px; }
-.batch-rename-fields .field { flex: 1 1 200px; }
-.batch-rename-fields input[type="number"] { width: 100px; }
-.batch-rename-preview { width: 100%; border-collapse: collapse; font-size: 13px; }
-.batch-rename-preview th { color: var(--text-muted); font-weight: 500; text-align: left; }
-.batch-rename-preview :is(th, td) { padding: 5px 8px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
-.batch-rename-preview tr.unchanged td { color: var(--text-muted); }
-.batch-rename-preview tr.problem td:first-child { color: var(--text-muted); text-decoration: line-through; }
+.batch-rename-modes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+.batch-rename-fields {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.batch-rename-fields .field {
+    flex: 1 1 200px;
+}
+.batch-rename-fields input[type='number'] {
+    width: 100px;
+}
+.batch-rename-preview {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.batch-rename-preview th {
+    color: var(--text-muted);
+    font-weight: 500;
+    text-align: left;
+}
+.batch-rename-preview :is(th, td) {
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--border);
+    overflow-wrap: anywhere;
+}
+.batch-rename-preview tr.unchanged td {
+    color: var(--text-muted);
+}
+.batch-rename-preview tr.problem td:first-child {
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
 
 /* The trash: a file's content before a save over it (text editor). */
-.trash-version { align-self: flex-start; padding: 0 6px; border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted); font-size: 11px; }
+.trash-version {
+    align-self: flex-start;
+    padding: 0 6px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 11px;
+}

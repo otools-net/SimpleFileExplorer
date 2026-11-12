@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    ElementRef,
+    inject,
+    input,
+    output,
+    signal,
+    viewChild,
+} from '@angular/core';
 import { InheritedDefaultTag, TagSummary } from '../core/models';
 import { IconComponent } from '../shared/icon.component';
 import { TagChipComponent } from './tag-chip.component';
@@ -84,17 +96,22 @@ export class DefaultTagsBadgeComponent {
     private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
     protected readonly id = `default-tags-${++nextId}`;
     protected readonly open = signal(false);
-    protected readonly position = signal<{ top: number | null; bottom: number | null; left: number }>({ top: 0, bottom: null, left: 0 });
+    protected readonly position = signal<{ top: number | null; bottom: number | null; left: number }>({
+        top: 0,
+        bottom: null,
+        left: 0,
+    });
 
     protected readonly count = computed(() => this.own().length + this.inherited().length);
     protected readonly label = computed(() => {
-        const names = [...this.own(), ...this.inherited().map(entry => entry.tag)].map(tag => tag.displayName || tag.name);
+        const names = [...this.own(), ...this.inherited().map((entry) => entry.tag)].map(
+            (tag) => tag.displayName || tag.name,
+        );
         return `Default tags: ${names.join(', ')}`;
     });
     protected readonly inheritedGroups = computed(() => {
         const groups = new Map<string, TagSummary[]>();
-        for (const entry of this.inherited())
-            groups.set(entry.path, [...groups.get(entry.path) ?? [], entry.tag]);
+        for (const entry of this.inherited()) groups.set(entry.path, [...(groups.get(entry.path) ?? []), entry.tag]);
         return [...groups].map(([path, tags]) => ({ path, label: folderLabel(path), tags }));
     });
 
@@ -104,18 +121,15 @@ export class DefaultTagsBadgeComponent {
         let shown: HTMLElement | null = null;
         effect(() => {
             const panel = this.panel()?.nativeElement ?? null;
-            if (panel && panel !== shown && typeof panel.showPopover === 'function')
-                panel.showPopover();
+            if (panel && panel !== shown && typeof panel.showPopover === 'function') panel.showPopover();
             shown = panel;
         });
         const outside = (event: Event) => {
-            if (this.open() && !this.host.contains(event.target as Node))
-                this.close(false);
+            if (this.open() && !this.host.contains(event.target as Node)) this.close(false);
         };
         // A page scrolling under the fixed panel would leave it pointing nowhere; its own content may scroll.
         const scrolled = (event: Event) => {
-            if (this.open() && !this.host.contains(event.target as Node))
-                this.close(false);
+            if (this.open() && !this.host.contains(event.target as Node)) this.close(false);
         };
         document.addEventListener('pointerdown', outside, true);
         document.addEventListener('scroll', scrolled, true);
@@ -128,19 +142,15 @@ export class DefaultTagsBadgeComponent {
     }
 
     protected toggle(): void {
-        if (this.open())
-            this.close(false);
-        else
-            this.show();
+        if (this.open()) this.close(false);
+        else this.show();
     }
 
     /** Closes the panel; `focus`: back on the icon (Esc, ×). */
     close(focus: boolean): void {
-        if (!this.open())
-            return;
+        if (!this.open()) return;
         this.open.set(false);
-        if (focus)
-            this.button().nativeElement.focus();
+        if (focus) this.button().nativeElement.focus();
     }
 
     protected change(): void {
@@ -153,12 +163,19 @@ export class DefaultTagsBadgeComponent {
         const rect = this.button().nativeElement.getBoundingClientRect();
         const width = Math.min(320, window.innerWidth - 16);
         // From the icon's left edge rightwards, else (near the window's right side) ending at its right edge.
-        const left = Math.max(8, rect.left + width <= window.innerWidth - 8 ? rect.left : Math.min(rect.right - width, window.innerWidth - width - 8));
+        const left = Math.max(
+            8,
+            rect.left + width <= window.innerWidth - 8
+                ? rect.left
+                : Math.min(rect.right - width, window.innerWidth - width - 8),
+        );
         // Room for a few lines of tags below, else above when there is more room there.
         const above = window.innerHeight - rect.bottom < 220 && rect.top > window.innerHeight - rect.bottom;
-        this.position.set(above
-            ? { top: null, bottom: window.innerHeight - rect.top + 6, left }
-            : { top: rect.bottom + 6, bottom: null, left });
+        this.position.set(
+            above
+                ? { top: null, bottom: window.innerHeight - rect.top + 6, left }
+                : { top: rect.bottom + 6, bottom: null, left },
+        );
         this.open.set(true);
     }
 }

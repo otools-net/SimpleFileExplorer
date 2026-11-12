@@ -4,14 +4,37 @@ import { Router } from '@angular/router';
 import { ApiError } from '../core/api.service';
 import { DirectoryListing, LibraryItem, SearchResults } from '../core/models';
 import { ToastService } from '../core/toast.service';
-import { ApiMock, deferred, fakeConfig, fileTags, item, loadConfig, mockApi, settle, summary, tag, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    deferred,
+    fakeConfig,
+    fileTags,
+    item,
+    loadConfig,
+    mockApi,
+    settle,
+    summary,
+    tag,
+    testProviders,
+} from '../../testing/fakes';
 import { Dialogs } from './dialogs.service';
 import { ListingStore } from './listing.store';
 import { SidebarService } from './sidebar/sidebar.service';
 import { ViewerComponent } from './viewer/viewer.component';
 
 function listing(items: LibraryItem[], overrides: Partial<DirectoryListing> = {}): DirectoryListing {
-    return { path: '', name: 'Root', parentPath: null, items, offset: 0, limit: items.length, total: items.length, directoryCount: 0, fileCount: items.length, ...overrides };
+    return {
+        path: '',
+        name: 'Root',
+        parentPath: null,
+        items,
+        offset: 0,
+        limit: items.length,
+        total: items.length,
+        directoryCount: 0,
+        fileCount: items.length,
+        ...overrides,
+    };
 }
 
 function results(items: LibraryItem[], next: string | null = null): SearchResults {
@@ -36,7 +59,7 @@ describe('ListingStore', () => {
         await loadConfig(api, fakeConfig({ pageSize: 3, searchPageSize: 2 }));
         store = TestBed.inject(ListingStore);
         sidebar = TestBed.inject(SidebarService);
-        vi.spyOn(sidebar, 'refresh').mockImplementation(() => { });
+        vi.spyOn(sidebar, 'refresh').mockImplementation(() => {});
         api.siblings.mockResolvedValue({ path: '', previous: null, next: null, position: 0, count: 0 });
     });
 
@@ -44,9 +67,15 @@ describe('ListingStore', () => {
 
     describe('folder rules', () => {
         it('narrows the rights of the space to those the folder rules give here and on each entry', async () => {
-            api.browse.mockResolvedValue(listing([folder, a], {
-                access: { rights: ['library.browse', 'tags.view', 'tags.assign'], pathOnly: false, children: { folder: { rights: ['library.browse'], pathOnly: true } } },
-            }));
+            api.browse.mockResolvedValue(
+                listing([folder, a], {
+                    access: {
+                        rights: ['library.browse', 'tags.view', 'tags.assign'],
+                        pathOnly: false,
+                        children: { folder: { rights: ['library.browse'], pathOnly: true } },
+                    },
+                }),
+            );
             await store.load();
 
             expect(store.can('tags.assign')).toBe(true);
@@ -75,7 +104,10 @@ describe('ListingStore', () => {
 
             await store.load();
 
-            expect(api.browse).toHaveBeenCalledWith({ path: 'x', offset: 0, limit: 3, sort: 'size', desc: true }, expect.any(AbortSignal));
+            expect(api.browse).toHaveBeenCalledWith(
+                { path: 'x', offset: 0, limit: 3, sort: 'size', desc: true },
+                expect.any(AbortSignal),
+            );
             expect(store.status()).toBe('ready');
             expect(store.items()).toEqual([folder, a, b]);
             expect(store.folders()).toEqual([folder]);
@@ -94,7 +126,9 @@ describe('ListingStore', () => {
         });
 
         it('loads the next pages from where the last one ended', async () => {
-            api.browse.mockResolvedValueOnce(listing([a, b, c], { total: 4 })).mockResolvedValueOnce(listing([d], { offset: 3, total: 4 }));
+            api.browse
+                .mockResolvedValueOnce(listing([a, b, c], { total: 4 }))
+                .mockResolvedValueOnce(listing([d], { offset: 3, total: 4 }));
             await store.load();
 
             expect(await store.loadMore()).toBe(true);
@@ -126,7 +160,10 @@ describe('ListingStore', () => {
             await store.load();
             await store.loadMore();
 
-            expect(api.search.mock.calls.map(([query]) => [query.after, query.limit, query.sort])).toEqual([[null, 2, 'path'], ['b.mp4', 2, 'path']]);
+            expect(api.search.mock.calls.map(([query]) => [query.after, query.limit, query.sort])).toEqual([
+                [null, 2, 'path'],
+                ['b.mp4', 2, 'path'],
+            ]);
             expect(store.items()).toEqual([a, b, c]);
             expect(store.hasMore()).toBe(false);
             expect(store.searching()).toBe(true);
@@ -155,8 +192,10 @@ describe('ListingStore', () => {
         });
 
         it('shows what came back when a page of the way back fails', async () => {
-            vi.spyOn(TestBed.inject(ToastService), 'error').mockImplementation(() => { });
-            api.browse.mockResolvedValueOnce(listing([a, b], { total: 5 })).mockRejectedValueOnce(new ApiError(500, 'Boom'));
+            vi.spyOn(TestBed.inject(ToastService), 'error').mockImplementation(() => {});
+            api.browse
+                .mockResolvedValueOnce(listing([a, b], { total: 5 }))
+                .mockRejectedValueOnce(new ApiError(500, 'Boom'));
 
             await store.load({ loaded: 4 });
 
@@ -193,7 +232,7 @@ describe('ListingStore', () => {
         });
 
         it('cancels the requests of the listing left', async () => {
-            api.browse.mockReturnValue(new Promise(() => { }));
+            api.browse.mockReturnValue(new Promise(() => {}));
             void store.load();
             const signal = api.browse.mock.lastCall![1]!;
 
@@ -224,7 +263,9 @@ describe('ListingStore', () => {
 
         it('stops paging after a failed page, saying so', async () => {
             const error = vi.spyOn(TestBed.inject(ToastService), 'error');
-            api.browse.mockResolvedValueOnce(listing([a, b, c], { total: 9 })).mockRejectedValueOnce(new ApiError(500, 'Boom'));
+            api.browse
+                .mockResolvedValueOnce(listing([a, b, c], { total: 9 }))
+                .mockRejectedValueOnce(new ApiError(500, 'Boom'));
             await store.load();
 
             expect(await store.loadMore()).toBe(false);
@@ -243,7 +284,10 @@ describe('ListingStore', () => {
             store.route.set({ path: 'x/y', q: '', sort: 'modified', desc: true });
             await store.load();
             await settle();
-            expect(api.siblings).toHaveBeenCalledWith({ path: 'x/y', sort: 'modified', desc: true }, expect.any(AbortSignal));
+            expect(api.siblings).toHaveBeenCalledWith(
+                { path: 'x/y', sort: 'modified', desc: true },
+                expect.any(AbortSignal),
+            );
             expect(store.siblings()).toEqual(siblings);
 
             store.route.set({ path: '', q: '', sort: '', desc: false });
@@ -354,7 +398,7 @@ describe('ListingStore', () => {
             store.applyTagChanged(renamed);
 
             expect(store.items()[1].tags).toEqual([summary(renamed)]);
-            expect(store.items()[2].tags!.map(t => t.name)).toEqual(['Sunny', 'Sea']);
+            expect(store.items()[2].tags!.map((t) => t.name)).toEqual(['Sunny', 'Sea']);
         });
 
         it('takes a deleted tag off the files', () => {
@@ -366,13 +410,25 @@ describe('ListingStore', () => {
 
         it('gives a tag added to a folder to its listed files, and to those of sub-folders when recursive', () => {
             const nested = item('Sub/n.jpg');
-            store.items.update(items => [...items, nested]);
+            store.items.update((items) => [...items, nested]);
 
             store.applyScopeTags({ path: '', recursive: false, query: null }, { add: sea });
-            expect(store.items().map(i => i.tags?.map(t => t.name))).toEqual([undefined, ['Sun', 'Sea'], ['Sun', 'Sea'], ['Sea'], []]);
+            expect(store.items().map((i) => i.tags?.map((t) => t.name))).toEqual([
+                undefined,
+                ['Sun', 'Sea'],
+                ['Sun', 'Sea'],
+                ['Sea'],
+                [],
+            ]);
 
             store.applyScopeTags({ path: '', recursive: true, query: null }, { remove: sun.id });
-            expect(store.items().map(i => i.tags?.map(t => t.name))).toEqual([undefined, ['Sea'], ['Sea'], ['Sea'], []]);
+            expect(store.items().map((i) => i.tags?.map((t) => t.name))).toEqual([
+                undefined,
+                ['Sea'],
+                ['Sea'],
+                ['Sea'],
+                [],
+            ]);
 
             store.applyScopeTags({ path: 'Sub', recursive: false, query: null }, { add: sun });
             expect(store.items()[4].tags).toEqual([sun]);
@@ -380,15 +436,15 @@ describe('ListingStore', () => {
         });
 
         it('drops the not-indexed mark of the files tagging indexed, and only theirs', () => {
-            store.items.update(items => items.map(i => ({ ...i, indexed: false })));
+            store.items.update((items) => items.map((i) => ({ ...i, indexed: false })));
             const nested = { ...item('Sub/n.jpg'), indexed: false };
-            store.items.update(items => [...items, nested]);
+            store.items.update((items) => [...items, nested]);
 
             store.applyFileTags([fileTags(c.path, [sea])]);
-            expect(store.items().map(i => i.indexed)).toEqual([false, false, false, true, false]);
+            expect(store.items().map((i) => i.indexed)).toEqual([false, false, false, true, false]);
 
             store.applyScopeTags({ path: '', recursive: false, query: null }, { add: sea });
-            expect(store.items().map(i => i.indexed)).toEqual([false, true, true, true, false]);
+            expect(store.items().map((i) => i.indexed)).toEqual([false, true, true, true, false]);
         });
 
         it('gives a tag added to the results of a search to the files listed for that search only', () => {
@@ -442,7 +498,7 @@ describe('ListingStore', () => {
         beforeEach(() => {
             viewer = { open: vi.fn() };
             TestBed.inject(Dialogs).viewer.set(viewer as unknown as ViewerComponent);
-            navigate = vi.spyOn(store, 'navigate').mockImplementation(() => { });
+            navigate = vi.spyOn(store, 'navigate').mockImplementation(() => {});
         });
 
         /** What the listing page does on the navigation `reveal` starts. */
@@ -456,7 +512,12 @@ describe('ListingStore', () => {
         it('lists the folder of the file, takes pages until it is there, and opens media in the viewer', async () => {
             const target = item('Media/d.jpg');
             api.browse
-                .mockResolvedValueOnce(listing([item('Media/a.jpg'), item('Media/b.mp4'), item('Media/c.txt')], { path: 'Media', total: 4 }))
+                .mockResolvedValueOnce(
+                    listing([item('Media/a.jpg'), item('Media/b.mp4'), item('Media/c.txt')], {
+                        path: 'Media',
+                        total: 4,
+                    }),
+                )
                 .mockResolvedValueOnce(listing([target], { path: 'Media', offset: 3, total: 4 }));
             store.route.set({ path: 'Other', q: 'cats', sort: 'size', desc: false });
 
@@ -518,7 +579,10 @@ describe('ListingStore', () => {
 
             store.navigate({ q: 't:cat' }, { replace: true });
 
-            expect(navigate).toHaveBeenCalledWith(['/'], { queryParams: { path: 'x', q: 't:cat', sort: 'size', desc: '1' }, replaceUrl: true });
+            expect(navigate).toHaveBeenCalledWith(['/'], {
+                queryParams: { path: 'x', q: 't:cat', sort: 'size', desc: '1' },
+                replaceUrl: true,
+            });
         });
 
         it('links to a folder keeping the sort but not the search', () => {
@@ -549,7 +613,15 @@ describe('ListingStore', () => {
             store.applyAdded(item('Aardvark', { kind: 'directory' }));
             store.applyAdded(item('Zzz', { kind: 'directory' }));
 
-            expect(store.items().map(i => i.name)).toEqual(['Aardvark', 'Folder', 'Photos', 'Zoo', 'Zzz', 'a.jpg', 'b.mp4']);
+            expect(store.items().map((i) => i.name)).toEqual([
+                'Aardvark',
+                'Folder',
+                'Photos',
+                'Zoo',
+                'Zzz',
+                'a.jpg',
+                'b.mp4',
+            ]);
             expect(store.listing()).toMatchObject({ total: 7, directoryCount: 5, fileCount: 2 });
             expect(store.total()).toEqual({ count: 7, capped: false });
         });
@@ -562,7 +634,7 @@ describe('ListingStore', () => {
             store.applyAdded(item('New', { kind: 'directory' }));
             store.applyAdded(item('Other/New', { kind: 'directory' }));
 
-            expect(store.items().map(i => i.path)).toEqual(['New', 'a.jpg', 'b.mp4']);
+            expect(store.items().map((i) => i.path)).toEqual(['New', 'a.jpg', 'b.mp4']);
         });
 
         it('leaves out of the next page what was added meanwhile', async () => {
@@ -574,7 +646,7 @@ describe('ListingStore', () => {
 
             await store.loadMore();
 
-            expect(store.items().map(i => i.path)).toEqual(['Folder', 'New', 'a.jpg', 'b.mp4', 'c.txt', 'd.jpg']);
+            expect(store.items().map((i) => i.path)).toEqual(['Folder', 'New', 'a.jpg', 'b.mp4', 'c.txt', 'd.jpg']);
         });
     });
 });

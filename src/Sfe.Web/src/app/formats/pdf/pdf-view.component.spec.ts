@@ -10,7 +10,9 @@ function fakeHandle(go: () => void) {
     return {
         pages: 12,
         title: 'Hiking guide' as string | null,
-        outline: [{ title: 'Before leaving', items: [{ title: 'Weather', items: [], go }], go: () => undefined }] as PdfOutlineItem[],
+        outline: [
+            { title: 'Before leaving', items: [{ title: 'Weather', items: [], go }], go: () => undefined },
+        ] as PdfOutlineItem[],
         goTo: vi.fn<(page: number) => void>(),
         setScale: vi.fn<(scale: string | number) => void>(),
         find: vi.fn<(query: string, options: { previous?: boolean; again?: boolean }) => void>(),
@@ -54,9 +56,8 @@ describe('PdfViewComponent', () => {
     }
 
     beforeEach(async () => {
-        for (const key of [PDF_PAGES_KEY, PDF_DARK_KEY, PDF_OUTLINE_KEY])
-            localStorage.removeItem(key);
-        document.head.querySelectorAll('link[data-pdf-viewer]').forEach(link => link.remove());
+        for (const key of [PDF_PAGES_KEY, PDF_DARK_KEY, PDF_OUTLINE_KEY]) localStorage.removeItem(key);
+        document.head.querySelectorAll('link[data-pdf-viewer]').forEach((link) => link.remove());
         api = mockApi();
         opened = [];
         failure = null;
@@ -68,38 +69,38 @@ describe('PdfViewComponent', () => {
             opened.push({ container, url, start });
             if (locked) {
                 let password = await given.password(false);
-                while (password !== 'secret' && password !== null)
-                    password = await given.password(true);
-                if (password === null)
-                    throw new Error('given up');
+                while (password !== 'secret' && password !== null) password = await given.password(true);
+                if (password === null) throw new Error('given up');
             }
-            if (failure)
-                throw failure;
+            if (failure) throw failure;
             return handle;
         };
         TestBed.configureTestingModule({
-            providers: testProviders(api,
+            providers: testProviders(
+                api,
                 { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => true } },
-                { provide: PDF_LOADER, useValue: loader }),
+                { provide: PDF_LOADER, useValue: loader },
+            ),
         });
         await loadConfig(api);
     });
 
     afterEach(() => {
-        for (const key of [PDF_PAGES_KEY, PDF_DARK_KEY, PDF_OUTLINE_KEY])
-            localStorage.removeItem(key);
+        for (const key of [PDF_PAGES_KEY, PDF_DARK_KEY, PDF_OUTLINE_KEY]) localStorage.removeItem(key);
         fixture?.destroy();
         TestBed.resetTestingModule();
     });
 
-    it('opens the file from the app itself, with pdf.js\' styles linked once', async () => {
+    it("opens the file from the app itself, with pdf.js' styles linked once", async () => {
         await show();
 
         expect(opened).toHaveLength(1);
         expect(opened[0].url).toBe('api/files/raw/Docs/Guide.pdf');
         expect(opened[0].container.classList).toContain('pdf-container');
         expect(opened[0].start).toBeNull();
-        expect(element.querySelector('.text-status')!.textContent).toContain('PDF  ·  12 pages  ·  2.3 MB  ·  Hiking guide');
+        expect(element.querySelector('.text-status')!.textContent).toContain(
+            'PDF  ·  12 pages  ·  2.3 MB  ·  Hiking guide',
+        );
         expect(status()).toBe('Page 1 of 12');
         expect(document.head.querySelectorAll('link[data-pdf-viewer]')).toHaveLength(1);
         expect(element.hasAttribute('data-owns-keys')).toBe(true);
@@ -151,7 +152,7 @@ describe('PdfViewComponent', () => {
         const find = new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true, cancelable: true });
         window.dispatchEvent(find);
         expect(find.defaultPrevented).toBe(true);
-        await stable();         // focused once shown (a phone's field shows under the bar first)
+        await stable(); // focused once shown (a phone's field shows under the bar first)
         const box = element.querySelector<HTMLInputElement>('[data-find]')!;
         expect(document.activeElement).toBe(box);
         expect(element.querySelector('.pdf-find')!.classList).toContain('open');
@@ -171,7 +172,7 @@ describe('PdfViewComponent', () => {
         await show();
 
         const links = [...element.querySelectorAll<HTMLAnchorElement>('.pdf-outline a')];
-        expect(links.map(link => link.textContent)).toEqual(['Before leaving', 'Weather']);
+        expect(links.map((link) => link.textContent)).toEqual(['Before leaving', 'Weather']);
         links[1].click();
         expect(outlineGo).toHaveBeenCalled();
 
@@ -224,14 +225,14 @@ describe('PdfViewComponent', () => {
         await show();
         const more = (fixture.componentInstance as unknown as { more: { zoom: () => MenuEntry } }).more;
         const sizes = more.zoom().submenu!();
-        expect(sizes.find(size => size.checked)?.label).toBe('Automatic');
-        sizes.find(size => size.label === '150 %')!.run!();
+        expect(sizes.find((size) => size.checked)?.label).toBe('Automatic');
+        sizes.find((size) => size.label === '150 %')!.run!();
         await stable();
         expect(more.zoom().label).toBe('Zoom: 150 %');
         expect(element.querySelector<HTMLSelectElement>('[data-scale]')!.value).toBe('1.5');
     });
 
-    it('offers a download when the file isn\'t a PDF it can show', async () => {
+    it("offers a download when the file isn't a PDF it can show", async () => {
         failure = new NotPdfError('Invalid PDF structure.');
         await show();
 

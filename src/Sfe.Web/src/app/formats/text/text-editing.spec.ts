@@ -19,14 +19,25 @@ describe('Editing text', () => {
 
     const ALL: TextAccess = { overwrite: true, saveCopy: true, download: true, permanent: false };
     const text = (overrides: Partial<TextFile> = {}): TextFile => ({
-        text: 'first\r\nsecond\r\n', encoding: 'windows-1252', lineEnding: 'crlf', saveLineEnding: 'crlf', version: 'v1', size: 15,
-        modified: '2026-10-18T10:00:00Z', access: ALL, ...overrides,
+        text: 'first\r\nsecond\r\n',
+        encoding: 'windows-1252',
+        lineEnding: 'crlf',
+        saveLineEnding: 'crlf',
+        version: 'v1',
+        size: 15,
+        modified: '2026-10-18T10:00:00Z',
+        access: ALL,
+        ...overrides,
     });
     const action = (name: string) => element.querySelector<HTMLButtonElement>(`[data-${name}]`);
     const bar = () => element.querySelector<HTMLElement>('[data-bar]');
     const view = () => EditorView.findFromDOM(element.querySelector<HTMLElement>('.text-editor .cm-editor')!)!;
 
-    async function show(name = 'notes.txt', edit = false, component: Type<TextViewComponent | MarkdownViewComponent> = TextViewComponent): Promise<void> {
+    async function show(
+        name = 'notes.txt',
+        edit = false,
+        component: Type<TextViewComponent | MarkdownViewComponent> = TextViewComponent,
+    ): Promise<void> {
         fixture = TestBed.createComponent(component);
         element = fixture.nativeElement;
         fixture.componentRef.setInput('item', item(`Docs/${name}`, { kind: 'file' }));
@@ -67,7 +78,7 @@ describe('Editing text', () => {
                     open,
                     guard: (canLeave: () => boolean) => {
                         guard = canLeave;
-                        return () => released = true;
+                        return () => (released = true);
                     },
                 },
             }),
@@ -129,7 +140,9 @@ describe('Editing text', () => {
     });
 
     it('offers nothing to edit when nothing could be done with the changes', async () => {
-        api.textFile.mockResolvedValue(text({ access: { overwrite: false, saveCopy: false, download: false, permanent: false } }));
+        api.textFile.mockResolvedValue(
+            text({ access: { overwrite: false, saveCopy: false, download: false, permanent: false } }),
+        );
         await show();
 
         expect(action('edit')).toBeNull();
@@ -138,9 +151,13 @@ describe('Editing text', () => {
     });
 
     it('saves a copy when the file may not be saved over, then opens the copy ready to be changed', async () => {
-        api.textFile.mockResolvedValue(text({ access: { overwrite: false, saveCopy: true, download: true, permanent: false } }));
+        api.textFile.mockResolvedValue(
+            text({ access: { overwrite: false, saveCopy: true, download: true, permanent: false } }),
+        );
         const copy = item('Docs/mine.txt', { kind: 'file' });
-        api.saveTextCopy.mockResolvedValueOnce({ type: 'file-exists', detail: 'A file named “notes (copy).txt” is there already.' }).mockResolvedValueOnce(copy);
+        api.saveTextCopy
+            .mockResolvedValueOnce({ type: 'file-exists', detail: 'A file named “notes (copy).txt” is there already.' })
+            .mockResolvedValueOnce(copy);
         await show('notes.txt', true);
 
         expect(action('save')).toBeNull();
@@ -161,14 +178,19 @@ describe('Editing text', () => {
         bar()!.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
         await stable();
 
-        expect(api.saveTextCopy).toHaveBeenLastCalledWith('Docs', 'mine.txt', { text: 'first\nsecond\nmore', encoding: 'windows-1252', lineEnding: 'crlf' });
+        expect(api.saveTextCopy).toHaveBeenLastCalledWith('Docs', 'mine.txt', {
+            text: 'first\nsecond\nmore',
+            encoding: 'windows-1252',
+            lineEnding: 'crlf',
+        });
         expect(open).toHaveBeenCalledWith(copy, { edit: true });
         expect(guard!()).toBe(true);
     });
 
     it('asks what to do when the file changed elsewhere: overwrite it, or read it again', async () => {
         api.textFile.mockResolvedValueOnce(text()).mockResolvedValueOnce(text({ text: 'theirs\r\n', version: 'v9' }));
-        api.saveText.mockRejectedValueOnce(new ApiError(412, 'It changed.', null, 'file-changed'))
+        api.saveText
+            .mockRejectedValueOnce(new ApiError(412, 'It changed.', null, 'file-changed'))
             .mockResolvedValueOnce({ version: 'v3', size: 20, modified: '2026-10-18T11:00:00Z' });
         await show('notes.txt', true);
         await type('mine');
@@ -177,7 +199,7 @@ describe('Editing text', () => {
         expect(bar()!.dataset['bar']).toBe('changed');
         expect(element.querySelector('[data-edited]')).not.toBeNull();
 
-        [...bar()!.querySelectorAll('button')].find(button => button.textContent === 'Overwrite')!.click();
+        [...bar()!.querySelectorAll('button')].find((button) => button.textContent === 'Overwrite')!.click();
         await stable();
         expect(api.saveText.mock.calls[1][3]).toBe('*');
         expect(bar()).toBeNull();
@@ -185,7 +207,7 @@ describe('Editing text', () => {
         await type(' again');
         api.saveText.mockRejectedValueOnce(new ApiError(412, 'It changed.', null, 'file-changed'));
         await key('s', { ctrlKey: true });
-        [...bar()!.querySelectorAll('button')].find(button => button.textContent === 'Reload')!.click();
+        [...bar()!.querySelectorAll('button')].find((button) => button.textContent === 'Reload')!.click();
         await stable();
         expect(view().state.doc.toString()).toBe('theirs\n');
         expect(element.querySelector('[data-edited]')).toBeNull();
@@ -193,7 +215,10 @@ describe('Editing text', () => {
 
     it('offers UTF-8 when the encoding of the file can not hold the text', async () => {
         api.textFile.mockResolvedValue(text());
-        api.saveText.mockRejectedValueOnce(new ApiError(422, 'Some characters can’t be written in windows-1252: 東', null, 'not-encodable'))
+        api.saveText
+            .mockRejectedValueOnce(
+                new ApiError(422, 'Some characters can’t be written in windows-1252: 東', null, 'not-encodable'),
+            )
             .mockResolvedValueOnce({ version: 'v2', size: 20, modified: '2026-10-18T11:00:00Z' });
         await show('notes.txt', true);
         await type('東');
@@ -236,7 +261,9 @@ describe('Editing text', () => {
     });
 
     it('edits Markdown beside the document, which follows the source', async () => {
-        api.textFile.mockResolvedValue(text({ text: '# Title\n', encoding: 'utf-8', lineEnding: 'lf', saveLineEnding: 'lf' }));
+        api.textFile.mockResolvedValue(
+            text({ text: '# Title\n', encoding: 'utf-8', lineEnding: 'lf', saveLineEnding: 'lf' }),
+        );
         await show('readme.md', false, MarkdownViewComponent);
         expect(element.dataset['mode']).toBe('rendered');
 

@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, input, OnInit } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    ElementRef,
+    inject,
+    input,
+    OnInit,
+} from '@angular/core';
 import { ConfigService } from '../../core/config.service';
 import { IconComponent } from '../../shared/icon.component';
 import { CoversService } from './covers.service';
@@ -46,7 +55,9 @@ export class FolderCoverComponent implements OnInit {
     /** The preview sources of each cell; empty when the folder has no pictures (yet). */
     protected readonly cells = computed(() => {
         const items = this.covers.covers().get(this.path()) ?? [];
-        return items.length ? Array.from({ length: this.count() }, (_, i) => items[i] ? this.previews.sources(items[i]) : []) : [];
+        return items.length
+            ? Array.from({ length: this.count() }, (_, i) => (items[i] ? this.previews.sources(items[i]) : []))
+            : [];
     });
 
     constructor() {

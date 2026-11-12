@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, output, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    DestroyRef,
+    effect,
+    inject,
+    input,
+    output,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { Api } from '../core/api.service';
 import { formatDate, formatElapsed, joinParts, plural } from '../core/format';
 import { TaskInfo, TaskKind, TaskOverview, TaskRunSummary, TaskSchedule } from '../core/models';
@@ -11,8 +23,18 @@ import { IconComponent } from '../shared/icon.component';
 import { ScheduleDraft, ScheduleFormComponent } from './schedule-form.component';
 import { TaskHistoryComponent } from './task-history.component';
 import {
-    describeSchedule, formatInterval, formatMoment, formatRelative, NextRun, nextRunOf, OUTCOMES, scheduleStatus, target,
-    TASK_ICONS, TASK_NAMES, TASK_PURPOSES,
+    describeSchedule,
+    formatInterval,
+    formatMoment,
+    formatRelative,
+    NextRun,
+    nextRunOf,
+    OUTCOMES,
+    scheduleStatus,
+    target,
+    TASK_ICONS,
+    TASK_NAMES,
+    TASK_PURPOSES,
 } from './tasks';
 
 const REFRESH_MS = 2000;
@@ -217,9 +239,16 @@ export class TasksSectionComponent {
     /** Ticks the elapsed and relative times with each refresh. */
     protected readonly now = signal(Date.now());
 
-    protected readonly runningCount = computed(() => this.overview()?.tasks.filter(t => t.state === 'running').length ?? 0);
-    protected readonly sortedSchedules = computed(() => [...this.overview()?.schedules ?? []].sort((a, b) =>
-        (a.nextRun ? Date.parse(a.nextRun) : Infinity) - (b.nextRun ? Date.parse(b.nextRun) : Infinity) || a.id - b.id));
+    protected readonly runningCount = computed(
+        () => this.overview()?.tasks.filter((t) => t.state === 'running').length ?? 0,
+    );
+    protected readonly sortedSchedules = computed(() =>
+        [...(this.overview()?.schedules ?? [])].sort(
+            (a, b) =>
+                (a.nextRun ? Date.parse(a.nextRun) : Infinity) - (b.nextRun ? Date.parse(b.nextRun) : Infinity) ||
+                a.id - b.id,
+        ),
+    );
 
     /** The counts on the tabs: tasks running, schedules. */
     readonly badges = computed((): Partial<Record<TasksTab, string>> => ({
@@ -230,16 +259,19 @@ export class TasksSectionComponent {
     /** What runs and the next thing planned, at the top: the user sees when the server will be busy next. */
     protected readonly summary = computed(() => {
         const overview = this.overview();
-        if (!overview)
-            return null;
+        if (!overview) return null;
         const next = overview.tasks
-            .map(task => ({ task, next: nextRunOf(task, overview.schedules) }))
+            .map((task) => ({ task, next: nextRunOf(task, overview.schedules) }))
             .filter((entry): entry is { task: TaskInfo; next: NextRun } => entry.next !== null)
             .sort((a, b) => Date.parse(a.next.at) - Date.parse(b.next.at))[0];
-        const running = overview.tasks.filter(t => t.state === 'running').map(t => TASK_NAMES[t.task].toLowerCase());
+        const running = overview.tasks
+            .filter((t) => t.state === 'running')
+            .map((t) => TASK_NAMES[t.task].toLowerCase());
         return joinParts([
             running.length ? `Running: ${running.join(', ')}` : 'Nothing running',
-            next ? `next: ${TASK_NAMES[next.task.task].toLowerCase()}${next.next.schedule?.task === 'scan' ? ` of ${target('scan', next.next.schedule.path)}` : ''} ${formatMoment(next.next.at, this.now())}` : 'nothing planned',
+            next
+                ? `next: ${TASK_NAMES[next.task.task].toLowerCase()}${next.next.schedule?.task === 'scan' ? ` of ${target('scan', next.next.schedule.path)}` : ''} ${formatMoment(next.next.at, this.now())}`
+                : 'nothing planned',
         ]);
     });
 
@@ -251,7 +283,7 @@ export class TasksSectionComponent {
     });
 
     protected readonly trickplayEvery = computed(() => {
-        const every = this.overview()?.tasks.find(t => t.task === 'trickplay')?.automaticEvery;
+        const every = this.overview()?.tasks.find((t) => t.task === 'trickplay')?.automaticEvery;
         return every ? ` every ${plural(every, 'hour')}` : ' when it is turned on';
     });
 
@@ -260,8 +292,7 @@ export class TasksSectionComponent {
         inject(DestroyRef).onDestroy(visibleInterval(() => void this.refresh(), REFRESH_MS));
         // The runs are read when their tab is shown, then with each refresh.
         effect(() => {
-            if (this.tab() === 'history')
-                untracked(() => void this.history().refresh());
+            if (this.tab() === 'history') untracked(() => void this.history().refresh());
         });
     }
 
@@ -271,7 +302,9 @@ export class TasksSectionComponent {
 
     protected nextSource(task: TaskInfo, next: NextRun): string {
         if (!next.schedule)
-            return task.automaticEvery ? `automatic check, ${formatInterval(task.automaticEvery * 60)} (Trickplay › Settings)` : 'automatic';
+            return task.automaticEvery
+                ? `automatic check, ${formatInterval(task.automaticEvery * 60)} (Trickplay › Settings)`
+                : 'automatic';
         const where = target(next.schedule.task, next.schedule.path);
         return `schedule: ${uncapitalize(describeSchedule(next.schedule))}${where && task.task === 'scan' ? `, ${where}` : ''}`;
     }
@@ -281,9 +314,10 @@ export class TasksSectionComponent {
     }
 
     protected startTitle(task: TaskInfo): string {
-        if (!task.canStart)
-            return task.state === 'running' ? 'Already running' : 'Turned off, or ffmpeg is missing';
-        return task.task === 'scan' ? 'Scan the folder browsed last and its sub-folders (asks first)' : `Start ${TASK_NAMES[task.task].toLowerCase()} now`;
+        if (!task.canStart) return task.state === 'running' ? 'Already running' : 'Turned off, or ffmpeg is missing';
+        return task.task === 'scan'
+            ? 'Scan the folder browsed last and its sub-folders (asks first)'
+            : `Start ${TASK_NAMES[task.task].toLowerCase()} now`;
     }
 
     protected async start(task: TaskInfo): Promise<void> {
@@ -299,7 +333,11 @@ export class TasksSectionComponent {
             if (result.result === 'unavailable')
                 this.toasts.error(`${TASK_NAMES[task.task]} can't run: it is turned off, or ffmpeg is missing.`);
             else if (result.result === 'alreadyRunning')
-                this.toasts.show(task.task === 'trickplay' ? 'A new check follows the one running.' : `${TASK_NAMES[task.task]} is already running.`);
+                this.toasts.show(
+                    task.task === 'trickplay'
+                        ? 'A new check follows the one running.'
+                        : `${TASK_NAMES[task.task]} is already running.`,
+                );
         } catch (error) {
             this.toasts.error(`Could not start ${TASK_NAMES[task.task].toLowerCase()}: ${(error as Error).message}`);
         } finally {
@@ -310,8 +348,7 @@ export class TasksSectionComponent {
 
     protected async cancel(task: TaskInfo): Promise<void> {
         const question = CANCEL_QUESTIONS[task.task];
-        if (question && !confirm(question))
-            return;
+        if (question && !confirm(question)) return;
         this.busy.set(`${task.task}:cancel`);
         try {
             await this.api.cancelTask(task.task);
@@ -339,9 +376,11 @@ export class TasksSectionComponent {
 
     protected onSaved(schedule: TaskSchedule): void {
         this.draft.set(null);
-        this.toasts.show(schedule.nextRun
-            ? `${TASK_NAMES[schedule.task]} scheduled: next run ${formatMoment(schedule.nextRun)}.`
-            : `${TASK_NAMES[schedule.task]} schedule saved.`);
+        this.toasts.show(
+            schedule.nextRun
+                ? `${TASK_NAMES[schedule.task]} scheduled: next run ${formatMoment(schedule.nextRun)}.`
+                : `${TASK_NAMES[schedule.task]} schedule saved.`,
+        );
         void this.refresh();
     }
 
@@ -355,12 +394,15 @@ export class TasksSectionComponent {
     }
 
     protected async remove(schedule: TaskSchedule): Promise<void> {
-        if (!confirm(`Delete the schedule “${TASK_NAMES[schedule.task]}: ${describeSchedule(schedule)}”? Its past runs stay in the history.`))
+        if (
+            !confirm(
+                `Delete the schedule “${TASK_NAMES[schedule.task]}: ${describeSchedule(schedule)}”? Its past runs stay in the history.`,
+            )
+        )
             return;
         try {
             await this.api.deleteSchedule(schedule.id);
-            if (this.draft()?.schedule?.id === schedule.id)
-                this.draft.set(null);
+            if (this.draft()?.schedule?.id === schedule.id) this.draft.set(null);
         } catch (error) {
             this.toasts.error(`Could not delete the schedule: ${(error as Error).message}`);
         }
@@ -384,8 +426,7 @@ export class TasksSectionComponent {
             this.error.set((error as Error).message);
         }
         this.now.set(Date.now());
-        if (this.tab() === 'history')
-            void this.history().refresh();
+        if (this.tab() === 'history') void this.history().refresh();
     }
 }
 

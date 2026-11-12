@@ -6,7 +6,16 @@ import { Api } from '../app/core/api.service';
 import { AdminPageComponent, leaveAdminPage } from '../app/admin/admin-page.component';
 import { routes } from '../app/app.routes';
 import { ConfigService } from '../app/core/config.service';
-import { ClientConfig, FileTagChangeResult, FileTags, InstallationView, LibraryItem, SettingsValues, TagDetails, TagSummary } from '../app/core/models';
+import {
+    ClientConfig,
+    FileTagChangeResult,
+    FileTags,
+    InstallationView,
+    LibraryItem,
+    SettingsValues,
+    TagDetails,
+    TagSummary,
+} from '../app/core/models';
 import { Rights } from '../app/core/rights';
 import { TABS } from '../app/settings/settings-schema';
 
@@ -23,21 +32,30 @@ export function mockApi(): ApiMock {
     return new Proxy({} as ApiMock, {
         get(target, key) {
             // Properties set on it (the Api's `tenantId`) read back as set.
-            if (Reflect.has(target, key))
-                return Reflect.get(target, key);
+            if (Reflect.has(target, key)) return Reflect.get(target, key);
             // Not API methods: what promises, injectors and test matchers look for on any object.
-            if (typeof key !== 'string' || key === 'then' || key.startsWith('ng') || key === 'toJSON' || key.startsWith('$$') || key === 'asymmetricMatch' || key === 'nodeType')
+            if (
+                typeof key !== 'string' ||
+                key === 'then' ||
+                key.startsWith('ng') ||
+                key === 'toJSON' ||
+                key.startsWith('$$') ||
+                key === 'asymmetricMatch' ||
+                key === 'nodeType'
+            )
                 return undefined;
             let mock = mocks.get(key);
-            if (!mock)
-                mocks.set(key, mock = vi.fn(() => new Promise(() => { })));
+            if (!mock) mocks.set(key, (mock = vi.fn(() => new Promise(() => {}))));
             return mock;
         },
     });
 }
 
 /** The providers of a component test: the mocked API and a router (ListingStore navigates). */
-export function testProviders(api: ApiMock, ...more: (Provider | EnvironmentProviders)[]): (Provider | EnvironmentProviders)[] {
+export function testProviders(
+    api: ApiMock,
+    ...more: (Provider | EnvironmentProviders)[]
+): (Provider | EnvironmentProviders)[] {
     return [{ provide: Api, useValue: api }, provideRouter([]), ...more];
 }
 
@@ -49,16 +67,19 @@ class BlankPageComponent {}
  * `admin` (with its guard and its earlier address) and an empty page at the root, standing for the listing page.
  */
 export function adminPageProviders(api: ApiMock): (Provider | EnvironmentProviders)[] {
-    return [{ provide: Api, useValue: api }, provideRouter([
-        { path: 'admin', component: AdminPageComponent, canDeactivate: [leaveAdminPage] },
-        routes.find(route => route.path === 'config')!,
-        { path: '**', component: BlankPageComponent },
-    ])];
+    return [
+        { provide: Api, useValue: api },
+        provideRouter([
+            { path: 'admin', component: AdminPageComponent, canDeactivate: [leaveAdminPage] },
+            routes.find((route) => route.path === 'config')!,
+            { path: '**', component: BlankPageComponent },
+        ]),
+    ];
 }
 
 /** The button of `root` whose text is `label`. */
 export function buttonNamed(root: ParentNode, label: string): HTMLButtonElement | undefined {
-    return [...root.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent!.trim() === label);
+    return [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent!.trim() === label);
 }
 
 export const TAG_COLORS = [
@@ -75,7 +96,11 @@ export const LIBRARY = { id: 1, slug: 'library', name: 'Library' };
 
 /** A configuration whose session has only `rights` (a visitor without an account when `user` is null). */
 export function limitedConfig(rights: string[], overrides: Partial<ClientConfig> = {}): ClientConfig {
-    return fakeConfig({ rights, user: { id: 2, userName: 'alice', displayName: null, kind: 'user', isServerAdmin: false, local: true }, ...overrides });
+    return fakeConfig({
+        rights,
+        user: { id: 2, userName: 'alice', displayName: null, kind: 'user', isServerAdmin: false, local: true },
+        ...overrides,
+    });
 }
 
 export function fakeConfig(overrides: Partial<ClientConfig> = {}): ClientConfig {
@@ -151,8 +176,25 @@ export function item(path: string, overrides: Partial<LibraryItem> = {}): Librar
     const name = path.split('/').pop()!;
     const dot = name.lastIndexOf('.');
     const extension = dot > 0 ? name.slice(dot) : null;
-    const kind = overrides.kind ?? (/\.(jpe?g|png|webp)$/i.test(name) ? 'image' : /\.(mp4|mkv|webm)$/i.test(name) ? 'video' : extension ? 'file' : 'directory');
-    return { name, path, kind, extension, size: kind === 'directory' ? null : 10, modified: '2026-01-01T10:00:00Z', tags: kind === 'directory' ? null : [], ...overrides };
+    const kind =
+        overrides.kind ??
+        (/\.(jpe?g|png|webp)$/i.test(name)
+            ? 'image'
+            : /\.(mp4|mkv|webm)$/i.test(name)
+              ? 'video'
+              : extension
+                ? 'file'
+                : 'directory');
+    return {
+        name,
+        path,
+        kind,
+        extension,
+        size: kind === 'directory' ? null : 10,
+        modified: '2026-01-01T10:00:00Z',
+        tags: kind === 'directory' ? null : [],
+        ...overrides,
+    };
 }
 
 export function fileTags(path: string, tags: TagSummary[] = []): FileTags {
@@ -163,20 +205,24 @@ export function fileTags(path: string, tags: TagSummary[] = []): FileTags {
  * What the server answers to a tag change, computed from the files' current tags: `current` maps each path to its
  * tags and is updated, so several changes can follow each other.
  */
-export function applyChange(current: Map<string, TagSummary[]>, known: TagSummary[], change: { paths: string[]; add?: number[]; remove?: number[] }): FileTagChangeResult {
+export function applyChange(
+    current: Map<string, TagSummary[]>,
+    known: TagSummary[],
+    change: { paths: string[]; add?: number[]; remove?: number[] },
+): FileTagChangeResult {
     let added = 0;
     let removed = 0;
-    const files = change.paths.map(path => {
+    const files = change.paths.map((path) => {
         let tags = current.get(path) ?? [];
         for (const id of change.add ?? []) {
-            if (!tags.some(t => t.id === id)) {
-                tags = [...tags, summary(known.find(t => t.id === id)!)];
+            if (!tags.some((t) => t.id === id)) {
+                tags = [...tags, summary(known.find((t) => t.id === id)!)];
                 added++;
             }
         }
-        for (const id of (change.remove ?? []).filter(id => !change.add?.includes(id))) {
-            if (tags.some(t => t.id === id)) {
-                tags = tags.filter(t => t.id !== id);
+        for (const id of (change.remove ?? []).filter((id) => !change.add?.includes(id))) {
+            if (tags.some((t) => t.id === id)) {
+                tags = tags.filter((t) => t.id !== id);
                 removed++;
             }
         }
@@ -188,7 +234,7 @@ export function applyChange(current: Map<string, TagSummary[]>, known: TagSummar
 
 /** Lets pending promises and timers of `ms` run, then the change detection. */
 export async function settle(ms = 0): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, ms));
+    await new Promise((resolve) => setTimeout(resolve, ms));
     await TestBed.inject(ApplicationRef).whenStable();
 }
 
@@ -228,7 +274,10 @@ export interface Deferred<T> {
 export function deferred<T>(): Deferred<T> {
     let resolve!: (value: T) => void;
     let reject!: (error: unknown) => void;
-    const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
+    const promise = new Promise<T>((res, rej) => {
+        resolve = res;
+        reject = rej;
+    });
     return { promise, resolve, reject };
 }
 
@@ -241,11 +290,18 @@ export function intersect(...elements: Element[]): void {
 export function installationView(overrides: Partial<InstallationView> = {}): InstallationView {
     const free = (value: string | null) => ({ value, locked: false, lockedBy: null });
     return {
-        root: free('C:\\Users\\me\\'), rootExists: true,
-        urls: free('http://localhost:5080'), port: 5080, network: false,
-        ffmpegPath: free('ffmpeg'), ffmpegFound: 'C:\\ffmpeg\\bin\\ffmpeg.exe', ffmpegVersion: '7.1',
+        root: free('C:\\Users\\me\\'),
+        rootExists: true,
+        urls: free('http://localhost:5080'),
+        port: 5080,
+        network: false,
+        ffmpegPath: free('ffmpeg'),
+        ffmpegFound: 'C:\\ffmpeg\\bin\\ffmpeg.exe',
+        ffmpegVersion: '7.1',
         restartRequired: false,
-        mode: free('Local'), modeInEffect: 'local', onThisComputer: true,
+        mode: free('Local'),
+        modeInEffect: 'local',
+        onThisComputer: true,
         ...overrides,
     };
 }
@@ -253,15 +309,21 @@ export function installationView(overrides: Partial<InstallationView> = {}): Ins
 /** A valid value for every field of the settings pages (the lowest numbers, empty lists...), as the server sends them all. */
 export function settingsValues(): SettingsValues {
     const result: Record<string, unknown> = {};
-    for (const field of TABS.flatMap(tab => tab.groups.flatMap(group => group.fields))) {
-        if (field.type === 'preset')
-            continue;
+    for (const field of TABS.flatMap((tab) => tab.groups.flatMap((group) => group.fields))) {
+        if (field.type === 'preset') continue;
         const parts = field.key.split('.');
         let target = result;
-        for (const part of parts.slice(0, -1))
-            target = (target[part] ??= {}) as Record<string, unknown>;
-        target[parts.at(-1)!] = field.type === 'number' ? field.min : field.type === 'checkbox' ? false
-            : field.type === 'list' || field.type === 'extensions' ? [] : field.type === 'select' ? field.options[0][0] : null;
+        for (const part of parts.slice(0, -1)) target = (target[part] ??= {}) as Record<string, unknown>;
+        target[parts.at(-1)!] =
+            field.type === 'number'
+                ? field.min
+                : field.type === 'checkbox'
+                  ? false
+                  : field.type === 'list' || field.type === 'extensions'
+                    ? []
+                    : field.type === 'select'
+                      ? field.options[0][0]
+                      : null;
     }
     return result;
 }
@@ -273,9 +335,15 @@ export function settingsValues(): SettingsValues {
 export function fakeCanvases(): { drawn: unknown[][] } {
     const drawn: unknown[][] = [];
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (this: HTMLCanvasElement) {
-        return { drawImage: (...args: unknown[]) => drawn.push([this, ...args]) } as unknown as CanvasRenderingContext2D;
+        return {
+            drawImage: (...args: unknown[]) => drawn.push([this, ...args]),
+        } as unknown as CanvasRenderingContext2D;
     } as never);
-    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (this: HTMLCanvasElement, callback: BlobCallback, type?: string) {
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (
+        this: HTMLCanvasElement,
+        callback: BlobCallback,
+        type?: string,
+    ) {
         callback(new Blob([`${this.width}x${this.height}`], { type }));
     });
     return { drawn };

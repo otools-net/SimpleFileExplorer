@@ -60,16 +60,15 @@ export class FileTagsDialog {
     /** Null while loading. */
     protected readonly current = signal<FileTags | null>(null);
 
-    protected readonly excluded = () => new Set(this.current()?.tags.map(tag => tag.id));
+    protected readonly excluded = () => new Set(this.current()?.tags.map((tag) => tag.id));
     protected readonly add = async (option: TagOption) => {
         const tag = option.create ? await this.api.createTag({ name: option.create }) : option.tag!;
-        if (option.create)
-            this.toasts.show(`Tag “${tag.name}” created.`);
+        if (option.create) this.toasts.show(`Tag “${tag.name}” created.`);
         await this.change({ add: [tag.id] });
     };
 
     constructor() {
-        registerDialog(dialogs => dialogs.fileTags, this);
+        registerDialog((dialogs) => dialogs.fileTags, this);
     }
 
     async open(item: LibraryItem): Promise<void> {
@@ -77,8 +76,7 @@ export class FileTagsDialog {
         this.name.set(item.name);
         this.current.set(null);
         this.sheet().open();
-        if (this.canAssign())
-            this.picker().focus();
+        if (this.canAssign()) this.picker().focus();
         await this.reload();
     }
 
@@ -88,8 +86,7 @@ export class FileTagsDialog {
 
     protected async edit(tag: TagSummary): Promise<void> {
         await this.dialogs.tagEditor()?.open(tag.id);
-        if (this.sheet().isOpen())
-            await this.reload();
+        if (this.sheet().isOpen()) await this.reload();
     }
 
     private async change(delta: { add?: number[]; remove?: number[] }): Promise<void> {

@@ -37,14 +37,12 @@ export class SidebarService {
 
     setOpen(open: boolean, { remember = true } = {}): void {
         this.open.set(open);
-        if (remember && !this.narrow)
-            writePreference(PREFERENCE, open ? 'open' : 'closed');
+        if (remember && !this.narrow) writePreference(PREFERENCE, open ? 'open' : 'closed');
     }
 
     /** The drawer closes when something in it was picked (phones only). */
     closeIfOverlay(): void {
-        if (this.narrow)
-            this.setOpen(false, { remember: false });
+        if (this.narrow) this.setOpen(false, { remember: false });
     }
 
     /** Reloads the lists, a moment later so that bursts of changes make one request. */
@@ -58,8 +56,7 @@ export class SidebarService {
         const request = ++this.sequence;
         try {
             const data = await this.api.tagSidebar();
-            if (request === this.sequence)
-                this.data.set(data);
+            if (request === this.sequence) this.data.set(data);
         } catch {
             // The index may be unavailable: keep what is shown.
         }
@@ -76,8 +73,7 @@ export class SidebarService {
         const request = ++this.trashSequence;
         try {
             const count = await this.api.trashCount();
-            if (request === this.trashSequence)
-                this.trash.set(count);
+            if (request === this.trashSequence) this.trash.set(count);
         } catch {
             // Keep what is shown.
         }

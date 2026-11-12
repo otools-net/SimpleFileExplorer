@@ -38,7 +38,12 @@ export class LocationStripComponent {
     protected readonly current = computed(() => this.links.crumbs().at(-1)!.name);
     /** The folder above the current one, so that a name used in many places still says which. */
     protected readonly parent = computed(() => this.links.crumbs().at(-2)?.name ?? null);
-    protected readonly fullName = computed(() => this.links.crumbs().map(crumb => crumb.name).join(' / '));
+    protected readonly fullName = computed(() =>
+        this.links
+            .crumbs()
+            .map((crumb) => crumb.name)
+            .join(' / '),
+    );
 
     protected toTop(): void {
         window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -5,7 +5,16 @@ import { plural } from '../core/format';
 import { LogEntry, LogLevelName, LogSearchResult } from '../core/models';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
-import { hasFilters, LEVEL_NAMES, LOG_LEVELS, LogFilters, NO_FILTERS, shortCategory, SpaceFilter, toQuery } from './logs';
+import {
+    hasFilters,
+    LEVEL_NAMES,
+    LOG_LEVELS,
+    LogFilters,
+    NO_FILTERS,
+    shortCategory,
+    SpaceFilter,
+    toQuery,
+} from './logs';
 
 const TYPING_MS = 400;
 const timeFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'medium' });
@@ -139,11 +148,17 @@ export class LogsSectionComponent {
     protected readonly spaces = computed(() => this.config.config()?.tenants ?? []);
     protected readonly keptText = computed(() => {
         const result = this.result();
-        if (!result)
-            return '';
-        const kept = result.retentionDays > 0 ? `Entries are kept ${plural(result.retentionDays, 'day')}` : 'Entries are kept forever';
-        const files = result.writeFiles ? `; a copy goes to a file per day${result.filesDirectory ? ` in ${result.filesDirectory}` : ''}` : '';
-        const scope = result.allSpaces ? '' : ` This page shows the entries of ${this.config.tenant()?.name ?? 'this space'}.`;
+        if (!result) return '';
+        const kept =
+            result.retentionDays > 0
+                ? `Entries are kept ${plural(result.retentionDays, 'day')}`
+                : 'Entries are kept forever';
+        const files = result.writeFiles
+            ? `; a copy goes to a file per day${result.filesDirectory ? ` in ${result.filesDirectory}` : ''}`
+            : '';
+        const scope = result.allSpaces
+            ? ''
+            : ` This page shows the entries of ${this.config.tenant()?.name ?? 'this space'}.`;
         return `${kept}${files}.${scope}`;
     });
 
@@ -162,20 +177,18 @@ export class LogsSectionComponent {
     async search(): Promise<void> {
         clearTimeout(this.typing);
         this.request?.abort();
-        const request = this.request = new AbortController();
+        const request = (this.request = new AbortController());
         this.loading.set(true);
         this.paging.set(false);
         try {
             const result = await this.api.logs(toQuery(this.filters()), request.signal);
-            if (request.signal.aborted)
-                return;
+            if (request.signal.aborted) return;
             this.result.set(result);
             this.entries.set(result.entries);
             this.next.set(result.next);
             this.error.set(null);
         } catch (error) {
-            if (!request.signal.aborted)
-                this.error.set((error as Error).message);
+            if (!request.signal.aborted) this.error.set((error as Error).message);
         } finally {
             if (this.request === request) {
                 this.loading.set(false);
@@ -187,12 +200,11 @@ export class LogsSectionComponent {
 
     protected async loadMore(): Promise<void> {
         const before = this.next();
-        if (before === null || this.loading())
-            return;
+        if (before === null || this.loading()) return;
         try {
             this.loading.set(true);
             const page = await whileBusy(this.paging, () => this.api.logs(toQuery(this.filters(), before)));
-            this.entries.update(entries => [...entries, ...page.entries]);
+            this.entries.update((entries) => [...entries, ...page.entries]);
             this.next.set(page.next);
         } catch (error) {
             this.error.set((error as Error).message);
@@ -202,29 +214,28 @@ export class LogsSectionComponent {
     }
 
     protected setText(text: string): void {
-        this.filters.update(filters => ({ ...filters, text }));
+        this.filters.update((filters) => ({ ...filters, text }));
         clearTimeout(this.typing);
         this.typing = setTimeout(() => void this.search(), TYPING_MS);
     }
 
     protected toggleLevel(level: LogLevelName): void {
-        this.filters.update(filters => {
+        this.filters.update((filters) => {
             const levels = new Set(filters.levels);
-            if (!levels.delete(level))
-                levels.add(level);
+            if (!levels.delete(level)) levels.add(level);
             return { ...filters, levels };
         });
         void this.search();
     }
 
     protected setDay(which: 'fromDay' | 'toDay', day: string): void {
-        this.filters.update(filters => ({ ...filters, [which]: day }));
+        this.filters.update((filters) => ({ ...filters, [which]: day }));
         void this.search();
     }
 
     protected setSpace(value: string): void {
         const space: SpaceFilter = value === 'all' || value === 'server' ? value : Number(value);
-        this.filters.update(filters => ({ ...filters, space }));
+        this.filters.update((filters) => ({ ...filters, space }));
         void this.search();
     }
 
@@ -234,13 +245,12 @@ export class LogsSectionComponent {
     }
 
     protected toggle(entry: LogEntry): void {
-        this.openId.update(id => id === entry.id ? null : entry.id);
+        this.openId.update((id) => (id === entry.id ? null : entry.id));
     }
 
     protected spaceName(tenantId: number | null): string {
-        if (tenantId === null)
-            return 'Server';
-        return this.spaces().find(space => space.id === tenantId)?.name ?? `Space ${tenantId}`;
+        if (tenantId === null) return 'Server';
+        return this.spaces().find((space) => space.id === tenantId)?.name ?? `Space ${tenantId}`;
     }
 
     protected time(value: string): string {

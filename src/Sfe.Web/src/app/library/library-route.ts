@@ -20,7 +20,7 @@ export function readRoute(params: ParamMap): LibraryRoute {
     return {
         path: params.get('path') || '',
         q: params.get('q') || '',
-        sort: SORTS.has(sort) ? sort as SortField : '',
+        sort: SORTS.has(sort) ? (sort as SortField) : '',
         desc: params.get('desc') === '1',
     };
 }
@@ -59,8 +59,7 @@ export interface RestoreState {
 export const initialHistoryState: RestoreState = readRestoreState(history.state);
 
 export function readRestoreState(state: unknown): RestoreState {
-    if (!state || typeof state !== 'object')
-        return {};
+    if (!state || typeof state !== 'object') return {};
     const { scrollY, loaded, anchor, anchorTop } = state as Record<string, unknown>;
     return {
         scrollY: typeof scrollY === 'number' ? scrollY : undefined,

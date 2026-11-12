@@ -8,9 +8,32 @@ import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
 import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
-import { ASPECTS, aspectRatio, clampRect, flipAspect, largestAround, dragRect, fitAspect, fullRect, Handle, HANDLES, rectFromPoints, sameRect } from './crop';
 import {
-    describeEdit, EDITOR_TOOLS, EditKindName, editedSize, EditOperation, encode, outputType, PICTURE_LOADER, Rect, renderEdits, Size,
+    ASPECTS,
+    aspectRatio,
+    clampRect,
+    flipAspect,
+    largestAround,
+    dragRect,
+    fitAspect,
+    fullRect,
+    Handle,
+    HANDLES,
+    rectFromPoints,
+    sameRect,
+} from './crop';
+import {
+    describeEdit,
+    EDITOR_TOOLS,
+    EditKindName,
+    editedSize,
+    EditOperation,
+    encode,
+    outputType,
+    PICTURE_LOADER,
+    Rect,
+    renderEdits,
+    Size,
 } from './edits';
 
 /** A drag of the crop frame: what moves, from where, and the frame then. */
@@ -157,7 +180,12 @@ export class ImageEditorDialog {
     protected readonly tools = EDITOR_TOOLS;
     protected readonly handles = HANDLES;
     protected readonly aspects = ASPECTS;
-    protected readonly cropFields: [CropField, string][] = [['x', 'Left'], ['y', 'Top'], ['width', 'Width'], ['height', 'Height']];
+    protected readonly cropFields: [CropField, string][] = [
+        ['x', 'Left'],
+        ['y', 'Top'],
+        ['width', 'Width'],
+        ['height', 'Height'],
+    ];
 
     protected readonly item = signal<LibraryItem | null>(null);
     /** The original, decoded; null while loading. */
@@ -180,12 +208,13 @@ export class ImageEditorDialog {
     });
 
     /** The crop frame leaves part of the picture out: Save applies it first. */
-    protected readonly pendingCrop = computed(() => this.activeTool() === 'crop' && this.size().width > 0 && !sameRect(this.crop(), fullRect(this.size())));
+    protected readonly pendingCrop = computed(
+        () => this.activeTool() === 'crop' && this.size().width > 0 && !sameRect(this.crop(), fullRect(this.size())),
+    );
     protected readonly dirty = computed(() => this.operations().length > 0 || this.pendingCrop());
     protected readonly subtitle = computed(() => {
         const picture = this.picture();
-        if (!picture)
-            return '';
+        if (!picture) return '';
         const original = `${picture.naturalWidth} × ${picture.naturalHeight}`;
         const edited = this.pendingCrop() ? this.crop() : this.size();
         return this.dirty() ? `${original} → ${edited.width} × ${edited.height}` : original;
@@ -193,9 +222,11 @@ export class ImageEditorDialog {
     /** The version opened and whether this account may save over it (null: not known, or not allowed). */
     protected readonly access = signal<EditedImageAccess | null>(null);
     protected readonly canOverwrite = computed(() => this.access()?.overwrite === true);
-    protected readonly overwriteHint = computed(() => this.access()?.permanent
-        ? 'Save over the original picture; this space keeps no previous version (Ctrl+S)'
-        : 'Save over the original picture; the version before goes to the trash (Ctrl+S)');
+    protected readonly overwriteHint = computed(() =>
+        this.access()?.permanent
+            ? 'Save over the original picture; this space keeps no previous version (Ctrl+S)'
+            : 'Save over the original picture; the version before goes to the trash (Ctrl+S)',
+    );
     protected readonly destination = computed(() => {
         const folder = this.config.config()?.editor?.outputFolder;
         const copy = folder
@@ -215,7 +246,7 @@ export class ImageEditorDialog {
     private generation = 0;
 
     constructor() {
-        registerDialog(dialogs => dialogs.imageEditor, this);
+        registerDialog((dialogs) => dialogs.imageEditor, this);
     }
 
     /** Opens the editor on a picture of the listing (its original, from this server). */
@@ -233,22 +264,26 @@ export class ImageEditorDialog {
         this.session = editingSession();
         this.canvasHost().nativeElement.replaceChildren();
         const dialog = this.dialog().nativeElement;
-        if (!dialog.open)
-            dialog.showModal();
+        if (!dialog.open) dialog.showModal();
         // Without an answer (no right, an older server), Save a copy is all there is.
-        this.api.editedImageAccess(item.path).then(access => {
-            if (generation === this.generation)
-                this.access.set(access);
-        }, () => undefined);
+        this.api.editedImageAccess(item.path).then(
+            (access) => {
+                if (generation === this.generation) this.access.set(access);
+            },
+            () => undefined,
+        );
         try {
             const picture = await this.loadPicture(this.config.urls()!.original(item.path));
-            if (generation !== this.generation)
-                return;
+            if (generation !== this.generation) return;
             this.picture.set(picture);
             this.render();
         } catch (error) {
             if (generation === this.generation)
-                this.error.set(error instanceof Error && error.name !== 'EncodingError' ? error.message : 'This browser cannot open this picture for editing.');
+                this.error.set(
+                    error instanceof Error && error.name !== 'EncodingError'
+                        ? error.message
+                        : 'This browser cannot open this picture for editing.',
+                );
         }
     }
 
@@ -258,8 +293,7 @@ export class ImageEditorDialog {
 
     /** Closes, after asking when there are unsaved edits. */
     protected requestClose(): void {
-        if (this.confirmDiscard())
-            this.close();
+        if (this.confirmDiscard()) this.close();
     }
 
     protected useTool(tool: EditKindName): void {
@@ -269,16 +303,14 @@ export class ImageEditorDialog {
 
     /** Back to the picture before the last edit. */
     protected undo(): void {
-        if (!this.operations().length)
-            return;
-        this.operations.update(list => list.slice(0, -1));
+        if (!this.operations().length) return;
+        this.operations.update((list) => list.slice(0, -1));
         this.render();
     }
 
     protected applyCrop(): void {
-        if (!this.pendingCrop())
-            return;
-        this.operations.update(list => [...list, { kind: 'crop', rect: this.crop() }]);
+        if (!this.pendingCrop()) return;
+        this.operations.update((list) => [...list, { kind: 'crop', rect: this.crop() }]);
         this.render();
     }
 
@@ -295,8 +327,7 @@ export class ImageEditorDialog {
     /** The same ratio, between landscape and portrait (16:9 ↔ 9:16), the frame keeping its centre. */
     protected flipAspect(): void {
         const flipped = this.flipped();
-        if (flipped)
-            this.setAspect(flipped);
+        if (flipped) this.setAspect(flipped);
     }
 
     /** The shape drawn on a ratio's button (CSS aspect-ratio); the free one is square, dashed. */
@@ -305,9 +336,11 @@ export class ImageEditorDialog {
     }
 
     protected aspectHint([id, label]: [string, string]): string {
-        return id === 'free' ? 'Free: any width and height'
-            : id === 'original' ? `Original: the picture's own shape${this.size().width ? ` (${this.size().width} × ${this.size().height})` : ''}`
-                : `${label === 'Square' ? 'Square (1:1)' : label}: the frame keeps this shape`;
+        return id === 'free'
+            ? 'Free: any width and height'
+            : id === 'original'
+              ? `Original: the picture's own shape${this.size().width ? ` (${this.size().width} × ${this.size().height})` : ''}`
+              : `${label === 'Square' ? 'Square (1:1)' : label}: the frame keeps this shape`;
     }
 
     /** A number typed for the frame: the others follow the aspect ratio and the picture's edges. */
@@ -320,24 +353,28 @@ export class ImageEditorDialog {
         }
         const ratio = this.ratio();
         const next = { ...current, [field]: value };
-        if (ratio && field === 'width')
-            next.height = value / ratio;
-        else if (ratio && field === 'height')
-            next.width = value * ratio;
-        this.crop.set(ratio ? fitAspect(clampRect(next, this.size()), ratio, this.size()) : clampRect(next, this.size()));
+        if (ratio && field === 'width') next.height = value / ratio;
+        else if (ratio && field === 'height') next.width = value * ratio;
+        this.crop.set(
+            ratio ? fitAspect(clampRect(next, this.size()), ratio, this.size()) : clampRect(next, this.size()),
+        );
     }
 
     /** Saves the edited picture as a new file. */
     protected async save(): Promise<void> {
         const item = this.item();
         const result = this.edited();
-        if (!item || !result)
-            return;
+        if (!item || !result) return;
         try {
-            const saved = await whileBusy(this.saving, async () => this.api.saveEditedImage(item.path, await this.encode(item, result)));
+            const saved = await whileBusy(this.saving, async () =>
+                this.api.saveEditedImage(item.path, await this.encode(item, result)),
+            );
             this.operations.set([]);
             this.close();
-            this.toasts.show(`Saved as “${saved.path}” (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).`, { timeout: 8000 });
+            this.toasts.show(
+                `Saved as “${saved.path}” (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).`,
+                { timeout: 8000 },
+            );
         } catch (error) {
             this.toasts.error(`Could not save the picture: ${(error as Error).message}`);
         }
@@ -351,32 +388,43 @@ export class ImageEditorDialog {
         const item = this.item();
         const access = this.access();
         const result = this.edited();
-        if (!item || !access?.overwrite || !result)
-            return;
+        if (!item || !access?.overwrite || !result) return;
         try {
             const saved = await whileBusy(this.saving, async () =>
-                this.api.saveEditedImageOver(item.path, await this.encode(item, result), this.session, force ? '*' : access.version));
+                this.api.saveEditedImageOver(
+                    item.path,
+                    await this.encode(item, result),
+                    this.session,
+                    force ? '*' : access.version,
+                ),
+            );
             if (!isSavedImage(saved)) {
                 this.toasts.error(saved.detail ?? 'The picture could not be saved.');
                 return;
             }
-            this.store.applySaved(item.path, { size: saved.size, modified: saved.modified, width: saved.width, height: saved.height });
+            this.store.applySaved(item.path, {
+                size: saved.size,
+                modified: saved.modified,
+                width: saved.width,
+                height: saved.height,
+            });
             this.operations.set([]);
             this.close();
-            this.toasts.show(`Saved (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).${access.permanent ? '' : ' The version before is in the trash.'}`, { timeout: 8000 });
+            this.toasts.show(
+                `Saved (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).${access.permanent ? '' : ' The version before is in the trash.'}`,
+                { timeout: 8000 },
+            );
         } catch (error) {
             if (error instanceof ApiError && error.status === 412) {
                 if (confirm('The picture was changed elsewhere since the editor opened it. Save over it anyway?'))
                     await this.saveOver(true);
-            } else
-                this.toasts.error(`Could not save the picture: ${(error as Error).message}`);
+            } else this.toasts.error(`Could not save the picture: ${(error as Error).message}`);
         }
     }
 
     /** The picture to save (a frame left on the stage is applied first); null when there is nothing to save. */
     private edited(): HTMLCanvasElement | null {
-        if (!this.item() || !this.result || this.saving())
-            return null;
+        if (!this.item() || !this.result || this.saving()) return null;
         this.applyCrop();
         return this.operations().length ? this.result : null;
     }
@@ -388,14 +436,12 @@ export class ImageEditorDialog {
     /* ---------- Crop frame drags (in picture pixels: the stage shows the picture smaller or larger) ---------- */
 
     protected startDrag(event: PointerEvent, handle: Handle | null): void {
-        if (event.button !== 0 || this.drag)
-            return;
+        if (event.button !== 0 || this.drag) return;
         event.stopPropagation();
         event.preventDefault();
         const layer = this.cropLayer()?.nativeElement;
         const box = layer?.getBoundingClientRect();
-        if (!layer || !box?.width)
-            return;
+        if (!layer || !box?.width) return;
         const scale = this.size().width / box.width;
         this.drag = {
             pointerId: event.pointerId,
@@ -411,19 +457,19 @@ export class ImageEditorDialog {
 
     protected moveDrag(event: PointerEvent): void {
         const drag = this.drag;
-        if (!drag || event.pointerId !== drag.pointerId)
-            return;
+        if (!drag || event.pointerId !== drag.pointerId) return;
         const dx = (event.clientX - drag.startX) * drag.scale;
         const dy = (event.clientY - drag.startY) * drag.scale;
         const ratio = this.ratio();
-        this.crop.set(drag.origin
-            ? rectFromPoints(drag.origin, { x: drag.origin.x + dx, y: drag.origin.y + dy }, this.size(), ratio)
-            : dragRect(drag.start, drag.handle!, dx, dy, this.size(), ratio));
+        this.crop.set(
+            drag.origin
+                ? rectFromPoints(drag.origin, { x: drag.origin.x + dx, y: drag.origin.y + dy }, this.size(), ratio)
+                : dragRect(drag.start, drag.handle!, dx, dy, this.size(), ratio),
+        );
     }
 
     protected endDrag(event: PointerEvent): void {
-        if (this.drag?.pointerId === event.pointerId)
-            this.drag = null;
+        if (this.drag?.pointerId === event.pointerId) this.drag = null;
     }
 
     /* ---------- Keys, closing ---------- */
@@ -444,11 +490,18 @@ export class ImageEditorDialog {
             (target as HTMLElement).blur?.();
             event.preventDefault();
             this.applyCrop();
-        } else if (key === 'x' && !command && !event.altKey && !typing && this.activeTool() === 'crop' && this.flipped()) {
+        } else if (
+            key === 'x' &&
+            !command &&
+            !event.altKey &&
+            !typing &&
+            this.activeTool() === 'crop' &&
+            this.flipped()
+        ) {
             event.preventDefault();
             this.flipAspect();
         } else if (!command && !event.altKey && !typing) {
-            const tool = this.tools.find(t => t.key.toLowerCase() === key);
+            const tool = this.tools.find((t) => t.key.toLowerCase() === key);
             if (tool && this.picture()) {
                 event.preventDefault();
                 this.useTool(tool.id);
@@ -460,8 +513,7 @@ export class ImageEditorDialog {
 
     /** Esc with unsaved edits asks first. */
     protected onCancel(event: Event): void {
-        if (!this.confirmDiscard())
-            event.preventDefault();
+        if (!this.confirmDiscard()) event.preventDefault();
     }
 
     private confirmDiscard(): boolean {
@@ -478,7 +530,7 @@ export class ImageEditorDialog {
     }
 
     protected percent(value: number, total: number): number {
-        return total ? value / total * 100 : 0;
+        return total ? (value / total) * 100 : 0;
     }
 
     protected describe(operation: EditOperation): string {
@@ -496,8 +548,7 @@ export class ImageEditorDialog {
     /** Draws the original with the edits, puts it on the stage, and frames the whole result. */
     private render(): void {
         const picture = this.picture();
-        if (!picture)
-            return;
+        if (!picture) return;
         const original = { width: picture.naturalWidth, height: picture.naturalHeight };
         try {
             this.result = renderEdits(picture, original, this.operations());

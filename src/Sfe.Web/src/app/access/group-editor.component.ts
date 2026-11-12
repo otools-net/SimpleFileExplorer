@@ -166,8 +166,11 @@ export class GroupEditorComponent {
     protected readonly saving = signal(false);
 
     protected readonly areas = computed(() => rightAreas(this.catalog()?.rights ?? []));
-    protected readonly presets: { builtIn: BuiltInGroup; label: string }[] =
-        [{ builtIn: 'administrators', label: 'Administrators' }, { builtIn: 'users', label: 'Users' }, { builtIn: 'guests', label: 'Guests' }];
+    protected readonly presets: { builtIn: BuiltInGroup; label: string }[] = [
+        { builtIn: 'administrators', label: 'Administrators' },
+        { builtIn: 'users', label: 'Users' },
+        { builtIn: 'guests', label: 'Guests' },
+    ];
 
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;
@@ -189,8 +192,7 @@ export class GroupEditorComponent {
 
     /** Why a right can't be given to the group (guests, switched off); null when it can. */
     protected rightNote(right: RightDefinition, draft: GroupDraft): string | null {
-        if (draft.builtIn === 'guests' && !right.guestAllowed)
-            return 'Visitors without an account can never have it.';
+        if (draft.builtIn === 'guests' && !right.guestAllowed) return 'Visitors without an account can never have it.';
         if (this.catalog()?.disabledByServer.includes(right.id))
             return 'Switched off for the whole server: nobody gets it.';
         if (this.catalog()?.disabledInTenant.includes(right.id))
@@ -199,27 +201,28 @@ export class GroupEditorComponent {
     }
 
     protected change(changes: Partial<GroupDraft>): void {
-        this.draft.update(draft => draft && { ...draft, ...changes });
+        this.draft.update((draft) => draft && { ...draft, ...changes });
     }
 
     protected usePreset(builtIn: BuiltInGroup): void {
-        const rights = (this.catalog()?.rights ?? []).filter(right => right.scope === 'tenant' && right.defaultGroups.includes(builtIn)).map(right => right.id);
+        const rights = (this.catalog()?.rights ?? [])
+            .filter((right) => right.scope === 'tenant' && right.defaultGroups.includes(builtIn))
+            .map((right) => right.id);
         this.change({ rights: new Set(rights) });
     }
 
     protected toggleRight(id: string, granted: boolean): void {
-        this.draft.update(draft => draft && { ...draft, rights: toggled(draft.rights, id, granted) });
+        this.draft.update((draft) => draft && { ...draft, rights: toggled(draft.rights, id, granted) });
     }
 
     protected toggleMember(id: number, member: boolean): void {
-        this.draft.update(draft => draft && { ...draft, memberIds: toggled(draft.memberIds, id, member) });
+        this.draft.update((draft) => draft && { ...draft, memberIds: toggled(draft.memberIds, id, member) });
     }
 
     protected async save(event?: Event): Promise<void> {
         event?.preventDefault();
         const draft = this.draft();
-        if (!draft)
-            return;
+        if (!draft) return;
         this.saving.set(true);
         this.errors.set({});
         this.problem.set(null);
@@ -230,21 +233,19 @@ export class GroupEditorComponent {
             memberIds: draft.builtIn === 'guests' ? null : [...draft.memberIds],
         };
         try {
-            const group = draft.id === null
-                ? await this.api.createGroup(input, this.space())
-                : await this.api.updateGroup(draft.id, input, this.space());
+            const group =
+                draft.id === null
+                    ? await this.api.createGroup(input, this.space())
+                    : await this.api.updateGroup(draft.id, input, this.space());
             this.sheet().close();
             this.toasts.show(draft.id === null ? `Group ${group.name} created.` : `Group ${group.name} saved.`);
             this.saved.emit(group);
             // The signed-in account's own rights may have changed.
-            if (this.space() === null)
-                await this.config.load();
+            if (this.space() === null) await this.config.load();
         } catch (error) {
             const errors = fieldErrors(error);
-            if (errors)
-                this.errors.set(errors);
-            else
-                this.problem.set((error as Error).message);
+            if (errors) this.errors.set(errors);
+            else this.problem.set((error as Error).message);
         } finally {
             this.saving.set(false);
         }

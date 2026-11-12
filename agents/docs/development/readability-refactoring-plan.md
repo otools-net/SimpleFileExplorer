@@ -72,7 +72,8 @@ then by hand for what they leave: comments and long strings. One commit per step
 - [x] OpenAPI descriptions in raw strings rewrapped (`rewrap-descriptions.mjs`, 43 paragraphs): the document
   differs only in its descriptions' line breaks (identical with whitespace collapsed; Markdown renders the same)
 - [ ] Long strings of the server tests (about 360 lines)
-- [ ] Prettier over the client (`src/Sfe.Web/src`: TypeScript, templates, CSS); `npm run format` / `format:check`
+- [x] Prettier over the client (`src/Sfe.Web/src`: TypeScript, CSS, `index.html`); `npm run format` /
+  `format:check`; long lines 2314 -> 312; client build: every chunk the same size
 - [ ] Prettier over the e2e tests
 - [ ] Comments of the client and e2e rewrapped
 - [ ] What is left over 120 in the client, e2e and styles, by hand (`measure.mjs --area client`)
@@ -251,7 +252,9 @@ string contents. What they cannot break is done by hand, by area, worst first (`
   named constant. A test asserting the text, or the OpenAPI diff, catches a slip.
 - Data tables (`settings-schema.ts`, the icon sprite's paths): one entry per block; an SVG path too long for one line
   becomes a named constant, its content unchanged.
-- Inline templates over 40 lines: Prettier formats them in place; phase 4 still moves them to `.html`.
+- Inline templates are left to phase 4 (moved to `.html`, then tidied by hand): Prettier's template formatting
+  changes text nodes (`13 B` became ` 13 B` in the DOM, 19 specs failed), so `embeddedLanguageFormatting` is
+  `off`, and `.html` files use `htmlWhitespaceSensitivity: strict`.
 
 Traps met:
 

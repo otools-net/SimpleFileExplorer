@@ -8,9 +8,18 @@ import { READING_KEY } from '../reading/reading.service';
 import { SUBTITLES_MODE_KEY, SubtitlesViewComponent } from './subtitles-view.component';
 
 const SRT = [
-    '1', '00:00:01,000 --> 00:00:03,000', 'Where are we <i>going</i>?', '',
-    '2', '00:00:04,000 --> 00:00:06,500', 'Up the ridge.', '',
-    '3', '00:00:06,000 --> 00:00:08,000', 'Then down to the lake.', '',
+    '1',
+    '00:00:01,000 --> 00:00:03,000',
+    'Where are we <i>going</i>?',
+    '',
+    '2',
+    '00:00:04,000 --> 00:00:06,500',
+    'Up the ridge.',
+    '',
+    '3',
+    '00:00:06,000 --> 00:00:08,000',
+    'Then down to the lake.',
+    '',
 ].join('\n');
 
 describe('SubtitlesViewComponent', () => {
@@ -21,10 +30,17 @@ describe('SubtitlesViewComponent', () => {
 
     const ALL: TextAccess = { overwrite: true, saveCopy: true, download: true, permanent: false };
     const text = (overrides: Partial<TextFile> = {}): TextFile => ({
-        text: SRT, encoding: 'utf-8', lineEnding: 'lf', version: 'v1', size: 150, modified: '2026-10-18T10:00:00Z', access: ALL, ...overrides,
+        text: SRT,
+        encoding: 'utf-8',
+        lineEnding: 'lf',
+        version: 'v1',
+        size: 150,
+        modified: '2026-10-18T10:00:00Z',
+        access: ALL,
+        ...overrides,
     });
     const list = () => element.querySelector<HTMLElement>('.subtitle-list')!;
-    const texts = () => [...element.querySelectorAll('.subtitle-cue .subtitle-text')].map(cue => cue.textContent);
+    const texts = () => [...element.querySelectorAll('.subtitle-cue .subtitle-text')].map((cue) => cue.textContent);
     const cue = (index: number) => element.querySelector<HTMLElement>(`.subtitle-cue[data-cue="${index}"]`)!;
     const status = () => element.querySelector('[data-counts]')!.textContent;
     const view = () => EditorView.findFromDOM(element.querySelector<HTMLElement>('.json-source .cm-editor')!)!;
@@ -53,19 +69,22 @@ describe('SubtitlesViewComponent', () => {
     }
 
     beforeEach(async () => {
-        for (const key of [READING_KEY, SUBTITLES_MODE_KEY])
-            localStorage.removeItem(key);
+        for (const key of [READING_KEY, SUBTITLES_MODE_KEY]) localStorage.removeItem(key);
         api = mockApi();
         api.textFile.mockResolvedValue(text());
         api.subtitleVideo.mockResolvedValue({ path: 'Films/Film.mkv' });
         can = () => true;
-        TestBed.configureTestingModule({ providers: testProviders(api, { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: (right: string) => can(right) } }) });
+        TestBed.configureTestingModule({
+            providers: testProviders(api, {
+                provide: FILE_VIEW_HOST,
+                useValue: { place: 'viewer', can: (right: string) => can(right) },
+            }),
+        });
         await loadConfig(api);
     });
 
     afterEach(() => {
-        for (const key of [READING_KEY, SUBTITLES_MODE_KEY])
-            localStorage.removeItem(key);
+        for (const key of [READING_KEY, SUBTITLES_MODE_KEY]) localStorage.removeItem(key);
         fixture?.destroy();
         TestBed.resetTestingModule();
     });
@@ -75,7 +94,10 @@ describe('SubtitlesViewComponent', () => {
 
         expect(texts()).toEqual(['Where are we going?', 'Up the ridge.', 'Then down to the lake.']);
         expect(cue(0).querySelector('.italic')!.textContent).toBe('going');
-        expect([...cue(1).querySelectorAll('.subtitle-time')].map(time => time.textContent)).toEqual(['00:04.000', '00:06.500']);
+        expect([...cue(1).querySelectorAll('.subtitle-time')].map((time) => time.textContent)).toEqual([
+            '00:04.000',
+            '00:06.500',
+        ]);
         expect(cue(2).classList).toContain('overlaps');
         expect(status()).toBe('3 cues · 8 s · 1 overlapping');
         expect(element.querySelector('.text-status')!.textContent).toContain('SubRip');
@@ -105,7 +127,7 @@ describe('SubtitlesViewComponent', () => {
 
         fixture.destroy();
         api.subtitleVideo.mockClear();
-        can = right => right !== 'files.view';
+        can = (right) => right !== 'files.view';
         await show();
         expect(api.subtitleVideo).not.toHaveBeenCalled();
     });
@@ -133,7 +155,7 @@ describe('SubtitlesViewComponent', () => {
         await vi.waitFor(() => expect(view().state.doc.lineAt(view().state.selection.main.from).number).toBe(6));
     });
 
-    it('tells the lines where it isn\'t valid', async () => {
+    it("tells the lines where it isn't valid", async () => {
         api.textFile.mockResolvedValue(text({ text: 'WEBVTT\n\n00:01.000 --> nonsense\nText\n' }));
         await show('clip.vtt');
 
@@ -155,12 +177,15 @@ describe('SubtitlesViewComponent', () => {
         expect(view().state.doc.line(10).text).toBe('00:00:05,500 --> 00:00:07,500');
         await vi.waitFor(async () => {
             await stable();
-            expect([...cue(0).querySelectorAll('.subtitle-time')].map(time => time.textContent)).toEqual(['00:00.500', '00:02.500']);
+            expect([...cue(0).querySelectorAll('.subtitle-time')].map((time) => time.textContent)).toEqual([
+                '00:00.500',
+                '00:02.500',
+            ]);
         });
         expect(element.querySelector('[data-edited]')).not.toBeNull();
     });
 
-    it('refuses a shift that isn\'t a number of seconds', async () => {
+    it("refuses a shift that isn't a number of seconds", async () => {
         await show();
         element.querySelector<HTMLButtonElement>('[data-edit]')!.click();
         await stable();

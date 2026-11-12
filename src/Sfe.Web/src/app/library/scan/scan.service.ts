@@ -13,7 +13,9 @@ const DISMISSED_KEY = 'sfe.scan.dismissed';
 export function describeScan(status: ScanStatus): string {
     const counts = joinParts([
         `${plural(status.directoriesScanned, 'folder')} scanned`,
-        status.state === 'running' && status.directoriesQueued ? `${status.directoriesQueued.toLocaleString()} waiting` : null,
+        status.state === 'running' && status.directoriesQueued
+            ? `${status.directoriesQueued.toLocaleString()} waiting`
+            : null,
         `${plural(status.filesIndexed, 'file')} indexed`,
         status.removed ? `${status.removed.toLocaleString()} removed` : null,
         status.relinked ? `${plural(status.relinked, 'moved file')} relinked` : null,
@@ -48,14 +50,15 @@ export class ScanService {
     /** The panel shows a scan running, or the result of the last one until dismissed. */
     readonly visible = computed(() => {
         const status = this.status();
-        return Boolean(status && status.state !== 'idle' && (status.state === 'running' || this.dismissed() !== status.startedAt));
+        return Boolean(
+            status && status.state !== 'idle' && (status.state === 'running' || this.dismissed() !== status.startedAt),
+        );
     });
     readonly busy = computed(() => this.running() || this.starting());
 
     constructor() {
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && this.waiting)
-                void this.poll({ quiet: true });
+            if (!document.hidden && this.waiting) void this.poll({ quiet: true });
         });
     }
 
@@ -64,32 +67,35 @@ export class ScanService {
      * now and then for scans started elsewhere while the page stays open.
      */
     watch(): void {
-        if (this.started)
-            return;
+        if (this.started) return;
         this.started = true;
         void this.poll();
         setInterval(() => {
-            if (!this.running() && !document.hidden)
-                void this.poll({ quiet: true });
+            if (!this.running() && !document.hidden) void this.poll({ quiet: true });
         }, 30000);
     }
 
     /** Asks first, then scans the folder browsed and its sub-folders. */
     async start(): Promise<void> {
-        if (this.busy())
-            return;
+        if (this.busy()) return;
         const path = this.store.route().path;
         const name = path ? `“${path}”` : `the whole library (${this.config.value.rootName})`;
         // A folder kept out of scans: nothing to do there (the server refuses it too).
         const listing = this.store.listing();
         const through = listing && !this.store.searching() && 'exclusions' in listing ? listing.exclusions?.scan : null;
         if (through) {
-            this.toasts.show(through === listing!.path
-                ? `${name} is excluded from scans: what the index has of it stays as it is.`
-                : `${name} is inside “${through}”, which is excluded from scans.`);
+            this.toasts.show(
+                through === listing!.path
+                    ? `${name} is excluded from scans: what the index has of it stays as it is.`
+                    : `${name} is inside “${through}”, which is excluded from scans.`,
+            );
             return;
         }
-        if (!confirm(`Scan ${name} and all its sub-folders?\n\nThe search index is updated in the background. This can take a while on large folders.${this.skippedNote()}`))
+        if (
+            !confirm(
+                `Scan ${name} and all its sub-folders?\n\nThe search index is updated in the background. This can take a while on large folders.${this.skippedNote()}`,
+            )
+        )
             return;
 
         this.starting.set(true);
@@ -108,17 +114,23 @@ export class ScanService {
 
     /** The folders listed here that scans skip, for the confirmation: '' when none. */
     private skippedNote(): string {
-        const skipped = this.store.searching() ? [] : this.store.items().filter(item => item.kind === 'directory' && item.excluded?.scan).map(item => `“${item.name}”`);
-        if (!skipped.length)
-            return '';
-        const names = skipped.length > 3 ? `${skipped.slice(0, 3).join(', ')} and ${skipped.length - 3} more` : skipped.join(', ');
+        const skipped = this.store.searching()
+            ? []
+            : this.store
+                  .items()
+                  .filter((item) => item.kind === 'directory' && item.excluded?.scan)
+                  .map((item) => `“${item.name}”`);
+        if (!skipped.length) return '';
+        const names =
+            skipped.length > 3
+                ? `${skipped.slice(0, 3).join(', ')} and ${skipped.length - 3} more`
+                : skipped.join(', ');
         return `\n\nExcluded from scans: ${names}. ${skipped.length === 1 ? 'It is' : 'They are'} skipped, and what the index has of ${skipped.length === 1 ? 'it' : 'them'} stays as it is.`;
     }
 
     async cancel(): Promise<void> {
-        if (!confirm('Cancel the scan? Folders already scanned stay indexed.'))
-            return;
-        await this.api.cancelScan().catch(() => { });
+        if (!confirm('Cancel the scan? Folders already scanned stay indexed.')) return;
+        await this.api.cancelScan().catch(() => {});
         void this.poll();
     }
 
@@ -135,26 +147,21 @@ export class ScanService {
         try {
             const status = await this.api.scanStatus();
             this.status.set(status);
-            if (status.state === 'running')
-                this.later(() => this.poll(), 1000);
+            if (status.state === 'running') this.later(() => this.poll(), 1000);
             else if (wasRunning && status.state === 'completed')
                 this.toasts.show(`Index updated: ${describeScan(status)}`);
         } catch (error) {
-            if (!quiet)
-                this.toasts.error(`Cannot read scan status: ${(error as Error).message}`);
+            if (!quiet) this.toasts.error(`Cannot read scan status: ${(error as Error).message}`);
             // Keep watching a running scan through a hiccup (e.g. the server restarting).
-            if (wasRunning)
-                this.later(() => this.poll({ quiet: true }), 5000);
+            if (wasRunning) this.later(() => this.poll({ quiet: true }), 5000);
         }
     }
 
     /** The next poll of a running scan, or, while the page is hidden, once it shows. */
     private later(poll: () => void, ms: number): void {
         this.timer = setTimeout(() => {
-            if (document.hidden)
-                this.waiting = true;
-            else
-                poll();
+            if (document.hidden) this.waiting = true;
+            else poll();
         }, ms);
     }
 }

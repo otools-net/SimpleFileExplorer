@@ -18,13 +18,27 @@ afterEach(() => vi.restoreAllMocks());
 
 function entry(overrides: Partial<LogEntry> = {}): LogEntry {
     return {
-        id: 10, timestamp: '2026-10-15T08:30:00Z', level: 'warning', category: 'Sfe.Core.Indexing.ScanCoordinator',
-        message: 'Cannot read Movies/a.mkv', exception: null, tenantId: 1, ...overrides,
+        id: 10,
+        timestamp: '2026-10-15T08:30:00Z',
+        level: 'warning',
+        category: 'Sfe.Core.Indexing.ScanCoordinator',
+        message: 'Cannot read Movies/a.mkv',
+        exception: null,
+        tenantId: 1,
+        ...overrides,
     };
 }
 
 function result(overrides: Partial<LogSearchResult> = {}): LogSearchResult {
-    return { entries: [entry()], next: null, retentionDays: 30, writeFiles: false, filesDirectory: null, allSpaces: true, ...overrides };
+    return {
+        entries: [entry()],
+        next: null,
+        retentionDays: 30,
+        writeFiles: false,
+        filesDirectory: null,
+        allSpaces: true,
+        ...overrides,
+    };
 }
 
 async function render() {
@@ -34,11 +48,20 @@ async function render() {
 }
 
 const buttonNamed = (root: HTMLElement, label: string) =>
-    [...root.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent!.trim() === label);
+    [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent!.trim() === label);
 
 describe('log filters', () => {
     it('make the query of api/logs, the "to" day included', () => {
-        const query = toQuery({ text: '  scan ', levels: new Set(['error', 'warning']), fromDay: '2026-10-01', toDay: '2026-10-03', space: 'server' }, 42);
+        const query = toQuery(
+            {
+                text: '  scan ',
+                levels: new Set(['error', 'warning']),
+                fromDay: '2026-10-01',
+                toDay: '2026-10-03',
+                space: 'server',
+            },
+            42,
+        );
 
         expect(query).toEqual({
             q: 'scan',
@@ -48,7 +71,14 @@ describe('log filters', () => {
             tenant: 0,
             before: 42,
         });
-        expect(toQuery(NO_FILTERS)).toEqual({ q: null, levels: null, from: null, to: null, tenant: null, before: null });
+        expect(toQuery(NO_FILTERS)).toEqual({
+            q: null,
+            levels: null,
+            from: null,
+            to: null,
+            tenant: null,
+            before: null,
+        });
         expect(toQuery({ ...NO_FILTERS, space: 3 }).tenant).toBe(3);
     });
 
@@ -63,9 +93,19 @@ describe('log filters', () => {
 
 describe('LogsSectionComponent', () => {
     it('lists the entries newest first with their level, space and logger, and opens one on its error', async () => {
-        api.logs.mockResolvedValue(result({
-            entries: [entry({ id: 12, level: 'error', message: 'Scan failed', exception: 'System.IO.IOException: gone\n   at Scan()' }), entry({ id: 11, tenantId: null, category: 'Sfe.Api' })],
-        }));
+        api.logs.mockResolvedValue(
+            result({
+                entries: [
+                    entry({
+                        id: 12,
+                        level: 'error',
+                        message: 'Scan failed',
+                        exception: 'System.IO.IOException: gone\n   at Scan()',
+                    }),
+                    entry({ id: 11, tenantId: null, category: 'Sfe.Api' }),
+                ],
+            }),
+        );
         const { root } = await render();
 
         const rows = root.querySelectorAll('.log-entry');
@@ -85,28 +125,50 @@ describe('LogsSectionComponent', () => {
     });
 
     it('shows security warnings as such, and filters them apart from warnings', async () => {
-        api.logs.mockResolvedValue(result({
-            entries: [entry({ id: 13, level: 'securityWarning', category: 'Sfe.Api.Endpoints.SessionEndpoints', message: 'Sign-in refused for admin from 203.0.113.7: wrong name or password' })],
-        }));
+        api.logs.mockResolvedValue(
+            result({
+                entries: [
+                    entry({
+                        id: 13,
+                        level: 'securityWarning',
+                        category: 'Sfe.Api.Endpoints.SessionEndpoints',
+                        message: 'Sign-in refused for admin from 203.0.113.7: wrong name or password',
+                    }),
+                ],
+            }),
+        );
         const { root } = await render();
 
         const row = root.querySelector('.log-entry')!;
         expect(row.classList).toContain('level-securityWarning');
         expect(row.querySelector('.log-level')!.textContent).toBe('Security warning');
 
-        const chips = [...root.querySelectorAll<HTMLLabelElement>('.logs-level-chip')].map(l => l.textContent!.trim());
+        const chips = [...root.querySelectorAll<HTMLLabelElement>('.logs-level-chip')].map((l) =>
+            l.textContent!.trim(),
+        );
         expect(chips.indexOf('Security warning')).toBe(chips.indexOf('Warning') + 1);
-        [...root.querySelectorAll<HTMLLabelElement>('.logs-level-chip')].find(l => l.textContent!.trim() === 'Security warning')!.querySelector('input')!.click();
+        [...root.querySelectorAll<HTMLLabelElement>('.logs-level-chip')]
+            .find((l) => l.textContent!.trim() === 'Security warning')!
+            .querySelector('input')!
+            .click();
         await settle();
-        expect(api.logs).toHaveBeenLastCalledWith(expect.objectContaining({ levels: 'securityWarning' }), expect.anything());
+        expect(api.logs).toHaveBeenLastCalledWith(
+            expect.objectContaining({ levels: 'securityWarning' }),
+            expect.anything(),
+        );
     });
 
     it('searches again by severity, text (after a pause), day and space', async () => {
         api.logs.mockResolvedValue(result());
         const { root } = await render();
-        expect(api.logs).toHaveBeenCalledWith(expect.objectContaining({ q: null, levels: null, tenant: null }), expect.anything());
+        expect(api.logs).toHaveBeenCalledWith(
+            expect.objectContaining({ q: null, levels: null, tenant: null }),
+            expect.anything(),
+        );
 
-        const error = [...root.querySelectorAll<HTMLLabelElement>('.logs-level-chip')].find(l => l.textContent!.trim() === 'Error')!;
+        const error = [...root.querySelectorAll<HTMLLabelElement>('.logs-level-chip')].find(
+            (l) => l.textContent!.trim() === 'Error',
+        )!;
         error.querySelector('input')!.click();
         await settle();
         expect(api.logs).toHaveBeenLastCalledWith(expect.objectContaining({ levels: 'error' }), expect.anything());
@@ -117,13 +179,19 @@ describe('LogsSectionComponent', () => {
         await settle();
         expect(api.logs).not.toHaveBeenLastCalledWith(expect.objectContaining({ q: 'boom' }), expect.anything());
         await settle(450);
-        expect(api.logs).toHaveBeenLastCalledWith(expect.objectContaining({ q: 'boom', levels: 'error' }), expect.anything());
+        expect(api.logs).toHaveBeenLastCalledWith(
+            expect.objectContaining({ q: 'boom', levels: 'error' }),
+            expect.anything(),
+        );
 
         const from = root.querySelector<HTMLInputElement>('input[type="date"]')!;
         from.value = '2026-10-01';
         from.dispatchEvent(new Event('change'));
         await settle();
-        expect(api.logs).toHaveBeenLastCalledWith(expect.objectContaining({ from: new Date(2026, 9, 1).toISOString() }), expect.anything());
+        expect(api.logs).toHaveBeenLastCalledWith(
+            expect.objectContaining({ from: new Date(2026, 9, 1).toISOString() }),
+            expect.anything(),
+        );
 
         const space = root.querySelector<HTMLSelectElement>('.logs-space select')!;
         space.value = 'server';
@@ -133,11 +201,15 @@ describe('LogsSectionComponent', () => {
 
         buttonNamed(root, 'Clear filters')!.click();
         await settle();
-        expect(api.logs).toHaveBeenLastCalledWith(expect.objectContaining({ q: null, levels: null, from: null, tenant: null }), expect.anything());
+        expect(api.logs).toHaveBeenLastCalledWith(
+            expect.objectContaining({ q: null, levels: null, from: null, tenant: null }),
+            expect.anything(),
+        );
     });
 
     it('adds older pages at the end', async () => {
-        api.logs.mockResolvedValueOnce(result({ entries: [entry({ id: 20 })], next: 20 }))
+        api.logs
+            .mockResolvedValueOnce(result({ entries: [entry({ id: 20 })], next: 20 }))
             .mockResolvedValueOnce(result({ entries: [entry({ id: 19 })], next: null }));
         const { root } = await render();
 
@@ -181,14 +253,20 @@ describe('LogsSectionComponent', () => {
 describe('the Logs section', () => {
     it('shows to those with the right to see the logs, its settings to those with the log settings', async () => {
         const viewer = await loadConfig(api, limitedConfig([Rights.viewLogs]));
-        const logs = visibleSections(rights => viewer.canAny(rights)).find(section => section.id === 'logs');
+        const logs = visibleSections((rights) => viewer.canAny(rights)).find((section) => section.id === 'logs');
 
-        expect(logs?.subpages.map(page => page.id)).toEqual(['entries']);
+        expect(logs?.subpages.map((page) => page.id)).toEqual(['entries']);
 
         const none = await loadConfig(api, limitedConfig([Rights.browse]));
-        expect(visibleSections(rights => none.canAny(rights)).find(section => section.id === 'logs')).toBeUndefined();
+        expect(
+            visibleSections((rights) => none.canAny(rights)).find((section) => section.id === 'logs'),
+        ).toBeUndefined();
 
         const settings = await loadConfig(api, limitedConfig([Rights.logSettings]));
-        expect(visibleSections(rights => settings.canAny(rights)).find(section => section.id === 'logs')?.subpages.map(page => page.id)).toEqual(['settings']);
+        expect(
+            visibleSections((rights) => settings.canAny(rights))
+                .find((section) => section.id === 'logs')
+                ?.subpages.map((page) => page.id),
+        ).toEqual(['settings']);
     });
 });

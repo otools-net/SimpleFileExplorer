@@ -23,12 +23,21 @@ describe('ScrollProgressComponent', () => {
         TestBed.configureTestingModule({ providers: testProviders(api) });
         await loadConfig(api, fakeConfig({ pageSize: 4, searchPageSize: 4 }));
         store = TestBed.inject(ListingStore);
-        vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+        vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
         api.siblings.mockResolvedValue({ path: '', previous: null, next: null, position: 0, count: 0 });
         vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
             const items = [...document.querySelectorAll('.content > .folders > *, .content > .files > *')];
             const top = items.indexOf(this) * ITEM_HEIGHT - window.scrollY;
-            return { top, bottom: top + ITEM_HEIGHT, left: 0, right: 100, width: 100, height: ITEM_HEIGHT, x: 0, y: top } as DOMRect;
+            return {
+                top,
+                bottom: top + ITEM_HEIGHT,
+                left: 0,
+                right: 100,
+                width: 100,
+                height: ITEM_HEIGHT,
+                x: 0,
+                y: top,
+            } as DOMRect;
         });
     });
 
@@ -38,7 +47,18 @@ describe('ScrollProgressComponent', () => {
     });
 
     async function show(items: LibraryItem[], page: Partial<DirectoryListing> = {}): Promise<void> {
-        api.browse.mockResolvedValue({ path: '', name: 'Root', parentPath: null, items, offset: 0, limit: 4, total: items.length, directoryCount: 0, fileCount: items.length, ...page });
+        api.browse.mockResolvedValue({
+            path: '',
+            name: 'Root',
+            parentPath: null,
+            items,
+            offset: 0,
+            limit: 4,
+            total: items.length,
+            directoryCount: 0,
+            fileCount: items.length,
+            ...page,
+        });
         await store.load();
         const fixture = TestBed.createComponent(ListingComponent);
         element = fixture.nativeElement;
@@ -49,7 +69,7 @@ describe('ScrollProgressComponent', () => {
     async function scrollTo(y: number): Promise<void> {
         Object.defineProperty(window, 'scrollY', { value: y, configurable: true });
         window.dispatchEvent(new Event('scroll'));
-        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise((resolve) => requestAnimationFrame(resolve));
         await settle();
     }
 
@@ -59,7 +79,7 @@ describe('ScrollProgressComponent', () => {
         expect(progress().hidden).toBe(true);
     });
 
-    it('says the page, the items scrolled to of the folder\'s total, and fills the bar as much', async () => {
+    it("says the page, the items scrolled to of the folder's total, and fills the bar as much", async () => {
         await show([folder, ...files], { total: 30 });
 
         // 768 px of screen from 1000 px down: the items whose top is above 1768 px, the folder included.
@@ -76,7 +96,16 @@ describe('ScrollProgressComponent', () => {
     });
 
     it('takes the number of matches of a search, at least as many when the count stopped', async () => {
-        const page: SearchResults = { query: 'f', path: '', items: files, limit: 4, hasMore: true, next: 'f8.jpg', total: 10000, totalCapped: true };
+        const page: SearchResults = {
+            query: 'f',
+            path: '',
+            items: files,
+            limit: 4,
+            hasMore: true,
+            next: 'f8.jpg',
+            total: 10000,
+            totalCapped: true,
+        };
         api.search.mockResolvedValue(page);
         store.route.set({ path: '', q: 'f', sort: '', desc: false });
         await store.load();
@@ -96,10 +125,20 @@ describe('ScrollProgressComponent', () => {
         await scrollTo(1500);
         expect(progress().querySelector('.scroll-progress-count')!.textContent).toBe('4 / 9');
 
-        api.browse.mockResolvedValue({ path: '', name: 'Root', parentPath: null, items: files.slice(4), offset: 4, limit: 4, total: 9, directoryCount: 0, fileCount: 9 });
+        api.browse.mockResolvedValue({
+            path: '',
+            name: 'Root',
+            parentPath: null,
+            items: files.slice(4),
+            offset: 4,
+            limit: 4,
+            total: 9,
+            directoryCount: 0,
+            fileCount: 9,
+        });
         await store.loadMore();
         await settle();
-        await new Promise(resolve => requestAnimationFrame(resolve));
+        await new Promise((resolve) => requestAnimationFrame(resolve));
         await settle();
 
         expect(progress().querySelector('.scroll-progress-count')!.textContent).toBe('8 / 9');

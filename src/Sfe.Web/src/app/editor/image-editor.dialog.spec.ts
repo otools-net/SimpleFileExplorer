@@ -4,7 +4,18 @@ import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { ViewerComponent } from '../library/viewer/viewer.component';
-import { ApiMock, fakeCanvases, fakeConfig, item, limitedConfig, ALL_RIGHTS, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    fakeCanvases,
+    fakeConfig,
+    item,
+    limitedConfig,
+    ALL_RIGHTS,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../testing/fakes';
 import { PICTURE_LOADER } from './edits';
 import { ContextMenuComponent } from '../menus/context-menu';
 import { ImageEditorDialog } from './image-editor.dialog';
@@ -33,11 +44,15 @@ describe('ImageEditorDialog', () => {
 
     const photo = item('Media/photo.jpg', { kind: 'image' });
     const dialog = () => element.querySelector('dialog')!;
-    const button = (label: string) => [...element.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent!.trim() === label || b.getAttribute('aria-label') === label)!;
+    const button = (label: string) =>
+        [...element.querySelectorAll<HTMLButtonElement>('button')].find(
+            (b) => b.textContent!.trim() === label || b.getAttribute('aria-label') === label,
+        )!;
     const field = (name: string) => element.querySelector<HTMLInputElement>(`input[data-field="${name}"]`)!;
-    const frame = () => [field('x'), field('y'), field('width'), field('height')].map(input => Number(input.value));
+    const frame = () => [field('x'), field('y'), field('width'), field('height')].map((input) => Number(input.value));
     const subtitle = () => element.querySelector('.viewer-title span')!.textContent!.trim();
-    const aspectButton = (id: string) => element.querySelector<HTMLButtonElement>(`.aspect-choice[data-aspect="${id}"]`)!;
+    const aspectButton = (id: string) =>
+        element.querySelector<HTMLButtonElement>(`.aspect-choice[data-aspect="${id}"]`)!;
     const pickAspect = async (id: string) => {
         aspectButton(id).click();
         await settle();
@@ -51,7 +66,9 @@ describe('ImageEditorDialog', () => {
     async function setUp(config = fakeConfig()): Promise<void> {
         api = mockApi();
         loader = vi.fn(() => Promise.resolve(picture(4000, 3000)));
-        TestBed.configureTestingModule({ providers: testProviders(api, { provide: PICTURE_LOADER, useValue: loader }) });
+        TestBed.configureTestingModule({
+            providers: testProviders(api, { provide: PICTURE_LOADER, useValue: loader }),
+        });
         await loadConfig(api, config);
         drawn = fakeCanvases().drawn;
         fixture = TestBed.createComponent(ImageEditorDialog);
@@ -100,8 +117,22 @@ describe('ImageEditorDialog', () => {
         await setUp();
         await open();
 
-        const ids = [...element.querySelectorAll<HTMLButtonElement>('.aspect-choice')].map(b => b.dataset['aspect']);
-        expect(ids).toEqual(expect.arrayContaining(['free', 'original', '1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '4:5', '21:9']));
+        const ids = [...element.querySelectorAll<HTMLButtonElement>('.aspect-choice')].map((b) => b.dataset['aspect']);
+        expect(ids).toEqual(
+            expect.arrayContaining([
+                'free',
+                'original',
+                '1:1',
+                '16:9',
+                '9:16',
+                '4:3',
+                '3:4',
+                '3:2',
+                '2:3',
+                '4:5',
+                '21:9',
+            ]),
+        );
         expect(aspectButton('free').getAttribute('aria-checked')).toBe('true');
 
         await pickAspect('16:9');
@@ -153,7 +184,12 @@ describe('ImageEditorDialog', () => {
         await setUp();
         await open();
         const layer = element.querySelector<HTMLElement>('.crop-layer')!;
-        vi.spyOn(layer, 'getBoundingClientRect').mockReturnValue({ left: 0, top: 0, width: 400, height: 300 } as DOMRect);
+        vi.spyOn(layer, 'getBoundingClientRect').mockReturnValue({
+            left: 0,
+            top: 0,
+            width: 400,
+            height: 300,
+        } as DOMRect);
 
         element.querySelector('[data-handle="se"]')!.dispatchEvent(pointer('pointerdown', 400, 300));
         layer.dispatchEvent(pointer('pointermove', 300, 250));
@@ -203,36 +239,73 @@ describe('ImageEditorDialog', () => {
         const sent = api.saveEditedImage.mock.calls[0][1];
         expect(await sent.text()).toBe('1000x800');
         expect(dialog().open).toBe(false);
-        expect(TestBed.inject(ToastService).toasts().map(t => t.message)).toEqual(['Saved as “Edited/Media/photo.jpg” (1000 × 800, 2 KB).']);
+        expect(
+            TestBed.inject(ToastService)
+                .toasts()
+                .map((t) => t.message),
+        ).toEqual(['Saved as “Edited/Media/photo.jpg” (1000 × 800, 2 KB).']);
     });
 
     it('saves over the original when the server allows it, from the version opened', async () => {
         await setUp();
         api.editedImageAccess.mockResolvedValue({ version: 'v1', overwrite: true, permanent: false });
-        api.saveEditedImageOver.mockResolvedValue({ path: 'Media/photo.jpg', width: 1000, height: 3000, size: 2048, version: 'v2', modified: '2026-10-19T10:00:00Z', trashId: 7 });
+        api.saveEditedImageOver.mockResolvedValue({
+            path: 'Media/photo.jpg',
+            width: 1000,
+            height: 3000,
+            size: 2048,
+            version: 'v2',
+            modified: '2026-10-19T10:00:00Z',
+            trashId: 7,
+        });
         const store = TestBed.inject(ListingStore);
         const applied = vi.spyOn(store, 'applySaved');
         await open();
         await setField('width', '1000');
 
         expect(button('Save a copy').disabled).toBe(false);
-        expect(element.querySelector('.editor-panel')!.textContent).toContain('Save writes over the original (the version before goes to the trash)');
+        expect(element.querySelector('.editor-panel')!.textContent).toContain(
+            'Save writes over the original (the version before goes to the trash)',
+        );
         button('Save').click();
         await settle(10);
 
         expect(api.editedImageAccess).toHaveBeenCalledWith('Media/photo.jpg');
-        expect(api.saveEditedImageOver).toHaveBeenCalledWith('Media/photo.jpg', expect.any(Blob), expect.stringMatching(/^[0-9a-f]{32}$/), 'v1');
+        expect(api.saveEditedImageOver).toHaveBeenCalledWith(
+            'Media/photo.jpg',
+            expect.any(Blob),
+            expect.stringMatching(/^[0-9a-f]{32}$/),
+            'v1',
+        );
         expect(api.saveEditedImage).not.toHaveBeenCalled();
-        expect(applied).toHaveBeenCalledWith('Media/photo.jpg', { size: 2048, modified: '2026-10-19T10:00:00Z', width: 1000, height: 3000 });
+        expect(applied).toHaveBeenCalledWith('Media/photo.jpg', {
+            size: 2048,
+            modified: '2026-10-19T10:00:00Z',
+            width: 1000,
+            height: 3000,
+        });
         expect(dialog().open).toBe(false);
-        expect(TestBed.inject(ToastService).toasts().map(t => t.message)).toEqual(['Saved (1000 × 3000, 2 KB). The version before is in the trash.']);
+        expect(
+            TestBed.inject(ToastService)
+                .toasts()
+                .map((t) => t.message),
+        ).toEqual(['Saved (1000 × 3000, 2 KB). The version before is in the trash.']);
     });
 
     it('asks before saving over a picture changed meanwhile; Ctrl+Shift+S saves a copy', async () => {
         await setUp();
         api.editedImageAccess.mockResolvedValue({ version: 'v1', overwrite: true, permanent: false });
-        api.saveEditedImageOver.mockRejectedValueOnce(new ApiError(412, 'Changed'))
-            .mockResolvedValueOnce({ path: 'Media/photo.jpg', width: 1000, height: 3000, size: 2048, version: 'v3', modified: '2026-10-19T10:00:00Z', trashId: null });
+        api.saveEditedImageOver
+            .mockRejectedValueOnce(new ApiError(412, 'Changed'))
+            .mockResolvedValueOnce({
+                path: 'Media/photo.jpg',
+                width: 1000,
+                height: 3000,
+                size: 2048,
+                version: 'v3',
+                modified: '2026-10-19T10:00:00Z',
+                trashId: null,
+            });
         const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
         await open();
         await setField('width', '1000');
@@ -240,13 +313,17 @@ describe('ImageEditorDialog', () => {
         dialog().dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true }));
         await settle(10);
 
-        expect(confirm).toHaveBeenCalledWith('The picture was changed elsewhere since the editor opened it. Save over it anyway?');
-        expect(api.saveEditedImageOver.mock.calls.map(call => call[3])).toEqual(['v1', '*']);
+        expect(confirm).toHaveBeenCalledWith(
+            'The picture was changed elsewhere since the editor opened it. Save over it anyway?',
+        );
+        expect(api.saveEditedImageOver.mock.calls.map((call) => call[3])).toEqual(['v1', '*']);
         expect(dialog().open).toBe(false);
 
         await open();
         await setField('width', '1000');
-        dialog().dispatchEvent(new KeyboardEvent('keydown', { key: 'S', ctrlKey: true, shiftKey: true, bubbles: true }));
+        dialog().dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'S', ctrlKey: true, shiftKey: true, bubbles: true }),
+        );
         await settle(10);
         expect(api.saveEditedImage).toHaveBeenCalledTimes(1);
     });
@@ -272,7 +349,10 @@ describe('ImageEditorDialog', () => {
         await settle(10);
 
         expect(dialog().open).toBe(true);
-        expect(TestBed.inject(ToastService).toasts()[0]).toMatchObject({ error: true, message: 'Could not save the picture: Disk full' });
+        expect(TestBed.inject(ToastService).toasts()[0]).toMatchObject({
+            error: true,
+            message: 'Could not save the picture: Disk full',
+        });
         expect(element.querySelector('.editor-history')!.textContent).toContain('Crop to 1000 × 3000');
     });
 
@@ -308,7 +388,9 @@ describe('ImageEditorDialog', () => {
 
         await open();
 
-        expect(element.querySelector('.viewer-message')!.textContent).toContain('This browser cannot open this picture for editing.');
+        expect(element.querySelector('.viewer-message')!.textContent).toContain(
+            'This browser cannot open this picture for editing.',
+        );
         expect(button('Save a copy').disabled).toBe(true);
     });
 
@@ -334,7 +416,10 @@ describe('ViewerComponent › Edit', () => {
         api = mockApi();
         TestBed.configureTestingModule({ providers: testProviders(api) });
         await loadConfig(api, limitedConfig(rights, editor ? {} : { editor: null }));
-        TestBed.inject(ListingStore).items.set([item('Media/photo.jpg', { kind: 'image' }), item('Media/clip.mp4', { kind: 'video' })]);
+        TestBed.inject(ListingStore).items.set([
+            item('Media/photo.jpg', { kind: 'image' }),
+            item('Media/clip.mp4', { kind: 'video' }),
+        ]);
         const editorDialog = { open: vi.fn(() => Promise.resolve()) };
         TestBed.inject(Dialogs).imageEditor.set(editorDialog as unknown as ImageEditorDialog);
         TestBed.createComponent(ContextMenuComponent);
@@ -370,7 +455,7 @@ describe('ViewerComponent › Edit', () => {
     });
 
     it('hides it without the right, or from a server without the editor', async () => {
-        const without = await viewer(ALL_RIGHTS.filter(r => r !== 'files.edit'));
+        const without = await viewer(ALL_RIGHTS.filter((r) => r !== 'files.edit'));
         without.fixture.componentInstance.open(item('Media/photo.jpg', { kind: 'image' }));
         await settle();
         expect(await editButton(without.element)).toBeNull();

@@ -10,7 +10,9 @@ describe('paths', () => {
         expect(encodePath('')).toBe('');
         expect(encodePath('a/b c/d')).toBe('a/b%20c/d');
         expect(encodePath('#?%+&=')).toBe('%23%3F%25%2B%26%3D');
-        expect(encodePath('Ñandú/日本/S̷e')).toBe(`${encodeURIComponent('Ñandú')}/${encodeURIComponent('日本')}/${encodeURIComponent('S̷e')}`);
+        expect(encodePath('Ñandú/日本/S̷e')).toBe(
+            `${encodeURIComponent('Ñandú')}/${encodeURIComponent('日本')}/${encodeURIComponent('S̷e')}`,
+        );
     });
 
     it('gives the parent and the name of a path, the root being ""', () => {
@@ -40,8 +42,12 @@ describe('preferences', () => {
     });
 
     it('falls back, and drops writes, when storage is unavailable', () => {
-        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new DOMException('denied', 'SecurityError'); });
-        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError'); });
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw new DOMException('denied', 'SecurityError');
+        });
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new DOMException('full', 'QuotaExceededError');
+        });
 
         expect(readPreference('sfe.x', 'grid')).toBe('grid');
         expect(() => writePreference('sfe.x', 'list')).not.toThrow();
@@ -61,10 +67,13 @@ describe('ToastService', () => {
 
         toasts.show('Saved');
         toasts.error('Failed', 1000);
-        expect(toasts.toasts().map(t => [t.message, t.error])).toEqual([['Saved', false], ['Failed', true]]);
+        expect(toasts.toasts().map((t) => [t.message, t.error])).toEqual([
+            ['Saved', false],
+            ['Failed', true],
+        ]);
 
         vi.advanceTimersByTime(1000);
-        expect(toasts.toasts().map(t => t.message)).toEqual(['Saved']);
+        expect(toasts.toasts().map((t) => t.message)).toEqual(['Saved']);
         vi.advanceTimersByTime(3500);
         expect(toasts.toasts()).toEqual([]);
     });

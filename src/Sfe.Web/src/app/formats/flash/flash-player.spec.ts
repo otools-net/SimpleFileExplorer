@@ -2,7 +2,11 @@ import { FlashEvents, FlashHandle, FlashMetadata, openFlash } from './flash-play
 
 describe('openFlash', () => {
     let container: HTMLElement;
-    let events: { metadata: ReturnType<typeof vi.fn<(metadata: FlashMetadata) => void>>; state: ReturnType<typeof vi.fn<(playing: boolean) => void>>; escape: ReturnType<typeof vi.fn<() => void>> } & FlashEvents;
+    let events: {
+        metadata: ReturnType<typeof vi.fn<(metadata: FlashMetadata) => void>>;
+        state: ReturnType<typeof vi.fn<(playing: boolean) => void>>;
+        escape: ReturnType<typeof vi.fn<() => void>>;
+    } & FlashEvents;
 
     function frame(): HTMLIFrameElement {
         return container.querySelector('iframe')!;
@@ -16,7 +20,11 @@ describe('openFlash', () => {
     beforeEach(() => {
         container = document.createElement('div');
         document.body.appendChild(container);
-        events = { metadata: vi.fn<(metadata: FlashMetadata) => void>(), state: vi.fn<(playing: boolean) => void>(), escape: vi.fn<() => void>() };
+        events = {
+            metadata: vi.fn<(metadata: FlashMetadata) => void>(),
+            state: vi.fn<(playing: boolean) => void>(),
+            escape: vi.fn<() => void>(),
+        };
     });
 
     afterEach(() => container.remove());
@@ -31,7 +39,10 @@ describe('openFlash', () => {
         expect(iframe.src).toBe(new URL('flash/player.html', document.baseURI).href);
 
         message({ type: 'ready' });
-        expect(sent).toHaveBeenCalledWith({ type: 'load', url: 'http://sfe/api/files/flash/T/Run.swf', volume: 0.5 }, '*');
+        expect(sent).toHaveBeenCalledWith(
+            { type: 'load', url: 'http://sfe/api/files/flash/T/Run.swf', volume: 0.5 },
+            '*',
+        );
         message({ type: 'metadata', metadata: { width: 550 } });
         message({ type: 'loaded' });
         const handle = await opening;
@@ -52,7 +63,9 @@ describe('openFlash', () => {
 
     it('hears only its own frame', async () => {
         let handle: FlashHandle | null = null;
-        void openFlash(container, 'http://sfe/api/files/flash/T/Run.swf', 1, events).then(opened => handle = opened);
+        void openFlash(container, 'http://sfe/api/files/flash/T/Run.swf', 1, events).then(
+            (opened) => (handle = opened),
+        );
 
         message({ type: 'loaded' }, window);
         message({ type: 'state', playing: true }, null);

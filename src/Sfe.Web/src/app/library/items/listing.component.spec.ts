@@ -13,7 +13,7 @@ describe('ListingComponent', () => {
         api = mockApi();
         TestBed.configureTestingModule({ providers: testProviders(api) });
         await loadConfig(api, config);
-        vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+        vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
         api.browse.mockRejectedValue(error);
         await TestBed.inject(ListingStore).load();
         const fixture = TestBed.createComponent(ListingComponent);
@@ -24,17 +24,33 @@ describe('ListingComponent', () => {
     afterEach(() => vi.restoreAllMocks());
 
     it('says when the whole library folder is missing, and where an administrator picks another', async () => {
-        const element = await show(new ApiError(404, 'The library folder E:\\Media\\ does not exist on the server.', null, 'library-root-missing'));
+        const element = await show(
+            new ApiError(
+                404,
+                'The library folder E:\\Media\\ does not exist on the server.',
+                null,
+                'library-root-missing',
+            ),
+        );
 
         expect(element.querySelector('sfe-empty-state')!.textContent).toContain('The library folder is missing');
         expect(element.textContent).toContain('E:\\Media\\');
-        const link = [...element.querySelectorAll<HTMLAnchorElement>('a')].find(a => a.textContent!.includes('Pick another folder'))!;
+        const link = [...element.querySelectorAll<HTMLAnchorElement>('a')].find((a) =>
+            a.textContent!.includes('Pick another folder'),
+        )!;
         expect(link.getAttribute('href')).toBe('/admin?section=system&page=installation');
     });
 
     it('sends the others to an administrator', async () => {
-        const element = await show(new ApiError(404, 'The library folder E:\\Media\\ does not exist on the server.', null, 'library-root-missing'),
-            limitedConfig([Rights.browse]));
+        const element = await show(
+            new ApiError(
+                404,
+                'The library folder E:\\Media\\ does not exist on the server.',
+                null,
+                'library-root-missing',
+            ),
+            limitedConfig([Rights.browse]),
+        );
 
         expect(element.textContent).toContain('Ask an administrator');
         expect(element.textContent).not.toContain('Pick another folder');

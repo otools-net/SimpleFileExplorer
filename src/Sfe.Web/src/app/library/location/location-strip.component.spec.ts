@@ -1,6 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 import { DirectoryListing } from '../../core/models';
-import { ApiMock, fakeConfig, intersect, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
+import {
+    ApiMock,
+    fakeConfig,
+    intersect,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../../testing/fakes';
 import { ListingStore } from '../listing.store';
 import { SidebarService } from '../sidebar/sidebar.service';
 import { LocationLinks } from './location-links.service';
@@ -13,10 +23,19 @@ let links: LocationLinks;
 
 async function show(path: string, q = ''): Promise<void> {
     store.route.set({ path, q, sort: '', desc: false });
-    if (q)
-        api.search.mockResolvedValue({ query: q, path, items: [], limit: 50, hasMore: false, next: null });
+    if (q) api.search.mockResolvedValue({ query: q, path, items: [], limit: 50, hasMore: false, next: null });
     else
-        api.browse.mockResolvedValue({ path, name: '', parentPath: null, items: [], offset: 0, limit: 100, total: 0, directoryCount: 0, fileCount: 0 } as DirectoryListing);
+        api.browse.mockResolvedValue({
+            path,
+            name: '',
+            parentPath: null,
+            items: [],
+            offset: 0,
+            limit: 100,
+            total: 0,
+            directoryCount: 0,
+            fileCount: 0,
+        } as DirectoryListing);
     await store.load();
     await settle();
 }
@@ -27,8 +46,14 @@ beforeEach(async () => {
     await loadConfig(api, fakeConfig({ rootName: 'Library' }));
     store = TestBed.inject(ListingStore);
     links = TestBed.inject(LocationLinks);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
-    api.siblings.mockResolvedValue({ path: 'Media/2020/Summer', previous: item('Media/2020/Spring', { kind: 'directory' }), next: null, position: 2, count: 2 });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
+    api.siblings.mockResolvedValue({
+        path: 'Media/2020/Summer',
+        previous: item('Media/2020/Spring', { kind: 'directory' }),
+        next: null,
+        position: 2,
+        count: 2,
+    });
 });
 
 afterEach(() => vi.restoreAllMocks());
@@ -58,8 +83,11 @@ describe('LocationStripComponent', () => {
 
         expect(bar(element).classList).toContain('shown');
         expect(bar(element).hasAttribute('inert')).toBe(false);
-        expect([...element.querySelectorAll<HTMLAnchorElement>('.folder-nav a')].map(a => a.title))
-            .toEqual(['Parent folder: 2020 (Backspace)', 'Previous folder: Spring (2 of 2)', 'Last folder']);
+        expect([...element.querySelectorAll<HTMLAnchorElement>('.folder-nav a')].map((a) => a.title)).toEqual([
+            'Parent folder: 2020 (Backspace)',
+            'Previous folder: Spring (2 of 2)',
+            'Last folder',
+        ]);
         expect(title(element).querySelector('.parent')!.textContent).toBe('2020');
         expect(title(element).querySelector('.current')!.textContent).toBe('Summer');
         expect(title(element).title).toBe('Back to the top: Library / Media / 2020 / Summer');
@@ -84,7 +112,7 @@ describe('LocationStripComponent', () => {
         await show('Media');
         links.headHidden.set(true);
         await settle();
-        const scroll = vi.spyOn(window, 'scrollTo').mockImplementation(() => { });
+        const scroll = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
 
         title(element).click();
 
@@ -125,7 +153,15 @@ describe('LocationComponent new folder button', () => {
         expect(button()).toBeNull();
 
         api.browse.mockResolvedValue({
-            path: 'Media', name: '', parentPath: null, items: [], offset: 0, limit: 100, total: 0, directoryCount: 0, fileCount: 0,
+            path: 'Media',
+            name: '',
+            parentPath: null,
+            items: [],
+            offset: 0,
+            limit: 100,
+            total: 0,
+            directoryCount: 0,
+            fileCount: 0,
             access: { rights: ['library.browse', 'files.createFolders'], pathOnly: true },
         } as DirectoryListing);
         store.route.set({ path: 'Media', q: '', sort: '', desc: false });

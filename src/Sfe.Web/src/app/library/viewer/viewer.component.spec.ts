@@ -9,7 +9,17 @@ import { ViewerComponent } from './viewer.component';
 
 /** A screen box (jsdom lays nothing out). */
 function box(left: number, top: number, width: number, height: number): DOMRect {
-    return { left, top, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON: () => ({}) } as DOMRect;
+    return {
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+    } as DOMRect;
 }
 
 /** A pointer event at a point of the screen (jsdom has no PointerEvent). */
@@ -56,7 +66,11 @@ describe('ViewerComponent › Actual size', () => {
     }
 
     /** Opens `shown` with its picture of `natural` pixels drawn in `drawn` (a 1000 × 600 stage, 50 px below the top). */
-    async function view(shown = photo, natural = { width: 4000, height: 3000 }, drawn = box(100, 50, 800, 600)): Promise<void> {
+    async function view(
+        shown = photo,
+        natural = { width: 4000, height: 3000 },
+        drawn = box(100, 50, 800, 600),
+    ): Promise<void> {
         fixture.componentInstance.open(shown);
         await settle();
         element.querySelector<HTMLElement>('.viewer-stage')!.getBoundingClientRect = () => box(0, 50, 1000, 600);
@@ -100,10 +114,24 @@ describe('ViewerComponent › Actual size', () => {
 
     it('follows two fingers: larger around the point between them, no larger than its actual size, fitted again when let go near it', async () => {
         await view();
-        type Pinch = { first: boolean; last: boolean; movement: [number, number]; origin: [number, number]; memo?: { width: number; height: number } };
-        const viewer = fixture.componentInstance as unknown as { onPinch(state: Pinch): { width: number; height: number } | undefined };
+        type Pinch = {
+            first: boolean;
+            last: boolean;
+            movement: [number, number];
+            origin: [number, number];
+            memo?: { width: number; height: number };
+        };
+        const viewer = fixture.componentInstance as unknown as {
+            onPinch(state: Pinch): { width: number; height: number } | undefined;
+        };
         const pinch = async (scale: number, step: 'first' | 'move' | 'last', memo?: Pinch['memo']) => {
-            const next = viewer.onPinch({ first: step === 'first', last: step === 'last', movement: [scale, 0], origin: [500, 350], memo });
+            const next = viewer.onPinch({
+                first: step === 'first',
+                last: step === 'last',
+                movement: [scale, 0],
+                origin: [500, 350],
+                memo,
+            });
             await settle();
             return next;
         };
@@ -189,7 +217,9 @@ describe('ViewerComponent › Actual size', () => {
         await view();
         await click(500, 350);
 
-        element.querySelector('.viewer-stage')!.dispatchEvent(new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true }));
+        element
+            .querySelector('.viewer-stage')!
+            .dispatchEvent(new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true }));
         await settle();
 
         expect(transform()).toBe('translate(-1500px, -1300px)');
@@ -247,8 +277,15 @@ describe('ViewerComponent › Documents', () => {
 
     beforeEach(async () => {
         const api = mockApi();
-        api.textFile.mockImplementation(async (path: string) => ({ text: `Text of ${path}\nline 2`, encoding: 'utf-8', lineEnding: 'lf', version: 'v', size: 20, modified: '2026-10-18T10:00:00Z',
-            access: { overwrite: true, saveCopy: true, download: true, permanent: false } }));
+        api.textFile.mockImplementation(async (path: string) => ({
+            text: `Text of ${path}\nline 2`,
+            encoding: 'utf-8',
+            lineEnding: 'lf',
+            version: 'v',
+            size: 20,
+            modified: '2026-10-18T10:00:00Z',
+            access: { overwrite: true, saveCopy: true, download: true, permanent: false },
+        }));
         TestBed.configureTestingModule({ providers: testProviders(api) });
         await loadConfig(api);
         store = TestBed.inject(ListingStore);
@@ -285,7 +322,7 @@ describe('ViewerComponent › Documents', () => {
     it('leaves the keys, the wheel and swipes in the text to the text', async () => {
         await open(notes);
 
-        await key('ArrowRight', content()!);    // the text's cursor moves (CodeMirror takes it)
+        await key('ArrowRight', content()!); // the text's cursor moves (CodeMirror takes it)
         const wheel = new WheelEvent('wheel', { deltaY: 200, bubbles: true, cancelable: true });
         content()!.dispatchEvent(wheel);
         await settle();
@@ -383,7 +420,9 @@ describe('ViewerComponent › Documents', () => {
 
     it('keeps only tags, a menu and close in its bar; the rest is in the menu, which Esc closes first', async () => {
         await open(clip);
-        const bar = [...element.querySelectorAll('.viewer-actions > :is(button, a)')].map(control => control.getAttribute('aria-label'));
+        const bar = [...element.querySelectorAll('.viewer-actions > :is(button, a)')].map((control) =>
+            control.getAttribute('aria-label'),
+        );
         expect(bar).toEqual(['Tags', 'More actions', 'Close']);
 
         element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]')!.click();
@@ -391,7 +430,9 @@ describe('ViewerComponent › Documents', () => {
         // In the dialog: the rest of the page is inert while it is open.
         expect(dialog().querySelector('.item-menu')).not.toBeNull();
         const entries = [...element.querySelectorAll<HTMLElement>('.item-menu .item-menu-entry')];
-        expect(entries.map(entry => entry.dataset['entry'])).toEqual(expect.arrayContaining(['popOut', 'newTab', 'download']));
+        expect(entries.map((entry) => entry.dataset['entry'])).toEqual(
+            expect.arrayContaining(['popOut', 'newTab', 'download']),
+        );
         expect(element.querySelector<HTMLAnchorElement>('.item-menu [data-entry="newTab"]')!.target).toBe('_blank');
 
         const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
@@ -406,13 +447,17 @@ describe('ViewerComponent › Documents', () => {
         await open(photo);
         const menu = TestBed.inject(ContextMenu);
 
-        element.querySelector('.viewer-stage')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 50, clientY: 60 }));
+        element
+            .querySelector('.viewer-stage')!
+            .dispatchEvent(
+                new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 50, clientY: 60 }),
+            );
         await settle();
         const target = menu.open()!.target;
         expect(target).toMatchObject({ kind: 'file', key: 'viewer:Media/photo.jpg', item: photo });
-        const ids = target.entries().map(entry => entry.id);
+        const ids = target.entries().map((entry) => entry.id);
         expect(ids).toEqual(expect.arrayContaining(['newTab', 'copy', 'copyTo', 'properties']));
-        expect(ids.filter(id => ['rename', 'delete', 'cut', 'moveTo', 'open'].includes(id))).toEqual([]);
+        expect(ids.filter((id) => ['rename', 'delete', 'cut', 'moveTo', 'open'].includes(id))).toEqual([]);
         expect(element.querySelector('button[aria-label="More actions"]')!.getAttribute('aria-expanded')).toBe('true');
 
         // The ⋮ button closes it (a toggle), then opens the same menu.

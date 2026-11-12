@@ -8,8 +8,12 @@ import { IconComponent } from '../shared/icon.component';
 
 /** The levels a rule sets, as the page names them. */
 export const FOLDER_LEVELS: { level: FolderLevel; label: string; hint: string }[] = [
-    { level: 'hidden', label: 'Hidden', hint: 'They don\'t see the folder (unless another of their groups does)' },
-    { level: 'read', label: 'Read only', hint: 'They see and use its files with their rights, but may not change the files' },
+    { level: 'hidden', label: 'Hidden', hint: "They don't see the folder (unless another of their groups does)" },
+    {
+        level: 'read',
+        label: 'Read only',
+        hint: 'They see and use its files with their rights, but may not change the files',
+    },
     { level: 'write', label: 'Read & write', hint: 'Their rights apply in full, those that change files too' },
 ];
 
@@ -223,10 +227,14 @@ export class FolderAccessComponent {
     }
 
     protected startNew(): void {
-        const first = this.groups().find(group => group.builtIn === 'users') ?? this.groups()[0];
+        const first = this.groups().find((group) => group.builtIn === 'users') ?? this.groups()[0];
         this.repointing.set(null);
         this.problem.set(null);
-        this.draft.set({ path: '', principal: first ? `g${first.id}` : `u${this.members()[0]?.id ?? 0}`, level: 'hidden' });
+        this.draft.set({
+            path: '',
+            principal: first ? `g${first.id}` : `u${this.members()[0]?.id ?? 0}`,
+            level: 'hidden',
+        });
         void this.browse('');
     }
 
@@ -243,7 +251,7 @@ export class FolderAccessComponent {
     }
 
     protected changeDraft(changes: Partial<{ principal: PrincipalKey; level: FolderLevel }>): void {
-        this.draft.update(draft => draft && { ...draft, ...changes });
+        this.draft.update((draft) => draft && { ...draft, ...changes });
     }
 
     /** Opens a folder of the picker; the folder opened is the one chosen. */
@@ -251,7 +259,7 @@ export class FolderAccessComponent {
         try {
             const picker = await this.api.spaceFolders(path, this.space());
             this.picker.set(picker);
-            this.draft.update(draft => draft && { ...draft, path: picker.path ?? '' });
+            this.draft.update((draft) => draft && { ...draft, path: picker.path ?? '' });
         } catch (error) {
             this.problem.set(`Could not list the folders: ${(error as Error).message}`);
         }
@@ -260,21 +268,27 @@ export class FolderAccessComponent {
     protected async addRule(event: Event): Promise<void> {
         event.preventDefault();
         const draft = this.draft();
-        if (!draft)
-            return;
+        if (!draft) return;
         const from = this.repointing();
         await this.run(async () => {
             if (from !== null) {
                 this.rules.set(await this.api.repointFolderRules(from, draft.path, this.space()));
-                this.toasts.show(`The rules of ${from || 'the library root'} now apply to ${draft.path || 'the library root'}.`);
+                this.toasts.show(
+                    `The rules of ${from || 'the library root'} now apply to ${draft.path || 'the library root'}.`,
+                );
             } else {
                 const id = Number(draft.principal.slice(1));
-                this.rules.set(await this.api.setFolderRule({
-                    path: draft.path,
-                    groupId: draft.principal.startsWith('g') ? id : null,
-                    userId: draft.principal.startsWith('u') ? id : null,
-                    level: draft.level,
-                }, this.space()));
+                this.rules.set(
+                    await this.api.setFolderRule(
+                        {
+                            path: draft.path,
+                            groupId: draft.principal.startsWith('g') ? id : null,
+                            userId: draft.principal.startsWith('u') ? id : null,
+                            level: draft.level,
+                        },
+                        this.space(),
+                    ),
+                );
                 this.toasts.show(`Rule set on ${draft.path || 'the library root'}.`);
             }
             this.cancel();
@@ -282,10 +296,19 @@ export class FolderAccessComponent {
     }
 
     protected async changeLevel(rule: FolderRuleView, value: string): Promise<void> {
-        const level = value === '' ? null : value as FolderLevel;
+        const level = value === '' ? null : (value as FolderLevel);
         await this.run(async () => {
-            this.rules.set(await this.api.setFolderRule({ path: rule.path, groupId: rule.groupId, userId: rule.userId, level }, this.space()));
-            this.toasts.show(level === null ? `${rule.name} follows the folder above again at ${rule.path || 'the library root'}.` : `Rule changed for ${rule.name}.`);
+            this.rules.set(
+                await this.api.setFolderRule(
+                    { path: rule.path, groupId: rule.groupId, userId: rule.userId, level },
+                    this.space(),
+                ),
+            );
+            this.toasts.show(
+                level === null
+                    ? `${rule.name} follows the folder above again at ${rule.path || 'the library root'}.`
+                    : `Rule changed for ${rule.name}.`,
+            );
             if (this.report()?.path === rule.path)
                 this.report.set(await this.api.folderAccess(rule.path, this.space()));
         });
@@ -310,8 +333,7 @@ export class FolderAccessComponent {
             await action();
         } catch (error) {
             this.problem.set((error as Error).message);
-            if (!this.draft())
-                this.toasts.error((error as Error).message);
+            if (!this.draft()) this.toasts.error((error as Error).message);
         } finally {
             this.busy.set(false);
         }

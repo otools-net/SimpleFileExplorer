@@ -30,7 +30,13 @@ const FOLDED_PREFERENCE = 'sfe.sidebar.sections';
 
 const SECTIONS: Section[] = [
     { key: 'popular', title: 'Most popular', empty: 'No file is tagged yet.' },
-    { key: 'searched', title: 'Last searched', empty: 'Search with t:name to see the tags here.', history: true, folded: true },
+    {
+        key: 'searched',
+        title: 'Last searched',
+        empty: 'Search with t:name to see the tags here.',
+        history: true,
+        folded: true,
+    },
     { key: 'viewed', title: 'Last viewed', empty: 'Open a tagged file to see its tags here.', history: true },
     { key: 'lucky', title: 'I feel lucky', empty: 'No other tags.', folded: true },
 ];
@@ -123,23 +129,19 @@ export class SidebarComponent implements OnInit {
         let seen = feed.trashChanges();
         effect(() => {
             const changes = feed.trashChanges();
-            if (changes !== seen && this.config.canAny(this.trashRights))
-                this.sidebar.refreshTrash();
+            if (changes !== seen && this.config.canAny(this.trashRights)) this.sidebar.refreshTrash();
             seen = changes;
         });
     }
 
     ngOnInit(): void {
         void this.sidebar.reload();
-        if (this.config.canAny(this.trashRights))
-            void this.sidebar.reloadTrash();
+        if (this.config.canAny(this.trashRights)) void this.sidebar.reloadTrash();
     }
 
     protected trashTitle(trash: TrashCount | null): string {
-        if (!trash)
-            return 'Trash';
-        if (!trash.count)
-            return 'Trash: empty';
+        if (!trash) return 'Trash';
+        if (!trash.count) return 'Trash: empty';
         return trash.more ? `Trash: more than ${trash.count} items` : `Trash: ${plural(trash.count, 'item')}`;
     }
 
@@ -148,7 +150,7 @@ export class SidebarComponent implements OnInit {
     }
 
     protected toggleFolded(section: Section): void {
-        this.folded.update(folded => ({ ...folded, [section.key]: !this.isFolded(section) }));
+        this.folded.update((folded) => ({ ...folded, [section.key]: !this.isFolded(section) }));
         writePreference(FOLDED_PREFERENCE, JSON.stringify(this.folded()));
     }
 
@@ -167,14 +169,18 @@ export class SidebarComponent implements OnInit {
     }
 
     protected closeDrawer(): void {
-        if (this.sidebar.narrow && this.sidebar.open())
-            this.sidebar.setOpen(false, { remember: false });
+        if (this.sidebar.narrow && this.sidebar.open()) this.sidebar.setOpen(false, { remember: false });
     }
 
     /** Tapping the page next to the drawer closes it. */
     protected closeOnOutsideClick(event: PointerEvent): void {
         const target = event.target as Element;
-        if (this.sidebar.narrow && this.sidebar.open() && !this.host.contains(target) && !target.closest?.('.sidebar-toggle'))
+        if (
+            this.sidebar.narrow &&
+            this.sidebar.open() &&
+            !this.host.contains(target) &&
+            !target.closest?.('.sidebar-toggle')
+        )
             this.sidebar.setOpen(false, { remember: false });
     }
 }
@@ -182,7 +188,7 @@ export class SidebarComponent implements OnInit {
 function readFolded(): Partial<Record<Section['key'], boolean>> {
     try {
         const value: unknown = JSON.parse(readPreference(FOLDED_PREFERENCE, '{}'));
-        return value && typeof value === 'object' ? value as Partial<Record<Section['key'], boolean>> : {};
+        return value && typeof value === 'object' ? (value as Partial<Record<Section['key'], boolean>>) : {};
     } catch {
         return {};
     }

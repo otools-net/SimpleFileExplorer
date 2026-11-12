@@ -151,10 +151,9 @@ export class SpacesPageComponent implements OnInit {
     protected readonly serverWide = computed(() => this.config.can(Rights.manageTenants));
     private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
     protected readonly selected = computed<SpaceView | null>(() => {
-        if (!this.serverWide())
-            return this.own();
+        if (!this.serverWide()) return this.own();
         const id = Number(this.params().get('space'));
-        const space = this.spaces().find(candidate => candidate.id === id);
+        const space = this.spaces().find((candidate) => candidate.id === id);
         return space ? this.viewOf(space) : null;
     });
 
@@ -166,11 +165,18 @@ export class SpacesPageComponent implements OnInit {
 
     async load(): Promise<void> {
         try {
-            if (this.serverWide())
-                this.spaces.set(await this.api.tenants());
+            if (this.serverWide()) this.spaces.set(await this.api.tenants());
             else {
                 const access = await this.api.tenantAccess();
-                this.own.set({ id: access.id, name: access.name, root: null, guestAccess: access.guestAccess, isDefault: false, disabled: false, current: true });
+                this.own.set({
+                    id: access.id,
+                    name: access.name,
+                    root: null,
+                    guestAccess: access.guestAccess,
+                    isDefault: false,
+                    disabled: false,
+                    current: true,
+                });
             }
             this.error.set(null);
         } catch (error) {
@@ -181,7 +187,7 @@ export class SpacesPageComponent implements OnInit {
     }
 
     protected details(id: number): TenantDetails | undefined {
-        return this.spaces().find(space => space.id === id);
+        return this.spaces().find((space) => space.id === id);
     }
 
     /** Shows a space's page (null: the list), in place of the current entry, keeping where "back" leads. */
@@ -196,22 +202,28 @@ export class SpacesPageComponent implements OnInit {
     }
 
     protected async onSaved(space: TenantDetails): Promise<void> {
-        const created = !this.spaces().some(existing => existing.id === space.id);
+        const created = !this.spaces().some((existing) => existing.id === space.id);
         await this.load();
-        if (created)
-            this.openSpace(space.id);
+        if (created) this.openSpace(space.id);
     }
 
     protected onChanged(space: SpaceView): void {
         if (this.serverWide())
-            this.spaces.update(spaces => spaces.map(existing => existing.id === space.id ? { ...existing, guestAccess: space.guestAccess } : existing));
-        else
-            this.own.set(space);
+            this.spaces.update((spaces) =>
+                spaces.map((existing) =>
+                    existing.id === space.id ? { ...existing, guestAccess: space.guestAccess } : existing,
+                ),
+            );
+        else this.own.set(space);
     }
 
     protected async remove(space: TenantDetails): Promise<void> {
-        if (!confirm(`Delete the space ${space.name}? Its groups and settings go, and its accounts lose access to it (accounts themselves stay). `
-            + 'The index of its library and its caches stay on the server\'s disk.'))
+        if (
+            !confirm(
+                `Delete the space ${space.name}? Its groups and settings go, and its accounts lose access to it (accounts themselves stay). ` +
+                    "The index of its library and its caches stay on the server's disk.",
+            )
+        )
             return;
         try {
             await this.api.deleteTenant(space.id);
@@ -226,7 +238,12 @@ export class SpacesPageComponent implements OnInit {
 
     private viewOf(space: TenantDetails): SpaceView {
         return {
-            id: space.id, name: space.name, root: space.root, guestAccess: space.guestAccess, isDefault: space.isDefault, disabled: space.disabled,
+            id: space.id,
+            name: space.name,
+            root: space.root,
+            guestAccess: space.guestAccess,
+            isDefault: space.isDefault,
+            disabled: space.disabled,
             current: space.id === this.config.tenant()?.id,
         };
     }

@@ -28,9 +28,11 @@ export class PinButtonComponent {
     readonly name = input.required<string>();
     protected readonly links = inject(QuickLinksService);
     protected readonly pinned = computed(() => this.links.paths().has(this.sfePin()));
-    protected readonly title = computed(() => this.pinned()
-        ? `Remove “${this.name()}” from the quick links`
-        : `Add “${this.name()}” to the quick links (or drag it onto the sidebar)`);
+    protected readonly title = computed(() =>
+        this.pinned()
+            ? `Remove “${this.name()}” from the quick links`
+            : `Add “${this.name()}” to the quick links (or drag it onto the sidebar)`,
+    );
 
     protected toggle(event: MouseEvent): void {
         event.preventDefault();

@@ -1,26 +1,45 @@
 import { fakeCanvases } from '../../testing/fakes';
-import { CanvasTooLargeError, describeEdit, EDIT_KINDS, EDITOR_TOOLS, editedSize, encode, EditOperation, outputType, renderEdits } from './edits';
+import {
+    CanvasTooLargeError,
+    describeEdit,
+    EDIT_KINDS,
+    EDITOR_TOOLS,
+    editedSize,
+    encode,
+    EditOperation,
+    outputType,
+    renderEdits,
+} from './edits';
 
 describe('edits', () => {
-    const crop = (x: number, y: number, width: number, height: number): EditOperation => ({ kind: 'crop', rect: { x, y, width, height } });
+    const crop = (x: number, y: number, width: number, height: number): EditOperation => ({
+        kind: 'crop',
+        rect: { x, y, width, height },
+    });
 
     afterEach(() => vi.restoreAllMocks());
 
     it('has a handler and a tool for every kind of edit', () => {
-        expect(Object.keys(EDIT_KINDS).sort()).toEqual(EDITOR_TOOLS.map(tool => tool.id).sort());
+        expect(Object.keys(EDIT_KINDS).sort()).toEqual(EDITOR_TOOLS.map((tool) => tool.id).sort());
         expect(describeEdit(crop(0, 0, 800, 600))).toBe('Crop to 800 × 600');
     });
 
     it('computes the size after the edits, in turn', () => {
         expect(editedSize({ width: 4000, height: 3000 }, [])).toEqual({ width: 4000, height: 3000 });
-        expect(editedSize({ width: 4000, height: 3000 }, [crop(10, 10, 2000, 1000), crop(0, 0, 500, 400)])).toEqual({ width: 500, height: 400 });
+        expect(editedSize({ width: 4000, height: 3000 }, [crop(10, 10, 2000, 1000), crop(0, 0, 500, 400)])).toEqual({
+            width: 500,
+            height: 400,
+        });
     });
 
     it('draws each edit on the result of the ones before', () => {
         const { drawn } = fakeCanvases();
         const source = document.createElement('img');
 
-        const result = renderEdits(source, { width: 4000, height: 3000 }, [crop(100, 200, 2000, 1000), crop(10, 20, 30, 40)]);
+        const result = renderEdits(source, { width: 4000, height: 3000 }, [
+            crop(100, 200, 2000, 1000),
+            crop(10, 20, 30, 40),
+        ]);
 
         expect([result.width, result.height]).toEqual([30, 40]);
         expect(drawn).toHaveLength(2);
@@ -43,7 +62,9 @@ describe('edits', () => {
     it('says when the browser cannot draw a canvas that large', () => {
         vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
 
-        expect(() => renderEdits(document.createElement('img'), { width: 30000, height: 30000 }, [])).toThrow(CanvasTooLargeError);
+        expect(() => renderEdits(document.createElement('img'), { width: 30000, height: 30000 }, [])).toThrow(
+            CanvasTooLargeError,
+        );
     });
 
     it('saves in the format of the original when a canvas writes it, else in PNG', () => {
@@ -68,7 +89,7 @@ describe('edits', () => {
     });
 
     it('rejects when the browser encodes nothing', async () => {
-        vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(callback => callback(null));
+        vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => callback(null));
 
         await expect(encode(document.createElement('canvas'), 'image/png', 90)).rejects.toThrow(CanvasTooLargeError);
     });

@@ -5,19 +5,33 @@
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: .08em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
-.section-title:first-child { margin-top: 0; }
+.section-title:first-child {
+    margin-top: 0;
+}
 
-.kind-directory { --kind: var(--folder); }
-.kind-image { --kind: var(--image); }
-.kind-video { --kind: var(--video); }
-.kind-audio { --kind: var(--audio); }
-.kind-file { --kind: var(--file); }
+.kind-directory {
+    --kind: var(--folder);
+}
+.kind-image {
+    --kind: var(--image);
+}
+.kind-video {
+    --kind: var(--video);
+}
+.kind-audio {
+    --kind: var(--audio);
+}
+.kind-file {
+    --kind: var(--file);
+}
 
-.item { position: relative; }
+.item {
+    position: relative;
+}
 
 .item-link {
     display: block;
@@ -25,7 +39,9 @@
     cursor: pointer;
 }
 
-.item-name { word-break: break-word; }
+.item-name {
+    word-break: break-word;
+}
 
 .item-folder {
     display: block;
@@ -36,12 +52,20 @@
     white-space: nowrap;
 }
 
-.item-folder:hover { color: var(--accent); text-decoration: underline; }
+.item-folder:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
 /* A finger's target: a 24 px line (WCAG 2.5.8; e2e a11y.spec.ts, search results). */
 @media (pointer: coarse) {
-    .item-folder { line-height: 24px; }
+    .item-folder {
+        line-height: 24px;
+    }
     /* The name's link (the picture's is the large one): a 24 px line at least, two lines when it wraps. */
-    .item .item-link:has(> .item-name) { min-height: 24px; align-content: center; }
+    .item .item-link:has(> .item-name) {
+        min-height: 24px;
+        align-content: center;
+    }
 }
 
 mark {
@@ -51,9 +75,17 @@ mark {
     color: var(--mark-text);
 }
 
-
 /* A file or folder the index doesn't have yet (browsing only, until a scan reaches it): faded, which moves nothing and
    leaves the selection's accent and the copied outline their meaning; full strength again under the pointer. */
-.item.unindexed, .folder-item.unindexed { opacity: .55; transition: opacity .15s; }
-.item.unindexed:hover, .item.unindexed:focus-within, .item.unindexed.selected,
-.folder-item.unindexed:hover, .folder-item.unindexed:focus-within { opacity: 1; }
+.item.unindexed,
+.folder-item.unindexed {
+    opacity: 0.55;
+    transition: opacity 0.15s;
+}
+.item.unindexed:hover,
+.item.unindexed:focus-within,
+.item.unindexed.selected,
+.folder-item.unindexed:hover,
+.folder-item.unindexed:focus-within {
+    opacity: 1;
+}

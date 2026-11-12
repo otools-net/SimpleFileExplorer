@@ -22,7 +22,14 @@ import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
  */
 @Component({
     selector: 'sfe-folder-item',
-    imports: [IconComponent, RouterLink, FolderCoverComponent, ItemMenuButtonComponent, SelectBoxComponent, DefaultTagsBadgeComponent],
+    imports: [
+        IconComponent,
+        RouterLink,
+        FolderCoverComponent,
+        ItemMenuButtonComponent,
+        SelectBoxComponent,
+        DefaultTagsBadgeComponent,
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'folder-item',
@@ -86,7 +93,9 @@ export class FolderItemComponent {
     /** Folders are cards with pictures (`config.folderPictures`), except in the list view. */
     readonly cards = input(false);
     /** Tagging a whole folder changes tags: hidden without the right (there, with folder rules). */
-    protected readonly canTag = computed(() => this.store.can(Rights.assignTags, this.item()) || this.store.can(Rights.folderDefaultTags, this.item()));
+    protected readonly canTag = computed(
+        () => this.store.can(Rights.assignTags, this.item()) || this.store.can(Rights.folderDefaultTags, this.item()),
+    );
     protected readonly store = inject(ListingStore);
     private readonly copyPaths = inject(CopyPathService);
     private readonly menu = inject(ItemMenu);
@@ -97,13 +106,21 @@ export class FolderItemComponent {
     protected readonly exclusion = computed(() => exclusionChip(this.item().excluded));
     protected readonly exclusionTitle = computed(() => exclusionTitle(this.item().excluded, this.item().path));
     /** The card's count lets clicks through to the link: its hint is the link's. */
-    protected readonly linkTitle = computed(() => [this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''),
-        this.cards() && this.indexedItems() !== null ? this.countTitle() : null, this.exclusionTitle()]
-        .filter(Boolean).join('\n'));
+    protected readonly linkTitle = computed(() =>
+        [
+            this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''),
+            this.cards() && this.indexedItems() !== null ? this.countTitle() : null,
+            this.exclusionTitle(),
+        ]
+            .filter(Boolean)
+            .join('\n'),
+    );
     /** Indexed files and sub-folders directly inside; null when unknown (not indexed, older server). */
     protected readonly indexedItems = computed(() => this.item().indexedItems ?? null);
-    protected readonly countTitle = computed(() =>
-        `${plural(this.indexedItems() ?? 0, 'indexed item')} directly in this folder (files and sub-folders, as of the last scan)`);
+    protected readonly countTitle = computed(
+        () =>
+            `${plural(this.indexedItems() ?? 0, 'indexed item')} directly in this folder (files and sub-folders, as of the last scan)`,
+    );
     private readonly dialogs = inject(Dialogs);
 
     constructor() {

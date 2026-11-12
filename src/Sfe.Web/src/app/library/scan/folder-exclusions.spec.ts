@@ -3,7 +3,17 @@ import { DirectoryListing, FolderExclusions, LibraryItem } from '../../core/mode
 import { Rights } from '../../core/rights';
 import { ToastService } from '../../core/toast.service';
 import { ItemMenu } from '../../files/item-menu';
-import { ApiMock, buttonNamed, fakeConfig, item, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
+import {
+    ApiMock,
+    buttonNamed,
+    fakeConfig,
+    item,
+    limitedConfig,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../../testing/fakes';
 import { FolderItemComponent } from '../items/folder-item.component';
 import { exclusionChip, exclusionTitle } from '../items/exclusions';
 import { ListingStore } from '../listing.store';
@@ -24,12 +34,23 @@ async function setUp(config = fakeConfig()): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: '', previous: null, next: null, position: 0, count: 0 });
 }
 
 async function show(path: string, items: LibraryItem[], exclusions: FolderExclusions | null = null): Promise<void> {
-    const page: DirectoryListing = { path, name: path.split('/').pop() ?? '', parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: items.length, fileCount: 0, exclusions };
+    const page: DirectoryListing = {
+        path,
+        name: path.split('/').pop() ?? '',
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: items.length,
+        fileCount: 0,
+        exclusions,
+    };
     store.route.set({ path, q: '', sort: '', desc: false });
     api.browse.mockResolvedValue(page);
     await store.load();
@@ -50,9 +71,12 @@ describe('Exclusion wording', () => {
     });
 
     it('names the folder above it is excluded through', () => {
-        expect(exclusionTitle({ scan: 'Media', trickplay: null, thumbnails: 'Media' }, 'Media'))
-            .toBe('Kept out of scans (what the index has of it stays as it was) and thumbnails by an administrator.');
-        expect(exclusionTitle({ ...none, trickplay: 'Media' }, 'Media/Old')).toBe('Kept out of trickplay by an administrator, through “Media”.');
+        expect(exclusionTitle({ scan: 'Media', trickplay: null, thumbnails: 'Media' }, 'Media')).toBe(
+            'Kept out of scans (what the index has of it stays as it was) and thumbnails by an administrator.',
+        );
+        expect(exclusionTitle({ ...none, trickplay: 'Media' }, 'Media/Old')).toBe(
+            'Kept out of trickplay by an administrator, through “Media”.',
+        );
     });
 });
 
@@ -80,11 +104,13 @@ describe('Excluded folders in the listing', () => {
 
     it('say it in the location bar, which opens the dialog for those who may change it', async () => {
         const dialog = TestBed.createComponent(FolderExclusionsDialog).componentInstance;
-        const open = vi.spyOn(dialog, 'open').mockImplementation(() => { });
+        const open = vi.spyOn(dialog, 'open').mockImplementation(() => {});
         await show('Media/Old', [], { ...none, scan: 'Media' });
         const fixture = TestBed.createComponent(LocationComponent);
         await settle();
-        const chip = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.summary button.exclusion-chip')!;
+        const chip = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+            '.summary button.exclusion-chip',
+        )!;
 
         expect(chip.textContent!.trim()).toBe('not scanned');
         expect(chip.title).toContain('through “Media”');
@@ -109,13 +135,13 @@ describe('Scans and previews… in the menu', () => {
     it('is offered on folders to those with the right, while browsing', async () => {
         await setUp();
         const dialog = TestBed.createComponent(FolderExclusionsDialog).componentInstance;
-        const open = vi.spyOn(dialog, 'open').mockImplementation(() => { });
+        const open = vi.spyOn(dialog, 'open').mockImplementation(() => {});
         const folder = item('Media', { excluded: { ...none, scan: 'Media' } });
         await show('', [folder, item('a.jpg')]);
         const menu = TestBed.inject(ItemMenu);
 
-        const entry = menu.entries(folder).find(e => e.id === 'exclusions')!;
-        expect(menu.entries(item('a.jpg')).some(e => e.id === 'exclusions')).toBe(false);
+        const entry = menu.entries(folder).find((e) => e.id === 'exclusions')!;
+        expect(menu.entries(item('a.jpg')).some((e) => e.id === 'exclusions')).toBe(false);
         entry.run();
         expect(open).toHaveBeenCalledWith('Media', { ...none, scan: 'Media' });
     });
@@ -126,7 +152,11 @@ describe('Scans and previews… in the menu', () => {
         const folder = item('Media');
         await show('', [folder]);
 
-        expect(TestBed.inject(ItemMenu).entries(folder).some(e => e.id === 'exclusions')).toBe(false);
+        expect(
+            TestBed.inject(ItemMenu)
+                .entries(folder)
+                .some((e) => e.id === 'exclusions'),
+        ).toBe(false);
     });
 });
 
@@ -166,7 +196,7 @@ describe('FolderExclusionsDialog', () => {
     });
 
     it('shows why the server refused', async () => {
-        api.setFolderExclusions.mockRejectedValue(new Error('This list is set by the server\'s configuration'));
+        api.setFolderExclusions.mockRejectedValue(new Error("This list is set by the server's configuration"));
         const fixture = TestBed.createComponent(FolderExclusionsDialog);
         const element: HTMLElement = fixture.nativeElement;
         fixture.componentInstance.open('Media', none);
@@ -206,7 +236,8 @@ describe('Scanning with excluded folders', () => {
 });
 
 describe('ExclusionsSectionComponent', () => {
-    const rows = (element: HTMLElement) => [...element.querySelectorAll<HTMLTableRowElement>('tbody tr')].map(row => row.dataset['path']);
+    const rows = (element: HTMLElement) =>
+        [...element.querySelectorAll<HTMLTableRowElement>('tbody tr')].map((row) => row.dataset['path']);
     const box = (element: HTMLElement, path: string, kind: string) =>
         element.querySelector<HTMLInputElement>(`tr[data-path="${path}"] input[data-kind=${kind}]`)!;
 
@@ -228,7 +259,10 @@ describe('ExclusionsSectionComponent', () => {
         const element = await create();
 
         expect(rows(element)).toEqual(['Gone', 'Media']);
-        expect([box(element, 'Media', 'scan').checked, box(element, 'Media', 'trickplay').checked]).toEqual([true, false]);
+        expect([box(element, 'Media', 'scan').checked, box(element, 'Media', 'trickplay').checked]).toEqual([
+            true,
+            false,
+        ]);
         expect(element.querySelector('tr[data-path="Gone"]')!.textContent).toContain('folder not found');
         expect(box(element, 'Gone', 'scan').disabled).toBe(true);
         expect(box(element, 'Gone', 'trickplay').disabled).toBe(false);
@@ -265,7 +299,14 @@ describe('ExclusionsSectionComponent', () => {
 
     it('adds a folder picked in the library', async () => {
         api.browse.mockImplementation(async ({ path }: { path: string }) => ({
-            path, name: path, parentPath: null, offset: 0, limit: 200, total: 2, directoryCount: 1, fileCount: 1,
+            path,
+            name: path,
+            parentPath: null,
+            offset: 0,
+            limit: 200,
+            total: 2,
+            directoryCount: 1,
+            fileCount: 1,
             items: path ? [] : [item('Photos'), item('a.jpg')],
         }));
         api.setFolderExclusions.mockResolvedValue({ ...none, thumbnails: 'Photos' });
@@ -273,7 +314,9 @@ describe('ExclusionsSectionComponent', () => {
 
         buttonNamed(element, 'Add folder…')!.click();
         await settle();
-        expect([...element.querySelectorAll('.folder-picker li button')].map(b => b.textContent!.trim())).toEqual(['Photos']);
+        expect([...element.querySelectorAll('.folder-picker li button')].map((b) => b.textContent!.trim())).toEqual([
+            'Photos',
+        ]);
         element.querySelector<HTMLButtonElement>('.folder-picker li button')!.click();
         await settle();
         element.querySelector<HTMLInputElement>('.exclusions-kinds input[data-kind=scan]')!.click();

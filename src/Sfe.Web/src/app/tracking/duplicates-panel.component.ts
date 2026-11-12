@@ -99,20 +99,24 @@ export class DuplicateGroupComponent {
 
     constructor() {
         // An Undo can come after the panel was reloaded.
-        inject(DestroyRef).onDestroy(() => this.destroyed = true);
+        inject(DestroyRef).onDestroy(() => (this.destroyed = true));
     }
 
-    protected readonly files = computed(() => this.group().files
-        .filter(file => !this.removedPaths().has(file.path))
-        .map(file => this.keptTags().has(file.path) ? { ...file, tags: this.keptTags().get(file.path) } : file));
+    protected readonly files = computed(() =>
+        this.group()
+            .files.filter((file) => !this.removedPaths().has(file.path))
+            .map((file) => (this.keptTags().has(file.path) ? { ...file, tags: this.keptTags().get(file.path) } : file)),
+    );
     private readonly count = computed(() => this.group().count - this.removedPaths().size);
     protected readonly hidden = computed(() => this.count() - this.files().length);
     protected readonly countText = computed(() => plural(this.count(), 'copy', 'copies'));
-    protected readonly sizeText = computed(() => `${formatSize(this.group().size)} each · ${formatSize(this.group().size * (this.count() - 1))} extra`);
+    protected readonly sizeText = computed(
+        () => `${formatSize(this.group().size)} each · ${formatSize(this.group().size * (this.count() - 1))} extra`,
+    );
     protected readonly hiddenText = computed(() => plural(this.hidden(), 'more file', 'more files'));
 
     protected othersOf(file: LibraryItem): LibraryItem[] {
-        return this.files().filter(other => other.path !== file.path);
+        return this.files().filter((other) => other.path !== file.path);
     }
 
     protected confirm(file: LibraryItem): void {
@@ -125,17 +129,20 @@ export class DuplicateGroupComponent {
         try {
             const result = await whileBusy(this.removing, () => this.api.removeDuplicate(file.path, keepPath));
             this.confirming.set(null);
-            this.removedPaths.update(paths => new Set([...paths, file.path]));
-            this.keptTags.update(tags => new Map(tags).set(keepPath, result.kept.tags));
+            this.removedPaths.update((paths) => new Set([...paths, file.path]));
+            this.keptTags.update((tags) => new Map(tags).set(keepPath, result.kept.tags));
             const kept = `“${keepPath}” is kept${result.kept.tags.length ? ' with its tags' : ''}.`;
             const trashId = result.trashId;
             if (typeof trashId === 'number')
                 this.toasts.show(`“${file.name}” moved to the trash; ${kept}`, {
                     timeout: 10000,
-                    action: { label: 'Undo', title: 'Put it back where it was', run: () => void this.undo(file, trashId) },
+                    action: {
+                        label: 'Undo',
+                        title: 'Put it back where it was',
+                        run: () => void this.undo(file, trashId),
+                    },
                 });
-            else
-                this.toasts.show(`“${file.name}” deleted; ${kept}`);
+            else this.toasts.show(`“${file.name}” deleted; ${kept}`);
             this.removed.emit({ file, keepPath, kept: result.kept, dissolved: this.count() < 2 });
         } catch (error) {
             this.toasts.error(`Could not remove “${file.name}”: ${(error as Error).message}`, 8000);
@@ -155,10 +162,9 @@ export class DuplicateGroupComponent {
             return;
         }
         this.toasts.show(`“${file.name}” put back.`);
-        if (this.destroyed || !this.removedPaths().has(file.path))
-            return;
+        if (this.destroyed || !this.removedPaths().has(file.path)) return;
         const revived = this.count() < 2;
-        this.removedPaths.update(paths => new Set([...paths].filter(path => path !== file.path)));
+        this.removedPaths.update((paths) => new Set([...paths].filter((path) => path !== file.path)));
         this.restored.emit({ file, revived });
     }
 }
@@ -217,12 +223,10 @@ export class DuplicatesPanelComponent {
 
     protected readonly status = computed(() => {
         const failure = this.failure();
-        if (failure)
-            return { state: 'unavailable', text: `Could not look for duplicates: ${failure}`, detail: '' };
+        if (failure) return { state: 'unavailable', text: `Could not look for duplicates: ${failure}`, detail: '' };
         const result = this.first();
         const summary = result?.summary;
-        if (!result || !summary)
-            return { state: null, text: '…', detail: '' };
+        if (!result || !summary) return { state: null, text: '…', detail: '' };
         const where = result.path ? `in “${result.path}”` : 'in the library';
         return {
             state: summary.groups ? 'found' : 'idle',
@@ -232,13 +236,19 @@ export class DuplicatesPanelComponent {
             detail: joinParts([
                 summary.groups ? `${plural(summary.files, 'file')} in all` : null,
                 result.minimumSize > 0 ? `files under ${formatSize(result.minimumSize)} are left out` : null,
-                summary.unfingerprinted ? `${plural(summary.unfingerprinted, 'indexed file')} without a fingerprint can't be compared${result.fingerprinting ? ' until they are scanned again' : ''}` : null,
-                !result.fingerprinting ? 'scans don\'t fingerprint files (Scanning › Indexing › Fingerprint files): new files are not compared' : null,
+                summary.unfingerprinted
+                    ? `${plural(summary.unfingerprinted, 'indexed file')} without a fingerprint can't be compared${result.fingerprinting ? ' until they are scanned again' : ''}`
+                    : null,
+                !result.fingerprinting
+                    ? "scans don't fingerprint files (Scanning › Indexing › Fingerprint files): new files are not compared"
+                    : null,
             ]),
         };
     });
     /** For the tab. */
-    readonly badge = computed(() => this.first()?.summary?.groups ? this.first()!.summary!.groups.toLocaleString() : '');
+    readonly badge = computed(() =>
+        this.first()?.summary?.groups ? this.first()!.summary!.groups.toLocaleString() : '',
+    );
 
     async load({ append = false } = {}): Promise<void> {
         const current = append ? this.generation : ++this.generation;
@@ -250,24 +260,24 @@ export class DuplicatesPanelComponent {
             this.next = null;
         }
         try {
-            const result = await this.api.duplicates({ path: this.folderOnly() ? this.folder() : '', after: append ? this.next : null });
-            if (current !== this.generation)
-                return;
+            const result = await this.api.duplicates({
+                path: this.folderOnly() ? this.folder() : '',
+                after: append ? this.next : null,
+            });
+            if (current !== this.generation) return;
             if (!append) {
                 this.first.set(result);
                 this.failure.set(null);
             }
             this.canRemove.set(result.canRemove);
             this.permanent.set(result.removesPermanently ?? false);
-            this.groups.update(groups => [...groups, ...result.groups]);
+            this.groups.update((groups) => [...groups, ...result.groups]);
             this.next = result.next;
             this.hasMore.set(result.hasMore);
         } catch (error) {
-            if (current === this.generation)
-                this.failure.set((error as Error).message);
+            if (current === this.generation) this.failure.set((error as Error).message);
         } finally {
-            if (current === this.generation)
-                this.loading.set(false);
+            if (current === this.generation) this.loading.set(false);
         }
     }
 
@@ -283,33 +293,28 @@ export class DuplicatesPanelComponent {
 
     protected onRemoved(group: DuplicateGroup, removed: RemovedCopy): void {
         this.changed.emit();
-        this.first.update(first => {
-            if (!first?.summary)
-                return first;
+        this.first.update((first) => {
+            if (!first?.summary) return first;
             const summary = { ...first.summary };
             summary.files -= removed.dissolved ? 2 : 1;
             summary.wastedBytes -= group.size;
-            if (removed.dissolved)
-                summary.groups--;
+            if (removed.dissolved) summary.groups--;
             return { ...first, summary };
         });
-        if (removed.dissolved)
-            this.dissolved.update(keys => new Set([...keys, group.fingerprint + group.size]));
+        if (removed.dissolved) this.dissolved.update((keys) => new Set([...keys, group.fingerprint + group.size]));
     }
 
     protected onRestored(group: DuplicateGroup, restored: RestoredCopy): void {
         this.changed.emit();
-        this.first.update(first => {
-            if (!first?.summary)
-                return first;
+        this.first.update((first) => {
+            if (!first?.summary) return first;
             const summary = { ...first.summary };
             summary.files += restored.revived ? 2 : 1;
             summary.wastedBytes += group.size;
-            if (restored.revived)
-                summary.groups++;
+            if (restored.revived) summary.groups++;
             return { ...first, summary };
         });
         if (restored.revived)
-            this.dissolved.update(keys => new Set([...keys].filter(key => key !== group.fingerprint + group.size)));
+            this.dissolved.update((keys) => new Set([...keys].filter((key) => key !== group.fingerprint + group.size)));
     }
 }

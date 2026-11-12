@@ -225,21 +225,30 @@ export class SetupPageComponent implements OnInit {
     protected readonly errors = signal<Record<string, string>>({});
 
     protected readonly mismatch = computed(() => this.confirm() !== '' && this.confirm() !== this.password());
-    protected readonly codeWhere = computed(() => this.info() ? generatedCodeWhere(this.info()!.hosting, this.info()!.codeFile ?? null) : '');
+    protected readonly codeWhere = computed(() =>
+        this.info() ? generatedCodeWhere(this.info()!.hosting, this.info()!.codeFile ?? null) : '',
+    );
     /** A new install opened on the server's own computer: no code step. */
     protected readonly codeFree = computed(() => this.info()?.codeRequired === false && !this.info()!.recover);
     /** The server opens a browser when it starts (portable packages): it can sign the administrator in there, when Local. */
-    protected readonly offerFastSignIn = computed(() => !this.info()?.recover && (this.info()?.hosting === 'portable' || this.info()?.hosting === 'appImage')
-        && this.installation()?.modeInEffect !== 'external');
-    protected readonly stepCount = computed(() => this.info()?.recover || this.codeFree() ? 2 : 3);
+    protected readonly offerFastSignIn = computed(
+        () =>
+            !this.info()?.recover &&
+            (this.info()?.hosting === 'portable' || this.info()?.hosting === 'appImage') &&
+            this.installation()?.modeInEffect !== 'external',
+    );
+    protected readonly stepCount = computed(() => (this.info()?.recover || this.codeFree() ? 2 : 3));
     protected readonly stepNumber = computed(() => {
-        if (!this.info()?.codeConfigured && !this.codeFree())
-            return null;
+        if (!this.info()?.codeConfigured && !this.codeFree()) return null;
         switch (this.step()) {
-            case 'code': return 1;
-            case 'library': return this.codeFree() ? 1 : 2;
-            case 'account': return this.stepCount();
-            default: return null;
+            case 'code':
+                return 1;
+            case 'library':
+                return this.codeFree() ? 1 : 2;
+            case 'account':
+                return this.stepCount();
+            default:
+                return null;
         }
     });
 
@@ -263,14 +272,12 @@ export class SetupPageComponent implements OnInit {
                 return;
             }
             this.info.set(info);
-            if (!this.libraryName())
-                this.libraryName.set(info.libraryName);
+            if (!this.libraryName()) this.libraryName.set(info.libraryName);
         } catch (error) {
             this.loadError.set((error as Error).message);
             return;
         }
-        if (this.codeFree() && this.step() === 'code')
-            await this.openWithoutCode();
+        if (this.codeFree() && this.step() === 'code') await this.openWithoutCode();
     }
 
     /** Step 1 without the code: the installation settings open at once. */
@@ -298,8 +305,7 @@ export class SetupPageComponent implements OnInit {
     protected async saveLibrary(event: Event): Promise<void> {
         event.preventDefault();
         const form = this.installationForm();
-        if (!form)
-            return;
+        if (!form) return;
         this.busy.set(true);
         try {
             const saved = await form.save();
@@ -316,8 +322,7 @@ export class SetupPageComponent implements OnInit {
     /** Step 3: the administrator, signed in at once. */
     protected async submit(event: Event): Promise<void> {
         event.preventDefault();
-        if (this.mismatch())
-            return;
+        if (this.mismatch()) return;
         await this.run(async () => {
             await this.api.completeSetup({
                 code: this.codeFree() ? '' : this.code().trim(),
@@ -328,10 +333,8 @@ export class SetupPageComponent implements OnInit {
                 fastSignIn: this.offerFastSignIn() && this.fastSignIn(),
             });
             this.config.clear();
-            if (this.restartRequired())
-                this.step.set('restart');
-            else
-                this.finish();
+            if (this.restartRequired()) this.step.set('restart');
+            else this.finish();
         });
     }
 
@@ -348,11 +351,14 @@ export class SetupPageComponent implements OnInit {
             await action();
         } catch (error) {
             if (error instanceof ApiError && error.errors)
-                this.errors.set(Object.fromEntries(Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')])));
+                this.errors.set(
+                    Object.fromEntries(
+                        Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')]),
+                    ),
+                );
             else if (error instanceof ApiError && error.status === 429)
                 this.error.set('Too many attempts: wait a minute, then try again.');
-            else
-                this.error.set((error as Error).message);
+            else this.error.set((error as Error).message);
         } finally {
             this.busy.set(false);
         }

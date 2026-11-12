@@ -103,8 +103,7 @@ export class TextEditBarComponent {
         // The copy's name selected up to its extension, ready to be typed over.
         effect(() => {
             const input = this.copyInput()?.nativeElement;
-            if (!input)
-                return;
+            if (!input) return;
             const dot = input.value.lastIndexOf('.');
             input.focus();
             input.setSelectionRange(0, dot > 0 ? dot : input.value.length);

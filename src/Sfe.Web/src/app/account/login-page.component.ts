@@ -170,15 +170,22 @@ export class LoginPageComponent implements OnInit {
             }
             this.session.set(session);
         } catch (error) {
-            this.session.set({ user: null, tenant: null, tenants: [], guestTenants: [], setupRequired: false, setupAvailable: false, canBrowse: false });
+            this.session.set({
+                user: null,
+                tenant: null,
+                tenants: [],
+                guestTenants: [],
+                setupRequired: false,
+                setupAvailable: false,
+                canBrowse: false,
+            });
             this.error.set(`The server is not reachable: ${(error as Error).message}`);
         }
     }
 
     protected async signIn(event: Event): Promise<void> {
         event.preventDefault();
-        if (!this.userName().trim() || !this.password())
-            return;
+        if (!this.userName().trim() || !this.password()) return;
         this.busy.set(true);
         this.error.set(null);
         try {
@@ -227,19 +234,26 @@ export class LoginPageComponent implements OnInit {
 
     protected async recover(event: Event): Promise<void> {
         event.preventDefault();
-        if (!this.code().trim() || !this.password() || this.password() !== this.confirm())
-            return;
+        if (!this.code().trim() || !this.password() || this.password() !== this.confirm()) return;
         this.busy.set(true);
         this.error.set(null);
         this.errors.set({});
         try {
-            await this.api.completeRecovery(this.userName().trim(), this.code().trim(), this.password(), this.remember());
+            await this.api.completeRecovery(
+                this.userName().trim(),
+                this.code().trim(),
+                this.password(),
+                this.remember(),
+            );
             this.done();
         } catch (error) {
             if (error instanceof ApiError && error.errors)
-                this.errors.set(Object.fromEntries(Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')])));
-            else
-                this.error.set((error as Error).message);
+                this.errors.set(
+                    Object.fromEntries(
+                        Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')]),
+                    ),
+                );
+            else this.error.set((error as Error).message);
         } finally {
             this.busy.set(false);
         }
@@ -257,6 +271,8 @@ export class LoginPageComponent implements OnInit {
     /** Signed in (or browsing as a guest): where the page was asked from, with the new session's configuration. */
     private done(): void {
         this.config.clear();
-        void this.router.navigateByUrl(this.returnUrl && this.returnUrl.startsWith('/') ? this.returnUrl : '/', { replaceUrl: true });
+        void this.router.navigateByUrl(this.returnUrl && this.returnUrl.startsWith('/') ? this.returnUrl : '/', {
+            replaceUrl: true,
+        });
     }
 }

@@ -14,7 +14,13 @@ describe('TextViewComponent', () => {
     let rights: Set<string>;
 
     const text = (overrides: Partial<TextFile> = {}): TextFile => ({
-        text: 'class A\r\n{\r\n}\r\n', encoding: 'windows-1252', lineEnding: 'crlf', version: 'v1', size: 2048, modified: '2026-10-18T10:00:00Z', ...overrides,
+        text: 'class A\r\n{\r\n}\r\n',
+        encoding: 'windows-1252',
+        lineEnding: 'crlf',
+        version: 'v1',
+        size: 2048,
+        modified: '2026-10-18T10:00:00Z',
+        ...overrides,
     });
     const button = (label: string) => element.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)!;
     const status = () => element.querySelector('.text-status')?.textContent ?? '';
@@ -41,14 +47,17 @@ describe('TextViewComponent', () => {
         api = mockApi();
         rights = new Set(['files.view', 'files.download']);
         TestBed.configureTestingModule({
-            providers: testProviders(api, { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: (right: string) => rights.has(right) } }),
+            providers: testProviders(api, {
+                provide: FILE_VIEW_HOST,
+                useValue: { place: 'viewer', can: (right: string) => rights.has(right) },
+            }),
         });
         await loadConfig(api);
     });
 
     afterEach(() => {
         localStorage.removeItem(READING_KEY);
-        document.head.querySelectorAll('link[data-reader-fonts]').forEach(link => link.remove());
+        document.head.querySelectorAll('link[data-reader-fonts]').forEach((link) => link.remove());
         fixture?.destroy();
         TestBed.resetTestingModule();
     });
@@ -151,7 +160,9 @@ describe('TextViewComponent', () => {
         await show('data.bin');
 
         expect(element.querySelector('.text-message')!.textContent).toContain('not text');
-        expect(element.querySelector<HTMLAnchorElement>('.text-message a')!.getAttribute('href')).toContain('download=true');
+        expect(element.querySelector<HTMLAnchorElement>('.text-message a')!.getAttribute('href')).toContain(
+            'download=true',
+        );
         expect(element.querySelector('.cm-editor')).toBeNull();
 
         fixture.destroy();

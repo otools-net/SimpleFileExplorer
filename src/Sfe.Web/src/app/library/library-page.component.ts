@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, OnInit, signal, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    effect,
+    inject,
+    OnInit,
+    signal,
+    viewChild,
+} from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { redirected } from '../core/api.service';
@@ -58,9 +67,33 @@ let created = false;
  */
 @Component({
     selector: 'sfe-library-page',
-    imports: [TopbarComponent, ScanPanelComponent, SidebarComponent, LocationComponent, LocationStripComponent, ListingComponent, SelectionBarComponent,
-        EmptyStateComponent, ViewerComponent, FileTagsDialog, FilesTagsDialog, ScopeTagsDialog, TagEditorDialog, TagManagerDialog,
-        RemoveFromIndexDialog, FolderExclusionsDialog, ImageEditorDialog, NameDialog, DeleteDialog, TransferDialog, ExtractDialog, CompressDialog, PropertiesDialog, BatchRenameDialog, OperationsPanelComponent],
+    imports: [
+        TopbarComponent,
+        ScanPanelComponent,
+        SidebarComponent,
+        LocationComponent,
+        LocationStripComponent,
+        ListingComponent,
+        SelectionBarComponent,
+        EmptyStateComponent,
+        ViewerComponent,
+        FileTagsDialog,
+        FilesTagsDialog,
+        ScopeTagsDialog,
+        TagEditorDialog,
+        TagManagerDialog,
+        RemoveFromIndexDialog,
+        FolderExclusionsDialog,
+        ImageEditorDialog,
+        NameDialog,
+        DeleteDialog,
+        TransferDialog,
+        ExtractDialog,
+        CompressDialog,
+        PropertiesDialog,
+        BatchRenameDialog,
+        OperationsPanelComponent,
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '[class.searching]': 'store.searching()',
@@ -130,8 +163,7 @@ export class LibraryPageComponent implements OnInit {
         effect(() => {
             const { path, q } = this.store.route();
             const config = this.config.config();
-            if (config)
-                title.setTitle(q ? `“${q}” – SFE` : `${baseName(path) || config.rootName} – SFE`);
+            if (config) title.setTitle(q ? `“${q}” – SFE` : `${baseName(path) || config.rootName} – SFE`);
         });
     }
 
@@ -144,8 +176,7 @@ export class LibraryPageComponent implements OnInit {
             await this.config.load();
         } catch (error) {
             // Not signed in, or the server is not set up: the sign-in or setup page opens instead.
-            if (!redirected(error))
-                this.unreachable.set((error as Error).message);
+            if (!redirected(error)) this.unreachable.set((error as Error).message);
             return;
         }
         this.theme.setDefault(this.config.value.theme);
@@ -166,7 +197,7 @@ export class LibraryPageComponent implements OnInit {
     private watchNavigation(): void {
         let restore: RestoreState = {};
         let timer = 0;
-        const subscription = this.router.events.subscribe(event => {
+        const subscription = this.router.events.subscribe((event) => {
             if (event instanceof NavigationStart) {
                 clearTimeout(timer);
                 if (event.navigationTrigger === 'popstate') {
@@ -188,8 +219,7 @@ export class LibraryPageComponent implements OnInit {
             timer = setTimeout(() => this.rememberPosition(), REMEMBER_DELAY);
         };
         const hidden = () => {
-            if (document.visibilityState === 'hidden')
-                this.rememberPosition();
+            if (document.visibilityState === 'hidden') this.rememberPosition();
         };
         window.addEventListener('scroll', scrolled, { passive: true });
         document.addEventListener('visibilitychange', hidden);
@@ -208,15 +238,22 @@ export class LibraryPageComponent implements OnInit {
 
     /** New folders can be made in the folder listed. */
     private canCreateFolder(): boolean {
-        return !this.store.route().q && this.store.status() === 'ready' && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFolders);
+        return (
+            !this.store.route().q &&
+            this.store.status() === 'ready' &&
+            !this.store.folderAccess()?.pathOnly &&
+            this.store.can(Rights.createFolders)
+        );
     }
 
     /** The item that has the keyboard focus, else the only item selected. */
     private focusedItem(): LibraryItem | null {
-        const path = (document.activeElement as Element | null)?.closest?.('sfe-listing [data-path]')?.getAttribute('data-path');
-        const focused = path !== null && path !== undefined ? this.store.items().find(item => item.path === path) : undefined;
-        if (focused)
-            return focused;
+        const path = (document.activeElement as Element | null)
+            ?.closest?.('sfe-listing [data-path]')
+            ?.getAttribute('data-path');
+        const focused =
+            path !== null && path !== undefined ? this.store.items().find((item) => item.path === path) : undefined;
+        if (focused) return focused;
         const selected = this.store.selectedItems();
         return selected.length === 1 ? selected[0] : null;
     }
@@ -228,25 +265,21 @@ export class LibraryPageComponent implements OnInit {
      */
     private onListingKey(event: KeyboardEvent): boolean {
         const current = focusedListItem();
-        if (!current || event.altKey || (event.target as Element).matches?.('input'))
-            return false;
+        if (!current || event.altKey || (event.target as Element).matches?.('input')) return false;
         const item = this.itemAt(current);
         if (event.key === ' ' && !event.metaKey && item) {
             event.preventDefault();
             this.store.select(item, !this.store.isSelected(item.path));
             return true;
         }
-        if (!MOVE_KEYS.has(event.key) || event.ctrlKey || event.metaKey)
-            return false;
+        if (!MOVE_KEYS.has(event.key) || event.ctrlKey || event.metaKey) return false;
         event.preventDefault();
         const next = neighbour(listedItems(), current, event.key);
-        if (!next)
-            return true;
+        if (!next) return true;
         focusItem(next);
         const target = this.itemAt(next);
         if (event.shiftKey && item && target) {
-            if (!this.store.isSelected(item.path))
-                this.store.select(item, true);
+            if (!this.store.isSelected(item.path)) this.store.select(item, true);
             this.store.select(target, true, true);
         }
         return true;
@@ -259,30 +292,45 @@ export class LibraryPageComponent implements OnInit {
     private onClipboardKey(key: string): boolean {
         const clipboard = this.transfers.clipboard();
         if (key === 'v')
-            return clipboard !== null && this.transfers.canInto(clipboard.kind) && this.transfers.paste(this.store.route().path);
-        if ((key !== 'x' && key !== 'c') || String(window.getSelection() ?? ''))
-            return false;
-        const items = this.store.selection().size ? this.store.selectedItems() : [this.focusedItem()].filter((item): item is LibraryItem => item !== null);
+            return (
+                clipboard !== null &&
+                this.transfers.canInto(clipboard.kind) &&
+                this.transfers.paste(this.store.route().path)
+            );
+        if ((key !== 'x' && key !== 'c') || String(window.getSelection() ?? '')) return false;
+        const items = this.store.selection().size
+            ? this.store.selectedItems()
+            : [this.focusedItem()].filter((item): item is LibraryItem => item !== null);
         return items.length > 0 && this.transfers.keep(key === 'x' ? 'move' : 'copy', items);
     }
 
     private itemAt(element: HTMLElement): LibraryItem | undefined {
         const path = element.getAttribute('data-path');
-        return this.store.items().find(item => item.path === path);
+        return this.store.items().find((item) => item.path === path);
     }
 
     protected onKeydown(event: KeyboardEvent): void {
         const target = event.target as Element;
         // A selection checkbox is an input, but not one being typed in.
         const typing = target.closest?.('input:not([type="checkbox"]), select, textarea, dialog');
-        if (!typing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a' && this.store.items().length) {
+        if (
+            !typing &&
+            (event.ctrlKey || event.metaKey) &&
+            event.key.toLowerCase() === 'a' &&
+            this.store.items().length
+        ) {
             event.preventDefault();
             this.store.selectAll();
             return;
         }
-        if (!typing && this.onListingKey(event))
-            return;
-        if (!typing && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && this.onClipboardKey(event.key.toLowerCase())) {
+        if (!typing && this.onListingKey(event)) return;
+        if (
+            !typing &&
+            (event.ctrlKey || event.metaKey) &&
+            !event.altKey &&
+            !event.shiftKey &&
+            this.onClipboardKey(event.key.toLowerCase())
+        ) {
             event.preventDefault();
             return;
         }
@@ -292,14 +340,14 @@ export class LibraryPageComponent implements OnInit {
             this.dialogs.name()?.newFolder();
             return;
         }
-        if (typing || event.ctrlKey || event.metaKey)
-            return;
+        if (typing || event.ctrlKey || event.metaKey) return;
         const { path, q } = this.store.route();
         if (event.key === 'Delete' && !event.altKey) {
             // The selection, else the item with the focus; Shift: for good.
-            const items = this.store.selection().size ? this.store.selectedItems() : [this.focusedItem()].filter((item): item is LibraryItem => item !== null);
-            if (items.length && this.fileActions.delete(items, event.shiftKey))
-                event.preventDefault();
+            const items = this.store.selection().size
+                ? this.store.selectedItems()
+                : [this.focusedItem()].filter((item): item is LibraryItem => item !== null);
+            if (items.length && this.fileActions.delete(items, event.shiftKey)) event.preventDefault();
             return;
         }
         // Properties: Alt+Enter as in Explorer, of the item with the focus (else the only one selected).
@@ -336,13 +384,10 @@ export class LibraryPageComponent implements OnInit {
             this.store.navigate({ path: parentPath(path) });
         } else if ((event.key === '[' || event.key === ']') && !q && this.store.siblings()) {
             const sibling = event.key === '[' ? this.store.siblings()!.previous : this.store.siblings()!.next;
-            if (sibling)
-                this.store.navigate({ path: sibling.path });
+            if (sibling) this.store.navigate({ path: sibling.path });
         } else if (event.key === 'Escape') {
-            if (this.popovers.open())
-                this.popovers.close();
-            else
-                this.store.clearSelection();
+            if (this.popovers.open()) this.popovers.close();
+            else this.store.clearSelection();
         }
     }
 }

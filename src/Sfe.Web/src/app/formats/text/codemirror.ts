@@ -3,8 +3,15 @@ import { bracketMatching, syntaxHighlighting } from '@codemirror/language';
 import { gotoLine, highlightSelectionMatches, openSearchPanel, search, searchKeymap } from '@codemirror/search';
 import { Compartment, EditorState, Extension, Text } from '@codemirror/state';
 import {
-    drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers,
-    ViewPlugin, ViewUpdate,
+    drawSelection,
+    EditorView,
+    highlightActiveLine,
+    highlightActiveLineGutter,
+    highlightSpecialChars,
+    keymap,
+    lineNumbers,
+    ViewPlugin,
+    ViewUpdate,
 } from '@codemirror/view';
 import { classHighlighter } from '@lezer/highlight';
 import { languageFor } from './languages';
@@ -15,7 +22,11 @@ import { languageFor } from './languages';
  */
 const readerTheme = EditorView.theme({
     '&': { height: '100%', color: 'var(--reader-text)', backgroundColor: 'var(--reader-bg)' },
-    '.cm-scroller': { fontFamily: 'var(--reader-font)', fontSize: 'var(--reader-size)', lineHeight: 'var(--reader-line-height)' },
+    '.cm-scroller': {
+        fontFamily: 'var(--reader-font)',
+        fontSize: 'var(--reader-size)',
+        lineHeight: 'var(--reader-line-height)',
+    },
     // Margins all around; a longest line (when lines wrap), centred. With no width the calc() is invalid: no maximum.
     '.cm-content': {
         caretColor: 'var(--reader-text)',
@@ -24,19 +35,39 @@ const readerTheme = EditorView.theme({
         marginInline: 'auto',
     },
     '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--reader-text)' },
-    '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': { backgroundColor: 'var(--reader-selection)' },
-    '.cm-gutters': { backgroundColor: 'var(--reader-gutter)', color: 'var(--reader-muted)', borderRight: '1px solid var(--reader-border)' },
+    '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection':
+        { backgroundColor: 'var(--reader-selection)' },
+    '.cm-gutters': {
+        backgroundColor: 'var(--reader-gutter)',
+        color: 'var(--reader-muted)',
+        borderRight: '1px solid var(--reader-border)',
+    },
     '.cm-activeLine': { backgroundColor: 'var(--reader-current-line, var(--reader-active-line))' },
     '.cm-activeLineGutter': { backgroundColor: 'var(--reader-active-line)', color: 'var(--reader-text)' },
     '.cm-selectionMatch': { backgroundColor: 'var(--reader-selection-match)' },
     '.cm-searchMatch': { backgroundColor: 'var(--mark-bg)', outline: '1px solid var(--accent)' },
     '.cm-searchMatch.cm-searchMatch-selected': { backgroundColor: 'var(--accent)', color: 'var(--accent-contrast)' },
-    '&.cm-focused .cm-matchingBracket': { backgroundColor: 'var(--reader-selection-match)', outline: '1px solid var(--reader-muted)' },
+    '&.cm-focused .cm-matchingBracket': {
+        backgroundColor: 'var(--reader-selection-match)',
+        outline: '1px solid var(--reader-muted)',
+    },
     '.cm-panels': { backgroundColor: 'var(--reader-gutter)', color: 'var(--reader-text)' },
     '.cm-panels.cm-panels-top': { borderBottom: '1px solid var(--reader-border)' },
     '.cm-panel': { fontFamily: 'var(--font)' },
-    '.cm-textfield': { backgroundColor: 'var(--reader-bg)', color: 'var(--reader-text)', border: '1px solid var(--reader-border)', borderRadius: '6px', padding: '3px 6px' },
-    '.cm-button': { backgroundImage: 'none', backgroundColor: 'var(--reader-active-line)', color: 'var(--reader-text)', border: '1px solid var(--reader-border)', borderRadius: '6px' },
+    '.cm-textfield': {
+        backgroundColor: 'var(--reader-bg)',
+        color: 'var(--reader-text)',
+        border: '1px solid var(--reader-border)',
+        borderRadius: '6px',
+        padding: '3px 6px',
+    },
+    '.cm-button': {
+        backgroundImage: 'none',
+        backgroundColor: 'var(--reader-active-line)',
+        color: 'var(--reader-text)',
+        border: '1px solid var(--reader-border)',
+        borderRadius: '6px',
+    },
     '.cm-panel.cm-search [name=close]': { color: 'var(--reader-muted)' },
     // A line going on past the right edge (see lineContinues): a fade over the text, not over the scroll bars or panels.
     '&.cm-line-continues::after': {
@@ -56,32 +87,42 @@ const readerTheme = EditorView.theme({
  * Shows that a line goes on past the right edge (wrapping off, not scrolled to its end): `cm-line-continues` on the
  * editor, a fade (readerTheme) placed by `--cm-fade-*` inside the scroller's scroll bars and under a search panel.
  */
-export const lineContinues = ViewPlugin.fromClass(class {
-    constructor(private readonly view: EditorView) {
-        view.scrollDOM.addEventListener('scroll', this.onScroll, { passive: true });
-        this.schedule();
-    }
-
-    update(update: ViewUpdate): void {
-        if (update.geometryChanged || update.docChanged || update.viewportChanged)
+export const lineContinues = ViewPlugin.fromClass(
+    class {
+        constructor(private readonly view: EditorView) {
+            view.scrollDOM.addEventListener('scroll', this.onScroll, { passive: true });
             this.schedule();
-    }
+        }
 
-    destroy(): void {
-        this.view.scrollDOM.removeEventListener('scroll', this.onScroll);
-        this.view.dom.classList.remove('cm-line-continues');
-    }
+        update(update: ViewUpdate): void {
+            if (update.geometryChanged || update.docChanged || update.viewportChanged) this.schedule();
+        }
 
-    /** Scrolling reads the layout at once (nothing is being updated then). */
-    private readonly onScroll = () => showLineContinues(this.view, readLineContinues(this.view));
+        destroy(): void {
+            this.view.scrollDOM.removeEventListener('scroll', this.onScroll);
+            this.view.dom.classList.remove('cm-line-continues');
+        }
 
-    /** After an update, when CodeMirror reads the layout. */
-    private schedule(): void {
-        this.view.requestMeasure({ key: this, read: readLineContinues, write: (fade, view) => showLineContinues(view, fade) });
-    }
-});
+        /** Scrolling reads the layout at once (nothing is being updated then). */
+        private readonly onScroll = () => showLineContinues(this.view, readLineContinues(this.view));
 
-interface LineFade { continues: boolean; top: number; right: number; bottom: number }
+        /** After an update, when CodeMirror reads the layout. */
+        private schedule(): void {
+            this.view.requestMeasure({
+                key: this,
+                read: readLineContinues,
+                write: (fade, view) => showLineContinues(view, fade),
+            });
+        }
+    },
+);
+
+interface LineFade {
+    continues: boolean;
+    top: number;
+    right: number;
+    bottom: number;
+}
 
 function readLineContinues(view: EditorView): LineFade {
     const scroller = view.scrollDOM;
@@ -156,15 +197,16 @@ export class TextEditor {
             EditorView.contentAttributes.of({ 'aria-label': `Content of ${options.name}` }),
         ];
         const onChange = options.onChange;
-        extensions.push(EditorView.updateListener.of(update => {
-            if (onCursor && (update.selectionSet || update.docChanged)) {
-                const head = update.state.selection.main.head;
-                const line = update.state.doc.lineAt(head);
-                onCursor(line.number, head - line.from + 1);
-            }
-            if (onChange && update.docChanged)
-                onChange(!update.state.doc.eq(this.saved));
-        }));
+        extensions.push(
+            EditorView.updateListener.of((update) => {
+                if (onCursor && (update.selectionSet || update.docChanged)) {
+                    const head = update.state.selection.main.head;
+                    const line = update.state.doc.lineAt(head);
+                    onCursor(line.number, head - line.from + 1);
+                }
+                if (onChange && update.docChanged) onChange(!update.state.doc.eq(this.saved));
+            }),
+        );
         const state = EditorState.create({ doc: options.text, extensions });
         this.saved = state.doc;
         this.view = new EditorView({ parent, state });
@@ -213,11 +255,14 @@ export class TextEditor {
         const changes: { from: number; to?: number; insert: string }[] = [{ from: doc.length, insert: text }];
         const over = doc.length + text.length - limit;
         if (over > 0)
-            changes.unshift({ from: 0, to: Math.min(doc.length, doc.lineAt(Math.min(over, doc.length)).to + 1), insert: '' });
+            changes.unshift({
+                from: 0,
+                to: Math.min(doc.length, doc.lineAt(Math.min(over, doc.length)).to + 1),
+                insert: '',
+            });
         this.view.dispatch({ changes });
         this.markSaved();
-        if (atEnd)
-            this.scrollToEnd();
+        if (atEnd) this.scrollToEnd();
     }
 
     /** The view shows the last line (within a line's height). */
@@ -248,15 +293,21 @@ export class TextEditor {
         const length = this.view.state.doc.length;
         const anchor = Math.min(Math.max(0, from), length);
         const head = Math.min(Math.max(anchor, to), length);
-        this.view.dispatch({ selection: { anchor, head }, effects: EditorView.scrollIntoView(anchor, { y: 'center' }) });
+        this.view.dispatch({
+            selection: { anchor, head },
+            effects: EditorView.scrollIntoView(anchor, { y: 'center' }),
+        });
     }
 
     /** Changes the text as typing would (undone at once, and dirty): `{ offset, length, content }` of the text now. */
     edit(changes: readonly { offset: number; length: number; content: string }[]): void {
-        if (!changes.length)
-            return;
+        if (!changes.length) return;
         this.view.dispatch({
-            changes: changes.map(change => ({ from: change.offset, to: change.offset + change.length, insert: change.content })),
+            changes: changes.map((change) => ({
+                from: change.offset,
+                to: change.offset + change.length,
+                insert: change.content,
+            })),
             userEvent: 'input',
         });
     }
@@ -264,11 +315,9 @@ export class TextEditor {
     /** Loads the language of `name` and highlights with it; resolves its name, or null for plain text. */
     async setLanguage(name: string): Promise<string | null> {
         const description = languageFor(name);
-        if (!description)
-            return null;
+        if (!description) return null;
         const support = await description.load();
-        if (!this.destroyed)
-            this.view.dispatch({ effects: this.language.reconfigure(support) });
+        if (!this.destroyed) this.view.dispatch({ effects: this.language.reconfigure(support) });
         return description.name;
     }
 
@@ -278,11 +327,12 @@ export class TextEditor {
         if (options.wrap !== this.wrap)
             effects.push(this.wrapping.reconfigure(options.wrap ? EditorView.lineWrapping : []));
         if (options.lineNumbers !== this.lineNumbers)
-            effects.push(this.numbers.reconfigure(options.lineNumbers ? [lineNumbers(), highlightActiveLineGutter()] : []));
+            effects.push(
+                this.numbers.reconfigure(options.lineNumbers ? [lineNumbers(), highlightActiveLineGutter()] : []),
+            );
         this.wrap = options.wrap;
         this.lineNumbers = options.lineNumbers;
-        if (effects.length)
-            this.view.dispatch({ effects });
+        if (effects.length) this.view.dispatch({ effects });
     }
 
     /** The font, size or spacing changed (CSS variables): the editor measures its lines again. */

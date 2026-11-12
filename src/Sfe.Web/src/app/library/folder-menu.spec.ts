@@ -20,7 +20,17 @@ const folder = item('Media/Holidays', { kind: 'directory' });
 const photo = item('Media/beach.jpg');
 
 function listing(items: LibraryItem[]): DirectoryListing {
-    return { path: 'Media', name: 'Media', parentPath: '', items, offset: 0, limit: 100, total: items.length, directoryCount: 1, fileCount: items.length - 1 };
+    return {
+        path: 'Media',
+        name: 'Media',
+        parentPath: '',
+        items,
+        offset: 0,
+        limit: 100,
+        total: items.length,
+        directoryCount: 1,
+        fileCount: items.length - 1,
+    };
 }
 
 async function setUp(rights?: string[], q = ''): Promise<void> {
@@ -28,7 +38,7 @@ async function setUp(rights?: string[], q = ''): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, rights ? limitedConfig(rights) : fakeConfig());
     store = TestBed.inject(ListingStore);
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
     api.siblings.mockResolvedValue({ path: 'Media', previous: null, next: null, position: 1, count: 1 });
     api.browse.mockResolvedValue(listing([folder, photo]));
     api.search.mockResolvedValue({ items: [photo], hasMore: false, cursor: null } as never);
@@ -45,17 +55,31 @@ async function setUp(rights?: string[], q = ''): Promise<void> {
 afterEach(() => vi.restoreAllMocks());
 
 describe('FolderMenu', () => {
-    const ids = () => menu.entries().map(entry => entry.id);
-    const entry = (id: string) => menu.entries().find(e => e.id === id)!;
+    const ids = () => menu.entries().map((entry) => entry.id);
+    const entry = (id: string) => menu.entries().find((e) => e.id === id)!;
 
     it('offers what may be done in the folder listed, by rights', async () => {
         await setUp();
-        expect(ids()).toEqual(['newFolder', 'newFile', 'upload', 'uploadFolder', 'selectAll', 'refresh', 'tags', 'exclusions', 'quickLink', 'newTab', 'properties']);
+        expect(ids()).toEqual([
+            'newFolder',
+            'newFile',
+            'upload',
+            'uploadFolder',
+            'selectAll',
+            'refresh',
+            'tags',
+            'exclusions',
+            'quickLink',
+            'newTab',
+            'properties',
+        ]);
 
         entry('newFolder').run!();
         expect(TestBed.inject(Dialogs).name()!.newFolder).toHaveBeenCalledWith('Media');
         entry('properties').run!();
-        expect(TestBed.inject(Dialogs).properties()!.open).toHaveBeenCalledWith(expect.objectContaining({ path: 'Media', name: 'Media', kind: 'directory' }));
+        expect(TestBed.inject(Dialogs).properties()!.open).toHaveBeenCalledWith(
+            expect.objectContaining({ path: 'Media', name: 'Media', kind: 'directory' }),
+        );
         expect(entry('newTab')).toMatchObject({ newTab: true, href: expect.stringMatching(/\?path=Media$/) });
         expect(menu.target()).toMatchObject({ kind: 'background', name: 'Media' });
     });
@@ -73,12 +97,16 @@ describe('FolderMenu', () => {
         expect(paste).toHaveBeenCalledWith('Media');
     });
 
-    it('offers the search\'s own entries while searching', async () => {
+    it("offers the search's own entries while searching", async () => {
         await setUp(undefined, 'beach');
         expect(ids()).toEqual(['selectAll', 'tags', 'refresh', 'newTab', 'copyLink']);
         expect(entry('tags').label).toBe('Tag the results…');
         entry('tags').run!();
-        expect(TestBed.inject(Dialogs).scopeTags()!.open).toHaveBeenCalledWith({ path: 'Media', recursive: false, query: 'beach' });
+        expect(TestBed.inject(Dialogs).scopeTags()!.open).toHaveBeenCalledWith({
+            path: 'Media',
+            recursive: false,
+            query: 'beach',
+        });
         expect(entry('newTab').href).toMatch(/\?path=Media&q=beach$/);
         expect(menu.target().name).toBe('Search “beach”');
     });
@@ -88,15 +116,19 @@ describe('FolderMenu', () => {
         const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
         const target = menu.linkTarget('Media/Trips');
         const entries = () => target.entries();
-        const link = (id: string) => entries().find(e => e.id === id)!;
+        const link = (id: string) => entries().find((e) => e.id === id)!;
 
         expect(target).toMatchObject({ kind: 'folderLink', key: 'folderLink:Media/Trips', name: 'Trips' });
-        expect(entries().map(e => e.id)).toEqual(['open', 'newTab', 'quickLink', 'properties']);
+        expect(entries().map((e) => e.id)).toEqual(['open', 'newTab', 'quickLink', 'properties']);
         link('open').run!();
-        expect(navigate).toHaveBeenCalledWith(['/'], { queryParams: { path: 'Media/Trips', q: null, sort: null, desc: null } });
+        expect(navigate).toHaveBeenCalledWith(['/'], {
+            queryParams: { path: 'Media/Trips', q: null, sort: null, desc: null },
+        });
         expect(link('newTab').href).toMatch(/\?path=Media%2FTrips$/);
         link('properties').run!();
-        expect(TestBed.inject(Dialogs).properties()!.open).toHaveBeenCalledWith(expect.objectContaining({ path: 'Media/Trips', name: 'Trips' }));
+        expect(TestBed.inject(Dialogs).properties()!.open).toHaveBeenCalledWith(
+            expect.objectContaining({ path: 'Media/Trips', name: 'Trips' }),
+        );
 
         TestBed.inject(FileTransfers).keep('move', [photo]);
         const paste = vi.spyOn(TestBed.inject(FileTransfers), 'paste').mockReturnValue(true);
@@ -110,7 +142,9 @@ describe('FolderMenu', () => {
         await setUp();
         const add = vi.spyOn(TestBed.inject(UploadQueue), 'add').mockResolvedValue();
         let picker: HTMLInputElement | undefined;
-        vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(function (this: HTMLInputElement) { picker = this; });
+        vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(function (this: HTMLInputElement) {
+            picker = this;
+        });
 
         entry('uploadFolder').run!();
         expect(picker!.type).toBe('file');
@@ -120,7 +154,7 @@ describe('FolderMenu', () => {
         expect(add).toHaveBeenCalledWith([], 'Media');
     });
 
-    it('is the page\'s menu: a right click on nothing with a menu of its own', async () => {
+    it("is the page's menu: a right click on nothing with a menu of its own", async () => {
         await setUp();
         const contextMenu = TestBed.inject(ContextMenu);
         contextMenu.page.set(menu.target());

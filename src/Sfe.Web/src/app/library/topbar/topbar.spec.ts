@@ -26,8 +26,8 @@ async function setUp(config: Partial<ClientConfig> = {}): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, fakeConfig(config));
     store = TestBed.inject(ListingStore);
-    navigate = vi.spyOn(store, 'navigate').mockImplementation(() => { });
-    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => { });
+    navigate = vi.spyOn(store, 'navigate').mockImplementation(() => {});
+    vi.spyOn(TestBed.inject(SidebarService), 'refresh').mockImplementation(() => {});
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -36,17 +36,33 @@ describe('LocationComponent', () => {
     let fixture: ComponentFixture<LocationComponent>;
     let element: HTMLElement;
 
-    const crumbs = () => [...element.querySelectorAll('.crumbs > a, .crumbs > span')].map(c => c.textContent!.trim());
+    const crumbs = () => [...element.querySelectorAll('.crumbs > a, .crumbs > span')].map((c) => c.textContent!.trim());
     const nav = () => [...element.querySelectorAll<HTMLAnchorElement>('.folder-nav a')];
     const summary = () => element.querySelector('.summary')!.textContent!;
-    const sortOptions = () => [...element.querySelectorAll<HTMLOptionElement>('#sort-select option')].map(o => o.value);
+    const sortOptions = () =>
+        [...element.querySelectorAll<HTMLOptionElement>('#sort-select option')].map((o) => o.value);
 
-    async function show(path: string, q = '', items: LibraryItem[] = [], page: Partial<DirectoryListing> = {}): Promise<void> {
+    async function show(
+        path: string,
+        q = '',
+        items: LibraryItem[] = [],
+        page: Partial<DirectoryListing> = {},
+    ): Promise<void> {
         store.route.set({ path, q, sort: '', desc: false });
-        if (q)
-            api.search.mockResolvedValue({ query: q, path, items, limit: 50, hasMore: false, next: null });
+        if (q) api.search.mockResolvedValue({ query: q, path, items, limit: 50, hasMore: false, next: null });
         else
-            api.browse.mockResolvedValue({ path, name: '', parentPath: null, items, offset: 0, limit: 100, total: items.length, directoryCount: 0, fileCount: 0, ...page });
+            api.browse.mockResolvedValue({
+                path,
+                name: '',
+                parentPath: null,
+                items,
+                offset: 0,
+                limit: 100,
+                total: items.length,
+                directoryCount: 0,
+                fileCount: 0,
+                ...page,
+            });
         await store.load();
         fixture ??= TestBed.createComponent(LocationComponent);
         element = fixture.nativeElement;
@@ -97,11 +113,21 @@ describe('LocationComponent', () => {
     });
 
     it('offers the parent, previous and next folders, disabled at the ends', async () => {
-        api.siblings.mockResolvedValue({ path: 'Media/B', previous: item('Media/A', { kind: 'directory' }), next: null, position: 2, count: 2 });
+        api.siblings.mockResolvedValue({
+            path: 'Media/B',
+            previous: item('Media/A', { kind: 'directory' }),
+            next: null,
+            position: 2,
+            count: 2,
+        });
         await show('Media/B');
 
-        expect(nav().map(a => a.title)).toEqual(['Parent folder: Media (Backspace)', 'Previous folder: A (2 of 2)', 'Last folder']);
-        expect(nav().map(a => a.getAttribute('aria-disabled'))).toEqual(['false', 'false', 'true']);
+        expect(nav().map((a) => a.title)).toEqual([
+            'Parent folder: Media (Backspace)',
+            'Previous folder: A (2 of 2)',
+            'Last folder',
+        ]);
+        expect(nav().map((a) => a.getAttribute('aria-disabled'))).toEqual(['false', 'false', 'true']);
     });
 
     it('names the root as the parent of a top folder, and has no folder links at the root or in a search', async () => {
@@ -137,7 +163,7 @@ describe('LocationComponent', () => {
         expect(navigate).toHaveBeenLastCalledWith({ desc: true }, { replace: true });
     });
 
-    it('copies the folder\'s full path only when the server allows it', async () => {
+    it("copies the folder's full path only when the server allows it", async () => {
         await show('Media');
         expect(element.querySelector('.copy-folder-path')).toBeNull();
 
@@ -154,7 +180,12 @@ describe('LocationComponent', () => {
         const menu = TestBed.inject(ContextMenu);
         expect(menu.open()?.target.kind).toBe('background');
         expect(menu.open()?.trigger).toBe(more);
-        expect(menu.open()!.target.entries().map(entry => entry.id)).toEqual(expect.arrayContaining(['refresh']));
+        expect(
+            menu
+                .open()!
+                .target.entries()
+                .map((entry) => entry.id),
+        ).toEqual(expect.arrayContaining(['refresh']));
         more.click();
         expect(menu.open()).toBeNull();
 
@@ -167,7 +198,10 @@ describe('MainMenuComponent', () => {
     let fixture: ComponentFixture<MainMenuComponent>;
     let element: HTMLElement;
 
-    const entry = (text: string) => [...element.querySelectorAll<HTMLButtonElement>('[role=menuitem]')].find(e => e.textContent!.trim().startsWith(text));
+    const entry = (text: string) =>
+        [...element.querySelectorAll<HTMLButtonElement>('[role=menuitem]')].find((e) =>
+            e.textContent!.trim().startsWith(text),
+        );
 
     async function create(config: Partial<ClientConfig> = {}): Promise<void> {
         await setUp(config);
@@ -193,8 +227,9 @@ describe('MainMenuComponent', () => {
     it('offers the scans, the administration page, full screen and signing out', async () => {
         await create();
 
-        expect([...element.querySelectorAll('[role=menuitem]')].map(e => e.textContent!.trim().split(/\s+/)[0]))
-            .toEqual(['admin', 'Scan', 'Remove', 'Administration', 'Toggle', 'Sign']);
+        expect(
+            [...element.querySelectorAll('[role=menuitem]')].map((e) => e.textContent!.trim().split(/\s+/)[0]),
+        ).toEqual(['admin', 'Scan', 'Remove', 'Administration', 'Toggle', 'Sign']);
         expect(element.querySelector('.menu-account')!.textContent).toContain('admin');
         expect(element.querySelector('.menu-account small')!.textContent).toBe('Library');
     });
@@ -202,7 +237,10 @@ describe('MainMenuComponent', () => {
     it('offers a visitor without an account only full screen and signing in', async () => {
         await create({ rights: [Rights.browse, Rights.viewFiles, Rights.viewTags], user: null, tenants: [] });
 
-        expect([...element.querySelectorAll('[role=menuitem]')].map(e => e.textContent!.trim())).toEqual(['Toggle fullscreen', 'Sign in']);
+        expect([...element.querySelectorAll('[role=menuitem]')].map((e) => e.textContent!.trim())).toEqual([
+            'Toggle fullscreen',
+            'Sign in',
+        ]);
         expect(element.querySelector('.menu-account')!.textContent).toContain('Guest');
     });
 
@@ -213,7 +251,7 @@ describe('MainMenuComponent', () => {
         expect(entry('Scan this folder')).toBeUndefined();
     });
 
-    it('switches to the account\'s other libraries, starting the page again there', async () => {
+    it("switches to the account's other libraries, starting the page again there", async () => {
         await create({ tenants: [LIBRARY, { id: 2, slug: 'films', name: 'Films' }] });
         api.switchTenant.mockResolvedValue({} as SessionInfo);
         const assign = vi.fn();
@@ -243,7 +281,7 @@ describe('MainMenuComponent', () => {
 
     it('toggles full screen, closing first', async () => {
         await create();
-        const request = vi.fn(async () => { });
+        const request = vi.fn(async () => {});
         document.documentElement.requestFullscreen = request;
         TestBed.inject(Popovers).toggle('menu');
 
@@ -315,7 +353,21 @@ describe('MainMenuComponent', () => {
 
     it('disables the scan while one runs', async () => {
         await create();
-        api.scanStatus.mockResolvedValue({ state: 'running', path: '', startedAt: 'x', finishedAt: null, directoriesScanned: 0, directoriesQueued: 0, filesIndexed: 0, removed: 0, errors: 0, currentDirectory: null, message: null, relinked: 0, missing: null });
+        api.scanStatus.mockResolvedValue({
+            state: 'running',
+            path: '',
+            startedAt: 'x',
+            finishedAt: null,
+            directoriesScanned: 0,
+            directoriesQueued: 0,
+            filesIndexed: 0,
+            removed: 0,
+            errors: 0,
+            currentDirectory: null,
+            message: null,
+            relinked: 0,
+            missing: null,
+        });
         TestBed.inject(ScanService).watch();
         await settle();
 

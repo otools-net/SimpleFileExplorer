@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    effect,
+    ElementRef,
+    inject,
+    signal,
+    untracked,
+    viewChild,
+} from '@angular/core';
 import { Api } from '../../core/api.service';
 import { plural } from '../../core/format';
 import { TagDetails } from '../../core/models';
@@ -12,8 +22,8 @@ import { SearchBoxState } from '../search-explain/search-explain.component';
 import { matchedParts, SearchHistory } from '../search-history.service';
 import { SearchHelpDialog } from './search-help.dialog';
 
-const LIVE_SEARCH_MIN_LENGTH = 4;   // search as you type once the query is longer than 3 characters
-const LIVE_SEARCH_DELAY = 300;      // ms of typing pause before the search runs
+const LIVE_SEARCH_MIN_LENGTH = 4; // search as you type once the query is longer than 3 characters
+const LIVE_SEARCH_DELAY = 300; // ms of typing pause before the search runs
 const LIST_ID = 'search-suggestions';
 
 interface TagTerm {
@@ -115,12 +125,14 @@ export class SearchBoxComponent {
     /** How many files the search found, once its results are listed and only while the box still holds its query. */
     protected readonly found = computed(() => {
         const q = this.store.route().q;
-        if (!q || this.store.status() !== 'ready' || this.search.text().trim() !== q)
-            return null;
+        if (!q || this.store.status() !== 'ready' || this.search.text().trim() !== q) return null;
         const total = this.store.total();
         const count = total?.count ?? this.store.items().length;
         const more = total ? total.capped : this.store.hasMore();
-        return { text: `${count.toLocaleString()}${more ? '+' : ''}`, title: `${plural(count, 'file')}${more ? ' or more' : ''} found` };
+        return {
+            text: `${count.toLocaleString()}${more ? '+' : ''}`,
+            title: `${plural(count, 'file')}${more ? ' or more' : ''} found`,
+        };
     });
 
     protected parts(query: string) {
@@ -137,8 +149,7 @@ export class SearchBoxComponent {
             const q = this.store.route().q;
             untracked(() => {
                 const input = this.input().nativeElement;
-                if (document.activeElement !== input || input.value.trim() !== q)
-                    input.value = q;
+                if (document.activeElement !== input || input.value.trim() !== q) input.value = q;
                 this.search.text.set(input.value);
             });
         });
@@ -174,16 +185,14 @@ export class SearchBoxComponent {
      * search key, to close the keyboard) would load them again and lose the scroll position.
      */
     private searchFor(q: string): void {
-        if (q !== this.store.route().q || this.store.status() === 'error')
-            this.store.navigate({ q });
+        if (q !== this.store.route().q || this.store.status() === 'error') this.store.navigate({ q });
     }
 
     protected onInput(): void {
         this.search.text.set(this.input().nativeElement.value);
         clearTimeout(this.liveSearchTimer);
         this.liveSearchTimer = setTimeout(() => {
-            if (!this.tagTerm())
-                this.liveSearch();
+            if (!this.tagTerm()) this.liveSearch();
         }, LIVE_SEARCH_DELAY);
         clearTimeout(this.suggestTimer);
         this.suggestTimer = setTimeout(() => this.updateSuggestions(), 120);
@@ -191,23 +200,19 @@ export class SearchBoxComponent {
 
     /** The native clear button ("x") empties the box: go back to browsing. */
     protected onClear(): void {
-        if (!this.input().nativeElement.value && this.store.route().q)
-            this.store.navigate({ q: '' });
+        if (!this.input().nativeElement.value && this.store.route().q) this.store.navigate({ q: '' });
     }
 
     protected onScope(): void {
-        if (this.store.route().q)
-            this.store.navigate({ path: '' });
-        else
-            this.input().nativeElement.focus();
+        if (this.store.route().q) this.store.navigate({ path: '' });
+        else this.input().nativeElement.focus();
     }
 
     /** `complete`: the query is not still being typed, search it whatever its length. */
     private liveSearch(complete = false): void {
         const q = this.input().nativeElement.value.trim();
         const route = this.store.route();
-        if (q === route.q || (q && q.length < LIVE_SEARCH_MIN_LENGTH && !complete))
-            return;
+        if (q === route.q || (q && q.length < LIVE_SEARCH_MIN_LENGTH && !complete)) return;
         // The first keystroke search gets its own history entry; refinements replace it.
         this.store.navigate({ q }, { replace: Boolean(route.q) });
     }
@@ -217,12 +222,13 @@ export class SearchBoxComponent {
     /** The tag term (`t:`, `tag:`, `-t:`...) around the caret, if any. */
     private tagTerm(): TagTerm | null {
         const input = this.input().nativeElement;
-        if (input.selectionStart !== input.selectionEnd || input.selectionStart === null)
-            return null;
+        if (input.selectionStart !== input.selectionEnd || input.selectionStart === null) return null;
         const caret = input.selectionStart;
         const { start, end } = termAt(input.value, caret);
         const match = TAG_TERM.exec(input.value.slice(start, caret));
-        return match ? { start, end, negation: match[1], prefix: match[2], text: match[3].replaceAll('"', '').trim() } : null;
+        return match
+            ? { start, end, negation: match[1], prefix: match[2], text: match[3].replaceAll('"', '').trim() }
+            : null;
     }
 
     protected async updateSuggestions(): Promise<void> {
@@ -240,8 +246,7 @@ export class SearchBoxComponent {
             this.hideSuggestions();
             return;
         }
-        if (request !== this.sequence || document.activeElement !== this.input().nativeElement)
-            return;
+        if (request !== this.sequence || document.activeElement !== this.input().nativeElement) return;
         const options = [...results.matches, ...results.descendants].slice(0, 12);
         this.options.set(options);
         this.active.set(options.length ? 0 : -1);
@@ -261,8 +266,7 @@ export class SearchBoxComponent {
     protected onBlur(): void {
         this.hideSuggestions();
         const q = this.store.route().q;
-        if (q && q === this.input().nativeElement.value.trim())
-            this.history.record(q);
+        if (q && q === this.input().nativeElement.value.trim()) this.history.record(q);
     }
 
     /* ---------- Search history ---------- */
@@ -296,12 +300,28 @@ export class SearchBoxComponent {
             key: `history:${query}`,
             name: query,
             entries: () => [
-                { id: 'search', label: 'Search', icon: 'search', title: 'Search this again', run: () => this.pickRecent(query) },
                 {
-                    id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'This search in a tab of its own', newTab: true,
+                    id: 'search',
+                    label: 'Search',
+                    icon: 'search',
+                    title: 'Search this again',
+                    run: () => this.pickRecent(query),
+                },
+                {
+                    id: 'newTab',
+                    label: 'Open in new tab',
+                    icon: 'external',
+                    title: 'This search in a tab of its own',
+                    newTab: true,
                     href: this.store.pageUrl(routeParams({ ...this.store.route(), q: query })),
                 },
-                { id: 'remove', label: 'Remove from the history', icon: 'close', title: 'Forget this search', run: () => this.history.remove(query) },
+                {
+                    id: 'remove',
+                    label: 'Remove from the history',
+                    icon: 'close',
+                    title: 'Forget this search',
+                    run: () => this.history.remove(query),
+                },
             ],
         };
     }
@@ -314,8 +334,7 @@ export class SearchBoxComponent {
 
     protected pick(tag: TagDetails): void {
         const term = this.tagTerm();
-        if (!term)
-            return;
+        if (!term) return;
         const input = this.input().nativeElement;
         const value = input.value;
         const completed = term.negation + term.prefix + termValue(tag.name) + (term.end === value.length ? ' ' : '');
@@ -330,13 +349,11 @@ export class SearchBoxComponent {
 
     /** Moving the caret into or out of a tag term. */
     protected onKeyup(event: KeyboardEvent): void {
-        if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key))
-            void this.updateSuggestions();
+        if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) void this.updateSuggestions();
     }
 
     protected onKeydown(event: KeyboardEvent): void {
-        if (!this.suggesting())
-            return;
+        if (!this.suggesting()) return;
         const recent = this.recent();
         if (recent.length) {
             this.onHistoryKeydown(event, recent);
@@ -345,7 +362,9 @@ export class SearchBoxComponent {
         const options = this.options();
         if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && options.length) {
             event.preventDefault();
-            this.active.update(active => (active + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length);
+            this.active.update(
+                (active) => (active + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length,
+            );
             this.scrollActiveIntoView();
         } else if ((event.key === 'Enter' || event.key === 'Tab') && this.active() >= 0) {
             // Complete the term instead of submitting the search or leaving the box.
@@ -363,7 +382,7 @@ export class SearchBoxComponent {
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault();
             const count = recent.length + 1;
-            this.active.update(active => (active + 1 + (event.key === 'ArrowDown' ? 1 : -1) + count) % count - 1);
+            this.active.update((active) => ((active + 1 + (event.key === 'ArrowDown' ? 1 : -1) + count) % count) - 1);
             this.scrollActiveIntoView();
         } else if (event.key === 'Enter' && this.active() >= 0) {
             event.preventDefault();
@@ -375,6 +394,8 @@ export class SearchBoxComponent {
     }
 
     private scrollActiveIntoView(): void {
-        queueMicrotask(() => document.getElementById(`${LIST_ID}-${this.active()}`)?.scrollIntoView({ block: 'nearest' }));
+        queueMicrotask(() =>
+            document.getElementById(`${LIST_ID}-${this.active()}`)?.scrollIntoView({ block: 'nearest' }),
+        );
     }
 }

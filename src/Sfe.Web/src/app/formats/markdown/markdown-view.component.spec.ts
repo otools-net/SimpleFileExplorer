@@ -26,10 +26,19 @@ describe('MarkdownViewComponent', () => {
     let opened: LibraryItem[];
 
     const text = (overrides: Partial<TextFile> = {}): TextFile => ({
-        text: DOCUMENT, encoding: 'utf-8', lineEnding: 'lf', version: 'v1', size: 300, modified: '2026-10-18T10:00:00Z', ...overrides,
+        text: DOCUMENT,
+        encoding: 'utf-8',
+        lineEnding: 'lf',
+        version: 'v1',
+        size: 300,
+        modified: '2026-10-18T10:00:00Z',
+        ...overrides,
     });
     const article = () => element.querySelector<HTMLElement>('article.markdown-body')!;
-    const mode = (label: string) => [...element.querySelectorAll<HTMLButtonElement>('.markdown-mode')].find(button => button.textContent === label)!;
+    const mode = (label: string) =>
+        [...element.querySelectorAll<HTMLButtonElement>('.markdown-mode')].find(
+            (button) => button.textContent === label,
+        )!;
 
     async function stable(): Promise<void> {
         await settle();
@@ -52,20 +61,21 @@ describe('MarkdownViewComponent', () => {
     }
 
     beforeEach(async () => {
-        for (const key of [READING_KEY, MARKDOWN_MODE_KEY, MARKDOWN_OUTLINE_KEY])
-            localStorage.removeItem(key);
+        for (const key of [READING_KEY, MARKDOWN_MODE_KEY, MARKDOWN_OUTLINE_KEY]) localStorage.removeItem(key);
         api = mockApi();
         api.textFile.mockResolvedValue(text());
         opened = [];
         TestBed.configureTestingModule({
-            providers: testProviders(api, { provide: FILE_VIEW_HOST, useValue: { place: 'viewer', can: () => true, open: (shown: LibraryItem) => opened.push(shown) } }),
+            providers: testProviders(api, {
+                provide: FILE_VIEW_HOST,
+                useValue: { place: 'viewer', can: () => true, open: (shown: LibraryItem) => opened.push(shown) },
+            }),
         });
         await loadConfig(api);
     });
 
     afterEach(() => {
-        for (const key of [READING_KEY, MARKDOWN_MODE_KEY, MARKDOWN_OUTLINE_KEY])
-            localStorage.removeItem(key);
+        for (const key of [READING_KEY, MARKDOWN_MODE_KEY, MARKDOWN_OUTLINE_KEY]) localStorage.removeItem(key);
         fixture?.destroy();
         TestBed.resetTestingModule();
     });
@@ -74,7 +84,10 @@ describe('MarkdownViewComponent', () => {
         await show();
 
         expect(article().querySelector('h1')!.textContent).toBe('Trip notes');
-        expect([...element.querySelectorAll('.markdown-outline a')].map(a => a.textContent)).toEqual(['Trip notes', 'The route']);
+        expect([...element.querySelectorAll('.markdown-outline a')].map((a) => a.textContent)).toEqual([
+            'Trip notes',
+            'The route',
+        ]);
         expect(element.classList).toContain('prose');
         expect(element.hasAttribute('data-owns-keys')).toBe(true);
         expect(element.querySelector('.text-status')!.textContent).toContain('Markdown');
@@ -83,14 +96,14 @@ describe('MarkdownViewComponent', () => {
 
     it('opens the documents it links to in its place, unless the click asks for a new tab', async () => {
         await show();
-        const link = [...article().querySelectorAll('a')].find(a => a.textContent === 'packing list')!;
+        const link = [...article().querySelectorAll('a')].find((a) => a.textContent === 'packing list')!;
 
         const plain = click(link);
         const newTab = click(link, { ctrlKey: true });
 
         expect(plain.defaultPrevented).toBe(true);
         expect(newTab.defaultPrevented).toBe(false);
-        expect(opened.map(shown => [shown.path, shown.kind])).toEqual([['Docs/Packing list.txt', 'file']]);
+        expect(opened.map((shown) => [shown.path, shown.kind])).toEqual([['Docs/Packing list.txt', 'file']]);
         expect(link.getAttribute('href')).toBe('view?path=Docs%2FPacking+list.txt');
     });
 
@@ -100,8 +113,8 @@ describe('MarkdownViewComponent', () => {
         const scrolled = vi.fn();
         heading.scrollIntoView = scrolled;
 
-        const fromLink = click([...article().querySelectorAll('a')].find(a => a.textContent === 'the route')!);
-        click([...element.querySelectorAll('.markdown-outline a')].find(a => a.textContent === 'The route')!);
+        const fromLink = click([...article().querySelectorAll('a')].find((a) => a.textContent === 'the route')!);
+        click([...element.querySelectorAll('.markdown-outline a')].find((a) => a.textContent === 'The route')!);
 
         expect(fromLink.defaultPrevented).toBe(true);
         expect(scrolled).toHaveBeenCalledTimes(2);

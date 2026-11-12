@@ -1,9 +1,21 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { setMediaQuery, settle } from '../../testing/fakes';
-import { ContextMenu, ContextMenuComponent, ContextMenuDirective, keepsBrowserMenu, MenuEntry, MenuTarget, usePageMenu } from './context-menu';
+import {
+    ContextMenu,
+    ContextMenuComponent,
+    ContextMenuDirective,
+    keepsBrowserMenu,
+    MenuEntry,
+    MenuTarget,
+    usePageMenu,
+} from './context-menu';
 
-function target(key: string, entries: MenuEntry[] = [{ id: 'act', label: 'Act', icon: 'info', title: 'Act', run: vi.fn() }], touch?: () => void): MenuTarget {
+function target(
+    key: string,
+    entries: MenuEntry[] = [{ id: 'act', label: 'Act', icon: 'info', title: 'Act', run: vi.fn() }],
+    touch?: () => void,
+): MenuTarget {
     return { kind: 'folderLink', key, name: key, entries: () => entries, touch };
 }
 
@@ -43,7 +55,13 @@ describe('ContextMenu', () => {
     let element: HTMLElement;
     const at = (selector: string) => element.querySelector<HTMLElement>(selector)!;
     const rightClick = (on: Element, init: MouseEventInit = {}) => {
-        const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 10, clientY: 20, ...init });
+        const event = new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 10,
+            clientY: 20,
+            ...init,
+        });
         on.dispatchEvent(event);
         return event;
     };
@@ -68,7 +86,7 @@ describe('ContextMenu', () => {
         expect(document.querySelector('.item-menu')?.getAttribute('data-menu')).toBe('folderLink');
     });
 
-    it('keeps the browser\'s menu with Shift, in text fields and on selected text', () => {
+    it("keeps the browser's menu with Shift, in text fields and on selected text", () => {
         expect(rightClick(at('#inner'), { shiftKey: true }).defaultPrevented).toBe(false);
         expect(rightClick(at('#text')).defaultPrevented).toBe(false);
         expect(rightClick(at('#editable')).defaultPrevented).toBe(false);
@@ -84,13 +102,13 @@ describe('ContextMenu', () => {
         expect(keepsBrowserMenu(new MouseEvent('contextmenu'))).toBe(false);
     });
 
-    it('leaves the browser\'s menu where there is nothing to offer, and no page menu', () => {
+    it("leaves the browser's menu where there is nothing to offer, and no page menu", () => {
         expect(rightClick(at('#empty')).defaultPrevented).toBe(false);
         expect(rightClick(at('#plain')).defaultPrevented).toBe(false);
         expect(menu.open()).toBeNull();
     });
 
-    it('shows the page\'s menu for a right click on nothing with a menu of its own', () => {
+    it("shows the page's menu for a right click on nothing with a menu of its own", () => {
         menu.page.set(target('page'));
 
         expect(rightClick(at('#plain')).defaultPrevented).toBe(true);
@@ -119,7 +137,7 @@ describe('ContextMenu', () => {
         expect(menu.open()).toBeNull();
     });
 
-    it('has a page\'s menu while the page is shown (usePageMenu)', () => {
+    it("has a page's menu while the page is shown (usePageMenu)", () => {
         @Component({ template: '' })
         class Page {
             readonly target = target('page');
@@ -146,8 +164,11 @@ describe('ContextMenu', () => {
         expect(event.defaultPrevented).toBe(true);
         const link = menu.open()!.target;
         expect(link).toMatchObject({ kind: 'appLink', name: 'Logs' });
-        expect(link.entries().map(e => e.id)).toEqual(['open', 'newTab', 'copyLink']);
-        expect(link.entries()[1]).toMatchObject({ newTab: true, href: expect.stringMatching(/\/admin\?section=logs$/) });
+        expect(link.entries().map((e) => e.id)).toEqual(['open', 'newTab', 'copyLink']);
+        expect(link.entries()[1]).toMatchObject({
+            newTab: true,
+            href: expect.stringMatching(/\/admin\?section=logs$/),
+        });
         const click = vi.fn((e: Event) => e.preventDefault());
         at('#appLink').addEventListener('click', click);
         link.entries()[0].run!();
@@ -160,7 +181,7 @@ describe('ContextMenu', () => {
         expect(menu.open()).toMatchObject({ target: { kind: 'appLink', name: 'Logs' }, trigger: at('#appLink') });
     });
 
-    it('does the target\'s touch action on a long press instead of opening the menu', () => {
+    it("does the target's touch action on a long press instead of opening the menu", () => {
         const touch = vi.fn();
         const event = Object.assign(new MouseEvent('contextmenu', { cancelable: true }), { pointerType: 'touch' });
 
@@ -170,11 +191,14 @@ describe('ContextMenu', () => {
         expect(touch).toHaveBeenCalled();
         expect(menu.open()).toBeNull();
         // Without one, the menu opens (a sheet on phones).
-        menu.fromEvent(Object.assign(new MouseEvent('contextmenu', { cancelable: true }), { pointerType: 'touch' }), target('link'));
+        menu.fromEvent(
+            Object.assign(new MouseEvent('contextmenu', { cancelable: true }), { pointerType: 'touch' }),
+            target('link'),
+        );
         expect(menu.open()?.target.key).toBe('link');
     });
 
-    it('opens the focused element\'s menu with the ContextMenu key or Shift+F10, and swallows the browser\'s echo', () => {
+    it("opens the focused element's menu with the ContextMenu key or Shift+F10, and swallows the browser's echo", () => {
         at('#inner').focus();
         const key = new KeyboardEvent('keydown', { key: 'ContextMenu', bubbles: true, cancelable: true });
         document.dispatchEvent(key);
@@ -188,7 +212,9 @@ describe('ContextMenu', () => {
 
         at('#words').setAttribute('tabindex', '0');
         at('#words').focus();
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }));
+        document.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }),
+        );
         expect(menu.open()?.target.key).toBe('outer');
         menu.close();
 
@@ -203,10 +229,26 @@ describe('ContextMenu', () => {
 
     it('shows links as links (a new tab), runs actions and opens submenus in its place', async () => {
         const speed = vi.fn();
-        menu.showAt(target('links', [
-            { id: 'newTab', label: 'Open in new tab', icon: 'external', title: 'In a tab of its own', href: 'view?path=a.txt', newTab: true },
-            { id: 'speed', label: 'Speed', icon: 'fast', title: 'Playing speed', submenu: () => [{ id: 'fast', label: '2×', icon: 'fast', title: 'Twice as fast', run: speed }] },
-        ]), at('#inner'));
+        menu.showAt(
+            target('links', [
+                {
+                    id: 'newTab',
+                    label: 'Open in new tab',
+                    icon: 'external',
+                    title: 'In a tab of its own',
+                    href: 'view?path=a.txt',
+                    newTab: true,
+                },
+                {
+                    id: 'speed',
+                    label: 'Speed',
+                    icon: 'fast',
+                    title: 'Playing speed',
+                    submenu: () => [{ id: 'fast', label: '2×', icon: 'fast', title: 'Twice as fast', run: speed }],
+                },
+            ]),
+            at('#inner'),
+        );
         await settle();
 
         const link = document.querySelector<HTMLAnchorElement>('[data-entry="newTab"]')!;
@@ -218,10 +260,18 @@ describe('ContextMenu', () => {
 
         document.querySelector<HTMLButtonElement>('[data-entry="speed"]')!.click();
         await settle();
-        expect([...document.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['back', 'fast']);
-        document.querySelector('.item-menu')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+        expect([...document.querySelectorAll('[data-entry]')].map((e) => e.getAttribute('data-entry'))).toEqual([
+            'back',
+            'fast',
+        ]);
+        document
+            .querySelector('.item-menu')!
+            .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
         await settle();
-        expect([...document.querySelectorAll('[data-entry]')].map(e => e.getAttribute('data-entry'))).toEqual(['newTab', 'speed']);
+        expect([...document.querySelectorAll('[data-entry]')].map((e) => e.getAttribute('data-entry'))).toEqual([
+            'newTab',
+            'speed',
+        ]);
 
         document.querySelector<HTMLButtonElement>('[data-entry="speed"]')!.click();
         await settle();
@@ -234,7 +284,9 @@ describe('ContextMenu', () => {
         const trigger = at('#inner');
         menu.toggle(target('inner'), trigger);
         await settle();
-        document.querySelector('.item-menu')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        document
+            .querySelector('.item-menu')!
+            .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
         expect(menu.open()).toBeNull();
         expect(document.activeElement).toBe(trigger);
 
@@ -284,7 +336,9 @@ describe('ContextMenu', () => {
 
         it("places a finger's menu again under its button when a turn makes the sheet a popup", async () => {
             setMediaQuery('(max-width: 640px)', true);
-            document.dispatchEvent(Object.assign(new Event('pointerdown', { bubbles: true }), { pointerType: 'touch' }));
+            document.dispatchEvent(
+                Object.assign(new Event('pointerdown', { bubbles: true }), { pointerType: 'touch' }),
+            );
             const trigger = at('#inner');
             menu.showAt(target('inner'), trigger);
             await settle();
@@ -306,8 +360,12 @@ describe('ContextMenu', () => {
         class FakeWatcher {
             onclose: (() => void) | null = null;
             destroyed = false;
-            constructor() { made.push(this); }
-            destroy(): void { this.destroyed = true; }
+            constructor() {
+                made.push(this);
+            }
+            destroy(): void {
+                this.destroyed = true;
+            }
         }
 
         beforeEach(() => {
@@ -345,8 +403,16 @@ describe('ContextMenu', () => {
 describe('a finger held on an element with a menu', () => {
     let menu: ContextMenu;
     let element: HTMLElement;
-    const pointer = (type: string, on: Element, init: { x?: number; y?: number } = {}) => on.dispatchEvent(Object.assign(new Event(type, { bubbles: true, cancelable: true }),
-        { pointerType: 'touch', pointerId: 7, isPrimary: true, clientX: init.x ?? 10, clientY: init.y ?? 20 }));
+    const pointer = (type: string, on: Element, init: { x?: number; y?: number } = {}) =>
+        on.dispatchEvent(
+            Object.assign(new Event(type, { bubbles: true, cancelable: true }), {
+                pointerType: 'touch',
+                pointerId: 7,
+                isPrimary: true,
+                clientX: init.x ?? 10,
+                clientY: init.y ?? 20,
+            }),
+        );
 
     beforeEach(async () => {
         vi.useFakeTimers();
@@ -360,7 +426,7 @@ describe('a finger held on an element with a menu', () => {
         vi.useRealTimers();
     });
 
-    it('opens its menu after a moment, as a finger\'s, and the lift is no tap', () => {
+    it("opens its menu after a moment, as a finger's, and the lift is no tap", () => {
         const inner = element.querySelector('#inner')!;
         expect(inner.hasAttribute('data-menu-target')).toBe(true);
         pointer('pointerdown', inner);
@@ -388,7 +454,9 @@ describe('a finger held on an element with a menu', () => {
         inner.addEventListener('contextmenu', seen);
         pointer('pointerdown', inner);
         vi.advanceTimersByTime(500);
-        inner.dispatchEvent(Object.assign(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }), { pointerType: 'touch' }));
+        inner.dispatchEvent(
+            Object.assign(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }), { pointerType: 'touch' }),
+        );
         vi.advanceTimersByTime(500);
         expect(seen).toHaveBeenCalledTimes(1);
         pointer('pointerup', inner);

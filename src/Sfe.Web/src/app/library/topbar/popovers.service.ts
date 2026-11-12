@@ -8,7 +8,7 @@ export class Popovers {
     readonly open = signal<Popover | null>(null);
 
     toggle(popover: Popover): void {
-        this.open.update(open => open === popover ? null : popover);
+        this.open.update((open) => (open === popover ? null : popover));
     }
 
     close(): void {

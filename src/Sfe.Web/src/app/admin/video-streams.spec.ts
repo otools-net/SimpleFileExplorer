@@ -25,12 +25,21 @@ describe('Video streams', () => {
     afterEach(() => TestBed.resetTestingModule());
 
     it('lists the videos being converted, with who watches them', async () => {
-        api.streamingStatus.mockResolvedValue(status({
-            streams: [{
-                id: 'a', path: 'Films/Old/film.avi', viewer: { library: 'Home', user: 'alice', address: '10.0.0.2' },
-                start: 754, transcoded: true, started: new Date(Date.now() - 125_000).toISOString(), bytes: 3 * 1024 * 1024,
-            }],
-        }));
+        api.streamingStatus.mockResolvedValue(
+            status({
+                streams: [
+                    {
+                        id: 'a',
+                        path: 'Films/Old/film.avi',
+                        viewer: { library: 'Home', user: 'alice', address: '10.0.0.2' },
+                        start: 754,
+                        transcoded: true,
+                        started: new Date(Date.now() - 125_000).toISOString(),
+                        bytes: 3 * 1024 * 1024,
+                    },
+                ],
+            }),
+        );
         await create();
         const row = fixture.nativeElement.querySelector('.stream-row') as HTMLElement;
         expect(row.querySelector('.trickplay-name')!.textContent).toBe('film.avi');
@@ -44,7 +53,7 @@ describe('Video streams', () => {
         api.streamingStatus.mockResolvedValue(status({ available: false }));
         await create();
         expect(text()).toContain('No video is being converted.');
-        expect(text()).toContain('ffmpeg can\'t be found');
+        expect(text()).toContain("ffmpeg can't be found");
 
         api.streamingStatus.mockResolvedValue(status({ available: false, mode: 'off' }));
         await create();

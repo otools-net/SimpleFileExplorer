@@ -37,26 +37,29 @@ export class TrickplayStatusComponent {
     protected readonly status = signal<TrickplayStatus | null>(null);
     private readonly error = signal<string | null>(null);
     protected readonly checking = signal(false);
-    protected readonly cannotCheck = computed(() => this.status()?.state === 'disabled' || this.status()?.state === 'unavailable');
+    protected readonly cannotCheck = computed(
+        () => this.status()?.state === 'disabled' || this.status()?.state === 'unavailable',
+    );
 
     protected readonly text = computed(() => {
         const error = this.error();
-        if (error)
-            return `Could not read the state: ${error}`;
+        if (error) return `Could not read the state: ${error}`;
         const status = this.status();
-        if (!status)
-            return '…';
+        if (!status) return '…';
         switch (status.state) {
-            case 'disabled': return 'Turned off.';
-            case 'unavailable': return 'ffmpeg can\'t be found.';
-            case 'running': return status.current.length ? `Working on ${status.current.join(', ')}` : 'Looking for videos…';
-            default: return status.lastPassFinished ? 'Up to date.' : 'Waiting.';
+            case 'disabled':
+                return 'Turned off.';
+            case 'unavailable':
+                return "ffmpeg can't be found.";
+            case 'running':
+                return status.current.length ? `Working on ${status.current.join(', ')}` : 'Looking for videos…';
+            default:
+                return status.lastPassFinished ? 'Up to date.' : 'Waiting.';
         }
     });
     protected readonly detail = computed(() => {
         const status = this.status();
-        if (!status || this.error())
-            return '';
+        if (!status || this.error()) return '';
         const counts = joinParts([
             plural(status.checked, 'video') + ' checked',
             plural(status.generated, 'created', 'created'),
@@ -66,10 +69,14 @@ export class TrickplayStatusComponent {
         ]);
         const finished = status.lastPassFinished ? `Last complete check ${formatDate(status.lastPassFinished)}` : null;
         switch (status.state) {
-            case 'disabled': return 'Tick “Create trickplay” and save to start.';
-            case 'unavailable': return 'Set its path (Thumbnails:FfmpegPath) in the server\'s configuration file.';
-            case 'running': return joinParts([counts, finished]);
-            default: return joinParts([finished, counts]);
+            case 'disabled':
+                return 'Tick “Create trickplay” and save to start.';
+            case 'unavailable':
+                return "Set its path (Thumbnails:FfmpegPath) in the server's configuration file.";
+            case 'running':
+                return joinParts([counts, finished]);
+            default:
+                return joinParts([finished, counts]);
         }
     });
 
@@ -78,8 +85,7 @@ export class TrickplayStatusComponent {
     }
 
     start(): void {
-        if (this.stopTimer)
-            return;
+        if (this.stopTimer) return;
         void this.refresh();
         this.stopTimer = visibleInterval(() => this.refresh(), REFRESH_MS);
     }
