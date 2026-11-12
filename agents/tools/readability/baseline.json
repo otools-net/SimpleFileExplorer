@@ -104,7 +104,6 @@
     "src/Sfe.Web/src/app/admin/system-section.component.ts": {"longLines":5,"longTemplates":1},
     "src/Sfe.Web/src/app/admin/video-streams.component.ts": {"longLines":1},
     "src/Sfe.Web/src/app/core/api.service.ts": {"fileLines":808},
-    "src/Sfe.Web/src/app/core/models.ts": {"fileLines":1516},
     "src/Sfe.Web/src/app/editor/crop.ts": {"manyParameterFunctions":1},
     "src/Sfe.Web/src/app/editor/image-editor.dialog.ts": {"fileLines":564,"longLines":22,"longTemplates":1},
     "src/Sfe.Web/src/app/files/batch-rename.dialog.ts": {"longLines":10,"longTemplates":1},

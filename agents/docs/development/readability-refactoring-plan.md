@@ -94,7 +94,8 @@ then by hand for what they leave: comments and long strings. One commit per step
 - [x] `Sfe.Core/Data` (5; `has-pending-model-changes` checked), `FileTracking` (5): 23 types, no model change
 - [x] Rest of the server (about 25 files in 14 folders): 61 types
 - [x] OpenAPI document identical to phase 0's reference (checked after each commit; EF models unchanged too)
-- [ ] Client: `core/models.ts` split by area, re-exported
+- [x] Client: `core/models.ts` split by area, re-exported (`split-models.mjs`): 14 area files, 6 shared ones in
+  `core/` by subject (none over 160 lines); client build: `main.js` 35 bytes apart (two guards moved)
 - [ ] Client: importers moved to the new files, area by area (one item each when started), then re-exports removed
 
 ### Phase 4: templates (56 inline templates over 40 lines)

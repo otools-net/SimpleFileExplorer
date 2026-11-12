@@ -145,3 +145,19 @@ dotnet csharpier format src/Sfe.Core/Files
   once they have left. An existing destination is refused (the file is left).
 - Files that are not one file-scoped namespace (`Program.cs`) are left.
 - Check: build, and `references.mjs --only openapi,ef` identical (schema names come from types, not files).
+
+## The client's models by area
+
+```sh
+node agents/tools/readability/split-models.mjs            # prints where each declaration of core/models.ts goes
+node agents/tools/readability/split-models.mjs --write    # writes the files; core/models.ts re-exports them
+```
+
+- A declaration used (imported from `core/models`) by one area only goes to that area's models file
+  (`tags/tag.models.ts`…); one used by several areas, or by `core/` itself, stays in `core/`, in a file by subject
+  (`core/tag.models.ts`, `core/task.models.ts`…, the `CORE_FILES` table); what a core type refers to stays in core.
+  `core/api.service.ts` does not count as a use (it carries every type).
+- Each file imports what it refers to with `import type` (`import` for the guards that are functions);
+  `core/models.ts` ends with `export *` of every new file, so no importer changes in that commit.
+- Check: both `tsc --noEmit` (app, spec), `npm test`, and the client build (`references.mjs --only client`): only
+  `main.js` moved by a few bytes (two guard functions changed modules).
