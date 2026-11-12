@@ -16,7 +16,7 @@ test.describe('location bar', () => {
 
         const at: number[] = [];
         for (const y of [1200, 2400]) {
-            await page.evaluate(y => window.scrollTo(0, y), y);
+            await page.evaluate((y) => window.scrollTo(0, y), y);
             await expect(strip).toHaveClass(/shown/);
             await page.waitForTimeout(150);
             const box = (await strip.boundingBox())!;

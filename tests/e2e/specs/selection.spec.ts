@@ -44,10 +44,11 @@ test.describe('selection', () => {
         await expectNothingCut(page);
         await expectTapTargets(page, '.selection-dock');
         // Touch screens: 36 px buttons (decided 2026-10-29; 30 with a mouse).
-        const heights = await dock.locator(':scope > :is(.button, .icon-button):visible').evaluateAll(buttons => buttons.map(button => button.getBoundingClientRect().height));
+        const heights = await dock
+            .locator(':scope > :is(.button, .icon-button):visible')
+            .evaluateAll((buttons) => buttons.map((button) => button.getBoundingClientRect().height));
         expect(heights.length).toBeGreaterThan(1);
-        for (const height of heights)
-            expect(height).toBeGreaterThanOrEqual(36);
+        for (const height of heights) expect(height).toBeGreaterThanOrEqual(36);
 
         await dock.getByRole('button', { name: 'Select all' }).tap();
         await expect(page.locator('sfe-listing .selected')).toHaveCount(6);

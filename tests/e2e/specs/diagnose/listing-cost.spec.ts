@@ -16,13 +16,18 @@ for (const [name, css] of Object.entries(variants)) {
         test.skip(browserName !== 'chromium', 'Chromium metrics');
         const cdp = await page.context().newCDPSession(page);
         await cdp.send('Performance.enable');
-        const metrics = async () => Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(m => [m.name, m.value]));
+        const metrics = async () =>
+            Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
         if (css)
-            await page.addInitScript(css => addEventListener('DOMContentLoaded', () => {
-                const style = document.createElement('style');
-                style.textContent = css;
-                document.head.append(style);
-            }), css);
+            await page.addInitScript(
+                (css) =>
+                    addEventListener('DOMContentLoaded', () => {
+                        const style = document.createElement('style');
+                        style.textContent = css;
+                        document.head.append(style);
+                    }),
+                css,
+            );
 
         const start = await metrics();
         await page.goto('./?path=Many%20photos');
@@ -30,16 +35,18 @@ for (const [name, css] of Object.entries(variants)) {
         await page.waitForTimeout(1500);
         const listed = await metrics();
         const width = page.viewportSize()!.width;
-        for (let i = 0; i < 6; i++)
-            await swipe(page, { x: width / 2, y: 600 }, { x: width / 2, y: 100 }, 200);
+        for (let i = 0; i < 6; i++) await swipe(page, { x: width / 2, y: 600 }, { x: width / 2, y: 100 }, 200);
         await page.waitForTimeout(1500);
         const scrolled = await metrics();
 
-        const ms = (a: Record<string, number>, b: Record<string, number>, key: string) => ((b[key] - a[key]) * 1000).toFixed(0);
+        const ms = (a: Record<string, number>, b: Record<string, number>, key: string) =>
+            ((b[key] - a[key]) * 1000).toFixed(0);
         const part = (a: Record<string, number>, b: Record<string, number>) =>
-            `task ${ms(a, b, 'TaskDuration')}, script ${ms(a, b, 'ScriptDuration')}, layout ${ms(a, b, 'LayoutDuration')} (${b.LayoutCount - a.LayoutCount}), `
-            + `style ${ms(a, b, 'RecalcStyleDuration')} (${b.RecalcStyleCount - a.RecalcStyleCount}) ms`;
-        console.log(`[cost] ${test.info().project.name} | ${name}\n  listing: ${part(start, listed)}\n  scrolling: ${part(listed, scrolled)}`
-            + `\n  scrolled to ${await page.evaluate(() => scrollY)}, ${await page.locator('sfe-listing [data-path]').count()} items`);
+            `task ${ms(a, b, 'TaskDuration')}, script ${ms(a, b, 'ScriptDuration')}, layout ${ms(a, b, 'LayoutDuration')} (${b.LayoutCount - a.LayoutCount}), ` +
+            `style ${ms(a, b, 'RecalcStyleDuration')} (${b.RecalcStyleCount - a.RecalcStyleCount}) ms`;
+        console.log(
+            `[cost] ${test.info().project.name} | ${name}\n  listing: ${part(start, listed)}\n  scrolling: ${part(listed, scrolled)}` +
+                `\n  scrolled to ${await page.evaluate(() => scrollY)}, ${await page.locator('sfe-listing [data-path]').count()} items`,
+        );
     });
 }

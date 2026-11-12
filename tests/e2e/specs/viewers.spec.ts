@@ -28,15 +28,30 @@ for (const [file, view, allowed] of documents) {
             await expect(shown).toBeVisible();
             // Something in it: text, a page drawn (PDF), a book's page (EPUB). Not the status line's words: a blank book
             // passed on them (found 2026-10-29: epub-document.ts, a resize before the first page was placed).
-            const content = view === 'sfe-pdf-view' ? 'canvas' : view === 'sfe-epub-view' ? '.epub-container iframe' : null;
-            await expect.poll(() => shown.evaluate((element, content) => content
-                ? !!element.querySelector(content)
-                : [...element.children].filter(child => !child.matches('footer, [role=toolbar], .text-toolbar')).some(child => (child as HTMLElement).innerText.trim().length > 10),
-            content), { timeout: 15_000 }).toBe(true);
+            const content =
+                view === 'sfe-pdf-view' ? 'canvas' : view === 'sfe-epub-view' ? '.epub-container iframe' : null;
+            await expect
+                .poll(
+                    () =>
+                        shown.evaluate(
+                            (element, content) =>
+                                content
+                                    ? !!element.querySelector(content)
+                                    : [...element.children]
+                                          .filter((child) => !child.matches('footer, [role=toolbar], .text-toolbar'))
+                                          .some((child) => (child as HTMLElement).innerText.trim().length > 10),
+                            content,
+                        ),
+                    { timeout: 15_000 },
+                )
+                .toBe(true);
             await page.waitForTimeout(500);
             await expectFitsScreen(page);
             await expectNothingCut(page);
-            await expectNoZoomOnFocus(page, 'dialog.viewer[open] :is(input:not([type=checkbox]):not([type=radio]), textarea, select)');
+            await expectNoZoomOnFocus(
+                page,
+                'dialog.viewer[open] :is(input:not([type=checkbox]):not([type=radio]), textarea, select)',
+            );
             await expectTapTargets(page, 'dialog.viewer[open] :is(.viewer-bar, [class*=toolbar])');
         });
     });

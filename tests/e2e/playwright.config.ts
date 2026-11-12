@@ -38,7 +38,12 @@ export default defineConfig<Options>({
         { name: 'android', use: android, grepInvert: /@desktop-only/ },
         {
             name: 'android-small',
-            use: { ...android, viewport: { width: 360, height: 740 }, screen: { width: 360, height: 800 }, deviceScaleFactor: 3 },
+            use: {
+                ...android,
+                viewport: { width: 360, height: 740 },
+                screen: { width: 360, height: 800 },
+                deviceScaleFactor: 3,
+            },
             grepInvert: /@desktop-only/,
         },
         { name: 'iphone', use: { ...devices['iPhone 13'] }, grepInvert: /@desktop-only/ },
@@ -47,12 +52,19 @@ export default defineConfig<Options>({
             use: { ...android, viewport: { width: 800, height: 360 }, screen: { width: 800, height: 412 } },
             grepInvert: /@desktop-only/,
         },
-        { name: 'desktop', use: { ...devices['Desktop Chrome'], channel, viewport: { width: 1280, height: 800 } }, grep: /@desktop/ },
+        {
+            name: 'desktop',
+            use: { ...devices['Desktop Chrome'], channel, viewport: { width: 1280, height: 800 } },
+            grep: /@desktop/,
+        },
         // A mid-range Android phone's speed (CPU 4× slower than this computer): timings, not layout. Measured last, one
         // test at a time, once the other devices are done: their load on this computer swung the medians past the
         // budgets (107 ms against 100 under the full run, ~70 alone). Alone: `--project=android-slow --no-deps`.
         {
-            name: 'android-slow', use: { ...android, cpuSlowdown: 4 }, grep: /@timing/, fullyParallel: false,
+            name: 'android-slow',
+            use: { ...android, cpuSlowdown: 4 },
+            grep: /@timing/,
+            fullyParallel: false,
             dependencies: ['android', 'android-small', 'iphone', 'landscape', 'desktop'],
         },
     ],

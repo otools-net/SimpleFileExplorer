@@ -10,19 +10,25 @@ const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 /** The page as it is now: serious and critical violations fail the test, the others go in its report. */
 async function audit(page: Page, screen: string, include?: string): Promise<void> {
     let builder = new AxeBuilder({ page }).withTags(TAGS);
-    if (include)
-        builder = builder.include(include);
+    if (include) builder = builder.include(include);
     const { violations } = await builder.analyze();
     const line = (v: (typeof violations)[number]) =>
-        `${v.id} (${v.impact}): ${v.help} — ${v.nodes.slice(0, 4).map(node => node.target.join(' ')).join(' | ')}${v.nodes.length > 4 ? ` … ${v.nodes.length} in all` : ''}`;
-    const minor = violations.filter(v => v.impact !== 'serious' && v.impact !== 'critical');
-    if (minor.length)
-        test.info().annotations.push({ type: `a11y ${screen}`, description: minor.map(line).join('\n') });
-    expect(violations.filter(v => v.impact === 'serious' || v.impact === 'critical').map(line), `${screen}: serious or critical`).toEqual([]);
+        `${v.id} (${v.impact}): ${v.help} — ${v.nodes
+            .slice(0, 4)
+            .map((node) => node.target.join(' '))
+            .join(' | ')}${v.nodes.length > 4 ? ` … ${v.nodes.length} in all` : ''}`;
+    const minor = violations.filter((v) => v.impact !== 'serious' && v.impact !== 'critical');
+    if (minor.length) test.info().annotations.push({ type: `a11y ${screen}`, description: minor.map(line).join('\n') });
+    expect(
+        violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map(line),
+        `${screen}: serious or critical`,
+    ).toEqual([]);
 }
 
 test.describe('@a11y', () => {
-    test.beforeEach(({}, testInfo) => test.skip(testInfo.project.name !== 'android', 'once per run, on the android device'));
+    test.beforeEach(({}, testInfo) =>
+        test.skip(testInfo.project.name !== 'android', 'once per run, on the android device'),
+    );
 
     test('the listing, selected items, an item menu', async ({ page }) => {
         await openFolder(page, 'Photos/2025 Mountains');

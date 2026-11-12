@@ -8,10 +8,8 @@ test.describe('@smoke @desktop', () => {
         await expect(tile).toBeVisible();
 
         const menuButton = tile.locator('.item-menu-button');
-        if (isMobile)
-            await menuButton.tap();
-        else
-            await menuButton.click(); // mouse: the desktop project
+        if (isMobile) await menuButton.tap();
+        else await menuButton.click(); // mouse: the desktop project
         const menu = page.locator('.item-menu[role="menu"]');
         await expect(menu).toBeVisible();
         await expect(menu.locator('.item-menu-title')).toHaveText('Summit.jpg');

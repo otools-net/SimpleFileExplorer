@@ -6,9 +6,25 @@ import { expect, test } from '../fixtures/test';
 import { expectFitsScreen, expectNothingCut, expectNoZoomOnFocus, expectTapTargets } from '../fixtures/layout';
 import { accounts, library } from '../paths';
 
-const sections = ['account', 'interface', 'playback', 'scanning', 'files', 'keepAlive', 'tags', 'tracking', 'thumbnails',
-    'trickplay', 'editor', 'access', 'tasks', 'logs', 'system'];
-const fields = ':is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]), textarea, select)';
+const sections = [
+    'account',
+    'interface',
+    'playback',
+    'scanning',
+    'files',
+    'keepAlive',
+    'tags',
+    'tracking',
+    'thumbnails',
+    'trickplay',
+    'editor',
+    'access',
+    'tasks',
+    'logs',
+    'system',
+];
+const fields =
+    ':is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]), textarea, select)';
 
 for (const section of sections) {
     test.describe('administration', () => {
@@ -26,13 +42,18 @@ for (const section of sections) {
             // Found 2026-10-29: beside the sections (800 px sideways) a log line's fixed parts left its message nothing
             // and pushed the page wider.
             if (section === 'logs') {
-                const lines = await page.locator('.log-entry-head').evaluateAll(heads => heads.map(head => ({
-                    message: head.querySelector('.log-message')?.getBoundingClientRect().width ?? 0,
-                    right: Math.max(...[...head.children].map(child => child.getBoundingClientRect().right)),
-                })));
+                const lines = await page.locator('.log-entry-head').evaluateAll((heads) =>
+                    heads.map((head) => ({
+                        message: head.querySelector('.log-message')?.getBoundingClientRect().width ?? 0,
+                        right: Math.max(...[...head.children].map((child) => child.getBoundingClientRect().right)),
+                    })),
+                );
                 expect(lines.length).toBeGreaterThan(0);
                 const width = page.viewportSize()!.width;
-                expect(lines.filter(line => line.message < 40 || line.right > width + 1), 'log lines squeezed or past the screen').toEqual([]);
+                expect(
+                    lines.filter((line) => line.message < 40 || line.right > width + 1),
+                    'log lines squeezed or past the screen',
+                ).toEqual([]);
             }
         });
     });
@@ -52,8 +73,14 @@ test.describe('sign-in', () => {
         await expectTapTargets(page);
         await name.tap();
         await name.fill(accounts.sam.userName);
-        await page.getByLabel(/password/i).first().fill(accounts.sam.password);
-        await page.getByRole('button', { name: /sign in/i }).first().tap();
+        await page
+            .getByLabel(/password/i)
+            .first()
+            .fill(accounts.sam.password);
+        await page
+            .getByRole('button', { name: /sign in/i })
+            .first()
+            .tap();
         await expect(page.locator('sfe-listing [data-path]').first()).toBeVisible();
     });
 });
@@ -64,7 +91,10 @@ test('long names in the trash keep the page within the screen', async ({ page, s
     const name = `IMG_20261029_123456789_${'0123456789'.repeat(6)}.jpg`;
     fs.mkdirSync(path.join(library, folder), { recursive: true });
     fs.copyFileSync(path.join(library, scratch, 'A.jpg'), path.join(library, folder, name));
-    const deleted = await page.request.post('api/files/delete', { data: { paths: [`${folder}/${name}`] }, headers: { 'X-SFE-Request': '1' } });
+    const deleted = await page.request.post('api/files/delete', {
+        data: { paths: [`${folder}/${name}`] },
+        headers: { 'X-SFE-Request': '1' },
+    });
     expect(deleted.ok(), await deleted.text()).toBe(true);
 
     await page.goto('./admin?section=files');
@@ -81,10 +111,15 @@ test('the server log scrolls by finger and loads older entries at its end', asyn
     // More entries than a page (100): a line per folder made (FileOperations logs each), in this test's own folder.
     const headers = { 'X-SFE-Request': '1' };
     for (let start = 0; start < 110; start += 10)
-        await Promise.all(Array.from({ length: 10 }, (_, i) =>
-            page.request.post('api/files/folders', { data: { path: scratch, name: `Log ${start + i}` }, headers })));
+        await Promise.all(
+            Array.from({ length: 10 }, (_, i) =>
+                page.request.post('api/files/folders', { data: { path: scratch, name: `Log ${start + i}` }, headers }),
+            ),
+        );
     // Written a moment later (AuditLogWorker).
-    await expect.poll(async () => (await (await page.request.get('api/logs', { headers })).json()).next, { timeout: 20_000 }).not.toBeNull();
+    await expect
+        .poll(async () => (await (await page.request.get('api/logs', { headers })).json()).next, { timeout: 20_000 })
+        .not.toBeNull();
 
     await page.goto('./admin?section=logs');
     const entries = page.locator('.log-entries > li');

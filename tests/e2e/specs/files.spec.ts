@@ -25,7 +25,10 @@ async function fromItemMenu(page: Page, path: string, entry: string): Promise<vo
 async function expectPhoneDialog(page: Page): Promise<void> {
     await expectFitsScreen(page);
     await expectNothingCut(page);
-    await expectNoZoomOnFocus(page, 'dialog.sheet[open] :is(input:not([type=checkbox]):not([type=radio]), textarea, select)');
+    await expectNoZoomOnFocus(
+        page,
+        'dialog.sheet[open] :is(input:not([type=checkbox]):not([type=radio]), textarea, select)',
+    );
     await expectTapTargets(page, 'dialog.sheet[open]');
 }
 
@@ -46,7 +49,7 @@ test.describe('file operations', () => {
     test('a new folder from the folder menu', async ({ page, scratch }) => {
         await openFolder(page, scratch);
         const more = page.locator('button.location-more');
-        test.skip(!await more.isVisible(), 'the folder menu is a "⋯" up to 640 px');
+        test.skip(!(await more.isVisible()), 'the folder menu is a "⋯" up to 640 px');
         await more.tap();
         await page.locator(`${menu} [data-entry="newFolder"]`).tap();
         await expect(dialog(page)).toBeVisible();
@@ -83,11 +86,17 @@ test.describe('file operations', () => {
     test('upload a photo from the phone into the folder', async ({ page, scratch }) => {
         await openFolder(page, scratch);
         const more = page.locator('button.location-more');
-        test.skip(!await more.isVisible(), 'the folder menu is a "⋯" up to 640 px');
+        test.skip(!(await more.isVisible()), 'the folder menu is a "⋯" up to 640 px');
         await more.tap();
         const chooser = page.waitForEvent('filechooser');
         await page.locator(`${menu} [data-entry="upload"]`).tap();
-        await (await chooser).setFiles({ name: 'From the phone.jpg', mimeType: 'image/jpeg', buffer: fs.readFileSync(path.join(library, scratch, 'A.jpg')) });
+        await (
+            await chooser
+        ).setFiles({
+            name: 'From the phone.jpg',
+            mimeType: 'image/jpeg',
+            buffer: fs.readFileSync(path.join(library, scratch, 'A.jpg')),
+        });
         await expect(item(page, `${scratch}/From the phone.jpg`)).toBeVisible({ timeout: 20_000 });
     });
 
@@ -98,7 +107,10 @@ test.describe('file operations', () => {
         await expect(item(page, `${scratch}/B.jpg`)).toHaveCount(0);
 
         await page.goto('./admin?section=files');
-        const row = page.locator('.tracking-missing', { hasText: 'B.jpg' }).filter({ hasText: scratch.split('/').pop()! }).first();
+        const row = page
+            .locator('.tracking-missing', { hasText: 'B.jpg' })
+            .filter({ hasText: scratch.split('/').pop()! })
+            .first();
         await expect(row).toBeVisible();
         await row.getByRole('button', { name: 'Restore' }).tap();
         await expect(row).toHaveCount(0);
@@ -108,7 +120,7 @@ test.describe('file operations', () => {
 });
 
 test.describe('with the keyboard open', () => {
-    test('rename: the field and the dialog\'s buttons stay above the keyboard', async ({ page, scratch }) => {
+    test("rename: the field and the dialog's buttons stay above the keyboard", async ({ page, scratch }) => {
         await openFolder(page, scratch);
         await fromItemMenu(page, `${scratch}/A.jpg`, 'rename');
         await expect(dialog(page).getByRole('textbox')).toBeFocused();
@@ -142,13 +154,18 @@ test.describe('more file operations', () => {
         await expect(item(page, `${scratch}/Trip 2.jpg`)).toBeVisible();
     });
 
-    test('copy a file into a folder; the operations panel keeps clear of the selection bar', async ({ page, scratch }) => {
+    test('copy a file into a folder; the operations panel keeps clear of the selection bar', async ({
+        page,
+        scratch,
+    }) => {
         await openFolder(page, scratch);
         await fromItemMenu(page, `${scratch}/C.jpg`, 'copyTo');
         await dialog(page).locator('.transfer-folder', { hasText: 'Inside' }).tap();
         await dialog(page).locator('button.primary').tap();
         await expect(dialog(page)).toHaveCount(0);
-        await expect.poll(() => fs.existsSync(path.join(library, scratch, 'Inside/C.jpg')), { timeout: 15_000 }).toBe(true);
+        await expect
+            .poll(() => fs.existsSync(path.join(library, scratch, 'Inside/C.jpg')), { timeout: 15_000 })
+            .toBe(true);
         await expect(item(page, `${scratch}/C.jpg`)).toBeVisible();
 
         // Both at the bottom of a phone: never over each other.
@@ -196,16 +213,18 @@ test.describe('more file operations', () => {
         await viewer.locator('[data-save]').tap();
         // The save swaps a temp file in (`File.Replace`): on Windows a reader can find no file for a moment, and an
         // ENOENT thrown in a poll ends it at once (seen under the full run's load).
-        await expect.poll(() => fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '').toContain('Typed on a phone');
+        await expect
+            .poll(() => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : ''))
+            .toContain('Typed on a phone');
 
         // A change not saved: closing the viewer asks; "no" keeps it open with the text.
         await editor.tap();
         await page.keyboard.type(' again');
-        page.once('dialog', question => void question.dismiss());
+        page.once('dialog', (question) => void question.dismiss());
         await viewer.getByRole('button', { name: 'Close' }).tap();
         await expect(viewer).toHaveCount(1);
         await expect(editor).toContainText('again');
-        page.once('dialog', question => void question.accept());
+        page.once('dialog', (question) => void question.accept());
         await viewer.getByRole('button', { name: 'Close' }).tap();
         await expect(viewer).toHaveCount(0);
         expect(fs.readFileSync(file, 'utf8')).not.toContain('again');

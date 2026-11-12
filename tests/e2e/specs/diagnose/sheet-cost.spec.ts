@@ -15,8 +15,7 @@ for (const [label, folder, file] of [
         test(`@diagnose @timing item menu, ${label}, page lock ${lock ? 'on' : 'off'}`, async ({ page }) => {
             test.skip(process.env.SFE_E2E_DIAGNOSE !== '1', 'diagnostics: SFE_E2E_DIAGNOSE=1');
             await openFolder(page, folder);
-            if (!lock)
-                expect(await withoutPageLock(page)).toBeGreaterThan(0);
+            if (!lock) expect(await withoutPageLock(page)).toBeGreaterThan(0);
             const tile = item(page, file);
             await tile.locator('.select-box').tap();
             await expect(tile).toHaveClass(/selected/);

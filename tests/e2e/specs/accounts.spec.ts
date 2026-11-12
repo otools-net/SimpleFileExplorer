@@ -12,8 +12,14 @@ async function signIn(page: Page): Promise<void> {
     await expect(name).toBeVisible();
     await name.tap();
     await name.fill(accounts.sam.userName);
-    await page.getByLabel(/password/i).first().fill(accounts.sam.password);
-    await page.getByRole('button', { name: /sign in/i }).first().tap();
+    await page
+        .getByLabel(/password/i)
+        .first()
+        .fill(accounts.sam.password);
+    await page
+        .getByRole('button', { name: /sign in/i })
+        .first()
+        .tap();
 }
 
 test.describe('accounts', () => {
@@ -49,7 +55,7 @@ test.describe('the connection', () => {
 
     test('the server not answering: a warning on the ⋮, gone when it answers again', async ({ page }) => {
         await page.clock.install();
-        await page.route('**/api/files/changes', route => route.abort());
+        await page.route('**/api/files/changes', (route) => route.abort());
         await openFolder(page, 'Photos');
         const more = page.getByRole('button', { name: /^More/ }).first();
         await page.clock.fastForward(11_000);
@@ -76,14 +82,17 @@ test.describe('preferences', () => {
         let id = '';
         const open = async () => {
             // The boxes show the defaults until the account's own values come.
-            const loaded = page.waitForResponse(response => response.url().includes('api/me/preferences') && response.request().method() === 'GET');
+            const loaded = page.waitForResponse(
+                (response) => response.url().includes('api/me/preferences') && response.request().method() === 'GET',
+            );
             await page.goto('./admin?section=account');
             await loaded;
             await expect(page.locator('.admin-head')).toBeVisible();
             const all = page.getByRole('button', { name: 'Show all settings' });
-            if (await all.isVisible())
-                await all.tap();
-            const box = id ? page.locator(`input#${id}`) : page.locator('main .setting-check input[type=checkbox]:enabled').first();
+            if (await all.isVisible()) await all.tap();
+            const box = id
+                ? page.locator(`input#${id}`)
+                : page.locator('main .setting-check input[type=checkbox]:enabled').first();
             await expect(box).toBeVisible();
             id ||= (await box.getAttribute('id'))!;
             return box;
@@ -91,7 +100,9 @@ test.describe('preferences', () => {
         const button = page.locator('main').getByRole('button', { name: 'Save', exact: true });
         // Saved once the server answered (the button is disabled while saving too; leaving earlier cancels it).
         const save = async () => {
-            const saved = page.waitForResponse(response => response.url().includes('api/me/preferences') && response.request().method() === 'PATCH');
+            const saved = page.waitForResponse(
+                (response) => response.url().includes('api/me/preferences') && response.request().method() === 'PATCH',
+            );
             await button.tap();
             expect((await saved).ok()).toBe(true);
             await expect(button).toBeDisabled();

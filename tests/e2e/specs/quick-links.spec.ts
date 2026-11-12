@@ -12,8 +12,7 @@ test('add a folder to the quick links, open it from the sidebar, remove it', asy
 
     const toggle = page.locator('.sidebar-toggle');
     const link = page.locator(`.quick-link[data-quick-link="${folder}"]`);
-    if (await toggle.getAttribute('aria-expanded') !== 'true')
-        await toggle.tap();
+    if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.tap();
     await expect(link).toBeVisible();
     await expectFitsScreen(page);
     await expectNothingCut(page, '#sidebar');
@@ -22,11 +21,9 @@ test('add a folder to the quick links, open it from the sidebar, remove it', asy
     await link.locator('.quick-link-target').tap();
     await expect.poll(() => new URL(page.url()).searchParams.get('path')).toBe(folder);
     // A phone's sidebar covers the page: opening a link closes it.
-    if (page.viewportSize()!.width <= 640)
-        await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    if (page.viewportSize()!.width <= 640) await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
-    if (await toggle.getAttribute('aria-expanded') !== 'true')
-        await toggle.tap();
+    if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.tap();
     await link.locator('.quick-link-remove').tap();
     await expect(link).toHaveCount(0);
 });

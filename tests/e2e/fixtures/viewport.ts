@@ -26,14 +26,21 @@ export async function openKeyboard(page: Page, fraction = 0.42): Promise<() => P
 
 /** The element that has the focus is shown whole above the keyboard (inside the shortened viewport). */
 export async function expectFocusedFieldShown(page: Page): Promise<void> {
-    await expect.poll(() => page.evaluate(() => {
-        const element = document.activeElement as HTMLElement | null;
-        if (!element || element === document.body)
-            return 'nothing has the focus';
-        const box = element.getBoundingClientRect();
-        const what = `${element.localName}.${String(element.className).split(' ')[0]}`;
-        return box.top >= 0 && box.bottom <= innerHeight + 0.5 ? 'shown' : `${what} at ${Math.round(box.top)}–${Math.round(box.bottom)}, screen ${innerHeight}`;
-    }), 'the focused field above the keyboard').toBe('shown');
+    await expect
+        .poll(
+            () =>
+                page.evaluate(() => {
+                    const element = document.activeElement as HTMLElement | null;
+                    if (!element || element === document.body) return 'nothing has the focus';
+                    const box = element.getBoundingClientRect();
+                    const what = `${element.localName}.${String(element.className).split(' ')[0]}`;
+                    return box.top >= 0 && box.bottom <= innerHeight + 0.5
+                        ? 'shown'
+                        : `${what} at ${Math.round(box.top)}–${Math.round(box.bottom)}, screen ${innerHeight}`;
+                }),
+            'the focused field above the keyboard',
+        )
+        .toBe('shown');
 }
 
 /** Turns the phone: width and height swapped. Returns its size before. */
@@ -51,7 +58,10 @@ export const IPHONE_INSETS = { top: 47, bottom: 34, left: 0, right: 0 };
  * Skips the test where the browser can't (WebKit in Playwright; a Chromium without it).
  */
 export async function setSafeArea(page: Page, insets = IPHONE_INSETS): Promise<void> {
-    test.skip(page.context().browser()?.browserType().name() !== 'chromium', "safe-area insets: Chromium's DevTools protocol");
+    test.skip(
+        page.context().browser()?.browserType().name() !== 'chromium',
+        "safe-area insets: Chromium's DevTools protocol",
+    );
     const cdp = await page.context().newCDPSession(page);
     try {
         await cdp.send('Emulation.setSafeAreaInsetsOverride' as never, { insets } as never);
@@ -71,12 +81,27 @@ export async function expectClearOfInsets(page: Page, scope: string, insets = IP
         return value;
     });
     expect(bottom, 'env(safe-area-inset-bottom) as emulated').toBe(insets.bottom);
-    const inside = await page.evaluate(({ scope, insets }) => [...document.querySelectorAll(`${scope} :is(button, a[href], input, select, textarea, [role=button])`)]
-        .filter(element => element.getClientRects().length > 0 && !element.closest('[inert], [aria-hidden=true]'))
-        .map(element => ({ element, box: element.getBoundingClientRect() }))
-        .filter(({ box }) => box.bottom > 0 && box.top < innerHeight
-            && (box.top < insets.top || box.bottom > innerHeight - insets.bottom || box.left < insets.left || box.right > innerWidth - insets.right))
-        .map(({ element, box }) => `${element.localName}.${String(element.className).split(' ')[0]} "${element.getAttribute('aria-label') ?? element.textContent?.trim().slice(0, 20)}" ${Math.round(box.top)}–${Math.round(box.bottom)}`),
-    { scope, insets });
+    const inside = await page.evaluate(
+        ({ scope, insets }) =>
+            [...document.querySelectorAll(`${scope} :is(button, a[href], input, select, textarea, [role=button])`)]
+                .filter(
+                    (element) => element.getClientRects().length > 0 && !element.closest('[inert], [aria-hidden=true]'),
+                )
+                .map((element) => ({ element, box: element.getBoundingClientRect() }))
+                .filter(
+                    ({ box }) =>
+                        box.bottom > 0 &&
+                        box.top < innerHeight &&
+                        (box.top < insets.top ||
+                            box.bottom > innerHeight - insets.bottom ||
+                            box.left < insets.left ||
+                            box.right > innerWidth - insets.right),
+                )
+                .map(
+                    ({ element, box }) =>
+                        `${element.localName}.${String(element.className).split(' ')[0]} "${element.getAttribute('aria-label') ?? element.textContent?.trim().slice(0, 20)}" ${Math.round(box.top)}–${Math.round(box.bottom)}`,
+                ),
+        { scope, insets },
+    );
     expect(inside, `controls of ${scope} under the notch or the home indicator`).toEqual([]);
 }

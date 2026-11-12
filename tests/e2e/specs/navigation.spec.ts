@@ -19,7 +19,7 @@ test.describe('navigation', () => {
         await expectFitsScreen(page);
         await page.locator('dialog.viewer[open]').getByRole('button', { name: 'Close' }).tap();
         await expect(page.locator('dialog.viewer[open]')).toHaveCount(0);
-        expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY)).toBeLessThan(20);
+        expect(Math.abs((await page.evaluate(() => window.scrollY)) - scrollY)).toBeLessThan(20);
         await expect(photo).toBeInViewport();
     });
 
@@ -52,13 +52,16 @@ test.describe('navigation', () => {
     });
 
     // Decided 2026-10-29: two fingers zoom a picture (@use-gesture), the page itself doesn't zoom, the file stays.
-    test('two fingers zoom a picture and fit it back; neither the page zooms nor the file changes', async ({ page, browserName }) => {
+    test('two fingers zoom a picture and fit it back; neither the page zooms nor the file changes', async ({
+        page,
+        browserName,
+    }) => {
         needsTouchGestures(browserName);
         await openFolder(page, 'Photos/2025 Mountains');
         await item(page, 'Photos/2025 Mountains/Blue hour.jpg').locator('.item-link').first().tap();
         const picture = page.locator('dialog.viewer[open] .viewer-stage > img:not(.preview)');
         await expect(picture).toBeVisible();
-        await expect.poll(() => picture.evaluate(img => (img as HTMLImageElement).complete)).toBe(true);
+        await expect.poll(() => picture.evaluate((img) => (img as HTMLImageElement).complete)).toBe(true);
         const fit = (await picture.boundingBox())!;
         const centre = { x: fit.x + fit.width / 2, y: fit.y + fit.height / 2 };
 
@@ -91,7 +94,7 @@ test.describe('navigation', () => {
         await page.waitForTimeout(800);
         const anchor = await page.evaluate(() => {
             const items = [...document.querySelectorAll('sfe-listing [data-path]')];
-            const first = items.find(element => element.getBoundingClientRect().top >= 0)!;
+            const first = items.find((element) => element.getBoundingClientRect().top >= 0)!;
             return { path: first.getAttribute('data-path')!, top: first.getBoundingClientRect().top };
         });
         await leave();
@@ -108,10 +111,9 @@ test.describe('navigation', () => {
             // The one a finger can reach (the sticky bar's): tapping the one scrolled away made Playwright scroll to it.
             const links = page.getByRole('link', { name: 'Parent folder' });
             let up = links.first();
-            for (let i = 0; i < await links.count(); i++) {
+            for (let i = 0; i < (await links.count()); i++) {
                 const box = await links.nth(i).boundingBox();
-                if (box && box.y >= 0 && box.y < page.viewportSize()!.height)
-                    up = links.nth(i);
+                if (box && box.y >= 0 && box.y < page.viewportSize()!.height) up = links.nth(i);
             }
             // At its place on the screen: locator.tap() first scrolls a sticky element "into view", which moved the page.
             await expect(up).toBeInViewport();
@@ -136,7 +138,7 @@ test.describe('navigation', () => {
         await openFolder(page, 'Many photos');
         const items = page.locator('sfe-listing [data-path]');
         expect(await items.count()).toBeLessThan(600);
-        for (let i = 0; i < 60 && await items.count() < 600; i++) {
+        for (let i = 0; i < 60 && (await items.count()) < 600; i++) {
             await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
             await page.waitForTimeout(250);
         }

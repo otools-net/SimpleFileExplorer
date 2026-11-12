@@ -12,8 +12,8 @@
     "watch": "ng build --watch --configuration development",
     "boot": "tsc -p tsconfig.boot.json",
     "test": "ng test --watch=false",
-    "format": "prettier --write \"src/**/*.{ts,html,css}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,html,css}\""
+    "format": "prettier --write \"src/**/*.{ts,html,css}\" \"../../tests/e2e/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,css}\" \"../../tests/e2e/**/*.ts\""
   },
   "private": true,
   "dependencies": {

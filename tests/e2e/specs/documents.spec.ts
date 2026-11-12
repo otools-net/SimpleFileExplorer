@@ -37,7 +37,8 @@ test.describe('documents by finger', () => {
         await expectFitsScreen(page);
         await field.press('Escape');
 
-        const size = () => text.locator('.cm-content').evaluate(content => parseFloat(getComputedStyle(content).fontSize));
+        const size = () =>
+            text.locator('.cm-content').evaluate((content) => parseFloat(getComputedStyle(content).fontSize));
         const before = await size();
         await toolbarAction(page, toolbar, toolbar.locator('[data-reading-toggle]'), 'reading');
         const panel = text.locator('sfe-reading-panel, .reading-panel').first();
@@ -66,8 +67,7 @@ test.describe('documents by finger', () => {
 
         // Phones: a magnifier shows the field; wider, the field is there.
         const toggle = toolbar.locator('[data-find-toggle]');
-        if (await toggle.isVisible())
-            await toggle.tap();
+        if (await toggle.isVisible()) await toggle.tap();
         const field = toolbar.locator('input[data-find]');
         await expect(field).toBeVisible();
         await expectFitsScreen(page);
@@ -104,15 +104,21 @@ test.describe('an EPUB by finger', () => {
         const book = await open(page, 'Documents/Hut stories.epub', 'sfe-epub-view');
         const next = book.locator('[data-next]');
         await expect(next).toBeEnabled({ timeout: 15_000 });
-        const place = () => book.locator('iframe').first().evaluate(frame => {
-            const view = (frame as HTMLIFrameElement).contentWindow;
-            return `${frame.getAttribute('src') ?? ''}#${view?.scrollX ?? 0}:${(frame as HTMLElement).style.transform ?? ''}:${(frame.parentElement as HTMLElement).scrollLeft}`;
-        });
+        const place = () =>
+            book
+                .locator('iframe')
+                .first()
+                .evaluate((frame) => {
+                    const view = (frame as HTMLIFrameElement).contentWindow;
+                    return `${frame.getAttribute('src') ?? ''}#${view?.scrollX ?? 0}:${(frame as HTMLElement).style.transform ?? ''}:${(frame.parentElement as HTMLElement).scrollLeft}`;
+                });
         const progress = book.locator('[data-progress]');
         const start = await progress.textContent();
         const before = await place();
         await next.tap();
-        await expect.poll(async () => `${await place()}|${await progress.textContent()}`).not.toBe(`${before}|${start}`);
+        await expect
+            .poll(async () => `${await place()}|${await progress.textContent()}`)
+            .not.toBe(`${before}|${start}`);
         await book.locator('[data-previous]').tap();
         await expect.poll(place).toBe(before);
     });

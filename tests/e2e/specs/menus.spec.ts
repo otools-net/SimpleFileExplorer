@@ -9,8 +9,7 @@ import { holdLikeIos } from '../fixtures/touch';
 const menu = '.item-menu[role="menu"]';
 
 async function expectSheet(page: Page): Promise<void> {
-    if (!isSheetWidth(page))
-        return;
+    if (!isSheetWidth(page)) return;
     const box = (await page.locator(menu).boundingBox())!;
     const viewport = page.viewportSize()!;
     expect(box.x).toBe(0);
@@ -24,12 +23,18 @@ test.describe('menus', () => {
         await openFolder(page, 'Photos/2025 Mountains');
         // Phones: the location bar's "⋯"; wider (landscape), the folder's own buttons: no menu to check there.
         const more = page.locator('button.location-more');
-        test.skip(!await more.isVisible(), 'the folder menu is a "⋯" up to 640 px');
+        test.skip(!(await more.isVisible()), 'the folder menu is a "⋯" up to 640 px');
         await more.tap();
         await expect(page.locator(menu)).toBeVisible();
         await expectSheet(page);
         await closeMenu(page);
-        await expectMedianOpensWithin(page, menu, () => more.tap(), () => closeMenu(page), menuBudget());
+        await expectMedianOpensWithin(
+            page,
+            menu,
+            () => more.tap(),
+            () => closeMenu(page),
+            menuBudget(),
+        );
     });
 
     test('the "⋯" of the selection bar', async ({ page }) => {
@@ -37,12 +42,18 @@ test.describe('menus', () => {
         await item(page, 'Photos/2025 Mountains/Summit.jpg').locator('.select-box').tap();
         const more = page.locator('.selection-bar .overflow-more.shown');
         await expect(page.locator('.selection-bar')).toBeVisible();
-        test.skip(!await more.isVisible(), 'every button fits at this width');
+        test.skip(!(await more.isVisible()), 'every button fits at this width');
         await more.tap();
         await expect(page.locator(menu)).toBeVisible();
         await expectSheet(page);
         await closeMenu(page);
-        await expectMedianOpensWithin(page, menu, () => more.tap(), () => closeMenu(page), menuBudget());
+        await expectMedianOpensWithin(
+            page,
+            menu,
+            () => more.tap(),
+            () => closeMenu(page),
+            menuBudget(),
+        );
     });
 
     test('the ⋮ of the viewer', async ({ page }) => {
@@ -54,7 +65,13 @@ test.describe('menus', () => {
         await expectSheet(page);
         await closeMenu(page);
         await expect(page.locator('dialog.viewer[open]'), 'closing the menu leaves the viewer open').toHaveCount(1);
-        await expectMedianOpensWithin(page, menu, () => more.tap(), () => closeMenu(page), menuBudget());
+        await expectMedianOpensWithin(
+            page,
+            menu,
+            () => more.tap(),
+            () => closeMenu(page),
+            menuBudget(),
+        );
     });
 
     test('a long item menu fits the screen and scrolls inside itself', async ({ page }) => {
@@ -64,7 +81,9 @@ test.describe('menus', () => {
         const sheet = page.locator(menu);
         await expect(sheet).toBeVisible();
         const box = (await sheet.boundingBox())!;
-        expect(box.height, 'no taller than 75 % of the screen').toBeLessThanOrEqual(page.viewportSize()!.height * 0.75 + 1);
+        expect(box.height, 'no taller than 75 % of the screen').toBeLessThanOrEqual(
+            page.viewportSize()!.height * 0.75 + 1,
+        );
         const last = sheet.locator('.item-menu-entry').last();
         await last.scrollIntoViewIfNeeded();
         await expect(last).toBeInViewport();
@@ -75,18 +94,27 @@ test.describe('menus', () => {
 // Decided 2026-10-29: Android's Back closes the open menu and stays on the page (a close watcher, Chromium only);
 // turning the phone keeps it open, laid out again.
 test.describe('closing and turning', () => {
-    test('Android\'s Back closes the open menu, and only it', async ({ page, browserName }) => {
-        test.skip(browserName !== 'chromium', 'close watchers: Chromium (Android\'s Back); iOS has no Back button');
+    test("Android's Back closes the open menu, and only it", async ({ page, browserName }) => {
+        test.skip(browserName !== 'chromium', "close watchers: Chromium (Android's Back); iOS has no Back button");
         // Back reaches the newest close watcher: kept here to ask it, as the system does.
         await page.addInitScript(() => {
             const Native = (window as unknown as { CloseWatcher?: new () => object }).CloseWatcher;
-            if (!Native)
-                return;
+            if (!Native) return;
             const made: object[] = [];
             Object.assign(window, { __watchers: made });
-            Object.assign(window, { CloseWatcher: class extends Native { constructor() { super(); made.push(this); } } });
+            Object.assign(window, {
+                CloseWatcher: class extends Native {
+                    constructor() {
+                        super();
+                        made.push(this);
+                    }
+                },
+            });
         });
-        const back = () => page.evaluate(() => (window as unknown as { __watchers: { requestClose(): void }[] }).__watchers.at(-1)!.requestClose());
+        const back = () =>
+            page.evaluate(() =>
+                (window as unknown as { __watchers: { requestClose(): void }[] }).__watchers.at(-1)!.requestClose(),
+            );
         await openFolder(page, 'Photos/2025 Mountains');
         const url = page.url();
         await item(page, 'Photos/2025 Mountains/Summit.jpg').locator('.item-menu-button').tap();
@@ -112,13 +140,23 @@ test.describe('closing and turning', () => {
         await tile.locator('.item-menu-button').tap();
         await expect(page.locator(menu)).toBeVisible();
 
-        for (const size of [{ width: height, height: width }, { width, height }]) {
+        for (const size of [
+            { width: height, height: width },
+            { width, height },
+        ]) {
             await page.setViewportSize(size);
             await expect(page.locator(menu)).toBeVisible();
-            await expect.poll(async () => {
-                const box = (await page.locator(menu).boundingBox())!;
-                return box.x >= 0 && box.y >= 0 && box.x + box.width <= size.width + 0.5 && box.y + box.height <= size.height + 0.5;
-            }, `the menu inside ${size.width}×${size.height}`).toBe(true);
+            await expect
+                .poll(async () => {
+                    const box = (await page.locator(menu).boundingBox())!;
+                    return (
+                        box.x >= 0 &&
+                        box.y >= 0 &&
+                        box.x + box.width <= size.width + 0.5 &&
+                        box.y + box.height <= size.height + 0.5
+                    );
+                }, `the menu inside ${size.width}×${size.height}`)
+                .toBe(true);
         }
         await expectSheet(page);
         await closeMenu(page);
@@ -168,11 +206,16 @@ test.describe('after a menu', () => {
         await expect(page.locator(menu)).toBeVisible();
         await closeMenu(page);
         await expect(page.locator(menu)).toHaveCount(0);
-        expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY), 'the listing did not move').toBeLessThanOrEqual(2);
+        expect(
+            Math.abs((await page.evaluate(() => window.scrollY)) - scrollY),
+            'the listing did not move',
+        ).toBeLessThanOrEqual(2);
         await expect(photo).toHaveClass(/selected/);
         const focused = await page.evaluate(() => {
             const element = document.activeElement;
-            return element?.matches('input:not([type=checkbox]):not([type=radio]), textarea, [contenteditable=true]') ? element.outerHTML.slice(0, 80) : null;
+            return element?.matches('input:not([type=checkbox]):not([type=radio]), textarea, [contenteditable=true]')
+                ? element.outerHTML.slice(0, 80)
+                : null;
         });
         expect(focused, 'a text field focused (the keyboard would come up)').toBeNull();
     });

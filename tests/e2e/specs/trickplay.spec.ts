@@ -9,10 +9,19 @@ const video = 'Videos/Timelapses/Clouds.webm';
 test.describe('@ffmpeg hold-to-preview', () => {
     test.skip(!process.env.SFE_E2E_FFMPEG, 'no ffmpeg: set SFE_E2E_FFMPEG (or SFE_TEST_FFMPEG), or put it on the PATH');
 
-    test('holding a video tile plays its preview; lifting the finger opens nothing and selects nothing', async ({ page }) => {
+    test('holding a video tile plays its preview; lifting the finger opens nothing and selects nothing', async ({
+        page,
+    }) => {
         // Asking for it queues it (a folder of the trickplay's): ready in seconds for a short sample.
-        await expect.poll(async () => (await page.request.get(`api/trickplay/files/${video}`, { headers: { 'X-SFE-Request': '1' } })).status(),
-            { timeout: 120_000, intervals: [1000] }).toBe(200);
+        await expect
+            .poll(
+                async () =>
+                    (
+                        await page.request.get(`api/trickplay/files/${video}`, { headers: { 'X-SFE-Request': '1' } })
+                    ).status(),
+                { timeout: 120_000, intervals: [1000] },
+            )
+            .toBe(200);
 
         await openFolder(page, 'Videos/Timelapses');
         const tile = item(page, video);

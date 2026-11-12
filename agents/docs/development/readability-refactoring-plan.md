@@ -74,7 +74,7 @@ then by hand for what they leave: comments and long strings. One commit per step
 - [ ] Long strings of the server tests (about 360 lines)
 - [x] Prettier over the client (`src/Sfe.Web/src`: TypeScript, CSS, `index.html`); `npm run format` /
   `format:check`; long lines 2314 -> 312; client build: every chunk the same size
-- [ ] Prettier over the e2e tests
+- [x] Prettier over the e2e tests (in `npm run format` of `src/Sfe.Web`; `npm run typecheck` of the e2e passes)
 - [ ] Comments of the client and e2e rewrapped
 - [ ] What is left over 120 in the client, e2e and styles, by hand (`measure.mjs --area client`)
 - [ ] Hashes of the formatter commits in `.git-blame-ignore-revs`

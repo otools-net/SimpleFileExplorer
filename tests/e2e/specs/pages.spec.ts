@@ -7,7 +7,9 @@ test('a file on its own page (view?path=) fits, with buttons big enough', async 
     await page.goto('./view?path=' + encodeURIComponent('Documents/Hiking guide.md'));
     const view = page.locator('sfe-view-page sfe-markdown-view');
     await expect(view).toBeVisible();
-    await expect.poll(() => view.evaluate(element => (element as HTMLElement).innerText.trim().length)).toBeGreaterThan(20);
+    await expect
+        .poll(() => view.evaluate((element) => (element as HTMLElement).innerText.trim().length))
+        .toBeGreaterThan(20);
     await expectFitsScreen(page);
     await expectNothingCut(page);
     await expectTapTargets(page, 'sfe-view-page');
@@ -21,7 +23,9 @@ for (const scheme of ['light', 'dark'] as const) {
         test('the first paint already has the theme', async ({ page }) => {
             await page.addInitScript(() => {
                 addEventListener('DOMContentLoaded', () => {
-                    (window as unknown as { __first: string }).__first = getComputedStyle(document.body).backgroundColor;
+                    (window as unknown as { __first: string }).__first = getComputedStyle(
+                        document.body,
+                    ).backgroundColor;
                 });
             });
             await page.goto('./?path=Photos');

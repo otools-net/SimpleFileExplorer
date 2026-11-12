@@ -11,8 +11,7 @@ export function needsTouchGestures(browserName: string): void {
 async function centre(locator: Locator): Promise<{ x: number; y: number }> {
     await locator.scrollIntoViewIfNeeded();
     const box = await locator.boundingBox();
-    if (!box)
-        throw new Error(`not on screen: ${locator}`);
+    if (!box) throw new Error(`not on screen: ${locator}`);
     return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
@@ -30,13 +29,26 @@ export async function longPress(page: Page, locator: Locator, ms = 800): Promise
     const point = await centre(locator);
     const cdp = await page.context().newCDPSession(page);
     try {
-        const gesture = cdp.send('Input.synthesizeTapGesture', { ...point, duration: ms, tapCount: 1, gestureSourceType: 'touch' });
+        const gesture = cdp.send('Input.synthesizeTapGesture', {
+            ...point,
+            duration: ms,
+            tapCount: 1,
+            gestureSourceType: 'touch',
+        });
         await page.waitForTimeout(LONG_PRESS_MS);
         await page.evaluate(({ x, y }) => {
             const target = document.elementFromPoint(x, y);
-            target?.dispatchEvent(new PointerEvent('contextmenu', {
-                bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerType: 'touch', isPrimary: true,
-            }));
+            target?.dispatchEvent(
+                new PointerEvent('contextmenu', {
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true,
+                    clientX: x,
+                    clientY: y,
+                    pointerType: 'touch',
+                    isPrimary: true,
+                }),
+            );
         }, point);
         await gesture;
     } finally {
@@ -45,13 +57,19 @@ export async function longPress(page: Page, locator: Locator, ms = 800): Promise
 }
 
 /** A finger moved from `from` to `to` (page coordinates) in `steps` moves over about `ms`. */
-export async function swipe(page: Page, from: { x: number; y: number }, to: { x: number; y: number }, ms = 300, steps = 12): Promise<void> {
+export async function swipe(
+    page: Page,
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    ms = 300,
+    steps = 12,
+): Promise<void> {
     const cdp = await page.context().newCDPSession(page);
     try {
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [from] });
         for (let i = 1; i <= steps; i++) {
             await page.waitForTimeout(ms / steps);
-            const point = { x: from.x + (to.x - from.x) * i / steps, y: from.y + (to.y - from.y) * i / steps };
+            const point = { x: from.x + ((to.x - from.x) * i) / steps, y: from.y + ((to.y - from.y) * i) / steps };
             await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point] });
         }
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
@@ -65,14 +83,27 @@ export async function swipe(page: Page, from: { x: number; y: number }, to: { x:
  * out), side by side, over about `ms`. Chromium only (`Input.dispatchTouchEvent`; Playwright has no multi-touch on
  * WebKit).
  */
-export async function pinch(page: Page, centre: { x: number; y: number }, from: number, to: number, ms = 300, steps = 12): Promise<void> {
+export async function pinch(
+    page: Page,
+    centre: { x: number; y: number },
+    from: number,
+    to: number,
+    ms = 300,
+    steps = 12,
+): Promise<void> {
     const cdp = await page.context().newCDPSession(page);
-    const fingers = (apart: number) => [{ x: centre.x - apart / 2, y: centre.y, id: 0 }, { x: centre.x + apart / 2, y: centre.y, id: 1 }];
+    const fingers = (apart: number) => [
+        { x: centre.x - apart / 2, y: centre.y, id: 0 },
+        { x: centre.x + apart / 2, y: centre.y, id: 1 },
+    ];
     try {
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: fingers(from) });
         for (let i = 1; i <= steps; i++) {
             await page.waitForTimeout(ms / steps);
-            await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: fingers(from + (to - from) * i / steps) });
+            await cdp.send('Input.dispatchTouchEvent', {
+                type: 'touchMove',
+                touchPoints: fingers(from + ((to - from) * i) / steps),
+            });
         }
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     } finally {
@@ -93,24 +124,30 @@ export async function tapWhenSettled(page: Page, locator: Locator): Promise<void
 /** `locator` scrolled into view, the page still (no scroll for 200 ms, its box the same over two frames). */
 async function settled(locator: Locator): Promise<void> {
     await locator.scrollIntoViewIfNeeded();
-    await locator.evaluate(element => new Promise<void>(resolve => {
-        let last = performance.now();
-        const scrolled = () => { last = performance.now(); };
-        addEventListener('scroll', scrolled, { capture: true, passive: true });
-        let box = element.getBoundingClientRect();
-        const frame = () => {
-            const now = element.getBoundingClientRect();
-            const same = now.x === box.x && now.y === box.y && now.width === box.width && now.height === box.height;
-            box = now;
-            if (same && performance.now() - last >= 200) {
-                removeEventListener('scroll', scrolled, { capture: true });
-                resolve();
-            } else {
+    await locator.evaluate(
+        (element) =>
+            new Promise<void>((resolve) => {
+                let last = performance.now();
+                const scrolled = () => {
+                    last = performance.now();
+                };
+                addEventListener('scroll', scrolled, { capture: true, passive: true });
+                let box = element.getBoundingClientRect();
+                const frame = () => {
+                    const now = element.getBoundingClientRect();
+                    const same =
+                        now.x === box.x && now.y === box.y && now.width === box.width && now.height === box.height;
+                    box = now;
+                    if (same && performance.now() - last >= 200) {
+                        removeEventListener('scroll', scrolled, { capture: true });
+                        resolve();
+                    } else {
+                        requestAnimationFrame(frame);
+                    }
+                };
                 requestAnimationFrame(frame);
-            }
-        };
-        requestAnimationFrame(frame);
-    }));
+            }),
+    );
 }
 
 /**
@@ -132,14 +169,33 @@ export async function pressLikeIos(page: Page, locator: Locator): Promise<() => 
     const init = { x: point.x, y: point.y };
     await page.evaluate(({ x, y }) => {
         const target = document.elementFromPoint(x, y)!;
-        const init = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerType: 'touch', pointerId: 41, isPrimary: true };
+        const init = {
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+            clientX: x,
+            clientY: y,
+            pointerType: 'touch',
+            pointerId: 41,
+            isPrimary: true,
+        };
         target.dispatchEvent(new PointerEvent('pointerdown', init));
         (window as unknown as { __held: Element }).__held = target;
     }, init);
-    return () => page.evaluate(({ x, y }) => {
-        const target = (window as unknown as { __held: Element }).__held;
-        const init = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerType: 'touch', pointerId: 41, isPrimary: true };
-        target.dispatchEvent(new PointerEvent('pointerup', init));
-        target.dispatchEvent(new MouseEvent('click', init));
-    }, init);
+    return () =>
+        page.evaluate(({ x, y }) => {
+            const target = (window as unknown as { __held: Element }).__held;
+            const init = {
+                bubbles: true,
+                cancelable: true,
+                composed: true,
+                clientX: x,
+                clientY: y,
+                pointerType: 'touch',
+                pointerId: 41,
+                isPrimary: true,
+            };
+            target.dispatchEvent(new PointerEvent('pointerup', init));
+            target.dispatchEvent(new MouseEvent('click', init));
+        }, init);
 }

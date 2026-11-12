@@ -31,8 +31,7 @@ export type Account = keyof typeof accounts;
  */
 export const ffmpeg: string | null = (() => {
     const configured = process.env.SFE_E2E_FFMPEG ?? process.env.SFE_TEST_FFMPEG;
-    if (configured === '')
-        return null;
+    if (configured === '') return null;
     const candidate = configured ?? 'ffmpeg';
     return spawnSync(candidate, ['-version'], { stdio: 'ignore' }).status === 0 ? candidate : null;
 })();

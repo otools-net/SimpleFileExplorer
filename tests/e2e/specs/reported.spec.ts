@@ -10,7 +10,6 @@ const file = `${folder}/Summit.jpg`;
 const menu = '.item-menu[role="menu"]';
 const bar = '.selection-dock .selection-bar';
 
-
 test.describe('@reported @timing 2026-10-29: select an item, open its menu: the bottom bar jumps, the menu opens late', () => {
     test('long press, then ⋮ (Android)', async ({ page, browserName }) => {
         needsTouchGestures(browserName);
@@ -24,7 +23,13 @@ test.describe('@reported @timing 2026-10-29: select an item, open its menu: the 
         await page.waitForTimeout(400);
 
         const watch = await watchBoxes(page, { 'selection bar': bar });
-        await expectMedianOpensWithin(page, menu, () => tile.locator('.item-menu-button').tap(), () => closeMenu(page), menuBudget());
+        await expectMedianOpensWithin(
+            page,
+            menu,
+            () => tile.locator('.item-menu-button').tap(),
+            () => closeMenu(page),
+            menuBudget(),
+        );
         await watch.expectSteady();
         await expect(tile).toHaveClass(/selected/);
     });
@@ -39,7 +44,13 @@ test.describe('@reported @timing 2026-10-29: select an item, open its menu: the 
         await page.waitForTimeout(400);
 
         const watch = await watchBoxes(page, { 'selection bar': bar });
-        await expectMedianOpensWithin(page, menu, () => tile.locator('.item-menu-button').tap(), () => closeMenu(page), menuBudget());
+        await expectMedianOpensWithin(
+            page,
+            menu,
+            () => tile.locator('.item-menu-button').tap(),
+            () => closeMenu(page),
+            menuBudget(),
+        );
         await watch.expectSteady();
         await expect(tile).toHaveClass(/selected/);
     });
@@ -54,10 +65,11 @@ test.describe('@reported 2026-10-29: a sheet holds the page without changing the
         test.skip(!isSheetWidth(page), 'sheets: phones up to 640 px');
         await openFolder(page, 'Many photos');
         await page.evaluate(() => window.scrollTo(0, 600));
-        const root = () => page.evaluate(() => {
-            const style = getComputedStyle(document.documentElement);
-            return `${style.overflowX} ${style.overflowY}`;
-        });
+        const root = () =>
+            page.evaluate(() => {
+                const style = getComputedStyle(document.documentElement);
+                return `${style.overflowX} ${style.overflowY}`;
+            });
         const before = await root();
         await tapWhenSettled(page, item(page, 'Many photos/Photo 020.jpg').locator('.item-menu-button'));
         await expect(page.locator(menu)).toBeVisible();
@@ -81,14 +93,16 @@ test.describe('@reported 2026-10-29: a sheet holds the page without changing the
         await page.waitForTimeout(300);
         await expect(page.locator(menu)).toBeVisible();
         // A few px can come from previews loading above (scroll anchoring); scrolling the page would be the swipe's 150.
-        expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY), 'swipe on the sheet').toBeLessThan(20);
+        expect(Math.abs((await page.evaluate(() => window.scrollY)) - scrollY), 'swipe on the sheet').toBeLessThan(20);
 
         // On the backdrop, above the sheet: no scroll either, and the sheet stays (only a tap there closes it).
         const top = (await page.locator(menu).boundingBox())!.y;
         await swipe(page, { x: width / 2, y: top - 20 }, { x: width / 2, y: Math.max(10, top - 170) });
         await page.waitForTimeout(300);
         await expect(page.locator(menu)).toBeVisible();
-        expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY), 'swipe on the backdrop').toBeLessThan(20);
+        expect(Math.abs((await page.evaluate(() => window.scrollY)) - scrollY), 'swipe on the backdrop').toBeLessThan(
+            20,
+        );
         await closeMenu(page);
     });
 });
@@ -139,9 +153,13 @@ test.describe('@reported 2026-10-29: a dialog sheet holds the page without chang
         const width = page.viewportSize()!.width;
         const box = (await dialog.boundingBox())!;
         await swipe(page, { x: width / 2, y: box.y + 20 }, { x: width / 2, y: box.y - 130 });
-        await swipe(page, { x: width / 2, y: Math.max(20, box.y - 30) }, { x: width / 2, y: Math.max(10, box.y - 180) });
+        await swipe(
+            page,
+            { x: width / 2, y: Math.max(20, box.y - 30) },
+            { x: width / 2, y: Math.max(10, box.y - 180) },
+        );
         await page.waitForTimeout(300);
-        expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY)).toBeLessThan(20);
+        expect(Math.abs((await page.evaluate(() => window.scrollY)) - scrollY)).toBeLessThan(20);
         await expect(dialog).toBeVisible();
     });
 
@@ -151,12 +169,18 @@ test.describe('@reported 2026-10-29: a dialog sheet holds the page without chang
         const dialog = await openRename(page);
         // More content than the screen holds (a long properties sheet, a batch rename preview…).
         const body = dialog.locator('.sheet-body');
-        await body.evaluate(element => element.insertAdjacentHTML('beforeend', '<div style="flex: none; height: 2000px">tall</div>'));
+        await body.evaluate((element) =>
+            element.insertAdjacentHTML('beforeend', '<div style="flex: none; height: 2000px">tall</div>'),
+        );
         const scrollY = await page.evaluate(() => window.scrollY);
         const box = (await body.boundingBox())!;
-        await swipe(page, { x: box.x + box.width / 2, y: box.y + box.height - 20 }, { x: box.x + box.width / 2, y: box.y + 20 });
+        await swipe(
+            page,
+            { x: box.x + box.width / 2, y: box.y + box.height - 20 },
+            { x: box.x + box.width / 2, y: box.y + 20 },
+        );
         await page.waitForTimeout(300);
-        expect(await body.evaluate(element => element.scrollTop)).toBeGreaterThan(50);
-        expect(Math.abs(await page.evaluate(() => window.scrollY) - scrollY)).toBeLessThan(20);
+        expect(await body.evaluate((element) => element.scrollTop)).toBeGreaterThan(50);
+        expect(Math.abs((await page.evaluate(() => window.scrollY)) - scrollY)).toBeLessThan(20);
     });
 });

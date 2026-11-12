@@ -15,7 +15,10 @@ test.describe('tags', () => {
         const tile = item(page, `${scratch}/A.jpg`);
         await tile.locator('.select-box').tap();
         // Icon only on phones: named by its title.
-        await page.locator('.selection-bar').getByRole('button', { name: /^(Tags|Add or remove tags)/ }).tap();
+        await page
+            .locator('.selection-bar')
+            .getByRole('button', { name: /^(Tags|Add or remove tags)/ })
+            .tap();
         const dialog = page.locator('dialog.sheet[open]');
         await expect(dialog).toBeVisible();
         await expectFitsScreen(page);
@@ -47,9 +50,15 @@ async function newTag(page: Page, label: string): Promise<{ id: number; name: st
 const headers = { 'X-SFE-Request': '1' };
 
 test.describe('tag panels and menus', () => {
-    test("a folder's default tags: their panel by a tap, a sheet on phones, closed by the dimmed area", async ({ page, scratch }) => {
+    test("a folder's default tags: their panel by a tap, a sheet on phones, closed by the dimmed area", async ({
+        page,
+        scratch,
+    }) => {
         const tag = await newTag(page, 'Default');
-        const set = await page.request.put('api/folder-default-tags', { data: { path: scratch, add: [tag.id] }, headers });
+        const set = await page.request.put('api/folder-default-tags', {
+            data: { path: scratch, add: [tag.id] },
+            headers,
+        });
         expect(set.ok(), await set.text()).toBe(true);
         await openFolder(page, scratch);
         await page.locator('.location-bar .default-tags-button').tap();
@@ -70,9 +79,12 @@ test.describe('tag panels and menus', () => {
         await expect(panel).toHaveCount(0);
     });
 
-    test("a tag on a file: holding it opens its menu, Add to the search works", async ({ page, scratch }) => {
+    test('a tag on a file: holding it opens its menu, Add to the search works', async ({ page, scratch }) => {
         const tag = await newTag(page, 'Chip');
-        const tagged = await page.request.post('api/file-tags', { data: { paths: [`${scratch}/A.jpg`], add: [tag.id] }, headers });
+        const tagged = await page.request.post('api/file-tags', {
+            data: { paths: [`${scratch}/A.jpg`], add: [tag.id] },
+            headers,
+        });
         expect(tagged.ok(), await tagged.text()).toBe(true);
         // A held finger: another test's scan panel coming in would move the page under it (menus.spec.ts).
         await quietScans(page);
@@ -95,7 +107,7 @@ test.describe('a whole folder', () => {
         const tag = await newTag(page, 'Folder');
         await openFolder(page, scratch);
         const more = page.locator('button.location-more');
-        test.skip(!await more.isVisible(), 'the folder menu is a "⋯" up to 640 px');
+        test.skip(!(await more.isVisible()), 'the folder menu is a "⋯" up to 640 px');
         await more.tap();
         await page.locator('.item-menu[role="menu"] [data-entry="tags"]').tap();
         const dialog = page.locator('dialog.sheet[open]');
@@ -109,7 +121,11 @@ test.describe('a whole folder', () => {
         await input.fill(tag.name.slice(0, 12));
         await dialog.locator('.tag-options li[role=option]', { hasText: tag.name }).first().tap();
         await dialog.locator('.scope-confirm').getByRole('button', { name: 'Add tag' }).tap();
-        await expect(dialog.locator('.tag-group', { hasText: 'On all these files' }).locator('sfe-tag-chip', { hasText: tag.name })).toBeVisible({ timeout: 15_000 });
+        await expect(
+            dialog
+                .locator('.tag-group', { hasText: 'On all these files' })
+                .locator('sfe-tag-chip', { hasText: tag.name }),
+        ).toBeVisible({ timeout: 15_000 });
         await dialog.getByRole('button', { name: 'Done' }).tap();
         await expect(dialog).toHaveCount(0);
         for (const name of ['A.jpg', 'B.jpg', 'C.jpg'])
