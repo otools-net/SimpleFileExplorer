@@ -895,7 +895,8 @@ public sealed class TrickplayService : IDisposable
                 "-i",
                 Path.Combine(folder, "%d.jpg"),
                 "-vf",
-                $"format=gray,untile={manifest.Columns}x{manifest.Rows},scale={VideoFingerprint.PixelWidth}:{VideoFingerprint.PixelHeight}:flags=area",
+                $"format=gray,untile={manifest.Columns}x{manifest.Rows},"
+                    + $"scale={VideoFingerprint.PixelWidth}:{VideoFingerprint.PixelHeight}:flags=area",
                 "-frames:v",
                 manifest.Count.ToString(),
                 "-f",

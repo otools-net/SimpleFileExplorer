@@ -324,11 +324,7 @@ public sealed class FileJobs(
                         ex is LinksInsideException or NoRoomException
                             ? ex.Message
                             : FileOperations
-                                .DiskFailure(
-                                    ex,
-                                    $"“{Base(path)}” could not be "
-                                        + $"{request.Kind switch { FileJobKind.Move => "moved", FileJobKind.Copy => "copied", _ => "extracted" }}"
-                                )
+                                .DiskFailure(ex, $"“{Base(path)}” could not be {Done(request.Kind)}")
                                 .Message
                     );
                 }
@@ -677,9 +673,24 @@ public sealed class FileJobs(
             FileOperationStatus.Done,
             skipped.Count == 0
                 ? null
-                : $"Left out: {string.Join(", ", skipped.Take(5))}{(skipped.Count > 5 ? $" and {skipped.Count - 5} more" : string.Empty)} (links, or folders you may not see)."
+                : $"Left out: {string.Join(", ", skipped.Take(5))}{More(skipped.Count, 5)} "
+                    + "(links, or folders you may not see)."
         );
     }
+
+    /// <summary>What a job of this kind does to an item, as the end of "could not be …".</summary>
+    private static string Done(FileJobKind kind) =>
+        kind switch
+        {
+            FileJobKind.Move => "moved",
+            FileJobKind.Copy => "copied",
+            _ => "extracted",
+        };
+
+    /// <summary>
+    /// " and N more" when a list of <paramref name="count"/> names shows only <paramref name="shown"/>.
+    /// </summary>
+    private static string More(int count, int shown) => count > shown ? $" and {count - shown} more" : string.Empty;
 
     private async Task CopyFolderAsync(
         Job job,

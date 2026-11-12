@@ -153,7 +153,11 @@ public sealed class BackupSources(
     private static string Entry(DatabaseProvider provider, string connectionString, string folder) =>
         provider == DatabaseProvider.Sqlite
             ? $"{folder}/{Path.GetFileName(new SqliteConnectionStringBuilder(connectionString).DataSource)}"
-            : $"{folder}/{(new SqlConnectionStringBuilder(connectionString).InitialCatalog is { Length: > 0 } name ? name : "database")}";
+            : $"{folder}/{SqlServerDatabaseName(connectionString)}";
+
+    /// <summary>The database a SQL Server connection string names, or "database" when it names none.</summary>
+    private static string SqlServerDatabaseName(string connectionString) =>
+        new SqlConnectionStringBuilder(connectionString).InitialCatalog is { Length: > 0 } name ? name : "database";
 }
 
 /// <summary>

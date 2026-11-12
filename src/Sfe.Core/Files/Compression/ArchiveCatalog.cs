@@ -830,8 +830,11 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             _folderTime = Prepare("UPDATE Folders SET Time = $time WHERE Id = $id", "$time", "$id");
             _insertEntry = Prepare(
                 """
-                INSERT INTO Entries (FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method, Crc, Cipher, CipherInfo)
-                VALUES ($folder, $name, $kind, $size, $packed, $time, $encrypted, $locator, $method, $crc, $cipher, $cipherInfo)
+                INSERT INTO Entries
+                    (FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method, Crc, Cipher, CipherInfo)
+                VALUES
+                    ($folder, $name, $kind, $size, $packed, $time, $encrypted, $locator, $method, $crc, $cipher,
+                    $cipherInfo)
                 """,
                 "$folder",
                 "$name",
@@ -908,7 +911,8 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
                 CREATE INDEX EncryptedFiles ON Entries (Size, Id) WHERE Encrypted = 1 AND Kind = 0;
                 UPDATE Folders SET Files = c.Count, AllFiles = c.Files, Size = c.Size, Packed = c.Packed
                 FROM (SELECT FolderId, count(*) AS Count, sum(Kind = 0) AS Files,
-                        total(CASE WHEN Kind = 0 THEN Size END) AS Size, total(CASE WHEN Kind = 0 THEN Packed END) AS Packed
+                        total(CASE WHEN Kind = 0 THEN Size END) AS Size,
+                        total(CASE WHEN Kind = 0 THEN Packed END) AS Packed
                       FROM Entries GROUP BY FolderId) AS c
                 WHERE Folders.Id = c.FolderId;
                 """

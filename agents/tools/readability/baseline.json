@@ -299,7 +299,7 @@
     "src/Sfe.Web/src/styles/video-player.css": {"fileLines":583,"longLines":1},
     "src/Sfe.Web/src/testing/fakes.ts": {"longLines":1},
     "tests/Sfe.Tests/AccessTests.cs": {"fileLines":1322,"longLines":1},
-    "tests/Sfe.Tests/ApiTests.cs": {"fileLines":1786},
+    "tests/Sfe.Tests/ApiTests.cs": {"fileLines":1788},
     "tests/Sfe.Tests/ArchiveCatalogTests.cs": {"longLines":1},
     "tests/Sfe.Tests/ExploreRouteTests.cs": {"fileLines":920,"longLines":1},
     "tests/Sfe.Tests/FolderRuleServiceTests.cs": {"longLines":1},

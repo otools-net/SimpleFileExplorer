@@ -267,6 +267,14 @@ Traps met:
 - `measure.mjs` read C# headers up to the line at the brace's indent: CSharpier's `)` on its own line hid every
   method with parameters one per line (functions with > 5 parameters fell from 121 to 3). Fixed before the
   baseline; compare `--json` counts before and after a layout change.
+- `ApiTests.EverySettingOfTheClientsSettingsDialogExists` reads `settings-schema.ts` with a regex written for its
+  old one-line entries: Prettier's one property per line broke it (fixed to allow any whitespace and either quote;
+  still 104 of 105 keys, as before). A server test can read client sources: run `dotnet test` after a client
+  reformat too.
+- Prettier is not always stable in one pass (two specs changed on a second `--write`): run `format:check` after.
+- The server's last 7 long lines by hand: SQL column lists broken at commas, two helpers named for long
+  interpolation holes (`FileJobs.Done`, `More`; `BackupSources.SqlServerDatabaseName`), an ffmpeg filter split. Left:
+  one `<see cref>` naming an overload with its full signature (`SettingsService`).
 - awk's `length` counts bytes, so lines with `…` or `→` look long to it: measure with Node (`measure.mjs`).
 
 ## Phase 3: one type per file (server) and `models.ts` by area (client)
