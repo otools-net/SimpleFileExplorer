@@ -1,31 +1,5 @@
 namespace Sfe.Core.Files.Compression;
 
-public enum ArchiveEntryKind
-{
-    File = 0,
-    Folder = 1,
-
-    /// <summary>A symbolic or hard link: listed, never created on extraction.</summary>
-    Link = 2,
-
-    /// <summary>A device, a FIFO, a socket: listed, never created.</summary>
-    Other = 3,
-}
-
-/// <summary>
-/// How a zip entry is encrypted (other formats: SharpCompress knows, <see cref="ArchiveEntry.Encrypted"/> says).
-/// </summary>
-public enum ZipCipher
-{
-    None = 0,
-
-    /// <summary>The traditional PKWARE cipher: read (old archives), never written.</summary>
-    ZipCrypto = 1,
-
-    /// <summary>WinZip AES (method 99, extra field <c>0x9901</c>).</summary>
-    Aes = 2,
-}
-
 /// <summary>
 /// One entry as an archive's directory lists it, before its name is checked (<see cref="ArchiveEntryNames"/>).
 /// </summary>

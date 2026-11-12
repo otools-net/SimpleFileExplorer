@@ -12,46 +12,6 @@ using Sfe.Core.Paths;
 
 namespace Sfe.Core.Files;
 
-/// <param name="Target">The folder it goes into (root-relative).</param>
-/// <param name="Name">
-/// The file's name, or its path below <paramref name="Target"/> for a folder upload (<c>Trip/Day 1/a.jpg</c>): the
-/// folders on the way are created when it is finished.
-/// </param>
-/// <param name="Modified">The file's modification time on the uploader's computer, kept on the uploaded file.</param>
-public sealed record UploadStart(string? Target, string? Name, long Size, DateTimeOffset? Modified = null);
-
-/// <summary>An upload not finished yet: what the uploader's browser needs to go on (also after a reload).</summary>
-/// <param name="Received">Bytes stored so far: the next chunk starts there.</param>
-public sealed record UploadInfo(
-    string Id,
-    string Target,
-    string Name,
-    long Size,
-    long Received,
-    DateTimeOffset? Modified,
-    int? OwnerId,
-    string OwnerName,
-    DateTimeOffset Started,
-    DateTimeOffset LastActivity
-);
-
-/// <summary>What a chunk did: the upload as it is now, or why it was refused.</summary>
-public sealed record UploadChunkResult(FileOperationStatus Status, UploadInfo? Upload, string? Message = null);
-
-/// <summary>What the person may do, asked when an upload starts and again when it is finished.</summary>
-public interface IUploadAccess
-{
-    /// <summary>
-    /// The person may use <paramref name="right"/> at the root-relative <paramref name="path"/> (there or not yet).
-    /// </summary>
-    Task<bool> MayAsync(string path, string right);
-
-    /// <summary>
-    /// The full path really is (through links) among the server's own files or a work folder: never written to.
-    /// </summary>
-    bool IsProtected(string fullPath);
-}
-
 /// <summary>
 /// Resumable uploads (agents/docs/features/uploads.md): a start answers an id, chunks are appended at the offset the
 /// server has (a chunk at another offset is refused with the current one, so a browser that lost a reply resends from

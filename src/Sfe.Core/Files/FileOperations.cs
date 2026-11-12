@@ -11,62 +11,6 @@ using Sfe.Core.Search;
 
 namespace Sfe.Core.Files;
 
-public enum FileOperationStatus
-{
-    Done,
-
-    /// <summary>The file or folder (or the folder to create one in) is not in the library.</summary>
-    NotFound,
-
-    /// <summary>The name can't be used (<see cref="FileNames.Check"/>, reserved, too long for the index).</summary>
-    Invalid,
-
-    /// <summary>
-    /// Something of that name is already there (seen or not by the asker: they are told nothing else).
-    /// </summary>
-    Exists,
-
-    /// <summary>A scan runs over that place: try again once it has finished.</summary>
-    ScanRunning,
-
-    /// <summary>Something else keeps it from being done now (folder rules left where the folder would go).</summary>
-    Conflict,
-
-    /// <summary>The disk refused: in use, or the server's account may not write there.</summary>
-    Failed,
-
-    /// <summary>Left as it was (a move to where it is, a name clash answered "skip").</summary>
-    Skipped,
-
-    /// <summary>The caller may not do it there (refused by the routes).</summary>
-    Forbidden,
-
-    /// <summary>
-    /// It can't go to the trash (a folder holding links, on another drive than the trash): delete it permanently
-    /// instead?
-    /// </summary>
-    TrashUnavailable,
-
-    /// <summary>An archive protected by a password that wasn't given, or a wrong one: nothing was extracted.</summary>
-    NeedsPassword,
-}
-
-/// <param name="Item">The new or renamed file or folder.</param>
-/// <param name="Message">Why it was not done, for the person (never a server path).</param>
-/// <param name="TrashId">The trash entry of what was deleted to the trash (for an Undo).</param>
-public sealed record FileOperationResult(
-    FileOperationStatus Status,
-    LibraryItem? Item = null,
-    string? Message = null,
-    int? TrashId = null
-)
-{
-    public static FileOperationResult Fail(FileOperationStatus status, string message) => new(status, Message: message);
-}
-
-/// <summary>Who changes the library's files, for the log and the folder rules' history.</summary>
-public sealed record FileActor(int? AccountId, string Name);
-
 /// <summary>
 /// The changes the web client makes to the library's files (agents/docs/development/file-management-plan.md): new
 /// folders and renames for now. Paths are root-relative; the routes have checked the rights and folder rules of the

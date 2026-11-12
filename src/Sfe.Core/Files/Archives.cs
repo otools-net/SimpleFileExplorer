@@ -11,67 +11,6 @@ using Sfe.Core.Search;
 
 namespace Sfe.Core.Files;
 
-/// <summary>What the person may do with a folder or file put in a zip.</summary>
-public enum ArchiveVerdict
-{
-    /// <summary>Seen and downloadable.</summary>
-    Allowed,
-
-    /// <summary>Seen, but its files may not be opened or downloaded: left out, and said so.</summary>
-    Refused,
-
-    /// <summary>Not seen at all (folder rules): left out without a word.</summary>
-    Hidden,
-}
-
-/// <summary>The access of the person downloading, asked at each item and each folder of the zip.</summary>
-public interface IArchiveAccess
-{
-    /// <summary>
-    /// Whether the root-relative <paramref name="path"/> may go in the zip (rights <c>files.view</c> and
-    /// <c>files.download</c>).
-    /// </summary>
-    ArchiveVerdict Check(string path);
-
-    /// <summary>
-    /// The full path really is (through links) among the server's own files or a work folder: never served.
-    /// </summary>
-    bool IsProtected(string fullPath);
-
-    /// <summary>
-    /// As <see cref="IsProtected"/>, for a path with no link on the way (already resolved): no disk access.
-    /// </summary>
-    bool IsProtectedReal(string realPath);
-}
-
-/// <summary>One file or folder chosen, with the name it gets at the top of the zip.</summary>
-public sealed record ArchiveItem(string Path, string FullPath, string RealPath, bool IsFolder, string EntryName);
-
-/// <summary>What a zip holds, checked: <see cref="Archives.WriteAsync"/> writes it.</summary>
-public sealed record ArchivePlan(IReadOnlyList<ArchiveItem> Items, string FileName);
-
-public sealed record ArchivePlanResult(FileOperationStatus Status, ArchivePlan? Plan, string? Message)
-{
-    public static ArchivePlanResult Fail(FileOperationStatus status, string message) => new(status, null, message);
-}
-
-/// <param name="Files">Files written.</param>
-/// <param name="Bytes">Their size.</param>
-/// <param name="LeftOut">Root-relative paths left out (links, unreadable files, folders not downloadable), listed in
-/// the zip.</param>
-public sealed record ArchiveSummary(int Files, long Bytes, IReadOnlyList<string> LeftOut);
-
-/// <param name="Level">Deflate level of the files (0: stored).</param>
-/// <param name="SkipCompressed">Files already compressed (pictures, videos, archives…) stored whatever the
-/// level.</param>
-/// <param name="Exclude">The real path of the zip being written: never put into itself.</param>
-public sealed record CompressOptions(int Level = 6, bool SkipCompressed = true, string? Exclude = null);
-
-/// <summary>
-/// A zip grew past <c>Files:MaxArchiveMegabytes</c> while it was written (the index was behind the disk).
-/// </summary>
-public sealed class ArchiveTooLargeException(string message) : IOException(message);
-
 /// <summary>
 /// Several files and folders downloaded as one zip (agents/docs/features/archives.md), written straight to the response
 /// while the files are read: no temporary file, nothing held in memory but the zip's directory. Media and other

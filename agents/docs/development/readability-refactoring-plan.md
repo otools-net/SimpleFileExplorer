@@ -87,7 +87,7 @@ then by hand for what they leave: comments and long strings. One commit per step
 
 - [x] `Sfe.Api/Endpoints` (29 files): routes + `<Area>Contracts.cs`, one commit with `split-types/SplitTypes.cs`
   (107 types; OpenAPI identical)
-- [ ] `Sfe.Core/Files` (16, `FileJobs` records and enums included, the class left for phase 6)
+- [x] `Sfe.Core/Files` (16, `FileJobs` records and enums included, the class left for phase 6): 68 types, subfolders too
 - [ ] `Sfe.Core/Access` (10), `Sfe.Api/Security` (9)
 - [ ] `Sfe.Core/Options` (`SfeOptions.cs` by section) and `Settings` (5, `EditableSettings`)
 - [ ] `Sfe.Core/Data` (5; `has-pending-model-changes` checked), `FileTracking` (5)

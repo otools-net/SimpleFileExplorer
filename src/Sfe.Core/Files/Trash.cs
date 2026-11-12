@@ -16,44 +16,6 @@ using Sfe.Core.Trickplay;
 
 namespace Sfe.Core.Files;
 
-/// <summary>A file or folder in the trash, as the trash page lists it.</summary>
-/// <param name="Path">Where it was, relative to the library root.</param>
-/// <param name="Size">Bytes as the index knew them; null when it was not indexed.</param>
-/// <param name="HasRules">A folder that had folder access rules (kept in the entry): its access isn't the
-/// parent's.</param>
-/// <param name="PreviousVersion">A copy of a file's content before it was saved over (the file is still where it
-/// was).</param>
-public sealed record TrashItem(
-    int Id,
-    string Path,
-    string Name,
-    bool IsFolder,
-    long? Size,
-    int? Files,
-    DateTimeOffset DeletedAt,
-    string? DeletedBy,
-    int? DeletedById,
-    bool HasRules = false,
-    bool PreviousVersion = false
-);
-
-/// <param name="Next">The <c>before</c> of the next page; null on the last.</param>
-/// <param name="RetentionDays">Days things stay in the trash (<see cref="TrashOptions.RetentionDays"/>); 0 = until
-/// emptied.</param>
-public sealed record TrashPage(IReadOnlyList<TrashItem> Items, bool HasMore, int? Next, int RetentionDays);
-
-/// <summary>How many entries of the trash someone sees, counted up to <see cref="Trash.CountCap"/>.</summary>
-/// <param name="More">There are more than <see cref="Count"/>.</param>
-public sealed record TrashCount(int Count, bool More);
-
-public enum TrashPurgeState
-{
-    Idle,
-    Running,
-}
-
-public sealed record TrashPurgeStatus(TrashPurgeState State, int Purged, DateTimeOffset? Started);
-
 /// <summary>
 /// The library's trash (agents/docs/features/trash.md): what is deleted goes to <c>trash/{guid}/{name}</c> in the work
 /// folder (<see cref="WorkFolder"/>), with a <see cref="TrashEntry"/> keeping where it was, who deleted it, the tags of

@@ -2,53 +2,6 @@ using System.Text;
 
 namespace Sfe.Core.Files.Compression;
 
-/// <param name="MaxDepth">Folders nested at most (<see cref="Options.ArchiveOptions.MaxDepth"/>).</param>
-/// <param name="MaxEntries">Entries read at most; past it the extraction stops and says so.</param>
-/// <param name="MaxCompressionRatio">A file claiming more than this many times its packed size is left out.</param>
-/// <param name="PortableNames">Names Windows refuses are left out on other systems too
-/// (<see cref="FileNames.Check"/>).</param>
-/// <param name="MaxFullPath">Longest full path written (the index's limit), or none.</param>
-public sealed record ExtractLimits(
-    int MaxDepth,
-    long MaxEntries,
-    double MaxCompressionRatio,
-    bool PortableNames,
-    int? MaxFullPath = null,
-    long MaxSevenZipList = SevenZipList.DefaultMaxMegabytes * 1024L * 1024
-);
-
-/// <summary>An entry not extracted, and why.</summary>
-public sealed record ExtractLeftOut(string Name, string Reason);
-
-/// <summary>What an extraction wrote and left out.</summary>
-public sealed class ExtractResult
-{
-    public int Files { get; internal set; }
-    public int Folders { get; internal set; }
-    public long Bytes { get; internal set; }
-
-    /// <summary>
-    /// The first <see cref="ArchiveExtractor.KeptLeftOut"/> entries left out; <see cref="LeftOutCount"/> counts them
-    /// all.
-    /// </summary>
-    public List<ExtractLeftOut> LeftOut { get; } = [];
-
-    public long LeftOutCount { get; internal set; }
-
-    /// <summary>
-    /// Why the extraction stopped before the archive's end (too many entries, the archive broken there); null when it
-    /// read it all.
-    /// </summary>
-    public string? Stopped { get; internal set; }
-
-    internal void Leave(string name, string reason)
-    {
-        if (LeftOut.Count < ArchiveExtractor.KeptLeftOut)
-            LeftOut.Add(new ExtractLeftOut(name, reason));
-        LeftOutCount++;
-    }
-}
-
 /// <summary>
 /// Writes an archive's entries (all, or those chosen) into a folder (agents/docs/features/archive-extraction.md): one
 /// pass in the archive's order (<see cref="ArchiveReader.ReadThrough"/>). Every name goes through

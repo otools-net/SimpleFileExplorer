@@ -2,17 +2,6 @@ using System.Text;
 
 namespace Sfe.Core.Files;
 
-/// <param name="Text">The content, line endings as they are in the file.</param>
-/// <param name="Encoding">How the bytes were read: <see cref="TextCodec.Utf8"/>, <see cref="TextCodec.Utf8Bom"/>,
-/// <see cref="TextCodec.Utf16Le"/>, <see cref="TextCodec.Utf16Be"/> or <see cref="TextCodec.Windows1252"/>.</param>
-/// <param name="LineEnding"><c>lf</c>, <c>crlf</c>, <c>cr</c>, or <c>mixed</c> when several are used (<c>lf</c> without
-/// any).</param>
-public sealed record DecodedText(string Text, string Encoding, string LineEnding);
-
-/// <param name="Bytes">The encoded text; null when some characters can't be written in the encoding.</param>
-/// <param name="Unrepresentable">Those characters (at most ten), when <paramref name="Bytes"/> is null.</param>
-public sealed record EncodedText(byte[]? Bytes, IReadOnlyList<string> Unrepresentable);
-
 /// <summary>
 /// Reads the bytes of a text file as the text editors of an OS do (agents/docs/features/text-viewer.md): a byte order
 /// mark says the encoding; without one the bytes are UTF-8 when they are valid UTF-8, else windows-1252 (what Notepad
