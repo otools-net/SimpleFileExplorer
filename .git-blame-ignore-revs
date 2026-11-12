@@ -6,3 +6,18 @@
 40efee5b5beddd38f5928a61a0e393fead723878
 # readability phase 1: dotnet format over tests/
 1d1472181e536db41b4a67c07a3d46dcdc98defe
+
+# readability phase 2: CSharpier over src/ and tests/
+76f289a0a218ded717cae730f635929224a103c2
+e2fa1be9a524c249cb3ba24c4a9e6c891c758c7c
+# readability phase 2: long comments, strings and OpenAPI descriptions of the server, by script
+d96c122e1a3ea44252950680669e7bd5104a604a
+1f0017376d5b27425147ac0189e2aac7ba7a08c6
+e77f9e8cd2cce7d9d4234172753efc46805b0b7d
+# readability phase 2: Prettier over the client and e2e; their comments and strings, by script
+e3ab9da25c66afd3984a5c25af69eaf810d1b4ab
+8a9397f09ed4c6a7cc822ed2d8aafb1c333b19a3
+5e307fe2ca623ec55472ce7581037ae2afd2c97d
+0e77b3fb4b0bf351a8770ff812c0c93e08f3f760
+0ee4264aa24b67cbb8d8548673f316916766c392
+1a4bef02a7967187df41add66d83e0f6d7acece1

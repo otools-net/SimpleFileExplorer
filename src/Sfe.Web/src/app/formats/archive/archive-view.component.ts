@@ -990,10 +990,11 @@ export class ArchiveViewComponent {
 
     protected countsOf(listing: ArchiveListing): string {
         const folder = listing.folder;
+        const below = `${(folder.allFiles ?? 0).toLocaleString()} ${fileWord(folder.allFiles)}`;
         const parts = [
             `${(folder.folders ?? 0).toLocaleString()} ${folder.folders === 1 ? 'folder' : 'folders'}`,
             `${(folder.files ?? 0).toLocaleString()} ${fileWord(folder.files)} here`,
-            `${formatSize(folder.size)} in ${(folder.allFiles ?? 0).toLocaleString()} ${fileWord(folder.allFiles)} below`,
+            `${formatSize(folder.size)} in ${below} below`,
         ];
         return `${parts.join(' · ')} · ${listing.format.toUpperCase()}`;
     }

@@ -170,7 +170,7 @@
     "src/Sfe.Web/src/app/files/uploads-panel.component.ts": {"longLines":13,"longTemplates":1},
     "src/Sfe.Web/src/app/files/uploads-section.component.ts": {"longLines":4},
     "src/Sfe.Web/src/app/files/uploads.ts": {"fileLines":454,"deepFunctions":2},
-    "src/Sfe.Web/src/app/formats/archive/archive-view.component.ts": {"fileLines":1105,"longLines":51,"deepFunctions":1,"longTemplates":1},
+    "src/Sfe.Web/src/app/formats/archive/archive-view.component.ts": {"fileLines":1106,"longLines":50,"deepFunctions":1,"longTemplates":1},
     "src/Sfe.Web/src/app/formats/csv/csv-table.ts": {"deepFunctions":1},
     "src/Sfe.Web/src/app/formats/csv/csv-view.component.ts": {"fileLines":618,"longLines":22,"longFunctions":1,"longTemplates":1},
     "src/Sfe.Web/src/app/formats/epub/epub-document.ts": {"longFunctions":1},

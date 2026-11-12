@@ -23,16 +23,17 @@ does and where they would change it. Everything below serves that.
 ## Sizes
 
 Limits, not targets: most code should be well under them. "Now" is what `measure.mjs` counted on 2026-11-12, after
-the formatting (server = `src/**/*.cs` without migrations, client = `src/Sfe.Web/src/**/*.ts` without specs).
+the formatters (phase 2 of the plan: CSharpier makes long calls longer in lines, so more functions passed 60);
+server = `src/**/*.cs` without migrations, client = `src/Sfe.Web/src/**/*.ts` without specs.
 
 | What | Limit | When over | Now over (server / client) |
 |---|---|---|---|
-| Line | 120 characters, comments too | break it ([Lines](#lines)) | 2749 / 2314 lines |
-| Function or method | 60 lines | extract named steps | 50 / 7 |
-| Nesting inside a function | 3 levels | guard clauses, extract the inner block | 16 / 7 |
+| Line | 120 characters, comments too | break it ([Lines](#lines)) | 1 / 1132 lines (inline templates) |
+| Function or method | 60 lines | extract named steps | 90 / 12 |
+| Nesting inside a function | 3 levels | guard clauses, extract the inner block | 21 / 7 |
 | Parameters | 5 | one object for those that travel together | 119 / 2 |
 | Dependencies of a class (constructor, `inject()`) | 8 | the class has several jobs: split it | 6 / 6 |
-| File | 400 lines (tests: 800) | split by responsibility | 21 / 17 (tests: 4 / 2) |
+| File | 400 lines (tests: 800) | split by responsibility | 36 / 28 (tests: 5 / 3) |
 | Top-level types in a C# file | 1 (see [C#](#c)) | one file per type | 106 files |
 | Inline Angular template | 40 lines | move it to `name.component.html` | 56 |
 | Paths through a function (cyclomatic complexity) | 25, the analyzer's default (CA1502) | split by case | editor hint |

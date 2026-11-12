@@ -71,15 +71,17 @@ then by hand for what they leave: comments and long strings. One commit per step
   OpenAPI document identical
 - [x] OpenAPI descriptions in raw strings rewrapped (`rewrap-descriptions.mjs`, 43 paragraphs): the document
   differs only in its descriptions' line breaks (identical with whitespace collapsed; Markdown renders the same)
-- [ ] Long strings of the server tests (about 360 lines)
+- [x] Long strings of the server tests (8 splits, 9 by hand; 4 lines of ffmpeg output kept as printed)
 - [x] Prettier over the client (`src/Sfe.Web/src`: TypeScript, CSS, `index.html`); `npm run format` /
   `format:check`; long lines 2314 -> 312; client build: every chunk the same size
 - [x] Prettier over the e2e tests (in `npm run format` of `src/Sfe.Web`; `npm run typecheck` of the e2e passes)
 - [x] Comments of the client and e2e rewrapped (147 paragraphs; one-line `/** … */` take the block form)
 - [x] Long strings of the client and e2e split (`split-strings-ts.mjs`, 242 splits; client build identical in size)
-- [ ] What is left over 120 in the client, e2e and styles, by hand (`measure.mjs --area client`); lines of inline
+- [x] What is left over 120 in the client, e2e and styles, by hand (`measure.mjs --area client`); lines of inline
   templates wait for phase 4
-- [ ] Hashes of the formatter commits in `.git-blame-ignore-revs`
+- [x] Hashes of the formatter commits in `.git-blame-ignore-revs` (the 11 mechanical ones; the commits by hand
+  stay visible to blame). Phase 2 done 2026-11-12: lines over 120: server 1 (a `<see cref>`), server tests 4,
+  client 1132 (all in inline templates, phase 4), client tests 1, e2e 0, styles 0
 
 ### Phase 3: one type per file, `models.ts` by area
 
@@ -228,8 +230,9 @@ Traps met:
   `ArchiveCatalog`).
 - `dotnet format` applies the MSTEST0037 fixes itself, two of them not compiling: `Assert.EndsWith('\n', …)` (takes
   a string) and `Assert.HasCount(long, …)` (takes an int; `AreEqual(size, array.LongLength)` instead), and
-  `Assert.AreEqual(0, enumValue)` (needs `(FileAttributes)0`); `dotnet format` itself still reports nothing then: build the tests. The
-  CA1416 guard `if (OperatingSystem.IsWindows()) Assert.Inconclusive(…)` needs a `return;` after it for the analyzer.
+  `Assert.AreEqual(0, enumValue)` (needs `(FileAttributes)0`); `dotnet format` itself still reports nothing then:
+  build the tests. The CA1416 guard `if (OperatingSystem.IsWindows()) Assert.Inconclusive(…)` needs a `return;`
+  after it for the analyzer.
 - A local constant renamed by text: leave the content of raw string literals (`"""`) alone (test data such as
   `Video: h264 (High)` that a `Replace` looks for), and rename inside interpolations (`$"at {depth}"`).
 - Added braces lengthen files and functions: `measure.mjs --check` fails for them; `--write-baseline` accepts it in
