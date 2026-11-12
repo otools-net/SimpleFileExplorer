@@ -100,6 +100,9 @@ then by hand for what they leave: comments and long strings. One commit per step
   files in one commit, the tool doing what the plan meant to do area by area); client build within a few bytes
   per chunk (guards imported from other modules)
 
+- Phase 3 done 2026-11-13: C# files with several types 106 -> 0 (492 server files); the 8 move commits are in
+  `.git-blame-ignore-revs`
+
 ### Phase 4: templates (56 inline templates over 40 lines)
 
 Move to `.html` (one commit per line):
