@@ -295,17 +295,15 @@ describe('ImageEditorDialog', () => {
     it('asks before saving over a picture changed meanwhile; Ctrl+Shift+S saves a copy', async () => {
         await setUp();
         api.editedImageAccess.mockResolvedValue({ version: 'v1', overwrite: true, permanent: false });
-        api.saveEditedImageOver
-            .mockRejectedValueOnce(new ApiError(412, 'Changed'))
-            .mockResolvedValueOnce({
-                path: 'Media/photo.jpg',
-                width: 1000,
-                height: 3000,
-                size: 2048,
-                version: 'v3',
-                modified: '2026-10-19T10:00:00Z',
-                trashId: null,
-            });
+        api.saveEditedImageOver.mockRejectedValueOnce(new ApiError(412, 'Changed')).mockResolvedValueOnce({
+            path: 'Media/photo.jpg',
+            width: 1000,
+            height: 3000,
+            size: 2048,
+            version: 'v3',
+            modified: '2026-10-19T10:00:00Z',
+            trashId: null,
+        });
         const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
         await open();
         await setField('width', '1000');

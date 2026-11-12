@@ -174,15 +174,13 @@ describe('ArchiveViewComponent', () => {
         it('searches the whole archive by name, goes on where a page stopped, and opens the folder of a result', async () => {
             api.exploreArchive.mockResolvedValue(listing([folder(2, 'Day 1'), file(10, 'readme.txt')]));
             await show();
-            api.searchArchive
-                .mockResolvedValueOnce({ items: [], next: 'f10' })
-                .mockResolvedValueOnce({
-                    items: [
-                        file(11, 'summit.jpg', { where: 'Day 1', in: 2 }),
-                        file(12, 'Summit.txt', { where: '', in: 1 }),
-                    ],
-                    next: null,
-                });
+            api.searchArchive.mockResolvedValueOnce({ items: [], next: 'f10' }).mockResolvedValueOnce({
+                items: [
+                    file(11, 'summit.jpg', { where: 'Day 1', in: 2 }),
+                    file(12, 'Summit.txt', { where: '', in: 1 }),
+                ],
+                next: null,
+            });
 
             await type('s');
             expect(api.searchArchive).not.toHaveBeenCalled();
