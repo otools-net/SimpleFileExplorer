@@ -78,9 +78,9 @@ export class ItemMenu {
     private readonly router = inject(Router);
 
     constructor() {
-        // Another listing: the item whose menu is open may not be there any more. The same listing refreshed (the change
-        // feed) keeps the menu open, unless its item left the folder (deleted or moved elsewhere): closed with a word,
-        // never silently gone.
+        // Another listing: the item whose menu is open may not be there any more. The same listing refreshed (the
+        // change feed) keeps the menu open, unless its item left the folder (deleted or moved elsewhere): closed with a
+        // word, never silently gone.
         let generation = untracked(() => this.store.generation());
         let watched: string | null = null;
         effect(() => {
@@ -163,7 +163,9 @@ export class ItemMenu {
     }
 
     /** A file without a viewer of its own may be opened as text (the server refuses what isn't). */
-    /** A comic book, an EPUB, an office document…: a zip (or rar, 7z, tar) underneath, its files explored in the viewer. */
+    /**
+     * A comic book, an EPUB, an office document…: a zip (or rar, 7z, tar) underneath, its files explored in the viewer.
+     */
     canOpenAsArchive(item: LibraryItem): boolean {
         return isContainer(item) && this.store.can(Rights.viewFiles, item) && Boolean(this.dialogs.viewer());
     }

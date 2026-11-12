@@ -26,8 +26,8 @@ export class ItemActions {
     }
 
     /**
-     * While items are selected, a plain click (or shift-click) on a file or folder adds it to the selection (or takes it
-     * out) instead of opening it. True when it did.
+     * While items are selected, a plain click (or shift-click) on a file or folder adds it to the selection (or takes
+     * it out) instead of opening it. True when it did.
      */
     selectInstead(event: MouseEvent, item: LibraryItem): boolean {
         if (!this.store.selection().size || event.ctrlKey || event.metaKey || event.altKey || event.button !== 0)
@@ -38,8 +38,8 @@ export class ItemActions {
     }
 
     /**
-     * A click on a file's link. While items are selected it selects (`selectInstead`); a plain click on a file with a viewer opens
-     * the viewer; other clicks open the link (new tab...).
+     * A click on a file's link. While items are selected it selects (`selectInstead`); a plain click on a file with a
+     * viewer opens the viewer; other clicks open the link (new tab...).
      */
     openFile(event: MouseEvent, item: LibraryItem): void {
         if (this.selectInstead(event, item)) return;

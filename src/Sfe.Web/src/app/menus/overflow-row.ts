@@ -23,7 +23,8 @@ let nextId = 0;
  * (`overflowPriority`: a lower one leaves earlier), and a "⋯" button (`button[sfeOverflowMore]`, the row's last child)
  * shows them in the app's menu. Every child of the row is a `[sfeOverflowItem]` (`overflowStay` for the ones that never
  * leave: their width must be counted too) but the "⋯"; what doesn't take part goes outside the row. Measuring and
- * choosing: `@fluentui/priority-overflow`, from the items' widths and the row's (agents/docs/features/overflow-menus.md).
+ * choosing: `@fluentui/priority-overflow`, from the items' widths and the row's
+ * (agents/docs/features/overflow-menus.md).
  */
 @Directive({ selector: '[sfeOverflowRow]', host: { class: 'overflow-row' } })
 export class OverflowRowDirective implements OnInit {
@@ -129,16 +130,17 @@ export class OverflowRowDirective implements OnInit {
     /**
      * The library adds up the items' widths, not the gaps between them nor the row's padding (and border, measured in
      * `overflowIn`): they are its padding, for the items shown (with a width: a text shown in another's place takes
-     * none while hidden) and the "⋯". That number changes with what fits, so within one width the padding only grows: an
-     * item that fitted without its gap leaves again and stays out, never back and forth. A new width (or items added or
-     * removed) starts again from the gaps always there: the items that stay, and the "⋯" or an item that may leave.
+     * none while hidden) and the "⋯". That number changes with what fits, so within one width the padding only grows:
+     * an item that fitted without its gap leaves again and stays out, never back and forth. A new width (or items added
+     * or removed) starts again from the gaps always there: the items that stay, and the "⋯" or an item that may leave.
      */
     private fitGaps(): void {
         if (!this.manager) return;
         const style = getComputedStyle(this.element);
         const px = (value: string) => parseFloat(value) || 0;
         const gap = px(style.columnGap);
-        // clientWidth holds the row's padding (not its border): room taken too; measured in `overflowIn`, its border as well.
+        // clientWidth holds the row's padding (not its border): room taken too; measured in `overflowIn`, its border as
+        // well.
         const chrome =
             px(style.paddingLeft) +
             px(style.paddingRight) +
@@ -152,7 +154,8 @@ export class OverflowRowDirective implements OnInit {
             ).length;
             const floor = room(staying + (this.items.size > staying ? 1 : 0));
             if (floor !== this.padding) {
-                // Measured again with it first; then grown from what fits (the library may not report an unchanged row).
+                // Measured again with it first; then grown from what fits (the library may not report an unchanged
+                // row).
                 this.setPadding(floor);
                 queueMicrotask(() => this.fitGaps());
                 return;

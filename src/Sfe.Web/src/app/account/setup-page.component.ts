@@ -15,10 +15,10 @@ type SetupStep = 'code' | 'library' | 'account' | 'restart';
 /**
  * The first administrator (`setup`). Nothing else works until one exists. The page needs the setup code: the one the
  * server made itself (shown in its console) or one set in its environment; without either, it says how to set one for
- * the way the server runs. Then it asks for the mode (Local or External), the library folder, who may open SFE and ffmpeg (the installation page,
- * saved before the administrator exists), then for the administrator. A new install opened in a browser on the
- * server's own computer skips the code (`codeRequired` false). With `Sfe:Setup:Recover`, the same page resets the
- * password of a local administrator (or adds one), without the library step.
+ * the way the server runs. Then it asks for the mode (Local or External), the library folder, who may open SFE and
+ * ffmpeg (the installation page, saved before the administrator exists), then for the administrator. A new install
+ * opened in a browser on the server's own computer skips the code (`codeRequired` false). With `Sfe:Setup:Recover`, the
+ * same page resets the password of a local administrator (or adds one), without the library step.
  */
 @Component({
     selector: 'sfe-setup-page',
@@ -230,7 +230,10 @@ export class SetupPageComponent implements OnInit {
     );
     /** A new install opened on the server's own computer: no code step. */
     protected readonly codeFree = computed(() => this.info()?.codeRequired === false && !this.info()!.recover);
-    /** The server opens a browser when it starts (portable packages): it can sign the administrator in there, when Local. */
+    /**
+     * The server opens a browser when it starts (portable packages): it can sign the administrator in there, when
+     * Local.
+     */
     protected readonly offerFastSignIn = computed(
         () =>
             !this.info()?.recover &&

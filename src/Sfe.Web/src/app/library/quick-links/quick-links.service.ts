@@ -91,7 +91,9 @@ export class QuickLinksService {
         );
     }
 
-    /** Runs a request answering the list; only the last one sent sets it. Says `done` once done, the error otherwise. */
+    /**
+     * Runs a request answering the list; only the last one sent sets it. Says `done` once done, the error otherwise.
+     */
     private async change(request: () => Promise<QuickLink[]>, done: string | null): Promise<boolean> {
         const sequence = ++this.sequence;
         try {

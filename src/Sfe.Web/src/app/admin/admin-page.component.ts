@@ -76,11 +76,15 @@ export { leaveAdminPage } from './leave-admin-page';
  * The administration page (`admin?section=&page=`): the sections of admin-sections.ts in a sidebar, the sub-pages of
  * the open section listed under it (on phones, where the sections are a list of their own, as chips above the
  * sub-page); breadcrumbs above the heading say where the page is. Without a section, it shows the sections as cards by
- * group (the overview; on phones, the list of sections), unless the session sees only one. A search box above the sections finds sections,
- * sub-pages and settings (admin-search.ts). The settings sub-pages share one form (SettingsForm), saved from the bar at
- * the bottom. Moving between sections and sub-pages replaces the history entry, so that "back" returns to the listing page.
+ * group (the overview; on phones, the list of sections), unless the session sees only one. A search box above the
+ * sections finds sections, sub-pages and settings (admin-search.ts). The settings sub-pages share one form
+ * (SettingsForm), saved from the bar at the bottom. Moving between sections and sub-pages replaces the history entry,
+ * so that "back" returns to the listing page.
  */
-/** Phones: the sub-pages' chips are one line that scrolls sideways; the one shown (`sfeChipInView`) is brought into view. */
+/**
+ * Phones: the sub-pages' chips are one line that scrolls sideways; the one shown (`sfeChipInView`) is brought into
+ * view.
+ */
 @Directive({ selector: '[sfeChipInView]' })
 export class ChipInViewDirective {
     readonly sfeChipInView = input.required<string>();
@@ -589,7 +593,8 @@ export class AdminPageComponent implements OnInit {
             return;
         }
         this.ready.set(true);
-        // A user who may change no settings (My account only: its own form) asks nothing: the space's were refused (403).
+        // A user who may change no settings (My account only: its own form) asks nothing: the space's were refused
+        // (403).
         if (this.form.levels().length) void this.form.load();
     }
 

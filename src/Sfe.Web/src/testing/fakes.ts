@@ -306,7 +306,10 @@ export function installationView(overrides: Partial<InstallationView> = {}): Ins
     };
 }
 
-/** A valid value for every field of the settings pages (the lowest numbers, empty lists...), as the server sends them all. */
+/**
+ * A valid value for every field of the settings pages (the lowest numbers, empty lists...), as the server sends them
+ * all.
+ */
 export function settingsValues(): SettingsValues {
     const result: Record<string, unknown> = {};
     for (const field of TABS.flatMap((tab) => tab.groups.flatMap((group) => group.fields))) {

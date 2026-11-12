@@ -182,7 +182,9 @@ export class PlayerPageComponent implements OnInit {
             .catch((error: Error) => this.toasts.error(`Could not open the video: ${error.message}`));
     }
 
-    /** Same shortcuts as in the viewer (Space/K, J/L, F, M, S); focused buttons and the seek bar keep their own keys. */
+    /**
+     * Same shortcuts as in the viewer (Space/K, J/L, F, M, S); focused buttons and the seek bar keep their own keys.
+     */
     protected onKeydown(event: KeyboardEvent): void {
         const target = event.target as Element;
         if ((event.key === ' ' || event.key === 'Enter') && target.closest?.('button, a')) return;

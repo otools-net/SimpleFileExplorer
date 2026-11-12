@@ -33,15 +33,18 @@ import { Dialogs, registerDialog } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 import { QuickLinksService } from '../quick-links/quick-links.service';
 
-// Mouse wheel (not over a view that scrolls itself, such as text): down = next, up = previous. A touchpad sends a long burst of small deltas (with inertia), so they add
-// up to a step and the rest of the gesture is ignored until it pauses, otherwise one flick would skip several files.
-// Wheel notches are large: they only wait a short fixed time, so each one still moves.
+// Mouse wheel (not over a view that scrolls itself, such as text): down = next, up = previous. A touchpad sends a long
+// burst of small deltas (with inertia), so they add up to a step and the rest of the gesture is ignored until it
+// pauses, otherwise one flick would skip several files. Wheel notches are large: they only wait a short fixed time, so
+// each one still moves.
 const WHEEL_STEP = 50;
 const WHEEL_PAUSE_MS = 250;
 /** A press on the picture that moves less than this (CSS pixels) is a click (zoom), not a drag. */
 const CLICK_SLOP = 4;
 
-/** Where a picture of `size` goes along one side of a stage `room` long: centred if it fits, else never leaving a gap. */
+/**
+ * Where a picture of `size` goes along one side of a stage `room` long: centred if it fits, else never leaving a gap.
+ */
 function clampAxis(position: number, room: number, size: number): number {
     return size <= room ? (room - size) / 2 : Math.min(0, Math.max(room - size, position));
 }
@@ -463,8 +466,8 @@ export class ViewerComponent {
 
     constructor() {
         registerDialog((dialogs) => dialogs.viewer, this);
-        // Two fingers zoom a picture (@use-gesture: touch, pointer and Safari's gesture events alike). Not the wheel with
-        // Ctrl: the browser's own zoom, as over a video or a document.
+        // Two fingers zoom a picture (@use-gesture: touch, pointer and Safari's gesture events alike). Not the wheel
+        // with Ctrl: the browser's own zoom, as over a video or a document.
         afterNextRender(() => {
             const pinch = new PinchGesture(this.stage().nativeElement, (state) => this.onPinch(state), {
                 pinchOnWheel: false,
@@ -635,7 +638,9 @@ export class ViewerComponent {
         this.zoomTo(picture, picture.naturalWidth, picture.naturalHeight, clientX, clientY);
     }
 
-    /** Shows the picture `width` × `height`, keeping the point at `clientX`, `clientY` (else the centre) where it is. */
+    /**
+     * Shows the picture `width` × `height`, keeping the point at `clientX`, `clientY` (else the centre) where it is.
+     */
     private zoomTo(picture: HTMLImageElement, width: number, height: number, clientX?: number, clientY?: number): void {
         const box = picture.getBoundingClientRect();
         const stage = this.stage().nativeElement.getBoundingClientRect();
@@ -653,8 +658,8 @@ export class ViewerComponent {
 
     /**
      * Two fingers on a picture: it follows their spread, around the point between them, from the size that fits the
-     * screen up to `PINCH_MAX_FIT` times it (or its actual size, if larger); let go near the fitted size, it fits again.
-     * A finger moving it once zoomed is the drag of `onPicturePointerMove`.
+     * screen up to `PINCH_MAX_FIT` times it (or its actual size, if larger); let go near the fitted size, it fits
+     * again. A finger moving it once zoomed is the drag of `onPicturePointerMove`.
      */
     private onPinch({
         first,
@@ -793,7 +798,8 @@ export class ViewerComponent {
     protected onKeydown(event: KeyboardEvent): void {
         const target = event.target as Element;
         if (target.closest?.(OWNS_KEYS)) {
-            // The view's keys are its own (arrows move its cursor); Esc leaves it first (unless it used it), then closes.
+            // The view's keys are its own (arrows move its cursor); Esc leaves it first (unless it used it), then
+            // closes.
             if (event.key === 'Escape' && !event.defaultPrevented) {
                 event.preventDefault();
                 this.dialog().nativeElement.focus();

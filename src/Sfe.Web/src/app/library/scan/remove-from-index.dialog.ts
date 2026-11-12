@@ -10,7 +10,8 @@ import { ListingStore } from '../listing.store';
 
 /**
  * "Remove from the index": takes a folder and its sub-folders out of the search index (the files stay on the disk),
- * after saying how much that is, and optionally keeps future scans out of it (Administration › Scanning › What to scan › Excluded folders).
+ * after saying how much that is, and optionally keeps future scans out of it (Administration › Scanning › What to scan
+ * › Excluded folders).
  */
 @Component({
     selector: 'sfe-remove-from-index',

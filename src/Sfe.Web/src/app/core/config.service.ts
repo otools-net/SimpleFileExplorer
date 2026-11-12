@@ -191,13 +191,14 @@ export class ConfigService {
     }
 
     /**
-     * `path` played converted by the server, for one player (`VideoPlayerComponent.stream`); null when the server doesn't
-     * convert videos for this session.
+     * `path` played converted by the server, for one player (`VideoPlayerComponent.stream`); null when the server
+     * doesn't convert videos for this session.
      */
     videoStream(path: string): VideoStream | null {
         const streaming = this.current()?.streaming;
         if (!streaming) return null;
-        // Not crypto.randomUUID: plain-http LAN pages aren't secure contexts. It only tells this player's streams apart.
+        // Not crypto.randomUUID: plain-http LAN pages aren't secure contexts. It only tells this player's streams
+        // apart.
         const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
         return {
             always: streaming.always,
@@ -217,12 +218,18 @@ export class ConfigService {
         return this.urls()!;
     }
 
-    /** The resolution of an image or video to show ("1920×1080"); empty when unknown or turned off (Browse:ShowResolution). */
+    /**
+     * The resolution of an image or video to show ("1920×1080"); empty when unknown or turned off
+     * (Browse:ShowResolution).
+     */
     resolution(item: LibraryItem): string {
         return this.current()?.showResolution ? formatResolution(item.width, item.height) : '';
     }
 
-    /** The duration of a video or audio file to show ("1:23:45"); empty when unknown or turned off (Browse:ShowDuration). */
+    /**
+     * The duration of a video or audio file to show ("1:23:45"); empty when unknown or turned off
+     * (Browse:ShowDuration).
+     */
     duration(item: LibraryItem): string {
         return this.current()?.showDuration && item.duration ? formatDuration(item.duration) : '';
     }

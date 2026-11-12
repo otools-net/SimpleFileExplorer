@@ -10,7 +10,10 @@ import { SheetComponent } from '../shared/sheet.component';
 import { TagChipComponent } from './tag-chip.component';
 import { TagOption, TagPickerComponent } from './tag-picker.component';
 
-/** The tags of a file, grouped by category: add (or create), remove, or edit them, each with its right (only seen without them). */
+/**
+ * The tags of a file, grouped by category: add (or create), remove, or edit them, each with its right (only seen
+ * without them).
+ */
 @Component({
     selector: 'sfe-file-tags',
     imports: [SheetComponent, TagChipComponent, TagPickerComponent],

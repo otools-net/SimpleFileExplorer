@@ -1,8 +1,13 @@
 import { FolderExclusions } from '../../core/models';
 
-/* How a folder kept out of scans, trickplay or thumbnails is described: a short chip in the listing, a sentence in its hint. */
+/*
+ * How a folder kept out of scans, trickplay or thumbnails is described: a short chip in the listing, a sentence in its
+ * hint.
+ */
 
-/** The short words of a folder's chip ('not scanned · no previews', 'skipped'); null when it is excluded from nothing. */
+/**
+ * The short words of a folder's chip ('not scanned · no previews', 'skipped'); null when it is excluded from nothing.
+ */
 export function exclusionChip(excluded: FolderExclusions | null | undefined): string | null {
     if (!excluded) return null;
     const { scan, trickplay, thumbnails } = excluded;

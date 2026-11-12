@@ -57,7 +57,9 @@ export type MenuTargetKind =
     | 'appLink'
     | 'overflow';
 
-/** Something with a context menu: it brings its own entries, so the pages, the viewer or the administration add theirs. */
+/**
+ * Something with a context menu: it brings its own entries, so the pages, the viewer or the administration add theirs.
+ */
 export interface MenuTarget {
     kind: MenuTargetKind;
     /** The same key: the same target (its ⋮ button closes the menu it opened). */
@@ -489,7 +491,10 @@ export function isTextField(element: Element): boolean {
     return field.getAttribute('contenteditable') !== 'false';
 }
 
-/** Puts the menu's layer in the top layer; browsers without the popover API (and jsdom) keep it in place, above the page by its z-index. */
+/**
+ * Puts the menu's layer in the top layer; browsers without the popover API (and jsdom) keep it in place, above the page
+ * by its z-index.
+ */
 function showLayer(layer: HTMLElement | undefined): void {
     try {
         if (layer && typeof layer.showPopover === 'function' && !layer.matches(':popover-open')) layer.showPopover();
@@ -498,7 +503,10 @@ function showLayer(layer: HTMLElement | undefined): void {
     }
 }
 
-/** The open modal dialog `trigger` is in, else the last one opened (the viewer, a sheet, the picture editor); null when none. */
+/**
+ * The open modal dialog `trigger` is in, else the last one opened (the viewer, a sheet, the picture editor); null when
+ * none.
+ */
 function openDialog(trigger: HTMLElement | null): HTMLDialogElement | null {
     const own = trigger?.closest<HTMLDialogElement>('dialog[open]');
     if (own) return own;
@@ -642,7 +650,9 @@ export class ContextMenuComponent {
     });
     /** Where the menu shows: at the pointer, moved back inside the window once its size is known. */
     protected readonly position = signal({ x: 0, y: 0 });
-    /** Android's Back (and Esc) closes the open menu instead of leaving the page, where the browser has close watchers. */
+    /**
+     * Android's Back (and Esc) closes the open menu instead of leaving the page, where the browser has close watchers.
+     */
     private watcher: CloseWatcherLike | null = null;
     /** When the window last changed size (`onScroll`). */
     private resizedAt = -Infinity;
@@ -661,10 +671,12 @@ export class ContextMenuComponent {
             afterNextRender(
                 () => {
                     showLayer(this.layer()?.nativeElement);
-                    // A phone's sheet is placed by its CSS (phone-sheets.css): measuring it forced a layout of the menu inside
-                    // this frame (~50 ms of a phone's opening it, e2e menu-profile.spec.ts) for a position it doesn't use.
+                    // A phone's sheet is placed by its CSS (phone-sheets.css): measuring it forced a layout of the menu
+                    // inside this frame (~50 ms of a phone's opening it, e2e menu-profile.spec.ts) for a position it
+                    // doesn't use.
                     if (!isSheet()) this.place(open.x, open.y);
-                    // A finger has no keys to move between the entries: the focus stays (no ring, no work); keys and mouse get it.
+                    // A finger has no keys to move between the entries: the focus stays (no ring, no work); keys and
+                    // mouse get it.
                     if (!open.touch) this.focusFirst();
                 },
                 { injector: this.injector },
@@ -673,8 +685,8 @@ export class ContextMenuComponent {
         const navigations = inject(Router, { optional: true })?.events.subscribe((event) => {
             if (event instanceof NavigationStart) this.menu.close();
         });
-        // Esc closes the menu wherever the focus is: one a finger opened leaves it outside (a tablet's keyboard). Caught
-        // before a dialog's own Esc, which would close the viewer under the menu.
+        // Esc closes the menu wherever the focus is: one a finger opened leaves it outside (a tablet's keyboard).
+        // Caught before a dialog's own Esc, which would close the viewer under the menu.
         const escape = (event: KeyboardEvent) => {
             if (event.key !== 'Escape' || !this.menu.open() || this.box()?.nativeElement.contains(event.target as Node))
                 return;
@@ -782,7 +794,10 @@ export class ContextMenuComponent {
             this.menu.close();
     }
 
-    /** Arrows move between the entries (Right opens a submenu, Left goes back); Esc closes and goes back to what opened the menu. */
+    /**
+     * Arrows move between the entries (Right opens a submenu, Left goes back); Esc closes and goes back to what opened
+     * the menu.
+     */
     protected keydown(event: KeyboardEvent): void {
         const entries = [...(this.box()?.nativeElement.querySelectorAll<HTMLElement>('.item-menu-entry') ?? [])];
         const index = entries.indexOf(document.activeElement as HTMLElement);

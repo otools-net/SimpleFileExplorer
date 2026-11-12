@@ -52,10 +52,10 @@ interface Part {
 /**
  * A text file in the viewer or on a page of its own (agents/docs/features/text-viewer.md): highlighting by its name,
  * find (Ctrl+F), go to line (Ctrl+Alt+G), and the reading preferences of its format's profile ("Aa": font, size with
- * Ctrl+= / Ctrl+− / Ctrl+0, line height, width, margins, wrapping, line numbers, colours). Edit (E) changes it and Ctrl+S
- * saves it, as the rights allow (agents/docs/features/text-editor.md); `edit` opens it ready to be changed. A file too
- * large to be read whole is read in parts; **Follow** shows what is added to its end (logs). It opens where it was last
- * read in this browser. Its keys, wheel and swipes are its own (`data-owns-keys`).
+ * Ctrl+= / Ctrl+− / Ctrl+0, line height, width, margins, wrapping, line numbers, colours). Edit (E) changes it and
+ * Ctrl+S saves it, as the rights allow (agents/docs/features/text-editor.md); `edit` opens it ready to be changed. A
+ * file too large to be read whole is read in parts; **Follow** shows what is added to its end (logs). It opens where it
+ * was last read in this browser. Its keys, wheel and swipes are its own (`data-owns-keys`).
  */
 @Component({
     selector: 'sfe-text-view',

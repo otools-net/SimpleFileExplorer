@@ -708,7 +708,10 @@ export class VideoPlayerComponent {
         this.updateTime();
     }
 
-    /** A conversion loops by seeking back to its start (the element's own loop would restart at the conversion's offset). */
+    /**
+     * A conversion loops by seeking back to its start (the element's own loop would restart at the conversion's
+     * offset).
+     */
     protected onEnded(): void {
         if (this.playback().streamed && this.looping()) {
             this.resume = true;
@@ -860,7 +863,9 @@ export class VideoPlayerComponent {
 
     /* ---------- Seek bar and its preview ---------- */
 
-    /** Follows the bar while it is dragged; a conversion that didn't get there yet is asked again once it is released. */
+    /**
+     * Follows the bar while it is dragged; a conversion that didn't get there yet is asked again once it is released.
+     */
     protected onSeekInput(): void {
         const value = Number(this.seekRef().nativeElement.value);
         const duration = this.length();

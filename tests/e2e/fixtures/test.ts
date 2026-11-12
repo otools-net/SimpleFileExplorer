@@ -56,7 +56,8 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; finalLay
     finalLayout: [
         async ({ page, layoutCheck, isMobile }, use, testInfo) => {
             await use();
-            // Only after a test that passed (a failure says more than its layout), on a phone, on one of the app's pages.
+            // Only after a test that passed (a failure says more than its layout), on a phone, on one of the app's
+            // pages.
             if (
                 !layoutCheck ||
                 !isMobile ||
@@ -90,8 +91,9 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; finalLay
             const problems: string[] = [];
             const allowed = (text: string) => allowedErrors?.test(text) ?? false;
             page.on('console', (message) => {
-                // A video's trickplay description (not a sheet) answers 404 until it is made, or outside the trickplay's
-                // folders: the app asks, by design (TrickplayEndpoints `GetTrickplay`); the browser logs it. Only with ffmpeg.
+                // A video's trickplay description (not a sheet) answers 404 until it is made, or outside the
+                // trickplay's folders: the app asks, by design (TrickplayEndpoints `GetTrickplay`); the browser logs
+                // it. Only with ffmpeg.
                 if (
                     /^Failed to load resource: .*404/.test(message.text()) &&
                     /\/api\/trickplay\/files\/[^?]+(\?(?!.*\bsheet=).*)?$/.test(message.location().url)
@@ -103,8 +105,9 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; finalLay
                     : message.text();
                 if (message.type() === 'error' && !allowed(text)) problems.push(`console: ${text}`);
             });
-            // WebKit reports a request that leaving the page cancelled as "… due to access control checks" (the app has one
-            // origin, nothing else gives it): forgiven when the page navigates within the second; any other time it counts.
+            // WebKit reports a request that leaving the page cancelled as "… due to access control checks" (the app has
+            // one origin, nothing else gives it): forgiven when the page navigates within the second; any other time it
+            // counts.
             let cancelled: { text: string; at: number }[] = [];
             page.on('framenavigated', (frame) => {
                 if (frame === page.mainFrame()) cancelled = cancelled.filter((each) => Date.now() - each.at > 1000);

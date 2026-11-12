@@ -38,7 +38,10 @@ function fieldText(field: SettingField, group: SettingGroup): string[] {
     return [field.hint, field.key, group.title, group.hint ?? '', ...choices];
 }
 
-/** Matches of `query` among `sections` (those the session sees), best first; the page lists `ADMIN_SEARCH_LIMIT` of them. */
+/**
+ * Matches of `query` among `sections` (those the session sees), best first; the page lists `ADMIN_SEARCH_LIMIT` of
+ * them.
+ */
 export function searchAdmin(query: string, sections: AdminSection[]): AdminSearchResult[] {
     const words = searchWords(query);
     if (!words.length) return [];

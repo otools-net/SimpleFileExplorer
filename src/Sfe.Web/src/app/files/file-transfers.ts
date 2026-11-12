@@ -41,7 +41,10 @@ export class FileTransfers {
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
     private readonly dialogs = inject(Dialogs);
-    /** The extractions this page started, by job: one failing on its password is asked again as it was (never the password). */
+    /**
+     * The extractions this page started, by job: one failing on its password is asked again as it was (never the
+     * password).
+     */
     private readonly extractions = new Map<number, ExtractRequest>();
 
     /** The session's jobs shown in the operations panel, newest first. */
@@ -110,7 +113,9 @@ export class FileTransfers {
         );
     }
 
-    /** May put `item` in a zip: it is read (view, download); the zip goes where one may compress (the folder listed). */
+    /**
+     * May put `item` in a zip: it is read (view, download); the zip goes where one may compress (the folder listed).
+     */
     canCompress(item: LibraryItem): boolean {
         return (
             this.config.can(Rights.compressFiles) &&
@@ -443,7 +448,10 @@ export function pastOf(kind: FileJobKind): string {
     return kind === 'move' ? 'moved' : kind === 'copy' ? 'copied' : kind === 'extract' ? 'extracted' : 'compressed';
 }
 
-/** The moves `done` undone: each item back into the folder it came from (one job per folder), asking about names taken there. */
+/**
+ * The moves `done` undone: each item back into the folder it came from (one job per folder), asking about names taken
+ * there.
+ */
 function groupByOrigin(done: FileJobItem[]): Map<string, string[]> {
     const groups = new Map<string, string[]>();
     for (const result of done) {

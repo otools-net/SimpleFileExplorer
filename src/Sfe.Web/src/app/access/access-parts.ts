@@ -55,7 +55,10 @@ export function rightAreas(rights: RightDefinition[]): { title: string; rights: 
     }));
 }
 
-/** The mark of a right that changes something: `files` when it changes the library's files on disk; null when it only looks. */
+/**
+ * The mark of a right that changes something: `files` when it changes the library's files on disk; null when it only
+ * looks.
+ */
 export function rightMark(right: RightDefinition): { kind: 'changes' | 'files'; label: string; hint: string } | null {
     if (right.atFolder === 'write')
         return {

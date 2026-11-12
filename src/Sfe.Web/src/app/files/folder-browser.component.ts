@@ -31,7 +31,9 @@ export class FolderBrowser {
         private readonly config: ConfigService,
     ) {}
 
-    /** `right` may be used in the folder shown (its folder rules, else the person's rights); false before it is read. */
+    /**
+     * `right` may be used in the folder shown (its folder rules, else the person's rights); false before it is read.
+     */
     allows(right: string): boolean {
         const listing = this.listing();
         if (!listing) return false;

@@ -322,7 +322,8 @@ export class TasksSectionComponent {
 
     protected async start(task: TaskInfo): Promise<void> {
         if (task.task === 'scan') {
-            // Same as the menu's "Scan this folder", for the folder browsed last: asks, then its card shows the progress.
+            // Same as the menu's "Scan this folder", for the folder browsed last: asks, then its card shows the
+            // progress.
             await this.scan.start();
             void this.refresh();
             return;

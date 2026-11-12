@@ -184,7 +184,10 @@ describe('SelectionBarComponent on a narrow screen', () => {
     const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth')!;
     const clientWidth = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth')!;
 
-    /** jsdom has no layout: the strip `dockWidth`, the long count 200, the short one 90, Select all 80, Tags 60, the others 50. */
+    /**
+     * jsdom has no layout: the strip `dockWidth`, the long count 200, the short one 90, Select all 80, Tags 60, the
+     * others 50.
+     */
     function width(this: HTMLElement): number {
         const has = (name: string) => this.classList.contains(name);
         if (has('selection-dock')) return dockWidth;
@@ -294,7 +297,8 @@ describe('SelectionBarComponent on a narrow screen', () => {
         const total = (await barAt(2000)).total;
         TestBed.resetTestingModule();
         await setUp();
-        // Without the long count (200) and with the "⋯" (50) it is still 1 px too wide: the rightmost button that may leave goes.
+        // Without the long count (200) and with the "⋯" (50) it is still 1 px too wide: the rightmost button that may
+        // leave goes.
         const bar = await barAt(total - 200 + 50 - 1);
         expect(bar.gone).toEqual(['selection-count', 'Download']);
         expect(bar.more).toBe(true);

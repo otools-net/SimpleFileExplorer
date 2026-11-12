@@ -87,7 +87,9 @@ test.describe('navigation', () => {
         expect(new URL(page.url()).searchParams.get('path')).toBe('Photos');
     });
 
-    /** Scrolls 'Many photos' down, leaves it with `leave`, comes back with Back: the item at the top is back in place. */
+    /**
+     * Scrolls 'Many photos' down, leaves it with `leave`, comes back with Back: the item at the top is back in place.
+     */
     async function backKeepsPlace(page: Page, leave: () => Promise<void>) {
         await openFolder(page, 'Many photos');
         await page.evaluate(() => window.scrollTo(0, 2500));
@@ -108,14 +110,16 @@ test.describe('navigation', () => {
 
     test('Back from the parent folder (a link of the app) brings the position back', async ({ page }) => {
         await backKeepsPlace(page, async () => {
-            // The one a finger can reach (the sticky bar's): tapping the one scrolled away made Playwright scroll to it.
+            // The one a finger can reach (the sticky bar's): tapping the one scrolled away made Playwright scroll to
+            // it.
             const links = page.getByRole('link', { name: 'Parent folder' });
             let up = links.first();
             for (let i = 0; i < (await links.count()); i++) {
                 const box = await links.nth(i).boundingBox();
                 if (box && box.y >= 0 && box.y < page.viewportSize()!.height) up = links.nth(i);
             }
-            // At its place on the screen: locator.tap() first scrolls a sticky element "into view", which moved the page.
+            // At its place on the screen: locator.tap() first scrolls a sticky element "into view", which moved the
+            // page.
             await expect(up).toBeInViewport();
             const box = (await up.boundingBox())!;
             expect(await page.evaluate(() => window.scrollY)).toBe(2500);

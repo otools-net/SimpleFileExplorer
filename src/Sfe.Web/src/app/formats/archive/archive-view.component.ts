@@ -31,7 +31,9 @@ import { FILE_SOURCE, FileSource } from '../file-source';
 import { extensionOf, FILE_VIEW_HOST, FileFormat, FileViewHost, formatOf } from '../formats';
 import { VirtualRows } from '../virtual-rows';
 
-/** The first page of a folder, then larger ones while scrolling (keyset pages: one indexed range each on the server). */
+/**
+ * The first page of a folder, then larger ones while scrolling (keyset pages: one indexed range each on the server).
+ */
 const FIRST_PAGE = 200;
 const NEXT_PAGE = 1000;
 /** Rows left below the screen when the next page is asked for. */
@@ -55,13 +57,19 @@ interface Found {
 const FIND_DELAY_MS = 300;
 const FIND_MIN = 2;
 
-/** The formats an entry is shown with in place (read only, read whole); others open in a tab (videos, audio) or download. */
+/**
+ * The formats an entry is shown with in place (read only, read whole); others open in a tab (videos, audio) or
+ * download.
+ */
 const IN_PLACE: ReadonlySet<string> = new Set(['text', 'prose', 'markdown', 'json', 'csv', 'subtitles', 'pdf']);
 
 /** What the archive view shows by itself: pictures, videos (the app's player) and audio. */
 type Media = 'picture' | 'video' | 'audio';
 
-/** An entry shown in place of the list: a picture, video or audio (`media`), or a format's view of it, reading it from the archive. */
+/**
+ * An entry shown in place of the list: a picture, video or audio (`media`), or a format's view of it, reading it from
+ * the archive.
+ */
 interface Viewing {
     entry: ArchiveItem;
     media: Media | null;
@@ -353,7 +361,10 @@ export class ArchiveViewComponent {
 
     /** An entry shown in place of the list (Back: the list as it was). */
     protected readonly viewing = signal<Viewing | null>(null);
-    /** The video or audio shown can't be played (a format the browser doesn't read, too large unpacked): its download is offered. */
+    /**
+     * The video or audio shown can't be played (a format the browser doesn't read, too large unpacked): its download is
+     * offered.
+     */
     protected readonly cannotPlay = signal(false);
     protected readonly previousEntry = (): MenuEntry => ({
         id: 'previous',
@@ -585,7 +596,10 @@ export class ArchiveViewComponent {
             window.open(this.entryUrl(entry, false), '_blank', 'noopener');
     }
 
-    /** A file's name clicked: shown in place when it can be; a new tab with Ctrl, Shift or the middle button, or for the rest. */
+    /**
+     * A file's name clicked: shown in place when it can be; a new tab with Ctrl, Shift or the middle button, or for the
+     * rest.
+     */
     protected openFromLink(event: MouseEvent, entry: ArchiveItem, index: number): void {
         event.stopPropagation();
         if (
@@ -613,7 +627,10 @@ export class ArchiveViewComponent {
         return format && IN_PLACE.has(format.id) ? format : null;
     }
 
-    /** A row's path in the archive: its folder's (the listing's, or a result's `where` when whole) and its name; null when unknown. */
+    /**
+     * A row's path in the archive: its folder's (the listing's, or a result's `where` when whole) and its name; null
+     * when unknown.
+     */
     private pathIn(entry: ArchiveItem): string | null {
         if (entry.at !== undefined) return entry.at;
         const folder = this.found()
@@ -642,7 +659,9 @@ export class ArchiveViewComponent {
         return this.placeOf(entry) !== null;
     }
 
-    /** The entry as the format views take it: its own path (positions remembered per entry), read through `FILE_SOURCE`. */
+    /**
+     * The entry as the format views take it: its own path (positions remembered per entry), read through `FILE_SOURCE`.
+     */
     private itemOf(entry: ArchiveItem): LibraryItem {
         const name = entry.name;
         const extension = extensionOf({ name } as LibraryItem);
@@ -746,7 +765,10 @@ export class ArchiveViewComponent {
         this.scroller().nativeElement.focus({ preventScroll: true });
     }
 
-    /** The row of the next entry shown in place, before (-1) or after (1) the one shown, among the rows loaded; null at an end. */
+    /**
+     * The row of the next entry shown in place, before (-1) or after (1) the one shown, among the rows loaded; null at
+     * an end.
+     */
     protected neighbour(direction: -1 | 1): number | null {
         const viewing = this.viewing();
         if (!viewing) return null;
@@ -807,7 +829,8 @@ export class ArchiveViewComponent {
         const target = event.target as HTMLElement;
         const viewing = this.viewing();
         if (viewing) {
-            // The entry's view keeps its keys (an editor, a find box); the bar and a picture: Esc back, ← → the files around.
+            // The entry's view keeps its keys (an editor, a find box); the bar and a picture: Esc back, ← → the files
+            // around.
             if (event.defaultPrevented || target.closest('input, textarea, [contenteditable="true"], .cm-editor'))
                 return;
             if (event.key === 'Escape') {
@@ -835,7 +858,10 @@ export class ArchiveViewComponent {
         }
     }
 
-    /** The address of an entry's data: inline in a tab for what the browser shows safely, else (or `download`) a download. */
+    /**
+     * The address of an entry's data: inline in a tab for what the browser shows safely, else (or `download`) a
+     * download.
+     */
     protected entryUrl(entry: ArchiveItem, download: boolean): string {
         const query = new URLSearchParams();
         if (download) query.set('download', 'true');
@@ -1031,7 +1057,10 @@ export class ArchiveViewComponent {
         }
     }
 
-    /** Nothing shown yet: the view says why. A folder that isn't there (Go to): the one shown stays, and a toast says so. */
+    /**
+     * Nothing shown yet: the view says why. A folder that isn't there (Go to): the one shown stays, and a toast says
+     * so.
+     */
     private fail(message: string): void {
         if (this.shown()) {
             this.state.set('ready');

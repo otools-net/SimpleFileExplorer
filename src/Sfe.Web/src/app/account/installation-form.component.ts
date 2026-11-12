@@ -7,9 +7,9 @@ import { IconComponent } from '../shared/icon.component';
 
 /**
  * The installation's settings a person setting SFE up needs, without editing a file: how SFE is used (Local or
- * External), the first space's library folder, who can open SFE (this computer, or the network) and ffmpeg. Shown by the setup page and by Administration › System ›
- * Installation, both after the setup code was checked (`token`); the page calls `save()`. A value the server's
- * environment sets (variable, command line) is shown, not editable.
+ * External), the first space's library folder, who can open SFE (this computer, or the network) and ffmpeg. Shown by
+ * the setup page and by Administration › System › Installation, both after the setup code was checked (`token`); the
+ * page calls `save()`. A value the server's environment sets (variable, command line) is shown, not editable.
  */
 @Component({
     selector: 'sfe-installation-form',
@@ -158,9 +158,14 @@ export class InstallationFormComponent implements OnInit {
     protected readonly settings = computed(() => this.saved() ?? this.initial());
 
     protected readonly chosenMode = signal<ServerMode>('local');
-    /** External is chosen (saved or not yet): the library folder and ffmpeg come from the server's configuration only. */
+    /**
+     * External is chosen (saved or not yet): the library folder and ffmpeg come from the server's configuration only.
+     */
     protected readonly external = computed(() => !!this.settings().mode && this.chosenMode() === 'external');
-    /** Local is chosen on the server's own computer only, and an External server goes back to it only in its configuration. */
+    /**
+     * Local is chosen on the server's own computer only, and an External server goes back to it only in its
+     * configuration.
+     */
     protected readonly localAllowed = computed(() => {
         const view = this.settings();
         return !!view.onThisComputer && (this.setup() || view.modeInEffect !== 'external' || view.mode?.value == null);

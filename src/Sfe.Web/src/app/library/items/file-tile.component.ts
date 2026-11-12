@@ -111,7 +111,10 @@ function sameStrings(a: string[], b: string[]): boolean {
     return a.length === b.length && a.every((value, i) => value === b[i]);
 }
 
-/** A file in the grid and one-per-row views: its preview (with its HR/LR mark, a video's duration), name, folder (search results), resolution, size, date and tags. */
+/**
+ * A file in the grid and one-per-row views: its preview (with its HR/LR mark, a video's duration), name, folder (search
+ * results), resolution, size, date and tags.
+ */
 @Component({
     selector: 'article[sfeFileTile]',
     imports: [

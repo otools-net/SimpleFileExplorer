@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Rewraps comments with a line over the limit: C# `///` and `//`, TypeScript `//` and the ` * ` lines of `/** */`
-// and `/* */` blocks, CSS ` * ` lines. Only the paragraph holding a long line is reflowed, with its own prefix; words
+// and `/* */` blocks, CSS ` * ` lines; a one-line `/** … */` too long takes the block form. Only the paragraph holding a long line is reflowed, with its own prefix; words
 // are never split, nor `<tags with attributes>` or `inline code`. Code lines ending in a comment, `<code>` and
 // fenced blocks are left alone (by hand). See README.md.
 //
@@ -117,6 +117,14 @@ function rewrap(source, cs) {
     let changed = 0;
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
+        // A one-line `/** … */` or `/* … */` too long takes the block form (section banners `/* ---- … */` are left).
+        const oneLine = !cs && line.length > LIMIT ? /^(\s*)\/\*(\*?) (.*?) ?\*\/\s*$/.exec(line) : null;
+        if (oneLine && !inBlock && !/^-{3,}/.test(oneLine[3])) {
+            const [, indent, star, text] = oneLine;
+            out.push(`${indent}/*${star}`, ...wrapWords(`${indent} * `, text), `${indent} */`);
+            changed++;
+            continue;
+        }
         const opensBlock = !cs && /^\s*\/\*/.test(line) && !line.includes('*/');
         const comment = split(line, inBlock && !opensBlock, cs);
         if (comment) {

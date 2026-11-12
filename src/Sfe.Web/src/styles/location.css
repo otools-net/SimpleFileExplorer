@@ -19,7 +19,10 @@
     flex: 1;
     min-width: 0;
 }
-/* Phones: the breadcrumbs keep the line; the folder's buttons give way to one "⋯", its menu (agents/docs/features/overflow-menus.md). */
+/*
+ * Phones: the breadcrumbs keep the line; the folder's buttons give way to one "⋯", its menu
+ * (agents/docs/features/overflow-menus.md).
+ */
 .location-head .location-more {
     display: none;
     flex: none;

@@ -35,9 +35,10 @@ function load(): string[] {
 }
 
 /**
- * The last searches of this browser, newest first, that the search box suggests again. The server only says how many
- * to keep (`config.searchHistory`, `Search:HistorySize`): each browser keeps its own, also for visitors without an account.
- * 0 turns it off: nothing is suggested or recorded, but what was kept stays until the size is set again or cleared.
+ * The last searches of this browser, newest first, that the search box suggests again. The server only says how many to
+ * keep (`config.searchHistory`, `Search:HistorySize`): each browser keeps its own, also for visitors without an
+ * account. 0 turns it off: nothing is suggested or recorded, but what was kept stays until the size is set again or
+ * cleared.
  */
 @Injectable({ providedIn: 'root' })
 export class SearchHistory {

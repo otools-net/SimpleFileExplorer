@@ -69,7 +69,8 @@ const readerTheme = EditorView.theme({
         borderRadius: '6px',
     },
     '.cm-panel.cm-search [name=close]': { color: 'var(--reader-muted)' },
-    // A line going on past the right edge (see lineContinues): a fade over the text, not over the scroll bars or panels.
+    // A line going on past the right edge (see lineContinues): a fade over the text, not over the scroll bars or
+    // panels.
     '&.cm-line-continues::after': {
         content: '""',
         position: 'absolute',
@@ -156,10 +157,10 @@ export interface TextEditorOptions {
 }
 
 /**
- * CodeMirror 6 for the text views of `formats/` (agents/docs/features/text-viewer.md, text-editor.md): read only
- * until `setEditable` (then with undo, and Tab indenting), knowing whether its text differs from the last saved. Colours
- * come from the app's CSS (`styles/reader.css`, `tok-*` classes of `classHighlighter`), not from a CodeMirror theme,
- * so they follow the app's theme as everything else does.
+ * CodeMirror 6 for the text views of `formats/` (agents/docs/features/text-viewer.md, text-editor.md): read only until
+ * `setEditable` (then with undo, and Tab indenting), knowing whether its text differs from the last saved. Colours come
+ * from the app's CSS (`styles/reader.css`, `tok-*` classes of `classHighlighter`), not from a CodeMirror theme, so they
+ * follow the app's theme as everything else does.
  */
 export class TextEditor {
     readonly view: EditorView;

@@ -63,7 +63,9 @@ export const Rights = {
 
 export type Right = (typeof Rights)[keyof typeof Rights];
 
-/** The right changing the settings of each tab of settings-schema.ts in a library (the server's need `server.settings`). */
+/**
+ * The right changing the settings of each tab of settings-schema.ts in a library (the server's need `server.settings`).
+ */
 export const SETTINGS_RIGHTS: Record<string, Right> = {
     appearance: Rights.interfaceSettings,
     browsing: Rights.interfaceSettings,

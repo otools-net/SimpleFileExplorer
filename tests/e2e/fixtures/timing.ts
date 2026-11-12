@@ -161,9 +161,9 @@ export async function expectMedianOpensWithin(
 
 /**
  * Median ms from a tap to a menu on screen, per project: 100 everywhere (the target), except WebKit, which paints in
- * software on Windows (~150 ms alone, up to ~270 under the full suite's load). Measured 2026-10-29 after the menu stopped
- * measuring sheets and focusing for fingers: Android at a phone's speed ~70 ms (was ~180), iPhone ~150 (was 200–360).
- * Lower it as it gets faster; never raise it to pass.
+ * software on Windows (~150 ms alone, up to ~270 under the full suite's load). Measured 2026-10-29 after the menu
+ * stopped measuring sheets and focusing for fingers: Android at a phone's speed ~70 ms (was ~180), iPhone ~150 (was
+ * 200–360). Lower it as it gets faster; never raise it to pass.
  */
 const MENU_BUDGET: Record<string, number> = { iphone: 350 };
 export const menuBudget = () => MENU_BUDGET[test.info().project.name] ?? 100;

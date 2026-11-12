@@ -69,7 +69,10 @@ export interface TagUsage {
     fileCount: number;
 }
 
-/** Files tagged together without listing them: those of a folder (`recursive`: with its sub-folders), or a search's matches (`query`). */
+/**
+ * Files tagged together without listing them: those of a folder (`recursive`: with its sub-folders), or a search's
+ * matches (`query`).
+ */
 export interface TagScope {
     path: string;
     recursive: boolean;
@@ -111,7 +114,9 @@ export interface FolderDefaults {
     inherited: InheritedDefaultTag[];
 }
 
-/** Default tags to add to a folder or remove from it; `addToFiles`/`removeFromFiles` change the files already there too. */
+/**
+ * Default tags to add to a folder or remove from it; `addToFiles`/`removeFromFiles` change the files already there too.
+ */
 export interface FolderDefaultTagsChange {
     path: string;
     add?: number[];
@@ -188,7 +193,10 @@ export interface FolderExclusions {
 
 export type ExclusionKind = keyof FolderExclusions;
 
-/** A folder on the exclusion lists (Administration › Scanning › Excluded folders): which lists, and whether it is still on the disk. */
+/**
+ * A folder on the exclusion lists (Administration › Scanning › Excluded folders): which lists, and whether it is still
+ * on the disk.
+ */
 export interface ExcludedFolder {
     path: string;
     scan: boolean;
@@ -222,7 +230,9 @@ export interface ArchiveItem {
     folders?: number | null;
     files?: number | null;
     allFiles?: number | null;
-    /** In a search's results: the path of the folder it is in ("" at the top; deep down, its last folders after "…/"). */
+    /**
+     * In a search's results: the path of the folder it is in ("" at the top; deep down, its last folders after "…/").
+     */
     where?: string | null;
     /** In a search's results: the id of the folder it is in. */
     in?: number | null;
@@ -232,7 +242,10 @@ export interface ArchiveItem {
     at?: string | null;
 }
 
-/** A page of a search in an archive: `next` goes on (a page cut short by its time may be empty); null once all was looked through. */
+/**
+ * A page of a search in an archive: `next` goes on (a page cut short by its time may be empty); null once all was
+ * looked through.
+ */
 export interface ArchiveSearch {
     items: ArchiveItem[];
     next: string | null;
@@ -532,7 +545,10 @@ export interface ClientConfig {
     showResolution: boolean;
     /** Listings and the viewer show the duration of videos and audio files (Browse:ShowDuration). */
     showDuration: boolean;
-    /** Smallest shorter side, in pixels, of a high-resolution image and video (HR/LR marks on previews); null = no marks. */
+    /**
+     * Smallest shorter side, in pixels, of a high-resolution image and video (HR/LR marks on previews); null = no
+     * marks.
+     */
     resolutionMark: { image: number; video: number } | null;
     /** The library root on the server, ending with its separator; null unless Browse:CopyPaths is on. */
     rootPath: string | null;
@@ -569,7 +585,9 @@ export interface ClientConfig {
     reading?: unknown;
     /** The library's own extensions shown as text (`Sfe:FileTypes:Text`); absent from older servers. */
     textExtensions?: string[] | null;
-    /** Flash movies (`.swf`) play in the viewer (`Player:Flash` and the right to view files); absent from older servers. */
+    /**
+     * Flash movies (`.swf`) play in the viewer (`Player:Flash` and the right to view files); absent from older servers.
+     */
     flash?: boolean;
     /** Which archives the viewer explores; null without the right to view files (and from older servers: none). */
     archives?: { maxCompressedTarMegabytes: number } | null;
@@ -664,7 +682,9 @@ export interface EditedImage {
     size: number;
 }
 
-/** Saving an edited picture over its original: its version, and whether this account may (`api/editor/images/access`). */
+/**
+ * Saving an edited picture over its original: its version, and whether this account may (`api/editor/images/access`).
+ */
 export interface EditedImageAccess {
     version: string;
     /** files.edit at its folder and the rule of Replace, and a JPEG, PNG or WebP file. */
@@ -1075,11 +1095,17 @@ export interface SetupInfo {
     codeGenerated?: boolean;
     /** Where that code is kept, as configured (usually relative to SFE's folder). */
     codeFile?: string | null;
-    /** The setup asks this visitor for the code; false for a new install set up from the server's own computer (missing from older servers: true). */
+    /**
+     * The setup asks this visitor for the code; false for a new install set up from the server's own computer (missing
+     * from older servers: true).
+     */
     codeRequired?: boolean;
 }
 
-/** none = the install belongs to this version; the others keep everything but the update page closed (503 `migration-required`). */
+/**
+ * none = the install belongs to this version; the others keep everything but the update page closed (503
+ * `migration-required`).
+ */
 export type MigrationStatus = 'none' | 'required' | 'running' | 'failed' | 'newer' | 'unavailable';
 
 /** A version of CHANGELOG.md: its sections (Added, Changed, Fixed), each item in the changelog's Markdown. */
@@ -1188,7 +1214,9 @@ export interface SavedText {
     trashId?: number | null;
 }
 
-/** Why a save over a file was not done although the request was fine (409): `file-is-link`, `read-only`, `scan-running`. */
+/**
+ * Why a save over a file was not done although the request was fine (409): `file-is-link`, `read-only`, `scan-running`.
+ */
 export type SaveTextResult = SavedText | FileConflict;
 
 export function isSaved(result: SaveTextResult): result is SavedText {

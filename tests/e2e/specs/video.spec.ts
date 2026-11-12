@@ -9,7 +9,10 @@ import { turn } from '../fixtures/viewport';
 
 const player = 'dialog.viewer[open] sfe-video-player';
 
-/** Opens the video and waits until the player has settled: its video's details loaded, or the app saying it can't play it. */
+/**
+ * Opens the video and waits until the player has settled: its video's details loaded, or the app saying it can't play
+ * it.
+ */
 async function openVideo(page: Page): Promise<void> {
     await openFolder(page, 'Videos/Holidays');
     await item(page, 'Videos/Holidays/Campfire.webm').locator('.item-link').first().tap();
@@ -136,8 +139,9 @@ test.describe('video, the whole screen', () => {
         page,
         browserName,
     }) => {
-        // An iPhone has no element fullscreen: the app hands the video to the system's player (`webkitEnterFullscreen`),
-        // checked by hand. WebKit in Playwright has `requestFullscreen` but never grants it (Linux; Windows plays no WebM).
+        // An iPhone has no element fullscreen: the app hands the video to the system's player
+        // (`webkitEnterFullscreen`), checked by hand. WebKit in Playwright has `requestFullscreen` but never grants it
+        // (Linux; Windows plays no WebM).
         test.skip(browserName === 'webkit', "the iPhone's fullscreen is the system's video player: by hand");
         await openVideo(page);
         const host = page.locator(player);

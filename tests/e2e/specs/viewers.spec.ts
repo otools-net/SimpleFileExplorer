@@ -26,8 +26,8 @@ for (const [file, view, allowed] of documents) {
             const viewer = page.locator('dialog.viewer[open]');
             const shown = viewer.locator(view);
             await expect(shown).toBeVisible();
-            // Something in it: text, a page drawn (PDF), a book's page (EPUB). Not the status line's words: a blank book
-            // passed on them (found 2026-10-29: epub-document.ts, a resize before the first page was placed).
+            // Something in it: text, a page drawn (PDF), a book's page (EPUB). Not the status line's words: a blank
+            // book passed on them (found 2026-10-29: epub-document.ts, a resize before the first page was placed).
             const content =
                 view === 'sfe-pdf-view' ? 'canvas' : view === 'sfe-epub-view' ? '.epub-container iframe' : null;
             await expect

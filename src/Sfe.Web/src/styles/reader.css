@@ -36,7 +36,9 @@
     display: grid;
     /* The toolbar, the editing bar (empty but for a problem), the text, the status bar. */
     grid-template-rows: auto auto minmax(0, 1fr) auto;
-    /* As wide as the viewer, whatever the text: long lines scroll inside the editor (else the toolbar grew with them). */
+    /*
+     * As wide as the viewer, whatever the text: long lines scroll inside the editor (else the toolbar grew with them).
+     */
     grid-template-columns: minmax(0, 1fr);
     min-width: 0;
     min-height: 0;
@@ -240,7 +242,10 @@
     color: var(--accent);
 }
 
-/* The toolbars are overflow rows (one line, the buttons that don't fit in their "⋯"); their fields stay, narrower on a phone. */
+/*
+ * The toolbars are overflow rows (one line, the buttons that don't fit in their "⋯"); their fields stay, narrower on a
+ * phone.
+ */
 @media (max-width: 640px) {
     .text-toolbar .json-filter:not(.pdf-page, [data-shift-box]) {
         width: 110px;
@@ -300,7 +305,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-/* Language · encoding · line endings · size; the encoding and line endings as choices (reopen, or what a save writes). */
+/*
+ * Language · encoding · line endings · size; the encoding and line endings as choices (reopen, or what a save writes).
+ */
 .text-status-details {
     display: flex;
     align-items: center;

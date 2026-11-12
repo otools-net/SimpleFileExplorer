@@ -2,7 +2,8 @@
 
 /*
  * The context menu's layer (ContextMenuComponent) is in the top layer (popover="manual"), inside the open modal dialog
- * when there is one: it covers the window but lets the pointer through, except on the menu (and on phones its backdrop).
+ * when there is one: it covers the window but lets the pointer through, except on the menu (and on phones its
+ * backdrop).
  */
 .context-menu-layer {
     position: fixed;
@@ -435,7 +436,10 @@ main.page.drop-over {
     align-items: center;
     gap: 8px;
 }
-/* The app's colours, not the browser's own select: Linux Chromium's was light text on its grey (a11y.spec.ts, contrast). */
+/*
+ * The app's colours, not the browser's own select: Linux Chromium's was light text on its grey (a11y.spec.ts,
+ * contrast).
+ */
 .properties-actions select {
     height: 32px;
     padding: 0 8px;

@@ -254,7 +254,10 @@
 .player-time-length {
     padding-left: 2px;
 }
-/* The buttons after the time on the right: the free room after the last part of the time shown (margins aren't measured). */
+/*
+ * The buttons after the time on the right: the free room after the last part of the time shown (margins aren't
+ * measured).
+ */
 .player-time-length,
 .player-time:has(+ .player-time-length[data-overflowed]) {
     margin-right: auto;

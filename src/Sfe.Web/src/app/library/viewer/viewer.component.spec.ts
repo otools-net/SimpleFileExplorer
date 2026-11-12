@@ -65,7 +65,9 @@ describe('ViewerComponent › Actual size', () => {
         return event;
     }
 
-    /** Opens `shown` with its picture of `natural` pixels drawn in `drawn` (a 1000 × 600 stage, 50 px below the top). */
+    /**
+     * Opens `shown` with its picture of `natural` pixels drawn in `drawn` (a 1000 × 600 stage, 50 px below the top).
+     */
     async function view(
         shown = photo,
         natural = { width: 4000, height: 3000 },

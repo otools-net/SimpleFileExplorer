@@ -20,7 +20,9 @@ export interface ExtractChoice {
     what?: string;
     /** The viewer's unlock of the archive: no password asked then. */
     unlock?: string | null;
-    /** The folder to start in (else the archive's), and whether into a new folder (else yes): an extraction asked again. */
+    /**
+     * The folder to start in (else the archive's), and whether into a new folder (else yes): an extraction asked again.
+     */
     target?: string;
     newFolder?: boolean;
 }

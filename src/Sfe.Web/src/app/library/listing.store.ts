@@ -503,7 +503,10 @@ export class ListingStore {
         this.highlight(item.path);
     }
 
-    /** The listed item `oldPath` was renamed to `item`: replaced where it is (selected still if it was), and highlighted. */
+    /**
+     * The listed item `oldPath` was renamed to `item`: replaced where it is (selected still if it was), and
+     * highlighted.
+     */
     applyRenamed(oldPath: string, item: LibraryItem): void {
         this.updateItems((existing) => (existing.path === oldPath ? item : existing));
         if (this.selection().has(oldPath)) {

@@ -106,7 +106,10 @@ export class UploadsPanelComponent {
     protected readonly plural = plural;
     protected readonly Math = Math;
 
-    /** An upload's menu (a right click): its buttons (Pause / Resume, Cancel, or Close once done), then the folder it goes into. */
+    /**
+     * An upload's menu (a right click): its buttons (Pause / Resume, Cancel, or Close once done), then the folder it
+     * goes into.
+     */
     protected batchMenu(batch: UploadBatch): MenuTarget {
         return {
             kind: 'job',

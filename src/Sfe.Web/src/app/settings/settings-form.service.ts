@@ -29,7 +29,9 @@ interface LevelEdits {
     customPresets: ReadonlySet<string>;
 }
 
-/** The levels in the order they save: a level above first, so that one below is checked against what it then inherits. */
+/**
+ * The levels in the order they save: a level above first, so that one below is checked against what it then inherits.
+ */
 const SAVE_ORDER: SettingLevel[] = ['server', 'tenant', 'user'];
 const LEVEL_NAMES: Partial<Record<SettingLevel, string>> = { server: 'the whole server', tenant: 'this space' };
 
@@ -95,7 +97,10 @@ export class SettingsForm {
      * (`server`), or the signed-in user's own preferences (`user`, see `forUser`).
      */
     readonly level = signal<SettingLevel>('tenant');
-    /** How each setting shows at that level: where its value comes from, whether it can change or be locked; null from servers without levels. */
+    /**
+     * How each setting shows at that level: where its value comes from, whether it can change or be locked; null from
+     * servers without levels.
+     */
     readonly states = signal<Record<string, SettingState> | null>(null);
     /** The settings locked at this level, as loaded and as ticked. */
     private readonly savedLocks = signal<ReadonlySet<string>>(new Set());
@@ -105,7 +110,10 @@ export class SettingsForm {
     /** The changes not saved of the levels not shown (or still loading), put back when they show again. */
     private readonly pending = signal<ReadonlyMap<SettingLevel, LevelEdits>>(new Map());
 
-    /** The levels of the administration page the session may edit: the space's, and the server's for server administrators. */
+    /**
+     * The levels of the administration page the session may edit: the space's, and the server's for server
+     * administrators.
+     */
     readonly levels = computed<SettingLevel[]>(() => {
         const rights = this.config.rights();
         return [

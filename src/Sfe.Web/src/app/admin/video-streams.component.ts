@@ -23,8 +23,8 @@ interface Row {
 }
 
 /**
- * Playback › Video streams on the administration page: the videos the server converts with ffmpeg at the moment, in every
- * space, with who watches them (`server.streams`). Refreshed while shown.
+ * Playback › Video streams on the administration page: the videos the server converts with ffmpeg at the moment, in
+ * every space, with who watches them (`server.streams`). Refreshed while shown.
  */
 @Component({
     selector: 'sfe-video-streams',

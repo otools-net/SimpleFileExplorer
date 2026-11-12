@@ -105,7 +105,10 @@ export class QuickLinksComponent implements OnInit {
     private readonly dialogs = inject(Dialogs);
 
     protected readonly editing = signal(false);
-    /** Where a drop would go: before the link at this index (the list's length: at the end); null while nothing is over it. */
+    /**
+     * Where a drop would go: before the link at this index (the list's length: at the end); null while nothing is over
+     * it.
+     */
     protected readonly dropIndex = signal<number | null>(null);
     /** The link being dragged to another place. */
     protected readonly moving = signal<string | null>(null);

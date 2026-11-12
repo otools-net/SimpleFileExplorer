@@ -148,7 +148,9 @@ describe('settings on the administration page', () => {
         await settle();
     }
 
-    /** Opens the page (again, with a new form) on the tab `tab` of settings-schema.ts, the server sending `settings`. */
+    /**
+     * Opens the page (again, with a new form) on the tab `tab` of settings-schema.ts, the server sending `settings`.
+     */
     async function open(settings: SettingsView = view(), tab = 'browsing'): Promise<void> {
         api.settings.mockResolvedValue(settings);
         await harness.navigateByUrl('/');

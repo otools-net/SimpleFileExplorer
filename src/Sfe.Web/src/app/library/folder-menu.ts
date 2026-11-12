@@ -30,14 +30,20 @@ export class FolderMenu {
     private readonly toasts = inject(ToastService);
     private readonly router = inject(Router);
 
-    /** Folders and files are made in the folder browsed (not in a search, nor in a folder shown only on the way to another). */
+    /**
+     * Folders and files are made in the folder browsed (not in a search, nor in a folder shown only on the way to
+     * another).
+     */
     readonly canCreateFolder = computed(
         () => !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFolders),
     );
     readonly canCreateFile = computed(
         () => !this.store.searching() && !this.store.folderAccess()?.pathOnly && this.store.can(Rights.createFiles),
     );
-    /** Tagging the files, or (browsing) setting the folder's default tags: both in the same dialog (here, with folder rules). */
+    /**
+     * Tagging the files, or (browsing) setting the folder's default tags: both in the same dialog (here, with folder
+     * rules).
+     */
     readonly canTag = computed(
         () =>
             this.store.can(Rights.assignTags) || (!this.store.searching() && this.store.can(Rights.folderDefaultTags)),

@@ -283,7 +283,10 @@ export function extensionOf(item: LibraryItem): string {
 }
 
 /** The file's name and extension say it is text: only files the server doesn't call media. */
-/** The library's own extensions shown as text (`Sfe:FileTypes:Text`, from the config): a signal, so that listings follow. */
+/**
+ * The library's own extensions shown as text (`Sfe:FileTypes:Text`, from the config): a signal, so that listings
+ * follow.
+ */
 const libraryTextExtensions = signal<ReadonlySet<string>>(new Set());
 
 export function setTextExtensions(extensions: readonly string[] | null | undefined): void {

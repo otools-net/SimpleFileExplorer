@@ -86,9 +86,10 @@ export class ScanPanelComponent {
                 if (entry) {
                     const next = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
                     root.setProperty('--scan-panel-h', `${next}px`);
-                    // Coming in (a scan started elsewhere, found by a poll) or growing, it pushes the listing down under
-                    // a finger: the page scrolls by as much, unless the browser already did (scroll anchoring, Chrome
-                    // once scrolled), and the panel covers the top instead (e2e selection.spec.ts, a long press).
+                    // Coming in (a scan started elsewhere, found by a poll) or growing, it pushes the listing down
+                    // under a finger: the page scrolls by as much, unless the browser already did (scroll anchoring,
+                    // Chrome once scrolled), and the panel covers the top instead (e2e selection.spec.ts, a long
+                    // press).
                     const now = listingTop();
                     if (next > height && top !== null && now !== null && Math.abs(now - top - (next - height)) < 1)
                         scrollBy(0, next - height);

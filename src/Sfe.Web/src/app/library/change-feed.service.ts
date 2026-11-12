@@ -133,7 +133,9 @@ export class ChangeFeed {
         this.heard();
     }
 
-    /** Open again: back to normal; after a loss, the folder listed is read again (changes made meanwhile weren't told). */
+    /**
+     * Open again: back to normal; after a loss, the folder listed is read again (changes made meanwhile weren't told).
+     */
     private opened(): void {
         clearTimeout(this.lostTimer);
         this.lostTimer = undefined;

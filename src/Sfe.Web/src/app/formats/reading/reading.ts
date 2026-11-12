@@ -1,6 +1,6 @@
 /**
- * Reading preferences of the text views (agents/docs/features/reading-preferences.md): one set per profile (code, prose)
- * plus a reader theme and a custom font name shared by both. Pure: stored and read by `ReadingService`.
+ * Reading preferences of the text views (agents/docs/features/reading-preferences.md): one set per profile (code,
+ * prose) plus a reader theme and a custom font name shared by both. Pure: stored and read by `ReadingService`.
  */
 
 export type ReadingProfile = 'code' | 'prose';
@@ -114,7 +114,9 @@ function sanitizeProfile(value: unknown, fallback: ProfilePreferences): ProfileP
     };
 }
 
-/** Preferences from anything (stored JSON of any version, an account's defaults): what is not valid is the default's. */
+/**
+ * Preferences from anything (stored JSON of any version, an account's defaults): what is not valid is the default's.
+ */
 export function sanitizeReading(value: unknown, fallback: ReadingPreferences = DEFAULT_READING): ReadingPreferences {
     const raw = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>;
     return {

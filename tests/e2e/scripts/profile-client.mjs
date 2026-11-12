@@ -1,6 +1,7 @@
 // Builds the web client as shipped (production: minified) but with source maps, into <work>/profile-client, for the
-// @diagnose profiles (specs/diagnose/menu-profile.spec.ts), which serve it in place of the app's own client.
-//   node scripts/profile-client.mjs        then   SFE_E2E_DIAGNOSE=1 npm run e2e -- specs/diagnose/menu-profile.spec.ts --project=android-slow
+// @diagnose profiles (specs/diagnose/menu-profile.spec.ts), which serve it in place of the app's own client. node
+// scripts/profile-client.mjs then SFE_E2E_DIAGNOSE=1 npm run e2e -- specs/diagnose/menu-profile.spec.ts
+// --project=android-slow
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';

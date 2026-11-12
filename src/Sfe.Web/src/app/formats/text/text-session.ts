@@ -9,7 +9,10 @@ import { FILE_VIEW_HOST } from '../formats';
 import { TextEditor } from './codemirror';
 import { FILE_SOURCE } from '../file-source';
 
-/** What stops a save, shown as a bar over the text: the file changed elsewhere, its encoding can't hold the text, or the copy's name asked for. */
+/**
+ * What stops a save, shown as a bar over the text: the file changed elsewhere, its encoding can't hold the text, or the
+ * copy's name asked for.
+ */
 export type TextProblem =
     | { kind: 'changed' }
     | { kind: 'not-encodable'; message: string }
@@ -22,7 +25,10 @@ export const DISK_CHECK_MS = 30_000;
 
 export const UNSAVED_QUESTION = 'Your changes to this file are not saved. Leave without saving them?';
 
-/** The line ending a save writes for `file`: as told by the server, else its own (CRLF for a mixed file of an older server). */
+/**
+ * The line ending a save writes for `file`: as told by the server, else its own (CRLF for a mixed file of an older
+ * server).
+ */
 export function lineEndingOf(file: TextFile): string {
     return file.saveLineEnding ?? (file.lineEnding === 'mixed' ? 'crlf' : file.lineEnding);
 }
@@ -91,7 +97,8 @@ export class TextSession {
             if (this.dirty() && !this.discarded) event.preventDefault();
         };
         window.addEventListener('beforeunload', onUnload);
-        // Changed elsewhere: told by the change feed for changes through SFE (its folder), checked now and then for the rest.
+        // Changed elsewhere: told by the change feed for changes through SFE (its folder), checked now and then for the
+        // rest.
         const onVisible = () => {
             if (document.visibilityState === 'visible') void this.checkDisk();
         };
@@ -217,7 +224,10 @@ export class TextSession {
         await this.save();
     }
 
-    /** The file as it is now on disk, in place of the changes (read as chosen: `readEncoding`). False when it couldn't be. */
+    /**
+     * The file as it is now on disk, in place of the changes (read as chosen: `readEncoding`). False when it couldn't
+     * be.
+     */
     async reload(): Promise<boolean> {
         if (!this.item) return false;
         try {
@@ -247,7 +257,10 @@ export class TextSession {
         if (!(await this.reload())) this.readEncoding.set(previous);
     }
 
-    /** Has the file changed elsewhere? Asked when not busy with something else; a version the person ignored stays ignored. */
+    /**
+     * Has the file changed elsewhere? Asked when not busy with something else; a version the person ignored stays
+     * ignored.
+     */
     async checkDisk(): Promise<void> {
         const file = this.file();
         // An entry of an archive changes with its archive: the archive view is opened again then.

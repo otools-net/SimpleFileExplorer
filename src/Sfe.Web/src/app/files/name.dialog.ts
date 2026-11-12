@@ -17,10 +17,10 @@ type Mode =
 const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
 
 /**
- * Asks for a name: of a new folder (New folder, Ctrl+Shift+N) or empty file (New file) in the folder listed, or the new name of a file or
- * folder (Rename, F2), with the name selected up to its extension as in Explorer. The server checks the name; its
- * answer shows under the field. Done, the listing takes the item in place, without loading again; a new text file opens
- * in the viewer, ready to be written.
+ * Asks for a name: of a new folder (New folder, Ctrl+Shift+N) or empty file (New file) in the folder listed, or the new
+ * name of a file or folder (Rename, F2), with the name selected up to its extension as in Explorer. The server checks
+ * the name; its answer shows under the field. Done, the listing takes the item in place, without loading again; a new
+ * text file opens in the viewer, ready to be written.
  */
 @Component({
     selector: 'sfe-name-dialog',

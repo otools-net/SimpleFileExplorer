@@ -192,13 +192,19 @@ export class Api {
     cancelScan = () => this.delete<ScanStatus>('api/scan');
     /** What the index holds of a folder (counts), before removing it. */
     indexedFolder = (path: string) => this.get<IndexedFolder>('api/index/folder', { path });
-    /** Removes a folder from the index (not from the disk); `exclude` also keeps future scans out of it. Resolves with the scan status (409) while a scan runs. */
+    /**
+     * Removes a folder from the index (not from the disk); `exclude` also keeps future scans out of it. Resolves with
+     * the scan status (409) while a scan runs.
+     */
     removeFromIndex = (path: string, exclude: boolean) =>
         this.delete<RemovedFromIndex | ScanStatus>(`api/index/folder?${params({ path, exclude }).toString()}`);
 
     /** Every folder kept out of scans, trickplay or thumbnails in the space (those the session sees). */
     folderExclusions = () => this.get<ExcludedFolder[]>('api/index/exclusions');
-    /** Keeps a folder out of scans, trickplay or thumbnails (true) or lets it in again (false); absent kinds stay as they are. */
+    /**
+     * Keeps a folder out of scans, trickplay or thumbnails (true) or lets it in again (false); absent kinds stay as
+     * they are.
+     */
     setFolderExclusions = (path: string, changes: Partial<Record<ExclusionKind, boolean>>) =>
         this.put<FolderExclusions>('api/index/exclusions', { path, ...changes });
 
@@ -245,13 +251,18 @@ export class Api {
     /** The default tags of a folder, its own and its parents'. */
     folderDefaultTags = (path: string, signal?: AbortSignal) =>
         this.get<FolderDefaults>('api/folder-default-tags', { path }, signal);
-    /** Changes a folder's default tags (and the files already there when asked). Resolves with the problem (409) while a scan runs. */
+    /**
+     * Changes a folder's default tags (and the files already there when asked). Resolves with the problem (409) while a
+     * scan runs.
+     */
     changeFolderDefaultTags = (change: FolderDefaultTagsChange) =>
         this.put<FolderDefaultTagsResult | { detail?: string }>('api/folder-default-tags', change);
     tagSidebar = () => this.get<TagSidebar>('api/tags/sidebar');
     clearTagHistory = () => this.delete<void>('api/tags/history');
 
-    /** The settings of a level: the server's (server administrators) or the space's; without one, the caller's default. */
+    /**
+     * The settings of a level: the server's (server administrators) or the space's; without one, the caller's default.
+     */
     settings = (level?: SettingLevel) => this.get<SettingsView>('api/settings', { level });
     saveSettings = (values: SettingsValues, level?: SettingLevel) =>
         this.put<SettingsView>(withLevel('api/settings', level), values);
@@ -270,7 +281,10 @@ export class Api {
     resetPreferences = () => this.delete<SettingsView>('api/me/preferences');
     /** The signed-in user's quick links in the library, in order. */
     quickLinks = () => this.get<QuickLink[]>('api/me/quick-links');
-    /** Adds `paths` before the link at `position` (at the end without one); links already there move. Resolves with the whole list. */
+    /**
+     * Adds `paths` before the link at `position` (at the end without one); links already there move. Resolves with the
+     * whole list.
+     */
     addQuickLinks = (paths: string[], position: number | null = null) =>
         this.post<QuickLink[]>('api/me/quick-links', { paths, position });
     removeQuickLink = (path: string) => this.delete<QuickLink[]>(withQuery('api/me/quick-links', { path }));
@@ -329,7 +343,10 @@ export class Api {
     signOut = () => this.post<SessionInfo>('api/session/logout', null, undefined, false);
     /** Browses `tenant` (a slug) as a visitor without an account. */
     browseAsGuest = (tenant: string) => this.post<SessionInfo>('api/session/guest', { tenant }, undefined, false);
-    /** Has the server show a one-time code for `userName` where it runs (console, recovery file); same answer for any name. */
+    /**
+     * Has the server show a one-time code for `userName` where it runs (console, recovery file); same answer for any
+     * name.
+     */
     requestRecovery = (userName: string) =>
         this.post<{ minutes: number }>('api/session/recovery', { userName }, undefined, false);
     /** A new password with the code: unlocks the account and signs it in. */
@@ -373,7 +390,9 @@ export class Api {
             false,
         );
     /** Whether the install waits for its update to this version (works while everything else is closed). */
-    /** With the setup code (once typed on the update page), the update's log and the reason of its error; else neither. */
+    /**
+     * With the setup code (once typed on the update page), the update's log and the reason of its error; else neither.
+     */
     migrationInfo = (code = '') =>
         this.send(
             this.http.get<MigrationInfo>('api/migration', {
@@ -389,13 +408,20 @@ export class Api {
 
     /** A link to `path` working without signing in, for a while: for external players. */
     fileLink = (path: string) => this.post<FileLink>('api/files/links', { path });
-    /** A link playing the Flash movie `path` in the player's frame, opening the files of its folder to it, read only. */
+    /**
+     * A link playing the Flash movie `path` in the player's frame, opening the files of its folder to it, read only.
+     */
     flashLink = (path: string) => this.post<FileLink>('api/files/flash-links', { path });
-    /** Creates the folder `name` in the folder `path`. Resolves with the conflict (409: the name is taken, a scan runs...). */
+    /**
+     * Creates the folder `name` in the folder `path`. Resolves with the conflict (409: the name is taken, a scan
+     * runs...).
+     */
     createFolder = (path: string, name: string) => this.post<FileOperationResult>('api/files/folders', { path, name });
     /** Creates the empty file `name` in the folder `path`. Resolves with the conflict (409) as `createFolder`. */
     createFile = (path: string, name: string) => this.post<FileOperationResult>('api/files/new-file', { path, name });
-    /** Renames the file or folder `path` to `name`, in its folder. Resolves with the conflict (409) as `createFolder`. */
+    /**
+     * Renames the file or folder `path` to `name`, in its folder. Resolves with the conflict (409) as `createFolder`.
+     */
     renameItem = (path: string, name: string) => this.post<FileOperationResult>('api/files/rename', { path, name });
     /** Deletes `paths`, to the trash or for good; a result per path. */
     deleteItems = (paths: string[], permanent: boolean) =>
@@ -429,7 +455,10 @@ export class Api {
         this.post<UploadInfo>('api/files/uploads', start);
     /** The session's unfinished uploads; `all`: everyone's (right `settings.files`). */
     uploads = (all = false) => this.get<UploadInfo[]>('api/files/uploads', { all: all || null });
-    /** Sends `chunk` at `offset`; resolves with the upload also when the server has another offset (409): go on from there. */
+    /**
+     * Sends `chunk` at `offset`; resolves with the upload also when the server has another offset (409): go on from
+     * there.
+     */
     sendUploadChunk = (id: string, offset: number, chunk: Blob, signal?: AbortSignal) =>
         this.send(
             this.http.put<UploadInfo>(`api/files/uploads/${id}`, chunk, {
@@ -553,7 +582,9 @@ export class Api {
     propertyJob = (id: string) => this.get<PropertyJob>(`api/files/properties/jobs/${id}`);
     cancelPropertyJob = (id: string) => this.delete<void>(`api/files/properties/jobs/${id}`);
 
-    /** Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original stays. */
+    /**
+     * Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original stays.
+     */
     saveEditedImage = (path: string, image: Blob) =>
         this.post<EditedImage>(withQuery('api/editor/images', { path }), image);
     /** The picture's version, and whether this account may save over it. */
@@ -607,7 +638,9 @@ export class Api {
 
     /** Every space (server administrators). */
     tenants = () => this.get<TenantDetails[]>('api/tenants');
-    /** The folders a space's library folder can be chosen in: the allowed roots without `path`, else its sub-folders. */
+    /**
+     * The folders a space's library folder can be chosen in: the allowed roots without `path`, else its sub-folders.
+     */
     tenantFolders = (path: string | null) => this.get<FolderPicker>('api/tenants/folders', { path });
     createTenant = (tenant: TenantInput) => this.post<TenantDetails>('api/tenants', tenant);
     updateTenant = (id: number, tenant: TenantInput) => this.put<TenantDetails>(`api/tenants/${id}`, tenant);

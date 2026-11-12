@@ -1,7 +1,9 @@
 import { InjectionToken } from '@angular/core';
 import { pathToken } from '../../core/paths';
 
-/** How a book is laid out: one page at a time, two side by side (when the window is wide enough), or one long scroll. */
+/**
+ * How a book is laid out: one page at a time, two side by side (when the window is wide enough), or one long scroll.
+ */
 export type EpubMode = 'pages' | 'spread' | 'scroll';
 
 /** A heading of the book's table of contents, with its depth (those under it follow it). */
@@ -250,8 +252,8 @@ export async function openEpub(
             if (!stage.clientWidth || !stage.clientHeight) return;
             const place = rendition.currentLocation()?.start?.cfi ?? options.start ?? undefined;
             rendition.resize();
-            // epub.js clears its pages on a new size and shows them again only once it knows where it is: a resize before
-            // that (the loading message going away, a phone's bar) left the book blank (e2e documents.spec.ts).
+            // epub.js clears its pages on a new size and shows them again only once it knows where it is: a resize
+            // before that (the loading message going away, a phone's bar) left the book blank (e2e documents.spec.ts).
             if (!rendition.getContents().length) void rendition.display(place).catch(() => rendition.display());
         },
         destroy: () => {

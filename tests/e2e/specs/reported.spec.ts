@@ -92,7 +92,8 @@ test.describe('@reported 2026-10-29: a sheet holds the page without changing the
         await swipe(page, { x: width / 2, y: title.y + 10 }, { x: width / 2, y: title.y - 150 });
         await page.waitForTimeout(300);
         await expect(page.locator(menu)).toBeVisible();
-        // A few px can come from previews loading above (scroll anchoring); scrolling the page would be the swipe's 150.
+        // A few px can come from previews loading above (scroll anchoring); scrolling the page would be the swipe's
+        // 150.
         expect(Math.abs((await page.evaluate(() => window.scrollY)) - scrollY), 'swipe on the sheet').toBeLessThan(20);
 
         // On the backdrop, above the sheet: no scroll either, and the sheet stays (only a tap there closes it).

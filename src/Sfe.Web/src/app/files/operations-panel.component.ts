@@ -371,7 +371,9 @@ export class OperationsPanelComponent implements OnInit {
         return types.includes('Files') && !types.includes(DRAG_ITEMS);
     }
 
-    /** Where dropped files go: a folder of the page under the pointer, else the folder listed (anywhere on the listing). */
+    /**
+     * Where dropped files go: a folder of the page under the pointer, else the folder listed (anywhere on the listing).
+     */
     private uploadPlace(event: DragEvent): { path: string; element: HTMLElement | null } | null {
         const target = this.dropTarget(event);
         if (target) {

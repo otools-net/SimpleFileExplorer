@@ -24,7 +24,9 @@ import { BUILT_IN_PURPOSE, groupNamesIn, inSpace, SpaceRef } from './access-part
 import { FolderAccessComponent } from './folder-access.component';
 import { GroupEditorComponent } from './group-editor.component';
 
-/** The space a page shows: from `api/tenants` for server administrators, from `api/access/tenant` for the space's own. */
+/**
+ * The space a page shows: from `api/tenants` for server administrators, from `api/access/tenant` for the space's own.
+ */
 export interface SpaceView {
     id: number;
     name: string;

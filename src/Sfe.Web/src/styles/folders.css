@@ -36,8 +36,8 @@
 }
 
 /*
- * Grid and one-per-row views: folders are cards showing their first pictures (`Browse:FolderPictures`), like a
- * Windows media folder, in as square a grid as the count allows (2×2 for 4; FolderCoverComponent sets `--cover-columns` and
+ * Grid and one-per-row views: folders are cards showing their first pictures (`Browse:FolderPictures`), like a Windows
+ * media folder, in as square a grid as the count allows (2×2 for 4; FolderCoverComponent sets `--cover-columns` and
  * `--cover-rows`). A folder without pictures keeps the same size, with its icon in the picture area.
  */
 .folders.covers {

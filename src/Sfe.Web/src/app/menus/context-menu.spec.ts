@@ -325,7 +325,8 @@ describe('ContextMenu', () => {
             menu.showAt(target('inner'), at('#inner'));
             await settle();
 
-            // The end of a fling, then the address bar coming back as the sheet freezes the page: only the height changes.
+            // The end of a fling, then the address bar coming back as the sheet freezes the page: only the height
+            // changes.
             window.dispatchEvent(new Event('scroll'));
             window.dispatchEvent(new Event('resize'));
             expect(menu.open()?.target.key).toBe('inner');

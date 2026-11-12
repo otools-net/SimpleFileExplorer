@@ -11,7 +11,10 @@ sfe-account-section,
     gap: 14px;
 }
 
-/* "?" help: the button next to what it explains, the explanation on a line of its own below (sfe-help is display: contents). */
+/*
+ * "?" help: the button next to what it explains, the explanation on a line of its own below (sfe-help is display:
+ * contents).
+ */
 sfe-help {
     display: contents;
 }
