@@ -96,7 +96,9 @@ then by hand for what they leave: comments and long strings. One commit per step
 - [x] OpenAPI document identical to phase 0's reference (checked after each commit; EF models unchanged too)
 - [x] Client: `core/models.ts` split by area, re-exported (`split-models.mjs`): 14 area files, 6 shared ones in
   `core/` by subject (none over 160 lines); client build: `main.js` 35 bytes apart (two guards moved)
-- [ ] Client: importers moved to the new files, area by area (one item each when started), then re-exports removed
+- [x] Client: importers moved to the new files, then re-exports removed (`split-models.mjs --imports`: 164
+  files in one commit, the tool doing what the plan meant to do area by area); client build within a few bytes
+  per chunk (guards imported from other modules)
 
 ### Phase 4: templates (56 inline templates over 40 lines)
 
@@ -313,6 +315,13 @@ Check: the OpenAPI document is identical (schema names come from type names, not
    `access/access.models.ts`…; a type used by several areas stays in `core/`), each file under 400 lines;
    `core/models.ts` becomes `export * from` lines only. One commit.
 2. Then, area by area, importers take the type from its new file; when none is left, the re-exports go.
+
+Traps met:
+
+- `SplitTypes.cs` (Roslyn) moved 369 server types in 6 commits; OpenAPI and EF models identical after each.
+  `measure.mjs` counts an `…Contracts.cs`/`…Models.cs` within 400 lines as an allowed group.
+- `npm test` from Git Bash after `cd /c/workspace/…` fails every suite ("Vitest failed to find the runner"):
+  `cd C:/workspace/…` ([testing-client](testing-client.md)).
 
 ## Phase 4: templates (about 60 commits, small)
 

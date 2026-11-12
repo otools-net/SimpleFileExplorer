@@ -1,7 +1,7 @@
 import { computed, DestroyRef, effect, inject, Injectable } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { TrickplayManifest } from '../core/models';
+import { TrickplayManifest } from '../core/task.models';
 import { ListingStore } from '../library/listing.store';
 
 const HOVER_DELAY_MS = 300; // before a hovered thumbnail asks for its trickplay

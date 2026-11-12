@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { FileTags, LibraryItem, TagSummary } from '../core/models';
+import { LibraryItem } from '../core/models';
+import { FileTags, TagSummary } from '../core/tag.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { Dialogs, registerDialog } from '../library/dialogs.service';

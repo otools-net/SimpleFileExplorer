@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Api } from '../../core/api.service';
-import { ExcludedFolder, ExclusionKind, FolderPicker } from '../../core/models';
+import { FolderPicker } from '../../core/models';
+import { ExcludedFolder, ExclusionKind } from '../library.models';
 import { ToastService } from '../../core/toast.service';
 import { BusyDirective, whileBusy } from '../../shared/busy.directive';
 import { FolderPickerComponent, FolderSource } from '../../shared/folder-picker.component';

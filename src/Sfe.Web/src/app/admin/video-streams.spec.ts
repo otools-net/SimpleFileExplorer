@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiMock, mockApi, settle, testProviders } from '../../testing/fakes';
-import { StreamingStatus } from '../core/models';
+import { StreamingStatus } from './admin.models';
 import { VideoStreamsComponent } from './video-streams.component';
 
 describe('Video streams', () => {

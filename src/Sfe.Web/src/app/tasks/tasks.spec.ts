@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../core/api.service';
-import { TaskInfo, TaskOverview, TaskRunDetails, TaskRunSummary, TaskSchedule } from '../core/models';
+import { TaskInfo, TaskRunSummary } from '../core/task.models';
+import { TaskOverview, TaskRunDetails, TaskSchedule } from './task.models';
 import { RemoveFromIndexDialog } from '../library/scan/remove-from-index.dialog';
 import { ApiMock, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
 import { ScheduleFormComponent } from './schedule-form.component';

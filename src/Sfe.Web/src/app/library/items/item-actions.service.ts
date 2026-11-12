@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { ConfigService } from '../../core/config.service';
 import { formatOf, isViewable } from '../../formats/formats';
-import { LibraryItem, TagSummary } from '../../core/models';
+import { LibraryItem } from '../../core/models';
+import { TagSummary } from '../../core/tag.models';
 import { tagQuery } from '../../tags/tags';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';

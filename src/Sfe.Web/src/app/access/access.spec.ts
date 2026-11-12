@@ -3,17 +3,16 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AccountSectionComponent } from '../account/account-section.component';
 import { ApiError } from '../core/api.service';
+import { FolderLevel, SessionInfo } from '../core/access.models';
 import {
-    FolderLevel,
     FolderRuleView,
     GroupInfo,
     RightDefinition,
     RightKind,
     RightsCatalog,
-    SessionInfo,
     TenantDetails,
     UserInfo,
-} from '../core/models';
+} from './access.models';
 import { Rights } from '../core/rights';
 import { HelpComponent } from '../shared/help.component';
 import {

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { formatDuration, formatElapsed, formatSize, joinParts, plural } from '../core/format';
-import { StreamActivity, StreamingStatus } from '../core/models';
+import { StreamActivity, StreamingStatus } from './admin.models';
 import { visibleInterval } from '../core/visible-interval';
 
 const REFRESH_MS = 2000;

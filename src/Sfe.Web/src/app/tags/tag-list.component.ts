@@ -2,7 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { plural } from '../core/format';
-import { TagDetails } from '../core/models';
+import { TagDetails } from '../core/tag.models';
 import { Dialogs } from '../library/dialogs.service';
 import { IconComponent } from '../shared/icon.component';
 import { TagChipComponent } from './tag-chip.component';

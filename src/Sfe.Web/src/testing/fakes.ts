@@ -6,16 +6,11 @@ import { Api } from '../app/core/api.service';
 import { AdminPageComponent, leaveAdminPage } from '../app/admin/admin-page.component';
 import { routes } from '../app/app.routes';
 import { ConfigService } from '../app/core/config.service';
-import {
-    ClientConfig,
-    FileTagChangeResult,
-    FileTags,
-    InstallationView,
-    LibraryItem,
-    SettingsValues,
-    TagDetails,
-    TagSummary,
-} from '../app/core/models';
+import { InstallationView } from '../app/core/access.models';
+import { ClientConfig } from '../app/core/config.models';
+import { LibraryItem } from '../app/core/models';
+import { SettingsValues } from '../app/core/setting.models';
+import { FileTagChangeResult, FileTags, TagDetails, TagSummary } from '../app/core/tag.models';
 import { Rights } from '../app/core/rights';
 import { TABS } from '../app/settings/settings-schema';
 

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { BuiltInGroup, GroupInfo, RightDefinition, RightsCatalog, UserInfo } from '../core/models';
+import { BuiltInGroup, GroupInfo, RightDefinition, RightsCatalog, UserInfo } from './access.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { checkedOf, valueOf } from '../shared/events';

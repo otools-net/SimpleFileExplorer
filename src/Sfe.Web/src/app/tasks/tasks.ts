@@ -1,13 +1,6 @@
 import { formatDate, formatTime, plural } from '../core/format';
-import {
-    ScheduleKind,
-    TaskInfo,
-    TaskKind,
-    TaskOutcome,
-    TaskSchedule,
-    TaskScheduleInput,
-    TaskTrigger,
-} from '../core/models';
+import { TaskInfo, TaskKind, TaskOutcome, TaskTrigger } from '../core/task.models';
+import { ScheduleKind, TaskSchedule, TaskScheduleInput } from './task.models';
 
 /*
  * Wording of the background tasks, their schedules and runs, shared by the "Background tasks" dialog's parts.

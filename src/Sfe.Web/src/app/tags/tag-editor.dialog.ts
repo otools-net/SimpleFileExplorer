@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signa
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { plural } from '../core/format';
-import { TagDetails, TagInput, TagSummary } from '../core/models';
+import { TagDetails, TagSummary } from '../core/tag.models';
+import { TagInput } from './tag.models';
 import { ToastService } from '../core/toast.service';
 import { Dialogs, registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';

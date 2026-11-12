@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { plural } from '../../core/format';
-import { QuickLink } from '../../core/models';
+import { QuickLink } from '../library.models';
 import { baseName } from '../../core/paths';
 import { Rights } from '../../core/rights';
 import { ToastService } from '../../core/toast.service';

@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { LibraryItem, TagSummary } from '../core/models';
+import { LibraryItem } from '../core/models';
+import { TagSummary } from '../core/tag.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';

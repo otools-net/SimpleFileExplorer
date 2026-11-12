@@ -3,16 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { ApiError } from '../core/api.service';
-import {
-    ClientConfig,
-    KeepAliveFolder,
-    KeepAliveView,
-    SettingLevel,
-    SettingState,
-    SettingsValues,
-    SettingsView,
-    TaskInfo,
-} from '../core/models';
+import { ClientConfig } from '../core/config.models';
+import { SettingLevel, SettingState, SettingsValues, SettingsView } from '../core/setting.models';
+import { TaskInfo } from '../core/task.models';
+import { KeepAliveFolder, KeepAliveView } from './admin.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { ListingStore } from '../library/listing.store';

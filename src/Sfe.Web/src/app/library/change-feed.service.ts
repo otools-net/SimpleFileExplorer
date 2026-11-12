@@ -1,7 +1,7 @@
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { TAB_ID } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { KeepAliveState } from '../core/models';
+import { KeepAliveState } from './library.models';
 import { Rights } from '../core/rights';
 import { ListingStore } from './listing.store';
 

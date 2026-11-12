@@ -1,7 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { SettingChanges, SettingLevel, SettingState, SettingsView } from '../core/models';
+import { SettingLevel, SettingState, SettingsView } from '../core/setting.models';
+import { SettingChanges } from './settings.models';
 import { readPreference, writePreference } from '../core/preferences';
 import { Rights, SETTINGS_RIGHTS } from '../core/rights';
 import { ThemeService } from '../core/theme.service';

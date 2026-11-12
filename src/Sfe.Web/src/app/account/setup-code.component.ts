@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { HostingKind } from '../core/models';
+import { HostingKind } from './account.models';
 
 /** How to give the server its setup code, by the way it runs ([title, steps]). */
 export const SETUP_CODE_STEPS: Record<HostingKind, [string, string]> = {

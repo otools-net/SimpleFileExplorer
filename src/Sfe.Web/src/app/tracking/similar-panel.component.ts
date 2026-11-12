@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { formatDate, formatDuration, formatSize, joinParts, plural } from '../core/format';
-import { SimilarVideoResults } from '../core/models';
+import { SimilarVideoResults } from './tracking.models';
 import { readPreference, writePreference } from '../core/preferences';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';

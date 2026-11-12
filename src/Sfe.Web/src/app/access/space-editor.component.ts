@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { FolderPicker, RightDefinition, TenantDetails } from '../core/models';
+import { FolderPicker } from '../core/models';
+import { RightDefinition, TenantDetails } from './access.models';
 import { ToastService } from '../core/toast.service';
 import { checkedOf, valueOf } from '../shared/events';
 import { HelpComponent } from '../shared/help.component';

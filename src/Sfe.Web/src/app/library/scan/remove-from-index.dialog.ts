@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../../core/api.service';
 import { joinParts, plural } from '../../core/format';
-import { IndexedFolder, RemovedFromIndex } from '../../core/models';
+import { IndexedFolder, RemovedFromIndex } from '../library.models';
 import { ToastService } from '../../core/toast.service';
 import { BusyDirective, whileBusy } from '../../shared/busy.directive';
 import { SheetComponent } from '../../shared/sheet.component';

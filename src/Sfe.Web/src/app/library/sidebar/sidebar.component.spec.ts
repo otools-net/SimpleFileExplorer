@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TagSidebar } from '../../core/models';
+import { TagSidebar } from '../library.models';
 import { TagManagerDialog } from '../../tags/tag-manager.dialog';
 import {
     ApiMock,

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
 import { InstallationFormComponent } from '../account/installation-form.component';
 import { Api, ApiError } from '../core/api.service';
-import { InstallationView } from '../core/models';
+import { InstallationView } from '../core/access.models';
 import { ToastService } from '../core/toast.service';
 import { valueOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';

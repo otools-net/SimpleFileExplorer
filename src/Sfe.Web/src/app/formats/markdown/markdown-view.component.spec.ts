@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../../core/api.service';
-import { LibraryItem, TextFile } from '../../core/models';
+import { LibraryItem } from '../../core/models';
+import { TextFile } from '../format.models';
 import { ApiMock, item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
 import { FILE_VIEW_HOST, MARKDOWN_FORMAT } from '../formats';
 import { READING_KEY } from '../reading/reading.service';

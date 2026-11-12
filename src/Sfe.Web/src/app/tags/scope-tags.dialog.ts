@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { plural } from '../core/format';
-import { FolderDefaults, ScopeTags, TagScope, TagSummary, TagUsage } from '../core/models';
+import { FolderDefaults, TagScope, TagSummary, TagUsage } from '../core/tag.models';
+import { ScopeTags } from './tag.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { Dialogs, registerDialog } from '../library/dialogs.service';

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
 import { formatDate, formatSize, plural } from '../core/format';
-import { MissingFileInfo } from '../core/models';
+import { MissingFileInfo } from './tracking.models';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';

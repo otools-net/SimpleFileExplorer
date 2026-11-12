@@ -13,7 +13,7 @@ import {
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { formatDate, plural } from '../core/format';
-import { GroupInfo, RightsCatalog, UserInfo } from '../core/models';
+import { GroupInfo, RightsCatalog, UserInfo } from './access.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { checkedOf } from '../shared/events';

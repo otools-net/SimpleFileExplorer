@@ -1,4 +1,4 @@
-import { TagDetails, TagSummary } from '../core/models';
+import { TagDetails, TagSummary } from '../core/tag.models';
 
 /*
  * Tags follow TagStudio's model: a name, a shorthand, aliases, parent tags (a file tagged "Shrek" is found by

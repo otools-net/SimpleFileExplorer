@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { TAB_ID } from '../core/api.service';
-import { DirectoryListing, FileJobView, LibraryItem } from '../core/models';
+import { DirectoryListing, LibraryItem } from '../core/models';
+import { FileJobView } from './file.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import {

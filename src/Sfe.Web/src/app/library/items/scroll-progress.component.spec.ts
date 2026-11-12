@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { DirectoryListing, LibraryItem, SearchResults } from '../../core/models';
+import { DirectoryListing, LibraryItem } from '../../core/models';
+import { SearchResults } from '../library.models';
 import { ApiMock, fakeConfig, item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
 import { ListingStore } from '../listing.store';
 import { SidebarService } from '../sidebar/sidebar.service';

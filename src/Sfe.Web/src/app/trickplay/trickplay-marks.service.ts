@@ -1,7 +1,7 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { TrickplayFileState, TrickplayManifest } from '../core/models';
+import { TrickplayFileState, TrickplayManifest } from '../core/task.models';
 import { ListingStore } from '../library/listing.store';
 import { waitForTrickplay } from './trickplay';
 

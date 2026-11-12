@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { DirectoryListing, LibraryItem, TrashPage } from '../core/models';
+import { DirectoryListing, LibraryItem } from '../core/models';
+import { TrashPage } from './file.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import {

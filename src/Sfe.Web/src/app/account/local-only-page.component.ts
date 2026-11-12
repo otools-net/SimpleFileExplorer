@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { InstallationSectionComponent } from '../admin/installation-section.component';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { SessionInfo } from '../core/models';
+import { SessionInfo } from '../core/access.models';
 import { IconComponent } from '../shared/icon.component';
 
 /** This app's address on the server's own computer: the same port and folder, at localhost. */

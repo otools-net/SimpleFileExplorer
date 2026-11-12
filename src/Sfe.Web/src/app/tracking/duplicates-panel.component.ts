@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { formatSize, joinParts, plural } from '../core/format';
-import { DuplicateGroup, DuplicateResults, FileTags, isFileConflict, LibraryItem } from '../core/models';
+import { isFileConflict, LibraryItem } from '../core/models';
+import { FileTags } from '../core/tag.models';
+import { DuplicateGroup, DuplicateResults } from './tracking.models';
 import { readPreference, writePreference } from '../core/preferences';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';

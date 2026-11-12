@@ -14,7 +14,8 @@ import {
 import { Api, ApiError } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { formatSize } from '../../core/format';
-import { LibraryItem, TextFile } from '../../core/models';
+import { LibraryItem } from '../../core/models';
+import { TextFile } from '../format.models';
 import { Rights } from '../../core/rights';
 import { MenuEntry } from '../../menus/context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../../menus/overflow-row';

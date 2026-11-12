@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { QuickLink } from '../../core/models';
+import { QuickLink } from '../library.models';
 import { Rights } from '../../core/rights';
 import { ToastService } from '../../core/toast.service';
 import {

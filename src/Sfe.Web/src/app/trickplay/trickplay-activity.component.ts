@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { formatDate, formatElapsed, formatTime, joinParts, plural } from '../core/format';
-import { TrickplayActivity } from '../core/models';
+import { TrickplayActivity } from './trickplay.models';
 import { ToastService } from '../core/toast.service';
 import { visibleInterval } from '../core/visible-interval';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';

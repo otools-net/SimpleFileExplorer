@@ -181,25 +181,3 @@ export interface FileLink {
     url: string;
     expires: string;
 }
-
-// The models of each area, until their importers take them from there (readability plan, phase 3).
-export * from '../access/access.models';
-export * from '../account/account.models';
-export * from '../admin/admin.models';
-export * from '../editor/editor.models';
-export * from '../files/file.models';
-export * from '../formats/format.models';
-export * from '../library/library.models';
-export * from '../logs/log.models';
-export * from '../migration/migration.models';
-export * from '../settings/settings.models';
-export * from '../tags/tag.models';
-export * from '../tasks/task.models';
-export * from '../tracking/tracking.models';
-export * from '../trickplay/trickplay.models';
-export * from './access.models';
-export * from './archive.models';
-export * from './config.models';
-export * from './setting.models';
-export * from './tag.models';
-export * from './task.models';

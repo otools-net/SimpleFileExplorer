@@ -13,7 +13,8 @@ import {
 } from '@angular/core';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
-import { LibraryItem, TextFile } from '../../core/models';
+import { LibraryItem } from '../../core/models';
+import { TextFile } from '../format.models';
 import { baseName } from '../../core/paths';
 import { readPreference, writePreference } from '../../core/preferences';
 import { Rights } from '../../core/rights';

@@ -20,7 +20,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { redirected } from '../core/api.service';
-import { SettingLevel } from '../core/models';
+import { SettingLevel } from '../core/setting.models';
 import { ConfigService } from '../core/config.service';
 import { ThemeService } from '../core/theme.service';
 import { routeParams } from '../library/library-route';

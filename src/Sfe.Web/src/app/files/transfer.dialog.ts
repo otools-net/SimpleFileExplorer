@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { ConfigService } from '../core/config.service';
 import { joinParts, plural } from '../core/format';
-import { AccessGain, FileJobKind, FileJobRequest, LibraryItem } from '../core/models';
+import { LibraryItem } from '../core/models';
+import { AccessGain, FileJobKind, FileJobRequest } from './file.models';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';

@@ -1,12 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-    FolderDefaults,
-    FolderDefaultTagsResult,
-    ScopeTagChangeResult,
-    ScopeTags,
-    TagScope,
-    TagSummary,
-} from '../core/models';
+import { FolderDefaults, TagScope, TagSummary } from '../core/tag.models';
+import { FolderDefaultTagsResult, ScopeTagChangeResult, ScopeTags } from './tag.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';

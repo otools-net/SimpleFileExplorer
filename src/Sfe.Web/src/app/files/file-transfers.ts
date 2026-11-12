@@ -2,6 +2,7 @@ import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core'
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { plural } from '../core/format';
+import { LibraryItem } from '../core/models';
 import {
     CompressRequest,
     ConflictChoice,
@@ -10,8 +11,7 @@ import {
     FileJobKind,
     FileJobRequest,
     FileJobView,
-    LibraryItem,
-} from '../core/models';
+} from './file.models';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';

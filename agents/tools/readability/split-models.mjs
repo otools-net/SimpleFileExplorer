@@ -8,6 +8,7 @@
 //
 //   node agents/tools/readability/split-models.mjs            # prints the plan
 //   node agents/tools/readability/split-models.mjs --write    # writes the files
+//   node agents/tools/readability/split-models.mjs --imports  # importers take each name from its file
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, dirname, relative, sep } from 'node:path';
 import { createRequire } from 'node:module';
@@ -40,6 +41,76 @@ const FILE_OF_AREA = {
     tracking: 'tracking.models.ts',
     trickplay: 'trickplay.models.ts',
 };
+
+if (process.argv.includes('--imports')) {
+    retargetImports();
+    process.exit(0);
+}
+
+/**
+ * Second step: every `import { … } from '…/core/models'` becomes imports from the files the names live in now (one
+ * declaration per file, `type` kept, aliases kept). Files are found from the declarations of `core/models.ts` and the
+ * files it re-exports.
+ */
+function retargetImports() {
+    const modelsText = readFileSync(modelsPath, 'utf8');
+    const modelsSf = ts.createSourceFile(modelsPath, modelsText, ts.ScriptTarget.Latest, true);
+    const where = new Map();
+    const declare = (file, fileSf) => {
+        for (const s of fileSf.statements) if (s.name && !ts.isImportDeclaration(s)) where.set(s.name.text, file);
+    };
+    declare(modelsPath, modelsSf);
+    for (const s of modelsSf.statements) {
+        if (!ts.isExportDeclaration(s) || s.exportClause) continue;
+        const file = join(dirname(modelsPath), s.moduleSpecifier.text) + '.ts';
+        declare(file, ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true));
+    }
+    let changed = 0;
+    for (const file of tsFilesOf(join(web, 'src'))) {
+        if (file === modelsPath || where.has(file)) continue;
+        const text = readFileSync(file, 'utf8');
+        if (!text.includes('models')) continue;
+        const fileSf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+        const edits = [];
+        for (const statement of fileSf.statements) {
+            if (!ts.isImportDeclaration(statement)) continue;
+            const from = statement.moduleSpecifier.text;
+            if (!from.startsWith('.') || join(dirname(file), from) + '.ts' !== modelsPath) continue;
+            const clause = statement.importClause;
+            const byFile = new Map();
+            for (const element of clause.namedBindings.elements) {
+                const name = (element.propertyName ?? element.name).text;
+                const target = where.get(name);
+                if (!target) throw new Error(`${file}: ${name} is not in core/models or its files`);
+                if (!byFile.has(target)) byFile.set(target, []);
+                byFile.get(target).push(element.getText());
+            }
+            const lines = [...byFile]
+                .map(([target, names]) => {
+                    let spec = relative(dirname(file), target.replace(/\.ts$/, '')).split(sep).join('/');
+                    if (!spec.startsWith('.')) spec = './' + spec;
+                    return `import ${clause.isTypeOnly ? 'type ' : ''}{ ${names.join(', ')} } from '${spec}';`;
+                })
+                .sort((a, b) => a.slice(a.indexOf(' from ')).localeCompare(b.slice(b.indexOf(' from '))));
+            edits.push([statement.getStart(), statement.getEnd(), lines.join('\n')]);
+        }
+        if (edits.length === 0) continue;
+        let result = text;
+        for (const [start, end, replacement] of edits.reverse())
+            result = result.slice(0, start) + replacement + result.slice(end);
+        writeFileSync(file, result);
+        changed++;
+    }
+    console.log(`${changed} file(s) import from the area files`);
+}
+
+function* tsFilesOf(dir) {
+    for (const name of readdirSync(dir)) {
+        const path = join(dir, name);
+        if (statSync(path).isDirectory()) yield* tsFilesOf(path);
+        else if (path.endsWith('.ts')) yield path;
+    }
+}
 
 const source = readFileSync(modelsPath, 'utf8');
 const sf = ts.createSourceFile(modelsPath, source, ts.ScriptTarget.Latest, true);
@@ -101,7 +172,7 @@ for (const d of declarations) {
     const [only] = areas;
     home.set(d.name, areas.size === 1 && FILE_OF_AREA[only] ? only : 'core');
 }
-for (let changed = true; changed; ) {
+for (let changed = true; changed;) {
     changed = false;
     for (const d of declarations) {
         if (home.get(d.name) !== 'core') continue;
@@ -121,8 +192,14 @@ const CORE_FILES = [
     ['archive', /^Archive(?!Link)/],
     ['task', /^(Task|Scan|Trickplay|Duplicate|RemovedDuplicate|SimilarVideo|RelinkPass)/],
     ['setting', /^Setting/],
-    ['access', /^(UserKind|Session|FolderRule|FolderAccessEntry|FolderLevel|Membership|UserInput|GroupInput|Tenant|Migration|ChangelogEntry|Installation|ServerMode|SetupInput)/],
-    ['config', /^(Theme|ClientConfig|StreamProbe|KeepAlive|StreamingMode|EditorConfig|EditedImage|SavedImage|SaveImageResult|TextVersion|SubtitleVideo|SavedText|SaveTextResult)$/],
+    [
+        'access',
+        /^(UserKind|Session|FolderRule|FolderAccessEntry|FolderLevel|Membership|UserInput|GroupInput|Tenant|Migration|ChangelogEntry|Installation|ServerMode|SetupInput)/,
+    ],
+    [
+        'config',
+        /^(Theme|ClientConfig|StreamProbe|KeepAlive|StreamingMode|EditorConfig|EditedImage|SavedImage|SaveImageResult|TextVersion|SubtitleVideo|SavedText|SaveTextResult)$/,
+    ],
 ];
 for (const d of declarations) {
     if (home.get(d.name) !== 'core') continue;
@@ -145,7 +222,9 @@ for (const d of declarations) {
 }
 for (const [area, list] of groups) {
     const lines = list.reduce((n, d) => n + d.text.split('\n').length + 1, 0);
-    console.log(`${area.padEnd(10)} ${String(list.length).padStart(3)} declarations, ~${lines} lines: ${list.map((d) => d.name).join(', ')}`);
+    console.log(
+        `${area.padEnd(10)} ${String(list.length).padStart(3)} declarations, ~${lines} lines: ${list.map((d) => d.name).join(', ')}`,
+    );
 }
 if (!write) process.exit(0);
 
@@ -178,7 +257,12 @@ for (const [area, list] of groups) {
     const imports = importsFor(area, list, dir);
     const body = list.map((d) => d.text).join('\n\n');
     writeFileSync(file, (imports.length ? imports.join('\n') + '\n\n' : '') + body + '\n');
-    reexports.push(`export * from '${relative(join(app, 'core'), pathOf(area)).split(sep).join('/').replace(/^(?!\.)/, './')}';`);
+    reexports.push(
+        `export * from '${relative(join(app, 'core'), pathOf(area))
+            .split(sep)
+            .join('/')
+            .replace(/^(?!\.)/, './')}';`,
+    );
 }
 const coreImports = importsFor('core', coreList, join(app, 'core'));
 const head = source.slice(0, sf.statements.find((s) => !ts.isImportDeclaration(s)).getFullStart()).trimEnd();

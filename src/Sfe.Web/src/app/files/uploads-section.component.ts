@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { formatDate, formatSize } from '../core/format';
-import { UploadInfo } from '../core/models';
+import { UploadInfo } from './file.models';
 import { baseName } from '../core/paths';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective } from '../shared/busy.directive';

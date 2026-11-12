@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ApiError } from '../core/api.service';
-import { DirectoryListing, LibraryItem, UploadInfo } from '../core/models';
+import { DirectoryListing, LibraryItem } from '../core/models';
+import { UploadInfo } from './file.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import {

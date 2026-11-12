@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, v
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { formatDate } from '../core/format';
-import { GroupInfo, UserInfo } from '../core/models';
+import { GroupInfo, UserInfo } from './access.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { valueOf } from '../shared/events';

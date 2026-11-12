@@ -1,6 +1,6 @@
 import { ApiError } from '../../core/api.service';
 import { formatSize, joinParts } from '../../core/format';
-import { TextFile } from '../../core/models';
+import { TextFile } from '../format.models';
 
 export const ENCODINGS: Readonly<Record<string, string>> = {
     'utf-8': 'UTF-8',

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { ClientConfig, LibraryItem } from '../../core/models';
+import { ClientConfig } from '../../core/config.models';
+import { LibraryItem } from '../../core/models';
 import { ApiMock, fakeConfig, item, loadConfig, mockApi, testProviders } from '../../../testing/fakes';
 import { FileTileComponent } from './file-tile.component';
 

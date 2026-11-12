@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
-import { FolderPicker, InstallationInput, InstallationSaved, InstallationView, ServerMode } from '../core/models';
+import { InstallationView, ServerMode } from '../core/access.models';
+import { FolderPicker } from '../core/models';
+import { InstallationInput, InstallationSaved } from './account.models';
 import { valueOf } from '../shared/events';
 import { FolderPickerComponent } from '../shared/folder-picker.component';
 import { IconComponent } from '../shared/icon.component';

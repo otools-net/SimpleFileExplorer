@@ -14,7 +14,8 @@ import {
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { copyText } from '../../core/copy-path.service';
-import { LibraryItem, TextFile } from '../../core/models';
+import { LibraryItem } from '../../core/models';
+import { TextFile } from '../format.models';
 import { readPreference, writePreference } from '../../core/preferences';
 import { Rights } from '../../core/rights';
 import { ToastService } from '../../core/toast.service';

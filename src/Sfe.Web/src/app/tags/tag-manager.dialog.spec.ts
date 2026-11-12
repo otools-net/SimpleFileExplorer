@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../core/api.service';
-import { TagSearchResults } from '../core/models';
+import { TagSearchResults } from '../core/tag.models';
 import { Dialogs } from '../library/dialogs.service';
 import { ApiMock, deferred, loadConfig, mockApi, settle, tag, testProviders, type } from '../../testing/fakes';
 import { TagEditorDialog, TagEditResult } from './tag-editor.dialog';

@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { plural } from '../core/format';
-import { TenantDetails } from '../core/models';
+import { TenantDetails } from './access.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { HelpComponent } from '../shared/help.component';

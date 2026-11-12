@@ -1,5 +1,5 @@
 import { Api } from '../core/api.service';
-import { TrickplayManifest } from '../core/models';
+import { TrickplayManifest } from '../core/task.models';
 
 const PLAYER_RETRY_MS = 4000; // the player waiting for the trickplay of its video
 

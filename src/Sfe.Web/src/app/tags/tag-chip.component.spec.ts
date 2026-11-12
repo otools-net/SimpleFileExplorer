@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TagSummary } from '../core/models';
+import { TagSummary } from '../core/tag.models';
 import { ApiMock, loadConfig, mockApi, summary, tag, testProviders } from '../../testing/fakes';
 import { TagChipComponent } from './tag-chip.component';
 

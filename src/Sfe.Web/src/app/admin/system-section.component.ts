@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { SystemInfo } from '../core/models';
+import { SystemInfo } from './admin.models';
 import { Rights } from '../core/rights';
 import { IconComponent } from '../shared/icon.component';
 import { InstallationSectionComponent } from './installation-section.component';

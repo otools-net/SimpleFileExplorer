@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
-import { GroupInfo, UserInfo, UserKind } from '../core/models';
+import { UserKind } from '../core/access.models';
+import { GroupInfo, UserInfo } from './access.models';
 import { ToastService } from '../core/toast.service';
 import { checkedOf, valueOf } from '../shared/events';
 import { HelpComponent } from '../shared/help.component';

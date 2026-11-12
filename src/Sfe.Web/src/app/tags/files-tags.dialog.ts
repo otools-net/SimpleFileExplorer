@@ -2,7 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { plural } from '../core/format';
-import { FileTagChange, LibraryItem, TagSummary } from '../core/models';
+import { LibraryItem } from '../core/models';
+import { TagSummary } from '../core/tag.models';
+import { FileTagChange } from './tag.models';
 import { ToastService } from '../core/toast.service';
 import { Dialogs, registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';

@@ -2,7 +2,7 @@
  * The wording and the filters of the Logs page: what the boxes hold, turned into the query of api/logs.
  */
 
-import { LogLevelName, LogQuery } from '../core/models';
+import { LogLevelName, LogQuery } from './log.models';
 
 /** From the least to the most severe; the filter lists them in this order. */
 export const LOG_LEVELS: LogLevelName[] = [

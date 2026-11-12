@@ -13,7 +13,8 @@ import {
 } from '@angular/core';
 import { Api } from '../core/api.service';
 import { formatDate, formatElapsed, joinParts, plural } from '../core/format';
-import { TaskInfo, TaskKind, TaskOverview, TaskRunSummary, TaskSchedule } from '../core/models';
+import { TaskInfo, TaskKind, TaskRunSummary } from '../core/task.models';
+import { TaskOverview, TaskSchedule } from './task.models';
 import { ToastService } from '../core/toast.service';
 import { visibleInterval } from '../core/visible-interval';
 import { ListingStore } from '../library/listing.store';

@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { joinParts, plural } from '../../core/format';
-import { ScanStatus } from '../../core/models';
+import { ScanStatus } from '../library.models';
 import { readPreference, writePreference } from '../../core/preferences';
 import { ToastService } from '../../core/toast.service';
 import { ListingStore } from '../listing.store';

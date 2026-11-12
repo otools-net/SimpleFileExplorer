@@ -5,7 +5,7 @@ import { generatedCodeWhere, SetupCodeStepsComponent } from '../account/setup-co
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { formatSize } from '../core/format';
-import { BackupLink, MigrationInfo } from '../core/models';
+import { BackupLink, MigrationInfo } from './migration.models';
 import { valueOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
 import { changelogParts } from './changelog';

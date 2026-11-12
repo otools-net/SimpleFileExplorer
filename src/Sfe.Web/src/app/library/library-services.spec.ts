@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Api, ApiError } from '../core/api.service';
-import { ScanStatus, TagSidebar } from '../core/models';
+import { ScanStatus, TagSidebar } from './library.models';
 import { ToastService } from '../core/toast.service';
 import { waitForTrickplay } from '../trickplay/trickplay';
 import {

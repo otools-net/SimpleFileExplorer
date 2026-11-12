@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, input, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
-import { TagDetails } from '../core/models';
+import { TagDetails } from '../core/tag.models';
 import { ToastService } from '../core/toast.service';
 import { IconComponent } from '../shared/icon.component';
 import { TagChipComponent } from './tag-chip.component';

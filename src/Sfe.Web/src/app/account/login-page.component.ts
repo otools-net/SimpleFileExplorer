@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { SessionInfo } from '../core/models';
+import { SessionInfo } from '../core/access.models';
 import { checkedOf, valueOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
 

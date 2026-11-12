@@ -151,6 +151,7 @@ dotnet csharpier format src/Sfe.Core/Files
 ```sh
 node agents/tools/readability/split-models.mjs            # prints where each declaration of core/models.ts goes
 node agents/tools/readability/split-models.mjs --write    # writes the files; core/models.ts re-exports them
+node agents/tools/readability/split-models.mjs --imports  # importers take each name from its file
 ```
 
 - A declaration used (imported from `core/models`) by one area only goes to that area's models file
@@ -159,5 +160,7 @@ node agents/tools/readability/split-models.mjs --write    # writes the files; co
   `core/api.service.ts` does not count as a use (it carries every type).
 - Each file imports what it refers to with `import type` (`import` for the guards that are functions);
   `core/models.ts` ends with `export *` of every new file, so no importer changes in that commit.
+- `--imports` rewrites every `import { … } from '…/core/models'` into one import per file the names live in now
+  (aliases and `type` kept); then the `export *` lines of `core/models.ts` can go.
 - Check: both `tsc --noEmit` (app, spec), `npm test`, and the client build (`references.mjs --only client`): only
   `main.js` moved by a few bytes (two guard functions changed modules).

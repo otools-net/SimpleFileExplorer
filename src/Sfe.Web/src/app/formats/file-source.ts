@@ -1,7 +1,8 @@
 import { inject, InjectionToken } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { LibraryItem, TextFile } from '../core/models';
+import { LibraryItem } from '../core/models';
+import { TextFile } from './format.models';
 
 /**
  * Where a format view reads the file it shows: the library (the default), or an entry of an archive shown in the

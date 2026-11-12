@@ -13,7 +13,7 @@ import {
     type,
 } from '../../testing/fakes';
 import { ApiError } from '../core/api.service';
-import { SystemInfo } from '../core/models';
+import { SystemInfo } from './admin.models';
 import { Rights } from '../core/rights';
 import { findSection, visibleSections } from './admin-sections';
 import { SystemSectionComponent } from './system-section.component';

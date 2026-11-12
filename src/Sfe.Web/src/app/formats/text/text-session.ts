@@ -1,7 +1,8 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { Api, ApiError, editingSession } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
-import { isFileConflict, isSaved, LibraryItem, TextFile, TextToSave } from '../../core/models';
+import { isFileConflict, LibraryItem } from '../../core/models';
+import { isSaved, TextFile, TextToSave } from '../format.models';
 import { parentPath } from '../../core/paths';
 import { ToastService } from '../../core/toast.service';
 import { ChangeFeed } from '../../library/change-feed.service';

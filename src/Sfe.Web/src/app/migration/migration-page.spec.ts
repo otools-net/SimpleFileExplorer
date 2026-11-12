@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { ApiMock, buttonNamed, mockApi, settle, testProviders } from '../../testing/fakes';
 import { ApiError } from '../core/api.service';
-import { MigrationInfo } from '../core/models';
+import { MigrationInfo } from './migration.models';
 import { changelogParts } from './changelog';
 import { MIGRATION_POLL_MS, MigrationPageComponent } from './migration-page.component';
 

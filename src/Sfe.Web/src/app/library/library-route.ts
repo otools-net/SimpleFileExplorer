@@ -1,5 +1,5 @@
 import { ParamMap, Params } from '@angular/router';
-import { SortField } from '../core/models';
+import { SortField } from './library.models';
 
 /** What the listing page shows; the URL's query string is the source of truth (`?path=&q=&sort=&desc=1`). */
 export interface LibraryRoute {

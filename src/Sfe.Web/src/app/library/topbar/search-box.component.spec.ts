@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../../core/api.service';
-import { TagSearchResults } from '../../core/models';
+import { TagSearchResults } from '../../core/tag.models';
 import { ApiMock, deferred, fakeConfig, loadConfig, mockApi, settle, tag, testProviders } from '../../../testing/fakes';
 import { ContextMenu } from '../../menus/context-menu';
 import { ListingStore } from '../listing.store';

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { DirectoryListing, FolderDefaults, InheritedDefaultTag, LibraryItem, TagSummary } from '../core/models';
+import { DirectoryListing, LibraryItem } from '../core/models';
+import { FolderDefaults, InheritedDefaultTag, TagSummary } from '../core/tag.models';
 import { Rights } from '../core/rights';
 import { FolderItemComponent } from '../library/items/folder-item.component';
 import { ListingStore } from '../library/listing.store';

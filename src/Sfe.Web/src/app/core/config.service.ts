@@ -1,7 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Api } from './api.service';
 import { formatDuration, formatResolution } from './format';
-import { ClientConfig, LibraryItem, StreamProbe } from './models';
+import { ClientConfig, StreamProbe } from './config.models';
+import { LibraryItem } from './models';
 import { encodePath } from './paths';
 import { setArchives, setFlashMovies, setTextExtensions } from '../formats/formats';
 

@@ -11,7 +11,7 @@ import {
     signal,
     viewChild,
 } from '@angular/core';
-import { InheritedDefaultTag, TagSummary } from '../core/models';
+import { InheritedDefaultTag, TagSummary } from '../core/tag.models';
 import { IconComponent } from '../shared/icon.component';
 import { TagChipComponent } from './tag-chip.component';
 

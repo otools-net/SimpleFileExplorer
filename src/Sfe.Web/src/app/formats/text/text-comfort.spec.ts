@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EditorView } from '@codemirror/view';
 import { ApiError } from '../../core/api.service';
-import { TextAccess, TextFile, TextPart } from '../../core/models';
+import { TextAccess, TextFile, TextPart } from '../format.models';
 import { ApiMock, item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
 import { ChangeFeed } from '../../library/change-feed.service';
 import { FILE_VIEW_HOST, isTextFile, setTextExtensions, TEXT_FORMAT } from '../formats';

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { ConfigService } from '../core/config.service';
-import { TagSummary } from '../core/models';
+import { TagSummary } from '../core/tag.models';
 import { IconComponent } from '../shared/icon.component';
 import { textOn } from './tags';
 

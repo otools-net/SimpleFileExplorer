@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { ItemProperties, LibraryItem, PropertyJob } from '../core/models';
+import { ItemProperties, LibraryItem } from '../core/models';
+import { PropertyJob } from './file.models';
 import { Rights } from '../core/rights';
 import {
     ApiMock,

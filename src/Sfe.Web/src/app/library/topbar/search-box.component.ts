@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { Api } from '../../core/api.service';
 import { plural } from '../../core/format';
-import { TagDetails } from '../../core/models';
+import { TagDetails } from '../../core/tag.models';
 import { ContextMenuDirective, MenuTarget } from '../../menus/context-menu';
 import { IconComponent } from '../../shared/icon.component';
 import { TagChipComponent } from '../../tags/tag-chip.component';

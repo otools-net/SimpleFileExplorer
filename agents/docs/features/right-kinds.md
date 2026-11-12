@@ -1,7 +1,7 @@
 # Right kinds: Read/Write and what a folder must allow
 
 Code: `src/Sfe.Core/Access/RightCatalog.cs` (`RightKind`, `FolderLevel`, `RightDefinition.Kind`/`AtFolder`/
-`ChangesFiles`, `WriteSelector`, `FileWriteSelector`); client `core/models.ts`, `access/access-parts.ts`
+`ChangesFiles`, `WriteSelector`, `FileWriteSelector`); client `access/access.models.ts`, `access/access-parts.ts`
 (`rightMark`, `changingRights`, `fileChangingRights`), `group-editor`, `space-editor`. Tests: `RightCatalogTests`,
 `AccessTests.TheServerCanSwitchOffEveryRightThatChangesFiles`/`TheServerCanBeMadeReadOnly`. Folder rules, which use
 `AtFolder`: [folder-access.md](folder-access.md).

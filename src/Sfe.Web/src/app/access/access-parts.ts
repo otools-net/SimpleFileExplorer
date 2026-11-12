@@ -5,7 +5,7 @@
  */
 
 import { ApiError } from '../core/api.service';
-import { GroupInfo, RightDefinition, UserInfo } from '../core/models';
+import { GroupInfo, RightDefinition, UserInfo } from './access.models';
 
 /** A space as the account and group editors name it. */
 export interface SpaceRef {

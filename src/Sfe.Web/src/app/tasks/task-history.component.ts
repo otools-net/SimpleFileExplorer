@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { formatDate, formatElapsed, joinParts, plural } from '../core/format';
-import { TaskKind, TaskRunDetails, TaskRunSummary } from '../core/models';
+import { TaskKind, TaskRunSummary } from '../core/task.models';
+import { TaskRunDetails } from './task.models';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';

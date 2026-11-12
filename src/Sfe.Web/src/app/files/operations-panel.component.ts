@@ -9,7 +9,8 @@ import {
     signal,
 } from '@angular/core';
 import { formatDate, formatSize, joinParts, plural } from '../core/format';
-import { ClashSide, FileJobView, LibraryItem } from '../core/models';
+import { ClashSide, LibraryItem } from '../core/models';
+import { FileJobView } from './file.models';
 import { baseName } from '../core/paths';
 import { checkedOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';

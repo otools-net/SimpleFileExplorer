@@ -34,7 +34,7 @@ server = `src/**/*.cs` without migrations, client = `src/Sfe.Web/src/**/*.ts` wi
 | Parameters | 5 | one object for those that travel together | 119 / 2 |
 | Dependencies of a class (constructor, `inject()`) | 8 | the class has several jobs: split it | 6 / 6 |
 | File | 400 lines (tests: 800) | split by responsibility | 36 / 28 (tests: 5 / 3) |
-| Top-level types in a C# file | 1 (see [C#](#c)) | one file per type | 106 files |
+| Top-level types in a C# file | 1 (see [C#](#c)) | one file per type | 0 (groups in `…Contracts.cs`, `…Models.cs`) |
 | Inline Angular template | 40 lines | move it to `name.component.html` | 56 |
 | Paths through a function (cyclomatic complexity) | 25, the analyzer's default (CA1502) | split by case | editor hint |
 
@@ -152,9 +152,9 @@ PascalCase constants, sorted usings, no unused members). What they cannot check:
 
 On top of [frontend](frontend.md); from the Angular style guide and Google's TypeScript guide.
 
-- **One concept per file, named after it** (`listing-position.ts`); no `utils.ts`/`helpers.ts`. `core/models.ts`
-  (1463 lines) is split by area, each part next to the feature that owns it, re-exported from `models.ts` while
-  callers move.
+- **One concept per file, named after it** (`listing-position.ts`); no `utils.ts`/`helpers.ts`. The API's
+  types are in `<area>.models.ts` next to the feature that uses them (`tags/tag.models.ts`); those several areas use
+  are in `core/`, by subject (`core/tag.models.ts`, `core/models.ts` for library items and the rest).
 - **Templates:** inline up to 40 lines; larger ones go in `name.component.html` (`templateUrl`), where the editor
   formats and checks them. In any template:
   - an element whose tag passes the line limit has **one attribute per line**, in the order: structure

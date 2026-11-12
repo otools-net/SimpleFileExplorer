@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Theme } from './models';
+import { Theme } from './config.models';
 import { readPreference, writePreference } from './preferences';
 
 // Light or dark colors, as `data-theme` on <html> (see styles/base.css). This browser's pick (System section) wins over

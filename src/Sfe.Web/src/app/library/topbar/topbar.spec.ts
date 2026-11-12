@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
-import { ClientConfig, DirectoryListing, LibraryItem, SessionInfo } from '../../core/models';
+import { SessionInfo } from '../../core/access.models';
+import { ClientConfig } from '../../core/config.models';
+import { DirectoryListing, LibraryItem } from '../../core/models';
 import { Rights } from '../../core/rights';
 import { ApiMock, fakeConfig, item, LIBRARY, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
 import { ContextMenu } from '../../menus/context-menu';

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { Api } from '../core/api.service';
-import { FolderAccessReport, FolderLevel, FolderPicker, FolderRuleView, GroupInfo, UserInfo } from '../core/models';
+import { FolderLevel } from '../core/access.models';
+import { FolderPicker } from '../core/models';
+import { FolderAccessReport, FolderRuleView, GroupInfo, UserInfo } from './access.models';
 import { ToastService } from '../core/toast.service';
 import { valueOf } from '../shared/events';
 import { HelpComponent } from '../shared/help.component';

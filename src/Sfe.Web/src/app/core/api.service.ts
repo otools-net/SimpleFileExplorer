@@ -3,112 +3,104 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
+    FolderAccessReport,
+    FolderRuleView,
+    GroupInfo,
+    RightsCatalog,
+    TenantDetails,
+    UserInfo,
+} from '../access/access.models';
+import { InstallationInput, InstallationSaved, SetupInfo } from '../account/account.models';
+import { KeepAliveView, StreamingStatus, SystemInfo } from '../admin/admin.models';
+import { EditedImageAccess } from '../editor/editor.models';
+import {
     AccessGain,
-    ArchiveAnswer,
-    ArchiveSearchAnswer,
-    ArchiveLink,
-    ArchiveUnlockAnswer,
-    TextFile,
-    TextPart,
-    TextVersion,
-    SubtitleVideo,
-    SaveTextResult,
-    TextToSave,
-    BackupLink,
     ChecksumAlgorithm,
     FolderTotals,
-    ItemProperties,
     PropertyJob,
-    ClientConfig,
     ConflictChoice,
-    DeleteResults,
     CompressRequest,
     ExtractRequest,
     FileJobRequest,
     FileJobView,
-    UploadCheck,
     UploadInfo,
-    FileOperationResult,
     TrashPage,
+} from '../files/file.models';
+import { ArchiveAnswer, TextFile, TextPart, TextToSave } from '../formats/format.models';
+import {
     TrashCount,
-    KeepAliveView,
-    DirectoryListing,
-    EditedImage,
-    EditedImageAccess,
-    SaveImageResult,
-    DuplicateResults,
-    FileLink,
-    FileTagChange,
-    FileTagChangeResult,
-    FileTags,
     ExcludedFolder,
     ExclusionKind,
-    FolderAccessReport,
-    FolderDefaults,
-    FolderDefaultTagsChange,
-    FolderDefaultTagsResult,
     FolderCover,
+    FolderSiblings,
+    IndexedFolder,
+    QuickLink,
+    RemovedFromIndex,
+    ScanStatus,
+    SearchResults,
+    SortField,
+    TagSidebar,
+} from '../library/library.models';
+import { LogQuery, LogSearchResult } from '../logs/log.models';
+import { BackupLink, MigrationInfo } from '../migration/migration.models';
+import { SettingChanges } from '../settings/settings.models';
+import { FileTagChange, FolderDefaultTagsResult, ScopeTagChangeResult, ScopeTags, TagInput } from '../tags/tag.models';
+import { TaskOverview, TaskRunDetails, TaskSchedule, TaskScheduleInput } from '../tasks/task.models';
+import { DuplicateResults, MissingFileResults, SimilarVideoResults } from '../tracking/tracking.models';
+import { TrickplayActivity, TrickplayStatus } from '../trickplay/trickplay.models';
+import {
+    FolderRuleChange,
+    GroupInput,
+    InstallationGrant,
+    InstallationView,
+    SessionInfo,
+    SetupInput,
+    TenantAccess,
+    TenantInput,
+    UserInput,
+} from './access.models';
+import { ArchiveSearchAnswer, ArchiveUnlockAnswer } from './archive.models';
+import {
+    TextVersion,
+    SubtitleVideo,
+    SaveTextResult,
+    ClientConfig,
+    EditedImage,
+    SaveImageResult,
+    StreamProbe,
+} from './config.models';
+import {
+    ArchiveLink,
+    ItemProperties,
+    DeleteResults,
+    UploadCheck,
+    FileOperationResult,
+    DirectoryListing,
+    FileLink,
     FolderExclusions,
     FolderPicker,
-    FolderRuleChange,
-    FolderRuleView,
-    FolderSiblings,
-    GroupInfo,
-    GroupInput,
-    IndexedFolder,
-    InstallationGrant,
-    InstallationInput,
-    InstallationSaved,
-    InstallationView,
-    LogQuery,
-    LogSearchResult,
-    MigrationInfo,
-    MissingFileResults,
-    QuickLink,
-    RelinkPassResult,
-    RemovedDuplicate,
-    RemovedFromIndex,
-    RightsCatalog,
-    ScanStatus,
+} from './models';
+import { SettingLevel, SettingsValues, SettingsView } from './setting.models';
+import {
+    FileTagChangeResult,
+    FileTags,
+    FolderDefaults,
+    FolderDefaultTagsChange,
     ScopeTagChange,
-    ScopeTagChangeResult,
-    ScopeTags,
-    SearchResults,
-    SessionInfo,
-    SettingChanges,
-    SettingLevel,
-    SettingsValues,
-    SettingsView,
-    SetupInfo,
-    SetupInput,
-    SimilarVideoResults,
-    SortField,
     TagDetails,
-    TagInput,
     TagScope,
     TagSearchResults,
-    TagSidebar,
+} from './tag.models';
+import {
+    RelinkPassResult,
+    RemovedDuplicate,
     TaskActionResult,
     TaskInfo,
     TaskKind,
-    TaskOverview,
-    TaskRunDetails,
     TaskRunPage,
-    TaskSchedule,
-    TaskScheduleInput,
-    TenantAccess,
-    TenantDetails,
-    TenantInput,
-    StreamingStatus,
-    StreamProbe,
-    SystemInfo,
-    TrickplayActivity,
     TrickplayManifest,
     TrickplayStates,
-    TrickplayStatus,
-    UserInfo,
-    UserInput,
-} from './models';
+} from './task.models';
 import { encodePath } from './paths';
 import { takeSetupLink } from './setup-link';
 

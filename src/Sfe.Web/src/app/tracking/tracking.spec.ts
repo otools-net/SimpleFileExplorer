@@ -6,7 +6,7 @@ import {
     MissingFileInfo,
     MissingFileResults,
     SimilarVideoResults,
-} from '../core/models';
+} from './tracking.models';
 import { ToastService } from '../core/toast.service';
 import {
     ApiMock,

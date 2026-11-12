@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { LogEntry, LogSearchResult } from '../core/models';
+import { LogEntry, LogSearchResult } from './log.models';
 import { Rights } from '../core/rights';
 import { ApiMock, limitedConfig, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
 import { visibleSections } from '../admin/admin-sections';

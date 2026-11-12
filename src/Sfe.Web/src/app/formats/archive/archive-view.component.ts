@@ -18,7 +18,9 @@ import {
 import { Api, ApiError } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { formatDate, formatSize } from '../../core/format';
-import { ArchiveAnswer, ArchiveItem, ArchiveListing, LibraryItem } from '../../core/models';
+import { ArchiveItem } from '../../core/archive.models';
+import { LibraryItem } from '../../core/models';
+import { ArchiveAnswer, ArchiveListing } from '../format.models';
 import { pathToken } from '../../core/paths';
 import { Rights } from '../../core/rights';
 import { ToastService } from '../../core/toast.service';

@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { setMediaQuery, settle } from '../../testing/fakes';
 import { VideoStream } from '../core/config.service';
-import { StreamProbe } from '../core/models';
+import { StreamProbe } from '../core/config.models';
 import { By } from '@angular/platform-browser';
 import { ContextMenuComponent } from '../menus/context-menu';
 import { OverflowRowDirective } from '../menus/overflow-row';

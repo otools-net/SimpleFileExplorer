@@ -11,7 +11,8 @@ import {
 } from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
 import { formatDate } from '../core/format';
-import { TaskKind, TaskSchedule, TaskScheduleInput } from '../core/models';
+import { TaskKind } from '../core/task.models';
+import { TaskSchedule, TaskScheduleInput } from './task.models';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
 import {

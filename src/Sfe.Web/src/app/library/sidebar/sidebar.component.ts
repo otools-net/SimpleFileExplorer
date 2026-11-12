@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, OnInit,
 import { RouterLink } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
 import { plural } from '../../core/format';
-import { TagSummary, TagUsage, TrashCount } from '../../core/models';
+import { TagSummary, TagUsage } from '../../core/tag.models';
+import { TrashCount } from '../library.models';
 import { readPreference, writePreference } from '../../core/preferences';
 import { Rights } from '../../core/rights';
 import { IconComponent } from '../../shared/icon.component';

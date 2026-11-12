@@ -14,7 +14,8 @@ import {
 } from '@angular/core';
 import { formatDuration as formatTime } from '../core/format';
 import { VideoStream } from '../core/config.service';
-import { StreamProbe, TrickplayManifest } from '../core/models';
+import { StreamProbe } from '../core/config.models';
+import { TrickplayManifest } from '../core/task.models';
 import { readPreference, writePreference } from '../core/preferences';
 import { MenuEntry } from '../menus/context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../menus/overflow-row';

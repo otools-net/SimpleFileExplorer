@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Api } from '../../core/api.service';
-import { TagSidebar, TrashCount } from '../../core/models';
+import { TagSidebar, TrashCount } from '../library.models';
 import { readPreference, writePreference } from '../../core/preferences';
 
 const PREFERENCE = 'sfe.sidebar';

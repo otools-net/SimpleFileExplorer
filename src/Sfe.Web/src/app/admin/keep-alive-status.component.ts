@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { formatDate, plural } from '../core/format';
-import { KeepAliveFolder, KeepAliveView } from '../core/models';
+import { KeepAliveFolder, KeepAliveView } from './admin.models';
 import { ToastService } from '../core/toast.service';
 import { visibleInterval } from '../core/visible-interval';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';

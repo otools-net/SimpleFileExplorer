@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../../core/api.service';
-import { ArchiveItem, ArchiveListing } from '../../core/models';
+import { ArchiveItem } from '../../core/archive.models';
+import { ArchiveListing } from '../format.models';
 import { pathToken } from '../../core/paths';
 import { Rights } from '../../core/rights';
 import { ApiMock, item, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';

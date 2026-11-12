@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../core/api.service';
-import { TagSearchResults } from '../core/models';
+import { TagSearchResults } from '../core/tag.models';
 import { ToastService } from '../core/toast.service';
 import { ApiMock, deferred, loadConfig, mockApi, settle, tag, testProviders, type } from '../../testing/fakes';
 import { TagOption, TagPickerComponent } from './tag-picker.component';

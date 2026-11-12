@@ -12,7 +12,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { CopyPathService } from '../../core/copy-path.service';
 import { joinParts, plural } from '../../core/format';
-import { SortField } from '../../core/models';
+import { SortField } from '../library.models';
 import { IconComponent } from '../../shared/icon.component';
 import { defaultSort, SEARCH_SORTS } from '../library-route';
 import { DefaultTagsBadgeComponent } from '../../tags/default-tags-badge.component';

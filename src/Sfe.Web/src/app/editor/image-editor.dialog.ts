@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signa
 import { Api, ApiError, editingSession } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { formatSize } from '../core/format';
-import { EditedImageAccess, isSavedImage, LibraryItem } from '../core/models';
+import { LibraryItem } from '../core/models';
+import { EditedImageAccess, isSavedImage } from './editor.models';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ApiError } from '../core/api.service';
-import { FileTagChangeResult, LibraryItem, TagSummary } from '../core/models';
+import { LibraryItem } from '../core/models';
+import { FileTagChangeResult, TagSummary } from '../core/tag.models';
 import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
