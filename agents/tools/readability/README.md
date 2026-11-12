@@ -1,5 +1,8 @@
 # Readability measurements
 
+Files: `measure.mjs` (the counts), `baseline.mjs` and `baseline.json` (the ratchet), `references.mjs` (outputs a
+refactoring must leave unchanged). The plan they serve: `agents/docs/development/readability-refactoring-plan.md`.
+
 Counts what is over the size limits of `agents/docs/development/readability.md` ("Sizes") and lists it worst first:
 the worklist of the refactoring, and how far it is. Reads the files git tracks, changes nothing. Node.js 22+ and the
 client's packages (`npm ci` in `src/Sfe.Web`: TypeScript files are read with the compiler's parser).
@@ -31,3 +34,43 @@ node agents/tools/readability/measure.mjs --json > <tmp>/readability.json
 - TypeScript is exact: nesting counts `if`/loops/`switch`/`try` inside one another, `else if` staying at its `if`'s
   level, inner functions measured on their own.
 - C# formatting and style are not this tool's job: `dotnet format Sfe.slnx --verify-no-changes --severity warn`.
+
+## The baseline (no file gets worse)
+
+`baseline.json` holds what each file is over the limits by (its lines when over the file limit, its long lines, its
+types when several, and how many of its functions, classes and templates are over a limit), one file per line. Code
+in `baseline.mjs`.
+
+```sh
+# exit 1 when a file is worse than in baseline.json (a new file over a limit counts); says when some are better
+node agents/tools/readability/measure.mjs --check
+# rewrite it from the code, printing the totals before -> after
+node agents/tools/readability/measure.mjs --write-baseline
+```
+
+- Run `--check` before each commit. A file worse than its baseline is brought back within it.
+- A refactoring that **moves** debt (a type with long lines into its own file, a function into another class) fails
+  the check for the new file: run `--write-baseline` and commit `baseline.json` with it; its diff shows where the debt
+  went, and the totals printed must not grow.
+- A commit that pays debt off runs `--write-baseline` too, so that the files it improved cannot slide back.
+- Both measure every area (no `--area`); another path can follow the flag (`--check <file>`).
+
+## References (what a refactoring must not change)
+
+```sh
+node agents/tools/readability/references.mjs <temp>/before            # on the commit before
+node agents/tools/readability/references.mjs <temp>/after              # after the change
+git diff --no-index <temp>/before <temp>/after                         # nothing, or only what was meant
+node agents/tools/readability/references.mjs <temp>/x --only openapi,ef  # some of them (openapi, ef, client)
+```
+
+| File | What | How |
+|---|---|---|
+| `openapi.json` | the OpenAPI document (routes, parameters, schemas, descriptions) | `OpenApiExportTests` with `SFE_OPENAPI_OUT`, through `dotnet test` (client build skipped) |
+| `ef-model.txt` | whether each EF context differs from its migrations' snapshot | `dotnet ef migrations has-pending-model-changes`: must say "No changes" |
+| `client-build.txt` | the client build's files and sizes, hashes left out of the names, and the total | `ng build --output-path` into the folder (not `wwwroot`), the build then deleted |
+
+- The folder must be outside the repository (the script refuses otherwise). About 2 minutes for all three.
+- Two runs on the same code give identical files (checked 2026-11-12), so any difference is the change's.
+- `client-build.txt` lists the hashed chunks as `chunk.js` sorted by size: a template moved to its `.html` file
+  should give the same sizes; a difference of a few bytes in one chunk is worth a look, not a failure.

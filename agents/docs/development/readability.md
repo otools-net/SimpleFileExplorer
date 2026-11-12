@@ -210,7 +210,8 @@ nothing else.
 - **Touching a file for another reason?** Leave what you touched within the rules, in a commit of its own before
   the change.
 
-Order, from mechanical to structural; each step is useful alone:
+Order, from mechanical to structural; each step is useful alone (the worklists, checks and traps of each step:
+[readability-refactoring-plan](readability-refactoring-plan.md)):
 
 1. **Format:** `dotnet format Sfe.slnx --severity warn` (about 260 findings on 2026-11-11: initializer members on
    one line, braces on multi-line statements, a dozen unused usings and field names). One commit, listed in a

@@ -77,6 +77,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [api-routes](agents/docs/development/api-routes.md) | minimal API conventions and gotchas | `Sfe.Api/Endpoints/` |
 | [code-style](agents/docs/development/code-style.md) | C# style | `.editorconfig` |
 | [readability](agents/docs/development/readability.md) | readable code: size limits (lines, functions, files, templates), names, comments, per-language rules, refactoring existing code without changing behaviour, checking tools | `.editorconfig`, `agents/tools/readability/` |
+| [readability-refactoring-plan](agents/docs/development/readability-refactoring-plan.md) | plan: bringing existing code to the readability rules, phase by phase (starting numbers, checks per step, traps, final checks in CI) | `agents/tools/readability/` |
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |

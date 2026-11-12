@@ -13,6 +13,7 @@ dotnet ef migrations add <Name> --context AccessDbContext --project src/Sfe.Core
 build/build.ps1 [-Target windows|linux] [-Version 1.2.0] [-SkipTests] [-SkipSmokeTest] [-NoTests]  # -> artifacts/
 build/build.sh  [--target linux|windows|all] [--version V] [--skip-tests] [--skip-smoke-test] [--no-tests]
 dotnet msbuild src/Sfe.Api/Sfe.Api.csproj -getProperty:Version       # current version
+git config blame.ignoreRevsFile .git-blame-ignore-revs               # once per clone: blame skips reformat commits
 ```
 
 - How the client build hooks into MSBuild, and build errors: [build.md](build.md).

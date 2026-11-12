@@ -1,15 +1,19 @@
 // Measures the code against the size limits of agents/docs/development/readability.md: what is over each limit,
-// worst first. Read-only. See README.md.
+// worst first. Read-only, except --write-baseline. See README.md.
 //
 //   node agents/tools/readability/measure.mjs [--top 15] [--area server|client|...] [--json]
+//   node agents/tools/readability/measure.mjs --check | --write-baseline [baseline.json]
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compare, debtsOf, readBaseline, totalsOf, writeBaseline } from './baseline.mjs';
 
-const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const toolFolder = dirname(fileURLToPath(import.meta.url));
+const repo = resolve(toolFolder, '../../..');
+const defaultBaseline = join(toolFolder, 'baseline.json');
 
 /** The limits of readability.md ("Sizes"). Change them there and here together. */
 const LIMITS = {
@@ -38,18 +42,28 @@ const AREAS = [
     { name: 'styles', language: 'css', tests: false, match: file => /^src\/Sfe\.Web\/src\/.*\.css$/.test(file) },
 ];
 
+const BASELINE_FLAGS = { '--check': 'check', '--write-baseline': 'writeBaseline' };
+
 function parseArguments(argv) {
-    const options = { top: 15, area: null, json: false };
+    const options = { top: 15, area: null, json: false, check: null, writeBaseline: null };
     for (let i = 0; i < argv.length; i++) {
-        if (argv[i] === '--top')
+        const flag = argv[i];
+        if (flag === '--top') {
             options.top = Number(argv[++i]);
-        else if (argv[i] === '--area')
+        } else if (flag === '--area') {
             options.area = argv[++i];
-        else if (argv[i] === '--json')
+        } else if (flag === '--json') {
             options.json = true;
-        else
-            throw new Error(`Unknown argument ${argv[i]} (--top N, --area NAME, --json)`);
+        } else if (flag in BASELINE_FLAGS) {
+            // The path is optional: the flag alone means baseline.json next to this script.
+            const hasPath = i + 1 < argv.length && !argv[i + 1].startsWith('--');
+            options[BASELINE_FLAGS[flag]] = hasPath ? resolve(argv[++i]) : defaultBaseline;
+        } else {
+            throw new Error(`Unknown argument ${argv[i]} (--top N, --area NAME, --json, --check, --write-baseline)`);
+        }
     }
+    if ((options.check || options.writeBaseline) && options.area)
+        throw new Error('--check and --write-baseline measure every area: leave out --area');
     return options;
 }
 
@@ -385,6 +399,39 @@ function printArea(area, top) {
     }
 }
 
+/* ---------- The baseline (ratchet) ---------- */
+
+const showChange = ({ file, measure, before, now }) => `  ${file}  ${measure} ${before} -> ${now}`;
+
+/** Exits with 1 when a file is worse than in the baseline; says when some are better, to lock it in. */
+function checkBaseline(areas, path) {
+    if (!existsSync(path))
+        throw new Error(`No baseline at ${path}: run --write-baseline first`);
+    const { worse, better } = compare(debtsOf(areas, LIMITS), readBaseline(path));
+    if (worse.length) {
+        console.log(`Worse than the baseline (${worse.length}): bring these back within it, or, when a refactoring`
+            + ' only moved the debt to other files, run --write-baseline and commit the change with it.');
+        worse.forEach(change => console.log(showChange(change)));
+        process.exitCode = 1;
+    }
+    if (better.length)
+        console.log(`Better than the baseline (${better.length}): run --write-baseline to lock it in.`);
+    if (!worse.length)
+        console.log('No file is worse than the baseline.');
+}
+
+function writeNewBaseline(areas, path) {
+    const debts = debtsOf(areas, LIMITS);
+    const before = totalsOf(readBaseline(path));
+    const after = totalsOf(debts);
+    writeBaseline(path, debts);
+    console.log(`Wrote ${path} (${debts.size} files over a limit). Totals, before -> after:`);
+    for (const measure of Object.keys(after)) {
+        const grew = after[measure] > before[measure] ? '   <- grew' : '';
+        console.log(`  ${measure.padEnd(24)} ${before[measure]} -> ${after[measure]}${grew}`);
+    }
+}
+
 function main() {
     const options = parseArguments(process.argv.slice(2));
     const selected = AREAS.filter(area => !options.area || area.name === options.area);
@@ -393,6 +440,14 @@ function main() {
 
     const files = trackedFiles();
     const areas = selected.map(area => measureArea(area, files.filter(area.match)));
+    if (options.check) {
+        checkBaseline(areas, options.check);
+        return;
+    }
+    if (options.writeBaseline) {
+        writeNewBaseline(areas, options.writeBaseline);
+        return;
+    }
     if (options.json) {
         console.log(JSON.stringify({ limits: LIMITS, areas }, null, 2));
         return;
