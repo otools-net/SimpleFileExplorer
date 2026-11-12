@@ -1287,7 +1287,9 @@ public sealed class ApiTests
         var fields = System
             .Text.RegularExpressions.Regex.Matches(
                 await File.ReadAllTextAsync(schema, TestContext.CancellationToken),
-                @"\{ key: '(?<key>[\w.]+)', label: '[^']*', type: '(?<type>\w+)'(?<numeric>, numeric: true)?"
+                // Prettier lays an entry out on one line or one property per line, a label in either quotes.
+                @"\{\s*key: '(?<key>[\w.]+)',\s*label: (?:'[^']*'|""[^""]*""),\s*"
+                    + @"type: '(?<type>\w+)'(?<numeric>,\s*numeric: true)?"
             )
             // A select of numbers (`numeric: true`) holds numbers.
             .Select(m =>
