@@ -28,10 +28,11 @@ node agents/tools/readability/measure.mjs --json > <tmp>/readability.json
 | files declaring several top-level types | C# |
 
 - The limits are the `LIMITS` constant at the top of `measure.mjs`: change them there and in `readability.md` together.
-- **C# is measured by its layout** (Allman braces, 4 spaces, file-scoped namespaces), not parsed: a member is a `{`
-  alone on its line at 4 or 8 spaces after a header with parentheses. Counts are close, not exact (a multi-line
-  lambda assigned to a field is missed; "nested" counts braces, so an object initializer inside a loop adds a level).
-  Run `dotnet csharpier format .` first if the layout is off. Migrations (`Data/*Migrations/`) are left out.
+- **C# is measured by its layout** (CSharpier's: Allman braces, 4 spaces, file-scoped namespaces), not parsed: a
+  member is a `{` alone on its line at 4 or 8 spaces after a header with parentheses (past the `)` CSharpier puts on
+  its own line). Counts are close, not exact: a multi-line lambda assigned to a field and an expression-bodied
+  member (`=> x switch { … }`) are not functions; "nested" counts the blocks open at once (statements, lambdas, local
+  functions), not the braces of initializers. Run `dotnet csharpier format .` first if the layout is off. Migrations (`Data/*Migrations/`) are left out.
 - TypeScript is exact: nesting counts `if`/loops/`switch`/`try` inside one another, `else if` staying at its `if`'s
   level, inner functions measured on their own.
 - C# formatting and style are not this tool's job: CSharpier and `dotnet format style`

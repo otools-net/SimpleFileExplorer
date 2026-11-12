@@ -108,10 +108,13 @@ const CS_STATEMENT_WORDS = [
 ];
 const CS_STATEMENT = new RegExp(`^(${CS_STATEMENT_WORDS.join('|')})\\b`);
 
-/** The lines of a declaration ending just before the brace at `braceIndex`: back to the line at the brace's indent. */
+/**
+ * The lines of a declaration ending just before the brace at `braceIndex`: back to the line at the brace's indent,
+ * past the `)` that CSharpier puts at that indent after parameters one per line (`) : base(…)` too).
+ */
 function headerBefore(lines, braceIndex, indent) {
     let start = braceIndex - 1;
-    while (start > 0 && (indentOf(lines[start]) > indent || !lines[start].trim()))
+    while (start > 0 && (indentOf(lines[start]) > indent || !lines[start].trim() || lines[start].trim().startsWith(')')))
         start--;
     return lines.slice(start, braceIndex).map(line => line.trim()).join(' ');
 }
@@ -125,12 +128,25 @@ function closingBrace(lines, braceIndex, indent) {
     return lines.length - 1;
 }
 
-/** Braces opened inside the body, deepest: blocks, and also initializers and lambdas with a body. */
-function braceDepth(lines, from, to, indent) {
+const CS_BLOCK_HEADER = /^(if|else|for|foreach|while|do|switch|try|catch|finally|using|lock|fixed|checked|unchecked)\b/;
+
+/**
+ * Blocks opened inside the body, deepest: statements (`if`, loops, `try`…), lambdas and local functions with a body.
+ * Counted as blocks open at once, not by indentation (CSharpier indents a lambda inside wrapped arguments further than
+ * its nesting); the braces of initializers, collections and switch expressions open no block.
+ */
+function braceDepth(lines, from, to) {
+    const open = [];
     let deepest = 0;
     for (let i = from + 1; i < to; i++) {
-        if (lines[i].trim() === '{')
-            deepest = Math.max(deepest, (indentOf(lines[i]) - indent) / 4);
+        const text = lines[i].trim();
+        if (text === '{') {
+            const header = headerBefore(lines, i, indentOf(lines[i]));
+            open.push(CS_BLOCK_HEADER.test(header) || header.endsWith('=>') || isMethodHeader(header));
+            deepest = Math.max(deepest, open.filter(Boolean).length);
+        } else if (text.startsWith('}') && open.length > 0) {
+            open.pop();
+        }
     }
     return deepest;
 }
@@ -167,7 +183,7 @@ function methodAt(file, lines, braceIndex, indent) {
         name: /([\w.]+)\s*(<[^(]*>)?\s*$/.exec(header.slice(0, open))?.[1] ?? '?',
         lines: end - braceIndex + 1,
         parameters: countParameters(header, open),
-        depth: braceDepth(lines, braceIndex, end, indent),
+        depth: braceDepth(lines, braceIndex, end),
     };
 }
 
