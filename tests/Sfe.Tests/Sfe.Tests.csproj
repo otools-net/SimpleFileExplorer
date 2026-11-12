@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
@@ -20,5 +19,4 @@
     <ProjectReference Include="..\..\src\Sfe.Core\Sfe.Core.csproj" />
     <ProjectReference Include="..\..\src\Sfe.Api\Sfe.Api.csproj" />
   </ItemGroup>
-
 </Project>

@@ -36,7 +36,11 @@ public sealed class EpubEntriesTests
         using var archive = new ZipArchive(memory, ZipArchiveMode.Read);
 
         Assert.AreEqual("OEBPS/images/cover.JPG", EpubEntries.Find(archive, "OEBPS/images/cover.JPG")?.FullName);
-        Assert.AreEqual("OEBPS/Images/Cover.jpg", EpubEntries.Find(archive, "/oebps/IMAGES/cover.jpg")?.FullName, "the first in any case");
+        Assert.AreEqual(
+            "OEBPS/Images/Cover.jpg",
+            EpubEntries.Find(archive, "/oebps/IMAGES/cover.jpg")?.FullName,
+            "the first in any case"
+        );
         Assert.IsNull(EpubEntries.Find(archive, "OEBPS/Text/"), "a folder");
         Assert.IsNull(EpubEntries.Find(archive, "OEBPS/none.css"));
         Assert.AreEqual("application/xhtml+xml", EpubEntries.ContentTypeOf("a/b.XHTML"));

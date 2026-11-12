@@ -47,16 +47,29 @@ public sealed class FolderExclusionTests
         var exclusions = FolderExclusions.Of(options);
 
         Assert.AreEqual("Media", exclusions.Through(ExclusionKind.Scan, "Media"));
-        Assert.AreEqual("Media/Old", exclusions.Through(ExclusionKind.Scan, "Media/Old/2019"), "the nearest listed folder");
+        Assert.AreEqual(
+            "Media/Old",
+            exclusions.Through(ExclusionKind.Scan, "Media/Old/2019"),
+            "the nearest listed folder"
+        );
         Assert.AreEqual("Media", exclusions.Through(ExclusionKind.Scan, "Media/New"));
         Assert.AreEqual("Other", exclusions.Through(ExclusionKind.Scan, "Other/x"), "listed paths are normalised");
-        Assert.IsNull(exclusions.Through(ExclusionKind.Scan, "Mediathek"), "a name starting the same is another folder");
+        Assert.IsNull(
+            exclusions.Through(ExclusionKind.Scan, "Mediathek"),
+            "a name starting the same is another folder"
+        );
         Assert.IsNull(exclusions.Through(ExclusionKind.Scan, ""));
         Assert.IsNull(exclusions.Through(ExclusionKind.Trickplay, "Media"));
 
         Assert.AreEqual(new FolderExclusionState("Media", null, null), exclusions.At("Media/a"));
-        Assert.AreEqual(new FolderExclusionState(null, null, "Photos/Raw"), exclusions.Child(FolderExclusionState.None, "Photos/Raw"));
-        Assert.AreEqual(new FolderExclusionState("Media", null, null), exclusions.Child(exclusions.At("Media"), "Media/a"));
+        Assert.AreEqual(
+            new FolderExclusionState(null, null, "Photos/Raw"),
+            exclusions.Child(FolderExclusionState.None, "Photos/Raw")
+        );
+        Assert.AreEqual(
+            new FolderExclusionState("Media", null, null),
+            exclusions.Child(exclusions.At("Media"), "Media/a")
+        );
         Assert.IsTrue(exclusions.At("Photos").IsNone);
 
         Assert.IsTrue(FolderExclusions.Of(new SfeOptions()).IsEmpty);
@@ -71,11 +84,22 @@ public sealed class FolderExclusionTests
         var options = new SfeOptions();
         options.Trickplay.ExcludedFolders = ["Media/Trailers"];
         options.Scan.ExcludedFolders = ["Media"];
-        var listing = new DirectoryListing("Media", "Media", "", [], [
-            new LibraryItem("Trailers", "Media/Trailers", ItemKind.Directory, null, null, null),
-            new LibraryItem("Shows", "Media/Shows", ItemKind.Directory, null, null, null),
-            new LibraryItem("clip.mp4", "Media/clip.mp4", ItemKind.Video, ".mp4", 1, null),
-        ], 0, 10, 3, 2, 1);
+        var listing = new DirectoryListing(
+            "Media",
+            "Media",
+            "",
+            [],
+            [
+                new LibraryItem("Trailers", "Media/Trailers", ItemKind.Directory, null, null, null),
+                new LibraryItem("Shows", "Media/Shows", ItemKind.Directory, null, null, null),
+                new LibraryItem("clip.mp4", "Media/clip.mp4", ItemKind.Video, ".mp4", 1, null),
+            ],
+            0,
+            10,
+            3,
+            2,
+            1
+        );
 
         var marked = FolderExclusions.Of(options).Mark(listing);
 
@@ -91,10 +115,18 @@ public sealed class FolderExclusionTests
     {
         await ScanAsync("");
         var tag = (await _services.Get<TagService>().CreateAsync(new TagInput("Kept"), Token)).Tag!.Id;
-        var (tagged, errors) = await _services.Get<TagService>().ChangeFileTagsAsync(new FileTagChange(["Media/photo.jpg"], Add: [tag]), Token);
+        var (tagged, errors) = await _services
+            .Get<TagService>()
+            .ChangeFileTagsAsync(new FileTagChange(["Media/photo.jpg"], Add: [tag]), Token);
         Assert.IsNotNull(tagged, errors is null ? null : string.Join(" ", errors.SelectMany(e => e.Value)));
 
-        var keys = await _services.Get<SettingsService>().SetExclusionsAsync("Media", new Dictionary<ExclusionKind, bool> { [ExclusionKind.Scan] = true }, cancellationToken: Token);
+        var keys = await _services
+            .Get<SettingsService>()
+            .SetExclusionsAsync(
+                "Media",
+                new Dictionary<ExclusionKind, bool> { [ExclusionKind.Scan] = true },
+                cancellationToken: Token
+            );
         CollectionAssert.AreEqual(new[] { "scan.excludedFolders" }, keys.ToArray());
         CollectionAssert.AreEqual(new[] { "Media" }, Options.Scan.ExcludedFolders);
 
@@ -107,14 +139,28 @@ public sealed class FolderExclusionTests
 
         await using var db = await _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
         Assert.IsTrue(await db.Directories.AnyAsync(d => d.FullName == _library.FullPath("Media"), Token));
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/Episode 2.mkv"), Token), "frozen, not refreshed");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/Episode 2.mkv"), Token),
+            "frozen, not refreshed"
+        );
         Assert.IsFalse(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/new.txt"), Token));
         Assert.IsFalse(await db.Directories.AnyAsync(d => d.FullName == _library.FullPath("Media/Sub"), Token));
         Assert.AreEqual(0, await db.MissingFiles.CountAsync(Token));
-        CollectionAssert.AreEqual(new[] { tag }, (await _services.Get<TagService>().GetFileTagsAsync("Media/photo.jpg", Token))!.Tags.Select(t => t.Id).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { tag },
+            (await _services.Get<TagService>().GetFileTagsAsync("Media/photo.jpg", Token))!
+                .Tags.Select(t => t.Id)
+                .ToArray()
+        );
 
         // Let in again: the next scan catches up.
-        await _services.Get<SettingsService>().SetExclusionsAsync("Media", new Dictionary<ExclusionKind, bool> { [ExclusionKind.Scan] = false }, cancellationToken: Token);
+        await _services
+            .Get<SettingsService>()
+            .SetExclusionsAsync(
+                "Media",
+                new Dictionary<ExclusionKind, bool> { [ExclusionKind.Scan] = false },
+                cancellationToken: Token
+            );
         Assert.IsEmpty(Options.Scan.ExcludedFolders);
         await ScanAsync("");
         Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/new.txt"), Token));
@@ -125,15 +171,26 @@ public sealed class FolderExclusionTests
     public async Task ExclusionsAreSavedOnlyWhenTheyChange()
     {
         var settings = _services.Get<SettingsService>();
-        var both = new Dictionary<ExclusionKind, bool> { [ExclusionKind.Trickplay] = true, [ExclusionKind.Thumbnails] = true };
+        var both = new Dictionary<ExclusionKind, bool>
+        {
+            [ExclusionKind.Trickplay] = true,
+            [ExclusionKind.Thumbnails] = true,
+        };
 
-        CollectionAssert.AreEquivalent(new[] { "trickplay.excludedFolders", "thumbnails.excludedFolders" }, (await settings.SetExclusionsAsync("Media", both, cancellationToken: Token)).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "trickplay.excludedFolders", "thumbnails.excludedFolders" },
+            (await settings.SetExclusionsAsync("Media", both, cancellationToken: Token)).ToArray()
+        );
         Assert.IsEmpty(await settings.SetExclusionsAsync("Media", both, cancellationToken: Token));
         CollectionAssert.AreEqual(new[] { "Media" }, Options.Trickplay.ExcludedFolders);
         CollectionAssert.AreEqual(new[] { "Media" }, Options.Thumbnails.ExcludedFolders);
         Assert.IsEmpty(Options.Scan.ExcludedFolders);
 
-        await settings.SetExclusionsAsync("Media", new Dictionary<ExclusionKind, bool> { [ExclusionKind.Thumbnails] = false }, cancellationToken: Token);
+        await settings.SetExclusionsAsync(
+            "Media",
+            new Dictionary<ExclusionKind, bool> { [ExclusionKind.Thumbnails] = false },
+            cancellationToken: Token
+        );
         CollectionAssert.AreEqual(new[] { "Media" }, Options.Trickplay.ExcludedFolders);
         Assert.IsEmpty(Options.Thumbnails.ExcludedFolders);
     }
@@ -141,7 +198,9 @@ public sealed class FolderExclusionTests
     [TestMethod]
     public async Task ExcludedFoldersGetNoNewThumbnailsButKeepTheirs()
     {
-        await using var services = await CoreServices.CreateAsync(_library, s => s["Sfe:Thumbnails:ExcludedFolders:0"] = "Media");
+        await using var services = await CoreServices.CreateAsync(_library, s =>
+            s["Sfe:Thumbnails:ExcludedFolders:0"] = "Media"
+        );
         var thumbnails = services.Get<ThumbnailService>();
 
         Assert.IsNull(await thumbnails.GetAsync("Media/photo.jpg", Token));

@@ -24,7 +24,9 @@ public sealed class FolderPolicyTests
     [TestMethod]
     public void TheNearestRuleAboveAPathWins()
     {
-        var policy = FolderPolicy.Compile([Group([Rights.Browse], ("Private", FolderLevel.Hidden), ("Private/Shared", FolderLevel.Read))]);
+        var policy = FolderPolicy.Compile([
+            Group([Rights.Browse], ("Private", FolderLevel.Hidden), ("Private/Shared", FolderLevel.Read)),
+        ]);
         var granted = Granted(Rights.Browse);
 
         Assert.IsTrue(policy.At("", granted).Has(Rights.Browse));
@@ -33,7 +35,10 @@ public sealed class FolderPolicyTests
         Assert.IsFalse(policy.At("Private/Other/b.jpg", granted).Has(Rights.Browse));
         Assert.IsTrue(policy.At("Private/Shared", granted).Has(Rights.Browse));
         Assert.IsTrue(policy.At("Private/Shared/Deep/c.jpg", granted).Has(Rights.Browse));
-        Assert.IsTrue(policy.At("Private Stuff", granted).Has(Rights.Browse), "A sibling with the same start is not below the rule");
+        Assert.IsTrue(
+            policy.At("Private Stuff", granted).Has(Rights.Browse),
+            "A sibling with the same start is not below the rule"
+        );
     }
 
     [TestMethod]
@@ -43,8 +48,10 @@ public sealed class FolderPolicyTests
         var family = Group([Rights.Browse]);
 
         Assert.IsFalse(FolderPolicy.Compile([kids]).At("Adult", Granted(Rights.Browse)).Has(Rights.Browse));
-        Assert.IsTrue(FolderPolicy.Compile([kids, family]).At("Adult", Granted(Rights.Browse)).Has(Rights.Browse),
-            "Another group of the account that sees the folder shows it");
+        Assert.IsTrue(
+            FolderPolicy.Compile([kids, family]).At("Adult", Granted(Rights.Browse)).Has(Rights.Browse),
+            "Another group of the account that sees the folder shows it"
+        );
     }
 
     [TestMethod]
@@ -56,7 +63,10 @@ public sealed class FolderPolicyTests
         var policy = FolderPolicy.Compile([editors, browsers]);
         var granted = Granted(Rights.Browse, Rights.EditImages);
 
-        Assert.IsFalse(policy.At("Archive/a.jpg", granted).Has(Rights.EditImages), "Neither group lets anyone edit in Archive");
+        Assert.IsFalse(
+            policy.At("Archive/a.jpg", granted).Has(Rights.EditImages),
+            "Neither group lets anyone edit in Archive"
+        );
         Assert.IsTrue(policy.At("Archive/a.jpg", granted).Has(Rights.Browse));
         Assert.IsTrue(policy.At("Inbox/a.jpg", granted).Has(Rights.EditImages));
     }
@@ -64,21 +74,43 @@ public sealed class FolderPolicyTests
     [TestMethod]
     public void AnAccountRuleOnlyAddsToItsGroups()
     {
-        var users = Group([Rights.Browse, Rights.EditImages], ("Private", FolderLevel.Hidden), ("Shared", FolderLevel.Read));
+        var users = Group(
+            [Rights.Browse, Rights.EditImages],
+            ("Private", FolderLevel.Hidden),
+            ("Shared", FolderLevel.Read)
+        );
         var granted = Granted(Rights.Browse, Rights.EditImages);
 
-        var opened = FolderPolicy.Compile([users, Account([Rights.Browse, Rights.EditImages], ("Private/Mine", FolderLevel.Write), ("Shared", FolderLevel.Hidden))]);
+        var opened = FolderPolicy.Compile([
+            users,
+            Account(
+                [Rights.Browse, Rights.EditImages],
+                ("Private/Mine", FolderLevel.Write),
+                ("Shared", FolderLevel.Hidden)
+            ),
+        ]);
 
-        Assert.IsTrue(opened.At("Private/Mine/a.jpg", granted).Has(Rights.EditImages), "The account's own rule opens its folder");
+        Assert.IsTrue(
+            opened.At("Private/Mine/a.jpg", granted).Has(Rights.EditImages),
+            "The account's own rule opens its folder"
+        );
         Assert.IsFalse(opened.At("Private/Other", granted).Has(Rights.Browse));
-        Assert.IsTrue(opened.At("Shared/b.jpg", granted).Has(Rights.Browse), "Hidden for the account adds nothing but takes nothing either");
-        Assert.IsTrue(opened.At("Elsewhere", granted).Has(Rights.EditImages), "Without a rule above, the account has no say: its groups decide");
+        Assert.IsTrue(
+            opened.At("Shared/b.jpg", granted).Has(Rights.Browse),
+            "Hidden for the account adds nothing but takes nothing either"
+        );
+        Assert.IsTrue(
+            opened.At("Elsewhere", granted).Has(Rights.EditImages),
+            "Without a rule above, the account has no say: its groups decide"
+        );
     }
 
     [TestMethod]
     public void RightsOfTheWholeSpaceApplyInHiddenFolders()
     {
-        var policy = FolderPolicy.Compile([Group([Rights.Browse, Rights.InterfaceSettings, Rights.ManageTags], ("", FolderLevel.Hidden))]);
+        var policy = FolderPolicy.Compile([
+            Group([Rights.Browse, Rights.InterfaceSettings, Rights.ManageTags], ("", FolderLevel.Hidden)),
+        ]);
         var access = policy.At("Anything", Granted(Rights.Browse, Rights.InterfaceSettings, Rights.ManageTags));
 
         Assert.IsFalse(access.Has(Rights.Browse));
@@ -89,7 +121,9 @@ public sealed class FolderPolicyTests
     [TestMethod]
     public void TaggingNeedsAReadableFolderAndEditingAWritableOne()
     {
-        var policy = FolderPolicy.Compile([Group([Rights.Browse, Rights.AssignTags, Rights.EditImages], ("Archive", FolderLevel.Read))]);
+        var policy = FolderPolicy.Compile([
+            Group([Rights.Browse, Rights.AssignTags, Rights.EditImages], ("Archive", FolderLevel.Read)),
+        ]);
         var access = policy.At("Archive/a.jpg", Granted(Rights.Browse, Rights.AssignTags, Rights.EditImages));
 
         Assert.IsTrue(access.Has(Rights.AssignTags));
@@ -102,18 +136,31 @@ public sealed class FolderPolicyTests
     {
         var policy = FolderPolicy.Compile([Group([Rights.Browse, Rights.EditImages], ("Inbox", FolderLevel.Write))]);
 
-        Assert.IsFalse(policy.At("Inbox", Granted(Rights.Browse)).Has(Rights.EditImages), "Switched off by the server: no folder gives it back");
+        Assert.IsFalse(
+            policy.At("Inbox", Granted(Rights.Browse)).Has(Rights.EditImages),
+            "Switched off by the server: no folder gives it back"
+        );
         Assert.IsTrue(policy.FilterFor(Rights.EditImages, Granted(Rights.Browse)).IsNothing);
     }
 
     [TestMethod]
     public void AHiddenFolderLeadsToWhatIsAllowedBelowIt()
     {
-        var policy = FolderPolicy.Compile([Group([Rights.Browse], ("Private", FolderLevel.Hidden), ("Private/Family/Shared", FolderLevel.Read), ("Media", FolderLevel.Read))]);
+        var policy = FolderPolicy.Compile([
+            Group(
+                [Rights.Browse],
+                ("Private", FolderLevel.Hidden),
+                ("Private/Family/Shared", FolderLevel.Read),
+                ("Media", FolderLevel.Read)
+            ),
+        ]);
         var granted = Granted(Rights.Browse);
 
         Assert.IsTrue(policy.At("Private", granted).PathOnly);
-        Assert.IsTrue(policy.At("Private/Family", granted).PathOnly, "A folder without a rule of its own leads there too");
+        Assert.IsTrue(
+            policy.At("Private/Family", granted).PathOnly,
+            "A folder without a rule of its own leads there too"
+        );
         Assert.IsTrue(policy.At("Private/Family", granted).IsVisible);
         Assert.IsFalse(policy.At("Private/Other", granted).IsVisible);
         Assert.IsFalse(policy.At("Private/Family/Shared", granted).PathOnly);
@@ -128,7 +175,13 @@ public sealed class FolderPolicyTests
     [TestMethod]
     public void ATreeChangesOnlyWhereEverythingInItAllowsIt()
     {
-        var policy = FolderPolicy.Compile([Group([Rights.Browse, Rights.EditImages], ("Photos/Kept", FolderLevel.Read), ("Videos/Hidden", FolderLevel.Hidden))]);
+        var policy = FolderPolicy.Compile([
+            Group(
+                [Rights.Browse, Rights.EditImages],
+                ("Photos/Kept", FolderLevel.Read),
+                ("Videos/Hidden", FolderLevel.Hidden)
+            ),
+        ]);
         var granted = Granted(Rights.Browse, Rights.EditImages);
 
         Assert.IsFalse(policy.AllowsThroughout("Photos", Rights.EditImages, granted), "A read-only folder below");
@@ -142,7 +195,10 @@ public sealed class FolderPolicyTests
     {
         var policy = FolderPolicy.Compile([Group([Rights.Browse], ("Private", FolderLevel.Hidden))]);
 
-        Assert.AreEqual(!LibraryPaths.IsCaseInsensitiveFileSystem, policy.At("private/a.jpg", Granted(Rights.Browse)).Has(Rights.Browse));
+        Assert.AreEqual(
+            !LibraryPaths.IsCaseInsensitiveFileSystem,
+            policy.At("private/a.jpg", Granted(Rights.Browse)).Has(Rights.Browse)
+        );
     }
 
     [TestMethod]
@@ -155,7 +211,8 @@ public sealed class FolderPolicyTests
     {
         var random = new Random(seed);
         var folders = RandomTree(random);
-        var principals = Enumerable.Range(0, 3)
+        var principals = Enumerable
+            .Range(0, 3)
             .Select(_ => Group([Rights.Browse], RandomRules(random, folders)))
             .Append(Account([Rights.Browse], RandomRules(random, folders)))
             .ToList();
@@ -164,7 +221,13 @@ public sealed class FolderPolicyTests
         var filter = policy.FilterFor(Rights.Browse, granted);
 
         foreach (var path in folders.Concat(folders.Select(f => f.Length == 0 ? "file.jpg" : f + "/file.jpg")))
-            Assert.AreEqual(policy.At(path, granted).Has(Rights.Browse), filter.Includes(path), $"{path} (seed {seed})");
+        {
+            Assert.AreEqual(
+                policy.At(path, granted).Has(Rights.Browse),
+                filter.Includes(path),
+                $"{path} (seed {seed})"
+            );
+        }
     }
 
     internal static List<string> RandomTree(Random random)
@@ -183,9 +246,12 @@ public sealed class FolderPolicyTests
     }
 
     internal static (string, FolderLevel)[] RandomRules(Random random, List<string> folders) =>
-        [.. Enumerable.Range(0, random.Next(0, 6))
-            .Select(_ => (folders[random.Next(folders.Count)], (FolderLevel)random.Next(3)))
-            .DistinctBy(r => r.Item1, LibraryPaths.PathComparer)];
+        [
+            .. Enumerable
+                .Range(0, random.Next(0, 6))
+                .Select(_ => (folders[random.Next(folders.Count)], (FolderLevel)random.Next(3)))
+                .DistinctBy(r => r.Item1, LibraryPaths.PathComparer),
+        ];
 
     private static FolderPrincipal Group(string[] rights, params (string Path, FolderLevel Level)[] rules) =>
         new(rules.ToDictionary(r => r.Path, r => r.Level), rights.ToHashSet(), true);

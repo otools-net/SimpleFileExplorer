@@ -64,7 +64,7 @@ then by hand for what they leave: comments and long strings. One commit per step
 - [x] CSharpier over `src/` (with `dotnet format style` adding the braces of wrapped statements): long lines
   2749 -> 845 (621 of them comments), but functions over 60 lines 50 -> 88 and nested ones 14 -> 21 (braces added
   to wrapped `if`s count now); `measure.mjs` taught CSharpier's layout first
-- [ ] CSharpier over `tests/`
+- [x] CSharpier over `tests/` (82 files; server tests' long lines 1724 -> about 900)
 - [ ] Comments rewrapped: server, then server tests
 - [ ] Long strings of the server (about 220 lines: OpenAPI descriptions, log templates, messages), by folder
 - [ ] Long strings of the server tests (about 360 lines)

@@ -52,15 +52,31 @@ public sealed class CompressJobTests
         StringAssert.Contains(result.Message, "→");
         StringAssert.Contains(result.Message, "%");
         Assert.AreEqual(1, job.Total);
-        var originals = Directory.GetFiles(_library.FullPath("RepeatedDir"), "*", SearchOption.AllDirectories)
-            .Select(f => "RepeatedDir/" + Path.GetRelativePath(_library.FullPath("RepeatedDir"), f).Replace('\\', '/')).ToList();
+        var originals = Directory
+            .GetFiles(_library.FullPath("RepeatedDir"), "*", SearchOption.AllDirectories)
+            .Select(f => "RepeatedDir/" + Path.GetRelativePath(_library.FullPath("RepeatedDir"), f).Replace('\\', '/'))
+            .ToList();
         using (var zip = ZipFile.OpenRead(_library.FullPath("RepeatedDir.zip")))
-            CollectionAssert.AreEquivalent(originals, zip.Entries.Where(e => !e.FullName.EndsWith('/')).Select(e => e.FullName).ToList());
-        Assert.AreEqual(originals.Count, ArchiveReader.ReadEntries(_library.FullPath("RepeatedDir.zip"), ArchiveFormat.Zip).Count(e => e.Kind == ArchiveEntryKind.File));
+        {
+            CollectionAssert.AreEquivalent(
+                originals,
+                zip.Entries.Where(e => !e.FullName.EndsWith('/')).Select(e => e.FullName).ToList()
+            );
+        }
+
+        Assert.AreEqual(
+            originals.Count,
+            ArchiveReader
+                .ReadEntries(_library.FullPath("RepeatedDir.zip"), ArchiveFormat.Zip)
+                .Count(e => e.Kind == ArchiveEntryKind.File)
+        );
         Assert.AreEqual(job.BytesTotal, job.BytesDone, "every byte read");
         Assert.IsEmpty(Directory.GetFiles(_library.Root, "*" + FileJobs.PartialSuffix));
         await using var db = await _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("RepeatedDir.zip"), Token), "the zip is indexed at once");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("RepeatedDir.zip"), Token),
+            "the zip is indexed at once"
+        );
     }
 
     [TestMethod]
@@ -71,7 +87,10 @@ public sealed class CompressJobTests
         Assert.AreEqual("ChildDir/my stuff.zip", job.Results.Single().NewPath, job.Results.Single().Message);
         using var zip = ZipFile.OpenRead(_library.FullPath("ChildDir/my stuff.zip"));
         Assert.IsNotNull(zip.GetEntry("RFile1.txt"));
-        Assert.IsFalse(zip.Entries.Any(e => e.Name.Contains("my stuff") || e.Name.Contains(FileJobs.PartialSuffix)), "not in itself");
+        Assert.IsFalse(
+            zip.Entries.Any(e => e.Name.Contains("my stuff") || e.Name.Contains(FileJobs.PartialSuffix)),
+            "not in itself"
+        );
     }
 
     [TestMethod]
@@ -81,13 +100,29 @@ public sealed class CompressJobTests
 
         await RunAsync(Compress(["Media/notes.txt", "Media/photo.jpg"], "", "stored") with { Level = 0 });
         await RunAsync(Compress(["Media/notes.txt", "Media/photo.jpg"], "", "skipping"));
-        await RunAsync(Compress(["Media/notes.txt", "Media/photo.jpg"], "", "everything") with { SkipCompressed = false });
+        await RunAsync(
+            Compress(["Media/notes.txt", "Media/photo.jpg"], "", "everything") with
+            {
+                SkipCompressed = false,
+            }
+        );
 
         Dictionary<string, int> Methods(string zip) =>
-            ArchiveReader.ReadEntries(_library.FullPath(zip), ArchiveFormat.Zip).ToDictionary(e => e.Name, e => e.Method);
-        CollectionAssert.AreEquivalent(new Dictionary<string, int> { ["notes.txt"] = 0, ["photo.jpg"] = 0 }, Methods("stored.zip"));
-        CollectionAssert.AreEquivalent(new Dictionary<string, int> { ["notes.txt"] = 8, ["photo.jpg"] = 0 }, Methods("skipping.zip"));
-        CollectionAssert.AreEquivalent(new Dictionary<string, int> { ["notes.txt"] = 8, ["photo.jpg"] = 8 }, Methods("everything.zip"));
+            ArchiveReader
+                .ReadEntries(_library.FullPath(zip), ArchiveFormat.Zip)
+                .ToDictionary(e => e.Name, e => e.Method);
+        CollectionAssert.AreEquivalent(
+            new Dictionary<string, int> { ["notes.txt"] = 0, ["photo.jpg"] = 0 },
+            Methods("stored.zip")
+        );
+        CollectionAssert.AreEquivalent(
+            new Dictionary<string, int> { ["notes.txt"] = 8, ["photo.jpg"] = 0 },
+            Methods("skipping.zip")
+        );
+        CollectionAssert.AreEquivalent(
+            new Dictionary<string, int> { ["notes.txt"] = 8, ["photo.jpg"] = 8 },
+            Methods("everything.zip")
+        );
     }
 
     [TestMethod]
@@ -127,22 +162,35 @@ public sealed class CompressJobTests
     {
         var access = new FakeAccess
         {
-            Walk = path => path == "RepeatedDir/ChildDir" ? ArchiveVerdict.Hidden : path == "RepeatedDir/RepeatedDir" ? ArchiveVerdict.Refused : ArchiveVerdict.Allowed,
+            Walk = path =>
+                path == "RepeatedDir/ChildDir" ? ArchiveVerdict.Hidden
+                : path == "RepeatedDir/RepeatedDir" ? ArchiveVerdict.Refused
+                : ArchiveVerdict.Allowed,
         };
 
         var job = await RunAsync(Compress(["RepeatedDir"], ""), access);
 
         StringAssert.Contains(job.Results.Single().Message, "Left out 1 item");
         using var zip = ZipFile.OpenRead(_library.FullPath("RepeatedDir.zip"));
-        Assert.IsFalse(zip.Entries.Any(e => e.FullName.StartsWith("RepeatedDir/ChildDir/") || e.FullName.StartsWith("RepeatedDir/RepeatedDir/")));
+        Assert.IsFalse(
+            zip.Entries.Any(e =>
+                e.FullName.StartsWith("RepeatedDir/ChildDir/") || e.FullName.StartsWith("RepeatedDir/RepeatedDir/")
+            )
+        );
         Assert.IsNotNull(zip.GetEntry(Archives.LeftOutEntry));
     }
 
     [TestMethod]
     public async Task ItNeedsTheRightToCompressThereAndToDownloadTheItems()
     {
-        var noCompress = await RunAsync(Compress(["RFile1.txt"], "ChildDir"), new FakeAccess { Refuse = (path, right) => right == Rights.CompressFiles });
-        var noDownload = await RunAsync(Compress(["RFile1.txt"], "ChildDir"), new FakeAccess { Walk = _ => ArchiveVerdict.Refused });
+        var noCompress = await RunAsync(
+            Compress(["RFile1.txt"], "ChildDir"),
+            new FakeAccess { Refuse = (path, right) => right == Rights.CompressFiles }
+        );
+        var noDownload = await RunAsync(
+            Compress(["RFile1.txt"], "ChildDir"),
+            new FakeAccess { Walk = _ => ArchiveVerdict.Refused }
+        );
         var gone = await RunAsync(Compress(["RFile1.txt"], "ChildDir"), new FakeAccess { Gone = true });
 
         Assert.AreEqual(FileOperationStatus.Forbidden, noCompress.Results.Single().Status);
@@ -163,7 +211,11 @@ public sealed class CompressJobTests
     public async Task ItKeepsTheFreeSpaceItIsToldTo()
     {
         await _services.DisposeAsync();
-        _services = await CoreServices.CreateAsync(_library, s => s["Sfe:Files:MinimumFreeSpaceMegabytes"] = int.MaxValue.ToString(), _log.AddTo);
+        _services = await CoreServices.CreateAsync(
+            _library,
+            s => s["Sfe:Files:MinimumFreeSpaceMegabytes"] = int.MaxValue.ToString(),
+            _log.AddTo
+        );
 
         var job = await RunAsync(Compress(["RFile1.txt"], ""));
 
@@ -214,7 +266,11 @@ public sealed class CompressJobTests
     private static FileJobRequest Compress(string[] paths, string target, string? name = null) =>
         new(FileJobKind.Compress, paths, target, Name: name);
 
-    private async Task<FileJobView> RunAsync(FileJobRequest request, IFileJobAccess? access = null, string? password = null)
+    private async Task<FileJobView> RunAsync(
+        FileJobRequest request,
+        IFileJobAccess? access = null,
+        string? password = null
+    )
     {
         var view = Jobs.Start(request, Me, access ?? new FakeAccess(), password);
         await Jobs.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(60), Token);
@@ -244,7 +300,8 @@ public sealed class CompressJobTests
 
         public Task<bool> MayThroughoutAsync(string path, string right) => Task.FromResult(!Refuse(path, right));
 
-        public bool IsProtected(string fullPath) => fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
+        public bool IsProtected(string fullPath) =>
+            fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
 
         public bool IsReadOnly(string fullPath) => IsProtected(fullPath);
 

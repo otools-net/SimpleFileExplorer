@@ -29,7 +29,8 @@ public sealed class UploadsTests
     }
 
     /// <summary>The work folder at the library's root (the server's by default): the tests look into it.</summary>
-    private static void InTheLibrary(IDictionary<string, string?> settings) => settings["Sfe:Files:WorkFolder"] = "Library";
+    private static void InTheLibrary(IDictionary<string, string?> settings) =>
+        settings["Sfe:Files:WorkFolder"] = "Library";
 
     [TestCleanup]
     public async Task CleanupAsync()
@@ -48,17 +49,26 @@ public sealed class UploadsTests
         Assert.AreEqual(FileOperationStatus.Done, (await SendAsync(upload.Id, content, 0, 100_000)).Status);
         var second = await SendAsync(upload.Id, content, 100_000, 200_000);
         Assert.AreEqual(300_000, second.Upload!.Received);
-        Assert.IsTrue(File.Exists(Path.Combine(_library.Root, ".sfe", "uploads", upload.Id + ".part")), "Kept in the work folder until finished");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(_library.Root, ".sfe", "uploads", upload.Id + ".part")),
+            "Kept in the work folder until finished"
+        );
         var done = await Uploads.FinishAsync(upload.Id, ConflictChoice.Ask, Me, new FakeAccess(), Token);
 
         Assert.AreEqual(FileOperationStatus.Done, done.Status, done.Message);
         Assert.AreEqual("Media/new clip.mp4", done.Item!.Path);
-        CollectionAssert.AreEqual(content, await File.ReadAllBytesAsync(_library.FullPath("Media/new clip.mp4"), Token));
+        CollectionAssert.AreEqual(
+            content,
+            await File.ReadAllBytesAsync(_library.FullPath("Media/new clip.mp4"), Token)
+        );
         Assert.AreEqual(modified.UtcDateTime, File.GetLastWriteTimeUtc(_library.FullPath("Media/new clip.mp4")));
         Assert.IsEmpty(Uploads.List(null, all: true));
         Assert.IsFalse(File.Exists(Path.Combine(_library.Root, ".sfe", "uploads", upload.Id + ".part")));
         await using var db = await _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/new clip.mp4"), Token), "Indexed at once");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/new clip.mp4"), Token),
+            "Indexed at once"
+        );
     }
 
     [TestMethod]
@@ -77,7 +87,11 @@ public sealed class UploadsTests
         Assert.AreEqual(400, again.Upload!.Received);
         Assert.AreEqual(FileOperationStatus.Conflict, gap.Status);
         Assert.AreEqual(FileOperationStatus.Invalid, tooMuch.Status);
-        Assert.AreEqual(400, new FileInfo(Path.Combine(_library.Root, ".sfe", "uploads", upload.Id + ".part")).Length, "Nothing of a refused chunk stays");
+        Assert.AreEqual(
+            400,
+            new FileInfo(Path.Combine(_library.Root, ".sfe", "uploads", upload.Id + ".part")).Length,
+            "Nothing of a refused chunk stays"
+        );
         Assert.AreEqual(FileOperationStatus.Invalid, early.Status);
     }
 
@@ -97,7 +111,10 @@ public sealed class UploadsTests
         Assert.AreEqual(2000, listed.Received);
         Assert.AreEqual("resumed.bin", listed.Name);
         Assert.AreEqual(FileOperationStatus.Done, done.Status, done.Message);
-        CollectionAssert.AreEqual(content, await File.ReadAllBytesAsync(_library.FullPath("ChildDir/resumed.bin"), Token));
+        CollectionAssert.AreEqual(
+            content,
+            await File.ReadAllBytesAsync(_library.FullPath("ChildDir/resumed.bin"), Token)
+        );
     }
 
     [TestMethod]
@@ -113,7 +130,10 @@ public sealed class UploadsTests
 
         var asked = await UploadAsync(ConflictChoice.Ask);
         var kept = await UploadAsync(ConflictChoice.KeepBoth);
-        var refused = await UploadAsync(ConflictChoice.Replace, new FakeAccess { Refuse = (_, right) => right == Rights.DeleteFiles });
+        var refused = await UploadAsync(
+            ConflictChoice.Replace,
+            new FakeAccess { Refuse = (_, right) => right == Rights.DeleteFiles }
+        );
         var replaced = await UploadAsync(ConflictChoice.Replace);
         var skipped = await UploadAsync(ConflictChoice.Skip);
 
@@ -122,9 +142,17 @@ public sealed class UploadsTests
         Assert.AreEqual(FileOperationStatus.Forbidden, refused.Status);
         Assert.AreEqual(FileOperationStatus.Done, replaced.Status, replaced.Message);
         Assert.AreEqual(3, new FileInfo(_library.FullPath("ChildDir/x.txt")).Length);
-        Assert.AreEqual("ChildDir/x.txt", (await _services.Get<Trash>().ListAsync(null, null, _ => true, Token)).Items.Single().Path, "The file replaced is in the trash");
+        Assert.AreEqual(
+            "ChildDir/x.txt",
+            (await _services.Get<Trash>().ListAsync(null, null, _ => true, Token)).Items.Single().Path,
+            "The file replaced is in the trash"
+        );
         Assert.AreEqual(FileOperationStatus.Skipped, skipped.Status);
-        Assert.HasCount(2, Uploads.List(null, all: true), "Asked and refused ones wait for another answer; skipped is removed");
+        Assert.HasCount(
+            2,
+            Uploads.List(null, all: true),
+            "Asked and refused ones wait for another answer; skipped is removed"
+        );
     }
 
     [TestMethod]
@@ -137,8 +165,12 @@ public sealed class UploadsTests
         Assert.AreEqual(FileOperationStatus.Done, done.Status, done.Message);
         Assert.IsTrue(File.Exists(_library.FullPath("Media/Trip/Day 1/a.jpg")));
 
-        var refused = await Uploads.StartAsync(new UploadStart("Media", "Private/b.jpg", 2), Me,
-            new FakeAccess { Refuse = (path, right) => right == Rights.UploadFiles && path == "Media/Private" }, Token);
+        var refused = await Uploads.StartAsync(
+            new UploadStart("Media", "Private/b.jpg", 2),
+            Me,
+            new FakeAccess { Refuse = (path, right) => right == Rights.UploadFiles && path == "Media/Private" },
+            Token
+        );
         Assert.AreEqual(FileOperationStatus.Forbidden, refused.Status);
     }
 
@@ -162,7 +194,12 @@ public sealed class UploadsTests
     {
         var work = await Uploads.StartAsync(new UploadStart(".sfe", "a.txt", 1), Me, new FakeAccess(), Token);
         var reserved = await Uploads.StartAsync(new UploadStart("", ".sfe/a.txt", 1), Me, new FakeAccess(), Token);
-        var hidden = await Uploads.StartAsync(new UploadStart("SpecialDir", "a.txt", 1), Me, new FakeAccess { Refuse = (path, _) => path == "SpecialDir" }, Token);
+        var hidden = await Uploads.StartAsync(
+            new UploadStart("SpecialDir", "a.txt", 1),
+            Me,
+            new FakeAccess { Refuse = (path, _) => path == "SpecialDir" },
+            Token
+        );
         var missing = await Uploads.StartAsync(new UploadStart("Nowhere", "a.txt", 1), Me, new FakeAccess(), Token);
 
         Assert.AreEqual(FileOperationStatus.NotFound, work.Status);
@@ -175,15 +212,29 @@ public sealed class UploadsTests
     public async Task TheLargestSizeAndTheFreeSpaceAreKept()
     {
         await _services.DisposeAsync();
-        _services = await CoreServices.CreateAsync(_library, s =>
-        {
-            InTheLibrary(s);
-            s["Sfe:Files:Uploads:MaxFileSizeMegabytes"] = "1";
-        }, _log.AddTo);
+        _services = await CoreServices.CreateAsync(
+            _library,
+            s =>
+            {
+                InTheLibrary(s);
+                s["Sfe:Files:Uploads:MaxFileSizeMegabytes"] = "1";
+            },
+            _log.AddTo
+        );
 
-        var tooLarge = await Uploads.StartAsync(new UploadStart("Media", "big.bin", 2 * 1024 * 1024), Me, new FakeAccess(), Token);
+        var tooLarge = await Uploads.StartAsync(
+            new UploadStart("Media", "big.bin", 2 * 1024 * 1024),
+            Me,
+            new FakeAccess(),
+            Token
+        );
         var fits = await Uploads.StartAsync(new UploadStart("Media", "small.bin", 1024), Me, new FakeAccess(), Token);
-        var noRoom = await Uploads.StartAsync(new UploadStart("Media", "huge.bin", long.MaxValue / 2), Me, new FakeAccess(), Token);
+        var noRoom = await Uploads.StartAsync(
+            new UploadStart("Media", "huge.bin", long.MaxValue / 2),
+            Me,
+            new FakeAccess(),
+            Token
+        );
 
         Assert.AreEqual(FileOperationStatus.Invalid, tooLarge.Status);
         StringAssert.Contains(tooLarge.Message, "1 MB");
@@ -194,7 +245,12 @@ public sealed class UploadsTests
     [TestMethod]
     public async Task AnUploadLargerThanTheFreeSpaceIsRefused()
     {
-        var noRoom = await Uploads.StartAsync(new UploadStart("Media", "huge.bin", long.MaxValue / 2), Me, new FakeAccess(), Token);
+        var noRoom = await Uploads.StartAsync(
+            new UploadStart("Media", "huge.bin", long.MaxValue / 2),
+            Me,
+            new FakeAccess(),
+            Token
+        );
 
         Assert.AreEqual(FileOperationStatus.Failed, noRoom.Status);
         StringAssert.Contains(noRoom.Message, "MB free");
@@ -234,6 +290,7 @@ public sealed class UploadsTests
 
         public Task<bool> MayAsync(string path, string right) => Task.FromResult(!Refuse(path, right));
 
-        public bool IsProtected(string fullPath) => fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
+        public bool IsProtected(string fullPath) =>
+            fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
     }
 }

@@ -45,14 +45,58 @@ public sealed class UploadRouteTests
         var accounts = _factory.Services.GetRequiredService<AccessService>();
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
-        Assert.AreEqual(AccessStatus.Ok, (await accounts.UpdateGroupAsync(tenant, users.Id,
-            new GroupInput(users.Name, Rights: [.. users.Rights, Rights.UploadFiles], MemberIds: users.MemberIds), cancellationToken: Token)).Status);
-        var readers = (await accounts.CreateGroupAsync(tenant, new GroupInput("Readers", Rights: [Rights.Browse]), cancellationToken: Token)).Value!;
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("carol", Password: "carol-password-1", GroupIds: [readers.Id]), null, Token);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await accounts.UpdateGroupAsync(
+                    tenant,
+                    users.Id,
+                    new GroupInput(
+                        users.Name,
+                        Rights: [.. users.Rights, Rights.UploadFiles],
+                        MemberIds: users.MemberIds
+                    ),
+                    cancellationToken: Token
+                )
+            ).Status
+        );
+        var readers = (
+            await accounts.CreateGroupAsync(
+                tenant,
+                new GroupInput("Readers", Rights: [Rights.Browse]),
+                cancellationToken: Token
+            )
+        ).Value!;
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("carol", Password: "carol-password-1", GroupIds: [readers.Id]),
+            null,
+            Token
+        );
         var rules = _factory.Services.GetRequiredService<FolderRuleService>();
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "SpecialDir", FolderPrincipalRef.Group(users.Id), FolderLevel.Hidden, null, Token)).Status);
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "Media", FolderPrincipalRef.Group(users.Id), FolderLevel.Read, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(
+                    tenant,
+                    "SpecialDir",
+                    FolderPrincipalRef.Group(users.Id),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(tenant, "Media", FolderPrincipalRef.Group(users.Id), FolderLevel.Read, null, Token)
+            ).Status
+        );
         _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
         _carol = await ApiClients.SignInAsync(_factory, "carol", "carol-password-1", Token);
     }
@@ -78,42 +122,118 @@ public sealed class UploadRouteTests
         using (var repeated = await ChunkAsync(_alice, upload.Id, 0, content[..20_000]))
         {
             Assert.AreEqual(HttpStatusCode.Conflict, repeated.StatusCode);
-            Assert.AreEqual(20_000, (await repeated.Content.ReadFromJsonAsync<UploadInfo>(Json, Token))!.Received, "Resend from there");
+            Assert.AreEqual(
+                20_000,
+                (await repeated.Content.ReadFromJsonAsync<UploadInfo>(Json, Token))!.Received,
+                "Resend from there"
+            );
         }
         using (var second = await ChunkAsync(_alice, upload.Id, 20_000, content[20_000..]))
             Assert.AreEqual(HttpStatusCode.OK, second.StatusCode);
-        using var finished = await _alice.PostAsJsonAsync($"/api/files/uploads/{upload.Id}/finish", new UploadFinish(), Json, Token);
+        using var finished = await _alice.PostAsJsonAsync(
+            $"/api/files/uploads/{upload.Id}/finish",
+            new UploadFinish(),
+            Json,
+            Token
+        );
 
         Assert.AreEqual(HttpStatusCode.OK, finished.StatusCode, await finished.Content.ReadAsStringAsync(Token));
-        Assert.AreEqual("ChildDir/photo.jpg", (await finished.Content.ReadFromJsonAsync<LibraryItem>(Json, Token))!.Path);
-        CollectionAssert.AreEqual(content, await File.ReadAllBytesAsync(_library.FullPath("ChildDir/photo.jpg"), Token));
+        Assert.AreEqual(
+            "ChildDir/photo.jpg",
+            (await finished.Content.ReadFromJsonAsync<LibraryItem>(Json, Token))!.Path
+        );
+        CollectionAssert.AreEqual(
+            content,
+            await File.ReadAllBytesAsync(_library.FullPath("ChildDir/photo.jpg"), Token)
+        );
     }
 
     [TestMethod]
     public async Task UploadsFollowRightsAndFolderRules()
     {
-        using (var readOnly = await _alice.PostAsJsonAsync("/api/files/uploads", new UploadStart("Media", "a.jpg", 1), Json, Token))
+        using (
+            var readOnly = await _alice.PostAsJsonAsync(
+                "/api/files/uploads",
+                new UploadStart("Media", "a.jpg", 1),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, readOnly.StatusCode);
-        using (var hidden = await _alice.PostAsJsonAsync("/api/files/uploads", new UploadStart("SpecialDir", "a.jpg", 1), Json, Token))
+        }
+
+        using (
+            var hidden = await _alice.PostAsJsonAsync(
+                "/api/files/uploads",
+                new UploadStart("SpecialDir", "a.jpg", 1),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
-        using (var noRight = await _carol.PostAsJsonAsync("/api/files/uploads", new UploadStart("ChildDir", "a.jpg", 1), Json, Token))
+        }
+
+        using (
+            var noRight = await _carol.PostAsJsonAsync(
+                "/api/files/uploads",
+                new UploadStart("ChildDir", "a.jpg", 1),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, noRight.StatusCode);
-        using (var escape = await _alice.PostAsJsonAsync("/api/files/uploads", new UploadStart("ChildDir", "../../a.jpg", 1), Json, Token))
+        }
+
+        using (
+            var escape = await _alice.PostAsJsonAsync(
+                "/api/files/uploads",
+                new UploadStart("ChildDir", "../../a.jpg", 1),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.BadRequest, escape.StatusCode);
-        using (var intoHidden = await _alice.PostAsJsonAsync("/api/files/uploads", new UploadStart("", "SpecialDir/a.jpg", 1), Json, Token))
-            Assert.AreEqual(HttpStatusCode.Forbidden, intoHidden.StatusCode, "A folder upload into a folder hidden from her");
+        }
+
+        using (
+            var intoHidden = await _alice.PostAsJsonAsync(
+                "/api/files/uploads",
+                new UploadStart("", "SpecialDir/a.jpg", 1),
+                Json,
+                Token
+            )
+        )
+        {
+            Assert.AreEqual(
+                HttpStatusCode.Forbidden,
+                intoHidden.StatusCode,
+                "A folder upload into a folder hidden from her"
+            );
+        }
+
         Assert.IsFalse(File.Exists(_library.FullPath("SpecialDir/a.jpg")));
     }
 
     [TestMethod]
     public async Task TheCheckTellsWhichNamesAreTakenEvenHiddenOnes()
     {
-        using var response = await _alice.PostAsJsonAsync("/api/files/uploads/check",
-            new UploadCheckRequest("", ["RFile1.txt", "new.txt", "SpecialDir", "ChildDir/AFile1.txt", "../RFile1.txt"]), Json, Token);
+        using var response = await _alice.PostAsJsonAsync(
+            "/api/files/uploads/check",
+            new UploadCheckRequest("", ["RFile1.txt", "new.txt", "SpecialDir", "ChildDir/AFile1.txt", "../RFile1.txt"]),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         var check = (await response.Content.ReadFromJsonAsync<UploadCheck>(Json, Token))!;
 
-        CollectionAssert.AreEquivalent(new[] { "RFile1.txt", "SpecialDir", "ChildDir/AFile1.txt" }, check.Existing.ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "RFile1.txt", "SpecialDir", "ChildDir/AFile1.txt" },
+            check.Existing.ToArray()
+        );
         Assert.IsFalse(check.CanReplace, "Alice may not delete");
     }
 
@@ -146,14 +266,36 @@ public sealed class UploadRouteTests
         using (var chunk = await ChunkAsync(_alice, upload.Id, 0, [1, 2]))
             Assert.AreEqual(HttpStatusCode.OK, chunk.StatusCode);
 
-        using (var asked = await _alice.PostAsJsonAsync($"/api/files/uploads/{upload.Id}/finish", new UploadFinish(), Json, Token))
+        using (
+            var asked = await _alice.PostAsJsonAsync(
+                $"/api/files/uploads/{upload.Id}/finish",
+                new UploadFinish(),
+                Json,
+                Token
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.Conflict, asked.StatusCode);
             StringAssert.Contains(await asked.Content.ReadAsStringAsync(Token), FileEndpoints.ExistsType);
         }
-        using (var replace = await _alice.PostAsJsonAsync($"/api/files/uploads/{upload.Id}/finish", new UploadFinish(ConflictChoice.Replace), Json, Token))
+        using (
+            var replace = await _alice.PostAsJsonAsync(
+                $"/api/files/uploads/{upload.Id}/finish",
+                new UploadFinish(ConflictChoice.Replace),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, replace.StatusCode, "Replacing needs the right to delete");
-        using var kept = await _alice.PostAsJsonAsync($"/api/files/uploads/{upload.Id}/finish", new UploadFinish(ConflictChoice.KeepBoth), Json, Token);
+        }
+
+        using var kept = await _alice.PostAsJsonAsync(
+            $"/api/files/uploads/{upload.Id}/finish",
+            new UploadFinish(ConflictChoice.KeepBoth),
+            Json,
+            Token
+        );
 
         Assert.AreEqual("RFile1 (2).txt", (await kept.Content.ReadFromJsonAsync<LibraryItem>(Json, Token))!.Path);
         Assert.AreEqual(10, new FileInfo(_library.FullPath("RFile1.txt")).Length);
@@ -166,8 +308,14 @@ public sealed class UploadRouteTests
 
         using var response = await ChunkAsync(_alice, upload.Id, 0, new byte[Uploads.MaxChunkBytes + 10]);
 
-        Assert.IsTrue(response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.RequestEntityTooLarge, response.StatusCode.ToString());
-        Assert.AreEqual(0, (await _alice.GetFromJsonAsync<UploadInfo>($"/api/files/uploads/{upload.Id}", Json, Token))!.Received);
+        Assert.IsTrue(
+            response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.RequestEntityTooLarge,
+            response.StatusCode.ToString()
+        );
+        Assert.AreEqual(
+            0,
+            (await _alice.GetFromJsonAsync<UploadInfo>($"/api/files/uploads/{upload.Id}", Json, Token))!.Received
+        );
     }
 
     private async Task<UploadInfo> StartAsync(HttpClient client, UploadStart start)

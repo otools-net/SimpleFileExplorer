@@ -14,8 +14,21 @@ public sealed class SlowWorkTests
         var reads = 0;
 
         var inconclusive = await Assert.ThrowsExactlyAsync<AssertInconclusiveException>(() =>
-            SlowWork.UntilAsync(() => ++reads, _ => false, 0.2 / SlowWork.Factor, "nothing", TestContext.CancellationToken));
-        var done = await SlowWork.UntilAsync(() => ++reads, n => n > reads - 1, 5, "the next read", TestContext.CancellationToken);
+            SlowWork.UntilAsync(
+                () => ++reads,
+                _ => false,
+                0.2 / SlowWork.Factor,
+                "nothing",
+                TestContext.CancellationToken
+            )
+        );
+        var done = await SlowWork.UntilAsync(
+            () => ++reads,
+            n => n > reads - 1,
+            5,
+            "the next read",
+            TestContext.CancellationToken
+        );
 
         StringAssert.Contains(inconclusive.Message, SlowWork.FactorVariable);
         Assert.IsGreaterThan(1, reads, "Read until the limit");

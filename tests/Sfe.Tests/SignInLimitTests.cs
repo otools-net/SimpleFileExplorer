@@ -68,7 +68,10 @@ public sealed class SignInLimitTests
         using var owner = await SignInAsync(otherNetwork, ApiClients.AdminPassword);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, blocked.StatusCode);
-        StringAssert.Contains(await blocked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
+        StringAssert.Contains(
+            await blocked.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            "Too many failed attempts"
+        );
         Assert.AreEqual(HttpStatusCode.OK, owner.StatusCode);
     }
 
@@ -87,7 +90,9 @@ public sealed class SignInLimitTests
         }
 
         CollectionAssert.AreEqual(
-            new[] { HttpStatusCode.BadRequest, HttpStatusCode.BadRequest, HttpStatusCode.TooManyRequests }, answers);
+            new[] { HttpStatusCode.BadRequest, HttpStatusCode.BadRequest, HttpStatusCode.TooManyRequests },
+            answers
+        );
     }
 
     [TestMethod]
@@ -121,9 +126,14 @@ public sealed class SignInLimitTests
         using var locked = await SignInAsync(owner, ApiClients.AdminPassword);
 
         StringAssert.Contains(
-            await guess.Content.ReadAsStringAsync(TestContext.CancellationToken), "Wrong name or password",
-            "A locked account must not tell a stranger that its name exists");
-        StringAssert.Contains(await locked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
+            await guess.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            "Wrong name or password",
+            "A locked account must not tell a stranger that its name exists"
+        );
+        StringAssert.Contains(
+            await locked.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            "Too many failed attempts"
+        );
     }
 
     private WebApplicationFactory<Program> Factory(Action<IDictionary<string, string?>>? configure = null)
@@ -134,7 +144,11 @@ public sealed class SignInLimitTests
     }
 
     private Task<HttpResponseMessage> SignInAsync(HttpClient client, string password) =>
-        client.PostAsJsonAsync("/api/session/login", new SignInRequest(ApiClients.AdminName, password), TestContext.CancellationToken);
+        client.PostAsJsonAsync(
+            "/api/session/login",
+            new SignInRequest(ApiClients.AdminName, password),
+            TestContext.CancellationToken
+        );
 
     private sealed class Settings(SecurityOptions value) : IOptionsMonitor<SecurityOptions>
     {

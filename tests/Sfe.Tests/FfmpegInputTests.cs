@@ -65,8 +65,13 @@ public sealed class FfmpegInputTests
     {
         var allowed = FfmpegDemuxers.AllowedList(NewList)!.Split(',');
 
-        foreach (var format in new[] { "mov", "mp4", "matroska", "webm", "avi", "image2", "jpeg_pipe", "mp3", "mpegts" })
+        foreach (
+            var format in new[] { "mov", "mp4", "matroska", "webm", "avi", "image2", "jpeg_pipe", "mp3", "mpegts" }
+        )
+        {
             CollectionAssert.Contains(allowed, format);
+        }
+
         foreach (var refused in new[] { "concat", "hls", "dash", "avisynth", "sdp", "rtsp", "dshow", "lavfi" })
             CollectionAssert.DoesNotContain(allowed, refused);
     }
@@ -100,7 +105,10 @@ public sealed class FfmpegInputTests
 
         var input = await services.Get<Ffmpeg>().LibraryInputAsync("film.mkv");
 
-        CollectionAssert.AreEqual(new[] { "-protocol_whitelist", "file", "-format_whitelist" }, input.Take(3).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "-protocol_whitelist", "file", "-format_whitelist" },
+            input.Take(3).ToArray()
+        );
         CollectionAssert.AreEqual(new[] { "-i", "film.mkv" }, input.Skip(4).ToArray());
         CollectionAssert.DoesNotContain(input[3].Split(','), "concat");
         CollectionAssert.Contains(input[3].Split(','), "matroska");
@@ -128,7 +136,11 @@ public sealed class FfmpegInputTests
         await using var services = await ServicesWithFfmpegAsync();
         TestSamples.CopyTo("testsrc-1s-320x180.mp4", _library.FullPath("Clips/Private/secret.mp4"));
         var script = _library.FullPath("Clips/innocent.mp4");
-        await File.WriteAllTextAsync(script, "ffconcat version 1.0\nfile Private/secret.mp4\n", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            script,
+            "ffconcat version 1.0\nfile Private/secret.mp4\n",
+            TestContext.CancellationToken
+        );
 
         var described = await services.Get<MediaDimensions>().ProbeAsync(script, TestContext.CancellationToken);
 
@@ -146,7 +158,8 @@ public sealed class FfmpegInputTests
         await File.WriteAllTextAsync(
             playlist,
             "#EXTM3U\n#EXT-X-TARGETDURATION:10\n#EXTINF:10,\nhttp://127.0.0.1:9/segment.ts\n#EXT-X-ENDLIST\n",
-            TestContext.CancellationToken);
+            TestContext.CancellationToken
+        );
 
         var described = await services.Get<MediaDimensions>().ProbeAsync(playlist, TestContext.CancellationToken);
 
@@ -157,8 +170,11 @@ public sealed class FfmpegInputTests
     private async Task<CoreServices> ServicesWithFfmpegAsync()
     {
         var services = await CoreServices.CreateAsync(_library, settings =>
-            settings["Sfe:Thumbnails:FfmpegPath"] =
-                Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG") is { Length: > 0 } path ? path : "ffmpeg");
+            settings["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG")
+                is { Length: > 0 } path
+                ? path
+                : "ffmpeg"
+        );
         if (!services.Get<Ffmpeg>().IsAvailable)
         {
             await services.DisposeAsync();

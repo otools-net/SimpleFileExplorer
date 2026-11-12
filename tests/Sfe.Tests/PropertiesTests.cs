@@ -99,14 +99,18 @@ public sealed class PropertiesTests
     {
         var bytes = await File.ReadAllBytesAsync(_library.FullPath("Media/Episode 2.mkv"), Token);
 
-        foreach (var (algorithm, expected) in new[]
+        foreach (
+            var (algorithm, expected) in new[]
+            {
+                (ChecksumAlgorithm.Sha256, SHA256.HashData(bytes)),
+                (ChecksumAlgorithm.Sha1, SHA1.HashData(bytes)),
+                (ChecksumAlgorithm.Md5, MD5.HashData(bytes)),
+            }
+        )
         {
-            (ChecksumAlgorithm.Sha256, SHA256.HashData(bytes)),
-            (ChecksumAlgorithm.Sha1, SHA1.HashData(bytes)),
-            (ChecksumAlgorithm.Md5, MD5.HashData(bytes)),
-        })
-        {
-            var job = await DoneAsync(Jobs.StartChecksum("me", "Media/Episode 2.mkv", _library.FullPath("Media/Episode 2.mkv"), algorithm));
+            var job = await DoneAsync(
+                Jobs.StartChecksum("me", "Media/Episode 2.mkv", _library.FullPath("Media/Episode 2.mkv"), algorithm)
+            );
             Assert.AreEqual(Convert.ToHexStringLower(expected), job.Checksum, algorithm.ToString());
             Assert.AreEqual(bytes.Length, job.Bytes);
             Assert.AreEqual(bytes.Length, job.Total);
@@ -116,7 +120,12 @@ public sealed class PropertiesTests
     [TestMethod]
     public async Task JobsAreTheirOwnersOnlyAndANewOneStopsThePrevious()
     {
-        var first = Jobs.StartChecksum("me", "Media/Holiday 2020.mp4", _library.FullPath("Media/Holiday 2020.mp4"), ChecksumAlgorithm.Sha256);
+        var first = Jobs.StartChecksum(
+            "me",
+            "Media/Holiday 2020.mp4",
+            _library.FullPath("Media/Holiday 2020.mp4"),
+            ChecksumAlgorithm.Sha256
+        );
         var count = Jobs.StartCount("me", "ChildDir", _library.FullPath("ChildDir"), new FakeAccess());
 
         Assert.IsNull(Jobs.Get("someone else", first.Id));
@@ -131,12 +140,20 @@ public sealed class PropertiesTests
     [TestMethod]
     public async Task AJobCanBeStopped()
     {
-        var job = Jobs.StartChecksum("me", "Media/Holiday 2020.mp4", _library.FullPath("Media/Holiday 2020.mp4"), ChecksumAlgorithm.Sha256);
+        var job = Jobs.StartChecksum(
+            "me",
+            "Media/Holiday 2020.mp4",
+            _library.FullPath("Media/Holiday 2020.mp4"),
+            ChecksumAlgorithm.Sha256
+        );
 
         Assert.IsTrue(Jobs.Cancel("me", job.Id));
         var done = await DoneAsync(job);
 
-        Assert.IsTrue(done.Checksum is null && done.Error == "Stopped." || done.Checksum is not null, "Stopped, unless it was already done");
+        Assert.IsTrue(
+            done.Checksum is null && done.Error == "Stopped." || done.Checksum is not null,
+            "Stopped, unless it was already done"
+        );
     }
 
     private async Task<PropertyJobView> DoneAsync(PropertyJobView job)
@@ -158,12 +175,14 @@ public sealed class PropertiesTests
         {
             if (OperatingSystem.IsWindows())
             {
-                using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{target}\"")
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                })!;
+                using var process = System.Diagnostics.Process.Start(
+                    new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{target}\"")
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                    }
+                )!;
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                     return false;
@@ -175,7 +194,8 @@ public sealed class PropertiesTests
             _links.Add(link);
             return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        catch (Exception ex)
+            when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
             return false;
         }
@@ -187,6 +207,7 @@ public sealed class PropertiesTests
 
         public bool Sees(string path) => !Hidden(path);
 
-        public bool IsProtectedReal(string realPath) => realPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
+        public bool IsProtectedReal(string realPath) =>
+            realPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
     }
 }

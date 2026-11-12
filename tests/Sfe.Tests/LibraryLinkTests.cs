@@ -51,7 +51,10 @@ public sealed class LibraryLinkTests
     {
         var admin = await AdminAsync();
 
-        Assert.AreEqual(HttpStatusCode.OK, await PostAsync(admin, "/api/files/folders", new CreateFolderRequest(Link, "made")));
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            await PostAsync(admin, "/api/files/folders", new CreateFolderRequest(Link, "made"))
+        );
         Assert.IsTrue(Directory.Exists(Path.Combine(_outside, "made")));
     }
 
@@ -60,9 +63,26 @@ public sealed class LibraryLinkTests
     {
         var admin = await AdminAsync();
 
-        var upload = await PostAsync(admin, "/api/files/uploads", new { target = Link, name = "up.txt", size = 3 });
+        var upload = await PostAsync(
+            admin,
+            "/api/files/uploads",
+            new
+            {
+                target = Link,
+                name = "up.txt",
+                size = 3,
+            }
+        );
         using var copy = await admin.PostAsJsonAsync(
-            "/api/files/jobs", new { kind = "copy", paths = new[] { "RFile1.txt" }, target = Link }, Token);
+            "/api/files/jobs",
+            new
+            {
+                kind = "copy",
+                paths = new[] { "RFile1.txt" },
+                target = Link,
+            },
+            Token
+        );
         var copied = Path.Combine(_outside, "RFile1.txt");
         for (var waited = 0; waited < 50 && !File.Exists(copied); waited++)
             await Task.Delay(100, Token);
@@ -93,7 +113,11 @@ public sealed class LibraryLinkTests
         var deeper = await PostAsync(admin, "/api/files/folders", new CreateFolderRequest($"{Link}/Sub", "made"));
         var file = await PostAsync(admin, "/api/files/new-file", new CreateFileRequest(Link, "made.txt"));
         var rename = await PostAsync(admin, "/api/files/rename", new RenameRequest($"{Link}/theirs.txt", "mine.txt"));
-        using var delete = await admin.PostAsJsonAsync("/api/files/delete", new DeleteRequest([$"{Link}/theirs.txt"], Permanent: true), Token);
+        using var delete = await admin.PostAsJsonAsync(
+            "/api/files/delete",
+            new DeleteRequest([$"{Link}/theirs.txt"], Permanent: true),
+            Token
+        );
         var deleted = await delete.Content.ReadAsStringAsync(Token);
 
         Assert.AreEqual(HttpStatusCode.NotFound, folder);
@@ -101,7 +125,10 @@ public sealed class LibraryLinkTests
         Assert.AreEqual(HttpStatusCode.NotFound, file);
         Assert.AreEqual(HttpStatusCode.NotFound, rename);
         StringAssert.Contains(deleted, "notFound", deleted);
-        CollectionAssert.AreEquivalent(new[] { "Sub", "theirs.txt" }, Directory.GetFileSystemEntries(_outside).Select(Path.GetFileName).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "Sub", "theirs.txt" },
+            Directory.GetFileSystemEntries(_outside).Select(Path.GetFileName).ToArray()
+        );
         Assert.IsEmpty(Directory.GetFileSystemEntries(Path.Combine(_outside, "Sub")));
     }
 
@@ -110,9 +137,26 @@ public sealed class LibraryLinkTests
     {
         var admin = await AdminAsync(ReadOnly);
 
-        var upload = await PostAsync(admin, "/api/files/uploads", new { target = Link, name = "up.txt", size = 3 });
+        var upload = await PostAsync(
+            admin,
+            "/api/files/uploads",
+            new
+            {
+                target = Link,
+                name = "up.txt",
+                size = 3,
+            }
+        );
         using var copy = await admin.PostAsJsonAsync(
-            "/api/files/jobs", new { kind = "copy", paths = new[] { "RFile1.txt" }, target = Link }, Token);
+            "/api/files/jobs",
+            new
+            {
+                kind = "copy",
+                paths = new[] { "RFile1.txt" },
+                target = Link,
+            },
+            Token
+        );
         // The job runs in the background: what it would have made never appears.
         await Task.Delay(500, Token);
 
@@ -127,7 +171,10 @@ public sealed class LibraryLinkTests
     {
         var admin = await AdminAsync(ReadOnly);
 
-        Assert.AreEqual(HttpStatusCode.OK, await PostAsync(admin, "/api/files/folders", new CreateFolderRequest("ChildDir/Inside", "made")));
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            await PostAsync(admin, "/api/files/folders", new CreateFolderRequest("ChildDir/Inside", "made"))
+        );
         Assert.IsTrue(Directory.Exists(_library.FullPath("Media/made")));
     }
 
@@ -140,11 +187,15 @@ public sealed class LibraryLinkTests
             settings["Sfe:Security:LinkTargets:0"] = _outside;
         });
 
-        Assert.AreEqual(HttpStatusCode.OK, await PostAsync(admin, "/api/files/folders", new CreateFolderRequest($"{Link}/Sub", "made")));
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            await PostAsync(admin, "/api/files/folders", new CreateFolderRequest($"{Link}/Sub", "made"))
+        );
         Assert.IsTrue(Directory.Exists(Path.Combine(_outside, "Sub", "made")));
     }
 
-    private static void ReadOnly(IDictionary<string, string?> settings) => settings["Sfe:Security:LinksOutsideLibrary"] = "ReadOnly";
+    private static void ReadOnly(IDictionary<string, string?> settings) =>
+        settings["Sfe:Security:LinksOutsideLibrary"] = "ReadOnly";
 
     private async Task<HttpClient> AdminAsync(Action<IDictionary<string, string?>>? configure = null)
     {
@@ -169,7 +220,10 @@ public sealed class LibraryLinkTests
         {
             if (OperatingSystem.IsWindows())
             {
-                var mklink = new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{linkPath}\" \"{target}\"")
+                var mklink = new System.Diagnostics.ProcessStartInfo(
+                    "cmd.exe",
+                    $"/c mklink /J \"{linkPath}\" \"{target}\""
+                )
                 {
                     CreateNoWindow = true,
                     UseShellExecute = false,
@@ -188,7 +242,8 @@ public sealed class LibraryLinkTests
             _links.Add(linkPath);
             return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        catch (Exception ex)
+            when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
             return false;
         }

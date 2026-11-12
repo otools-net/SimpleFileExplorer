@@ -66,9 +66,13 @@ public sealed class FileTrackingTests
         Assert.AreEqual(3, video.Count);
         CollectionAssert.AreEqual(
             new[] { "Copies/Holiday copy.mp4", "Copies/Sub/holiday.mp4", "Media/Holiday 2020.mp4" },
-            video.Files.Select(f => f.Path).ToArray());
+            video.Files.Select(f => f.Path).ToArray()
+        );
         Assert.AreEqual(2 * video.Size, video.WastedBytes);
-        CollectionAssert.AreEquivalent(new[] { "Copies/photo (1).jpg", "Media/photo.jpg" }, results.Groups[1].Files.Select(f => f.Path).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "Copies/photo (1).jpg", "Media/photo.jpg" },
+            results.Groups[1].Files.Select(f => f.Path).ToArray()
+        );
 
         Assert.IsNotNull(results.Summary);
         Assert.AreEqual(2, results.Summary.Groups);
@@ -112,7 +116,10 @@ public sealed class FileTrackingTests
 
         Assert.AreEqual("Copies", results.Path);
         var group = Assert.ContainsSingle(results.Groups);
-        CollectionAssert.AreEqual(new[] { "Copies/Holiday copy.mp4", "Copies/Sub/holiday.mp4" }, group.Files.Select(f => f.Path).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "Copies/Holiday copy.mp4", "Copies/Sub/holiday.mp4" },
+            group.Files.Select(f => f.Path).ToArray()
+        );
         Assert.IsNull(await Duplicates.FindAsync("../outside", null, null, TestContext.CancellationToken));
         Assert.IsNull(await Duplicates.FindAsync("", "not a cursor", null, TestContext.CancellationToken));
     }
@@ -143,7 +150,12 @@ public sealed class FileTrackingTests
         await TagAsync(cat, "Media/photo.jpg");
         await TagAsync(beach, "Copies/photo (1).jpg");
 
-        var result = await Remover.RemoveAsync("Copies/photo (1).jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
+        var result = await Remover.RemoveAsync(
+            "Copies/photo (1).jpg",
+            "Media/photo.jpg",
+            Actor,
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(DuplicateRemovalStatus.Removed, result.Status, result.Error);
         Assert.IsFalse(File.Exists(_library.FullPath("Copies/photo (1).jpg")));
@@ -155,10 +167,15 @@ public sealed class FileTrackingTests
         Assert.AreEqual(0, (await ScanAsync()).Missing);
 
         // In the trash, with its own tags for a restore.
-        var entry = Assert.ContainsSingle((await Trash.ListAsync(null, null, _ => true, TestContext.CancellationToken)).Items);
+        var entry = Assert.ContainsSingle(
+            (await Trash.ListAsync(null, null, _ => true, TestContext.CancellationToken)).Items
+        );
         Assert.AreEqual(result.TrashId, entry.Id);
         Assert.AreEqual("Copies/photo (1).jpg", entry.Path);
-        Assert.AreEqual(FileOperationStatus.Done, (await Trash.RestoreAsync(entry.Id, Actor, TestContext.CancellationToken)).Status);
+        Assert.AreEqual(
+            FileOperationStatus.Done,
+            (await Trash.RestoreAsync(entry.Id, Actor, TestContext.CancellationToken)).Status
+        );
         Assert.IsTrue(File.Exists(_library.FullPath("Copies/photo (1).jpg")));
         CollectionAssert.AreEquivalent(new[] { beach }, await TagIdsAsync("Copies/photo (1).jpg"));
         CollectionAssert.AreEquivalent(new[] { cat, beach }, await TagIdsAsync("Media/photo.jpg"));
@@ -172,7 +189,12 @@ public sealed class FileTrackingTests
         await ScanAsync();
         Assert.IsTrue((await Duplicates.FindAsync("", null, null, TestContext.CancellationToken))!.RemovesPermanently);
 
-        var result = await Remover.RemoveAsync("Copies/photo.jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
+        var result = await Remover.RemoveAsync(
+            "Copies/photo.jpg",
+            "Media/photo.jpg",
+            Actor,
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(DuplicateRemovalStatus.Removed, result.Status, result.Error);
         Assert.IsNull(result.TrashId);
@@ -191,7 +213,12 @@ public sealed class FileTrackingTests
         await ScanAsync();
         Assert.ContainsSingle((await Duplicates.FindAsync("", null, null, TestContext.CancellationToken))!.Groups);
 
-        var result = await Remover.RemoveAsync("same-start-b.bin", "same-start-a.bin", Actor, TestContext.CancellationToken);
+        var result = await Remover.RemoveAsync(
+            "same-start-b.bin",
+            "same-start-a.bin",
+            Actor,
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(DuplicateRemovalStatus.Invalid, result.Status);
         Assert.AreEqual("keep", result.Field);
@@ -209,10 +236,19 @@ public sealed class FileTrackingTests
         {
             await ScanAsync();
             var groups = (await Duplicates.FindAsync("", null, null, TestContext.CancellationToken))!.Groups;
-            Assert.IsTrue(groups.Any(g => g.Files.Select(f => f.Path).Order().SequenceEqual(["Linked/photo.jpg", "Media/photo.jpg"])),
-                "The photo is listed through both paths.");
+            Assert.IsTrue(
+                groups.Any(g =>
+                    g.Files.Select(f => f.Path).Order().SequenceEqual(["Linked/photo.jpg", "Media/photo.jpg"])
+                ),
+                "The photo is listed through both paths."
+            );
 
-            var result = await Remover.RemoveAsync("Linked/photo.jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
+            var result = await Remover.RemoveAsync(
+                "Linked/photo.jpg",
+                "Media/photo.jpg",
+                Actor,
+                TestContext.CancellationToken
+            );
 
             Assert.AreEqual(DuplicateRemovalStatus.Invalid, result.Status);
             Assert.IsTrue(File.Exists(_library.FullPath("Media/photo.jpg")));
@@ -227,10 +263,22 @@ public sealed class FileTrackingTests
     [TestMethod]
     public async Task HardLinksAreNotRemovedOnWindows()
     {
-        if (!OperatingSystem.IsWindows() || !RunCmd($"mklink /H \"{_library.FullPath("photo link.jpg")}\" \"{_library.FullPath("Media/photo.jpg")}\""))
+        if (
+            !OperatingSystem.IsWindows()
+            || !RunCmd(
+                $"mklink /H \"{_library.FullPath("photo link.jpg")}\" \"{_library.FullPath("Media/photo.jpg")}\""
+            )
+        )
+        {
             Assert.Inconclusive("Hard links are only checked on Windows.");
+        }
 
-        var result = await Remover.RemoveAsync("photo link.jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
+        var result = await Remover.RemoveAsync(
+            "photo link.jpg",
+            "Media/photo.jpg",
+            Actor,
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(DuplicateRemovalStatus.Invalid, result.Status);
         Assert.IsTrue(File.Exists(_library.FullPath("photo link.jpg")));
@@ -244,7 +292,12 @@ public sealed class FileTrackingTests
         await ScanAsync();
 
         Assert.IsFalse((await Duplicates.FindAsync("", null, null, TestContext.CancellationToken))!.CanRemove);
-        var result = await Remover.RemoveAsync("Copies/photo.jpg", "Media/photo.jpg", Actor, TestContext.CancellationToken);
+        var result = await Remover.RemoveAsync(
+            "Copies/photo.jpg",
+            "Media/photo.jpg",
+            Actor,
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(DuplicateRemovalStatus.Disabled, result.Status);
         Assert.IsTrue(File.Exists(_library.FullPath("Copies/photo.jpg")));
@@ -334,10 +387,16 @@ public sealed class FileTrackingTests
         var item = Assert.ContainsSingle((await Relink.ListAsync(null, null, TestContext.CancellationToken)).Items);
         CollectionAssert.AreEqual(new[] { "A/one.jpg", "B/two.jpg" }, item.Candidates.Select(c => c.Path).ToArray());
 
-        Assert.AreEqual(RelinkStatus.Relinked, await Relink.RelinkAsync(item.Id, "B/two.jpg", TestContext.CancellationToken));
+        Assert.AreEqual(
+            RelinkStatus.Relinked,
+            await Relink.RelinkAsync(item.Id, "B/two.jpg", TestContext.CancellationToken)
+        );
         CollectionAssert.AreEqual(new[] { tag }, await TagIdsAsync("B/two.jpg"));
         Assert.IsEmpty(await TagIdsAsync("A/one.jpg"));
-        Assert.AreEqual(RelinkStatus.NotFound, await Relink.RelinkAsync(item.Id, "A/one.jpg", TestContext.CancellationToken));
+        Assert.AreEqual(
+            RelinkStatus.NotFound,
+            await Relink.RelinkAsync(item.Id, "A/one.jpg", TestContext.CancellationToken)
+        );
     }
 
     [TestMethod]
@@ -413,9 +472,16 @@ public sealed class FileTrackingTests
         Assert.AreEqual(1, await Relink.CountAsync(TestContext.CancellationToken));
 
         // Kept longer than the retention: forgotten by the next pass.
-        await using (var db = await _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(TestContext.CancellationToken))
+        await using (
+            var db = await _services
+                .Get<IDbContextFactory<SfeDbContext>>()
+                .CreateDbContextAsync(TestContext.CancellationToken)
+        )
         {
-            await db.MissingFiles.ExecuteUpdateAsync(s => s.SetProperty(m => m.MissingSince, DateTime.Now.AddDays(-31)), TestContext.CancellationToken);
+            await db.MissingFiles.ExecuteUpdateAsync(
+                s => s.SetProperty(m => m.MissingSince, DateTime.Now.AddDays(-31)),
+                TestContext.CancellationToken
+            );
         }
         var pass = await Relink.RunAsync(TestContext.CancellationToken);
         Assert.AreEqual(1, pass.Forgotten);
@@ -433,7 +499,9 @@ public sealed class FileTrackingTests
 
         Assert.AreEqual(TagDeleteStatus.Deleted, await Tags.DeleteAsync(tag, TestContext.CancellationToken));
 
-        Assert.IsEmpty(Assert.ContainsSingle((await Relink.ListAsync(null, null, TestContext.CancellationToken)).Items).Tags);
+        Assert.IsEmpty(
+            Assert.ContainsSingle((await Relink.ListAsync(null, null, TestContext.CancellationToken)).Items).Tags
+        );
     }
 
     [TestMethod]
@@ -492,12 +560,14 @@ public sealed class FileTrackingTests
 
     private static bool RunCmd(string command)
     {
-        using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + command)
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        })!;
+        using var process = System.Diagnostics.Process.Start(
+            new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + command)
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            }
+        )!;
         process.WaitForExit();
         return process.ExitCode == 0;
     }
@@ -518,7 +588,10 @@ public sealed class FileTrackingTests
 
     private async Task TagAsync(int tag, params string[] paths)
     {
-        var (result, errors) = await Tags.ChangeFileTagsAsync(new FileTagChange(paths, Add: [tag]), TestContext.CancellationToken);
+        var (result, errors) = await Tags.ChangeFileTagsAsync(
+            new FileTagChange(paths, Add: [tag]),
+            TestContext.CancellationToken
+        );
         Assert.IsNotNull(result, errors is null ? null : string.Join(" ", errors.SelectMany(e => e.Value)));
     }
 

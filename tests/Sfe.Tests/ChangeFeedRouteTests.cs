@@ -44,9 +44,25 @@ public sealed class ChangeFeedRouteTests
         var accounts = _factory.Services.GetRequiredService<AccessService>();
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]), null, Token);
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]),
+            null,
+            Token
+        );
         var rules = _factory.Services.GetRequiredService<FolderRuleService>();
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "SpecialDir", FolderPrincipalRef.Group(users.Id), FolderLevel.Hidden, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(
+                    tenant,
+                    "SpecialDir",
+                    FolderPrincipalRef.Group(users.Id),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
         _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
     }
 
@@ -94,8 +110,14 @@ public sealed class ChangeFeedRouteTests
         Assert.AreEqual(KeepAliveState.None, (await NextEventAsync<KeepAliveSignal>(reader, "keepAlive")).State);
 
         // Turned on for the space: the settings change pings at once, and the feed tells it (no folder named).
-        using (var saved = await _admin.PatchAsJsonAsync("/api/settings?level=tenant",
-                   new SettingChanges(new Dictionary<string, JsonNode?> { ["keepAlive.mode"] = "always" }), Json, Token))
+        using (
+            var saved = await _admin.PatchAsJsonAsync(
+                "/api/settings?level=tenant",
+                new SettingChanges(new Dictionary<string, JsonNode?> { ["keepAlive.mode"] = "always" }),
+                Json,
+                Token
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
         }
@@ -106,16 +128,34 @@ public sealed class ChangeFeedRouteTests
     [TestMethod]
     public async Task TrashChangesAreToldToThoseWhoMayDelete()
     {
-        using var adminFeed = await _admin.GetAsync("/api/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
+        using var adminFeed = await _admin.GetAsync(
+            "/api/files/changes",
+            HttpCompletionOption.ResponseHeadersRead,
+            Token
+        );
         using var admin = new StreamReader(await adminFeed.Content.ReadAsStreamAsync(Token));
-        using var aliceFeed = await _alice.GetAsync("/api/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
+        using var aliceFeed = await _alice.GetAsync(
+            "/api/files/changes",
+            HttpCompletionOption.ResponseHeadersRead,
+            Token
+        );
         using var alice = new StreamReader(await aliceFeed.Content.ReadAsStreamAsync(Token));
         // The first event comes once each feed listens.
         await NextEventAsync<KeepAliveSignal>(admin, "keepAlive");
         await NextEventAsync<KeepAliveSignal>(alice, "keepAlive");
 
-        using (var deleted = await _admin.PostAsJsonAsync("/api/files/delete", new DeleteRequest(["ChildDir/AFile1.txt"]), Json, Token))
+        using (
+            var deleted = await _admin.PostAsJsonAsync(
+                "/api/files/delete",
+                new DeleteRequest(["ChildDir/AFile1.txt"]),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.OK, deleted.StatusCode, await deleted.Content.ReadAsStringAsync(Token));
+        }
+
         await CreateFolderAsync("RepeatedDir", "after", null);
 
         Assert.IsNotNull(await NextEventAsync<JsonObject>(admin, "trash"));
@@ -140,9 +180,24 @@ public sealed class ChangeFeedRouteTests
     [TestMethod]
     public async Task NewFilesNeedTheirRight()
     {
-        using var refused = await _alice.PostAsJsonAsync("/api/files/new-file", new CreateFileRequest("ChildDir", "notes.txt"), Json, Token);
-        using var created = await _admin.PostAsJsonAsync("/api/files/new-file", new CreateFileRequest("ChildDir", "notes.txt"), Json, Token);
-        using var again = await _admin.PostAsJsonAsync("/api/files/new-file", new CreateFileRequest("ChildDir", "notes.txt"), Json, Token);
+        using var refused = await _alice.PostAsJsonAsync(
+            "/api/files/new-file",
+            new CreateFileRequest("ChildDir", "notes.txt"),
+            Json,
+            Token
+        );
+        using var created = await _admin.PostAsJsonAsync(
+            "/api/files/new-file",
+            new CreateFileRequest("ChildDir", "notes.txt"),
+            Json,
+            Token
+        );
+        using var again = await _admin.PostAsJsonAsync(
+            "/api/files/new-file",
+            new CreateFileRequest("ChildDir", "notes.txt"),
+            Json,
+            Token
+        );
 
         Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, created.StatusCode, await created.Content.ReadAsStringAsync(Token));
@@ -152,7 +207,10 @@ public sealed class ChangeFeedRouteTests
 
     private async Task CreateFolderAsync(string path, string name, string? tab)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/files/folders") { Content = JsonContent.Create(new CreateFolderRequest(path, name), options: Json) };
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/files/folders")
+        {
+            Content = JsonContent.Create(new CreateFolderRequest(path, name), options: Json),
+        };
         if (tab is not null)
             request.Headers.Add(ChangeEndpoints.TabHeader, tab);
         using var response = await _admin.SendAsync(request, Token);

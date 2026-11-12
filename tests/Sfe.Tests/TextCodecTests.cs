@@ -15,7 +15,11 @@ public sealed class TextCodecTests
         var be = TextCodec.Decode([0xFE, 0xFF, .. Encoding.BigEndianUnicode.GetBytes("héllo")])!;
 
         Assert.AreEqual(("héllo", TextCodec.Utf8Bom), (utf8.Text, utf8.Encoding));
-        Assert.AreEqual(("héllo\r\n", TextCodec.Utf16Le, "crlf"), (le.Text, le.Encoding, le.LineEnding), "UTF-16 is full of NULs, yet text");
+        Assert.AreEqual(
+            ("héllo\r\n", TextCodec.Utf16Le, "crlf"),
+            (le.Text, le.Encoding, le.LineEnding),
+            "UTF-16 is full of NULs, yet text"
+        );
         Assert.AreEqual(("héllo", TextCodec.Utf16Be), (be.Text, be.Encoding));
     }
 
@@ -48,7 +52,8 @@ public sealed class TextCodecTests
     [DataRow("a\r\nb\nc", "mixed")]
     [DataRow("one line", "lf")]
     [DataRow("", "lf")]
-    public void TellsTheLineEnding(string text, string expected) => Assert.AreEqual(expected, TextCodec.LineEndingOf(text));
+    public void TellsTheLineEnding(string text, string expected) =>
+        Assert.AreEqual(expected, TextCodec.LineEndingOf(text));
 
     [TestMethod]
     public void AVersionChangesWithTheBytesEvenAtTheSameTimeAndSize()
@@ -77,13 +82,19 @@ public sealed class TextCodecTests
         var encoded = TextCodec.Encode(Text, encoding, "crlf");
         var decoded = TextCodec.Decode(encoded.Bytes)!;
 
-        Assert.AreEqual((Text.Replace("\n", "\r\n"), encoding, "crlf"), (decoded.Text, decoded.Encoding, decoded.LineEnding));
+        Assert.AreEqual(
+            (Text.Replace("\n", "\r\n"), encoding, "crlf"),
+            (decoded.Text, decoded.Encoding, decoded.LineEnding)
+        );
     }
 
     [TestMethod]
     public void EveryLineEndsAsAsked()
     {
-        Assert.AreEqual("a\nb\nc\n", Encoding.UTF8.GetString(TextCodec.Encode("a\r\nb\rc\n", TextCodec.Utf8, "lf").Bytes!));
+        Assert.AreEqual(
+            "a\nb\nc\n",
+            Encoding.UTF8.GetString(TextCodec.Encode("a\r\nb\rc\n", TextCodec.Utf8, "lf").Bytes!)
+        );
         Assert.AreEqual("a\rb", Encoding.UTF8.GetString(TextCodec.Encode("a\nb", TextCodec.Utf8, "cr").Bytes!));
         Assert.AreEqual("crlf", TextCodec.DominantLineEnding("a\r\nb\r\nc\nd"));
         Assert.AreEqual("lf", TextCodec.DominantLineEnding("a\nb\nc\r\n"));
@@ -96,7 +107,10 @@ public sealed class TextCodecTests
         var encoded = TextCodec.Encode("Tokyo 東京, Moscow Москва, 東京 again", TextCodec.Windows1252, "lf");
 
         Assert.IsNull(encoded.Bytes);
-        CollectionAssert.AreEqual(new[] { "東", "京", "М", "о", "с", "к", "в", "а" }, encoded.Unrepresentable.ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "東", "京", "М", "о", "с", "к", "в", "а" },
+            encoded.Unrepresentable.ToArray()
+        );
         Assert.ThrowsExactly<ArgumentException>(() => TextCodec.Encode("x", "latin-9", "lf"));
         Assert.ThrowsExactly<ArgumentException>(() => TextCodec.Encode("x", TextCodec.Utf8, "mixed"));
     }
@@ -104,14 +118,27 @@ public sealed class TextCodecTests
     [TestMethod]
     public void AFileCanBeReadInAnotherEncoding()
     {
-        byte[] latin = [0x63, 0x61, 0x66, 0xC3, 0xA9];      // "café" in UTF-8, read as windows-1252: "cafÃ©"
+        byte[] latin = [0x63, 0x61, 0x66, 0xC3, 0xA9]; // "café" in UTF-8, read as windows-1252: "cafÃ©"
         byte[] marked = [0xEF, 0xBB, 0xBF, 0x63, 0x61, 0x66, 0xC3, 0xA9];
 
-        Assert.AreEqual(("cafÃ©", TextCodec.Windows1252), (TextCodec.Decode(latin, TextCodec.Windows1252)!.Text, TextCodec.Decode(latin, TextCodec.Windows1252)!.Encoding));
-        Assert.AreEqual(("café", TextCodec.Utf8Bom), (TextCodec.Decode(marked, TextCodec.Utf8)!.Text, TextCodec.Decode(marked, TextCodec.Utf8)!.Encoding),
-            "Read as UTF-8, its mark is kept for a save");
+        Assert.AreEqual(
+            ("cafÃ©", TextCodec.Windows1252),
+            (
+                TextCodec.Decode(latin, TextCodec.Windows1252)!.Text,
+                TextCodec.Decode(latin, TextCodec.Windows1252)!.Encoding
+            )
+        );
+        Assert.AreEqual(
+            ("café", TextCodec.Utf8Bom),
+            (TextCodec.Decode(marked, TextCodec.Utf8)!.Text, TextCodec.Decode(marked, TextCodec.Utf8)!.Encoding),
+            "Read as UTF-8, its mark is kept for a save"
+        );
         Assert.AreEqual("\uFFFD", TextCodec.Decode([0xE9], TextCodec.Utf8)!.Text, "What isn't valid is replaced");
-        Assert.AreEqual("ab", TextCodec.Decode([0x61, 0x00, 0x62, 0x00], TextCodec.Utf16Le)!.Text, "UTF-16 without a mark");
+        Assert.AreEqual(
+            "ab",
+            TextCodec.Decode([0x61, 0x00, 0x62, 0x00], TextCodec.Utf16Le)!.Text,
+            "UTF-16 without a mark"
+        );
         Assert.IsNull(TextCodec.Decode([0x61, 0x00, 0x62, 0x00], TextCodec.Utf8), "binary for an 8-bit encoding");
         Assert.ThrowsExactly<ArgumentException>(() => TextCodec.Decode(latin, TextCodec.Utf8Bom));
     }

@@ -15,7 +15,13 @@ public static class SlowWork
     public const string FactorVariable = "SFE_TEST_TIME_FACTOR";
 
     public static double Factor { get; } =
-        double.TryParse(Environment.GetEnvironmentVariable(FactorVariable), NumberStyles.Float, CultureInfo.InvariantCulture, out var factor) && factor >= 1
+        double.TryParse(
+            Environment.GetEnvironmentVariable(FactorVariable),
+            NumberStyles.Float,
+            CultureInfo.InvariantCulture,
+            out var factor
+        )
+        && factor >= 1
             ? factor
             : 1;
 
@@ -24,7 +30,13 @@ public static class SlowWork
 
     /// <summary>Reads <paramref name="read"/> until <paramref name="condition"/> holds; inconclusive past the limit.</summary>
     /// <param name="what">What is awaited, for the message (e.g. "trickplay").</param>
-    public static async Task<T> UntilAsync<T>(Func<T> read, Func<T, bool> condition, double seconds, string what, CancellationToken cancellationToken)
+    public static async Task<T> UntilAsync<T>(
+        Func<T> read,
+        Func<T, bool> condition,
+        double seconds,
+        string what,
+        CancellationToken cancellationToken
+    )
     {
         var limit = Limit(seconds);
         var watch = Stopwatch.StartNew();
@@ -40,7 +52,12 @@ public static class SlowWork
     }
 
     /// <summary>Runs ffmpeg for a test (to make its media); a timeout makes the test inconclusive, an error fails it.</summary>
-    public static async Task RunFfmpegAsync(Ffmpeg ffmpeg, IEnumerable<string> arguments, double seconds, CancellationToken cancellationToken)
+    public static async Task RunFfmpegAsync(
+        Ffmpeg ffmpeg,
+        IEnumerable<string> arguments,
+        double seconds,
+        CancellationToken cancellationToken
+    )
     {
         var limit = Limit(seconds);
         int exitCode;
@@ -59,6 +76,8 @@ public static class SlowWork
     }
 
     private static void TooSlow(string what, TimeSpan limit) =>
-        Assert.Inconclusive($"Timed out after {limit.TotalSeconds:0} s {what}: this machine is too slow or busy for this test " +
-                            $"(not a failure of SFE). Set {FactorVariable} (e.g. 3) to give it more time.");
+        Assert.Inconclusive(
+            $"Timed out after {limit.TotalSeconds:0} s {what}: this machine is too slow or busy for this test "
+                + $"(not a failure of SFE). Set {FactorVariable} (e.g. 3) to give it more time."
+        );
 }

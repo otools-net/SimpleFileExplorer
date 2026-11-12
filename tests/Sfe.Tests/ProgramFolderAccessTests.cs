@@ -38,7 +38,9 @@ public sealed class ProgramFolderAccessTests
     public void AFolderOnlyAdministratorsChangeIsNot()
     {
         var security = AdministratorsOnly();
-        security.AddAccessRule(Rule(WellKnownSidType.BuiltinUsersSid, FileSystemRights.ReadAndExecute, AccessControlType.Allow));
+        security.AddAccessRule(
+            Rule(WellKnownSidType.BuiltinUsersSid, FileSystemRights.ReadAndExecute, AccessControlType.Allow)
+        );
         security.AddAccessRule(Rule(WellKnownSidType.WorldSid, FileSystemRights.Modify, AccessControlType.Deny));
 
         Assert.IsEmpty(ProgramFolderAccess.OrdinaryAccountsThatMayChange(security));
@@ -48,9 +50,15 @@ public sealed class ProgramFolderAccessTests
     public void EachGroupIsNamedOnce()
     {
         var security = AdministratorsOnly();
-        security.AddAccessRule(Rule(WellKnownSidType.BuiltinUsersSid, FileSystemRights.CreateFiles, AccessControlType.Allow));
-        security.AddAccessRule(Rule(WellKnownSidType.BuiltinUsersSid, FileSystemRights.AppendData, AccessControlType.Allow));
-        security.AddAccessRule(Rule(WellKnownSidType.AuthenticatedUserSid, FileSystemRights.Modify, AccessControlType.Allow));
+        security.AddAccessRule(
+            Rule(WellKnownSidType.BuiltinUsersSid, FileSystemRights.CreateFiles, AccessControlType.Allow)
+        );
+        security.AddAccessRule(
+            Rule(WellKnownSidType.BuiltinUsersSid, FileSystemRights.AppendData, AccessControlType.Allow)
+        );
+        security.AddAccessRule(
+            Rule(WellKnownSidType.AuthenticatedUserSid, FileSystemRights.Modify, AccessControlType.Allow)
+        );
 
         Assert.HasCount(2, ProgramFolderAccess.OrdinaryAccountsThatMayChange(security));
     }
@@ -58,16 +66,27 @@ public sealed class ProgramFolderAccessTests
     [TestMethod]
     public void AFolderOfTheDiskIsRead()
     {
-        var folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "sfe-tests", Guid.NewGuid().ToString("N")));
+        var folder = Directory.CreateDirectory(
+            Path.Combine(Path.GetTempPath(), "sfe-tests", Guid.NewGuid().ToString("N"))
+        );
         try
         {
             var closed = AdministratorsOnly();
-            closed.AddAccessRule(new FileSystemAccessRule(
-                WindowsIdentity.GetCurrent().User!, FileSystemRights.FullControl, Everything, PropagationFlags.None, AccessControlType.Allow));
+            closed.AddAccessRule(
+                new FileSystemAccessRule(
+                    WindowsIdentity.GetCurrent().User!,
+                    FileSystemRights.FullControl,
+                    Everything,
+                    PropagationFlags.None,
+                    AccessControlType.Allow
+                )
+            );
             folder.SetAccessControl(closed);
             Assert.IsEmpty(ProgramFolderAccess.OrdinaryAccountsThatMayChange(folder.FullName));
 
-            closed.AddAccessRule(Rule(WellKnownSidType.BuiltinUsersSid, FileSystemRights.Modify, AccessControlType.Allow));
+            closed.AddAccessRule(
+                Rule(WellKnownSidType.BuiltinUsersSid, FileSystemRights.Modify, AccessControlType.Allow)
+            );
             folder.SetAccessControl(closed);
             Assert.HasCount(1, ProgramFolderAccess.OrdinaryAccountsThatMayChange(folder.FullName));
         }
@@ -82,8 +101,12 @@ public sealed class ProgramFolderAccessTests
     {
         var security = new DirectorySecurity();
         security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
-        security.AddAccessRule(Rule(WellKnownSidType.BuiltinAdministratorsSid, FileSystemRights.FullControl, AccessControlType.Allow));
-        security.AddAccessRule(Rule(WellKnownSidType.LocalSystemSid, FileSystemRights.FullControl, AccessControlType.Allow));
+        security.AddAccessRule(
+            Rule(WellKnownSidType.BuiltinAdministratorsSid, FileSystemRights.FullControl, AccessControlType.Allow)
+        );
+        security.AddAccessRule(
+            Rule(WellKnownSidType.LocalSystemSid, FileSystemRights.FullControl, AccessControlType.Allow)
+        );
         return security;
     }
 

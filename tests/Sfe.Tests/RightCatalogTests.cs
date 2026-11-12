@@ -10,7 +10,10 @@ public sealed class RightCatalogTests
     [TestMethod]
     public void GuestsNeverGetARightThatChangesSomething()
     {
-        var offending = RightCatalog.All.Where(r => r.Kind == RightKind.Write && r.GuestAllowed).Select(r => r.Id).ToList();
+        var offending = RightCatalog
+            .All.Where(r => r.Kind == RightKind.Write && r.GuestAllowed)
+            .Select(r => r.Id)
+            .ToList();
 
         Assert.IsEmpty(offending, string.Join(", ", offending));
     }
@@ -18,7 +21,10 @@ public sealed class RightCatalogTests
     [TestMethod]
     public void OnlyRightsThatChangeSomethingNeedAWritableFolder()
     {
-        var offending = RightCatalog.All.Where(r => r.ChangesFiles && r.Kind != RightKind.Write).Select(r => r.Id).ToList();
+        var offending = RightCatalog
+            .All.Where(r => r.ChangesFiles && r.Kind != RightKind.Write)
+            .Select(r => r.Id)
+            .ToList();
 
         Assert.IsEmpty(offending, string.Join(", ", offending));
     }
@@ -26,7 +32,10 @@ public sealed class RightCatalogTests
     [TestMethod]
     public void ServerRightsAreNotAboutFolders()
     {
-        var offending = RightCatalog.All.Where(r => r.Scope == RightScope.Server && r.AtFolder is not null).Select(r => r.Id).ToList();
+        var offending = RightCatalog
+            .All.Where(r => r.Scope == RightScope.Server && r.AtFolder is not null)
+            .Select(r => r.Id)
+            .ToList();
 
         Assert.IsEmpty(offending, string.Join(", ", offending));
     }
@@ -36,7 +45,24 @@ public sealed class RightCatalogTests
     {
         var changesFiles = RightCatalog.All.Where(r => r.ChangesFiles).Select(r => r.Id).ToList();
 
-        CollectionAssert.AreEquivalent(new[] { Rights.EditImages, Rights.RemoveDuplicates, Rights.CreateFolders, Rights.RenameFiles, Rights.DeleteFiles, Rights.DeletePermanently, Rights.MoveFiles, Rights.CopyFiles, Rights.UploadFiles, Rights.CreateFiles, Rights.ExtractFiles, Rights.CompressFiles }, changesFiles);
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                Rights.EditImages,
+                Rights.RemoveDuplicates,
+                Rights.CreateFolders,
+                Rights.RenameFiles,
+                Rights.DeleteFiles,
+                Rights.DeletePermanently,
+                Rights.MoveFiles,
+                Rights.CopyFiles,
+                Rights.UploadFiles,
+                Rights.CreateFiles,
+                Rights.ExtractFiles,
+                Rights.CompressFiles,
+            },
+            changesFiles
+        );
     }
 
     [TestMethod]
@@ -69,7 +95,12 @@ public sealed class RightCatalogTests
     {
         var key = SettingCatalog.All[0].Key;
 
-        Assert.IsFalse(SettingCatalog.All.Any(s => SettingCatalog.Matches(RightCatalog.WriteSelector, s.Key) || SettingCatalog.Matches(RightCatalog.FileWriteSelector, s.Key)));
+        Assert.IsFalse(
+            SettingCatalog.All.Any(s =>
+                SettingCatalog.Matches(RightCatalog.WriteSelector, s.Key)
+                || SettingCatalog.Matches(RightCatalog.FileWriteSelector, s.Key)
+            )
+        );
         Assert.IsTrue(SettingCatalog.Matches(key[..(key.IndexOf('.') + 1)] + "*", key));
     }
 }

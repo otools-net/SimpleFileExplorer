@@ -14,7 +14,8 @@ public sealed class WarningLog : ILoggerProvider
 
     public void AddTo(ILoggingBuilder builder) => builder.AddProvider(this);
 
-    public override string ToString() => _entries.IsEmpty ? "(nothing logged)" : string.Join(Environment.NewLine, _entries);
+    public override string ToString() =>
+        _entries.IsEmpty ? "(nothing logged)" : string.Join(Environment.NewLine, _entries);
 
     public ILogger CreateLogger(string categoryName) => new Logger(this, categoryName);
 
@@ -22,14 +23,25 @@ public sealed class WarningLog : ILoggerProvider
 
     private sealed class Logger(WarningLog log, string category) : ILogger
     {
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
 
         public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Warning;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter
+        )
         {
             if (IsEnabled(logLevel))
-                log._entries.Enqueue($"{logLevel} {category}: {formatter(state, exception)}{(exception is null ? "" : Environment.NewLine + exception)}");
+            {
+                log._entries.Enqueue(
+                    $"{logLevel} {category}: {formatter(state, exception)}{(exception is null ? "" : Environment.NewLine + exception)}"
+                );
+            }
         }
     }
 }

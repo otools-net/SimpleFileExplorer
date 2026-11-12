@@ -39,7 +39,8 @@ public sealed class MediaResolutionTests
     public void ReadsPng() => Assert.AreEqual(new PixelSize(640, 480), Header(Png(640, 480)));
 
     [TestMethod]
-    public void ReadsGif() => Assert.AreEqual(new PixelSize(300, 200), Header([.. "GIF89a"u8, 0x2C, 0x01, 0xC8, 0x00, .. new byte[8]]));
+    public void ReadsGif() =>
+        Assert.AreEqual(new PixelSize(300, 200), Header([.. "GIF89a"u8, 0x2C, 0x01, 0xC8, 0x00, .. new byte[8]]));
 
     [TestMethod]
     public void ReadsBmpWithTopDownRows()
@@ -133,7 +134,10 @@ public sealed class MediaResolutionTests
               Stream #0:1: Video: vp9 (Profile 0), yuv420p(tv, bt709), 3840x2160, SAR 1:1 DAR 16:9, 25 fps, 25 tbr, 1k tbn (default)
             """;
         Assert.AreEqual(new PixelSize(3840, 2160), MediaDimensions.ParseFfmpegOutput(Output));
-        Assert.AreEqual(PixelSize.Unknown, MediaDimensions.ParseFfmpegOutput("clip.mkv: Invalid data found when processing input"));
+        Assert.AreEqual(
+            PixelSize.Unknown,
+            MediaDimensions.ParseFfmpegOutput("clip.mkv: Invalid data found when processing input")
+        );
     }
 
     [TestMethod]
@@ -160,11 +164,15 @@ public sealed class MediaResolutionTests
         await using (var db = await CreateDbAsync())
         {
             var holiday = _library.FullPath("Media/Holiday 2020.mp4");
-            await db.Files.Where(f => f.FullName == holiday).ExecuteUpdateAsync(s => s.SetProperty(f => f.Duration, 61.5), TestContext.CancellationToken);
+            await db
+                .Files.Where(f => f.FullName == holiday)
+                .ExecuteUpdateAsync(s => s.SetProperty(f => f.Duration, 61.5), TestContext.CancellationToken);
         }
 
         var listing = _services.Get<LibraryBrowser>().List("Media", 0, 10)!;
-        var listed = await _services.Get<TagService>().AttachIndexDataAsync(listing.Items, TestContext.CancellationToken);
+        var listed = await _services
+            .Get<TagService>()
+            .AttachIndexDataAsync(listing.Items, TestContext.CancellationToken);
         Assert.AreEqual(61.5, listed.Single(i => i.Name == "Holiday 2020.mp4").Duration);
         Assert.IsNull(listed.Single(i => i.Name == "photo.jpg").Duration);
     }
@@ -185,7 +193,10 @@ public sealed class MediaResolutionTests
         await using (var db = await CreateDbAsync())
         {
             Assert.IsTrue(await db.Files.AnyAsync(TestContext.CancellationToken), "The indexed files are kept.");
-            Assert.IsFalse(await db.Files.AnyAsync(f => f.Duration != null, TestContext.CancellationToken), "Read again by the next scan.");
+            Assert.IsFalse(
+                await db.Files.AnyAsync(f => f.Duration != null, TestContext.CancellationToken),
+                "Read again by the next scan."
+            );
         }
         Assert.IsNotEmpty(await SearchAsync("holiday -d:>1h"));
     }
@@ -201,17 +212,28 @@ public sealed class MediaResolutionTests
             await db.Database.ExecuteSqlAsync($"DROP INDEX IX_Files_Pixels", TestContext.CancellationToken);
             await db.Database.ExecuteSqlAsync($"DROP INDEX IX_Files_Duration", TestContext.CancellationToken);
             await db.Database.ExecuteSqlAsync($"ALTER TABLE Files DROP COLUMN Pixels", TestContext.CancellationToken);
-            await db.Database.ExecuteSqlAsync($"UPDATE Files SET Width = 1920, Height = 1080, Duration = 60 WHERE FullName = {holiday}", TestContext.CancellationToken);
+            await db.Database.ExecuteSqlAsync(
+                $"UPDATE Files SET Width = 1920, Height = 1080, Duration = 60 WHERE FullName = {holiday}",
+                TestContext.CancellationToken
+            );
         }
 
         await _services.Get<DatabaseInitializer>().InitializeAsync(TestContext.CancellationToken);
 
         await using (var db = await CreateDbAsync())
         {
-            var indexes = await db.Database.SqlQuery<string>($"SELECT name AS Value FROM sqlite_master WHERE type = 'index'").ToListAsync(TestContext.CancellationToken);
+            var indexes = await db
+                .Database.SqlQuery<string>($"SELECT name AS Value FROM sqlite_master WHERE type = 'index'")
+                .ToListAsync(TestContext.CancellationToken);
             CollectionAssert.IsSubsetOf(new[] { "IX_Files_Pixels", "IX_Files_Duration" }, indexes);
-            Assert.AreEqual(1920L * 1080, await db.Files.Where(f => f.FullName == holiday).Select(f => f.Pixels).SingleAsync(TestContext.CancellationToken),
-                "Computed for the existing rows.");
+            Assert.AreEqual(
+                1920L * 1080,
+                await db
+                    .Files.Where(f => f.FullName == holiday)
+                    .Select(f => f.Pixels)
+                    .SingleAsync(TestContext.CancellationToken),
+                "Computed for the existing rows."
+            );
         }
 
         var search = _services.Get<FileSearchService>();
@@ -226,7 +248,15 @@ public sealed class MediaResolutionTests
         await ScanAsync();
         await using (var db = await CreateDbAsync())
         {
-            var row = await db.Files.Where(f => f.FullName == holiday).Select(f => new { f.Width, f.Height, f.Pixels }).SingleAsync(TestContext.CancellationToken);
+            var row = await db
+                .Files.Where(f => f.FullName == holiday)
+                .Select(f => new
+                {
+                    f.Width,
+                    f.Height,
+                    f.Pixels,
+                })
+                .SingleAsync(TestContext.CancellationToken);
             Assert.AreEqual((long?)row.Width * row.Height, row.Pixels);
         }
     }
@@ -240,7 +270,11 @@ public sealed class MediaResolutionTests
     {
         await ScanAsync();
 
-        Assert.IsNull(await _services.Get<FileSearchService>().SearchAsync("", "", after, 10, sort, cancellationToken: TestContext.CancellationToken));
+        Assert.IsNull(
+            await _services
+                .Get<FileSearchService>()
+                .SearchAsync("", "", after, 10, sort, cancellationToken: TestContext.CancellationToken)
+        );
     }
 
     [TestMethod]
@@ -262,7 +296,9 @@ public sealed class MediaResolutionTests
         }
 
         var listing = _services.Get<LibraryBrowser>().List("Photos", 0, 10)!;
-        var listed = await _services.Get<TagService>().AttachIndexDataAsync(listing.Items, TestContext.CancellationToken);
+        var listed = await _services
+            .Get<TagService>()
+            .AttachIndexDataAsync(listing.Items, TestContext.CancellationToken);
         var wide = listed.Single(i => i.Name == "wide.png");
         Assert.AreEqual((1600, 900), (wide.Width, wide.Height));
 
@@ -279,7 +315,14 @@ public sealed class MediaResolutionTests
         await ScanAsync();
 
         await using (var db = await CreateDbAsync())
-            Assert.AreEqual((0, 0), await SizeAsync(db, "Photos/broken.png"), "Read once, not understood: not read again.");
+        {
+            Assert.AreEqual(
+                (0, 0),
+                await SizeAsync(db, "Photos/broken.png"),
+                "Read once, not understood: not read again."
+            );
+        }
+
         Assert.IsNull((await SearchAsync("broken")).Single().Width, "Not listed as 0×0.");
         Assert.IsEmpty(await SearchAsync("broken w:<100"));
         Assert.IsEmpty(await SearchAsync("broken r:<=10x10"));
@@ -320,7 +363,9 @@ public sealed class MediaResolutionTests
     public async Task ImagesTaggedBeforeAnyScanGetTheirResolution()
     {
         await WriteAsync("Photos/image.png", Png(64, 32));
-        var ids = await _services.Get<DirectoryIndexer>().IndexFilesAsync([_library.FullPath("Photos/image.png")], TestContext.CancellationToken);
+        var ids = await _services
+            .Get<DirectoryIndexer>()
+            .IndexFilesAsync([_library.FullPath("Photos/image.png")], TestContext.CancellationToken);
 
         await using var db = await CreateDbAsync();
         var file = await db.Files.SingleAsync(f => f.Id == ids.Values.Single(), TestContext.CancellationToken);
@@ -351,14 +396,20 @@ public sealed class MediaResolutionTests
     public async Task ScansReadTheResolutionOfVideosWithFfmpeg()
     {
         await using var services = await CoreServices.CreateAsync(_library, s =>
-            s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG") is { Length: > 0 } path ? path : "ffmpeg");
+            s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG")
+                is { Length: > 0 } path
+                ? path
+                : "ffmpeg"
+        );
         var ffmpeg = services.Get<Ffmpeg>();
         if (!ffmpeg.IsAvailable)
             Assert.Inconclusive("ffmpeg not found: set SFE_TEST_FFMPEG to run the video resolution test.");
 
         TestSamples.CopyTo("testsrc-1s-320x180.mp4", _library.FullPath("Clips/clip.mp4"));
 
-        await services.Get<DirectoryIndexer>().IndexAsync(_library.FullPath("Clips"), true, new ScanProgress(), TestContext.CancellationToken);
+        await services
+            .Get<DirectoryIndexer>()
+            .IndexAsync(_library.FullPath("Clips"), true, new ScanProgress(), TestContext.CancellationToken);
 
         await using (var db = await CreateDbAsync())
         {
@@ -367,10 +418,14 @@ public sealed class MediaResolutionTests
 
             // A video indexed by the version that only read resolutions: the next scan reads its duration.
             var fullName = _library.FullPath("Clips/clip.mp4");
-            await db.Files.Where(f => f.FullName == fullName).ExecuteUpdateAsync(s => s.SetProperty(f => f.Duration, (double?)null), TestContext.CancellationToken);
+            await db
+                .Files.Where(f => f.FullName == fullName)
+                .ExecuteUpdateAsync(s => s.SetProperty(f => f.Duration, (double?)null), TestContext.CancellationToken);
         }
 
-        await services.Get<DirectoryIndexer>().IndexAsync(_library.FullPath("Clips"), true, new ScanProgress(), TestContext.CancellationToken);
+        await services
+            .Get<DirectoryIndexer>()
+            .IndexAsync(_library.FullPath("Clips"), true, new ScanProgress(), TestContext.CancellationToken);
         await using (var db = await CreateDbAsync())
             Assert.AreEqual(1, (await DurationAsync(db, "Clips/clip.mp4"))!.Value, 0.05);
         Assert.HasCount(1, await SearchAsync("clip d:1s"));
@@ -380,7 +435,11 @@ public sealed class MediaResolutionTests
     public async Task ScansReadTheDurationOfAudioWithFfmpeg()
     {
         await using var services = await CoreServices.CreateAsync(_library, s =>
-            s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG") is { Length: > 0 } path ? path : "ffmpeg");
+            s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG")
+                is { Length: > 0 } path
+                ? path
+                : "ffmpeg"
+        );
         var ffmpeg = services.Get<Ffmpeg>();
         if (!ffmpeg.IsAvailable)
             Assert.Inconclusive("ffmpeg not found: set SFE_TEST_FFMPEG to run the audio duration test.");
@@ -388,7 +447,9 @@ public sealed class MediaResolutionTests
         TestSamples.CopyTo("sine-440hz-2s.wav", _library.FullPath("Music/song.wav"));
 
         async Task ScanMusicAsync() =>
-            await services.Get<DirectoryIndexer>().IndexAsync(_library.FullPath("Music"), true, new ScanProgress(), TestContext.CancellationToken);
+            await services
+                .Get<DirectoryIndexer>()
+                .IndexAsync(_library.FullPath("Music"), true, new ScanProgress(), TestContext.CancellationToken);
 
         await ScanMusicAsync();
         await using (var db = await CreateDbAsync())
@@ -398,7 +459,9 @@ public sealed class MediaResolutionTests
 
             // An audio file indexed by a version that did not read durations: the next scan reads it.
             var fullName = _library.FullPath("Music/song.wav");
-            await db.Files.Where(f => f.FullName == fullName).ExecuteUpdateAsync(s => s.SetProperty(f => f.Duration, (double?)null), TestContext.CancellationToken);
+            await db
+                .Files.Where(f => f.FullName == fullName)
+                .ExecuteUpdateAsync(s => s.SetProperty(f => f.Duration, (double?)null), TestContext.CancellationToken);
         }
 
         await ScanMusicAsync();
@@ -412,7 +475,9 @@ public sealed class MediaResolutionTests
         Assert.AreEqual(2, (await SearchAsync("song")).Single().Duration!.Value, 0.05);
 
         var listing = services.Get<LibraryBrowser>().List("Music", 0, 10)!;
-        var listed = await services.Get<TagService>().AttachIndexDataAsync(listing.Items, TestContext.CancellationToken);
+        var listed = await services
+            .Get<TagService>()
+            .AttachIndexDataAsync(listing.Items, TestContext.CancellationToken);
         Assert.AreEqual(2, listed.Single().Duration!.Value, 0.05);
         Assert.IsNull(listed.Single().Width);
     }
@@ -448,7 +513,25 @@ public sealed class MediaResolutionTests
     private static byte[] Png(int width, int height)
     {
         var png = new byte[33];
-        new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13, (byte)'I', (byte)'H', (byte)'D', (byte)'R' }.CopyTo(png, 0);
+        new byte[]
+        {
+            0x89,
+            0x50,
+            0x4E,
+            0x47,
+            0x0D,
+            0x0A,
+            0x1A,
+            0x0A,
+            0,
+            0,
+            0,
+            13,
+            (byte)'I',
+            (byte)'H',
+            (byte)'D',
+            (byte)'R',
+        }.CopyTo(png, 0);
         BinaryPrimitives.WriteInt32BigEndian(png.AsSpan(16), width);
         BinaryPrimitives.WriteInt32BigEndian(png.AsSpan(20), height);
         return png;
@@ -473,7 +556,20 @@ public sealed class MediaResolutionTests
     /// <summary>SOI, an APP0, an EXIF APP1 with the orientation (0 = none), the frame header (SOF0) and EOI.</summary>
     private static byte[] Jpeg(int width, int height, int orientation = 0, bool bigEndian = false)
     {
-        var bytes = new List<byte> { 0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x07, (byte)'J', (byte)'F', (byte)'I', (byte)'F', 0 };
+        var bytes = new List<byte>
+        {
+            0xFF,
+            0xD8,
+            0xFF,
+            0xE0,
+            0x00,
+            0x07,
+            (byte)'J',
+            (byte)'F',
+            (byte)'I',
+            (byte)'F',
+            0,
+        };
         if (orientation > 0)
         {
             // TIFF header + IFD0 with one entry: tag 0x0112, type SHORT, count 1, value.
@@ -496,10 +592,10 @@ public sealed class MediaResolutionTests
 
             tiff[0] = tiff[1] = (byte)(bigEndian ? 'M' : 'I');
             Write16(2, 42);
-            Write32(4, 8);          // IFD0 right after the header
-            Write16(8, 1);          // one entry
+            Write32(4, 8); // IFD0 right after the header
+            Write16(8, 1); // one entry
             Write16(10, 0x0112);
-            Write16(12, 3);         // SHORT
+            Write16(12, 3); // SHORT
             Write32(14, 1);
             Write16(18, orientation);
             byte[] app1 = [.. "Exif\0\0"u8, .. tiff];
@@ -507,7 +603,18 @@ public sealed class MediaResolutionTests
             bytes.AddRange(app1);
         }
 
-        bytes.AddRange([0xFF, 0xC0, 0x00, 0x11, 8, (byte)(height >> 8), (byte)height, (byte)(width >> 8), (byte)width, 3]);
+        bytes.AddRange([
+            0xFF,
+            0xC0,
+            0x00,
+            0x11,
+            8,
+            (byte)(height >> 8),
+            (byte)height,
+            (byte)(width >> 8),
+            (byte)width,
+            3,
+        ]);
         bytes.AddRange(new byte[9]);
         bytes.AddRange([0xFF, 0xD9]);
         return [.. bytes];
@@ -524,12 +631,18 @@ public sealed class MediaResolutionTests
     private async Task ScanAsync()
     {
         var progress = new ScanProgress();
-        await _services.Get<DirectoryIndexer>().IndexAsync(_library.Root, true, progress, TestContext.CancellationToken);
+        await _services
+            .Get<DirectoryIndexer>()
+            .IndexAsync(_library.Root, true, progress, TestContext.CancellationToken);
         Assert.AreEqual(0, progress.Errors);
     }
 
     private async Task<IReadOnlyList<LibraryItem>> SearchAsync(string query) =>
-        (await _services.Get<FileSearchService>().SearchAsync(query, "", null, 100, cancellationToken: TestContext.CancellationToken))!.Items;
+        (
+            await _services
+                .Get<FileSearchService>()
+                .SearchAsync(query, "", null, 100, cancellationToken: TestContext.CancellationToken)
+        )!.Items;
 
     private async Task<(int?, int?)> SizeAsync(SfeDbContext db, string relative)
     {
@@ -541,7 +654,10 @@ public sealed class MediaResolutionTests
     private async Task<double?> DurationAsync(SfeDbContext db, string relative)
     {
         var fullName = _library.FullPath(relative);
-        return await db.Files.Where(f => f.FullName == fullName).Select(f => f.Duration).SingleAsync(TestContext.CancellationToken);
+        return await db
+            .Files.Where(f => f.FullName == fullName)
+            .Select(f => f.Duration)
+            .SingleAsync(TestContext.CancellationToken);
     }
 
     private Task<SfeDbContext> CreateDbAsync() =>

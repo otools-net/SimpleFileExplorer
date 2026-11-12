@@ -43,10 +43,30 @@ public sealed class FolderExclusionRouteTests
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var administrators = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Administrators, Token))!;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
-        await accounts.CreateUserAsync(new UserInput("ada", Password: "ada-password-1", GroupIds: [administrators.Id]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]), null, Token);
+        await accounts.CreateUserAsync(
+            new UserInput("ada", Password: "ada-password-1", GroupIds: [administrators.Id]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]),
+            null,
+            Token
+        );
         var rules = _factory.Services.GetRequiredService<FolderRuleService>();
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "SpecialDir", FolderPrincipalRef.Group(administrators.Id), FolderLevel.Hidden, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(
+                    tenant,
+                    "SpecialDir",
+                    FolderPrincipalRef.Group(administrators.Id),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
         _ada = await ApiClients.SignInAsync(_factory, "ada", "ada-password-1", Token);
         _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
     }
@@ -64,17 +84,26 @@ public sealed class FolderExclusionRouteTests
     [TestMethod]
     public async Task SpaceAdministratorsExcludeAFolderThatListingsThenMark()
     {
-        var state = await PutAsync(_ada, new FolderExclusionChange("Media", Scan: true, Trickplay: null, Thumbnails: true));
+        var state = await PutAsync(
+            _ada,
+            new FolderExclusionChange("Media", Scan: true, Trickplay: null, Thumbnails: true)
+        );
         Assert.AreEqual(new FolderExclusionState("Media", null, "Media"), state);
 
         // Everyone browsing sees it: on the folder's item, in the folder, and on its sub-folders.
         var root = await BrowseAsync(_alice, "");
-        Assert.AreEqual(new FolderExclusionState("Media", null, "Media"), root.Items.Single(i => i.Name == "Media").Excluded);
+        Assert.AreEqual(
+            new FolderExclusionState("Media", null, "Media"),
+            root.Items.Single(i => i.Name == "Media").Excluded
+        );
         Assert.IsNull(root.Items.Single(i => i.Name == "ChildDir").Excluded);
         Assert.IsNull(root.Exclusions);
         var media = await BrowseAsync(_alice, "Media");
         Assert.AreEqual(new FolderExclusionState("Media", null, "Media"), media.Exclusions);
-        Assert.AreEqual(new FolderExclusionState("Media", null, "Media"), media.Items.Single(i => i.Name == "Sub").Excluded);
+        Assert.AreEqual(
+            new FolderExclusionState("Media", null, "Media"),
+            media.Items.Single(i => i.Name == "Sub").Excluded
+        );
 
         // Saved for the space, like the settings page does.
         var settings = await _admin.GetFromJsonAsync<SettingsView>("/api/settings?level=tenant", Json, Token);
@@ -91,30 +120,95 @@ public sealed class FolderExclusionRouteTests
         }
 
         // A sub-folder is let in only through the folder listed.
-        using (var inherited = await _ada.PutAsJsonAsync("/api/index/exclusions", new FolderExclusionChange("Media/Sub", false, null, null), Token))
+        using (
+            var inherited = await _ada.PutAsJsonAsync(
+                "/api/index/exclusions",
+                new FolderExclusionChange("Media/Sub", false, null, null),
+                Token
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.BadRequest, inherited.StatusCode);
             StringAssert.Contains(await inherited.Content.ReadAsStringAsync(Token), "“Media”");
         }
-        Assert.AreEqual(new FolderExclusionState(null, null, "Media"), await PutAsync(_ada, new FolderExclusionChange("Media", false, null, null)));
-        Assert.AreEqual(new FolderExclusionState(null, "Media/Sub", "Media"), await PutAsync(_ada, new FolderExclusionChange("Media/Sub", null, true, null)));
+        Assert.AreEqual(
+            new FolderExclusionState(null, null, "Media"),
+            await PutAsync(_ada, new FolderExclusionChange("Media", false, null, null))
+        );
+        Assert.AreEqual(
+            new FolderExclusionState(null, "Media/Sub", "Media"),
+            await PutAsync(_ada, new FolderExclusionChange("Media/Sub", null, true, null))
+        );
     }
 
     [TestMethod]
     public async Task OnlyTheRightAndAVisibleFolderAllowIt()
     {
-        using (var member = await _alice.PutAsJsonAsync("/api/index/exclusions", new FolderExclusionChange("Media", true, null, null), Token))
+        using (
+            var member = await _alice.PutAsJsonAsync(
+                "/api/index/exclusions",
+                new FolderExclusionChange("Media", true, null, null),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, member.StatusCode, "Users don't have the right");
-        using (var hidden = await _ada.PutAsJsonAsync("/api/index/exclusions", new FolderExclusionChange("SpecialDir", true, null, null), Token))
+        }
+
+        using (
+            var hidden = await _ada.PutAsJsonAsync(
+                "/api/index/exclusions",
+                new FolderExclusionChange("SpecialDir", true, null, null),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode, "a folder hidden from her");
-        using (var missing = await _ada.PutAsJsonAsync("/api/index/exclusions", new FolderExclusionChange("Nowhere", true, null, null), Token))
+        }
+
+        using (
+            var missing = await _ada.PutAsJsonAsync(
+                "/api/index/exclusions",
+                new FolderExclusionChange("Nowhere", true, null, null),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode);
-        using (var file = await _ada.PutAsJsonAsync("/api/index/exclusions", new FolderExclusionChange("RFile1.txt", true, null, null), Token))
+        }
+
+        using (
+            var file = await _ada.PutAsJsonAsync(
+                "/api/index/exclusions",
+                new FolderExclusionChange("RFile1.txt", true, null, null),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, file.StatusCode, "files are not excluded, folders are");
-        using (var library = await _ada.PutAsJsonAsync("/api/index/exclusions", new FolderExclusionChange("", true, null, null), Token))
+        }
+
+        using (
+            var library = await _ada.PutAsJsonAsync(
+                "/api/index/exclusions",
+                new FolderExclusionChange("", true, null, null),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.BadRequest, library.StatusCode, "the library itself");
-        using (var outside = await _ada.PutAsJsonAsync("/api/index/exclusions", new FolderExclusionChange("../..", true, null, null), Token))
+        }
+
+        using (
+            var outside = await _ada.PutAsJsonAsync(
+                "/api/index/exclusions",
+                new FolderExclusionChange("../..", true, null, null),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.BadRequest, outside.StatusCode);
+        }
 
         var settings = await _admin.GetFromJsonAsync<SettingsView>("/api/settings?level=tenant", Json, Token);
         Assert.IsEmpty(settings!.Values.Scan.ExcludedFolders);
@@ -128,23 +222,47 @@ public sealed class FolderExclusionRouteTests
         await PutAsync(_admin, new FolderExclusionChange("SpecialDir", Scan: true, Trickplay: null, Thumbnails: null));
         Directory.Delete(_library.FullPath("ChildDir"), recursive: true);
 
-        CollectionAssert.AreEqual(new[]
-        {
-            new ExcludedFolder("ChildDir", false, true, true, false),
-            new ExcludedFolder("Media", true, false, false, true),
-            new ExcludedFolder("SpecialDir", true, false, false, true),
-        }, await ListAsync(_admin));
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                new ExcludedFolder("ChildDir", false, true, true, false),
+                new ExcludedFolder("Media", true, false, false, true),
+                new ExcludedFolder("SpecialDir", true, false, false, true),
+            },
+            await ListAsync(_admin)
+        );
         // A space administrator doesn't see the folder hidden from her, even by name.
         CollectionAssert.AreEqual(new[] { "ChildDir", "Media" }, (await ListAsync(_ada)).Select(f => f.Path).ToArray());
         using (var member = await _alice.GetAsync("/api/index/exclusions", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, member.StatusCode);
 
         // Gone from the disk: it can be taken off the lists, not put on more of them.
-        using (var more = await _ada.PutAsJsonAsync("/api/index/exclusions", new FolderExclusionChange("ChildDir", true, null, null), Token))
+        using (
+            var more = await _ada.PutAsJsonAsync(
+                "/api/index/exclusions",
+                new FolderExclusionChange("ChildDir", true, null, null),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, more.StatusCode);
-        Assert.AreEqual(new FolderExclusionState(null, null, null), await PutAsync(_ada, new FolderExclusionChange("ChildDir", null, false, false)));
-        using (var never = await _ada.PutAsJsonAsync("/api/index/exclusions", new FolderExclusionChange("Nowhere", false, null, null), Token))
+        }
+
+        Assert.AreEqual(
+            new FolderExclusionState(null, null, null),
+            await PutAsync(_ada, new FolderExclusionChange("ChildDir", null, false, false))
+        );
+        using (
+            var never = await _ada.PutAsJsonAsync(
+                "/api/index/exclusions",
+                new FolderExclusionChange("Nowhere", false, null, null),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, never.StatusCode, "a folder on no list and not on the disk");
+        }
+
         CollectionAssert.AreEqual(new[] { "Media" }, (await ListAsync(_ada)).Select(f => f.Path).ToArray());
     }
 
@@ -159,5 +277,11 @@ public sealed class FolderExclusionRouteTests
     }
 
     private async Task<DirectoryListing> BrowseAsync(HttpClient client, string path) =>
-        (await client.GetFromJsonAsync<DirectoryListing>($"/api/browse?path={Uri.EscapeDataString(path)}", Json, Token))!;
+        (
+            await client.GetFromJsonAsync<DirectoryListing>(
+                $"/api/browse?path={Uri.EscapeDataString(path)}",
+                Json,
+                Token
+            )
+        )!;
 }

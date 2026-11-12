@@ -35,7 +35,8 @@ public sealed class TrashTests
     }
 
     /// <summary>The work folder at the library's root (the server's by default): the tests look into it.</summary>
-    private static void InTheLibrary(IDictionary<string, string?> settings) => settings["Sfe:Files:WorkFolder"] = "Library";
+    private static void InTheLibrary(IDictionary<string, string?> settings) =>
+        settings["Sfe:Files:WorkFolder"] = "Library";
 
     [TestCleanup]
     public async Task CleanupAsync()
@@ -49,11 +50,15 @@ public sealed class TrashTests
     private async Task UseServicesAsync(Action<IDictionary<string, string?>> configure)
     {
         await _services.DisposeAsync();
-        _services = await CoreServices.CreateAsync(_library, settings =>
-        {
-            InTheLibrary(settings);
-            configure(settings);
-        }, _log.AddTo);
+        _services = await CoreServices.CreateAsync(
+            _library,
+            settings =>
+            {
+                InTheLibrary(settings);
+                configure(settings);
+            },
+            _log.AddTo
+        );
     }
 
     [TestMethod]
@@ -79,20 +84,30 @@ public sealed class TrashTests
         Assert.AreEqual(new TrashCount(0, false), await Trash.CountAsync(_ => true, Token));
         await using (var db = await DbAsync())
         {
-            db.TrashEntries.AddRange(Enumerable.Range(0, Trash.CountCap + 150).Select(i => new TrashEntry
-            {
-                Path = $"ChildDir/f{i}",
-                Name = $"f{i}",
-                DeletedAt = DateTime.UtcNow,
-                Folder = Guid.NewGuid().ToString("N"),
-            }));
+            db.TrashEntries.AddRange(
+                Enumerable
+                    .Range(0, Trash.CountCap + 150)
+                    .Select(i => new TrashEntry
+                    {
+                        Path = $"ChildDir/f{i}",
+                        Name = $"f{i}",
+                        DeletedAt = DateTime.UtcNow,
+                        Folder = Guid.NewGuid().ToString("N"),
+                    })
+            );
             await db.SaveChangesAsync(Token);
         }
 
         Assert.AreEqual(new TrashCount(Trash.CountCap, true), await Trash.CountAsync(_ => true, Token));
-        Assert.AreEqual(new TrashCount(Trash.CountCap, false), await Trash.CountAsync(item => int.Parse(item.Name[1..]) < Trash.CountCap, Token));
-        Assert.AreEqual(new TrashCount(3, false), await Trash.CountAsync(item => item.Name is "f0" or "f1" or "f200", Token),
-            "Read past the first batches to find them");
+        Assert.AreEqual(
+            new TrashCount(Trash.CountCap, false),
+            await Trash.CountAsync(item => int.Parse(item.Name[1..]) < Trash.CountCap, Token)
+        );
+        Assert.AreEqual(
+            new TrashCount(3, false),
+            await Trash.CountAsync(item => item.Name is "f0" or "f1" or "f200", Token),
+            "Read past the first batches to find them"
+        );
     }
 
     [TestMethod]
@@ -115,7 +130,10 @@ public sealed class TrashTests
         Assert.IsTrue(File.Exists(Path.Combine(holder, "photo.jpg")));
         await using (var db = await DbAsync())
         {
-            Assert.IsFalse(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/photo.jpg"), Token), _log.ToString());
+            Assert.IsFalse(
+                await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/photo.jpg"), Token),
+                _log.ToString()
+            );
             Assert.AreEqual(0, await db.MissingFiles.CountAsync(Token), "Deleted, not missing");
         }
 
@@ -145,8 +163,10 @@ public sealed class TrashTests
         Assert.IsTrue(File.Exists(_library.FullPath("RepeatedDir (2)/RepeatedDir/RDFile2.txt")));
         CollectionAssert.AreEqual(new[] { tag }, await TagIdsAsync("RepeatedDir (2)/ChildDir/AFile1.txt"));
         await using var db = await DbAsync();
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("RepeatedDir (2)/RDFile1.txt"), Token),
-            "A scan of the restored folder indexes the rest");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("RepeatedDir (2)/RDFile1.txt"), Token),
+            "A scan of the restored folder indexes the rest"
+        );
     }
 
     [TestMethod]
@@ -160,7 +180,10 @@ public sealed class TrashTests
         Assert.AreEqual(FileOperationStatus.Done, restored.Status, restored.Message);
         Assert.IsTrue(File.Exists(_library.FullPath("ChildDir/AFile1.txt")));
         await using var db = await DbAsync();
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("ChildDir/AFile1.txt"), Token), "A restored file is indexed at once");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("ChildDir/AFile1.txt"), Token),
+            "A restored file is indexed at once"
+        );
     }
 
     [TestMethod]
@@ -184,7 +207,9 @@ public sealed class TrashTests
         Assert.IsFalse(File.Exists(thumbnail));
         Assert.IsEmpty((await Trash.ListAsync(null, null, _ => true, Token)).Items);
         await using var db = await DbAsync();
-        Assert.IsFalse(await db.Directories.AnyAsync(d => d.FullName.StartsWith(_library.FullPath("RepeatedDir")), Token));
+        Assert.IsFalse(
+            await db.Directories.AnyAsync(d => d.FullName.StartsWith(_library.FullPath("RepeatedDir")), Token)
+        );
         Assert.AreEqual(0, await db.MissingFiles.CountAsync(Token));
     }
 
@@ -238,7 +263,11 @@ public sealed class TrashTests
 
         Assert.AreEqual(FileOperationStatus.ScanRunning, result.Status);
         Assert.IsTrue(Directory.Exists(_library.FullPath("ChildDir")));
-        Assert.AreEqual(FileOperationStatus.NotFound, (await Files.DeleteAsync("", permanent: true, Me, Token)).Status, "Never the root");
+        Assert.AreEqual(
+            FileOperationStatus.NotFound,
+            (await Files.DeleteAsync("", permanent: true, Me, Token)).Status,
+            "Never the root"
+        );
     }
 
     [TestMethod]
@@ -249,15 +278,25 @@ public sealed class TrashTests
         await Trash.Completion;
         var holder = Path.Combine(_library.Root, ".sfe", "trash", await HolderAsync(old.TrashId!.Value));
         await using (var db = await DbAsync())
-            await db.TrashEntries.Where(t => t.Id == old.TrashId).ExecuteUpdateAsync(s => s.SetProperty(t => t.DeletedAt, DateTime.UtcNow.AddDays(-31)), Token);
+        {
+            await db
+                .TrashEntries.Where(t => t.Id == old.TrashId)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.DeletedAt, DateTime.UtcNow.AddDays(-31)), Token);
+        }
 
         Assert.IsTrue(Trash.TryStartPurge());
         await Trash.Completion;
 
-        CollectionAssert.AreEqual(new[] { recent.TrashId!.Value }, (await Trash.ListAsync(null, null, _ => true, Token)).Items.Select(i => i.Id).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { recent.TrashId!.Value },
+            (await Trash.ListAsync(null, null, _ => true, Token)).Items.Select(i => i.Id).ToArray()
+        );
         Assert.IsFalse(Directory.Exists(holder));
         var runs = await _services.Get<TaskHistory>().ListAsync(BackgroundTaskKind.TrashPurge, null, 10, Token);
-        Assert.IsTrue(runs.Runs.Any(r => r.Outcome == TaskOutcome.Completed && r.Summary!.Contains("1 deleted for good")), string.Join(" | ", runs.Runs.Select(r => r.Summary)));
+        Assert.IsTrue(
+            runs.Runs.Any(r => r.Outcome == TaskOutcome.Completed && r.Summary!.Contains("1 deleted for good")),
+            string.Join(" | ", runs.Runs.Select(r => r.Summary))
+        );
     }
 
     [TestMethod]
@@ -266,7 +305,12 @@ public sealed class TrashTests
         await UseServicesAsync(settings => settings["Sfe:Files:Trash:RetentionDays"] = "0");
         var old = await Files.DeleteAsync("RFile1.txt", permanent: false, Me, Token);
         await using (var db = await DbAsync())
-            await db.TrashEntries.ExecuteUpdateAsync(s => s.SetProperty(t => t.DeletedAt, DateTime.UtcNow.AddYears(-5)), Token);
+        {
+            await db.TrashEntries.ExecuteUpdateAsync(
+                s => s.SetProperty(t => t.DeletedAt, DateTime.UtcNow.AddYears(-5)),
+                Token
+            );
+        }
 
         Assert.IsTrue(Trash.TryStartPurge());
         await Trash.Completion;
@@ -280,7 +324,13 @@ public sealed class TrashTests
         await UseServicesAsync(settings => settings["Sfe:Files:WorkFolder"] = "Server");
 
         var deleted = await Files.DeleteAsync("ChildDir", permanent: false, Me, Token);
-        var stored = Path.Combine(_library.ThumbnailPath, WorkFolder.ServerFolderName, Trash.FolderName, await HolderAsync(deleted.TrashId!.Value), "ChildDir");
+        var stored = Path.Combine(
+            _library.ThumbnailPath,
+            WorkFolder.ServerFolderName,
+            Trash.FolderName,
+            await HolderAsync(deleted.TrashId!.Value),
+            "ChildDir"
+        );
 
         Assert.IsTrue(Directory.Exists(stored));
         Assert.IsFalse(Directory.Exists(Path.Combine(_library.Root, ".sfe")));
@@ -317,12 +367,17 @@ public sealed class TrashTests
         FileTree.MoveByCopy(_library.FullPath("ChildDir"), copy);
 
         Assert.IsFalse(Directory.Exists(_library.FullPath("ChildDir")));
-        CollectionAssert.AreEquivalent(new[] { ".hidden", "AFile1.txt", "AFile2" }, Directory.GetFiles(copy).Select(Path.GetFileName).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { ".hidden", "AFile1.txt", "AFile2" },
+            Directory.GetFiles(copy).Select(Path.GetFileName).ToArray()
+        );
 
         if (!TryLinkFolder("RepeatedDir/Into", "SpecialDir"))
             Assert.Inconclusive("Folder links can't be made here.");
         var refused = Path.Combine(_library.BasePath, "Other drive", "RepeatedDir");
-        Assert.ThrowsExactly<LinksInsideException>(() => FileTree.MoveByCopy(_library.FullPath("RepeatedDir"), refused));
+        Assert.ThrowsExactly<LinksInsideException>(() =>
+            FileTree.MoveByCopy(_library.FullPath("RepeatedDir"), refused)
+        );
         Assert.IsFalse(Directory.Exists(refused), "No half copy");
         Assert.IsTrue(File.Exists(_library.FullPath("RepeatedDir/RDFile1.txt")));
         Assert.IsTrue(File.Exists(_library.FullPath("SpecialDir/SDEspañol")));
@@ -370,7 +425,8 @@ public sealed class TrashTests
     private async Task<int[]> TagIdsAsync(string path) =>
         (await Tags.GetFileTagsAsync(path, Token))!.Tags.Select(t => t.Id).ToArray();
 
-    private Task<SfeDbContext> DbAsync() => _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
+    private Task<SfeDbContext> DbAsync() =>
+        _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
 
     private bool TryLinkFolder(string link, string target)
     {
@@ -379,12 +435,17 @@ public sealed class TrashTests
         {
             if (OperatingSystem.IsWindows())
             {
-                using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{linkPath}\" \"{_library.FullPath(target)}\"")
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                })!;
+                using var process = System.Diagnostics.Process.Start(
+                    new System.Diagnostics.ProcessStartInfo(
+                        "cmd.exe",
+                        $"/c mklink /J \"{linkPath}\" \"{_library.FullPath(target)}\""
+                    )
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                    }
+                )!;
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                     return false;
@@ -396,7 +457,8 @@ public sealed class TrashTests
             _links.Add(linkPath);
             return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        catch (Exception ex)
+            when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
             return false;
         }

@@ -55,12 +55,19 @@ public sealed class AccessTests
 
         var setup = await GetAsync<SetupInfo>(client, "/api/setup");
         using var config = await client.GetAsync("/api/config", TestContext.CancellationToken);
-        using var attempt = await client.PostAsJsonAsync("/api/setup", new SetupInput("", "admin", "admin-password"), TestContext.CancellationToken);
+        using var attempt = await client.PostAsJsonAsync(
+            "/api/setup",
+            new SetupInput("", "admin", "admin-password"),
+            TestContext.CancellationToken
+        );
 
         Assert.IsTrue(setup.Required);
         Assert.IsFalse(setup.CodeConfigured);
         Assert.AreEqual(HttpStatusCode.ServiceUnavailable, config.StatusCode);
-        StringAssert.Contains(await config.Content.ReadAsStringAsync(TestContext.CancellationToken), RequestGuard.SetupRequiredType);
+        StringAssert.Contains(
+            await config.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            RequestGuard.SetupRequiredType
+        );
         Assert.AreEqual(HttpStatusCode.Conflict, attempt.StatusCode);
     }
 
@@ -70,7 +77,11 @@ public sealed class AccessTests
         var client = Client(Factory(settings => settings["Sfe:Setup:Code"] = "short"));
 
         var setup = await GetAsync<SetupInfo>(client, "/api/setup");
-        using var attempt = await client.PostAsJsonAsync("/api/setup", new SetupInput("short", "admin", "admin-password"), TestContext.CancellationToken);
+        using var attempt = await client.PostAsJsonAsync(
+            "/api/setup",
+            new SetupInput("short", "admin", "admin-password"),
+            TestContext.CancellationToken
+        );
 
         Assert.IsFalse(setup.CodeConfigured);
         Assert.IsTrue(setup.CodeTooShort);
@@ -83,12 +94,28 @@ public sealed class AccessTests
         var factory = Factory();
         var client = Client(factory);
 
-        using var wrong = await client.PostAsJsonAsync("/api/setup", new SetupInput("not-the-code-at-all", "admin", "admin-password"), TestContext.CancellationToken);
-        using var weak = await client.PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, "admin", "short"), TestContext.CancellationToken);
-        using var done = await client.PostAsJsonAsync("/api/setup",
-            new SetupInput(TestLibrary.SetupCode, "admin", "admin-password", "The Admin", "Family media"), TestContext.CancellationToken);
+        using var wrong = await client.PostAsJsonAsync(
+            "/api/setup",
+            new SetupInput("not-the-code-at-all", "admin", "admin-password"),
+            TestContext.CancellationToken
+        );
+        using var weak = await client.PostAsJsonAsync(
+            "/api/setup",
+            new SetupInput(TestLibrary.SetupCode, "admin", "short"),
+            TestContext.CancellationToken
+        );
+        using var done = await client.PostAsJsonAsync(
+            "/api/setup",
+            new SetupInput(TestLibrary.SetupCode, "admin", "admin-password", "The Admin", "Family media"),
+            TestContext.CancellationToken
+        );
         var session = (await done.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!;
-        using var again = await Client(factory).PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, "other", "other-password"), TestContext.CancellationToken);
+        using var again = await Client(factory)
+            .PostAsJsonAsync(
+                "/api/setup",
+                new SetupInput(TestLibrary.SetupCode, "other", "other-password"),
+                TestContext.CancellationToken
+            );
         var config = await GetAsync<ClientConfig>(client, "/api/config");
         var accounts = await GetAsync<List<UserInfo>>(client, "/api/access/users?all=true");
 
@@ -114,11 +141,18 @@ public sealed class AccessTests
         var client = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         client.DefaultRequestHeaders.Remove(RequestGuard.Header);
 
-        using var refused = await client.PostAsJsonAsync("/api/tags", new TagInputLike("Holiday"), TestContext.CancellationToken);
+        using var refused = await client.PostAsJsonAsync(
+            "/api/tags",
+            new TagInputLike("Holiday"),
+            TestContext.CancellationToken
+        );
         using var read = await client.GetAsync("/api/config", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
-        StringAssert.Contains(await refused.Content.ReadAsStringAsync(TestContext.CancellationToken), RequestGuard.Header);
+        StringAssert.Contains(
+            await refused.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            RequestGuard.Header
+        );
         Assert.AreEqual(HttpStatusCode.OK, read.StatusCode);
     }
 
@@ -128,11 +162,21 @@ public sealed class AccessTests
         var factory = Factory();
         Client(factory);
 
-        var routes = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
-            .Where(e => e.RoutePattern.RawText?.TrimStart('/') is { } path && (path.StartsWith("api/", StringComparison.Ordinal) || path.StartsWith("openapi", StringComparison.Ordinal)))
+        var routes = factory
+            .Services.GetRequiredService<EndpointDataSource>()
+            .Endpoints.OfType<RouteEndpoint>()
+            .Where(e =>
+                e.RoutePattern.RawText?.TrimStart('/') is { } path
+                && (
+                    path.StartsWith("api/", StringComparison.Ordinal)
+                    || path.StartsWith("openapi", StringComparison.Ordinal)
+                )
+            )
             .ToList();
         var unnamed = routes
-            .Where(e => e.Metadata.GetMetadata<RightMetadata>() is null && e.Metadata.GetMetadata<IAllowAnonymous>() is null)
+            .Where(e =>
+                e.Metadata.GetMetadata<RightMetadata>() is null && e.Metadata.GetMetadata<IAllowAnonymous>() is null
+            )
             .Select(e => e.RoutePattern.RawText)
             .ToList();
         var unknown = routes
@@ -157,21 +201,41 @@ public sealed class AccessTests
         Client(factory);
         string[] pathNames = ["path", "paths", "keep"];
 
-        var routes = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
+        var routes = factory
+            .Services.GetRequiredService<EndpointDataSource>()
+            .Endpoints.OfType<RouteEndpoint>()
             .Where(e => e.RoutePattern.RawText?.TrimStart('/').StartsWith("api/", StringComparison.Ordinal) == true)
-            .Where(e => e.Metadata.GetMetadata<System.Reflection.MethodInfo>() is { } handler
-                && handler.GetParameters().Any(p => (pathNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase) && typeof(IEnumerable<char>).IsAssignableFrom(p.ParameterType))
-                    // Request bodies are the app's records (HttpRequest and some services have a Path of their own).
-                    || (p.ParameterType.Namespace?.StartsWith("Sfe.", StringComparison.Ordinal) == true && p.ParameterType.GetMethod("<Clone>$") is not null
-                        && p.ParameterType.GetProperties().Any(property => pathNames.Contains(property.Name, StringComparer.OrdinalIgnoreCase)))))
+            .Where(e =>
+                e.Metadata.GetMetadata<System.Reflection.MethodInfo>() is { } handler
+                && handler
+                    .GetParameters()
+                    .Any(p =>
+                        (
+                            pathNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase)
+                            && typeof(IEnumerable<char>).IsAssignableFrom(p.ParameterType)
+                        )
+                        // Request bodies are the app's records (HttpRequest and some services have a Path of their own).
+                        || (
+                            p.ParameterType.Namespace?.StartsWith("Sfe.", StringComparison.Ordinal) == true
+                            && p.ParameterType.GetMethod("<Clone>$") is not null
+                            && p.ParameterType.GetProperties()
+                                .Any(property => pathNames.Contains(property.Name, StringComparer.OrdinalIgnoreCase))
+                        )
+                    )
+            )
             .ToList();
         var silent = routes
             .Where(e => e.Metadata.GetMetadata<FolderMetadata>() is null)
-            .Select(e => $"{string.Join('/', e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? [])} {e.RoutePattern.RawText}")
+            .Select(e =>
+                $"{string.Join('/', e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? [])} {e.RoutePattern.RawText}"
+            )
             .ToList();
 
         Assert.IsGreaterThan(25, routes.Count);
-        Assert.IsEmpty(silent, "Routes taking a path without FolderScoped or NotLibraryPaths: " + string.Join(", ", silent));
+        Assert.IsEmpty(
+            silent,
+            "Routes taking a path without FolderScoped or NotLibraryPaths: " + string.Join(", ", silent)
+        );
     }
 
     [TestMethod]
@@ -189,12 +253,23 @@ public sealed class AccessTests
         Client(factory);
 
         // Every method of the route (the editor saves a copy with POST, over the picture with PUT).
-        var endpoints = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
-            .Where(e => e.RoutePattern.RawText == route).ToList();
+        var endpoints = factory
+            .Services.GetRequiredService<EndpointDataSource>()
+            .Endpoints.OfType<RouteEndpoint>()
+            .Where(e => e.RoutePattern.RawText == route)
+            .ToList();
 
         Assert.IsNotEmpty(endpoints, route);
         foreach (var endpoint in endpoints)
-            Assert.AreEqual(policy, endpoint.Metadata.GetMetadata<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>()?.PolicyName, route);
+        {
+            Assert.AreEqual(
+                policy,
+                endpoint
+                    .Metadata.GetMetadata<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>()
+                    ?.PolicyName,
+                route
+            );
+        }
     }
 
     [TestMethod]
@@ -203,14 +278,24 @@ public sealed class AccessTests
         var factory = Factory();
         var flooder = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         _disposables.Add(flooder);
-        await CreateUserAsync(flooder, new UserInput("bob", Password: "bob-password", GroupIds: [(await GroupAsync(flooder, BuiltInGroup.Users)).Id]));
+        await CreateUserAsync(
+            flooder,
+            new UserInput(
+                "bob",
+                Password: "bob-password",
+                GroupIds: [(await GroupAsync(flooder, BuiltInGroup.Users)).Id]
+            )
+        );
         // Another account, from the same address: limits follow the account.
         var other = await ApiClients.SignInAsync(factory, "bob", "bob-password", TestContext.CancellationToken);
         _disposables.Add(other);
 
         // As many searches as the limit allows a minute, then one more: the flood is refused, others are not.
-        await Task.WhenAll(Enumerable.Range(0, RequestLimits.SearchesPerMinute).Select(async _ =>
-            (await flooder.GetAsync("/api/search?q=x", TestContext.CancellationToken)).Dispose()));
+        await Task.WhenAll(
+            Enumerable
+                .Range(0, RequestLimits.SearchesPerMinute)
+                .Select(async _ => (await flooder.GetAsync("/api/search?q=x", TestContext.CancellationToken)).Dispose())
+        );
         using var refused = await flooder.GetAsync("/api/search?q=x", TestContext.CancellationToken);
         using var served = await other.GetAsync("/api/search?q=x", TestContext.CancellationToken);
 
@@ -238,7 +323,10 @@ public sealed class AccessTests
         Assert.AreEqual(HttpStatusCode.BadRequest, unknown.StatusCode);
         Assert.IsTrue(failures.All(s => s == HttpStatusCode.BadRequest));
         Assert.AreEqual(HttpStatusCode.BadRequest, locked.StatusCode);
-        StringAssert.Contains(await locked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
+        StringAssert.Contains(
+            await locked.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            "Too many failed attempts"
+        );
         Assert.IsNull((await GetAsync<SessionInfo>(client, "/api/session")).User);
     }
 
@@ -258,7 +346,10 @@ public sealed class AccessTests
         using var ownerSignsIn = await SignInAsync(owner, ApiClients.AdminName, ApiClients.AdminPassword);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, attackerLocked.StatusCode);
-        StringAssert.Contains(await attackerLocked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
+        StringAssert.Contains(
+            await attackerLocked.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            "Too many failed attempts"
+        );
         Assert.AreEqual(HttpStatusCode.OK, ownerSignsIn.StatusCode);
     }
 
@@ -279,7 +370,11 @@ public sealed class AccessTests
         }
 
         StringAssert.Contains(await ThirdAnswerAsync(ApiClients.AdminName), "Too many failed attempts");
-        StringAssert.Contains(await ThirdAnswerAsync("nobody"), "Too many failed attempts", "An unknown name answers as a known one");
+        StringAssert.Contains(
+            await ThirdAnswerAsync("nobody"),
+            "Too many failed attempts",
+            "An unknown name answers as a known one"
+        );
     }
 
     [TestMethod]
@@ -297,14 +392,19 @@ public sealed class AccessTests
         using var owner = ApiClients.CreateFrom(factory, "192.168.1.20");
         using var locked = await SignInAsync(owner, ApiClients.AdminName, ApiClients.AdminPassword);
 
-        StringAssert.Contains(await locked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
+        StringAssert.Contains(
+            await locked.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            "Too many failed attempts"
+        );
     }
 
     private string RecoveryFile => Path.Combine(_library.BasePath, "recovery-code.txt");
 
     /// <summary>The code the server wrote for <paramref name="userName"/>, as its administrator reads it from the file.</summary>
     private string RecoveryCodeOf(string userName) =>
-        File.ReadAllLines(RecoveryFile).Single(l => l.StartsWith(userName + ": ", StringComparison.Ordinal)).Split(' ')[1];
+        File.ReadAllLines(RecoveryFile).Single(l => l.StartsWith(userName + ": ", StringComparison.Ordinal)).Split(' ')[
+            1
+        ];
 
     [TestMethod]
     public async Task ALockedOutAdministratorRecoversWithACodeFromTheConsole()
@@ -322,23 +422,56 @@ public sealed class AccessTests
         var owner = ApiClients.CreateFrom(factory, "192.168.1.20");
         _disposables.Add(owner);
         using (var locked = await SignInAsync(owner, ApiClients.AdminName, ApiClients.AdminPassword))
-            StringAssert.Contains(await locked.Content.ReadAsStringAsync(TestContext.CancellationToken), "Too many failed attempts");
+        {
+            StringAssert.Contains(
+                await locked.Content.ReadAsStringAsync(TestContext.CancellationToken),
+                "Too many failed attempts"
+            );
+        }
 
-        using var asked = await owner.PostAsJsonAsync("/api/session/recovery", new RecoveryRequest(ApiClients.AdminName), TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, asked.StatusCode, await asked.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        using var asked = await owner.PostAsJsonAsync(
+            "/api/session/recovery",
+            new RecoveryRequest(ApiClients.AdminName),
+            TestContext.CancellationToken
+        );
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            asked.StatusCode,
+            await asked.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
         var code = RecoveryCodeOf(ApiClients.AdminName);
-        using var askedAgain = await owner.PostAsJsonAsync("/api/session/recovery", new RecoveryRequest(ApiClients.AdminName), TestContext.CancellationToken);
+        using var askedAgain = await owner.PostAsJsonAsync(
+            "/api/session/recovery",
+            new RecoveryRequest(ApiClients.AdminName),
+            TestContext.CancellationToken
+        );
         var codeAgain = RecoveryCodeOf(ApiClients.AdminName);
-        using var wrongCode = await owner.PostAsJsonAsync("/api/session/recovery/complete",
-            new RecoveryCompletion(ApiClients.AdminName, "AAAA-BBBB-CCCC-DDDD", "new-admin-password"), TestContext.CancellationToken);
-        using var shortPassword = await owner.PostAsJsonAsync("/api/session/recovery/complete",
-            new RecoveryCompletion(ApiClients.AdminName, code, "short"), TestContext.CancellationToken);
+        using var wrongCode = await owner.PostAsJsonAsync(
+            "/api/session/recovery/complete",
+            new RecoveryCompletion(ApiClients.AdminName, "AAAA-BBBB-CCCC-DDDD", "new-admin-password"),
+            TestContext.CancellationToken
+        );
+        using var shortPassword = await owner.PostAsJsonAsync(
+            "/api/session/recovery/complete",
+            new RecoveryCompletion(ApiClients.AdminName, code, "short"),
+            TestContext.CancellationToken
+        );
         // Retyped from the console: lower case, without the dashes.
-        using var recovered = await owner.PostAsJsonAsync("/api/session/recovery/complete",
-            new RecoveryCompletion(ApiClients.AdminName, code.Replace("-", "").ToLowerInvariant(), "new-admin-password"), TestContext.CancellationToken);
+        using var recovered = await owner.PostAsJsonAsync(
+            "/api/session/recovery/complete",
+            new RecoveryCompletion(
+                ApiClients.AdminName,
+                code.Replace("-", "").ToLowerInvariant(),
+                "new-admin-password"
+            ),
+            TestContext.CancellationToken
+        );
         var session = (await recovered.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!;
-        using var reused = await owner.PostAsJsonAsync("/api/session/recovery/complete",
-            new RecoveryCompletion(ApiClients.AdminName, code, "another-password"), TestContext.CancellationToken);
+        using var reused = await owner.PostAsJsonAsync(
+            "/api/session/recovery/complete",
+            new RecoveryCompletion(ApiClients.AdminName, code, "another-password"),
+            TestContext.CancellationToken
+        );
         using var oldSessionAfter = await oldSession.GetAsync("/api/config", TestContext.CancellationToken);
         using var newPassword = await SignInAsync(Client(factory), ApiClients.AdminName, "new-admin-password");
 
@@ -361,18 +494,38 @@ public sealed class AccessTests
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         _disposables.Add(admin);
-        await CreateUserAsync(admin, new UserInput("alice", Password: "alice-password", GroupIds: [(await GroupAsync(admin, BuiltInGroup.Administrators)).Id]));
+        await CreateUserAsync(
+            admin,
+            new UserInput(
+                "alice",
+                Password: "alice-password",
+                GroupIds: [(await GroupAsync(admin, BuiltInGroup.Administrators)).Id]
+            )
+        );
         var visitor = Client(factory);
 
-        using var unknown = await visitor.PostAsJsonAsync("/api/session/recovery", new RecoveryRequest("nobody"), TestContext.CancellationToken);
+        using var unknown = await visitor.PostAsJsonAsync(
+            "/api/session/recovery",
+            new RecoveryRequest("nobody"),
+            TestContext.CancellationToken
+        );
         // A space's administrator, not the server's: another administrator unlocks it.
-        using var notServerAdmin = await visitor.PostAsJsonAsync("/api/session/recovery", new RecoveryRequest("alice"), TestContext.CancellationToken);
-        using var completeUnknown = await visitor.PostAsJsonAsync("/api/session/recovery/complete",
-            new RecoveryCompletion("alice", "AAAA-BBBB-CCCC-DDDD", "new-alice-password"), TestContext.CancellationToken);
+        using var notServerAdmin = await visitor.PostAsJsonAsync(
+            "/api/session/recovery",
+            new RecoveryRequest("alice"),
+            TestContext.CancellationToken
+        );
+        using var completeUnknown = await visitor.PostAsJsonAsync(
+            "/api/session/recovery/complete",
+            new RecoveryCompletion("alice", "AAAA-BBBB-CCCC-DDDD", "new-alice-password"),
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(HttpStatusCode.OK, unknown.StatusCode);
-        Assert.AreEqual(await unknown.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            await notServerAdmin.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(
+            await unknown.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            await notServerAdmin.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
         Assert.IsFalse(File.Exists(RecoveryFile));
         Assert.AreEqual(HttpStatusCode.BadRequest, completeUnknown.StatusCode);
     }
@@ -393,19 +546,39 @@ public sealed class AccessTests
             return client;
         }
 
-        using var first = await SignInAsync(ThroughProxy("127.0.0.1", "198.51.100.1"), ApiClients.AdminName, ApiClients.AdminPassword);
-        using var second = await SignInAsync(ThroughProxy("127.0.0.1", "198.51.100.2"), ApiClients.AdminName, ApiClients.AdminPassword);
+        using var first = await SignInAsync(
+            ThroughProxy("127.0.0.1", "198.51.100.1"),
+            ApiClients.AdminName,
+            ApiClients.AdminPassword
+        );
+        using var second = await SignInAsync(
+            ThroughProxy("127.0.0.1", "198.51.100.2"),
+            ApiClients.AdminName,
+            ApiClients.AdminPassword
+        );
         // Not a proxy: what it says about the visitor is ignored.
         var stranger = ThroughProxy("203.0.113.9", "198.51.100.3");
         using var spoofed = await SignInAsync(stranger, ApiClients.AdminName, ApiClients.AdminPassword);
-        using var spoofedAgain = await SignInAsync(ThroughProxy("203.0.113.9", "198.51.100.4"), ApiClients.AdminName, ApiClients.AdminPassword);
+        using var spoofedAgain = await SignInAsync(
+            ThroughProxy("203.0.113.9", "198.51.100.4"),
+            ApiClients.AdminName,
+            ApiClients.AdminPassword
+        );
 
         Assert.AreEqual(HttpStatusCode.OK, first.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, second.StatusCode, "Another visitor of the same proxy");
-        StringAssert.Contains(string.Join(";", first.Headers.GetValues("Set-Cookie")), "secure", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(
+            string.Join(";", first.Headers.GetValues("Set-Cookie")),
+            "secure",
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.AreEqual(HttpStatusCode.OK, spoofed.StatusCode);
         Assert.DoesNotContain("secure", string.Join(";", spoofed.Headers.GetValues("Set-Cookie")).ToLowerInvariant());
-        Assert.AreEqual(HttpStatusCode.TooManyRequests, spoofedAgain.StatusCode, "Its own address counts, whatever it forwards");
+        Assert.AreEqual(
+            HttpStatusCode.TooManyRequests,
+            spoofedAgain.StatusCode,
+            "Its own address counts, whatever it forwards"
+        );
     }
 
     [TestMethod]
@@ -417,7 +590,11 @@ public sealed class AccessTests
 
         using var signIn = await SignInAsync(client, ApiClients.AdminName, ApiClients.AdminPassword);
 
-        StringAssert.Contains(string.Join(";", signIn.Headers.GetValues("Set-Cookie")), "secure", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(
+            string.Join(";", signIn.Headers.GetValues("Set-Cookie")),
+            "secure",
+            StringComparison.OrdinalIgnoreCase
+        );
     }
 
     [TestMethod]
@@ -451,8 +628,15 @@ public sealed class AccessTests
         {
             var client = first.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false });
             client.DefaultRequestHeaders.Add(RequestGuard.Header, "1");
-            using var setup = await client.PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"), TestContext.CancellationToken);
-            cookie = setup.Headers.GetValues("Set-Cookie").Single(c => c.StartsWith(SfeSession.CookieName + "=", StringComparison.Ordinal)).Split(';')[0];
+            using var setup = await client.PostAsJsonAsync(
+                "/api/setup",
+                new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"),
+                TestContext.CancellationToken
+            );
+            cookie = setup
+                .Headers.GetValues("Set-Cookie")
+                .Single(c => c.StartsWith(SfeSession.CookieName + "=", StringComparison.Ordinal))
+                .Split(';')[0];
         }
 
         var second = Factory();
@@ -470,7 +654,11 @@ public sealed class AccessTests
         // Browsers keep cookies per host, not per port: two instances on one host must not share the session's.
         var factory = Factory();
         var client = PortClient(factory, 5000);
-        using var setup = await client.PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"), TestContext.CancellationToken);
+        using var setup = await client.PostAsJsonAsync(
+            "/api/setup",
+            new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"),
+            TestContext.CancellationToken
+        );
         var cookie = SetCookie(setup, "sfe.session-5000");
         Assert.IsNotNull(cookie, string.Join(" | ", setup.Headers.GetValues("Set-Cookie")));
         Assert.IsNull(SetCookie(setup, SfeSession.CookieName), "Not under the shared name");
@@ -481,7 +669,10 @@ public sealed class AccessTests
         other.DefaultRequestHeaders.Add("Cookie", cookie);
 
         Assert.AreEqual("admin", (await GetAsync<SessionInfo>(same, "/api/session")).User?.UserName);
-        Assert.IsNull((await GetAsync<SessionInfo>(other, "/api/session")).User, "Another port's cookie isn't this one's");
+        Assert.IsNull(
+            (await GetAsync<SessionInfo>(other, "/api/session")).User,
+            "Another port's cookie isn't this one's"
+        );
     }
 
     [TestMethod]
@@ -490,7 +681,11 @@ public sealed class AccessTests
         // A session signed in before the names had ports: read once, then written under this port's name.
         var factory = Factory();
         var client = PortClient(factory, 5000);
-        using var setup = await client.PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"), TestContext.CancellationToken);
+        using var setup = await client.PostAsJsonAsync(
+            "/api/setup",
+            new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"),
+            TestContext.CancellationToken
+        );
         var value = SetCookie(setup, "sfe.session-5000")!.Split('=', 2)[1];
 
         var before = PortClient(factory, 5000);
@@ -500,7 +695,9 @@ public sealed class AccessTests
 
         Assert.AreEqual("admin", session.User?.UserName);
         Assert.IsNotNull(SetCookie(response, "sfe.session-5000"), "Written under the new name");
-        var removed = response.Headers.GetValues("Set-Cookie").SingleOrDefault(c => c.StartsWith(SfeSession.CookieName + "=;", StringComparison.Ordinal));
+        var removed = response
+            .Headers.GetValues("Set-Cookie")
+            .SingleOrDefault(c => c.StartsWith(SfeSession.CookieName + "=;", StringComparison.Ordinal));
         Assert.IsNotNull(removed, "The shared one is removed");
         StringAssert.Contains(removed, "expires=Thu, 01 Jan 1970");
 
@@ -509,12 +706,21 @@ public sealed class AccessTests
         foreign.DefaultRequestHeaders.Add("Cookie", $"{SfeSession.CookieName}=another-instances-session");
         using var left = await foreign.GetAsync("/api/session", TestContext.CancellationToken);
         Assert.IsNull((await left.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!.User);
-        Assert.IsFalse(left.Headers.TryGetValues("Set-Cookie", out var set) && set.Any(c => c.StartsWith(SfeSession.CookieName + "=", StringComparison.Ordinal)));
+        Assert.IsFalse(
+            left.Headers.TryGetValues("Set-Cookie", out var set)
+                && set.Any(c => c.StartsWith(SfeSession.CookieName + "=", StringComparison.Ordinal))
+        );
     }
 
     private static HttpClient PortClient(WebApplicationFactory<Program> factory, int port)
     {
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri($"http://localhost:{port}"), HandleCookies = false });
+        var client = factory.CreateClient(
+            new WebApplicationFactoryClientOptions
+            {
+                BaseAddress = new Uri($"http://localhost:{port}"),
+                HandleCookies = false,
+            }
+        );
         client.DefaultRequestHeaders.Add(RequestGuard.Header, "1");
         return client;
     }
@@ -522,7 +728,12 @@ public sealed class AccessTests
     /// <summary>The <c>name=value</c> of the cookie <paramref name="name"/> a response sets, if it sets it.</summary>
     private static string? SetCookie(HttpResponseMessage response, string name) =>
         response.Headers.TryGetValues("Set-Cookie", out var cookies)
-            ? cookies.FirstOrDefault(c => c.StartsWith(name + "=", StringComparison.Ordinal) && !c.StartsWith(name + "=;", StringComparison.Ordinal))?.Split(';')[0]
+            ? cookies
+                .FirstOrDefault(c =>
+                    c.StartsWith(name + "=", StringComparison.Ordinal)
+                    && !c.StartsWith(name + "=;", StringComparison.Ordinal)
+                )
+                ?.Split(';')[0]
             : null;
 
     [TestMethod]
@@ -539,11 +750,16 @@ public sealed class AccessTests
         using var scan = await alice.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken);
         using var settings = await alice.GetAsync("/api/settings", TestContext.CancellationToken);
         using var accounts = await alice.GetAsync("/api/access/users", TestContext.CancellationToken);
-        using var tag = await alice.PostAsJsonAsync("/api/tags", new TagInputLike("Holiday"), TestContext.CancellationToken);
+        using var tag = await alice.PostAsJsonAsync(
+            "/api/tags",
+            new TagInputLike("Holiday"),
+            TestContext.CancellationToken
+        );
 
         CollectionAssert.AreEquivalent(
             RightCatalog.All.Where(r => r.DefaultGroups.Contains(BuiltInGroup.Users)).Select(r => r.Id).ToList(),
-            config.Rights.ToList());
+            config.Rights.ToList()
+        );
         Assert.IsNull(config.RootPath);
         Assert.AreEqual(HttpStatusCode.OK, browse.StatusCode);
         Assert.AreEqual(HttpStatusCode.Forbidden, scan.StatusCode);
@@ -560,18 +776,32 @@ public sealed class AccessTests
         var guests = await GroupAsync(admin, BuiltInGroup.Guests);
         var administrators = await GroupAsync(admin, BuiltInGroup.Administrators);
 
-        using var refused = await admin.PutAsJsonAsync($"/api/access/groups/{guests.Id}",
-            new GroupInput(guests.Name, Rights: [.. guests.Rights, Rights.ManageTags]), Json, TestContext.CancellationToken);
+        using var refused = await admin.PutAsJsonAsync(
+            $"/api/access/groups/{guests.Id}",
+            new GroupInput(guests.Name, Rights: [.. guests.Rights, Rights.ManageTags]),
+            Json,
+            TestContext.CancellationToken
+        );
         // A guest account in the Administrators group still only gets what guests may have.
-        await CreateUserAsync(admin, new UserInput("kids", Password: "kids-password", Kind: UserKind.Guest, GroupIds: [administrators.Id]));
+        await CreateUserAsync(
+            admin,
+            new UserInput("kids", Password: "kids-password", Kind: UserKind.Guest, GroupIds: [administrators.Id])
+        );
         var kids = await ApiClients.SignInAsync(factory, "kids", "kids-password", TestContext.CancellationToken);
         var config = await GetAsync<ClientConfig>(kids, "/api/config");
         using var scan = await kids.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken);
-        using var guestAdmin = await admin.PostAsJsonAsync("/api/access/users",
-            new UserInput("bad", Password: "bad-password", Kind: UserKind.Guest, IsServerAdmin: true), Json, TestContext.CancellationToken);
+        using var guestAdmin = await admin.PostAsJsonAsync(
+            "/api/access/users",
+            new UserInput("bad", Password: "bad-password", Kind: UserKind.Guest, IsServerAdmin: true),
+            Json,
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
-        CollectionAssert.AreEquivalent(RightCatalog.All.Where(r => r.GuestAllowed).Select(r => r.Id).ToList(), config.Rights.ToList());
+        CollectionAssert.AreEquivalent(
+            RightCatalog.All.Where(r => r.GuestAllowed).Select(r => r.Id).ToList(),
+            config.Rights.ToList()
+        );
         Assert.AreEqual(HttpStatusCode.Forbidden, scan.StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, guestAdmin.StatusCode);
     }
@@ -585,12 +815,24 @@ public sealed class AccessTests
 
         using var closed = await visitor.GetAsync("/api/config", TestContext.CancellationToken);
         var before = await GetAsync<SessionInfo>(visitor, "/api/session");
-        using (var open = await admin.PutAsJsonAsync("/api/access/tenant/guest-access", new GuestAccessChange(true), TestContext.CancellationToken))
+        using (
+            var open = await admin.PutAsJsonAsync(
+                "/api/access/tenant/guest-access",
+                new GuestAccessChange(true),
+                TestContext.CancellationToken
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.OK, open.StatusCode);
+        }
+
         var after = await GetAsync<SessionInfo>(visitor, "/api/session");
         var config = await GetAsync<ClientConfig>(visitor, "/api/config");
         using var file = await visitor.GetAsync("/api/files/raw/Media/photo.jpg", TestContext.CancellationToken);
-        using var download = await visitor.GetAsync("/api/files/raw/Media/photo.jpg?download=true", TestContext.CancellationToken);
+        using var download = await visitor.GetAsync(
+            "/api/files/raw/Media/photo.jpg?download=true",
+            TestContext.CancellationToken
+        );
         using var scan = await visitor.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, closed.StatusCode);
@@ -599,7 +841,9 @@ public sealed class AccessTests
         Assert.IsTrue(after.CanBrowse);
         Assert.IsNull(config.User);
         CollectionAssert.AreEquivalent(
-            RightCatalog.All.Where(r => r.DefaultGroups.Contains(BuiltInGroup.Guests)).Select(r => r.Id).ToList(), config.Rights.ToList());
+            RightCatalog.All.Where(r => r.DefaultGroups.Contains(BuiltInGroup.Guests)).Select(r => r.Id).ToList(),
+            config.Rights.ToList()
+        );
         Assert.AreEqual(HttpStatusCode.OK, file.StatusCode);
         Assert.AreNotEqual(HttpStatusCode.OK, download.StatusCode);
         Assert.AreEqual(HttpStatusCode.Unauthorized, scan.StatusCode);
@@ -610,8 +854,13 @@ public sealed class AccessTests
     {
         var factory = Factory(settings => settings["Sfe:Security:AnonymousGuests"] = "false");
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        using (await admin.PutAsJsonAsync("/api/access/tenant/guest-access", new GuestAccessChange(true), TestContext.CancellationToken))
-        { }
+        using (
+            await admin.PutAsJsonAsync(
+                "/api/access/tenant/guest-access",
+                new GuestAccessChange(true),
+                TestContext.CancellationToken
+            )
+        ) { }
 
         using var config = await Client(factory).GetAsync("/api/config", TestContext.CancellationToken);
 
@@ -642,7 +891,24 @@ public sealed class AccessTests
         var config = await GetAsync<ClientConfig>(admin, "/api/config");
         var catalog = await GetAsync<RightsCatalogInfo>(admin, "/api/access/rights");
 
-        CollectionAssert.AreEquivalent(new[] { Rights.EditImages, Rights.RemoveDuplicates, Rights.CreateFolders, Rights.RenameFiles, Rights.DeleteFiles, Rights.DeletePermanently, Rights.MoveFiles, Rights.CopyFiles, Rights.UploadFiles, Rights.CreateFiles, Rights.ExtractFiles, Rights.CompressFiles }, catalog.DisabledByServer.ToList());
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                Rights.EditImages,
+                Rights.RemoveDuplicates,
+                Rights.CreateFolders,
+                Rights.RenameFiles,
+                Rights.DeleteFiles,
+                Rights.DeletePermanently,
+                Rights.MoveFiles,
+                Rights.CopyFiles,
+                Rights.UploadFiles,
+                Rights.CreateFiles,
+                Rights.ExtractFiles,
+                Rights.CompressFiles,
+            },
+            catalog.DisabledByServer.ToList()
+        );
         CollectionAssert.DoesNotContain(config.Rights.ToList(), Rights.EditImages);
         CollectionAssert.Contains(config.Rights.ToList(), Rights.AssignTags);
         Assert.AreEqual(FolderLevel.Write, catalog.Rights.Single(r => r.Id == Rights.EditImages).AtFolder);
@@ -656,9 +922,16 @@ public sealed class AccessTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
 
         var config = await GetAsync<ClientConfig>(admin, "/api/config");
-        using var tag = await admin.PostAsJsonAsync("/api/file-tags", new { paths = Array.Empty<string>(), add = Array.Empty<int>() }, TestContext.CancellationToken);
+        using var tag = await admin.PostAsJsonAsync(
+            "/api/file-tags",
+            new { paths = Array.Empty<string>(), add = Array.Empty<int>() },
+            TestContext.CancellationToken
+        );
 
-        Assert.IsTrue(config.Rights.All(r => RightCatalog.Find(r)!.Kind == RightKind.Read), string.Join(", ", config.Rights));
+        Assert.IsTrue(
+            config.Rights.All(r => RightCatalog.Find(r)!.Kind == RightKind.Read),
+            string.Join(", ", config.Rights)
+        );
         CollectionAssert.Contains(config.Rights.ToList(), Rights.Browse);
         Assert.AreEqual(HttpStatusCode.Forbidden, tag.StatusCode);
     }
@@ -669,12 +942,26 @@ public sealed class AccessTests
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var users = await GroupAsync(admin, BuiltInGroup.Users);
-        var alice = await CreateUserAsync(admin, new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]));
-        var aliceClient = await ApiClients.SignInAsync(factory, "alice", "alice-password", TestContext.CancellationToken);
+        var alice = await CreateUserAsync(
+            admin,
+            new UserInput("alice", Password: "alice-password", GroupIds: [users.Id])
+        );
+        var aliceClient = await ApiClients.SignInAsync(
+            factory,
+            "alice",
+            "alice-password",
+            TestContext.CancellationToken
+        );
 
         using var before = await aliceClient.GetAsync("/api/config", TestContext.CancellationToken);
-        using (var disabled = await admin.PutAsJsonAsync($"/api/access/users/{alice.Id}",
-                   new UserInput("alice", Disabled: true, GroupIds: [users.Id]), Json, TestContext.CancellationToken))
+        using (
+            var disabled = await admin.PutAsJsonAsync(
+                $"/api/access/users/{alice.Id}",
+                new UserInput("alice", Disabled: true, GroupIds: [users.Id]),
+                Json,
+                TestContext.CancellationToken
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.OK, disabled.StatusCode);
         }
@@ -693,8 +980,16 @@ public sealed class AccessTests
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
 
-        using var wrong = await admin.PutAsJsonAsync("/api/session/password", new PasswordChange("not-it", "new-password-1"), TestContext.CancellationToken);
-        using var changed = await admin.PutAsJsonAsync("/api/session/password", new PasswordChange(ApiClients.AdminPassword, "new-password-1"), TestContext.CancellationToken);
+        using var wrong = await admin.PutAsJsonAsync(
+            "/api/session/password",
+            new PasswordChange("not-it", "new-password-1"),
+            TestContext.CancellationToken
+        );
+        using var changed = await admin.PutAsJsonAsync(
+            "/api/session/password",
+            new PasswordChange(ApiClients.AdminPassword, "new-password-1"),
+            TestContext.CancellationToken
+        );
         using var still = await admin.GetAsync("/api/config", TestContext.CancellationToken);
         using var old = await SignInAsync(Client(factory), ApiClients.AdminName, ApiClients.AdminPassword);
         using var fresh = await SignInAsync(Client(factory), ApiClients.AdminName, "new-password-1");
@@ -726,17 +1021,36 @@ public sealed class AccessTests
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
 
-        using var created = await admin.PostAsJsonAsync("/api/files/links", new FileLinkRequest("Media/Episode 2.mkv"), TestContext.CancellationToken);
+        using var created = await admin.PostAsJsonAsync(
+            "/api/files/links",
+            new FileLinkRequest("Media/Episode 2.mkv"),
+            TestContext.CancellationToken
+        );
         var link = (await created.Content.ReadFromJsonAsync<FileLink>(Json, TestContext.CancellationToken))!;
-        using var missing = await admin.PostAsJsonAsync("/api/files/links", new FileLinkRequest("Media/nothing.mkv"), TestContext.CancellationToken);
+        using var missing = await admin.PostAsJsonAsync(
+            "/api/files/links",
+            new FileLinkRequest("Media/nothing.mkv"),
+            TestContext.CancellationToken
+        );
         var player = Client(factory);
         using var whole = await player.GetAsync("/" + link.Url, TestContext.CancellationToken);
-        using var range = new HttpRequestMessage(HttpMethod.Get, "/" + link.Url) { Headers = { Range = new RangeHeaderValue(0, 99) } };
+        using var range = new HttpRequestMessage(HttpMethod.Get, "/" + link.Url)
+        {
+            Headers = { Range = new RangeHeaderValue(0, 99) },
+        };
         using var part = await player.SendAsync(range, TestContext.CancellationToken);
         var token = link.Url.Split('/')[3];
-        using var forged = await player.GetAsync("/" + link.Url.Replace(token, token[..^2] + (token[^2] == 'A' ? "BB" : "AA")), TestContext.CancellationToken);
-        using (await admin.PutAsJsonAsync("/api/session/password", new PasswordChange(ApiClients.AdminPassword, "new-password-1"), TestContext.CancellationToken))
-        { }
+        using var forged = await player.GetAsync(
+            "/" + link.Url.Replace(token, token[..^2] + (token[^2] == 'A' ? "BB" : "AA")),
+            TestContext.CancellationToken
+        );
+        using (
+            await admin.PutAsJsonAsync(
+                "/api/session/password",
+                new PasswordChange(ApiClients.AdminPassword, "new-password-1"),
+                TestContext.CancellationToken
+            )
+        ) { }
         using var revoked = await player.GetAsync("/" + link.Url, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, created.StatusCode);
@@ -757,7 +1071,12 @@ public sealed class AccessTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var self = (await GetAsync<SessionInfo>(admin, "/api/session")).User!;
 
-        using var demoted = await admin.PutAsJsonAsync($"/api/access/users/{self.Id}", new UserInput(self.UserName, IsServerAdmin: false), Json, TestContext.CancellationToken);
+        using var demoted = await admin.PutAsJsonAsync(
+            $"/api/access/users/{self.Id}",
+            new UserInput(self.UserName, IsServerAdmin: false),
+            Json,
+            TestContext.CancellationToken
+        );
         using var deleted = await admin.DeleteAsync($"/api/access/users/{self.Id}", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Conflict, demoted.StatusCode);
@@ -774,7 +1093,11 @@ public sealed class AccessTests
         var client = Client(recovering);
         var setup = await GetAsync<SetupInfo>(client, "/api/setup");
         using var browse = await Client(recovering).GetAsync("/api/session", TestContext.CancellationToken);
-        using var restored = await client.PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, "admin", "recovered-password"), TestContext.CancellationToken);
+        using var restored = await client.PostAsJsonAsync(
+            "/api/setup",
+            new SetupInput(TestLibrary.SetupCode, "admin", "recovered-password"),
+            TestContext.CancellationToken
+        );
         using var signIn = await SignInAsync(Client(recovering), "admin", "recovered-password");
         var users = await GetAsync<List<UserInfo>>(client, "/api/access/users?all=true");
 
@@ -793,25 +1116,52 @@ public sealed class AccessTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var administrators = await GroupAsync(admin, BuiltInGroup.Administrators);
         var users = await GroupAsync(admin, BuiltInGroup.Users);
-        await CreateUserAsync(admin, new UserInput("manager", Password: "manager-password", GroupIds: [administrators.Id]));
-        var manager = await ApiClients.SignInAsync(factory, "manager", "manager-password", TestContext.CancellationToken);
+        await CreateUserAsync(
+            admin,
+            new UserInput("manager", Password: "manager-password", GroupIds: [administrators.Id])
+        );
+        var manager = await ApiClients.SignInAsync(
+            factory,
+            "manager",
+            "manager-password",
+            TestContext.CancellationToken
+        );
         var self = (await GetAsync<SessionInfo>(admin, "/api/session")).User!;
 
-        using var created = await manager.PostAsJsonAsync("/api/access/users",
-            new UserInput("bob", Password: "bob-password", IsServerAdmin: true, GroupIds: [users.Id]), Json, TestContext.CancellationToken);
+        using var created = await manager.PostAsJsonAsync(
+            "/api/access/users",
+            new UserInput("bob", Password: "bob-password", IsServerAdmin: true, GroupIds: [users.Id]),
+            Json,
+            TestContext.CancellationToken
+        );
         var bob = (await created.Content.ReadFromJsonAsync<UserInfo>(Json, TestContext.CancellationToken))!;
-        using var noGroup = await manager.PostAsJsonAsync("/api/access/users", new UserInput("carol", Password: "carol-password"), Json, TestContext.CancellationToken);
+        using var noGroup = await manager.PostAsJsonAsync(
+            "/api/access/users",
+            new UserInput("carol", Password: "carol-password"),
+            Json,
+            TestContext.CancellationToken
+        );
         using var serverSettings = await manager.GetAsync("/api/settings?level=server", TestContext.CancellationToken);
-        using var libraryAdmin = await manager.PutAsJsonAsync($"/api/access/users/{self.Id}",
-            new UserInput("renamed", Disabled: true, GroupIds: []), Json, TestContext.CancellationToken);
-        var adminAfter = (await GetAsync<List<UserInfo>>(admin, "/api/access/users?all=true")).Single(u => u.Id == self.Id);
+        using var libraryAdmin = await manager.PutAsJsonAsync(
+            $"/api/access/users/{self.Id}",
+            new UserInput("renamed", Disabled: true, GroupIds: []),
+            Json,
+            TestContext.CancellationToken
+        );
+        var adminAfter = (await GetAsync<List<UserInfo>>(admin, "/api/access/users?all=true")).Single(u =>
+            u.Id == self.Id
+        );
 
         Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
         Assert.IsFalse(bob.IsServerAdmin, "Only server administrators make server administrators");
         Assert.AreEqual(HttpStatusCode.BadRequest, noGroup.StatusCode);
         Assert.AreEqual(HttpStatusCode.Forbidden, serverSettings.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, libraryAdmin.StatusCode);
-        Assert.AreEqual(ApiClients.AdminName, adminAfter.UserName, "A server administrator's account is not the library's to change");
+        Assert.AreEqual(
+            ApiClients.AdminName,
+            adminAfter.UserName,
+            "A server administrator's account is not the library's to change"
+        );
         Assert.IsFalse(adminAfter.Disabled);
     }
 
@@ -822,30 +1172,70 @@ public sealed class AccessTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var administrators = await GroupAsync(admin, BuiltInGroup.Administrators);
         var users = await GroupAsync(admin, BuiltInGroup.Users);
-        await CreateUserAsync(admin, new UserInput("manager", Password: "manager-password", GroupIds: [administrators.Id]));
-        var member = await CreateUserAsync(admin, new UserInput("member", Password: "member-password", GroupIds: [users.Id]));
+        await CreateUserAsync(
+            admin,
+            new UserInput("manager", Password: "manager-password", GroupIds: [administrators.Id])
+        );
+        var member = await CreateUserAsync(
+            admin,
+            new UserInput("member", Password: "member-password", GroupIds: [users.Id])
+        );
         var outsider = await CreateUserAsync(admin, new UserInput("outsider", Password: "outsider-password"));
         users = await GroupAsync(admin, BuiltInGroup.Users);
-        var manager = await ApiClients.SignInAsync(factory, "manager", "manager-password", TestContext.CancellationToken);
+        var manager = await ApiClients.SignInAsync(
+            factory,
+            "manager",
+            "manager-password",
+            TestContext.CancellationToken
+        );
 
         // Taken into a group, the account would belong to this library alone: its administrators could set its password.
-        using var pulledIn = await manager.PutAsJsonAsync($"/api/access/groups/{users.Id}",
-            new GroupInput(users.Name, MemberIds: [.. users.MemberIds, outsider.Id]), Json, TestContext.CancellationToken);
-        using var newGroup = await manager.PostAsJsonAsync("/api/access/groups",
-            new GroupInput("Friends", MemberIds: [outsider.Id]), Json, TestContext.CancellationToken);
-        using var takenOver = await manager.PutAsJsonAsync($"/api/access/users/{outsider.Id}",
-            new UserInput("outsider", Password: "taken-over", GroupIds: [users.Id]), Json, TestContext.CancellationToken);
-        using var promoted = await manager.PutAsJsonAsync($"/api/access/groups/{administrators.Id}",
-            new GroupInput(administrators.Name, MemberIds: [.. (await GroupAsync(admin, BuiltInGroup.Administrators)).MemberIds, member.Id]), Json, TestContext.CancellationToken);
-        var outsiderAfter = (await GetAsync<List<UserInfo>>(admin, "/api/access/users?all=true")).Single(u => u.Id == outsider.Id);
-        using var byServerAdmin = await admin.PutAsJsonAsync($"/api/access/groups/{users.Id}",
-            new GroupInput(users.Name, MemberIds: [.. users.MemberIds, outsider.Id]), Json, TestContext.CancellationToken);
+        using var pulledIn = await manager.PutAsJsonAsync(
+            $"/api/access/groups/{users.Id}",
+            new GroupInput(users.Name, MemberIds: [.. users.MemberIds, outsider.Id]),
+            Json,
+            TestContext.CancellationToken
+        );
+        using var newGroup = await manager.PostAsJsonAsync(
+            "/api/access/groups",
+            new GroupInput("Friends", MemberIds: [outsider.Id]),
+            Json,
+            TestContext.CancellationToken
+        );
+        using var takenOver = await manager.PutAsJsonAsync(
+            $"/api/access/users/{outsider.Id}",
+            new UserInput("outsider", Password: "taken-over", GroupIds: [users.Id]),
+            Json,
+            TestContext.CancellationToken
+        );
+        using var promoted = await manager.PutAsJsonAsync(
+            $"/api/access/groups/{administrators.Id}",
+            new GroupInput(
+                administrators.Name,
+                MemberIds: [.. (await GroupAsync(admin, BuiltInGroup.Administrators)).MemberIds, member.Id]
+            ),
+            Json,
+            TestContext.CancellationToken
+        );
+        var outsiderAfter = (await GetAsync<List<UserInfo>>(admin, "/api/access/users?all=true")).Single(u =>
+            u.Id == outsider.Id
+        );
+        using var byServerAdmin = await admin.PutAsJsonAsync(
+            $"/api/access/groups/{users.Id}",
+            new GroupInput(users.Name, MemberIds: [.. users.MemberIds, outsider.Id]),
+            Json,
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(HttpStatusCode.BadRequest, pulledIn.StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, newGroup.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, takenOver.StatusCode);
         Assert.IsEmpty(outsiderAfter.Groups, "The account stayed out of the library");
-        Assert.AreEqual(HttpStatusCode.OK, promoted.StatusCode, "Accounts of the library still move between its groups");
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            promoted.StatusCode,
+            "Accounts of the library still move between its groups"
+        );
         Assert.AreEqual(HttpStatusCode.OK, byServerAdmin.StatusCode, "Server administrators add any account");
     }
 
@@ -869,7 +1259,8 @@ public sealed class AccessTests
     [DataRow("Películas", "peliculas")]
     [DataRow("Фильмы", "library")]
     [DataRow("--a--b--", "a-b")]
-    public void LibrarySlugsAreMadeFromTheirNames(string name, string slug) => Assert.AreEqual(slug, AccessService.Slugify(name));
+    public void LibrarySlugsAreMadeFromTheirNames(string name, string slug) =>
+        Assert.AreEqual(slug, AccessService.Slugify(name));
 
     private WebApplicationFactory<Program> Factory(Action<IDictionary<string, string?>>? configure = null)
     {
@@ -886,22 +1277,39 @@ public sealed class AccessTests
     }
 
     private Task<HttpResponseMessage> SignInAsync(HttpClient client, string userName, string password) =>
-        client.PostAsJsonAsync("/api/session/login", new SignInRequest(userName, password), TestContext.CancellationToken);
+        client.PostAsJsonAsync(
+            "/api/session/login",
+            new SignInRequest(userName, password),
+            TestContext.CancellationToken
+        );
 
     private async Task<GroupInfo> GroupAsync(HttpClient admin, BuiltInGroup builtIn) =>
         (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g => g.BuiltIn == builtIn);
 
     private async Task<UserInfo> CreateUserAsync(HttpClient admin, UserInput input)
     {
-        using var response = await admin.PostAsJsonAsync("/api/access/users", input, Json, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        using var response = await admin.PostAsJsonAsync(
+            "/api/access/users",
+            input,
+            Json,
+            TestContext.CancellationToken
+        );
+        Assert.AreEqual(
+            HttpStatusCode.Created,
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
         return (await response.Content.ReadFromJsonAsync<UserInfo>(Json, TestContext.CancellationToken))!;
     }
 
     private async Task<T> GetAsync<T>(HttpClient client, string url)
     {
         using var response = await client.GetAsync(url, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"{url}: {await response.Content.ReadAsStringAsync(TestContext.CancellationToken)}");
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            $"{url}: {await response.Content.ReadAsStringAsync(TestContext.CancellationToken)}"
+        );
         return (await response.Content.ReadFromJsonAsync<T>(Json, TestContext.CancellationToken))!;
     }
 

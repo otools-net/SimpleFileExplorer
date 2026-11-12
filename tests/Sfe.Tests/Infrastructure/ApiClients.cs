@@ -20,7 +20,10 @@ public static class ApiClients
     public const string AdminPassword = "admin-password";
 
     /// <summary>A server on <paramref name="library"/>, with changes to its configuration.</summary>
-    public static WebApplicationFactory<Program> CreateFactory(TestLibrary library, Action<IDictionary<string, string?>>? configure = null)
+    public static WebApplicationFactory<Program> CreateFactory(
+        TestLibrary library,
+        Action<IDictionary<string, string?>>? configure = null
+    )
     {
         var settings = library.Settings();
         configure?.Invoke(settings);
@@ -54,22 +57,28 @@ public static class ApiClients
     public static HttpClient CreateWithSetupLink(WebApplicationFactory<Program> factory)
     {
         var client = CreateFrom(factory, "127.0.0.1");
-        client.DefaultRequestHeaders.Add(LocalSetupLink.Header, factory.Services.GetRequiredService<LocalSetupLink>().Token);
+        client.DefaultRequestHeaders.Add(
+            LocalSetupLink.Header,
+            factory.Services.GetRequiredService<LocalSetupLink>().Token
+        );
         return client;
     }
 
     private sealed class TestAddressFilter : IStartupFilter
     {
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
-        {
-            app.Use((context, nextMiddleware) =>
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) =>
+            app =>
             {
-                if (context.Request.Headers[AddressHeader].ToString() is { Length: > 0 } address)
-                    context.Connection.RemoteIpAddress = IPAddress.Parse(address);
-                return nextMiddleware(context);
-            });
-            next(app);
-        };
+                app.Use(
+                    (context, nextMiddleware) =>
+                    {
+                        if (context.Request.Headers[AddressHeader].ToString() is { Length: > 0 } address)
+                            context.Connection.RemoteIpAddress = IPAddress.Parse(address);
+                        return nextMiddleware(context);
+                    }
+                );
+                next(app);
+            };
     }
 
     /// <summary>A client that is not signed in (a visitor without an account).</summary>
@@ -81,11 +90,22 @@ public static class ApiClients
     }
 
     /// <summary>Runs the setup with <see cref="TestLibrary.SetupCode"/>: the client is signed in as the server administrator.</summary>
-    public static async Task<HttpClient> SetUpAsync(WebApplicationFactory<Program> factory, CancellationToken cancellationToken)
+    public static async Task<HttpClient> SetUpAsync(
+        WebApplicationFactory<Program> factory,
+        CancellationToken cancellationToken
+    )
     {
         var client = Create(factory);
-        using var response = await client.PostAsJsonAsync("/api/setup", new SetupInput(TestLibrary.SetupCode, AdminName, AdminPassword), cancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken));
+        using var response = await client.PostAsJsonAsync(
+            "/api/setup",
+            new SetupInput(TestLibrary.SetupCode, AdminName, AdminPassword),
+            cancellationToken
+        );
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(cancellationToken)
+        );
         return client;
     }
 
@@ -95,10 +115,25 @@ public static class ApiClients
         var client = Create(factory);
         // As the update page once the code is typed: the log and the error come as they are.
         client.DefaultRequestHeaders.Add(MigrationEndpoints.SetupCodeHeader, TestLibrary.SetupCode);
-        using (var response = await client.PostAsJsonAsync("/api/migration", new MigrationInput(TestLibrary.SetupCode), cancellationToken))
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken));
+        using (
+            var response = await client.PostAsJsonAsync(
+                "/api/migration",
+                new MigrationInput(TestLibrary.SetupCode),
+                cancellationToken
+            )
+        )
+        {
+            Assert.AreEqual(
+                HttpStatusCode.OK,
+                response.StatusCode,
+                await response.Content.ReadAsStringAsync(cancellationToken)
+            );
+        }
 
-        var json = new JsonSerializerOptions(JsonSerializerDefaults.Web) { Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) } };
+        var json = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        };
         var timeout = DateTime.UtcNow.AddSeconds(60);
         while (true)
         {
@@ -112,11 +147,24 @@ public static class ApiClients
     }
 
     /// <summary>A new client signed in with a name and password.</summary>
-    public static async Task<HttpClient> SignInAsync(WebApplicationFactory<Program> factory, string userName, string password, CancellationToken cancellationToken)
+    public static async Task<HttpClient> SignInAsync(
+        WebApplicationFactory<Program> factory,
+        string userName,
+        string password,
+        CancellationToken cancellationToken
+    )
     {
         var client = Create(factory);
-        using var response = await client.PostAsJsonAsync("/api/session/login", new SignInRequest(userName, password), cancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken));
+        using var response = await client.PostAsJsonAsync(
+            "/api/session/login",
+            new SignInRequest(userName, password),
+            cancellationToken
+        );
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(cancellationToken)
+        );
         return client;
     }
 }

@@ -78,12 +78,23 @@ public sealed class FileNamesTests
     [TestMethod]
     public void KeepBothNumbersTheCopyLikeExplorer()
     {
-        var taken = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "beach.jpg", "beach (2).jpg", "Photos", "Photos (2)", "Photos (3)" };
+        var taken = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "beach.jpg",
+            "beach (2).jpg",
+            "Photos",
+            "Photos (2)",
+            "Photos (3)",
+        };
 
         Assert.AreEqual("beach (3).jpg", FileNames.KeepBoth("beach.jpg", isFolder: false, taken.Contains));
         Assert.AreEqual("Photos (4)", FileNames.KeepBoth("Photos", isFolder: true, taken.Contains));
         Assert.AreEqual("archive.tar (2).gz", FileNames.KeepBoth("archive.tar.gz", isFolder: false, taken.Contains));
-        Assert.AreEqual("v1.2 (2)", FileNames.KeepBoth("v1.2", isFolder: true, taken.Contains), "A folder's dot is not an extension");
+        Assert.AreEqual(
+            "v1.2 (2)",
+            FileNames.KeepBoth("v1.2", isFolder: true, taken.Contains),
+            "A folder's dot is not an extension"
+        );
         Assert.AreEqual(".profile (2)", FileNames.KeepBoth(".profile", isFolder: false, taken.Contains));
         Assert.IsNull(FileNames.KeepBoth("x", isFolder: false, _ => true));
     }

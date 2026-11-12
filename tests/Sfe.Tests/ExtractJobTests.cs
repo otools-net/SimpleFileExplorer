@@ -54,7 +54,10 @@ public sealed class ExtractJobTests
         Assert.AreEqual(new FileInfo(_library.FullPath("Media/holiday.zip")).Length, job.BytesTotal);
         Assert.IsEmpty(Directory.GetDirectories(_library.FullPath("Media"), "*" + FileJobs.PartialSuffix));
         await using var db = await DbAsync();
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/holiday/Photos/a.txt"), Token), "a scan of the new folder indexes it");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/holiday/Photos/a.txt"), Token),
+            "a scan of the new folder indexes it"
+        );
     }
 
     [TestMethod]
@@ -66,8 +69,14 @@ public sealed class ExtractJobTests
         var job = await RunAsync(Extract("Media/trip.zip", "Media"));
 
         Assert.AreEqual("Media/trip (2)", job.Results.Single().NewPath, job.Results.Single().Message);
-        Assert.IsTrue(File.Exists(_library.FullPath("Media/trip (2)/day1.txt")), "trip/ inside gives trip (2), not trip (2)/trip");
-        Assert.IsEmpty(Directory.EnumerateFileSystemEntries(_library.FullPath("Media/trip")), "what was there is untouched");
+        Assert.IsTrue(
+            File.Exists(_library.FullPath("Media/trip (2)/day1.txt")),
+            "trip/ inside gives trip (2), not trip (2)/trip"
+        );
+        Assert.IsEmpty(
+            Directory.EnumerateFileSystemEntries(_library.FullPath("Media/trip")),
+            "what was there is untouched"
+        );
     }
 
     [TestMethod]
@@ -96,7 +105,13 @@ public sealed class ExtractJobTests
         File.WriteAllText(_library.FullPath("README.md"), "old");
         Archive("README.zip", ("README.md", "new"));
 
-        var job = await RunAsync(Extract("README.zip", "") with { NewFolder = false, Conflicts = ConflictChoice.Replace });
+        var job = await RunAsync(
+            Extract("README.zip", "") with
+            {
+                NewFolder = false,
+                Conflicts = ConflictChoice.Replace,
+            }
+        );
 
         var result = job.Results.Single();
         Assert.AreEqual(FileOperationStatus.Done, result.Status, result.Message);
@@ -109,18 +124,33 @@ public sealed class ExtractJobTests
         var trash = Directory.CreateDirectory(_library.FullPath(".sfe/trash")).FullName;
         File.WriteAllText(Path.Combine(trash, "kept.txt"), "kept");
         var shortName = ShortName(_library.FullPath(".sfe"));
-        var entries = new List<(string, string?)> { (".sfe/trash/planted.txt", "planted"), (".SFE/x.txt", "x"), ("ok.txt", "ok") };
+        var entries = new List<(string, string?)>
+        {
+            (".sfe/trash/planted.txt", "planted"),
+            (".SFE/x.txt", "x"),
+            ("ok.txt", "ok"),
+        };
         if (shortName is not null)
             entries.Add(($"{shortName}/trash/short.txt", "short"));
         Archive("drop.zip", [.. entries]);
 
-        var job = await RunAsync(Extract("drop.zip", "") with { NewFolder = false, Conflicts = ConflictChoice.Replace });
+        var job = await RunAsync(
+            Extract("drop.zip", "") with
+            {
+                NewFolder = false,
+                Conflicts = ConflictChoice.Replace,
+            }
+        );
 
         var result = job.Results.Single();
         Assert.AreEqual(FileOperationStatus.Done, result.Status, result.Message);
         StringAssert.Contains(result.Message, "not placed");
         Assert.AreEqual("ok", File.ReadAllText(_library.FullPath("ok.txt")));
-        CollectionAssert.AreEquivalent(new[] { "kept.txt" }, Directory.GetFiles(trash).Select(Path.GetFileName).ToArray(), "the trash is untouched");
+        CollectionAssert.AreEquivalent(
+            new[] { "kept.txt" },
+            Directory.GetFiles(trash).Select(Path.GetFileName).ToArray(),
+            "the trash is untouched"
+        );
         Assert.IsFalse(File.Exists(_library.FullPath(".sfe/x.txt")));
 
         // In a new folder: one top folder named as the work folder takes another name.
@@ -138,10 +168,16 @@ public sealed class ExtractJobTests
         var buffer = new System.Text.StringBuilder(1024);
         var length = GetShortPathName(path, buffer, buffer.Capacity);
         var name = length > 0 ? Path.GetFileName(buffer.ToString()) : null;
-        return name is null || string.Equals(name, Path.GetFileName(path), StringComparison.OrdinalIgnoreCase) ? null : name;
+        return name is null || string.Equals(name, Path.GetFileName(path), StringComparison.OrdinalIgnoreCase)
+            ? null
+            : name;
     }
 
-    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, EntryPoint = "GetShortPathNameW")]
+    [System.Runtime.InteropServices.DllImport(
+        "kernel32.dll",
+        CharSet = System.Runtime.InteropServices.CharSet.Unicode,
+        EntryPoint = "GetShortPathNameW"
+    )]
     private static extern int GetShortPathName(string path, System.Text.StringBuilder shortPath, int length);
 
     [TestMethod]
@@ -149,13 +185,22 @@ public sealed class ExtractJobTests
     {
         Archive("Media/pick.zip", ("top.txt", "top"), ("Photos/2024/a.txt", "a"), ("Photos/2024/b.txt", "b"));
 
-        var job = await RunAsync(Extract("Media/pick.zip", "ChildDir") with { NewFolder = false, Entries = ["Photos/2024/a.txt"] });
+        var job = await RunAsync(
+            Extract("Media/pick.zip", "ChildDir") with
+            {
+                NewFolder = false,
+                Entries = ["Photos/2024/a.txt"],
+            }
+        );
 
         Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
         Assert.AreEqual("a", File.ReadAllText(_library.FullPath("ChildDir/a.txt")));
         Assert.IsFalse(File.Exists(_library.FullPath("ChildDir/top.txt")));
         await using var db = await DbAsync();
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("ChildDir/a.txt"), Token), "an extracted file is indexed at once");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("ChildDir/a.txt"), Token),
+            "an extracted file is indexed at once"
+        );
     }
 
     [TestMethod]
@@ -174,8 +219,11 @@ public sealed class ExtractJobTests
         StringAssert.Contains(wrong.Results.Single().Message, "doesn't open");
         Assert.AreEqual(FileOperationStatus.Done, right.Results.Single().Status, right.Results.Single().Message);
         Assert.IsTrue(File.Exists(_library.FullPath("Secret/tree/Deep/a/b/c/d/e/bottom.txt")));
-        CollectionAssert.AreEquivalent(new[] { "tree", "tree.zip" }, Directory.EnumerateFileSystemEntries(_library.FullPath("Secret")).Select(Path.GetFileName).ToList(),
-            "the failed ones left nothing");
+        CollectionAssert.AreEquivalent(
+            new[] { "tree", "tree.zip" },
+            Directory.EnumerateFileSystemEntries(_library.FullPath("Secret")).Select(Path.GetFileName).ToList(),
+            "the failed ones left nothing"
+        );
         foreach (var view in new[] { missing, wrong, right })
             Assert.DoesNotContain("secret", JsonSerializer.Serialize(view).Replace("Secret/", ""));
         Assert.DoesNotContain("secret", _log.ToString().Replace("Secret", ""));
@@ -186,9 +234,18 @@ public sealed class ExtractJobTests
     {
         Archive("Media/a.zip", ("x.txt", "x"));
 
-        var noExtract = await RunAsync(Extract("Media/a.zip", "ChildDir"), new FakeAccess { Refuse = (path, right) => right == Rights.ExtractFiles && path == "ChildDir" });
-        var noDownload = await RunAsync(Extract("Media/a.zip", "ChildDir"), new FakeAccess { Refuse = (path, right) => right == Rights.Download });
-        var unseen = await RunAsync(Extract("Media/a.zip", "ChildDir"), new FakeAccess { Refuse = (path, right) => right == Rights.Browse && path == "Media/a.zip" });
+        var noExtract = await RunAsync(
+            Extract("Media/a.zip", "ChildDir"),
+            new FakeAccess { Refuse = (path, right) => right == Rights.ExtractFiles && path == "ChildDir" }
+        );
+        var noDownload = await RunAsync(
+            Extract("Media/a.zip", "ChildDir"),
+            new FakeAccess { Refuse = (path, right) => right == Rights.Download }
+        );
+        var unseen = await RunAsync(
+            Extract("Media/a.zip", "ChildDir"),
+            new FakeAccess { Refuse = (path, right) => right == Rights.Browse && path == "Media/a.zip" }
+        );
 
         Assert.AreEqual(FileOperationStatus.Forbidden, noExtract.Results.Single().Status);
         Assert.AreEqual(FileOperationStatus.Forbidden, noDownload.Results.Single().Status);
@@ -236,7 +293,11 @@ public sealed class ExtractJobTests
     public async Task ItKeepsTheFreeSpaceItIsToldTo()
     {
         await _services.DisposeAsync();
-        _services = await CoreServices.CreateAsync(_library, s => s["Sfe:Files:MinimumFreeSpaceMegabytes"] = int.MaxValue.ToString(), _log.AddTo);
+        _services = await CoreServices.CreateAsync(
+            _library,
+            s => s["Sfe:Files:MinimumFreeSpaceMegabytes"] = int.MaxValue.ToString(),
+            _log.AddTo
+        );
         Archive("Media/a.zip", ("x.txt", "x"));
 
         var job = await RunAsync(Extract("Media/a.zip", "Media"));
@@ -256,7 +317,11 @@ public sealed class ExtractJobTests
         TestArchives.Zip(Path.GetDirectoryName(full)!, Path.GetFileName(full), entries);
     }
 
-    private async Task<FileJobView> RunAsync(FileJobRequest request, IFileJobAccess? access = null, string? password = null)
+    private async Task<FileJobView> RunAsync(
+        FileJobRequest request,
+        IFileJobAccess? access = null,
+        string? password = null
+    )
     {
         var view = Jobs.Start(request, Me, access ?? new FakeAccess(), password);
         await Jobs.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(30), Token);
@@ -282,7 +347,8 @@ public sealed class ExtractJobTests
             await scan.WaitAsync(TimeSpan.FromSeconds(30), Token);
     }
 
-    private Task<SfeDbContext> DbAsync() => _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
+    private Task<SfeDbContext> DbAsync() =>
+        _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
 
     /// <summary>Everything allowed but what <see cref="Refuse"/> says.</summary>
     private sealed class FakeAccess : IFileJobAccess
@@ -293,7 +359,8 @@ public sealed class ExtractJobTests
 
         public Task<bool> MayThroughoutAsync(string path, string right) => Task.FromResult(!Refuse(path, right));
 
-        public bool IsProtected(string fullPath) => fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
+        public bool IsProtected(string fullPath) =>
+            fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
 
         public bool IsReadOnly(string fullPath) => IsProtected(fullPath);
     }

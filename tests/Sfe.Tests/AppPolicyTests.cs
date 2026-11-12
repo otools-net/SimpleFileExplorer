@@ -49,13 +49,16 @@ public sealed class AppPolicyTests
     public async Task TheAppsPagesCarryThePolicyOfTheConfiguredDataServer()
     {
         using var library = new TestLibrary();
-        await using var factory = ApiClients.CreateFactory(library, settings => settings["Sfe:DataServer"] = "http://nas:8080/files");
+        await using var factory = ApiClients.CreateFactory(library, settings =>
+            settings["Sfe:DataServer"] = "http://nas:8080/files"
+        );
         using var visitor = ApiClients.Create(factory);
 
         using var page = await visitor.GetAsync("/api/session", TestContext.CancellationToken);
 
         Assert.AreEqual(
             SecurityHeaders.AppPolicyFor("http://nas:8080/files"),
-            string.Join(';', page.Headers.GetValues("Content-Security-Policy")));
+            string.Join(';', page.Headers.GetValues("Content-Security-Policy"))
+        );
     }
 }

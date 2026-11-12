@@ -51,18 +51,90 @@ public sealed class TextRouteTests
         var accounts = _factory.Services.GetRequiredService<AccessService>();
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
-        var browsers = (await accounts.CreateGroupAsync(tenant, new GroupInput("Browsers", Rights: [Rights.Browse]), cancellationToken: Token)).Value!;
-        var editors = (await accounts.CreateGroupAsync(tenant, new GroupInput("Editors",
-            Rights: [Rights.Browse, Rights.ViewFiles, Rights.Download, Rights.CreateFiles, .. editorRights.Length > 0 ? editorRights : [Rights.DeleteFiles]]), cancellationToken: Token)).Value!;
-        var copiers = (await accounts.CreateGroupAsync(tenant, new GroupInput("Copiers", Rights: [Rights.Browse, Rights.ViewFiles, Rights.CreateFiles]), cancellationToken: Token)).Value!;
-        await accounts.CreateUserAsync(new UserInput("eve", Password: "eve-password-1", GroupIds: [editors.Id]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("cara", Password: "cara-password-1", GroupIds: [copiers.Id]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("bob", Password: "bob-password-1", GroupIds: [browsers.Id]), null, Token);
+        var browsers = (
+            await accounts.CreateGroupAsync(
+                tenant,
+                new GroupInput("Browsers", Rights: [Rights.Browse]),
+                cancellationToken: Token
+            )
+        ).Value!;
+        var editors = (
+            await accounts.CreateGroupAsync(
+                tenant,
+                new GroupInput(
+                    "Editors",
+                    Rights:
+                    [
+                        Rights.Browse,
+                        Rights.ViewFiles,
+                        Rights.Download,
+                        Rights.CreateFiles,
+                        .. editorRights.Length > 0 ? editorRights : [Rights.DeleteFiles],
+                    ]
+                ),
+                cancellationToken: Token
+            )
+        ).Value!;
+        var copiers = (
+            await accounts.CreateGroupAsync(
+                tenant,
+                new GroupInput("Copiers", Rights: [Rights.Browse, Rights.ViewFiles, Rights.CreateFiles]),
+                cancellationToken: Token
+            )
+        ).Value!;
+        await accounts.CreateUserAsync(
+            new UserInput("eve", Password: "eve-password-1", GroupIds: [editors.Id]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("cara", Password: "cara-password-1", GroupIds: [copiers.Id]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("bob", Password: "bob-password-1", GroupIds: [browsers.Id]),
+            null,
+            Token
+        );
         var rules = _factory.Services.GetRequiredService<FolderRuleService>();
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "SpecialDir", FolderPrincipalRef.Group(users.Id), FolderLevel.Hidden, null, Token)).Status);
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "Media", FolderPrincipalRef.Group(users.Id), FolderLevel.Read, null, Token)).Status);
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "Media", FolderPrincipalRef.Group(editors.Id), FolderLevel.Read, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(
+                    tenant,
+                    "SpecialDir",
+                    FolderPrincipalRef.Group(users.Id),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(tenant, "Media", FolderPrincipalRef.Group(users.Id), FolderLevel.Read, null, Token)
+            ).Status
+        );
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(
+                    tenant,
+                    "Media",
+                    FolderPrincipalRef.Group(editors.Id),
+                    FolderLevel.Read,
+                    null,
+                    Token
+                )
+            ).Status
+        );
         _eve = await ApiClients.SignInAsync(_factory, "eve", "eve-password-1", Token);
         _cara = await ApiClients.SignInAsync(_factory, "cara", "cara-password-1", Token);
         _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
@@ -89,13 +161,21 @@ public sealed class TextRouteTests
     [TestMethod]
     public async Task ATextFileComesWithItsEncodingLineEndingAndVersion()
     {
-        await File.WriteAllBytesAsync(_library.FullPath("Media/notes.txt"), [0x80, (byte)'\r', (byte)'\n', (byte)'b'], Token);
+        await File.WriteAllBytesAsync(
+            _library.FullPath("Media/notes.txt"),
+            [0x80, (byte)'\r', (byte)'\n', (byte)'b'],
+            Token
+        );
 
         using var response = await _alice.GetAsync("/api/files/text?path=Media/notes.txt", Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         var text = (await response.Content.ReadFromJsonAsync<TextFile>(Json, Token))!;
 
-        Assert.AreEqual(("€\r\nb", TextCodec.Windows1252, "crlf", 4L), (text.Text, text.Encoding, text.LineEnding, text.Size), "Media is read only for Alice: reading is fine");
+        Assert.AreEqual(
+            ("€\r\nb", TextCodec.Windows1252, "crlf", 4L),
+            (text.Text, text.Encoding, text.LineEnding, text.Size),
+            "Media is read only for Alice: reading is fine"
+        );
         Assert.AreEqual($"\"{text.Version}\"", response.Headers.ETag?.ToString());
         Assert.IsTrue(response.Headers.CacheControl?.NoStore);
     }
@@ -107,7 +187,17 @@ public sealed class TextRouteTests
 
         using (var forbidden = await _bob.GetAsync("/api/files/text?path=RFile1.txt", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode, "Bob may not open files");
-        foreach (var path in new[] { "SpecialDir/SDРусский.txt", "Nothing.txt", "../Root/RFile1.txt", ".sfe/trash/x.txt", "", "ChildDir" })
+        foreach (
+            var path in new[]
+            {
+                "SpecialDir/SDРусский.txt",
+                "Nothing.txt",
+                "../Root/RFile1.txt",
+                ".sfe/trash/x.txt",
+                "",
+                "ChildDir",
+            }
+        )
         {
             using var response = await _alice.GetAsync($"/api/files/text?path={Uri.EscapeDataString(path)}", Token);
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, path);
@@ -156,8 +246,16 @@ public sealed class TextRouteTests
 
         Assert.AreEqual(new TextAccess(false, false, true, false), (await ReadAsync(_alice, "Docs/notes.txt")).Access);
         Assert.AreEqual(new TextAccess(true, true, true, false), (await ReadAsync(_eve, "Docs/notes.txt")).Access);
-        Assert.AreEqual(new TextAccess(false, false, true, false), (await ReadAsync(_eve, "Media/notes.txt")).Access, "Media is read only for Eve");
-        Assert.AreEqual(new TextAccess(false, true, false, false), (await ReadAsync(_cara, "Docs/notes.txt")).Access, "Cara may only save copies");
+        Assert.AreEqual(
+            new TextAccess(false, false, true, false),
+            (await ReadAsync(_eve, "Media/notes.txt")).Access,
+            "Media is read only for Eve"
+        );
+        Assert.AreEqual(
+            new TextAccess(false, true, false, false),
+            (await ReadAsync(_cara, "Docs/notes.txt")).Access,
+            "Cara may only save copies"
+        );
     }
 
     [TestMethod]
@@ -215,7 +313,13 @@ public sealed class TextRouteTests
         var opened = await ReadAsync(_eve, "Docs/old.txt");
         Assert.AreEqual(TextCodec.Windows1252, opened.Encoding);
 
-        using var refused = await SaveAsync(_eve, "Docs/old.txt", "café 東京", opened.Version, encoding: opened.Encoding);
+        using var refused = await SaveAsync(
+            _eve,
+            "Docs/old.txt",
+            "café 東京",
+            opened.Version,
+            encoding: opened.Encoding
+        );
 
         Assert.AreEqual(HttpStatusCode.UnprocessableEntity, refused.StatusCode);
         var body = await refused.Content.ReadAsStringAsync(Token);
@@ -230,22 +334,58 @@ public sealed class TextRouteTests
         WriteText("Docs/notes.txt", "notes");
         WriteText("SpecialDir/hidden.txt", "hidden");
 
-        using (var copy = await _cara.PostAsJsonAsync("/api/files/text", new CopyTextRequest("Docs", "notes (copy).txt", "edited", TextCodec.Utf8, "lf"), Json, Token))
+        using (
+            var copy = await _cara.PostAsJsonAsync(
+                "/api/files/text",
+                new CopyTextRequest("Docs", "notes (copy).txt", "edited", TextCodec.Utf8, "lf"),
+                Json,
+                Token
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.OK, copy.StatusCode, await copy.Content.ReadAsStringAsync(Token));
-            Assert.AreEqual("Docs/notes (copy).txt", (await copy.Content.ReadFromJsonAsync<Sfe.Core.Library.LibraryItem>(Json, Token))!.Path);
+            Assert.AreEqual(
+                "Docs/notes (copy).txt",
+                (await copy.Content.ReadFromJsonAsync<Sfe.Core.Library.LibraryItem>(Json, Token))!.Path
+            );
         }
         Assert.AreEqual("edited", File.ReadAllText(_library.FullPath("Docs/notes (copy).txt")));
-        using (var clash = await _cara.PostAsJsonAsync("/api/files/text", new CopyTextRequest("Docs", "notes.txt", "over", TextCodec.Utf8, "lf"), Json, Token))
+        using (
+            var clash = await _cara.PostAsJsonAsync(
+                "/api/files/text",
+                new CopyTextRequest("Docs", "notes.txt", "over", TextCodec.Utf8, "lf"),
+                Json,
+                Token
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.Conflict, clash.StatusCode);
             StringAssert.Contains(await clash.Content.ReadAsStringAsync(Token), FileEndpoints.ExistsType);
         }
         Assert.AreEqual("notes", File.ReadAllText(_library.FullPath("Docs/notes.txt")));
-        using (var alice = await _alice.PostAsJsonAsync("/api/files/text", new CopyTextRequest("Docs", "x.txt", "x", TextCodec.Utf8, "lf"), Json, Token))
+        using (
+            var alice = await _alice.PostAsJsonAsync(
+                "/api/files/text",
+                new CopyTextRequest("Docs", "x.txt", "x", TextCodec.Utf8, "lf"),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, alice.StatusCode);
-        using (var work = await _cara.PostAsJsonAsync("/api/files/text", new CopyTextRequest(".sfe", "x.txt", "x", TextCodec.Utf8, "lf"), Json, Token))
+        }
+
+        using (
+            var work = await _cara.PostAsJsonAsync(
+                "/api/files/text",
+                new CopyTextRequest(".sfe", "x.txt", "x", TextCodec.Utf8, "lf"),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, work.StatusCode);
+        }
     }
 
     [TestMethod]
@@ -266,7 +406,6 @@ public sealed class TextRouteTests
     }
 
     /// <summary>Another server, on a library of its own (the first one's database is set up already).</summary>
-
     [TestMethod]
     public async Task AFileIsReadAgainInTheEncodingAsked()
     {
@@ -292,10 +431,16 @@ public sealed class TextRouteTests
         var start = await PartAsync(_alice, "big.log&offset=0&length=100");
         var end = await PartAsync(_alice, "big.log&length=100");
         using var binary = await _alice.GetAsync("/api/files/text/part?path=RFile2", Token);
-        using var tooLong = await _alice.GetAsync($"/api/files/text/part?path=big.log&length={TextEndpoints.MaxPartBytes + 1}", Token);
+        using var tooLong = await _alice.GetAsync(
+            $"/api/files/text/part?path=big.log&length={TextEndpoints.MaxPartBytes + 1}",
+            Token
+        );
         using var forbidden = await _bob.GetAsync("/api/files/text/part?path=big.log", Token);
         using var work = await _alice.GetAsync("/api/files/text/part?path=.sfe/trash/x.log", Token);
-        using var hidden = await _alice.GetAsync($"/api/files/text/part?path={Uri.EscapeDataString("SpecialDir/SDРусский.txt")}", Token);
+        using var hidden = await _alice.GetAsync(
+            $"/api/files/text/part?path={Uri.EscapeDataString("SpecialDir/SDРусский.txt")}",
+            Token
+        );
 
         Assert.AreEqual((0L, 100L, 10_000L), (start.Offset, start.End, start.Size));
         StringAssert.StartsWith(start.Text, "line 0001\n");
@@ -364,25 +509,48 @@ public sealed class TextRouteTests
             StringAssert.Contains(chapter.Headers.GetValues("Content-Security-Policy").Single(), "sandbox");
             var etag = chapter.Headers.ETag;
             Assert.IsNotNull(etag);
-            using var again = new HttpRequestMessage(HttpMethod.Get, $"/api/files/epub/{token}/OEBPS/Chapter%201.xhtml");
+            using var again = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"/api/files/epub/{token}/OEBPS/Chapter%201.xhtml"
+            );
             again.Headers.IfNoneMatch.Add(etag);
             using var notModified = await _alice.SendAsync(again, Token);
-            Assert.AreEqual(HttpStatusCode.NotModified, notModified.StatusCode, "the same book: from the browser's cache");
+            Assert.AreEqual(
+                HttpStatusCode.NotModified,
+                notModified.StatusCode,
+                "the same book: from the browser's cache"
+            );
         }
         using (var style = await _alice.GetAsync($"/api/files/epub/{token}/oebps/STYLE.css", Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, style.StatusCode, "any case when not found as written");
             Assert.AreEqual("text/css", style.Content.Headers.ContentType?.MediaType);
         }
-        foreach (var missing in new[] { $"{token}/OEBPS/none.xhtml", $"{token}/OEBPS/", "not-a-token!/x", $"{EpubEntries.Token("RFile1.txt")}/x", $"{EpubEntries.Token("Media/None.epub")}/x" })
+        foreach (
+            var missing in new[]
+            {
+                $"{token}/OEBPS/none.xhtml",
+                $"{token}/OEBPS/",
+                "not-a-token!/x",
+                $"{EpubEntries.Token("RFile1.txt")}/x",
+                $"{EpubEntries.Token("Media/None.epub")}/x",
+            }
+        )
         {
             using var response = await _alice.GetAsync($"/api/files/epub/{missing}", Token);
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, missing);
         }
         using (var forbidden = await _bob.GetAsync($"/api/files/epub/{token}/META-INF/container.xml", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode, "Bob may not open files");
-        using (var hidden = await _alice.GetAsync($"/api/files/epub/{EpubEntries.Token("SpecialDir/Hidden.epub")}/META-INF/container.xml", Token))
+        using (
+            var hidden = await _alice.GetAsync(
+                $"/api/files/epub/{EpubEntries.Token("SpecialDir/Hidden.epub")}/META-INF/container.xml",
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode, "hidden from Alice");
+        }
     }
 
     /// <summary>A small EPUB: its container, package, a chapter and a style.</summary>
@@ -397,9 +565,15 @@ public sealed class TextRouteTests
             writer.Write(content);
         }
         Add("mimetype", "application/epub+zip");
-        Add("META-INF/container.xml", "<container><rootfiles><rootfile full-path=\"OEBPS/content.opf\"/></rootfiles></container>");
+        Add(
+            "META-INF/container.xml",
+            "<container><rootfiles><rootfile full-path=\"OEBPS/content.opf\"/></rootfiles></container>"
+        );
         Add("OEBPS/content.opf", "<package/>");
-        Add("OEBPS/Chapter 1.xhtml", "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body><p>Up the ridge.</p></body></html>");
+        Add(
+            "OEBPS/Chapter 1.xhtml",
+            "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body><p>Up the ridge.</p></body></html>"
+        );
         Add("OEBPS/style.css", "body { margin: 0; }");
     }
 
@@ -423,6 +597,7 @@ public sealed class TextRouteTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<TextVersion>(Json, Token))!;
     }
+
     private Task RestartAsync(Action<IDictionary<string, string?>> configure, params string[] editorRights)
     {
         Stop();
@@ -438,7 +613,14 @@ public sealed class TextRouteTests
         return (await response.Content.ReadFromJsonAsync<TextFile>(Json, Token))!;
     }
 
-    private Task<HttpResponseMessage> SaveAsync(HttpClient client, string path, string text, string? version, string session = "session-1", string encoding = TextCodec.Utf8)
+    private Task<HttpResponseMessage> SaveAsync(
+        HttpClient client,
+        string path,
+        string text,
+        string? version,
+        string session = "session-1",
+        string encoding = TextCodec.Utf8
+    )
     {
         var request = new HttpRequestMessage(HttpMethod.Put, $"/api/files/text?path={Uri.EscapeDataString(path)}")
         {

@@ -68,8 +68,13 @@ public sealed class SearchQueryTests
         var group = SearchQuery.Parse("r:>720X1024").Groups.Single();
 
         CollectionAssert.AreEqual(
-            new[] { new DimensionFilter(Dimension.Width, SizeComparison.GreaterThan, 720), new DimensionFilter(Dimension.Height, SizeComparison.GreaterThan, 1024) },
-            group.Dimensions.ToArray());
+            new[]
+            {
+                new DimensionFilter(Dimension.Width, SizeComparison.GreaterThan, 720),
+                new DimensionFilter(Dimension.Height, SizeComparison.GreaterThan, 1024),
+            },
+            group.Dimensions.ToArray()
+        );
     }
 
     [TestMethod]
@@ -122,7 +127,10 @@ public sealed class SearchQueryTests
     {
         var group = SearchQuery.Parse("type:image TYPE:Video type:audio type:other -type:video").Groups.Single();
 
-        CollectionAssert.AreEqual(new[] { ItemKind.Image, ItemKind.Video, ItemKind.Audio, ItemKind.File }, group.Kinds.ToArray());
+        CollectionAssert.AreEqual(
+            new[] { ItemKind.Image, ItemKind.Video, ItemKind.Audio, ItemKind.File },
+            group.Kinds.ToArray()
+        );
         CollectionAssert.AreEqual(new[] { ItemKind.Video }, group.ExcludedFilters.Single().Kinds.ToArray());
         // "type:" is not "t:": no tag term.
         Assert.IsEmpty(group.Tags);
@@ -165,11 +173,22 @@ public sealed class SearchQueryTests
         Assert.IsEmpty(group.Dimensions);
         var excluded = group.ExcludedFilters;
         Assert.HasCount(5, excluded);
-        CollectionAssert.AreEqual(new[] { new DimensionFilter(Dimension.Width, SizeComparison.Equal, 1920) }, excluded[0].Dimensions.ToArray());
         CollectionAssert.AreEqual(
-            new[] { new DimensionFilter(Dimension.Width, SizeComparison.GreaterThan, 720), new DimensionFilter(Dimension.Height, SizeComparison.GreaterThan, 1024) },
-            excluded[1].Dimensions.ToArray());
-        CollectionAssert.AreEqual(new[] { new SizeFilter(SizeComparison.LessThan, 1024L * 1024) }, excluded[2].Sizes.ToArray());
+            new[] { new DimensionFilter(Dimension.Width, SizeComparison.Equal, 1920) },
+            excluded[0].Dimensions.ToArray()
+        );
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                new DimensionFilter(Dimension.Width, SizeComparison.GreaterThan, 720),
+                new DimensionFilter(Dimension.Height, SizeComparison.GreaterThan, 1024),
+            },
+            excluded[1].Dimensions.ToArray()
+        );
+        CollectionAssert.AreEqual(
+            new[] { new SizeFilter(SizeComparison.LessThan, 1024L * 1024) },
+            excluded[2].Sizes.ToArray()
+        );
         CollectionAssert.AreEqual(new[] { ".mp4" }, excluded[3].Extensions.ToArray());
         CollectionAssert.AreEqual(new[] { ".mkv" }, excluded[4].Extensions.ToArray());
     }
@@ -246,12 +265,21 @@ public sealed class SearchQueryTests
     [TestMethod]
     public void ParsesTagTerms()
     {
-        var group = SearchQuery.Parse("holiday t:beach -tag:Work T:\"Science Fiction\" special:untagged").Groups.Single();
+        var group = SearchQuery
+            .Parse("holiday t:beach -tag:Work T:\"Science Fiction\" special:untagged")
+            .Groups.Single();
 
         CollectionAssert.AreEqual(new[] { "holiday" }, group.Include.ToArray());
         CollectionAssert.AreEqual(
-            new[] { new TagFilter("beach"), new TagFilter("Work", Negated: true), new TagFilter("Science Fiction"), new TagFilter(null, Negated: true) },
-            group.Tags.ToArray());
+            new[]
+            {
+                new TagFilter("beach"),
+                new TagFilter("Work", Negated: true),
+                new TagFilter("Science Fiction"),
+                new TagFilter(null, Negated: true),
+            },
+            group.Tags.ToArray()
+        );
         Assert.AreEqual(new TagFilter(null), SearchQuery.Parse("-special:untagged").Groups.Single().Tags.Single());
     }
 
@@ -276,40 +304,78 @@ public sealed class SearchQueryTests
     [TestMethod]
     public void ParsesEveryKindOfTermInOneGroup()
     {
-        var group = SearchQuery.Parse("holiday -draft s:>1mb s:<2gb e:mp4 e:mkv t:beach -tag:work -special:untagged").Groups.Single();
+        var group = SearchQuery
+            .Parse("holiday -draft s:>1mb s:<2gb e:mp4 e:mkv t:beach -tag:work -special:untagged")
+            .Groups.Single();
 
         CollectionAssert.AreEqual(new[] { "holiday" }, group.Include.ToArray());
         CollectionAssert.AreEqual(new[] { "draft" }, group.Exclude.ToArray());
         CollectionAssert.AreEqual(
-            new[] { new SizeFilter(SizeComparison.GreaterThan, 1024L * 1024), new SizeFilter(SizeComparison.LessThan, 2L * 1024 * 1024 * 1024) },
-            group.Sizes.ToArray());
+            new[]
+            {
+                new SizeFilter(SizeComparison.GreaterThan, 1024L * 1024),
+                new SizeFilter(SizeComparison.LessThan, 2L * 1024 * 1024 * 1024),
+            },
+            group.Sizes.ToArray()
+        );
         CollectionAssert.AreEqual(new[] { ".mp4", ".mkv" }, group.Extensions.ToArray());
-        CollectionAssert.AreEqual(new[] { new TagFilter("beach"), new TagFilter("work", Negated: true), new TagFilter(null) }, group.Tags.ToArray());
+        CollectionAssert.AreEqual(
+            new[] { new TagFilter("beach"), new TagFilter("work", Negated: true), new TagFilter(null) },
+            group.Tags.ToArray()
+        );
     }
 
     [TestMethod]
     public void ParsesEveryKindOfNegatedTermInOneGroup()
     {
-        var query = SearchQuery.Parse("-holiday -s:>1gb -e:mp4 -w:<100 -h:=50 -r:1x1 -t:\"two words\" -special:untagged");
+        var query = SearchQuery.Parse(
+            "-holiday -s:>1gb -e:mp4 -w:<100 -h:=50 -r:1x1 -t:\"two words\" -special:untagged"
+        );
 
         Assert.IsFalse(query.IsEmpty);
         var group = query.Groups.Single();
-        AssertGroup(group, exclude: ["holiday"], tags: [new TagFilter("two words", Negated: true), new TagFilter(null)], excludedFilters: 5);
+        AssertGroup(
+            group,
+            exclude: ["holiday"],
+            tags: [new TagFilter("two words", Negated: true), new TagFilter(null)],
+            excludedFilters: 5
+        );
         Assert.IsEmpty(group.Dimensions);
-        Assert.AreEqual(new SizeFilter(SizeComparison.GreaterThan, 1024L * 1024 * 1024), group.ExcludedFilters[0].Sizes.Single());
+        Assert.AreEqual(
+            new SizeFilter(SizeComparison.GreaterThan, 1024L * 1024 * 1024),
+            group.ExcludedFilters[0].Sizes.Single()
+        );
         CollectionAssert.AreEqual(new[] { ".mp4" }, group.ExcludedFilters[1].Extensions.ToArray());
-        Assert.AreEqual(new DimensionFilter(Dimension.Width, SizeComparison.LessThan, 100), group.ExcludedFilters[2].Dimensions.Single());
-        Assert.AreEqual(new DimensionFilter(Dimension.Height, SizeComparison.Equal, 50), group.ExcludedFilters[3].Dimensions.Single());
+        Assert.AreEqual(
+            new DimensionFilter(Dimension.Width, SizeComparison.LessThan, 100),
+            group.ExcludedFilters[2].Dimensions.Single()
+        );
+        Assert.AreEqual(
+            new DimensionFilter(Dimension.Height, SizeComparison.Equal, 50),
+            group.ExcludedFilters[3].Dimensions.Single()
+        );
         Assert.HasCount(2, group.ExcludedFilters[4].Dimensions);
     }
 
     [TestMethod]
     public void AnExcludedFilterHoldsOnlyItsOwnTerm()
     {
-        foreach (var excluded in SearchQuery.Parse("-s:1mb -e:mkv -w:10 -d:>5m -r:lr -type:image").Groups.Single().ExcludedFilters)
+        foreach (
+            var excluded in SearchQuery
+                .Parse("-s:1mb -e:mkv -w:10 -d:>5m -r:lr -type:image")
+                .Groups.Single()
+                .ExcludedFilters
+        )
         {
-            Assert.AreEqual(1, excluded.Sizes.Count + excluded.Extensions.Count + excluded.Dimensions.Count + excluded.Durations.Count + excluded.Levels.Count
-                + excluded.Kinds.Count);
+            Assert.AreEqual(
+                1,
+                excluded.Sizes.Count
+                    + excluded.Extensions.Count
+                    + excluded.Dimensions.Count
+                    + excluded.Durations.Count
+                    + excluded.Levels.Count
+                    + excluded.Kinds.Count
+            );
             AssertGroup(excluded, sizes: [.. excluded.Sizes], extensions: [.. excluded.Extensions], excludedFilters: 0);
         }
     }
@@ -331,8 +397,16 @@ public sealed class SearchQueryTests
     {
         var group = SearchQuery.Parse("e:mp4 -e:mkv e:avi s:>1mb -s:>1gb w:>100 -w:>1000").Groups.Single();
 
-        AssertGroup(group, sizes: [new SizeFilter(SizeComparison.GreaterThan, 1024L * 1024)], extensions: [".mp4", ".avi"], excludedFilters: 3);
-        CollectionAssert.AreEqual(new[] { new DimensionFilter(Dimension.Width, SizeComparison.GreaterThan, 100) }, group.Dimensions.ToArray());
+        AssertGroup(
+            group,
+            sizes: [new SizeFilter(SizeComparison.GreaterThan, 1024L * 1024)],
+            extensions: [".mp4", ".avi"],
+            excludedFilters: 3
+        );
+        CollectionAssert.AreEqual(
+            new[] { new DimensionFilter(Dimension.Width, SizeComparison.GreaterThan, 100) },
+            group.Dimensions.ToArray()
+        );
     }
 
     [TestMethod]
@@ -380,7 +454,11 @@ public sealed class SearchQueryTests
 
         Assert.HasCount(3, query.Groups);
         AssertGroup(query.Groups[0], include: ["cat"], exclude: ["kitten"], extensions: [".jpg"]);
-        AssertGroup(query.Groups[1], sizes: [new SizeFilter(SizeComparison.LessThan, 1024L * 1024)], tags: [new TagFilter("dog")]);
+        AssertGroup(
+            query.Groups[1],
+            sizes: [new SizeFilter(SizeComparison.LessThan, 1024L * 1024)],
+            tags: [new TagFilter("dog")]
+        );
         AssertGroup(query.Groups[2], tags: [new TagFilter("cat", Negated: true), new TagFilter(null, Negated: true)]);
         CollectionAssert.AreEquivalent(new[] { "dog", "cat" }, query.TagNames.ToArray());
     }
@@ -391,7 +469,11 @@ public sealed class SearchQueryTests
         // ',' is never a decimal separator: "s:1,5mb" is "s:1" (about 1 MB) or the word "5mb".
         var query = SearchQuery.Parse("movie s:1,5mb");
 
-        AssertGroup(query.Groups[0], include: ["movie"], sizes: [new SizeFilter(SizeComparison.Approximately, 1024L * 1024, 512L * 1024)]);
+        AssertGroup(
+            query.Groups[0],
+            include: ["movie"],
+            sizes: [new SizeFilter(SizeComparison.Approximately, 1024L * 1024, 512L * 1024)]
+        );
         AssertGroup(query.Groups[1], include: ["5mb"]);
     }
 
@@ -437,7 +519,10 @@ public sealed class SearchQueryTests
     [DataRow("S:=1TB", SizeComparison.Equal, 1024L * 1024 * 1024 * 1024, 0L)]
     public void ApproximateSizesAllowHalfAUnit(string token, SizeComparison comparison, long bytes, long tolerance)
     {
-        Assert.AreEqual(new SizeFilter(comparison, bytes, tolerance), SearchQuery.Parse(token).Groups.Single().Sizes.Single());
+        Assert.AreEqual(
+            new SizeFilter(comparison, bytes, tolerance),
+            SearchQuery.Parse(token).Groups.Single().Sizes.Single()
+        );
     }
 
     [TestMethod]
@@ -465,8 +550,14 @@ public sealed class SearchQueryTests
 
     /// <summary>Compares every list of a group (the record itself compares its lists by reference).</summary>
     private static void AssertGroup(
-        SearchGroup group, string[]? include = null, string[]? exclude = null, SizeFilter[]? sizes = null, string[]? extensions = null, TagFilter[]? tags = null,
-        int? excludedFilters = null)
+        SearchGroup group,
+        string[]? include = null,
+        string[]? exclude = null,
+        SizeFilter[]? sizes = null,
+        string[]? extensions = null,
+        TagFilter[]? tags = null,
+        int? excludedFilters = null
+    )
     {
         if (excludedFilters is not null)
             Assert.HasCount(excludedFilters.Value, group.ExcludedFilters, "ExcludedFilters");

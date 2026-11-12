@@ -112,7 +112,10 @@ public sealed class LibraryContentTests
     {
         File.WriteAllText(_library.FullPath("evil.js"), Script);
         using var created = await _client.PostAsJsonAsync(
-            "/api/files/links", new Sfe.Api.Endpoints.FileLinkRequest("evil.js"), TestContext.CancellationToken);
+            "/api/files/links",
+            new Sfe.Api.Endpoints.FileLinkRequest("evil.js"),
+            TestContext.CancellationToken
+        );
         var link = (await created.Content.ReadFromJsonAsync<FileLink>(TestContext.CancellationToken))!;
 
         using var asScript = await GetAsAsync("/" + link.Url, "script");

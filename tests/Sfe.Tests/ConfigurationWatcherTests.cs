@@ -31,15 +31,17 @@ public sealed class ConfigurationWatcherTests
     }
 
     private static int InotifyInstances() =>
-        new DirectoryInfo("/proc/self/fd").EnumerateFileSystemInfos().Count(fd =>
-        {
-            try
+        new DirectoryInfo("/proc/self/fd")
+            .EnumerateFileSystemInfos()
+            .Count(fd =>
             {
-                return fd.LinkTarget == "anon_inode:inotify";
-            }
-            catch (IOException)
-            {
-                return false; // Closed since it was listed.
-            }
-        });
+                try
+                {
+                    return fd.LinkTarget == "anon_inode:inotify";
+                }
+                catch (IOException)
+                {
+                    return false; // Closed since it was listed.
+                }
+            });
 }

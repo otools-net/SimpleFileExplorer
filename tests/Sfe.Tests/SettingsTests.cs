@@ -63,7 +63,11 @@ public sealed class SettingsTests
 
         await ScanAsync();
         Assert.IsEmpty(await SearchNamesAsync("RDFile"), "RepeatedDir is now ignored.");
-        CollectionAssert.AreEqual(new[] { "SDEnglish.con" }, await SearchNamesAsync("SDEnglish"), "SpecialDir is no longer ignored.");
+        CollectionAssert.AreEqual(
+            new[] { "SDEnglish.con" },
+            await SearchNamesAsync("SDEnglish"),
+            "SpecialDir is no longer ignored."
+        );
     }
 
     [TestMethod]
@@ -102,7 +106,10 @@ public sealed class SettingsTests
 
         settings.Appearance.Theme = Theme.Dark;
         await Settings.SaveAsync(settings, TestContext.CancellationToken);
-        StringAssert.Contains(await File.ReadAllTextAsync(_services.Get<SettingsStore>().FilePath, TestContext.CancellationToken), "\"Dark\"");
+        StringAssert.Contains(
+            await File.ReadAllTextAsync(_services.Get<SettingsStore>().FilePath, TestContext.CancellationToken),
+            "\"Dark\""
+        );
 
         await _services.DisposeAsync();
         _services = await CoreServices.CreateAsync(_library);
@@ -118,7 +125,11 @@ public sealed class SettingsTests
     public async Task KeysMissingFromTheFileKeepTheirConfiguredValue()
     {
         // A file written before a setting existed, edited by hand.
-        await File.WriteAllTextAsync(_library.SettingsPath, """{ "browse": { "defaultPageSize": 3 } }""", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            _library.SettingsPath,
+            """{ "browse": { "defaultPageSize": 3 } }""",
+            TestContext.CancellationToken
+        );
         await _services.DisposeAsync();
         _services = await CoreServices.CreateAsync(_library);
 
@@ -133,15 +144,23 @@ public sealed class SettingsTests
     public async Task TheThumbnailCacheFolderIsOnlySetInTheConfiguration()
     {
         // A file saved when the cache folder was still on the Settings page.
-        await File.WriteAllTextAsync(_library.SettingsPath,
-            """{ "thumbnails": { "cacheDirectory": "C:/Elsewhere", "width": 300 } }""", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            _library.SettingsPath,
+            """{ "thumbnails": { "cacheDirectory": "C:/Elsewhere", "width": 300 } }""",
+            TestContext.CancellationToken
+        );
         await _services.DisposeAsync();
         _services = await CoreServices.CreateAsync(_library);
 
-        var options = _services.Get<Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions>>().CurrentValue;
+        var options = _services
+            .Get<Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions>>()
+            .CurrentValue;
         Assert.AreEqual(_library.ThumbnailPath, options.Thumbnails.CacheDirectory);
         Assert.AreEqual(300, options.Thumbnails.Width);
-        Assert.DoesNotContain("cacheDirectory", System.Text.Json.JsonSerializer.Serialize(Settings.Get(), SettingsStore.Json));
+        Assert.DoesNotContain(
+            "cacheDirectory",
+            System.Text.Json.JsonSerializer.Serialize(Settings.Get(), SettingsStore.Json)
+        );
     }
 
     [TestMethod]
@@ -152,7 +171,11 @@ public sealed class SettingsTests
 
         var fileTypes = Settings.Get().Values.FileTypes;
         CollectionAssert.AreEqual(new[] { "jpg" }, fileTypes.Images, "Configured: no default added.");
-        CollectionAssert.AreEqual(Sfe.Core.Options.FileTypeOptions.DefaultVideos, fileTypes.Videos, "Not configured: defaults.");
+        CollectionAssert.AreEqual(
+            Sfe.Core.Options.FileTypeOptions.DefaultVideos,
+            fileTypes.Videos,
+            "Not configured: defaults."
+        );
         Assert.AreEqual(ItemKind.File, _services.Get<MediaClassifier>().Classify(".png"));
     }
 
@@ -211,8 +234,26 @@ public sealed class SettingsTests
 
         Assert.IsNull(view);
         CollectionAssert.AreEquivalent(
-            new[] { "browse.defaultPageSize", "search.maxPageSize", "search.defaultPageSize", "scan.parallelism", "scan.ignoredFiles", "fileTypes", "fileTypes.images", "thumbnails.width", "thumbnails.largeImageKilobytes", "dataServer", "tags.sidebarCount", "trickplay.folders", "trickplay.columns", "player.seekSeconds", "player.externalUrl" },
-            errors!.Keys.ToArray());
+            new[]
+            {
+                "browse.defaultPageSize",
+                "search.maxPageSize",
+                "search.defaultPageSize",
+                "scan.parallelism",
+                "scan.ignoredFiles",
+                "fileTypes",
+                "fileTypes.images",
+                "thumbnails.width",
+                "thumbnails.largeImageKilobytes",
+                "dataServer",
+                "tags.sidebarCount",
+                "trickplay.folders",
+                "trickplay.columns",
+                "player.seekSeconds",
+                "player.externalUrl",
+            },
+            errors!.Keys.ToArray()
+        );
         Assert.IsFalse(File.Exists(_library.SettingsPath));
     }
 
@@ -253,7 +294,10 @@ public sealed class SettingsTests
     public async Task TurningHistoryOffStopsRecordingAndClearingForgetsIt()
     {
         var tags = _services.Get<TagService>();
-        var (tagged, _) = await tags.ChangeFileTagsAsync(new FileTagChange(["RFile1.txt"], Add: [BuiltInTags.Favorite]), TestContext.CancellationToken);
+        var (tagged, _) = await tags.ChangeFileTagsAsync(
+            new FileTagChange(["RFile1.txt"], Add: [BuiltInTags.Favorite]),
+            TestContext.CancellationToken
+        );
         Assert.IsNotNull(tagged);
         await tags.RecordViewedAsync("RFile1.txt", TestContext.CancellationToken);
         Assert.HasCount(1, (await tags.GetSidebarAsync(TestContext.CancellationToken)).Viewed);
@@ -281,10 +325,18 @@ public sealed class SettingsTests
     private async Task ScanAsync()
     {
         var progress = new ScanProgress();
-        await _services.Get<DirectoryIndexer>().IndexAsync(_library.Root, true, progress, TestContext.CancellationToken);
+        await _services
+            .Get<DirectoryIndexer>()
+            .IndexAsync(_library.Root, true, progress, TestContext.CancellationToken);
         Assert.AreEqual(0, progress.Errors);
     }
 
     private async Task<string[]> SearchNamesAsync(string query) =>
-        (await _services.Get<FileSearchService>().SearchAsync(query, "", null, 200, cancellationToken: TestContext.CancellationToken))!.Items.Select(i => i.Name).ToArray();
+        (
+            await _services
+                .Get<FileSearchService>()
+                .SearchAsync(query, "", null, 200, cancellationToken: TestContext.CancellationToken)
+        )!
+            .Items.Select(i => i.Name)
+            .ToArray();
 }

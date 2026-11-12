@@ -62,7 +62,11 @@ public sealed class WorkFolderUpgradeTests
         var other = await CreateTenantAsync(access, "Other", "Media");
         var chosen = await CreateTenantAsync(access, "Chosen", "ChildDir");
         var rows = factory.Services.GetRequiredService<SettingLayers>().Rows;
-        await rows.SaveTenantAsync(chosen, new Dictionary<string, StoredSetting> { [Key] = new(JsonValue.Create("Server"), false) }, Token);
+        await rows.SaveTenantAsync(
+            chosen,
+            new Dictionary<string, StoredSetting> { [Key] = new(JsonValue.Create("Server"), false) },
+            Token
+        );
 
         await RunAsync(factory);
         var later = await CreateTenantAsync(access, "Later", "RepeatedDir");
@@ -70,11 +74,22 @@ public sealed class WorkFolderUpgradeTests
 
         Assert.AreEqual(WorkFolderLocation.Library, (await WorkFolderAsync(factory, first)).Location);
         Assert.AreEqual(WorkFolderLocation.Library, (await WorkFolderAsync(factory, other)).Location);
-        Assert.AreEqual(WorkFolderLocation.Server, (await WorkFolderAsync(factory, chosen)).Location, "A library's own choice stays");
-        Assert.AreEqual(WorkFolderLocation.Server, (await WorkFolderAsync(factory, later)).Location, "A library created after the update gets the new default");
+        Assert.AreEqual(
+            WorkFolderLocation.Server,
+            (await WorkFolderAsync(factory, chosen)).Location,
+            "A library's own choice stays"
+        );
+        Assert.AreEqual(
+            WorkFolderLocation.Server,
+            (await WorkFolderAsync(factory, later)).Location,
+            "A library created after the update gets the new default"
+        );
         Assert.IsFalse(rows.ForTenant(later).ContainsKey(Key));
         Assert.IsTrue(File.Exists(Path.Combine(_library.BasePath, KeepWorkFolderInLibraries.MarkerName)));
-        CollectionAssert.AreEqual(new[] { "2 libraries keep their work folder in the library (Files › Where SFE keeps its work files)." }, _notes);
+        CollectionAssert.AreEqual(
+            new[] { "2 libraries keep their work folder in the library (Files › Where SFE keeps its work files)." },
+            _notes
+        );
     }
 
     [TestMethod]
@@ -84,8 +99,13 @@ public sealed class WorkFolderUpgradeTests
 
         await RunAsync(factory);
 
-        Assert.IsEmpty(factory.Services.GetRequiredService<SettingLayers>().Rows.ForTenant(await DefaultTenantAsync(factory)));
-        Assert.AreEqual(WorkFolderLocation.Server, (await WorkFolderAsync(factory, await DefaultTenantAsync(factory))).Location);
+        Assert.IsEmpty(
+            factory.Services.GetRequiredService<SettingLayers>().Rows.ForTenant(await DefaultTenantAsync(factory))
+        );
+        Assert.AreEqual(
+            WorkFolderLocation.Server,
+            (await WorkFolderAsync(factory, await DefaultTenantAsync(factory))).Location
+        );
         Assert.IsEmpty(_notes);
     }
 
@@ -98,7 +118,10 @@ public sealed class WorkFolderUpgradeTests
         await RunAsync(saved);
 
         Assert.IsEmpty(layers.Rows.ForTenant(await DefaultTenantAsync(saved)));
-        Assert.AreEqual(WorkFolderLocation.Library, (await WorkFolderAsync(saved, await DefaultTenantAsync(saved))).Location);
+        Assert.AreEqual(
+            WorkFolderLocation.Library,
+            (await WorkFolderAsync(saved, await DefaultTenantAsync(saved))).Location
+        );
     }
 
     [TestMethod]
@@ -114,10 +137,15 @@ public sealed class WorkFolderUpgradeTests
         Assert.IsTrue(layers.Server.Locked.Contains(Key));
         Assert.IsTrue(layers.Server.Values.ContainsKey(Key));
         Assert.IsEmpty(layers.Rows.ForTenant(await DefaultTenantAsync(factory)));
-        Assert.AreEqual(WorkFolderLocation.Library, (await WorkFolderAsync(factory, await DefaultTenantAsync(factory))).Location);
+        Assert.AreEqual(
+            WorkFolderLocation.Library,
+            (await WorkFolderAsync(factory, await DefaultTenantAsync(factory))).Location
+        );
     }
 
-    private async Task<WebApplicationFactory<Program>> InstallAsync(Action<IDictionary<string, string?>>? configure = null)
+    private async Task<WebApplicationFactory<Program>> InstallAsync(
+        Action<IDictionary<string, string?>>? configure = null
+    )
     {
         var factory = ApiClients.CreateFactory(_library, configure);
         _disposables.Add(factory);
@@ -128,8 +156,13 @@ public sealed class WorkFolderUpgradeTests
     private async Task RunAsync(WebApplicationFactory<Program> factory)
     {
         var tenants = await factory.Services.GetRequiredService<AccessService>().GetTenantsAsync(Token);
-        var context = new UpgradeContext([], _notes.Add, NullLogger.Instance,
-            Settings: factory.Services.GetRequiredService<SettingLayers>(), TenantIds: [.. tenants.Select(t => t.Id)]);
+        var context = new UpgradeContext(
+            [],
+            _notes.Add,
+            NullLogger.Instance,
+            Settings: factory.Services.GetRequiredService<SettingLayers>(),
+            TenantIds: [.. tenants.Select(t => t.Id)]
+        );
         await new KeepWorkFolderInLibraries().RunAsync(context, Token);
     }
 
@@ -138,7 +171,11 @@ public sealed class WorkFolderUpgradeTests
 
     private async Task<int> CreateTenantAsync(AccessService access, string name, string root)
     {
-        var created = await access.CreateTenantAsync(new TenantInput(name, Slug: name.ToLowerInvariant()), _library.FullPath(root), Token);
+        var created = await access.CreateTenantAsync(
+            new TenantInput(name, Slug: name.ToLowerInvariant()),
+            _library.FullPath(root),
+            Token
+        );
         Assert.AreEqual(AccessStatus.Ok, created.Status, created.Problem);
         return created.Value!.Id;
     }

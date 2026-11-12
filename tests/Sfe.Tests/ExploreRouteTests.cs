@@ -49,11 +49,37 @@ public sealed class ExploreRouteTests
         var accounts = _factory.Services.GetRequiredService<AccessService>();
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
-        var browsers = (await accounts.CreateGroupAsync(tenant, new GroupInput("Browsers", Rights: [Rights.Browse]), cancellationToken: Token)).Value!;
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("bob", Password: "bob-password-1", GroupIds: [browsers.Id]), null, Token);
+        var browsers = (
+            await accounts.CreateGroupAsync(
+                tenant,
+                new GroupInput("Browsers", Rights: [Rights.Browse]),
+                cancellationToken: Token
+            )
+        ).Value!;
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("bob", Password: "bob-password-1", GroupIds: [browsers.Id]),
+            null,
+            Token
+        );
         var rules = _factory.Services.GetRequiredService<FolderRuleService>();
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "SpecialDir", FolderPrincipalRef.Group(users.Id), FolderLevel.Hidden, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(
+                    tenant,
+                    "SpecialDir",
+                    FolderPrincipalRef.Group(users.Id),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
         _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
         _bob = await ApiClients.SignInAsync(_factory, "bob", "bob-password-1", Token);
     }
@@ -76,13 +102,26 @@ public sealed class ExploreRouteTests
     [TestMethod]
     public async Task AnArchiveIsReadOnceThenListedFolderByFolderInPages()
     {
-        TestArchives.Zip(_library.Root, "Media/trip.zip",
-            ("readme.txt", "hello"), ("Day 1/a.txt", "a"), ("Day 1/b.txt", "bb"), ("Day 1/c.txt", "ccc"), ("Day 2/Deep/x.txt", "x"));
+        TestArchives.Zip(
+            _library.Root,
+            "Media/trip.zip",
+            ("readme.txt", "hello"),
+            ("Day 1/a.txt", "a"),
+            ("Day 1/b.txt", "bb"),
+            ("Day 1/c.txt", "ccc"),
+            ("Day 2/Deep/x.txt", "x")
+        );
 
         var root = await ListAsync(_alice, "path=Media/trip.zip");
         Assert.AreEqual(("zip", true, 5L, 0L), (root.Format, root.Complete, root.Entries, root.LeftOut));
-        CollectionAssert.AreEqual(new[] { "Day 1", "Day 2", "readme.txt" }, root.Items.Select(item => item.Name).ToList());
-        Assert.AreEqual(("folder", 3L, 3L), (root.Items[0].Kind, root.Items[0].Files!.Value, root.Items[0].AllFiles!.Value));
+        CollectionAssert.AreEqual(
+            new[] { "Day 1", "Day 2", "readme.txt" },
+            root.Items.Select(item => item.Name).ToList()
+        );
+        Assert.AreEqual(
+            ("folder", 3L, 3L),
+            (root.Items[0].Kind, root.Items[0].Files!.Value, root.Items[0].AllFiles!.Value)
+        );
         Assert.AreEqual((5L, 1L + 1 + 2 + 3 + 5), (root.Folder.AllFiles!.Value, root.Folder.Size));
         Assert.IsNull(root.Next);
 
@@ -90,12 +129,14 @@ public sealed class ExploreRouteTests
         string? after = null;
         do
         {
-            var page = await ListAsync(_alice, $"path=Media/trip.zip&folder={root.Items[0].Id}&limit=2" + (after is null ? "" : $"&after={after}"));
+            var page = await ListAsync(
+                _alice,
+                $"path=Media/trip.zip&folder={root.Items[0].Id}&limit=2" + (after is null ? "" : $"&after={after}")
+            );
             names.AddRange(page.Items.Select(item => item.Name));
             Assert.AreEqual("Day 1", page.Trail.Last.Single().Name);
             after = page.Next;
-        }
-        while (after is not null);
+        } while (after is not null);
         CollectionAssert.AreEqual(new[] { "a.txt", "b.txt", "c.txt" }, names);
 
         var deep = await ListAsync(_alice, $"path=Media/trip.zip&at={Uri.EscapeDataString("Day 2/Deep")}");
@@ -122,7 +163,10 @@ public sealed class ExploreRouteTests
         }
         var listing = await ListAsync(_alice, "path=Media/files.zip");
         var html = listing.Items.Single(item => item.Name == "page.html");
-        var pictures = await ListAsync(_alice, $"path=Media/files.zip&folder={listing.Items.Single(item => item.Name == "pictures").Id}");
+        var pictures = await ListAsync(
+            _alice,
+            $"path=Media/files.zip&folder={listing.Items.Single(item => item.Name == "pictures").Id}"
+        );
         var still = pictures.Items.Single();
         var token = EpubEntries.Token("Media/files.zip");
 
@@ -133,7 +177,10 @@ public sealed class ExploreRouteTests
             Assert.IsNull(picture.Content.Headers.ContentDisposition, "a picture shows inline");
             CollectionAssert.AreEqual(png, await picture.Content.ReadAsByteArrayAsync(Token));
             StringAssert.Contains(picture.Headers.GetValues("Content-Security-Policy").Single(), "sandbox");
-            using var again = new HttpRequestMessage(HttpMethod.Get, $"/api/files/explore/entry/{token}/{still.Id}/still.png");
+            using var again = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"/api/files/explore/entry/{token}/{still.Id}/still.png"
+            );
             again.Headers.IfNoneMatch.Add(picture.Headers.ETag!);
             using var notModified = await _alice.SendAsync(again, Token);
             Assert.AreEqual(HttpStatusCode.NotModified, notModified.StatusCode);
@@ -141,12 +188,31 @@ public sealed class ExploreRouteTests
         using (var page = await _alice.GetAsync($"/api/files/explore/entry/{token}/{html.Id}/page.html", Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, page.StatusCode);
-            Assert.AreEqual("attachment", page.Content.Headers.ContentDisposition?.DispositionType, "a page of a stranger never opens on the app's origin");
+            Assert.AreEqual(
+                "attachment",
+                page.Content.Headers.ContentDisposition?.DispositionType,
+                "a page of a stranger never opens on the app's origin"
+            );
         }
-        using (var saved = await _alice.GetAsync($"/api/files/explore/entry/{token}/{still.Id}/still.png?download=true", Token))
+        using (
+            var saved = await _alice.GetAsync(
+                $"/api/files/explore/entry/{token}/{still.Id}/still.png?download=true",
+                Token
+            )
+        )
+        {
             Assert.AreEqual("attachment", saved.Content.Headers.ContentDisposition?.DispositionType);
-        foreach (var wrong in new[] { $"{token}/{still.Id}/other.png", $"{token}/{listing.Items[0].Id + 1000}/still.png", $"not-a-token!/{still.Id}/still.png",
-            $"{EpubEntries.Token("Media/none.zip")}/{still.Id}/still.png" })
+        }
+
+        foreach (
+            var wrong in new[]
+            {
+                $"{token}/{still.Id}/other.png",
+                $"{token}/{listing.Items[0].Id + 1000}/still.png",
+                $"not-a-token!/{still.Id}/still.png",
+                $"{EpubEntries.Token("Media/none.zip")}/{still.Id}/still.png",
+            }
+        )
         {
             using var response = await _alice.GetAsync($"/api/files/explore/entry/{wrong}", Token);
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, wrong);
@@ -158,34 +224,85 @@ public sealed class ExploreRouteTests
     [TestMethod]
     public async Task ATextEntryIsReadDecodedAndReadOnlyAndMediaAreNamed()
     {
-        TestArchives.Zip(_library.Root, "Media/texts.zip", ("notes.txt", "first\r\nsecond\r\n"), ("photo.jpg", "not really"), ("song.mp3", "x"),
-            ("data.bin", "\0\0\0binary\0"));
+        TestArchives.Zip(
+            _library.Root,
+            "Media/texts.zip",
+            ("notes.txt", "first\r\nsecond\r\n"),
+            ("photo.jpg", "not really"),
+            ("song.mp3", "x"),
+            ("data.bin", "\0\0\0binary\0")
+        );
         var items = (await ListAsync(_alice, "path=Media/texts.zip")).Items.ToDictionary(item => item.Name);
-        Assert.AreEqual(("image", "audio", (string?)null), (items["photo.jpg"].Media, items["song.mp3"].Media, items["notes.txt"].Media));
+        Assert.AreEqual(
+            ("image", "audio", (string?)null),
+            (items["photo.jpg"].Media, items["song.mp3"].Media, items["notes.txt"].Media)
+        );
 
-        using (var response = await _alice.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}", Token))
+        using (
+            var response = await _alice.GetAsync(
+                $"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}",
+                Token
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
             var text = (await response.Content.ReadFromJsonAsync<TextFile>(Json, Token))!;
             Assert.AreEqual(("first\r\nsecond\r\n", "utf-8", "crlf"), (text.Text, text.Encoding, text.LineEnding));
             Assert.AreEqual(new TextAccess(false, false, false, false), text.Access, "an entry is never saved over");
         }
-        using (var latin = await _alice.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=windows-1252", Token))
+        using (
+            var latin = await _alice.GetAsync(
+                $"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=windows-1252",
+                Token
+            )
+        )
+        {
             Assert.AreEqual("windows-1252", (await latin.Content.ReadFromJsonAsync<TextFile>(Json, Token))!.Encoding);
-        using (var binary = await _alice.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["data.bin"].Id}", Token))
+        }
+
+        using (
+            var binary = await _alice.GetAsync(
+                $"/api/files/explore/text?path=Media/texts.zip&id={items["data.bin"].Id}",
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.UnsupportedMediaType, binary.StatusCode);
-        using (var badEncoding = await _alice.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=ebcdic", Token))
+        }
+
+        using (
+            var badEncoding = await _alice.GetAsync(
+                $"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=ebcdic",
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.BadRequest, badEncoding.StatusCode);
+        }
+
         using (var none = await _alice.GetAsync("/api/files/explore/text?path=Media/texts.zip&id=99999", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, none.StatusCode);
-        using (var bob = await _bob.GetAsync($"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}", Token))
+        using (
+            var bob = await _bob.GetAsync(
+                $"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}",
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, bob.StatusCode, "Bob may not open files");
+        }
     }
 
     [TestMethod]
     public async Task AFileIsServedByItsPathInTheArchiveAndAListingGivesItsFolderPath()
     {
-        TestArchives.Zip(_library.Root, "Media/site.zip", ("docs/readme.md", "# Hello\n\n![a](img/a.png)"), ("docs/img/a.png", "png bytes"), ("top.txt", "t"));
+        TestArchives.Zip(
+            _library.Root,
+            "Media/site.zip",
+            ("docs/readme.md", "# Hello\n\n![a](img/a.png)"),
+            ("docs/img/a.png", "png bytes"),
+            ("top.txt", "t")
+        );
         var top = await ListAsync(_alice, "path=Media/site.zip");
         Assert.AreEqual("", top.Path);
         var docs = await ListAsync(_alice, "path=Media/site.zip&at=docs");
@@ -212,17 +329,30 @@ public sealed class ExploreRouteTests
 
         using (var text = await _alice.GetAsync("/api/files/explore/text?path=Media/site.zip&at=docs/readme.md", Token))
             StringAssert.StartsWith((await text.Content.ReadFromJsonAsync<TextFile>(Json, Token))!.Text, "# Hello");
-        using (var both = await _alice.GetAsync($"/api/files/explore/text?path=Media/site.zip&at=top.txt&id={top.Items[0].Id}", Token))
+        using (
+            var both = await _alice.GetAsync(
+                $"/api/files/explore/text?path=Media/site.zip&at=top.txt&id={top.Items[0].Id}",
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.BadRequest, both.StatusCode);
+        }
     }
 
     [TestMethod]
     public async Task AContainerIsExploredByItsBytesWhateverItsName()
     {
-        File.Copy(Path.Combine(TestSamples.Folder, "..", "library", "Documents", "Hut stories.epub"), _library.FullPath("Media/book.epub"));
+        File.Copy(
+            Path.Combine(TestSamples.Folder, "..", "library", "Documents", "Hut stories.epub"),
+            _library.FullPath("Media/book.epub")
+        );
         var top = await ListAsync(_alice, "path=Media/book.epub");
         Assert.AreEqual("zip", top.Format);
-        Assert.IsTrue(top.Items.Any(item => item.Name == "mimetype"), string.Join(", ", top.Items.Select(item => item.Name)));
+        Assert.IsTrue(
+            top.Items.Any(item => item.Name == "mimetype"),
+            string.Join(", ", top.Items.Select(item => item.Name))
+        );
 
         File.WriteAllText(_library.FullPath("Media/fake.docx"), "not a zip at all");
         using var fake = await _alice.GetAsync("/api/files/explore?path=Media/fake.docx", Token);
@@ -238,7 +368,16 @@ public sealed class ExploreRouteTests
 
         using (var bob = await _bob.GetAsync("/api/files/explore?path=Media/seen.zip", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, bob.StatusCode);
-        foreach (var path in new[] { "SpecialDir/hidden.zip", ".sfe/trash/work.zip", "Media/none.zip", "../Root/Media/seen.zip", "Media" })
+        foreach (
+            var path in new[]
+            {
+                "SpecialDir/hidden.zip",
+                ".sfe/trash/work.zip",
+                "Media/none.zip",
+                "../Root/Media/seen.zip",
+                "Media",
+            }
+        )
         {
             using var response = await _alice.GetAsync($"/api/files/explore?path={Uri.EscapeDataString(path)}", Token);
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, path);
@@ -263,7 +402,12 @@ public sealed class ExploreRouteTests
     [TestMethod]
     public async Task HostileEntriesAreLeftOutOrRefused()
     {
-        var zip = TestArchives.Zip(_library.Root, "Media/hostile.zip", ("../../evil.txt", "evil"), ("zeros.bin", new string('\0', 64 * 1024)));
+        var zip = TestArchives.Zip(
+            _library.Root,
+            "Media/hostile.zip",
+            ("../../evil.txt", "evil"),
+            ("zeros.bin", new string('\0', 64 * 1024))
+        );
         // The directory claims 1 GB for 64 KB of zeros (a few hundred bytes deflated): past the ratio allowed.
         TestArchives.PatchDirectory(zip, 24, BitConverter.GetBytes(1_000_000_000u), record: 1);
 
@@ -271,7 +415,10 @@ public sealed class ExploreRouteTests
         Assert.AreEqual(1L, listing.LeftOut, "the name leaving the archive");
         var zeros = listing.Items.Single();
         Assert.AreEqual(1_000_000_000L, zeros.Size);
-        using var refused = await _alice.GetAsync($"/api/files/explore/entry/{EpubEntries.Token("Media/hostile.zip")}/{zeros.Id}/zeros.bin?download=true", Token);
+        using var refused = await _alice.GetAsync(
+            $"/api/files/explore/entry/{EpubEntries.Token("Media/hostile.zip")}/{zeros.Id}/zeros.bin?download=true",
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.UnprocessableEntity, refused.StatusCode);
     }
 
@@ -298,7 +445,12 @@ public sealed class ExploreRouteTests
 
         // Stored (as videos are): a slice of the archive, any size, with Range (a video seeks in it).
         var bytes = string.Concat(Enumerable.Range(0, 2 * 1024 * 1024 / 8).Select(i => $"{i % 10_000_000:D8}"));
-        TestArchives.Zip(_library.Root, "Media/stored.zip", System.IO.Compression.CompressionLevel.NoCompression, ("clip.mp4", bytes));
+        TestArchives.Zip(
+            _library.Root,
+            "Media/stored.zip",
+            System.IO.Compression.CompressionLevel.NoCompression,
+            ("clip.mp4", bytes)
+        );
         var clip = (await ListAsync(_alice, "path=Media/stored.zip")).Items.Single();
         var clipUrl = $"/api/files/explore/entry/{EpubEntries.Token("Media/stored.zip")}/{clip.Id}/clip.mp4";
         using (var whole = await _alice.GetAsync(clipUrl, Token))
@@ -314,11 +466,19 @@ public sealed class ExploreRouteTests
             Assert.AreEqual(HttpStatusCode.PartialContent, part.StatusCode);
             Assert.AreEqual(bytes.Substring(1_000_000, 16), await part.Content.ReadAsStringAsync(Token));
         }
-        using (var byPath = new HttpRequestMessage(HttpMethod.Get, $"/api/files/explore/entry/{EpubEntries.Token("Media/stored.zip")}/at/clip.mp4"))
+        using (
+            var byPath = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"/api/files/explore/entry/{EpubEntries.Token("Media/stored.zip")}/at/clip.mp4"
+            )
+        )
         {
             byPath.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, 7);
             using var part = await _alice.SendAsync(byPath, Token);
-            Assert.AreEqual((HttpStatusCode.PartialContent, "00000000"), (part.StatusCode, await part.Content.ReadAsStringAsync(Token)));
+            Assert.AreEqual(
+                (HttpStatusCode.PartialContent, "00000000"),
+                (part.StatusCode, await part.Content.ReadAsStringAsync(Token))
+            );
         }
 
         // Reached only by unpacking 2 MB before it: refused, viewed or downloaded.
@@ -326,11 +486,24 @@ public sealed class ExploreRouteTests
         using (var gzip = new System.IO.Compression.GZipStream(file, System.IO.Compression.CompressionLevel.Fastest))
         using (var tar = new System.Formats.Tar.TarWriter(gzip, System.Formats.Tar.TarEntryFormat.Pax))
         {
-            tar.WriteEntry(new System.Formats.Tar.PaxTarEntry(System.Formats.Tar.TarEntryType.RegularFile, "zeros.bin") { DataStream = new MemoryStream(new byte[2 * 1024 * 1024]) });
-            tar.WriteEntry(new System.Formats.Tar.PaxTarEntry(System.Formats.Tar.TarEntryType.RegularFile, "after.txt") { DataStream = new MemoryStream("after"u8.ToArray()) });
+            tar.WriteEntry(
+                new System.Formats.Tar.PaxTarEntry(System.Formats.Tar.TarEntryType.RegularFile, "zeros.bin")
+                {
+                    DataStream = new MemoryStream(new byte[2 * 1024 * 1024]),
+                }
+            );
+            tar.WriteEntry(
+                new System.Formats.Tar.PaxTarEntry(System.Formats.Tar.TarEntryType.RegularFile, "after.txt")
+                {
+                    DataStream = new MemoryStream("after"u8.ToArray()),
+                }
+            );
         }
         var after = (await ListAsync(_alice, "path=Media/far.tar.gz")).Items.Single(item => item.Name == "after.txt");
-        using var far = await _alice.GetAsync($"/api/files/explore/entry/{EpubEntries.Token("Media/far.tar.gz")}/{after.Id}/after.txt?download=true", Token);
+        using var far = await _alice.GetAsync(
+            $"/api/files/explore/entry/{EpubEntries.Token("Media/far.tar.gz")}/{after.Id}/after.txt?download=true",
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, far.StatusCode);
         StringAssert.Contains(await far.Content.ReadAsStringAsync(Token), "extract it");
     }
@@ -340,7 +513,11 @@ public sealed class ExploreRouteTests
     {
         File.Copy(TestSamples.ArchiveOf("tree-aes256.zip"), _library.FullPath("Media/secret.zip"));
         var top = await ListAsync(_alice, "path=Media/secret.zip");
-        Assert.AreEqual((true, false, false), (top.Protected, top.Unlocked, top.NeedsPassword), "names in clear, files encrypted");
+        Assert.AreEqual(
+            (true, false, false),
+            (top.Protected, top.Unlocked, top.NeedsPassword),
+            "names in clear, files encrypted"
+        );
         var readme = top.Items.Single(item => item.Name == "readme.txt");
         Assert.IsTrue(readme.Encrypted);
         var url = $"/api/files/explore/entry/{EpubEntries.Token("Media/secret.zip")}/{readme.Id}/readme.txt";
@@ -375,7 +552,8 @@ public sealed class ExploreRouteTests
         File.Copy(TestSamples.ArchiveOf("tree-zipcrypto.zip"), _library.FullPath("Media/secret.zip"));
         var readme = (await ListAsync(_alice, "path=Media/secret.zip")).Items.Single(item => item.Name == "readme.txt");
         var unlock = await UnlockedAsync(_alice, "Media/secret.zip", "secret");
-        var url = $"/api/files/explore/entry/{EpubEntries.Token("Media/secret.zip")}/{readme.Id}/readme.txt?unlock={unlock}";
+        var url =
+            $"/api/files/explore/entry/{EpubEntries.Token("Media/secret.zip")}/{readme.Id}/readme.txt?unlock={unlock}";
         using (var opened = await _alice.GetAsync(url, Token))
             Assert.AreEqual(HttpStatusCode.OK, opened.StatusCode);
 
@@ -383,7 +561,11 @@ public sealed class ExploreRouteTests
             Assert.AreEqual(HttpStatusCode.OK, signOut.StatusCode);
         using var again = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
         using var ended = await again.GetAsync(url, Token);
-        Assert.AreEqual(HttpStatusCode.Forbidden, ended.StatusCode, "signed in again: the password must be given again");
+        Assert.AreEqual(
+            HttpStatusCode.Forbidden,
+            ended.StatusCode,
+            "signed in again: the password must be given again"
+        );
     }
 
     [TestMethod]
@@ -396,17 +578,32 @@ public sealed class ExploreRouteTests
         var unlock = await UnlockedAsync(_alice, "Media/hidden names.7z", "secret");
         var top = await ListAsync(_alice, $"path={Uri.EscapeDataString("Media/hidden names.7z")}", unlock);
         Assert.AreEqual((false, true, true), (top.NeedsPassword, top.Protected, top.Unlocked));
-        CollectionAssert.AreEqual(new[] { "Deep", "Photos", "readme.txt" }, top.Items.Select(item => item.Name).ToList());
+        CollectionAssert.AreEqual(
+            new[] { "Deep", "Photos", "readme.txt" },
+            top.Items.Select(item => item.Name).ToList()
+        );
         var readme = top.Items.Single(item => item.Name == "readme.txt");
-        using (var opened = await _alice.GetAsync($"/api/files/explore/entry/{EpubEntries.Token("Media/hidden names.7z")}/{readme.Id}/readme.txt?unlock={unlock}", Token))
+        using (
+            var opened = await _alice.GetAsync(
+                $"/api/files/explore/entry/{EpubEntries.Token("Media/hidden names.7z")}/{readme.Id}/readme.txt?unlock={unlock}",
+                Token
+            )
+        )
+        {
             Assert.AreEqual("An archive made for the tests.\n", await opened.Content.ReadAsStringAsync(Token));
+        }
 
         // The names never reached the disk: nothing in the cache folder (where catalogs are) holds them.
         var catalogs = Directory.EnumerateFiles(_library.ThumbnailPath, "*", SearchOption.AllDirectories).ToList();
         Assert.IsNotEmpty(catalogs, "the archive's own catalog (empty: its list is encrypted)");
         foreach (var file in catalogs)
         {
-            using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var stream = new FileStream(
+                file,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete
+            );
             using var copy = new MemoryStream();
             await stream.CopyToAsync(copy, Token);
             Assert.AreEqual(-1, copy.ToArray().AsSpan().IndexOf("notes.txt"u8), file);
@@ -437,18 +634,45 @@ public sealed class ExploreRouteTests
     [TestMethod]
     public async Task TheEntriesChosenInTheListingAreExtracted()
     {
-        TestArchives.Zip(_library.Root, "Media/trip.zip", ("readme.txt", "hello"), ("Day 1/a.txt", "a"), ("Day 2/b.txt", "b"));
+        TestArchives.Zip(
+            _library.Root,
+            "Media/trip.zip",
+            ("readme.txt", "hello"),
+            ("Day 1/a.txt", "a"),
+            ("Day 2/b.txt", "b")
+        );
         var root = await ListAsync(_admin, "path=Media/trip.zip");
         var day1 = root.Items.Single(item => item.Name == "Day 1");
         var readme = root.Items.Single(item => item.Name == "readme.txt");
 
         // Alice (Users) has no right to extract; the jobs route doesn't take extractions.
-        using (var refused = await _alice.PostAsJsonAsync("/api/files/jobs/extract", new ExtractRequest("Media/trip.zip", "ChildDir"), Token))
+        using (
+            var refused = await _alice.PostAsJsonAsync(
+                "/api/files/jobs/extract",
+                new ExtractRequest("Media/trip.zip", "ChildDir"),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode);
-        using (var wrongRoute = await _admin.PostAsJsonAsync("/api/files/jobs", new FileJobRequest(FileJobKind.Extract, ["Media/trip.zip"], "ChildDir"), Json, Token))
-            Assert.AreEqual(HttpStatusCode.BadRequest, wrongRoute.StatusCode);
+        }
 
-        var job = await ExtractAsync(_admin, new ExtractRequest("Media/trip.zip", "ChildDir", NewFolder: false, Folders: [day1.Id], Files: [readme.Id]));
+        using (
+            var wrongRoute = await _admin.PostAsJsonAsync(
+                "/api/files/jobs",
+                new FileJobRequest(FileJobKind.Extract, ["Media/trip.zip"], "ChildDir"),
+                Json,
+                Token
+            )
+        )
+        {
+            Assert.AreEqual(HttpStatusCode.BadRequest, wrongRoute.StatusCode);
+        }
+
+        var job = await ExtractAsync(
+            _admin,
+            new ExtractRequest("Media/trip.zip", "ChildDir", NewFolder: false, Folders: [day1.Id], Files: [readme.Id])
+        );
 
         Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
         Assert.AreEqual("hello", File.ReadAllText(_library.FullPath("ChildDir/readme.txt")));
@@ -459,19 +683,36 @@ public sealed class ExploreRouteTests
     [TestMethod]
     public async Task AnArchiveIsSearchedByNameWithTheFolderOfEachFound()
     {
-        TestArchives.Zip(_library.Root, "Media/trip.zip", ("Day 1/summit.jpg", "s"), ("Day 2/Summit notes.txt", "n"), ("readme.txt", "r"));
+        TestArchives.Zip(
+            _library.Root,
+            "Media/trip.zip",
+            ("Day 1/summit.jpg", "s"),
+            ("Day 2/Summit notes.txt", "n"),
+            ("readme.txt", "r")
+        );
         await ListAsync(_alice, "path=Media/trip.zip");
 
         using var response = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=SUMMIT", Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         var found = (await response.Content.ReadFromJsonAsync<ArchiveSearch>(Json, Token))!;
-        CollectionAssert.AreEquivalent(new[] { ("summit.jpg", "Day 1"), ("Summit notes.txt", "Day 2") }, found.Items.Select(item => (item.Name, item.Where)).ToList());
+        CollectionAssert.AreEquivalent(
+            new[] { ("summit.jpg", "Day 1"), ("Summit notes.txt", "Day 2") },
+            found.Items.Select(item => (item.Name, item.Where)).ToList()
+        );
         Assert.IsNull(found.Next);
 
         using (var tooShort = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=s", Token))
             Assert.AreEqual(HttpStatusCode.BadRequest, tooShort.StatusCode);
-        using (var badCursor = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=summit&after=x1", Token))
+        using (
+            var badCursor = await _alice.GetAsync(
+                "/api/files/explore/search?path=Media/trip.zip&q=summit&after=x1",
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.BadRequest, badCursor.StatusCode);
+        }
+
         using (var hidden = await _alice.GetAsync("/api/files/explore/search?path=SpecialDir/trip.zip&q=summit", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
     }
@@ -479,27 +720,64 @@ public sealed class ExploreRouteTests
     [TestMethod]
     public async Task AFolderOfAnArchiveIsSearchedAloneWithListingCursors()
     {
-        TestArchives.Zip(_library.Root, "Media/trip.zip", ("Day 1/summit.jpg", "s"), ("Day 1/Summit 2.jpg", "s"), ("Day 1/Summit dir/a.txt", "a"),
-            ("Day 1/other.txt", "o"), ("Day 2/Summit notes.txt", "n"));
+        TestArchives.Zip(
+            _library.Root,
+            "Media/trip.zip",
+            ("Day 1/summit.jpg", "s"),
+            ("Day 1/Summit 2.jpg", "s"),
+            ("Day 1/Summit dir/a.txt", "a"),
+            ("Day 1/other.txt", "o"),
+            ("Day 2/Summit notes.txt", "n")
+        );
         var day1 = (await ListAsync(_alice, "path=Media/trip.zip")).Items.Single(item => item.Name == "Day 1").Id;
 
-        using (var response = await _alice.GetAsync($"/api/files/explore/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&limit=2", Token))
+        using (
+            var response = await _alice.GetAsync(
+                $"/api/files/explore/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&limit=2",
+                Token
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
             var first = (await response.Content.ReadFromJsonAsync<ArchiveSearch>(Json, Token))!;
-            CollectionAssert.AreEqual(new[] { ("Summit dir", "folder"), ("Summit 2.jpg", "file") }, first.Items.Select(item => (item.Name, item.Kind)).ToList());
+            CollectionAssert.AreEqual(
+                new[] { ("Summit dir", "folder"), ("Summit 2.jpg", "file") },
+                first.Items.Select(item => (item.Name, item.Kind)).ToList()
+            );
             Assert.IsTrue(first.Items.All(item => item.Where is null));
             Assert.IsNotNull(first.Next);
 
-            using var rest = await _alice.GetAsync($"/api/files/explore/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&after={first.Next}", Token);
+            using var rest = await _alice.GetAsync(
+                $"/api/files/explore/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&after={first.Next}",
+                Token
+            );
             var second = (await rest.Content.ReadFromJsonAsync<ArchiveSearch>(Json, Token))!;
             CollectionAssert.AreEqual(new[] { "summit.jpg" }, second.Items.Select(item => item.Name).ToList());
             Assert.IsNull(second.Next);
         }
-        using (var searchCursor = await _alice.GetAsync($"/api/files/explore/search?path=Media/trip.zip&q=summit&folder={day1}&after=f10", Token))
-            Assert.AreEqual(HttpStatusCode.BadRequest, searchCursor.StatusCode, "a folder's pages go on with listing cursors");
-        using (var noFolder = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=summit&folder=999", Token))
+        using (
+            var searchCursor = await _alice.GetAsync(
+                $"/api/files/explore/search?path=Media/trip.zip&q=summit&folder={day1}&after=f10",
+                Token
+            )
+        )
+        {
+            Assert.AreEqual(
+                HttpStatusCode.BadRequest,
+                searchCursor.StatusCode,
+                "a folder's pages go on with listing cursors"
+            );
+        }
+
+        using (
+            var noFolder = await _alice.GetAsync(
+                "/api/files/explore/search?path=Media/trip.zip&q=summit&folder=999",
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, noFolder.StatusCode);
+        }
     }
 
     [TestMethod]
@@ -510,8 +788,15 @@ public sealed class ExploreRouteTests
 
         // The entry route of an archive never read answers 404 without reading it.
         TestArchives.Zip(_library.Root, "Media/never.zip", ("b.txt", "b"));
-        using (var entry = await _alice.GetAsync($"/api/files/explore/entry/{EpubEntries.Token("Media/never.zip")}/2/b.txt", Token))
+        using (
+            var entry = await _alice.GetAsync(
+                $"/api/files/explore/entry/{EpubEntries.Token("Media/never.zip")}/2/b.txt",
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, entry.StatusCode);
+        }
 
         // A read started per archive never read: past the limit, 429, the others' and the ones read still answer.
         var statuses = new List<HttpStatusCode>();
@@ -528,7 +813,11 @@ public sealed class ExploreRouteTests
             StringAssert.Contains(await refused.Content.ReadAsStringAsync(Token), "wait a minute");
         }
         Assert.HasCount(1, (await ListAsync(_alice, "path=Media/read.zip")).Items, "an archive read already is listed");
-        Assert.HasCount(1, (await ListAsync(_admin, "path=Media/never.zip")).Items, "another caller has their own limit");
+        Assert.HasCount(
+            1,
+            (await ListAsync(_admin, "path=Media/never.zip")).Items,
+            "another caller has their own limit"
+        );
     }
 
     [TestMethod]
@@ -540,7 +829,11 @@ public sealed class ExploreRouteTests
 
         Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
         Assert.AreEqual("from the zip", File.ReadAllText(_library.FullPath("README.md")));
-        using var noTarget = await _admin.PostAsJsonAsync("/api/files/jobs/extract", new ExtractRequest("README.zip", null), Token);
+        using var noTarget = await _admin.PostAsJsonAsync(
+            "/api/files/jobs/extract",
+            new ExtractRequest("README.zip", null),
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.BadRequest, noTarget.StatusCode);
     }
 
@@ -549,16 +842,31 @@ public sealed class ExploreRouteTests
     {
         File.Copy(TestSamples.ArchiveOf("tree-names-encrypted.7z"), _library.FullPath("Media/hidden.7z"));
         await ListAsync(_admin, "path=Media/hidden.7z");
-        using (var locked = await _admin.PostAsJsonAsync("/api/files/jobs/extract", new ExtractRequest("Media/hidden.7z", "Media", Files: [1]), Token))
+        using (
+            var locked = await _admin.PostAsJsonAsync(
+                "/api/files/jobs/extract",
+                new ExtractRequest("Media/hidden.7z", "Media", Files: [1]),
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, locked.StatusCode, "ids of a list not read: its password first");
+        }
+
         var unlock = await UnlockedAsync(_admin, "Media/hidden.7z", "secret");
         var top = await ListAsync(_admin, "path=Media/hidden.7z", unlock);
         var readme = top.Items.Single(item => item.Name == "readme.txt");
 
-        var job = await ExtractAsync(_admin, new ExtractRequest("Media/hidden.7z", "Media", Files: [readme.Id], Unlock: unlock));
+        var job = await ExtractAsync(
+            _admin,
+            new ExtractRequest("Media/hidden.7z", "Media", Files: [readme.Id], Unlock: unlock)
+        );
 
         Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
-        Assert.AreEqual("An archive made for the tests.\n", File.ReadAllText(_library.FullPath("Media/hidden/readme.txt")));
+        Assert.AreEqual(
+            "An archive made for the tests.\n",
+            File.ReadAllText(_library.FullPath("Media/hidden/readme.txt"))
+        );
         Assert.IsFalse(Directory.Exists(_library.FullPath("Media/hidden/Photos")));
         using var listed = await _admin.GetAsync("/api/files/jobs", Token);
         Assert.DoesNotContain("secret", await listed.Content.ReadAsStringAsync(Token));

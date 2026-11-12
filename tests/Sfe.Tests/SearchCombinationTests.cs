@@ -63,8 +63,26 @@ public sealed class SearchCombinationTests
     private const string SFRussian = Special + "/SFРусский.txt";
 
     /// <summary>The ten .txt files, all 10 bytes and untagged but for RFile1 (Dog), ChildDir/AFile1 (Favorite), RepeatedDir/ChildDir/AFile1 (Cat).</summary>
-    private const string TextFiles = RFile1 + "|" + Done + "|" + ChildAFile1 + "|" + RDFile1 + "|" + RDFile2 + "|" + RepeatedAFile1 + "|"
-        + RepeatedRDFile1 + "|" + RepeatedRDFile2 + "|" + SDRussian + "|" + SFRussian;
+    private const string TextFiles =
+        RFile1
+        + "|"
+        + Done
+        + "|"
+        + ChildAFile1
+        + "|"
+        + RDFile1
+        + "|"
+        + RDFile2
+        + "|"
+        + RepeatedAFile1
+        + "|"
+        + RepeatedRDFile1
+        + "|"
+        + RepeatedRDFile2
+        + "|"
+        + SDRussian
+        + "|"
+        + SFRussian;
 
     /// <summary>The visible files without an extension (RFile2 has none too, but is hidden).</summary>
     private const string NoExtension = ChildAFile2 + "|" + RepeatedAFile2 + "|" + SDSpanish + "|" + SFSpanish;
@@ -86,7 +104,9 @@ public sealed class SearchCombinationTests
         var log = new WarningLog();
         _services = await CoreServices.CreateAsync(_library, logging: log.AddTo);
         var progress = new ScanProgress();
-        await _services.Get<DirectoryIndexer>().IndexAsync(_library.Root, true, progress, TestContext.CancellationToken);
+        await _services
+            .Get<DirectoryIndexer>()
+            .IndexAsync(_library.Root, true, progress, TestContext.CancellationToken);
         Assert.AreEqual(0, progress.Errors, log.ToString());
         await TagLibraryAsync();
         await SetResolutionsAsync();
@@ -125,7 +145,8 @@ public sealed class SearchCombinationTests
     [DataRow("e:mkv, e:jpg", Episode10 + "|" + Episode2 + "|" + Photo)]
     [DataRow("e:con", "SpecialDir/SDEnglish.con|" + Special + "/SFEnglish.con")]
     [DataRow("e:avi", "")]
-    public Task NameTermsIgnoreTheExtensionWhichHasItsOwnFilter(string query, string expected) => AssertFindsAsync(query, expected);
+    public Task NameTermsIgnoreTheExtensionWhichHasItsOwnFilter(string query, string expected) =>
+        AssertFindsAsync(query, expected);
 
     [TestMethod]
     [DataRow("type:image", Photo)]
@@ -151,11 +172,15 @@ public sealed class SearchCombinationTests
     {
         // Known values in order, then every other file (unknown or unreadable) by path, whichever the direction.
         var search = _services.Get<FileSearchService>();
-        var all = (await search.SearchAsync("", "", null, 100, sort, descending, TestContext.CancellationToken))!.Items.Select(i => i.Path).ToArray();
+        var all = (await search.SearchAsync("", "", null, 100, sort, descending, TestContext.CancellationToken))!
+            .Items.Select(i => i.Path)
+            .ToArray();
         var expected = known.Split('|');
         CollectionAssert.AreEqual(expected, all.Take(expected.Length).ToArray());
         var rest = all.Skip(expected.Length).ToArray();
-        var byPath = (await search.SearchAsync("", "", null, 100, SortField.Path, false, TestContext.CancellationToken))!.Items.Select(i => i.Path);
+        var byPath = (
+            await search.SearchAsync("", "", null, 100, SortField.Path, false, TestContext.CancellationToken)
+        )!.Items.Select(i => i.Path);
         CollectionAssert.AreEqual(byPath.Where(rest.Contains).ToArray(), rest);
         Assert.HasCount(20, all);
         CollectionAssert.Contains(rest, Episode10, "Unreadable (0) counts as unknown.");
@@ -167,11 +192,12 @@ public sealed class SearchCombinationTests
             string? after = null;
             do
             {
-                var page = (await search.SearchAsync("", "", after, size, sort, descending, TestContext.CancellationToken))!;
+                var page = (
+                    await search.SearchAsync("", "", after, size, sort, descending, TestContext.CancellationToken)
+                )!;
                 paged.AddRange(page.Items.Select(i => i.Path));
                 after = page.Next;
-            }
-            while (after is not null);
+            } while (after is not null);
             CollectionAssert.AreEqual(all, paged.ToArray(), $"Pages of {size}");
         }
     }
@@ -191,9 +217,22 @@ public sealed class SearchCombinationTests
     {
         // RFile2 has a hidden tag: left out whatever the terms.
         CollectionAssert.AreEquivalent(
-            new[] { "100%_done[1].txt", "SpecialDir/SDEnglish.con", "SpecialDir/SDEspañol", "SpecialDir/SDРусский.txt",
-                Special + "/SFEnglish.con", Special + "/SFEspañol", Special + "/SFРусский.txt", Holiday, Episode10, Episode2, Photo },
-            await SearchPathsAsync("-file"));
+            new[]
+            {
+                "100%_done[1].txt",
+                "SpecialDir/SDEnglish.con",
+                "SpecialDir/SDEspañol",
+                "SpecialDir/SDРусский.txt",
+                Special + "/SFEnglish.con",
+                Special + "/SFEspañol",
+                Special + "/SFРусский.txt",
+                Holiday,
+                Episode10,
+                Episode2,
+                Photo,
+            },
+            await SearchPathsAsync("-file")
+        );
     }
 
     [TestMethod]
@@ -203,8 +242,12 @@ public sealed class SearchCombinationTests
     [DataRow("*RepeatedDir RDFile1", "RepeatedDir/RDFile1.txt|RepeatedDir/RepeatedDir/RDFile1.txt")]
     [DataRow("*specialdir e:txt", "SpecialDir/SDРусский.txt|" + Special + "/SFРусский.txt")]
     [DataRow("RepeatedDir AFile", "")]
-    [DataRow("*childdir, *media e:jpg", ChildAFile1 + "|" + ChildAFile2 + "|" + RepeatedAFile1 + "|" + RepeatedAFile2 + "|" + Photo)]
-    public Task LeadingStarMatchesTheWholePathInEveryAlternative(string query, string expected) => AssertFindsAsync(query, expected);
+    [DataRow(
+        "*childdir, *media e:jpg",
+        ChildAFile1 + "|" + ChildAFile2 + "|" + RepeatedAFile1 + "|" + RepeatedAFile2 + "|" + Photo
+    )]
+    public Task LeadingStarMatchesTheWholePathInEveryAlternative(string query, string expected) =>
+        AssertFindsAsync(query, expected);
 
     [TestMethod]
     [DataRow("s:>1mb", Holiday)]
@@ -285,8 +328,13 @@ public sealed class SearchCombinationTests
             s["Sfe:Browse:ImageHighResolutionPixels"] = "3500";
         });
         async Task<string[]> FindAsync(string query) =>
-            (await services.Get<FileSearchService>().SearchAsync(query, "", null, 100, cancellationToken: TestContext.CancellationToken))!
-                .Items.Select(i => i.Path).ToArray();
+            (
+                await services
+                    .Get<FileSearchService>()
+                    .SearchAsync(query, "", null, 100, cancellationToken: TestContext.CancellationToken)
+            )!
+                .Items.Select(i => i.Path)
+                .ToArray();
 
         CollectionAssert.AreEquivalent(new[] { Holiday }, await FindAsync("r:hr"));
         CollectionAssert.AreEquivalent(new[] { Photo, Episode2 }, await FindAsync("r:lr"));
@@ -296,7 +344,11 @@ public sealed class SearchCombinationTests
     [TestMethod]
     public async Task ResultsCarryTheDurationOfVideos()
     {
-        var items = (await _services.Get<FileSearchService>().SearchAsync("*media", "", null, 100, cancellationToken: TestContext.CancellationToken))!.Items;
+        var items = (
+            await _services
+                .Get<FileSearchService>()
+                .SearchAsync("*media", "", null, 100, cancellationToken: TestContext.CancellationToken)
+        )!.Items;
 
         Assert.AreEqual(5400.4, items.Single(i => i.Path == Holiday).Duration);
         Assert.AreEqual(1500, items.Single(i => i.Path == Episode2).Duration);
@@ -320,15 +372,40 @@ public sealed class SearchCombinationTests
     [DataRow("*media -w:1920 w:>0", Photo + "|" + Episode2)]
     [DataRow("rfile -w:1920", RFile1)]
     [DataRow("photo -s:big", Photo)]
-    public Task NegatesSizeExtensionAndResolutionFilters(string query, string expected) => AssertFindsAsync(query, expected);
+    public Task NegatesSizeExtensionAndResolutionFilters(string query, string expected) =>
+        AssertFindsAsync(query, expected);
 
     [TestMethod]
     public async Task EveryTermAndItsNegationSplitTheVisibleFiles()
     {
         // The rule for "-": it finds exactly the files the term doesn't (unknown resolutions and durations included).
         var all = await SearchPathsAsync("s:>=0b");
-        string[] terms = ["episode", "e:mkv", "e:txt", "s:<1mb", "s:5mb", "s:=10b", "w:>=1920", "w:<2000", "h:720", "r:1920x1080",
-            "r:<=1920x1080", "r:hr", "r:lr", "d:>1h", "d:25m", "d:<=1:30:00", "type:image", "type:video", "type:audio", "type:other", "t:animal", "t:vac", "special:untagged"];
+        string[] terms =
+        [
+            "episode",
+            "e:mkv",
+            "e:txt",
+            "s:<1mb",
+            "s:5mb",
+            "s:=10b",
+            "w:>=1920",
+            "w:<2000",
+            "h:720",
+            "r:1920x1080",
+            "r:<=1920x1080",
+            "r:hr",
+            "r:lr",
+            "d:>1h",
+            "d:25m",
+            "d:<=1:30:00",
+            "type:image",
+            "type:video",
+            "type:audio",
+            "type:other",
+            "t:animal",
+            "t:vac",
+            "special:untagged",
+        ];
         foreach (var term in terms)
         {
             var found = await SearchPathsAsync(term);
@@ -366,7 +443,8 @@ public sealed class SearchCombinationTests
     [DataRow("t:nobody", "")]
     [DataRow("t:favorite", ChildAFile1)]
     [DataRow("t:\"meta tags\"", ChildAFile1 + "|" + RFile2)]
-    public Task FindsByTagIncludingTheTagsInheritingFromIt(string query, string expected) => AssertFindsAsync(query, expected);
+    public Task FindsByTagIncludingTheTagsInheritingFromIt(string query, string expected) =>
+        AssertFindsAsync(query, expected);
 
     [TestMethod]
     [DataRow("t:cat t:vacation", Photo)]
@@ -397,7 +475,10 @@ public sealed class SearchCombinationTests
         var tagged = await SearchPathsAsync("-special:untagged");
         var untagged = await SearchPathsAsync("special:untagged");
 
-        CollectionAssert.AreEquivalent(new[] { Photo, Holiday, Episode2, Episode10, RFile1, ChildAFile1, RepeatedAFile1 }, tagged);
+        CollectionAssert.AreEquivalent(
+            new[] { Photo, Holiday, Episode2, Episode10, RFile1, ChildAFile1, RepeatedAFile1 },
+            tagged
+        );
         Assert.HasCount(20 - tagged.Length, untagged);
         Assert.IsFalse(tagged.Intersect(untagged).Any());
     }
@@ -433,8 +514,21 @@ public sealed class SearchCombinationTests
     {
         // Every pair of terms (AND) finds exactly the files both terms find on their own; "a, b" (OR) their union.
         // ("*" is left out: it switches the whole query to full paths; so is a second "e:", OR-ed with the first.)
-        string[] terms = ["episode", "-episode", "photo", "-afile", "e:mkv", "s:<1mb", "s:>250kb", "t:animal",
-            "-t:cat", "t:vac", "special:untagged", "-special:untagged"];
+        string[] terms =
+        [
+            "episode",
+            "-episode",
+            "photo",
+            "-afile",
+            "e:mkv",
+            "s:<1mb",
+            "s:>250kb",
+            "t:animal",
+            "-t:cat",
+            "t:vac",
+            "special:untagged",
+            "-special:untagged",
+        ];
         var alone = new Dictionary<string, string[]>();
         foreach (var term in terms)
             alone[term] = await SearchPathsAsync(term);
@@ -443,8 +537,16 @@ public sealed class SearchCombinationTests
         {
             foreach (var b in terms)
             {
-                CollectionAssert.AreEquivalent(alone[a].Intersect(alone[b]).ToArray(), await SearchPathsAsync($"{a} {b}"), $"“{a} {b}”");
-                CollectionAssert.AreEquivalent(alone[a].Union(alone[b]).ToArray(), await SearchPathsAsync($"{a}, {b}"), $"“{a}, {b}”");
+                CollectionAssert.AreEquivalent(
+                    alone[a].Intersect(alone[b]).ToArray(),
+                    await SearchPathsAsync($"{a} {b}"),
+                    $"“{a} {b}”"
+                );
+                CollectionAssert.AreEquivalent(
+                    alone[a].Union(alone[b]).ToArray(),
+                    await SearchPathsAsync($"{a}, {b}"),
+                    $"“{a}, {b}”"
+                );
             }
         }
     }
@@ -488,7 +590,10 @@ public sealed class SearchCombinationTests
     [DataRow("afile -e:txt", ChildAFile2 + "|" + RepeatedAFile2)]
     [DataRow("sd e:con", SDEnglish)]
     [DataRow("e:con -english", "")]
-    [DataRow("e:txt e:con -rfile -afile -rdfile", Done + "|" + SDRussian + "|" + SFRussian + "|" + SDEnglish + "|" + SFEnglish)]
+    [DataRow(
+        "e:txt e:con -rfile -afile -rdfile",
+        Done + "|" + SDRussian + "|" + SFRussian + "|" + SDEnglish + "|" + SFEnglish
+    )]
     [DataRow("e:txt -e:txt", "")]
     [DataRow("e:txt e:con -e:txt", SDEnglish + "|" + SFEnglish)]
     [DataRow("e:mkv -e:mp4", Episode10 + "|" + Episode2)]
@@ -513,7 +618,8 @@ public sealed class SearchCombinationTests
     [DataRow("Русский -sf", SDRussian)]
     [DataRow("*\"" + TestLibrary.SpecialFolder + "\"", SFEnglish + "|" + SFSpanish + "|" + SFRussian)]
     [DataRow("*\"" + TestLibrary.SpecialFolder + "\" -e:txt -e:con", SFSpanish)]
-    public Task MatchesWildcardAndUnicodeCharactersLiterally(string query, string expected) => AssertFindsAsync(query, expected);
+    public Task MatchesWildcardAndUnicodeCharactersLiterally(string query, string expected) =>
+        AssertFindsAsync(query, expected);
 
     [TestMethod]
     [DataRow("*childdir", ChildAFile1 + "|" + ChildAFile2 + "|" + RepeatedAFile1 + "|" + RepeatedAFile2)]
@@ -527,7 +633,10 @@ public sealed class SearchCombinationTests
     [DataRow("*media -t:vac -e:mkv", "")]
     [DataRow("*media -s:<1mb -w:>0", "")]
     [DataRow("*specialdir -e:txt -e:con", SDSpanish + "|" + SFSpanish)]
-    [DataRow("*media, childdir", MediaFiles + "|" + ChildAFile1 + "|" + ChildAFile2 + "|" + RepeatedAFile1 + "|" + RepeatedAFile2)]
+    [DataRow(
+        "*media, childdir",
+        MediaFiles + "|" + ChildAFile1 + "|" + ChildAFile2 + "|" + RepeatedAFile1 + "|" + RepeatedAFile2
+    )]
     [DataRow("*media, childdir special:untagged", MediaFiles + "|" + ChildAFile2 + "|" + RepeatedAFile2)]
     public Task MatchesFullPathsWithEveryOtherTerm(string query, string expected) => AssertFindsAsync(query, expected);
 
@@ -537,7 +646,10 @@ public sealed class SearchCombinationTests
     [DataRow("s:200kb", Episode2)]
     [DataRow("s:300kb", Episode10)]
     [DataRow("s:=10b e:txt", TextFiles)]
-    [DataRow("s:=10b -e:txt", ChildAFile2 + "|" + RepeatedAFile2 + "|" + SDEnglish + "|" + SDSpanish + "|" + SFEnglish + "|" + SFSpanish)]
+    [DataRow(
+        "s:=10b -e:txt",
+        ChildAFile2 + "|" + RepeatedAFile2 + "|" + SDEnglish + "|" + SDSpanish + "|" + SFEnglish + "|" + SFSpanish
+    )]
     [DataRow("s:>10b", MediaFiles)]
     [DataRow("s:>10b, t:archived", MediaFiles + "|" + RFile2)]
     [DataRow("s:>=3kb s:<=3kb", Photo)]
@@ -557,7 +669,7 @@ public sealed class SearchCombinationTests
     [DataRow("w:>=1280 -w:1920 w:<=1920", Episode2)]
     [DataRow("h:>=720 -e:mp4", Photo + "|" + Episode2)]
     [DataRow("*media -w:>0", Episode10)]
-    [DataRow("-w:>0 *media", "")]   // "*" past the start is a character, and no name has one
+    [DataRow("-w:>0 *media", "")] // "*" past the start is a character, and no name has one
     [DataRow("w:=0", "")]
     [DataRow("h:0, w:<=0", "")]
     [DataRow("r:>=1280x720 s:<1mb", Photo + "|" + Episode2)]
@@ -573,7 +685,10 @@ public sealed class SearchCombinationTests
     [DataRow("t:animal -e:mkv -e:txt", Photo + "|" + Holiday)]
     [DataRow("t:vacation w:>=1920 -s:>1mb", Photo)]
     [DataRow("t:\"science fiction\" -w:>0", Episode10)]
-    [DataRow("t:animal, t:\"science fiction\"", Photo + "|" + RepeatedAFile1 + "|" + Episode2 + "|" + Holiday + "|" + RFile1 + "|" + Episode10)]
+    [DataRow(
+        "t:animal, t:\"science fiction\"",
+        Photo + "|" + RepeatedAFile1 + "|" + Episode2 + "|" + Holiday + "|" + RFile1 + "|" + Episode10
+    )]
     [DataRow("t:kitten, t:dog -e:mp4", Episode2 + "|" + RFile1)]
     [DataRow("t:cat afile", RepeatedAFile1)]
     [DataRow("t:favorite, t:cat afile", ChildAFile1 + "|" + RepeatedAFile1)]
@@ -582,8 +697,26 @@ public sealed class SearchCombinationTests
     [DataRow("t:cat t:cat", Photo + "|" + RepeatedAFile1 + "|" + Episode2)]
     [DataRow("t:animal -t:dog -t:cat", "")]
     [DataRow("-t:animal -special:untagged", Episode10 + "|" + ChildAFile1)]
-    [DataRow("special:untagged e:txt", Done + "|" + RDFile1 + "|" + RDFile2 + "|" + RepeatedRDFile1 + "|" + RepeatedRDFile2 + "|" + SDRussian + "|" + SFRussian)]
-    [DataRow("special:untagged -e:txt", ChildAFile2 + "|" + RepeatedAFile2 + "|" + SDEnglish + "|" + SDSpanish + "|" + SFEnglish + "|" + SFSpanish)]
+    [DataRow(
+        "special:untagged e:txt",
+        Done
+            + "|"
+            + RDFile1
+            + "|"
+            + RDFile2
+            + "|"
+            + RepeatedRDFile1
+            + "|"
+            + RepeatedRDFile2
+            + "|"
+            + SDRussian
+            + "|"
+            + SFRussian
+    )]
+    [DataRow(
+        "special:untagged -e:txt",
+        ChildAFile2 + "|" + RepeatedAFile2 + "|" + SDEnglish + "|" + SDSpanish + "|" + SFEnglish + "|" + SFSpanish
+    )]
     [DataRow("-special:untagged -e:txt", MediaFiles)]
     [DataRow("special:untagged w:>0", "")]
     [DataRow("special:untagged -special:untagged", "")]
@@ -597,7 +730,8 @@ public sealed class SearchCombinationTests
     [DataRow("t:archived -e:txt", RFile2)]
     [DataRow("-t:archived", Visible)]
     [DataRow("-e:txt -e:con -e:mkv -e:mp4 -e:jpg, t:archived", NoExtension + "|" + RFile2)]
-    public Task HiddenTagsShowUpInEveryAlternativeOnceOneAsksForThem(string query, string expected) => AssertFindsAsync(query, expected);
+    public Task HiddenTagsShowUpInEveryAlternativeOnceOneAsksForThem(string query, string expected) =>
+        AssertFindsAsync(query, expected);
 
     [TestMethod]
     [DataRow("PHOTO", Photo)]
@@ -631,28 +765,50 @@ public sealed class SearchCombinationTests
     [DataRow("Media", "e:mkv, t:vac", MediaFiles)]
     [DataRow("Media", "*media -episode", Photo + "|" + Holiday)]
     [DataRow("Media", "w:>0 -t:animal", "")]
-    [DataRow("RepeatedDir", "afile, rdfile1", RepeatedAFile1 + "|" + RepeatedAFile2 + "|" + RDFile1 + "|" + RepeatedRDFile1)]
+    [DataRow(
+        "RepeatedDir",
+        "afile, rdfile1",
+        RepeatedAFile1 + "|" + RepeatedAFile2 + "|" + RDFile1 + "|" + RepeatedRDFile1
+    )]
     [DataRow("RepeatedDir/RepeatedDir", "rdfile -2", RepeatedRDFile1)]
     [DataRow("SpecialDir", "-e:txt", SDEnglish + "|" + SDSpanish + "|" + SFEnglish + "|" + SFSpanish)]
     [DataRow(Special, "e:con, e:txt", SFEnglish + "|" + SFRussian)]
     [DataRow("ChildDir", "special:untagged", ChildAFile2)]
     [DataRow("ChildDir", "t:cat", "")]
     [DataRow("ChildDir", "t:cat, t:favorite", ChildAFile1)]
-    public Task EveryCombinationIsScopedToTheFolder(string path, string query, string expected) => AssertFindsAsync(query, expected, path);
+    public Task EveryCombinationIsScopedToTheFolder(string path, string query, string expected) =>
+        AssertFindsAsync(query, expected, path);
 
     [TestMethod]
     public async Task ExclusionsAreTheComplementOfAlternatives()
     {
         // De Morgan: "-a -b" finds exactly the visible files "a, b" doesn't.
         var visible = Visible.Split('|');
-        string[] terms = ["episode", "afile", "e:mkv", "e:txt", "s:<1mb", "s:=10b", "w:>=1920", "h:<1080", "r:1920x1080", "t:animal", "t:vac",
-            "special:untagged"];
+        string[] terms =
+        [
+            "episode",
+            "afile",
+            "e:mkv",
+            "e:txt",
+            "s:<1mb",
+            "s:=10b",
+            "w:>=1920",
+            "h:<1080",
+            "r:1920x1080",
+            "t:animal",
+            "t:vac",
+            "special:untagged",
+        ];
         foreach (var a in terms)
         {
             foreach (var b in terms)
             {
                 var either = await SearchPathsAsync($"{a}, {b}");
-                CollectionAssert.AreEquivalent(visible.Except(either).ToArray(), await SearchPathsAsync($"-{a} -{b}"), $"“-{a} -{b}”");
+                CollectionAssert.AreEquivalent(
+                    visible.Except(either).ToArray(),
+                    await SearchPathsAsync($"-{a} -{b}"),
+                    $"“-{a} -{b}”"
+                );
             }
         }
     }
@@ -660,7 +816,20 @@ public sealed class SearchCombinationTests
     [TestMethod]
     public async Task ThreeTermsGiveTheIntersectionOfAllThree()
     {
-        string[] terms = ["episode", "-afile", "e:mkv", "-e:txt", "s:<1mb", "-s:=10b", "w:>0", "-h:1080", "t:animal", "-t:vac", "special:untagged"];
+        string[] terms =
+        [
+            "episode",
+            "-afile",
+            "e:mkv",
+            "-e:txt",
+            "s:<1mb",
+            "-s:=10b",
+            "w:>0",
+            "-h:1080",
+            "t:animal",
+            "-t:vac",
+            "special:untagged",
+        ];
         var alone = new Dictionary<string, string[]>();
         foreach (var term in terms)
             alone[term] = await SearchPathsAsync(term);
@@ -672,8 +841,16 @@ public sealed class SearchCombinationTests
                 for (var k = j + 1; k < terms.Length; k++)
                 {
                     var (a, b, c) = (terms[i], terms[j], terms[k]);
-                    CollectionAssert.AreEquivalent(alone[a].Intersect(alone[b]).Intersect(alone[c]).ToArray(), await SearchPathsAsync($"{a} {b} {c}"), $"“{a} {b} {c}”");
-                    CollectionAssert.AreEquivalent(alone[a].Union(alone[b].Intersect(alone[c])).ToArray(), await SearchPathsAsync($"{a}, {b} {c}"), $"“{a}, {b} {c}”");
+                    CollectionAssert.AreEquivalent(
+                        alone[a].Intersect(alone[b]).Intersect(alone[c]).ToArray(),
+                        await SearchPathsAsync($"{a} {b} {c}"),
+                        $"“{a} {b} {c}”"
+                    );
+                    CollectionAssert.AreEquivalent(
+                        alone[a].Union(alone[b].Intersect(alone[c])).ToArray(),
+                        await SearchPathsAsync($"{a}, {b} {c}"),
+                        $"“{a}, {b} {c}”"
+                    );
                 }
             }
         }
@@ -697,12 +874,13 @@ public sealed class SearchCombinationTests
                 int? total = null;
                 do
                 {
-                    var page = (await search.SearchAsync(query, "", after, 3, sort, descending, TestContext.CancellationToken))!;
+                    var page = (
+                        await search.SearchAsync(query, "", after, 3, sort, descending, TestContext.CancellationToken)
+                    )!;
                     total ??= page.Total;
                     paths.AddRange(page.Items.Select(i => i.Path));
                     after = page.HasMore ? page.Next : null;
-                }
-                while (after is not null);
+                } while (after is not null);
 
                 var label = $"“{query}” by {sort}{(descending ? " descending" : "")}";
                 Assert.HasCount(expected.Length, paths, label);
@@ -717,18 +895,31 @@ public sealed class SearchCombinationTests
     {
         CollectionAssert.AreEquivalent(new[] { Photo, Holiday, Episode2 }, await SearchPathsAsync("t:animal", "Media"));
         CollectionAssert.AreEquivalent(new[] { RepeatedAFile1 }, await SearchPathsAsync("t:cat", "RepeatedDir"));
-        CollectionAssert.AreEquivalent(new[] { RepeatedAFile2 }, await SearchPathsAsync("special:untagged afile", "RepeatedDir/ChildDir"));
+        CollectionAssert.AreEquivalent(
+            new[] { RepeatedAFile2 },
+            await SearchPathsAsync("special:untagged afile", "RepeatedDir/ChildDir")
+        );
         Assert.IsEmpty(await SearchPathsAsync("t:dog", "ChildDir"));
     }
 
     [TestMethod]
     public async Task ResultsCarryTheTagsSetOnTheFile()
     {
-        var items = (await _services.Get<FileSearchService>().SearchAsync("t:animal", "Media", null, 100, cancellationToken: TestContext.CancellationToken))!.Items;
+        var items = (
+            await _services
+                .Get<FileSearchService>()
+                .SearchAsync("t:animal", "Media", null, 100, cancellationToken: TestContext.CancellationToken)
+        )!.Items;
 
         // The tags set on the file, not the parents they are found through.
-        CollectionAssert.AreEquivalent(new[] { "Cat", "Vacation" }, items.Single(i => i.Path == Photo).Tags!.Select(t => t.Name).ToArray());
-        CollectionAssert.AreEquivalent(new[] { "Kitten", "Science Fiction" }, items.Single(i => i.Path == Episode2).Tags!.Select(t => t.Name).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "Cat", "Vacation" },
+            items.Single(i => i.Path == Photo).Tags!.Select(t => t.Name).ToArray()
+        );
+        CollectionAssert.AreEquivalent(
+            new[] { "Kitten", "Science Fiction" },
+            items.Single(i => i.Path == Episode2).Tags!.Select(t => t.Name).ToArray()
+        );
     }
 
     [TestMethod]
@@ -739,17 +930,44 @@ public sealed class SearchCombinationTests
         var dog = (await tags.SearchAsync("dog", 1, TestContext.CancellationToken)).Matches.Single();
 
         // Dog moves under Vacation: its files leave "Animal" and join "Vacation".
-        Assert.AreEqual(TagEditStatus.Ok, (await tags.UpdateAsync(dog.Id, new TagInput("Dog", ParentIds: [vacation.Id]), TestContext.CancellationToken)).Status);
+        Assert.AreEqual(
+            TagEditStatus.Ok,
+            (
+                await tags.UpdateAsync(
+                    dog.Id,
+                    new TagInput("Dog", ParentIds: [vacation.Id]),
+                    TestContext.CancellationToken
+                )
+            ).Status
+        );
         CollectionAssert.AreEquivalent(new[] { Photo, RepeatedAFile1, Episode2 }, await SearchPathsAsync("t:animal"));
         CollectionAssert.AreEquivalent(new[] { Photo, Holiday, RFile1 }, await SearchPathsAsync("t:vacation"));
 
         // Renaming the shorthand: the old one finds nothing any more.
-        Assert.AreEqual(TagEditStatus.Ok, (await tags.UpdateAsync(vacation.Id, new TagInput("Vacation", Shorthand: "Trip"), TestContext.CancellationToken)).Status);
+        Assert.AreEqual(
+            TagEditStatus.Ok,
+            (
+                await tags.UpdateAsync(
+                    vacation.Id,
+                    new TagInput("Vacation", Shorthand: "Trip"),
+                    TestContext.CancellationToken
+                )
+            ).Status
+        );
         Assert.IsEmpty(await SearchPathsAsync("t:vac"));
         CollectionAssert.AreEquivalent(new[] { Photo, Holiday, RFile1 }, await SearchPathsAsync("t:trip"));
 
         // Hiding a tag hides the files it is set on from searches that don't ask for it.
-        Assert.AreEqual(TagEditStatus.Ok, (await tags.UpdateAsync(vacation.Id, new TagInput("Vacation", IsHidden: true), TestContext.CancellationToken)).Status);
+        Assert.AreEqual(
+            TagEditStatus.Ok,
+            (
+                await tags.UpdateAsync(
+                    vacation.Id,
+                    new TagInput("Vacation", IsHidden: true),
+                    TestContext.CancellationToken
+                )
+            ).Status
+        );
         CollectionAssert.AreEquivalent(new[] { RepeatedAFile1, Episode2 }, await SearchPathsAsync("t:animal"));
         CollectionAssert.AreEquivalent(new[] { Photo, Holiday, RFile1 }, await SearchPathsAsync("t:vacation"));
         // Asking for a child of a hidden tag is not asking for the hidden tag: Holiday is tagged Vacation itself.
@@ -759,25 +977,53 @@ public sealed class SearchCombinationTests
     private async Task AssertFindsAsync(string query, string expected, string path = "")
     {
         var paths = await SearchPathsAsync(query, path);
-        CollectionAssert.AreEquivalent(expected.Split('|', StringSplitOptions.RemoveEmptyEntries), paths,
-            $"“{query}” found: {string.Join(", ", paths)}");
+        CollectionAssert.AreEquivalent(
+            expected.Split('|', StringSplitOptions.RemoveEmptyEntries),
+            paths,
+            $"“{query}” found: {string.Join(", ", paths)}"
+        );
     }
 
     private async Task<string[]> SearchPathsAsync(string query, string path = "") =>
-        ((await _services.Get<FileSearchService>().SearchAsync(query, path, null, 100, cancellationToken: TestContext.CancellationToken))
-            ?? throw new AssertFailedException("Search scope not found.")).Items.Select(i => i.Path).ToArray();
+        (
+            (
+                await _services
+                    .Get<FileSearchService>()
+                    .SearchAsync(query, path, null, 100, cancellationToken: TestContext.CancellationToken)
+            ) ?? throw new AssertFailedException("Search scope not found.")
+        )
+            .Items.Select(i => i.Path)
+            .ToArray();
 
     /// <summary>The fixture's media are not real pictures: their resolutions and durations are written into the index.</summary>
     private async Task SetResolutionsAsync()
     {
-        await using var db = await _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(TestContext.CancellationToken);
-        foreach (var (path, width, height, duration) in new (string, int, int, double?)[]
-                 { (Photo, 4032, 3024, null), (Holiday, 1920, 1080, 5400.4), (Episode2, 1280, 720, 1500), (Episode10, 0, 0, 0) })
+        await using var db = await _services
+            .Get<IDbContextFactory<SfeDbContext>>()
+            .CreateDbContextAsync(TestContext.CancellationToken);
+        foreach (
+            var (path, width, height, duration) in new (string, int, int, double?)[]
+            {
+                (Photo, 4032, 3024, null),
+                (Holiday, 1920, 1080, 5400.4),
+                (Episode2, 1280, 720, 1500),
+                (Episode10, 0, 0, 0),
+            }
+        )
         {
             var fullName = _library.FullPath(path);
-            Assert.AreEqual(1, await db.Files.Where(f => f.FullName == fullName)
-                .ExecuteUpdateAsync(s => s.SetProperty(f => f.Width, width).SetProperty(f => f.Height, height).SetProperty(f => f.Duration, duration),
-                    TestContext.CancellationToken));
+            Assert.AreEqual(
+                1,
+                await db
+                    .Files.Where(f => f.FullName == fullName)
+                    .ExecuteUpdateAsync(
+                        s =>
+                            s.SetProperty(f => f.Width, width)
+                                .SetProperty(f => f.Height, height)
+                                .SetProperty(f => f.Duration, duration),
+                        TestContext.CancellationToken
+                    )
+            );
         }
     }
 
@@ -793,7 +1039,10 @@ public sealed class SearchCombinationTests
 
         async Task TagAsync(string[] paths, params int[] tagIds)
         {
-            var (result, errors) = await tags.ChangeFileTagsAsync(new FileTagChange(paths, Add: tagIds), TestContext.CancellationToken);
+            var (result, errors) = await tags.ChangeFileTagsAsync(
+                new FileTagChange(paths, Add: tagIds),
+                TestContext.CancellationToken
+            );
             Assert.IsNotNull(result, string.Join("; ", errors?.SelectMany(e => e.Value) ?? []));
         }
 

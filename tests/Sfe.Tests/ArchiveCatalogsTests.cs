@@ -52,13 +52,20 @@ public sealed class ArchiveCatalogsTests
     public async Task ABuildNobodyWaitsForIsDropped()
     {
         var gate = new ArchiveBuildGate();
-        var catalogs = new ArchiveCatalogs(_settings, gate, NullLogger<ArchiveCatalogs>.Instance) { Abandoned = TimeSpan.FromMilliseconds(200) };
+        var catalogs = new ArchiveCatalogs(_settings, gate, NullLogger<ArchiveCatalogs>.Instance)
+        {
+            Abandoned = TimeSpan.FromMilliseconds(200),
+        };
         var zip = TestArchives.Zip(_folder, "a.zip", ("one.txt", "1"));
         var busy = gate.Builds(1);
         await busy.WaitAsync(TestContext.CancellationToken);
         try
         {
-            Assert.AreEqual(ArchiveCatalogStatus.Building, catalogs.Get(zip, "a.zip", ArchiveFormat.Zip).Status, "queued behind another build");
+            Assert.AreEqual(
+                ArchiveCatalogStatus.Building,
+                catalogs.Get(zip, "a.zip", ArchiveFormat.Zip).Status,
+                "queued behind another build"
+            );
             await Task.Delay(800, TestContext.CancellationToken);
         }
         finally
@@ -66,9 +73,16 @@ public sealed class ArchiveCatalogsTests
             busy.Release();
         }
         await Task.Delay(300, TestContext.CancellationToken);
-        Assert.IsFalse(Directory.Exists(catalogs.Folder) && Directory.GetFiles(catalogs.Folder, "*.db").Length > 0, "given up: nothing built");
+        Assert.IsFalse(
+            Directory.Exists(catalogs.Folder) && Directory.GetFiles(catalogs.Folder, "*.db").Length > 0,
+            "given up: nothing built"
+        );
 
-        Assert.AreEqual(ArchiveCatalogStatus.Building, catalogs.Get(zip, "a.zip", ArchiveFormat.Zip).Status, "asked again: started again");
+        Assert.AreEqual(
+            ArchiveCatalogStatus.Building,
+            catalogs.Get(zip, "a.zip", ArchiveFormat.Zip).Status,
+            "asked again: started again"
+        );
         Assert.AreEqual(1L, (await ReadyAsync(catalogs, zip)).Summary().Entries);
     }
 
@@ -112,7 +126,9 @@ public sealed class ArchiveCatalogsTests
     {
         public SfeOptions Value { get; } = new();
         public SfeOptions CurrentValue => Value;
+
         public SfeOptions Get(string? name) => Value;
+
         public IDisposable? OnChange(Action<SfeOptions, string?> listener) => null;
     }
 }

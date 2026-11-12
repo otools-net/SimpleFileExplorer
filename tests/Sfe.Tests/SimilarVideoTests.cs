@@ -29,7 +29,10 @@ public sealed class SimilarVideoTests
         _library = new TestLibrary();
         _services = await CoreServices.CreateAsync(_library, s =>
         {
-            s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG") is { Length: > 0 } path ? path : "ffmpeg";
+            s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG")
+                is { Length: > 0 } path
+                ? path
+                : "ffmpeg";
             s["Sfe:Trickplay:Enabled"] = "true";
             s["Sfe:Trickplay:Folders:0"] = "Clips";
             s["Sfe:Trickplay:IntervalSeconds"] = "1";
@@ -83,7 +86,7 @@ public sealed class SimilarVideoTests
         Assert.AreEqual(6, results.Summary.Videos);
 
         var group = results.Groups.Single();
-        Assert.AreEqual("Clips/zoom.mp4", group.Videos[0].File.Path);      // same length, bigger file
+        Assert.AreEqual("Clips/zoom.mp4", group.Videos[0].File.Path); // same length, bigger file
         Assert.IsNull(group.Videos[0].Match);
         Assert.AreEqual(20, group.Videos[0].Duration);
         Assert.AreEqual("Clips/Copies/zoom small.mp4", group.Videos[1].File.Path);

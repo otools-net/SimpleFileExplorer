@@ -43,7 +43,15 @@ public sealed class FolderRuleServiceTests
         await _accounts.SetGuestAccessAsync(_tenant, true, Token);
         _users = (await _accounts.GetBuiltInGroupAsync(_tenant, BuiltInGroup.Users, Token))!.Id;
         _guests = (await _accounts.GetBuiltInGroupAsync(_tenant, BuiltInGroup.Guests, Token))!.Id;
-        _alice = (await _accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [_users]), null, Token)).Value!.Id;
+        _alice = (
+            await _accounts.CreateUserAsync(
+                new UserInput("alice", Password: "alice-password-1", GroupIds: [_users]),
+                null,
+                Token
+            )
+        )
+            .Value!
+            .Id;
     }
 
     [TestCleanup]
@@ -57,8 +65,22 @@ public sealed class FolderRuleServiceTests
     [TestMethod]
     public async Task SetsReplacesAndRemovesARule()
     {
-        var set = await _rules.SetAsync(_tenant, "/Private/", FolderPrincipalRef.Group(_users), FolderLevel.Hidden, _alice, Token);
-        var replaced = await _rules.SetAsync(_tenant, "Private", FolderPrincipalRef.Group(_users), FolderLevel.Read, null, Token);
+        var set = await _rules.SetAsync(
+            _tenant,
+            "/Private/",
+            FolderPrincipalRef.Group(_users),
+            FolderLevel.Hidden,
+            _alice,
+            Token
+        );
+        var replaced = await _rules.SetAsync(
+            _tenant,
+            "Private",
+            FolderPrincipalRef.Group(_users),
+            FolderLevel.Read,
+            null,
+            Token
+        );
         var afterReplace = await _rules.GetAsync(_tenant, Token);
         var removed = await _rules.SetAsync(_tenant, "Private", FolderPrincipalRef.Group(_users), null, null, Token);
 
@@ -74,17 +96,72 @@ public sealed class FolderRuleServiceTests
     [TestMethod]
     public async Task RefusesPathsAndPrincipalsOutsideTheSpace()
     {
-        var bob = (await _accounts.CreateUserAsync(new UserInput("bob", Password: "bob-password-12"), null, Token)).Value!.Id;
+        var bob = (await _accounts.CreateUserAsync(new UserInput("bob", Password: "bob-password-12"), null, Token))
+            .Value!
+            .Id;
 
-        Assert.AreEqual(AccessStatus.Invalid, (await _rules.SetAsync(_tenant, "Photos/../..", FolderPrincipalRef.Group(_users), FolderLevel.Hidden, null, Token)).Status);
-        Assert.AreEqual(AccessStatus.Invalid, (await _rules.SetAsync(_tenant, "Photos", FolderPrincipalRef.Group(9999), FolderLevel.Hidden, null, Token)).Status);
-        Assert.AreEqual(AccessStatus.Invalid, (await _rules.SetAsync(_tenant, "Photos", FolderPrincipalRef.Account(bob), FolderLevel.Read, null, Token)).Status,
-            "An account in no group of the space");
-        Assert.AreEqual(AccessStatus.Invalid, (await _rules.SetAsync(_tenant, "Photos", new FolderPrincipalRef(_users, _alice), FolderLevel.Read, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Invalid,
+            (
+                await _rules.SetAsync(
+                    _tenant,
+                    "Photos/../..",
+                    FolderPrincipalRef.Group(_users),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
+        Assert.AreEqual(
+            AccessStatus.Invalid,
+            (
+                await _rules.SetAsync(
+                    _tenant,
+                    "Photos",
+                    FolderPrincipalRef.Group(9999),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
+        Assert.AreEqual(
+            AccessStatus.Invalid,
+            (
+                await _rules.SetAsync(_tenant, "Photos", FolderPrincipalRef.Account(bob), FolderLevel.Read, null, Token)
+            ).Status,
+            "An account in no group of the space"
+        );
+        Assert.AreEqual(
+            AccessStatus.Invalid,
+            (
+                await _rules.SetAsync(
+                    _tenant,
+                    "Photos",
+                    new FolderPrincipalRef(_users, _alice),
+                    FolderLevel.Read,
+                    null,
+                    Token
+                )
+            ).Status
+        );
         if (OperatingSystem.IsWindows())
         {
-            Assert.AreEqual(AccessStatus.Invalid, (await _rules.SetAsync(_tenant, "Private.", FolderPrincipalRef.Group(_users), FolderLevel.Hidden, null, Token)).Status,
-                "Windows opens \"Private.\" as \"Private\"");
+            Assert.AreEqual(
+                AccessStatus.Invalid,
+                (
+                    await _rules.SetAsync(
+                        _tenant,
+                        "Private.",
+                        FolderPrincipalRef.Group(_users),
+                        FolderLevel.Hidden,
+                        null,
+                        Token
+                    )
+                ).Status,
+                "Windows opens \"Private.\" as \"Private\""
+            );
         }
 
         Assert.IsEmpty(await _rules.GetAsync(_tenant, Token));
@@ -95,19 +172,37 @@ public sealed class FolderRuleServiceTests
     {
         await using (var db = await DbAsync())
         {
-            db.FolderRules.AddRange(Enumerable.Range(0, FolderRuleService.MaxRules).Select(i => new FolderRule
-            {
-                TenantId = _tenant,
-                Path = $"Folder {i}",
-                GroupId = _users,
-                Level = FolderLevel.Read,
-                Created = DateTime.UtcNow,
-            }));
+            db.FolderRules.AddRange(
+                Enumerable
+                    .Range(0, FolderRuleService.MaxRules)
+                    .Select(i => new FolderRule
+                    {
+                        TenantId = _tenant,
+                        Path = $"Folder {i}",
+                        GroupId = _users,
+                        Level = FolderLevel.Read,
+                        Created = DateTime.UtcNow,
+                    })
+            );
             await db.SaveChangesAsync(Token);
         }
 
-        var added = await _rules.SetAsync(_tenant, "One more", FolderPrincipalRef.Group(_users), FolderLevel.Hidden, null, Token);
-        var changed = await _rules.SetAsync(_tenant, "Folder 3", FolderPrincipalRef.Group(_users), FolderLevel.Hidden, null, Token);
+        var added = await _rules.SetAsync(
+            _tenant,
+            "One more",
+            FolderPrincipalRef.Group(_users),
+            FolderLevel.Hidden,
+            null,
+            Token
+        );
+        var changed = await _rules.SetAsync(
+            _tenant,
+            "Folder 3",
+            FolderPrincipalRef.Group(_users),
+            FolderLevel.Hidden,
+            null,
+            Token
+        );
 
         Assert.AreEqual(AccessStatus.Conflict, added.Status);
         Assert.AreEqual(AccessStatus.Ok, changed.Status, "Changing a rule is still possible");
@@ -120,14 +215,24 @@ public sealed class FolderRuleServiceTests
         var before = await evaluator.GetAsync(new AccessSubject(_tenant, _alice), Token);
 
         await _rules.SetAsync(_tenant, "Private", FolderPrincipalRef.Group(_users), FolderLevel.Hidden, null, Token);
-        await _rules.SetAsync(_tenant, "Private/Alice", FolderPrincipalRef.Account(_alice), FolderLevel.Write, null, Token);
+        await _rules.SetAsync(
+            _tenant,
+            "Private/Alice",
+            FolderPrincipalRef.Account(_alice),
+            FolderLevel.Write,
+            null,
+            Token
+        );
         await _rules.SetAsync(_tenant, "Public", FolderPrincipalRef.Group(_guests), FolderLevel.Read, null, Token);
         await _rules.SetAsync(_tenant, "", FolderPrincipalRef.Group(_guests), FolderLevel.Hidden, null, Token);
         var alice = await evaluator.GetAsync(new AccessSubject(_tenant, _alice), Token);
         var visitor = await evaluator.GetAsync(new AccessSubject(_tenant, null), Token);
 
         Assert.IsTrue(before.FolderPolicy.IsUnrestricted);
-        Assert.IsFalse(alice.At("Private/Bob/a.jpg").Has(Rights.Browse), "A rule applies at once (the cache follows the changes)");
+        Assert.IsFalse(
+            alice.At("Private/Bob/a.jpg").Has(Rights.Browse),
+            "A rule applies at once (the cache follows the changes)"
+        );
         Assert.IsTrue(alice.At("Private").PathOnly);
         Assert.IsTrue(alice.At("Private/Alice/a.jpg").Has(Rights.EditImages));
         Assert.IsTrue(alice.At("Elsewhere").Has(Rights.EditImages));
@@ -142,7 +247,13 @@ public sealed class FolderRuleServiceTests
     [TestMethod]
     public async Task DeletingAGroupDeletesItsRules()
     {
-        var kids = (await _accounts.CreateGroupAsync(_tenant, new GroupInput("Kids", Rights: [Rights.Browse]), cancellationToken: Token)).Value!;
+        var kids = (
+            await _accounts.CreateGroupAsync(
+                _tenant,
+                new GroupInput("Kids", Rights: [Rights.Browse]),
+                cancellationToken: Token
+            )
+        ).Value!;
         await _rules.SetAsync(_tenant, "Adult", FolderPrincipalRef.Group(kids.Id), FolderLevel.Hidden, null, Token);
         await _rules.SetAsync(_tenant, "Adult", FolderPrincipalRef.Group(_users), FolderLevel.Read, null, Token);
 
@@ -156,28 +267,78 @@ public sealed class FolderRuleServiceTests
     public async Task MovingAFolderMovesTheRulesOfItsWholeTree()
     {
         await _rules.SetAsync(_tenant, "Photos", FolderPrincipalRef.Group(_users), FolderLevel.Read, null, Token);
-        await _rules.SetAsync(_tenant, "Photos/2024/Private", FolderPrincipalRef.Account(_alice), FolderLevel.Write, null, Token);
-        await _rules.SetAsync(_tenant, "Photos/2024/Private", FolderPrincipalRef.Group(_guests), FolderLevel.Hidden, null, Token);
+        await _rules.SetAsync(
+            _tenant,
+            "Photos/2024/Private",
+            FolderPrincipalRef.Account(_alice),
+            FolderLevel.Write,
+            null,
+            Token
+        );
+        await _rules.SetAsync(
+            _tenant,
+            "Photos/2024/Private",
+            FolderPrincipalRef.Group(_guests),
+            FolderLevel.Hidden,
+            null,
+            Token
+        );
         await _rules.SetAsync(_tenant, "Photos2", FolderPrincipalRef.Group(_users), FolderLevel.Hidden, null, Token);
         await _rules.SetAsync(_tenant, "Other", FolderPrincipalRef.Group(_users), FolderLevel.Hidden, null, Token);
 
-        await using var move = (await _rules.BeginMoveAsync(_tenant, "Photos", "Albums/Pictures", false, _alice, Token)).Value!;
+        await using var move = (
+            await _rules.BeginMoveAsync(_tenant, "Photos", "Albums/Pictures", false, _alice, Token)
+        ).Value!;
         var during = Paths(await _rules.GetAsync(_tenant, Token));
         await move.CompleteAsync(Token);
         var after = await _rules.GetAsync(_tenant, Token);
 
-        CollectionAssert.AreEquivalent(new[] { "Photos", "Photos/2024/Private", "Photos/2024/Private", "Photos2", "Other",
-            "Albums/Pictures", "Albums/Pictures/2024/Private", "Albums/Pictures/2024/Private" }, during, "While the disk changes, both places are protected");
-        CollectionAssert.AreEquivalent(new[] { "Albums/Pictures", "Albums/Pictures/2024/Private", "Albums/Pictures/2024/Private", "Photos2", "Other" }, Paths(after));
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "Photos",
+                "Photos/2024/Private",
+                "Photos/2024/Private",
+                "Photos2",
+                "Other",
+                "Albums/Pictures",
+                "Albums/Pictures/2024/Private",
+                "Albums/Pictures/2024/Private",
+            },
+            during,
+            "While the disk changes, both places are protected"
+        );
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "Albums/Pictures",
+                "Albums/Pictures/2024/Private",
+                "Albums/Pictures/2024/Private",
+                "Photos2",
+                "Other",
+            },
+            Paths(after)
+        );
         Assert.AreEqual(FolderLevel.Write, after.Single(r => r.Principal.UserId == _alice).Level);
-        Assert.AreEqual(FolderLevel.Hidden, after.Single(r => r.Principal.GroupId == _guests).Level, "Every principal's rules move");
+        Assert.AreEqual(
+            FolderLevel.Hidden,
+            after.Single(r => r.Principal.GroupId == _guests).Level,
+            "Every principal's rules move"
+        );
     }
 
     [TestMethod]
     public async Task AnAbortedMoveLeavesTheRulesAsTheyWere()
     {
         await _rules.SetAsync(_tenant, "Photos", FolderPrincipalRef.Group(_users), FolderLevel.Read, null, Token);
-        await _rules.SetAsync(_tenant, "Photos/Deep", FolderPrincipalRef.Group(_guests), FolderLevel.Hidden, null, Token);
+        await _rules.SetAsync(
+            _tenant,
+            "Photos/Deep",
+            FolderPrincipalRef.Group(_guests),
+            FolderLevel.Hidden,
+            null,
+            Token
+        );
         await _rules.SetAsync(_tenant, "Public", FolderPrincipalRef.Group(_guests), FolderLevel.Read, null, Token);
         var before = await _rules.GetAsync(_tenant, Token);
 
@@ -193,21 +354,38 @@ public sealed class FolderRuleServiceTests
         await _rules.SetAsync(_tenant, "Photos", FolderPrincipalRef.Group(_guests), FolderLevel.Hidden, null, Token);
 
         var move = (await _rules.BeginMoveAsync(_tenant, "Photos", "Pictures", false, null, Token)).Value!;
-        var waiting = _rules.SetAsync(_tenant, "Other", FolderPrincipalRef.Group(_guests), FolderLevel.Hidden, null, Token);
+        var waiting = _rules.SetAsync(
+            _tenant,
+            "Other",
+            FolderPrincipalRef.Group(_guests),
+            FolderLevel.Hidden,
+            null,
+            Token
+        );
         await Task.Delay(300, Token);
         Assert.IsFalse(waiting.IsCompleted, "Rule changes wait for the move");
         await move.DisposeAsync();
         await waiting.WaitAsync(TimeSpan.FromSeconds(10), Token);
 
-        CollectionAssert.AreEquivalent(new[] { "Photos", "Pictures", "Other" }, Paths(await _rules.GetAsync(_tenant, Token)),
-            "A move that never completed (a crash) leaves stale rules, never fewer");
+        CollectionAssert.AreEquivalent(
+            new[] { "Photos", "Pictures", "Other" },
+            Paths(await _rules.GetAsync(_tenant, Token)),
+            "A move that never completed (a crash) leaves stale rules, never fewer"
+        );
         await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => move.CompleteAsync(Token));
     }
 
     [TestMethod]
     public async Task ACaseOnlyRenameRewritesThePaths()
     {
-        await _rules.SetAsync(_tenant, "Photos/Private", FolderPrincipalRef.Group(_guests), FolderLevel.Hidden, null, Token);
+        await _rules.SetAsync(
+            _tenant,
+            "Photos/Private",
+            FolderPrincipalRef.Group(_guests),
+            FolderLevel.Hidden,
+            null,
+            Token
+        );
 
         await using (var move = (await _rules.BeginMoveAsync(_tenant, "Photos", "photos", false, null, Token)).Value!)
             await move.CompleteAsync(Token);
@@ -216,7 +394,11 @@ public sealed class FolderRuleServiceTests
             await move.AbortAsync(Token);
 
         CollectionAssert.AreEqual(new[] { "photos/Private" }, renamed);
-        CollectionAssert.AreEqual(new[] { "photos/Private" }, Paths(await _rules.GetAsync(_tenant, Token)), "Aborted: the old spelling is back");
+        CollectionAssert.AreEqual(
+            new[] { "photos/Private" },
+            Paths(await _rules.GetAsync(_tenant, Token)),
+            "Aborted: the old spelling is back"
+        );
     }
 
     [TestMethod]
@@ -224,13 +406,32 @@ public sealed class FolderRuleServiceTests
     {
         await _rules.SetAsync(_tenant, "Pictures/Old", FolderPrincipalRef.Group(_users), FolderLevel.Read, null, Token);
 
-        Assert.AreEqual(AccessStatus.Invalid, (await _rules.BeginMoveAsync(_tenant, "", "Elsewhere", false, null, Token)).Status, "The root");
-        Assert.AreEqual(AccessStatus.Invalid, (await _rules.BeginMoveAsync(_tenant, "Photos", "Photos/Inside", false, null, Token)).Status, "Into itself");
-        Assert.AreEqual(AccessStatus.Invalid, (await _rules.BeginMoveAsync(_tenant, "Photos", "Photos", false, null, Token)).Status);
-        Assert.AreEqual(AccessStatus.Conflict, (await _rules.BeginMoveAsync(_tenant, "Photos", "Pictures", false, null, Token)).Status,
-            "Stale rules where the folder goes would apply to it");
-        Assert.AreEqual(AccessStatus.Ok, (await _rules.SetAsync(_tenant, "Free", FolderPrincipalRef.Group(_users), FolderLevel.Read, null, Token)).Status,
-            "A refused move holds no lock");
+        Assert.AreEqual(
+            AccessStatus.Invalid,
+            (await _rules.BeginMoveAsync(_tenant, "", "Elsewhere", false, null, Token)).Status,
+            "The root"
+        );
+        Assert.AreEqual(
+            AccessStatus.Invalid,
+            (await _rules.BeginMoveAsync(_tenant, "Photos", "Photos/Inside", false, null, Token)).Status,
+            "Into itself"
+        );
+        Assert.AreEqual(
+            AccessStatus.Invalid,
+            (await _rules.BeginMoveAsync(_tenant, "Photos", "Photos", false, null, Token)).Status
+        );
+        Assert.AreEqual(
+            AccessStatus.Conflict,
+            (await _rules.BeginMoveAsync(_tenant, "Photos", "Pictures", false, null, Token)).Status,
+            "Stale rules where the folder goes would apply to it"
+        );
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await _rules.SetAsync(_tenant, "Free", FolderPrincipalRef.Group(_users), FolderLevel.Read, null, Token)
+            ).Status,
+            "A refused move holds no lock"
+        );
     }
 
     [TestMethod]
@@ -242,8 +443,15 @@ public sealed class FolderRuleServiceTests
         var evaluator = _services.GetRequiredService<RightsEvaluator>();
 
         var changes = (await _rules.CompareMoveAsync(_tenant, "Private/Holiday", "Public/Holiday", Token)).Value!;
-        await using (var move = (await _rules.BeginMoveAsync(_tenant, "Private/Holiday", "Public/Holiday", true, null, Token)).Value!)
+        await using (
+            var move = (
+                await _rules.BeginMoveAsync(_tenant, "Private/Holiday", "Public/Holiday", true, null, Token)
+            ).Value!
+        )
+        {
             await move.CompleteAsync(Token);
+        }
+
         var visitor = await evaluator.GetAsync(new AccessSubject(_tenant, null), Token);
         var alice = await evaluator.GetAsync(new AccessSubject(_tenant, _alice), Token);
 
@@ -281,7 +489,9 @@ public sealed class FolderFilterIndexTests
     {
         _library = new TestLibrary();
         _services = await CoreServices.CreateAsync(_library);
-        await _services.Get<Sfe.Core.Indexing.DirectoryIndexer>().IndexAsync(_library.Root, true, new Sfe.Core.Indexing.ScanProgress(), TestContext.CancellationToken);
+        await _services
+            .Get<Sfe.Core.Indexing.DirectoryIndexer>()
+            .IndexAsync(_library.Root, true, new Sfe.Core.Indexing.ScanProgress(), TestContext.CancellationToken);
     }
 
     [TestCleanup]
@@ -295,12 +505,18 @@ public sealed class FolderFilterIndexTests
     [TestMethod]
     public async Task AFolderRuleCoversItsTreeOnly()
     {
-        var policy = FolderPolicy.Compile([new FolderPrincipal(new Dictionary<string, FolderLevel>
-        {
-            ["ChildDir"] = FolderLevel.Hidden,
-            ["RepeatedDir"] = FolderLevel.Hidden,
-            ["RepeatedDir/RepeatedDir"] = FolderLevel.Read,
-        }, new HashSet<string> { Rights.Browse }, true)]);
+        var policy = FolderPolicy.Compile([
+            new FolderPrincipal(
+                new Dictionary<string, FolderLevel>
+                {
+                    ["ChildDir"] = FolderLevel.Hidden,
+                    ["RepeatedDir"] = FolderLevel.Hidden,
+                    ["RepeatedDir/RepeatedDir"] = FolderLevel.Read,
+                },
+                new HashSet<string> { Rights.Browse },
+                true
+            ),
+        ]);
 
         var files = await FilesAsync(policy.FilterFor(Rights.Browse, new HashSet<string> { Rights.Browse }));
 
@@ -322,30 +538,60 @@ public sealed class FolderFilterIndexTests
     public async Task TheIndexFilterPicksWhatThePolicyAllows(int seed)
     {
         var paths = _services.Get<LibraryPaths>();
-        await using var db = await _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(TestContext.CancellationToken);
-        var folders = (await db.Directories.Select(d => d.FullName).ToListAsync(TestContext.CancellationToken)).Select(f => paths.ToRelative(f)!).ToList();
-        var all = (await db.Files.Select(f => f.FullName).ToListAsync(TestContext.CancellationToken)).Select(f => paths.ToRelative(f)!).ToList();
+        await using var db = await _services
+            .Get<IDbContextFactory<SfeDbContext>>()
+            .CreateDbContextAsync(TestContext.CancellationToken);
+        var folders = (await db.Directories.Select(d => d.FullName).ToListAsync(TestContext.CancellationToken))
+            .Select(f => paths.ToRelative(f)!)
+            .ToList();
+        var all = (await db.Files.Select(f => f.FullName).ToListAsync(TestContext.CancellationToken))
+            .Select(f => paths.ToRelative(f)!)
+            .ToList();
         var random = new Random(seed);
-        var principals = Enumerable.Range(0, 2)
-            .Select(_ => new FolderPrincipal(FolderPolicyTests.RandomRules(random, folders).ToDictionary(r => r.Item1, r => r.Item2), new HashSet<string> { Rights.Browse }, true))
+        var principals = Enumerable
+            .Range(0, 2)
+            .Select(_ => new FolderPrincipal(
+                FolderPolicyTests.RandomRules(random, folders).ToDictionary(r => r.Item1, r => r.Item2),
+                new HashSet<string> { Rights.Browse },
+                true
+            ))
             .ToList();
         var granted = new HashSet<string> { Rights.Browse };
         var policy = FolderPolicy.Compile(principals);
         var filter = policy.FilterFor(Rights.Browse, granted);
 
         var files = await FilesAsync(filter);
-        var shownFolders = (await db.Directories.Where(filter.ToPredicate<DirectoryEntry>(d => d.FullName, paths)).Select(d => d.FullName).ToListAsync(TestContext.CancellationToken))
-            .Select(f => paths.ToRelative(f)!).ToList();
+        var shownFolders = (
+            await db
+                .Directories.Where(filter.ToPredicate<DirectoryEntry>(d => d.FullName, paths))
+                .Select(d => d.FullName)
+                .ToListAsync(TestContext.CancellationToken)
+        )
+            .Select(f => paths.ToRelative(f)!)
+            .ToList();
 
-        CollectionAssert.AreEquivalent(all.Where(f => policy.At(f, granted).Has(Rights.Browse)).ToList(), files, $"seed {seed}");
-        CollectionAssert.AreEquivalent(folders.Where(f => policy.At(f, granted).Has(Rights.Browse)).ToList(), shownFolders, $"seed {seed}");
+        CollectionAssert.AreEquivalent(
+            all.Where(f => policy.At(f, granted).Has(Rights.Browse)).ToList(),
+            files,
+            $"seed {seed}"
+        );
+        CollectionAssert.AreEquivalent(
+            folders.Where(f => policy.At(f, granted).Has(Rights.Browse)).ToList(),
+            shownFolders,
+            $"seed {seed}"
+        );
     }
 
     private async Task<List<string>> FilesAsync(PathFilter filter)
     {
         var paths = _services.Get<LibraryPaths>();
-        await using var db = await _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(TestContext.CancellationToken);
-        var names = await db.Files.Where(filter.ToPredicate<FileEntry>(f => f.FullName, paths)).Select(f => f.FullName).ToListAsync(TestContext.CancellationToken);
+        await using var db = await _services
+            .Get<IDbContextFactory<SfeDbContext>>()
+            .CreateDbContextAsync(TestContext.CancellationToken);
+        var names = await db
+            .Files.Where(filter.ToPredicate<FileEntry>(f => f.FullName, paths))
+            .Select(f => f.FullName)
+            .ToListAsync(TestContext.CancellationToken);
         return [.. names.Select(n => paths.ToRelative(n)!)];
     }
 }
@@ -394,10 +640,24 @@ public sealed class FolderRulesUpgradeTests
         var accounts = updated.Services.GetRequiredService<AccessService>();
         var tenant = (await accounts.GetTenantsAsync(TestContext.CancellationToken)).Single(t => t.IsDefault).Id;
         var admin = (await accounts.GetServerAdminIdsAsync(TestContext.CancellationToken)).Single();
-        var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, TestContext.CancellationToken))!.Id;
+        var users = (
+            await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, TestContext.CancellationToken)
+        )!.Id;
         var rules = updated.Services.GetRequiredService<FolderRuleService>();
 
         Assert.IsEmpty(await rules.GetAsync(tenant, TestContext.CancellationToken));
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "Media", FolderPrincipalRef.Group(users), FolderLevel.Read, admin, TestContext.CancellationToken)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(
+                    tenant,
+                    "Media",
+                    FolderPrincipalRef.Group(users),
+                    FolderLevel.Read,
+                    admin,
+                    TestContext.CancellationToken
+                )
+            ).Status
+        );
     }
 }

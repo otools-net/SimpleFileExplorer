@@ -51,7 +51,11 @@ public sealed class FileContentTests
 
         Assert.AreEqual("0123456789", Encoding.ASCII.GetString(whole.Bytes!));
         Assert.AreEqual(10, whole.Version!.Size);
-        Assert.AreEqual(whole.Version, await FileVersion.OfFileAsync(file, Token), "The same version, read whole or streamed");
+        Assert.AreEqual(
+            whole.Version,
+            await FileVersion.OfFileAsync(file, Token),
+            "The same version, read whole or streamed"
+        );
         Assert.IsTrue(tooLarge.TooLarge);
         Assert.AreEqual(10, tooLarge.Size);
         Assert.IsNull(await Content.ReadAsync(file + ".missing", 10, Token));
@@ -72,7 +76,11 @@ public sealed class FileContentTests
         Assert.AreEqual(OverwriteStatus.Changed, stale.Status);
         Assert.AreEqual(OverwriteStatus.Done, anyway.Status, anyway.Message);
         Assert.AreEqual("fourth", File.ReadAllText(file));
-        Assert.AreEqual(anyway.Version, await FileVersion.OfFileAsync(file, Token), "The answer's version is the file's");
+        Assert.AreEqual(
+            anyway.Version,
+            await FileVersion.OfFileAsync(file, Token),
+            "The answer's version is the file's"
+        );
         Assert.IsEmpty(Directory.GetFiles(Path.GetDirectoryName(file)!, "*.sfe-tmp"), "No temporary file left");
     }
 
@@ -108,7 +116,10 @@ public sealed class FileContentTests
         var file = WriteText("Media/notes.txt", "short");
         await ScanAsync();
         var tag = (await Tags.CreateAsync(new TagInput("Todo"), Token)).Tag!.Id;
-        var (tagged, errors) = await Tags.ChangeFileTagsAsync(new FileTagChange(["Media/notes.txt"], Add: [tag]), Token);
+        var (tagged, errors) = await Tags.ChangeFileTagsAsync(
+            new FileTagChange(["Media/notes.txt"], Add: [tag]),
+            Token
+        );
         Assert.IsNotNull(tagged, errors is null ? null : string.Join(" ", errors.SelectMany(e => e.Value)));
         int id;
         await using (var db = await DbAsync())
@@ -125,9 +136,16 @@ public sealed class FileContentTests
             Assert.AreEqual(id, row.Id, "The same row");
             Assert.AreEqual(new FileInfo(file).Length, row.Size);
             Assert.AreEqual(new FileInfo(file).LastWriteTime, row.LastWriteTime);
-            Assert.AreEqual(await FileFingerprint.ComputeAsync(file, Token), row.Sha1, "The new content's fingerprint (duplicates)");
+            Assert.AreEqual(
+                await FileFingerprint.ComputeAsync(file, Token),
+                row.Sha1,
+                "The new content's fingerprint (duplicates)"
+            );
         }
-        CollectionAssert.AreEqual(new[] { tag }, (await Tags.GetFileTagsAsync("Media/notes.txt", Token))!.Tags.Select(t => t.Id).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { tag },
+            (await Tags.GetFileTagsAsync("Media/notes.txt", Token))!.Tags.Select(t => t.Id).ToArray()
+        );
         CollectionAssert.Contains(changed, "Media", "The change feed hears of it");
     }
 
@@ -171,7 +189,10 @@ public sealed class FileContentTests
         Assert.AreEqual(OverwriteStatus.NotFound, (await SaveAsync("Docs/nothing.txt", "x", "*")).Status);
         Assert.AreEqual(OverwriteStatus.NotFound, (await SaveAsync("../outside.txt", "x", "*")).Status);
         Assert.AreEqual("keep", File.ReadAllText(file));
-        Assert.IsEmpty((await Trash.ListAsync(null, null, _ => true, Token)).Items, "Nothing kept for what wasn't saved");
+        Assert.IsEmpty(
+            (await Trash.ListAsync(null, null, _ => true, Token)).Items,
+            "Nothing kept for what wasn't saved"
+        );
     }
 
     [TestMethod]
@@ -201,7 +222,10 @@ public sealed class FileContentTests
         StringAssert.Contains(result.Message, "in use");
         Assert.AreEqual("before", File.ReadAllText(file));
         Assert.IsEmpty(Directory.GetFiles(Path.GetDirectoryName(file)!, "*.sfe-tmp"), "No temporary file left");
-        Assert.IsEmpty((await Trash.ListAsync(null, null, _ => true, Token)).Items, "No previous version kept for a save that didn't happen");
+        Assert.IsEmpty(
+            (await Trash.ListAsync(null, null, _ => true, Token)).Items,
+            "No previous version kept for a save that didn't happen"
+        );
     }
 
     [TestMethod]
@@ -240,14 +264,18 @@ public sealed class FileContentTests
 
     private TagService Tags => _services.Get<TagService>();
 
-    private Task<OverwriteResult> SaveAsync(string path, string text, string ifMatch, string session = "s", bool keepPrevious = true) =>
-        Content.OverwriteAsync(path, Encoding.UTF8.GetBytes(text), ifMatch, session, keepPrevious, Me, Token);
-
+    private Task<OverwriteResult> SaveAsync(
+        string path,
+        string text,
+        string ifMatch,
+        string session = "s",
+        bool keepPrevious = true
+    ) => Content.OverwriteAsync(path, Encoding.UTF8.GetBytes(text), ifMatch, session, keepPrevious, Me, Token);
 
     [TestMethod]
     public async Task AnyPartOfALargeFileIsReadAtWholeLines()
     {
-        var lines = string.Concat(Enumerable.Range(1, 2000).Select(i => $"line {i:0000}\n"));    // 10 bytes a line
+        var lines = string.Concat(Enumerable.Range(1, 2000).Select(i => $"line {i:0000}\n")); // 10 bytes a line
         var full = WriteText("big.log", lines);
 
         var start = (await Content.ReadPartAsync(full, 0, 95, null, Token))!;
@@ -255,7 +283,10 @@ public sealed class FileContentTests
         var end = (await Content.ReadPartAsync(full, -1, 95, null, Token))!;
         var past = (await Content.ReadPartAsync(full, 1_000_000, 100, null, Token))!;
 
-        Assert.AreEqual(("line 0001\n", 0L, 90L, 20_000L, TextCodec.Utf8), (start.Text![..10], start.Offset, start.End, start.Size, start.Encoding));
+        Assert.AreEqual(
+            ("line 0001\n", 0L, 90L, 20_000L, TextCodec.Utf8),
+            (start.Text![..10], start.Offset, start.End, start.Size, start.Encoding)
+        );
         Assert.AreEqual((100L, "line 0011\n"), (middle.Offset, middle.Text![..10]), "from the line after the offset");
         Assert.EndsWith("\n", middle.Text);
         Assert.AreEqual((19_910L, 20_000L, "line 1992\n"), (end.Offset, end.End, end.Text![..10]));
@@ -275,7 +306,11 @@ public sealed class FileContentTests
         var next = (await Content.ReadPartAsync(wide, start.End, 100, null, Token))!;
         var refused = (await Content.ReadPartAsync(binary, 0, 100, null, Token))!;
 
-        Assert.AreEqual(("one\n", TextCodec.Utf16Le, 2L), (start.Text, start.Encoding, start.Offset), "the mark is skipped");
+        Assert.AreEqual(
+            ("one\n", TextCodec.Utf16Le, 2L),
+            (start.Text, start.Encoding, start.Offset),
+            "the mark is skipped"
+        );
         Assert.AreEqual("two\nthree\n", next.Text);
         Assert.IsNull(refused.Text);
     }
@@ -286,16 +321,23 @@ public sealed class FileContentTests
         var full = WriteText("notes.txt", "first");
         var version = (await Content.VersionAsync(full, null, Token))!;
         var same = (await Content.VersionAsync(full, version.Token, Token))!;
-        var forged = (await Content.VersionAsync(full, version.Token[..version.Token.LastIndexOf('-')] + "-0000", Token))!;
+        var forged = (
+            await Content.VersionAsync(full, version.Token[..version.Token.LastIndexOf('-')] + "-0000", Token)
+        )!;
         await File.WriteAllTextAsync(full, "second!", Token);
         var changed = (await Content.VersionAsync(full, version.Token, Token))!;
 
         Assert.AreEqual(version, same);
-        Assert.AreEqual(version.Token[..version.Token.LastIndexOf('-')] + "-0000", forged.Token, "Same size and time: not read again");
+        Assert.AreEqual(
+            version.Token[..version.Token.LastIndexOf('-')] + "-0000",
+            forged.Token,
+            "Same size and time: not read again"
+        );
         Assert.AreNotEqual(version.Token, changed.Token);
         Assert.AreEqual((await FileVersion.OfFileAsync(full, Token)).Token, changed.Token);
         Assert.IsNull(await Content.VersionAsync(Path.Combine(_library.Root, "nothing.txt"), null, Token));
     }
+
     private string WriteText(string relative, string text)
     {
         var full = _library.FullPath(relative);
@@ -311,7 +353,8 @@ public sealed class FileContentTests
         await coordinator.Completion!;
     }
 
-    private Task<SfeDbContext> DbAsync() => _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
+    private Task<SfeDbContext> DbAsync() =>
+        _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
 
     private static bool TryCreateFileLink(string link, string target)
     {

@@ -64,13 +64,26 @@ public sealed class LogTests
         var anyCase = await SearchAsync(admin, "q=PROBE+GAMMA");
         var inException = await SearchAsync(admin, "q=inner+trouble");
         var byCategory = await SearchAsync(admin, "q=" + Category);
-        var inRange = await SearchAsync(admin, $"q=probe&from={Uri.EscapeDataString(before.ToString("O"))}&to={Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(1).ToString("O"))}");
-        var later = await SearchAsync(admin, $"q=probe&from={Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(1).ToString("O"))}");
+        var inRange = await SearchAsync(
+            admin,
+            $"q=probe&from={Uri.EscapeDataString(before.ToString("O"))}&to={Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(1).ToString("O"))}"
+        );
+        var later = await SearchAsync(
+            admin,
+            $"q=probe&from={Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(1).ToString("O"))}"
+        );
         var start = await SearchAsync(admin, "q=SFE&levels=information");
         using var badLevel = await admin.GetAsync("/api/logs?levels=loud", TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new[] { "probe gamma", "probe beta 100%_done[1]", "probe alpha 1" }, probes.Entries.Select(e => e.Message).ToArray(), "Newest first");
-        CollectionAssert.AreEqual(new[] { LogEntryLevel.Error, LogEntryLevel.Warning }, problems.Entries.Select(e => e.Level).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "probe gamma", "probe beta 100%_done[1]", "probe alpha 1" },
+            probes.Entries.Select(e => e.Message).ToArray(),
+            "Newest first"
+        );
+        CollectionAssert.AreEqual(
+            new[] { LogEntryLevel.Error, LogEntryLevel.Warning },
+            problems.Entries.Select(e => e.Level).ToArray()
+        );
         Assert.AreEqual("probe beta 100%_done[1]", literal.Entries.Single().Message, "%, _ and [ are plain characters");
         Assert.IsEmpty(wildcard.Entries, "_ is no wildcard");
         Assert.AreEqual("probe gamma", anyCase.Entries.Single().Message);
@@ -79,7 +92,10 @@ public sealed class LogTests
         Assert.HasCount(3, byCategory.Entries);
         Assert.HasCount(3, inRange.Entries);
         Assert.IsEmpty(later.Entries);
-        Assert.IsTrue(start.Entries.Any(e => e.Message.StartsWith("SFE ", StringComparison.Ordinal) && e.TenantId is null), "The start-up's own entries are kept");
+        Assert.IsTrue(
+            start.Entries.Any(e => e.Message.StartsWith("SFE ", StringComparison.Ordinal) && e.TenantId is null),
+            "The start-up's own entries are kept"
+        );
         Assert.IsTrue(probes.AllSpaces);
         Assert.AreEqual(30, probes.RetentionDays);
         Assert.IsFalse(probes.WriteFiles);
@@ -93,8 +109,17 @@ public sealed class LogTests
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
 
-        using var refused = await admin.PostAsJsonAsync("/api/files/jobs/compress",
-            new { paths = new[] { "Media" }, target = "", level = 12, password = "secret-zip-password" }, TestContext.CancellationToken);
+        using var refused = await admin.PostAsJsonAsync(
+            "/api/files/jobs/compress",
+            new
+            {
+                paths = new[] { "Media" },
+                target = "",
+                level = 12,
+                password = "secret-zip-password",
+            },
+            TestContext.CancellationToken
+        );
         Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
         await FlushAsync(factory);
 
@@ -120,8 +145,14 @@ public sealed class LogTests
         var second = await SearchAsync(admin, $"q=page+probe&limit=2&before={first.Next}");
         var third = await SearchAsync(admin, $"q=page+probe&limit=2&before={second.Next}");
 
-        CollectionAssert.AreEqual(new[] { "page probe 5", "page probe 4" }, first.Entries.Select(e => e.Message).ToArray());
-        CollectionAssert.AreEqual(new[] { "page probe 3", "page probe 2" }, second.Entries.Select(e => e.Message).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "page probe 5", "page probe 4" },
+            first.Entries.Select(e => e.Message).ToArray()
+        );
+        CollectionAssert.AreEqual(
+            new[] { "page probe 3", "page probe 2" },
+            second.Entries.Select(e => e.Message).ToArray()
+        );
         CollectionAssert.AreEqual(new[] { "page probe 1" }, third.Entries.Select(e => e.Message).ToArray());
         Assert.IsNull(third.Next);
     }
@@ -137,14 +168,30 @@ public sealed class LogTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
         var tenantId = groups[0].TenantId;
-        await CreateUserAsync(admin, new UserInput("alice", Password: "alice-password", GroupIds: [groups.Single(g => g.BuiltIn == BuiltInGroup.Administrators).Id]));
-        await CreateUserAsync(admin, new UserInput("bob", Password: "bob-password", GroupIds: [groups.Single(g => g.BuiltIn == BuiltInGroup.Users).Id]));
+        await CreateUserAsync(
+            admin,
+            new UserInput(
+                "alice",
+                Password: "alice-password",
+                GroupIds: [groups.Single(g => g.BuiltIn == BuiltInGroup.Administrators).Id]
+            )
+        );
+        await CreateUserAsync(
+            admin,
+            new UserInput(
+                "bob",
+                Password: "bob-password",
+                GroupIds: [groups.Single(g => g.BuiltIn == BuiltInGroup.Users).Id]
+            )
+        );
         var alice = await ApiClients.SignInAsync(factory, "alice", "alice-password", TestContext.CancellationToken);
         var bob = await ApiClients.SignInAsync(factory, "bob", "bob-password", TestContext.CancellationToken);
         _disposables.Add(alice);
         _disposables.Add(bob);
 
-        var host = await factory.Services.GetRequiredService<TenantRegistry>().GetAsync(tenantId, TestContext.CancellationToken);
+        var host = await factory
+            .Services.GetRequiredService<TenantRegistry>()
+            .GetAsync(tenantId, TestContext.CancellationToken);
         host!.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Category).LogWarning("space probe");
         factory.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Category).LogWarning("server probe");
         await FlushAsync(factory);
@@ -156,15 +203,25 @@ public sealed class LogTests
         using var byMember = await bob.GetAsync("/api/logs", TestContext.CancellationToken);
         using var byVisitor = await ApiClients.Create(factory).GetAsync("/api/logs", TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(new[] { "space probe", "server probe" }, everything.Entries.Select(e => e.Message).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "space probe", "server probe" },
+            everything.Entries.Select(e => e.Message).ToArray()
+        );
         Assert.AreEqual(tenantId, everything.Entries.Single(e => e.Message == "space probe").TenantId);
         Assert.AreEqual("server probe", serverOnly.Entries.Single().Message);
         Assert.AreEqual("space probe", spaceOnly.Entries.Single().Message);
-        Assert.AreEqual("space probe", bySpaceAdmin.Entries.Single().Message, "Only the space's entries, whatever tenant says");
+        Assert.AreEqual(
+            "space probe",
+            bySpaceAdmin.Entries.Single().Message,
+            "Only the space's entries, whatever tenant says"
+        );
         Assert.IsFalse(bySpaceAdmin.AllSpaces);
         Assert.IsNull(bySpaceAdmin.FilesDirectory, "Where the server keeps its files is not told");
         Assert.AreEqual(HttpStatusCode.Forbidden, byMember.StatusCode);
-        Assert.IsTrue(byVisitor.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden, byVisitor.StatusCode.ToString());
+        Assert.IsTrue(
+            byVisitor.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden,
+            byVisitor.StatusCode.ToString()
+        );
     }
 
     [TestMethod]
@@ -173,12 +230,20 @@ public sealed class LogTests
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
 
-        using var saved = await PatchAsync(admin, "server", new() { ["logs.retentionDays"] = 7, ["logs.writeFiles"] = true });
+        using var saved = await PatchAsync(
+            admin,
+            "server",
+            new() { ["logs.retentionDays"] = 7, ["logs.writeFiles"] = true }
+        );
         using var negative = await PatchAsync(admin, "server", new() { ["logs.retentionDays"] = -1 });
         using var inLibrary = await PatchAsync(admin, "tenant", new() { ["logs.retentionDays"] = 3 });
         var page = await SearchAsync(admin, "");
 
-        Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            saved.StatusCode,
+            await saved.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
         Assert.AreEqual(HttpStatusCode.BadRequest, negative.StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, inLibrary.StatusCode, "Only the whole server sets them");
         Assert.AreEqual(7, page.RetentionDays);
@@ -199,22 +264,43 @@ public sealed class LogTests
         // A wrong password and a wrong setup code, through the API.
         using (var visitor = ApiClients.CreateFrom(factory, "203.0.113.50"))
         {
-            (await visitor.PostAsJsonAsync("/api/session/login", new SignInRequest(ApiClients.AdminName, "wrong-password"), TestContext.CancellationToken)).Dispose();
-            (await visitor.PostAsJsonAsync("/api/migration", new Sfe.Api.Endpoints.MigrationInput("not-the-code"), TestContext.CancellationToken)).Dispose();
+            (
+                await visitor.PostAsJsonAsync(
+                    "/api/session/login",
+                    new SignInRequest(ApiClients.AdminName, "wrong-password"),
+                    TestContext.CancellationToken
+                )
+            ).Dispose();
+            (
+                await visitor.PostAsJsonAsync(
+                    "/api/migration",
+                    new Sfe.Api.Endpoints.MigrationInput("not-the-code"),
+                    TestContext.CancellationToken
+                )
+            ).Dispose();
         }
         await log.FlushAsync(cancellationToken: TestContext.CancellationToken);
 
         var probes = await SearchAsync(admin, "q=probe");
         var security = await SearchAsync(admin, "levels=securityWarning");
         var warnings = await SearchAsync(admin, "q=probe&levels=warning");
-        var file = await File.ReadAllTextAsync(Path.Combine(_library.LogsPath, AuditLogService.FileName(DateOnly.FromDateTime(DateTime.UtcNow))),
-            TestContext.CancellationToken);
+        var file = await File.ReadAllTextAsync(
+            Path.Combine(_library.LogsPath, AuditLogService.FileName(DateOnly.FromDateTime(DateTime.UtcNow))),
+            TestContext.CancellationToken
+        );
 
-        Assert.AreEqual(LogEntryLevel.SecurityWarning, probes.Entries.Single(e => e.Message == "probe security event").Level);
+        Assert.AreEqual(
+            LogEntryLevel.SecurityWarning,
+            probes.Entries.Single(e => e.Message == "probe security event").Level
+        );
         Assert.AreEqual(LogEntryLevel.Warning, probes.Entries.Single(e => e.Message == "probe plain warning").Level);
         Assert.IsTrue(security.Entries.All(e => e.Level == LogEntryLevel.SecurityWarning));
-        Assert.IsTrue(security.Entries.Any(e => e.Message.Contains("Sign-in refused for admin from 203.0.113.50: wrong name or password")),
-            string.Join("\n", security.Entries.Select(e => e.Message)));
+        Assert.IsTrue(
+            security.Entries.Any(e =>
+                e.Message.Contains("Sign-in refused for admin from 203.0.113.50: wrong name or password")
+            ),
+            string.Join("\n", security.Entries.Select(e => e.Message))
+        );
         Assert.IsTrue(security.Entries.Any(e => e.Message == "Update refused: wrong setup code"));
         Assert.AreEqual("probe plain warning", warnings.Entries.Single().Message, "Plain warnings are filtered apart");
         StringAssert.Contains(file, $" SEC {Category}: probe security event");
@@ -225,10 +311,15 @@ public sealed class LogTests
     {
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        factory.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Category).LogSecurityWarning("probe by name");
+        factory
+            .Services.GetRequiredService<ILoggerFactory>()
+            .CreateLogger(Category)
+            .LogSecurityWarning("probe by name");
         await FlushAsync(factory);
 
-        var json = JsonNode.Parse(await admin.GetStringAsync("/api/logs?q=probe+by+name", TestContext.CancellationToken))!;
+        var json = JsonNode.Parse(
+            await admin.GetStringAsync("/api/logs?q=probe+by+name", TestContext.CancellationToken)
+        )!;
 
         Assert.AreEqual("securityWarning", json["entries"]![0]!["level"]!.GetValue<string>());
     }
@@ -245,14 +336,25 @@ public sealed class LogTests
 
         var today = Path.Combine(_library.LogsPath, AuditLogService.FileName(DateOnly.FromDateTime(DateTime.UtcNow)));
         var text = await File.ReadAllTextAsync(today, TestContext.CancellationToken);
-        StringAssert.Contains(text, $" ERR {Category}: file probe\n    second line\n    System.InvalidOperationException: broken");
+        StringAssert.Contains(
+            text,
+            $" ERR {Category}: file probe\n    second line\n    System.InvalidOperationException: broken"
+        );
 
         var old = Path.Combine(_library.LogsPath, AuditLogService.FileName(new DateOnly(2020, 1, 1)));
         await File.WriteAllTextAsync(old, "old\n", TestContext.CancellationToken);
         var dbFactory = factory.Services.GetRequiredService<IDbContextFactory<AccessDbContext>>();
         await using (var db = await dbFactory.CreateDbContextAsync(TestContext.CancellationToken))
         {
-            db.LogEntries.Add(new LogEntry { Timestamp = new DateTime(2020, 1, 1), Level = LogEntryLevel.Warning, Category = Category, Message = "old probe" });
+            db.LogEntries.Add(
+                new LogEntry
+                {
+                    Timestamp = new DateTime(2020, 1, 1),
+                    Level = LogEntryLevel.Warning,
+                    Category = Category,
+                    Message = "old probe",
+                }
+            );
             await db.SaveChangesAsync(TestContext.CancellationToken);
         }
 
@@ -263,7 +365,9 @@ public sealed class LogTests
         await using (var db = await dbFactory.CreateDbContextAsync(TestContext.CancellationToken))
         {
             Assert.IsFalse(await db.LogEntries.AnyAsync(e => e.Message == "old probe", TestContext.CancellationToken));
-            Assert.IsTrue(await db.LogEntries.AnyAsync(e => e.Message.StartsWith("file probe"), TestContext.CancellationToken));
+            Assert.IsTrue(
+                await db.LogEntries.AnyAsync(e => e.Message.StartsWith("file probe"), TestContext.CancellationToken)
+            );
         }
     }
 
@@ -287,24 +391,33 @@ public sealed class LogTests
     {
         await using (var factory = ApiClients.CreateFactory(_library))
             await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        await ExecuteAsync($"""
+        await ExecuteAsync(
+            $"""
             DROP TABLE "LogEntries";
             DELETE FROM "GroupRights" WHERE "Right" IN ('{Rights.ViewLogs}', '{Rights.LogSettings}');
             UPDATE "Tenants" SET "RightsRevision" = 3;
             UPDATE "{AccessDbContext.ServerPropertiesTable}" SET "Value" = '1.45.0' WHERE "Key" = '{ServerProperty.VersionKey}';
             PRAGMA wal_checkpoint(TRUNCATE);
-            """);
+            """
+        );
 
         var updated = Factory();
         _ = updated.Server;
         updated.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Category).LogWarning("waiting probe");
-        await updated.Services.GetRequiredService<AuditLogService>().FlushAsync(database: false, TestContext.CancellationToken);
+        await updated
+            .Services.GetRequiredService<AuditLogService>()
+            .FlushAsync(database: false, TestContext.CancellationToken);
         // Long enough for the worker to have flushed a few times.
         await Task.Delay(Sfe.Api.AuditLogWorker.FlushInterval * 2, TestContext.CancellationToken);
         var tableBefore = await TableExistsAsync("LogEntries");
 
         await ApiClients.MigrateAsync(updated, TestContext.CancellationToken);
-        var admin = await ApiClients.SignInAsync(updated, ApiClients.AdminName, ApiClients.AdminPassword, TestContext.CancellationToken);
+        var admin = await ApiClients.SignInAsync(
+            updated,
+            ApiClients.AdminName,
+            ApiClients.AdminPassword,
+            TestContext.CancellationToken
+        );
         _disposables.Add(admin);
         await FlushAsync(updated);
         var waiting = await SearchAsync(admin, "q=waiting+probe");
@@ -325,29 +438,57 @@ public sealed class LogTests
     }
 
     private Task FlushAsync(WebApplicationFactory<Program> factory) =>
-        factory.Services.GetRequiredService<AuditLogService>().FlushAsync(cancellationToken: TestContext.CancellationToken);
+        factory
+            .Services.GetRequiredService<AuditLogService>()
+            .FlushAsync(cancellationToken: TestContext.CancellationToken);
 
     private async Task<LogSearchResult> SearchAsync(HttpClient client, string query)
     {
         using var response = await client.GetAsync("/api/logs?" + query, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
         return (await response.Content.ReadFromJsonAsync<LogSearchResult>(Json, TestContext.CancellationToken))!;
     }
 
-    private Task<HttpResponseMessage> PatchAsync(HttpClient client, string level, Dictionary<string, JsonNode?> values) =>
-        client.PatchAsJsonAsync($"/api/settings?level={level}", new SettingChanges(values), Json, TestContext.CancellationToken);
+    private Task<HttpResponseMessage> PatchAsync(
+        HttpClient client,
+        string level,
+        Dictionary<string, JsonNode?> values
+    ) =>
+        client.PatchAsJsonAsync(
+            $"/api/settings?level={level}",
+            new SettingChanges(values),
+            Json,
+            TestContext.CancellationToken
+        );
 
     private async Task<T> GetAsync<T>(HttpClient client, string url)
     {
         using var response = await client.GetAsync(url, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
         return (await response.Content.ReadFromJsonAsync<T>(Json, TestContext.CancellationToken))!;
     }
 
     private async Task CreateUserAsync(HttpClient admin, UserInput input)
     {
-        using var response = await admin.PostAsJsonAsync("/api/access/users", input, Json, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        using var response = await admin.PostAsJsonAsync(
+            "/api/access/users",
+            input,
+            Json,
+            TestContext.CancellationToken
+        );
+        Assert.AreEqual(
+            HttpStatusCode.Created,
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
     }
 
     private async Task ExecuteAsync(string sql)

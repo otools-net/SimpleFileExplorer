@@ -107,14 +107,26 @@ public sealed class ZipWriterTests
         Assert.AreEqual(-1, bytes.AsSpan().IndexOf("Unicode names survive"u8), "the content is not in clear");
         Assert.AreNotEqual(-1, bytes.AsSpan().IndexOf(Encoding.UTF8.GetBytes("día uno.txt")), "the names are");
 
-        var entries = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).Where(e => e.Kind == ArchiveEntryKind.File).ToList();
-        Assert.IsTrue(entries.All(e => e.Encrypted && e.Cipher == ZipCipher.Aes && e.CipherInfo == 0x23 && e.Crc == 0), "AE-2, 256 bits, no CRC");
+        var entries = ArchiveReader
+            .ReadEntries(zip, ArchiveFormat.Zip)
+            .Where(e => e.Kind == ArchiveEntryKind.File)
+            .ToList();
+        Assert.IsTrue(
+            entries.All(e => e.Encrypted && e.Cipher == ZipCipher.Aes && e.CipherInfo == 0x23 && e.Crc == 0),
+            "AE-2, 256 bits, no CRC"
+        );
         foreach (var (name, text) in Tree)
         {
-            using var data = new StreamReader(ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, entries.Single(e => e.Name == name), password));
+            using var data = new StreamReader(
+                ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, entries.Single(e => e.Name == name), password)
+            );
             Assert.AreEqual(text, data.ReadToEnd(), name);
         }
-        Assert.IsTrue(Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, entries[0], "wrong")).NeedsPassword);
+        Assert.IsTrue(
+            Assert
+                .Throws<ArchiveException>(() => ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, entries[0], "wrong"))
+                .NeedsPassword
+        );
 
         using (var file = File.OpenRead(zip))
         using (var reader = ReaderFactory.OpenReader(file, new ReaderOptions { Password = password }))
@@ -145,7 +157,16 @@ public sealed class ZipWriterTests
         await using (var writer = new ZipWriter(output))
         {
             for (var i = 0; i < 70_000; i++)
-                await writer.AddFileAsync($"f/{i:00000}.txt", Time, new MemoryStream([(byte)'x']), 1, cancel: TestContext.CancellationToken);
+            {
+                await writer.AddFileAsync(
+                    $"f/{i:00000}.txt",
+                    Time,
+                    new MemoryStream([(byte)'x']),
+                    1,
+                    cancel: TestContext.CancellationToken
+                );
+            }
+
             writer.Finish();
         }
 
@@ -162,14 +183,23 @@ public sealed class ZipWriterTests
         await using (var output = File.Create(zip))
         await using (var writer = new ZipWriter(output))
         {
-            await writer.AddFileAsync("piped.txt", Time, new UnknownLength(Encoding.UTF8.GetBytes("from a pipe")), 6, cancel: TestContext.CancellationToken);
+            await writer.AddFileAsync(
+                "piped.txt",
+                Time,
+                new UnknownLength(Encoding.UTF8.GetBytes("from a pipe")),
+                6,
+                cancel: TestContext.CancellationToken
+            );
             writer.Finish();
         }
 
         using (var archive = ZipFile.OpenRead(zip))
             Assert.AreEqual("from a pipe", new StreamReader(archive.GetEntry("piped.txt")!.Open()).ReadToEnd());
         var entry = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).Single();
-        Assert.AreEqual("from a pipe", new StreamReader(ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, entry)).ReadToEnd());
+        Assert.AreEqual(
+            "from a pipe",
+            new StreamReader(ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, entry)).ReadToEnd()
+        );
         SevenZipTests(zip, null);
     }
 
@@ -179,11 +209,20 @@ public sealed class ZipWriterTests
         long read = 0;
         await using var output = new MemoryStream();
         await using var writer = new ZipWriter(output);
-        var packed = await writer.AddFileAsync("a.txt", Time, new MemoryStream(new byte[3 << 20]), 9, n => read += n, TestContext.CancellationToken);
+        var packed = await writer.AddFileAsync(
+            "a.txt",
+            Time,
+            new MemoryStream(new byte[3 << 20]),
+            9,
+            n => read += n,
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(3 << 20, read);
         Assert.IsLessThan(64 * 1024, packed, "zeros deflate to almost nothing");
-        Assert.Throws<ArgumentOutOfRangeException>(() => writer.AddFileAsync("b.txt", Time, new MemoryStream(), 10).GetAwaiter().GetResult());
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            writer.AddFileAsync("b.txt", Time, new MemoryStream(), 10).GetAwaiter().GetResult()
+        );
     }
 
     private async Task<string> WriteAsync(string name, int level, string? password = null)
@@ -194,7 +233,16 @@ public sealed class ZipWriterTests
         writer.AddFolder("Photos", Time);
         writer.AddFolder("Photos/2024", Time);
         foreach (var (entry, text) in Tree)
-            await writer.AddFileAsync(entry, Time, new MemoryStream(Encoding.UTF8.GetBytes(text)), level, cancel: TestContext.CancellationToken);
+        {
+            await writer.AddFileAsync(
+                entry,
+                Time,
+                new MemoryStream(Encoding.UTF8.GetBytes(text)),
+                level,
+                cancel: TestContext.CancellationToken
+            );
+        }
+
         writer.Finish();
         return zip;
     }
@@ -202,11 +250,18 @@ public sealed class ZipWriterTests
     /// <summary>7-Zip's test of the zip (<c>7z t</c>), when it is installed.</summary>
     private static void SevenZipTests(string zip, string? password)
     {
-        var sevenZip = Environment.GetEnvironmentVariable("SFE_TEST_SEVENZIP") is { Length: > 0 } set ? set
-            : File.Exists("C:/Program Files/7-Zip/7z.exe") ? "C:/Program Files/7-Zip/7z.exe" : null;
+        var sevenZip =
+            Environment.GetEnvironmentVariable("SFE_TEST_SEVENZIP") is { Length: > 0 } set ? set
+            : File.Exists("C:/Program Files/7-Zip/7z.exe") ? "C:/Program Files/7-Zip/7z.exe"
+            : null;
         if (sevenZip is null)
             return;
-        var start = new ProcessStartInfo(sevenZip) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
+        var start = new ProcessStartInfo(sevenZip)
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
         start.ArgumentList.Add("t");
         start.ArgumentList.Add(password is null ? "-p-" : "-p" + password);
         start.ArgumentList.Add(zip);
@@ -226,11 +281,20 @@ public sealed class ZipWriterTests
         public override bool CanSeek => false;
         public override bool CanWrite => false;
         public override long Length => throw new NotSupportedException();
-        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
         public override void Flush() { }
+
         public override int Read(byte[] buffer, int offset, int count) => _inner.Read(buffer, offset, count);
+
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
         public override void SetLength(long value) => throw new NotSupportedException();
+
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }

@@ -61,13 +61,30 @@ public sealed class CacheLayoutUpgradeTests
         AssertMoved(NewThumbnail(tenantCache, tenantPhoto), [7]);
         foreach (var (name, content) in sheets)
             AssertMoved(Path.Combine(NewTrickplay(_cache, video), name), content);
-        Assert.IsEmpty(Directory.GetDirectories(_cache).Select(Path.GetFileName).Where(name => name!.Length == 40).ToList(), "The old folders are gone");
-        Assert.IsEmpty(Directory.GetDirectories(Path.Combine(_cache, TrickplayService.FolderName)).Select(Path.GetFileName).Where(name => name!.Length == 40).ToList());
+        Assert.IsEmpty(
+            Directory.GetDirectories(_cache).Select(Path.GetFileName).Where(name => name!.Length == 40).ToList(),
+            "The old folders are gone"
+        );
+        Assert.IsEmpty(
+            Directory
+                .GetDirectories(Path.Combine(_cache, TrickplayService.FolderName))
+                .Select(Path.GetFileName)
+                .Where(name => name!.Length == 40)
+                .ToList()
+        );
         Assert.IsTrue(Directory.Exists(tenantCache), "Other libraries' caches stay where they are");
         Assert.IsFalse(File.Exists(leftover));
-        Assert.HasCount(3, Directory.GetFiles(_cache, "*.bin", SearchOption.AllDirectories)
-            .Where(f => !f.StartsWith(Path.Combine(_cache, "tenants")) && !f.StartsWith(Path.Combine(_cache, TrickplayService.FolderName))).ToList(),
-            "No thumbnail is left behind or duplicated");
+        Assert.HasCount(
+            3,
+            Directory
+                .GetFiles(_cache, "*.bin", SearchOption.AllDirectories)
+                .Where(f =>
+                    !f.StartsWith(Path.Combine(_cache, "tenants"))
+                    && !f.StartsWith(Path.Combine(_cache, TrickplayService.FolderName))
+                )
+                .ToList(),
+            "No thumbnail is left behind or duplicated"
+        );
         CollectionAssert.Contains(_notes, $"{_cache}: moved 3 thumbnails and 1 trickplays.");
     }
 
@@ -81,7 +98,11 @@ public sealed class CacheLayoutUpgradeTests
         Assert.AreEqual(Path.Combine(_cache, key[..2], key[2..4], key[4..] + ".bin"), NewThumbnail(_cache, photo));
         Assert.AreEqual(40, key.Length);
         Assert.AreEqual(key.ToLowerInvariant(), key);
-        Assert.AreNotEqual(key, ThumbnailService.CacheKey(Source("Other", "photo.jpg")), "The folder is part of the key");
+        Assert.AreNotEqual(
+            key,
+            ThumbnailService.CacheKey(Source("Other", "photo.jpg")),
+            "The folder is part of the key"
+        );
     }
 
     [TestMethod]
@@ -101,13 +122,31 @@ public sealed class CacheLayoutUpgradeTests
         File.SetLastWriteTimeUtc(NewThumbnail(_cache, photo), Written.AddDays(1));
         OldTrickplay(_cache, video);
         Directory.CreateDirectory(NewTrickplay(_cache, video));
-        await File.WriteAllTextAsync(Path.Combine(NewTrickplay(_cache, video), "info.json"), "new", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            Path.Combine(NewTrickplay(_cache, video), "info.json"),
+            "new",
+            TestContext.CancellationToken
+        );
         await RunAsync(_cache);
 
-        CollectionAssert.AreEqual(new byte[] { 1 }, await File.ReadAllBytesAsync(NewThumbnail(_cache, photo), TestContext.CancellationToken));
-        Assert.AreEqual("new", await File.ReadAllTextAsync(Path.Combine(NewTrickplay(_cache, video), "info.json"), TestContext.CancellationToken));
-        Assert.IsFalse(File.Exists(Path.Combine(NewTrickplay(_cache, video), "0.jpg")), "The newer folder is kept whole");
-        Assert.IsEmpty(Directory.GetDirectories(_cache).Select(Path.GetFileName).Where(name => name!.Length == 40).ToList());
+        CollectionAssert.AreEqual(
+            new byte[] { 1 },
+            await File.ReadAllBytesAsync(NewThumbnail(_cache, photo), TestContext.CancellationToken)
+        );
+        Assert.AreEqual(
+            "new",
+            await File.ReadAllTextAsync(
+                Path.Combine(NewTrickplay(_cache, video), "info.json"),
+                TestContext.CancellationToken
+            )
+        );
+        Assert.IsFalse(
+            File.Exists(Path.Combine(NewTrickplay(_cache, video), "0.jpg")),
+            "The newer folder is kept whole"
+        );
+        Assert.IsEmpty(
+            Directory.GetDirectories(_cache).Select(Path.GetFileName).Where(name => name!.Length == 40).ToList()
+        );
     }
 
     [TestMethod]
@@ -125,8 +164,14 @@ public sealed class CacheLayoutUpgradeTests
 
         Assert.IsTrue(File.Exists(lockedFile));
         AssertMoved(NewThumbnail(_cache, free), [2]);
-        Assert.IsTrue(_notes.Any(note => note.Contains(lockedFile, StringComparison.Ordinal)), string.Join("\n", _notes));
-        CollectionAssert.Contains(_notes, $"{_cache}: moved 1 thumbnails and 0 trickplays; 1 could not be moved and stay in the old layout.");
+        Assert.IsTrue(
+            _notes.Any(note => note.Contains(lockedFile, StringComparison.Ordinal)),
+            string.Join("\n", _notes)
+        );
+        CollectionAssert.Contains(
+            _notes,
+            $"{_cache}: moved 1 thumbnails and 0 trickplays; 1 could not be moved and stay in the old layout."
+        );
     }
 
     [TestMethod]
@@ -135,15 +180,25 @@ public sealed class CacheLayoutUpgradeTests
         var app = new SemanticVersion(1, 40, 0);
 
         CollectionAssert.Contains(UpgradeSteps.Due(null, app).Select(s => s.Version).ToList(), app);
-        CollectionAssert.Contains(UpgradeSteps.Due(new SemanticVersion(1, 39, 0), app).Select(s => s.Version).ToList(), app);
+        CollectionAssert.Contains(
+            UpgradeSteps.Due(new SemanticVersion(1, 39, 0), app).Select(s => s.Version).ToList(),
+            app
+        );
         Assert.IsEmpty(UpgradeSteps.Due(app, app));
         Assert.IsEmpty(UpgradeSteps.Due(null, new SemanticVersion(1, 39, 5)), "Never a step of a later version");
-        Assert.IsTrue(UpgradeSteps.All.All(step => step.GetType().Namespace!.EndsWith($".V{step.Version.Major}_{step.Version.Minor}_{step.Version.Patch}")),
-            "Each step lives in the folder of its version");
+        Assert.IsTrue(
+            UpgradeSteps.All.All(step =>
+                step.GetType().Namespace!.EndsWith($".V{step.Version.Major}_{step.Version.Minor}_{step.Version.Patch}")
+            ),
+            "Each step lives in the folder of its version"
+        );
     }
 
     private Task RunAsync(params string[] caches) =>
-        new ShardCacheLayout().RunAsync(new UpgradeContext(caches, _notes.Add, NullLogger.Instance), TestContext.CancellationToken);
+        new ShardCacheLayout().RunAsync(
+            new UpgradeContext(caches, _notes.Add, NullLogger.Instance),
+            TestContext.CancellationToken
+        );
 
     /// <summary>A source file's full path (nothing is written there: the step never reads the sources).</summary>
     private string Source(string folder, string name) => Path.Combine(_base, "library", folder, name);
@@ -151,7 +206,11 @@ public sealed class CacheLayoutUpgradeTests
     /// <summary>Writes a thumbnail where versions before 1.40.0 kept it: <c>{SHA1(folder)}/{SHA1(name)}.bin</c>.</summary>
     private static string OldThumbnail(string cache, string source, byte[] content)
     {
-        var path = Path.Combine(cache, ThumbnailService.Hash(Path.GetDirectoryName(source)!), ThumbnailService.Hash(Path.GetFileName(source)) + ".bin");
+        var path = Path.Combine(
+            cache,
+            ThumbnailService.Hash(Path.GetDirectoryName(source)!),
+            ThumbnailService.Hash(Path.GetFileName(source)) + ".bin"
+        );
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllBytes(path, content);
         File.SetLastWriteTimeUtc(path, Written);
@@ -161,10 +220,20 @@ public sealed class CacheLayoutUpgradeTests
     /// <summary>Writes a video's trickplay where versions before 1.40.0 kept it; answers its files.</summary>
     private static Dictionary<string, byte[]> OldTrickplay(string cache, string source)
     {
-        var folder = Path.Combine(cache, TrickplayService.FolderName, ThumbnailService.Hash(Path.GetDirectoryName(source)!),
-            ThumbnailService.Hash(Path.GetFileName(source)));
+        var folder = Path.Combine(
+            cache,
+            TrickplayService.FolderName,
+            ThumbnailService.Hash(Path.GetDirectoryName(source)!),
+            ThumbnailService.Hash(Path.GetFileName(source))
+        );
         Directory.CreateDirectory(folder);
-        var files = new Dictionary<string, byte[]> { ["info.json"] = "{}"u8.ToArray(), ["0.jpg"] = [1, 2], ["1.jpg"] = [3], ["fingerprint.bin"] = [4, 5, 6] };
+        var files = new Dictionary<string, byte[]>
+        {
+            ["info.json"] = "{}"u8.ToArray(),
+            ["0.jpg"] = [1, 2],
+            ["1.jpg"] = [3],
+            ["fingerprint.bin"] = [4, 5, 6],
+        };
         foreach (var (name, content) in files)
         {
             File.WriteAllBytes(Path.Combine(folder, name), content);
@@ -174,10 +243,15 @@ public sealed class CacheLayoutUpgradeTests
         return files;
     }
 
-    private static string NewThumbnail(string cache, string source) => Path.Combine(cache, ThumbnailService.ShardedPath(ThumbnailService.CacheKey(source)) + ".bin");
+    private static string NewThumbnail(string cache, string source) =>
+        Path.Combine(cache, ThumbnailService.ShardedPath(ThumbnailService.CacheKey(source)) + ".bin");
 
     private static string NewTrickplay(string cache, string source) =>
-        Path.Combine(cache, TrickplayService.FolderName, ThumbnailService.ShardedPath(ThumbnailService.CacheKey(source)));
+        Path.Combine(
+            cache,
+            TrickplayService.FolderName,
+            ThumbnailService.ShardedPath(ThumbnailService.CacheKey(source))
+        );
 
     private void AssertMoved(string path, byte[] content)
     {
@@ -186,5 +260,9 @@ public sealed class CacheLayoutUpgradeTests
         Assert.AreEqual(Written, File.GetLastWriteTimeUtc(path), "A rename keeps the date the freshness check reads");
     }
 
-    private string Snapshot() => string.Join("\n", Directory.GetFileSystemEntries(_cache, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal));
+    private string Snapshot() =>
+        string.Join(
+            "\n",
+            Directory.GetFileSystemEntries(_cache, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal)
+        );
 }

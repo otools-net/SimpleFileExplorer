@@ -44,11 +44,23 @@ public sealed class ArchivesTests
 
         Assert.AreEqual("RepeatedDir.zip", plan.FileName);
         CollectionAssert.IsSubsetOf(
-            new[] { "RepeatedDir/", "RepeatedDir/RDFile1.txt", "RepeatedDir/ChildDir/", "RepeatedDir/ChildDir/AFile1.txt", "RepeatedDir/RepeatedDir/RDFile2.txt", "RepeatedDir/Empty/" },
-            Names(zip));
+            new[]
+            {
+                "RepeatedDir/",
+                "RepeatedDir/RDFile1.txt",
+                "RepeatedDir/ChildDir/",
+                "RepeatedDir/ChildDir/AFile1.txt",
+                "RepeatedDir/RepeatedDir/RDFile2.txt",
+                "RepeatedDir/Empty/",
+            },
+            Names(zip)
+        );
         Assert.HasCount(10, Names(zip));
         using var reader = new StreamReader(zip.GetEntry("RepeatedDir/ChildDir/AFile1.txt")!.Open());
-        Assert.AreEqual(await File.ReadAllTextAsync(_library.FullPath("RepeatedDir/ChildDir/AFile1.txt"), Token), await reader.ReadToEndAsync(Token));
+        Assert.AreEqual(
+            await File.ReadAllTextAsync(_library.FullPath("RepeatedDir/ChildDir/AFile1.txt"), Token),
+            await reader.ReadToEndAsync(Token)
+        );
         Assert.IsNull(zip.GetEntry(Archives.LeftOutEntry), "Nothing left out, no note");
     }
 
@@ -68,11 +80,21 @@ public sealed class ArchivesTests
     [TestMethod]
     public async Task ItemsOfTheSameNameAreKeptBothAndItemsInsideAChosenFolderOnce()
     {
-        var (plan, zip) = await ZipAsync(new FakeAccess(), "ChildDir", "RepeatedDir/ChildDir", "ChildDir/AFile1.txt", "RFile1.txt", "RFile1.txt");
+        var (plan, zip) = await ZipAsync(
+            new FakeAccess(),
+            "ChildDir",
+            "RepeatedDir/ChildDir",
+            "ChildDir/AFile1.txt",
+            "RFile1.txt",
+            "RFile1.txt"
+        );
 
         Assert.AreEqual("Root.zip", plan.FileName, "Items of several folders: named after the library");
         Assert.HasCount(3, plan.Items);
-        CollectionAssert.IsSubsetOf(new[] { "ChildDir/AFile1.txt", "ChildDir (2)/AFile1.txt", "RFile1.txt" }, Names(zip));
+        CollectionAssert.IsSubsetOf(
+            new[] { "ChildDir/AFile1.txt", "ChildDir (2)/AFile1.txt", "RFile1.txt" },
+            Names(zip)
+        );
         Assert.AreEqual(1, Names(zip).Count(name => name == "ChildDir/AFile1.txt"));
     }
 
@@ -90,19 +112,22 @@ public sealed class ArchivesTests
     {
         var access = new FakeAccess
         {
-            Verdict = path => path switch
-            {
-                "SpecialDir" => ArchiveVerdict.Hidden,
-                "RepeatedDir/RepeatedDir" => ArchiveVerdict.Refused,
-                _ => ArchiveVerdict.Allowed,
-            },
+            Verdict = path =>
+                path switch
+                {
+                    "SpecialDir" => ArchiveVerdict.Hidden,
+                    "RepeatedDir/RepeatedDir" => ArchiveVerdict.Refused,
+                    _ => ArchiveVerdict.Allowed,
+                },
         };
 
         var (plan, zip) = await ZipAsync(access, "");
 
         Assert.AreEqual("Root.zip", plan.FileName);
         Assert.IsFalse(Names(zip).Any(name => name.Contains("SpecialDir") || name.Contains("SDEspañol")));
-        Assert.IsFalse(Names(zip).Any(name => name.StartsWith("Root/RepeatedDir/RepeatedDir/", StringComparison.Ordinal)));
+        Assert.IsFalse(
+            Names(zip).Any(name => name.StartsWith("Root/RepeatedDir/RepeatedDir/", StringComparison.Ordinal))
+        );
         Assert.Contains("Root/RepeatedDir/RDFile1.txt", Names(zip));
         var note = await NoteAsync(zip);
         Assert.Contains("RepeatedDir/RepeatedDir/", note);
@@ -123,7 +148,10 @@ public sealed class ArchivesTests
 
         var (_, zip) = await ZipAsync(access, "");
 
-        Assert.IsFalse(Names(zip).Any(name => name.Contains(".sfe") || name.Contains("deleted.txt")), "The work folder");
+        Assert.IsFalse(
+            Names(zip).Any(name => name.Contains(".sfe") || name.Contains("deleted.txt")),
+            "The work folder"
+        );
         Assert.IsFalse(Names(zip).Any(name => name.Contains("keys.xml")), "The server's files");
         Assert.IsFalse(Names(zip).Any(name => name.Contains("secret.txt")), "Links are not followed");
         var note = await NoteAsync(zip);
@@ -136,7 +164,13 @@ public sealed class ArchivesTests
     {
         var access = new FakeAccess
         {
-            Verdict = path => path switch { "SpecialDir" => ArchiveVerdict.Hidden, "Media" => ArchiveVerdict.Refused, _ => ArchiveVerdict.Allowed },
+            Verdict = path =>
+                path switch
+                {
+                    "SpecialDir" => ArchiveVerdict.Hidden,
+                    "Media" => ArchiveVerdict.Refused,
+                    _ => ArchiveVerdict.Allowed,
+                },
         };
         _library.AddFile(".sfe/trash/x.txt", 10);
 
@@ -146,7 +180,10 @@ public sealed class ArchivesTests
         Assert.AreEqual(FileOperationStatus.NotFound, Archives.Plan([".sfe/trash/x.txt"], access).Status);
         Assert.AreEqual(FileOperationStatus.NotFound, Archives.Plan(["RFile1.txt", "SpecialDir"], access).Status);
         Assert.AreEqual(FileOperationStatus.Forbidden, Archives.Plan(["Media"], access).Status);
-        Assert.AreEqual(FileOperationStatus.Invalid, Archives.Plan([.. Enumerable.Repeat("RFile1.txt", Archives.MaxItems + 1)], access).Status);
+        Assert.AreEqual(
+            FileOperationStatus.Invalid,
+            Archives.Plan([.. Enumerable.Repeat("RFile1.txt", Archives.MaxItems + 1)], access).Status
+        );
     }
 
     [TestMethod]
@@ -154,9 +191,18 @@ public sealed class ArchivesTests
     {
         var plan = Plan(new FakeAccess(), "");
         using var cancel = CancellationTokenSource.CreateLinkedTokenSource(Token);
-        var output = new OneWayStream(new MemoryStream()) { AfterWrite = written => { if (written > 1000) cancel.Cancel(); } };
+        var output = new OneWayStream(new MemoryStream())
+        {
+            AfterWrite = written =>
+            {
+                if (written > 1000)
+                    cancel.Cancel();
+            },
+        };
 
-        await Assert.ThrowsAsync<OperationCanceledException>(() => Archives.WriteAsync(plan, output, new FakeAccess(), cancel.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            Archives.WriteAsync(plan, output, new FakeAccess(), cancel.Token)
+        );
 
         Assert.IsLessThan(2_000_000, output.Written, "Stopped long before the 5 MB of the library");
     }
@@ -164,7 +210,9 @@ public sealed class ArchivesTests
     [TestMethod]
     public async Task TheLimitIsCheckedFromTheIndexAndWhileWriting()
     {
-        await using var services = await CoreServices.CreateAsync(_library, s => s["Sfe:Files:MaxArchiveMegabytes"] = "1");
+        await using var services = await CoreServices.CreateAsync(_library, s =>
+            s["Sfe:Files:MaxArchiveMegabytes"] = "1"
+        );
         var scans = services.Get<ScanCoordinator>();
         Assert.IsTrue(scans.TryStart(""));
         await scans.Completion!;
@@ -175,7 +223,9 @@ public sealed class ArchivesTests
 
         Assert.AreEqual(5 * 1024 * 1024 + 300 * 1024 + 200 * 1024 + 3 * 1024 + 2 * 1024, size);
         Assert.AreEqual(1024 * 1024, archives.MaxBytes);
-        await Assert.ThrowsAsync<ArchiveTooLargeException>(() => archives.WriteAsync(media, new OneWayStream(Stream.Null), new FakeAccess(), Token));
+        await Assert.ThrowsAsync<ArchiveTooLargeException>(() =>
+            archives.WriteAsync(media, new OneWayStream(Stream.Null), new FakeAccess(), Token)
+        );
     }
 
     [TestMethod]
@@ -218,12 +268,14 @@ public sealed class ArchivesTests
         {
             if (OperatingSystem.IsWindows())
             {
-                using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{target}\"")
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                })!;
+                using var process = System.Diagnostics.Process.Start(
+                    new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{target}\"")
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                    }
+                )!;
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                     return false;
@@ -235,7 +287,8 @@ public sealed class ArchivesTests
             _links.Add(link);
             return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        catch (Exception ex)
+            when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
             return false;
         }
@@ -264,7 +317,11 @@ public sealed class ArchivesTests
         public override bool CanSeek => false;
         public override bool CanWrite => true;
         public override long Length => throw new NotSupportedException();
-        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
@@ -273,7 +330,10 @@ public sealed class ArchivesTests
             AfterWrite?.Invoke(Written);
         }
 
-        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        public override async ValueTask WriteAsync(
+            ReadOnlyMemory<byte> buffer,
+            CancellationToken cancellationToken = default
+        )
         {
             await inner.WriteAsync(buffer, cancellationToken);
             Written += buffer.Length;
@@ -284,8 +344,11 @@ public sealed class ArchivesTests
             WriteAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
 
         public override void Flush() => inner.Flush();
+
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
         public override void SetLength(long value) => throw new NotSupportedException();
     }
 }

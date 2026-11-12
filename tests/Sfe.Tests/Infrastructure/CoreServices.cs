@@ -13,8 +13,11 @@ public sealed class CoreServices : IAsyncDisposable
 
     private CoreServices(ServiceProvider provider) => _provider = provider;
 
-    public static async Task<CoreServices> CreateAsync(TestLibrary library, Action<IDictionary<string, string?>>? configure = null,
-        Action<ILoggingBuilder>? logging = null)
+    public static async Task<CoreServices> CreateAsync(
+        TestLibrary library,
+        Action<IDictionary<string, string?>>? configure = null,
+        Action<ILoggingBuilder>? logging = null
+    )
     {
         var settings = library.Settings();
         configure?.Invoke(settings);
@@ -29,7 +32,8 @@ public sealed class CoreServices : IAsyncDisposable
         return new CoreServices(services);
     }
 
-    public T Get<T>() where T : notnull => _provider.GetRequiredService<T>();
+    public T Get<T>()
+        where T : notnull => _provider.GetRequiredService<T>();
 
     public ValueTask DisposeAsync() => _provider.DisposeAsync();
 }

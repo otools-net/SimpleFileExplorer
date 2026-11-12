@@ -113,7 +113,9 @@ public sealed class KeepAliveTests
     public async Task AFailingFolderIsLoggedOnceThenWhenItAnswersAgain()
     {
         var failing = true;
-        var (service, _) = Create(KeepAliveMode.Always, ping: _ => failing ? throw new IOException("The network name cannot be found.") : Task.CompletedTask);
+        var (service, _) = Create(KeepAliveMode.Always, ping: _ =>
+            failing ? throw new IOException("The network name cannot be found.") : Task.CompletedTask
+        );
 
         await service.PingAllAsync(TestContext.CancellationToken);
         await service.PingAllAsync(TestContext.CancellationToken);
@@ -200,7 +202,10 @@ public sealed class KeepAliveTests
 
         var linked = Path.Combine(Root, "Linked");
         CollectionAssert.AreEquivalent(new[] { Root, linked, Root, linked }, pings.ToList(), string.Join(", ", pings));
-        CollectionAssert.AreEqual(new[] { (Root, true), (linked, false) }, service.Status().Select(f => (f.Path, f.IsRoot)).ToList());
+        CollectionAssert.AreEqual(
+            new[] { (Root, true), (linked, false) },
+            service.Status().Select(f => (f.Path, f.IsRoot)).ToList()
+        );
         Assert.AreEqual(1, _log.Count("“../Outside” is not a folder of the library"), _log.ToString());
         Assert.AreEqual(1, _log.Count("“.sfe” is not a folder of the library"), _log.ToString());
 
@@ -239,7 +244,10 @@ public sealed class KeepAliveTests
         Assert.IsTrue(Directory.Exists(work), _log.ToString());
         Assert.IsEmpty(Directory.GetFileSystemEntries(work));
         CollectionAssert.AreEqual(new[] { Path.Combine(Root, "Linked") }, pings.ToList());
-        CollectionAssert.AreEqual(new KeepAliveMethod?[] { KeepAliveMethod.Touch, KeepAliveMethod.List }, service.Status().Select(f => f.Method).ToList());
+        CollectionAssert.AreEqual(
+            new KeepAliveMethod?[] { KeepAliveMethod.Touch, KeepAliveMethod.List },
+            service.Status().Select(f => f.Method).ToList()
+        );
         Assert.IsTrue(service.Status().All(f => f.Error is null), _log.ToString());
     }
 
@@ -266,7 +274,9 @@ public sealed class KeepAliveTests
     public async Task TheStateIsToldWhenItChanges()
     {
         var failing = false;
-        var (service, _) = Create(KeepAliveMode.Always, ping: _ => failing ? throw new IOException("gone") : Task.CompletedTask);
+        var (service, _) = Create(KeepAliveMode.Always, ping: _ =>
+            failing ? throw new IOException("gone") : Task.CompletedTask
+        );
         var told = new List<KeepAliveState>();
         service.StateChanged += told.Add;
         Assert.AreEqual(KeepAliveState.None, service.State);
@@ -292,7 +302,11 @@ public sealed class KeepAliveTests
     }
 
     /// <summary>A service whose read pings are recorded (and answered by <paramref name="ping"/>); the write ping is real.</summary>
-    private (KeepAliveService Service, ConcurrentQueue<string> Pings) Create(KeepAliveMode mode, bool network = true, Func<string, Task>? ping = null)
+    private (KeepAliveService Service, ConcurrentQueue<string> Pings) Create(
+        KeepAliveMode mode,
+        bool network = true,
+        Func<string, Task>? ping = null
+    )
     {
         _settings.Value.KeepAlive.Mode = mode;
         var pings = new ConcurrentQueue<string>();
@@ -352,11 +366,18 @@ public sealed class KeepAliveTests
 
         public override string ToString() => string.Join(Environment.NewLine, _lines);
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
 
         public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Information;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter
+        )
         {
             if (IsEnabled(logLevel))
                 _lines.Enqueue($"{logLevel}: {formatter(state, exception)}");

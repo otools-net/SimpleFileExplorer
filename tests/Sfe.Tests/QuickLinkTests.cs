@@ -45,17 +45,35 @@ public sealed class QuickLinkTests
         var admin = await ApiClients.SetUpAsync(Factory(), TestContext.CancellationToken);
 
         await AddAsync(admin, ["Media", "Media/photo.jpg"]);
-        var links = await AddAsync(admin, ["", $"SpecialDir/{TestLibrary.SpecialFolder}", "Media/Holiday 2020.mp4", "Media"]);
+        var links = await AddAsync(
+            admin,
+            ["", $"SpecialDir/{TestLibrary.SpecialFolder}", "Media/Holiday 2020.mp4", "Media"]
+        );
 
-        CollectionAssert.AreEqual(new[] { "Media", "Media/photo.jpg", "", $"SpecialDir/{TestLibrary.SpecialFolder}", "Media/Holiday 2020.mp4" },
-            links.Select(l => l.Path).ToArray(), "New links go at the end; one already there stays where it is");
-        CollectionAssert.AreEqual(new[] { ItemKind.Directory, ItemKind.Image, ItemKind.Directory, ItemKind.Directory, ItemKind.Video },
-            links.Select(l => l.Kind).ToArray());
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "Media",
+                "Media/photo.jpg",
+                "",
+                $"SpecialDir/{TestLibrary.SpecialFolder}",
+                "Media/Holiday 2020.mp4",
+            },
+            links.Select(l => l.Path).ToArray(),
+            "New links go at the end; one already there stays where it is"
+        );
+        CollectionAssert.AreEqual(
+            new[] { ItemKind.Directory, ItemKind.Image, ItemKind.Directory, ItemKind.Directory, ItemKind.Video },
+            links.Select(l => l.Kind).ToArray()
+        );
         Assert.AreEqual("Root", links[2].Name, "The root is named as the library's folder");
         Assert.AreEqual("photo.jpg", links[1].Name);
         Assert.AreEqual("jpg", links[1].Extension);
         Assert.IsTrue(links.All(l => l.Exists));
-        CollectionAssert.AreEqual(links.Select(l => l.Path).ToArray(), (await ListAsync(admin)).Select(l => l.Path).ToArray());
+        CollectionAssert.AreEqual(
+            links.Select(l => l.Path).ToArray(),
+            (await ListAsync(admin)).Select(l => l.Path).ToArray()
+        );
     }
 
     [TestMethod]
@@ -100,7 +118,9 @@ public sealed class QuickLinkTests
         await AddAsync(admin, ["Media", "ChildDir", "RFile1.txt"]);
 
         using var response = await admin.DeleteAsync($"{Url}?path=ChildDir", TestContext.CancellationToken);
-        var links = (await response.Content.ReadFromJsonAsync<List<QuickLinkView>>(Json, TestContext.CancellationToken))!;
+        var links = (
+            await response.Content.ReadFromJsonAsync<List<QuickLinkView>>(Json, TestContext.CancellationToken)
+        )!;
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         CollectionAssert.AreEqual(new[] { "Media", "RFile1.txt" }, links.Select(l => l.Path).ToArray());
@@ -131,7 +151,12 @@ public sealed class QuickLinkTests
     {
         var admin = await ApiClients.SetUpAsync(Factory(), TestContext.CancellationToken);
 
-        using var response = await admin.PostAsJsonAsync(Url, new QuickLinkAdd(["Media", path], null), Json, TestContext.CancellationToken);
+        using var response = await admin.PostAsJsonAsync(
+            Url,
+            new QuickLinkAdd(["Media", path], null),
+            Json,
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         Assert.IsEmpty(await ListAsync(admin), "Nothing is added when one path is refused");
@@ -146,7 +171,12 @@ public sealed class QuickLinkTests
             Directory.CreateDirectory(_library.FullPath(folder));
         await AddAsync(admin, folders);
 
-        using var refused = await admin.PostAsJsonAsync(Url, new QuickLinkAdd(["Media"], null), Json, TestContext.CancellationToken);
+        using var refused = await admin.PostAsJsonAsync(
+            Url,
+            new QuickLinkAdd(["Media"], null),
+            Json,
+            TestContext.CancellationToken
+        );
         var moved = await AddAsync(admin, [folders[^1]], 0);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
@@ -159,9 +189,17 @@ public sealed class QuickLinkTests
     {
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        var users = (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g => g.BuiltIn == BuiltInGroup.Users);
-        using (var created = await admin.PostAsJsonAsync("/api/access/users",
-                   new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]), Json, TestContext.CancellationToken))
+        var users = (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g =>
+            g.BuiltIn == BuiltInGroup.Users
+        );
+        using (
+            var created = await admin.PostAsJsonAsync(
+                "/api/access/users",
+                new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]),
+                Json,
+                TestContext.CancellationToken
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
         }
@@ -181,17 +219,37 @@ public sealed class QuickLinkTests
     {
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        using (var open = await admin.PutAsJsonAsync("/api/access/tenant/guest-access", new { guestAccess = true }, TestContext.CancellationToken))
+        using (
+            var open = await admin.PutAsJsonAsync(
+                "/api/access/tenant/guest-access",
+                new { guestAccess = true },
+                TestContext.CancellationToken
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.OK, open.StatusCode);
+        }
+
         var visitor = ApiClients.Create(factory);
         _disposables.Add(visitor);
 
         using var list = await visitor.GetAsync(Url, TestContext.CancellationToken);
-        using var add = await visitor.PostAsJsonAsync(Url, new QuickLinkAdd(["Media"], null), Json, TestContext.CancellationToken);
+        using var add = await visitor.PostAsJsonAsync(
+            Url,
+            new QuickLinkAdd(["Media"], null),
+            Json,
+            TestContext.CancellationToken
+        );
 
         Assert.IsFalse(RightCatalog.Find(Rights.QuickLinks)!.GuestAllowed);
-        Assert.IsTrue(list.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden, list.StatusCode.ToString());
-        Assert.IsTrue(add.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden, add.StatusCode.ToString());
+        Assert.IsTrue(
+            list.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden,
+            list.StatusCode.ToString()
+        );
+        Assert.IsTrue(
+            add.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden,
+            add.StatusCode.ToString()
+        );
     }
 
     /// <summary>
@@ -219,7 +277,12 @@ public sealed class QuickLinkTests
 
         var updated = Factory();
         await ApiClients.MigrateAsync(updated, TestContext.CancellationToken);
-        var admin = await ApiClients.SignInAsync(updated, ApiClients.AdminName, ApiClients.AdminPassword, TestContext.CancellationToken);
+        var admin = await ApiClients.SignInAsync(
+            updated,
+            ApiClients.AdminName,
+            ApiClients.AdminPassword,
+            TestContext.CancellationToken
+        );
         _disposables.Add(admin);
         var links = await AddAsync(admin, ["Media"]);
         var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
@@ -237,10 +300,23 @@ public sealed class QuickLinkTests
         return factory;
     }
 
-    private async Task<List<QuickLinkView>> AddAsync(HttpClient client, IReadOnlyList<string> paths, int? position = null)
+    private async Task<List<QuickLinkView>> AddAsync(
+        HttpClient client,
+        IReadOnlyList<string> paths,
+        int? position = null
+    )
     {
-        using var response = await client.PostAsJsonAsync(Url, new QuickLinkAdd(paths, position), Json, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        using var response = await client.PostAsJsonAsync(
+            Url,
+            new QuickLinkAdd(paths, position),
+            Json,
+            TestContext.CancellationToken
+        );
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
         return (await response.Content.ReadFromJsonAsync<List<QuickLinkView>>(Json, TestContext.CancellationToken))!;
     }
 
@@ -249,7 +325,11 @@ public sealed class QuickLinkTests
     private async Task<T> GetAsync<T>(HttpClient client, string url)
     {
         using var response = await client.GetAsync(url, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"{url}: {await response.Content.ReadAsStringAsync(TestContext.CancellationToken)}");
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            $"{url}: {await response.Content.ReadAsStringAsync(TestContext.CancellationToken)}"
+        );
         return (await response.Content.ReadFromJsonAsync<T>(Json, TestContext.CancellationToken))!;
     }
 }

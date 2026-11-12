@@ -48,11 +48,37 @@ public sealed class ArchiveRouteTests
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
         Assert.Contains(Rights.Download, users.Rights, "Members may download by default");
-        var readers = (await accounts.CreateGroupAsync(tenant, new GroupInput("Readers", Rights: [Rights.Browse, Rights.ViewFiles]), cancellationToken: Token)).Value!;
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("carol", Password: "carol-password-1", GroupIds: [readers.Id]), null, Token);
+        var readers = (
+            await accounts.CreateGroupAsync(
+                tenant,
+                new GroupInput("Readers", Rights: [Rights.Browse, Rights.ViewFiles]),
+                cancellationToken: Token
+            )
+        ).Value!;
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("carol", Password: "carol-password-1", GroupIds: [readers.Id]),
+            null,
+            Token
+        );
         var rules = _factory.Services.GetRequiredService<FolderRuleService>();
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "SpecialDir", FolderPrincipalRef.Group(users.Id), FolderLevel.Hidden, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(
+                    tenant,
+                    "SpecialDir",
+                    FolderPrincipalRef.Group(users.Id),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
         _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
         _carol = await ApiClients.SignInAsync(_factory, "carol", "carol-password-1", Token);
     }
@@ -81,7 +107,10 @@ public sealed class ArchiveRouteTests
         Assert.AreEqual("application/zip", response.Content.Headers.ContentType?.MediaType);
         Assert.AreEqual("Root.zip", response.Content.Headers.ContentDisposition?.FileNameStar);
         using var zip = await ZipAsync(response);
-        CollectionAssert.AreEquivalent(new[] { "ChildDir/", "ChildDir/AFile1.txt", "ChildDir/AFile2", "RFile1.txt" }, zip.Entries.Select(e => e.FullName).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "ChildDir/", "ChildDir/AFile1.txt", "ChildDir/AFile2", "RFile1.txt" },
+            zip.Entries.Select(e => e.FullName).ToArray()
+        );
         using var again = await _alice.GetAsync(link.Url, Token);
         Assert.AreEqual(HttpStatusCode.NotFound, again.StatusCode, "Once");
     }
@@ -89,9 +118,19 @@ public sealed class ArchiveRouteTests
     [TestMethod]
     public async Task HiddenFoldersAreNotFoundAndLeftOutOfTheRoot()
     {
-        using var hidden = await _alice.PostAsJsonAsync("/api/files/archive", new ArchiveRequest(["SpecialDir"]), Json, Token);
+        using var hidden = await _alice.PostAsJsonAsync(
+            "/api/files/archive",
+            new ArchiveRequest(["SpecialDir"]),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
-        using var missing = await _alice.PostAsJsonAsync("/api/files/archive", new ArchiveRequest(["../RFile1.txt"]), Json, Token);
+        using var missing = await _alice.PostAsJsonAsync(
+            "/api/files/archive",
+            new ArchiveRequest(["../RFile1.txt"]),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode);
 
         var link = await LinkAsync(_alice, "");
@@ -106,7 +145,12 @@ public sealed class ArchiveRouteTests
     [TestMethod]
     public async Task OnlyThoseWhoMayDownloadGetAZip()
     {
-        using var refused = await _carol.PostAsJsonAsync("/api/files/archive", new ArchiveRequest(["ChildDir"]), Json, Token);
+        using var refused = await _carol.PostAsJsonAsync(
+            "/api/files/archive",
+            new ArchiveRequest(["ChildDir"]),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode);
 
         // Someone else's link: as if it didn't exist (and it still works for its owner).
@@ -125,7 +169,12 @@ public sealed class ArchiveRouteTests
         if (!Link("ChildDir/Logs", _library.LogsPath))
             Assert.Inconclusive("Links can't be made here.");
 
-        using var direct = await _admin.PostAsJsonAsync("/api/files/archive", new ArchiveRequest(["ChildDir/Logs"]), Json, Token);
+        using var direct = await _admin.PostAsJsonAsync(
+            "/api/files/archive",
+            new ArchiveRequest(["ChildDir/Logs"]),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.NotFound, direct.StatusCode);
         var link = await LinkAsync(_admin, "ChildDir");
         using var response = await _admin.GetAsync(link.Url, Token);
@@ -160,14 +209,28 @@ public sealed class ArchiveRouteTests
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
         using (var scan = await _admin.PostAsJsonAsync("/api/scan", new ScanRequest(""), Json, Token))
             Assert.IsTrue(scan.IsSuccessStatusCode);
-        for (var attempt = 0; (await _admin.GetFromJsonAsync<ScanStatus>("/api/scan", Json, Token))!.State == ScanState.Running; attempt++)
+        for (
+            var attempt = 0;
+            (await _admin.GetFromJsonAsync<ScanStatus>("/api/scan", Json, Token))!.State == ScanState.Running;
+            attempt++
+        )
         {
             Assert.IsLessThan(200, attempt, "The scan did not finish in time");
             await Task.Delay(50, Token);
         }
 
-        using var tooLarge = await _admin.PostAsJsonAsync("/api/files/archive", new ArchiveRequest(["Media"]), Json, Token);
-        using var small = await _admin.PostAsJsonAsync("/api/files/archive", new ArchiveRequest(["ChildDir"]), Json, Token);
+        using var tooLarge = await _admin.PostAsJsonAsync(
+            "/api/files/archive",
+            new ArchiveRequest(["Media"]),
+            Json,
+            Token
+        );
+        using var small = await _admin.PostAsJsonAsync(
+            "/api/files/archive",
+            new ArchiveRequest(["ChildDir"]),
+            Json,
+            Token
+        );
 
         Assert.AreEqual(HttpStatusCode.BadRequest, tooLarge.StatusCode);
         StringAssert.Contains(await tooLarge.Content.ReadAsStringAsync(Token), "at most 1 MB");
@@ -196,12 +259,14 @@ public sealed class ArchiveRouteTests
         {
             if (OperatingSystem.IsWindows())
             {
-                using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{target}\"")
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                })!;
+                using var process = System.Diagnostics.Process.Start(
+                    new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{target}\"")
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                    }
+                )!;
                 process.WaitForExit();
                 if (process.ExitCode != 0)
                     return false;
@@ -213,7 +278,8 @@ public sealed class ArchiveRouteTests
             _links.Add(link);
             return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        catch (Exception ex)
+            when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
             return false;
         }

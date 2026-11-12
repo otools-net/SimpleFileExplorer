@@ -47,11 +47,38 @@ public sealed class FileJobRouteTests
         _tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(_tenant, BuiltInGroup.Users, Token))!;
         _users = users.Id;
-        Assert.AreEqual(AccessStatus.Ok, (await accounts.UpdateGroupAsync(_tenant, _users,
-            new GroupInput(users.Name, Rights: [.. users.Rights, Rights.MoveFiles, Rights.CopyFiles], MemberIds: users.MemberIds), cancellationToken: Token)).Status);
-        var readers = (await accounts.CreateGroupAsync(_tenant, new GroupInput("Readers", Rights: [Rights.Browse]), cancellationToken: Token)).Value!;
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [_users]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("carol", Password: "carol-password-1", GroupIds: [readers.Id]), null, Token);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await accounts.UpdateGroupAsync(
+                    _tenant,
+                    _users,
+                    new GroupInput(
+                        users.Name,
+                        Rights: [.. users.Rights, Rights.MoveFiles, Rights.CopyFiles],
+                        MemberIds: users.MemberIds
+                    ),
+                    cancellationToken: Token
+                )
+            ).Status
+        );
+        var readers = (
+            await accounts.CreateGroupAsync(
+                _tenant,
+                new GroupInput("Readers", Rights: [Rights.Browse]),
+                cancellationToken: Token
+            )
+        ).Value!;
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [_users]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("carol", Password: "carol-password-1", GroupIds: [readers.Id]),
+            null,
+            Token
+        );
         _rules = _factory.Services.GetRequiredService<FolderRuleService>();
         await RuleAsync(FolderPrincipalRef.Group(_users), "SpecialDir", FolderLevel.Hidden);
         await RuleAsync(FolderPrincipalRef.Group(_users), "Media", FolderLevel.Read);
@@ -74,12 +101,23 @@ public sealed class FileJobRouteTests
     [TestMethod]
     public async Task AMoveRunsInTheBackgroundAndReportsEachItem()
     {
-        var started = await StartAsync(_alice, new FileJobRequest(FileJobKind.Move, ["ChildDir/AFile1.txt", "Media/photo.jpg", "SpecialDir/SDEspañol"], "RepeatedDir"));
+        var started = await StartAsync(
+            _alice,
+            new FileJobRequest(
+                FileJobKind.Move,
+                ["ChildDir/AFile1.txt", "Media/photo.jpg", "SpecialDir/SDEspañol"],
+                "RepeatedDir"
+            )
+        );
         var job = await FinishedAsync(_alice, started.Id);
 
         Assert.AreEqual(FileJobState.Completed, job.State);
         var byPath = job.Results.ToDictionary(r => r.Path);
-        Assert.AreEqual(FileOperationStatus.Done, byPath["ChildDir/AFile1.txt"].Status, byPath["ChildDir/AFile1.txt"].Message);
+        Assert.AreEqual(
+            FileOperationStatus.Done,
+            byPath["ChildDir/AFile1.txt"].Status,
+            byPath["ChildDir/AFile1.txt"].Message
+        );
         Assert.AreEqual(FileOperationStatus.Forbidden, byPath["Media/photo.jpg"].Status, "Read-only folder");
         Assert.AreEqual(FileOperationStatus.NotFound, byPath["SpecialDir/SDEspañol"].Status, "Hidden folder");
         Assert.IsTrue(File.Exists(_library.FullPath("RepeatedDir/AFile1.txt")));
@@ -92,7 +130,10 @@ public sealed class FileJobRouteTests
     [TestMethod]
     public async Task ACopyFromAReadOnlyFolderIsAllowed()
     {
-        var job = await FinishedAsync(_alice, (await StartAsync(_alice, new FileJobRequest(FileJobKind.Copy, ["Media/photo.jpg"], "ChildDir"))).Id);
+        var job = await FinishedAsync(
+            _alice,
+            (await StartAsync(_alice, new FileJobRequest(FileJobKind.Copy, ["Media/photo.jpg"], "ChildDir"))).Id
+        );
 
         Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
         Assert.IsTrue(File.Exists(_library.FullPath("ChildDir/photo.jpg")));
@@ -107,24 +148,55 @@ public sealed class FileJobRouteTests
         var waiting = await WaitForAsync(_alice, started.Id, j => j.State == FileJobState.Waiting);
         Assert.AreEqual("RFile1.txt", waiting.Conflict!.Existing.Name);
 
-        using (var other = await _admin.PostAsJsonAsync($"/api/files/jobs/{started.Id}/answer", new JobAnswer(ConflictChoice.Skip), Json, Token))
+        using (
+            var other = await _admin.PostAsJsonAsync(
+                $"/api/files/jobs/{started.Id}/answer",
+                new JobAnswer(ConflictChoice.Skip),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NotFound, other.StatusCode, "Someone else's job");
+        }
+
         using (var other = await _admin.GetAsync($"/api/files/jobs/{started.Id}", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, other.StatusCode);
-        using (var answered = await _alice.PostAsJsonAsync($"/api/files/jobs/{started.Id}/answer", new JobAnswer(ConflictChoice.KeepBoth), Json, Token))
+        using (
+            var answered = await _alice.PostAsJsonAsync(
+                $"/api/files/jobs/{started.Id}/answer",
+                new JobAnswer(ConflictChoice.KeepBoth),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.NoContent, answered.StatusCode);
+        }
 
         var job = await FinishedAsync(_alice, started.Id);
         Assert.AreEqual("ChildDir/RFile1 (2).txt", job.Results.Single().NewPath);
-        using (var again = await _alice.PostAsJsonAsync($"/api/files/jobs/{started.Id}/answer", new JobAnswer(ConflictChoice.Skip), Json, Token))
+        using (
+            var again = await _alice.PostAsJsonAsync(
+                $"/api/files/jobs/{started.Id}/answer",
+                new JobAnswer(ConflictChoice.Skip),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Conflict, again.StatusCode, "Nothing asked");
+        }
     }
 
     [TestMethod]
     public async Task AWaitingJobCanBeCancelled()
     {
         _library.AddFile("ChildDir/RFile1.txt", 5);
-        var started = await StartAsync(_alice, new FileJobRequest(FileJobKind.Move, ["RFile1.txt", "RFile2"], "ChildDir"));
+        var started = await StartAsync(
+            _alice,
+            new FileJobRequest(FileJobKind.Move, ["RFile1.txt", "RFile2"], "ChildDir")
+        );
         await WaitForAsync(_alice, started.Id, j => j.State == FileJobState.Waiting);
 
         using (var cancelled = await _alice.PostAsync($"/api/files/jobs/{started.Id}/cancel", null, Token))
@@ -138,18 +210,42 @@ public sealed class FileJobRouteTests
     [TestMethod]
     public async Task MovingAndCopyingNeedTheirRights()
     {
-        using (var refused = await _carol.PostAsJsonAsync("/api/files/jobs", new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "ChildDir"), Json, Token))
+        using (
+            var refused = await _carol.PostAsJsonAsync(
+                "/api/files/jobs",
+                new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "ChildDir"),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode);
+        }
+
         using (var listed = await _carol.GetAsync("/api/files/jobs", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, listed.StatusCode);
-        using (var empty = await _alice.PostAsJsonAsync("/api/files/jobs", new FileJobRequest(FileJobKind.Copy, [], "ChildDir"), Json, Token))
+        using (
+            var empty = await _alice.PostAsJsonAsync(
+                "/api/files/jobs",
+                new FileJobRequest(FileJobKind.Copy, [], "ChildDir"),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.BadRequest, empty.StatusCode);
+        }
     }
 
     [TestMethod]
     public async Task TheCheckTellsWhoWouldGainAccess()
     {
-        using var response = await _alice.PostAsJsonAsync("/api/files/jobs/check", new MoveCheckRequest(["RepeatedDir/ChildDir", "RFile1.txt", "SpecialDir"], ""), Json, Token);
+        using var response = await _alice.PostAsJsonAsync(
+            "/api/files/jobs/check",
+            new MoveCheckRequest(["RepeatedDir/ChildDir", "RFile1.txt", "SpecialDir"], ""),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         var check = (await response.Content.ReadFromJsonAsync<MoveCheck>(Json, Token))!;
 
@@ -163,37 +259,106 @@ public sealed class FileJobRouteTests
     [TestMethod]
     public async Task KeepingAccessPinsWhatTheFolderHad()
     {
-        var job = await FinishedAsync(_alice, (await StartAsync(_alice, new FileJobRequest(FileJobKind.Move, ["RepeatedDir/ChildDir"], "", ConflictChoice.KeepBoth, KeepAccess: true))).Id);
+        var job = await FinishedAsync(
+            _alice,
+            (
+                await StartAsync(
+                    _alice,
+                    new FileJobRequest(
+                        FileJobKind.Move,
+                        ["RepeatedDir/ChildDir"],
+                        "",
+                        ConflictChoice.KeepBoth,
+                        KeepAccess: true
+                    )
+                )
+            ).Id
+        );
 
         Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
         Assert.AreEqual("ChildDir (2)", job.Results.Single().NewPath);
         var rules = await _rules.GetAsync(_tenant, Token);
-        Assert.IsTrue(rules.Any(r => r.Path == "ChildDir (2)" && r.Level == FolderLevel.Hidden), string.Join(", ", rules.Select(r => $"{r.Path}={r.Level}")));
+        Assert.IsTrue(
+            rules.Any(r => r.Path == "ChildDir (2)" && r.Level == FolderLevel.Hidden),
+            string.Join(", ", rules.Select(r => $"{r.Path}={r.Level}"))
+        );
     }
 
     [TestMethod]
     public async Task ACompressionLeavesOutWhatThePersonDoesNotSeeAndNeverShowsItsPassword()
     {
-        using (var refused = await _alice.PostAsJsonAsync("/api/files/jobs/compress", new CompressRequest(["Media"], "ChildDir"), Json, Token))
+        using (
+            var refused = await _alice.PostAsJsonAsync(
+                "/api/files/jobs/compress",
+                new CompressRequest(["Media"], "ChildDir"),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode, "Users may not compress yet");
-        using (var wrongRoute = await _admin.PostAsJsonAsync("/api/files/jobs", new FileJobRequest(FileJobKind.Compress, ["Media"], "ChildDir"), Json, Token))
+        }
+
+        using (
+            var wrongRoute = await _admin.PostAsJsonAsync(
+                "/api/files/jobs",
+                new FileJobRequest(FileJobKind.Compress, ["Media"], "ChildDir"),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.BadRequest, wrongRoute.StatusCode);
+        }
+
         var accounts = _factory.Services.GetRequiredService<AccessService>();
         var users = (await accounts.GetBuiltInGroupAsync(_tenant, BuiltInGroup.Users, Token))!;
-        Assert.AreEqual(AccessStatus.Ok, (await accounts.UpdateGroupAsync(_tenant, _users,
-            new GroupInput(users.Name, Rights: [.. users.Rights, Rights.CompressFiles], MemberIds: users.MemberIds), cancellationToken: Token)).Status);
-        using (var level = await _alice.PostAsJsonAsync("/api/files/jobs/compress", new CompressRequest(["Media"], "ChildDir", Level: 10), Json, Token))
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await accounts.UpdateGroupAsync(
+                    _tenant,
+                    _users,
+                    new GroupInput(
+                        users.Name,
+                        Rights: [.. users.Rights, Rights.CompressFiles],
+                        MemberIds: users.MemberIds
+                    ),
+                    cancellationToken: Token
+                )
+            ).Status
+        );
+        using (
+            var level = await _alice.PostAsJsonAsync(
+                "/api/files/jobs/compress",
+                new CompressRequest(["Media"], "ChildDir", Level: 10),
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.BadRequest, level.StatusCode);
+        }
 
         // The whole library, from a read-only folder too, into a folder Alice may change: SpecialDir isn't hers to see.
-        using var started = await _alice.PostAsJsonAsync("/api/files/jobs/compress", new CompressRequest([""], "ChildDir", "everything", Password: "route-secret"), Json, Token);
+        using var started = await _alice.PostAsJsonAsync(
+            "/api/files/jobs/compress",
+            new CompressRequest([""], "ChildDir", "everything", Password: "route-secret"),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.Accepted, started.StatusCode, await started.Content.ReadAsStringAsync(Token));
         var job = await FinishedAsync(_alice, (await started.Content.ReadFromJsonAsync<FileJobView>(Json, Token))!.Id);
 
         Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
         Assert.AreEqual("ChildDir/everything.zip", job.Results.Single().NewPath);
-        var names = Sfe.Core.Files.Compression.ArchiveReader.ReadEntries(_library.FullPath("ChildDir/everything.zip"), Sfe.Core.Files.Compression.ArchiveFormat.Zip)
-            .Select(e => e.Name).ToList();
+        var names = Sfe
+            .Core.Files.Compression.ArchiveReader.ReadEntries(
+                _library.FullPath("ChildDir/everything.zip"),
+                Sfe.Core.Files.Compression.ArchiveFormat.Zip
+            )
+            .Select(e => e.Name)
+            .ToList();
         Assert.Contains(n => n.Contains("/Media/photo.jpg"), names);
         Assert.DoesNotContain(n => n.Contains("SpecialDir"), names);
         Assert.DoesNotContain(n => n.Contains("everything"), names);

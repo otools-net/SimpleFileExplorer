@@ -35,7 +35,10 @@ public sealed class ArchiveUnlocksTests
         var other = Path.Combine(_folder, "b.zip");
         File.WriteAllText(other, "another");
         Assert.IsNull(unlocks.PasswordFor(id, 1, "user:1:stamp", other), "another archive");
-        Assert.IsNull(unlocks.PasswordFor(id[..^1] + (id[^1] == '0' ? "1" : "0"), 1, "user:1:stamp", _archive), "another id");
+        Assert.IsNull(
+            unlocks.PasswordFor(id[..^1] + (id[^1] == '0' ? "1" : "0"), 1, "user:1:stamp", _archive),
+            "another id"
+        );
         Assert.IsNull(unlocks.PasswordFor(null, 1, "user:1:stamp", _archive));
 
         File.SetLastWriteTimeUtc(_archive, DateTime.UtcNow.AddHours(1));
@@ -67,7 +70,10 @@ public sealed class ArchiveUnlocksTests
     public void OnePersonKeepsAFewUnlocksTheOldestGoing()
     {
         var unlocks = new ArchiveUnlocks(TimeProvider.System);
-        var ids = Enumerable.Range(0, ArchiveUnlocks.MaxPerOwner + 1).Select(_ => unlocks.Add(1, "user:1:s", _archive, "p")).ToList();
+        var ids = Enumerable
+            .Range(0, ArchiveUnlocks.MaxPerOwner + 1)
+            .Select(_ => unlocks.Add(1, "user:1:s", _archive, "p"))
+            .ToList();
 
         Assert.IsNull(unlocks.PasswordFor(ids[0], 1, "user:1:s", _archive));
         Assert.AreEqual("p", unlocks.PasswordFor(ids[^1], 1, "user:1:s", _archive));

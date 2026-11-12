@@ -32,14 +32,29 @@ public sealed class ArchiveCatalogTests
     [TestMethod]
     public void FoldersComeFirstThenFilesByNameWithTheirTotals()
     {
-        var zip = TestArchives.Zip(_folder, "a.zip",
-            ("readme.txt", "12345"), ("b.txt", "1"), ("Zeta/z.txt", "zz"), ("alpha/one.txt", "111"), ("alpha/Deep/two.txt", "2222"),
-            ("Empty/", null), ("A.txt", "a"));
+        var zip = TestArchives.Zip(
+            _folder,
+            "a.zip",
+            ("readme.txt", "12345"),
+            ("b.txt", "1"),
+            ("Zeta/z.txt", "zz"),
+            ("alpha/one.txt", "111"),
+            ("alpha/Deep/two.txt", "2222"),
+            ("Empty/", null),
+            ("A.txt", "a")
+        );
         var catalog = Build(zip, ArchiveFormat.Zip);
 
         var root = catalog.Children(ArchiveCatalog.RootId, null, 100);
-        CollectionAssert.AreEqual(new[] { "alpha", "Empty", "Zeta" }, root.Folders.Select(folder => folder.Name).ToList(), "any case");
-        CollectionAssert.AreEqual(new[] { "A.txt", "b.txt", "readme.txt" }, root.Files.Select(file => file.Name).ToList());
+        CollectionAssert.AreEqual(
+            new[] { "alpha", "Empty", "Zeta" },
+            root.Folders.Select(folder => folder.Name).ToList(),
+            "any case"
+        );
+        CollectionAssert.AreEqual(
+            new[] { "A.txt", "b.txt", "readme.txt" },
+            root.Files.Select(file => file.Name).ToList()
+        );
         Assert.IsNull(root.Next);
 
         var top = catalog.Folder(ArchiveCatalog.RootId)!;
@@ -52,19 +67,31 @@ public sealed class ArchiveCatalogTests
         Assert.AreEqual(0, root.Folders[1].AllFiles, "an empty folder entry is a folder");
 
         var summary = catalog.Summary();
-        Assert.AreEqual((ArchiveFormat.Zip, 7L, 4L, 0L, true), (summary.Format, summary.Entries, summary.Folders, summary.LeftOut, summary.Complete));
+        Assert.AreEqual(
+            (ArchiveFormat.Zip, 7L, 4L, 0L, true),
+            (summary.Format, summary.Entries, summary.Folders, summary.LeftOut, summary.Complete)
+        );
         Assert.IsNull(summary.Stopped);
     }
 
     [TestMethod]
     public void FoldersAreFoundByPathAndEntriesOpenFromTheCatalog()
     {
-        var zip = TestArchives.Zip(_folder, "a.zip", ("Docs/Año/Nota.txt", "from the catalog"), ("docs/other.txt", "case"));
+        var zip = TestArchives.Zip(
+            _folder,
+            "a.zip",
+            ("Docs/Año/Nota.txt", "from the catalog"),
+            ("docs/other.txt", "case")
+        );
         var catalog = Build(zip, ArchiveFormat.Zip);
 
         var año = catalog.FindFolder("Docs/Año")!.Value;
         Assert.AreEqual(año, catalog.FindFolder("DOCS/año/"), "in any case when nothing matches as written");
-        Assert.AreNotEqual(catalog.FindFolder("Docs"), catalog.FindFolder("docs"), "both spellings are folders of their own");
+        Assert.AreNotEqual(
+            catalog.FindFolder("Docs"),
+            catalog.FindFolder("docs"),
+            "both spellings are folders of their own"
+        );
         Assert.IsNull(catalog.FindFolder("Docs/none"));
         Assert.AreEqual(ArchiveCatalog.RootId, catalog.FindFolder(""));
         Assert.AreEqual("Docs/Año", catalog.PathOf(año));
@@ -83,7 +110,10 @@ public sealed class ArchiveCatalogTests
             entries.Add(($"folder {i:D2}/x.txt", "x"));
         for (var i = 0; i < 1000; i++)
             entries.Add(($"file {i:D4}.txt", ""));
-        var catalog = Build(TestArchives.Zip(_folder, "many.zip", CompressionLevel.NoCompression, [.. entries]), ArchiveFormat.Zip);
+        var catalog = Build(
+            TestArchives.Zip(_folder, "many.zip", CompressionLevel.NoCompression, [.. entries]),
+            ArchiveFormat.Zip
+        );
 
         foreach (var limit in new[] { 1, 7, 30, 64, 1030, 5000 })
         {
@@ -98,13 +128,20 @@ public sealed class ArchiveCatalogTests
                 names.AddRange(page.Files.Select(file => file.Name));
                 cursor = page.Next;
                 pages++;
-            }
-            while (cursor is not null);
+            } while (cursor is not null);
 
             Assert.HasCount(1030, names, $"limit {limit}");
             CollectionAssert.AllItemsAreUnique(names);
-            CollectionAssert.AreEqual(Enumerable.Range(0, 30).Select(i => $"folder {i:D2}/").ToList(), names.Take(30).ToList(), $"limit {limit}");
-            CollectionAssert.AreEqual(Enumerable.Range(0, 1000).Select(i => $"file {i:D4}.txt").ToList(), names.Skip(30).ToList(), $"limit {limit}");
+            CollectionAssert.AreEqual(
+                Enumerable.Range(0, 30).Select(i => $"folder {i:D2}/").ToList(),
+                names.Take(30).ToList(),
+                $"limit {limit}"
+            );
+            CollectionAssert.AreEqual(
+                Enumerable.Range(0, 1000).Select(i => $"file {i:D4}.txt").ToList(),
+                names.Skip(30).ToList(),
+                $"limit {limit}"
+            );
             Assert.IsLessThanOrEqualTo(1030 / limit + 2, pages);
         }
     }
@@ -112,13 +149,25 @@ public sealed class ArchiveCatalogTests
     [TestMethod]
     public void NamesAreSearchedInAnyCaseWithTheFolderEachIsIn()
     {
-        var zip = TestArchives.Zip(_folder, "s.zip",
-            ("Photos/2024/Día uno.txt", "1"), ("Photos/2024/notes.txt", "2"), ("Días/readme.txt", "3"), ("other.txt", "4"));
+        var zip = TestArchives.Zip(
+            _folder,
+            "s.zip",
+            ("Photos/2024/Día uno.txt", "1"),
+            ("Photos/2024/notes.txt", "2"),
+            ("Días/readme.txt", "3"),
+            ("other.txt", "4")
+        );
         var catalog = Build(zip, ArchiveFormat.Zip);
 
         var page = catalog.Search("DÍA", null, 100, TimeSpan.FromSeconds(5));
-        CollectionAssert.AreEqual(new[] { ("Días", "") }, page.Folders.Select(found => (found.Folder.Name, found.Where)).ToList());
-        CollectionAssert.AreEqual(new[] { ("Día uno.txt", "Photos/2024") }, page.Files.Select(found => (found.File.Name, found.Where)).ToList());
+        CollectionAssert.AreEqual(
+            new[] { ("Días", "") },
+            page.Folders.Select(found => (found.Folder.Name, found.Where)).ToList()
+        );
+        CollectionAssert.AreEqual(
+            new[] { ("Día uno.txt", "Photos/2024") },
+            page.Files.Select(found => (found.File.Name, found.Where)).ToList()
+        );
         Assert.IsNull(page.Next, "all looked through");
         Assert.IsEmpty(catalog.Search("nothing like it", null, 100, TimeSpan.FromSeconds(5)).Files);
     }
@@ -131,10 +180,15 @@ public sealed class ArchiveCatalogTests
             entries.Add(($"match folder {i:D2}/other {i:D2}.txt", "x"));
         for (var i = 0; i < 300; i++)
             entries.Add(($"{(i % 3 == 0 ? "match" : "skip")} {i:D3}.txt", ""));
-        var catalog = Build(TestArchives.Zip(_folder, "pages.zip", CompressionLevel.NoCompression, [.. entries]), ArchiveFormat.Zip);
+        var catalog = Build(
+            TestArchives.Zip(_folder, "pages.zip", CompressionLevel.NoCompression, [.. entries]),
+            ArchiveFormat.Zip
+        );
 
         // Small pages, small ranges, and no time at all: every page stops after one range, and the whole is found once.
-        foreach (var (limit, budget) in new[] { (7, TimeSpan.FromSeconds(5)), (1000, TimeSpan.Zero), (3, TimeSpan.Zero) })
+        foreach (
+            var (limit, budget) in new[] { (7, TimeSpan.FromSeconds(5)), (1000, TimeSpan.Zero), (3, TimeSpan.Zero) }
+        )
         {
             var names = new List<string>();
             ArchiveSearchCursor? cursor = null;
@@ -147,8 +201,7 @@ public sealed class ArchiveCatalogTests
                 names.AddRange(page.Files.Select(found => found.File.Name));
                 cursor = page.Next;
                 Assert.IsLessThan(1000, ++pages);
-            }
-            while (cursor is not null);
+            } while (cursor is not null);
 
             Assert.HasCount(40 + 100, names, $"limit {limit}, budget {budget}");
             CollectionAssert.AllItemsAreUnique(names);
@@ -165,7 +218,8 @@ public sealed class ArchiveCatalogTests
         using var connection = new SqliteConnection($"Data Source={catalog.Path};Mode=ReadOnly;Pooling=False");
         connection.Open();
         using var command = connection.CreateCommand();
-        command.CommandText = "EXPLAIN QUERY PLAN SELECT * FROM Entries WHERE Encrypted = 1 AND Kind = 0 ORDER BY Size, Id LIMIT 1";
+        command.CommandText =
+            "EXPLAIN QUERY PLAN SELECT * FROM Entries WHERE Encrypted = 1 AND Kind = 0 ORDER BY Size, Id LIMIT 1";
         using var reader = command.ExecuteReader();
         var plan = new List<string>();
         while (reader.Read())
@@ -183,12 +237,26 @@ public sealed class ArchiveCatalogTests
             entries.Add(($"in/{(i % 4 == 0 ? "MATCH" : "skip")} {i:D3}.txt", ""));
         entries.Add(("match outside.txt", ""));
         entries.Add(("in/skip dir 00/match below.txt", ""));
-        var catalog = Build(TestArchives.Zip(_folder, "in.zip", CompressionLevel.NoCompression, [.. entries]), ArchiveFormat.Zip);
+        var catalog = Build(
+            TestArchives.Zip(_folder, "in.zip", CompressionLevel.NoCompression, [.. entries]),
+            ArchiveFormat.Zip
+        );
         var folder = catalog.FindFolder("in")!.Value;
-        var expected = Enumerable.Range(0, 15).Select(i => $"Match dir {i * 2:D2}/")
-            .Concat(Enumerable.Range(0, 50).Select(i => $"MATCH {i * 4:D3}.txt")).ToList();
+        var expected = Enumerable
+            .Range(0, 15)
+            .Select(i => $"Match dir {i * 2:D2}/")
+            .Concat(Enumerable.Range(0, 50).Select(i => $"MATCH {i * 4:D3}.txt"))
+            .ToList();
 
-        foreach (var (limit, budget) in new[] { (1000, TimeSpan.FromSeconds(5)), (7, TimeSpan.FromSeconds(5)), (1000, TimeSpan.Zero), (3, TimeSpan.Zero) })
+        foreach (
+            var (limit, budget) in new[]
+            {
+                (1000, TimeSpan.FromSeconds(5)),
+                (7, TimeSpan.FromSeconds(5)),
+                (1000, TimeSpan.Zero),
+                (3, TimeSpan.Zero),
+            }
+        )
         {
             var names = new List<string>();
             ArchiveCursor? cursor = null;
@@ -201,13 +269,18 @@ public sealed class ArchiveCatalogTests
                 names.AddRange(page.Files.Select(found => found.Name));
                 cursor = page.Next;
                 Assert.IsLessThan(1000, ++pages);
-            }
-            while (cursor is not null);
+            } while (cursor is not null);
 
             CollectionAssert.AreEqual(expected, names, $"limit {limit}, budget {budget}: its own, in its order, once");
         }
         Assert.IsEmpty(catalog.FindIn(ArchiveCatalog.RootId, "match", null, 100, TimeSpan.FromSeconds(5)).Folders);
-        CollectionAssert.AreEqual(new[] { "match outside.txt" }, catalog.FindIn(ArchiveCatalog.RootId, "MATCH", null, 100, TimeSpan.FromSeconds(5)).Files.Select(found => found.Name).ToList());
+        CollectionAssert.AreEqual(
+            new[] { "match outside.txt" },
+            catalog
+                .FindIn(ArchiveCatalog.RootId, "MATCH", null, 100, TimeSpan.FromSeconds(5))
+                .Files.Select(found => found.Name)
+                .ToList()
+        );
     }
 
     [TestMethod]
@@ -222,8 +295,11 @@ public sealed class ArchiveCatalogTests
             if (level % 1000 == 0 || level == Depth)
                 entries.Add((path + $"at {level}.txt", "1"));
         }
-        var catalog = Build(TestArchives.Zip(_folder, "deep.zip", CompressionLevel.NoCompression, [.. entries]), ArchiveFormat.Zip,
-            new ArchiveOptions { MaxDepth = 10_000 });
+        var catalog = Build(
+            TestArchives.Zip(_folder, "deep.zip", CompressionLevel.NoCompression, [.. entries]),
+            ArchiveFormat.Zip,
+            new ArchiveOptions { MaxDepth = 10_000 }
+        );
 
         var deepest = catalog.FindFolder(string.Join('/', Enumerable.Repeat("d", Depth)))!.Value;
         Assert.AreEqual(Depth, catalog.Folder(deepest)!.Depth);
@@ -238,7 +314,10 @@ public sealed class ArchiveCatalogTests
         var found = catalog.Search($"at {Depth}", null, 10, TimeSpan.FromSeconds(5)).Files.Single();
         Assert.AreEqual("…/" + string.Join('/', Enumerable.Repeat("d", ArchiveCatalog.WhereLevels)), found.Where);
         Assert.AreEqual(deepest, found.File.FolderId);
-        Assert.AreEqual("d/d/d/d/d/d/d/d", catalog.Search("at 1000", null, 10, TimeSpan.FromSeconds(5)).Files.Single().Where[^15..]);
+        Assert.AreEqual(
+            "d/d/d/d/d/d/d/d",
+            catalog.Search("at 1000", null, 10, TimeSpan.FromSeconds(5)).Files.Single().Where[^15..]
+        );
 
         var root = catalog.Folder(ArchiveCatalog.RootId)!;
         Assert.AreEqual(5, root.AllFiles, "totals rolled up level by level");
@@ -282,7 +361,11 @@ public sealed class ArchiveCatalogTests
     public void AListPastTheLimitStopsAndSaysSo()
     {
         var entries = Enumerable.Range(0, 50).Select(i => ($"{i}.txt", (string?)"x")).ToArray();
-        var catalog = Build(TestArchives.Zip(_folder, "a.zip", entries), ArchiveFormat.Zip, new ArchiveOptions { MaxEntries = 10 });
+        var catalog = Build(
+            TestArchives.Zip(_folder, "a.zip", entries),
+            ArchiveFormat.Zip,
+            new ArchiveOptions { MaxEntries = 10 }
+        );
 
         var summary = catalog.Summary();
         Assert.IsFalse(summary.Complete);
@@ -300,7 +383,18 @@ public sealed class ArchiveCatalogTests
         using (var tar = new TarWriter(gzip, TarEntryFormat.Pax))
         {
             for (var i = 0; i < 200; i++)
-                tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, $"{i}.bin") { DataStream = new MemoryStream(new byte[2000].Select((_, n) => (byte)(n * i)).ToArray()) });
+            {
+                tar.WriteEntry(
+                    new PaxTarEntry(TarEntryType.RegularFile, $"{i}.bin")
+                    {
+                        DataStream = new MemoryStream(
+                            new byte[2000]
+                                .Select((_, n) => (byte)(n * i))
+                                .ToArray()
+                        ),
+                    }
+                );
+            }
         }
 
         var bytes = File.ReadAllBytes(path);
@@ -321,7 +415,14 @@ public sealed class ArchiveCatalogTests
         using (var tar = new TarWriter(file, TarEntryFormat.Ustar))
         {
             for (var i = 0; i < 5; i++)
-                tar.WriteEntry(new UstarTarEntry(TarEntryType.RegularFile, $"{i}.bin") { DataStream = new MemoryStream(Enumerable.Repeat((byte)1, 512).ToArray()) });
+            {
+                tar.WriteEntry(
+                    new UstarTarEntry(TarEntryType.RegularFile, $"{i}.bin")
+                    {
+                        DataStream = new MemoryStream(Enumerable.Repeat((byte)1, 512).ToArray()),
+                    }
+                );
+            }
         }
 
         var compressed = Path.Combine(_folder, "whole.tar.gz");
@@ -346,7 +447,10 @@ public sealed class ArchiveCatalogTests
     {
         var catalog = Build(TestSamples.ArchiveOf("tree-solid.7z"), ArchiveFormat.SevenZip);
         var photos = catalog.FindFolder("Photos/2024")!.Value;
-        CollectionAssert.AreEqual(new[] { "día uno.txt", "notes.txt" }, catalog.Children(photos, null, 10).Files.Select(file => file.Name).ToList());
+        CollectionAssert.AreEqual(
+            new[] { "día uno.txt", "notes.txt" },
+            catalog.Children(photos, null, 10).Files.Select(file => file.Name).ToList()
+        );
         Assert.AreEqual(4, catalog.Folder(ArchiveCatalog.RootId)!.AllFiles);
         Assert.AreEqual(8L, catalog.Summary().Folders);
         Assert.IsNotNull(catalog.Folder(photos)!.Time, "the folder entry's time");
@@ -373,7 +477,9 @@ public sealed class ArchiveCatalogTests
         using var cancel = new CancellationTokenSource();
         var progress = new Progress(() => cancel.Cancel());
 
-        Assert.Throws<OperationCanceledException>(() => ArchiveCatalog.Build(zip, ArchiveFormat.Zip, target, new ArchiveOptions(), progress, cancel.Token));
+        Assert.Throws<OperationCanceledException>(() =>
+            ArchiveCatalog.Build(zip, ArchiveFormat.Zip, target, new ArchiveOptions(), progress, cancel.Token)
+        );
         Assert.IsFalse(File.Exists(target));
         Assert.IsFalse(File.Exists(target + ".building"));
     }
@@ -392,7 +498,9 @@ public sealed class ArchiveCatalogTests
         var watch = Stopwatch.StartNew();
         var catalog = Build(path, ArchiveFormat.Zip);
         var built = watch.Elapsed;
-        TestContext.WriteLine($"200 000 entries: catalog built in {built.TotalSeconds:F1} s, {new FileInfo(catalog.Path).Length / 1024} KB");
+        TestContext.WriteLine(
+            $"200 000 entries: catalog built in {built.TotalSeconds:F1} s, {new FileInfo(catalog.Path).Length / 1024} KB"
+        );
 
         var last = catalog.FindFolder("part 99")!.Value;
         Assert.AreEqual(2000, catalog.Folder(last)!.Files);
@@ -404,16 +512,20 @@ public sealed class ArchiveCatalogTests
             var page = catalog.Children(last, cursor, 200);
             count += page.Files.Count;
             cursor = page.Next;
-        }
-        while (cursor is not null);
+        } while (cursor is not null);
         TestContext.WriteLine($"10 pages of 200 in {watch.ElapsedMilliseconds} ms");
         Assert.AreEqual(2000, count);
         Assert.AreEqual(200_000, catalog.Folder(ArchiveCatalog.RootId)!.AllFiles);
     }
 
     private ArchiveCatalog Build(string archive, ArchiveFormat format, ArchiveOptions? options = null) =>
-        ArchiveCatalog.Build(archive, format, Path.Combine(_folder, "catalogs", Path.GetFileName(archive) + ".db"), options ?? new ArchiveOptions(),
-            cancel: TestContext.CancellationToken);
+        ArchiveCatalog.Build(
+            archive,
+            format,
+            Path.Combine(_folder, "catalogs", Path.GetFileName(archive) + ".db"),
+            options ?? new ArchiveOptions(),
+            cancel: TestContext.CancellationToken
+        );
 
     private sealed class Progress(Action report) : IProgress<long>
     {

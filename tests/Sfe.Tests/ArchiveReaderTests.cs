@@ -42,11 +42,19 @@ public sealed class ArchiveReaderTests
         }
 
         var solid = TestSamples.ArchiveOf("tree-solid.7z");
-        var listed = Assert.Throws<ArchiveException>(() => ArchiveReader.ReadEntries(solid, ArchiveFormat.SevenZip, maxSevenZipList: 100).ToList());
+        var listed = Assert.Throws<ArchiveException>(() =>
+            ArchiveReader.ReadEntries(solid, ArchiveFormat.SevenZip, maxSevenZipList: 100).ToList()
+        );
         StringAssert.Contains(listed.Message, "MaxSevenZipListMegabytes");
-        Assert.Throws<ArchiveException>(() => ArchiveReader.ReadThrough(solid, ArchiveFormat.SevenZip, null, (_, _) => { }, maxSevenZipList: 100));
-        var entry = ArchiveReader.ReadEntries(solid, ArchiveFormat.SevenZip).First(found => found.Kind == ArchiveEntryKind.File);
-        Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, entry, maxSevenZipList: 100).Dispose());
+        Assert.Throws<ArchiveException>(() =>
+            ArchiveReader.ReadThrough(solid, ArchiveFormat.SevenZip, null, (_, _) => { }, maxSevenZipList: 100)
+        );
+        var entry = ArchiveReader
+            .ReadEntries(solid, ArchiveFormat.SevenZip)
+            .First(found => found.Kind == ArchiveEntryKind.File);
+        Assert.Throws<ArchiveException>(() =>
+            ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, entry, maxSevenZipList: 100).Dispose()
+        );
         using (ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, entry))
         {
             // Under the default limit: opened.
@@ -73,7 +81,10 @@ public sealed class ArchiveReaderTests
         var gz = Path.Combine(_folder, "c.gz");
         File.Copy(tgz, gz);
         Assert.AreEqual(ArchiveFormat.Single, ArchiveFormats.Detect(gz), "a .gz is one file compressed alone");
-        Assert.AreEqual(ArchiveFormat.Tar, ArchiveFormats.Detect(TestArchives.Tar(_folder, "d.tar", gzip: false, ("x.txt", "x"))));
+        Assert.AreEqual(
+            ArchiveFormat.Tar,
+            ArchiveFormats.Detect(TestArchives.Tar(_folder, "d.tar", gzip: false, ("x.txt", "x")))
+        );
 
         var text = Path.Combine(_folder, "not-a.zip");
         File.WriteAllText(text, "just text");
@@ -90,7 +101,10 @@ public sealed class ArchiveReaderTests
         Assert.IsTrue(ArchiveFormats.IsExplorable(ArchiveFormat.Rar, long.MaxValue, options));
         Assert.IsFalse(ArchiveFormats.IsExplorable(ArchiveFormat.Single, 1, options), "one file alone: extract only");
         Assert.IsTrue(ArchiveFormats.IsExplorable(ArchiveFormat.TarGzip, 10L * 1024 * 1024, options));
-        Assert.IsFalse(ArchiveFormats.IsExplorable(ArchiveFormat.TarXz, 10L * 1024 * 1024 + 1, options), "listing it would decompress it all");
+        Assert.IsFalse(
+            ArchiveFormats.IsExplorable(ArchiveFormat.TarXz, 10L * 1024 * 1024 + 1, options),
+            "listing it would decompress it all"
+        );
     }
 
     [TestMethod]
@@ -117,8 +131,11 @@ public sealed class ArchiveReaderTests
     {
         CollectionAssert.AreEqual(new[] { "a", "b", "c.txt" }, ArchiveEntryNames.Split("a/./b//c.txt", 100, out _));
         CollectionAssert.AreEqual(new[] { "a", "b.txt" }, ArchiveEntryNames.Split("a\\b.txt", 100, out _));
-        CollectionAssert.AreEqual(new[] { "dossier", "año", "CON.txt" }, ArchiveEntryNames.Split("dossier/año/CON.txt", 100, out _),
-            "names the system refuses are checked when extracting, not when listing");
+        CollectionAssert.AreEqual(
+            new[] { "dossier", "año", "CON.txt" },
+            ArchiveEntryNames.Split("dossier/año/CON.txt", 100, out _),
+            "names the system refuses are checked when extracting, not when listing"
+        );
         Assert.IsNotNull(ArchiveEntryNames.Split(string.Join('/', Enumerable.Repeat("d", 100)), 100, out _));
         Assert.IsNull(ArchiveEntryNames.Split(string.Join('/', Enumerable.Repeat("d", 101)), 100, out var reason));
         Assert.Contains("too deep", reason!);
@@ -129,10 +146,20 @@ public sealed class ArchiveReaderTests
     public void AZipIsListedFromItsDirectoryAndItsEntriesOpen()
     {
         var big = new string('z', 100_000);
-        var zip = TestArchives.Zip(_folder, "a.zip", ("readme.txt", "hello"), ("Photos/", null), ("Photos/año/día.txt", "unicode"), ("Photos/big.txt", big));
+        var zip = TestArchives.Zip(
+            _folder,
+            "a.zip",
+            ("readme.txt", "hello"),
+            ("Photos/", null),
+            ("Photos/año/día.txt", "unicode"),
+            ("Photos/big.txt", big)
+        );
         var entries = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).ToList();
 
-        CollectionAssert.AreEqual(new[] { "readme.txt", "Photos/", "Photos/año/día.txt", "Photos/big.txt" }, entries.Select(entry => entry.Name).ToList());
+        CollectionAssert.AreEqual(
+            new[] { "readme.txt", "Photos/", "Photos/año/día.txt", "Photos/big.txt" },
+            entries.Select(entry => entry.Name).ToList()
+        );
         Assert.AreEqual(ArchiveEntryKind.Folder, entries[1].Kind);
         Assert.AreEqual(100_000, entries[3].Size);
         Assert.IsLessThan(1000, entries[3].Packed, "deflated");
@@ -207,12 +234,18 @@ public sealed class ArchiveReaderTests
         var bytes = File.ReadAllBytes(zip);
         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(bytes.Length - 22 + 10), 60_000);
         File.WriteAllBytes(zip, bytes);
-        Assert.Contains("more entries than", Assert.Throws<ArchiveException>(() => ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).ToList()).Message);
+        Assert.Contains(
+            "more entries than",
+            Assert.Throws<ArchiveException>(() => ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).ToList()).Message
+        );
 
         var outside = TestArchives.Zip(_folder, "offset.zip", ("a.txt", "a"));
         TestArchives.PatchDirectory(outside, 42, BitConverter.GetBytes(1_000_000u));
         var entry = ArchiveReader.ReadEntries(outside, ArchiveFormat.Zip).Single();
-        Assert.Contains("outside", Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(outside, ArchiveFormat.Zip, entry)).Message);
+        Assert.Contains(
+            "outside",
+            Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(outside, ArchiveFormat.Zip, entry)).Message
+        );
 
         var cut = TestArchives.Zip(_folder, "cut.zip", ("a.txt", "a"));
         File.WriteAllBytes(cut, File.ReadAllBytes(cut)[..^10]);
@@ -226,7 +259,10 @@ public sealed class ArchiveReaderTests
         TestArchives.PatchDirectory(zip, 8, BitConverter.GetBytes((ushort)1)); // flags: encrypted
         var entry = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).Single();
         Assert.IsTrue(entry.Encrypted);
-        Assert.Contains("password", Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, entry)).Message);
+        Assert.Contains(
+            "password",
+            Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, entry)).Message
+        );
     }
 
     [TestMethod]
@@ -249,15 +285,28 @@ public sealed class ArchiveReaderTests
             using (var tar = new TarWriter(compressed, TarEntryFormat.Pax))
             {
                 tar.WriteEntry(new PaxTarEntry(TarEntryType.Directory, "docs/"));
-                tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "docs/a.txt") { DataStream = new MemoryStream("first"u8.ToArray()) });
+                tar.WriteEntry(
+                    new PaxTarEntry(TarEntryType.RegularFile, "docs/a.txt")
+                    {
+                        DataStream = new MemoryStream("first"u8.ToArray()),
+                    }
+                );
                 tar.WriteEntry(new PaxTarEntry(TarEntryType.SymbolicLink, "docs/passwd") { LinkName = "/etc/passwd" });
-                tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "docs/b.txt") { DataStream = new MemoryStream("second"u8.ToArray()) });
+                tar.WriteEntry(
+                    new PaxTarEntry(TarEntryType.RegularFile, "docs/b.txt")
+                    {
+                        DataStream = new MemoryStream("second"u8.ToArray()),
+                    }
+                );
             }
             var format = gzip ? ArchiveFormat.TarGzip : ArchiveFormat.Tar;
             var entries = ArchiveReader.ReadEntries(path, format).ToList();
 
-            CollectionAssert.AreEqual(new[] { ArchiveEntryKind.Folder, ArchiveEntryKind.File, ArchiveEntryKind.Link, ArchiveEntryKind.File },
-                entries.Select(entry => entry.Kind).ToList(), path);
+            CollectionAssert.AreEqual(
+                new[] { ArchiveEntryKind.Folder, ArchiveEntryKind.File, ArchiveEntryKind.Link, ArchiveEntryKind.File },
+                entries.Select(entry => entry.Kind).ToList(),
+                path
+            );
             Assert.AreEqual("docs/b.txt", entries[3].Name.TrimStart('.', '/'));
             Assert.AreEqual("second", ReadText(path, format, entries[3]), "walked to, past the others");
             Assert.AreEqual("first", ReadText(path, format, entries[1]));
@@ -269,13 +318,26 @@ public sealed class ArchiveReaderTests
     {
         var solid = TestSamples.ArchiveOf("tree-solid.7z");
         var entries = ArchiveReader.ReadEntries(solid, ArchiveFormat.SevenZip).ToList();
-        var files = entries.Where(entry => entry.Kind == ArchiveEntryKind.File).ToDictionary(entry => entry.Name.Replace('\\', '/'));
+        var files = entries
+            .Where(entry => entry.Kind == ArchiveEntryKind.File)
+            .ToDictionary(entry => entry.Name.Replace('\\', '/'));
 
-        CollectionAssert.AreEquivalent(new[] { "readme.txt", "Photos/2024/día uno.txt", "Photos/2024/notes.txt", "Deep/a/b/c/d/e/bottom.txt" }, files.Keys.ToList());
+        CollectionAssert.AreEquivalent(
+            new[] { "readme.txt", "Photos/2024/día uno.txt", "Photos/2024/notes.txt", "Deep/a/b/c/d/e/bottom.txt" },
+            files.Keys.ToList()
+        );
         Assert.AreEqual(4097, files["Photos/2024/notes.txt"].Size);
-        Assert.AreEqual(new string('x', 4096) + "\n", ReadText(solid, ArchiveFormat.SevenZip, files["Photos/2024/notes.txt"]));
-        Assert.AreEqual("Five folders down.\n", ReadText(solid, ArchiveFormat.SevenZip, files["Deep/a/b/c/d/e/bottom.txt"]));
-        Assert.IsTrue(entries.Any(entry => entry.Kind == ArchiveEntryKind.Folder && entry.Name.Replace('\\', '/') == "Deep/a/b"));
+        Assert.AreEqual(
+            new string('x', 4096) + "\n",
+            ReadText(solid, ArchiveFormat.SevenZip, files["Photos/2024/notes.txt"])
+        );
+        Assert.AreEqual(
+            "Five folders down.\n",
+            ReadText(solid, ArchiveFormat.SevenZip, files["Deep/a/b/c/d/e/bottom.txt"])
+        );
+        Assert.IsTrue(
+            entries.Any(entry => entry.Kind == ArchiveEntryKind.Folder && entry.Name.Replace('\\', '/') == "Deep/a/b")
+        );
     }
 
     [TestMethod]
@@ -286,7 +348,9 @@ public sealed class ArchiveReaderTests
     {
         var rar = TestSamples.ThirdPartyOf("sharpcompress/" + name);
         Assert.AreEqual(ArchiveFormat.Rar, ArchiveFormats.Detect(rar));
-        var files = ArchiveReader.ReadEntries(rar, ArchiveFormat.Rar).Where(entry => entry.Kind == ArchiveEntryKind.File)
+        var files = ArchiveReader
+            .ReadEntries(rar, ArchiveFormat.Rar)
+            .Where(entry => entry.Kind == ArchiveEntryKind.File)
             .ToDictionary(entry => entry.Name.Replace('\\', '/'));
 
         Assert.AreEqual(15_498, files["тест.txt"].Size);
@@ -303,25 +367,44 @@ public sealed class ArchiveReaderTests
     {
         // 7z: the files before it in its block count; the block's first is reached at no cost.
         var solid = TestSamples.ArchiveOf("tree-solid.7z");
-        var sevens = ArchiveReader.ReadEntries(solid, ArchiveFormat.SevenZip).Where(entry => entry.Kind == ArchiveEntryKind.File).OrderBy(entry => entry.Locator).ToList();
-        using (ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, sevens[0], maxSkipped: 0))
-        {
-        }
-        var refused = Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, sevens[^1], maxSkipped: 1));
+        var sevens = ArchiveReader
+            .ReadEntries(solid, ArchiveFormat.SevenZip)
+            .Where(entry => entry.Kind == ArchiveEntryKind.File)
+            .OrderBy(entry => entry.Locator)
+            .ToList();
+        using (ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, sevens[0], maxSkipped: 0)) { }
+        var refused = Assert.Throws<ArchiveException>(() =>
+            ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, sevens[^1], maxSkipped: 1)
+        );
         Assert.IsTrue(refused.TooFar);
         Assert.Contains("extract it", refused.Message);
-        using (ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, sevens[^1], maxSkipped: 1 << 20))
-        {
-        }
+        using (ArchiveReader.OpenEntry(solid, ArchiveFormat.SevenZip, sevens[^1], maxSkipped: 1 << 20)) { }
 
         // Rar: a solid one unpacks what comes before, another passes over it.
-        ArchiveEntry Jpeg(string name) => ArchiveReader.ReadEntries(TestSamples.ThirdPartyOf("sharpcompress/" + name), ArchiveFormat.Rar)
-            .Single(entry => entry.Name.Replace('\\', '/') == "jpg/test.jpg");
-        Assert.IsTrue(Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(TestSamples.ThirdPartyOf("sharpcompress/Rar5.solid.rar"), ArchiveFormat.Rar,
-            Jpeg("Rar5.solid.rar"), maxSkipped: 1)).TooFar);
-        using (ArchiveReader.OpenEntry(TestSamples.ThirdPartyOf("sharpcompress/Rar5.rar"), ArchiveFormat.Rar, Jpeg("Rar5.rar"), maxSkipped: 0))
-        {
-        }
+        ArchiveEntry Jpeg(string name) =>
+            ArchiveReader
+                .ReadEntries(TestSamples.ThirdPartyOf("sharpcompress/" + name), ArchiveFormat.Rar)
+                .Single(entry => entry.Name.Replace('\\', '/') == "jpg/test.jpg");
+        Assert.IsTrue(
+            Assert
+                .Throws<ArchiveException>(() =>
+                    ArchiveReader.OpenEntry(
+                        TestSamples.ThirdPartyOf("sharpcompress/Rar5.solid.rar"),
+                        ArchiveFormat.Rar,
+                        Jpeg("Rar5.solid.rar"),
+                        maxSkipped: 1
+                    )
+                )
+                .TooFar
+        );
+        using (
+            ArchiveReader.OpenEntry(
+                TestSamples.ThirdPartyOf("sharpcompress/Rar5.rar"),
+                ArchiveFormat.Rar,
+                Jpeg("Rar5.rar"),
+                maxSkipped: 0
+            )
+        ) { }
 
         // Tars: a compressed one unpacks everything before, a plain one seeks past it.
         foreach (var gzip in new[] { true, false })
@@ -331,15 +414,37 @@ public sealed class ArchiveReaderTests
             using (Stream compressed = gzip ? new GZipStream(file, CompressionLevel.Fastest) : file)
             using (var tar = new TarWriter(compressed, TarEntryFormat.Pax))
             {
-                tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "big.bin") { DataStream = new MemoryStream(new byte[100_000]) });
-                tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "after.txt") { DataStream = new MemoryStream("after"u8.ToArray()) });
+                tar.WriteEntry(
+                    new PaxTarEntry(TarEntryType.RegularFile, "big.bin")
+                    {
+                        DataStream = new MemoryStream(new byte[100_000]),
+                    }
+                );
+                tar.WriteEntry(
+                    new PaxTarEntry(TarEntryType.RegularFile, "after.txt")
+                    {
+                        DataStream = new MemoryStream("after"u8.ToArray()),
+                    }
+                );
             }
             var format = gzip ? ArchiveFormat.TarGzip : ArchiveFormat.Tar;
-            var after = ArchiveReader.ReadEntries(path, format).Single(entry => entry.Name.EndsWith("after.txt", StringComparison.Ordinal));
+            var after = ArchiveReader
+                .ReadEntries(path, format)
+                .Single(entry => entry.Name.EndsWith("after.txt", StringComparison.Ordinal));
             if (gzip)
-                Assert.IsTrue(Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(path, format, after, maxSkipped: 99_999)).TooFar);
+            {
+                Assert.IsTrue(
+                    Assert
+                        .Throws<ArchiveException>(() =>
+                            ArchiveReader.OpenEntry(path, format, after, maxSkipped: 99_999)
+                        )
+                        .TooFar
+                );
+            }
             else
+            {
                 Assert.AreEqual("after", ReadText(path, format, after, maxSkipped: 0));
+            }
         }
     }
 
@@ -347,10 +452,26 @@ public sealed class ArchiveReaderTests
     public void EncryptedRarsAskForTheirPassword()
     {
         // SharpCompress reads even a RAR 5 whose names are in clear only with its password (0.50.7): listed, it says so.
-        foreach (var name in new[] { "Rar5.encrypted_filesOnly.rar", "Rar5.encrypted_filesAndHeader.rar", "Rar.encrypted_filesAndHeader.rar" })
+        foreach (
+            var name in new[]
+            {
+                "Rar5.encrypted_filesOnly.rar",
+                "Rar5.encrypted_filesAndHeader.rar",
+                "Rar.encrypted_filesAndHeader.rar",
+            }
+        )
         {
-            Assert.Contains("password", Assert.Throws<ArchiveException>(
-                () => ArchiveReader.ReadEntries(TestSamples.ThirdPartyOf("sharpcompress/" + name), ArchiveFormat.Rar).ToList()).Message, name);
+            Assert.Contains(
+                "password",
+                Assert
+                    .Throws<ArchiveException>(() =>
+                        ArchiveReader
+                            .ReadEntries(TestSamples.ThirdPartyOf("sharpcompress/" + name), ArchiveFormat.Rar)
+                            .ToList()
+                    )
+                    .Message,
+                name
+            );
         }
     }
 
@@ -361,13 +482,18 @@ public sealed class ArchiveReaderTests
     public void ZipsMadeWithAPasswordOpenWithIt(string name, ZipCipher cipher)
     {
         var zip = TestSamples.ArchiveOf(name);
-        var files = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).Where(entry => entry.Kind == ArchiveEntryKind.File)
+        var files = ArchiveReader
+            .ReadEntries(zip, ArchiveFormat.Zip)
+            .Where(entry => entry.Kind == ArchiveEntryKind.File)
             .ToDictionary(entry => entry.Name.Replace('\\', '/'));
         Assert.HasCount(4, files, "a zip's names are never encrypted");
         Assert.IsTrue(files.Values.All(entry => entry.Encrypted && entry.Cipher == cipher), name);
         var notes = files["Photos/2024/notes.txt"];
 
-        Assert.IsTrue(Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, notes)).NeedsPassword, "no password");
+        Assert.IsTrue(
+            Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, notes)).NeedsPassword,
+            "no password"
+        );
         var wrong = Assert.Throws<ArchiveException>(() =>
         {
             using var data = ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, notes, "wrong");
@@ -375,7 +501,10 @@ public sealed class ArchiveReaderTests
         });
         Assert.IsTrue(wrong.NeedsPassword, wrong.Message);
         Assert.AreEqual(new string('x', 4096) + "\n", ReadText(zip, ArchiveFormat.Zip, notes, "secret"));
-        Assert.AreEqual("Unicode names survive.\n", ReadText(zip, ArchiveFormat.Zip, files["Photos/2024/día uno.txt"], "secret"));
+        Assert.AreEqual(
+            "Unicode names survive.\n",
+            ReadText(zip, ArchiveFormat.Zip, files["Photos/2024/día uno.txt"], "secret")
+        );
     }
 
     [TestMethod]
@@ -387,17 +516,29 @@ public sealed class ArchiveReaderTests
     public void ZipsCompressedWithOtherMethodsAreReadAndExtracted(string name, int method)
     {
         var zip = TestSamples.ArchiveOf(name);
-        var files = ArchiveReader.ReadEntries(zip, ArchiveFormat.Zip).Where(entry => entry.Kind == ArchiveEntryKind.File)
+        var files = ArchiveReader
+            .ReadEntries(zip, ArchiveFormat.Zip)
+            .Where(entry => entry.Kind == ArchiveEntryKind.File)
             .ToDictionary(entry => entry.Name.Replace('\\', '/'));
         Assert.HasCount(4, files);
         var notes = files["Photos/2024/notes.txt"];
         Assert.AreEqual(method, notes.Method, "7-Zip used the method asked for");
         Assert.AreEqual(new string('x', 4096) + "\n", ReadText(zip, ArchiveFormat.Zip, notes, null));
-        Assert.AreEqual("Five folders down.\n", ReadText(zip, ArchiveFormat.Zip, files["Deep/a/b/c/d/e/bottom.txt"], null));
+        Assert.AreEqual(
+            "Five folders down.\n",
+            ReadText(zip, ArchiveFormat.Zip, files["Deep/a/b/c/d/e/bottom.txt"], null)
+        );
 
         // Extracting reads them the same way (one pass, every CRC checked).
         var into = Path.Combine(_folder, "out");
-        var result = ArchiveExtractor.Extract(zip, ArchiveFormat.Zip, null, into, null, new ExtractLimits(100, 1000, 10_000, PortableNames: false));
+        var result = ArchiveExtractor.Extract(
+            zip,
+            ArchiveFormat.Zip,
+            null,
+            into,
+            null,
+            new ExtractLimits(100, 1000, 10_000, PortableNames: false)
+        );
         Assert.AreEqual(0, result.LeftOutCount);
         Assert.AreEqual("An archive made for the tests.\n", File.ReadAllText(Path.Combine(into, "readme.txt")));
     }
@@ -475,7 +616,11 @@ public sealed class ArchiveReaderTests
         // One byte of the encrypted data flipped: the verifier still passes, the HMAC at the end doesn't.
         var bytes = File.ReadAllBytes(zip);
         var local = (int)notes.Locator;
-        var dataStart = local + 30 + BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(local + 26)) + BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(local + 28));
+        var dataStart =
+            local
+            + 30
+            + BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(local + 26))
+            + BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(local + 28));
         bytes[dataStart + 16 + 2 + 3] ^= 0x40;
         File.WriteAllBytes(zip, bytes);
 
@@ -491,19 +636,42 @@ public sealed class ArchiveReaderTests
     public void SevenZipsAndRarsOpenWithTheirPassword()
     {
         var names = TestSamples.ArchiveOf("tree-names-encrypted.7z");
-        var listed = ArchiveReader.ReadEntries(names, ArchiveFormat.SevenZip, password: "secret").Where(entry => entry.Kind == ArchiveEntryKind.File).ToList();
+        var listed = ArchiveReader
+            .ReadEntries(names, ArchiveFormat.SevenZip, password: "secret")
+            .Where(entry => entry.Kind == ArchiveEntryKind.File)
+            .ToList();
         Assert.HasCount(4, listed, "the list, with the password");
-        Assert.AreEqual("An archive made for the tests.\n", ReadText(names, ArchiveFormat.SevenZip, listed.Single(entry => entry.Name == "readme.txt"), "secret"));
-        Assert.IsTrue(Assert.Throws<ArchiveException>(() => ArchiveReader.ReadEntries(names, ArchiveFormat.SevenZip, password: "wrong").ToList()).NeedsPassword);
+        Assert.AreEqual(
+            "An archive made for the tests.\n",
+            ReadText(names, ArchiveFormat.SevenZip, listed.Single(entry => entry.Name == "readme.txt"), "secret")
+        );
+        Assert.IsTrue(
+            Assert
+                .Throws<ArchiveException>(() =>
+                    ArchiveReader.ReadEntries(names, ArchiveFormat.SevenZip, password: "wrong").ToList()
+                )
+                .NeedsPassword
+        );
 
         var data = TestSamples.ArchiveOf("tree-files-encrypted.7z");
-        var readme = ArchiveReader.ReadEntries(data, ArchiveFormat.SevenZip).Single(entry => entry.Name == "readme.txt");
+        var readme = ArchiveReader
+            .ReadEntries(data, ArchiveFormat.SevenZip)
+            .Single(entry => entry.Name == "readme.txt");
         Assert.AreEqual("An archive made for the tests.\n", ReadText(data, ArchiveFormat.SevenZip, readme, "secret"));
 
-        foreach (var rar in new[] { "Rar5.encrypted_filesAndHeader.rar", "Rar5.encrypted_filesOnly.rar", "Rar.encrypted_filesAndHeader.rar" })
+        foreach (
+            var rar in new[]
+            {
+                "Rar5.encrypted_filesAndHeader.rar",
+                "Rar5.encrypted_filesOnly.rar",
+                "Rar.encrypted_filesAndHeader.rar",
+            }
+        )
         {
             var path = TestSamples.ThirdPartyOf("sharpcompress/" + rar);
-            var text = ArchiveReader.ReadEntries(path, ArchiveFormat.Rar, password: "test").Single(entry => entry.Name == "тест.txt");
+            var text = ArchiveReader
+                .ReadEntries(path, ArchiveFormat.Rar, password: "test")
+                .Single(entry => entry.Name == "тест.txt");
             Assert.AreEqual(15_498, ReadText(path, ArchiveFormat.Rar, text, "test").Length, rar);
         }
     }
@@ -512,16 +680,39 @@ public sealed class ArchiveReaderTests
     public void PasswordsAreSaidNotGuessed()
     {
         var filesEncrypted = TestSamples.ArchiveOf("tree-files-encrypted.7z");
-        var entries = ArchiveReader.ReadEntries(filesEncrypted, ArchiveFormat.SevenZip).Where(entry => entry.Kind == ArchiveEntryKind.File).ToList();
+        var entries = ArchiveReader
+            .ReadEntries(filesEncrypted, ArchiveFormat.SevenZip)
+            .Where(entry => entry.Kind == ArchiveEntryKind.File)
+            .ToList();
         Assert.HasCount(4, entries, "the names are not encrypted: listed");
         Assert.IsTrue(entries.All(entry => entry.Encrypted));
-        Assert.Contains("password", Assert.Throws<ArchiveException>(() => ArchiveReader.OpenEntry(filesEncrypted, ArchiveFormat.SevenZip, entries[0])).Message);
+        Assert.Contains(
+            "password",
+            Assert
+                .Throws<ArchiveException>(() =>
+                    ArchiveReader.OpenEntry(filesEncrypted, ArchiveFormat.SevenZip, entries[0])
+                )
+                .Message
+        );
 
         var namesEncrypted = TestSamples.ArchiveOf("tree-names-encrypted.7z");
-        Assert.Contains("password", Assert.Throws<ArchiveException>(() => ArchiveReader.ReadEntries(namesEncrypted, ArchiveFormat.SevenZip).ToList()).Message);
+        Assert.Contains(
+            "password",
+            Assert
+                .Throws<ArchiveException>(() =>
+                    ArchiveReader.ReadEntries(namesEncrypted, ArchiveFormat.SevenZip).ToList()
+                )
+                .Message
+        );
     }
 
-    private static string ReadText(string path, ArchiveFormat format, ArchiveEntry entry, string? password = null, long maxSkipped = long.MaxValue)
+    private static string ReadText(
+        string path,
+        ArchiveFormat format,
+        ArchiveEntry entry,
+        string? password = null,
+        long maxSkipped = long.MaxValue
+    )
     {
         using var data = ArchiveReader.OpenEntry(path, format, entry, password, maxSkipped);
         using var reader = new StreamReader(data);
@@ -536,7 +727,12 @@ internal static class TestArchives
     public static string Zip(string folder, string name, params (string Name, string? Text)[] entries) =>
         Zip(folder, name, CompressionLevel.Optimal, entries);
 
-    public static string Zip(string folder, string name, CompressionLevel level, params (string Name, string? Text)[] entries)
+    public static string Zip(
+        string folder,
+        string name,
+        CompressionLevel level,
+        params (string Name, string? Text)[] entries
+    )
     {
         var path = Path.Combine(folder, name);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -561,7 +757,15 @@ internal static class TestArchives
         using Stream stream = gzip ? new GZipStream(file, CompressionLevel.Fastest) : file;
         using var tar = new TarWriter(stream, TarEntryFormat.Pax);
         foreach (var (entryName, text) in files)
-            tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, entryName) { DataStream = new MemoryStream(Encoding.UTF8.GetBytes(text)) });
+        {
+            tar.WriteEntry(
+                new PaxTarEntry(TarEntryType.RegularFile, entryName)
+                {
+                    DataStream = new MemoryStream(Encoding.UTF8.GetBytes(text)),
+                }
+            );
+        }
+
         return path;
     }
 

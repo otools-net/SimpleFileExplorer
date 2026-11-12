@@ -87,7 +87,7 @@ public sealed class ImageAnimationTests
     {
         var gif = new List<byte>();
         gif.AddRange("GIF89a"u8.ToArray());
-        gif.AddRange([2, 0, 2, 0, (byte)(globalColors ? 0x80 : 0), 0, 0]);    // 2 colours when present
+        gif.AddRange([2, 0, 2, 0, (byte)(globalColors ? 0x80 : 0), 0, 0]); // 2 colours when present
         if (globalColors)
             gif.AddRange([0, 0, 0, 255, 255, 255]);
         if (loop)
@@ -103,7 +103,7 @@ public sealed class ImageAnimationTests
             gif.AddRange([0x2C, 0, 0, 0, 0, 2, 0, 2, 0, (byte)(localColors ? 0x80 : 0)]);
             if (localColors)
                 gif.AddRange([0, 0, 0, 255, 255, 255]);
-            gif.AddRange([2, 2, 0x44, 0x01, 0]);    // LZW code size, one sub-block, terminator
+            gif.AddRange([2, 2, 0x44, 0x01, 0]); // LZW code size, one sub-block, terminator
         }
 
         gif.Add(0x3B);
@@ -121,7 +121,7 @@ public sealed class ImageAnimationTests
             png.AddRange(length);
             png.AddRange(System.Text.Encoding.ASCII.GetBytes(type));
             png.AddRange(data);
-            png.AddRange(new byte[4]);      // CRC, not checked
+            png.AddRange(new byte[4]); // CRC, not checked
         }
 
         Chunk("IHDR", [0, 0, 0, 2, 0, 0, 0, 2, 8, 6, 0, 0, 0]);

@@ -64,7 +64,11 @@ public sealed class MigrationTests
     {
         await InstallAsync("1.35.0");
         // A per-library setting in the server's file: a regular start moves it to the library (a change to wait for).
-        await File.WriteAllTextAsync(_library.SettingsPath, """{ "scan": { "excludedFolders": ["Media"] } }""", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            _library.SettingsPath,
+            """{ "scan": { "excludedFolders": ["Media"] } }""",
+            TestContext.CancellationToken
+        );
         var before = Fingerprint();
 
         var factory = Factory();
@@ -72,22 +76,39 @@ public sealed class MigrationTests
         var info = await MigrationAsync(visitor);
         using var config = await visitor.GetAsync("/api/config", TestContext.CancellationToken);
         using var setup = await visitor.GetAsync("/api/setup", TestContext.CancellationToken);
-        using var signIn = await visitor.PostAsJsonAsync("/api/session/login", new { userName = ApiClients.AdminName, password = ApiClients.AdminPassword },
-            TestContext.CancellationToken);
-        using var wrong = await visitor.PostAsJsonAsync("/api/migration", new MigrationInput("not-the-setup-code"), TestContext.CancellationToken);
+        using var signIn = await visitor.PostAsJsonAsync(
+            "/api/session/login",
+            new { userName = ApiClients.AdminName, password = ApiClients.AdminPassword },
+            TestContext.CancellationToken
+        );
+        using var wrong = await visitor.PostAsJsonAsync(
+            "/api/migration",
+            new MigrationInput("not-the-setup-code"),
+            TestContext.CancellationToken
+        );
         var after = Fingerprint();
 
         Assert.AreEqual(MigrationStatus.Required, info.Status);
         Assert.AreEqual("1.35.0", info.DatabaseVersion);
         Assert.IsTrue(info.CodeConfigured);
-        CollectionAssert.Contains(info.Changes.Select(c => c.Version).ToList(), MigrationCoordinator.AppVersion.ToString());
+        CollectionAssert.Contains(
+            info.Changes.Select(c => c.Version).ToList(),
+            MigrationCoordinator.AppVersion.ToString()
+        );
         CollectionAssert.Contains(info.Changes.Select(c => c.Version).ToList(), "1.36.0");
-        CollectionAssert.DoesNotContain(info.Changes.Select(c => c.Version).ToList(), "1.35.0", "Only the versions after the installed one");
+        CollectionAssert.DoesNotContain(
+            info.Changes.Select(c => c.Version).ToList(),
+            "1.35.0",
+            "Only the versions after the installed one"
+        );
         Assert.AreEqual("Added", info.Changes.Single(c => c.Version == "1.36.0").Sections[0].Title);
         foreach (var refused in new[] { config, setup, signIn })
         {
             Assert.AreEqual(HttpStatusCode.ServiceUnavailable, refused.StatusCode);
-            StringAssert.Contains(await refused.Content.ReadAsStringAsync(TestContext.CancellationToken), "migration-required");
+            StringAssert.Contains(
+                await refused.Content.ReadAsStringAsync(TestContext.CancellationToken),
+                "migration-required"
+            );
         }
         Assert.AreEqual(HttpStatusCode.BadRequest, wrong.StatusCode);
         Assert.AreEqual(before, after, "Neither the database nor the settings file changed");
@@ -103,37 +124,75 @@ public sealed class MigrationTests
         var visitor = ApiClients.Create(factory);
 
         var info = await MigrationAsync(visitor);
-        var code = (await File.ReadAllTextAsync(Path.Combine(_library.BasePath, "setup-code.txt"), TestContext.CancellationToken)).Trim();
-        using var started = await visitor.PostAsJsonAsync("/api/migration", new MigrationInput(code), TestContext.CancellationToken);
+        var code = (
+            await File.ReadAllTextAsync(
+                Path.Combine(_library.BasePath, "setup-code.txt"),
+                TestContext.CancellationToken
+            )
+        ).Trim();
+        using var started = await visitor.PostAsJsonAsync(
+            "/api/migration",
+            new MigrationInput(code),
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(MigrationStatus.Required, info.Status);
         Assert.IsTrue(info.CodeConfigured);
         Assert.IsTrue(info.CodeGenerated);
-        Assert.AreEqual(HttpStatusCode.OK, started.StatusCode, await started.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            started.StatusCode,
+            await started.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
     }
 
     [TestMethod]
     public async Task TheConfirmedUpdateBringsTheInstallUpAndOpensIt()
     {
         await InstallAsync(null);
-        await File.WriteAllTextAsync(_library.SettingsPath, """{ "scan": { "excludedFolders": ["Media"] } }""", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            _library.SettingsPath,
+            """{ "scan": { "excludedFolders": ["Media"] } }""",
+            TestContext.CancellationToken
+        );
 
         var factory = Factory();
         var waiting = await MigrationAsync(ApiClients.Create(factory));
         await ApiClients.MigrateAsync(factory, TestContext.CancellationToken);
         var done = await MigrationAsync(ApiClients.Create(factory), TestLibrary.SetupCode);
-        var admin = await ApiClients.SignInAsync(factory, ApiClients.AdminName, ApiClients.AdminPassword, TestContext.CancellationToken);
+        var admin = await ApiClients.SignInAsync(
+            factory,
+            ApiClients.AdminName,
+            ApiClients.AdminPassword,
+            TestContext.CancellationToken
+        );
         using var config = await admin.GetAsync("/api/config", TestContext.CancellationToken);
-        using var again = await admin.PostAsJsonAsync("/api/migration", new MigrationInput(TestLibrary.SetupCode), TestContext.CancellationToken);
+        using var again = await admin.PostAsJsonAsync(
+            "/api/migration",
+            new MigrationInput(TestLibrary.SetupCode),
+            TestContext.CancellationToken
+        );
         // Nothing else was saved: the emptied file is removed.
-        var file = File.Exists(_library.SettingsPath) ? JsonNode.Parse(await File.ReadAllTextAsync(_library.SettingsPath, TestContext.CancellationToken)) : null;
+        var file = File.Exists(_library.SettingsPath)
+            ? JsonNode.Parse(await File.ReadAllTextAsync(_library.SettingsPath, TestContext.CancellationToken))
+            : null;
 
         Assert.AreEqual(MigrationStatus.Required, waiting.Status);
         Assert.IsNull(waiting.DatabaseVersion, "Installs before 1.37.0 have no version recorded");
-        Assert.IsGreaterThan(5, waiting.Changes.Count, "Every version of the changelog is listed when the installed one is unknown");
+        Assert.IsGreaterThan(
+            5,
+            waiting.Changes.Count,
+            "Every version of the changelog is listed when the installed one is unknown"
+        );
         Assert.AreEqual(MigrationStatus.None, done.Status);
-        CollectionAssert.Contains(done.Log.ToList(), $"The install now belongs to SFE {MigrationCoordinator.AppVersion}.");
-        Assert.IsEmpty((await MigrationAsync(ApiClients.Create(factory))).Log, "The log names folders: not without the setup code");
+        CollectionAssert.Contains(
+            done.Log.ToList(),
+            $"The install now belongs to SFE {MigrationCoordinator.AppVersion}."
+        );
+        Assert.IsEmpty(
+            (await MigrationAsync(ApiClients.Create(factory))).Log,
+            "The log names folders: not without the setup code"
+        );
         Assert.IsEmpty((await MigrationAsync(ApiClients.Create(factory), "not-the-setup-code")).Log);
         Assert.AreEqual(MigrationCoordinator.AppVersion.ToString(), StoredVersion());
         Assert.AreEqual(HttpStatusCode.OK, config.StatusCode, "The app opens, with the sessions of before");
@@ -146,8 +205,11 @@ public sealed class MigrationTests
     {
         await InstallAsync("1.39.0");
         var photo = _library.FullPath("Media/photo.jpg");
-        var old = Path.Combine(_library.ThumbnailPath, Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetDirectoryName(photo)!),
-            Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetFileName(photo)) + ".bin");
+        var old = Path.Combine(
+            _library.ThumbnailPath,
+            Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetDirectoryName(photo)!),
+            Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetFileName(photo)) + ".bin"
+        );
         Directory.CreateDirectory(Path.GetDirectoryName(old)!);
         await File.WriteAllBytesAsync(old, [0xFF, 0xD8, 0xFF, 0x01], TestContext.CancellationToken);
         File.SetLastWriteTimeUtc(old, DateTime.UtcNow.AddDays(1));
@@ -155,14 +217,29 @@ public sealed class MigrationTests
         var factory = Factory();
         await ApiClients.MigrateAsync(factory, TestContext.CancellationToken);
         var done = await MigrationAsync(ApiClients.Create(factory), TestLibrary.SetupCode);
-        var admin = await ApiClients.SignInAsync(factory, ApiClients.AdminName, ApiClients.AdminPassword, TestContext.CancellationToken);
+        var admin = await ApiClients.SignInAsync(
+            factory,
+            ApiClients.AdminName,
+            ApiClients.AdminPassword,
+            TestContext.CancellationToken
+        );
         using var thumbnail = await admin.GetAsync("/api/thumbnails/Media/photo.jpg", TestContext.CancellationToken);
 
         Assert.AreEqual(MigrationStatus.None, done.Status);
-        Assert.IsTrue(done.Log.Any(line => line.StartsWith("1.40.0: ", StringComparison.Ordinal)), string.Join("\n", done.Log));
+        Assert.IsTrue(
+            done.Log.Any(line => line.StartsWith("1.40.0: ", StringComparison.Ordinal)),
+            string.Join("\n", done.Log)
+        );
         Assert.IsFalse(File.Exists(old));
-        Assert.AreEqual(HttpStatusCode.OK, thumbnail.StatusCode, "The moved thumbnail is found at its new place (no ffmpeg run)");
-        CollectionAssert.AreEqual(new byte[] { 0xFF, 0xD8, 0xFF, 0x01 }, await thumbnail.Content.ReadAsByteArrayAsync(TestContext.CancellationToken));
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            thumbnail.StatusCode,
+            "The moved thumbnail is found at its new place (no ffmpeg run)"
+        );
+        CollectionAssert.AreEqual(
+            new byte[] { 0xFF, 0xD8, 0xFF, 0x01 },
+            await thumbnail.Content.ReadAsByteArrayAsync(TestContext.CancellationToken)
+        );
     }
 
     [TestMethod]
@@ -173,7 +250,11 @@ public sealed class MigrationTests
         var factory = Factory();
         var client = ApiClients.Create(factory);
         var info = await MigrationAsync(client);
-        using var start = await client.PostAsJsonAsync("/api/migration", new MigrationInput(TestLibrary.SetupCode), TestContext.CancellationToken);
+        using var start = await client.PostAsJsonAsync(
+            "/api/migration",
+            new MigrationInput(TestLibrary.SetupCode),
+            TestContext.CancellationToken
+        );
         using var config = await client.GetAsync("/api/config", TestContext.CancellationToken);
 
         Assert.AreEqual(MigrationStatus.Newer, info.Status);
@@ -187,12 +268,24 @@ public sealed class MigrationTests
     public async Task TheUpdatePageMakesABackupWithTheSetupCodeDownloadedOnce()
     {
         await InstallAsync("1.36.0");
-        await File.WriteAllTextAsync(_library.SettingsPath, """{ "scan": { "excludedFolders": ["Media"] } }""", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            _library.SettingsPath,
+            """{ "scan": { "excludedFolders": ["Media"] } }""",
+            TestContext.CancellationToken
+        );
         var before = Fingerprint();
         var client = ApiClients.Create(Factory());
 
-        using var refused = await client.PostAsJsonAsync("/api/migration/backup", new MigrationInput("wrong-code-0000"), TestContext.CancellationToken);
-        using var made = await client.PostAsJsonAsync("/api/migration/backup", new MigrationInput(TestLibrary.SetupCode), TestContext.CancellationToken);
+        using var refused = await client.PostAsJsonAsync(
+            "/api/migration/backup",
+            new MigrationInput("wrong-code-0000"),
+            TestContext.CancellationToken
+        );
+        using var made = await client.PostAsJsonAsync(
+            "/api/migration/backup",
+            new MigrationInput(TestLibrary.SetupCode),
+            TestContext.CancellationToken
+        );
         var link = (await made.Content.ReadFromJsonAsync<BackupLink>(Json, TestContext.CancellationToken))!;
         using var download = await client.GetAsync("/" + link.Url, TestContext.CancellationToken);
         var zip = await download.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
@@ -213,19 +306,43 @@ public sealed class MigrationTests
     {
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        using (var created = await admin.PostAsJsonAsync("/api/tenants", new TenantInput("Other", Slug: "other", Root: _library.FullPath("Media")), Json,
-                   TestContext.CancellationToken))
+        using (
+            var created = await admin.PostAsJsonAsync(
+                "/api/tenants",
+                new TenantInput("Other", Slug: "other", Root: _library.FullPath("Media")),
+                Json,
+                TestContext.CancellationToken
+            )
+        )
         {
-            Assert.AreEqual(HttpStatusCode.Created, created.StatusCode, await created.Content.ReadAsStringAsync(TestContext.CancellationToken));
+            Assert.AreEqual(
+                HttpStatusCode.Created,
+                created.StatusCode,
+                await created.Content.ReadAsStringAsync(TestContext.CancellationToken)
+            );
         }
 
-        await File.WriteAllTextAsync(_library.SettingsPath, """{ "player": { "seekSeconds": 25 } }""", TestContext.CancellationToken);
-        await File.WriteAllTextAsync(Path.Combine(_library.BasePath, "installation.json"), """{ "Urls": "http://*:5181" }""", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            _library.SettingsPath,
+            """{ "player": { "seekSeconds": 25 } }""",
+            TestContext.CancellationToken
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(_library.BasePath, "installation.json"),
+            """{ "Urls": "http://*:5181" }""",
+            TestContext.CancellationToken
+        );
 
         using var backup = await admin.GetAsync("/api/system/backup", TestContext.CancellationToken);
         var zip = await backup.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
-        using var visitor = await ApiClients.Create(factory).GetAsync("/api/system/backup", TestContext.CancellationToken);
-        using var migrationBackup = await admin.PostAsJsonAsync("/api/migration/backup", new MigrationInput(TestLibrary.SetupCode), TestContext.CancellationToken);
+        using var visitor = await ApiClients
+            .Create(factory)
+            .GetAsync("/api/system/backup", TestContext.CancellationToken);
+        using var migrationBackup = await admin.PostAsJsonAsync(
+            "/api/migration/backup",
+            new MigrationInput(TestLibrary.SetupCode),
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(HttpStatusCode.OK, backup.StatusCode);
         StringAssert.StartsWith(backup.Content.Headers.ContentDisposition?.FileName?.Trim('"'), "SFE-backup-");
@@ -233,7 +350,11 @@ public sealed class MigrationTests
         CollectionAssert.Contains(entries, "databases/tenants/other.db", "Every library's index");
         CollectionAssert.Contains(entries, "config/installation.json", "What the installation page saved");
         Assert.AreEqual(HttpStatusCode.Unauthorized, visitor.StatusCode);
-        Assert.AreEqual(HttpStatusCode.BadRequest, migrationBackup.StatusCode, "The setup code backs up only while an update waits");
+        Assert.AreEqual(
+            HttpStatusCode.BadRequest,
+            migrationBackup.StatusCode,
+            "The setup code backs up only while an update waits"
+        );
     }
 
     [TestMethod]
@@ -251,7 +372,8 @@ public sealed class MigrationTests
     [TestMethod]
     public void TheChangelogIsReadByVersionAndSection()
     {
-        var entries = Changelog.Parse("""
+        var entries = Changelog.Parse(
+            """
             # Changelog
 
             Intro text.
@@ -285,7 +407,8 @@ public sealed class MigrationTests
             ### Added
 
             - The start.
-            """);
+            """
+        );
         var between = Changelog.Between(entries, Parse("1.0.0"), Parse("1.1.5"));
 
         CollectionAssert.AreEqual(new[] { "1.2.0", "1.1.0", "1.0.0" }, entries.Select(e => e.Version).ToList());
@@ -301,7 +424,11 @@ public sealed class MigrationTests
         var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "CHANGELOG.md");
         var entries = Changelog.Parse(File.ReadAllText(path));
 
-        Assert.AreEqual(MigrationCoordinator.AppVersion.ToString(), entries[0].Version, "Each version bump adds its section to CHANGELOG.md");
+        Assert.AreEqual(
+            MigrationCoordinator.AppVersion.ToString(),
+            entries[0].Version,
+            "Each version bump adds its section to CHANGELOG.md"
+        );
         Assert.IsTrue(entries.All(e => SemanticVersion.TryParse(e.Version, out _) && e.Sections.Count > 0));
     }
 
@@ -332,7 +459,8 @@ public sealed class MigrationTests
         using var connection = new SqliteConnection(_library.ConnectionString + ";Mode=ReadOnly;Pooling=False");
         connection.Open();
         using var command = connection.CreateCommand();
-        command.CommandText = $"SELECT Value FROM \"{AccessDbContext.ServerPropertiesTable}\" WHERE Key = '{ServerProperty.VersionKey}'";
+        command.CommandText =
+            $"SELECT Value FROM \"{AccessDbContext.ServerPropertiesTable}\" WHERE Key = '{ServerProperty.VersionKey}'";
         return command.ExecuteScalar() as string;
     }
 
@@ -347,10 +475,24 @@ public sealed class MigrationTests
             command.CommandText = "SELECT type, name, sql FROM sqlite_master ORDER BY type, name";
             using var reader = command.ExecuteReader();
             while (reader.Read())
-                text.AppendLine($"{reader.GetString(0)} {reader.GetString(1)} {(reader.IsDBNull(2) ? "" : reader.GetString(2))}");
+            {
+                text.AppendLine(
+                    $"{reader.GetString(0)} {reader.GetString(1)} {(reader.IsDBNull(2) ? "" : reader.GetString(2))}"
+                );
+            }
         }
 
-        foreach (var table in new[] { "Tenants", "Users", "Groups", "GroupRights", "TenantSettings", AccessDbContext.ServerPropertiesTable })
+        foreach (
+            var table in new[]
+            {
+                "Tenants",
+                "Users",
+                "Groups",
+                "GroupRights",
+                "TenantSettings",
+                AccessDbContext.ServerPropertiesTable,
+            }
+        )
         {
             using var command = connection.CreateCommand();
             command.CommandText = $"SELECT * FROM \"{table}\"";
@@ -358,7 +500,18 @@ public sealed class MigrationTests
             {
                 using var reader = command.ExecuteReader();
                 while (reader.Read())
-                    text.AppendLine(table + ": " + string.Join("|", Enumerable.Range(0, reader.FieldCount).Select(i => reader.IsDBNull(i) ? "null" : reader.GetValue(i).ToString())));
+                {
+                    text.AppendLine(
+                        table
+                            + ": "
+                            + string.Join(
+                                "|",
+                                Enumerable
+                                    .Range(0, reader.FieldCount)
+                                    .Select(i => reader.IsDBNull(i) ? "null" : reader.GetValue(i).ToString())
+                            )
+                    );
+                }
             }
             catch (SqliteException)
             {
@@ -401,7 +554,11 @@ public sealed class MigrationTests
     public async Task TheReasonOfAnErrorIsToldOnlyWithTheSetupCode()
     {
         // Not a database: the server cannot read its install's version, and says why in the provider's words.
-        await File.WriteAllTextAsync(_library.DatabasePath, "this is not a database, whatever its name", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            _library.DatabasePath,
+            "this is not a database, whatever its name",
+            TestContext.CancellationToken
+        );
         var visitor = ApiClients.Create(Factory());
 
         var anonymous = await MigrationAsync(visitor);
@@ -433,5 +590,6 @@ public sealed class MigrationTests
         return factory;
     }
 
-    private static SemanticVersion Parse(string text) => SemanticVersion.TryParse(text, out var version) ? version : throw new FormatException(text);
+    private static SemanticVersion Parse(string text) =>
+        SemanticVersion.TryParse(text, out var version) ? version : throw new FormatException(text);
 }

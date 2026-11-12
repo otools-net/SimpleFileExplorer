@@ -16,7 +16,12 @@ public sealed class VideoMatcherTests
         var copy = Blur(original, bits: 3, seed: 2);
         var other = RandomVideo(60, seed: 3);
 
-        var groups = VideoMatcher.FindGroups([original, copy, other], [100, 200, 100], 80, TestContext.CancellationToken);
+        var groups = VideoMatcher.FindGroups(
+            [original, copy, other],
+            [100, 200, 100],
+            80,
+            TestContext.CancellationToken
+        );
 
         var group = groups.Single();
         // Same length: the bigger file is the reference.
@@ -30,7 +35,9 @@ public sealed class VideoMatcherTests
         var original = RandomVideo(60, seed: 1);
         var trimmed = Slice(Blur(original, bits: 2, seed: 2), 6, 54);
 
-        var group = VideoMatcher.FindGroups([trimmed, original], [100, 100], 80, TestContext.CancellationToken).Single();
+        var group = VideoMatcher
+            .FindGroups([trimmed, original], [100, 100], 80, TestContext.CancellationToken)
+            .Single();
 
         // The longer one is the reference; 54 of its 60 frames are in the copy.
         Assert.AreEqual(new VideoMember(1, null), group.Members[0]);
@@ -59,7 +66,10 @@ public sealed class VideoMatcherTests
         var group = VideoMatcher.FindGroups([a, b, c], [3, 2, 1], 60, TestContext.CancellationToken).Single();
 
         Assert.AreEqual(new VideoMember(0, null), group.Members[0]);
-        CollectionAssert.AreEqual(new[] { new VideoMember(1, 66), new VideoMember(2, 33) }, group.Members.Skip(1).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { new VideoMember(1, 66), new VideoMember(2, 33) },
+            group.Members.Skip(1).ToArray()
+        );
     }
 
     [TestMethod]
@@ -129,12 +139,14 @@ public sealed class VideoMatcherTests
     private static VideoFingerprint Blur(VideoFingerprint video, int bits, int seed)
     {
         var random = new Random(seed);
-        var hashes = video.Hashes.Select(h =>
-        {
-            for (var b = 0; b < bits; b++)
-                h ^= 1UL << random.Next(64);
-            return h;
-        }).ToArray();
+        var hashes = video
+            .Hashes.Select(h =>
+            {
+                for (var b = 0; b < bits; b++)
+                    h ^= 1UL << random.Next(64);
+                return h;
+            })
+            .ToArray();
         return new VideoFingerprint(video.Interval, hashes, [.. video.Contrast]);
     }
 

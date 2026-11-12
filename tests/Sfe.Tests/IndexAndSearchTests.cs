@@ -48,7 +48,8 @@ public sealed class IndexAndSearchTests
         Assert.AreEqual("Root", root.Name);
         CollectionAssert.AreEquivalent(
             new[] { "ChildDir", "Media", "RepeatedDir", "SpecialDir" },
-            root.Directories.Select(d => d.Name).ToArray());
+            root.Directories.Select(d => d.Name).ToArray()
+        );
 
         var file = await db.Files.SingleAsync(f => f.FullName == _library.FullPath("Media/Holiday 2020.mp4"));
         Assert.AreEqual("Holiday 2020", file.Name);
@@ -69,27 +70,42 @@ public sealed class IndexAndSearchTests
         var until = DateTime.UtcNow.AddSeconds(15);
         for (var round = 0; DateTime.UtcNow < until && errors.IsEmpty; round++)
         {
-            var roundConnection = new SqliteConnectionStringBuilder(connectionString) { DefaultTimeout = 1000 + round }.ToString();
-            var options = (DbContextOptions<SfeDbContext>)SfeDatabase.Configure(
-                new DbContextOptionsBuilder<SfeDbContext>(), Core.Options.DatabaseProvider.Sqlite, roundConnection).Options;
-            using var start = new Barrier(64);
-            var threads = Enumerable.Range(0, 64).Select(_ => new Thread(() =>
+            var roundConnection = new SqliteConnectionStringBuilder(connectionString)
             {
-                try
+                DefaultTimeout = 1000 + round,
+            }.ToString();
+            var options =
+                (DbContextOptions<SfeDbContext>)
+                    SfeDatabase
+                        .Configure(
+                            new DbContextOptionsBuilder<SfeDbContext>(),
+                            Core.Options.DatabaseProvider.Sqlite,
+                            roundConnection
+                        )
+                        .Options;
+            using var start = new Barrier(64);
+            var threads = Enumerable
+                .Range(0, 64)
+                .Select(_ => new Thread(() =>
                 {
-                    start.SignalAndWait();
-                    for (var i = 0; i < 3; i++)
+                    try
                     {
-                        using var db = new SfeDbContext(options);
-                        db.Files.Count();
+                        start.SignalAndWait();
+                        for (var i = 0; i < 3; i++)
+                        {
+                            using var db = new SfeDbContext(options);
+                            db.Files.Count();
+                        }
                     }
-                }
-                catch (Exception ex)
+                    catch (Exception ex)
+                    {
+                        errors.Enqueue(ex.Message);
+                    }
+                })
                 {
-                    errors.Enqueue(ex.Message);
-                }
-            })
-            { IsBackground = true }).ToList();
+                    IsBackground = true,
+                })
+                .ToList();
             threads.ForEach(t => t.Start());
             if (!threads.All(t => t.Join(TimeSpan.FromSeconds(30))))
             {
@@ -126,7 +142,10 @@ public sealed class IndexAndSearchTests
     {
         await ScanAsync(_library.FullPath("RepeatedDir"), recursive: false);
 
-        CollectionAssert.AreEquivalent(new[] { "RDFile1.txt", "RDFile2.txt" }, await SearchNamesAsync("RDFile -1, RDFile -2"));
+        CollectionAssert.AreEquivalent(
+            new[] { "RDFile1.txt", "RDFile2.txt" },
+            await SearchNamesAsync("RDFile -1, RDFile -2")
+        );
     }
 
     [TestMethod]
@@ -207,7 +226,8 @@ public sealed class IndexAndSearchTests
         Assert.IsNull(second.Next);
         CollectionAssert.AreEqual(
             all.Items.Select(i => i.Path).ToArray(),
-            first.Items.Concat(second.Items).Select(i => i.Path).ToArray());
+            first.Items.Concat(second.Items).Select(i => i.Path).ToArray()
+        );
     }
 
     [TestMethod]
@@ -229,8 +249,12 @@ public sealed class IndexAndSearchTests
     public async Task CountingTheMatchesLogsNoWarning()
     {
         var recorder = new WarningRecorder();
-        await using var services = await CoreServices.CreateAsync(_library, logging: builder => builder.AddProvider(recorder));
-        var results = await services.Get<FileSearchService>().SearchAsync("r:>100x100", "", null, 10, cancellationToken: TestContext.CancellationToken);
+        await using var services = await CoreServices.CreateAsync(_library, logging: builder =>
+            builder.AddProvider(recorder)
+        );
+        var results = await services
+            .Get<FileSearchService>()
+            .SearchAsync("r:>100x100", "", null, 10, cancellationToken: TestContext.CancellationToken);
 
         Assert.IsNotNull(results?.Total);
         Assert.IsEmpty(recorder.Warnings);
@@ -264,7 +288,9 @@ public sealed class IndexAndSearchTests
         await ScanAsync(_library.Root);
 
         var search = _services.Get<FileSearchService>();
-        var all = (await search.SearchAsync("", "", null, 1000, sort, descending, TestContext.CancellationToken))!.Items;
+        var all = (
+            await search.SearchAsync("", "", null, 1000, sort, descending, TestContext.CancellationToken)
+        )!.Items;
         var paged = new List<LibraryItem>();
         string? after = null;
         do
@@ -272,8 +298,7 @@ public sealed class IndexAndSearchTests
             var page = (await search.SearchAsync("", "", after, 2, sort, descending, TestContext.CancellationToken))!;
             paged.AddRange(page.Items);
             after = page.Next;
-        }
-        while (after is not null);
+        } while (after is not null);
 
         Assert.IsGreaterThan(10, all.Count);
         CollectionAssert.AreEqual(all.Select(i => i.Path).ToArray(), paged.Select(i => i.Path).ToArray());
@@ -297,7 +322,16 @@ public sealed class IndexAndSearchTests
 
         var first = await SearchAsync("File", "", limit: 2);
         var search = _services.Get<FileSearchService>();
-        Assert.IsNull(await search.SearchAsync("File", "", first.Next, 2, SortField.Size, cancellationToken: TestContext.CancellationToken));
+        Assert.IsNull(
+            await search.SearchAsync(
+                "File",
+                "",
+                first.Next,
+                2,
+                SortField.Size,
+                cancellationToken: TestContext.CancellationToken
+            )
+        );
     }
 
     [TestMethod]
@@ -305,7 +339,11 @@ public sealed class IndexAndSearchTests
     {
         await ScanAsync(_library.Root);
 
-        Assert.IsNull(await _services.Get<FileSearchService>().SearchAsync("File", "", "../outside", 10, cancellationToken: TestContext.CancellationToken));
+        Assert.IsNull(
+            await _services
+                .Get<FileSearchService>()
+                .SearchAsync("File", "", "../outside", 10, cancellationToken: TestContext.CancellationToken)
+        );
     }
 
     [TestMethod]
@@ -373,7 +411,9 @@ public sealed class IndexAndSearchTests
     public async Task IgnoredFoldersAreNotIndexed()
     {
         await _services.DisposeAsync();
-        _services = await CoreServices.CreateAsync(_library, settings => settings["Sfe:Scan:IgnoredDirectories:0"] = "SpecialDir");
+        _services = await CoreServices.CreateAsync(_library, settings =>
+            settings["Sfe:Scan:IgnoredDirectories:0"] = "SpecialDir"
+        );
 
         await ScanAsync(_library.Root);
 
@@ -395,7 +435,10 @@ public sealed class IndexAndSearchTests
         await using var db = await CreateDbAsync();
         var indexedRoot = await db.Directories.Include(d => d.Directories).SingleAsync(d => d.ParentId == null);
         Assert.AreEqual(_library.Root, indexedRoot.FullName);
-        CollectionAssert.AreEquivalent(new[] { "Media", "RepeatedDir", "SpecialDir" }, indexedRoot.Directories.Select(d => d.Name).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "Media", "RepeatedDir", "SpecialDir" },
+            indexedRoot.Directories.Select(d => d.Name).ToArray()
+        );
         Assert.AreEqual(_library.DirectoryCount, await db.Directories.CountAsync());
     }
 
@@ -424,7 +467,10 @@ public sealed class IndexAndSearchTests
         Assert.IsEmpty(await SearchNamesAsync("other"));
 
         var thumbnails = _services.Get<ThumbnailService>();
-        Assert.AreNotEqual(thumbnails.GetCachePath(_library.FullPath("Media/photo.jpg")), thumbnails.GetCachePath(_library.FullPath("Media/photo.JPG")));
+        Assert.AreNotEqual(
+            thumbnails.GetCachePath(_library.FullPath("Media/photo.jpg")),
+            thumbnails.GetCachePath(_library.FullPath("Media/photo.JPG"))
+        );
     }
 
     [TestMethod]
@@ -449,8 +495,15 @@ public sealed class IndexAndSearchTests
         await ScanAsync(_library.Root);
 
         await using var db = await CreateDbAsync();
-        Assert.AreEqual(expectedDirectories + 1, await db.Directories.CountAsync(), "Only Media/outside is a new folder.");
-        CollectionAssert.AreEqual(new[] { "Media/outside/Linked.txt" }, (await SearchAsync("Linked", "")).Items.Select(i => i.Path).ToArray());
+        Assert.AreEqual(
+            expectedDirectories + 1,
+            await db.Directories.CountAsync(),
+            "Only Media/outside is a new folder."
+        );
+        CollectionAssert.AreEqual(
+            new[] { "Media/outside/Linked.txt" },
+            (await SearchAsync("Linked", "")).Items.Select(i => i.Path).ToArray()
+        );
     }
 
     [TestMethod]
@@ -471,8 +524,14 @@ public sealed class IndexAndSearchTests
         await File.WriteAllTextAsync(a, "a", TestContext.CancellationToken);
         await File.WriteAllTextAsync(b, "b", TestContext.CancellationToken);
 
-        Assert.AreNotEqual(await FileFingerprint.ComputeAsync(a, TestContext.CancellationToken), await FileFingerprint.ComputeAsync(b, TestContext.CancellationToken));
-        Assert.AreEqual(Convert.ToHexString(SHA1.HashData("a"u8)), await FileFingerprint.ComputeAsync(a, TestContext.CancellationToken));
+        Assert.AreNotEqual(
+            await FileFingerprint.ComputeAsync(a, TestContext.CancellationToken),
+            await FileFingerprint.ComputeAsync(b, TestContext.CancellationToken)
+        );
+        Assert.AreEqual(
+            Convert.ToHexString(SHA1.HashData("a"u8)),
+            await FileFingerprint.ComputeAsync(a, TestContext.CancellationToken)
+        );
     }
 
     private async Task<ScanProgress> ScanAsync(string path, bool recursive = true)
@@ -485,7 +544,9 @@ public sealed class IndexAndSearchTests
     }
 
     private async Task<SearchResults> SearchAsync(string query, string path, string? after = null, int limit = 100) =>
-        await _services.Get<FileSearchService>().SearchAsync(query, path, after, limit, cancellationToken: TestContext.CancellationToken)
+        await _services
+            .Get<FileSearchService>()
+            .SearchAsync(query, path, after, limit, cancellationToken: TestContext.CancellationToken)
         ?? throw new AssertFailedException("Search scope not found.");
 
     private async Task<string[]> SearchNamesAsync(string query) =>
@@ -501,18 +562,23 @@ public sealed class IndexAndSearchTests
 
         public ILogger CreateLogger(string categoryName) => this;
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
 
         public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Warning;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter
+        )
         {
             if (IsEnabled(logLevel))
                 Warnings.Enqueue($"{eventId.Name}: {formatter(state, exception)}");
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

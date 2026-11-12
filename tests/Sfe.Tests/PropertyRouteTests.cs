@@ -44,11 +44,37 @@ public sealed class PropertyRouteTests
         var accounts = _factory.Services.GetRequiredService<AccessService>();
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
-        var readers = (await accounts.CreateGroupAsync(tenant, new GroupInput("Readers", Rights: [Rights.Browse, Rights.ViewFiles]), cancellationToken: Token)).Value!;
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("carol", Password: "carol-password-1", GroupIds: [readers.Id]), null, Token);
+        var readers = (
+            await accounts.CreateGroupAsync(
+                tenant,
+                new GroupInput("Readers", Rights: [Rights.Browse, Rights.ViewFiles]),
+                cancellationToken: Token
+            )
+        ).Value!;
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("carol", Password: "carol-password-1", GroupIds: [readers.Id]),
+            null,
+            Token
+        );
         var rules = _factory.Services.GetRequiredService<FolderRuleService>();
-        Assert.AreEqual(AccessStatus.Ok, (await rules.SetAsync(tenant, "SpecialDir", FolderPrincipalRef.Group(users.Id), FolderLevel.Hidden, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await rules.SetAsync(
+                    tenant,
+                    "SpecialDir",
+                    FolderPrincipalRef.Group(users.Id),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
         _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
         _carol = await ApiClients.SignInAsync(_factory, "carol", "carol-password-1", Token);
     }
@@ -73,7 +99,12 @@ public sealed class PropertyRouteTests
         Assert.AreEqual(3 * 1024, alice.Details.Size);
         Assert.IsTrue(alice.CanChecksum);
         Assert.IsFalse(carol.CanChecksum, "Carol may not download");
-        using var refused = await _carol.PostAsJsonAsync("/api/files/properties/checksum", new ChecksumRequest("Media/photo.jpg"), Json, Token);
+        using var refused = await _carol.PostAsJsonAsync(
+            "/api/files/properties/checksum",
+            new ChecksumRequest("Media/photo.jpg"),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode);
         Assert.AreEqual("Root", (await GetAsync<ItemProperties>(_alice, "/api/files/properties?path=")).Item.Name);
     }
@@ -85,10 +116,18 @@ public sealed class PropertyRouteTests
 
         foreach (var path in new[] { "SpecialDir", "SpecialDir/SDEspañol", ".sfe", "Nothing", "../Root" })
         {
-            using var response = await _alice.GetAsync($"/api/files/properties?path={Uri.EscapeDataString(path)}", Token);
+            using var response = await _alice.GetAsync(
+                $"/api/files/properties?path={Uri.EscapeDataString(path)}",
+                Token
+            );
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, path);
         }
-        using var count = await _alice.PostAsJsonAsync("/api/files/properties/count", new CountRequest("SpecialDir"), Json, Token);
+        using var count = await _alice.PostAsJsonAsync(
+            "/api/files/properties/count",
+            new CountRequest("SpecialDir"),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.NotFound, count.StatusCode);
     }
 
@@ -117,7 +156,12 @@ public sealed class PropertyRouteTests
     [TestMethod]
     public async Task AJobIsItsStartersOnly()
     {
-        using var started = await _alice.PostAsJsonAsync("/api/files/properties/checksum", new ChecksumRequest("Media/photo.jpg", ChecksumAlgorithm.Md5), Json, Token);
+        using var started = await _alice.PostAsJsonAsync(
+            "/api/files/properties/checksum",
+            new ChecksumRequest("Media/photo.jpg", ChecksumAlgorithm.Md5),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.OK, started.StatusCode, await started.Content.ReadAsStringAsync(Token));
         var job = (await started.Content.ReadFromJsonAsync<PropertyJobView>(Json, Token))!;
 
@@ -126,12 +170,24 @@ public sealed class PropertyRouteTests
         using (var stop = await _admin.DeleteAsync($"/api/files/properties/jobs/{job.Id}", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, stop.StatusCode);
         var done = await WaitAsync(_alice, job.Id);
-        Assert.AreEqual(Convert.ToHexStringLower(System.Security.Cryptography.MD5.HashData(await File.ReadAllBytesAsync(_library.FullPath("Media/photo.jpg"), Token))), done.Checksum);
+        Assert.AreEqual(
+            Convert.ToHexStringLower(
+                System.Security.Cryptography.MD5.HashData(
+                    await File.ReadAllBytesAsync(_library.FullPath("Media/photo.jpg"), Token)
+                )
+            ),
+            done.Checksum
+        );
     }
 
     private async Task<PropertyJobView> CountAsync(HttpClient client, string path)
     {
-        using var started = await client.PostAsJsonAsync("/api/files/properties/count", new CountRequest(path), Json, Token);
+        using var started = await client.PostAsJsonAsync(
+            "/api/files/properties/count",
+            new CountRequest(path),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.OK, started.StatusCode, await started.Content.ReadAsStringAsync(Token));
         return await WaitAsync(client, (await started.Content.ReadFromJsonAsync<PropertyJobView>(Json, Token))!.Id);
     }
@@ -151,7 +207,11 @@ public sealed class PropertyRouteTests
     private async Task<T> GetAsync<T>(HttpClient client, string url)
     {
         using var response = await client.GetAsync(url, Token);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"{url}: {await response.Content.ReadAsStringAsync(Token)}");
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            $"{url}: {await response.Content.ReadAsStringAsync(Token)}"
+        );
         return (await response.Content.ReadFromJsonAsync<T>(Json, Token))!;
     }
 }

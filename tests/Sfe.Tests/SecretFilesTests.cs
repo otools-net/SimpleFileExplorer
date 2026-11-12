@@ -6,8 +6,13 @@ namespace Sfe.Tests;
 [TestClass]
 public sealed class SecretFilesTests
 {
-    private const UnixFileMode Others = UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.GroupExecute
-        | UnixFileMode.OtherRead | UnixFileMode.OtherWrite | UnixFileMode.OtherExecute;
+    private const UnixFileMode Others =
+        UnixFileMode.GroupRead
+        | UnixFileMode.GroupWrite
+        | UnixFileMode.GroupExecute
+        | UnixFileMode.OtherRead
+        | UnixFileMode.OtherWrite
+        | UnixFileMode.OtherExecute;
 
     private string _folder = null!;
 
@@ -57,7 +62,10 @@ public sealed class SecretFilesTests
         }
         var file = Path.Combine(_folder, "code.txt");
         File.WriteAllText(file, "old");
-        File.SetUnixFileMode(file, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+        File.SetUnixFileMode(
+            file,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead
+        );
 
         SecretFiles.WriteAllText(file, "new");
 
@@ -87,7 +95,12 @@ public sealed class SecretFilesTests
             return;
         }
         var shared = Path.Combine(_folder, "shared");
-        var mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute | UnixFileMode.GroupRead | UnixFileMode.GroupExecute;
+        var mode =
+            UnixFileMode.UserRead
+            | UnixFileMode.UserWrite
+            | UnixFileMode.UserExecute
+            | UnixFileMode.GroupRead
+            | UnixFileMode.GroupExecute;
         Directory.CreateDirectory(shared, mode);
         File.SetUnixFileMode(shared, mode);
 

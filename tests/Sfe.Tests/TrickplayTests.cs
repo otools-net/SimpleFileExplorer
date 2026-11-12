@@ -26,7 +26,10 @@ public sealed class TrickplayTests
         _library = new TestLibrary();
         _services = await CoreServices.CreateAsync(_library, s =>
         {
-            s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG") is { Length: > 0 } path ? path : "ffmpeg";
+            s["Sfe:Thumbnails:FfmpegPath"] = Environment.GetEnvironmentVariable("SFE_TEST_FFMPEG")
+                is { Length: > 0 } path
+                ? path
+                : "ffmpeg";
             s["Sfe:Trickplay:Enabled"] = "true";
             s["Sfe:Trickplay:Folders:0"] = "Media";
             s["Sfe:Trickplay:ExcludedFolders:0"] = "Media/Skipped";
@@ -65,8 +68,8 @@ public sealed class TrickplayTests
 
         var manifest = Trickplay.Get("Media/clip.mp4");
         Assert.IsNotNull(manifest);
-        Assert.AreEqual(8, manifest.Count);         // seconds 0 to 7
-        Assert.AreEqual(2, manifest.Sheets);        // 6 frames per sheet
+        Assert.AreEqual(8, manifest.Count); // seconds 0 to 7
+        Assert.AreEqual(2, manifest.Sheets); // 6 frames per sheet
         Assert.AreEqual(64, manifest.TileWidth);
         Assert.AreEqual(36, manifest.TileHeight);
         Assert.IsNotNull(Trickplay.GetSheet("Media/clip.mp4", 1));
@@ -107,8 +110,12 @@ public sealed class TrickplayTests
         // Neither by the pass nor when the player asks for it.
         Assert.IsNull(Trickplay.Get("Media/Skipped/Deeper/skipped.mp4"));
         Assert.AreEqual(0, Trickplay.Status.Queued);
-        Assert.IsFalse(Directory.Exists(Trickplay.GetCacheFolder(_library.FullPath("Media/Skipped/Deeper/skipped.mp4"))));
-        Assert.IsFalse(Trickplay.GetActivity(10).Recent.Any(r => r.Path.StartsWith("Media/Skipped", StringComparison.Ordinal)));
+        Assert.IsFalse(
+            Directory.Exists(Trickplay.GetCacheFolder(_library.FullPath("Media/Skipped/Deeper/skipped.mp4")))
+        );
+        Assert.IsFalse(
+            Trickplay.GetActivity(10).Recent.Any(r => r.Path.StartsWith("Media/Skipped", StringComparison.Ordinal))
+        );
     }
 
     [TestMethod]
@@ -169,7 +176,9 @@ public sealed class TrickplayTests
         // A sheet being served (or scanned by an antivirus) while the new trickplay replaces the old one: on Windows
         // the old folder can't be deleted until it is closed.
         var cache = Trickplay.GetCacheFolder(_library.FullPath("Media/later.mp4"));
-        await using (var held = new FileStream(Path.Combine(cache, "0.jpg"), FileMode.Open, FileAccess.Read, FileShare.Read))
+        await using (
+            var held = new FileStream(Path.Combine(cache, "0.jpg"), FileMode.Open, FileAccess.Read, FileShare.Read)
+        )
         {
             AddVideo("Media/later.mp4", seconds: 5);
             File.SetLastWriteTimeUtc(_library.FullPath("Media/later.mp4"), DateTime.UtcNow.AddMinutes(1));
@@ -188,5 +197,8 @@ public sealed class TrickplayTests
 
     /// <summary>A small test pattern video of 2, 3, 5 or 7.5 seconds with a key frame every second (tests/samples/media).</summary>
     private void AddVideo(string relativePath, double seconds) =>
-        TestSamples.CopyTo($"testsrc-{seconds.ToString(System.Globalization.CultureInfo.InvariantCulture)}s-keyframes.mp4", _library.FullPath(relativePath));
+        TestSamples.CopyTo(
+            $"testsrc-{seconds.ToString(System.Globalization.CultureInfo.InvariantCulture)}s-keyframes.mp4",
+            _library.FullPath(relativePath)
+        );
 }

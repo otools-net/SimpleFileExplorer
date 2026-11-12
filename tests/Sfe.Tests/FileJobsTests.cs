@@ -74,27 +74,38 @@ public sealed class FileJobsTests
         await ScanAsync();
         var tag = await TagAsync("Beach", "Media/photo.jpg");
 
-        var tagged = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["Media/photo.jpg"], "ChildDir", KeepTags: true));
+        var tagged = await RunAsync(
+            new FileJobRequest(FileJobKind.Copy, ["Media/photo.jpg"], "ChildDir", KeepTags: true)
+        );
         var plain = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["Media/photo.jpg"], "RepeatedDir"));
 
         Assert.AreEqual(FileOperationStatus.Done, tagged.Results.Single().Status, tagged.Results.Single().Message);
         Assert.AreEqual(3 * 1024, tagged.BytesDone);
         Assert.AreEqual(tagged.BytesTotal, tagged.BytesDone);
         Assert.IsTrue(File.Exists(_library.FullPath("Media/photo.jpg")), "The original stays");
-        Assert.AreEqual(File.GetLastWriteTimeUtc(_library.FullPath("Media/photo.jpg")), File.GetLastWriteTimeUtc(_library.FullPath("ChildDir/photo.jpg")));
+        Assert.AreEqual(
+            File.GetLastWriteTimeUtc(_library.FullPath("Media/photo.jpg")),
+            File.GetLastWriteTimeUtc(_library.FullPath("ChildDir/photo.jpg"))
+        );
         CollectionAssert.AreEqual(new[] { tag }, await TagIdsAsync("ChildDir/photo.jpg"));
         CollectionAssert.AreEqual(new[] { tag }, await TagIdsAsync("Media/photo.jpg"));
         Assert.IsEmpty(await TagIdsAsync("RepeatedDir/photo.jpg"));
         Assert.AreEqual(FileOperationStatus.Done, plain.Results.Single().Status);
         await using var db = await DbAsync();
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("RepeatedDir/photo.jpg"), Token), "A copied file is indexed at once");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("RepeatedDir/photo.jpg"), Token),
+            "A copied file is indexed at once"
+        );
     }
 
     [TestMethod]
     public async Task ACopiedFolderLeavesOutWhatThePersonMayNotSeeAndIsScanned()
     {
         await ScanAsync();
-        var access = new FakeAccess { Refuse = (path, right) => right == Rights.ViewFiles && path == "RepeatedDir/ChildDir" };
+        var access = new FakeAccess
+        {
+            Refuse = (path, right) => right == Rights.ViewFiles && path == "RepeatedDir/ChildDir",
+        };
 
         var job = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["RepeatedDir"], "Media"), access);
         await _services.Get<ScanCoordinator>().Completion!;
@@ -106,7 +117,10 @@ public sealed class FileJobsTests
         Assert.IsFalse(Directory.Exists(_library.FullPath("Media/RepeatedDir/ChildDir")));
         Assert.IsTrue(File.Exists(_library.FullPath("RepeatedDir/ChildDir/AFile1.txt")));
         await using var db = await DbAsync();
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/RepeatedDir/RDFile1.txt"), Token), "A scan of the copy indexes it");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/RepeatedDir/RDFile1.txt"), Token),
+            "A scan of the copy indexes it"
+        );
     }
 
     [TestMethod]
@@ -115,7 +129,11 @@ public sealed class FileJobsTests
         _library.AddFile("ChildDir/RFile1.txt", 5);
         _library.AddFile("ChildDir/RFile2", 5);
 
-        var view = Jobs.Start(new FileJobRequest(FileJobKind.Copy, ["RFile1.txt", "RFile2"], "ChildDir"), Me, new FakeAccess());
+        var view = Jobs.Start(
+            new FileJobRequest(FileJobKind.Copy, ["RFile1.txt", "RFile2"], "ChildDir"),
+            Me,
+            new FakeAccess()
+        );
         var waiting = await WaitForAsync(view.Id, j => j.State == FileJobState.Waiting);
 
         Assert.AreEqual("RFile1.txt", waiting.Conflict!.Source.Name);
@@ -128,7 +146,10 @@ public sealed class FileJobsTests
 
         var done = Jobs.Find(view.Id)!;
         Assert.AreEqual(FileJobState.Completed, done.State);
-        CollectionAssert.AreEqual(new[] { "ChildDir/RFile1 (2).txt", "ChildDir/RFile2 (2)" }, done.Results.Select(r => r.NewPath).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "ChildDir/RFile1 (2).txt", "ChildDir/RFile2 (2)" },
+            done.Results.Select(r => r.NewPath).ToArray()
+        );
         Assert.IsFalse(Jobs.Answer(view.Id, ConflictChoice.Skip, forAll: false), "Nothing is asked any more");
     }
 
@@ -138,10 +159,15 @@ public sealed class FileJobsTests
         _library.AddFile("ChildDir/RFile1.txt", 5);
         _library.AddFile("ChildDir/RFile2", 5);
 
-        var replaced = await RunAsync(new FileJobRequest(FileJobKind.Move, ["RFile1.txt"], "ChildDir", ConflictChoice.Replace));
+        var replaced = await RunAsync(
+            new FileJobRequest(FileJobKind.Move, ["RFile1.txt"], "ChildDir", ConflictChoice.Replace)
+        );
         // Without the right to delete there, "replace" can't hold: the job asks instead.
-        var started = Jobs.Start(new FileJobRequest(FileJobKind.Move, ["RFile2"], "ChildDir", ConflictChoice.Replace), Me,
-            new FakeAccess { Refuse = (_, right) => right == Rights.DeleteFiles });
+        var started = Jobs.Start(
+            new FileJobRequest(FileJobKind.Move, ["RFile2"], "ChildDir", ConflictChoice.Replace),
+            Me,
+            new FakeAccess { Refuse = (_, right) => right == Rights.DeleteFiles }
+        );
         Assert.IsFalse((await WaitForAsync(started.Id, j => j.State == FileJobState.Waiting)).Conflict!.CanReplace);
         Jobs.Answer(started.Id, ConflictChoice.Replace, forAll: false);
         await Jobs.Completion(started.Id)!;
@@ -149,7 +175,10 @@ public sealed class FileJobsTests
 
         Assert.AreEqual(FileOperationStatus.Done, replaced.Results.Single().Status, replaced.Results.Single().Message);
         Assert.AreEqual(10, new FileInfo(_library.FullPath("ChildDir/RFile1.txt")).Length);
-        Assert.AreEqual("ChildDir/RFile1.txt", (await _services.Get<Trash>().ListAsync(null, null, _ => true, Token)).Items.Single().Path);
+        Assert.AreEqual(
+            "ChildDir/RFile1.txt",
+            (await _services.Get<Trash>().ListAsync(null, null, _ => true, Token)).Items.Single().Path
+        );
         Assert.AreEqual(FileOperationStatus.Forbidden, refused.Results.Single().Status);
         Assert.IsTrue(File.Exists(_library.FullPath("RFile2")));
         Assert.AreEqual(5, new FileInfo(_library.FullPath("ChildDir/RFile2")).Length);
@@ -161,7 +190,9 @@ public sealed class FileJobsTests
         _library.AddFile("ChildDir/RFile1.txt", 5);
 
         var copy = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["Media/photo.jpg"], "Media"));
-        var skipped = await RunAsync(new FileJobRequest(FileJobKind.Move, ["RFile1.txt"], "ChildDir", ConflictChoice.Skip));
+        var skipped = await RunAsync(
+            new FileJobRequest(FileJobKind.Move, ["RFile1.txt"], "ChildDir", ConflictChoice.Skip)
+        );
 
         Assert.AreEqual("Media/photo (2).jpg", copy.Results.Single().NewPath);
         Assert.AreEqual(FileOperationStatus.Skipped, skipped.Results.Single().Status);
@@ -173,7 +204,11 @@ public sealed class FileJobsTests
     {
         _library.AddFile("ChildDir/RFile2", 5);
 
-        var view = Jobs.Start(new FileJobRequest(FileJobKind.Copy, ["RFile1.txt", "RFile2", "100%_done[1].txt"], "ChildDir"), Me, new FakeAccess());
+        var view = Jobs.Start(
+            new FileJobRequest(FileJobKind.Copy, ["RFile1.txt", "RFile2", "100%_done[1].txt"], "ChildDir"),
+            Me,
+            new FakeAccess()
+        );
         await WaitForAsync(view.Id, j => j.State == FileJobState.Waiting);
         Assert.IsTrue(Jobs.Cancel(view.Id));
         await Jobs.Completion(view.Id)!;
@@ -189,11 +224,21 @@ public sealed class FileJobsTests
     [TestMethod]
     public async Task WhatThePersonMayNotDoIsRefusedItemByItem()
     {
-        var access = new FakeAccess { Refuse = (path, right) => right == Rights.MoveFiles && path == "RepeatedDir/ChildDir" };
+        var access = new FakeAccess
+        {
+            Refuse = (path, right) => right == Rights.MoveFiles && path == "RepeatedDir/ChildDir",
+        };
 
-        var job = await RunAsync(new FileJobRequest(FileJobKind.Move, ["RepeatedDir", "RFile1.txt", "ChildDir", "Nowhere.txt"], ""), access);
+        var job = await RunAsync(
+            new FileJobRequest(FileJobKind.Move, ["RepeatedDir", "RFile1.txt", "ChildDir", "Nowhere.txt"], ""),
+            access
+        );
 
-        Assert.AreEqual(FileOperationStatus.Forbidden, job.Results[0].Status, "Something below the folder may not move");
+        Assert.AreEqual(
+            FileOperationStatus.Forbidden,
+            job.Results[0].Status,
+            "Something below the folder may not move"
+        );
         Assert.AreEqual(FileOperationStatus.Skipped, job.Results[1].Status, "Already there");
         Assert.AreEqual(FileOperationStatus.Skipped, job.Results[2].Status);
         Assert.AreEqual(FileOperationStatus.NotFound, job.Results[3].Status);
@@ -202,13 +247,30 @@ public sealed class FileJobsTests
         Assert.AreEqual(FileOperationStatus.Failed, into.Results.Single().Status);
         StringAssert.Contains(into.Results.Single().Message, "into itself");
 
-        var hidden = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "Media"), new FakeAccess { Refuse = (_, right) => right == Rights.Browse });
-        Assert.AreEqual(FileOperationStatus.NotFound, hidden.Results.Single().Status, "Nothing tells what one may not see");
+        var hidden = await RunAsync(
+            new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "Media"),
+            new FakeAccess { Refuse = (_, right) => right == Rights.Browse }
+        );
+        Assert.AreEqual(
+            FileOperationStatus.NotFound,
+            hidden.Results.Single().Status,
+            "Nothing tells what one may not see"
+        );
 
-        var closed = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["ChildDir"], "Media"), new FakeAccess { Refuse = (path, right) => right == Rights.ViewFiles && path == "ChildDir" });
-        Assert.AreEqual(FileOperationStatus.Forbidden, closed.Results.Single().Status, "A folder whose files may not be opened");
+        var closed = await RunAsync(
+            new FileJobRequest(FileJobKind.Copy, ["ChildDir"], "Media"),
+            new FakeAccess { Refuse = (path, right) => right == Rights.ViewFiles && path == "ChildDir" }
+        );
+        Assert.AreEqual(
+            FileOperationStatus.Forbidden,
+            closed.Results.Single().Status,
+            "A folder whose files may not be opened"
+        );
 
-        var target = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "Media"), new FakeAccess { Refuse = (path, _) => path == "Media" });
+        var target = await RunAsync(
+            new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "Media"),
+            new FakeAccess { Refuse = (path, _) => path == "Media" }
+        );
         Assert.AreEqual(FileOperationStatus.Forbidden, target.Results.Single().Status);
         Assert.IsTrue(File.Exists(_library.FullPath("RepeatedDir/ChildDir/AFile1.txt")));
     }
@@ -227,7 +289,11 @@ public sealed class FileJobsTests
     public async Task ACopyKeepsTheFreeSpaceItIsToldTo()
     {
         await _services.DisposeAsync();
-        _services = await CoreServices.CreateAsync(_library, s => s["Sfe:Files:MinimumFreeSpaceMegabytes"] = int.MaxValue.ToString(), _log.AddTo);
+        _services = await CoreServices.CreateAsync(
+            _library,
+            s => s["Sfe:Files:MinimumFreeSpaceMegabytes"] = int.MaxValue.ToString(),
+            _log.AddTo
+        );
 
         var job = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "Media"));
 
@@ -240,7 +306,11 @@ public sealed class FileJobsTests
     public async Task JobsAreListedForTheirOwner()
     {
         await RunAsync(new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "Media"));
-        var other = Jobs.Start(new FileJobRequest(FileJobKind.Copy, ["RFile2"], "Media"), new FileActor(8, "other"), new FakeAccess());
+        var other = Jobs.Start(
+            new FileJobRequest(FileJobKind.Copy, ["RFile2"], "Media"),
+            new FileActor(8, "other"),
+            new FakeAccess()
+        );
         await Jobs.Completion(other.Id)!;
 
         Assert.HasCount(1, Jobs.List(7));
@@ -285,7 +355,8 @@ public sealed class FileJobsTests
     private async Task<int[]> TagIdsAsync(string path) =>
         (await Tags.GetFileTagsAsync(path, Token))?.Tags.Select(t => t.Id).ToArray() ?? [];
 
-    private Task<SfeDbContext> DbAsync() => _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
+    private Task<SfeDbContext> DbAsync() =>
+        _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
 
     /// <summary>Everything allowed but what <see cref="Refuse"/> says.</summary>
     private sealed class FakeAccess : IFileJobAccess
@@ -295,13 +366,23 @@ public sealed class FileJobsTests
         public Task<bool> MayAsync(string path, string right) => Task.FromResult(!Refuse(path, right));
 
         public Task<bool> MayThroughoutAsync(string path, string right) =>
-            Task.FromResult(!Refuse(path, right) && !Probe.Any(p => p.StartsWith(path + "/", StringComparison.Ordinal) && Refuse(p, right)));
+            Task.FromResult(
+                !Refuse(path, right)
+                    && !Probe.Any(p => p.StartsWith(path + "/", StringComparison.Ordinal) && Refuse(p, right))
+            );
 
-        public bool IsProtected(string fullPath) => fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
+        public bool IsProtected(string fullPath) =>
+            fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
 
         public bool IsReadOnly(string fullPath) => IsProtected(fullPath);
 
         /// <summary>Paths below a folder the fake knows of (the test library's folders).</summary>
-        private static readonly string[] Probe = ["RepeatedDir/ChildDir", "RepeatedDir/RepeatedDir", "ChildDir", "Media"];
+        private static readonly string[] Probe =
+        [
+            "RepeatedDir/ChildDir",
+            "RepeatedDir/RepeatedDir",
+            "ChildDir",
+            "Media",
+        ];
     }
 }

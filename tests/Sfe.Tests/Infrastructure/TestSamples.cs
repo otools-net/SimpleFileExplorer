@@ -9,14 +9,20 @@ namespace Sfe.Tests.Infrastructure;
 /// </summary>
 public static class TestSamples
 {
-    public static string Folder { get; } = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(SourceFile())!, "..", "..", "samples", "media"));
+    public static string Folder { get; } =
+        Path.GetFullPath(Path.Combine(Path.GetDirectoryName(SourceFile())!, "..", "..", "samples", "media"));
 
     /// <summary>The sample's path in the repository (to read it where it is).</summary>
     public static string PathOf(string name)
     {
         var path = Path.Combine(Folder, name);
         if (!File.Exists(path))
-            Assert.Fail($"No sample {name} in {Folder}: add it to tests/samples/media.json and run agents/tools/samples/update-samples.mjs.");
+        {
+            Assert.Fail(
+                $"No sample {name} in {Folder}: add it to tests/samples/media.json and run agents/tools/samples/update-samples.mjs."
+            );
+        }
+
         return path;
     }
 
@@ -28,7 +34,12 @@ public static class TestSamples
     {
         var path = Path.Combine(ArchivesFolder, name);
         if (!File.Exists(path))
-            Assert.Fail($"No archive {name} in {ArchivesFolder}: make it in agents/tools/samples/make-archives.mjs and run update-samples.mjs.");
+        {
+            Assert.Fail(
+                $"No archive {name} in {ArchivesFolder}: make it in agents/tools/samples/make-archives.mjs and run update-samples.mjs."
+            );
+        }
+
         return path;
     }
 

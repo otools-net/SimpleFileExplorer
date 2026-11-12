@@ -64,7 +64,10 @@ public sealed class FileOperationsTests
         Assert.IsTrue(Directory.Exists(_library.FullPath("ChildDir/New folder")));
         await using var db = await DbAsync();
         var parent = await db.Directories.SingleAsync(d => d.FullName == _library.FullPath("ChildDir"), Token);
-        var created = await db.Directories.SingleAsync(d => d.FullName == _library.FullPath("ChildDir/New folder"), Token);
+        var created = await db.Directories.SingleAsync(
+            d => d.FullName == _library.FullPath("ChildDir/New folder"),
+            Token
+        );
         Assert.AreEqual(parent.Id, created.ParentId);
         Assert.AreEqual("New folder", created.Name);
     }
@@ -98,9 +101,15 @@ public sealed class FileOperationsTests
         Assert.AreEqual(FileOperationStatus.Exists, again.Status);
         Assert.AreEqual(FileOperationStatus.Exists, overFolder.Status);
         Assert.AreEqual(FileOperationStatus.Invalid, (await Files.CreateFileAsync("", "a/b.txt", Me, Token)).Status);
-        Assert.AreEqual(FileOperationStatus.NotFound, (await Files.CreateFileAsync("Nothing", "x.txt", Me, Token)).Status);
+        Assert.AreEqual(
+            FileOperationStatus.NotFound,
+            (await Files.CreateFileAsync("Nothing", "x.txt", Me, Token)).Status
+        );
         await using var db = await DbAsync();
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("ChildDir/notes.txt"), Token), "Indexed at once");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("ChildDir/notes.txt"), Token),
+            "Indexed at once"
+        );
         CollectionAssert.Contains(changed, "ChildDir", "The change feed hears of it");
     }
 
@@ -111,16 +120,36 @@ public sealed class FileOperationsTests
         Assert.AreEqual(FileOperationStatus.Invalid, (await Files.CreateFolderAsync("", "..", Me, Token)).Status);
         Assert.AreEqual(FileOperationStatus.Invalid, (await Files.CreateFolderAsync("", "CON", Me, Token)).Status);
         Assert.AreEqual(FileOperationStatus.Invalid, (await Files.CreateFolderAsync("", "", Me, Token)).Status);
-        Assert.AreEqual(FileOperationStatus.Invalid, (await Files.CreateFolderAsync("", LibraryPaths.WorkFolderName, Me, Token)).Status,
-            "SFE's work folder at the root");
-        Assert.AreEqual(FileOperationStatus.Done, (await Files.CreateFolderAsync("ChildDir", LibraryPaths.WorkFolderName, Me, Token)).Status,
-            "Only the root's is reserved");
-        Assert.AreEqual(FileOperationStatus.NotFound, (await Files.CreateFolderAsync("Nowhere", "x", Me, Token)).Status);
-        Assert.AreEqual(FileOperationStatus.NotFound, (await Files.CreateFolderAsync("RFile1.txt", "x", Me, Token)).Status, "Not a folder");
-        Assert.AreEqual(FileOperationStatus.NotFound, (await Files.CreateFolderAsync("../outside", "x", Me, Token)).Status);
+        Assert.AreEqual(
+            FileOperationStatus.Invalid,
+            (await Files.CreateFolderAsync("", LibraryPaths.WorkFolderName, Me, Token)).Status,
+            "SFE's work folder at the root"
+        );
+        Assert.AreEqual(
+            FileOperationStatus.Done,
+            (await Files.CreateFolderAsync("ChildDir", LibraryPaths.WorkFolderName, Me, Token)).Status,
+            "Only the root's is reserved"
+        );
+        Assert.AreEqual(
+            FileOperationStatus.NotFound,
+            (await Files.CreateFolderAsync("Nowhere", "x", Me, Token)).Status
+        );
+        Assert.AreEqual(
+            FileOperationStatus.NotFound,
+            (await Files.CreateFolderAsync("RFile1.txt", "x", Me, Token)).Status,
+            "Not a folder"
+        );
+        Assert.AreEqual(
+            FileOperationStatus.NotFound,
+            (await Files.CreateFolderAsync("../outside", "x", Me, Token)).Status
+        );
         Assert.IsFalse(Directory.Exists(Path.Combine(_library.BasePath, "outside")));
         Assert.AreEqual(FileOperationStatus.Invalid, (await Files.RenameAsync("RFile1.txt", "x:y", Me, Token)).Status);
-        Assert.AreEqual(FileOperationStatus.NotFound, (await Files.RenameAsync("", "Root2", Me, Token)).Status, "The root is not renamed");
+        Assert.AreEqual(
+            FileOperationStatus.NotFound,
+            (await Files.RenameAsync("", "Root2", Me, Token)).Status,
+            "The root is not renamed"
+        );
         Assert.IsTrue(File.Exists(_library.FullPath("RFile1.txt")));
     }
 
@@ -140,7 +169,10 @@ public sealed class FileOperationsTests
         Assert.AreEqual(10, new FileInfo(_library.FullPath("RFile1.txt")).Length);
         Assert.AreEqual(2048, new FileInfo(_library.FullPath("RFile2")).Length);
         // One folder for Windows, two for Linux.
-        Assert.AreEqual(LibraryPaths.IsCaseInsensitiveFileSystem ? FileOperationStatus.Exists : FileOperationStatus.Done, otherCase.Status);
+        Assert.AreEqual(
+            LibraryPaths.IsCaseInsensitiveFileSystem ? FileOperationStatus.Exists : FileOperationStatus.Done,
+            otherCase.Status
+        );
     }
 
     /* ---------- Rename ---------- */
@@ -162,7 +194,10 @@ public sealed class FileOperationsTests
         Assert.AreEqual("Media/beach day.jpeg", result.Item!.Path);
         Assert.IsFalse(File.Exists(_library.FullPath("Media/photo.jpg")));
         Assert.IsTrue(File.Exists(_library.FullPath("Media/beach day.jpeg")));
-        CollectionAssert.AreEqual(new[] { tag }, (await Tags.GetFileTagsAsync("Media/beach day.jpeg", Token))!.Tags.Select(t => t.Id).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { tag },
+            (await Tags.GetFileTagsAsync("Media/beach day.jpeg", Token))!.Tags.Select(t => t.Id).ToArray()
+        );
         await using var db = await DbAsync();
         var row = await db.Files.SingleAsync(f => f.Id == id, Token);
         Assert.AreEqual(_library.FullPath("Media/beach day.jpeg"), row.FullName);
@@ -197,13 +232,33 @@ public sealed class FileOperationsTests
         WriteCache(Path.Combine(oldTrickplay, "info.json"));
         await using (var setup = await DbAsync())
         {
-            setup.TaskSchedules.Add(new TaskSchedule { Task = BackgroundTaskKind.Scan, Path = "RepeatedDir/ChildDir", Kind = ScheduleKind.Once, Start = DateTime.UtcNow.AddDays(1) });
-            setup.TaskSchedules.Add(new TaskSchedule { Task = BackgroundTaskKind.Scan, Path = "RepeatedDirectory", Kind = ScheduleKind.Once, Start = DateTime.UtcNow.AddDays(1) });
+            setup.TaskSchedules.Add(
+                new TaskSchedule
+                {
+                    Task = BackgroundTaskKind.Scan,
+                    Path = "RepeatedDir/ChildDir",
+                    Kind = ScheduleKind.Once,
+                    Start = DateTime.UtcNow.AddDays(1),
+                }
+            );
+            setup.TaskSchedules.Add(
+                new TaskSchedule
+                {
+                    Task = BackgroundTaskKind.Scan,
+                    Path = "RepeatedDirectory",
+                    Kind = ScheduleKind.Once,
+                    Start = DateTime.UtcNow.AddDays(1),
+                }
+            );
             await setup.SaveChangesAsync(Token);
         }
         await using var before = await DbAsync();
-        var folderId = (await before.Directories.SingleAsync(d => d.FullName == _library.FullPath("RepeatedDir"), Token)).Id;
-        var childId = (await before.Directories.SingleAsync(d => d.FullName == _library.FullPath("RepeatedDir/ChildDir"), Token)).Id;
+        var folderId = (
+            await before.Directories.SingleAsync(d => d.FullName == _library.FullPath("RepeatedDir"), Token)
+        ).Id;
+        var childId = (
+            await before.Directories.SingleAsync(d => d.FullName == _library.FullPath("RepeatedDir/ChildDir"), Token)
+        ).Id;
         var rows = await before.Files.CountAsync(Token);
 
         var result = await Files.RenameAsync("RepeatedDir", "Renamed", Me, Token);
@@ -220,7 +275,10 @@ public sealed class FileOperationsTests
         Assert.AreEqual(folderId, child.ParentId);
         Assert.IsFalse(await db.Files.AnyAsync(f => f.FullName.StartsWith(_library.FullPath("RepeatedDir")), Token));
         Assert.AreEqual(rows, await db.Files.CountAsync(Token));
-        CollectionAssert.AreEqual(new[] { tag }, (await Tags.GetFileTagsAsync("Renamed/ChildDir/AFile1.txt", Token))!.Tags.Select(t => t.Id).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { tag },
+            (await Tags.GetFileTagsAsync("Renamed/ChildDir/AFile1.txt", Token))!.Tags.Select(t => t.Id).ToArray()
+        );
 
         var options = _services.Get<IOptionsMonitor<SfeOptions>>().CurrentValue;
         CollectionAssert.AreEqual(new[] { "Renamed/RepeatedDir", "SpecialDir" }, options.Scan.ExcludedFolders);
@@ -229,16 +287,23 @@ public sealed class FileOperationsTests
         CollectionAssert.AreEqual(new[] { "Renamed" }, options.Thumbnails.ExcludedFolders);
         Assert.AreEqual("Renamed/Edited", options.Editor.OutputFolder);
         CollectionAssert.AreEqual(new[] { "Renamed/ChildDir" }, options.KeepAlive.Folders);
-        CollectionAssert.AreEquivalent(new[] { "Renamed/ChildDir", "RepeatedDirectory" }, await db.TaskSchedules.Select(s => s.Path).ToListAsync(Token),
-            "RepeatedDirectory is not inside RepeatedDir");
+        CollectionAssert.AreEquivalent(
+            new[] { "Renamed/ChildDir", "RepeatedDirectory" },
+            await db.TaskSchedules.Select(s => s.Path).ToListAsync(Token),
+            "RepeatedDirectory is not inside RepeatedDir"
+        );
         Assert.IsFalse(Directory.Exists(oldTrickplay));
-        Assert.IsTrue(File.Exists(Path.Combine(trickplay.GetCacheFolder(_library.FullPath("Renamed/RDFile1.txt")), "info.json")));
+        Assert.IsTrue(
+            File.Exists(Path.Combine(trickplay.GetCacheFolder(_library.FullPath("Renamed/RDFile1.txt")), "info.json"))
+        );
 
         var rescan = await ScanAsync();
         Assert.AreEqual(0, rescan.Removed);
         Assert.AreEqual(0, await db.MissingFiles.CountAsync(Token));
-        Assert.IsFalse(await db.Directories.AnyAsync(d => d.FullName == _library.FullPath("Renamed/RepeatedDir"), Token),
-            "The excluded folder is still left out of the index");
+        Assert.IsFalse(
+            await db.Directories.AnyAsync(d => d.FullName == _library.FullPath("Renamed/RepeatedDir"), Token),
+            "The excluded folder is still left out of the index"
+        );
     }
 
     [TestMethod]
@@ -250,12 +315,26 @@ public sealed class FileOperationsTests
 
         Assert.AreEqual(FileOperationStatus.Done, result.Status, result.Message);
         Assert.AreEqual("childDIR", result.Item!.Name);
-        CollectionAssert.Contains(Directory.GetDirectories(_library.Root).Select(Path.GetFileName).ToList(), "childDIR");
-        CollectionAssert.DoesNotContain(Directory.GetDirectories(_library.Root).Select(Path.GetFileName).ToList(), "ChildDir");
+        CollectionAssert.Contains(
+            Directory.GetDirectories(_library.Root).Select(Path.GetFileName).ToList(),
+            "childDIR"
+        );
+        CollectionAssert.DoesNotContain(
+            Directory.GetDirectories(_library.Root).Select(Path.GetFileName).ToList(),
+            "ChildDir"
+        );
         await using var db = await DbAsync();
         var names = await db.Files.Select(f => f.FullName).ToListAsync(Token);
-        Assert.IsTrue(names.Any(n => n.StartsWith(_library.FullPath("childDIR") + Path.DirectorySeparatorChar, StringComparison.Ordinal)));
-        Assert.IsFalse(names.Any(n => n.StartsWith(_library.FullPath("ChildDir") + Path.DirectorySeparatorChar, StringComparison.Ordinal)));
+        Assert.IsTrue(
+            names.Any(n =>
+                n.StartsWith(_library.FullPath("childDIR") + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            )
+        );
+        Assert.IsFalse(
+            names.Any(n =>
+                n.StartsWith(_library.FullPath("ChildDir") + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            )
+        );
     }
 
     [TestMethod]
@@ -288,7 +367,8 @@ public sealed class FileOperationsTests
             Assert.Inconclusive("Only Windows keeps open files from being renamed.");
         await ScanAsync();
 
-        FileOperationResult file, folder;
+        FileOperationResult file,
+            folder;
         using (File.Open(_library.FullPath("RFile1.txt"), FileMode.Open, FileAccess.Read, FileShare.None))
             file = await Files.RenameAsync("RFile1.txt", "Other.txt", Me, Token);
         using (File.Open(_library.FullPath("ChildDir/AFile1.txt"), FileMode.Open, FileAccess.Read, FileShare.None))
@@ -296,13 +376,19 @@ public sealed class FileOperationsTests
 
         Assert.AreEqual(FileOperationStatus.Failed, file.Status);
         StringAssert.Contains(file.Message, "in use");
-        Assert.IsFalse(file.Message!.Contains(_library.Root, StringComparison.OrdinalIgnoreCase), "No server path in the answer");
+        Assert.IsFalse(
+            file.Message!.Contains(_library.Root, StringComparison.OrdinalIgnoreCase),
+            "No server path in the answer"
+        );
         Assert.IsTrue(File.Exists(_library.FullPath("RFile1.txt")));
         Assert.AreEqual(FileOperationStatus.Failed, folder.Status);
         Assert.IsTrue(Directory.Exists(_library.FullPath("ChildDir")));
         Assert.IsFalse(Directory.Exists(_library.FullPath("Other")));
         await using var db = await DbAsync();
-        Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("RFile1.txt"), Token), "The index is unchanged");
+        Assert.IsTrue(
+            await db.Files.AnyAsync(f => f.FullName == _library.FullPath("RFile1.txt"), Token),
+            "The index is unchanged"
+        );
     }
 
     /* ---------- Work folder ---------- */
@@ -371,7 +457,8 @@ public sealed class FileOperationsTests
         Assert.IsNotNull(result, errors is null ? null : string.Join(" ", errors.SelectMany(e => e.Value)));
     }
 
-    private Task<SfeDbContext> DbAsync() => _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
+    private Task<SfeDbContext> DbAsync() =>
+        _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContextAsync(Token);
 
     private static string WriteCache(string path)
     {

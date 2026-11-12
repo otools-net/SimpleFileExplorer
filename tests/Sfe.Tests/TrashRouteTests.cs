@@ -48,16 +48,55 @@ public sealed class TrashRouteTests
         _tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(_tenant, BuiltInGroup.Users, Token))!;
         _users = users.Id;
-        Assert.AreEqual(AccessStatus.Ok, (await accounts.UpdateGroupAsync(_tenant, _users,
-            new GroupInput(users.Name, Rights: [.. users.Rights, Rights.DeleteFiles], MemberIds: users.MemberIds), cancellationToken: Token)).Status);
-        var cleaners = (await accounts.CreateGroupAsync(_tenant, new GroupInput("Cleaners", Rights: [Rights.Browse, Rights.DeleteFiles, Rights.DeletePermanently]), cancellationToken: Token)).Value!;
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [_users]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("carol", Password: "carol-password-1", GroupIds: [cleaners.Id]), null, Token);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await accounts.UpdateGroupAsync(
+                    _tenant,
+                    _users,
+                    new GroupInput(
+                        users.Name,
+                        Rights: [.. users.Rights, Rights.DeleteFiles],
+                        MemberIds: users.MemberIds
+                    ),
+                    cancellationToken: Token
+                )
+            ).Status
+        );
+        var cleaners = (
+            await accounts.CreateGroupAsync(
+                _tenant,
+                new GroupInput("Cleaners", Rights: [Rights.Browse, Rights.DeleteFiles, Rights.DeletePermanently]),
+                cancellationToken: Token
+            )
+        ).Value!;
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [_users]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("carol", Password: "carol-password-1", GroupIds: [cleaners.Id]),
+            null,
+            Token
+        );
         _rules = _factory.Services.GetRequiredService<FolderRuleService>();
         await RuleAsync("SpecialDir", FolderLevel.Hidden);
         await RuleAsync("Media", FolderLevel.Read);
         await RuleAsync("RepeatedDir/RepeatedDir", FolderLevel.Hidden);
-        Assert.AreEqual(AccessStatus.Ok, (await _rules.SetAsync(_tenant, "SpecialDir", FolderPrincipalRef.Group(cleaners.Id), FolderLevel.Hidden, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await _rules.SetAsync(
+                    _tenant,
+                    "SpecialDir",
+                    FolderPrincipalRef.Group(cleaners.Id),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
         _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
         _carol = await ApiClients.SignInAsync(_factory, "carol", "carol-password-1", Token);
     }
@@ -75,7 +114,17 @@ public sealed class TrashRouteTests
     [TestMethod]
     public async Task EachPathGetsItsOwnAnswer()
     {
-        var results = await DeleteAsync(_alice, ["ChildDir/AFile1.txt", "Media/photo.jpg", "SpecialDir/SDEspañol", "RepeatedDir", "Nowhere", "ChildDir/AFile1.txt"]);
+        var results = await DeleteAsync(
+            _alice,
+            [
+                "ChildDir/AFile1.txt",
+                "Media/photo.jpg",
+                "SpecialDir/SDEspañol",
+                "RepeatedDir",
+                "Nowhere",
+                "ChildDir/AFile1.txt",
+            ]
+        );
 
         var byPath = results.Items.ToDictionary(i => i.Path);
         Assert.HasCount(5, results.Items, "Each path once");
@@ -83,7 +132,11 @@ public sealed class TrashRouteTests
         Assert.IsNotNull(byPath["ChildDir/AFile1.txt"].TrashId);
         Assert.AreEqual(FileOperationStatus.Forbidden, byPath["Media/photo.jpg"].Status, "Read-only folder");
         Assert.AreEqual(FileOperationStatus.NotFound, byPath["SpecialDir/SDEspañol"].Status, "Hidden folder");
-        Assert.AreEqual(FileOperationStatus.Forbidden, byPath["RepeatedDir"].Status, "Holds a folder Alice doesn't see");
+        Assert.AreEqual(
+            FileOperationStatus.Forbidden,
+            byPath["RepeatedDir"].Status,
+            "Holds a folder Alice doesn't see"
+        );
         Assert.AreEqual(FileOperationStatus.NotFound, byPath["Nowhere"].Status);
         Assert.IsFalse(results.Permanent);
         Assert.IsTrue(File.Exists(_library.FullPath("Media/photo.jpg")));
@@ -107,14 +160,27 @@ public sealed class TrashRouteTests
     [TestMethod]
     public async Task WhenTheSpaceDeletesPermanentlyTheTrashIsSkipped()
     {
-        using (var saved = await _admin.PatchAsJsonAsync("/api/settings?level=tenant", new { values = new Dictionary<string, object> { ["files.deletePermanently"] = true } }, Json, Token))
+        using (
+            var saved = await _admin.PatchAsJsonAsync(
+                "/api/settings?level=tenant",
+                new { values = new Dictionary<string, object> { ["files.deletePermanently"] = true } },
+                Json,
+                Token
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
+        }
 
         var alice = await DeleteAsync(_alice, ["ChildDir/AFile1.txt"]);
         var carol = await DeleteAsync(_carol, ["ChildDir/AFile2"]);
         using var config = await _alice.GetAsync("/api/config", Token);
 
-        Assert.AreEqual(FileOperationStatus.Forbidden, alice.Items.Single().Status, "Trash-only rights can't delete then");
+        Assert.AreEqual(
+            FileOperationStatus.Forbidden,
+            alice.Items.Single().Status,
+            "Trash-only rights can't delete then"
+        );
         Assert.IsTrue(carol.Permanent);
         Assert.IsFalse(File.Exists(_library.FullPath("ChildDir/AFile2")));
         Assert.IsEmpty((await ListAsync(_admin)).Items);
@@ -124,8 +190,24 @@ public sealed class TrashRouteTests
     [TestMethod]
     public async Task ATrashedFolderTakesItsRulesAlongAndGetsThemBack()
     {
-        var guests = (await _factory.Services.GetRequiredService<AccessService>().GetBuiltInGroupAsync(_tenant, BuiltInGroup.Guests, Token))!.Id;
-        Assert.AreEqual(AccessStatus.Ok, (await _rules.SetAsync(_tenant, "ChildDir", FolderPrincipalRef.Group(guests), FolderLevel.Hidden, null, Token)).Status);
+        var guests = (
+            await _factory
+                .Services.GetRequiredService<AccessService>()
+                .GetBuiltInGroupAsync(_tenant, BuiltInGroup.Guests, Token)
+        )!.Id;
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (
+                await _rules.SetAsync(
+                    _tenant,
+                    "ChildDir",
+                    FolderPrincipalRef.Group(guests),
+                    FolderLevel.Hidden,
+                    null,
+                    Token
+                )
+            ).Status
+        );
 
         var id = (await DeleteAsync(_admin, ["ChildDir"])).Items.Single().TrashId!.Value;
         var whileTrashed = await _rules.GetAsync(_tenant, Token);
@@ -133,10 +215,18 @@ public sealed class TrashRouteTests
         using var restore = await _admin.PostAsync($"/api/files/trash/{id}/restore", null, Token);
 
         Assert.IsFalse(whileTrashed.Any(r => r.Path == "ChildDir"), "No stale rule where the folder was");
-        Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode, "A folder with rules of its own: only those managing access see it");
+        Assert.AreEqual(
+            HttpStatusCode.NotFound,
+            hidden.StatusCode,
+            "A folder with rules of its own: only those managing access see it"
+        );
         Assert.AreEqual(HttpStatusCode.OK, restore.StatusCode, await restore.Content.ReadAsStringAsync(Token));
         Assert.AreEqual("ChildDir", (await restore.Content.ReadFromJsonAsync<LibraryItem>(Json, Token))!.Path);
-        Assert.IsTrue((await _rules.GetAsync(_tenant, Token)).Any(r => r.Path == "ChildDir" && r.Principal.GroupId == guests && r.Level == FolderLevel.Hidden));
+        Assert.IsTrue(
+            (await _rules.GetAsync(_tenant, Token)).Any(r =>
+                r.Path == "ChildDir" && r.Principal.GroupId == guests && r.Level == FolderLevel.Hidden
+            )
+        );
     }
 
     [TestMethod]
@@ -185,7 +275,11 @@ public sealed class TrashRouteTests
         var left = (await ListAsync(_admin)).Items.Select(i => i.Path).ToList();
         using var admin = await _admin.DeleteAsync("/api/files/trash", Token);
 
-        Assert.AreEqual(2, (await carol.Content.ReadFromJsonAsync<EmptiedTrash>(Json, Token))!.Purged, "Not the hidden folder");
+        Assert.AreEqual(
+            2,
+            (await carol.Content.ReadFromJsonAsync<EmptiedTrash>(Json, Token))!.Purged,
+            "Not the hidden folder"
+        );
         CollectionAssert.AreEqual(new[] { "SpecialDir" }, left);
         Assert.AreEqual(1, (await admin.Content.ReadFromJsonAsync<EmptiedTrash>(Json, Token))!.Purged);
         Assert.IsEmpty((await ListAsync(_admin)).Items);
@@ -198,13 +292,21 @@ public sealed class TrashRouteTests
 
         var results = await DeleteAsync(_admin, [".sfe", ".sfe/trash/x/kept.txt", "", "/"], permanent: true);
 
-        Assert.IsTrue(results.Items.All(i => i.Status == FileOperationStatus.NotFound), string.Join(", ", results.Items.Select(i => $"{i.Path}: {i.Status}")));
+        Assert.IsTrue(
+            results.Items.All(i => i.Status == FileOperationStatus.NotFound),
+            string.Join(", ", results.Items.Select(i => $"{i.Path}: {i.Status}"))
+        );
         Assert.IsTrue(File.Exists(_library.FullPath(".sfe/trash/x/kept.txt")));
     }
 
     private async Task<DeleteResults> DeleteAsync(HttpClient client, string[] paths, bool permanent = false)
     {
-        using var response = await client.PostAsJsonAsync("/api/files/delete", new DeleteRequest(paths, permanent), Json, Token);
+        using var response = await client.PostAsJsonAsync(
+            "/api/files/delete",
+            new DeleteRequest(paths, permanent),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<DeleteResults>(Json, Token))!;
     }
@@ -224,5 +326,8 @@ public sealed class TrashRouteTests
     }
 
     private async Task RuleAsync(string path, FolderLevel level) =>
-        Assert.AreEqual(AccessStatus.Ok, (await _rules.SetAsync(_tenant, path, FolderPrincipalRef.Group(_users), level, null, Token)).Status);
+        Assert.AreEqual(
+            AccessStatus.Ok,
+            (await _rules.SetAsync(_tenant, path, FolderPrincipalRef.Group(_users), level, null, Token)).Status
+        );
 }

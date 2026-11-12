@@ -43,8 +43,16 @@ public sealed class KeepAliveRouteTests
         var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var administrators = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Administrators, Token))!;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
-        await accounts.CreateUserAsync(new UserInput("ada", Password: "ada-password-1", GroupIds: [administrators.Id]), null, Token);
-        await accounts.CreateUserAsync(new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]), null, Token);
+        await accounts.CreateUserAsync(
+            new UserInput("ada", Password: "ada-password-1", GroupIds: [administrators.Id]),
+            null,
+            Token
+        );
+        await accounts.CreateUserAsync(
+            new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]),
+            null,
+            Token
+        );
         _ada = await ApiClients.SignInAsync(_factory, "ada", "ada-password-1", Token);
         _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
     }
@@ -108,7 +116,11 @@ public sealed class KeepAliveRouteTests
     [TestMethod]
     public async Task TheSpaceSettingsAreCheckedAndApplied()
     {
-        using (var invalid = await PatchAsync(new() { ["keepAlive.intervalSeconds"] = 5, ["keepAlive.timeoutSeconds"] = 0 }))
+        using (
+            var invalid = await PatchAsync(
+                new() { ["keepAlive.intervalSeconds"] = 5, ["keepAlive.timeoutSeconds"] = 0 }
+            )
+        )
         {
             Assert.AreEqual(HttpStatusCode.BadRequest, invalid.StatusCode);
             var body = await invalid.Content.ReadAsStringAsync(Token);
@@ -116,8 +128,12 @@ public sealed class KeepAliveRouteTests
             StringAssert.Contains(body, "keepAlive.timeoutSeconds");
         }
 
-        using (var saved = await PatchAsync(new() { ["keepAlive.mode"] = "always", ["keepAlive.intervalSeconds"] = 60 }))
+        using (
+            var saved = await PatchAsync(new() { ["keepAlive.mode"] = "always", ["keepAlive.intervalSeconds"] = 60 })
+        )
+        {
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
+        }
 
         var view = await _ada.GetFromJsonAsync<KeepAliveView>("/api/keep-alive", Json, Token);
         Assert.AreEqual(KeepAliveMode.Always, view!.Mode);
@@ -137,15 +153,22 @@ public sealed class KeepAliveRouteTests
             StringAssert.Contains(await invalid.Content.ReadAsStringAsync(Token), "keepAlive.folders", refused);
         }
 
-        using (var saved = await PatchAsync(new() { ["keepAlive.folders"] = new JsonArray("ChildDir/"), ["keepAlive.method"] = "touch" }))
+        using (
+            var saved = await PatchAsync(
+                new() { ["keepAlive.folders"] = new JsonArray("ChildDir/"), ["keepAlive.method"] = "touch" }
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
+        }
 
         using var pinged = await _ada.PostAsync("/api/keep-alive/ping", null, Token);
         var view = (await pinged.Content.ReadFromJsonAsync<KeepAliveView>(Json, Token))!;
         Assert.AreEqual(KeepAliveMethod.Touch, view.Method);
         CollectionAssert.AreEqual(
             new[] { ("", true, (KeepAliveMethod?)KeepAliveMethod.Touch), ("ChildDir", false, KeepAliveMethod.List) },
-            view.Folders.Select(f => (f.Path, f.IsRoot, f.Method)).ToList());
+            view.Folders.Select(f => (f.Path, f.IsRoot, f.Method)).ToList()
+        );
         Assert.IsTrue(view.Folders.All(f => f.Error is null), string.Join(", ", view.Folders.Select(f => f.Error)));
         Assert.IsTrue(Directory.Exists(_library.FullPath(".sfe/keep-alive")));
     }

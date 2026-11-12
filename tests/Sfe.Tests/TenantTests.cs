@@ -49,8 +49,18 @@ public sealed class TenantTests
         var config = await GetAsync<ClientConfig>(admin, "/api/config");
         await ScanAsync(admin);
         var inMedia = await GetAsync<SearchResults>(admin, "/api/search?q=photo");
-        using (var tag = await admin.PostAsJsonAsync("/api/tags", new TagInput("Only in media"), Json, TestContext.CancellationToken))
+        using (
+            var tag = await admin.PostAsJsonAsync(
+                "/api/tags",
+                new TagInput("Only in media"),
+                Json,
+                TestContext.CancellationToken
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Created, tag.StatusCode);
+        }
+
         await SwitchAsync(admin, AccessService.DefaultTenantSlug);
         var inFirst = await GetAsync<SearchResults>(admin, "/api/search?q=photo");
         var tags = await GetAsync<TagSearchResults>(admin, "/api/tags?q=Only");
@@ -61,7 +71,10 @@ public sealed class TenantTests
         Assert.AreEqual("photo.jpg", inMedia.Items.Single().Path, "Paths are relative to the library's own root");
         Assert.IsEmpty(inFirst.Items, "The first library's index was not scanned");
         Assert.IsEmpty(tags.Matches);
-        Assert.IsTrue(File.Exists(Path.Combine(_library.BasePath, "tenants", "media-files.db")), "Its index sits next to the first library's");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(_library.BasePath, "tenants", "media-files.db")),
+            "Its index sits next to the first library's"
+        );
     }
 
     [TestMethod]
@@ -70,11 +83,27 @@ public sealed class TenantTests
         var admin = await AdminAsync(Factory());
         var outside = Directory.CreateDirectory(Path.Combine(_library.BasePath, "Elsewhere")).FullName;
 
-        using var refused = await admin.PostAsJsonAsync("/api/tenants", new TenantInput("Elsewhere", Root: outside), Json, TestContext.CancellationToken);
-        using var missing = await admin.PostAsJsonAsync("/api/tenants", new TenantInput("Missing", Root: _library.FullPath("Nowhere")), Json, TestContext.CancellationToken);
+        using var refused = await admin.PostAsJsonAsync(
+            "/api/tenants",
+            new TenantInput("Elsewhere", Root: outside),
+            Json,
+            TestContext.CancellationToken
+        );
+        using var missing = await admin.PostAsJsonAsync(
+            "/api/tenants",
+            new TenantInput("Missing", Root: _library.FullPath("Nowhere")),
+            Json,
+            TestContext.CancellationToken
+        );
         var roots = await GetAsync<FolderPicker>(admin, "/api/tenants/folders");
-        var root = await GetAsync<FolderPicker>(admin, $"/api/tenants/folders?path={Uri.EscapeDataString(_library.Root)}");
-        using var above = await admin.GetAsync($"/api/tenants/folders?path={Uri.EscapeDataString(_library.BasePath)}", TestContext.CancellationToken);
+        var root = await GetAsync<FolderPicker>(
+            admin,
+            $"/api/tenants/folders?path={Uri.EscapeDataString(_library.Root)}"
+        );
+        using var above = await admin.GetAsync(
+            $"/api/tenants/folders?path={Uri.EscapeDataString(_library.BasePath)}",
+            TestContext.CancellationToken
+        );
 
         Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, missing.StatusCode);
@@ -96,8 +125,15 @@ public sealed class TenantTests
         try
         {
             using var refused = await admin.PostAsJsonAsync(
-                "/api/tenants", new TenantInput("Through a link", Root: link), Json, TestContext.CancellationToken);
-            using var picker = await admin.GetAsync($"/api/tenants/folders?path={Uri.EscapeDataString(link)}", TestContext.CancellationToken);
+                "/api/tenants",
+                new TenantInput("Through a link", Root: link),
+                Json,
+                TestContext.CancellationToken
+            );
+            using var picker = await admin.GetAsync(
+                $"/api/tenants/folders?path={Uri.EscapeDataString(link)}",
+                TestContext.CancellationToken
+            );
 
             Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
             Assert.AreEqual(HttpStatusCode.NotFound, picker.StatusCode);
@@ -130,7 +166,8 @@ public sealed class TenantTests
             process.WaitForExit();
             return process.ExitCode == 0;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        catch (Exception ex)
+            when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
             return false;
         }
@@ -157,14 +194,29 @@ public sealed class TenantTests
         var admin = await AdminAsync(factory);
         var media = await CreateLibraryAsync(admin, "Media", _library.FullPath("Media"));
         await SwitchAsync(admin, media.Slug);
-        var users = (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g => g.BuiltIn == BuiltInGroup.Users);
-        using (var created = await admin.PostAsJsonAsync("/api/access/users", new UserInput("bob", Password: "bob-password", GroupIds: [users.Id]), Json, TestContext.CancellationToken))
+        var users = (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g =>
+            g.BuiltIn == BuiltInGroup.Users
+        );
+        using (
+            var created = await admin.PostAsJsonAsync(
+                "/api/access/users",
+                new UserInput("bob", Password: "bob-password", GroupIds: [users.Id]),
+                Json,
+                TestContext.CancellationToken
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
+        }
 
         var bob = await ApiClients.SignInAsync(factory, "bob", "bob-password", TestContext.CancellationToken);
         _disposables.Add(bob);
         var session = await GetAsync<SessionInfo>(bob, "/api/session");
-        using var first = await bob.PostAsJsonAsync("/api/session/tenant", new TenantChoice(AccessService.DefaultTenantSlug), TestContext.CancellationToken);
+        using var first = await bob.PostAsJsonAsync(
+            "/api/session/tenant",
+            new TenantChoice(AccessService.DefaultTenantSlug),
+            TestContext.CancellationToken
+        );
         using var tenants = await bob.GetAsync("/api/tenants", TestContext.CancellationToken);
         var adminSession = await GetAsync<SessionInfo>(admin, "/api/session");
 
@@ -182,14 +234,51 @@ public sealed class TenantTests
         var admin = await AdminAsync(factory);
         var first = (await GetAsync<SessionInfo>(admin, "/api/session")).Tenant!;
         var media = await CreateLibraryAsync(admin, "Media", _library.FullPath("Media"));
-        var mediaUsers = (await GetAsync<List<GroupInfo>>(admin, $"/api/access/groups?tenant={media.Id}")).Single(g => g.BuiltIn == BuiltInGroup.Users);
-        using (var kids = await admin.PostAsJsonAsync($"/api/access/groups?tenant={media.Id}", new GroupInput("Kids", Rights: [Rights.Browse]), Json, TestContext.CancellationToken))
-            Assert.AreEqual(HttpStatusCode.Created, kids.StatusCode, await kids.Content.ReadAsStringAsync(TestContext.CancellationToken));
-        using (var bob = await admin.PostAsJsonAsync("/api/access/users", new UserInput("bob", Password: "bob-password", GroupIds: [mediaUsers.Id]), Json, TestContext.CancellationToken))
+        var mediaUsers = (await GetAsync<List<GroupInfo>>(admin, $"/api/access/groups?tenant={media.Id}")).Single(g =>
+            g.BuiltIn == BuiltInGroup.Users
+        );
+        using (
+            var kids = await admin.PostAsJsonAsync(
+                $"/api/access/groups?tenant={media.Id}",
+                new GroupInput("Kids", Rights: [Rights.Browse]),
+                Json,
+                TestContext.CancellationToken
+            )
+        )
+        {
+            Assert.AreEqual(
+                HttpStatusCode.Created,
+                kids.StatusCode,
+                await kids.Content.ReadAsStringAsync(TestContext.CancellationToken)
+            );
+        }
+
+        using (
+            var bob = await admin.PostAsJsonAsync(
+                "/api/access/users",
+                new UserInput("bob", Password: "bob-password", GroupIds: [mediaUsers.Id]),
+                Json,
+                TestContext.CancellationToken
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Created, bob.StatusCode);
-        var administrators = (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g => g.BuiltIn == BuiltInGroup.Administrators);
-        using (var manager = await admin.PostAsJsonAsync("/api/access/users", new UserInput("manager", Password: "manager-password", GroupIds: [administrators.Id]), Json, TestContext.CancellationToken))
+        }
+
+        var administrators = (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g =>
+            g.BuiltIn == BuiltInGroup.Administrators
+        );
+        using (
+            var manager = await admin.PostAsJsonAsync(
+                "/api/access/users",
+                new UserInput("manager", Password: "manager-password", GroupIds: [administrators.Id]),
+                Json,
+                TestContext.CancellationToken
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.Created, manager.StatusCode);
+        }
 
         var mediaGroups = await GetAsync<List<GroupInfo>>(admin, $"/api/access/groups?tenant={media.Id}");
         var everyGroup = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups?all=true");
@@ -198,25 +287,55 @@ public sealed class TenantTests
         var details = (await GetAsync<List<TenantDetails>>(admin, "/api/tenants")).Single(t => t.Id == media.Id);
         await GetAsync<RightsCatalogInfo>(admin, $"/api/access/rights?tenant={media.Id}");
 
-        var spaceAdmin = await ApiClients.SignInAsync(factory, "manager", "manager-password", TestContext.CancellationToken);
+        var spaceAdmin = await ApiClients.SignInAsync(
+            factory,
+            "manager",
+            "manager-password",
+            TestContext.CancellationToken
+        );
         _disposables.Add(spaceAdmin);
-        using var otherGroups = await spaceAdmin.GetAsync($"/api/access/groups?tenant={media.Id}", TestContext.CancellationToken);
-        using var otherAccounts = await spaceAdmin.GetAsync($"/api/access/users?tenant={media.Id}", TestContext.CancellationToken);
-        using var otherGroup = await spaceAdmin.PostAsJsonAsync($"/api/access/groups?tenant={media.Id}", new GroupInput("Intruders"), Json, TestContext.CancellationToken);
+        using var otherGroups = await spaceAdmin.GetAsync(
+            $"/api/access/groups?tenant={media.Id}",
+            TestContext.CancellationToken
+        );
+        using var otherAccounts = await spaceAdmin.GetAsync(
+            $"/api/access/users?tenant={media.Id}",
+            TestContext.CancellationToken
+        );
+        using var otherGroup = await spaceAdmin.PostAsJsonAsync(
+            $"/api/access/groups?tenant={media.Id}",
+            new GroupInput("Intruders"),
+            Json,
+            TestContext.CancellationToken
+        );
         var ownGroups = await GetAsync<List<GroupInfo>>(spaceAdmin, "/api/access/groups?all=true");
 
-        CollectionAssert.AreEquivalent(new[] { "Administrators", "Users", "Guests", "Kids" }, mediaGroups.Select(g => g.Name).ToList());
+        CollectionAssert.AreEquivalent(
+            new[] { "Administrators", "Users", "Guests", "Kids" },
+            mediaGroups.Select(g => g.Name).ToList()
+        );
         Assert.IsTrue(mediaGroups.All(g => g.TenantId == media.Id));
-        CollectionAssert.IsSubsetOf(mediaGroups.Select(g => g.Id).ToList(), everyGroup.Select(g => g.Id).ToList(), "all=true lists the groups of every space");
+        CollectionAssert.IsSubsetOf(
+            mediaGroups.Select(g => g.Id).ToList(),
+            everyGroup.Select(g => g.Id).ToList(),
+            "all=true lists the groups of every space"
+        );
         Assert.IsTrue(everyGroup.Any(g => g.TenantId == first.Id));
         Assert.AreEqual("bob", mediaAccounts.Single().UserName);
         Assert.IsFalse(firstAccounts.Any(u => u.UserName == "bob"), "Without tenant, the request's own space");
         Assert.AreEqual(1, details.Members);
         Assert.AreEqual(4, details.Groups);
-        Assert.AreEqual(HttpStatusCode.NotFound, otherGroups.StatusCode, "A space's administrator manages that space only");
+        Assert.AreEqual(
+            HttpStatusCode.NotFound,
+            otherGroups.StatusCode,
+            "A space's administrator manages that space only"
+        );
         Assert.AreEqual(HttpStatusCode.NotFound, otherAccounts.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, otherGroup.StatusCode);
-        Assert.IsTrue(ownGroups.All(g => g.TenantId == first.Id), "all=true is for server administrators: others get their own space's");
+        Assert.IsTrue(
+            ownGroups.All(g => g.TenantId == first.Id),
+            "all=true is for server administrators: others get their own space's"
+        );
     }
 
     [TestMethod]
@@ -225,9 +344,23 @@ public sealed class TenantTests
         var admin = await AdminAsync(Factory());
         var media = await CreateLibraryAsync(admin, "Media", _library.FullPath("Media"));
 
-        using (var disabled = await admin.PutAsJsonAsync($"/api/tenants/{media.Id}", new TenantInput("Media", Disabled: true), Json, TestContext.CancellationToken))
+        using (
+            var disabled = await admin.PutAsJsonAsync(
+                $"/api/tenants/{media.Id}",
+                new TenantInput("Media", Disabled: true),
+                Json,
+                TestContext.CancellationToken
+            )
+        )
+        {
             Assert.AreEqual(HttpStatusCode.OK, disabled.StatusCode);
-        using var switchToDisabled = await admin.PostAsJsonAsync("/api/session/tenant", new TenantChoice(media.Slug), TestContext.CancellationToken);
+        }
+
+        using var switchToDisabled = await admin.PostAsJsonAsync(
+            "/api/session/tenant",
+            new TenantChoice(media.Slug),
+            TestContext.CancellationToken
+        );
         var list = await GetAsync<List<TenantDetails>>(admin, "/api/tenants");
         using var deleted = await admin.DeleteAsync($"/api/tenants/{media.Id}", TestContext.CancellationToken);
         var first = list.Single(t => t.IsDefault);
@@ -237,7 +370,10 @@ public sealed class TenantTests
         Assert.IsTrue(list.Single(t => t.Id == media.Id).Disabled);
         Assert.AreEqual(Path.GetFullPath(_library.Root), first.Root);
         Assert.AreEqual(HttpStatusCode.NoContent, deleted.StatusCode);
-        Assert.IsTrue(File.Exists(Path.Combine(_library.BasePath, "tenants", "media.db")), "Its index stays on the disk");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(_library.BasePath, "tenants", "media.db")),
+            "Its index stays on the disk"
+        );
         Assert.AreEqual(HttpStatusCode.Conflict, deleteFirst.StatusCode);
     }
 
@@ -247,14 +383,23 @@ public sealed class TenantTests
         var admin = await AdminAsync(Factory());
         var session = await GetAsync<SessionInfo>(admin, "/api/session");
 
-        using var same = new HttpRequestMessage(HttpMethod.Get, "/api/config") { Headers = { { TenantMiddleware.Header, session.Tenant!.Id.ToString() } } };
+        using var same = new HttpRequestMessage(HttpMethod.Get, "/api/config")
+        {
+            Headers = { { TenantMiddleware.Header, session.Tenant!.Id.ToString() } },
+        };
         using var sameResponse = await admin.SendAsync(same, TestContext.CancellationToken);
-        using var other = new HttpRequestMessage(HttpMethod.Get, "/api/config") { Headers = { { TenantMiddleware.Header, (session.Tenant.Id + 1).ToString() } } };
+        using var other = new HttpRequestMessage(HttpMethod.Get, "/api/config")
+        {
+            Headers = { { TenantMiddleware.Header, (session.Tenant.Id + 1).ToString() } },
+        };
         using var otherResponse = await admin.SendAsync(other, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, sameResponse.StatusCode);
         Assert.AreEqual(HttpStatusCode.Conflict, otherResponse.StatusCode);
-        StringAssert.Contains(await otherResponse.Content.ReadAsStringAsync(TestContext.CancellationToken), TenantMiddleware.TenantChangedType);
+        StringAssert.Contains(
+            await otherResponse.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            TenantMiddleware.TenantChangedType
+        );
     }
 
     [TestMethod]
@@ -265,8 +410,14 @@ public sealed class TenantTests
         var media = await CreateLibraryAsync(admin, "Media", _library.FullPath("Media"));
         await SwitchAsync(admin, media.Slug);
 
-        using var created = await admin.PostAsJsonAsync("/api/files/links", new FileLinkRequest("photo.jpg"), TestContext.CancellationToken);
-        var link = (await created.Content.ReadFromJsonAsync<Sfe.Api.Security.FileLink>(Json, TestContext.CancellationToken))!;
+        using var created = await admin.PostAsJsonAsync(
+            "/api/files/links",
+            new FileLinkRequest("photo.jpg"),
+            TestContext.CancellationToken
+        );
+        var link = (
+            await created.Content.ReadFromJsonAsync<Sfe.Api.Security.FileLink>(Json, TestContext.CancellationToken)
+        )!;
         await SwitchAsync(admin, AccessService.DefaultTenantSlug);
         var player = ApiClients.Create(factory);
         _disposables.Add(player);
@@ -292,21 +443,47 @@ public sealed class TenantTests
 
     private async Task<TenantDetails> CreateLibraryAsync(HttpClient admin, string name, string root)
     {
-        using var response = await admin.PostAsJsonAsync("/api/tenants", new TenantInput(name, Root: root), Json, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        using var response = await admin.PostAsJsonAsync(
+            "/api/tenants",
+            new TenantInput(name, Root: root),
+            Json,
+            TestContext.CancellationToken
+        );
+        Assert.AreEqual(
+            HttpStatusCode.Created,
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
         return (await response.Content.ReadFromJsonAsync<TenantDetails>(Json, TestContext.CancellationToken))!;
     }
 
     private async Task SwitchAsync(HttpClient client, string slug)
     {
-        using var response = await client.PostAsJsonAsync("/api/session/tenant", new TenantChoice(slug), TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        using var response = await client.PostAsJsonAsync(
+            "/api/session/tenant",
+            new TenantChoice(slug),
+            TestContext.CancellationToken
+        );
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(TestContext.CancellationToken)
+        );
     }
 
     private async Task ScanAsync(HttpClient client)
     {
-        using (var start = await client.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken))
-            Assert.AreEqual(HttpStatusCode.Accepted, start.StatusCode, await start.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        using (
+            var start = await client.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken)
+        )
+        {
+            Assert.AreEqual(
+                HttpStatusCode.Accepted,
+                start.StatusCode,
+                await start.Content.ReadAsStringAsync(TestContext.CancellationToken)
+            );
+        }
+
         for (var i = 0; i < 200; i++)
         {
             if ((await GetAsync<ScanStatus>(client, "/api/scan")).State is not ScanState.Running)
@@ -320,7 +497,11 @@ public sealed class TenantTests
     private async Task<T> GetAsync<T>(HttpClient client, string url)
     {
         using var response = await client.GetAsync(url, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"{url}: {await response.Content.ReadAsStringAsync(TestContext.CancellationToken)}");
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            response.StatusCode,
+            $"{url}: {await response.Content.ReadAsStringAsync(TestContext.CancellationToken)}"
+        );
         return (await response.Content.ReadFromJsonAsync<T>(Json, TestContext.CancellationToken))!;
     }
 }
