@@ -334,7 +334,10 @@ public sealed partial class AccessService(
             return AccessResult<UserInfo>.Invalid("userName", nameError);
         if (!string.Equals(userName, user.UserName, StringComparison.Ordinal)
             && await db.Users.AnyAsync(u => u.Id != id && u.UserName == userName, cancellationToken))
+        {
             return AccessResult<UserInfo>.Invalid("userName", $"There is already an account named “{userName}”.");
+        }
+
         if (input.Password is not null && !IsLocal(user))
             return AccessResult<UserInfo>.Invalid("password", "The password of this account is kept by its directory.");
         if (input.Password is not null && PasswordError(input.Password) is { } passwordError)
@@ -591,7 +594,10 @@ public sealed partial class AccessService(
             var joining = wanted.Where(u => group.Members.All(m => m.UserId != u)).ToList();
             if (membersOfTenantOnly && joining.Count > 0
                 && await db.Users.AnyAsync(u => joining.Contains(u.Id) && !u.Groups.Any(m => m.Group!.TenantId == group.TenantId), cancellationToken))
+            {
                 return AccessResult<UserGroup>.Invalid("memberIds", "Only accounts of this space can join its groups: a server administrator adds the others.");
+            }
+
             group.Members.RemoveAll(m => !wanted.Contains(m.UserId));
             foreach (var userId in wanted.Where(u => group.Members.All(m => m.UserId != u)))
                 group.Members.Add(new GroupMember { UserId = userId });

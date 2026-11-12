@@ -205,7 +205,10 @@ public sealed class FileOperations(
     {
         if (LibraryPaths.NormalizeRelative(path) is not { Length: > 0 } relative || !paths.TryResolve(relative, out var full)
             || paths.ToRelative(full) is not { Length: > 0 } canonical)
+        {
             return FileOperationResult.Fail(FileOperationStatus.NotFound, "The file or folder was not found.");
+        }
+
         var isFolder = Directory.Exists(full);
         if (!isFolder && !File.Exists(full))
             return FileOperationResult.Fail(FileOperationStatus.NotFound, "The file or folder was not found.");
@@ -234,9 +237,12 @@ public sealed class FileOperations(
         {
             var begun = await rules.BeginMoveAsync(tenantId, canonical, targetPath, keepAccess: false, actor.AccountId, cancellationToken);
             if (begun.Status != AccessStatus.Ok)
+            {
                 return FileOperationResult.Fail(FileOperationStatus.Conflict, begun.Problem is not null
                     ? $"“{name}” can't be used here: folder access rules are set for a folder of that name. An administrator can remove them or point them elsewhere (Folder access)."
                     : begun.Errors?.Values.SelectMany(e => e).FirstOrDefault() ?? "The folder's access rules can't follow it there.");
+            }
+
             ruleMove = begun.Value;
         }
 
@@ -275,7 +281,10 @@ public sealed class FileOperations(
     {
         if (LibraryPaths.NormalizeRelative(path) is not { Length: > 0 } relative || !paths.TryResolve(relative, out var full)
             || paths.ToRelative(full) is not { Length: > 0 } canonical)
+        {
             return FileOperationResult.Fail(FileOperationStatus.NotFound, "The file or folder was not found.");
+        }
+
         var isFolder = Directory.Exists(full);
         if (!isFolder && !File.Exists(full))
             return FileOperationResult.Fail(FileOperationStatus.NotFound, "The file or folder was not found.");

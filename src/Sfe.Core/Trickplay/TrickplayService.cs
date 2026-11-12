@@ -446,7 +446,9 @@ public sealed class TrickplayService : IDisposable
                     && !_running.ContainsKey(source)
                     && !_requested.Contains(source)
                     && _pending.Add(source))
+                {
                     found.Release();
+                }
             }
         }
         finally
@@ -554,7 +556,10 @@ public sealed class TrickplayService : IDisposable
             foreach (var child in entries.OfType<DirectoryInfo>()
                          .Where(d => !ignored.Contains(d.Name) && !exclusions.IsExcluded(ExclusionKind.Trickplay, _paths, d.FullName))
                          .OrderByDescending(d => d.Name, NaturalComparer.Instance))
+            {
                 pending.Push(child.FullName);
+            }
+
             foreach (var file in entries.OfType<FileInfo>().OrderBy(f => f.Name, NaturalComparer.Instance))
             {
                 if (_classifier.Classify(file.Extension) == ItemKind.Video)

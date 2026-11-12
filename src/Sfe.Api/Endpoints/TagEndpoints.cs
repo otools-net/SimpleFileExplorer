@@ -1,7 +1,7 @@
-using Sfe.Core.Paths;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Paths;
 using Sfe.Core.Tagging;
 
 namespace Sfe.Api.Endpoints;
@@ -132,7 +132,10 @@ public static class TagEndpoints
         var state = await current.GetAsync();
         if (state.At(paths, path) is not { IsVisible: true } || !paths.TryResolve(path, out var full) || !Directory.Exists(full)
             || paths.ToRelative(full) is not { } folder)
+        {
             return TypedResults.NotFound();
+        }
+
         return TypedResults.Ok(await defaults.GetAsync(folder, cancellationToken));
     }
 

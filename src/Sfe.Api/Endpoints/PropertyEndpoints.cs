@@ -73,7 +73,10 @@ public static class PropertyEndpoints
         if (Find(state, paths, serverFiles, work, path) is not { } found
             || properties.Describe(found.Path, found.Full) is not { } details
             || browser.ToItem(details.IsFolder ? new DirectoryInfo(found.Full) : new FileInfo(found.Full)) is not { } item)
+        {
             return TypedResults.NotFound();
+        }
+
         try
         {
             item = (await tags.AttachIndexDataAsync([item], cancellationToken))[0];
@@ -130,7 +133,10 @@ public static class PropertyEndpoints
         if (!paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { } canonical
             || (!File.Exists(full) && !Directory.Exists(full)) || FileEndpoints.Protected(full, serverFiles, work)
             || state.Check(paths, canonical, Rights.Browse) != PathVerdict.Allowed)
+        {
             return null;
+        }
+
         return (canonical, full);
     }
 

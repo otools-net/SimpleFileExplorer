@@ -46,13 +46,21 @@ public static class TextCodec
         string text;
         string encoding;
         if (bytes.StartsWith((ReadOnlySpan<byte>)[0xEF, 0xBB, 0xBF]))
+        {
             (text, encoding) = (Encoding.UTF8.GetString(bytes[3..]), Utf8Bom);
+        }
         else if (bytes.StartsWith((ReadOnlySpan<byte>)[0xFF, 0xFE]))
+        {
             (text, encoding) = (Encoding.Unicode.GetString(bytes[2..]), Utf16Le);
+        }
         else if (bytes.StartsWith((ReadOnlySpan<byte>)[0xFE, 0xFF]))
+        {
             (text, encoding) = (Encoding.BigEndianUnicode.GetString(bytes[2..]), Utf16Be);
+        }
         else if (bytes[..Math.Min(bytes.Length, BinaryProbe)].Contains((byte)0))
+        {
             return null;
+        }
         else
         {
             try
@@ -177,7 +185,9 @@ public static class TextCodec
         for (var i = 0; i < text.Length; i++)
         {
             if (text[i] == '\n')
+            {
                 lf++;
+            }
             else if (text[i] == '\r')
             {
                 if (i + 1 < text.Length && text[i + 1] == '\n')
@@ -186,7 +196,9 @@ public static class TextCodec
                     i++;
                 }
                 else
+                {
                     cr++;
+                }
             }
         }
         if (lf + crlf + cr == 0)
@@ -201,7 +213,9 @@ public static class TextCodec
         for (var i = 0; i < text.Length; i++)
         {
             if (text[i] == '\n')
+            {
                 lf++;
+            }
             else if (text[i] == '\r')
             {
                 if (i + 1 < text.Length && text[i + 1] == '\n')
@@ -210,7 +224,9 @@ public static class TextCodec
                     i++;
                 }
                 else
+                {
                     cr++;
+                }
             }
         }
         return ((lf > 0 ? 1 : 0) + (crlf > 0 ? 1 : 0) + (cr > 0 ? 1 : 0)) switch

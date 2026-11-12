@@ -1,4 +1,3 @@
-using Sfe.Core.Paths;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
@@ -6,6 +5,7 @@ using Microsoft.Net.Http.Headers;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Options;
+using Sfe.Core.Paths;
 using Sfe.Core.Streaming;
 
 namespace Sfe.Api.Endpoints;

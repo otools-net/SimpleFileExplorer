@@ -45,8 +45,11 @@ public static class ArchiveFormats
     public static ArchiveFormat? OfName(string name)
     {
         foreach (var (suffix, format) in Suffixes)
+        {
             if (name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) && name.Length > suffix.Length)
                 return format;
+        }
+
         return null;
     }
 

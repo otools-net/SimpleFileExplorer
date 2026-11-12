@@ -104,7 +104,10 @@ public static class EditorEndpoints
         var state = await current.GetAsync();
         if (Picture(paths, serverFiles, work, path) is not (var full, var canonical) || state.Check(paths, canonical, Rights.ViewFiles) != PathVerdict.Allowed
             || await content.VersionAsync(full, null, cancellationToken) is not { } version)
+        {
             return TypedResults.NotFound();
+        }
+
         context.Response.Headers.CacheControl = "no-store";
         context.Response.Headers.ETag = new EntityTagHeaderValue($"\"{version.Token}\"").ToString();
         var mayOverwrite = MayOverwrite(state, paths, trash, canonical) && !FileEndpoints.ProtectedFromWrites(full, serverFiles, work);
@@ -118,12 +121,18 @@ public static class EditorEndpoints
         var state = await current.GetAsync();
         if (Picture(paths, serverFiles, work, path) is not (var full, var canonical)
             || state.Check(paths, canonical, Rights.ViewFiles) != PathVerdict.Allowed)
+        {
             return TypedResults.NotFound();
+        }
+
         if (!MayOverwrite(state, paths, trash, canonical) || FileEndpoints.ProtectedFromWrites(full, serverFiles, work))
             return TypedResults.Problem("You may not save over this picture: save a copy instead.", statusCode: StatusCodes.Status403Forbidden);
         if (TextEndpoints.IfMatch(context.Request) is not { } ifMatch)
+        {
             return TypedResults.Problem("Say which version of the picture is being saved over (If-Match).", statusCode: StatusCodes.Status428PreconditionRequired,
                 type: TextEndpoints.VersionRequiredType);
+        }
+
         if (session is null || !TextEndpoints.SessionPattern().IsMatch(session))
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["session"] = ["An editing session (letters, digits and dashes) is needed."] });
 

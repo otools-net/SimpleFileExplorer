@@ -48,11 +48,14 @@ internal sealed class ZipDirectory
 
         var at = -1;
         for (var i = tailLength - EndLength; i >= 0; i--)
+        {
             if (U32(tail, i) == EndSignature && i + EndLength + U16(tail, i + 20) <= tailLength)
             {
                 at = i;
                 break;
             }
+        }
+
         if (at < 0)
             throw new ArchiveException("The zip has no directory: it is broken or cut off.");
 
@@ -140,9 +143,12 @@ internal sealed class ZipDirectory
                 {
                     // Zip64: the 8-byte values of the fields that are 0xFFFFFFFF, in this order.
                     var next = data;
-                    if (size == uint.MaxValue && next + 8 <= data + length) { size = Long(extra, next); next += 8; }
-                    if (packed == uint.MaxValue && next + 8 <= data + length) { packed = Long(extra, next); next += 8; }
-                    if (offset == uint.MaxValue && next + 8 <= data + length) offset = Long(extra, next);
+                    if (size == uint.MaxValue && next + 8 <= data + length)
+                    { size = Long(extra, next); next += 8; }
+                    if (packed == uint.MaxValue && next + 8 <= data + length)
+                    { packed = Long(extra, next); next += 8; }
+                    if (offset == uint.MaxValue && next + 8 <= data + length)
+                        offset = Long(extra, next);
                 }
                 else if (id == 0x5455 && length >= 5 && (extra[data] & 1) != 0)
                 {

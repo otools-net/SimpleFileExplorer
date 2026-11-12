@@ -62,10 +62,15 @@ public static class TextParts
         var from = 0;
         var to = bytes.Length;
         if (!atStart && IndexOf(bytes, lineBreak, unit) is var first and >= 0 && first + unit < to)
+        {
             from = first + unit;
+        }
         else if (!atStart && unit == 1 && encoding != TextCodec.Windows1252)
+        {
             while (from < to && from < 3 && (bytes[from] & 0xC0) == 0x80)
                 from++;
+        }
+
         if (!atEnd && LastIndexOf(bytes[from..], lineBreak, unit) is var last and >= 0)
             to = from + last + unit;
         else if (!atEnd && unit == 1 && encoding != TextCodec.Windows1252)
@@ -77,16 +82,22 @@ public static class TextParts
     private static int IndexOf(ReadOnlySpan<byte> bytes, ReadOnlySpan<byte> lineBreak, int unit)
     {
         for (var i = 0; i + unit <= bytes.Length; i += unit)
+        {
             if (bytes.Slice(i, unit).SequenceEqual(lineBreak))
                 return i;
+        }
+
         return -1;
     }
 
     private static int LastIndexOf(ReadOnlySpan<byte> bytes, ReadOnlySpan<byte> lineBreak, int unit)
     {
         for (var i = (bytes.Length - unit) / unit * unit; i >= 0; i -= unit)
+        {
             if (bytes.Slice(i, unit).SequenceEqual(lineBreak))
                 return i;
+        }
+
         return -1;
     }
 

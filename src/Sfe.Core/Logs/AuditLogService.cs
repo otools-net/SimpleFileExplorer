@@ -269,7 +269,12 @@ public sealed class AuditLogService(
 
     private static LogEntry Copy(LogEntry e) => new()
     {
-        Timestamp = e.Timestamp, Level = e.Level, Category = e.Category, Message = e.Message, Exception = e.Exception, TenantId = e.TenantId,
+        Timestamp = e.Timestamp,
+        Level = e.Level,
+        Category = e.Category,
+        Message = e.Message,
+        Exception = e.Exception,
+        TenantId = e.TenantId,
     };
 
     private const string LikeEscape = "\\";

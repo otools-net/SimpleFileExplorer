@@ -101,7 +101,8 @@ public sealed class Uploads(
             return new UploadChunkResult(FileOperationStatus.NotFound, null, "The folder was not found.");
         var upload = new UploadInfo(Guid.NewGuid().ToString("N"), paths.ToRelative(targetFull)!, Clean(start.Name!), start.Size, 0,
             start.Modified, actor.AccountId, actor.Name, now, now);
-        await using (File.Create(PartPath(upload.Id))) { }
+        await using (File.Create(PartPath(upload.Id)))
+        { }
         Save(upload);
         all[upload.Id] = upload;
         logger.LogInformation("{Account} started uploading {Name} ({Size} bytes) to {Target}", actor.Name, upload.Name, upload.Size, Display(upload.Target));
@@ -323,7 +324,10 @@ public sealed class Uploads(
         var notFound = (FileOperationResult.Fail(FileOperationStatus.NotFound, "The folder was not found."), (string?)null);
         if (LibraryPaths.NormalizeRelative(target) is not { } normalized || !paths.TryResolve(normalized, out var targetFull)
             || !Directory.Exists(targetFull) || access.IsProtected(targetFull) || paths.ToRelative(targetFull) is not { } targetPath)
+        {
             return notFound;
+        }
+
         if (!await access.MayAsync(targetPath, Rights.Browse))
             return notFound;
         if (string.IsNullOrEmpty(name))

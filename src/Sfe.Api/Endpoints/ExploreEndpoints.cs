@@ -507,6 +507,7 @@ public static class ExploreEndpoints
         var opened = await OpenEntryAsync(catalogs, options.CurrentValue, paths, serverFiles, work, unlocks, current, context,
             path, new EntryKey(id, null, at), TextEndpoints.MaxBytes, unlock);
         if (opened.Refused is { } refused)
+        {
             return refused.Result switch
             {
                 ForbidHttpResult forbid => forbid,
@@ -516,6 +517,7 @@ public static class ExploreEndpoints
                 ProblemHttpResult problem => problem,
                 _ => TypedResults.NotFound(),
             };
+        }
 
         byte[] bytes;
         try
@@ -576,7 +578,9 @@ public static class ExploreEndpoints
             || CatalogOf(catalogs, full, canonical, format, unlock, password, static () => false) is not { Status: ArchiveCatalogStatus.Ready, Catalog: { } catalog }
             || (key.At is { } at ? catalog.FindFile(at) : catalog.Entry(key.Id ?? 0)) is not { Entry.Kind: ArchiveEntryKind.File } file
             || key.Name is not null && !string.Equals(file.Name, key.Name, StringComparison.Ordinal))
+        {
             return new(TypedResults.NotFound(), null, null, full, canonical);
+        }
 
         var entry = file.Entry;
         // Per-entry packed sizes exist only where the format keeps them (zip, non-solid): elsewhere the declared size holds.
@@ -643,10 +647,16 @@ public static class ExploreEndpoints
         var state = await current.GetAsync();
         if (!paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { Length: > 0 } canonical
             || !File.Exists(full) || FileEndpoints.Protected(full, serverFiles, work))
+        {
             return (string.Empty, string.Empty, false);
+        }
+
         foreach (var right in rights)
+        {
             if (state.Check(paths, canonical, right) is var verdict and not PathVerdict.Allowed)
                 return (full, canonical, verdict != PathVerdict.NotFound);
+        }
+
         return (full, canonical, null);
     }
 

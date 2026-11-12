@@ -279,7 +279,9 @@ public sealed class FileJobs(
         if (LibraryPaths.NormalizeRelative(path) is not { Length: > 0 } || !paths.TryResolve(path, out var source)
             || paths.ToRelative(source) is not { Length: > 0 } sourcePath || (!File.Exists(source) && !Directory.Exists(source))
             || job.Access.IsProtected(source) || !await job.Access.MayAsync(sourcePath, Rights.Browse))
+        {
             return new FileJobItem(path, null, FileOperationStatus.NotFound, "It was not found.");
+        }
         // Moving takes it away from where it is: a write there too.
         if (move && job.Access.IsReadOnly(source))
         {
@@ -375,9 +377,12 @@ public sealed class FileJobs(
         {
             var begun = await rules.BeginMoveAsync(tenantId, sourcePath, destinationPath, job.Request.KeepAccess, job.Actor.AccountId, token);
             if (begun.Status != AccessStatus.Ok)
+            {
                 return new FileJobItem(path, null, FileOperationStatus.Conflict, begun.Problem is not null
                     ? $"“{Base(destinationPath)}” can't go there: folder access rules are set for a folder of that name. An administrator can remove them or point them elsewhere."
                     : begun.Errors?.Values.SelectMany(e => e).FirstOrDefault());
+            }
+
             ruleMove = begun.Value;
         }
 
@@ -408,8 +413,10 @@ public sealed class FileJobs(
         var needed = SizeOf(source);
         var margin = Math.Max(0, options.CurrentValue.Files.MinimumFreeSpaceMegabytes) * 1024L * 1024;
         if (FreeSpace(Path.GetDirectoryName(destination)!) is { } free && free - needed < margin)
+        {
             return new FileJobItem(path, null, FileOperationStatus.Failed,
                 $"“{Base(path)}” was not copied: the drive would keep less than {margin / 1024 / 1024:N0} MB free.");
+        }
 
         using var hold = scans.TryBeginOperation(destination);
         if (hold is null)
@@ -528,8 +535,10 @@ public sealed class FileJobs(
                 foreach (var (file, tagIds) in tagged)
                 {
                     if (copies.TryGetValue(file, out var fileId))
+                    {
                         foreach (var tagId in tagIds.Where(t => !existing.Contains((fileId, t))))
                             db.FileTags.Add(new FileTag { FileId = fileId, TagId = tagId });
+                    }
                 }
                 await db.SaveChangesAsync(token);
             }
@@ -552,12 +561,18 @@ public sealed class FileJobs(
         if (LibraryPaths.NormalizeRelative(path) is not { Length: > 0 } || !paths.TryResolve(path, out var source)
             || paths.ToRelative(source) is not { Length: > 0 } sourcePath || !File.Exists(source)
             || job.Access.IsProtected(source) || !await job.Access.MayAsync(sourcePath, Rights.Browse))
+        {
             return new FileJobItem(path, null, FileOperationStatus.NotFound, "It was not found.");
+        }
+
         var name = Path.GetFileName(source);
         // An archive's content is the file's content: it is opened (view, download) and written where one may extract.
         if (!await job.Access.MayAsync(sourcePath, Rights.ViewFiles) || !await job.Access.MayAsync(sourcePath, Rights.Download)
             || !await job.Access.MayAsync(targetPath, Rights.ExtractFiles))
+        {
             return new FileJobItem(path, null, FileOperationStatus.Forbidden, $"You may not extract “{name}” there.");
+        }
+
         if (ArchiveFormats.Detect(source) is not { } format)
             return new FileJobItem(path, null, FileOperationStatus.Invalid, $"“{name}” is not an archive SFE extracts (zip, 7z, rar, tar, gz, bz2, xz).");
 
@@ -599,9 +614,12 @@ public sealed class FileJobs(
         {
             RemovePartial(partial);
             if (ex is ArchiveException { NeedsPassword: true })
+            {
                 return new FileJobItem(path, null, FileOperationStatus.NeedsPassword, string.IsNullOrEmpty(job.Password)
                     ? $"“{name}” is protected by a password: extract it with its password."
                     : $"That password doesn't open “{name}”: nothing was extracted.");
+            }
+
             if (ex is ArchiveException)
                 return new FileJobItem(path, null, FileOperationStatus.Failed, $"“{name}” could not be extracted: {Lower(ex.Message)}");
             throw;
@@ -717,8 +735,10 @@ public sealed class FileJobs(
         var margin = Math.Max(0, settings.Files.MinimumFreeSpaceMegabytes) * 1024L * 1024;
         var bound = await archives.IndexedSizeAsync(chosen, token);
         if (FreeSpace(targetFull) is { } free && free - bound < margin)
+        {
             return new FileJobItem(label, null, FileOperationStatus.Failed,
                 $"“{name}” was not made: the drive would keep less than {margin / 1024 / 1024:N0} MB free.");
+        }
 
         // One compression at a time on the server: the others wait their turn (the panel shows them running).
         var gate = gates.Compressions(settings.Files.Archives.CompressJobs);
@@ -855,8 +875,11 @@ public sealed class FileJobs(
     internal static string StemOf(string name)
     {
         foreach (var double_ in new[] { ".tar.gz", ".tar.bz2", ".tar.xz" })
+        {
             if (name.EndsWith(double_, StringComparison.OrdinalIgnoreCase) && name.Length > double_.Length)
                 return name[..^double_.Length];
+        }
+
         var stem = Path.GetFileNameWithoutExtension(name);
         return stem.Length > 0 ? stem : name;
     }
@@ -890,11 +913,16 @@ public sealed class FileJobs(
         {
             var running = _jobs.Values.Where(j => j != job && j.State is FileJobState.Running or FileJobState.Waiting).SelectMany(j => j.Partials).ToHashSet(LibraryPaths.PathComparer);
             foreach (var leftover in Directory.EnumerateDirectories(folder, "*" + PartialSuffix))
+            {
                 if (!running.Contains(leftover) && new DirectoryInfo(leftover).LinkTarget is null)
                     RemovePartial(leftover);
+            }
+
             foreach (var leftover in Directory.EnumerateFiles(folder, "*" + PartialSuffix))
+            {
                 if (!running.Contains(leftover) && new FileInfo(leftover).LinkTarget is null)
                     RemovePartialFile(leftover);
+            }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -1103,9 +1131,11 @@ public sealed class FileJobs(
         public FileJobView View()
         {
             lock (_gate)
+            {
                 return new FileJobView(Id, Request.Kind, State, Request.Target,
                     Request.Kind == FileJobKind.Compress ? 1 : Request.Paths.Distinct(StringComparer.Ordinal).Count(), _results.Count,
                     BytesTotal, Interlocked.Read(ref _bytesDone), Current, _conflict, [.. _results], Started, _finished, Actor.AccountId);
+            }
         }
     }
 }

@@ -22,7 +22,9 @@ public static class LocalVisitor
         var request = context.Request;
         if (context.Connection.RemoteIpAddress is not { } address || !IPAddress.IsLoopback(address)
             || request.Headers.ContainsKey("X-Forwarded-For") || request.Headers.ContainsKey("X-Original-For") || request.Headers.ContainsKey("Forwarded"))
+        {
             return false;
+        }
 
         var host = request.Host.Host;
         return string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase)

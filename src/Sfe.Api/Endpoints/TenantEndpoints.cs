@@ -94,9 +94,11 @@ public static class TenantEndpoints
 
         var result = await accounts.CreateTenantAsync(input, root, cancellationToken);
         if (result.Status != AccessStatus.Ok)
+        {
             return result.Status == AccessStatus.Invalid
                 ? TypedResults.ValidationProblem(result.Errors!)
                 : TypedResults.Problem(result.Problem, statusCode: StatusCodes.Status409Conflict);
+        }
 
         // Its index database is created now, so that a wrong connection string shows at once.
         try

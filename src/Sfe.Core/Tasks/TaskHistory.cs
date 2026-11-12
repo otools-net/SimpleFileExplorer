@@ -46,8 +46,14 @@ public sealed class TaskHistory(IDbContextFactory<SfeDbContext> dbFactory, IOpti
         var now = DateTime.UtcNow;
         var row = new TaskRun
         {
-            Task = task, Path = path, Trigger = TaskTrigger.Schedule, ScheduleId = scheduleId,
-            Started = now, Finished = now, Outcome = TaskOutcome.Skipped, Summary = Truncate(reason),
+            Task = task,
+            Path = path,
+            Trigger = TaskTrigger.Schedule,
+            ScheduleId = scheduleId,
+            Started = now,
+            Finished = now,
+            Outcome = TaskOutcome.Skipped,
+            Summary = Truncate(reason),
         };
         try
         {

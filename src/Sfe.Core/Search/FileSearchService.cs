@@ -1,8 +1,8 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
-using Microsoft.Extensions.Options;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;

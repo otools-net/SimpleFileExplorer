@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.Options;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Data;
 using Sfe.Core.Files;
 using Sfe.Core.Library;
-using Microsoft.Extensions.Options;
 using Sfe.Core.Logs;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
@@ -339,7 +339,10 @@ public static class FileEndpoints
         {
             if (!paths.TryResolve(path, out var full) || !Directory.Exists(full) || paths.ToRelative(full) is not { Length: > 0 } folder
                 || state.Check(paths, folder, Rights.MoveFiles) != PathVerdict.Allowed)
+            {
                 continue;
+            }
+
             var name = folder.Split('/')[^1];
             var compared = await rules.CompareMoveAsync(tenant.Id, folder, target.Length == 0 ? name : $"{target}/{name}", cancellationToken);
             foreach (var change in compared.Value?.Where(c => c.Gains) ?? [])
@@ -467,7 +470,10 @@ public static class FileEndpoints
         {
             if (ProtectedFromWrites(full, serverFiles, workFolder)
                 || ProtectedFromWrites(Path.GetDirectoryName(full)!, serverFiles, workFolder))
+            {
                 return Refused(PathVerdict.NotFound, state, paths, request.Path, "rename", loggers, protectedPlace: true);
+            }
+
             if (state.Check(paths, ParentOf(canonical), Rights.RenameFiles) != PathVerdict.Allowed)
                 return TypedResults.Forbid();
             if (Directory.Exists(full) && !state.Access.FolderPolicy.AllowsThroughout(canonical, Rights.RenameFiles, state.Access.Rights))
@@ -502,8 +508,11 @@ public static class FileEndpoints
         if (verdict == PathVerdict.Forbidden)
             return TypedResults.Forbid();
         if (protectedPlace || (paths.TryResolve(path, out var full) && (Directory.Exists(full) || File.Exists(full))))
+        {
             loggers.CreateLogger(typeof(FileEndpoints)).LogSecurityWarning("{User} was refused to {Action} “{Path}”: {Why}",
                 state.User?.UserName ?? "A visitor", action, path, protectedPlace ? "it leads to the server's own files, or out of the library through a link" : "a folder they may not see");
+        }
+
         return TypedResults.NotFound();
     }
 

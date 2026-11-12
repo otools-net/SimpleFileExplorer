@@ -109,11 +109,14 @@ public static class ArchiveExtractor
         {
             var shown = string.Join('/', segments);
             foreach (var segment in segments.AsSpan(start))
+            {
                 if (FileNames.Check(segment, limits.PortableNames) is { } wrong)
                 {
                     result.Leave(shown, wrong.TrimEnd('.'));
                     return;
                 }
+            }
+
             var full = Path.Combine([root, .. segments[start..]]);
             // Checked names can't leave the folder; checked again whatever comes.
             if (!full.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.Ordinal))
@@ -202,8 +205,11 @@ public static class ArchiveExtractor
         bool FileInTheWay(string folder)
         {
             for (var at = folder; at.Length > root.Length; at = Path.GetDirectoryName(at)!)
+            {
                 if (File.Exists(at))
                     return true;
+            }
+
             return false;
         }
     }

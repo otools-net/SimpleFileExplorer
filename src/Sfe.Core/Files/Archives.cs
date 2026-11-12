@@ -163,10 +163,14 @@ public sealed class Archives(
         foreach (var item in plan.Items)
         {
             if (!item.IsFolder)
+            {
                 total += new FileInfo(item.FullPath).Length;
+            }
             else
+            {
                 total += await db.Files.AsNoTracking().Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, item.FullPath))
                     .SumAsync(f => (long?)f.Size, cancellationToken) ?? 0;
+            }
         }
         return total;
     }

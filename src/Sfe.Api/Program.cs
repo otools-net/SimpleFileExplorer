@@ -177,11 +177,15 @@ switch (migration.Status)
             {
                 code = EnsureSetupCode(code);
                 if (!code.HasUsableCode)
+                {
                     app.Logger.LogWarning(
                         "No administrator yet and no usable setup code: set Sfe:Setup:Code (e.g. the environment variable Sfe__Setup__Code) to at least {Length} characters, restart, then open the app",
                         SetupOptions.MinimumCodeLength);
+                }
                 else if (!code.CodeIsGenerated)
+                {
                     app.Logger.LogWarning("No administrator yet: open the app in a browser and enter the setup code (Sfe:Setup:Code) to create one");
+                }
             }
             else if (!string.IsNullOrWhiteSpace(code.Code) && !code.Recover && !code.CodeIsGenerated)
             {

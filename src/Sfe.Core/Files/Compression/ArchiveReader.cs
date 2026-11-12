@@ -272,9 +272,11 @@ public static class ArchiveReader
     private static void TooFar(long skipped, long maxSkipped)
     {
         if (skipped > maxSkipped)
+        {
             throw new ArchiveException(
                 $"To reach this file the archive would unpack {skipped / (1024 * 1024):N0} MB before it (it is packed together with them): extract it, or download the archive.")
             { TooFar = true };
+        }
     }
 
     private static ArchiveException CutOff() =>
@@ -385,17 +387,17 @@ public static class ArchiveReader
     /// <summary>A decompressed stream read through, keeping its length and last 1 KB (where a tar's end mark is).</summary>
     private sealed class TailStream(Stream inner) : Stream
     {
-        private readonly byte[] last = new byte[1024];
-        private long length;
+        private readonly byte[] _last = new byte[1024];
+        private long _length;
 
         public bool EndsWithTarMark =>
-            length >= last.Length && length % 512 == 0 && !last.AsSpan().ContainsAnyExcept((byte)0);
+            _length >= _last.Length && _length % 512 == 0 && !_last.AsSpan().ContainsAnyExcept((byte)0);
 
         public override bool CanRead => true;
         public override bool CanSeek => false;
         public override bool CanWrite => false;
         public override long Length => throw new NotSupportedException();
-        public override long Position { get => length; set => throw new NotSupportedException(); }
+        public override long Position { get => _length; set => throw new NotSupportedException(); }
 
         public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
 
@@ -403,16 +405,16 @@ public static class ArchiveReader
         {
             var read = inner.Read(buffer);
             var data = buffer[..read];
-            if (data.Length >= last.Length)
+            if (data.Length >= _last.Length)
             {
-                data[^last.Length..].CopyTo(last);
+                data[^_last.Length..].CopyTo(_last);
             }
             else if (data.Length > 0)
             {
-                last.AsSpan(data.Length).CopyTo(last);
-                data.CopyTo(last.AsSpan(last.Length - data.Length));
+                _last.AsSpan(data.Length).CopyTo(_last);
+                data.CopyTo(_last.AsSpan(_last.Length - data.Length));
             }
-            length += read;
+            _length += read;
             return read;
         }
 

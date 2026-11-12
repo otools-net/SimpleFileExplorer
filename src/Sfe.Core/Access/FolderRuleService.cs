@@ -162,8 +162,13 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
                 // An account had no say before: an account rule that adds nothing (Hidden) keeps it so.
                 pins.AddRange(Compare(rules, groups, source, target).Select(c => new FolderRule
                 {
-                    TenantId = tenantId, Path = target, GroupId = c.Principal.GroupId, UserId = c.Principal.UserId,
-                    Level = c.Before ?? FolderLevel.Hidden, Created = now, CreatedById = changedById,
+                    TenantId = tenantId,
+                    Path = target,
+                    GroupId = c.Principal.GroupId,
+                    UserId = c.Principal.UserId,
+                    Level = c.Before ?? FolderLevel.Hidden,
+                    Created = now,
+                    CreatedById = changedById,
                 }));
             }
 
@@ -181,8 +186,13 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
             {
                 var copies = renamed.Select(m => new FolderRule
                 {
-                    TenantId = tenantId, Path = m.Path, GroupId = m.Rule.GroupId, UserId = m.Rule.UserId, Level = m.Rule.Level,
-                    Created = m.Rule.Created, CreatedById = m.Rule.CreatedById,
+                    TenantId = tenantId,
+                    Path = m.Path,
+                    GroupId = m.Rule.GroupId,
+                    UserId = m.Rule.UserId,
+                    Level = m.Rule.Level,
+                    Created = m.Rule.Created,
+                    CreatedById = m.Rule.CreatedById,
                 }).ToList();
                 db.FolderRules.AddRange(copies);
                 db.FolderRules.AddRange(pins);
@@ -251,8 +261,13 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
                     continue;
                 kept.Add(new FolderRule
                 {
-                    TenantId = tenantId, Path = rule.Path.Length == 0 ? target : $"{target}/{rule.Path}", GroupId = rule.GroupId, UserId = rule.UserId,
-                    Level = rule.Level, Created = rule.Created, CreatedById = rule.CreatedById,
+                    TenantId = tenantId,
+                    Path = rule.Path.Length == 0 ? target : $"{target}/{rule.Path}",
+                    GroupId = rule.GroupId,
+                    UserId = rule.UserId,
+                    Level = rule.Level,
+                    Created = rule.Created,
+                    CreatedById = rule.CreatedById,
                 });
             }
             db.FolderRules.AddRange(kept);

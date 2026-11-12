@@ -225,13 +225,25 @@ public sealed class ReadingOptions
     /// <summary>Code, logs and settings files: monospace, line numbers, long lines kept whole.</summary>
     public ReadingProfileOptions Code { get; set; } = new()
     {
-        Font = "system-mono", Size = 14, LineHeight = 1.5, Width = 0, Padding = 8, Wrap = false, LineNumbers = true,
+        Font = "system-mono",
+        Size = 14,
+        LineHeight = 1.5,
+        Width = 0,
+        Padding = 8,
+        Wrap = false,
+        LineNumbers = true,
     };
 
     /// <summary>Notes and documents (<c>.txt</c>, <c>.md</c>, <c>README</c>...): wrapped, in a reading font.</summary>
     public ReadingProfileOptions Prose { get; set; } = new()
     {
-        Font = "literata", Size = 17, LineHeight = 1.65, Width = 72, Padding = 32, Wrap = true, LineNumbers = false,
+        Font = "literata",
+        Size = 17,
+        LineHeight = 1.65,
+        Width = 72,
+        Padding = 32,
+        Wrap = true,
+        LineNumbers = false,
     };
 
     public ReadingOptions Copy() => new() { Theme = Theme, CustomFont = CustomFont, Code = Code.Copy(), Prose = Prose.Copy() };

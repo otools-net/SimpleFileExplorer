@@ -28,7 +28,9 @@ internal static class BrowserLauncher
         if (noBrowser || !PortableBuild.IsPortable
             || SetupEndpoints.DetectHosting() is not (HostingKind.Portable or HostingKind.AppImage)
             || !Environment.UserInteractive)
+        {
             return;
+        }
 
         // The configuration, then System › Start-up (settings.json); readable before an update too (nothing is written).
         if (!app.Services.GetRequiredService<SettingLayers>().ServerLevel().OpenBrowser)

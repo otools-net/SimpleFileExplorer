@@ -20,7 +20,9 @@ public sealed record SemanticVersion(int Major, int Minor, int Patch, string? Pr
         var preRelease = dash < 0 ? null : core[(dash + 1)..];
         if (numbers.Length != 3 || preRelease is "" || !int.TryParse(numbers[0], out var major) || !int.TryParse(numbers[1], out var minor)
             || !int.TryParse(numbers[2], out var patch) || major < 0 || minor < 0 || patch < 0)
+        {
             return false;
+        }
 
         version = new SemanticVersion(major, minor, patch, preRelease);
         return true;

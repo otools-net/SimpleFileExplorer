@@ -338,8 +338,15 @@ public sealed class DirectoryIndexer(
                 // Attached with its stored values, so that only the columns that change are written.
                 entry = new FileEntry
                 {
-                    Id = known.Id, FullName = known.FullName, DirectoryId = directoryId, Size = known.Size, LastWriteTime = known.LastWriteTime,
-                    Sha1 = known.Sha1, Width = known.Width, Height = known.Height, Duration = known.Duration,
+                    Id = known.Id,
+                    FullName = known.FullName,
+                    DirectoryId = directoryId,
+                    Size = known.Size,
+                    LastWriteTime = known.LastWriteTime,
+                    Sha1 = known.Sha1,
+                    Width = known.Width,
+                    Height = known.Height,
+                    Duration = known.Duration,
                 };
                 db.Files.Attach(entry);
             }

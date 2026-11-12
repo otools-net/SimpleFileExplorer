@@ -148,7 +148,10 @@ public sealed class EditedImages(
         var source = LibraryPaths.NormalizeRelative(path);
         if (string.IsNullOrEmpty(source) || !paths.TryResolve(source, out var full) || !File.Exists(full)
             || classifier.Classify(Path.GetExtension(full)) != ItemKind.Image)
+        {
             return null;
+        }
+
         return (paths.ToRelative(full) ?? source, full);
     }
 

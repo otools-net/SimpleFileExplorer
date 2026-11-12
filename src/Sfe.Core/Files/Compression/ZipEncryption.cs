@@ -1,4 +1,3 @@
-using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -169,8 +168,10 @@ internal static class ZipEncryption
             Span<byte> code = stackalloc byte[AesAuthCode];
             Inner.ReadExactly(code);
             if (!CryptographicOperations.FixedTimeEquals(_mac.GetHashAndReset().AsSpan(0, AesAuthCode), code))
+            {
                 throw new ArchiveException("An encrypted entry doesn't match its authentication: the password is wrong or the archive is damaged.",
                     needsPassword: true);
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -246,9 +247,12 @@ internal sealed class CrcCheckStream(Stream inner, uint expected, bool encrypted
         var read = Inner.Read(buffer);
         _crc.Append(buffer[..read]);
         if (read == 0 && buffer.Length > 0 && _crc.GetCurrentHashAsUInt32() != expected)
+        {
             throw encrypted
                 ? new ArchiveException("An entry doesn't match its checksum: the password is wrong or the archive is damaged.", needsPassword: true)
                 : new ArchiveException("An entry doesn't match its checksum: the archive is damaged.");
+        }
+
         return read;
     }
 }

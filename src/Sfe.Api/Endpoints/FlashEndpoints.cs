@@ -54,7 +54,9 @@ public static class FlashEndpoints
         var path = LibraryPaths.NormalizeRelative(request.Path);
         if (path is not { Length: > 0 } || !path.EndsWith(".swf", StringComparison.OrdinalIgnoreCase)
             || !paths.TryResolve(path, out var full) || !File.Exists(full) || FileEndpoints.Protected(full, serverFiles, work))
+        {
             return TypedResults.NotFound();
+        }
 
         var state = await current.GetAsync();
         if (state.Check(paths, path, Rights.ViewFiles) is var verdict and not PathVerdict.Allowed)

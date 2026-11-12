@@ -200,8 +200,11 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         using var connection = Open();
         var info = new Dictionary<string, string?>();
         using (var reader = Command(connection, "SELECT Key, Value FROM Info").ExecuteReader())
+        {
             while (reader.Read())
                 info[reader.GetString(0)] = reader.IsDBNull(1) ? null : reader.GetString(1);
+        }
+
         return new ArchiveCatalogSummary(
             Enum.Parse<ArchiveFormat>(info["format"]!),
             long.Parse(info["entries"]!, CultureInfo.InvariantCulture),
@@ -648,65 +651,65 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     /// <summary>Fills a catalog: entries in batches, folders found by a stack of the last path and a bounded cache.</summary>
     private sealed class Writer
     {
-        private readonly SqliteConnection connection;
-        private readonly int maxDepth;
-        private readonly SqliteCommand insertFolder, findFolder, folderTime, insertEntry, insertLeftOut;
-        private readonly Dictionary<(long Parent, string Name), long> folders = [];
-        // The folders of the last entry's path: archives list entries folder by folder, so most entries reuse it.
-        private readonly List<string> stackNames = [];
-        private readonly List<long> stackIds = [];
-        private SqliteTransaction transaction;
+        private readonly SqliteConnection _connection;
+        private readonly int _maxDepth;
+        private readonly SqliteCommand _insertFolder, _findFolder, _folderTime, _insertEntry, _insertLeftOut;
+        private readonly Dictionary<(long Parent, string Name), long> _folders = [];
+        // The _folders of the last entry's path: archives list entries folder by folder, so most entries reuse it.
+        private readonly List<string> _stackNames = [];
+        private readonly List<long> _stackIds = [];
+        private SqliteTransaction _transaction;
 
         public long Entries { get; private set; }
         public long LeftOut { get; private set; }
 
         public Writer(SqliteConnection connection, int maxDepth)
         {
-            this.connection = connection;
-            this.maxDepth = maxDepth;
-            transaction = connection.BeginTransaction();
-            insertFolder = Prepare("INSERT INTO Folders (ParentId, Name, Depth) VALUES ($parent, $name, $depth) RETURNING Id",
+            _connection = connection;
+            _maxDepth = maxDepth;
+            _transaction = _connection.BeginTransaction();
+            _insertFolder = Prepare("INSERT INTO Folders (ParentId, Name, Depth) VALUES ($parent, $name, $depth) RETURNING Id",
                 "$parent", "$name", "$depth");
-            findFolder = Prepare("SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name COLLATE BINARY LIMIT 1",
+            _findFolder = Prepare("SELECT Id FROM Folders WHERE ParentId = $parent AND Name = $name COLLATE BINARY LIMIT 1",
                 "$parent", "$name");
-            folderTime = Prepare("UPDATE Folders SET Time = $time WHERE Id = $id", "$time", "$id");
-            insertEntry = Prepare("""
+            _folderTime = Prepare("UPDATE Folders SET Time = $time WHERE Id = $id", "$time", "$id");
+            _insertEntry = Prepare("""
                 INSERT INTO Entries (FolderId, Name, Kind, Size, Packed, Time, Encrypted, Locator, Method, Crc, Cipher, CipherInfo)
                 VALUES ($folder, $name, $kind, $size, $packed, $time, $encrypted, $locator, $method, $crc, $cipher, $cipherInfo)
                 """, "$folder", "$name", "$kind", "$size", "$packed", "$time", "$encrypted", "$locator", "$method", "$crc", "$cipher", "$cipherInfo");
-            insertLeftOut = Prepare("INSERT INTO LeftOut (Name, Reason) VALUES ($name, $reason)", "$name", "$reason");
+            _insertLeftOut = Prepare("INSERT INTO LeftOut (Name, Reason) VALUES ($name, $reason)", "$name", "$reason");
         }
 
         public void Add(ArchiveEntry entry)
         {
             Entries++;
-            var segments = ArchiveEntryNames.Split(entry.Name, maxDepth, out var reason);
+            var segments = ArchiveEntryNames.Split(entry.Name, _maxDepth, out var reason);
             if (segments is null)
             {
                 // "./" and "/" folder entries name the root: nothing to list, nothing left out.
                 if (entry.Kind == ArchiveEntryKind.Folder && entry.Name.Trim('/', '\\', '.').Length == 0)
                     return;
                 if (LeftOut++ < MaxLeftOutListed)
-                    Run(insertLeftOut, entry.Name.Length > 1024 ? entry.Name[..1024] + "…" : entry.Name, reason!);
+                    Run(_insertLeftOut, entry.Name.Length > 1024 ? entry.Name[..1024] + "…" : entry.Name, reason!);
                 return;
             }
             if (entry.Kind == ArchiveEntryKind.Folder)
             {
                 var id = ResolveFolder(segments, segments.Length);
                 if (entry.Time is { } time)
-                    Run(folderTime, time.Ticks, id);
+                    Run(_folderTime, time.Ticks, id);
                 return;
             }
             var folder = ResolveFolder(segments, segments.Length - 1);
-            Run(insertEntry, folder, segments[^1], (int)entry.Kind, Math.Max(entry.Size, 0), Math.Max(entry.Packed, 0),
+            Run(_insertEntry, folder, segments[^1], (int)entry.Kind, Math.Max(entry.Size, 0), Math.Max(entry.Packed, 0),
                 entry.Time?.Ticks, entry.Encrypted ? 1 : 0, entry.Locator, entry.Method, (long)entry.Crc, (int)entry.Cipher, entry.CipherInfo);
         }
 
         public void Commit()
         {
-            transaction.Commit();
-            transaction.Dispose();
-            transaction = connection.BeginTransaction();
+            _transaction.Commit();
+            _transaction.Dispose();
+            _transaction = _connection.BeginTransaction();
         }
 
         /// <summary>Indexes, then the totals bottom-up one depth at a time (each level's sums are final when its parents add them).</summary>
@@ -744,9 +747,9 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             Run(info, "complete", stopped is null ? "1" : "0");
             Run(info, "stopped", stopped);
             Run(info, "needsPassword", needsPassword ? "1" : "0");
-            transaction.Commit();
-            transaction.Dispose();
-            foreach (var command in new[] { insertFolder, findFolder, folderTime, insertEntry, insertLeftOut })
+            _transaction.Commit();
+            _transaction.Dispose();
+            foreach (var command in new[] { _insertFolder, _findFolder, _folderTime, _insertEntry, _insertLeftOut })
                 command.Dispose();
         }
 
@@ -757,36 +760,36 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         private long ResolveFolder(string[] segments, int count)
         {
             var common = 0;
-            while (common < count && common < stackNames.Count && string.Equals(segments[common], stackNames[common], StringComparison.Ordinal))
+            while (common < count && common < _stackNames.Count && string.Equals(segments[common], _stackNames[common], StringComparison.Ordinal))
                 common++;
-            stackNames.RemoveRange(common, stackNames.Count - common);
-            stackIds.RemoveRange(common, stackIds.Count - common);
-            var id = common == 0 ? RootId : stackIds[common - 1];
+            _stackNames.RemoveRange(common, _stackNames.Count - common);
+            _stackIds.RemoveRange(common, _stackIds.Count - common);
+            var id = common == 0 ? RootId : _stackIds[common - 1];
             for (var i = common; i < count; i++)
             {
                 id = Child(id, segments[i], i + 1);
-                stackNames.Add(segments[i]);
-                stackIds.Add(id);
+                _stackNames.Add(segments[i]);
+                _stackIds.Add(id);
             }
             return id;
         }
 
         private long Child(long parent, string name, int depth)
         {
-            if (folders.TryGetValue((parent, name), out var id))
+            if (_folders.TryGetValue((parent, name), out var id))
                 return id;
-            if (Run(findFolder, parent, name) is not long found)
-                found = (long)Run(insertFolder, parent, name, depth)!;
-            if (folders.Count >= FolderCacheCount)
-                folders.Clear();
-            folders[(parent, name)] = found;
+            if (Run(_findFolder, parent, name) is not long found)
+                found = (long)Run(_insertFolder, parent, name, depth)!;
+            if (_folders.Count >= FolderCacheCount)
+                _folders.Clear();
+            _folders[(parent, name)] = found;
             return found;
         }
 
         private SqliteCommand Prepare(string sql, params string[] names)
         {
-            var command = Command(connection, sql);
-            command.Transaction = transaction;
+            var command = Command(_connection, sql);
+            command.Transaction = _transaction;
             foreach (var name in names)
                 command.Parameters.Add(new SqliteParameter { ParameterName = name });
             return command;
@@ -794,7 +797,7 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
 
         private object? Run(SqliteCommand command, params object?[] values)
         {
-            command.Transaction = transaction;
+            command.Transaction = _transaction;
             for (var i = 0; i < values.Length; i++)
                 command.Parameters[i].Value = values[i] ?? DBNull.Value;
             return command.ExecuteScalar();
@@ -802,15 +805,15 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
 
         private object? Scalar(string sql)
         {
-            using var command = Command(connection, sql);
-            command.Transaction = transaction;
+            using var command = Command(_connection, sql);
+            command.Transaction = _transaction;
             return command.ExecuteScalar();
         }
 
         private void Execute(string sql)
         {
-            using var command = Command(connection, sql);
-            command.Transaction = transaction;
+            using var command = Command(_connection, sql);
+            command.Transaction = _transaction;
             command.ExecuteNonQuery();
         }
     }

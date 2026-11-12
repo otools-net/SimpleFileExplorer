@@ -107,7 +107,9 @@ public sealed class InstallationSettings
         {
             if (configuration.Sources[i] is JsonConfigurationSource { Path: { } path }
                 && Path.GetFileName(path).StartsWith("appsettings", StringComparison.OrdinalIgnoreCase))
+            {
                 last = i;
+            }
         }
 
         return last >= 0 ? last + 1 : 0;
@@ -230,8 +232,11 @@ public sealed class InstallationSettings
         if (SetByConfiguration(key) is { } source)
             return new InstallationField(value, true, source);
         if (key is RootKey or FfmpegKey && ServerModes.InEffect(_configuration) == ServerMode.External)
+        {
             return new InstallationField(value, true,
                 $"the server's configuration (External mode: {(key == RootKey ? "Sfe__Root" : "Sfe__Thumbnails__FfmpegPath")} in its environment, or appsettings.json)");
+        }
+
         return new InstallationField(value, false, null);
     }
 

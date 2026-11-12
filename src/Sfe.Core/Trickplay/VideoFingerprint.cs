@@ -115,7 +115,9 @@ public sealed class VideoFingerprint
 
         if (bytes.Length < sizeof(uint) || BinaryPrimitives.ReadUInt32LittleEndian(bytes) != Magic
             || (bytes.Length - sizeof(uint)) % RecordBytes != 0)
+        {
             return null;
+        }
 
         var count = (bytes.Length - sizeof(uint)) / RecordBytes;
         var hashes = new ulong[count];

@@ -118,8 +118,16 @@ public sealed class Trash(
         var (size, files) = await MeasureAsync(full, isFolder, cancellationToken);
         var entry = new TrashEntry
         {
-            Path = relative, Name = Path.GetFileName(full), IsFolder = isFolder, Size = size, Files = files, DeletedAt = DateTime.UtcNow,
-            DeletedById = actor.AccountId, DeletedBy = actor.Name, Location = work.Location, Folder = Guid.NewGuid().ToString("N"),
+            Path = relative,
+            Name = Path.GetFileName(full),
+            IsFolder = isFolder,
+            Size = size,
+            Files = files,
+            DeletedAt = DateTime.UtcNow,
+            DeletedById = actor.AccountId,
+            DeletedBy = actor.Name,
+            Location = work.Location,
+            Folder = Guid.NewGuid().ToString("N"),
         };
         await using (var db = await dbFactory.CreateDbContextAsync(cancellationToken))
         {
@@ -199,8 +207,15 @@ public sealed class Trash(
     {
         var entry = new TrashEntry
         {
-            Path = relative, Name = Path.GetFileName(full), IsFolder = false, Size = new FileInfo(full).Length, DeletedAt = DateTime.UtcNow,
-            DeletedById = actor.AccountId, DeletedBy = actor.Name, Location = work.Location, Folder = Guid.NewGuid().ToString("N"),
+            Path = relative,
+            Name = Path.GetFileName(full),
+            IsFolder = false,
+            Size = new FileInfo(full).Length,
+            DeletedAt = DateTime.UtcNow,
+            DeletedById = actor.AccountId,
+            DeletedBy = actor.Name,
+            Location = work.Location,
+            Folder = Guid.NewGuid().ToString("N"),
             Kind = TrashEntryKind.PreviousVersion,
         };
         await using (var db = await dbFactory.CreateDbContextAsync(cancellationToken))
@@ -231,9 +246,11 @@ public sealed class Trash(
         // The files whose previews go with them, read before their rows go.
         List<string> cached;
         await using (var db = await dbFactory.CreateDbContextAsync(cancellationToken))
+        {
             cached = isFolder
                 ? await db.Files.Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, full)).Select(f => f.FullName).ToListAsync(cancellationToken)
                 : [full];
+        }
 
         FileTree.Delete(full);
 
@@ -292,18 +309,18 @@ public sealed class Trash(
     /// </summary>
     public async Task<TrashCount> CountAsync(Func<TrashItem, bool> visible, CancellationToken cancellationToken = default)
     {
-        const int batchSize = MaxPageSize;
+        const int BatchSize = MaxPageSize;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var cursor = int.MaxValue;
         var count = 0;
         while (count <= CountCap)
         {
-            var batch = await db.TrashEntries.AsNoTracking().Where(t => t.Id < cursor).OrderByDescending(t => t.Id).Take(batchSize).ToListAsync(cancellationToken);
+            var batch = await db.TrashEntries.AsNoTracking().Where(t => t.Id < cursor).OrderByDescending(t => t.Id).Take(BatchSize).ToListAsync(cancellationToken);
             if (batch.Count == 0)
                 break;
             cursor = batch[^1].Id;
             count += batch.Select(ToItem).Count(visible);
-            if (batch.Count < batchSize)
+            if (batch.Count < BatchSize)
                 break;
         }
         return new TrashCount(Math.Min(count, CountCap), count > CountCap);
@@ -422,9 +439,12 @@ public sealed class Trash(
         var stored = StoragePath(entry);
         // The previews were kept by the original paths (a previous version's are the live file's: they stay).
         if (entry.Kind != TrashEntryKind.PreviousVersion && paths.TryResolve(entry.Path, out var original))
+        {
             DeleteCachesLater(entry.IsFolder
                 ? [.. FileTree.Files(stored).Select(file => original + file[stored.Length..])]
                 : [original]);
+        }
+
         if (File.Exists(stored) || Directory.Exists(stored))
             FileTree.Delete(stored);
         TryDeleteHolder(entry);
@@ -503,8 +523,10 @@ public sealed class Trash(
                     try
                     {
                         if (await PurgeAsync(id, null, cancellationToken))
+                        {
                             lock (_gate)
                                 _purged++;
+                        }
                     }
                     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                     {
@@ -677,6 +699,7 @@ public sealed class Trash(
         if (files.Count == 0)
             return;
         lock (_cacheGate)
+        {
             _cacheDeletes = _cacheDeletes.ContinueWith(_ =>
             {
                 foreach (var file in files)
@@ -694,6 +717,7 @@ public sealed class Trash(
                     }
                 }
             }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+        }
     }
 
     private static TrashItem ToItem(TrashEntry entry) => new(

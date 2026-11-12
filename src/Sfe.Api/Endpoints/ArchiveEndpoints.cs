@@ -71,9 +71,11 @@ public static class ArchiveEndpoints
             return TypedResults.Problem($"You are already downloading {ArchiveLinks.MaxPerCaller} zips: wait for one to finish.", statusCode: StatusCodes.Status429TooManyRequests);
         var plan = result.Plan!;
         if (archives.MaxBytes > 0 && await archives.IndexedSizeAsync(plan, cancellationToken) is var size && size > archives.MaxBytes)
+        {
             return TypedResults.Problem(
                 $"This is {size / 1024 / 1024:N0} MB: a zip may hold at most {archives.MaxBytes / 1024 / 1024:N0} MB here. Choose fewer files.",
                 statusCode: StatusCodes.Status400BadRequest);
+        }
 
         var token = links.Add(state.TenantId, caller, [.. plan.Items.Select(item => item.Path)]);
         return TypedResults.Ok(new ArchiveLink($"api/files/archive/{token}", plan.FileName));

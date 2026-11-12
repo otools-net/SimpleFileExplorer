@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
 using Sfe.Core.Access;

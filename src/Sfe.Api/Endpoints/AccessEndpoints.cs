@@ -154,11 +154,17 @@ public static class AccessEndpoints
 
         AccessResult<UserInfo> result;
         if (state.Has(Rights.ManageUsers))
+        {
             result = await accounts.UpdateUserAsync(id, input, null, cancellationToken);
+        }
         else if (!IsInTenant(target, state.TenantId))
+        {
             return TypedResults.NotFound();
+        }
         else if (OwnedBy(target, state.TenantId))
+        {
             result = await accounts.UpdateUserAsync(id, input, state.TenantId, cancellationToken);
+        }
         else
         {
             // Shared with other spaces (or a server administrator): only its groups here are this space's business.

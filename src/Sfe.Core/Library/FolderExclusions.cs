@@ -65,7 +65,10 @@ public sealed class FolderExclusions
     {
         if (Cache.TryGetValue(options, out var cached)
             && Enum.GetValues<ExclusionKind>().All(kind => ReferenceEquals(cached._sources[(int)kind], List(options, kind))))
+        {
             return cached;
+        }
+
         var compiled = new FolderExclusions(options);
         Cache.AddOrUpdate(options, compiled);
         return compiled;
@@ -117,8 +120,11 @@ public sealed class FolderExclusions
         if (folders.Count == 0)
             return null;
         for (var path = relativePath; path.Length > 0; path = Parent(path))
+        {
             if (folders.Contains(path))
                 return path;
+        }
+
         return null;
     }
 

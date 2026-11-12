@@ -40,8 +40,10 @@ public sealed partial class ShardCacheLayout : IUpgradeStep
                 continue;
             var result = Move(cache, context, cancellationToken);
             if (result.Thumbnails + result.Trickplays + result.Failed > 0)
+            {
                 context.Note($"{cache}: moved {result.Thumbnails} thumbnails and {result.Trickplays} trickplays"
                     + (result.Failed > 0 ? $"; {result.Failed} could not be moved and stay in the old layout." : "."));
+            }
         }
     }, cancellationToken);
 

@@ -62,9 +62,11 @@ public static class SevenZipList
     public static void Check(Stream stream, long maxBytes)
     {
         if (UnpackedSize(stream) is { } size && size > maxBytes)
+        {
             throw new ArchiveException(
                 $"This 7z's list of entries is too large to be read by the server ({size / (1024.0 * 1024):N0} MB, at most {maxBytes / (1024 * 1024):N0} MB): " +
                 "download it and open it on your computer, or ask an administrator to raise Files:Archives:MaxSevenZipListMegabytes.");
+        }
     }
 
     /// <summary>The largest unpack size of the streams describing a compressed list (its output: the list).</summary>
@@ -82,12 +84,18 @@ public static class SevenZipList
                         for (var part = reader.Byte(); part != End; part = reader.Byte())
                         {
                             if (part == Size)
+                            {
                                 for (var i = 0L; i < packStreams; i++)
                                     reader.Number();
+                            }
                             else if (part == Crc)
+                            {
                                 reader.Digests(packStreams);
+                            }
                             else
+                            {
                                 return null;
+                            }
                         }
                         break;
                     }
@@ -104,8 +112,10 @@ public static class SevenZipList
                         if (reader.Byte() != CodersUnpackSize)
                             return null;
                         foreach (var count in outputs)
+                        {
                             for (var i = 0L; i < count; i++)
                                 largest = Math.Max(largest ?? 0, reader.Number());
+                        }
                         // The CRCs and the end follow: not needed.
                         return largest;
                     }
@@ -196,8 +206,11 @@ public static class SevenZipList
             }
             var packed = inputs - (outputs - 1);
             if (packed > 1)
+            {
                 for (var i = 0L; i < packed; i++)
                     Number();
+            }
+
             return outputs;
         }
     }

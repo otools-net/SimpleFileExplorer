@@ -137,9 +137,9 @@ public sealed class Ffmpeg
     /// <summary>The word after "ffmpeg version" on the first line of <c>ffmpeg -version</c>.</summary>
     internal static string? ParseVersion(string output)
     {
-        const string prefix = "ffmpeg version ";
+        const string Prefix = "ffmpeg version ";
         var line = output.Split('\n', 2)[0].Trim();
-        return line.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && line[prefix.Length..].Split(' ', 2)[0] is { Length: > 0 } version
+        return line.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase) && line[Prefix.Length..].Split(' ', 2)[0] is { Length: > 0 } version
             ? version
             : null;
     }

@@ -46,7 +46,8 @@ too big is split into sub-items here before starting it. A new trap found on the
 
 ### Phase 1: formatting
 
-- [ ] `dotnet format` over `src/` (diff reviewed for renames)
+- [x] `dotnet format` over `src/` (diff reviewed for renames): the IDE1006 renames and 5 braces of `if`/`else`
+  chains done by hand; the braces grew the baseline (file lines +151, long functions +2, deep +1), accepted
 - [ ] `dotnet format` over `tests/`, plus the MSTest asserts, CA1416, IDE0052, IDE0044 by hand
 - [ ] Hashes of both in `.git-blame-ignore-revs`; `dotnet format --verify-no-changes` passes
 
@@ -208,6 +209,17 @@ what applies to this plan.
    6 CA1416 in `SecretFilesTests` (`[SupportedOSPlatform("linux")]` / `OperatingSystem.IsWindows()` guard as the test
    already behaves), `TextRouteTests._tenant` (IDE0052), `TrashTests` readonly field.
 3. From then on `dotnet format --verify-no-changes --severity warn` passes; it joins the checks of every later commit.
+
+Traps met:
+
+- `dotnet format` cannot fix IDE1006 ("NamingStyleCodeFixProvider doesn't support Fix All in Solution"), nor the
+  braces of an `if`/`else` chain where one branch already has them: both by hand. Renaming a field to `_name` by
+  text: keep `this.name = name` constructor parameters, and string literals equal to the name (`"folders"` in
+  `ArchiveCatalog`).
+- Added braces lengthen files and functions: `measure.mjs --check` fails for them; `--write-baseline` accepts it in
+  this phase only.
+- `references.mjs` fails when another `dotnet` build runs at the same time: run it alone.
+- `dotnet test` takes about 9 minutes (1550 tests): see [long-runs](../environment/long-runs.md).
 
 ## Phase 2: long lines (about 40 commits, one per folder, worst first)
 

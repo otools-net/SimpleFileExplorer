@@ -137,8 +137,11 @@ public sealed class ArchiveCatalogs(IOptionsMonitor<SfeOptions> options, Archive
             // Waits for its turn, and gives it up when nobody asks any more.
             var poll = Abandoned < TimeSpan.FromSeconds(4) ? Abandoned / 2 : TimeSpan.FromSeconds(2);
             while (!(entered = await semaphore.WaitAsync(poll)))
+            {
                 if (DateTime.UtcNow - build.Asked > Abandoned)
                     return;
+            }
+
             DeleteOldVersions();
             var progress = new Progress(read =>
             {

@@ -4,7 +4,6 @@ using Microsoft.Net.Http.Headers;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Files;
-using Sfe.Core.Library;
 using Sfe.Core.Paths;
 
 namespace Sfe.Api.Endpoints;
@@ -40,7 +39,10 @@ public static class EpubEndpoints
         var state = await current.GetAsync();
         if (EpubEntries.PathOf(book) is not { } path || !paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { Length: > 0 } canonical
             || !full.EndsWith(".epub", StringComparison.OrdinalIgnoreCase) || !File.Exists(full) || FileEndpoints.Protected(full, serverFiles, work))
+        {
             return TypedResults.NotFound();
+        }
+
         if (state.Check(paths, canonical, Rights.ViewFiles) is var verdict and not PathVerdict.Allowed)
             return verdict == PathVerdict.NotFound ? TypedResults.NotFound() : TypedResults.Forbid();
 

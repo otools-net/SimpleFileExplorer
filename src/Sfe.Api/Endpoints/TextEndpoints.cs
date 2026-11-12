@@ -163,8 +163,11 @@ public static partial class TextEndpoints
         if (read is null)
             return TypedResults.NotFound();
         if (read.TooLarge)
+        {
             return TypedResults.Problem($"It is too large to be shown as text (more than {MaxBytes / (1024 * 1024)} MB): download it instead.",
                 statusCode: StatusCodes.Status413PayloadTooLarge, type: TooLargeType);
+        }
+
         if (TextCodec.Decode(read.Bytes, encoding) is not { } decoded)
             return TypedResults.Problem("It is not a text file.", statusCode: StatusCodes.Status415UnsupportedMediaType, type: NotTextType);
 
@@ -253,7 +256,10 @@ public static partial class TextEndpoints
         var state = await current.GetAsync();
         if (!paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { Length: > 0 } canonical
             || !File.Exists(full) || FileEndpoints.Protected(full, serverFiles, work))
+        {
             return (string.Empty, string.Empty, state, false);
+        }
+
         if (state.Check(paths, canonical, Rights.ViewFiles) is var verdict and not PathVerdict.Allowed)
             return (full, canonical, state, verdict != PathVerdict.NotFound);
         return (full, canonical, state, null);
@@ -282,15 +288,20 @@ public static partial class TextEndpoints
 
         var ifMatch = IfMatch(context.Request);
         if (ifMatch is null)
+        {
             return TypedResults.Problem("Say which version of the file is being saved over (If-Match).", statusCode: StatusCodes.Status428PreconditionRequired,
                 type: VersionRequiredType);
+        }
+
         if (request.Session is not { } session || !SessionPattern().IsMatch(session))
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["session"] = ["An editing session (letters, digits and dashes) is needed."] });
         if (Encode(request.Text, request.Encoding, request.LineEnding) is not { } bytes)
             return EncodingProblem(request.Text, request.Encoding, request.LineEnding);
         if (bytes.Length > MaxBytes)
+        {
             return TypedResults.Problem($"The text is too large to be saved here (more than {MaxBytes / (1024 * 1024)} MB).",
                 statusCode: StatusCodes.Status413PayloadTooLarge, type: TooLargeType);
+        }
 
         var result = await content.OverwriteAsync(canonical, bytes, ifMatch, session, keepPrevious: !trash.AlwaysPermanent, FileEndpoints.Actor(state), cancellationToken);
         switch (result.Status)
@@ -326,8 +337,10 @@ public static partial class TextEndpoints
         if (Encode(request.Text, request.Encoding, request.LineEnding) is not { } bytes)
             return EncodingProblem(request.Text, request.Encoding, request.LineEnding);
         if (bytes.Length > MaxBytes)
+        {
             return TypedResults.Problem($"The text is too large to be saved here (more than {MaxBytes / (1024 * 1024)} MB).",
                 statusCode: StatusCodes.Status413PayloadTooLarge, type: TooLargeType);
+        }
 
         return await FileEndpoints.ResultAsync(
             await operations.CreateFileAsync(request.Path, request.Name, FileEndpoints.Actor(state), cancellationToken, bytes), tags, cancellationToken);
@@ -343,8 +356,11 @@ public static partial class TextEndpoints
     private static ProblemHttpResult EncodingProblem(string? text, string? encoding, string? lineEnding)
     {
         if (text is null || encoding is null || lineEnding is null || !TextCodec.Encodings.Contains(encoding) || !TextCodec.LineEndings.Contains(lineEnding))
+        {
             return TypedResults.Problem($"The text, an encoding ({string.Join(", ", TextCodec.Encodings)}) and a line ending (lf, crlf, cr) are needed.",
                 statusCode: StatusCodes.Status400BadRequest);
+        }
+
         var missing = TextCodec.Encode(text, encoding, lineEnding).Unrepresentable;
         return TypedResults.Problem($"Some characters can't be written in {encoding}: {string.Join(" ", missing)}. Save it as UTF-8 instead.",
             statusCode: StatusCodes.Status422UnprocessableEntity, type: NotEncodableType,

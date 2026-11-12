@@ -125,10 +125,15 @@ public static class FolderRuleEndpoints
         // Opening a folder to visitors without an account is what a security review wants to find.
         if (change.GroupId is { } groupId && change.Level is FolderLevel.Read or FolderLevel.Write
             && (await accounts.GetBuiltInGroupAsync(space.Id, Core.Data.BuiltInGroup.Guests, cancellationToken))?.Id == groupId)
+        {
             logger.LogSecurityWarning("Folder rule: {User} lets the Guests group {Level} “{Path}”", who, change.Level, path);
+        }
         else
+        {
             logger.LogInformation("Folder rule: {User} set {Principal} to {Level} at “{Path}”", who, change.GroupId is { } g ? $"group {g}" : $"account {change.UserId}",
                 change.Level?.ToString() ?? "inherit", path);
+        }
+
         return TypedResults.Ok(await ViewsAsync(rules, accounts, space, cancellationToken));
     }
 

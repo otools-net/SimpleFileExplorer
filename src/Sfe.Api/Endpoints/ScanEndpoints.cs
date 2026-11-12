@@ -133,30 +133,42 @@ public static class ScanEndpoints
         var removing = new[] { change.Scan, change.Trickplay, change.Thumbnails }.All(v => v is null or false);
         if (!Directory.Exists(full)
             && (!removing || File.Exists(full) || !FolderExclusions.Of(options.CurrentValue).Folders().Contains(folder, LibraryPaths.PathComparer)))
+        {
             return TypedResults.NotFound();
+        }
+
         if (folder.Length == 0)
             return Problem("path", "The library itself can't be excluded: exclude some of its folders.");
 
         var asked = new Dictionary<ExclusionKind, bool>();
         foreach (var (kind, value) in new[] { (ExclusionKind.Scan, change.Scan), (ExclusionKind.Trickplay, change.Trickplay), (ExclusionKind.Thumbnails, change.Thumbnails) })
+        {
             if (value is { } excluded)
                 asked[kind] = excluded;
+        }
 
         var before = FolderExclusions.Of(options.CurrentValue);
         foreach (var (kind, excluded) in asked)
+        {
             if (!excluded && before.Through(kind, folder) is { } parent && !LibraryPaths.PathComparer.Equals(parent, folder))
                 return Problem(Key(kind), $"Excluded through “{parent}”: take that folder off the list to let this one in again.");
+        }
 
         var keys = await settings.SetExclusionsAsync(folder, asked, cancellationToken: cancellationToken);
         var after = FolderExclusions.Of(options.CurrentValue).At(folder);
         // A list set by the server's configuration (Sfe:Locked) can't be changed from here.
         foreach (var (kind, excluded) in asked)
+        {
             if ((after.Of(kind) is not null) != excluded)
                 return Problem(Key(kind), "This list is set by the server's configuration: it can't be changed here.");
+        }
 
         if (keys.Count > 0)
+        {
             loggerFactory.CreateLogger(typeof(ScanEndpoints)).LogInformation("Folder exclusions of {Folder} changed: {Changes}",
                 folder, string.Join(", ", asked.Select(a => $"{a.Key} {(a.Value ? "excluded" : "included")}")));
+        }
+
         return TypedResults.Ok(after);
 
         static string Key(ExclusionKind kind) => kind.ToString().ToLowerInvariant();
@@ -229,12 +241,14 @@ public static class ScanEndpoints
         // Nothing to do there: the scan would leave it as it is.
         if (paths.TryResolve(path, out var full) && paths.ToRelative(full) is { } canonical
             && FolderExclusions.Of(options.CurrentValue).Through(ExclusionKind.Scan, canonical) is { } through)
+        {
             return TypedResults.ValidationProblem(new Dictionary<string, string[]>
             {
                 ["path"] = [LibraryPaths.PathComparer.Equals(through, canonical)
                     ? $"“{through}” is excluded from scans: what the index has of it stays as it is."
                     : $"This folder is inside “{through}”, which is excluded from scans: what the index has of it stays as it is."],
             });
+        }
 
         return coordinator.TryStart(path)
             ? TypedResults.Accepted("/api/scan", coordinator.Status)

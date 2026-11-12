@@ -272,7 +272,9 @@ public sealed class SimilarVideoFinder(
             if (colon <= 0
                 || !int.TryParse(after.AsSpan(0, colon), NumberStyles.None, CultureInfo.InvariantCulture, out var run) || run != snapshot.Run
                 || !int.TryParse(after.AsSpan(colon + 1), NumberStyles.None, CultureInfo.InvariantCulture, out start))
+            {
                 return null;
+            }
         }
 
         var prefix = Path.TrimEndingDirectorySeparator(directory) + Path.DirectorySeparatorChar;
@@ -328,7 +330,9 @@ public sealed class SimilarVideoFinder(
                 if (rows.TryGetValue(video.Id, out var row)
                     && string.Equals(row.FullName, video.FullName, LibraryPaths.PathComparison)
                     && duplicates.ToItem(row.FullName, row.Extension, row.Size, row.LastWriteTime, TagService.Summaries(graph, row.TagIds)) is { } item)
+                {
                     videos.Add(new SimilarVideo(item, video.Match, video.Duration));
+                }
             }
 
             if (videos.Count > 1)
