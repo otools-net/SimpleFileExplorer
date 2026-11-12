@@ -1,3 +1,8 @@
 # Commits that only reformat or move code (readability refactoring, agents/docs/development/readability.md):
 # `git blame` skips them once `git config blame.ignoreRevsFile .git-blame-ignore-revs` is set (GitHub reads this file
 # by itself). One full hash per line, with a comment line above saying what it did.
+
+# readability phase 1: dotnet format over src/
+40efee5b5beddd38f5928a61a0e393fead723878
+# readability phase 1: dotnet format over tests/
+1d1472181e536db41b4a67c07a3d46dcdc98defe

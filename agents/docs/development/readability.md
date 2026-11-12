@@ -21,15 +21,15 @@ does and where they would change it. Everything below serves that.
 
 ## Sizes
 
-Limits, not targets: most code should be well under them. "Now" is what `measure.mjs` counted on 2026-11-11
+Limits, not targets: most code should be well under them. "Now" is what `measure.mjs` counted on 2026-11-12, after the formatting
 (server = `src/**/*.cs` without migrations, client = `src/Sfe.Web/src/**/*.ts` without specs).
 
 | What | Limit | When over | Now over (server / client) |
 |---|---|---|---|
-| Line | 120 characters, comments too | break it ([Lines](#lines)) | 2728 / 2310 lines |
-| Function or method | 60 lines | extract named steps | 48 / 7 |
-| Nesting inside a function | 3 levels | guard clauses, extract the inner block | 15 / 7 |
-| Parameters | 5 | one object for those that travel together | 117 / 2 |
+| Line | 120 characters, comments too | break it ([Lines](#lines)) | 2749 / 2314 lines |
+| Function or method | 60 lines | extract named steps | 50 / 7 |
+| Nesting inside a function | 3 levels | guard clauses, extract the inner block | 16 / 7 |
+| Parameters | 5 | one object for those that travel together | 119 / 2 |
 | Dependencies of a class (constructor, `inject()`) | 8 | the class has several jobs: split it | 6 / 6 |
 | File | 400 lines (tests: 800) | split by responsibility | 21 / 17 (tests: 4 / 2) |
 | Top-level types in a C# file | 1 (see [C#](#c)) | one file per type | 106 files |
@@ -213,9 +213,8 @@ nothing else.
 Order, from mechanical to structural; each step is useful alone (the worklists, checks and traps of each step:
 [readability-refactoring-plan](readability-refactoring-plan.md)):
 
-1. **Format:** `dotnet format Sfe.slnx --severity warn` (about 260 findings on 2026-11-11: initializer members on
-   one line, braces on multi-line statements, a dozen unused usings and field names). One commit, listed in a
-   `.git-blame-ignore-revs` file so `git blame` skips it.
+1. **Format:** `dotnet format Sfe.slnx --severity warn` (done 2026-11-12, one commit for `src/` and one for
+   `tests/`, both in `.git-blame-ignore-revs` so `git blame` skips them); `--verify-no-changes` passes since.
 2. **Long lines**, file by file, worst first (`measure.mjs` lists them).
 3. **One type per file** on the server; `models.ts` by area on the client.
 4. **Templates** over 40 lines into `.html` files, then their long tags and expressions.

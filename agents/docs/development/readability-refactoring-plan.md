@@ -50,7 +50,8 @@ too big is split into sub-items here before starting it. A new trap found on the
   chains done by hand; the braces grew the baseline (file lines +151, long functions +2, deep +1), accepted
 - [x] `dotnet format` over `tests/`, plus the MSTest asserts, CA1416, IDE0052, IDE0044 by hand (two of the
   fixer's asserts did not compile, see the traps)
-- [ ] Hashes of both in `.git-blame-ignore-revs`; `dotnet format --verify-no-changes` passes
+- [x] Hashes of both in `.git-blame-ignore-revs`; `dotnet format --verify-no-changes` passes (`40efee5`,
+  `1d14721`; after it: server 2749 long lines, 50 long functions, 16 deep, 119 with many parameters)
 
 ### Phase 2: long lines (numbers: lines over 120 characters on 2026-11-12)
 
