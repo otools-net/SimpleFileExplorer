@@ -7,16 +7,6 @@ using Sfe.Core.Options;
 
 namespace Sfe.Core.Access;
 
-public enum SignInStatus
-{
-    Ok,
-    Invalid,
-    LockedOut,
-    Disabled,
-}
-
-public sealed record SignInResult(SignInStatus Status, SessionUser? User = null, DateTime? LockedUntil = null);
-
 /// <summary>
 /// Checks a name and password against the directories in their configured order (the local accounts when none is
 /// named): the first one that knows the account decides. A directory account gets a local row on its first

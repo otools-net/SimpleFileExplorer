@@ -3,9 +3,6 @@ using System.Security.Cryptography;
 
 namespace Sfe.Api.Security;
 
-/// <summary>A zip asked for, waiting for the browser to download it by its link.</summary>
-public sealed record PendingArchive(int TenantId, string Caller, IReadOnlyList<string> Paths, DateTime Expires);
-
 /// <summary>
 /// The one-time links of zips (agents/docs/features/archives.md): the page names the items with a POST (no URL holds
 /// thousands of paths, and no GET changes anything), then the browser downloads the zip from the link answered like any

@@ -5,12 +5,6 @@ using Sfe.Core.Access;
 
 namespace Sfe.Api.Security;
 
-/// <param name="Url">
-/// Relative to the app (<c>api/files/flash/{token}/{name}</c>): the movie, whose relative addresses (<c>level2.swf</c>)
-/// resolve under the token, to the files of its folder.
-/// </param>
-public sealed record FlashLink(string Url, DateTimeOffset Expires);
-
 /// <summary>
 /// Links for the Flash viewer (agents/docs/features/flash-viewer.md). Ruffle plays a movie in a frame of no origin, so
 /// that the movie can never send the session's cookie: what it loads comes through a link whose token stands for the

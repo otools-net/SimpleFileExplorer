@@ -8,16 +8,6 @@ using Sfe.Core.Options;
 namespace Sfe.Api.Security;
 
 /// <summary>
-/// Whether the visitor may use the installation page (<see cref="InstallationAccess.CheckVisitorAsync"/>).
-/// </summary>
-public enum InstallationVisitor
-{
-    Allowed,
-    NotSignedIn,
-    NotServerAdmin,
-}
-
-/// <summary>
 /// The installation page's proof that its visitor knows the setup code: the code is checked once (rate-limited, as
 /// sign-ins), then a token valid for <see cref="Lifetime"/> carries that proof through the folder picker's many
 /// requests. The token holds a hash of the code, so a new code ends every token given for the old one.

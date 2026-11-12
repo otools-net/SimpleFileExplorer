@@ -6,11 +6,6 @@ using Sfe.Core.Logs;
 
 namespace Sfe.Core.Access;
 
-/// <param name="UserName">The account the code recovers.</param>
-/// <param name="Code">Shown only where the server runs (its console and <see cref="AccountRecovery.FilePath"/>), never
-/// to the browser.</param>
-public sealed record RecoveryCode(int UserId, string UserName, string Code, DateTime Expires);
-
 /// <summary>
 /// The way back in for a server administrator locked out (by someone guessing the password) or who forgot the password,
 /// without editing a file or restarting: the sign-in page asks for a one-time code, which the server shows only where

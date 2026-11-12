@@ -4,27 +4,6 @@ using Sfe.Core.Paths;
 
 namespace Sfe.Api.Security;
 
-/// <summary>
-/// How a route takes folder rules into account (agents/docs/features/folder-access.md), read by the test checking
-/// that every route about library paths says it; null <paramref name="How"/> for routes whose paths are not the
-/// library's (server folders).
-/// </summary>
-public sealed record FolderMetadata(string? How);
-
-/// <summary>What a route answers about one library path.</summary>
-public enum PathVerdict
-{
-    Allowed,
-
-    /// <summary>The subject sees the path but may not do that there (403).</summary>
-    Forbidden,
-
-    /// <summary>
-    /// Not a path of the library, or one the subject doesn't see: answered as missing (404), never told apart.
-    /// </summary>
-    NotFound,
-}
-
 /// <summary>Folder rules at the routes: what the subject of the request may do at a library path, or where.</summary>
 public static class FolderChecks
 {

@@ -4,20 +4,6 @@ using Sfe.Core.Paths;
 
 namespace Sfe.Core.Access;
 
-/// <param name="Path">Relative to the library root ('/' separated, empty for the root).</param>
-/// <param name="IsFolder">A folder, else a file.</param>
-public sealed record QuickLinkEntry(string Path, bool IsFolder);
-
-public enum QuickLinkAddStatus
-{
-    Done,
-
-    /// <summary>
-    /// The list would hold more than <see cref="QuickLinkService.MaxLinks"/> links: nothing was changed.
-    /// </summary>
-    Full,
-}
-
 /// <summary>
 /// The quick links of each user in each library: a short ordered list of folders and files kept in the sidebar.
 /// Paths are compared as the host file system does (<see cref="LibraryPaths.PathComparer"/>); whether they exist is
