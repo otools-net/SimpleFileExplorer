@@ -48,6 +48,8 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 - **Readable code:** new and changed code keeps the size limits and rules of
   [readability](agents/docs/development/readability.md) (120-character lines, 60-line functions, one type per file…);
   a refactoring changes no behaviour and is committed apart from features and fixes.
+- **Long runs:** a command expected to take more than 10 minutes runs in the background with a cron task reporting
+  its progress every 10 minutes, deleted when it ends ([long-runs](agents/docs/environment/long-runs.md)).
 - **Agent tools:** put any reusable helper (scripts, drivers, generators) in `agents/tools/<job>/` with a `README.md`,
   never only in the scratchpad; work output goes to a temp folder, not the repo.
 
@@ -95,6 +97,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | Note | Covers |
 |---|---|
 | [commands](agents/docs/environment/commands.md) | build, test, run, migrations, packages |
+| [long-runs](agents/docs/environment/long-runs.md) | runs over 10 minutes: background + cron progress report every 10 minutes |
 | [build](agents/docs/environment/build.md) | client build inside MSBuild, theme-boot, build errors, locked DLLs |
 | [portable-build](agents/docs/environment/portable-build.md) | portable zip, AppImage, smoke tests |
 | [docker](agents/docs/environment/docker.md) | the Docker image: stages, `/data` content root, environment, smoke test |
