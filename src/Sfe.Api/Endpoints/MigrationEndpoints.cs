@@ -68,10 +68,10 @@ public static class MigrationEndpoints
             )
             .WithDescription(
                 """
-                While an update is due (`required`, `running`, `failed`), or the install belongs to a later version (`newer`),
-                every other route answers 503 `migration-required`. `log` and the text of `error` name folders and servers:
-                they are given only with the setup code in the header `X-SFE-Setup-Code` (as the update page sends it once
-                typed); without it `log` is empty and `error` only says that there is one.
+                While an update is due (`required`, `running`, `failed`), or the install belongs to a later version
+                (`newer`), every other route answers 503 `migration-required`. `log` and the text of `error` name
+                folders and servers: they are given only with the setup code in the header `X-SFE-Setup-Code` (as the
+                update page sends it once typed); without it `log` is empty and `error` only says that there is one.
                 """
             );
 

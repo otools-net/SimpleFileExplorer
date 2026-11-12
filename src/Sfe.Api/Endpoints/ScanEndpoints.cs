@@ -120,11 +120,11 @@ public static class ScanEndpoints
             )
             .WithDescription(
                 """
-                Changes the space's `Scan:ExcludedFolders`, `Trickplay:ExcludedFolders` and `Thumbnails:ExcludedFolders`.
-                A folder no longer on the disk can only be taken off them.
-                What is already indexed or made stays: scans keep the folder's index rows as they are. A folder excluded
-                through a listed parent can only be let in again by taking the parent off the list (400). Answers what
-                the folder is kept out of afterwards.
+                Changes the space's `Scan:ExcludedFolders`, `Trickplay:ExcludedFolders` and
+                `Thumbnails:ExcludedFolders`. A folder no longer on the disk can only be taken off them. What is already
+                indexed or made stays: scans keep the folder's index rows as they are. A folder excluded through a
+                listed parent can only be let in again by taking the parent off the list (400). Answers what the folder
+                is kept out of afterwards.
                 """
             );
 

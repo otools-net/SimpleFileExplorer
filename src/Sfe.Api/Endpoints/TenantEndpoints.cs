@@ -58,9 +58,10 @@ public static class TenantEndpoints
             )
             .WithDescription(
                 """
-                The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name), else next to the first
-                space's (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database `{database}_{slug}` on the same
-                server, which the server's account must be allowed to create). Its caches go under `{CacheDirectory}/tenants/{slug}`.
+                The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),
+                else next to the first space's (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database
+                `{database}_{slug}` on the same server, which the server's account must be allowed to create). Its
+                caches go under `{CacheDirectory}/tenants/{slug}`.
                 """
             );
 

@@ -31,9 +31,10 @@ public static class FlashEndpoints
             )
             .WithDescription(
                 $$"""
-                The link (`api/files/flash/{token}/{name}`, relative to the app) works for {{FlashLinks.Lifetime.TotalHours:0}}
-                hours, and stops earlier when the account changes its password, is disabled, or loses the right to view
-                the files. 404 when the library doesn't play Flash movies (`Player:Flash`) or the file isn't a `.swf`.
+                The link (`api/files/flash/{token}/{name}`, relative to the app) works for
+                {{FlashLinks.Lifetime.TotalHours:0}} hours, and stops earlier when the account changes its password, is
+                disabled, or loses the right to view the files. 404 when the library doesn't play Flash movies
+                (`Player:Flash`) or the file isn't a `.swf`.
                 """
             );
 

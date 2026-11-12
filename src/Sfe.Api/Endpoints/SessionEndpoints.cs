@@ -84,9 +84,9 @@ public static class SessionEndpoints
             .WithSummary("Signs in with a name and password.")
             .WithDescription(
                 """
-                `remember` keeps the session after the browser closes (for `Sfe:Security:SessionDays` without use). A Local
-                server (`Sfe:Mode`) lets only administrators in (server administrators, members of a space's Administrators
-                group): others get 400 `local-administrators-only`.
+                `remember` keeps the session after the browser closes (for `Sfe:Security:SessionDays` without use). A
+                Local server (`Sfe:Mode`) lets only administrators in (server administrators, members of a space's
+                Administrators group): others get 400 `local-administrators-only`.
                 """
             );
 
@@ -117,9 +117,10 @@ public static class SessionEndpoints
             )
             .WithDescription(
                 $"""
-                Only with `Sfe:FastSignIn` (Administration › System › Start-up), from the server's own computer, while the
-                server has a single enabled administrator. The link (`token`) is made when SFE starts, works once and for
-                {FastSignIn.Lifetime.TotalMinutes:0} minute. Whatever happens, the answer sends the browser to the app.
+                Only with `Sfe:FastSignIn` (Administration › System › Start-up), from the server's own computer, while
+                the server has a single enabled administrator. The link (`token`) is made when SFE starts, works once
+                and for {FastSignIn.Lifetime.TotalMinutes:0} minute. Whatever happens, the answer sends the browser to
+                the app.
                 """
             );
 
@@ -134,10 +135,10 @@ public static class SessionEndpoints
             )
             .WithDescription(
                 $"""
-                For a server administrator locked out (wrong passwords from someone else) or who forgot the password. The
-                code appears in the server's console and in `recovery-code.txt` beside the setup code file, for
-                {AccountRecovery.Lifetime.TotalMinutes:0} minutes; asking again shows the same code. The answer is the same
-                whatever the name, so it doesn't tell which accounts exist.
+                For a server administrator locked out (wrong passwords from someone else) or who forgot the password.
+                The code appears in the server's console and in `recovery-code.txt` beside the setup code file, for
+                {AccountRecovery.Lifetime.TotalMinutes:0} minutes; asking again shows the same code. The answer is the
+                same whatever the name, so it doesn't tell which accounts exist.
                 """
             );
 

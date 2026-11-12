@@ -22,9 +22,10 @@ public static class SettingsEndpoints
     {
         var settings = api.MapGroup("/settings").WithTags("Settings").RequireRight(AnySettingsRight);
         const string LevelDescription = """
-            `level` is `server` (the server settings page, over the configuration files: server administrators) or `tenant`
-            (the library's settings, over the server's). Without it: `server` for server administrators, `tenant` otherwise.
-            The library root, the database, ffmpeg and the system commands are only set in the configuration files.
+            `level` is `server` (the server settings page, over the configuration files: server administrators) or
+            `tenant` (the library's settings, over the server's). Without it: `server` for server administrators,
+            `tenant` otherwise. The library root, the database, ffmpeg and the system commands are only set in the
+            configuration files.
             """;
 
         settings
@@ -44,8 +45,9 @@ public static class SettingsEndpoints
                 LevelDescription
                     + """
 
-                    Only the settings the level may change are kept, when they differ from what it inherits. Changing one it may
-                    not change (locked above, outside its scope, or without the section's right) is a validation error.
+                    Only the settings the level may change are kept, when they differ from what it inherits. Changing
+                    one it may not change (locked above, outside its scope, or without the section's right) is a
+                    validation error.
                     """
             );
 
@@ -59,9 +61,10 @@ public static class SettingsEndpoints
                 LevelDescription
                     + """
 
-                    `values` maps setting keys (`player.seekSeconds`) to their new value; one equal to what the level inherits
-                    follows the levels above again. `lock` / `unlock` list the settings this level starts or stops locking for
-                    the levels below. The values are checked with those in effect; nothing is saved when one is refused.
+                    `values` maps setting keys (`player.seekSeconds`) to their new value; one equal to what the level
+                    inherits follows the levels above again. `lock` / `unlock` list the settings this level starts or
+                    stops locking for the levels below. The values are checked with those in effect; nothing is saved
+                    when one is refused.
                     """
             );
 

@@ -68,9 +68,9 @@ public static class TrickplayEndpoints
             .WithSummary("Trickplay of a video: its description, or one of its sheets with `?sheet=n`.")
             .WithDescription(
                 """
-                404 when the video has no trickplay yet. A video of the configured folders is then queued, ahead of
-                the background pass, unless `queue=false` (a thumbnail preview only shows what exists). Sheets are JPEG images; their URL should carry the description's `version`
-                (e.g. `&v=`): they are cached by the browser.
+                404 when the video has no trickplay yet. A video of the configured folders is then queued, ahead of the
+                background pass, unless `queue=false` (a thumbnail preview only shows what exists). Sheets are JPEG
+                images; their URL should carry the description's `version` (e.g. `&v=`): they are cached by the browser.
                 """
             );
 

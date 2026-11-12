@@ -70,9 +70,9 @@ public static class AccessEndpoints
             .WithSummary("Changes an account (a new password or status ends its sessions).")
             .WithDescription(
                 """
-                Server administrators replace every group of the account (`groupIds`: those of all its spaces). A space's
-                administrator changes only the account's groups in that space, unless the account belongs to that space
-                alone and is no server administrator.
+                Server administrators replace every group of the account (`groupIds`: those of all its spaces). A
+                space's administrator changes only the account's groups in that space, unless the account belongs to
+                that space alone and is no server administrator.
                 """
             );
 
@@ -106,8 +106,8 @@ public static class AccessEndpoints
             .WithSummary("Changes a group's name, directory group, rights and members.")
             .WithDescription(
                 $"""
-                The Guests group cannot get a right guests may never have. Only server administrators add accounts that are
-                in none of the space's groups yet. {TenantParameter}
+                The Guests group cannot get a right guests may never have. Only server administrators add accounts that
+                are in none of the space's groups yet. {TenantParameter}
                 """
             );
 

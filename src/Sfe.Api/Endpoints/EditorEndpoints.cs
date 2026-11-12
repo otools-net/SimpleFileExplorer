@@ -75,7 +75,8 @@ public static class EditorEndpoints
                 picture changed meanwhile. The previous version goes to the trash at the first save of an editing
                 `session` (not in a space that always deletes for good); the picture keeps its tags. 409 for a link
                 (`{TextEndpoints.IsLinkType}`), a read-only file (`{TextEndpoints.ReadOnlyType}`) or a scan running
-                (`{FileEndpoints.ScanRunningType}`). Answers the picture's size in pixels, its new version (also the ETag) and time.
+                (`{FileEndpoints.ScanRunningType}`). Answers the picture's size in pixels, its new version (also the
+                ETag) and time.
                 """
             );
 

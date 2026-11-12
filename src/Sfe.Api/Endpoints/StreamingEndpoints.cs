@@ -56,9 +56,9 @@ public static class StreamingEndpoints
             )
             .WithDescription(
                 """
-                For browsers that can't play the file itself. The response has no length and no ranges: to seek, ask again
-                with another `t` (its times start at 0 there). `id` names the player: a new request with the same `id`
-                stops its earlier stream. 503 while the server converts `Streaming:MaxStreams` videos already.
+                For browsers that can't play the file itself. The response has no length and no ranges: to seek, ask
+                again with another `t` (its times start at 0 there). `id` names the player: a new request with the same
+                `id` stops its earlier stream. 503 while the server converts `Streaming:MaxStreams` videos already.
                 """
             );
 

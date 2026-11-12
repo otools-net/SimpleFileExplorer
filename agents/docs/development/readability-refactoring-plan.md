@@ -69,7 +69,8 @@ then by hand for what they leave: comments and long strings. One commit per step
   (656 paragraphs; one `<see cref>` longer than a line left)
 - [x] Long strings of the server, split (`split-strings.mjs`: 137 splits, one SQL `FormattableString` by hand);
   OpenAPI document identical
-- [ ] OpenAPI descriptions in raw strings rewrapped (`rewrap-descriptions.mjs`, 43 paragraphs)
+- [x] OpenAPI descriptions in raw strings rewrapped (`rewrap-descriptions.mjs`, 43 paragraphs): the document
+  differs only in its descriptions' line breaks (identical with whitespace collapsed; Markdown renders the same)
 - [ ] Long strings of the server tests (about 360 lines)
 - [ ] Prettier over the client (`src/Sfe.Web/src`: TypeScript, templates, CSS); `npm run format` / `format:check`
 - [ ] Prettier over the e2e tests

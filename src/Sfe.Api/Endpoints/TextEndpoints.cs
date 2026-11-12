@@ -95,11 +95,11 @@ public static partial class TextEndpoints
             )
             .WithDescription(
                 $"""
-                At most {MaxBytes
-                    / (1024 * 1024)} MB: larger files answer 413 (`{TooLargeType}`), files that aren't text 415
-                (`{NotTextType}`). A byte order mark gives the encoding; otherwise valid UTF-8 is UTF-8 and anything else
-                windows-1252; `encoding` (`utf-8`, `windows-1252`, `utf-16le`, `utf-16be`) reads it otherwise (Reopen with
-                encoding). `access` says whether the caller may save over it, save a copy or download it.
+                At most {MaxBytes / (1024 * 1024)} MB: larger files answer 413 (`{TooLargeType}`), files that aren't
+                text 415 (`{NotTextType}`). A byte order mark gives the encoding; otherwise valid UTF-8 is UTF-8 and
+                anything else windows-1252; `encoding` (`utf-8`, `windows-1252`, `utf-16le`, `utf-16be`) reads it
+                otherwise (Reopen with encoding). `access` says whether the caller may save over it, save a copy or
+                download it.
                 """
             );
         text.MapGet("/part", GetPart)
@@ -109,10 +109,10 @@ public static partial class TextEndpoints
             .WithSummary("A part of a text file of any size, at whole lines: large files and logs.")
             .WithDescription(
                 $"""
-                About `length` bytes (default {PartBytes / 1024} KB, at most {MaxPartBytes
-                    / 1024} KB) from `offset`, or the last ones
-                without an offset (`offset=-1`): cut after the first and the last line break, so that `end` is where the
-                next part starts. Decoded as the whole file would be, or in `encoding`. 415 (`{NotTextType}`) for a binary file.
+                About `length` bytes (default {PartBytes / 1024} KB, at most {MaxPartBytes / 1024} KB) from `offset`, or
+                the last ones without an offset (`offset=-1`): cut after the first and the last line break, so that
+                `end` is where the next part starts. Decoded as the whole file would be, or in `encoding`. 415
+                (`{NotTextType}`) for a binary file.
                 """
             );
         text.MapGet("/version", GetVersion)
@@ -150,11 +150,11 @@ public static partial class TextEndpoints
                 $"""
                 Needs `If-Match` with the version the editor started from (`*`: whatever is there now): 428
                 (`{VersionRequiredType}`) without it, 412 (`{ChangedType}`) when the file changed meanwhile. The text is
-                written in `encoding` with `lineEnding` (`lf`, `crlf`, `cr`); characters the encoding can't hold answer 422
-                (`{NotEncodableType}`, with `characters`). The previous version goes to the trash at the first save of an
-                editing `session` (not in a space that always deletes for good); the file keeps its tags. 409 for a link
-                (`{IsLinkType}`), a read-only file (`{ReadOnlyType}`) or a scan running (`{FileEndpoints.ScanRunningType}`).
-                Answers the new version (also the ETag).
+                written in `encoding` with `lineEnding` (`lf`, `crlf`, `cr`); characters the encoding can't hold answer
+                422 (`{NotEncodableType}`, with `characters`). The previous version goes to the trash at the first save
+                of an editing `session` (not in a space that always deletes for good); the file keeps its tags. 409 for
+                a link (`{IsLinkType}`), a read-only file (`{ReadOnlyType}`) or a scan running
+                (`{FileEndpoints.ScanRunningType}`). Answers the new version (also the ETag).
                 """
             );
         text.MapPost("", SaveCopy)
@@ -165,8 +165,8 @@ public static partial class TextEndpoints
             .WithDescription(
                 $"""
                 Creates the file `name` in the folder `path` with the text in `encoding` and `lineEnding`, never over
-                anything (409 `{FileEndpoints.ExistsType}`, even for an item the caller doesn't see). Answers the new file as
-                listings show it; 400 for a name that can't be used, 422 (`{NotEncodableType}`) as when saving.
+                anything (409 `{FileEndpoints.ExistsType}`, even for an item the caller doesn't see). Answers the new
+                file as listings show it; 400 for a name that can't be used, 422 (`{NotEncodableType}`) as when saving.
                 """
             );
         return api;

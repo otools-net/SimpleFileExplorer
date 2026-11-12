@@ -96,8 +96,8 @@ public static class FolderRuleEndpoints
             .WithDescription(
                 $"""
                 The nearest rule above a path decides each group's and account's level there; a group without one has
-                `write`. An account rule only adds to what its groups give. A space has at most {FolderRuleService.MaxRules}
-                rules. {TenantParameter}
+                `write`. An account rule only adds to what its groups give. A space has at most
+                {FolderRuleService.MaxRules} rules. {TenantParameter}
                 """
             );
 
@@ -111,8 +111,8 @@ public static class FolderRuleEndpoints
             )
             .WithDescription(
                 $"""
-                For a folder moved or renamed outside SFE. 409 while `from` still exists, or when `to` (or a folder below it)
-                has rules already. {TenantParameter}
+                For a folder moved or renamed outside SFE. 409 while `from` still exists, or when `to` (or a folder
+                below it) has rules already. {TenantParameter}
                 """
             );
 

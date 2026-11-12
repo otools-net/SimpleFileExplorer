@@ -48,7 +48,8 @@ public static class PropertyEndpoints
             .WithDescription(
                 $"""
                 Answers the job, followed with `GET jobs/<id>`. Links are not followed; at most
-                {PropertyJobs.MaxCountedEntries:N0} entries (`capped`). One count per caller at a time: a new one stops the previous.
+                {PropertyJobs.MaxCountedEntries:N0} entries (`capped`). One count per caller at a time: a new one stops
+                the previous.
                 """
             );
         properties

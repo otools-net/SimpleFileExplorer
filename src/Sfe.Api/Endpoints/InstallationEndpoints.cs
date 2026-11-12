@@ -60,10 +60,10 @@ public static class InstallationEndpoints
             )
             .WithDescription(
                 """
-                The token goes in the `X-SFE-Installation` header; it lasts an hour, and ends when the setup code changes.
-                A new install set up from the server's own computer needs no code (see `CompleteSetup`).
-                Once the server has an administrator, every installation route also needs a signed-in server
-                administrator (401 without a session, 403 for other accounts).
+                The token goes in the `X-SFE-Installation` header; it lasts an hour, and ends when the setup code
+                changes. A new install set up from the server's own computer needs no code (see `CompleteSetup`). Once
+                the server has an administrator, every installation route also needs a signed-in server administrator
+                (401 without a session, 403 for other accounts).
                 """
             );
 
@@ -87,11 +87,11 @@ public static class InstallationEndpoints
             )
             .WithDescription(
                 """
-                Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. A new folder or ffmpeg starts
-                the libraries again at once; a new address applies after a restart (`restartRequired`). Values set by the
-                server's environment variables or command line cannot be changed here. The mode (`Sfe:Mode`) goes from Local
-                to External here, never back once the server has its administrator; Local is only chosen from a browser on
-                the server's own computer.
+                Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. A new folder or ffmpeg
+                starts the libraries again at once; a new address applies after a restart (`restartRequired`). Values
+                set by the server's environment variables or command line cannot be changed here. The mode (`Sfe:Mode`)
+                goes from Local to External here, never back once the server has its administrator; Local is only chosen
+                from a browser on the server's own computer.
                 """
             );
 

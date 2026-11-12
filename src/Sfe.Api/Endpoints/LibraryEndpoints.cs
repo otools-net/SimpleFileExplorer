@@ -127,9 +127,9 @@ public static class LibraryEndpoints
             .WithSummary("A link to a file that works without signing in, for a while: for external players.")
             .WithDescription(
                 """
-                The link (`api/files/shared/{token}/{name}`, relative to the app) works for `Player:LinkLifetimeMinutes`.
-                It stops working earlier when the account that asked for it changes its password, is disabled, or loses the
-                right to view files or use external players.
+                The link (`api/files/shared/{token}/{name}`, relative to the app) works for
+                `Player:LinkLifetimeMinutes`. It stops working earlier when the account that asked for it changes its
+                password, is disabled, or loses the right to view files or use external players.
                 """
             );
 

@@ -147,13 +147,14 @@ public static class ExploreEndpoints
             )
             .WithDescription(
                 $"""
-                `folder` is a folder's id (from a previous answer; the root without it) or `at` its path inside the archive.
-                The first question about an archive reads its list once, in the background: 202 with the entries read so
-                far until it is ready (ask again). `after` is the previous page's `next`; `limit` at most {MaxPageSize}
-                (default {PageSize}). An archive not read yet starts its read, {CatalogBuildLimits.PerMinute} a minute per
-                caller at most (429 past it). 409 (`{NotExplorableType}`) for a file that isn't an archive SFE explores (one file
-                compressed alone, a compressed tar over `Files:Archives:MaxCompressedTarMegabytes`, a name its bytes deny);
-                422 (`{UnreadableType}`) when it can't be read now. `complete` false: the list stopped (`stopped` says why).
+                `folder` is a folder's id (from a previous answer; the root without it) or `at` its path inside the
+                archive. The first question about an archive reads its list once, in the background: 202 with the
+                entries read so far until it is ready (ask again). `after` is the previous page's `next`; `limit` at
+                most {MaxPageSize} (default {PageSize}). An archive not read yet starts its read,
+                {CatalogBuildLimits.PerMinute} a minute per caller at most (429 past it). 409 (`{NotExplorableType}`)
+                for a file that isn't an archive SFE explores (one file compressed alone, a compressed tar over
+                `Files:Archives:MaxCompressedTarMegabytes`, a name its bytes deny); 422 (`{UnreadableType}`) when it
+                can't be read now. `complete` false: the list stopped (`stopped` says why).
                 """
             );
         explore
@@ -170,8 +171,9 @@ public static class ExploreEndpoints
                 `q` (at least {MinSearchLength} characters) is looked for in the names of the whole archive, the catalog
                 looked through for {SearchBudgetMilliseconds} ms at most per request: a page may hold fewer than `limit`
                 (default {SearchPageSize}, at most {MaxPageSize}) and still have a `next` (ask again with `after`). Each
-                item has `where`, the path of its folder. With `folder` (a folder's id), only what is right inside that folder,
-                in its order (folders first, by name), without `where`. 202 while the list is read, as for `GET explore`.
+                item has `where`, the path of its folder. With `folder` (a folder's id), only what is right inside that
+                folder, in its order (folders first, by name), without `where`. 202 while the list is read, as for
+                `GET explore`.
                 """
             );
         explore
@@ -187,12 +189,12 @@ public static class ExploreEndpoints
                 `archive` is the archive's path, UTF-8 in base64url; `id` the entry's id in its listing; `name` its name
                 (the browser's file name). Sandboxed as the library's files are, inline only for what the browser shows
                 safely (pictures, audio, video, plain text), downloaded otherwise or with `download=true`. Larger than
-                `Files:Archives:MaxPreviewMegabytes` only with `download=true` (413 `{TooLargeType}` otherwise). An entry
-                claiming more than `Files:Archives:MaxCompressionRatio` times its packed size is refused (422); one that
-                would unpack more than `Files:Archives:MaxSkippedMegabytes` of the files before it (a solid 7z or rar, a
-                compressed tar) too (413 `{TooLargeType}`: extract it). Its data is
-                held to the size the archive declares: more or less is a broken archive, and the download is cut off.
-                `unlock` (from `unlock`) opens an encrypted entry, or any of an archive whose list is encrypted.
+                `Files:Archives:MaxPreviewMegabytes` only with `download=true` (413 `{TooLargeType}` otherwise). An
+                entry claiming more than `Files:Archives:MaxCompressionRatio` times its packed size is refused (422);
+                one that would unpack more than `Files:Archives:MaxSkippedMegabytes` of the files before it (a solid 7z
+                or rar, a compressed tar) too (413 `{TooLargeType}`: extract it). Its data is held to the size the
+                archive declares: more or less is a broken archive, and the download is cut off. `unlock` (from
+                `unlock`) opens an encrypted entry, or any of an archive whose list is encrypted.
                 """
             );
         explore
@@ -223,11 +225,11 @@ public static class ExploreEndpoints
             )
             .WithDescription(
                 $"""
-                `id` is the entry's id in the archive's listing (or `at` its path in the archive); `encoding` reads it in that encoding rather than the one it
-                seems to have. Up to {TextEndpoints.MaxBytes
-                    / (1024 * 1024)} MB (413 `{TooLargeType}`: download it); 415
-                `{TextEndpoints.NotTextType}` when it isn't text. `access` allows nothing: an entry is never saved over.
-                The same checks as `GET explore/entry` (password, compression ratio, files before it in a solid block).
+                `id` is the entry's id in the archive's listing (or `at` its path in the archive); `encoding` reads it
+                in that encoding rather than the one it seems to have. Up to {TextEndpoints.MaxBytes / (1024 * 1024)} MB
+                (413 `{TooLargeType}`: download it); 415 `{TextEndpoints.NotTextType}` when it isn't text. `access`
+                allows nothing: an entry is never saved over. The same checks as `GET explore/entry` (password,
+                compression ratio, files before it in a solid block).
                 """
             );
         api.MapPost("/files/jobs/extract", Extract)
@@ -244,16 +246,16 @@ public static class ExploreEndpoints
             )
             .WithDescription(
                 $"""
-                Starts an extraction job and answers its first state (202), followed as moves and copies are (`GET
-                api/files/jobs/:id`, `answer`, `cancel`). `newFolder` (default): into a new folder named after the archive
-                (after its one top folder when it has one), never mixed with what is there; else straight into `target`,
-                where name clashes are asked as `conflicts` says. `folders` and `files` (at most {MaxExtractChosen}, ids of
-                the archive's listing: its list must have been read, else 409 `{ReadingType}`) choose what is extracted,
-                each from its own name. Names leading out of the folder, links, names the system refuses, and files
-                claiming more than `Files:Archives:MaxCompressionRatio` times their packed size are left out and listed in
-                the result. A protected archive needs `unlock` (or `password`): a wrong one fails the job before anything
-                stays. Cancelled or failed, nothing half written stays. At most {RequestLimits.UnlocksPerMinute} a minute
-                per caller.
+                Starts an extraction job and answers its first state (202), followed as moves and copies are
+                (`GET api/files/jobs/:id`, `answer`, `cancel`). `newFolder` (default): into a new folder named after the
+                archive (after its one top folder when it has one), never mixed with what is there; else straight into
+                `target`, where name clashes are asked as `conflicts` says. `folders` and `files` (at most
+                {MaxExtractChosen}, ids of the archive's listing: its list must have been read, else 409
+                `{ReadingType}`) choose what is extracted, each from its own name. Names leading out of the folder,
+                links, names the system refuses, and files claiming more than `Files:Archives:MaxCompressionRatio` times
+                their packed size are left out and listed in the result. A protected archive needs `unlock` (or
+                `password`): a wrong one fails the job before anything stays. Cancelled or failed, nothing half written
+                stays. At most {RequestLimits.UnlocksPerMinute} a minute per caller.
                 """
             );
         explore
@@ -265,12 +267,12 @@ public static class ExploreEndpoints
             .WithSummary("Tries a password on an archive; answers an unlock for the requests that need it.")
             .WithDescription(
                 $"""
-                Checked on the archive itself: its encrypted list (7z, rar), else its smallest encrypted file read through
-                (its checks and authentication). 422 (`{WrongPasswordType}`) for a wrong one, 409 (`{NotProtectedType}`)
-                for an archive that has nothing encrypted, 202 while its list is still being read. At most
-                {RequestLimits.UnlocksPerMinute} a minute per caller (429). The password stays in the server's memory only,
-                behind the unlock: never logged, never answered; the unlock serves its caller only, for this archive as it
-                is, until 15 minutes unused or a sign-out.
+                Checked on the archive itself: its encrypted list (7z, rar), else its smallest encrypted file read
+                through (its checks and authentication). 422 (`{WrongPasswordType}`) for a wrong one, 409
+                (`{NotProtectedType}`) for an archive that has nothing encrypted, 202 while its list is still being
+                read. At most {RequestLimits.UnlocksPerMinute} a minute per caller (429). The password stays in the
+                server's memory only, behind the unlock: never logged, never answered; the unlock serves its caller
+                only, for this archive as it is, until 15 minutes unused or a sign-out.
                 """
             );
         return api;

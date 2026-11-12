@@ -51,8 +51,8 @@ public static class ArchiveEndpoints
                 $"""
                 Written while it is sent (no size known in advance). Links are not followed; folders the caller doesn't
                 see are left out; links, unreadable files and folders the caller may not download are listed in
-                “{Archives.LeftOutEntry}” inside the zip. A zip passing `Files:MaxArchiveMegabytes` (the index was behind)
-                is cut off: the download fails.
+                “{Archives.LeftOutEntry}” inside the zip. A zip passing `Files:MaxArchiveMegabytes` (the index was
+                behind) is cut off: the download fails.
                 """
             );
         return api;
