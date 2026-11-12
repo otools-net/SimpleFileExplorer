@@ -29,13 +29,20 @@ public enum EditedImageOutcome
     /// <summary>What was sent is larger than <see cref="EditedImages.MaxBytes"/>.</summary>
     TooLarge,
 
-    /// <summary><see cref="EditorOptions.OutputFolder"/> is not a folder of the library, or the file cannot be written there.</summary>
+    /// <summary>
+    /// <see cref="EditorOptions.OutputFolder"/> is not a folder of the library, or the file cannot be written there.
+    /// </summary>
     CannotWrite,
 
-    /// <summary>Saved over the original: the edited picture is not in the original's format (a GIF made a PNG...).</summary>
+    /// <summary>
+    /// Saved over the original: the edited picture is not in the original's format (a GIF made a PNG...).
+    /// </summary>
     OtherFormat,
 
-    /// <summary>Saved over the original: <see cref="FileContent.OverwriteAsync"/> did not (see <see cref="EditedImageResult.Written"/>).</summary>
+    /// <summary>
+    /// Saved over the original: <see cref="FileContent.OverwriteAsync"/> did not (see
+    /// <see cref="EditedImageResult.Written"/>).
+    /// </summary>
     NotWritten,
 }
 
@@ -79,7 +86,9 @@ public sealed class EditedImages(
     /// <summary>Names tried before giving up (<c>beach (2).jpg</c>, <c>beach (3).jpg</c>...).</summary>
     private const int MaxNameAttempts = 1000;
 
-    /// <summary>Saves <paramref name="content"/> as the edited version of the picture <paramref name="sourcePath"/>.</summary>
+    /// <summary>
+    /// Saves <paramref name="content"/> as the edited version of the picture <paramref name="sourcePath"/>.
+    /// </summary>
     /// <param name="sourcePath">The original, relative to the library root.</param>
     public async Task<EditedImageResult> SaveAsync(
         string? sourcePath,
@@ -195,7 +204,9 @@ public sealed class EditedImages(
     public static bool SavesInPlace(string name) =>
         Path.GetExtension(name).TrimStart('.').ToLowerInvariant() is "jpg" or "jpeg" or "jpe" or "png" or "webp";
 
-    /// <summary>The picture <paramref name="path"/> of the library: its canonical path and where it is; null when it isn't one.</summary>
+    /// <summary>
+    /// The picture <paramref name="path"/> of the library: its canonical path and where it is; null when it isn't one.
+    /// </summary>
     private (string Path, string Full)? Source(string? path)
     {
         var source = LibraryPaths.NormalizeRelative(path);
@@ -212,7 +223,10 @@ public sealed class EditedImages(
         return (paths.ToRelative(full) ?? source, full);
     }
 
-    /// <summary>Reads what was sent into <paramref name="buffer"/>: the problem when it is too large or not a picture of a known size.</summary>
+    /// <summary>
+    /// Reads what was sent into <paramref name="buffer"/>: the problem when it is too large or not a picture of a known
+    /// size.
+    /// </summary>
     private static async Task<EditedImageResult?> ReadAsync(
         Stream content,
         MemoryStream buffer,
@@ -289,7 +303,9 @@ public sealed class EditedImages(
             _ => false,
         };
 
-    /// <summary>Writes to the first free name; <see cref="FileMode.CreateNew"/> keeps two saves at once from sharing one.</summary>
+    /// <summary>
+    /// Writes to the first free name; <see cref="FileMode.CreateNew"/> keeps two saves at once from sharing one.
+    /// </summary>
     private static async Task<string> WriteNewAsync(
         string folder,
         string baseName,

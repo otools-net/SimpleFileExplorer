@@ -9,7 +9,9 @@ namespace Sfe.Api.Security;
 /// </summary>
 public static class InstanceCookies
 {
-    /// <summary><paramref name="name"/> for the port the browser asked for (its Host): <c>sfe.session-5000</c>.</summary>
+    /// <summary>
+    /// <paramref name="name"/> for the port the browser asked for (its Host): <c>sfe.session-5000</c>.
+    /// </summary>
     public static string Name(HttpRequest request, string name) =>
         request.Host.Port is { } port ? $"{name}-{port}" : name;
 }

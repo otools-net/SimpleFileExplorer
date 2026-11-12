@@ -31,7 +31,8 @@ public static class SearchPredicateBuilder
     /// Ids of the tags a tag term refers to, including the tags inheriting from them. Without it, tag terms match
     /// nothing.
     /// </param>
-    /// <param name="highResolution">What <c>r:hr</c> and <c>r:lr</c> compare with; without it, they match nothing.</param>
+    /// <param name="highResolution">What <c>r:hr</c> and <c>r:lr</c> compare with; without it, they match
+    /// nothing.</param>
     /// <param name="kinds">What <c>type:</c> compares with; without it, type terms match nothing.</param>
     public static Expression<Func<FileEntry, bool>> Build(
         SearchQuery query,
@@ -143,7 +144,10 @@ public static class SearchPredicateBuilder
         return conditions.Aggregate(And);
     }
 
-    /// <summary>A video's or audio file's length compared to a number of seconds; 0 (not readable) and null (not read) never match.</summary>
+    /// <summary>
+    /// A video's or audio file's length compared to a number of seconds; 0 (not readable) and null (not read) never
+    /// match.
+    /// </summary>
     private static Expression<Func<FileEntry, bool>> Duration(DurationFilter filter)
     {
         var seconds = filter.Seconds;
@@ -190,7 +194,10 @@ public static class SearchPredicateBuilder
             .Aggregate(Or);
     }
 
-    /// <summary>Files whose extension the listing classifies as <paramref name="kind"/>; "other" files have none of the media ones.</summary>
+    /// <summary>
+    /// Files whose extension the listing classifies as <paramref name="kind"/>; "other" files have none of the media
+    /// ones.
+    /// </summary>
     private static Expression<Func<FileEntry, bool>> Kind(ItemKind kind, MediaKinds? kinds)
     {
         if (kinds is null)
@@ -213,7 +220,9 @@ public static class SearchPredicateBuilder
             : f => EF.Functions.Like(f.Name, pattern, LikeEscape);
     }
 
-    /// <summary>Files with one of <paramref name="extensions"/> (with or without the dot), compared like <c>e:</c>.</summary>
+    /// <summary>
+    /// Files with one of <paramref name="extensions"/> (with or without the dot), compared like <c>e:</c>.
+    /// </summary>
     internal static Expression<Func<FileEntry, bool>> HasExtension(IEnumerable<string> extensions) =>
         extensions.Select(e => Extension("." + e.TrimStart('.'))).DefaultIfEmpty(f => false).Aggregate(Or);
 
@@ -271,7 +280,9 @@ public static class SearchPredicateBuilder
         Expression<Func<FileEntry, bool>> right
     ) => Combine(left, right, Expression.OrElse);
 
-    /// <summary>Merges two lambdas into one sharing a single parameter (no Expression.Invoke, which EF Core cannot translate).</summary>
+    /// <summary>
+    /// Merges two lambdas into one sharing a single parameter (no Expression.Invoke, which EF Core cannot translate).
+    /// </summary>
     private static Expression<Func<FileEntry, bool>> Combine(
         Expression<Func<FileEntry, bool>> left,
         Expression<Func<FileEntry, bool>> right,

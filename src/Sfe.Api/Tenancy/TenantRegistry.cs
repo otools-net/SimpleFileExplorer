@@ -57,7 +57,10 @@ public sealed class TenantRegistry(
         }
     }
 
-    /// <summary>Stops a library's services (disabled or deleted): its workers stop, and its next request starts them again if it may.</summary>
+    /// <summary>
+    /// Stops a library's services (disabled or deleted): its workers stop, and its next request starts them again if it
+    /// may.
+    /// </summary>
     public async Task StopAsync(int tenantId)
     {
         if (_hosts.TryRemove(tenantId, out var host))

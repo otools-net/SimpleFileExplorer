@@ -24,7 +24,9 @@ public sealed class SfeOptions
     /// </summary>
     public string? DataServer { get; set; }
 
-    /// <summary>Show files and folders flagged as hidden or system (on Linux and macOS: names starting with a dot).</summary>
+    /// <summary>
+    /// Show files and folders flagged as hidden or system (on Linux and macOS: names starting with a dot).
+    /// </summary>
     public bool ShowHiddenItems { get; set; }
 
     /// <summary>
@@ -85,7 +87,9 @@ public sealed class SfeOptions
 
 public sealed class TagOptions
 {
-    /// <summary>Record the tags that are searched for and the tags of viewed files (the sidebar's history lists).</summary>
+    /// <summary>
+    /// Record the tags that are searched for and the tags of viewed files (the sidebar's history lists).
+    /// </summary>
     public bool RecordHistory { get; set; } = true;
 
     /// <summary>Tags shown in each section of the client's sidebar.</summary>
@@ -95,7 +99,9 @@ public sealed class TagOptions
 /// <summary>The web client's video player.</summary>
 public sealed partial class PlayerOptions
 {
-    /// <summary>Seconds jumped by the back/forward buttons, the J/L keys and a double tap on a side of the picture.</summary>
+    /// <summary>
+    /// Seconds jumped by the back/forward buttons, the J/L keys and a double tap on a side of the picture.
+    /// </summary>
     public int SeekSeconds { get; set; } = 10;
 
     /// <summary>Videos start over at their end; the player's loop button switches it for the video on screen.</summary>
@@ -114,19 +120,21 @@ public sealed partial class PlayerOptions
 
     /// <summary>
     /// Minutes a link given to an external player works. The player fetches the file itself, without the browser's
-    /// sign-in, so the link carries a token of its own; it must outlast a whole film, as players ask again on each seek.
+    /// sign-in, so the link carries a token of its own; it must outlast a whole film, as players ask again on each
+    /// seek.
     /// </summary>
     public int LinkLifetimeMinutes { get; set; } = 360;
 
     /// <summary>
-    /// Flash movies (<c>.swf</c>) play in the viewer, through Ruffle (a Flash Player emulator bundled with the app), in a
-    /// frame that can't act as the signed-in user. Off: they are only downloaded.
+    /// Flash movies (<c>.swf</c>) play in the viewer, through Ruffle (a Flash Player emulator bundled with the app), in
+    /// a frame that can't act as the signed-in user. Off: they are only downloaded.
     /// </summary>
     public bool Flash { get; set; } = true;
 
     /// <summary>
     /// The link starts with a scheme other than those running script or showing content in the page itself: a library's
-    /// administrator sets it for everyone, so a <c>javascript:</c> link would run in the browser of every user and guest.
+    /// administrator sets it for everyone, so a <c>javascript:</c> link would run in the browser of every user and
+    /// guest.
     /// </summary>
     public static bool IsAllowedExternalUrl(string url)
     {
@@ -175,15 +183,20 @@ public sealed class StreamingOptions
     /// </summary>
     public int MaxStreams { get; set; } = 2;
 
-    /// <summary>x264's constant rate factor: lower is better and heavier (18 looks like the original, 28 is small).</summary>
+    /// <summary>
+    /// x264's constant rate factor: lower is better and heavier (18 looks like the original, 28 is small).
+    /// </summary>
     public int Quality { get; set; } = 23;
 
-    /// <summary>Converted videos taller than this are scaled down to it, keeping their shape; 0 keeps their size.</summary>
+    /// <summary>
+    /// Converted videos taller than this are scaled down to it, keeping their shape; 0 keeps their size.
+    /// </summary>
     public int MaxHeight { get; set; } = 1080;
 
     /// <summary>
-    /// H.264 pictures that browsers can play (8-bit 4:2:0) are copied as they are, only repackaged with converted sound:
-    /// almost no processor time, but seeking lands on the nearest earlier key frame, and the size limit doesn't apply.
+    /// H.264 pictures that browsers can play (8-bit 4:2:0) are copied as they are, only repackaged with converted
+    /// sound: almost no processor time, but seeking lands on the nearest earlier key frame, and the size limit doesn't
+    /// apply.
     /// </summary>
     public bool CopyVideo { get; set; } = true;
 }
@@ -205,18 +218,21 @@ public enum Theme
 public sealed class AppearanceOptions
 {
     /// <summary>
-    /// Theme of the browsers that have not picked one in Administration › Interface › Appearance (that choice is kept per browser and wins).
+    /// Theme of the browsers that have not picked one in Administration › Interface › Appearance (that choice is kept
+    /// per browser and wins).
     /// </summary>
     public Theme Theme { get; set; } = Theme.System;
 }
 
 /// <summary>
-/// How text files read in the viewer (the reading settings, "Aa"): the library's defaults, each account's own over them,
-/// each browser's changes over those. Values outside the lists of the client fall back to its defaults.
+/// How text files read in the viewer (the reading settings, "Aa"): the library's defaults, each account's own over
+/// them, each browser's changes over those. Values outside the lists of the client fall back to its defaults.
 /// </summary>
 public sealed class ReadingOptions
 {
-    /// <summary>Allowed values of <see cref="Theme"/>: as the app (light or dark), or always light, sepia or dark.</summary>
+    /// <summary>
+    /// Allowed values of <see cref="Theme"/>: as the app (light or dark), or always light, sepia or dark.
+    /// </summary>
     public static readonly IReadOnlyList<string> Themes = ["app", "light", "sepia", "dark"];
 
     /// <summary>Colours of the text: <c>app</c>, <c>light</c>, <c>sepia</c> or <c>dark</c>.</summary>
@@ -320,7 +336,9 @@ public sealed class LogOptions
     /// <summary>Days the log entries (and the daily files) are kept; 0 = forever.</summary>
     public int RetentionDays { get; set; } = 30;
 
-    /// <summary>Also writes each entry to a file of the day (<c>sfe-yyyyMMdd.log</c>, UTC) in <see cref="Directory"/>.</summary>
+    /// <summary>
+    /// Also writes each entry to a file of the day (<c>sfe-yyyyMMdd.log</c>, UTC) in <see cref="Directory"/>.
+    /// </summary>
     public bool WriteFiles { get; set; }
 
     /// <summary>
@@ -353,8 +371,8 @@ public sealed class EditorOptions
 public enum WorkFolderLocation
 {
     /// <summary>
-    /// A hidden folder at the library's root (<see cref="Sfe.Core.Files.WorkFolder.Name"/>): on the library's own drive, so
-    /// that moving a file there is a rename, however large the file.
+    /// A hidden folder at the library's root (<see cref="Sfe.Core.Files.WorkFolder.Name"/>): on the library's own
+    /// drive, so that moving a file there is a rename, however large the file.
     /// </summary>
     Library,
 
@@ -365,7 +383,9 @@ public enum WorkFolderLocation
     Server,
 }
 
-/// <summary>Managing the library's files from the web client: new folders, renames (and, later, moves, the trash, uploads).</summary>
+/// <summary>
+/// Managing the library's files from the web client: new folders, renames (and, later, moves, the trash, uploads).
+/// </summary>
 public sealed class FileManagementOptions
 {
     /// <summary>
@@ -377,7 +397,8 @@ public sealed class FileManagementOptions
 
     /// <summary>
     /// Where the work files of file management go (<see cref="WorkFolderLocation"/>). The server's since 1.82.0; the
-    /// libraries of earlier installs kept the library's (<see cref="Upgrades.Steps.V1_82_0.KeepWorkFolderInLibraries"/>).
+    /// libraries of earlier installs kept the library's
+    /// (<see cref="Upgrades.Steps.V1_82_0.KeepWorkFolderInLibraries"/>).
     /// </summary>
     public WorkFolderLocation WorkFolder { get; set; } = WorkFolderLocation.Server;
 
@@ -389,12 +410,16 @@ public sealed class FileManagementOptions
 
     public TrashOptions Trash { get; set; } = new();
 
-    /// <summary>A copy is refused when it would leave less free space than this on the target's drive (megabytes).</summary>
+    /// <summary>
+    /// A copy is refused when it would leave less free space than this on the target's drive (megabytes).
+    /// </summary>
     public int MinimumFreeSpaceMegabytes { get; set; } = 1024;
 
     public UploadOptions Uploads { get; set; } = new();
 
-    /// <summary>The largest zip of several files or a folder one may download (megabytes, as the index counts it); 0 = no limit.</summary>
+    /// <summary>
+    /// The largest zip of several files or a folder one may download (megabytes, as the index counts it); 0 = no limit.
+    /// </summary>
     public int MaxArchiveMegabytes { get; set; }
 
     /// <summary>Exploring and extracting archives kept in the library (zip, 7z, rar, tar).</summary>
@@ -419,16 +444,22 @@ public sealed class ArchiveOptions
     /// </summary>
     public int MaxCompressionRatio { get; set; } = 10_000;
 
-    /// <summary>Largest compressed tar (<c>.tar.gz</c>…) explored: it has no directory, listing it decompresses all of it.</summary>
+    /// <summary>
+    /// Largest compressed tar (<c>.tar.gz</c>…) explored: it has no directory, listing it decompresses all of it.
+    /// </summary>
     public int MaxCompressedTarMegabytes { get; set; } = 2048;
 
     /// <summary>Archives' lists read at once by the whole server (catalogs built), the others queued.</summary>
     public int CatalogBuilds { get; set; } = 1;
 
-    /// <summary>Zips written at once by the whole server (compressing keeps a processor busy), the others queued.</summary>
+    /// <summary>
+    /// Zips written at once by the whole server (compressing keeps a processor busy), the others queued.
+    /// </summary>
     public int CompressJobs { get; set; } = 1;
 
-    /// <summary>Disk the catalogs of a library may take; past it the least recently used are deleted (made again if asked).</summary>
+    /// <summary>
+    /// Disk the catalogs of a library may take; past it the least recently used are deleted (made again if asked).
+    /// </summary>
     public int CatalogMegabytes { get; set; } = 1024;
 
     /// <summary>Largest entry opened in the viewer from inside an archive; larger ones are only downloaded.</summary>
@@ -441,8 +472,8 @@ public sealed class ArchiveOptions
     public int MaxSkippedMegabytes { get; set; } = 2048;
 
     /// <summary>
-    /// Largest list of entries of a 7z read (its header, unpacked): SharpCompress holds a 7z's list whole, ~570 bytes per
-    /// entry, so a larger one is refused rather than read (listed, opened or extracted). 32 MB: ~400 000 entries.
+    /// Largest list of entries of a 7z read (its header, unpacked): SharpCompress holds a 7z's list whole, ~570 bytes
+    /// per entry, so a larger one is refused rather than read (listed, opened or extracted). 32 MB: ~400 000 entries.
     /// </summary>
     public int MaxSevenZipListMegabytes { get; set; } = Files.Compression.SevenZipList.DefaultMaxMegabytes;
 
@@ -464,7 +495,9 @@ public sealed class UploadOptions
 
 public sealed class TrashOptions
 {
-    /// <summary>Days a deleted file or folder stays in the trash before it is deleted for good; 0 = until emptied.</summary>
+    /// <summary>
+    /// Days a deleted file or folder stays in the trash before it is deleted for good; 0 = until emptied.
+    /// </summary>
     public int RetentionDays { get; set; } = 30;
 }
 
@@ -482,7 +515,9 @@ public sealed class FileTrackingOptions
 /// </summary>
 public sealed class DuplicateOptions
 {
-    /// <summary>Smaller files are left out: a library is full of identical tiny files (empty files, sidecars).</summary>
+    /// <summary>
+    /// Smaller files are left out: a library is full of identical tiny files (empty files, sidecars).
+    /// </summary>
     public int MinimumKilobytes { get; set; } = 1;
 
     /// <summary>Groups of identical files loaded at a time.</summary>
@@ -572,9 +607,10 @@ public sealed class BrowseOptions
     public bool ShowDuration { get; set; } = true;
 
     /// <summary>
-    /// The web client marks the previews of images and videos whose resolution the index knows as high (HR) or low
-    /// (LR) resolution, by <see cref="ImageHighResolutionPixels"/> and <see cref="VideoHighResolutionPixels"/>. Off by
-    /// default: one more label on every picture. The search terms <c>r:hr</c> and <c>r:lr</c> use the thresholds either way.
+    /// The web client marks the previews of images and videos whose resolution the index knows as high (HR) or low (LR)
+    /// resolution, by <see cref="ImageHighResolutionPixels"/> and <see cref="VideoHighResolutionPixels"/>. Off by
+    /// default: one more label on every picture. The search terms <c>r:hr</c> and <c>r:lr</c> use the thresholds either
+    /// way.
     /// </summary>
     public bool ResolutionMark { get; set; }
 
@@ -696,7 +732,9 @@ public sealed class ThumbnailOptions
     /// </summary>
     public string CacheDirectory { get; set; } = "data/thumbs";
 
-    /// <summary>The full path of a configured <see cref="CacheDirectory"/>, relative ones against <paramref name="basePath"/>.</summary>
+    /// <summary>
+    /// The full path of a configured <see cref="CacheDirectory"/>, relative ones against <paramref name="basePath"/>.
+    /// </summary>
     public static string ResolveCacheDirectory(string cacheDirectory, string basePath) =>
         Path.GetFullPath(Paths.LibraryPaths.ExpandHome(cacheDirectory), basePath);
 
@@ -750,7 +788,10 @@ public sealed class TrickplayOptions
     /// <summary>Off by default: a first pass over a large library keeps ffmpeg busy for a long time.</summary>
     public bool Enabled { get; set; }
 
-    /// <summary>Library folders (relative to the root, with their sub-folders) whose videos get trickplay; empty = the whole library.</summary>
+    /// <summary>
+    /// Library folders (relative to the root, with their sub-folders) whose videos get trickplay; empty = the whole
+    /// library.
+    /// </summary>
     public List<string> Folders { get; set; } = [];
 
     /// <summary>
@@ -780,7 +821,9 @@ public sealed class TrickplayOptions
     /// <summary>Videos processed at once by the background job.</summary>
     public int Parallelism { get; set; } = 1;
 
-    /// <summary>Time limit for one video; a video taking longer is given up on until it or the settings change.</summary>
+    /// <summary>
+    /// Time limit for one video; a video taking longer is given up on until it or the settings change.
+    /// </summary>
     public int TimeoutMinutes { get; set; } = 30;
 
     /// <summary>
@@ -844,7 +887,9 @@ public enum KeepAliveMode
 {
     Off,
 
-    /// <summary>Only folders on a network share (a UNC path, a mapped drive, a CIFS/NFS/SSHFS mount), links followed.</summary>
+    /// <summary>
+    /// Only folders on a network share (a UNC path, a mapped drive, a CIFS/NFS/SSHFS mount), links followed.
+    /// </summary>
     Auto,
 
     /// <summary>Every folder, also one SFE can't tell is on the network.</summary>

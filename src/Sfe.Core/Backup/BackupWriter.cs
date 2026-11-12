@@ -10,7 +10,8 @@ using Sfe.Core.Options;
 namespace Sfe.Core.Backup;
 
 /// <param name="Entry">Path in the zip file, without extension for SQL Server (<c>.bak</c> is added).</param>
-/// <param name="Description">What it holds, for the manifest (e.g. "Accounts, spaces and the index of Library").</param>
+/// <param name="Description">What it holds, for the manifest (e.g. "Accounts, spaces and the index of
+/// Library").</param>
 public sealed record BackupDatabase(
     string Entry,
     string Description,
@@ -180,8 +181,8 @@ public sealed class BackupWriter(IOptionsMonitor<BackupOptions> options, ILogger
     }
 
     /// <summary>
-    /// SQL Server writes the backup on its own computer: into <see cref="BackupOptions.SqlServerFolder"/> or its default
-    /// backup folder. Added to the zip (and removed) when that path is readable from here, else left there.
+    /// SQL Server writes the backup on its own computer: into <see cref="BackupOptions.SqlServerFolder"/> or its
+    /// default backup folder. Added to the zip (and removed) when that path is readable from here, else left there.
     /// </summary>
     private async Task<object> AddSqlServerAsync(
         ZipArchive zip,

@@ -1,6 +1,8 @@
 namespace Sfe.Core.Data;
 
-/// <summary>A preference of one user, over the defaults of the library (<see cref="Settings.SettingCatalog"/>).</summary>
+/// <summary>
+/// A preference of one user, over the defaults of the library (<see cref="Settings.SettingCatalog"/>).
+/// </summary>
 public sealed class UserSetting
 {
     public int UserId { get; set; }

@@ -59,13 +59,15 @@ public enum ConflictChoice
 /// <param name="Target">The folder they go into.</param>
 /// <param name="KeepAccess">Moved folders keep the access each group and account had (folder rules pinning it).</param>
 /// <param name="KeepTags">Copies get the tags of their originals.</param>
-/// <param name="Entries">Extract: the paths inside the archive to extract (each with what is below it); null: all of it.</param>
-/// <param name="NewFolder">
-/// Extract: into a new folder named after the archive (or after its one top folder), rather than straight into the target.
+/// <param name="Entries">Extract: the paths inside the archive to extract (each with what is below it); null: all of
+/// it.</param>
+/// <param name="NewFolder"> Extract: into a new folder named after the archive (or after its one top folder), rather
+/// than straight into the target.
 /// </param>
 /// <param name="Name">Compress: the zip's name (<c>.zip</c> added); null: its only item's, else their folder's.</param>
 /// <param name="Level">Compress: the deflate level, 0 (stored) to 9.</param>
-/// <param name="SkipCompressed">Compress: files already compressed (pictures, videos, archives…) stored whatever the level.</param>
+/// <param name="SkipCompressed">Compress: files already compressed (pictures, videos, archives…) stored whatever the
+/// level.</param>
 public sealed record FileJobRequest(
     FileJobKind Kind,
     IReadOnlyList<string> Paths,
@@ -118,10 +120,14 @@ public interface IFileJobAccess
     /// <summary>The person may use <paramref name="right"/> at the root-relative <paramref name="path"/>.</summary>
     Task<bool> MayAsync(string path, string right);
 
-    /// <summary>The person may use <paramref name="right"/> at the folder <paramref name="path"/> and everywhere below it.</summary>
+    /// <summary>
+    /// The person may use <paramref name="right"/> at the folder <paramref name="path"/> and everywhere below it.
+    /// </summary>
     Task<bool> MayThroughoutAsync(string path, string right);
 
-    /// <summary>The full path really is (through links) among the server's own files or a work folder: never written to.</summary>
+    /// <summary>
+    /// The full path really is (through links) among the server's own files or a work folder: never written to.
+    /// </summary>
     bool IsProtected(string fullPath);
 
     /// <summary>
@@ -131,8 +137,8 @@ public interface IFileJobAccess
     bool IsReadOnly(string fullPath);
 
     /// <summary>
-    /// The person's access now, for a walk through folders (a compression: <c>files.view</c> and <c>files.download</c> at
-    /// each); null when they have none any more.
+    /// The person's access now, for a walk through folders (a compression: <c>files.view</c> and <c>files.download</c>
+    /// at each); null when they have none any more.
     /// </summary>
     Task<IArchiveAccess?> ArchiveAccessAsync() => Task.FromResult<IArchiveAccess?>(null);
 }
@@ -178,8 +184,8 @@ public sealed class FileJobs(
     public const string PartialSuffix = ".sfe-partial";
 
     /// <summary>
-    /// Starts a move, copy or extraction; the result is its first view. <paramref name="password"/>: the archive's, held
-    /// by the job only while it runs (never in its view, its request or the log).
+    /// Starts a move, copy or extraction; the result is its first view. <paramref name="password"/>: the archive's,
+    /// held by the job only while it runs (never in its view, its request or the log).
     /// </summary>
     public FileJobView Start(FileJobRequest request, FileActor actor, IFileJobAccess access, string? password = null)
     {
@@ -216,7 +222,9 @@ public sealed class FileJobs(
     /// <summary>The job's task; for tests.</summary>
     internal Task? Completion(int id) => _jobs.TryGetValue(id, out var job) ? job.Completion : null;
 
-    /// <summary>Answers the job's question about a name clash; <paramref name="forAll"/>: the same for the next ones.</summary>
+    /// <summary>
+    /// Answers the job's question about a name clash; <paramref name="forAll"/>: the same for the next ones.
+    /// </summary>
     public bool Answer(int id, ConflictChoice choice, bool forAll) =>
         choice != ConflictChoice.Ask && _jobs.TryGetValue(id, out var job) && job.Answer(choice, forAll);
 
@@ -650,7 +658,8 @@ public sealed class FileJobs(
             throw;
         }
 
-        // The copies: indexed (a file now, a folder by a scan), with the previews and, when asked, the tags of the originals.
+        // The copies: indexed (a file now, a folder by a scan), with the previews and, when asked, the tags of the
+        // originals.
         try
         {
             await AfterCopyAsync(job, source, destination, isFolder, copiedFolders, destinationPath, token);
@@ -1057,8 +1066,8 @@ public sealed class FileJobs(
     /// <summary>
     /// Compresses the request's items into one zip in the target (agents/docs/features/compression.md): the walk of the
     /// downloads (<see cref="Archives"/>: links never followed, what the person may not see left out) into SFE's writer
-    /// (the level asked, a password), one compression at a time on the server. Written into a partial file, then given its
-    /// name (a clash asked then); cancelled or failed, the partial file goes.
+    /// (the level asked, a password), one compression at a time on the server. Written into a partial file, then given
+    /// its name (a clash asked then); cancelled or failed, the partial file goes.
     /// </summary>
     private async Task<FileJobItem> CompressAsync(
         Job job,
@@ -1256,7 +1265,9 @@ public sealed class FileJobs(
         }
     }
 
-    /// <summary>What an extraction says when it is done: what it wrote, what it left out and why, where it stopped.</summary>
+    /// <summary>
+    /// What an extraction says when it is done: what it wrote, what it left out and why, where it stopped.
+    /// </summary>
     private static string ExtractMessage(ExtractResult result, int skipped)
     {
         var parts = new List<string>
@@ -1307,7 +1318,10 @@ public sealed class FileJobs(
         return stem.Length > 0 ? stem : name;
     }
 
-    /// <summary>A free <c>name.sfe-partial</c> in <paramref name="folder"/> (its name cut to stay a valid one), for a folder or a file.</summary>
+    /// <summary>
+    /// A free <c>name.sfe-partial</c> in <paramref name="folder"/> (its name cut to stay a valid one), for a folder or
+    /// a file.
+    /// </summary>
     private static string PartialFolder(string folder, string stem)
     {
         stem = stem.Length > 200 ? stem[..200].TrimEnd('.', ' ') : stem;
@@ -1320,15 +1334,17 @@ public sealed class FileJobs(
         throw new IOException("No free name.");
     }
 
-    /// <summary><paramref name="name"/> in <paramref name="folder"/> is a path no route takes (the work folder, its 8.3 name).</summary>
+    /// <summary>
+    /// <paramref name="name"/> in <paramref name="folder"/> is a path no route takes (the work folder, its 8.3 name).
+    /// </summary>
     private bool Reserved(string folder, string name) => !paths.TryResolve(Join(folder, name), out _);
 
     private static Func<string, bool> Taken(string folder) =>
         n => File.Exists(Path.Combine(folder, n)) || Directory.Exists(Path.Combine(folder, n));
 
     /// <summary>
-    /// Partial folders an extraction left in <paramref name="folder"/> when the server stopped during it: removed at the
-    /// next extraction there, unless a running job writes into one.
+    /// Partial folders an extraction left in <paramref name="folder"/> when the server stopped during it: removed at
+    /// the next extraction there, unless a running job writes into one.
     /// </summary>
     private void RemoveLeftovers(Job job, string folder)
     {
@@ -1373,7 +1389,9 @@ public sealed class FileJobs(
         }
     }
 
-    /// <summary>The thumbnail and trickplay of a copy are those of its original (same content, same modification time).</summary>
+    /// <summary>
+    /// The thumbnail and trickplay of a copy are those of its original (same content, same modification time).
+    /// </summary>
     private void CopyCache(string original, string copy)
     {
         try

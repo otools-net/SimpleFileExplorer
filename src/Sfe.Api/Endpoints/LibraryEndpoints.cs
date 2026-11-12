@@ -155,7 +155,9 @@ public static class LibraryEndpoints
         return api;
     }
 
-    /// <summary>The problem type of a browse whose library folder doesn't exist (moved drive, folder renamed, new install).</summary>
+    /// <summary>
+    /// The problem type of a browse whose library folder doesn't exist (moved drive, folder renamed, new install).
+    /// </summary>
     public const string LibraryRootMissingType = "library-root-missing";
 
     private static async Task<Results<Ok<DirectoryListing>, NotFound, ProblemHttpResult>> Browse(
@@ -500,9 +502,9 @@ public static class LibraryEndpoints
 
     /// <summary>
     /// A file of the library, with range requests (seeking in media) and the right type for players. Its content is
-    /// anyone's who can write in the library: it is sandboxed (<see cref="SecurityHeaders.FilePolicy"/>), and a type the
-    /// browser could run as a page (HTML, SVG, XML...) is only ever downloaded (<see cref="OpensInline"/>). A script or
-    /// a style sheet is served as a plain download type, so no page of the app can load it as its own.
+    /// anyone's who can write in the library: it is sandboxed (<see cref="SecurityHeaders.FilePolicy"/>), and a type
+    /// the browser could run as a page (HTML, SVG, XML...) is only ever downloaded (<see cref="OpensInline"/>). A
+    /// script or a style sheet is served as a plain download type, so no page of the app can load it as its own.
     /// </summary>
     internal static PhysicalFileHttpResult ServeFile(HttpContext context, string fullPath, bool download)
     {
@@ -555,7 +557,8 @@ public static class LibraryEndpoints
 
     /// <summary>
     /// Pictures, videos, audio and plain text open in the browser; anything else is downloaded. SVG pictures are
-    /// documents that run scripts when opened by themselves: they still show in &lt;img&gt;, which ignores the download.
+    /// documents that run scripts when opened by themselves: they still show in &lt;img&gt;, which ignores the
+    /// download.
     /// </summary>
     internal static bool OpensInline(string contentType) =>
         contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase)

@@ -11,7 +11,9 @@ using Sfe.Core.Tagging;
 
 namespace Sfe.Api.Endpoints;
 
-/// <summary>What the caller may do with a text file (from the server: the client's own idea is optimistic in searches).</summary>
+/// <summary>
+/// What the caller may do with a text file (from the server: the client's own idea is optimistic in searches).
+/// </summary>
 /// <param name="Overwrite">Save over it: may delete it (to the trash, or for good in a space that always deletes for
 /// good) and create files in its folder, as move/copy's Replace.</param>
 /// <param name="SaveCopy">Save a copy in its folder (<c>files.createFiles</c> there).</param>
@@ -20,10 +22,12 @@ namespace Sfe.Api.Endpoints;
 public sealed record TextAccess(bool Overwrite, bool SaveCopy, bool Download, bool Permanent);
 
 /// <param name="Text">The content, line endings as they are in the file.</param>
-/// <param name="Encoding">How it was read: <c>utf-8</c>, <c>utf-8-bom</c>, <c>utf-16le</c>, <c>utf-16be</c>, <c>windows-1252</c>.</param>
+/// <param name="Encoding">How it was read: <c>utf-8</c>, <c>utf-8-bom</c>, <c>utf-16le</c>, <c>utf-16be</c>,
+/// <c>windows-1252</c>.</param>
 /// <param name="LineEnding"><c>lf</c>, <c>crlf</c>, <c>cr</c> or <c>mixed</c>.</param>
 /// <param name="Version">The content's version (also the ETag): what a save will say it changes.</param>
-/// <param name="SaveLineEnding">What a save writes: the line ending, or the most used one of a file that mixes them.</param>
+/// <param name="SaveLineEnding">What a save writes: the line ending, or the most used one of a file that mixes
+/// them.</param>
 public sealed record TextFile(
     string Text,
     string Encoding,
@@ -45,7 +49,8 @@ public sealed record SaveTextRequest(string? Text, string? Encoding, string? Lin
 /// <param name="TrashId">The previous version's trash entry, when this save kept one.</param>
 public sealed record SavedText(string Version, long Size, DateTime Modified, int? TrashId);
 
-/// <param name="Path">The video a subtitle file belongs to (root-relative), or null when there is none the caller sees.</param>
+/// <param name="Path">The video a subtitle file belongs to (root-relative), or null when there is none the caller
+/// sees.</param>
 public sealed record SubtitleVideo(string? Path);
 
 /// <param name="Path">The folder the copy goes in.</param>
@@ -349,7 +354,8 @@ public static partial class TextEndpoints
 
     /// <summary>
     /// The file <paramref name="path"/> that the caller may open (<c>files.view</c>): its full and canonical paths, or
-    /// why not (<c>Refused</c>: false for 404, what isn't there or a protected or hidden place; true for 403, no right).
+    /// why not (<c>Refused</c>: false for 404, what isn't there or a protected or hidden place; true for 403, no
+    /// right).
     /// </summary>
     private static async Task<(string Full, string Canonical, AccessState State, bool? Refused)> ResolveAsync(
         LibraryPaths paths,
@@ -561,7 +567,9 @@ public static partial class TextEndpoints
         );
     }
 
-    /// <summary>The bytes of the text, or null when it can't be encoded as asked (see <see cref="EncodingProblem"/>).</summary>
+    /// <summary>
+    /// The bytes of the text, or null when it can't be encoded as asked (see <see cref="EncodingProblem"/>).
+    /// </summary>
     private static byte[]? Encode(string? text, string? encoding, string? lineEnding) =>
         text is not null
         && encoding is not null
@@ -596,7 +604,9 @@ public static partial class TextEndpoints
         );
     }
 
-    /// <summary>The version named by <c>If-Match</c> (quotes and a weak mark taken off); <c>*</c>; null without one.</summary>
+    /// <summary>
+    /// The version named by <c>If-Match</c> (quotes and a weak mark taken off); <c>*</c>; null without one.
+    /// </summary>
     internal static string? IfMatch(HttpRequest request)
     {
         var value = request.Headers.IfMatch.ToString().Trim();

@@ -1,6 +1,8 @@
 namespace Sfe.Core.Data;
 
-/// <summary>A run of a background task, with its log, kept <c>Tasks:LogRetentionDays</c> (see <see cref="Tasks.TaskHistory"/>).</summary>
+/// <summary>
+/// A run of a background task, with its log, kept <c>Tasks:LogRetentionDays</c> (see <see cref="Tasks.TaskHistory"/>).
+/// </summary>
 public sealed class TaskRun
 {
     public long Id { get; set; }

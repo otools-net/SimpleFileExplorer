@@ -14,10 +14,9 @@ using Sfe.Core.Upgrades;
 namespace Sfe.Api.Maintenance;
 
 /// <summary>
-/// What a backup holds: the database of <c>ConnectionStrings:Sfe</c> (accounts, spaces, the first library's index),
-/// the index of every other library, the settings file, the installation file and the configuration files of the content
-/// root. Read without
-/// the libraries' services, so that it works while the install waits for its update too.
+/// What a backup holds: the database of <c>ConnectionStrings:Sfe</c> (accounts, spaces, the first library's index), the
+/// index of every other library, the settings file, the installation file and the configuration files of the content
+/// root. Read without the libraries' services, so that it works while the install waits for its update too.
 /// </summary>
 public sealed class BackupSources(
     IConfiguration configuration,
@@ -29,7 +28,8 @@ public sealed class BackupSources(
     ILogger<BackupSources> logger
 )
 {
-    /// <param name="installedVersion">The version the databases belong to (<see cref="MigrationCoordinator.DatabaseVersion"/>).</param>
+    /// <param name="installedVersion">The version the databases belong to
+    /// (<see cref="MigrationCoordinator.DatabaseVersion"/>).</param>
     public async Task<BackupArchive> WriteAsync(string? installedVersion, CancellationToken cancellationToken = default)
     {
         var contentRoot = environment.ContentRootPath;
@@ -129,7 +129,9 @@ public sealed class BackupSources(
         }
     }
 
-    /// <summary>A relative SQLite file resolved against the content root, as the app does (without creating its folder).</summary>
+    /// <summary>
+    /// A relative SQLite file resolved against the content root, as the app does (without creating its folder).
+    /// </summary>
     private static string Resolve(DatabaseProvider provider, string connectionString, string contentRoot)
     {
         if (provider != DatabaseProvider.Sqlite)

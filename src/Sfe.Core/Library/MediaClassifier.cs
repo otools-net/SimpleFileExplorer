@@ -17,7 +17,10 @@ public sealed class MediaClassifier(IOptionsMonitor<SfeOptions> options)
             ? kind
             : ItemKind.File;
 
-    /// <summary>The extensions (without dot) classified as <paramref name="kind"/>; one listed under two kinds counts as the last.</summary>
+    /// <summary>
+    /// The extensions (without dot) classified as <paramref name="kind"/>; one listed under two kinds counts as the
+    /// last.
+    /// </summary>
     public IReadOnlyList<string> Extensions(ItemKind kind) =>
         [.. Kinds().Where(k => k.Value == kind).Select(k => k.Key)];
 

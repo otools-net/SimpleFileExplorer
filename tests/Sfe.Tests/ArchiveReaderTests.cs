@@ -451,7 +451,8 @@ public sealed class ArchiveReaderTests
     [TestMethod]
     public void EncryptedRarsAskForTheirPassword()
     {
-        // SharpCompress reads even a RAR 5 whose names are in clear only with its password (0.50.7): listed, it says so.
+        // SharpCompress reads even a RAR 5 whose names are in clear only with its password (0.50.7): listed, it says
+        // so.
         foreach (
             var name in new[]
             {
@@ -560,7 +561,10 @@ public sealed class ArchiveReaderTests
         Assert.AreEqual(text, ReadText(zip, ArchiveFormat.Zip, entry));
     }
 
-    /// <summary>A zip of one entry whose data is <paramref name="packed"/> as <paramref name="method"/> says (CRC and size of <paramref name="plain"/>).</summary>
+    /// <summary>
+    /// A zip of one entry whose data is <paramref name="packed"/> as <paramref name="method"/> says (CRC and size of
+    /// <paramref name="plain"/>).
+    /// </summary>
     private static byte[] OneEntryZip(string name, ushort method, byte[] packed, byte[] plain)
     {
         var nameBytes = System.Text.Encoding.UTF8.GetBytes(name);
@@ -720,7 +724,9 @@ public sealed class ArchiveReaderTests
     }
 }
 
-/// <summary>Small archives written by the tests (zips and tars: .NET writes them), and the bytes of hostile ones.</summary>
+/// <summary>
+/// Small archives written by the tests (zips and tars: .NET writes them), and the bytes of hostile ones.
+/// </summary>
 internal static class TestArchives
 {
     /// <summary>A zip of <paramref name="entries"/> (a null text = a folder entry).</summary>
@@ -769,7 +775,10 @@ internal static class TestArchives
         return path;
     }
 
-    /// <summary>Writes <paramref name="bytes"/> at <paramref name="offset"/> of a central-directory record (the first by default).</summary>
+    /// <summary>
+    /// Writes <paramref name="bytes"/> at <paramref name="offset"/> of a central-directory record (the first by
+    /// default).
+    /// </summary>
     public static void PatchDirectory(string zip, int offset, byte[] bytes, int record = 0)
     {
         var content = File.ReadAllBytes(zip);

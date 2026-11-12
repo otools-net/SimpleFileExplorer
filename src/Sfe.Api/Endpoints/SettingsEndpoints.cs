@@ -5,7 +5,8 @@ using Sfe.Core.Settings;
 
 namespace Sfe.Api.Endpoints;
 
-/// <param name="Keys">The settings this level locks for the levels below (its other lockable settings are unlocked).</param>
+/// <param name="Keys">The settings this level locks for the levels below (its other lockable settings are
+/// unlocked).</param>
 public sealed record SettingLocks(IReadOnlyList<string>? Keys);
 
 public static class SettingsEndpoints
@@ -104,7 +105,9 @@ public static class SettingsEndpoints
         return api;
     }
 
-    /// <summary>The level asked for and who may change what there; null when the caller may not use that level.</summary>
+    /// <summary>
+    /// The level asked for and who may change what there; null when the caller may not use that level.
+    /// </summary>
     private static (SettingLevel Level, Func<SettingDefinition, bool>? CanChange)? Resolve(
         AccessState state,
         string? level

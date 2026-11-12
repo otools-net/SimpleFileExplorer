@@ -52,7 +52,9 @@ public sealed class FolderDefaultTags(
     private volatile Snapshot? _snapshot;
     private int _version;
 
-    /// <summary>The tags of each folder that has some (root-relative paths, compared as the file system does).</summary>
+    /// <summary>
+    /// The tags of each folder that has some (root-relative paths, compared as the file system does).
+    /// </summary>
     private sealed class Snapshot(Dictionary<string, int[]> byFolder)
     {
         public bool IsEmpty => byFolder.Count == 0;
@@ -74,7 +76,9 @@ public sealed class FolderDefaultTags(
         public int[] At(string folder) => IsEmpty ? [] : [.. Through(folder).SelectMany(f => f.Tags).Distinct()];
     }
 
-    /// <summary>Default tags changed (or a tag was deleted, taking its rows with it): read them again when next needed.</summary>
+    /// <summary>
+    /// Default tags changed (or a tag was deleted, taking its rows with it): read them again when next needed.
+    /// </summary>
     public void Invalidate()
     {
         Interlocked.Increment(ref _version);
@@ -101,7 +105,9 @@ public sealed class FolderDefaultTags(
         return snapshot;
     }
 
-    /// <summary>The tags a file entering the folder <paramref name="fullFolder"/> gets: the folder's and its parents'.</summary>
+    /// <summary>
+    /// The tags a file entering the folder <paramref name="fullFolder"/> gets: the folder's and its parents'.
+    /// </summary>
     public async Task<int[]> ForFolderAsync(string fullFolder, CancellationToken cancellationToken = default)
     {
         var snapshot = await SnapshotAsync(cancellationToken);
@@ -302,8 +308,8 @@ public sealed class FolderDefaultTags(
     }
 
     /// <summary>
-    /// Takes the default tags of a folder and below it off the table (it goes to the trash, or for good): returned to be
-    /// kept with it and given back by <see cref="PutBackAsync"/>.
+    /// Takes the default tags of a folder and below it off the table (it goes to the trash, or for good): returned to
+    /// be kept with it and given back by <see cref="PutBackAsync"/>.
     /// </summary>
     public async Task<IReadOnlyList<KeptDefaultTag>> TakeTreeAsync(
         string folder,
@@ -324,7 +330,9 @@ public sealed class FolderDefaultTags(
         return [.. rows.Select(r => new KeptDefaultTag(r.Path[folder.Length..].TrimStart('/'), r.TagId, r.Created))];
     }
 
-    /// <summary>Gives back tags taken by <see cref="TakeTreeAsync"/> to the folder now at <paramref name="folder"/> (restored).</summary>
+    /// <summary>
+    /// Gives back tags taken by <see cref="TakeTreeAsync"/> to the folder now at <paramref name="folder"/> (restored).
+    /// </summary>
     /// <returns>Rows put back (tags deleted meanwhile are dropped).</returns>
     public async Task<int> PutBackAsync(
         string folder,

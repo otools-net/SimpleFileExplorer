@@ -73,7 +73,9 @@ public static class FileTree
         return info.LinkTarget is not null;
     }
 
-    /// <summary>The files below <paramref name="folder"/> (links not followed), for a walk over what is deleted.</summary>
+    /// <summary>
+    /// The files below <paramref name="folder"/> (links not followed), for a walk over what is deleted.
+    /// </summary>
     public static IEnumerable<string> Files(string folder) =>
         Directory.Exists(folder) && !IsLink(folder)
             ? Directory.EnumerateFiles(

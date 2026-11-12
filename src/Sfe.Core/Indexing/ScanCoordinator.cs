@@ -26,7 +26,9 @@ public sealed class ScanProgress
     public string? CurrentDirectory { get; set; }
     public int Directories => _directories;
 
-    /// <summary>Folders found but not scanned yet. The total is unknown up front: folders are discovered level by level.</summary>
+    /// <summary>
+    /// Folders found but not scanned yet. The total is unknown up front: folders are discovered level by level.
+    /// </summary>
     public int Queued => _queued;
     public int Files => _files;
     public int Removed => _removed;
@@ -49,7 +51,8 @@ public sealed class ScanProgress
 /// <param name="FilesIndexed">New or changed files written to the index.</param>
 /// <param name="Removed">Files and folders removed from the index because they no longer exist.</param>
 /// <param name="DirectoriesQueued">Folders found and still waiting to be scanned.</param>
-/// <param name="Relinked">Missing (tagged) files found again after the scan, moved or renamed, and given back their tags.</param>
+/// <param name="Relinked">Missing (tagged) files found again after the scan, moved or renamed, and given back their
+/// tags.</param>
 /// <param name="Missing">Tagged files no longer found, waiting to be relinked (after the scan; null before).</param>
 public sealed record ScanStatus(
     ScanState State,
@@ -263,7 +266,8 @@ public sealed class ScanCoordinator(
     /// Removes a folder, its sub-folders and their files from the index (they stay on the disk). Tagged files are kept
     /// as missing files with their tags (when relinking is on): scanning the folder again gives the tags back.
     /// </summary>
-    /// <returns>What the index held of the folder, or null while a scan runs (it could index the folder again right away).</returns>
+    /// <returns>What the index held of the folder, or null while a scan runs (it could index the folder again right
+    /// away).</returns>
     public async Task<IndexedFolderStats?> RemoveFromIndexAsync(
         string relativePath,
         CancellationToken cancellationToken = default

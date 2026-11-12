@@ -12,7 +12,9 @@ public enum QuickLinkAddStatus
 {
     Done,
 
-    /// <summary>The list would hold more than <see cref="QuickLinkService.MaxLinks"/> links: nothing was changed.</summary>
+    /// <summary>
+    /// The list would hold more than <see cref="QuickLinkService.MaxLinks"/> links: nothing was changed.
+    /// </summary>
     Full,
 }
 
@@ -23,7 +25,9 @@ public enum QuickLinkAddStatus
 /// </summary>
 public sealed class QuickLinkService(IDbContextFactory<AccessDbContext> dbFactory)
 {
-    /// <summary>A sidebar list, not a bookmark store: every list is read and checked on the disk at each page load.</summary>
+    /// <summary>
+    /// A sidebar list, not a bookmark store: every list is read and checked on the disk at each page load.
+    /// </summary>
     public const int MaxLinks = 100;
 
     public async Task<IReadOnlyList<QuickLinkEntry>> GetAsync(

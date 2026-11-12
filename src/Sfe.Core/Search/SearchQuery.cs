@@ -10,20 +10,21 @@ namespace Sfe.Core.Search;
 /// <item><c>,</c> separates alternatives (OR).</item>
 /// <item>a space separates terms that must all match (AND).</item>
 /// <item><c>-term</c> excludes names containing <c>term</c>. A <c>-</c> before any other term (<c>-s:</c>, <c>-e:</c>,
-/// <c>-w:</c>, <c>-h:</c>, <c>-r:</c>, <c>-d:</c>, <c>-type:</c>, <c>-t:</c>, <c>-special:untagged</c>) finds exactly the files that term doesn't,
-/// e.g. <c>-w:1920</c> also finds files whose resolution is not known.</item>
-/// <item><c>s:&lt;10mb</c>, <c>s:&gt;=1gb</c>, <c>s:=0b</c>, <c>s:700mb</c> (approximately) filter by size; units b, kb, mb (default), gb, tb.</item>
+/// <c>-w:</c>, <c>-h:</c>, <c>-r:</c>, <c>-d:</c>, <c>-type:</c>, <c>-t:</c>, <c>-special:untagged</c>) finds exactly
+/// the files that term doesn't, e.g. <c>-w:1920</c> also finds files whose resolution is not known.</item>
+/// <item><c>s:&lt;10mb</c>, <c>s:&gt;=1gb</c>, <c>s:=0b</c>, <c>s:700mb</c> (approximately) filter by size; units b,
+/// kb, mb (default), gb, tb.</item>
 /// <item><c>e:mp4</c> filters by extension.</item>
-/// <item><c>type:image</c>, <c>type:video</c>, <c>type:audio</c>, <c>type:other</c> filter by kind of file, as the listing
-/// classifies extensions; several in a group are alternatives, like <c>e:</c>.</item>
-/// <item><c>w:&gt;=1920</c>, <c>h:&lt;720</c> filter by the width or height in pixels of images and videos, <c>r:&gt;720x1024</c> by
-/// both (each side compared); <c>&lt;</c>, <c>&lt;=</c>, <c>&gt;</c>, <c>&gt;=</c>, <c>=</c>, none = exactly. Files whose
-/// resolution is not known never match.</item>
+/// <item><c>type:image</c>, <c>type:video</c>, <c>type:audio</c>, <c>type:other</c> filter by kind of file, as the
+/// listing classifies extensions; several in a group are alternatives, like <c>e:</c>.</item>
+/// <item><c>w:&gt;=1920</c>, <c>h:&lt;720</c> filter by the width or height in pixels of images and videos,
+/// <c>r:&gt;720x1024</c> by both (each side compared); <c>&lt;</c>, <c>&lt;=</c>, <c>&gt;</c>, <c>&gt;=</c>, <c>=</c>,
+/// none = exactly. Files whose resolution is not known never match.</item>
 /// <item><c>r:hr</c>, <c>r:lr</c> find the images and videos of high or low resolution, by the thresholds of the HR/LR
 /// marks (shorter side, one threshold for images, one for videos).</item>
-/// <item><c>d:&gt;10m</c>, <c>d:&lt;=30s</c>, <c>d:1h</c>, <c>d:&gt;1:30:00</c> filter videos and audio by duration; units s, m
-/// (default), h, or a clock (<c>m:ss</c>, <c>h:mm:ss</c>); without an operator, about (rounded to the unit). Files
-/// whose duration is not known never match.</item>
+/// <item><c>d:&gt;10m</c>, <c>d:&lt;=30s</c>, <c>d:1h</c>, <c>d:&gt;1:30:00</c> filter videos and audio by duration;
+/// units s, m (default), h, or a clock (<c>m:ss</c>, <c>h:mm:ss</c>); without an operator, about (rounded to the unit).
+/// Files whose duration is not known never match.</item>
 /// <item>a leading <c>*</c> matches against the whole path instead of the file name.</item>
 /// <item><c>t:name</c> or <c>tag:name</c> finds files with a tag named so (name, shorthand or alias), or with any tag
 /// inheriting from it (TagStudio's tag search). <c>special:untagged</c> finds files without tags.</item>
@@ -88,7 +89,9 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
         return new SearchQuery(matchFullPath, groups);
     }
 
-    /// <summary>Splits on <paramref name="separator"/> except inside double quotes; parts are trimmed, empty ones dropped.</summary>
+    /// <summary>
+    /// Splits on <paramref name="separator"/> except inside double quotes; parts are trimmed, empty ones dropped.
+    /// </summary>
     internal static IEnumerable<string> SplitOutsideQuotes(string text, char separator)
     {
         var start = 0;
@@ -127,7 +130,8 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
             }
             else if (negated && IsFilter(body))
             {
-                // NOT of the whole term: "-r:1920x1080" is "not both sides", not "neither side"; several "-e:" exclude each one.
+                // NOT of the whole term: "-r:1920x1080" is "not both sides", not "neither side"; several "-e:" exclude
+                // each one.
                 var excludedFilter = new Filters();
                 AddFilter(body, excludedFilter);
                 var excluded = excludedFilter.ToGroup([], [], [], []);
@@ -179,7 +183,10 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
     private static bool IsFilter(string token) =>
         FilterPrefixes.Any(p => token.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>Adds a size, resolution, duration, extension or type filter; false when the token is none. Malformed ones are ignored.</summary>
+    /// <summary>
+    /// Adds a size, resolution, duration, extension or type filter; false when the token is none. Malformed ones are
+    /// ignored.
+    /// </summary>
     private static bool AddFilter(string token, Filters filters)
     {
         if (!IsFilter(token))
@@ -232,7 +239,9 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
         return Enum.IsDefined(level);
     }
 
-    /// <summary>The kind after <c>type:</c>, in any case; <c>other</c> is every file that is neither image, video nor audio.</summary>
+    /// <summary>
+    /// The kind after <c>type:</c>, in any case; <c>other</c> is every file that is neither image, video nor audio.
+    /// </summary>
     private static bool TryParseKind(string value, out ItemKind kind)
     {
         kind = value.ToLowerInvariant() switch
@@ -281,12 +290,13 @@ public sealed record SearchQuery(bool MatchFullPath, IReadOnlyList<SearchGroup> 
         double.Parse(value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
 }
 
-/// <param name="ExcludedFilters">
-/// One group per negated size, extension, resolution, duration or type term (<c>-s:</c>, <c>-e:</c>, <c>-w:</c>, <c>-h:</c>,
+/// <param name="ExcludedFilters"> One group per negated size, extension, resolution, duration or type term (<c>-s:</c>,
+/// <c>-e:</c>, <c>-w:</c>, <c>-h:</c>,
 /// <c>-r:</c>, <c>-d:</c>, <c>-type:</c>): files matching it are left out.
 /// </param>
 /// <param name="Levels">High or low resolution terms (<c>r:hr</c>, <c>r:lr</c>).</param>
-/// <param name="Kinds">Kinds of file (<c>type:</c>), alternatives; <see cref="ItemKind.File"/> = none of the media kinds.</param>
+/// <param name="Kinds">Kinds of file (<c>type:</c>), alternatives; <see cref="ItemKind.File"/> = none of the media
+/// kinds.</param>
 public sealed record SearchGroup(
     IReadOnlyList<string> Include,
     IReadOnlyList<string> Exclude,
@@ -321,7 +331,8 @@ public enum ResolutionLevel
 }
 
 /// <summary>The length of a video or audio file compared to a number of seconds (<c>d:</c>).</summary>
-/// <param name="Tolerance">Seconds either side of <paramref name="Seconds"/> for <see cref="SizeComparison.Approximately"/>.</param>
+/// <param name="Tolerance">Seconds either side of <paramref name="Seconds"/> for
+/// <see cref="SizeComparison.Approximately"/>.</param>
 public sealed record DurationFilter(SizeComparison Comparison, double Seconds, double Tolerance = 0)
 {
     public static bool TryParse(string value, out DurationFilter filter)
@@ -428,7 +439,9 @@ public enum Dimension
 /// <summary>A side of an image or video compared to a number of pixels (<c>w:</c>, <c>h:</c>, <c>r:</c>).</summary>
 public sealed record DimensionFilter(Dimension Dimension, SizeComparison Comparison, int Pixels)
 {
-    /// <summary>The filters of a <c>w:</c>, <c>h:</c> or <c>r:</c> token: none when malformed, two for <c>r:</c>.</summary>
+    /// <summary>
+    /// The filters of a <c>w:</c>, <c>h:</c> or <c>r:</c> token: none when malformed, two for <c>r:</c>.
+    /// </summary>
     public static IReadOnlyList<DimensionFilter> Parse(string token)
     {
         var prefix = token[..2].ToLowerInvariant();

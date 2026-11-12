@@ -31,12 +31,15 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
 
     private sealed record ListingKey(string FullPath, SortField Sort, bool Descending, bool ShowHidden);
 
-    /// <param name="Version">Last write time of the folder: it changes when an entry is added, removed or renamed.</param>
+    /// <param name="Version">Last write time of the folder: it changes when an entry is added, removed or
+    /// renamed.</param>
     private sealed record CachedListing(ListingKey Key, DateTime Version, List<LibraryItem> Items, int DirectoryCount)
     {
         private Dictionary<string, int>? _positions;
 
-        /// <summary>Where each name is in <see cref="Items"/>: built once, for the listings that folder rules filter.</summary>
+        /// <summary>
+        /// Where each name is in <see cref="Items"/>: built once, for the listings that folder rules filter.
+        /// </summary>
         public Dictionary<string, int> Positions =>
             _positions ??= Items
                 .Select((item, index) => (item.Name, index))
@@ -89,7 +92,9 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         );
     }
 
-    /// <summary>A page of the listing without what <paramref name="filter"/> leaves out, with the counts of what is left.</summary>
+    /// <summary>
+    /// A page of the listing without what <paramref name="filter"/> leaves out, with the counts of what is left.
+    /// </summary>
     private static (List<LibraryItem> Items, int Total, int Directories) Filtered(
         CachedListing listing,
         ListingFilter filter,
@@ -209,13 +214,15 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
     private sealed record CachedCover(DateTime Version, IReadOnlyList<LibraryItem> Items);
 
     /// <summary>
-    /// The first <see cref="BrowseOptions.FolderPictures"/> pictures (images, and videos when <paramref name="videos"/>)
-    /// of each folder, in name order, for the folder cards of a listing. Only the folder's own files count, not its
-    /// sub-folders. Empty lists when the setting is 0.
+    /// The first <see cref="BrowseOptions.FolderPictures"/> pictures (images, and videos when
+    /// <paramref name="videos"/>) of each folder, in name order, for the folder cards of a listing. Only the folder's
+    /// own files count, not its sub-folders. Empty lists when the setting is 0.
     /// </summary>
     /// <param name="videos">Include videos: only worth it when they have thumbnails.</param>
     /// <returns>One cover per existing folder of the library; the others are left out.</returns>
-    /// <remarks>Kept while the folder is unchanged (its last write time changes when an entry is added or removed).</remarks>
+    /// <remarks>
+    /// Kept while the folder is unchanged (its last write time changes when an entry is added or removed).
+    /// </remarks>
     public IReadOnlyList<FolderCover> Covers(IEnumerable<string> relativePaths, bool videos)
     {
         var showHidden = options.CurrentValue.ShowHiddenItems;
@@ -384,7 +391,8 @@ public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifie
         }
     }
 
-    /// <returns>null outside the library, and for SFE's work folder at its root (never listed, hidden items or not).</returns>
+    /// <returns>null outside the library, and for SFE's work folder at its root (never listed, hidden items or
+    /// not).</returns>
     public LibraryItem? ToItem(FileSystemInfo info)
     {
         var path = paths.ToRelative(info.FullName);

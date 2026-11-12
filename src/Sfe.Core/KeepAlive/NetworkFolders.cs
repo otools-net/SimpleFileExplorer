@@ -42,7 +42,9 @@ public static class NetworkFolders
         return false;
     }
 
-    /// <summary><c>\\server\share</c> or <c>\\?\UNC\server\share</c>; not <c>\\?\C:\</c> nor the device namespace <c>\\.\</c>.</summary>
+    /// <summary>
+    /// <c>\\server\share</c> or <c>\\?\UNC\server\share</c>; not <c>\\?\C:\</c> nor the device namespace <c>\\.\</c>.
+    /// </summary>
     internal static bool IsUncPath(string path) =>
         path.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase)
         || (
@@ -51,7 +53,9 @@ public static class NetworkFolders
             && !path.StartsWith(@"\\.\", StringComparison.Ordinal)
         );
 
-    /// <summary>The file system type of the mount holding <paramref name="path"/> (the deepest mount point containing it).</summary>
+    /// <summary>
+    /// The file system type of the mount holding <paramref name="path"/> (the deepest mount point containing it).
+    /// </summary>
     /// <param name="mountInfo">The text of <c>/proc/self/mountinfo</c>.</param>
     internal static string? FileSystemTypeAt(string mountInfo, string path)
     {

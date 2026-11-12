@@ -13,7 +13,8 @@ namespace Sfe.Api.Endpoints;
 /// <param name="Names">Their names, or paths below it for a folder upload.</param>
 public sealed record UploadCheckRequest(string? Target, IReadOnlyList<string>? Names);
 
-/// <param name="Existing">The names (of <see cref="UploadCheckRequest.Names"/>) already taken there, seen by the caller or not.</param>
+/// <param name="Existing">The names (of <see cref="UploadCheckRequest.Names"/>) already taken there, seen by the caller
+/// or not.</param>
 /// <param name="CanReplace">The caller may replace what is there (it would go to the trash).</param>
 public sealed record UploadCheck(IReadOnlyList<string> Existing, bool CanReplace);
 
@@ -297,7 +298,9 @@ public static class UploadEndpoints
         return TypedResults.NoContent();
     }
 
-    /// <summary>The upload when it is the caller's (visitors without an account have none: they can't have the right).</summary>
+    /// <summary>
+    /// The upload when it is the caller's (visitors without an account have none: they can't have the right).
+    /// </summary>
     private static UploadInfo? Mine(UploadInfo? upload, AccessState state) =>
         upload is not null && state.User is { } user && upload.OwnerId == user.Id && state.Has(Rights.UploadFiles)
             ? upload

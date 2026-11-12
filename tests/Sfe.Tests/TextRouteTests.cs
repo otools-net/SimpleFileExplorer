@@ -14,8 +14,8 @@ namespace Sfe.Tests;
 
 /// <summary>
 /// Text files through HTTP (<c>api/files/text</c>). Alice is in Users, with SpecialDir hidden from them and Media read
-/// only; Bob may browse but not open files. Eve may also delete and create files (Media read only for her too); Cara may
-/// create files, not delete them.
+/// only; Bob may browse but not open files. Eve may also delete and create files (Media read only for her too); Cara
+/// may create files, not delete them.
 /// </summary>
 [TestClass]
 public sealed class TextRouteTests

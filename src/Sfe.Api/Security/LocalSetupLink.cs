@@ -13,10 +13,14 @@ namespace Sfe.Api.Security;
 /// </summary>
 public sealed class LocalSetupLink
 {
-    /// <summary>The query parameter of the link (<c>http://localhost:5080/?setup=…</c>); the client keeps its value.</summary>
+    /// <summary>
+    /// The query parameter of the link (<c>http://localhost:5080/?setup=…</c>); the client keeps its value.
+    /// </summary>
     public const string Parameter = "setup";
 
-    /// <summary>The request header the client sends the link's token back in, on the setup and installation routes.</summary>
+    /// <summary>
+    /// The request header the client sends the link's token back in, on the setup and installation routes.
+    /// </summary>
     public const string Header = "X-SFE-Setup-Link";
 
     private const int TokenBytes = 16;

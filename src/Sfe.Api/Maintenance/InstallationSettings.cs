@@ -11,7 +11,8 @@ using Sfe.Core.Thumbnails;
 namespace Sfe.Api.Maintenance;
 
 /// <param name="Value">The value the server uses now (from whichever source gives it).</param>
-/// <param name="Locked">A source after the installation file gives it (an environment variable, the command line...): the page can't change it.</param>
+/// <param name="Locked">A source after the installation file gives it (an environment variable, the command line...):
+/// the page can't change it.</param>
 /// <param name="LockedBy">That source, in words.</param>
 public sealed record InstallationField(string? Value, bool Locked, string? LockedBy);
 
@@ -24,9 +25,11 @@ public sealed record InstallationField(string? Value, bool Locked, string? Locke
 /// <param name="FfmpegFound">The executable found for it; null when there is none.</param>
 /// <param name="FfmpegVersion">The version it reports.</param>
 /// <param name="RestartRequired">The addresses saved differ from those the server listens on since it started.</param>
-/// <param name="Mode"><c>Sfe:Mode</c> as configured; a null value = not chosen yet (the server then works as Local).</param>
+/// <param name="Mode"><c>Sfe:Mode</c> as configured; a null value = not chosen yet (the server then works as
+/// Local).</param>
 /// <param name="ModeInEffect">The mode the server works in (<see cref="ServerModes.InEffect"/>).</param>
-/// <param name="OnThisComputer">The visitor is on the server's own computer (<see cref="LocalVisitor"/>): only they may choose Local.</param>
+/// <param name="OnThisComputer">The visitor is on the server's own computer (<see cref="LocalVisitor"/>): only they may
+/// choose Local.</param>
 public sealed record InstallationView(
     InstallationField Root,
     bool RootExists,
@@ -43,7 +46,8 @@ public sealed record InstallationView(
 );
 
 /// <param name="Root">The first library's folder; null keeps it.</param>
-/// <param name="Network">Listen on every network interface (true) or on this computer only (false); null keeps it.</param>
+/// <param name="Network">Listen on every network interface (true) or on this computer only (false); null keeps
+/// it.</param>
 /// <param name="Port">The port; null keeps it.</param>
 /// <param name="FfmpegPath">ffmpeg's executable or folder; empty = look for it on PATH; null keeps it.</param>
 /// <param name="Mode">How the server is used; null keeps it.</param>
@@ -55,16 +59,17 @@ public sealed record InstallationInput(
     ServerMode? Mode = null
 );
 
-/// <param name="SetupDone">The server has its administrator: the mode no longer goes back from External to Local here.</param>
+/// <param name="SetupDone">The server has its administrator: the mode no longer goes back from External to Local
+/// here.</param>
 /// <param name="OnThisComputer">The visitor is on the server's own computer (<see cref="LocalVisitor"/>).</param>
 public sealed record InstallationVisitorInfo(bool SetupDone, bool OnThisComputer);
 
 /// <summary>
 /// The few settings of the installation that a person setting SFE up needs, written from the web (with the setup code)
-/// into an app-managed configuration file (<see cref="FileKey"/>, default <c>data/installation.json</c>), so that nobody
-/// has to edit JSON by hand. That file comes after <c>appsettings*.json</c> and before the environment and the command
-/// line (Program.cs): what whoever runs the server sets there still wins, and shows as locked. Only <see cref="Keys"/>
-/// may be written; the database, caches, keys and security stay in the configuration files.
+/// into an app-managed configuration file (<see cref="FileKey"/>, default <c>data/installation.json</c>), so that
+/// nobody has to edit JSON by hand. That file comes after <c>appsettings*.json</c> and before the environment and the
+/// command line (Program.cs): what whoever runs the server sets there still wins, and shows as locked. Only
+/// <see cref="Keys"/> may be written; the database, caches, keys and security stay in the configuration files.
 /// </summary>
 public sealed class InstallationSettings
 {
@@ -173,11 +178,12 @@ public sealed class InstallationSettings
     }
 
     /// <summary>Checks and writes the changed values.</summary>
-    /// <param name="libraryRoots">
-    /// The libraries' folders: ffmpeg is never taken from one, where whoever can add files would choose the program SFE runs.
+    /// <param name="libraryRoots"> The libraries' folders: ffmpeg is never taken from one, where whoever can add files
+    /// would choose the program SFE runs.
     /// </param>
     /// <param name="visitor">Who saves: the mode's rules depend on it.</param>
-    /// <returns>The errors by field (<c>root</c>, <c>port</c>, <c>ffmpegPath</c>, <c>mode</c>), or the keys that changed.</returns>
+    /// <returns>The errors by field (<c>root</c>, <c>port</c>, <c>ffmpegPath</c>, <c>mode</c>), or the keys that
+    /// changed.</returns>
     public (Dictionary<string, string[]>? Errors, IReadOnlyList<string> Changed) Save(
         InstallationInput input,
         IReadOnlyList<string> libraryRoots,
@@ -281,7 +287,8 @@ public sealed class InstallationSettings
             {
                 errors[FieldName(key)] = [$"Set by {by}: change it there."];
             }
-            // Local → External with a new folder or ffmpeg in the same save: External decides, as it would a moment later.
+            // Local → External with a new folder or ffmpeg in the same save: External decides, as it would a moment
+            // later.
             else if (key is RootKey or FfmpegKey && input.Mode == ServerMode.External)
             {
                 errors[FieldName(key)] =
@@ -305,7 +312,8 @@ public sealed class InstallationSettings
 
     /// <summary>
     /// The value of a key and whether something else decides it: a source after the file, or, on an External server,
-    /// the configuration alone for the library folder and ffmpeg (what runs and where data lives is not chosen from the web).
+    /// the configuration alone for the library folder and ffmpeg (what runs and where data lives is not chosen from the
+    /// web).
     /// </summary>
     private InstallationField Field(string key)
     {
@@ -329,7 +337,10 @@ public sealed class InstallationSettings
         _configuration is IConfigurationRoot root
         && root.Providers.Any(provider => IsOurs(provider) && provider.TryGet(key, out _));
 
-    /// <summary>A source after the file that gives <paramref name="key"/>, in words (an environment variable, the command line...); null when none does.</summary>
+    /// <summary>
+    /// A source after the file that gives <paramref name="key"/>, in words (an environment variable, the command
+    /// line...); null when none does.
+    /// </summary>
     public string? SetByConfiguration(string key)
     {
         if (_configuration is not IConfigurationRoot root)

@@ -190,7 +190,9 @@ public static class PropertyEndpoints
     private static Results<NoContent, NotFound> CancelJob(PropertyJobs jobs, HttpContext context, string id) =>
         jobs.Cancel(RequestLimits.Caller(context), id) ? TypedResults.NoContent() : TypedResults.NotFound();
 
-    /// <summary>The item, canonical and full, when the caller sees it and it isn't one of the server's own files.</summary>
+    /// <summary>
+    /// The item, canonical and full, when the caller sees it and it isn't one of the server's own files.
+    /// </summary>
     private static (string Path, string Full)? Find(
         AccessState state,
         LibraryPaths paths,

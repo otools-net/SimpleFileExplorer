@@ -195,7 +195,9 @@ public sealed class TrickplayTests
     private Task<TrickplayStatus> WaitAsync(Func<TrickplayStatus, bool> condition) =>
         SlowWork.UntilAsync(() => Trickplay.Status, condition, 60, "trickplay", TestContext.CancellationToken);
 
-    /// <summary>A small test pattern video of 2, 3, 5 or 7.5 seconds with a key frame every second (tests/samples/media).</summary>
+    /// <summary>
+    /// A small test pattern video of 2, 3, 5 or 7.5 seconds with a key frame every second (tests/samples/media).
+    /// </summary>
     private void AddVideo(string relativePath, double seconds) =>
         TestSamples.CopyTo(
             $"testsrc-{seconds.ToString(System.Globalization.CultureInfo.InvariantCulture)}s-keyframes.mp4",

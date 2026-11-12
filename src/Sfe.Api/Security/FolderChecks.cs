@@ -19,14 +19,18 @@ public enum PathVerdict
     /// <summary>The subject sees the path but may not do that there (403).</summary>
     Forbidden,
 
-    /// <summary>Not a path of the library, or one the subject doesn't see: answered as missing (404), never told apart.</summary>
+    /// <summary>
+    /// Not a path of the library, or one the subject doesn't see: answered as missing (404), never told apart.
+    /// </summary>
     NotFound,
 }
 
 /// <summary>Folder rules at the routes: what the subject of the request may do at a library path, or where.</summary>
 public static class FolderChecks
 {
-    /// <summary>The route checks its library paths against the folder rules itself; <paramref name="how"/> says how.</summary>
+    /// <summary>
+    /// The route checks its library paths against the folder rules itself; <paramref name="how"/> says how.
+    /// </summary>
     public static TBuilder FolderScoped<TBuilder>(this TBuilder builder, string how)
         where TBuilder : IEndpointConventionBuilder => builder.WithMetadata(new FolderMetadata(how));
 
@@ -75,7 +79,9 @@ public static class FolderChecks
         state.Access.FolderPolicy.IsUnrestricted
         || list.All(path => state.Check(paths, path, right) == PathVerdict.Allowed);
 
-    /// <summary>Where the subject may see files, for the queries over the index; null when everywhere (no condition to add).</summary>
+    /// <summary>
+    /// Where the subject may see files, for the queries over the index; null when everywhere (no condition to add).
+    /// </summary>
     public static PathFilter? Visible(this AccessState state) =>
         state.Access.FilterFor(Rights.Browse) is { IsEverything: false } filter ? filter : null;
 
@@ -112,7 +118,9 @@ public static class FolderChecks
         IReadOnlyList<LibraryItem> items
     ) => state.Access.FolderPolicy.IsUnrestricted ? items : [.. items.Where(item => state.Sees(paths, item.Path))];
 
-    /// <summary>The subject may see the file or folder at <paramref name="relativePath"/> itself (not only pass through it).</summary>
+    /// <summary>
+    /// The subject may see the file or folder at <paramref name="relativePath"/> itself (not only pass through it).
+    /// </summary>
     public static bool Sees(this AccessState state, LibraryPaths paths, string relativePath) =>
         state.Access.FolderPolicy.IsUnrestricted || state.At(paths, relativePath)?.Has(Rights.Browse) == true;
 }

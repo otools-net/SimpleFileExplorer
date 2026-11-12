@@ -60,7 +60,8 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
             // ends. An existing SQLite index gets the index from DatabaseInitializer.
             entity.Property(f => f.Extension).HasMaxLength(MaxPathLength);
             entity.HasIndex(f => f.Extension);
-            // Search results sorted by date (FileSearchService). An existing SQLite index gets it from DatabaseInitializer.
+            // Search results sorted by date (FileSearchService). An existing SQLite index gets it from
+            // DatabaseInitializer.
             entity.HasIndex(f => f.LastWriteTime);
             // Search results sorted by duration or resolution. Virtual (not stored) because SQLite can only add a
             // virtual generated column to an existing table (DatabaseInitializer); bigint so that no odd header
@@ -88,7 +89,9 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
         ConfigureTasks(modelBuilder);
     }
 
-    /// <summary>Schedules and run history of the background tasks. Enums are stored by name, readable in the table.</summary>
+    /// <summary>
+    /// Schedules and run history of the background tasks. Enums are stored by name, readable in the table.
+    /// </summary>
     private static void ConfigureTasks(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<TaskSchedule>(entity =>
@@ -113,7 +116,9 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
         });
     }
 
-    /// <summary>Files and folders deleted to the trash, with the tags of their files (see <see cref="TrashEntry"/>).</summary>
+    /// <summary>
+    /// Files and folders deleted to the trash, with the tags of their files (see <see cref="TrashEntry"/>).
+    /// </summary>
     private static void ConfigureTrash(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<TrashEntry>(entity =>
@@ -182,8 +187,8 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
     }
 
     /// <summary>
-    /// Tagging tables. Links between tags never cascade (SQL Server rejects multiple cascade paths): <see cref="Tagging.TagService"/>
-    /// removes them before deleting a tag.
+    /// Tagging tables. Links between tags never cascade (SQL Server rejects multiple cascade paths):
+    /// <see cref="Tagging.TagService"/> removes them before deleting a tag.
     /// </summary>
     private static void ConfigureTagging(ModelBuilder modelBuilder, bool isSqlServer)
     {

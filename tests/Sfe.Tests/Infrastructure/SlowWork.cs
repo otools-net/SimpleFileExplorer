@@ -6,9 +6,9 @@ namespace Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// Waits on work whose speed is the machine's, not SFE's: ffmpeg making test media, background workers rendering
-/// trickplay or fingerprints. Past the limit the test is <b>inconclusive</b> (reported as skipped, with the reason), not
-/// failed: a busy or slow host (a CI runner) is no bug. A wrong result still fails. <c>SFE_TEST_TIME_FACTOR</c> (≥ 1)
-/// multiplies every limit, for slow machines (the GitHub workflow sets it).
+/// trickplay or fingerprints. Past the limit the test is <b>inconclusive</b> (reported as skipped, with the reason),
+/// not failed: a busy or slow host (a CI runner) is no bug. A wrong result still fails. <c>SFE_TEST_TIME_FACTOR</c> (≥
+/// 1) multiplies every limit, for slow machines (the GitHub workflow sets it).
 /// </summary>
 public static class SlowWork
 {
@@ -28,7 +28,9 @@ public static class SlowWork
     /// <summary><paramref name="seconds"/> times <see cref="Factor"/>.</summary>
     public static TimeSpan Limit(double seconds) => TimeSpan.FromSeconds(seconds * Factor);
 
-    /// <summary>Reads <paramref name="read"/> until <paramref name="condition"/> holds; inconclusive past the limit.</summary>
+    /// <summary>
+    /// Reads <paramref name="read"/> until <paramref name="condition"/> holds; inconclusive past the limit.
+    /// </summary>
     /// <param name="what">What is awaited, for the message (e.g. "trickplay").</param>
     public static async Task<T> UntilAsync<T>(
         Func<T> read,
@@ -51,7 +53,9 @@ public static class SlowWork
         }
     }
 
-    /// <summary>Runs ffmpeg for a test (to make its media); a timeout makes the test inconclusive, an error fails it.</summary>
+    /// <summary>
+    /// Runs ffmpeg for a test (to make its media); a timeout makes the test inconclusive, an error fails it.
+    /// </summary>
     public static async Task RunFfmpegAsync(
         Ffmpeg ffmpeg,
         IEnumerable<string> arguments,

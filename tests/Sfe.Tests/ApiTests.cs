@@ -1514,12 +1514,12 @@ public sealed class ApiTests
 
         // The client's own sources, then the built client: the framework's bundled error messages name its
         // documentation site (text shown to developers, never requested). pdf.js parses links against the dummy bases
-        // example.com and foo.bar (never fetched), names the XUL namespace (www.mozilla.org), and its pictures carry the
-        // MPL's address (mozilla.org) in a comment. epub.js names the EPUB and Dublin Core namespaces (www.idpf.org,
-        // purl.org), jszip and the bundler's CommonJS shim link their docs in error messages (stuk.github.io, rolldown.rs).
-        // Ruffle (flash/ruffle/) links its site and its project (ruffle.rs, github.com) in its error panel: links,
-        // not requests, which its frame can't even follow (no allow-popups).
-        // Hosts are matched whole (the pattern doesn't take paths).
+        // example.com and foo.bar (never fetched), names the XUL namespace (www.mozilla.org), and its pictures carry
+        // the MPL's address (mozilla.org) in a comment. epub.js names the EPUB and Dublin Core namespaces
+        // (www.idpf.org, purl.org), jszip and the bundler's CommonJS shim link their docs in error messages
+        // (stuk.github.io, rolldown.rs). Ruffle (flash/ruffle/) links its site and its project (ruffle.rs, github.com)
+        // in its error panel: links, not requests, which its frame can't even follow (no allow-popups). Hosts are
+        // matched whole (the pattern doesn't take paths).
         var offenders = ExternalUrls(Path.Combine(web, "src"), [".ts", ".html", ".css"], [])
             .Concat(ExternalUrls(Path.Combine(web, "public"), [".html", ".js", ".css", ".svg"], []))
             .Concat(

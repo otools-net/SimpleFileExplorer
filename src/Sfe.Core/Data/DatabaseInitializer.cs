@@ -15,7 +15,9 @@ public sealed class DatabaseInitializer(IDbContextFactory<SfeDbContext> dbFactor
     }
 }
 
-/// <summary>Creates or updates the database of the accounts, groups and libraries (<see cref="AccessDbContext"/>).</summary>
+/// <summary>
+/// Creates or updates the database of the accounts, groups and libraries (<see cref="AccessDbContext"/>).
+/// </summary>
 public sealed class AccessDatabaseInitializer(
     IDbContextFactory<AccessDbContext> dbFactory,
     ILogger<AccessDatabaseInitializer> logger

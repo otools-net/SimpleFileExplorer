@@ -4,8 +4,9 @@ namespace Sfe.Api.Security;
 
 /// <summary>
 /// Headers every answer carries, so that a page of another site cannot frame the app (clickjacking), the browser never
-/// guesses a type, links don't tell other sites the app's addresses, and the app's pages run only the app's own scripts.
-/// A route that sets its own <c>Content-Security-Policy</c> (the library's files: <see cref="FilePolicy"/>) keeps it.
+/// guesses a type, links don't tell other sites the app's addresses, and the app's pages run only the app's own
+/// scripts. A route that sets its own <c>Content-Security-Policy</c> (the library's files: <see cref="FilePolicy"/>)
+/// keeps it.
 /// </summary>
 public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPolicy)
 {
@@ -29,7 +30,9 @@ public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPol
             + "form-action 'self'; frame-ancestors 'none'";
     }
 
-    /// <summary><c>scheme://host[:port]</c> of an http(s) address, placeholders filled; null when it has none.</summary>
+    /// <summary>
+    /// <c>scheme://host[:port]</c> of an http(s) address, placeholders filled; null when it has none.
+    /// </summary>
     private static string? OriginOf(string address)
     {
         var filled = address
@@ -53,17 +56,21 @@ public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPol
     /// </summary>
     public const string FilePolicy = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
 
-    /// <summary>The page of the Flash viewer's frame (<see cref="FlashPlayerPage"/>), the only one framed by the app.</summary>
+    /// <summary>
+    /// The page of the Flash viewer's frame (<see cref="FlashPlayerPage"/>), the only one framed by the app.
+    /// </summary>
     public const string FlashPlayerPage = "/flash/player.html";
 
-    /// <summary>Ruffle's own files (scripts, WebAssembly): fetched by the player's frame, which has no origin.</summary>
+    /// <summary>
+    /// Ruffle's own files (scripts, WebAssembly): fetched by the player's frame, which has no origin.
+    /// </summary>
     public const string RuffleFiles = "/flash/ruffle";
 
     /// <summary>
-    /// The Flash viewer's frame (agents/docs/features/flash-viewer.md): Ruffle compiles WebAssembly (<c>'wasm-unsafe-eval'</c>,
-    /// on this page only), and the page is sandboxed without <c>allow-same-origin</c>: it has no origin, so neither Ruffle
-    /// nor a movie can send the session's cookie, read the app's storage or reach the page around it. It loads only the
-    /// app's files; only the app may frame it.
+    /// The Flash viewer's frame (agents/docs/features/flash-viewer.md): Ruffle compiles WebAssembly
+    /// (<c>'wasm-unsafe-eval'</c>, on this page only), and the page is sandboxed without <c>allow-same-origin</c>: it
+    /// has no origin, so neither Ruffle nor a movie can send the session's cookie, read the app's storage or reach the
+    /// page around it. It loads only the app's files; only the app may frame it.
     /// </summary>
     public const string FlashPolicy =
         "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; "

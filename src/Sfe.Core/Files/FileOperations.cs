@@ -21,7 +21,9 @@ public enum FileOperationStatus
     /// <summary>The name can't be used (<see cref="FileNames.Check"/>, reserved, too long for the index).</summary>
     Invalid,
 
-    /// <summary>Something of that name is already there (seen or not by the asker: they are told nothing else).</summary>
+    /// <summary>
+    /// Something of that name is already there (seen or not by the asker: they are told nothing else).
+    /// </summary>
     Exists,
 
     /// <summary>A scan runs over that place: try again once it has finished.</summary>
@@ -39,7 +41,10 @@ public enum FileOperationStatus
     /// <summary>The caller may not do it there (refused by the routes).</summary>
     Forbidden,
 
-    /// <summary>It can't go to the trash (a folder holding links, on another drive than the trash): delete it permanently instead?</summary>
+    /// <summary>
+    /// It can't go to the trash (a folder holding links, on another drive than the trash): delete it permanently
+    /// instead?
+    /// </summary>
     TrashUnavailable,
 
     /// <summary>An archive protected by a password that wasn't given, or a wrong one: nothing was extracted.</summary>
@@ -82,7 +87,9 @@ public sealed class FileOperations(
     FolderRuleService? rules = null
 )
 {
-    /// <summary>Tries of a rename refused because a file is in use (a thumbnail being made...), and the wait between them.</summary>
+    /// <summary>
+    /// Tries of a rename refused because a file is in use (a thumbnail being made...), and the wait between them.
+    /// </summary>
     private const int InUseAttempts = 3;
     private static readonly TimeSpan InUseDelay = TimeSpan.FromMilliseconds(250);
 
@@ -401,7 +408,9 @@ public sealed class FileOperations(
         }
     }
 
-    /// <summary>Why <paramref name="name"/> can't be a new name in the folder <paramref name="parent"/>; null when it can.</summary>
+    /// <summary>
+    /// Why <paramref name="name"/> can't be a new name in the folder <paramref name="parent"/>; null when it can.
+    /// </summary>
     private (FileOperationResult? Error, string? Path) Target(string parent, string? name)
     {
         if (FileNames.Check(name, PortableNames) is { } message)
@@ -473,7 +482,8 @@ public sealed class FileOperations(
 
     /// <summary>
     /// Why the index could not hold the new paths of what is at <paramref name="full"/> once longer by
-    /// <paramref name="growth"/> characters (SQL Server keeps paths to <see cref="SfeDbContext.MaxPathLength"/>); null when it can.
+    /// <paramref name="growth"/> characters (SQL Server keeps paths to <see cref="SfeDbContext.MaxPathLength"/>); null
+    /// when it can.
     /// </summary>
     private async Task<string?> TooLongForTheIndexAsync(string full, int growth, CancellationToken cancellationToken)
     {

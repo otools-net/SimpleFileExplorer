@@ -36,7 +36,9 @@ public sealed class VideoFingerprint
         Contrast = contrast;
     }
 
-    /// <summary>Seconds between two frames (the trickplay interval): only fingerprints of the same interval compare.</summary>
+    /// <summary>
+    /// Seconds between two frames (the trickplay interval): only fingerprints of the same interval compare.
+    /// </summary>
     public int Interval { get; }
 
     public ulong[] Hashes { get; }
@@ -51,7 +53,9 @@ public sealed class VideoFingerprint
     /// <summary>Bits that differ between two frame hashes (0 to 64).</summary>
     public static int Distance(ulong a, ulong b) => BitOperations.PopCount(a ^ b);
 
-    /// <summary>Fingerprint of <paramref name="count"/> frames given as consecutive 9×8 grey pictures (row by row).</summary>
+    /// <summary>
+    /// Fingerprint of <paramref name="count"/> frames given as consecutive 9×8 grey pictures (row by row).
+    /// </summary>
     public static VideoFingerprint FromGreyFrames(int interval, ReadOnlySpan<byte> pixels, int count)
     {
         count = Math.Min(count, pixels.Length / FrameBytes);
@@ -86,7 +90,9 @@ public sealed class VideoFingerprint
         return new VideoFingerprint(interval, hashes, contrast);
     }
 
-    /// <summary>Layout: <c>"SFP1"</c>, then per frame its hash (8 bytes, little-endian) and its contrast (1 byte).</summary>
+    /// <summary>
+    /// Layout: <c>"SFP1"</c>, then per frame its hash (8 bytes, little-endian) and its contrast (1 byte).
+    /// </summary>
     public void Write(string path)
     {
         var bytes = new byte[sizeof(uint) + Count * RecordBytes];

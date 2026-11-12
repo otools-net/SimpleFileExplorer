@@ -88,7 +88,8 @@ public sealed class LocalStartTests
     [TestMethod]
     public async Task BeingOnThisComputerIsNotEnoughWithoutTheSetupLink()
     {
-        // A tunnel on the computer (ssh -R, ngrok tcp) brings strangers in from 127.0.0.1; so does every other user of it.
+        // A tunnel on the computer (ssh -R, ngrok tcp) brings strangers in from 127.0.0.1; so does every other user of
+        // it.
         var factory = Factory();
         var loopback = ApiClients.CreateFrom(factory, ThisComputer);
         var guessed = ApiClients.CreateFrom(factory, ThisComputer);
@@ -164,7 +165,8 @@ public sealed class LocalStartTests
     {
         var factory = Factory();
         var client = ApiClients.CreateFrom(factory, address);
-        // Even with the link of the first start (seen over a shoulder, in a screenshot): it only works from this computer.
+        // Even with the link of the first start (seen over a shoulder, in a screenshot): it only works from this
+        // computer.
         client.DefaultRequestHeaders.Add(
             LocalSetupLink.Header,
             factory.Services.GetRequiredService<LocalSetupLink>().Token
@@ -516,7 +518,9 @@ public sealed class LocalStartTests
         return library;
     }
 
-    /// <summary>A Local server (what these conveniences are for), unless <paramref name="configure"/> sets another mode.</summary>
+    /// <summary>
+    /// A Local server (what these conveniences are for), unless <paramref name="configure"/> sets another mode.
+    /// </summary>
     private WebApplicationFactory<Program> Factory(
         Action<IDictionary<string, string?>>? configure = null,
         TimeProvider? time = null,

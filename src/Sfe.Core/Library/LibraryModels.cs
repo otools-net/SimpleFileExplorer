@@ -21,19 +21,27 @@ public enum SortField
     /// <summary>Full path, grouping search results by folder; the same as <see cref="Name"/> when browsing.</summary>
     Path,
 
-    /// <summary>Length of videos and audio, from the index: searches only; the same as <see cref="Name"/> when browsing.</summary>
+    /// <summary>
+    /// Length of videos and audio, from the index: searches only; the same as <see cref="Name"/> when browsing.
+    /// </summary>
     Duration,
 
-    /// <summary>Width × height of images and videos, from the index: searches only; the same as <see cref="Name"/> when browsing.</summary>
+    /// <summary>
+    /// Width × height of images and videos, from the index: searches only; the same as <see cref="Name"/> when
+    /// browsing.
+    /// </summary>
     Resolution,
 }
 
 /// <param name="Path">Path relative to the library root, '/' separated.</param>
 /// <param name="Directory">Parent folder (relative), only filled for search results.</param>
-/// <param name="Tags">Tags set on a file (not inherited ones); null for folders, or when the index is unavailable.</param>
-/// <param name="Width">Pixel width of an image or video, when the index knows it (see <see cref="Data.FileEntry.Width"/>).</param>
+/// <param name="Tags">Tags set on a file (not inherited ones); null for folders, or when the index is
+/// unavailable.</param>
+/// <param name="Width">Pixel width of an image or video, when the index knows it (see
+/// <see cref="Data.FileEntry.Width"/>).</param>
 /// <param name="Height">Pixel height, set along with <paramref name="Width"/>.</param>
-/// <param name="Duration">Seconds of a video or audio file, when the index knows them (see <see cref="Data.FileEntry.Duration"/>).</param>
+/// <param name="Duration">Seconds of a video or audio file, when the index knows them (see
+/// <see cref="Data.FileEntry.Duration"/>).</param>
 /// <param name="Indexed">
 /// Browsing only: whether the index has this file or folder (false until a scan reaches it); null when the index could
 /// not be read, and for search results, which all come from the index.
@@ -69,7 +77,8 @@ public sealed record LibraryItem(
 
 public sealed record Breadcrumb(string Name, string Path);
 
-/// <param name="Access">What folder rules let the asker do here; null when none apply to it (every right of the space).</param>
+/// <param name="Access">What folder rules let the asker do here; null when none apply to it (every right of the
+/// space).</param>
 /// <param name="Exclusions">What the folder is kept out of (scans, trickplay, thumbnails); null when nothing.</param>
 /// <param name="DefaultTags">The default tags of the folder, its own and its parents'; null when none.</param>
 public sealed record DirectoryListing(
@@ -91,7 +100,8 @@ public sealed record DirectoryListing(
 /// <summary>What folder rules let the asker do in a folder (agents/docs/features/folder-access.md).</summary>
 /// <param name="Rights">The rights it has here.</param>
 /// <param name="PathOnly">It doesn't see the folder: the folder only leads to what it sees below.</param>
-/// <param name="Children">The entries whose access differs from the folder's, by name; the others have the folder's.</param>
+/// <param name="Children">The entries whose access differs from the folder's, by name; the others have the
+/// folder's.</param>
 public sealed record FolderAccessView(
     IReadOnlyList<string> Rights,
     bool PathOnly,
@@ -100,12 +110,14 @@ public sealed record FolderAccessView(
 
 /// <param name="Previous">The folder listed before this one in its parent; null for the first one or the root.</param>
 /// <param name="Next">The folder listed after this one; null for the last one or the root.</param>
-/// <param name="Position">1-based place of the folder among its parent's folders; 0 when not listed there (root).</param>
+/// <param name="Position">1-based place of the folder among its parent's folders; 0 when not listed there
+/// (root).</param>
 /// <param name="Count">Number of folders in the parent.</param>
 public sealed record FolderSiblings(string Path, LibraryItem? Previous, LibraryItem? Next, int Position, int Count);
 
 /// <param name="Path">The folder, relative to the library root.</param>
-/// <param name="Items">Its first pictures (images, videos with thumbnails) in name order; empty when it has none.</param>
+/// <param name="Items">Its first pictures (images, videos with thumbnails) in name order; empty when it has
+/// none.</param>
 public sealed record FolderCover(string Path, IReadOnlyList<LibraryItem> Items);
 
 /// <param name="Next">Value of the <c>after</c> parameter that requests the next page; null on the last page.</param>
@@ -113,7 +125,8 @@ public sealed record FolderCover(string Path, IReadOnlyList<LibraryItem> Items);
 /// Number of matches, counted on the first page only (null on the next ones) and at most
 /// <see cref="Search.FileSearchService.CountLimit"/>.
 /// </param>
-/// <param name="TotalCapped">The count stopped at the limit: there are more matches than <paramref name="Total"/>.</param>
+/// <param name="TotalCapped">The count stopped at the limit: there are more matches than
+/// <paramref name="Total"/>.</param>
 public sealed record SearchResults(
     string Query,
     string Path,

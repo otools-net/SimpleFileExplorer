@@ -5,11 +5,11 @@ using Sfe.Core.Options;
 namespace Sfe.Api.Security;
 
 /// <summary>
-/// Failed sign-ins counted per account name and address (<see cref="SecurityOptions.MaxFailedSignIns"/>): after too many,
-/// that address waits <see cref="SecurityOptions.LockoutMinutes"/> before trying that name again, while the account's
-/// owner signs in from anywhere else. Names that don't exist count the same, so the answers don't tell which exist. The
-/// account itself is locked much later (<see cref="SecurityOptions.AccountLockoutFailures"/>, in the database), against
-/// guesses from many addresses. Kept in memory: a restart forgets it, as the rate limits.
+/// Failed sign-ins counted per account name and address (<see cref="SecurityOptions.MaxFailedSignIns"/>): after too
+/// many, that address waits <see cref="SecurityOptions.LockoutMinutes"/> before trying that name again, while the
+/// account's owner signs in from anywhere else. Names that don't exist count the same, so the answers don't tell which
+/// exist. The account itself is locked much later (<see cref="SecurityOptions.AccountLockoutFailures"/>, in the
+/// database), against guesses from many addresses. Kept in memory: a restart forgets it, as the rate limits.
 /// </summary>
 public sealed class SignInThrottle(IOptionsMonitor<SecurityOptions> security)
 {

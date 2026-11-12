@@ -4,7 +4,8 @@ namespace Sfe.Core.Data;
 
 /// <summary>
 /// A file or folder deleted to the trash (agents/docs/features/trash.md): it is kept in the work folder
-/// (<see cref="Files.WorkFolder"/>) under <c>trash/{Folder}/{Name}</c> until it is restored, deleted for good or purged.
+/// (<see cref="Files.WorkFolder"/>) under <c>trash/{Folder}/{Name}</c> until it is restored, deleted for good or
+/// purged.
 /// </summary>
 public sealed class TrashEntry
 {
@@ -38,7 +39,10 @@ public sealed class TrashEntry
     /// <summary>Its own folder under the trash (a GUID): two deletions of the same name never meet.</summary>
     public string Folder { get; set; } = string.Empty;
 
-    /// <summary>The folder rules of a folder and below it, as JSON, given back by a restore (<see cref="Access.FolderRuleService"/>).</summary>
+    /// <summary>
+    /// The folder rules of a folder and below it, as JSON, given back by a restore
+    /// (<see cref="Access.FolderRuleService"/>).
+    /// </summary>
     public string? Rules { get; set; }
 
     /// <summary>

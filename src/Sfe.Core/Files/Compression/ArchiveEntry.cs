@@ -12,7 +12,9 @@ public enum ArchiveEntryKind
     Other = 3,
 }
 
-/// <summary>How a zip entry is encrypted (other formats: SharpCompress knows, <see cref="ArchiveEntry.Encrypted"/> says).</summary>
+/// <summary>
+/// How a zip entry is encrypted (other formats: SharpCompress knows, <see cref="ArchiveEntry.Encrypted"/> says).
+/// </summary>
 public enum ZipCipher
 {
     None = 0,

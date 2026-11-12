@@ -151,7 +151,9 @@ public sealed class LibraryContentTests
         writer.Write(text);
     }
 
-    /// <summary>A GET as a browser sends it when it loads <paramref name="url"/> for <paramref name="destination"/>.</summary>
+    /// <summary>
+    /// A GET as a browser sends it when it loads <paramref name="url"/> for <paramref name="destination"/>.
+    /// </summary>
     private async Task<HttpResponseMessage> GetAsAsync(string url, string destination)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);

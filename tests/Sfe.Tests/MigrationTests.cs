@@ -524,7 +524,9 @@ public sealed class MigrationTests
         return Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text.ToString())));
     }
 
-    /// <summary>The zip's manifest, its database (a SQLite file with the accounts) and settings file; answers its entries.</summary>
+    /// <summary>
+    /// The zip's manifest, its database (a SQLite file with the accounts) and settings file; answers its entries.
+    /// </summary>
     private List<string> AssertBackup(byte[] zip, string version)
     {
         using var archive = new ZipArchive(new MemoryStream(zip));

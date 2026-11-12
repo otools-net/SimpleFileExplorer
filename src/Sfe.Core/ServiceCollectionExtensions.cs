@@ -35,7 +35,8 @@ public static class ServiceCollectionExtensions
     /// Folder that relative paths in the settings (thumbnail cache, SQLite database, settings file) are resolved
     /// against; the current directory when null.
     /// </param>
-    /// <param name="tenantId">The library these services work for; null = the first library (the configuration's).</param>
+    /// <param name="tenantId">The library these services work for; null = the first library (the
+    /// configuration's).</param>
     public static IServiceCollection AddSfeCore(
         this IServiceCollection services,
         IConfiguration configuration,

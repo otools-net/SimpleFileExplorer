@@ -96,7 +96,9 @@ public sealed class ProgramFolderAccessTests
         }
     }
 
-    /// <summary>An access list of its own (nothing inherited) where Administrators and the system have everything.</summary>
+    /// <summary>
+    /// An access list of its own (nothing inherited) where Administrators and the system have everything.
+    /// </summary>
     private static DirectorySecurity AdministratorsOnly()
     {
         var security = new DirectorySecurity();

@@ -27,13 +27,20 @@ public enum ArchiveVerdict
 /// <summary>The access of the person downloading, asked at each item and each folder of the zip.</summary>
 public interface IArchiveAccess
 {
-    /// <summary>Whether the root-relative <paramref name="path"/> may go in the zip (rights <c>files.view</c> and <c>files.download</c>).</summary>
+    /// <summary>
+    /// Whether the root-relative <paramref name="path"/> may go in the zip (rights <c>files.view</c> and
+    /// <c>files.download</c>).
+    /// </summary>
     ArchiveVerdict Check(string path);
 
-    /// <summary>The full path really is (through links) among the server's own files or a work folder: never served.</summary>
+    /// <summary>
+    /// The full path really is (through links) among the server's own files or a work folder: never served.
+    /// </summary>
     bool IsProtected(string fullPath);
 
-    /// <summary>As <see cref="IsProtected"/>, for a path with no link on the way (already resolved): no disk access.</summary>
+    /// <summary>
+    /// As <see cref="IsProtected"/>, for a path with no link on the way (already resolved): no disk access.
+    /// </summary>
     bool IsProtectedReal(string realPath);
 }
 
@@ -50,20 +57,24 @@ public sealed record ArchivePlanResult(FileOperationStatus Status, ArchivePlan? 
 
 /// <param name="Files">Files written.</param>
 /// <param name="Bytes">Their size.</param>
-/// <param name="LeftOut">Root-relative paths left out (links, unreadable files, folders not downloadable), listed in the zip.</param>
+/// <param name="LeftOut">Root-relative paths left out (links, unreadable files, folders not downloadable), listed in
+/// the zip.</param>
 public sealed record ArchiveSummary(int Files, long Bytes, IReadOnlyList<string> LeftOut);
 
 /// <param name="Level">Deflate level of the files (0: stored).</param>
-/// <param name="SkipCompressed">Files already compressed (pictures, videos, archives…) stored whatever the level.</param>
+/// <param name="SkipCompressed">Files already compressed (pictures, videos, archives…) stored whatever the
+/// level.</param>
 /// <param name="Exclude">The real path of the zip being written: never put into itself.</param>
 public sealed record CompressOptions(int Level = 6, bool SkipCompressed = true, string? Exclude = null);
 
-/// <summary>A zip grew past <c>Files:MaxArchiveMegabytes</c> while it was written (the index was behind the disk).</summary>
+/// <summary>
+/// A zip grew past <c>Files:MaxArchiveMegabytes</c> while it was written (the index was behind the disk).
+/// </summary>
 public sealed class ArchiveTooLargeException(string message) : IOException(message);
 
 /// <summary>
-/// Several files and folders downloaded as one zip (agents/docs/features/archives.md), written straight to the
-/// response while the files are read: no temporary file, nothing held in memory but the zip's directory. Media and other
+/// Several files and folders downloaded as one zip (agents/docs/features/archives.md), written straight to the response
+/// while the files are read: no temporary file, nothing held in memory but the zip's directory. Media and other
 /// compressed files are stored as they are, text is compressed. Links are never followed, the server's files and work
 /// folders never included, and each folder is checked against the downloader's access on the way.
 /// </summary>
@@ -86,8 +97,8 @@ public sealed class Archives(
     private const int CopyBuffer = 1024 * 1024;
 
     /// <summary>
-    /// Extensions of files already compressed (pictures, sound, video, archives, documents that are zips): compressing them
-    /// again costs time for next to nothing, so a compression skipping them stores them.
+    /// Extensions of files already compressed (pictures, sound, video, archives, documents that are zips): compressing
+    /// them again costs time for next to nothing, so a compression skipping them stores them.
     /// </summary>
     private static readonly HashSet<string> AlreadyCompressed = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -149,7 +160,10 @@ public sealed class Archives(
         ".woff2",
     };
 
-    /// <summary>Extensions whose files gain from compression; everything else (media, archives, documents that are zips) is stored.</summary>
+    /// <summary>
+    /// Extensions whose files gain from compression; everything else (media, archives, documents that are zips) is
+    /// stored.
+    /// </summary>
     private static readonly HashSet<string> Compressible = new(StringComparer.OrdinalIgnoreCase)
     {
         ".txt",
@@ -266,7 +280,8 @@ public sealed class Archives(
 
     /// <summary>
     /// The size of what the plan holds as the index knows it (a folder not indexed counts nothing), to refuse a zip
-    /// larger than <see cref="MaxBytes"/> before it starts. Only called when there is a limit: it sums the folders' files.
+    /// larger than <see cref="MaxBytes"/> before it starts. Only called when there is a limit: it sums the folders'
+    /// files.
     /// </summary>
     public async Task<long> IndexedSizeAsync(ArchivePlan plan, CancellationToken cancellationToken = default)
     {
@@ -295,7 +310,8 @@ public sealed class Archives(
     /// as they are now, checked against <paramref name="access"/> at each one: hidden folders are left out silently,
     /// links, unreadable files and folders not downloadable are named in <see cref="LeftOutEntry"/>.
     /// </summary>
-    /// <exception cref="ArchiveTooLargeException">The zip passes <see cref="MaxBytes"/>: the output is incomplete.</exception>
+    /// <exception cref="ArchiveTooLargeException">The zip passes <see cref="MaxBytes"/>: the output is
+    /// incomplete.</exception>
     public async Task<ArchiveSummary> WriteAsync(
         ArchivePlan plan,
         Stream output,
@@ -324,10 +340,10 @@ public sealed class Archives(
     }
 
     /// <summary>
-    /// Writes the zip of <paramref name="plan"/> with SFE's own writer (a compression into the library, at the level and
-    /// with the password of <paramref name="writer"/>): the same walk as <see cref="WriteAsync"/>, with no size limit
-    /// but the disk's. <paramref name="read"/> is told the bytes read, <paramref name="written"/> the zip's length after
-    /// each file. The caller finishes the writer.
+    /// Writes the zip of <paramref name="plan"/> with SFE's own writer (a compression into the library, at the level
+    /// and with the password of <paramref name="writer"/>): the same walk as <see cref="WriteAsync"/>, with no size
+    /// limit but the disk's. <paramref name="read"/> is told the bytes read, <paramref name="written"/> the zip's
+    /// length after each file. The caller finishes the writer.
     /// </summary>
     public Task<ArchiveSummary> CompressAsync(
         ArchivePlan plan,
@@ -369,10 +385,15 @@ public sealed class Archives(
         return new ArchiveSummary(writer.Files, writer.Bytes, writer.LeftOut);
     }
 
-    /// <summary>A file or folder name as a zip entry: a backslash (a plain character on Linux) would be a folder on Windows.</summary>
+    /// <summary>
+    /// A file or folder name as a zip entry: a backslash (a plain character on Linux) would be a folder on Windows.
+    /// </summary>
     internal static string EntryName(string name) => name.Replace('\\', '_');
 
-    /// <summary>The zip's name: its only item's, else the folder they are in (the library's name for the root, or for several folders).</summary>
+    /// <summary>
+    /// The zip's name: its only item's, else the folder they are in (the library's name for the root, or for several
+    /// folders).
+    /// </summary>
     private string FileName(IReadOnlyList<ArchiveItem> items)
     {
         if (items.Count == 1)
@@ -442,7 +463,9 @@ public sealed class Archives(
         }
     }
 
-    /// <summary>A compression into the library: SFE's writer, at the level asked, files already compressed stored when asked.</summary>
+    /// <summary>
+    /// A compression into the library: SFE's writer, at the level asked, files already compressed stored when asked.
+    /// </summary>
     private sealed class CompressTarget(
         ZipWriter writer,
         CompressOptions options,

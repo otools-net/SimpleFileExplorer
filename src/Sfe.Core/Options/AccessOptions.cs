@@ -22,8 +22,9 @@ public sealed class SetupOptions
     public bool Recover { get; set; }
 
     /// <summary>
-    /// Where the server keeps the setup code it makes itself when none is configured (<see cref="Access.GeneratedSetupCode"/>),
-    /// so that nobody has to edit a file before the first start. Relative paths are resolved against the content root.
+    /// Where the server keeps the setup code it makes itself when none is configured
+    /// (<see cref="Access.GeneratedSetupCode"/>), so that nobody has to edit a file before the first start. Relative
+    /// paths are resolved against the content root.
     /// </summary>
     public string CodeFile { get; set; } = "data/setup-code.txt";
 
@@ -92,8 +93,8 @@ public sealed class SecurityOptions
 
     /// <summary>
     /// Reverse proxies (addresses, or networks such as <c>10.0.0.0/8</c>) whose <c>X-Forwarded-For</c> and
-    /// <c>X-Forwarded-Proto</c> are believed, besides this computer's own (always): the visitor's address then counts for
-    /// the sign-in limits, and https at the proxy marks the cookie secure.
+    /// <c>X-Forwarded-Proto</c> are believed, besides this computer's own (always): the visitor's address then counts
+    /// for the sign-in limits, and https at the proxy marks the cookie secure.
     /// </summary>
     public List<string> TrustedProxies { get; set; } = [];
 
@@ -130,9 +131,9 @@ public sealed class SecurityOptions
 public sealed class RightOptions
 {
     /// <summary>
-    /// Rights nobody gets, not even administrators (e.g. <c>tracking.duplicatesRemove</c>, <c>files.*</c>; <c>folder:write</c>
-    /// for every right that changes the library's files, <c>kind:write</c> for every right that changes anything): the
-    /// functions they cover are gone from the server. See <see cref="Access.RightCatalog"/>.
+    /// Rights nobody gets, not even administrators (e.g. <c>tracking.duplicatesRemove</c>, <c>files.*</c>;
+    /// <c>folder:write</c> for every right that changes the library's files, <c>kind:write</c> for every right that
+    /// changes anything): the functions they cover are gone from the server. See <see cref="Access.RightCatalog"/>.
     /// </summary>
     public List<string> Disabled { get; set; } = [];
 }

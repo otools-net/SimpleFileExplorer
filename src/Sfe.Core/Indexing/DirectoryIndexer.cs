@@ -343,7 +343,9 @@ public sealed class DirectoryIndexer(
         return entity;
     }
 
-    /// <summary>A file entering the index: with the default tags of its folder (<see cref="FolderDefaultTags"/>).</summary>
+    /// <summary>
+    /// A file entering the index: with the default tags of its folder (<see cref="FolderDefaultTags"/>).
+    /// </summary>
     private static FileEntry NewEntry(string fullName, int directoryId, int[] defaults) =>
         new()
         {
@@ -476,7 +478,9 @@ public sealed class DirectoryIndexer(
         }
     }
 
-    /// <summary>Tagged files no longer found are kept for relinking (<see cref="FileTracking.RelinkService"/>).</summary>
+    /// <summary>
+    /// Tagged files no longer found are kept for relinking (<see cref="FileTracking.RelinkService"/>).
+    /// </summary>
     private bool RememberMissing => options.CurrentValue.FileTracking.Relink.Enabled;
 
     private sealed record IndexedFile(
@@ -509,7 +513,9 @@ public sealed class DirectoryIndexer(
             _ => width is null,
         };
 
-    /// <summary>Copies the file's properties to its index entry, and its fingerprint and resolution when asked to.</summary>
+    /// <summary>
+    /// Copies the file's properties to its index entry, and its fingerprint and resolution when asked to.
+    /// </summary>
     private async Task CopyAsync(
         FileInfo file,
         FileEntry entry,
@@ -581,8 +587,8 @@ public sealed class DirectoryIndexer(
 
     /// <summary>
     /// Forgets what the index still holds at <paramref name="fullPath"/>, a folder (with what is below it) or a file
-    /// that is not on the disk any more: before a file or folder takes that name (<see cref="Files.PathMoves"/>). Tagged
-    /// files are kept as missing files, as by a scan.
+    /// that is not on the disk any more: before a file or folder takes that name (<see cref="Files.PathMoves"/>).
+    /// Tagged files are kept as missing files, as by a scan.
     /// </summary>
     internal async Task ForgetAsync(string fullPath, CancellationToken cancellationToken = default)
     {
@@ -600,7 +606,10 @@ public sealed class DirectoryIndexer(
         );
     }
 
-    /// <summary>The index row of the folder <paramref name="fullPath"/>, made (with its own parent's link) when <paramref name="create"/> and missing.</summary>
+    /// <summary>
+    /// The index row of the folder <paramref name="fullPath"/>, made (with its own parent's link) when
+    /// <paramref name="create"/> and missing.
+    /// </summary>
     /// <returns>null when it has none (and none was made: not asked, ignored, too long a path).</returns>
     internal async Task<int?> FolderIdAsync(
         SfeDbContext db,

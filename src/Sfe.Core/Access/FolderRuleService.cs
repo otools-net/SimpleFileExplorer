@@ -15,7 +15,9 @@ public sealed record FolderPrincipalRef(int? GroupId, int? UserId)
     internal bool Owns(FolderRule rule) => rule.GroupId == GroupId && rule.UserId == UserId;
 }
 
-/// <summary>A folder rule kept while its folder is out of the library (in the trash); its path relative to that folder.</summary>
+/// <summary>
+/// A folder rule kept while its folder is out of the library (in the trash); its path relative to that folder.
+/// </summary>
 public sealed record KeptFolderRule(
     string Path,
     int? GroupId,
@@ -80,7 +82,8 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
 
     /// <summary>
     /// Sets the level of <paramref name="principal"/> at <paramref name="path"/>, replacing its rule there; a null
-    /// <paramref name="level"/> removes the rule (the folder inherits again). The result is the rule, null when removed.
+    /// <paramref name="level"/> removes the rule (the folder inherits again). The result is the rule, null when
+    /// removed.
     /// </summary>
     public async Task<AccessResult<FolderRuleInfo?>> SetAsync(
         int tenantId,
@@ -344,7 +347,8 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
 
     /// <summary>
     /// Gives back rules taken by <see cref="TakeTreeAsync"/> to the folder now at <paramref name="folder"/> (restored,
-    /// maybe under another name). Rules of groups deleted meanwhile, or of accounts no longer in the library, are dropped.
+    /// maybe under another name). Rules of groups deleted meanwhile, or of accounts no longer in the library, are
+    /// dropped.
     /// </summary>
     /// <returns>Rules put back.</returns>
     public async Task<int> PutBackAsync(
@@ -608,7 +612,9 @@ public sealed class FolderRuleMove : IAsyncDisposable
         }
     }
 
-    /// <summary>Releases the lock; without <see cref="CompleteAsync"/> or <see cref="AbortAsync"/> both sets of rules stay.</summary>
+    /// <summary>
+    /// Releases the lock; without <see cref="CompleteAsync"/> or <see cref="AbortAsync"/> both sets of rules stay.
+    /// </summary>
     public ValueTask DisposeAsync()
     {
         Release();

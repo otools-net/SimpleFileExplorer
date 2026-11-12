@@ -5,7 +5,8 @@ namespace Sfe.Core.Files.Compression;
 /// <param name="MaxDepth">Folders nested at most (<see cref="Options.ArchiveOptions.MaxDepth"/>).</param>
 /// <param name="MaxEntries">Entries read at most; past it the extraction stops and says so.</param>
 /// <param name="MaxCompressionRatio">A file claiming more than this many times its packed size is left out.</param>
-/// <param name="PortableNames">Names Windows refuses are left out on other systems too (<see cref="FileNames.Check"/>).</param>
+/// <param name="PortableNames">Names Windows refuses are left out on other systems too
+/// (<see cref="FileNames.Check"/>).</param>
 /// <param name="MaxFullPath">Longest full path written (the index's limit), or none.</param>
 public sealed record ExtractLimits(
     int MaxDepth,
@@ -26,12 +27,18 @@ public sealed class ExtractResult
     public int Folders { get; internal set; }
     public long Bytes { get; internal set; }
 
-    /// <summary>The first <see cref="ArchiveExtractor.KeptLeftOut"/> entries left out; <see cref="LeftOutCount"/> counts them all.</summary>
+    /// <summary>
+    /// The first <see cref="ArchiveExtractor.KeptLeftOut"/> entries left out; <see cref="LeftOutCount"/> counts them
+    /// all.
+    /// </summary>
     public List<ExtractLeftOut> LeftOut { get; } = [];
 
     public long LeftOutCount { get; internal set; }
 
-    /// <summary>Why the extraction stopped before the archive's end (too many entries, the archive broken there); null when it read it all.</summary>
+    /// <summary>
+    /// Why the extraction stopped before the archive's end (too many entries, the archive broken there); null when it
+    /// read it all.
+    /// </summary>
     public string? Stopped { get; internal set; }
 
     internal void Leave(string name, string reason)
@@ -65,7 +72,8 @@ public static class ArchiveExtractor
     /// Paths inside the archive (segments joined by <c>/</c>, as the catalog gives them) to extract with what is below
     /// them, each written from its own name (a chosen <c>a/b</c> is written as <c>b</c>); null: everything.
     /// </param>
-    /// <param name="reserve">Told each file's declared size before it is written: throws when the disk can't take it.</param>
+    /// <param name="reserve">Told each file's declared size before it is written: throws when the disk can't take
+    /// it.</param>
     /// <param name="read">How far into the archive's file the pass is.</param>
     /// <param name="written">Bytes written, as they are.</param>
     public static ExtractResult Extract(

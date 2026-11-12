@@ -24,12 +24,16 @@ public sealed class Ffmpeg
     /// <summary>Full path of the executable, or null when it can't be found.</summary>
     public string? ExecutablePath => _path.Value;
 
-    /// <summary>The executable as configured (<c>Thumbnails:FfmpegPath</c>): a path, or a name looked up on PATH.</summary>
+    /// <summary>
+    /// The executable as configured (<c>Thumbnails:FfmpegPath</c>): a path, or a name looked up on PATH.
+    /// </summary>
     public string Configured => _options.CurrentValue.Thumbnails.FfmpegPath;
 
     public bool IsAvailable => ExecutablePath is not null;
 
-    /// <summary>Runs ffmpeg with <paramref name="arguments"/>; standard output is copied to <paramref name="output"/>.</summary>
+    /// <summary>
+    /// Runs ffmpeg with <paramref name="arguments"/>; standard output is copied to <paramref name="output"/>.
+    /// </summary>
     /// <returns>The exit code and the error output.</returns>
     /// <exception cref="TimeoutException">ffmpeg ran longer than <paramref name="timeout"/> (it is killed).</exception>
     public async Task<(int ExitCode, string Errors)> RunAsync(
@@ -130,7 +134,9 @@ public sealed class Ffmpeg
         }
     }
 
-    /// <summary>The version ffmpeg reports (<c>7.1-full_build...</c>), read once; null when it is missing or says none.</summary>
+    /// <summary>
+    /// The version ffmpeg reports (<c>7.1-full_build...</c>), read once; null when it is missing or says none.
+    /// </summary>
     public Task<string?> GetVersionAsync() => _version.Value;
 
     private readonly Lazy<Task<string?>> _version;
@@ -181,7 +187,9 @@ public sealed class Ffmpeg
         return found;
     }
 
-    /// <summary>The file is named as ffmpeg's program (<c>ffmpeg</c>, <c>ffmpeg.exe</c> on Windows), whatever the case.</summary>
+    /// <summary>
+    /// The file is named as ffmpeg's program (<c>ffmpeg</c>, <c>ffmpeg.exe</c> on Windows), whatever the case.
+    /// </summary>
     public static bool IsFfmpegName(string path) =>
         Path.GetFileName(path) is var name
         && (
@@ -226,7 +234,9 @@ public sealed class Ffmpeg
             .FirstOrDefault(File.Exists);
     }
 
-    /// <summary>The version an ffmpeg executable reports, for a path not yet configured (the installation page).</summary>
+    /// <summary>
+    /// The version an ffmpeg executable reports, for a path not yet configured (the installation page).
+    /// </summary>
     public static async Task<string?> ProbeVersionAsync(
         string executable,
         CancellationToken cancellationToken = default

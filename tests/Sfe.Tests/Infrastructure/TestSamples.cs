@@ -26,7 +26,9 @@ public static class TestSamples
         return path;
     }
 
-    /// <summary>The tests' archives that need another program (7z), made by <c>agents/tools/samples/make-archives.mjs</c>.</summary>
+    /// <summary>
+    /// The tests' archives that need another program (7z), made by <c>agents/tools/samples/make-archives.mjs</c>.
+    /// </summary>
     public static string ArchivesFolder { get; } = Path.GetFullPath(Path.Combine(Folder, "..", "archives"));
 
     /// <summary>An archive sample's path in the repository (read in place: nothing writes to it).</summary>

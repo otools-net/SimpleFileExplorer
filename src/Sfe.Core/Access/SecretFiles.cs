@@ -38,7 +38,8 @@ public static class SecretFiles
 
     /// <summary>
     /// Creates the folder <paramref name="path"/> (and those above it that are missing) for the server's account only.
-    /// A folder that exists is left as it is: its administrator may have opened it on purpose (<see cref="IsOpenToOthers"/>).
+    /// A folder that exists is left as it is: its administrator may have opened it on purpose
+    /// (<see cref="IsOpenToOthers"/>).
     /// </summary>
     /// <exception cref="IOException">The folder cannot be created.</exception>
     public static void CreatePrivateDirectory(string path)

@@ -193,7 +193,9 @@ public sealed class RelinkService(
         return new MissingFileResults(items, total, hasMore, hasMore ? files[^1].Id : null, Settings.Enabled);
     }
 
-    /// <summary>Gives the tags of a missing file to a file of the library chosen by the user, and forgets the missing file.</summary>
+    /// <summary>
+    /// Gives the tags of a missing file to a file of the library chosen by the user, and forgets the missing file.
+    /// </summary>
     /// <param name="relativePath">Any existing file: it is indexed if needed.</param>
     /// <param name="visible">Where the asker may see files: a missing file that was elsewhere is not found.</param>
     public async Task<RelinkStatus> RelinkAsync(
@@ -256,7 +258,8 @@ public sealed class RelinkService(
     }
 
     /// <summary>Forgets a missing file and its tags (all of them when <paramref name="missingId"/> is null).</summary>
-    /// <param name="visible">Where the asker may see files: only the missing files that were there are forgotten.</param>
+    /// <param name="visible">Where the asker may see files: only the missing files that were there are
+    /// forgotten.</param>
     /// <returns>Missing files forgotten.</returns>
     public async Task<int> ForgetAsync(
         int? missingId,
@@ -279,7 +282,9 @@ public sealed class RelinkService(
         return await db.MissingFiles.CountAsync(cancellationToken);
     }
 
-    /// <summary>Moves the tags of the missing file to <paramref name="target"/>, with its cached previews, and forgets it.</summary>
+    /// <summary>
+    /// Moves the tags of the missing file to <paramref name="target"/>, with its cached previews, and forgets it.
+    /// </summary>
     private async Task RelinkAsync(
         SfeDbContext db,
         MissingFile missing,

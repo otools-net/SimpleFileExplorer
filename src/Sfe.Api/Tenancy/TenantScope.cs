@@ -9,7 +9,9 @@ using Sfe.Core.Thumbnails;
 
 namespace Sfe.Api.Tenancy;
 
-/// <summary>The services of the request's library, found once its session is known (<see cref="TenantMiddleware"/>).</summary>
+/// <summary>
+/// The services of the request's library, found once its session is known (<see cref="TenantMiddleware"/>).
+/// </summary>
 public sealed class TenantScope(TenantRegistry registry, CurrentAccess current)
 {
     private TenantHost? _host;
@@ -78,7 +80,8 @@ public sealed class TenantMiddleware(RequestDelegate next)
             return;
         }
 
-        // The routes' Core services come from the library's own container; its singletons are not the request's to dispose.
+        // The routes' Core services come from the library's own container; its singletons are not the request's to
+        // dispose.
         var original = context.RequestServices;
         context.RequestServices = new TenantRequestServices(original, host.Services);
         try
@@ -119,13 +122,16 @@ internal sealed class TenantRequestServices(IServiceProvider request, IServicePr
 
 public static class TenancyServiceCollectionExtensions
 {
-    /// <summary>The types a library's services provide (and the whole server doesn't share): see <see cref="AddSfeTenancy"/>.</summary>
+    /// <summary>
+    /// The types a library's services provide (and the whole server doesn't share): see <see cref="AddSfeTenancy"/>.
+    /// </summary>
     public static IReadOnlySet<Type> LibraryTypes { get; private set; } = new HashSet<Type>();
 
     /// <summary>
     /// The libraries' services (<see cref="TenantRegistry"/>). The routes keep asking for the Core's services (a
-    /// <c>LibraryBrowser</c>, the <c>SfeOptions</c>...): <see cref="TenantMiddleware"/> resolves each one in the request's
-    /// library. They are registered here too, so that the routes know them as services, but never resolved here.
+    /// <c>LibraryBrowser</c>, the <c>SfeOptions</c>...): <see cref="TenantMiddleware"/> resolves each one in the
+    /// request's library. They are registered here too, so that the routes know them as services, but never resolved
+    /// here.
     /// </summary>
     public static IServiceCollection AddSfeTenancy(
         this IServiceCollection services,

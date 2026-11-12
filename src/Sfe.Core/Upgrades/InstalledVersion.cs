@@ -7,7 +7,8 @@ using Sfe.Core.Data;
 namespace Sfe.Core.Upgrades;
 
 /// <param name="Exists">The database exists and has tables: an install, set up by some version of SFE.</param>
-/// <param name="Version">The version that last set it up or updated it; null when it predates the record (before 1.37.0).</param>
+/// <param name="Version">The version that last set it up or updated it; null when it predates the record (before
+/// 1.37.0).</param>
 public sealed record InstalledVersionInfo(bool Exists, string? Version);
 
 /// <summary>
@@ -36,7 +37,9 @@ public sealed class InstalledVersion(IDbContextFactory<AccessDbContext> dbFactor
         return new InstalledVersionInfo(true, version);
     }
 
-    /// <summary>Records that the install now belongs to <paramref name="version"/> (its schema is up to date).</summary>
+    /// <summary>
+    /// Records that the install now belongs to <paramref name="version"/> (its schema is up to date).
+    /// </summary>
     public async Task RecordAsync(string version, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -63,7 +66,10 @@ public sealed class InstalledVersion(IDbContextFactory<AccessDbContext> dbFactor
             db.ServerProperties.Add(new ServerProperty { Key = key, Value = value });
     }
 
-    /// <summary>The database has <paramref name="table"/> (in schema SFE on SQL Server): asked before querying a table an older install may lack.</summary>
+    /// <summary>
+    /// The database has <paramref name="table"/> (in schema SFE on SQL Server): asked before querying a table an older
+    /// install may lack.
+    /// </summary>
     public static async Task<bool> HasTableAsync(
         DbContext db,
         string table,

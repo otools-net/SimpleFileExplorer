@@ -185,7 +185,9 @@ public sealed partial class AccessService(
         return AccessResult<TenantInfo>.Ok(ToInfo(tenant));
     }
 
-    /// <summary>Changes the name, the guest access, the disabled rights and the status of a library (not its slug or root).</summary>
+    /// <summary>
+    /// Changes the name, the guest access, the disabled rights and the status of a library (not its slug or root).
+    /// </summary>
     public async Task<AccessResult<TenantInfo>> UpdateTenantAsync(
         int id,
         TenantInput input,
@@ -229,7 +231,9 @@ public sealed partial class AccessService(
         return AccessResult<TenantInfo>.Ok(ToInfo(tenant));
     }
 
-    /// <summary>Lets visitors without an account in, or not (the part of a library its own administrators change).</summary>
+    /// <summary>
+    /// Lets visitors without an account in, or not (the part of a library its own administrators change).
+    /// </summary>
     public async Task<TenantInfo?> SetGuestAccessAsync(
         int id,
         bool guestAccess,
@@ -362,7 +366,9 @@ public sealed partial class AccessService(
         return await db.Users.AnyAsync(u => u.IsServerAdmin && !u.Disabled, cancellationToken);
     }
 
-    /// <summary>The enabled server administrators, at most two: enough to tell whether there is a single one (fast sign-in).</summary>
+    /// <summary>
+    /// The enabled server administrators, at most two: enough to tell whether there is a single one (fast sign-in).
+    /// </summary>
     public async Task<IReadOnlyList<int>> GetServerAdminIdsAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -554,7 +560,8 @@ public sealed partial class AccessService(
 
     // ---- Groups ----
 
-    /// <param name="tenantId">The space's groups; null = those of every space (the account editor of server administrators).</param>
+    /// <param name="tenantId">The space's groups; null = those of every space (the account editor of server
+    /// administrators).</param>
     public async Task<IReadOnlyList<GroupInfo>> GetGroupsAsync(
         int? tenantId,
         CancellationToken cancellationToken = default
@@ -723,7 +730,10 @@ public sealed partial class AccessService(
 
     private static string? Clean(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
 
-    /// <summary>Replaces the account's groups among those <paramref name="tenantScope"/> covers; an error for a group outside it.</summary>
+    /// <summary>
+    /// Replaces the account's groups among those <paramref name="tenantScope"/> covers; an error for a group outside
+    /// it.
+    /// </summary>
     private static async Task<string?> ReplaceGroupsAsync(
         AccessDbContext db,
         UserAccount user,

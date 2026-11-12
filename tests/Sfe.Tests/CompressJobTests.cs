@@ -10,8 +10,8 @@ using Sfe.Tests.Infrastructure;
 namespace Sfe.Tests;
 
 /// <summary>
-/// Zips made in the library as background jobs (<see cref="FileJobs"/>, <see cref="FileJobKind.Compress"/>). The walk is
-/// the downloads' (links, rules, the note of what was left out: <c>ArchivesTests</c>); here, what the job adds.
+/// Zips made in the library as background jobs (<see cref="FileJobs"/>, <see cref="FileJobKind.Compress"/>). The walk
+/// is the downloads' (links, rules, the note of what was left out: <c>ArchivesTests</c>); here, what the job adds.
 /// </summary>
 [TestClass]
 public sealed class CompressJobTests
@@ -289,7 +289,9 @@ public sealed class CompressJobTests
         throw new TimeoutException(_log.ToString());
     }
 
-    /// <summary>Everything allowed but what <see cref="Refuse"/> and <see cref="Walk"/> say; <see cref="Gone"/>: the account is.</summary>
+    /// <summary>
+    /// Everything allowed but what <see cref="Refuse"/> and <see cref="Walk"/> say; <see cref="Gone"/>: the account is.
+    /// </summary>
     private sealed class FakeAccess : IFileJobAccess, IArchiveAccess
     {
         public Func<string, string, bool> Refuse { get; init; } = (_, _) => false;

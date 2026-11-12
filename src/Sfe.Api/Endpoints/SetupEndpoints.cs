@@ -23,7 +23,8 @@ public enum HostingKind
 }
 
 /// <param name="Hosting">How the server runs (the setup page explains how to set the code for it).</param>
-/// <param name="CodeGenerated">The code is the one the server made itself: shown in its console and kept in <paramref name="CodeFile"/>.</param>
+/// <param name="CodeGenerated">The code is the one the server made itself: shown in its console and kept in
+/// <paramref name="CodeFile"/>.</param>
 /// <param name="CodeRequired">
 /// The setup asks this visitor for the code; false for a new install set up from the server's own computer
 /// (<c>Sfe:Setup:LocalWithoutCode</c>): the setup and installation routes then take no code.

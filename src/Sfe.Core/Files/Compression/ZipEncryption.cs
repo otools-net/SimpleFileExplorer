@@ -4,9 +4,9 @@ using System.Text;
 namespace Sfe.Core.Files.Compression;
 
 /// <summary>
-/// Decrypting zip entries (agents/docs/features/archive-reading.md): ZipCrypto (old archives)
-/// and WinZip AES (AE-1, AE-2; 128, 192, 256 bits). Ours, not SharpCompress' zip: our directory reader keeps memory flat
-/// whatever the count, and AES is also what SFE writes.
+/// Decrypting zip entries (agents/docs/features/archive-reading.md): ZipCrypto (old archives) and WinZip AES (AE-1,
+/// AE-2; 128, 192, 256 bits). Ours, not SharpCompress' zip: our directory reader keeps memory flat whatever the count,
+/// and AES is also what SFE writes.
 /// </summary>
 internal static class ZipEncryption
 {
@@ -34,8 +34,8 @@ internal static class ZipEncryption
         };
 
     /// <summary>
-    /// The entry's compressed data, decrypted from <paramref name="packed"/> (its whole packed data): checked against the
-    /// password at once (ZipCrypto's check byte, AES' verifier), and AES' authentication code at the end.
+    /// The entry's compressed data, decrypted from <paramref name="packed"/> (its whole packed data): checked against
+    /// the password at once (ZipCrypto's check byte, AES' verifier), and AES' authentication code at the end.
     /// </summary>
     public static Stream Decrypt(Stream packed, ArchiveEntry entry, string? password)
     {
@@ -134,9 +134,9 @@ internal static class ZipEncryption
     }
 
     /// <summary>
-    /// WinZip AES: AES in counter mode (a little-endian counter from 1), HMAC-SHA1 of the encrypted data, whose first 10
-    /// bytes follow the data. A mismatch at the end is a wrong password or a damaged entry: the data read is not to be
-    /// trusted, and the reader gets an error instead of the end.
+    /// WinZip AES: AES in counter mode (a little-endian counter from 1), HMAC-SHA1 of the encrypted data, whose first
+    /// 10 bytes follow the data. A mismatch at the end is a wrong password or a damaged entry: the data read is not to
+    /// be trusted, and the reader gets an error instead of the end.
     /// </summary>
     private sealed class AesCtrStream : ReadOnlyStream
     {
@@ -267,8 +267,8 @@ internal abstract class ReadOnlyStream(Stream inner) : Stream
 }
 
 /// <summary>
-/// Checks the CRC-32 of what is read at its end: a damaged entry, or a wrong ZipCrypto password (which passes its 1-byte
-/// check 1 time in 256). <paramref name="encrypted"/>: a mismatch may be the password.
+/// Checks the CRC-32 of what is read at its end: a damaged entry, or a wrong ZipCrypto password (which passes its
+/// 1-byte check 1 time in 256). <paramref name="encrypted"/>: a mismatch may be the password.
 /// </summary>
 internal sealed class CrcCheckStream(Stream inner, uint expected, bool encrypted = true) : ReadOnlyStream(inner)
 {

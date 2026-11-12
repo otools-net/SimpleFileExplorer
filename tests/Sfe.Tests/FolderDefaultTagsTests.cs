@@ -8,7 +8,9 @@ using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
 
-/// <summary>Default tags of folders (<see cref="FolderDefaultTags"/>): which files get them, and how they follow folders.</summary>
+/// <summary>
+/// Default tags of folders (<see cref="FolderDefaultTags"/>): which files get them, and how they follow folders.
+/// </summary>
 [TestClass]
 public sealed class FolderDefaultTagsTests
 {

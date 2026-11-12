@@ -27,9 +27,9 @@ public static class Subtitles
     }
 
     /// <summary>
-    /// The full path of the video next to <paramref name="subtitleFile"/> with one of <paramref name="videoExtensions"/>
-    /// (without a dot), as the extension is written or in capitals; null when there is none. A few file checks, not a
-    /// listing of the folder.
+    /// The full path of the video next to <paramref name="subtitleFile"/> with one of
+    /// <paramref name="videoExtensions"/> (without a dot), as the extension is written or in capitals; null when there
+    /// is none. A few file checks, not a listing of the folder.
     /// </summary>
     public static string? FindVideo(string subtitleFile, IEnumerable<string> videoExtensions)
     {

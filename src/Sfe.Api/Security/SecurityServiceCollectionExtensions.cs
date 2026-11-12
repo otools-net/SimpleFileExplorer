@@ -53,7 +53,8 @@ public static class SecurityServiceCollectionExtensions
                 options.CookieManager = new InstanceCookieManager();
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.Lax;
-                // Plain http on a home network has to work; behind https (or a trusted proxy's) the cookie is marked secure.
+                // Plain http on a home network has to work; behind https (or a trusted proxy's) the cookie is marked
+                // secure.
                 options.Cookie.SecurePolicy = security.RequireHttps
                     ? CookieSecurePolicy.Always
                     : CookieSecurePolicy.SameAsRequest;

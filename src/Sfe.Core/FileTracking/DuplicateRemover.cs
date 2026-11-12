@@ -11,10 +11,10 @@ using Sfe.Core.Tagging;
 namespace Sfe.Core.FileTracking;
 
 /// <summary>
-/// Removes one copy of a duplicate, after adding its tags to the copy kept: to the library's <see cref="Trash"/>, or for
-/// good when the space deletes permanently (<see cref="FileManagementOptions.DeletePermanently"/>). The content must
-/// never be lost: the copies are compared byte for byte (the fingerprint only covers the first megabyte), and two paths
-/// leading to the same file (folder links) are refused.
+/// Removes one copy of a duplicate, after adding its tags to the copy kept: to the library's <see cref="Trash"/>, or
+/// for good when the space deletes permanently (<see cref="FileManagementOptions.DeletePermanently"/>). The content
+/// must never be lost: the copies are compared byte for byte (the fingerprint only covers the first megabyte), and two
+/// paths leading to the same file (folder links) are refused.
 /// </summary>
 public sealed class DuplicateRemover(
     IDbContextFactory<SfeDbContext> dbFactory,

@@ -9,7 +9,9 @@ internal static class FileTagRows
     /// <summary>Files read and changed per round trip.</summary>
     public const int BatchSize = 1000;
 
-    /// <summary>Gives <paramref name="tagIds"/> to the files <paramref name="fileIds"/> (one batch) that lack them.</summary>
+    /// <summary>
+    /// Gives <paramref name="tagIds"/> to the files <paramref name="fileIds"/> (one batch) that lack them.
+    /// </summary>
     /// <returns>Links added.</returns>
     public static async Task<int> AddAsync(
         SfeDbContext db,

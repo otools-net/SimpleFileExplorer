@@ -16,9 +16,11 @@ namespace Sfe.Api.Endpoints;
 /// <param name="Kind"><c>folder</c>, <c>file</c>, <c>link</c> (never created when extracting) or <c>other</c>.</param>
 /// <param name="Packed">0 when the format doesn't tell it per entry (a solid 7z or rar).</param>
 /// <param name="Folders">A folder's folders and entries right inside it, and its files in all.</param>
-/// <param name="Where">In search results: the path of the folder it is in, its last folders after "…/" when deep.</param>
+/// <param name="Where">In search results: the path of the folder it is in, its last folders after "…/" when
+/// deep.</param>
 /// <param name="In">In search results: the id of the folder it is in (to open it).</param>
-/// <param name="Media">A file the library calls a picture, video or audio (<c>image</c>, <c>video</c>, <c>audio</c>: <c>Sfe:FileTypes</c>), else null.</param>
+/// <param name="Media">A file the library calls a picture, video or audio (<c>image</c>, <c>video</c>, <c>audio</c>:
+/// <c>Sfe:FileTypes</c>), else null.</param>
 public sealed record ArchiveItem(
     string Kind,
     long Id,
@@ -35,19 +37,24 @@ public sealed record ArchiveItem(
     long? In = null
 );
 
-/// <param name="Items">Folders, then files, whose name holds the text; <c>Where</c> is the path of the folder each is in.</param>
-/// <param name="Next">Where to go on (a page cut short by its time has fewer items); null once all was looked through.</param>
+/// <param name="Items">Folders, then files, whose name holds the text; <c>Where</c> is the path of the folder each is
+/// in.</param>
+/// <param name="Next">Where to go on (a page cut short by its time has fewer items); null once all was looked
+/// through.</param>
 public sealed record ArchiveSearch(IReadOnlyList<ArchiveItem> Items, string? Next);
 
 public sealed record ArchiveCrumb(long Id, string Name);
 
-/// <param name="Skipped">Folders between the root and <paramref name="Last"/> (deep trees: the way is shown collapsed).</param>
+/// <param name="Skipped">Folders between the root and <paramref name="Last"/> (deep trees: the way is shown
+/// collapsed).</param>
 public sealed record ArchiveTrail(int Skipped, IReadOnlyList<ArchiveCrumb> Last);
 
 /// <param name="Complete">False when the list stopped (a limit, damage): <paramref name="Stopped"/> says why.</param>
-/// <param name="NeedsPassword">The archive's list is encrypted and no unlock was given (or it expired): ask for it.</param>
+/// <param name="NeedsPassword">The archive's list is encrypted and no unlock was given (or it expired): ask for
+/// it.</param>
 /// <param name="Protected">Some of its files are encrypted: opening them needs the password.</param>
-/// <param name="Unlocked">The unlock given opens this archive (its list was read with the password, or its files open).</param>
+/// <param name="Unlocked">The unlock given opens this archive (its list was read with the password, or its files
+/// open).</param>
 /// <param name="Folder">The folder listed: its totals (<c>AllFiles</c>, <c>Size</c>: its whole tree).</param>
 /// <param name="Next">The cursor of the next page; null on the last one.</param>
 /// <param name="Path">The folder's whole path in the archive ("" at its top): on a first page, for a folder at most
@@ -79,10 +86,13 @@ public sealed record ArchiveReading(long Read);
 
 /// <param name="Archive">The archive's path in the library.</param>
 /// <param name="Target">The folder to extract into.</param>
-/// <param name="NewFolder">Into a new folder named after the archive (or after its one top folder); else straight into <paramref name="Target"/>.</param>
-/// <param name="Folders">Folders of the archive to extract (ids of its listing), with what they hold; none with <paramref name="Files"/>: all of it.</param>
+/// <param name="NewFolder">Into a new folder named after the archive (or after its one top folder); else straight into
+/// <paramref name="Target"/>.</param>
+/// <param name="Folders">Folders of the archive to extract (ids of its listing), with what they hold; none with
+/// <paramref name="Files"/>: all of it.</param>
 /// <param name="Files">Files of the archive to extract (ids of its listing).</param>
-/// <param name="Unlock">The unlock of the archive (from <c>explore/unlock</c>), or its <paramref name="Password"/>.</param>
+/// <param name="Unlock">The unlock of the archive (from <c>explore/unlock</c>), or its
+/// <paramref name="Password"/>.</param>
 public sealed record ExtractRequest(
     string? Archive,
     string? Target,
@@ -108,7 +118,9 @@ public static class ExploreEndpoints
     public const string NotProtectedType = "not-protected";
     public const string UnlockHeader = "X-SFE-Archive-Unlock";
 
-    /// <summary>The most of an entry read to try a password: its checks are at its start (zip) or come with its data.</summary>
+    /// <summary>
+    /// The most of an entry read to try a password: its checks are at its start (zip) or come with its data.
+    /// </summary>
     private const int TryBytes = 16 * 1024 * 1024;
     public const int PageSize = 200;
 
@@ -475,8 +487,8 @@ public static class ExploreEndpoints
         );
 
     /// <summary>
-    /// The catalog to answer from: the archive's own (on disk); for an archive whose list is encrypted, the one read with
-    /// the unlock's password, in memory.
+    /// The catalog to answer from: the archive's own (on disk); for an archive whose list is encrypted, the one read
+    /// with the unlock's password, in memory.
     /// </summary>
     private static ArchiveCatalogState CatalogOf(
         ArchiveCatalogs catalogs,
@@ -718,9 +730,9 @@ public static class ExploreEndpoints
     }
 
     /// <summary>
-    /// Whether <paramref name="password"/> opens the archive: its encrypted list read (its first entry), else its smallest
-    /// encrypted file read through (up to <see cref="TryBytes"/>: the checks of zip and RAR come first, AES' at the end);
-    /// null when nothing in it is encrypted.
+    /// Whether <paramref name="password"/> opens the archive: its encrypted list read (its first entry), else its
+    /// smallest encrypted file read through (up to <see cref="TryBytes"/>: the checks of zip and RAR come first, AES'
+    /// at the end); null when nothing in it is encrypted.
     /// </summary>
     private static bool? Opens(
         string full,
@@ -971,7 +983,9 @@ public static class ExploreEndpoints
     private static string EntryTag(string canonical, FileInfo archive, long id) =>
         $"{ArchiveCatalogs.KeyOf(canonical, archive.Length, archive.LastWriteTimeUtc)[..16]}-{id:x}";
 
-    /// <summary>An entry by its id (and its name, when given: it must be that), or by its path in the archive.</summary>
+    /// <summary>
+    /// An entry by its id (and its name, when given: it must be that), or by its path in the archive.
+    /// </summary>
     private sealed record EntryKey(long? Id, string? Name, string? At);
 
     /// <param name="Refused">Why it isn't opened (404, 403, a problem); else <paramref name="Data"/> is the entry's
@@ -1042,7 +1056,8 @@ public static class ExploreEndpoints
         }
 
         var entry = file.Entry;
-        // Per-entry packed sizes exist only where the format keeps them (zip, non-solid): elsewhere the declared size holds.
+        // Per-entry packed sizes exist only where the format keeps them (zip, non-solid): elsewhere the declared size
+        // holds.
         if (entry.Packed > 0 && entry.Size / entry.Packed > settings.MaxCompressionRatio)
         {
             return Problem(
@@ -1123,7 +1138,9 @@ public static class ExploreEndpoints
         }
     }
 
-    /// <summary>The archive's format when the viewer is offered for it (the client's rule, checked here on its bytes).</summary>
+    /// <summary>
+    /// The archive's format when the viewer is offered for it (the client's rule, checked here on its bytes).
+    /// </summary>
     private static ArchiveFormat? FormatOf(string full, SfeOptions options)
     {
         ArchiveFormat? format;

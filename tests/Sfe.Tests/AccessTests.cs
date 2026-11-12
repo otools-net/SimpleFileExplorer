@@ -214,7 +214,8 @@ public sealed class AccessTests
                             pathNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase)
                             && typeof(IEnumerable<char>).IsAssignableFrom(p.ParameterType)
                         )
-                        // Request bodies are the app's records (HttpRequest and some services have a Path of their own).
+                        // Request bodies are the app's records (HttpRequest and some services have a Path of their
+                        // own).
                         || (
                             p.ParameterType.Namespace?.StartsWith("Sfe.", StringComparison.Ordinal) == true
                             && p.ParameterType.GetMethod("<Clone>$") is not null
@@ -400,7 +401,9 @@ public sealed class AccessTests
 
     private string RecoveryFile => Path.Combine(_library.BasePath, "recovery-code.txt");
 
-    /// <summary>The code the server wrote for <paramref name="userName"/>, as its administrator reads it from the file.</summary>
+    /// <summary>
+    /// The code the server wrote for <paramref name="userName"/>, as its administrator reads it from the file.
+    /// </summary>
     private string RecoveryCodeOf(string userName) =>
         File.ReadAllLines(RecoveryFile).Single(l => l.StartsWith(userName + ": ", StringComparison.Ordinal)).Split(' ')[
             1
@@ -1189,7 +1192,8 @@ public sealed class AccessTests
             TestContext.CancellationToken
         );
 
-        // Taken into a group, the account would belong to this library alone: its administrators could set its password.
+        // Taken into a group, the account would belong to this library alone: its administrators could set its
+        // password.
         using var pulledIn = await manager.PutAsJsonAsync(
             $"/api/access/groups/{users.Id}",
             new GroupInput(users.Name, MemberIds: [.. users.MemberIds, outsider.Id]),

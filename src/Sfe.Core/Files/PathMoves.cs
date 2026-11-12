@@ -16,8 +16,9 @@ namespace Sfe.Core.Files;
 /// <summary>
 /// The one place where what SFE keeps by path follows a file or folder renamed or moved on the disk
 /// (agents/docs/features/path-moves.md): the index rows (so tags stay on their files), the library's settings naming
-/// folders, task schedules, default tags (and those of the new place given to the files), quick links, the thumbnail and trickplay caches (with the video fingerprints), the listings
-/// kept, the tag counts. Folder rules are moved around the disk step by <see cref="FolderRuleService.BeginMoveAsync"/>.
+/// folders, task schedules, default tags (and those of the new place given to the files), quick links, the thumbnail
+/// and trickplay caches (with the video fingerprints), the listings kept, the tag counts. Folder rules are moved around
+/// the disk step by <see cref="FolderRuleService.BeginMoveAsync"/>.
 /// </summary>
 /// <remarks>
 /// Called once the disk has changed: nothing here can undo it, so each part is done on its own, and one that fails is
@@ -186,7 +187,8 @@ public sealed class PathMoves(
             else
             {
                 var file = db.Files.Where(f => f.FullName == from);
-                // A file's row needs its folder's: made when the folder has none yet (a file moved into a folder never scanned).
+                // A file's row needs its folder's: made when the folder has none yet (a file moved into a folder never
+                // scanned).
                 if (
                     parent is not null
                     && await file.AnyAsync(cancellationToken)

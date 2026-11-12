@@ -15,8 +15,9 @@ public static class ArchiveReader
 
     /// <summary>
     /// The entries of the archive at <paramref name="fullPath"/>, in the archive's order, as they are read (a caller
-    /// stops when it has enough). Errors of the archive come as <see cref="ArchiveException"/>. <paramref name="password"/>
-    /// opens a 7z or rar whose list is encrypted (a zip's names are never encrypted). A 7z whose list is larger than
+    /// stops when it has enough). Errors of the archive come as <see cref="ArchiveException"/>.
+    /// <paramref name="password"/> opens a 7z or rar whose list is encrypted (a zip's names are never encrypted). A 7z
+    /// whose list is larger than
     /// <paramref name="maxSevenZipList"/> bytes is refused before it is read (<see cref="SevenZipList"/>).
     /// </summary>
     public static IEnumerable<ArchiveEntry> ReadEntries(
@@ -42,7 +43,8 @@ public static class ArchiveReader
     /// The data of <paramref name="entry"/> (as listed by <see cref="ReadEntries"/>), decrypted with
     /// <paramref name="password"/> when it is encrypted, held to its declared size. A solid 7z or rar, or a compressed
     /// tar, unpacks the entries before it to reach it: past <paramref name="maxSkipped"/> bytes of those (as declared,
-    /// which is what the decoder produces), it is refused (<see cref="ArchiveException.TooFar"/>), before any is unpacked.
+    /// which is what the decoder produces), it is refused (<see cref="ArchiveException.TooFar"/>), before any is
+    /// unpacked.
     /// </summary>
     public static Stream OpenEntry(
         string fullPath,
@@ -76,8 +78,8 @@ public static class ArchiveReader
     }
 
     /// <summary>
-    /// A stored, unencrypted file of a zip as a seekable slice of the archive (its data as it is, with no decompression:
-    /// a video seeks in it); null for anything else (other formats, deflated or encrypted entries).
+    /// A stored, unencrypted file of a zip as a seekable slice of the archive (its data as it is, with no
+    /// decompression: a video seeks in it); null for anything else (other formats, deflated or encrypted entries).
     /// </summary>
     public static Stream? OpenStored(string fullPath, ArchiveFormat format, ArchiveEntry entry)
     {
@@ -157,7 +159,9 @@ public static class ArchiveReader
         }
     }
 
-    /// <summary>A zip: its directory read from one handle, the entries' data from another (no seeking back and forth).</summary>
+    /// <summary>
+    /// A zip: its directory read from one handle, the entries' data from another (no seeking back and forth).
+    /// </summary>
     private static void ReadThroughZip(
         string fullPath,
         string? password,
@@ -227,7 +231,9 @@ public static class ArchiveReader
 
     private static Stream NoData() => throw new ArchiveException("Only files of an archive have data.");
 
-    /// <summary>An encrypted entry opened without a password: refused (only when it is taken, not when it is passed).</summary>
+    /// <summary>
+    /// An encrypted entry opened without a password: refused (only when it is taken, not when it is passed).
+    /// </summary>
     private static Stream? Locked(ArchiveEntry entry, string? password) =>
         entry.Encrypted && string.IsNullOrEmpty(password)
             ? throw new ArchiveException("This entry is protected by a password.", needsPassword: true)
@@ -323,7 +329,9 @@ public static class ArchiveReader
             _ => new SharpCompress.Compressors.Xz.XZStream(file),
         };
 
-    /// <summary>A whole tar ends with two zero blocks (then zeros to its record size): its length is whole blocks.</summary>
+    /// <summary>
+    /// A whole tar ends with two zero blocks (then zeros to its record size): its length is whole blocks.
+    /// </summary>
     private static bool EndsWithTarMark(FileStream stream)
     {
         var length = stream.Length;
@@ -365,7 +373,8 @@ public static class ArchiveReader
         var archive = SevenZipArchive.OpenArchive(stream, Options(password));
         try
         {
-            // What the decoder unpacks first: the files before it in its block (IsSolid: shares the previous one's block).
+            // What the decoder unpacks first: the files before it in its block (IsSolid: shares the previous one's
+            // block).
             var skipped = 0L;
             var index = 0L;
             SharpCompress.Archives.IArchiveEntry? found = null;
@@ -393,8 +402,8 @@ public static class ArchiveReader
     }
 
     /// <summary>
-    /// Rar and tars have no index: the reader walks to the entry, skipping the others' data (unpacked in a compressed tar
-    /// and a solid rar, passed over in a plain tar and another rar).
+    /// Rar and tars have no index: the reader walks to the entry, skipping the others' data (unpacked in a compressed
+    /// tar and a solid rar, passed over in a plain tar and another rar).
     /// </summary>
     private static Stream OpenForward(
         FileStream stream,
@@ -466,7 +475,9 @@ public static class ArchiveReader
             FileOptions.SequentialScan
         );
 
-    /// <summary>SharpCompress' own errors (format, password, cut-off file) as one <see cref="ArchiveException"/>.</summary>
+    /// <summary>
+    /// SharpCompress' own errors (format, password, cut-off file) as one <see cref="ArchiveException"/>.
+    /// </summary>
     private static T Wrap<T>(Func<T> read)
     {
         try
@@ -490,7 +501,9 @@ public static class ArchiveReader
         }
     }
 
-    /// <summary>A decompressed stream read through, keeping its length and last 1 KB (where a tar's end mark is).</summary>
+    /// <summary>
+    /// A decompressed stream read through, keeping its length and last 1 KB (where a tar's end mark is).
+    /// </summary>
     private sealed class TailStream(Stream inner) : Stream
     {
         private readonly byte[] _last = new byte[1024];
@@ -544,7 +557,9 @@ public static class ArchiveReader
         }
     }
 
-    /// <summary>The archive's file under one entry's stream: the entry ends, the file stays open for the next.</summary>
+    /// <summary>
+    /// The archive's file under one entry's stream: the entry ends, the file stays open for the next.
+    /// </summary>
     private sealed class KeptOpen(Stream inner) : ReadOnlyStream(inner)
     {
         public override bool CanSeek => true;
@@ -562,7 +577,10 @@ public static class ArchiveReader
         protected override void Dispose(bool disposing) { }
     }
 
-    /// <summary>SharpCompress' errors while an entry's data is read (a wrong password, a damaged block), as <see cref="ArchiveException"/>.</summary>
+    /// <summary>
+    /// SharpCompress' errors while an entry's data is read (a wrong password, a damaged block), as
+    /// <see cref="ArchiveException"/>.
+    /// </summary>
     private sealed class WrappedErrors(Stream inner) : ReadOnlyStream(inner)
     {
         public override int Read(Span<byte> buffer)

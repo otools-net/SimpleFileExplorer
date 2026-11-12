@@ -152,7 +152,9 @@ public sealed class ScopeTagger(
         );
     }
 
-    /// <summary>The scope's folder, as stored in the index: without trailing separator (drive roots keep theirs).</summary>
+    /// <summary>
+    /// The scope's folder, as stored in the index: without trailing separator (drive roots keep theirs).
+    /// </summary>
     private bool TryResolve(TagScope scope, [NotNullWhen(true)] out string? directory)
     {
         directory = null;

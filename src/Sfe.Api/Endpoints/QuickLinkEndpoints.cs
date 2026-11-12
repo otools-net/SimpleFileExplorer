@@ -157,7 +157,9 @@ public static class QuickLinkEndpoints
     private static readonly string TooMany =
         $"Quick links hold at most {QuickLinkService.MaxLinks} folders and files: remove some first.";
 
-    /// <summary>The links as the sidebar shows them; one leading where the subject no longer sees is shown as missing.</summary>
+    /// <summary>
+    /// The links as the sidebar shows them; one leading where the subject no longer sees is shown as missing.
+    /// </summary>
     private static IReadOnlyList<QuickLinkView> View(
         IReadOnlyList<QuickLinkEntry> links,
         LibraryPaths paths,

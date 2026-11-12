@@ -8,7 +8,9 @@ namespace Sfe.Api;
 /// </summary>
 internal static class StartupErrors
 {
-    /// <summary>A configuration file failed to load (<see cref="InvalidDataException"/> from the configuration).</summary>
+    /// <summary>
+    /// A configuration file failed to load (<see cref="InvalidDataException"/> from the configuration).
+    /// </summary>
     public static int ConfigurationFile(InvalidDataException error)
     {
         var json = error.InnerException as JsonException ?? error.InnerException?.InnerException as JsonException;

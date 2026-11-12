@@ -11,8 +11,8 @@ namespace Sfe.Core.Upgrades.Steps.V1_40_0;
 /// <remarks>
 /// <para>
 /// Before: <c>{cache}/{F}/{N}.bin</c> and <c>{cache}/trickplay/{F}/{N}/</c>, with <c>F</c>/<c>N</c> the hashes of the
-/// file's folder and name (<see cref="ThumbnailService.Hash"/>): a large library had hundreds of thousands of folders in
-/// the cache's root. After: <c>{cache}/ab/cd/{rest}.bin</c> and <c>{cache}/trickplay/ab/cd/{rest}/</c> for the key
+/// file's folder and name (<see cref="ThumbnailService.Hash"/>): a large library had hundreds of thousands of folders
+/// in the cache's root. After: <c>{cache}/ab/cd/{rest}.bin</c> and <c>{cache}/trickplay/ab/cd/{rest}/</c> for the key
 /// <c>abcd…</c> = <see cref="ThumbnailService.CacheKey(string, string)"/> of <c>F</c> and <c>N</c>.
 /// </para>
 /// <para>
@@ -128,7 +128,9 @@ public sealed partial class ShardCacheLayout : IUpgradeStep
 
     private static bool IsOldHash(string name) => OldHash().IsMatch(name);
 
-    /// <summary>The old names are upper-case hex; a file system that changed their case still gives the same key.</summary>
+    /// <summary>
+    /// The old names are upper-case hex; a file system that changed their case still gives the same key.
+    /// </summary>
     private static string Key(string folderHash, string fileHash) =>
         ThumbnailService.CacheKey(folderHash.ToUpperInvariant(), fileHash.ToUpperInvariant());
 
@@ -145,7 +147,9 @@ public sealed partial class ShardCacheLayout : IUpgradeStep
             File.Move(from, to, overwrite: true);
     }
 
-    /// <summary>Renames a video's trickplay folder; as <see cref="MoveFile"/>, by the date of its <c>info.json</c>.</summary>
+    /// <summary>
+    /// Renames a video's trickplay folder; as <see cref="MoveFile"/>, by the date of its <c>info.json</c>.
+    /// </summary>
     private static void MoveFolder(string from, string to)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(to)!);

@@ -19,7 +19,9 @@ public sealed class CatalogBuildLimits : IDisposable
         })
     );
 
-    /// <summary>For <c>ArchiveCatalogs.Get</c>: may this request's caller start a read now (counted when it says yes).</summary>
+    /// <summary>
+    /// For <c>ArchiveCatalogs.Get</c>: may this request's caller start a read now (counted when it says yes).
+    /// </summary>
     public Func<bool> For(HttpContext context)
     {
         var caller = RequestLimits.Caller(context);

@@ -4,7 +4,9 @@ using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
 
-/// <summary>Animated pictures told from still ones by their structure (the listings' hover on large animated images).</summary>
+/// <summary>
+/// Animated pictures told from still ones by their structure (the listings' hover on large animated images).
+/// </summary>
 [TestClass]
 public sealed class ImageAnimationTests
 {
@@ -110,7 +112,9 @@ public sealed class ImageAnimationTests
         return [.. gif];
     }
 
-    /// <summary>A PNG with an <c>acTL</c> chunk of <paramref name="animationFrames"/> frames (none when null) before IDAT.</summary>
+    /// <summary>
+    /// A PNG with an <c>acTL</c> chunk of <paramref name="animationFrames"/> frames (none when null) before IDAT.
+    /// </summary>
     private static byte[] Png(int? animationFrames)
     {
         var png = new List<byte>([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);

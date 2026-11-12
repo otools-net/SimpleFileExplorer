@@ -10,8 +10,8 @@ public enum LinksOutsideLibrary
     Follow,
 
     /// <summary>
-    /// Followed to browse, play and download; nothing is created, changed, renamed, moved away or deleted behind it. For
-    /// a library other people can put links in outside SFE (a network share, SFTP, a shared computer).
+    /// Followed to browse, play and download; nothing is created, changed, renamed, moved away or deleted behind it.
+    /// For a library other people can put links in outside SFE (a network share, SFTP, a shared computer).
     /// </summary>
     ReadOnly,
 }

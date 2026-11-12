@@ -2,7 +2,9 @@ using System.Collections.Concurrent;
 
 namespace Sfe.Core.Streaming;
 
-/// <summary>Who watches a converted video: shown to the server's administrators (<see cref="VideoStreams.List"/>).</summary>
+/// <summary>
+/// Who watches a converted video: shown to the server's administrators (<see cref="VideoStreams.List"/>).
+/// </summary>
 /// <param name="Library">Name of the library the video is in.</param>
 /// <param name="User">The account's name; null for a visitor without one.</param>
 /// <param name="Address">The viewer's network address, when known.</param>
@@ -40,8 +42,8 @@ public sealed class VideoStreams(TimeProvider time)
         [.. _streams.Values.Select(s => s.Snapshot()).OrderBy(s => s.Started)];
 
     /// <summary>
-    /// Registers a stream, unless <paramref name="max"/> are running. A stream of the same <paramref name="client"/> (one
-    /// player, which seeks by asking again from another position) is stopped first and doesn't count: the viewer's
+    /// Registers a stream, unless <paramref name="max"/> are running. A stream of the same <paramref name="client"/>
+    /// (one player, which seeks by asking again from another position) is stopped first and doesn't count: the viewer's
     /// browser drops the old request, but not always before sending the new one.
     /// </summary>
     /// <returns>Null when the server is busy; else the stream, to dispose of when it ends.</returns>

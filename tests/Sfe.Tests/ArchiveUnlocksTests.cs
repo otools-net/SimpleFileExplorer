@@ -2,7 +2,9 @@ using Sfe.Api.Security;
 
 namespace Sfe.Tests;
 
-/// <summary>Archives' passwords held behind unlocks (<see cref="ArchiveUnlocks"/>): for their owner, their archive, a while.</summary>
+/// <summary>
+/// Archives' passwords held behind unlocks (<see cref="ArchiveUnlocks"/>): for their owner, their archive, a while.
+/// </summary>
 [TestClass]
 public sealed class ArchiveUnlocksTests
 {

@@ -5,7 +5,8 @@ namespace Sfe.Core.Files;
 /// <param name="Text">The content, line endings as they are in the file.</param>
 /// <param name="Encoding">How the bytes were read: <see cref="TextCodec.Utf8"/>, <see cref="TextCodec.Utf8Bom"/>,
 /// <see cref="TextCodec.Utf16Le"/>, <see cref="TextCodec.Utf16Be"/> or <see cref="TextCodec.Windows1252"/>.</param>
-/// <param name="LineEnding"><c>lf</c>, <c>crlf</c>, <c>cr</c>, or <c>mixed</c> when several are used (<c>lf</c> without any).</param>
+/// <param name="LineEnding"><c>lf</c>, <c>crlf</c>, <c>cr</c>, or <c>mixed</c> when several are used (<c>lf</c> without
+/// any).</param>
 public sealed record DecodedText(string Text, string Encoding, string LineEnding);
 
 /// <param name="Bytes">The encoded text; null when some characters can't be written in the encoding.</param>
@@ -78,7 +79,9 @@ public static class TextCodec
         return new DecodedText(text, encoding, LineEndingOf(text));
     }
 
-    /// <summary>The encodings a file can be read with on request (Reopen with encoding); a byte order mark is skipped.</summary>
+    /// <summary>
+    /// The encodings a file can be read with on request (Reopen with encoding); a byte order mark is skipped.
+    /// </summary>
     public static readonly IReadOnlySet<string> ReadEncodings = new HashSet<string>
     {
         Utf8,
@@ -107,14 +110,20 @@ public static class TextCodec
         return new DecodedText(text, encoding == Utf8 && mark == Utf8Bom ? Utf8Bom : encoding, LineEndingOf(text));
     }
 
-    /// <summary>The encoding a byte order mark at the start of <paramref name="bytes"/> gives, and the mark's length (null and 0 without one).</summary>
+    /// <summary>
+    /// The encoding a byte order mark at the start of <paramref name="bytes"/> gives, and the mark's length (null and 0
+    /// without one).
+    /// </summary>
     public static (string? Encoding, int Length) ByteOrderMark(ReadOnlySpan<byte> bytes) =>
         bytes.StartsWith((ReadOnlySpan<byte>)[0xEF, 0xBB, 0xBF]) ? (Utf8Bom, 3)
         : bytes.StartsWith((ReadOnlySpan<byte>)[0xFF, 0xFE]) ? (Utf16Le, 2)
         : bytes.StartsWith((ReadOnlySpan<byte>)[0xFE, 0xFF]) ? (Utf16Be, 2)
         : (null, 0);
 
-    /// <summary>Bytes without a mark as text in <paramref name="encoding"/>, what isn't valid replaced (a part of a file cut anywhere).</summary>
+    /// <summary>
+    /// Bytes without a mark as text in <paramref name="encoding"/>, what isn't valid replaced (a part of a file cut
+    /// anywhere).
+    /// </summary>
     public static string Read(ReadOnlySpan<byte> bytes, string encoding) =>
         encoding switch
         {
@@ -142,9 +151,9 @@ public static class TextCodec
     public static readonly IReadOnlySet<string> LineEndings = new HashSet<string> { "lf", "crlf", "cr" };
 
     /// <summary>
-    /// The bytes of <paramref name="text"/> in <paramref name="encoding"/> (with its byte order mark), every line ending
-    /// made <paramref name="lineEnding"/> (<c>lf</c>, <c>crlf</c> or <c>cr</c>). Characters windows-1252 has no byte for
-    /// are listed instead (at most ten, each once): nothing is replaced by a "?" behind the person's back.
+    /// The bytes of <paramref name="text"/> in <paramref name="encoding"/> (with its byte order mark), every line
+    /// ending made <paramref name="lineEnding"/> (<c>lf</c>, <c>crlf</c> or <c>cr</c>). Characters windows-1252 has no
+    /// byte for are listed instead (at most ten, each once): nothing is replaced by a "?" behind the person's back.
     /// </summary>
     public static EncodedText Encode(string text, string encoding, string lineEnding)
     {
@@ -195,7 +204,9 @@ public static class TextCodec
         }
     }
 
-    /// <summary>The line ending most lines of <paramref name="text"/> end with (<c>crlf</c> on a tie); <c>lf</c> without any.</summary>
+    /// <summary>
+    /// The line ending most lines of <paramref name="text"/> end with (<c>crlf</c> on a tie); <c>lf</c> without any.
+    /// </summary>
     public static string DominantLineEnding(string text)
     {
         int lf = 0,
@@ -227,7 +238,9 @@ public static class TextCodec
             : "cr";
     }
 
-    /// <summary>The line ending used by <paramref name="text"/>: <c>lf</c>, <c>crlf</c>, <c>cr</c> or <c>mixed</c>.</summary>
+    /// <summary>
+    /// The line ending used by <paramref name="text"/>: <c>lf</c>, <c>crlf</c>, <c>cr</c> or <c>mixed</c>.
+    /// </summary>
     public static string LineEndingOf(string text)
     {
         int lf = 0,

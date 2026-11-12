@@ -5,11 +5,14 @@ namespace Sfe.Core.Files.Compression;
 /// <summary>
 /// How large a 7z's list of entries (its header) is, read before SharpCompress opens it: SharpCompress holds that list
 /// whole, with an object per entry (~570 bytes each: 1 000 000 entries took 717 MB), so a list past
-/// <c>Files:Archives:MaxSevenZipListMegabytes</c> is refused rather than read (agents/docs/features/archive-reading.md).
+/// <c>Files:Archives:MaxSevenZipListMegabytes</c> is refused rather than read
+/// (agents/docs/features/archive-reading.md).
 /// </summary>
 public static class SevenZipList
 {
-    /// <summary>The default limit (<c>MaxSevenZipListMegabytes</c>): about 400 000 entries of usual names, ~500 MB held.</summary>
+    /// <summary>
+    /// The default limit (<c>MaxSevenZipListMegabytes</c>): about 400 000 entries of usual names, ~500 MB held.
+    /// </summary>
     public const int DefaultMaxMegabytes = 32;
 
     private const byte EncodedHeader = 0x17;
@@ -65,7 +68,9 @@ public static class SevenZipList
         }
     }
 
-    /// <summary>Throws when the list of the 7z in <paramref name="stream"/> is larger than <paramref name="maxBytes"/>.</summary>
+    /// <summary>
+    /// Throws when the list of the 7z in <paramref name="stream"/> is larger than <paramref name="maxBytes"/>.
+    /// </summary>
     public static void Check(Stream stream, long maxBytes)
     {
         if (UnpackedSize(stream) is { } size && size > maxBytes)

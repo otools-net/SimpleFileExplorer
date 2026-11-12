@@ -294,7 +294,9 @@ public sealed class ThumbnailService
     /// <summary>Relative cache path of a key: <c>ab/cd/rest</c> (65 536 folders over two levels).</summary>
     public static string ShardedPath(string key) => Path.Combine(key[..2], key[2..4], key[4..]);
 
-    /// <summary>Hash of a folder or file name: upper-case hex SHA1 of the (lower-cased) name without trailing separators.</summary>
+    /// <summary>
+    /// Hash of a folder or file name: upper-case hex SHA1 of the (lower-cased) name without trailing separators.
+    /// </summary>
     internal static string Hash(string key)
     {
         if (LibraryPaths.IsCaseInsensitiveFileSystem)

@@ -27,11 +27,13 @@ public sealed record ExternalPlayer(string Name, string Url);
 /// <summary>Smallest shorter side, in pixels, of a high-resolution image and of a high-resolution video.</summary>
 public sealed record ResolutionThresholds(int Image, int Video);
 
-/// <param name="OutputFolder">Library folder edited pictures are saved in, under their originals' folders; empty = next to the originals.</param>
+/// <param name="OutputFolder">Library folder edited pictures are saved in, under their originals' folders; empty = next
+/// to the originals.</param>
 /// <param name="Quality">Quality (1-100) of the JPEG and WebP pictures the editor encodes.</param>
 public sealed record EditorConfig(string OutputFolder, int Quality);
 
-/// <param name="Always">Every video plays converted (<c>Streaming:Mode</c> = <c>Always</c>), not only those the browser can't play.</param>
+/// <param name="Always">Every video plays converted (<c>Streaming:Mode</c> = <c>Always</c>), not only those the browser
+/// can't play.</param>
 public sealed record StreamingConfig(bool Always);
 
 /// <param name="DeletePermanently">Every delete skips the trash (<c>Files:DeletePermanently</c>).</param>
@@ -45,7 +47,9 @@ public sealed record FilesConfig(
     int KeepUnfinishedUploadsHours = 48
 );
 
-/// <param name="DataServer">When set, the client links files to this server instead of <c>/api/files/raw</c>: a base the path is appended to, or a template with <c>{url}</c> / <c>{encodedUrl}</c> (<see cref="DataServerUrl"/>).</param>
+/// <param name="DataServer">When set, the client links files to this server instead of <c>/api/files/raw</c>: a base
+/// the path is appended to, or a template with <c>{url}</c> / <c>{encodedUrl}</c>
+/// (<see cref="DataServerUrl"/>).</param>
 /// <param name="PageSize">Items the client loads at a time while browsing a folder.</param>
 /// <param name="SearchPageSize">Results the client loads at a time while searching.</param>
 /// <param name="TagColors">Palette for tag colors, see <see cref="Sfe.Core.Tagging.TagColors"/>.</param>
@@ -54,7 +58,8 @@ public sealed record FilesConfig(
 /// <param name="SeekSeconds">Seconds the video player jumps back or forward.</param>
 /// <param name="Loop">Videos start over at their end until the player's loop button is switched off.</param>
 /// <param name="TrickplayHover">Hovering a video in a listing plays its trickplay over the thumbnail.</param>
-/// <param name="FolderPictures">Pictures on a folder card (see <c>/api/browse/covers</c>); 0 = folders without pictures.</param>
+/// <param name="FolderPictures">Pictures on a folder card (see <c>/api/browse/covers</c>); 0 = folders without
+/// pictures.</param>
 /// <param name="SearchExplain">The search box offers to put the query into words.</param>
 /// <param name="SearchHistory">Searches each browser remembers and suggests in the search box; 0 = none.</param>
 /// <param name="SingleViewOriginals">The "one per row" view shows images themselves, not their thumbnails.</param>
@@ -67,11 +72,13 @@ public sealed record FilesConfig(
 /// Full path of the library root on the server, ending with its directory separator, for the buttons copying full
 /// paths; null when they are off (<c>Browse:CopyPaths</c>), so that the server's layout is not given away.
 /// </param>
-/// <param name="ExternalPlayer">App that videos and audio can be opened in (<c>Player:ExternalUrl</c>); null = none.</param>
+/// <param name="ExternalPlayer">App that videos and audio can be opened in (<c>Player:ExternalUrl</c>); null =
+/// none.</param>
 /// <param name="Theme">Theme of the browsers that have not picked one themselves.</param>
 /// <param name="Version">Version of the server (<c>Directory.Build.props</c>), e.g. <c>1.2.0</c>.</param>
 /// <param name="Commit">Short hash of the commit it was built from, when known.</param>
-/// <param name="Rights">What the session may do in the library (<see cref="Sfe.Core.Access.Rights"/>): the client hides the rest.</param>
+/// <param name="Rights">What the session may do in the library (<see cref="Sfe.Core.Access.Rights"/>): the client hides
+/// the rest.</param>
 /// <param name="User">The signed-in account; null for a visitor without one.</param>
 /// <param name="Tenant">The library being browsed.</param>
 /// <param name="Tenants">The libraries the account can switch to (empty for a visitor without one).</param>
@@ -121,8 +128,8 @@ public sealed record ClientConfig(
     ArchivesConfig? Archives = null
 );
 
-/// <param name="MaxCompressedTarMegabytes">Compressed tars (<c>.tar.gz</c>…) larger than this aren't explored (listing one
-/// decompresses all of it): the client offers no viewer for them.</param>
+/// <param name="MaxCompressedTarMegabytes">Compressed tars (<c>.tar.gz</c>…) larger than this aren't explored (listing
+/// one decompresses all of it): the client offers no viewer for them.</param>
 public sealed record ArchivesConfig(int MaxCompressedTarMegabytes);
 
 public static class ConfigEndpoints

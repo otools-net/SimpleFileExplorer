@@ -2,7 +2,9 @@ using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
 
-/// <summary>The tests' waits on slow work (<see cref="SlowWork"/>): too slow is inconclusive, never a failure.</summary>
+/// <summary>
+/// The tests' waits on slow work (<see cref="SlowWork"/>): too slow is inconclusive, never a failure.
+/// </summary>
 [TestClass]
 public sealed class SlowWorkTests
 {

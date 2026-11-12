@@ -25,19 +25,23 @@ public sealed class DuplicateFinder(
 {
     public const int MaxGroupsPerPage = 500;
 
-    /// <summary>Files listed per group; a group of thousands of identical files only reports how many there are.</summary>
+    /// <summary>
+    /// Files listed per group; a group of thousands of identical files only reports how many there are.
+    /// </summary>
     public const int MaxFilesPerGroup = 100;
 
     private DuplicateOptions Settings => options.CurrentValue.FileTracking.Duplicates;
 
-    /// <param name="relativeDirectory">Only files of this folder and below are compared; empty for the whole library.</param>
+    /// <param name="relativeDirectory">Only files of this folder and below are compared; empty for the whole
+    /// library.</param>
     /// <param name="after"><see cref="DuplicateResults.Next"/> of the previous page; null for the first one.</param>
     /// <returns>null when <paramref name="relativeDirectory"/> or <paramref name="after"/> is invalid.</returns>
     /// <remarks>
     /// Biggest files first (the most space to win back), paged by key on (size, fingerprint) like searches: the
     /// <c>(Size, Sha1)</c> index gives the groups in order, so no page sorts or skips the whole index.
     /// </remarks>
-    /// <param name="visible">Where the asker may see files (folder rules): groups count only those; null = everywhere.</param>
+    /// <param name="visible">Where the asker may see files (folder rules): groups count only those; null =
+    /// everywhere.</param>
     public async Task<DuplicateResults?> FindAsync(
         string? relativeDirectory,
         string? after,
@@ -188,7 +192,8 @@ public sealed class DuplicateFinder(
 }
 
 /// <param name="Fingerprint">The files' partial SHA1 (see <see cref="Indexing.FileFingerprint"/>).</param>
-/// <param name="Count">Files in the group; <paramref name="Files"/> lists at most <see cref="DuplicateFinder.MaxFilesPerGroup"/>.</param>
+/// <param name="Count">Files in the group; <paramref name="Files"/> lists at most
+/// <see cref="DuplicateFinder.MaxFilesPerGroup"/>.</param>
 /// <param name="WastedBytes">Space taken by all copies but one.</param>
 public sealed record DuplicateGroup(
     long Size,
@@ -201,15 +206,19 @@ public sealed record DuplicateGroup(
 /// <param name="Groups">Groups of two or more identical files.</param>
 /// <param name="Files">Files in those groups.</param>
 /// <param name="WastedBytes">Space taken by all copies but one of each group.</param>
-/// <param name="Unfingerprinted">Indexed files (in the whole index) without a fingerprint, which cannot be compared.</param>
+/// <param name="Unfingerprinted">Indexed files (in the whole index) without a fingerprint, which cannot be
+/// compared.</param>
 public sealed record DuplicateSummary(int Groups, int Files, long WastedBytes, int Unfingerprinted);
 
 /// <param name="Next">Value of the <c>after</c> parameter that requests the next page; null on the last page.</param>
 /// <param name="Summary">Totals over every page; only on the first page.</param>
-/// <param name="Fingerprinting">Scans fingerprint files (<c>Scan:ComputeHashes</c>); without it no new file can be compared.</param>
+/// <param name="Fingerprinting">Scans fingerprint files (<c>Scan:ComputeHashes</c>); without it no new file can be
+/// compared.</param>
 /// <param name="MinimumSize">Smaller files are left out (bytes).</param>
-/// <param name="CanRemove">Copies can be removed (<c>POST /api/duplicates/remove</c>, see <see cref="DuplicateRemover"/>).</param>
-/// <param name="RemovesPermanently">A copy removed is deleted for good, not moved to the trash (<c>Files:DeletePermanently</c>).</param>
+/// <param name="CanRemove">Copies can be removed (<c>POST /api/duplicates/remove</c>, see
+/// <see cref="DuplicateRemover"/>).</param>
+/// <param name="RemovesPermanently">A copy removed is deleted for good, not moved to the trash
+/// (<c>Files:DeletePermanently</c>).</param>
 public sealed record DuplicateResults(
     string Path,
     IReadOnlyList<DuplicateGroup> Groups,

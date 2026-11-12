@@ -59,7 +59,9 @@ public sealed class FastSignIn(
         return token;
     }
 
-    /// <summary>The account <paramref name="token"/> signs in, once; null when it is not the pending link (or no longer valid).</summary>
+    /// <summary>
+    /// The account <paramref name="token"/> signs in, once; null when it is not the pending link (or no longer valid).
+    /// </summary>
     public async Task<SessionUser?> RedeemAsync(string? token, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(token))
@@ -75,7 +77,8 @@ public sealed class FastSignIn(
             userId = pending.UserId;
         }
 
-        // Still on, still Local, and still the only administrator: the setting, the mode or the accounts may have changed since the start.
+        // Still on, still Local, and still the only administrator: the setting, the mode or the accounts may have
+        // changed since the start.
         if (
             !settings.ServerLevel().FastSignIn
             || !ServerModes.IsLocal(configuration)

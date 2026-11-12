@@ -3,7 +3,9 @@ using Sfe.Core.Paths;
 
 namespace Sfe.Tests;
 
-/// <summary>How folder rules decide what a subject may do where (<see cref="FolderPolicy"/>), without a database.</summary>
+/// <summary>
+/// How folder rules decide what a subject may do where (<see cref="FolderPolicy"/>), without a database.
+/// </summary>
 [TestClass]
 public sealed class FolderPolicyTests
 {

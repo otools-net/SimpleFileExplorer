@@ -20,7 +20,8 @@ public sealed record ArchiveCatalogSummary(
 
 /// <param name="Folders">Folders right inside it.</param>
 /// <param name="Files">Entries right inside it (files, links…).</param>
-/// <param name="AllFiles">Files in its whole tree; <paramref name="Size"/> and <paramref name="Packed"/> are theirs.</param>
+/// <param name="AllFiles">Files in its whole tree; <paramref name="Size"/> and <paramref name="Packed"/> are
+/// theirs.</param>
 public sealed record ArchiveFolder(
     long Id,
     long ParentId,
@@ -44,12 +45,14 @@ public sealed record ArchivePage(
     ArchiveCursor? Next
 );
 
-/// <summary>Where a page stopped: in the folders or the files, after this name and id (keyset, never an offset).</summary>
+/// <summary>
+/// Where a page stopped: in the folders or the files, after this name and id (keyset, never an offset).
+/// </summary>
 public sealed record ArchiveCursor(bool InFiles, string Name, long Id);
 
 /// <summary>
-/// A page of a search by name: the folders, then the files, whose name holds the text, in the archive's order, each with
-/// the path of the folder it is in. <c>Next</c> is null once the whole catalog was looked through.
+/// A page of a search by name: the folders, then the files, whose name holds the text, in the archive's order, each
+/// with the path of the folder it is in. <c>Next</c> is null once the whole catalog was looked through.
 /// </summary>
 public sealed record ArchiveSearchPage(
     IReadOnlyList<(ArchiveFolder Folder, string Where)> Folders,
@@ -57,10 +60,15 @@ public sealed record ArchiveSearchPage(
     ArchiveSearchCursor? Next
 );
 
-/// <summary>Where a search stopped: in the folders or the files, after this id (what was looked through, not only found).</summary>
+/// <summary>
+/// Where a search stopped: in the folders or the files, after this id (what was looked through, not only found).
+/// </summary>
 public sealed record ArchiveSearchCursor(bool InFiles, long Id);
 
-/// <summary>The end of the path to a folder: the root is always first, then the <c>Skipped</c> folders between, then <c>Last</c>.</summary>
+/// <summary>
+/// The end of the path to a folder: the root is always first, then the <c>Skipped</c> folders between, then
+/// <c>Last</c>.
+/// </summary>
 public sealed record ArchiveTrail(int Skipped, IReadOnlyList<ArchiveFolder> Last);
 
 /// <summary>
@@ -246,7 +254,9 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         );
     }
 
-    /// <summary>Whether the file at <paramref name="catalogPath"/> is a whole catalog of this <see cref="Version"/>.</summary>
+    /// <summary>
+    /// Whether the file at <paramref name="catalogPath"/> is a whole catalog of this <see cref="Version"/>.
+    /// </summary>
     public static bool IsCurrent(string catalogPath)
     {
         if (!File.Exists(catalogPath))
@@ -350,7 +360,9 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         return new ArchiveTrail(depth - folders.Count, folders);
     }
 
-    /// <summary>The whole path of folder <paramref name="id"/> (<c>/</c>-separated, empty for the root): one lookup per level.</summary>
+    /// <summary>
+    /// The whole path of folder <paramref name="id"/> (<c>/</c>-separated, empty for the root): one lookup per level.
+    /// </summary>
     public string? PathOf(long id)
     {
         using var connection = Open();
@@ -437,9 +449,10 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     public const int SearchChunk = 20_000;
 
     /// <summary>
-    /// Folders and files whose name holds <paramref name="text"/> (any case, any letters), after <paramref name="after"/>:
-    /// the catalog is looked through by ranges of ids, so a page costs <paramref name="budget"/> at most whatever the
-    /// archive holds; a page cut short by it has fewer than <paramref name="limit"/> and a <c>Next</c> to go on.
+    /// Folders and files whose name holds <paramref name="text"/> (any case, any letters), after
+    /// <paramref name="after"/>: the catalog is looked through by ranges of ids, so a page costs
+    /// <paramref name="budget"/> at most whatever the archive holds; a page cut short by it has fewer than
+    /// <paramref name="limit"/> and a <c>Next</c> to go on.
     /// <paramref name="chunk"/>: ids per query (tests make it small).
     /// </summary>
     public ArchiveSearchPage Search(
@@ -518,10 +531,11 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
     }
 
     /// <summary>
-    /// The folders, then the files, right inside folder <paramref name="folderId"/> whose name holds <paramref name="text"/>
-    /// (as <see cref="Search"/>), in the folder's order, after <paramref name="after"/>: the folder's index is looked
-    /// through by ranges of <paramref name="chunk"/> names, so a page costs <paramref name="budget"/> at most however
-    /// big the folder; a page cut short by it has fewer than <paramref name="limit"/> and a <c>Next</c> to go on.
+    /// The folders, then the files, right inside folder <paramref name="folderId"/> whose name holds
+    /// <paramref name="text"/> (as <see cref="Search"/>), in the folder's order, after <paramref name="after"/>: the
+    /// folder's index is looked through by ranges of <paramref name="chunk"/> names, so a page costs
+    /// <paramref name="budget"/> at most however big the folder; a page cut short by it has fewer than
+    /// <paramref name="limit"/> and a <c>Next</c> to go on.
     /// </summary>
     public ArchivePage FindIn(
         long folderId,
@@ -625,7 +639,10 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         return command.ExecuteScalar() is long id ? id : 0;
     }
 
-    /// <summary>Folders named at most in a search result's <c>where</c>: deeper, its start is "…/" (the result's folder id opens it).</summary>
+    /// <summary>
+    /// Folders named at most in a search result's <c>where</c>: deeper, its start is "…/" (the result's folder id opens
+    /// it).
+    /// </summary>
     public const int WhereLevels = 8;
 
     /// <summary>
@@ -663,7 +680,9 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         return reader.Read() ? ReadFile(reader) : null;
     }
 
-    /// <summary>The smallest encrypted file: what a password is tried on (all of it read, its checks included).</summary>
+    /// <summary>
+    /// The smallest encrypted file: what a password is tried on (all of it read, its checks included).
+    /// </summary>
     public ArchiveFile? SmallestEncrypted()
     {
         using var connection = Open();
@@ -742,7 +761,8 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
 
     private static SqliteConnection Connect(string source, SqliteOpenMode mode, bool inMemory)
     {
-        // Not pooled: a catalog is opened per question, and a pooled handle would keep the file locked for its eviction.
+        // Not pooled: a catalog is opened per question, and a pooled handle would keep the file locked for its
+        // eviction.
         var connection = new SqliteConnection(
             new SqliteConnectionStringBuilder
             {
@@ -769,7 +789,9 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
         command.ExecuteNonQuery();
     }
 
-    /// <summary>Fills a catalog: entries in batches, folders found by a stack of the last path and a bounded cache.</summary>
+    /// <summary>
+    /// Fills a catalog: entries in batches, folders found by a stack of the last path and a bounded cache.
+    /// </summary>
     private sealed class Writer
     {
         private readonly SqliteConnection _connection;
@@ -872,7 +894,10 @@ public sealed class ArchiveCatalog(string path, bool inMemory = false)
             _transaction = _connection.BeginTransaction();
         }
 
-        /// <summary>Indexes, then the totals bottom-up one depth at a time (each level's sums are final when its parents add them).</summary>
+        /// <summary>
+        /// Indexes, then the totals bottom-up one depth at a time (each level's sums are final when its parents add
+        /// them).
+        /// </summary>
         public void Finish(ArchiveFormat format, string? stopped, bool needsPassword)
         {
             Execute(

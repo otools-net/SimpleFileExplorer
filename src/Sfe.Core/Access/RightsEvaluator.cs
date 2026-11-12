@@ -64,7 +64,9 @@ public sealed class RightsEvaluator(
         return Filter(access);
     }
 
-    /// <summary>The libraries an account reaches (server administrators: every enabled one), first library first.</summary>
+    /// <summary>
+    /// The libraries an account reaches (server administrators: every enabled one), first library first.
+    /// </summary>
     public async Task<IReadOnlyList<int>> GetTenantIdsAsync(int userId, CancellationToken cancellationToken = default)
     {
         var user = await accounts.GetSessionUserAsync(userId, cancellationToken);
@@ -82,7 +84,9 @@ public sealed class RightsEvaluator(
             .ToListAsync(cancellationToken);
     }
 
-    /// <summary>The server's switches apply at once, also to cached entries (they come from the configuration).</summary>
+    /// <summary>
+    /// The server's switches apply at once, also to cached entries (they come from the configuration).
+    /// </summary>
     private EffectiveAccess Filter(EffectiveAccess access)
     {
         var disabled = rightOptions.CurrentValue.Disabled;
@@ -215,7 +219,9 @@ public sealed class RightsEvaluator(
         return FolderPolicy.Compile(principals);
     }
 
-    /// <summary>A principal's rules by path; two rows for one path (concurrent changes) count as the stricter one.</summary>
+    /// <summary>
+    /// A principal's rules by path; two rows for one path (concurrent changes) count as the stricter one.
+    /// </summary>
     public static Dictionary<string, FolderLevel> RuleMap(IEnumerable<(string Path, FolderLevel Level)> rules) =>
         rules
             .GroupBy(r => r.Path, LibraryPaths.PathComparer)

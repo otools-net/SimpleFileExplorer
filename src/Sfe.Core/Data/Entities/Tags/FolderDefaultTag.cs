@@ -2,7 +2,8 @@ namespace Sfe.Core.Data;
 
 /// <summary>
 /// A tag every file entering a folder (or one of its sub-folders) gets: indexed by a scan, created, uploaded, copied or
-/// moved there (agents/docs/features/default-tags.md). Kept by path, as task schedules are: the folder needn't be indexed.
+/// moved there (agents/docs/features/default-tags.md). Kept by path, as task schedules are: the folder needn't be
+/// indexed.
 /// </summary>
 public sealed class FolderDefaultTag
 {

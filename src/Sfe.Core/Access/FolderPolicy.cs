@@ -8,7 +8,8 @@ namespace Sfe.Core.Access;
 /// One principal's part in a subject's folder access: a group the subject is in, or the subject's own account.
 /// </summary>
 /// <param name="Rules">Its folder rules by root-relative path.</param>
-/// <param name="Rights">The rights it grants: a group's own; for an account, those of all its groups in the library.</param>
+/// <param name="Rights">The rights it grants: a group's own; for an account, those of all its groups in the
+/// library.</param>
 /// <param name="UnrestrictedByDefault">
 /// True for a group: where no rule of it is above a path, it has <see cref="FolderLevel.Write"/> there (what every
 /// group had before folder rules). False for an account: without a rule of its own it has no say.
@@ -42,7 +43,9 @@ public sealed class FolderPolicy
 
     public bool IsUnrestricted => _entries is null;
 
-    /// <summary>The paths with a rule of some principal, with the root: where what the subject may do can change.</summary>
+    /// <summary>
+    /// The paths with a rule of some principal, with the root: where what the subject may do can change.
+    /// </summary>
     public IEnumerable<string> Paths => _entries is null ? [string.Empty] : _entries.Keys;
 
     public static FolderPolicy Compile(IReadOnlyList<FolderPrincipal> principals)
@@ -97,7 +100,8 @@ public sealed class FolderPolicy
 
     /// <summary>
     /// The subject may use <paramref name="right"/> at <paramref name="folder"/> and everywhere below it: the check
-    /// before changing a whole tree (deleting or moving a folder), so that nobody changes what they can't see or change.
+    /// before changing a whole tree (deleting or moving a folder), so that nobody changes what they can't see or
+    /// change.
     /// </summary>
     public bool AllowsThroughout(string folder, string right, IReadOnlySet<string> granted) =>
         At(folder, granted).Has(right)
@@ -134,7 +138,9 @@ public sealed class FolderPolicy
         return new PathFilter(regions);
     }
 
-    /// <summary>The level a principal with <paramref name="rules"/> has at <paramref name="path"/>; null when it has no say.</summary>
+    /// <summary>
+    /// The level a principal with <paramref name="rules"/> has at <paramref name="path"/>; null when it has no say.
+    /// </summary>
     public static FolderLevel? LevelAt(
         IReadOnlyDictionary<string, FolderLevel> rules,
         string path,
@@ -149,7 +155,9 @@ public sealed class FolderPolicy
         return unrestrictedByDefault ? FolderLevel.Write : null;
     }
 
-    /// <summary><paramref name="path"/> is <paramref name="folder"/> or below it (root-relative paths, host case rules).</summary>
+    /// <summary>
+    /// <paramref name="path"/> is <paramref name="folder"/> or below it (root-relative paths, host case rules).
+    /// </summary>
     public static bool IsSameOrBelow(string path, string folder) =>
         folder.Length == 0 || LibraryPaths.PathComparer.Equals(path, folder) || IsBelow(path, folder);
 
@@ -184,7 +192,9 @@ public sealed class FolderPolicy
     private IReadOnlySet<string> Nearest(string path) =>
         SelfAndAncestors(path).Select(p => _entries!.GetValueOrDefault(p)).First(r => r is not null)!;
 
-    /// <summary>The subject can't browse the folder, but can browse something below it: the folder only leads there.</summary>
+    /// <summary>
+    /// The subject can't browse the folder, but can browse something below it: the folder only leads there.
+    /// </summary>
     private bool IsPathOnly(string path, IReadOnlySet<string> rights, IReadOnlySet<string> granted) =>
         granted.Contains(Rights.Browse)
         && !rights.Contains(Rights.Browse)
@@ -208,7 +218,9 @@ public sealed class FolderPolicy
     }
 }
 
-/// <summary>What a subject may do at one path: the rights it was granted in the library that the folder lets through.</summary>
+/// <summary>
+/// What a subject may do at one path: the rights it was granted in the library that the folder lets through.
+/// </summary>
 public sealed class FolderAccess
 {
     private readonly IReadOnlySet<string> _granted;
@@ -232,7 +244,9 @@ public sealed class FolderAccess
 
     public bool Has(string right) => _granted.Contains(right) && (_atFolder is null || _atFolder.Contains(right));
 
-    /// <summary>What both allow: one place reached by two paths (a link and its target) gets the stricter access.</summary>
+    /// <summary>
+    /// What both allow: one place reached by two paths (a link and its target) gets the stricter access.
+    /// </summary>
     public FolderAccess And(FolderAccess other) =>
         _atFolder is null && other._atFolder is null
             ? this
@@ -300,8 +314,8 @@ public sealed class PathFilter
 public static class PathFilterQueries
 {
     /// <summary>
-    /// The rows whose full path (selected by <paramref name="fullName"/>) <paramref name="filter"/> includes; all of them
-    /// for a null filter or <see cref="PathFilter.Everything"/> (no condition added: the query stays as it was).
+    /// The rows whose full path (selected by <paramref name="fullName"/>) <paramref name="filter"/> includes; all of
+    /// them for a null filter or <see cref="PathFilter.Everything"/> (no condition added: the query stays as it was).
     /// </summary>
     public static IQueryable<T> WhereVisible<T>(
         this IQueryable<T> query,

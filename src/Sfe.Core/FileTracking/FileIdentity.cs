@@ -91,7 +91,9 @@ internal static class FileIdentity
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetFileInformationByHandle(SafeFileHandle file, out ByHandleFileInformation information);
 
-    /// <summary>BY_HANDLE_FILE_INFORMATION; the FILETIMEs are pairs of DWORDs (4-byte aligned, unlike a long).</summary>
+    /// <summary>
+    /// BY_HANDLE_FILE_INFORMATION; the FILETIMEs are pairs of DWORDs (4-byte aligned, unlike a long).
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     private struct ByHandleFileInformation
     {

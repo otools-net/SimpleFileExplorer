@@ -31,7 +31,8 @@ public sealed class TagService(
     /// Tags whose name, shorthand or alias contains <paramref name="text"/>. As in TagStudio, names starting with
     /// the text come first (shortest first), and tags inheriting from a match are listed separately.
     /// </summary>
-    /// <param name="visible">Where the asker may see files (folder rules): file counts count only those; null = everywhere.</param>
+    /// <param name="visible">Where the asker may see files (folder rules): file counts count only those; null =
+    /// everywhere.</param>
     public async Task<TagSearchResults> SearchAsync(
         string? text,
         int limit,
@@ -152,7 +153,10 @@ public sealed class TagService(
         return new TagEditResult(TagEditStatus.Ok, await GetAsync(id, cancellationToken));
     }
 
-    /// <summary>Deletes a tag, its aliases, its links to other tags and to files, and where it is a folder's default. Built-in tags cannot be deleted.</summary>
+    /// <summary>
+    /// Deletes a tag, its aliases, its links to other tags and to files, and where it is a folder's default. Built-in
+    /// tags cannot be deleted.
+    /// </summary>
     public async Task<TagDeleteStatus> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         if (BuiltInTags.IsBuiltIn(id))
@@ -240,7 +244,9 @@ public sealed class TagService(
         return null;
     }
 
-    /// <summary>Copies <paramref name="input"/> to a tracked tag, trimming names and dropping duplicate aliases.</summary>
+    /// <summary>
+    /// Copies <paramref name="input"/> to a tracked tag, trimming names and dropping duplicate aliases.
+    /// </summary>
     private static void Apply(SfeDbContext db, Tag tag, TagInput input)
     {
         tag.Name = input.Name.Trim();
@@ -295,12 +301,16 @@ public sealed class TagService(
             counts.GetValueOrDefault(node.Id)
         );
 
-    /// <summary>How long file counts per tag are reused: removing files from the index (scan) changes them too.</summary>
+    /// <summary>
+    /// How long file counts per tag are reused: removing files from the index (scan) changes them too.
+    /// </summary>
     private static readonly TimeSpan FileCountLifetime = TimeSpan.FromSeconds(30);
 
     private sealed record FileCounts(Dictionary<int, int> Counts, long Version, DateTime LoadedAt);
 
-    /// <summary>Counts kept for subjects that folder rules restrict, by <see cref="PathFilter.Key"/>; all dropped when full.</summary>
+    /// <summary>
+    /// Counts kept for subjects that folder rules restrict, by <see cref="PathFilter.Key"/>; all dropped when full.
+    /// </summary>
     private const int CachedFilteredCounts = 64;
 
     private FileCounts? _fileCounts;
@@ -378,7 +388,8 @@ public sealed class TagService(
     /// Most used tags, last searched tags, tags of the last viewed files, and random tags in none of those lists,
     /// <see cref="TagOptions.SidebarCount"/> of each. The history lists stay empty while history is off.
     /// </summary>
-    /// <param name="visible">Where the asker may see files (folder rules): counts, hence the most used tags, count only those.</param>
+    /// <param name="visible">Where the asker may see files (folder rules): counts, hence the most used tags, count only
+    /// those.</param>
     public async Task<TagSidebar> GetSidebarAsync(
         CancellationToken cancellationToken = default,
         PathFilter? visible = null

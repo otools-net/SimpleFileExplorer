@@ -18,7 +18,10 @@ using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
 
-/// <summary>The server's log (Administration › Server › Logs): what is kept, searched, shown to whom, written to files and forgotten.</summary>
+/// <summary>
+/// The server's log (Administration › Server › Logs): what is kept, searched, shown to whom, written to files and
+/// forgotten.
+/// </summary>
 [TestClass]
 public sealed class LogTests
 {

@@ -29,10 +29,14 @@ internal sealed class ZipDirectory
     /// <summary>Where it ends: the (Zip64) end record.</summary>
     public long End { get; private init; }
 
-    /// <summary>Bytes added before the zip (a self-extracting stub): every offset of the directory is shifted by it.</summary>
+    /// <summary>
+    /// Bytes added before the zip (a self-extracting stub): every offset of the directory is shifted by it.
+    /// </summary>
     public long Shift { get; private init; }
 
-    /// <summary>The count the end record claims (may be wrong past 65 535 without Zip64: never relied on to read).</summary>
+    /// <summary>
+    /// The count the end record claims (may be wrong past 65 535 without Zip64: never relied on to read).
+    /// </summary>
     public long DeclaredCount { get; private init; }
 
     /// <summary>Finds the end record (within the last 64 KB: its comment) and the directory it describes.</summary>

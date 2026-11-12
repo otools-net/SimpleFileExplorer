@@ -8,7 +8,8 @@ using Sfe.Core.Tasks;
 
 namespace Sfe.Api.Endpoints;
 
-/// <param name="Result">What happened: started, already running (a trickplay pass then follows the current one), or unavailable.</param>
+/// <param name="Result">What happened: started, already running (a trickplay pass then follows the current one), or
+/// unavailable.</param>
 /// <param name="Task">The task's state afterwards.</param>
 public sealed record TaskActionResult(TaskStartResult Result, TaskInfo Task);
 

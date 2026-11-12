@@ -7,8 +7,8 @@ namespace Sfe.Api.Security;
 
 /// <summary>
 /// What the person who started a move or copy may do, read again at each item of the job (agents/docs/features/
-/// move-and-copy.md): rights, folder rules and the account itself (disabled meanwhile: nothing more) can change while it
-/// runs, long after the request that started it.
+/// move-and-copy.md): rights, folder rules and the account itself (disabled meanwhile: nothing more) can change while
+/// it runs, long after the request that started it.
 /// </summary>
 public sealed class FileJobAccess(
     AccessService accounts,

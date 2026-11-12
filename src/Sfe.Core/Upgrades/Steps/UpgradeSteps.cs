@@ -11,8 +11,8 @@ public static class UpgradeSteps
     [new ShardCacheLayout(), new RenewSetupCode(), new KeepWorkFolderInLibraries()];
 
     /// <summary>
-    /// The steps an install of <paramref name="installed"/> needs to become <paramref name="app"/>: those after it, up to
-    /// the running version. Null = unknown (before 1.37.0, or not tracked): every step.
+    /// The steps an install of <paramref name="installed"/> needs to become <paramref name="app"/>: those after it, up
+    /// to the running version. Null = unknown (before 1.37.0, or not tracked): every step.
     /// </summary>
     public static IReadOnlyList<IUpgradeStep> Due(SemanticVersion? installed, SemanticVersion app) =>
         [

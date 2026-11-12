@@ -218,7 +218,9 @@ public sealed class FileSearchService(
         List<int> TagIds
     );
 
-    /// <summary>The page following <paramref name="cursor"/> (the first one without it), <paramref name="count"/> rows at most.</summary>
+    /// <summary>
+    /// The page following <paramref name="cursor"/> (the first one without it), <paramref name="count"/> rows at most.
+    /// </summary>
     /// <remarks>
     /// Sorted by duration or resolution, the files with a known value come first (a range of that column's index),
     /// then those without one by ascending path (the path index): neither direction starts with every file that has
@@ -292,7 +294,8 @@ public sealed class FileSearchService(
     /// <param name="Text">Its name or extension (name and type sorts).</param>
     /// <param name="Number">Its size, modification ticks or pixels (size, date and resolution sorts).</param>
     /// <param name="Seconds">Its duration (duration sort).</param>
-    /// <param name="Unknown">Its duration or resolution is not known: the page goes on with the files without one.</param>
+    /// <param name="Unknown">Its duration or resolution is not known: the page goes on with the files without
+    /// one.</param>
     private sealed record Cursor(
         string FullName,
         string? Text = null,
@@ -374,7 +377,9 @@ public sealed class FileSearchService(
         };
 
     /// <summary>The files following the cursor in <see cref="Order"/>.</summary>
-    /// <remarks>String comparisons become SQL comparisons with the column's collation, the one ORDER BY uses too.</remarks>
+    /// <remarks>
+    /// String comparisons become SQL comparisons with the column's collation, the one ORDER BY uses too.
+    /// </remarks>
     private static IQueryable<FileEntry> After(
         IQueryable<FileEntry> files,
         SortField sort,

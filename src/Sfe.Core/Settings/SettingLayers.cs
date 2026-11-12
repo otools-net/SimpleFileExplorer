@@ -30,7 +30,8 @@ public sealed record ResolvedSetting(JsonNode? Value, SettingLevel Source, Setti
 /// <summary>How a setting shows on the settings page of a level.</summary>
 /// <param name="Scope">The most specific level that may set it (<see cref="SettingDefinition.Scope"/>).</param>
 /// <param name="Source">Where its value comes from.</param>
-/// <param name="Editable">This level may change it: within its scope, not locked by a level above, and (for a library's administrator) with the right.</param>
+/// <param name="Editable">This level may change it: within its scope, not locked by a level above, and (for a library's
+/// administrator) with the right.</param>
 /// <param name="Lockable">This level may lock it for the levels below (only when one of them could change it).</param>
 /// <param name="Locked">This level locked it.</param>
 /// <param name="LockedBy">The level above that locked it, when one did.</param>
@@ -304,7 +305,8 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
     /// one as their own. A server lock without a value (the default locked for every library) gets it as the server's.
     /// Idempotent: once kept, the libraries have their value.
     /// </summary>
-    /// <returns>How many libraries keep the previous value (all of them for a server lock); 0 when the configuration sets or locks it.</returns>
+    /// <returns>How many libraries keep the previous value (all of them for a server lock); 0 when the configuration
+    /// sets or locks it.</returns>
     public async Task<int> KeepPreviousDefaultAsync(
         string key,
         JsonNode previous,
@@ -377,7 +379,10 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
         return true;
     }
 
-    /// <summary>Signals the libraries' options after a save of the server level (the libraries' own saves signal through <see cref="AccessChanges"/>).</summary>
+    /// <summary>
+    /// Signals the libraries' options after a save of the server level (the libraries' own saves signal through
+    /// <see cref="AccessChanges"/>).
+    /// </summary>
     public void NotifyChanged()
     {
         var previous = Interlocked.Exchange(ref _changed, new CancellationTokenSource());

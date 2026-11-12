@@ -72,7 +72,9 @@ public enum RightScope
     Server,
 }
 
-/// <summary>What a right does: only looks (<see cref="Read"/>), or changes something through one of its routes.</summary>
+/// <summary>
+/// What a right does: only looks (<see cref="Read"/>), or changes something through one of its routes.
+/// </summary>
 public enum RightKind
 {
     Read,
@@ -96,7 +98,8 @@ public enum FolderLevel
 /// the settings or the accounts, and for what tells about the server: such a right is never theirs, whatever their
 /// groups grant.
 /// </param>
-/// <param name="DefaultGroups">The built-in groups granted it when a space is created; changed by hand afterwards.</param>
+/// <param name="DefaultGroups">The built-in groups granted it when a space is created; changed by hand
+/// afterwards.</param>
 /// <param name="Area">Heading the right is listed under on the groups page.</param>
 /// <param name="Since">
 /// The catalog revision that added it (<see cref="RightCatalog.Revision"/>): the spaces created before get it once, in
@@ -208,7 +211,8 @@ public static class RightCatalog
             "Play videos the browser can't play as they are, converted by ffmpeg on the server while they play (it keeps the server's processor busy).",
             since: 2
         ),
-        // File management (agents/docs/development/file-management-plan.md): nobody gets these by upgrade or by default.
+        // File management (agents/docs/development/file-management-plan.md): nobody gets these by upgrade or by
+        // default.
         Tenant(
             Rights.CreateFolders,
             false,
@@ -692,12 +696,15 @@ public static class RightCatalog
     /// <summary>Selector naming every right that changes something (<see cref="RightKind.Write"/>).</summary>
     public const string WriteSelector = "kind:write";
 
-    /// <summary>Selector naming every right that changes the library's files on disk (<see cref="RightDefinition.ChangesFiles"/>).</summary>
+    /// <summary>
+    /// Selector naming every right that changes the library's files on disk
+    /// (<see cref="RightDefinition.ChangesFiles"/>).
+    /// </summary>
     public const string FileWriteSelector = "folder:write";
 
     /// <summary>
-    /// The latest revision of the catalog: one more each time rights are added (their <see cref="RightDefinition.Since"/>).
-    /// 0 is the catalog of 1.34.0, the first with rights.
+    /// The latest revision of the catalog: one more each time rights are added (their
+    /// <see cref="RightDefinition.Since"/>). 0 is the catalog of 1.34.0, the first with rights.
     /// </summary>
     public static int Revision { get; } = All.Max(r => r.Since);
 

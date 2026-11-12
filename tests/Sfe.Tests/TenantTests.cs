@@ -145,7 +145,9 @@ public sealed class TenantTests
         }
     }
 
-    /// <summary>Links the folder <paramref name="link"/> to <paramref name="target"/>: a junction on Windows (no rights needed).</summary>
+    /// <summary>
+    /// Links the folder <paramref name="link"/> to <paramref name="target"/>: a junction on Windows (no rights needed).
+    /// </summary>
     private static bool TryLinkFolder(string link, string target)
     {
         try

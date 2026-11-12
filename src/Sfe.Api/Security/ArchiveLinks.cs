@@ -31,7 +31,9 @@ public sealed class ArchiveLinks
         return token;
     }
 
-    /// <summary>The zip of <paramref name="token"/> when it is this caller's in this space, forgotten here (once).</summary>
+    /// <summary>
+    /// The zip of <paramref name="token"/> when it is this caller's in this space, forgotten here (once).
+    /// </summary>
     public PendingArchive? Take(string token, int tenantId, string caller)
     {
         Purge();
@@ -43,7 +45,10 @@ public sealed class ArchiveLinks
     /// <summary>The caller may start another zip now.</summary>
     public bool HasRoom(string caller) => _running.GetValueOrDefault(caller) < MaxPerCaller;
 
-    /// <summary>Counts a zip of <paramref name="caller"/> until disposed; null when they already download <see cref="MaxPerCaller"/>.</summary>
+    /// <summary>
+    /// Counts a zip of <paramref name="caller"/> until disposed; null when they already download
+    /// <see cref="MaxPerCaller"/>.
+    /// </summary>
     public IDisposable? TryBegin(string caller)
     {
         lock (_gate)

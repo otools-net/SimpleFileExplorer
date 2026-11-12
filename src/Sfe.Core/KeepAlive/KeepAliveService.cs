@@ -9,7 +9,8 @@ using Sfe.Core.Paths;
 namespace Sfe.Core.KeepAlive;
 
 /// <summary>What keep alive knows of one folder.</summary>
-/// <param name="IsRoot">The library's folder itself (the others come from <see cref="KeepAliveOptions.Folders"/>).</param>
+/// <param name="IsRoot">The library's folder itself (the others come from
+/// <see cref="KeepAliveOptions.Folders"/>).</param>
 /// <param name="IsNetwork">Null until the first ping looked.</param>
 /// <param name="LastPing">When the last ping ended (null: none yet).</param>
 /// <param name="Error">Why the last ping failed; null when it worked.</param>
@@ -66,7 +67,9 @@ public sealed class KeepAliveService : IDisposable
     private readonly SemaphoreSlim _round = new(1, 1);
     private readonly IDisposable? _subscription;
 
-    /// <summary>What was already said since the settings last changed (refused folders, the write ping read instead).</summary>
+    /// <summary>
+    /// What was already said since the settings last changed (refused folders, the write ping read instead).
+    /// </summary>
     private readonly ConcurrentDictionary<string, bool> _told = new(StringComparer.Ordinal);
 
     public KeepAliveService(
@@ -82,7 +85,8 @@ public sealed class KeepAliveService : IDisposable
         _logger = logger;
         _subscription = options.OnChange(_ =>
         {
-            // A mapped drive may have appeared, a mode changed: look again, and ping now rather than after the old interval.
+            // A mapped drive may have appeared, a mode changed: look again, and ping now rather than after the old
+            // interval.
             foreach (var folder in _folders.Values)
                 folder.IsNetwork = null;
             _told.Clear();
@@ -118,13 +122,18 @@ public sealed class KeepAliveService : IDisposable
     /// </summary>
     private string RootPath => Path.TrimEndingDirectorySeparator(_paths.Root);
 
-    /// <summary>Raised when <see cref="State"/> changes (after a round, or when the settings turn it off), on that thread.</summary>
+    /// <summary>
+    /// Raised when <see cref="State"/> changes (after a round, or when the settings turn it off), on that thread.
+    /// </summary>
     public event Action<KeepAliveState>? StateChanged;
 
     private readonly Lock _stateGate = new();
     private volatile KeepAliveState _state;
 
-    /// <summary>How keep alive goes as a whole; only folders pinged count (not those <see cref="KeepAliveMode.Auto"/> leaves alone).</summary>
+    /// <summary>
+    /// How keep alive goes as a whole; only folders pinged count (not those <see cref="KeepAliveMode.Auto"/> leaves
+    /// alone).
+    /// </summary>
     public KeepAliveState State => _state;
 
     public IReadOnlyList<KeepAliveFolder> Status() =>
@@ -255,7 +264,9 @@ public sealed class KeepAliveService : IDisposable
         return targets;
     }
 
-    /// <summary>The write ping only for the root, and only when the work folder is in the library (on its share).</summary>
+    /// <summary>
+    /// The write ping only for the root, and only when the work folder is in the library (on its share).
+    /// </summary>
     private KeepAliveMethod MethodFor(Folder folder, KeepAliveOptions settings)
     {
         if (!folder.IsRoot || settings.Method != KeepAliveMethod.Touch)

@@ -3,10 +3,10 @@ using Sfe.Core.Options;
 namespace Sfe.Core.Settings;
 
 /// <summary>
-/// The part of <see cref="SfeOptions"/> that can be changed from the web client, by level (<see cref="SettingCatalog"/>).
-/// Left out on purpose: the library root, the thumbnail cache folder, the database, the ffmpeg executable and the system
-/// commands. Those run programs or decide where data lives: only whoever runs the server sets them, in the
-/// configuration files.
+/// The part of <see cref="SfeOptions"/> that can be changed from the web client, by level
+/// (<see cref="SettingCatalog"/>). Left out on purpose: the library root, the thumbnail cache folder, the database, the
+/// ffmpeg executable and the system commands. Those run programs or decide where data lives: only whoever runs the
+/// server sets them, in the configuration files.
 /// </summary>
 public sealed class EditableSettings
 {
@@ -400,9 +400,11 @@ public sealed class RelinkSettings
 }
 
 /// <param name="Values">Settings in effect at <paramref name="Level"/>.</param>
-/// <param name="Customized">The level has values of its own (for the server: the settings file), rather than all inherited.</param>
+/// <param name="Customized">The level has values of its own (for the server: the settings file), rather than all
+/// inherited.</param>
 /// <param name="Level">The level the values are read at.</param>
-/// <param name="Keys">For each setting, where its value comes from and whether the level may change or lock it; null without levels.</param>
+/// <param name="Keys">For each setting, where its value comes from and whether the level may change or lock it; null
+/// without levels.</param>
 public sealed record SettingsView(
     EditableSettings Values,
     bool Customized,
@@ -415,7 +417,9 @@ public sealed class TaskSettings
     public int LogRetentionDays { get; set; }
 }
 
-/// <summary>The server's log; its folder (<see cref="LogOptions.Directory"/>) is only set in the configuration.</summary>
+/// <summary>
+/// The server's log; its folder (<see cref="LogOptions.Directory"/>) is only set in the configuration.
+/// </summary>
 public sealed class LogSettings
 {
     public int RetentionDays { get; set; }
@@ -424,7 +428,9 @@ public sealed class LogSettings
 
 public sealed class EditorSettings
 {
-    /// <summary>A library folder, relative to the root and separated by <c>/</c>; empty = next to the originals.</summary>
+    /// <summary>
+    /// A library folder, relative to the root and separated by <c>/</c>; empty = next to the originals.
+    /// </summary>
     public string? OutputFolder { get; set; }
     public int Quality { get; set; }
 }

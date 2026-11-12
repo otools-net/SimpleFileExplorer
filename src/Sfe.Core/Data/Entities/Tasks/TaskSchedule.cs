@@ -21,7 +21,9 @@ public sealed class TaskSchedule
 
     public bool Enabled { get; set; } = true;
 
-    /// <summary>Created or last changed: occurrences before it are not due (a new schedule doesn't run for the past).</summary>
+    /// <summary>
+    /// Created or last changed: occurrences before it are not due (a new schedule doesn't run for the past).
+    /// </summary>
     public DateTime Updated { get; set; }
 
     /// <summary>Last time it came due (whether its task could start or not).</summary>

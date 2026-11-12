@@ -9,12 +9,18 @@ using Sfe.Core.Upgrades;
 
 namespace Sfe.Api.Endpoints;
 
-/// <param name="DatabaseVersion">The version the install belongs to; null when unknown (installs before 1.37.0).</param>
-/// <param name="Changes">The changelog of the versions after it up to this one, newest first (while an update is due).</param>
-/// <param name="Log">What the update did so far; empty for who doesn't send the setup code (it names folders of the server).</param>
-/// <param name="Error">Why the update stopped or the database can't be read; without the setup code, only that it did.</param>
-/// <param name="CodeConfigured">The server has a setup code long enough (configured, or made by itself): the update can be confirmed.</param>
-/// <param name="CodeGenerated">The code is the one the server made itself: shown in its console and kept in <paramref name="CodeFile"/>.</param>
+/// <param name="DatabaseVersion">The version the install belongs to; null when unknown (installs before
+/// 1.37.0).</param>
+/// <param name="Changes">The changelog of the versions after it up to this one, newest first (while an update is
+/// due).</param>
+/// <param name="Log">What the update did so far; empty for who doesn't send the setup code (it names folders of the
+/// server).</param>
+/// <param name="Error">Why the update stopped or the database can't be read; without the setup code, only that it
+/// did.</param>
+/// <param name="CodeConfigured">The server has a setup code long enough (configured, or made by itself): the update can
+/// be confirmed.</param>
+/// <param name="CodeGenerated">The code is the one the server made itself: shown in its console and kept in
+/// <paramref name="CodeFile"/>.</param>
 public sealed record MigrationInfo(
     MigrationStatus Status,
     string AppVersion,
@@ -37,10 +43,14 @@ public sealed record BackupLink(string Url, string FileName, long Size);
 
 public static class MigrationEndpoints
 {
-    /// <summary>The setup code on <c>GET api/migration</c>: its sender reads the update's log and error as they are.</summary>
+    /// <summary>
+    /// The setup code on <c>GET api/migration</c>: its sender reads the update's log and error as they are.
+    /// </summary>
     public const string SetupCodeHeader = "X-SFE-Setup-Code";
 
-    /// <summary>What a visitor without the setup code learns of an error: its text may name servers, folders, accounts.</summary>
+    /// <summary>
+    /// What a visitor without the setup code learns of an error: its text may name servers, folders, accounts.
+    /// </summary>
     public const string ErrorWithoutCode = "The reason is in the server's log.";
 
     private static readonly Lazy<IReadOnlyList<ChangelogEntry>> Changelog = new(LoadChangelog);

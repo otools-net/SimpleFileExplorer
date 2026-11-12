@@ -12,10 +12,12 @@ namespace Sfe.Api.Endpoints;
 /// <param name="IsNetwork">Whether it is on a network share; null until the first ping looked.</param>
 /// <param name="LastPing">When the last ping ended; null: none yet.</param>
 /// <param name="DurationMilliseconds">How long the last ping took, when it worked.</param>
-/// <param name="Error">Why the last ping failed; null when it worked. The library's place on the server is not named.</param>
+/// <param name="Error">Why the last ping failed; null when it worked. The library's place on the server is not
+/// named.</param>
 /// <param name="FailingSince">The first failed ping of the current run of failures.</param>
 /// <param name="Waiting">A ping is still blocked on the folder (the share does not answer).</param>
-/// <param name="Method">How the last ping was made (a folder read, or a file written in the work folder); null: none yet.</param>
+/// <param name="Method">How the last ping was made (a folder read, or a file written in the work folder); null: none
+/// yet.</param>
 public sealed record KeepAliveFolderView(
     string Path,
     bool IsRoot,

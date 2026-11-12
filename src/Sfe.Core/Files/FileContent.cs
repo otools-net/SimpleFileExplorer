@@ -50,16 +50,20 @@ public sealed record FileRead(byte[]? Bytes, FileVersion? Version, long Size, Da
 /// <param name="Offset">Where the part starts in the file, in bytes (after a cut to a whole line).</param>
 /// <param name="End">Where it ends: the offset of the next part.</param>
 /// <param name="Size">The file's size when it was read.</param>
-/// <param name="Encoding">How it was read (as <see cref="TextCodec"/> names them; a UTF-8 mark is plain <c>utf-8</c>).</param>
+/// <param name="Encoding">How it was read (as <see cref="TextCodec"/> names them; a UTF-8 mark is plain
+/// <c>utf-8</c>).</param>
 public sealed record TextPart(string? Text, long Offset, long End, long Size, string Encoding, DateTime Modified);
 
-/// <summary>Where a part of a text file read from anywhere is cut, so that it holds whole lines and whole characters.</summary>
+/// <summary>
+/// Where a part of a text file read from anywhere is cut, so that it holds whole lines and whole characters.
+/// </summary>
 public static class TextParts
 {
     /// <summary>
-    /// The bytes of <paramref name="bytes"/> to keep: from after the first line break (unless <paramref name="atStart"/>)
-    /// to after the last one (unless <paramref name="atEnd"/>). Without a line break, at whole characters only (a
-    /// UTF-8 sequence is never cut). <paramref name="encoding"/> null or 8-bit: one byte a character unit.
+    /// The bytes of <paramref name="bytes"/> to keep: from after the first line break (unless
+    /// <paramref name="atStart"/>) to after the last one (unless <paramref name="atEnd"/>). Without a line break, at
+    /// whole characters only (a UTF-8 sequence is never cut). <paramref name="encoding"/> null or 8-bit: one byte a
+    /// character unit.
     /// </summary>
     public static (int From, int To) Cut(ReadOnlySpan<byte> bytes, bool atStart, bool atEnd, string? encoding)
     {
@@ -112,7 +116,9 @@ public static class TextParts
         return -1;
     }
 
-    /// <summary>How many bytes of <paramref name="bytes"/> end at a whole UTF-8 character (an 8-bit text: all of them).</summary>
+    /// <summary>
+    /// How many bytes of <paramref name="bytes"/> end at a whole UTF-8 character (an 8-bit text: all of them).
+    /// </summary>
     private static int WholeUtf8(ReadOnlySpan<byte> bytes)
     {
         // Back over at most three continuation bytes to the start of the last sequence; keep it only when complete.
@@ -178,17 +184,24 @@ public sealed class FileContent(
     ILogger<FileContent> logger
 )
 {
-    /// <summary>Tries of a replace refused because the file is in use (an editor or a scan reading it), and the wait between them.</summary>
+    /// <summary>
+    /// Tries of a replace refused because the file is in use (an editor or a scan reading it), and the wait between
+    /// them.
+    /// </summary>
     private const int InUseAttempts = 3;
     private static readonly TimeSpan InUseDelay = TimeSpan.FromMilliseconds(250);
 
     /// <summary>How long an editing session keeps its "previous version already in the trash".</summary>
     private static readonly TimeSpan SessionLifetime = TimeSpan.FromHours(12);
 
-    /// <summary>One overwrite at a time (they are rare; the version check and the replace must not interleave).</summary>
+    /// <summary>
+    /// One overwrite at a time (they are rare; the version check and the replace must not interleave).
+    /// </summary>
     private readonly SemaphoreSlim _writing = new(1, 1);
 
-    /// <summary>Editing sessions (account, session, file) whose previous version is in the trash already, and since when.</summary>
+    /// <summary>
+    /// Editing sessions (account, session, file) whose previous version is in the trash already, and since when.
+    /// </summary>
     private readonly ConcurrentDictionary<(int? Account, string Session, string Path), DateTime> _kept = new();
 
     /// <summary>
@@ -239,10 +252,10 @@ public sealed class FileContent(
 
     /// <summary>
     /// A part of a text file of any size (agents/docs/features/text-viewer.md, large files and logs): about
-    /// <paramref name="length"/> bytes from <paramref name="offset"/>, or the last ones when it is negative, cut at whole
-    /// lines (unless a line is longer than the part) and decoded in <paramref name="encoding"/>, or as the file's mark
-    /// says, or as UTF-8 when the part is valid UTF-8 and else windows-1252. Null when the file is not there; a part
-    /// with null text when it is binary.
+    /// <paramref name="length"/> bytes from <paramref name="offset"/>, or the last ones when it is negative, cut at
+    /// whole lines (unless a line is longer than the part) and decoded in <paramref name="encoding"/>, or as the file's
+    /// mark says, or as UTF-8 when the part is valid UTF-8 and else windows-1252. Null when the file is not there; a
+    /// part with null text when it is binary.
     /// </summary>
     public async Task<TextPart?> ReadPartAsync(
         string full,
@@ -327,7 +340,8 @@ public sealed class FileContent(
 
     /// <summary>
     /// The version of <paramref name="full"/> now, without reading it when its size and time are those of
-    /// <paramref name="known"/> (a check that it was not changed elsewhere, every few seconds). Null when it is not there.
+    /// <paramref name="known"/> (a check that it was not changed elsewhere, every few seconds). Null when it is not
+    /// there.
     /// </summary>
     public async Task<FileVersion?> VersionAsync(string full, string? known, CancellationToken cancellationToken)
     {

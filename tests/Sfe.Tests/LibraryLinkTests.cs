@@ -212,7 +212,10 @@ public sealed class LibraryLinkTests
         return response.StatusCode;
     }
 
-    /// <summary>Links <paramref name="link"/> (in the library) to <paramref name="target"/>: a junction on Windows (no rights needed).</summary>
+    /// <summary>
+    /// Links <paramref name="link"/> (in the library) to <paramref name="target"/>: a junction on Windows (no rights
+    /// needed).
+    /// </summary>
     private bool TryLinkFolder(string link, string target)
     {
         var linkPath = _library.FullPath(link);

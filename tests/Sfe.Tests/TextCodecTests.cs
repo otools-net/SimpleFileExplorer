@@ -3,7 +3,9 @@ using Sfe.Core.Files;
 
 namespace Sfe.Tests;
 
-/// <summary>Bytes read and written as text the way an OS text editor does (<see cref="TextCodec"/>), and versions of content.</summary>
+/// <summary>
+/// Bytes read and written as text the way an OS text editor does (<see cref="TextCodec"/>), and versions of content.
+/// </summary>
 [TestClass]
 public sealed class TextCodecTests
 {

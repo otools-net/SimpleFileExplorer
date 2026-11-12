@@ -17,7 +17,8 @@ public enum SettingLevel
     User,
 }
 
-/// <param name="Key">As the settings page names it, e.g. <c>player.seekSeconds</c> (also the key of its validation errors).</param>
+/// <param name="Key">As the settings page names it, e.g. <c>player.seekSeconds</c> (also the key of its validation
+/// errors).</param>
 /// <param name="Scope">
 /// The most specific level that may set it: <see cref="SettingLevel.Server"/> for what the server shares (its own
 /// resources), <see cref="SettingLevel.Tenant"/> for what a library decides, <see cref="SettingLevel.User"/> for
@@ -32,7 +33,9 @@ public enum SettingLevel
 /// </param>
 public sealed record SettingDefinition(string Key, SettingLevel Scope, string Right, bool PerLibrary);
 
-/// <summary>Every setting of <see cref="EditableSettings"/>, with the level it can be set down to and its right.</summary>
+/// <summary>
+/// Every setting of <see cref="EditableSettings"/>, with the level it can be set down to and its right.
+/// </summary>
 public static class SettingCatalog
 {
     private static readonly HashSet<string> ServerKeys =

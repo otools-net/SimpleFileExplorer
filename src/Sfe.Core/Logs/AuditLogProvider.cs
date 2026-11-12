@@ -17,7 +17,9 @@ public sealed class AuditLogProvider(TimeProvider time) : ILoggerProvider
     public const int MaxMessageLength = 8_000;
     public const int MaxExceptionLength = 16_000;
 
-    /// <summary>Set while the log itself works (its database commands, its own failures): those are not logged again.</summary>
+    /// <summary>
+    /// Set while the log itself works (its database commands, its own failures): those are not logged again.
+    /// </summary>
     private static readonly AsyncLocal<bool> SuppressedFlow = new();
 
     private readonly ConcurrentQueue<LogEntry> _queue = new();
@@ -29,10 +31,14 @@ public sealed class AuditLogProvider(TimeProvider time) : ILoggerProvider
 
     public ILogger CreateLogger(string categoryName) => new AuditLogger(this, categoryName, null);
 
-    /// <summary>The output of a library's services: the same queue, its entries marked with <paramref name="tenantId"/>.</summary>
+    /// <summary>
+    /// The output of a library's services: the same queue, its entries marked with <paramref name="tenantId"/>.
+    /// </summary>
     public ILoggerProvider ForTenant(int tenantId) => new TenantOutput(this, tenantId);
 
-    /// <summary>Until disposed, what the calling flow logs is left out of the log (the console still shows it).</summary>
+    /// <summary>
+    /// Until disposed, what the calling flow logs is left out of the log (the console still shows it).
+    /// </summary>
     public static IDisposable Suppress()
     {
         var previous = SuppressedFlow.Value;
@@ -112,7 +118,9 @@ public sealed class AuditLogProvider(TimeProvider time) : ILoggerProvider
         }
     }
 
-    /// <summary>Handed to a library's services as an instance: their container doesn't dispose the server's queue.</summary>
+    /// <summary>
+    /// Handed to a library's services as an instance: their container doesn't dispose the server's queue.
+    /// </summary>
     private sealed class TenantOutput(AuditLogProvider provider, int tenantId) : ILoggerProvider
     {
         public ILogger CreateLogger(string categoryName) => new AuditLogger(provider, categoryName, tenantId);

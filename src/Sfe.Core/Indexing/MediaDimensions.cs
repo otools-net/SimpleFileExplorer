@@ -10,15 +10,19 @@ namespace Sfe.Core.Indexing;
 /// <summary>Width and height in pixels, as the picture is shown (rotated by its orientation metadata).</summary>
 public readonly record struct PixelSize(int Width, int Height)
 {
-    /// <summary>Stored for a file whose size could not be read, so that it is not read again until it changes.</summary>
+    /// <summary>
+    /// Stored for a file whose size could not be read, so that it is not read again until it changes.
+    /// </summary>
     public static readonly PixelSize Unknown = new(0, 0);
 
     public bool IsKnown => Width > 0 && Height > 0;
 }
 
 /// <summary>What a scan reads of an image, video or audio file.</summary>
-/// <param name="Size">The picture of an image or video; null for audio, which has none (a cover is not its picture).</param>
-/// <param name="Duration">Seconds of a video or audio file; 0 when ffmpeg does not tell (a broken file); null for images.</param>
+/// <param name="Size">The picture of an image or video; null for audio, which has none (a cover is not its
+/// picture).</param>
+/// <param name="Duration">Seconds of a video or audio file; 0 when ffmpeg does not tell (a broken file); null for
+/// images.</param>
 public readonly record struct MediaProperties(PixelSize? Size, double? Duration = null);
 
 /// <summary>
@@ -35,10 +39,9 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
     public bool CanRead(ItemKind kind) =>
         kind == ItemKind.Image || kind is ItemKind.Video or ItemKind.Audio && ffmpeg.IsAvailable;
 
-    /// <returns>
-    /// The size (<see cref="PixelSize.Unknown"/> when the file is not a picture it understands; none for audio) and, for
-    /// a video or audio file, its duration; null when it cannot tell now (ffmpeg missing or timed out, file locked), so
-    /// that the next scan tries again.
+    /// <returns> The size (<see cref="PixelSize.Unknown"/> when the file is not a picture it understands; none for
+    /// audio) and, for a video or audio file, its duration; null when it cannot tell now (ffmpeg missing or timed out,
+    /// file locked), so that the next scan tries again.
     /// </returns>
     public async Task<MediaProperties?> ReadAsync(
         string fullPath,
@@ -90,7 +93,9 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
         }
     }
 
-    /// <summary>What ffmpeg tells about the file's container and streams (its error output when given no output file).</summary>
+    /// <summary>
+    /// What ffmpeg tells about the file's container and streams (its error output when given no output file).
+    /// </summary>
     internal async Task<string> ProbeAsync(string fullPath, CancellationToken cancellationToken)
     {
         // No output file: ffmpeg describes the input, then fails with "At least one output file must be specified".
@@ -162,7 +167,9 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
     [GeneratedRegex(@"(?:rotation of|rotate\s*:)\s*(-?\d+(?:\.\d+)?)")]
     private static partial Regex Rotation();
 
-    /// <summary>The size written in the header of a JPEG, PNG, GIF, BMP or WebP image; null for other formats.</summary>
+    /// <summary>
+    /// The size written in the header of a JPEG, PNG, GIF, BMP or WebP image; null for other formats.
+    /// </summary>
     internal static PixelSize? ReadImageHeader(Stream stream)
     {
         Span<byte> head = stackalloc byte[32];
@@ -189,7 +196,8 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
 
         if (head.Length >= 26 && head[..2].SequenceEqual("BM"u8))
         {
-            // BITMAPCOREHEADER (12 bytes) has 16-bit sizes; the later headers 32-bit ones, negative heights for top-down rows.
+            // BITMAPCOREHEADER (12 bytes) has 16-bit sizes; the later headers 32-bit ones, negative heights for
+            // top-down rows.
             return BinaryPrimitives.ReadUInt32LittleEndian(head[14..]) == 12
                 ? Checked(
                     BinaryPrimitives.ReadUInt16LittleEndian(head[18..]),
@@ -288,7 +296,9 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
         return PixelSize.Unknown;
     }
 
-    /// <summary>Orientation tag (0x0112) of the first IFD of a TIFF block; 0 when missing. 5 to 8 swap the sides.</summary>
+    /// <summary>
+    /// Orientation tag (0x0112) of the first IFD of a TIFF block; 0 when missing. 5 to 8 swap the sides.
+    /// </summary>
     internal static int ExifOrientation(ReadOnlySpan<byte> tiff)
     {
         if (tiff.Length < 8)

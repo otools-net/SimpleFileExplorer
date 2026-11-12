@@ -14,7 +14,8 @@ public sealed record RightsCatalogInfo(
     IReadOnlyList<string> DisabledInTenant
 );
 
-/// <param name="AnonymousGuestsAllowed">The server lets spaces open to visitors without an account (<c>Sfe:Security:AnonymousGuests</c>).</param>
+/// <param name="AnonymousGuestsAllowed">The server lets spaces open to visitors without an account
+/// (<c>Sfe:Security:AnonymousGuests</c>).</param>
 public sealed record TenantAccessInfo(
     int Id,
     string Name,
@@ -440,7 +441,9 @@ public static class AccessEndpoints
 
     private static bool IsInTenant(UserInfo user, int tenantId) => user.Groups.Any(g => g.TenantId == tenantId);
 
-    /// <summary>The account belongs to this space alone and is no server administrator: its administrators may change it all.</summary>
+    /// <summary>
+    /// The account belongs to this space alone and is no server administrator: its administrators may change it all.
+    /// </summary>
     private static bool OwnedBy(UserInfo user, int tenantId) =>
         !user.IsServerAdmin && user.Groups.All(g => g.TenantId == tenantId);
 }

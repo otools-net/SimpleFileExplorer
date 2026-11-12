@@ -13,7 +13,9 @@ using Sfe.Core.Access;
 
 namespace Sfe.Tests.Infrastructure;
 
-/// <summary>HTTP clients of a test server: they keep the sign-in cookie and send the header requests that change something need.</summary>
+/// <summary>
+/// HTTP clients of a test server: they keep the sign-in cookie and send the header requests that change something need.
+/// </summary>
 public static class ApiClients
 {
     public const string AdminName = "admin";
@@ -89,7 +91,9 @@ public static class ApiClients
         return client;
     }
 
-    /// <summary>Runs the setup with <see cref="TestLibrary.SetupCode"/>: the client is signed in as the server administrator.</summary>
+    /// <summary>
+    /// Runs the setup with <see cref="TestLibrary.SetupCode"/>: the client is signed in as the server administrator.
+    /// </summary>
     public static async Task<HttpClient> SetUpAsync(
         WebApplicationFactory<Program> factory,
         CancellationToken cancellationToken
@@ -109,7 +113,10 @@ public static class ApiClients
         return client;
     }
 
-    /// <summary>Confirms the update of an install of an earlier version with <see cref="TestLibrary.SetupCode"/> and waits until it is done.</summary>
+    /// <summary>
+    /// Confirms the update of an install of an earlier version with <see cref="TestLibrary.SetupCode"/> and waits until
+    /// it is done.
+    /// </summary>
     public static async Task MigrateAsync(WebApplicationFactory<Program> factory, CancellationToken cancellationToken)
     {
         var client = Create(factory);

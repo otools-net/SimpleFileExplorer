@@ -203,7 +203,9 @@ public sealed class CacheLayoutUpgradeTests
     /// <summary>A source file's full path (nothing is written there: the step never reads the sources).</summary>
     private string Source(string folder, string name) => Path.Combine(_base, "library", folder, name);
 
-    /// <summary>Writes a thumbnail where versions before 1.40.0 kept it: <c>{SHA1(folder)}/{SHA1(name)}.bin</c>.</summary>
+    /// <summary>
+    /// Writes a thumbnail where versions before 1.40.0 kept it: <c>{SHA1(folder)}/{SHA1(name)}.bin</c>.
+    /// </summary>
     private static string OldThumbnail(string cache, string source, byte[] content)
     {
         var path = Path.Combine(

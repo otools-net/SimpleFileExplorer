@@ -3,7 +3,9 @@ using Sfe.Core.Trickplay;
 
 namespace Sfe.Core.FileTracking;
 
-/// <summary>A video of a group and how much of it matches the group's reference (null for the reference itself).</summary>
+/// <summary>
+/// A video of a group and how much of it matches the group's reference (null for the reference itself).
+/// </summary>
 internal readonly record struct VideoMember(int Video, int? Percent);
 
 /// <summary>Similar videos: the reference (the longest) first.</summary>
@@ -101,7 +103,9 @@ internal static class VideoMatcher
         return groups;
     }
 
-    /// <summary>Pairs (<see cref="PairKey"/>) matching at <paramref name="minimumPercent"/> % or more, with their percentage.</summary>
+    /// <summary>
+    /// Pairs (<see cref="PairKey"/>) matching at <paramref name="minimumPercent"/> % or more, with their percentage.
+    /// </summary>
     private static Dictionary<long, int> FindPairs(
         IReadOnlyList<VideoFingerprint> videos,
         int[] informative,
@@ -190,7 +194,9 @@ internal static class VideoMatcher
         return pairs;
     }
 
-    /// <summary>Best percentage of <paramref name="a"/> and <paramref name="b"/> over <paramref name="offsets"/>.</summary>
+    /// <summary>
+    /// Best percentage of <paramref name="a"/> and <paramref name="b"/> over <paramref name="offsets"/>.
+    /// </summary>
     private static (int Percent, int Offset) Compare(
         VideoFingerprint a,
         VideoFingerprint b,
@@ -214,7 +220,9 @@ internal static class VideoMatcher
         return best;
     }
 
-    /// <summary>Frames <c>i</c> of <paramref name="a"/> showing the picture of frame <c>i + offset</c> of <paramref name="b"/>.</summary>
+    /// <summary>
+    /// Frames <c>i</c> of <paramref name="a"/> showing the picture of frame <c>i + offset</c> of <paramref name="b"/>.
+    /// </summary>
     private static int MatchedFrames(VideoFingerprint a, VideoFingerprint b, int offset)
     {
         var matched = 0;

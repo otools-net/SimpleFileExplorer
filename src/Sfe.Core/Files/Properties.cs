@@ -26,7 +26,8 @@ public sealed record ItemDetails(
 );
 
 /// <summary>What the index knows below a folder (the files and folders the asker may see).</summary>
-/// <param name="Indexed">The folder itself is in the index (else the counts are those of what was indexed below it, if anything).</param>
+/// <param name="Indexed">The folder itself is in the index (else the counts are those of what was indexed below it, if
+/// anything).</param>
 public sealed record FolderTotals(bool Indexed, long Files, long Folders, long Bytes);
 
 public enum PropertyJobKind
@@ -48,7 +49,8 @@ public enum ChecksumAlgorithm
 /// <param name="Bytes">Counted (a count), or read so far (a checksum).</param>
 /// <param name="Total">The file's size, for a checksum's progress.</param>
 /// <param name="LeftOut">Links not followed and folders that couldn't be read, while counting.</param>
-/// <param name="Capped">The count stopped at <see cref="PropertyJobs.MaxCountedEntries"/>: the folder holds more.</param>
+/// <param name="Capped">The count stopped at <see cref="PropertyJobs.MaxCountedEntries"/>: the folder holds
+/// more.</param>
 /// <param name="Checksum">The checksum, in lowercase hex, once done.</param>
 public sealed record PropertyJobView(
     string Id,
@@ -155,7 +157,9 @@ public sealed class PropertyJobs(ILogger<PropertyJobs> logger)
 
     private readonly ConcurrentDictionary<string, Job> _jobs = new();
 
-    /// <summary>Counts the folder <paramref name="fullPath"/> (root-relative <paramref name="path"/>) on the disk.</summary>
+    /// <summary>
+    /// Counts the folder <paramref name="fullPath"/> (root-relative <paramref name="path"/>) on the disk.
+    /// </summary>
     public PropertyJobView StartCount(string owner, string path, string fullPath, IPropertyAccess access)
     {
         var job = Begin(owner, PropertyJobKind.Count, path, null);

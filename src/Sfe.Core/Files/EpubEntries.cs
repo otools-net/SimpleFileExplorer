@@ -10,7 +10,9 @@ namespace Sfe.Core.Files;
 /// </summary>
 public static class EpubEntries
 {
-    /// <summary>The largest entry served (a book's picture or font, never this big): a zip bomb answers nothing.</summary>
+    /// <summary>
+    /// The largest entry served (a book's picture or font, never this big): a zip bomb answers nothing.
+    /// </summary>
     public const long MaxEntryBytes = 64L * 1024 * 1024;
 
     private static readonly Dictionary<string, string> Types = new(StringComparer.OrdinalIgnoreCase)
@@ -42,7 +44,9 @@ public static class EpubEntries
         [".js"] = "text/plain",
     };
 
-    /// <summary>The book's path in a URL segment: base64url of its UTF-8 (relative links inside the book keep working).</summary>
+    /// <summary>
+    /// The book's path in a URL segment: base64url of its UTF-8 (relative links inside the book keep working).
+    /// </summary>
     public static string Token(string relativePath) =>
         Convert.ToBase64String(Encoding.UTF8.GetBytes(relativePath)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
@@ -68,8 +72,8 @@ public static class EpubEntries
 
     /// <summary>
     /// The entry <paramref name="name"/> of the zip <paramref name="archive"/>: as written, else ignoring case (books
-    /// made on Windows link <c>Images/Cover.jpg</c> to <c>images/cover.jpg</c>); null when there is none, it is a folder
-    /// or it is larger than <see cref="MaxEntryBytes"/>.
+    /// made on Windows link <c>Images/Cover.jpg</c> to <c>images/cover.jpg</c>); null when there is none, it is a
+    /// folder or it is larger than <see cref="MaxEntryBytes"/>.
     /// </summary>
     public static ZipArchiveEntry? Find(ZipArchive archive, string name)
     {

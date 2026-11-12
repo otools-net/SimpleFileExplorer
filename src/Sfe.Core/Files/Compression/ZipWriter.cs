@@ -8,10 +8,11 @@ namespace Sfe.Core.Files.Compression;
 /// <summary>
 /// SFE's own zip writer (agents/docs/features/compression.md): neither .NET's <c>ZipArchive</c> nor SharpCompress
 /// writes encrypted zips, nor takes any deflate level. Writes to a seekable stream: each entry's local header gets its
-/// CRC and sizes written back after its data (no data descriptors), Zip64 for an entry near 4 GB and for the archive past
-/// 65 535 entries or 4 GB, UTF-8 names, the modified time (DOS, and the extended timestamp in UTC), deflate at levels
-/// 0–9 (0: stored), and with a password WinZip AES-256 (AE-2: no CRC, which would leak small files' content; a new salt
-/// per entry). The central directory goes to a temporary file until the end: memory stays flat whatever the count.
+/// CRC and sizes written back after its data (no data descriptors), Zip64 for an entry near 4 GB and for the archive
+/// past 65 535 entries or 4 GB, UTF-8 names, the modified time (DOS, and the extended timestamp in UTC), deflate at
+/// levels 0–9 (0: stored), and with a password WinZip AES-256 (AE-2: no CRC, which would leak small files' content; a
+/// new salt per entry). The central directory goes to a temporary file until the end: memory stays flat whatever the
+/// count.
 /// </summary>
 public sealed class ZipWriter : IDisposable, IAsyncDisposable
 {
@@ -60,7 +61,9 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
     /// <summary>Bytes of the zip so far.</summary>
     public long Length => _output.Position;
 
-    /// <summary>A folder entry (<paramref name="name"/> without its trailing <c>/</c>): what keeps an empty folder.</summary>
+    /// <summary>
+    /// A folder entry (<paramref name="name"/> without its trailing <c>/</c>): what keeps an empty folder.
+    /// </summary>
     public void AddFolder(string name, DateTime modified)
     {
         var entryName = Encoding.UTF8.GetBytes(name.TrimEnd('/') + "/");
@@ -94,8 +97,8 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// A file entry: <paramref name="input"/> read to its end, deflated at <paramref name="level"/> (0: stored), encrypted
-    /// when the writer has a password. <paramref name="read"/> is told the bytes read, as they are.
+    /// A file entry: <paramref name="input"/> read to its end, deflated at <paramref name="level"/> (0: stored),
+    /// encrypted when the writer has a password. <paramref name="read"/> is told the bytes read, as they are.
     /// </summary>
     /// <returns>The bytes the entry's data takes in the zip.</returns>
     public async Task<long> AddFileAsync(
@@ -356,7 +359,9 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         _entries++;
     }
 
-    /// <summary>The extra fields: Zip64 room (local headers that may need it), the time in UTC, AES' description.</summary>
+    /// <summary>
+    /// The extra fields: Zip64 room (local headers that may need it), the time in UTC, AES' description.
+    /// </summary>
     private static byte[] Extras(bool zip64, DateTime modified, bool aes, ushort method)
     {
         var extra = new List<byte>(32);
@@ -435,7 +440,9 @@ public sealed class ZipWriter : IDisposable, IAsyncDisposable
         ) => inner.WriteAsync(buffer, cancellationToken);
     }
 
-    /// <summary>WinZip AES while writing: AES-CTR (a little-endian counter from 1), HMAC-SHA1 of what it writes.</summary>
+    /// <summary>
+    /// WinZip AES while writing: AES-CTR (a little-endian counter from 1), HMAC-SHA1 of what it writes.
+    /// </summary>
     private sealed class AesCtrWriter : Stream
     {
         private readonly Stream _inner;

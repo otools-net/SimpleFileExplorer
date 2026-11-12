@@ -7,16 +7,17 @@ using Sfe.Core.Logs;
 namespace Sfe.Core.Access;
 
 /// <param name="UserName">The account the code recovers.</param>
-/// <param name="Code">Shown only where the server runs (its console and <see cref="AccountRecovery.FilePath"/>), never to the browser.</param>
+/// <param name="Code">Shown only where the server runs (its console and <see cref="AccountRecovery.FilePath"/>), never
+/// to the browser.</param>
 public sealed record RecoveryCode(int UserId, string UserName, string Code, DateTime Expires);
 
 /// <summary>
-/// The way back in for a server administrator locked out (by someone guessing the password) or who forgot the
-/// password, without editing a file or restarting: the sign-in page asks for a one-time code, which the server shows
-/// only where it runs (its console, and <see cref="FilePath"/> for a service without one); with it, a new password
-/// unlocks the account and signs it in. Whoever reads the console runs the server, which is what the code proves. A
-/// code lives <see cref="Lifetime"/>, works once, and exists only while someone recovers: no lasting secret, unlike the
-/// setup code. Other accounts are unlocked by an administrator; a disabled administrator needs <c>Sfe:Setup:Recover</c>.
+/// The way back in for a server administrator locked out (by someone guessing the password) or who forgot the password,
+/// without editing a file or restarting: the sign-in page asks for a one-time code, which the server shows only where
+/// it runs (its console, and <see cref="FilePath"/> for a service without one); with it, a new password unlocks the
+/// account and signs it in. Whoever reads the console runs the server, which is what the code proves. A code lives
+/// <see cref="Lifetime"/>, works once, and exists only while someone recovers: no lasting secret, unlike the setup
+/// code. Other accounts are unlocked by an administrator; a disabled administrator needs <c>Sfe:Setup:Recover</c>.
 /// </summary>
 public sealed class AccountRecovery(
     IDbContextFactory<AccessDbContext> dbFactory,

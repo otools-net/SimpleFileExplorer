@@ -3,7 +3,10 @@ using Sfe.Core.Trickplay;
 
 namespace Sfe.Tests;
 
-/// <summary>Video fingerprints and their matching, on made-up frame hashes (see <see cref="SimilarVideoTests"/> for real videos).</summary>
+/// <summary>
+/// Video fingerprints and their matching, on made-up frame hashes (see <see cref="SimilarVideoTests"/> for real
+/// videos).
+/// </summary>
 [TestClass]
 public sealed class VideoMatcherTests
 {
@@ -135,7 +138,9 @@ public sealed class VideoMatcherTests
         return new VideoFingerprint(10, hashes, Enumerable.Repeat((byte)100, frames).ToArray());
     }
 
-    /// <summary>The same video with <paramref name="bits"/> random bits of each frame flipped, like a re-encode.</summary>
+    /// <summary>
+    /// The same video with <paramref name="bits"/> random bits of each frame flipped, like a re-encode.
+    /// </summary>
     private static VideoFingerprint Blur(VideoFingerprint video, int bits, int seed)
     {
         var random = new Random(seed);

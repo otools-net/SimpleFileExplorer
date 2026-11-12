@@ -14,7 +14,9 @@ using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
 
-/// <summary>New folders and renames in Core (<see cref="FileOperations"/>, <see cref="PathMoves"/>) and the work folder.</summary>
+/// <summary>
+/// New folders and renames in Core (<see cref="FileOperations"/>, <see cref="PathMoves"/>) and the work folder.
+/// </summary>
 [TestClass]
 public sealed class FileOperationsTests
 {

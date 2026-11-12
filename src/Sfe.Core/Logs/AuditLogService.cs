@@ -74,7 +74,9 @@ public sealed class AuditLogService(
     /// <summary>The folder of the daily files (full path).</summary>
     public string Directory { get; } = directory;
 
-    /// <summary>The log's settings in effect: the configuration's, then the server's settings page (server-level keys).</summary>
+    /// <summary>
+    /// The log's settings in effect: the configuration's, then the server's settings page (server-level keys).
+    /// </summary>
     public LogOptions Options() => settings.ServerLevel().Logs;
 
     /// <summary>
@@ -165,7 +167,9 @@ public sealed class AuditLogService(
         return new LogPage(page, rows.Count > size ? page[^1].Id : null);
     }
 
-    /// <summary>Forgets the entries and the daily files older than <see cref="LogOptions.RetentionDays"/> (0: never).</summary>
+    /// <summary>
+    /// Forgets the entries and the daily files older than <see cref="LogOptions.RetentionDays"/> (0: never).
+    /// </summary>
     public async Task PurgeAsync(CancellationToken cancellationToken = default)
     {
         using var suppressed = AuditLogProvider.Suppress();
@@ -177,7 +181,8 @@ public sealed class AuditLogService(
         try
         {
             await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-            // In slices, so that a large backlog (a first purge after raising the level) doesn't hold one long transaction.
+            // In slices, so that a large backlog (a first purge after raising the level) doesn't hold one long
+            // transaction.
             while (true)
             {
                 var last = await db

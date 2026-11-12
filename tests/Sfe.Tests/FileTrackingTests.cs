@@ -542,7 +542,9 @@ public sealed class FileTrackingTests
         File.Move(_library.FullPath(from), _library.FullPath(to));
     }
 
-    /// <summary>Links <paramref name="link"/> to the folder <paramref name="target"/>: a junction on Windows (no rights needed).</summary>
+    /// <summary>
+    /// Links <paramref name="link"/> to the folder <paramref name="target"/>: a junction on Windows (no rights needed).
+    /// </summary>
     private bool TryLinkFolder(string link, string target)
     {
         if (OperatingSystem.IsWindows())

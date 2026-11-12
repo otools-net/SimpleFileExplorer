@@ -4,7 +4,8 @@ namespace Sfe.Core.Access;
 
 /// <param name="Root">Full path of the root folder; null for the first library (it follows <c>Sfe:Root</c>).</param>
 /// <param name="DisabledRights">Rights nobody gets in this library (<see cref="TenantDisabledRight"/>).</param>
-/// <param name="ConnectionString">Its index's own connection string; null = the server's (never sent to the web client).</param>
+/// <param name="ConnectionString">Its index's own connection string; null = the server's (never sent to the web
+/// client).</param>
 public sealed record TenantInfo(
     int Id,
     string Slug,
@@ -20,7 +21,8 @@ public sealed record TenantInfo(
 public sealed record MembershipInfo(int TenantId, int GroupId, string Group);
 
 /// <param name="Source"><c>local</c>, or the directory the account comes from (its password is checked there).</param>
-/// <param name="LockedOut">Too many failed sign-ins: locked until a while has passed or an administrator unlocks it.</param>
+/// <param name="LockedOut">Too many failed sign-ins: locked until a while has passed or an administrator unlocks
+/// it.</param>
 public sealed record UserInfo(
     int Id,
     string UserName,
@@ -46,7 +48,8 @@ public sealed record GroupInfo(
 );
 
 /// <param name="Password">Required for a new local account; null keeps the current one.</param>
-/// <param name="GroupIds">The account's groups, replacing those it had in the libraries the change covers; null keeps them.</param>
+/// <param name="GroupIds">The account's groups, replacing those it had in the libraries the change covers; null keeps
+/// them.</param>
 /// <param name="Unlock">Clears a lock left by failed sign-ins.</param>
 public sealed record UserInput(
     string? UserName,
@@ -69,7 +72,8 @@ public sealed record GroupInput(
 );
 
 /// <param name="Slug">Short name for its index and caches; made from the name when empty. Fixed once created.</param>
-/// <param name="Root">Root folder (full path, inside <c>Sfe:Tenants:AllowedRoots</c>); ignored for the first library.</param>
+/// <param name="Root">Root folder (full path, inside <c>Sfe:Tenants:AllowedRoots</c>); ignored for the first
+/// library.</param>
 /// <param name="DisabledRights">Rights nobody gets in this library; null keeps the current ones.</param>
 public sealed record TenantInput(
     string? Name,
@@ -80,7 +84,10 @@ public sealed record TenantInput(
     IReadOnlyList<string>? DisabledRights = null
 );
 
-/// <summary>What a request needs to know about the signed-in account (cached, see <see cref="AccessService.GetSessionUserAsync"/>).</summary>
+/// <summary>
+/// What a request needs to know about the signed-in account (cached, see
+/// <see cref="AccessService.GetSessionUserAsync"/>).
+/// </summary>
 public sealed record SessionUser(
     int Id,
     string UserName,
@@ -102,7 +109,9 @@ public enum AccessStatus
     Invalid,
     NotFound,
 
-    /// <summary>The change would break something (the last administrator, a built-in group...): see the problem.</summary>
+    /// <summary>
+    /// The change would break something (the last administrator, a built-in group...): see the problem.
+    /// </summary>
     Conflict,
 }
 

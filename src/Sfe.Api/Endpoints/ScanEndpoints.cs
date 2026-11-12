@@ -29,13 +29,17 @@ public sealed record IndexedFolder(
 /// <param name="Excluded">The folder was added to the excluded folders.</param>
 public sealed record RemovedFromIndex(string Path, int Directories, int Files, int TaggedFiles, bool Excluded);
 
-/// <summary>Puts a folder on the lists that keep it out of scans, trickplay or thumbnails (true), or takes it off (false); null leaves a list alone.</summary>
+/// <summary>
+/// Puts a folder on the lists that keep it out of scans, trickplay or thumbnails (true), or takes it off (false); null
+/// leaves a list alone.
+/// </summary>
 /// <param name="Path">The folder, relative to the library root (not the root itself).</param>
 public sealed record FolderExclusionChange(string? Path, bool? Scan, bool? Trickplay, bool? Thumbnails);
 
 /// <summary>A folder on the lists that keep folders out of scans, trickplay or thumbnails, and which ones.</summary>
 /// <param name="Path">The folder as listed, relative to the library root.</param>
-/// <param name="Exists">The folder is on the disk (a folder renamed or deleted outside SFE stays listed until removed).</param>
+/// <param name="Exists">The folder is on the disk (a folder renamed or deleted outside SFE stays listed until
+/// removed).</param>
 public sealed record ExcludedFolder(string Path, bool Scan, bool Trickplay, bool Thumbnails, bool Exists);
 
 public static class ScanEndpoints

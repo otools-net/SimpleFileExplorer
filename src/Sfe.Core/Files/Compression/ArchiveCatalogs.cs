@@ -17,10 +17,14 @@ public sealed class ArchiveBuildGate
     private Gate _gate = new(1);
     private Gate _compress = new(1);
 
-    /// <summary>The gate, resized to <paramref name="size"/> when the setting changed (builds running release the old one).</summary>
+    /// <summary>
+    /// The gate, resized to <paramref name="size"/> when the setting changed (builds running release the old one).
+    /// </summary>
     public SemaphoreSlim Builds(int size) => Resized(ref _gate, size);
 
-    /// <summary>The gate of compressions (zips written into libraries, <c>CompressJobs</c>), as <see cref="Builds"/>.</summary>
+    /// <summary>
+    /// The gate of compressions (zips written into libraries, <c>CompressJobs</c>), as <see cref="Builds"/>.
+    /// </summary>
     public SemaphoreSlim Compressions(int size) => Resized(ref _compress, size);
 
     private static SemaphoreSlim Resized(ref Gate field, int size)
@@ -48,10 +52,15 @@ public enum ArchiveCatalogStatus
     /// <summary>Being read (or waiting for its turn): <see cref="ArchiveCatalogState.Read"/> entries so far.</summary>
     Building,
 
-    /// <summary>Couldn't be read (the disk, the file in use): <see cref="ArchiveCatalogState.Error"/> says so; asked again later.</summary>
+    /// <summary>
+    /// Couldn't be read (the disk, the file in use): <see cref="ArchiveCatalogState.Error"/> says so; asked again
+    /// later.
+    /// </summary>
     Failed,
 
-    /// <summary>Not read yet, and no new read was started for this caller (<c>mayStart</c> said no): ask again later.</summary>
+    /// <summary>
+    /// Not read yet, and no new read was started for this caller (<c>mayStart</c> said no): ask again later.
+    /// </summary>
     Limited,
 }
 
@@ -93,7 +102,9 @@ public sealed class ArchiveCatalogs(
 
     public string Folder => Path.Combine(options.CurrentValue.Thumbnails.CacheDirectory, FolderName, VersionFolder);
 
-    /// <summary>The catalog's name: the archive's path and version. A changed archive is another catalog; the old one ages out.</summary>
+    /// <summary>
+    /// The catalog's name: the archive's path and version. A changed archive is another catalog; the old one ages out.
+    /// </summary>
     public static string KeyOf(string canonicalPath, long size, DateTime modifiedUtc) =>
         Convert.ToHexStringLower(
             SHA256.HashData(Encoding.UTF8.GetBytes($"{canonicalPath}\n{size}\n{modifiedUtc.Ticks}"))
@@ -186,13 +197,17 @@ public sealed class ArchiveCatalogs(
         {
             if (entered)
                 semaphore.Release();
-            // Done, dropped or cancelled: the next question finds the catalog, or starts again. A failure stays a while.
+            // Done, dropped or cancelled: the next question finds the catalog, or starts again. A failure stays a
+            // while.
             if (build.Error is null)
                 _builds.TryRemove(new KeyValuePair<string, Build>(key, build));
         }
     }
 
-    /// <summary>Lists of archives with encrypted names held at once per library (each up to <see cref="ArchiveOptions.MaxEncryptedListEntries"/>).</summary>
+    /// <summary>
+    /// Lists of archives with encrypted names held at once per library (each up to
+    /// <see cref="ArchiveOptions.MaxEncryptedListEntries"/>).
+    /// </summary>
     public const int MaxInMemory = 4;
 
     /// <summary>A list in memory unused this long is dropped (as the unlock that opened it).</summary>
@@ -317,7 +332,9 @@ public sealed class ArchiveCatalogs(
         public string? Error;
     }
 
-    /// <summary>The least recently used catalogs deleted until the library's are under the cap (the new one kept).</summary>
+    /// <summary>
+    /// The least recently used catalogs deleted until the library's are under the cap (the new one kept).
+    /// </summary>
     internal void Evict(string keep)
     {
         var cap = Math.Max(1, options.CurrentValue.Files.Archives.CatalogMegabytes) * 1024L * 1024;
@@ -352,7 +369,9 @@ public sealed class ArchiveCatalogs(
         catch (IOException) { }
     }
 
-    /// <summary>Catalogs of another schema are never read: their folders go at the first build after an upgrade.</summary>
+    /// <summary>
+    /// Catalogs of another schema are never read: their folders go at the first build after an upgrade.
+    /// </summary>
     private void DeleteOldVersions()
     {
         if (Interlocked.Exchange(ref _cleaned, 1) == 1)

@@ -37,7 +37,9 @@ public sealed record EmptiedTrash(int Purged);
 /// <param name="Target">The folder it would go into.</param>
 public sealed record MoveCheckRequest(IReadOnlyList<string>? Paths, string? Target);
 
-/// <summary>Someone who would see or change more of a moved folder than before (its new parent gives more access).</summary>
+/// <summary>
+/// Someone who would see or change more of a moved folder than before (its new parent gives more access).
+/// </summary>
 /// <param name="Who">The group's or account's name ("Visitors" for the Guests group).</param>
 public sealed record AccessGain(string Folder, string Who, bool IsGroup, FolderLevel Before, FolderLevel After);
 
@@ -50,7 +52,8 @@ public sealed record JobAnswer(ConflictChoice Choice, bool ForAll = false);
 /// <param name="Name">The zip's name (<c>.zip</c> added); null: its only item's, else their folder's.</param>
 /// <param name="Level">0 (stored) to 9 (smallest, slowest); 6 by default.</param>
 /// <param name="SkipCompressed">Pictures, videos, archives… stored whatever the level.</param>
-/// <param name="Password">Encrypts the files with AES-256 (the names stay readable); held by the job only while it runs.</param>
+/// <param name="Password">Encrypts the files with AES-256 (the names stay readable); held by the job only while it
+/// runs.</param>
 public sealed record CompressRequest(
     IReadOnlyList<string>? Paths,
     string? Target,
@@ -61,7 +64,9 @@ public sealed record CompressRequest(
     ConflictChoice Conflicts = ConflictChoice.Ask
 );
 
-/// <summary>File management (agents/docs/development/file-management-plan.md): changes to the library's files.</summary>
+/// <summary>
+/// File management (agents/docs/development/file-management-plan.md): changes to the library's files.
+/// </summary>
 public static class FileEndpoints
 {
     /// <summary>The 409 problem types, which the client tells apart.</summary>
@@ -281,7 +286,9 @@ public static class FileEndpoints
         return TypedResults.Ok(new DeleteResults(results, permanent));
     }
 
-    /// <summary>Why the caller may not delete <paramref name="path"/> (with the right named); null when they may.</summary>
+    /// <summary>
+    /// Why the caller may not delete <paramref name="path"/> (with the right named); null when they may.
+    /// </summary>
     private static FileOperationStatus? DeleteVerdict(
         AccessState state,
         LibraryPaths paths,
@@ -408,7 +415,8 @@ public static class FileEndpoints
     {
         var state = await current.GetAsync();
         var purged = 0;
-        // What the caller sees and may delete for good where it was, page by page (each page's rows go as it is purged).
+        // What the caller sees and may delete for good where it was, page by page (each page's rows go as it is
+        // purged).
         while (true)
         {
             var page = await trash.ListAsync(
@@ -637,9 +645,10 @@ public static class FileEndpoints
     }
 
     /// <summary>
-    /// The caller sees a trash entry: one they deleted, or one deleted where they may delete (to the trash or for good);
-    /// server administrators see them all. A folder that had access rules of its own (kept in the entry until a restore)
-    /// may have been hidden from people who may delete in its parent: only those who manage the space's access see it.
+    /// The caller sees a trash entry: one they deleted, or one deleted where they may delete (to the trash or for
+    /// good); server administrators see them all. A folder that had access rules of its own (kept in the entry until a
+    /// restore) may have been hidden from people who may delete in its parent: only those who manage the space's access
+    /// see it.
     /// </summary>
     private static bool SeesInTrash(AccessState state, LibraryPaths paths, TrashItem item) =>
         state.Access.IsServerAdmin
@@ -816,9 +825,9 @@ public static class FileEndpoints
         };
 
     /// <summary>
-    /// The answer to a request about a place the caller may not change (403) or doesn't see (404). An attempt on a place
-    /// that is there but hidden from the caller (the page never offers it), or on the server's own files through a
-    /// link, is logged as a security warning.
+    /// The answer to a request about a place the caller may not change (403) or doesn't see (404). An attempt on a
+    /// place that is there but hidden from the caller (the page never offers it), or on the server's own files through
+    /// a link, is logged as a security warning.
     /// </summary>
     internal static Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult> Refused(
         PathVerdict verdict,
@@ -855,7 +864,9 @@ public static class FileEndpoints
     /// <see cref="Protected"/>, or it really is outside the library while links leaving it are read only
     /// (<see cref="LibraryLinks"/>).
     /// </summary>
-    /// <summary>What a write refused by <see cref="ProtectedFromWrites"/> says where the place itself is no secret.</summary>
+    /// <summary>
+    /// What a write refused by <see cref="ProtectedFromWrites"/> says where the place itself is no secret.
+    /// </summary>
     internal const string ReadOnlyThroughLink =
         "It is behind a link leaving the library, which is read only on this server.";
 

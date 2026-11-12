@@ -60,7 +60,10 @@ public sealed class SettingsStore : IOptionsChangeTokenSource<SfeOptions>
         }
     }
 
-    /// <summary>The settings the server's settings page locked for the libraries and users (keys, see <see cref="SettingCatalog"/>).</summary>
+    /// <summary>
+    /// The settings the server's settings page locked for the libraries and users (keys, see
+    /// <see cref="SettingCatalog"/>).
+    /// </summary>
     public IReadOnlyList<string> Locked =>
         _saved?[LockedKey] is JsonArray locked
             ? locked
@@ -167,7 +170,9 @@ public sealed class SettingsStore : IOptionsChangeTokenSource<SfeOptions>
         }
     }
 
-    /// <summary>Copies <paramref name="source"/> over <paramref name="target"/>: objects merge, other values replace.</summary>
+    /// <summary>
+    /// Copies <paramref name="source"/> over <paramref name="target"/>: objects merge, other values replace.
+    /// </summary>
     private static void Merge(JsonObject target, JsonObject source)
     {
         foreach (var (key, value) in source)

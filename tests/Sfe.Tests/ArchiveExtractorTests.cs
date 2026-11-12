@@ -7,8 +7,8 @@ namespace Sfe.Tests;
 
 /// <summary>
 /// Extracting archives (<see cref="ArchiveExtractor"/>, <see cref="ArchiveReader.ReadThrough"/>): every format, the
-/// entries chosen, and what a stranger's archive does to write outside its folder, to fill the disk or to leave a broken
-/// file looking whole.
+/// entries chosen, and what a stranger's archive does to write outside its folder, to fill the disk or to leave a
+/// broken file looking whole.
 /// </summary>
 [TestClass]
 public sealed class ArchiveExtractorTests
@@ -459,7 +459,8 @@ public sealed class ArchiveExtractorTests
     [TestMethod]
     public void PathsPastWindowsOldLimitAreWritten()
     {
-        // 260 characters was Windows' limit without long paths enabled: .NET writes past it by itself (its `\\?\` prefix).
+        // 260 characters was Windows' limit without long paths enabled: .NET writes past it by itself (its `\\?\`
+        // prefix).
         var folders = string.Join('/', Enumerable.Range(0, 4).Select(i => new string((char)('a' + i), 90)));
         var zip = TestArchives.Zip(_folder, "deep-names.zip", ($"{folders}/far.txt", "far"));
 

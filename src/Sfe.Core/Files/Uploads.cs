@@ -41,10 +41,14 @@ public sealed record UploadChunkResult(FileOperationStatus Status, UploadInfo? U
 /// <summary>What the person may do, asked when an upload starts and again when it is finished.</summary>
 public interface IUploadAccess
 {
-    /// <summary>The person may use <paramref name="right"/> at the root-relative <paramref name="path"/> (there or not yet).</summary>
+    /// <summary>
+    /// The person may use <paramref name="right"/> at the root-relative <paramref name="path"/> (there or not yet).
+    /// </summary>
     Task<bool> MayAsync(string path, string right);
 
-    /// <summary>The full path really is (through links) among the server's own files or a work folder: never written to.</summary>
+    /// <summary>
+    /// The full path really is (through links) among the server's own files or a work folder: never written to.
+    /// </summary>
     bool IsProtected(string fullPath);
 }
 
@@ -69,7 +73,9 @@ public sealed class Uploads(
 {
     public const string FolderName = "uploads";
 
-    /// <summary>The largest chunk one request may carry (under Kestrel's 30 MB and most proxies' limits once lowered).</summary>
+    /// <summary>
+    /// The largest chunk one request may carry (under Kestrel's 30 MB and most proxies' limits once lowered).
+    /// </summary>
     public const int MaxChunkBytes = 16 * 1024 * 1024;
 
     /// <summary>Unfinished uploads one person may have at once.</summary>
@@ -169,8 +175,9 @@ public sealed class Uploads(
     public UploadInfo? Find(string? id) => id is not null && Load().TryGetValue(id, out var upload) ? upload : null;
 
     /// <summary>
-    /// Appends <paramref name="body"/> at <paramref name="offset"/>: refused (<see cref="FileOperationStatus.Conflict"/>,
-    /// with the upload) when the server has another offset, or when it would pass the size.
+    /// Appends <paramref name="body"/> at <paramref name="offset"/>: refused
+    /// (<see cref="FileOperationStatus.Conflict"/>, with the upload) when the server has another offset, or when it
+    /// would pass the size.
     /// </summary>
     public async Task<UploadChunkResult> AppendAsync(
         string id,
@@ -260,9 +267,10 @@ public sealed class Uploads(
     }
 
     /// <summary>
-    /// Puts a fully received upload into the library: the folders of a folder upload are made, a name taken is
-    /// answered as <paramref name="conflicts"/> says (<see cref="ConflictChoice.Ask"/>: <see cref="FileOperationStatus.Exists"/>,
-    /// to ask the person and finish again), the file is indexed. A skipped upload is removed.
+    /// Puts a fully received upload into the library: the folders of a folder upload are made, a name taken is answered
+    /// as <paramref name="conflicts"/> says (<see cref="ConflictChoice.Ask"/>:
+    /// <see cref="FileOperationStatus.Exists"/>, to ask the person and finish again), the file is indexed. A skipped
+    /// upload is removed.
     /// </summary>
     public async Task<FileOperationResult> FinishAsync(
         string id,
@@ -438,7 +446,10 @@ public sealed class Uploads(
         return true;
     }
 
-    /// <summary>Removes the uploads idle for longer than <c>Files:Uploads:KeepUnfinishedHours</c> (at <paramref name="now"/>); how many.</summary>
+    /// <summary>
+    /// Removes the uploads idle for longer than <c>Files:Uploads:KeepUnfinishedHours</c> (at <paramref name="now"/>);
+    /// how many.
+    /// </summary>
     public int RemoveAbandoned(DateTimeOffset? now = null)
     {
         var limit =

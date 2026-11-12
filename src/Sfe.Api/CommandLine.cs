@@ -1,6 +1,8 @@
 namespace Sfe.Api;
 
-/// <summary>Switches of the program's own (not configuration keys), read before the builder sees the arguments.</summary>
+/// <summary>
+/// Switches of the program's own (not configuration keys), read before the builder sees the arguments.
+/// </summary>
 internal static class CommandLine
 {
     /// <summary>
@@ -17,13 +19,15 @@ internal static class CommandLine
             || string.Equals(arg, "/" + name, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary><c>--help</c>, <c>-h</c>, <c>-?</c>, <c>/?</c> or <c>/help</c> anywhere: the help, and nothing else.</summary>
+    /// <summary>
+    /// <c>--help</c>, <c>-h</c>, <c>-?</c>, <c>/?</c> or <c>/help</c> anywhere: the help, and nothing else.
+    /// </summary>
     public static bool AsksForHelp(string[] args) =>
         args.Any(a => a.ToLowerInvariant() is "--help" or "-h" or "-?" or "/?" or "/help");
 
     /// <summary>
-    /// What <c>--help</c> prints, grouped: the program's switches, then the settings most often given on the command line
-    /// (any configuration key is accepted; docs/configuration.md lists them all). ASCII, within 80 columns.
+    /// What <c>--help</c> prints, grouped: the program's switches, then the settings most often given on the command
+    /// line (any configuration key is accepted; docs/configuration.md lists them all). ASCII, within 80 columns.
     /// </summary>
     public static string HelpText(string version) =>
         $"""

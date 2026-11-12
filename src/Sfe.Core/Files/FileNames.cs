@@ -66,8 +66,8 @@ public static class FileNames
     }
 
     /// <summary>
-    /// <paramref name="name"/> is a device on Windows: <c>CON</c>, <c>NUL</c>, <c>COM1</c>, <c>LPT¹</c>… with or without
-    /// an extension and spaces before it (<c>con .txt</c>).
+    /// <paramref name="name"/> is a device on Windows: <c>CON</c>, <c>NUL</c>, <c>COM1</c>, <c>LPT¹</c>… with or
+    /// without an extension and spaces before it (<c>con .txt</c>).
     /// </summary>
     public static bool IsReservedOnWindows(string name)
     {

@@ -38,11 +38,13 @@ public sealed record SimilarVideoStatus(
     string? Message
 );
 
-/// <param name="Match">Matching frames with the first video of the group, in percent of the longer one; null for that first video.</param>
+/// <param name="Match">Matching frames with the first video of the group, in percent of the longer one; null for that
+/// first video.</param>
 /// <param name="Duration">Seconds, as seen by the trickplay (frames × interval).</param>
 public sealed record SimilarVideo(LibraryItem File, int? Match, int Duration);
 
-/// <param name="Count">Videos in the group; <paramref name="Videos"/> lists at most <see cref="DuplicateFinder.MaxFilesPerGroup"/>.</param>
+/// <param name="Count">Videos in the group; <paramref name="Videos"/> lists at most
+/// <see cref="DuplicateFinder.MaxFilesPerGroup"/>.</param>
 /// <param name="WastedBytes">Space taken by all videos but the biggest.</param>
 /// <param name="Videos">The video the others are compared to (the longest, then the biggest) first.</param>
 public sealed record SimilarVideoGroup(int Count, long WastedBytes, IReadOnlyList<SimilarVideo> Videos);
@@ -62,7 +64,8 @@ public sealed record SimilarVideoSummary(
 
 /// <param name="Summary">Totals of the last comparison; only on the first page, null before any comparison.</param>
 /// <param name="Next">Value of the <c>after</c> parameter that requests the next page; null on the last page.</param>
-/// <param name="TrickplayEnabled">Trickplay is made in the background: videos get the fingerprints compared here.</param>
+/// <param name="TrickplayEnabled">Trickplay is made in the background: videos get the fingerprints compared
+/// here.</param>
 public sealed record SimilarVideoResults(
     string Path,
     SimilarVideoStatus Status,
@@ -109,7 +112,9 @@ public sealed class SimilarVideoFinder(
     private int _runs;
     private Snapshot? _snapshot;
 
-    /// <summary>The groups of a completed comparison; <see cref="Run"/> tells comparisons apart in page cursors.</summary>
+    /// <summary>
+    /// The groups of a completed comparison; <see cref="Run"/> tells comparisons apart in page cursors.
+    /// </summary>
     private sealed record Snapshot(
         int Run,
         IReadOnlyList<StoredGroup> Groups,
@@ -310,13 +315,15 @@ public sealed class SimilarVideoFinder(
         );
     }
 
-    /// <param name="relativeDirectory">Only groups with a video in this folder (or below) are listed; empty for all.</param>
+    /// <param name="relativeDirectory">Only groups with a video in this folder (or below) are listed; empty for
+    /// all.</param>
     /// <param name="after"><see cref="SimilarVideoResults.Next"/> of the previous page; null for the first one.</param>
     /// <param name="visible">
     /// Where the asker may see files (folder rules): the other videos are left out of the groups, and groups with
     /// fewer than two left out of the list; null = everywhere.
     /// </param>
-    /// <returns>null when <paramref name="relativeDirectory"/> is invalid, or <paramref name="after"/> is not a page of the last comparison.</returns>
+    /// <returns>null when <paramref name="relativeDirectory"/> is invalid, or <paramref name="after"/> is not a page of
+    /// the last comparison.</returns>
     public async Task<SimilarVideoResults?> FindAsync(
         string? relativeDirectory,
         string? after,
@@ -406,7 +413,9 @@ public sealed class SimilarVideoFinder(
         return videos.Count < 2 ? null : new StoredGroup(videos, videos.Sum(v => v.Size) - videos.Max(v => v.Size));
     }
 
-    /// <summary>The groups' videos as they are indexed now, with their tags; videos no longer indexed are left out.</summary>
+    /// <summary>
+    /// The groups' videos as they are indexed now, with their tags; videos no longer indexed are left out.
+    /// </summary>
     private async Task<List<SimilarVideoGroup>> LoadAsync(List<StoredGroup> page, CancellationToken cancellationToken)
     {
         List<int> ids = [.. page.SelectMany(g => g.Videos.Take(DuplicateFinder.MaxFilesPerGroup)).Select(v => v.Id)];

@@ -8,7 +8,9 @@ using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
 
-/// <summary>Archives extracted as background jobs (<see cref="FileJobs"/>, <see cref="FileJobKind.Extract"/>).</summary>
+/// <summary>
+/// Archives extracted as background jobs (<see cref="FileJobs"/>, <see cref="FileJobKind.Extract"/>).
+/// </summary>
 [TestClass]
 public sealed class ExtractJobTests
 {
@@ -160,7 +162,9 @@ public sealed class ExtractJobTests
         Assert.IsFalse(File.Exists(_library.FullPath(".sfe/a.txt")));
     }
 
-    /// <summary>The 8.3 name of <paramref name="path"/>'s last part (Windows, where the disk makes them), else null.</summary>
+    /// <summary>
+    /// The 8.3 name of <paramref name="path"/>'s last part (Windows, where the disk makes them), else null.
+    /// </summary>
     private static string? ShortName(string path)
     {
         if (!OperatingSystem.IsWindows())

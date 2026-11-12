@@ -301,7 +301,9 @@ public sealed class KeepAliveTests
         Assert.AreEqual(KeepAliveState.None, service.State);
     }
 
-    /// <summary>A service whose read pings are recorded (and answered by <paramref name="ping"/>); the write ping is real.</summary>
+    /// <summary>
+    /// A service whose read pings are recorded (and answered by <paramref name="ping"/>); the write ping is real.
+    /// </summary>
     private (KeepAliveService Service, ConcurrentQueue<string> Pings) Create(
         KeepAliveMode mode,
         bool network = true,

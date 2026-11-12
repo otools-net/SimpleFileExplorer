@@ -13,7 +13,9 @@ public sealed class FfmpegLimits
     /// <summary>The gate of thumbnail runs, resized to <paramref name="size"/> when the setting changed.</summary>
     public SemaphoreSlim Thumbnails(int size) => Resize(ref _thumbnails, size);
 
-    /// <summary>The gate of the videos the trickplay passes make, resized to <paramref name="size"/> when the setting changed.</summary>
+    /// <summary>
+    /// The gate of the videos the trickplay passes make, resized to <paramref name="size"/> when the setting changed.
+    /// </summary>
     public SemaphoreSlim Trickplay(int size) => Resize(ref _trickplay, size);
 
     /// <summary>Replaced when the setting changes: runs in progress release the old one.</summary>

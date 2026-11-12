@@ -10,7 +10,9 @@ public sealed class AccessChanges
 
     public long Version => Interlocked.Read(ref _version);
 
-    /// <summary>Raised after the settings of a library changed, with its id, so that its options are read again.</summary>
+    /// <summary>
+    /// Raised after the settings of a library changed, with its id, so that its options are read again.
+    /// </summary>
     public event Action<int>? TenantSettingsChanged;
 
     public void Changed() => Interlocked.Increment(ref _version);

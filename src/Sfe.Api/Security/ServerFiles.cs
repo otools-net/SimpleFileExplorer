@@ -7,10 +7,10 @@ using Sfe.Core.Paths;
 namespace Sfe.Api.Security;
 
 /// <summary>
-/// The server's own files, never served as files of a library: the keys signing the sessions (with them anyone forges an
-/// administrator's cookie), the setup code, the databases, the configuration. A library reaches them when its folder holds
-/// SFE's (a root at <c>C:\</c>), or through a folder link (symbolic link, junction) someone made in it: paths are checked
-/// once every link on the way is resolved (<see cref="LibraryPaths.RealPath"/>).
+/// The server's own files, never served as files of a library: the keys signing the sessions (with them anyone forges
+/// an administrator's cookie), the setup code, the databases, the configuration. A library reaches them when its folder
+/// holds SFE's (a root at <c>C:\</c>), or through a folder link (symbolic link, junction) someone made in it: paths are
+/// checked once every link on the way is resolved (<see cref="LibraryPaths.RealPath"/>).
 /// </summary>
 public sealed class ServerFiles
 {
@@ -25,10 +25,14 @@ public sealed class ServerFiles
     /// <summary>What links leaving a library allow: checked with the server's files wherever a route writes.</summary>
     public LibraryLinks Links { get; }
 
-    /// <summary><paramref name="fullPath"/> is one of the server's files, or in one of its folders, wherever links lead.</summary>
+    /// <summary>
+    /// <paramref name="fullPath"/> is one of the server's files, or in one of its folders, wherever links lead.
+    /// </summary>
     public bool Contains(string fullPath) => ContainsReal(LibraryPaths.RealPath(fullPath));
 
-    /// <summary>As <see cref="Contains"/>, for a path already resolved (<see cref="LibraryPaths.RealPath"/>): no disk access.</summary>
+    /// <summary>
+    /// As <see cref="Contains"/>, for a path already resolved (<see cref="LibraryPaths.RealPath"/>): no disk access.
+    /// </summary>
     public bool ContainsReal(string real)
     {
         var (folders, files) = _protected.Value;
@@ -42,7 +46,8 @@ public sealed class ServerFiles
         string Setting(string key, string fallback) => configuration[key] is { Length: > 0 } value ? value : fallback;
         var section = SfeOptions.SectionName;
 
-        // The program's folder holds appsettings*.json (connection strings, maybe the setup code) and, by default, data/.
+        // The program's folder holds appsettings*.json (connection strings, maybe the setup code) and, by default,
+        // data/.
         List<string> folders =
         [
             contentRoot,

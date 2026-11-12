@@ -9,8 +9,8 @@ using Sfe.Tests.Infrastructure;
 namespace Sfe.Tests;
 
 /// <summary>
-/// Search terms on their own, negated and combined: name, full path (<c>*</c>), exclusion, size, extension, tags (by name,
-/// shorthand, alias, through parents, negated, untagged) and alternatives, run against an indexed, tagged
+/// Search terms on their own, negated and combined: name, full path (<c>*</c>), exclusion, size, extension, tags (by
+/// name, shorthand, alias, through parents, negated, untagged) and alternatives, run against an indexed, tagged
 /// <see cref="TestLibrary"/>.
 /// </summary>
 /// <remarks>
@@ -29,12 +29,11 @@ namespace Sfe.Tests;
 /// RFile2                           Archived (hidden: left out unless the search asks for it)
 /// ChildDir/AFile1.txt              Favorite
 /// RepeatedDir/ChildDir/AFile1.txt  Cat
-/// </code>
-/// Sizes: Holiday 2020.mp4 5 MB, Episode 10.mkv 300 KB, Episode 2.mkv 200 KB, photo.jpg 3 KB, RFile2 2 KB,
-/// every other file 10 bytes. File names are indexed without their extension.
-/// Resolutions (<see cref="SetResolutionsAsync"/>): photo.jpg 4032×3024, Holiday 2020.mp4 1920×1080, Episode 2.mkv
-/// 1280×720, Episode 10.mkv unreadable (0×0), every other file unknown; all HR by the default thresholds (photos 1500,
-/// videos 720). Durations: Holiday 2020.mp4 1:30:00.4, Episode 2.mkv 25:00, Episode 10.mkv unreadable (0), others unknown.
+/// </code> Sizes: Holiday 2020.mp4 5 MB, Episode 10.mkv 300 KB, Episode 2.mkv 200 KB, photo.jpg 3 KB, RFile2 2 KB,
+/// every other file 10 bytes. File names are indexed without their extension. Resolutions
+/// (<see cref="SetResolutionsAsync"/>): photo.jpg 4032×3024, Holiday 2020.mp4 1920×1080, Episode 2.mkv 1280×720,
+/// Episode 10.mkv unreadable (0×0), every other file unknown; all HR by the default thresholds (photos 1500, videos
+/// 720). Durations: Holiday 2020.mp4 1:30:00.4, Episode 2.mkv 25:00, Episode 10.mkv unreadable (0), others unknown.
 /// </remarks>
 [TestClass]
 public sealed class SearchCombinationTests
@@ -62,7 +61,10 @@ public sealed class SearchCombinationTests
     private const string SFSpanish = Special + "/SFEspañol";
     private const string SFRussian = Special + "/SFРусский.txt";
 
-    /// <summary>The ten .txt files, all 10 bytes and untagged but for RFile1 (Dog), ChildDir/AFile1 (Favorite), RepeatedDir/ChildDir/AFile1 (Cat).</summary>
+    /// <summary>
+    /// The ten .txt files, all 10 bytes and untagged but for RFile1 (Dog), ChildDir/AFile1 (Favorite),
+    /// RepeatedDir/ChildDir/AFile1 (Cat).
+    /// </summary>
     private const string TextFiles =
         RFile1
         + "|"
@@ -995,7 +997,9 @@ public sealed class SearchCombinationTests
             .Items.Select(i => i.Path)
             .ToArray();
 
-    /// <summary>The fixture's media are not real pictures: their resolutions and durations are written into the index.</summary>
+    /// <summary>
+    /// The fixture's media are not real pictures: their resolutions and durations are written into the index.
+    /// </summary>
     private async Task SetResolutionsAsync()
     {
         await using var db = await _services

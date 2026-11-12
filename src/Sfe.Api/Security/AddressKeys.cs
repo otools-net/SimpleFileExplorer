@@ -13,7 +13,9 @@ public static class AddressKeys
     /// <summary>Bytes of an IPv6 address naming the network a provider gives one customer (/64).</summary>
     private const int NetworkBytes = 8;
 
-    /// <summary>The limit key of the request's visitor; empty when the connection has no address (tests, pipes).</summary>
+    /// <summary>
+    /// The limit key of the request's visitor; empty when the connection has no address (tests, pipes).
+    /// </summary>
     public static string Of(HttpContext context) => Of(context.Connection.RemoteIpAddress);
 
     /// <summary>

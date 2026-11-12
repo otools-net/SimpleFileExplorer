@@ -19,8 +19,10 @@ namespace Sfe.Core.Files;
 /// <summary>A file or folder in the trash, as the trash page lists it.</summary>
 /// <param name="Path">Where it was, relative to the library root.</param>
 /// <param name="Size">Bytes as the index knew them; null when it was not indexed.</param>
-/// <param name="HasRules">A folder that had folder access rules (kept in the entry): its access isn't the parent's.</param>
-/// <param name="PreviousVersion">A copy of a file's content before it was saved over (the file is still where it was).</param>
+/// <param name="HasRules">A folder that had folder access rules (kept in the entry): its access isn't the
+/// parent's.</param>
+/// <param name="PreviousVersion">A copy of a file's content before it was saved over (the file is still where it
+/// was).</param>
 public sealed record TrashItem(
     int Id,
     string Path,
@@ -36,7 +38,8 @@ public sealed record TrashItem(
 );
 
 /// <param name="Next">The <c>before</c> of the next page; null on the last.</param>
-/// <param name="RetentionDays">Days things stay in the trash (<see cref="TrashOptions.RetentionDays"/>); 0 = until emptied.</param>
+/// <param name="RetentionDays">Days things stay in the trash (<see cref="TrashOptions.RetentionDays"/>); 0 = until
+/// emptied.</param>
 public sealed record TrashPage(IReadOnlyList<TrashItem> Items, bool HasMore, int? Next, int RetentionDays);
 
 /// <summary>How many entries of the trash someone sees, counted up to <see cref="Trash.CountCap"/>.</summary>
@@ -109,12 +112,16 @@ public sealed class Trash(
         }
     }
 
-    /// <summary>Raised when an entry comes in or leaves (deleted, restored, purged), on that thread; for the change feed.</summary>
+    /// <summary>
+    /// Raised when an entry comes in or leaves (deleted, restored, purged), on that thread; for the change feed.
+    /// </summary>
     public event Action? EntriesChanged;
 
     public int RetentionDays => Math.Max(0, options.CurrentValue.Files.Trash.RetentionDays);
 
-    /// <summary>The space deletes everything for good (<see cref="FileManagementOptions.DeletePermanently"/>).</summary>
+    /// <summary>
+    /// The space deletes everything for good (<see cref="FileManagementOptions.DeletePermanently"/>).
+    /// </summary>
     public bool AlwaysPermanent => options.CurrentValue.Files.DeletePermanently;
 
     /* ---------- Deleting ---------- */
@@ -223,12 +230,13 @@ public sealed class Trash(
     }
 
     /// <summary>
-    /// Keeps a copy of the file <paramref name="full"/> in the trash as its previous version, before an editor saves over
-    /// it (agents/docs/features/text-editor.md): the file stays where it is, with its tags, index row and previews.
-    /// Restored, the copy comes back next to it (" (2)").
+    /// Keeps a copy of the file <paramref name="full"/> in the trash as its previous version, before an editor saves
+    /// over it (agents/docs/features/text-editor.md): the file stays where it is, with its tags, index row and
+    /// previews. Restored, the copy comes back next to it (" (2)").
     /// </summary>
     /// <exception cref="IOException">The disk refused.</exception>
-    /// <exception cref="UnauthorizedAccessException">The server's account may not read it or write to the trash.</exception>
+    /// <exception cref="UnauthorizedAccessException">The server's account may not read it or write to the
+    /// trash.</exception>
     internal async Task<int> CopyInAsync(
         string full,
         string relative,
@@ -271,7 +279,10 @@ public sealed class Trash(
         return entry.Id;
     }
 
-    /// <summary>Deletes <paramref name="full"/> for good: the disk, then its index rows, folder rules, default tags and cached previews.</summary>
+    /// <summary>
+    /// Deletes <paramref name="full"/> for good: the disk, then its index rows, folder rules, default tags and cached
+    /// previews.
+    /// </summary>
     internal async Task DeleteForGoodAsync(
         string full,
         string relative,
@@ -399,8 +410,8 @@ public sealed class Trash(
     }
 
     /// <summary>
-    /// Puts an entry back where it was (its folder made again if it is gone; " (2)" added when the name is taken there),
-    /// with the tags of its files and a folder's rules; a folder is then scanned to index the rest.
+    /// Puts an entry back where it was (its folder made again if it is gone; " (2)" added when the name is taken
+    /// there), with the tags of its files and a folder's rules; a folder is then scanned to index the rest.
     /// </summary>
     public async Task<FileOperationResult> RestoreAsync(
         int id,
@@ -726,7 +737,10 @@ public sealed class Trash(
         return (await indexed.SumAsync(f => (long?)f.Size, cancellationToken) ?? 0, files);
     }
 
-    /// <summary>The tags of the files at or below <paramref name="full"/> go into the entry; their index rows go away (not as missing files).</summary>
+    /// <summary>
+    /// The tags of the files at or below <paramref name="full"/> go into the entry; their index rows go away (not as
+    /// missing files).
+    /// </summary>
     private async Task KeepTagsAndForgetRowsAsync(int entryId, string full, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);

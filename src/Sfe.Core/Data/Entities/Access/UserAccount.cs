@@ -32,7 +32,9 @@ public sealed class UserAccount
 
     public bool Disabled { get; set; }
 
-    /// <summary>Changes with the password or the account's status: sessions and links made before stop working.</summary>
+    /// <summary>
+    /// Changes with the password or the account's status: sessions and links made before stop working.
+    /// </summary>
     public string SecurityStamp { get; set; } = string.Empty;
 
     public int FailedSignIns { get; set; }
@@ -43,7 +45,9 @@ public sealed class UserAccount
     public List<GroupMember> Groups { get; set; } = [];
 }
 
-/// <summary>Guests never get the rights that change anything (<see cref="Access.RightDefinition.GuestAllowed"/>).</summary>
+/// <summary>
+/// Guests never get the rights that change anything (<see cref="Access.RightDefinition.GuestAllowed"/>).
+/// </summary>
 public enum UserKind
 {
     User,

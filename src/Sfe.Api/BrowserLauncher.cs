@@ -19,11 +19,15 @@ internal static class BrowserLauncher
     /// <summary>Command-line switch that keeps the browser closed, whatever the settings say.</summary>
     public const string NoBrowserArgument = "--no-browser";
 
-    /// <summary>The arguments without <see cref="NoBrowserArgument"/>, which the configuration would read as a key taking the next argument as its value.</summary>
+    /// <summary>
+    /// The arguments without <see cref="NoBrowserArgument"/>, which the configuration would read as a key taking the
+    /// next argument as its value.
+    /// </summary>
     public static string[] TakeNoBrowser(string[] args, out bool noBrowser) =>
         CommandLine.TakeSwitch(args, "no-browser", out noBrowser);
 
-    /// <param name="newInstall">No account yet and the setup may skip the code here: the browser opens the setup link.</param>
+    /// <param name="newInstall">No account yet and the setup may skip the code here: the browser opens the setup
+    /// link.</param>
     public static async Task OpenIfWantedAsync(WebApplication app, bool noBrowser, bool updateDue, bool newInstall)
     {
         if (
@@ -36,7 +40,8 @@ internal static class BrowserLauncher
             return;
         }
 
-        // The configuration, then System › Start-up (settings.json); readable before an update too (nothing is written).
+        // The configuration, then System › Start-up (settings.json); readable before an update too (nothing is
+        // written).
         if (!app.Services.GetRequiredService<SettingLayers>().ServerLevel().OpenBrowser)
             return;
 
@@ -68,7 +73,10 @@ internal static class BrowserLauncher
         }
     }
 
-    /// <summary>A listening address as a browser on this computer reaches it (<c>http://[::]:5080</c> → <c>http://localhost:5080/</c>).</summary>
+    /// <summary>
+    /// A listening address as a browser on this computer reaches it (<c>http://[::]:5080</c> →
+    /// <c>http://localhost:5080/</c>).
+    /// </summary>
     internal static string? BrowserUrl(string? address)
     {
         if (string.IsNullOrEmpty(address))

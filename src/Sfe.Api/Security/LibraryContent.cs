@@ -41,7 +41,9 @@ public static class LibraryContent
         return runs ? Download : contentType;
     }
 
-    /// <summary>Answers 404 when a page loads the route's file as a script, a worker, a plug-in or a style sheet.</summary>
+    /// <summary>
+    /// Answers 404 when a page loads the route's file as a script, a worker, a plug-in or a style sheet.
+    /// </summary>
     public static RouteHandlerBuilder NeverRunByPages(this RouteHandlerBuilder route) =>
         route.Refusing(RunningOrStyling);
 

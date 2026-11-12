@@ -7,7 +7,8 @@ namespace Sfe.Api.Security;
 /// Checks made before the routes' own rights:
 /// <list type="bullet">
 /// <item>while the install waits for its update to this version (<see cref="MigrationCoordinator"/>), only the update
-/// page's routes answer (503 <c>migration-required</c>): nothing may read or change what the update hasn't brought up yet;</item>
+/// page's routes answer (503 <c>migration-required</c>): nothing may read or change what the update hasn't brought up
+/// yet;</item>
 /// <item>until the first administrator exists, only the setup, the installation page (its own code check) and the
 /// session answer (503 <c>setup-required</c>);</item>
 /// <item>once set up, a Local server (<see cref="ServerModes"/>) answers other computers only on the setup, session,

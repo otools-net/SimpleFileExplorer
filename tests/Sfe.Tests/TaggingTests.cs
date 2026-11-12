@@ -7,7 +7,9 @@ using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
 
-/// <summary>Tag hierarchy, file tagging and tag search, after TagStudio's behavior (docs/tags.md, docs/search.md).</summary>
+/// <summary>
+/// Tag hierarchy, file tagging and tag search, after TagStudio's behavior (docs/tags.md, docs/search.md).
+/// </summary>
 [TestClass]
 public sealed class TaggingTests
 {

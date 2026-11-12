@@ -29,7 +29,9 @@ public static class ImageAnimation
         return false;
     }
 
-    /// <summary>Counts the image descriptors (after the global colour table) up to the second one or the trailer.</summary>
+    /// <summary>
+    /// Counts the image descriptors (after the global colour table) up to the second one or the trailer.
+    /// </summary>
     private static bool IsAnimatedGif(Stream stream, byte screenFlags)
     {
         stream.Position = 13 + ColorTableSize(screenFlags);

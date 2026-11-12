@@ -8,13 +8,17 @@ namespace Sfe.Core.Thumbnails;
 /// </summary>
 public static class FfmpegDemuxers
 {
-    /// <summary>Fewer readers than this in <c>ffmpeg -demuxers</c>: the list was not understood, nothing is restricted.</summary>
+    /// <summary>
+    /// Fewer readers than this in <c>ffmpeg -demuxers</c>: the list was not understood, nothing is restricted.
+    /// </summary>
     private const int FewestExpected = 20;
 
     /// <summary>Characters of a line of <c>ffmpeg -demuxers</c> before the reader's names.</summary>
     private const int FlagsWidth = 4;
 
-    /// <summary>Readers that open other files or addresses named in the file, run it as a program, or are devices.</summary>
+    /// <summary>
+    /// Readers that open other files or addresses named in the file, run it as a program, or are devices.
+    /// </summary>
     private static readonly HashSet<string> Refused = new(StringComparer.OrdinalIgnoreCase)
     {
         "concat",

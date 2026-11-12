@@ -15,7 +15,10 @@ public sealed class WorkFolder(LibraryPaths paths, IOptionsMonitor<SfeOptions> o
 {
     public const string Name = LibraryPaths.WorkFolderName;
 
-    /// <summary>The folder in the server's data folder (<see cref="ThumbnailOptions.CacheDirectory"/>), for <see cref="WorkFolderLocation.Server"/>.</summary>
+    /// <summary>
+    /// The folder in the server's data folder (<see cref="ThumbnailOptions.CacheDirectory"/>), for
+    /// <see cref="WorkFolderLocation.Server"/>.
+    /// </summary>
     public const string ServerFolderName = "work";
 
     public WorkFolderLocation Location => options.CurrentValue.Files.WorkFolder;

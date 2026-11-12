@@ -2,7 +2,9 @@ using Sfe.Core.Files;
 
 namespace Sfe.Tests;
 
-/// <summary>Names file management gives files and folders (<see cref="FileNames"/>), on Windows and Linux rules.</summary>
+/// <summary>
+/// Names file management gives files and folders (<see cref="FileNames"/>), on Windows and Linux rules.
+/// </summary>
 [TestClass]
 public sealed class FileNamesTests
 {

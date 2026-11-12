@@ -29,7 +29,9 @@ public sealed class TaskScheduleService(
     /// <summary>Occurrences listed by <see cref="Preview"/>.</summary>
     public const int PreviewCount = 5;
 
-    /// <summary>The loop looks at the schedules at least this often (a changed clock, a database back online).</summary>
+    /// <summary>
+    /// The loop looks at the schedules at least this often (a changed clock, a database back online).
+    /// </summary>
     private static readonly TimeSpan MaxWait = TimeSpan.FromMinutes(30);
     private static readonly TimeSpan PurgeEvery = TimeSpan.FromHours(6);
 
@@ -135,7 +137,9 @@ public sealed class TaskScheduleService(
         return ([.. runs.Select(Utc)], null);
     }
 
-    /// <summary>Starts the tasks of the schedules as they come due, until <paramref name="stoppingToken"/> is cancelled.</summary>
+    /// <summary>
+    /// Starts the tasks of the schedules as they come due, until <paramref name="stoppingToken"/> is cancelled.
+    /// </summary>
     public async Task RunAsync(CancellationToken stoppingToken)
     {
         await history.RecoverAsync(stoppingToken);
@@ -250,7 +254,8 @@ public sealed class TaskScheduleService(
     /// <summary>
     /// The schedule <paramref name="input"/> describes, normalized: fields its kind and task don't use are cleared.
     /// </summary>
-    /// <param name="existing">The schedule being changed; a one-off whose time is kept needn't be in the future.</param>
+    /// <param name="existing">The schedule being changed; a one-off whose time is kept needn't be in the
+    /// future.</param>
     /// <param name="requireFuture">A one-off must not be in the past (unless off).</param>
     private static (TaskSchedule? Schedule, Dictionary<string, string[]> Errors) Validate(
         TaskScheduleInput input,

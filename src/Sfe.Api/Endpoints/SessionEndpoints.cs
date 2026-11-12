@@ -8,7 +8,8 @@ using Sfe.Core.Options;
 
 namespace Sfe.Api.Endpoints;
 
-/// <param name="Local">A local account: its password can be changed here (a directory account's is changed in the directory).</param>
+/// <param name="Local">A local account: its password can be changed here (a directory account's is changed in the
+/// directory).</param>
 public sealed record SessionAccount(
     int Id,
     string UserName,
@@ -25,8 +26,10 @@ public sealed record SessionTenant(int Id, string Slug, string Name);
 /// <param name="Tenants">The libraries the account can switch to.</param>
 /// <param name="GuestTenants">Libraries open to visitors without an account (listed on the sign-in page).</param>
 /// <param name="SetupRequired">No administrator yet: only the setup page works.</param>
-/// <param name="SetupAvailable">The setup page can be used (also to recover an administrator, <c>Sfe:Setup:Recover</c>).</param>
-/// <param name="CanBrowse">The library can be browsed in this session (otherwise the client shows the sign-in page).</param>
+/// <param name="SetupAvailable">The setup page can be used (also to recover an administrator,
+/// <c>Sfe:Setup:Recover</c>).</param>
+/// <param name="CanBrowse">The library can be browsed in this session (otherwise the client shows the sign-in
+/// page).</param>
 public sealed record SessionInfo(
     SessionAccount? User,
     SessionTenant? Tenant,

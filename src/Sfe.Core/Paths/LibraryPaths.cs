@@ -52,7 +52,9 @@ public sealed class LibraryPaths
             : Path.TrimEndingDirectorySeparator(Root);
 
     /// <summary>Resolves an API path to a physical path inside the root.</summary>
-    /// <remarks>The root itself resolves without its trailing separator (unless it is a drive or file system root).</remarks>
+    /// <remarks>
+    /// The root itself resolves without its trailing separator (unless it is a drive or file system root).
+    /// </remarks>
     public bool TryResolve(string? relativePath, [NotNullWhen(true)] out string? fullPath)
     {
         fullPath = null;
@@ -155,7 +157,9 @@ public sealed class LibraryPaths
         return string.Join('/', segments);
     }
 
-    /// <summary>A root folder as typed (<c>~</c>, <c>V:</c>...) as a full path ending with a directory separator.</summary>
+    /// <summary>
+    /// A root folder as typed (<c>~</c>, <c>V:</c>...) as a full path ending with a directory separator.
+    /// </summary>
     public static string NormalizeRoot(string root)
     {
         root = ExpandHome(root.Trim());
@@ -171,8 +175,8 @@ public sealed class LibraryPaths
 
     /// <summary>
     /// Where a path really is: every symbolic link or junction along it replaced by its final target, and on Windows
-    /// short (8.3) names by long ones, so that two spellings of one place compare equal. Parts that don't exist are kept as
-    /// written.
+    /// short (8.3) names by long ones, so that two spellings of one place compare equal. Parts that don't exist are
+    /// kept as written.
     /// </summary>
     public static string RealPath(string path) => LongPath(RealPath(path, 0));
 
@@ -209,7 +213,10 @@ public sealed class LibraryPaths
         return Path.TrimEndingDirectorySeparator(current);
     }
 
-    /// <summary>On Windows, the long names of the parts of <paramref name="path"/> that exist (<c>PROGRA~1</c> → <c>Program Files</c>).</summary>
+    /// <summary>
+    /// On Windows, the long names of the parts of <paramref name="path"/> that exist (<c>PROGRA~1</c> → <c>Program
+    /// Files</c>).
+    /// </summary>
     private static string LongPath(string path)
     {
         if (!OperatingSystem.IsWindows() || !path.Contains('~'))
@@ -236,7 +243,10 @@ public sealed class LibraryPaths
         public static extern uint GetLongPathNameW(string shortPath, char[] longPath, uint bufferLength);
     }
 
-    /// <summary><paramref name="path"/> is <paramref name="folder"/> or inside it (both full paths, compared as the file system does).</summary>
+    /// <summary>
+    /// <paramref name="path"/> is <paramref name="folder"/> or inside it (both full paths, compared as the file system
+    /// does).
+    /// </summary>
     public static bool IsSameOrInside(string path, string folder)
     {
         // A drive or file system root keeps its separator.

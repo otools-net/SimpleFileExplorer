@@ -114,14 +114,20 @@ public sealed class FolderExclusions
     /// <summary><paramref name="relativePath"/> is on the list of <paramref name="kind"/> itself.</summary>
     public bool Lists(ExclusionKind kind, string relativePath) => _folders[(int)kind].Contains(relativePath);
 
-    /// <summary>The folder (root-relative, canonical) is excluded from <paramref name="kind"/>, itself or through an ancestor.</summary>
+    /// <summary>
+    /// The folder (root-relative, canonical) is excluded from <paramref name="kind"/>, itself or through an ancestor.
+    /// </summary>
     public bool IsExcluded(ExclusionKind kind, string relativePath) => Through(kind, relativePath) is not null;
 
-    /// <summary>A file or folder given by its full path is excluded from <paramref name="kind"/>; false outside the library.</summary>
+    /// <summary>
+    /// A file or folder given by its full path is excluded from <paramref name="kind"/>; false outside the library.
+    /// </summary>
     public bool IsExcluded(ExclusionKind kind, LibraryPaths paths, string fullPath) =>
         _folders[(int)kind].Count > 0 && paths.ToRelative(fullPath) is { } relative && IsExcluded(kind, relative);
 
-    /// <summary>The listed folder <paramref name="relativePath"/> is excluded through, the nearest first; null when it isn't.</summary>
+    /// <summary>
+    /// The listed folder <paramref name="relativePath"/> is excluded through, the nearest first; null when it isn't.
+    /// </summary>
     public string? Through(ExclusionKind kind, string relativePath)
     {
         var folders = _folders[(int)kind];

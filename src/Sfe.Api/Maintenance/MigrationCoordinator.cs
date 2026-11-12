@@ -24,7 +24,9 @@ public enum MigrationStatus
     /// <summary>The install belongs to a later version: this one must not touch it.</summary>
     Newer,
 
-    /// <summary>The database could not be read at all (e.g. SQL Server not started yet): checked again from time to time.</summary>
+    /// <summary>
+    /// The database could not be read at all (e.g. SQL Server not started yet): checked again from time to time.
+    /// </summary>
     Unavailable,
 }
 
@@ -52,7 +54,9 @@ public sealed class MigrationCoordinator(
     public static SemanticVersion AppVersion { get; } =
         SemanticVersion.TryParse(Api.AppVersion.Version, out var version) ? version : new SemanticVersion(0, 0, 0);
 
-    /// <summary>Starts as blocking: nothing is served before <see cref="InitializeAsync"/> knew the install's version.</summary>
+    /// <summary>
+    /// Starts as blocking: nothing is served before <see cref="InitializeAsync"/> knew the install's version.
+    /// </summary>
     public MigrationStatus Status { get; private set; } = MigrationStatus.Unavailable;
 
     /// <summary>The install's version; null when unknown (before 1.37.0, or not read).</summary>
@@ -120,7 +124,9 @@ public sealed class MigrationCoordinator(
         }
     }
 
-    /// <summary>Starts the update in the background; false when there is nothing to update (or it runs already).</summary>
+    /// <summary>
+    /// Starts the update in the background; false when there is nothing to update (or it runs already).
+    /// </summary>
     public async Task<bool> StartAsync()
     {
         await _gate.WaitAsync();
@@ -326,7 +332,10 @@ public sealed class MigrationCoordinator(
         }
     }
 
-    /// <summary>Starts every library, which updates its index database (strict: an index that can't be updated fails the update).</summary>
+    /// <summary>
+    /// Starts every library, which updates its index database (strict: an index that can't be updated fails the
+    /// update).
+    /// </summary>
     private async Task StartLibrariesAsync(bool strict, CancellationToken cancellationToken)
     {
         var registry = services.GetRequiredService<TenantRegistry>();

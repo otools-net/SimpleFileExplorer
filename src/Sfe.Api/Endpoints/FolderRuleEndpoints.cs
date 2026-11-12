@@ -36,8 +36,10 @@ public sealed record FolderRuleRepoint(string? From, string? To);
 /// groups decide).
 /// </param>
 /// <param name="Explicit">The level comes from a rule on this very folder.</param>
-/// <param name="Sees">What it all comes to: it may browse the folder (accounts: with all their groups and rules).</param>
-/// <param name="ChangesFiles">It may change the folder's files (a right such as editing pictures, and Write here).</param>
+/// <param name="Sees">What it all comes to: it may browse the folder (accounts: with all their groups and
+/// rules).</param>
+/// <param name="ChangesFiles">It may change the folder's files (a right such as editing pictures, and Write
+/// here).</param>
 public sealed record FolderAccessEntry(
     int? GroupId,
     int? UserId,
@@ -48,7 +50,8 @@ public sealed record FolderAccessEntry(
     bool ChangesFiles
 );
 
-/// <param name="Visitors">Visitors without an account (the Guests group), when the space lets them in; null otherwise.</param>
+/// <param name="Visitors">Visitors without an account (the Guests group), when the space lets them in; null
+/// otherwise.</param>
 public sealed record FolderAccessReport(
     string Path,
     bool Exists,
@@ -369,7 +372,9 @@ public static class FolderRuleEndpoints
         );
     }
 
-    /// <summary>Most folders listed: a picker, not a listing (a folder of a hundred thousand sub-folders isn't sent whole).</summary>
+    /// <summary>
+    /// Most folders listed: a picker, not a listing (a folder of a hundred thousand sub-folders isn't sent whole).
+    /// </summary>
     private const int MaxPickerFolders = 1000;
 
     private static async Task<Results<Ok<FolderPicker>, NotFound>> Folders(
@@ -416,7 +421,10 @@ public static class FolderRuleEndpoints
         return TypedResults.Ok(new FolderPicker(folder, parent, folders));
     }
 
-    /// <summary>The space a request is about, with its library; null when the caller may not manage it (as in <see cref="AccessEndpoints"/>).</summary>
+    /// <summary>
+    /// The space a request is about, with its library; null when the caller may not manage it (as in
+    /// <see cref="AccessEndpoints"/>).
+    /// </summary>
     private static async Task<ManagedSpace?> SpaceAsync(
         CurrentAccess current,
         TenantRegistry tenants,

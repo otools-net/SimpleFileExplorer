@@ -85,8 +85,8 @@ public sealed class TestLibrary : IDisposable
             ["Sfe:Thumbnails:CacheDirectory"] = ThumbnailPath,
             ["Sfe:SettingsFile"] = SettingsPath,
             ["Sfe:Setup:Code"] = SetupCode,
-            // The test clients aren't on the server's own computer (no remote address): a Local server would refuse them.
-            // Tests of the Local mode remove it, or set Local.
+            // The test clients aren't on the server's own computer (no remote address): a Local server would refuse
+            // them. Tests of the Local mode remove it, or set Local.
             ["Sfe:Mode"] = "External",
             // Never next to the app (src/Sfe.Api/data): a test without a code makes one, the installation page writes.
             ["Sfe:Setup:CodeFile"] = Path.Combine(BasePath, "setup-code.txt"),

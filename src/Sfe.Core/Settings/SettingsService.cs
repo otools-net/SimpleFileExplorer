@@ -8,8 +8,11 @@ using Sfe.Core.Paths;
 
 namespace Sfe.Core.Settings;
 
-/// <summary>Some settings of a level to change, the others left as they are (<see cref="SettingsService.SaveChangesAsync"/>).</summary>
-/// <param name="Values">New values by setting key (<c>player.seekSeconds</c>); a value equal to the inherited one follows the levels above again.</param>
+/// <summary>
+/// Some settings of a level to change, the others left as they are (<see cref="SettingsService.SaveChangesAsync"/>).
+/// </summary>
+/// <param name="Values">New values by setting key (<c>player.seekSeconds</c>); a value equal to the inherited one
+/// follows the levels above again.</param>
 /// <param name="Lock">Settings this level locks for the levels below.</param>
 /// <param name="Unlock">Settings this level stops locking.</param>
 public sealed record SettingChanges(
@@ -59,7 +62,9 @@ public sealed class SettingsService(
     /// <summary>Videos converted at once (<c>Streaming:MaxStreams</c>).</summary>
     public const int MaxStreams = 32;
 
-    /// <summary>Range of x264's constant rate factor (<c>Streaming:Quality</c>): beyond it, files grow for nothing or look bad.</summary>
+    /// <summary>
+    /// Range of x264's constant rate factor (<c>Streaming:Quality</c>): beyond it, files grow for nothing or look bad.
+    /// </summary>
     public const int MinStreamQuality = 15,
         MaxStreamQuality = 40;
 
@@ -84,7 +89,9 @@ public sealed class SettingsService(
         return View(SettingLevel.Server, sources, null);
     }
 
-    /// <summary>The settings of a level as its page shows them: values in effect, where they come from, what may change.</summary>
+    /// <summary>
+    /// The settings of a level as its page shows them: values in effect, where they come from, what may change.
+    /// </summary>
     /// <param name="tenantId">The library (tenant and user levels); null = the first library.</param>
     /// <param name="userId">The user (user level).</param>
     /// <param name="canChange">Whether the person may change a setting (their rights); null = every one.</param>
@@ -114,7 +121,9 @@ public sealed class SettingsService(
         return View(level, sources, canChange);
     }
 
-    /// <summary>The settings a user's web client works with: the library's, with the user's preferences over them.</summary>
+    /// <summary>
+    /// The settings a user's web client works with: the library's, with the user's preferences over them.
+    /// </summary>
     public async Task<EditableSettings> GetEffectiveAsync(
         int? tenantId,
         int? userId,
@@ -128,8 +137,12 @@ public sealed class SettingsService(
         return SettingLayers.ToSettings(SettingLayers.Resolve(sources, SettingLevel.User));
     }
 
-    /// <summary>Normalizes and validates <paramref name="settings"/>, then saves them at the server level; they apply right away.</summary>
-    /// <returns>The settings in effect, or the validation errors keyed by setting (e.g. <c>browse.maxPageSize</c>).</returns>
+    /// <summary>
+    /// Normalizes and validates <paramref name="settings"/>, then saves them at the server level; they apply right
+    /// away.
+    /// </summary>
+    /// <returns>The settings in effect, or the validation errors keyed by setting (e.g.
+    /// <c>browse.maxPageSize</c>).</returns>
     public async Task<(SettingsView? View, Dictionary<string, string[]>? Errors)> SaveAsync(
         EditableSettings settings,
         CancellationToken cancellationToken = default
@@ -214,10 +227,11 @@ public sealed class SettingsService(
 
     /// <summary>
     /// Saves only the settings named in <paramref name="changes"/> at a level; what the level stores for the others
-    /// stays as it is. Unlike <see cref="SaveAsync(SettingLevel, int?, int?, EditableSettings, Func{SettingDefinition, bool}?, CancellationToken)"/>,
+    /// stays as it is. Unlike
+    /// <see cref="SaveAsync(SettingLevel, int?, int?, EditableSettings, Func{SettingDefinition, bool}?, CancellationToken)"/>,
     /// which takes every value, a page holding values loaded before another level changed cannot pin them here: an
-    /// inherited value nobody touched keeps following the levels above. The values are checked together with those
-    /// in effect (a page size against the largest page), and nothing is written when any check fails.
+    /// inherited value nobody touched keeps following the levels above. The values are checked together with those in
+    /// effect (a page size against the largest page), and nothing is written when any check fails.
     /// </summary>
     public async Task<(SettingsView? View, Dictionary<string, string[]>? Errors)> SaveChangesAsync(
         SettingLevel level,
@@ -327,7 +341,8 @@ public sealed class SettingsService(
                 break;
             case SettingLevel.Tenant:
                 var tenant = Tenant(tenantId) ?? throw new InvalidOperationException("No library yet.");
-                // A newly locked setting pins the value in effect; an unlocked one with the inherited value needs no row.
+                // A newly locked setting pins the value in effect; an unlocked one with the inherited value needs no
+                // row.
                 foreach (var key in toLock.Where(k => !layer.ContainsKey(k)))
                     layer[key] = normalized[key];
                 var rows = layer.ToDictionary(
@@ -356,7 +371,10 @@ public sealed class SettingsService(
         return (await GetAsync(level, tenantId, userId, canChange, cancellationToken), null);
     }
 
-    /// <summary>The settings in effect still read with <paramref name="value"/> for <paramref name="key"/> alone (its type fits).</summary>
+    /// <summary>
+    /// The settings in effect still read with <paramref name="value"/> for <paramref name="key"/> alone (its type
+    /// fits).
+    /// </summary>
     private static bool Readable(Dictionary<string, ResolvedSetting> resolved, string key, JsonNode? value)
     {
         var json = new JsonObject();
@@ -445,7 +463,10 @@ public sealed class SettingsService(
         return (await GetAsync(level, tenantId, null, canChange, cancellationToken), null);
     }
 
-    /// <summary>Adds a library folder to <see cref="ScanOptions.ExcludedFolders"/> (saved like the other settings, for the library).</summary>
+    /// <summary>
+    /// Adds a library folder to <see cref="ScanOptions.ExcludedFolders"/> (saved like the other settings, for the
+    /// library).
+    /// </summary>
     public Task ExcludeFolderAsync(
         string relativePath,
         int? tenantId = null,

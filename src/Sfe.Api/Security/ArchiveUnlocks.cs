@@ -20,13 +20,18 @@ public sealed class ArchiveUnlocks(TimeProvider time)
 
     private readonly ConcurrentDictionary<string, Unlock> _unlocks = new(StringComparer.Ordinal);
 
-    /// <summary>Who an unlock belongs to: the account and its stamp (a new password ends its unlocks), else the address.</summary>
+    /// <summary>
+    /// Who an unlock belongs to: the account and its stamp (a new password ends its unlocks), else the address.
+    /// </summary>
     public static string OwnerOf(HttpContext context) =>
         context.User.UserId() is { } user
             ? $"user:{user}:{context.User.FindFirstValue(SfeSession.StampClaim)}"
             : $"address:{context.Connection.RemoteIpAddress}";
 
-    /// <summary>Keeps <paramref name="password"/> for the archive at <paramref name="fullPath"/> as it is now; answers the unlock id.</summary>
+    /// <summary>
+    /// Keeps <paramref name="password"/> for the archive at <paramref name="fullPath"/> as it is now; answers the
+    /// unlock id.
+    /// </summary>
     public string Add(int tenant, string owner, string fullPath, string password)
     {
         Sweep();
@@ -50,8 +55,9 @@ public sealed class ArchiveUnlocks(TimeProvider time)
     }
 
     /// <summary>
-    /// The password of unlock <paramref name="id"/> when it is <paramref name="owner"/>'s, in <paramref name="tenant"/>,
-    /// for the archive at <paramref name="fullPath"/> unchanged; null otherwise (and a changed archive's unlock is dropped).
+    /// The password of unlock <paramref name="id"/> when it is <paramref name="owner"/>'s, in
+    /// <paramref name="tenant"/>, for the archive at <paramref name="fullPath"/> unchanged; null otherwise (and a
+    /// changed archive's unlock is dropped).
     /// </summary>
     public string? PasswordFor(string? id, int tenant, string owner, string fullPath)
     {

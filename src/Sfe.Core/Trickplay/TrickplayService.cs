@@ -32,7 +32,8 @@ public enum TrickplayState
 /// <param name="Current">Videos being processed.</param>
 /// <param name="LastPassFinished">When the last complete pass over the folders ended.</param>
 /// <param name="PassStarted">When the pass running started; null between passes.</param>
-/// <param name="NextPass">When the next periodic pass starts (<see cref="TrickplayOptions.RecheckHours"/>); null when none is planned.</param>
+/// <param name="NextPass">When the next periodic pass starts (<see cref="TrickplayOptions.RecheckHours"/>); null when
+/// none is planned.</param>
 public sealed record TrickplayStatus(
     TrickplayState State,
     int Checked,
@@ -72,7 +73,8 @@ public sealed record TrickplayResult(
 );
 
 /// <summary>Detailed progress of the background job, for the activity dialog.</summary>
-/// <param name="Queued">The first videos opened in the player and waiting (they go first); the total is in the status.</param>
+/// <param name="Queued">The first videos opened in the player and waiting (they go first); the total is in the
+/// status.</param>
 /// <param name="Pending">The first videos the pass will process next; the total is in the status.</param>
 /// <param name="Recent">The last videos finished, the most recent first.</param>
 public sealed record TrickplayActivity(
@@ -83,12 +85,15 @@ public sealed record TrickplayActivity(
     IReadOnlyList<TrickplayResult> Recent
 );
 
-/// <summary>Trickplay of a video: <see cref="Count"/> frames, one every <see cref="Interval"/> seconds, tiled on sheets.</summary>
+/// <summary>
+/// Trickplay of a video: <see cref="Count"/> frames, one every <see cref="Interval"/> seconds, tiled on sheets.
+/// </summary>
 /// <param name="Interval">Seconds between two frames; frame <c>n</c> shows second <c>n × Interval</c>.</param>
 /// <param name="Columns">Frames per row of a sheet, left to right then top to bottom.</param>
 /// <param name="TileWidth">Size of one frame in pixels.</param>
 /// <param name="Sheets">Sheet images, numbered from 0. The last one can be partly empty.</param>
-/// <param name="Version">Changes when the trickplay is generated again: sheet URLs carry it, so browsers may cache them.</param>
+/// <param name="Version">Changes when the trickplay is generated again: sheet URLs carry it, so browsers may cache
+/// them.</param>
 public sealed record TrickplayManifest(
     int Interval,
     int Count,
@@ -106,9 +111,9 @@ public sealed record TrickplayManifest(
 /// <remarks>
 /// <para>
 /// Layout: <c>{CacheDirectory}/trickplay/{k[0..2]}/{k[2..4]}/{k[4..]}/</c> holds <c>info.json</c> and the sheets
-/// <c>0.jpg</c>, <c>1.jpg</c>… (same keys as the thumbnails, <see cref="ThumbnailService.CacheKey(string)"/>). <c>info.json</c>
-/// records the size and date of the video and the settings used, so a changed video or new settings make it stale.
-/// A failure is recorded too, so that one broken file isn't sent to ffmpeg again on every pass.
+/// <c>0.jpg</c>, <c>1.jpg</c>… (same keys as the thumbnails, <see cref="ThumbnailService.CacheKey(string)"/>).
+/// <c>info.json</c> records the size and date of the video and the settings used, so a changed video or new settings
+/// make it stale. A failure is recorded too, so that one broken file isn't sent to ffmpeg again on every pass.
 /// </para>
 /// <para>
 /// Two loops run in <see cref="RunAsync"/>: passes over the folders (at start-up, when the settings change, every
@@ -159,7 +164,9 @@ public sealed class TrickplayService : IDisposable
     private DateTimeOffset? _passStarted;
     private DateTimeOffset? _nextPass;
 
-    /// <summary>Cancelled (and replaced) by <see cref="Cancel"/>: stops the video of the player's queue being made.</summary>
+    /// <summary>
+    /// Cancelled (and replaced) by <see cref="Cancel"/>: stops the video of the player's queue being made.
+    /// </summary>
     private CancellationTokenSource _queueWork = new();
     private volatile bool _discovering;
     private volatile CancellationTokenSource? _pass;
@@ -465,7 +472,9 @@ public sealed class TrickplayService : IDisposable
         }
     }
 
-    /// <summary>Adds the videos of the pass without (current) trickplay to <see cref="_pending"/>, one signal each.</summary>
+    /// <summary>
+    /// Adds the videos of the pass without (current) trickplay to <see cref="_pending"/>, one signal each.
+    /// </summary>
     private void Discover(
         TrickplayOptions settings,
         SemaphoreSlim found,
@@ -716,7 +725,8 @@ public sealed class TrickplayService : IDisposable
             List<string> extract = ["-hide_banner", "-loglevel", "error", "-nostdin"];
             if (settings.KeyFramesOnly)
                 extract.AddRange(["-skip_frame", "nokey"]);
-            // round=up: frame n is the picture at n × interval (the default rounding would take it half an interval early).
+            // round=up: frame n is the picture at n × interval (the default rounding would take it half an interval
+            // early).
             extract.AddRange(await _ffmpeg.LibraryInputAsync(video.FullName));
             extract.AddRange([
                 "-an",
@@ -921,8 +931,8 @@ public sealed class TrickplayService : IDisposable
     }
 
     /// <summary>
-    /// Fingerprint of the video at <paramref name="sourceFullPath"/>, as it is now, from its trickplay; null when it has
-    /// none (no trickplay yet, made of an older version of the file, or the fingerprint could not be made).
+    /// Fingerprint of the video at <paramref name="sourceFullPath"/>, as it is now, from its trickplay; null when it
+    /// has none (no trickplay yet, made of an older version of the file, or the fingerprint could not be made).
     /// </summary>
     public VideoFingerprint? GetFingerprint(string sourceFullPath)
     {
@@ -979,7 +989,9 @@ public sealed class TrickplayService : IDisposable
     private static string ImageKey(TrickplayOptions s) =>
         $"{s.IntervalSeconds}|{s.Width}|{s.Columns}|{s.Rows}|{s.KeyFramesOnly}";
 
-    /// <summary>A failed video is tried again when any setting that could help changes (e.g. a longer time limit).</summary>
+    /// <summary>
+    /// A failed video is tried again when any setting that could help changes (e.g. a longer time limit).
+    /// </summary>
     private static string FailureKey(TrickplayOptions s) => $"{ImageKey(s)}|{s.TimeoutMinutes}";
 
     /// <summary>Settings that decide which videos a pass handles, and how.</summary>

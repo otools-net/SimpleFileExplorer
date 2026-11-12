@@ -11,7 +11,8 @@ namespace Sfe.Api.Endpoints;
 
 public sealed record InstallationCheck(string? Code);
 
-/// <param name="Token">Sent back in the <c>X-SFE-Installation</c> header by the other installation routes, for an hour.</param>
+/// <param name="Token">Sent back in the <c>X-SFE-Installation</c> header by the other installation routes, for an
+/// hour.</param>
 public sealed record InstallationGrant(string Token, InstallationView Settings);
 
 /// <param name="RestartRequired">The new listening address applies once SFE is started again.</param>
@@ -23,7 +24,8 @@ public sealed record ServerFolder(string Name, string Path);
 /// <param name="Path">The folder listed; null for the top (drives, or <c>/</c>).</param>
 /// <param name="Parent">Its parent; null at the top of a drive.</param>
 /// <param name="Places">At the top: the home folder, the current library folder and the usual media folders.</param>
-/// <param name="Truncated">More sub-folders than <see cref="InstallationEndpoints.MaxFolders"/>: only the first ones are listed.</param>
+/// <param name="Truncated">More sub-folders than <see cref="InstallationEndpoints.MaxFolders"/>: only the first ones
+/// are listed.</param>
 public sealed record ServerFolders(
     string? Path,
     string? Parent,
@@ -36,7 +38,8 @@ public sealed record ServerFolders(
 /// The installation page (setup wizard, Administration › System › Installation): the first library's folder, the
 /// listening address and ffmpeg, written to <see cref="InstallationSettings"/>. These decide where data lives and which
 /// program runs, so they need the setup code, not a right: only whoever runs the server knows it. Once an administrator
-/// exists, the visitor must also be a signed-in server administrator (<see cref="InstallationAccess.CheckVisitorAsync"/>).
+/// exists, the visitor must also be a signed-in server administrator
+/// (<see cref="InstallationAccess.CheckVisitorAsync"/>).
 /// </summary>
 public static class InstallationEndpoints
 {
@@ -277,8 +280,8 @@ public static class InstallationEndpoints
     }
 
     /// <summary>
-    /// The visitor may use the page (<see cref="InstallationAccess.CheckVisitorAsync"/>) and its token is good; a bad or
-    /// missing token answers as not signed in (401), as before the setup.
+    /// The visitor may use the page (<see cref="InstallationAccess.CheckVisitorAsync"/>) and its token is good; a bad
+    /// or missing token answers as not signed in (401), as before the setup.
     /// </summary>
     private static async Task<InstallationVisitor> CheckAsync(HttpContext context, InstallationAccess access) =>
         await InstallationAccess.CheckVisitorAsync(context) is var visitor && visitor != InstallationVisitor.Allowed

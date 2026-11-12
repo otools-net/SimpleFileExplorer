@@ -16,8 +16,8 @@ public sealed record ArchiveRequest(IReadOnlyList<string?>? Paths);
 public sealed record ArchiveLink(string Url, string FileName);
 
 /// <summary>
-/// Several files, or folders with everything in them, downloaded as one zip (agents/docs/features/archives.md): the page
-/// names them, then the browser downloads the zip, written while it is sent.
+/// Several files, or folders with everything in them, downloaded as one zip (agents/docs/features/archives.md): the
+/// page names them, then the browser downloads the zip, written while it is sent.
 /// </summary>
 public static class ArchiveEndpoints
 {
@@ -178,7 +178,8 @@ public static class ArchiveEndpoints
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // The headers are gone: cut the connection, so that the browser says the download failed instead of keeping half a zip.
+            // The headers are gone: cut the connection, so that the browser says the download failed instead of keeping
+            // half a zip.
             logger.LogWarning(ex, "The zip {Name} of {Account} stopped", plan.FileName, who);
             context.Abort();
         }

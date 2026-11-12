@@ -106,7 +106,8 @@ public sealed record TagScope(string? Path, bool Recursive = false, string? Quer
 
 /// <param name="Scope">The scope as understood: path normalised, <c>Recursive</c> false for a search.</param>
 /// <param name="Files">Indexed files of the scope.</param>
-/// <param name="Tags">Tags set on at least one of them, with the number of files having each; most common first.</param>
+/// <param name="Tags">Tags set on at least one of them, with the number of files having each; most common
+/// first.</param>
 public sealed record ScopeTags(TagScope Scope, int Files, IReadOnlyList<TagUsage> Tags);
 
 /// <summary>Tags to add and remove on every file of a <see cref="TagScope"/>.</summary>
@@ -147,7 +148,8 @@ public sealed record ScopeTagOutcome(
 
 /// <summary>Default tags to add to a folder and remove from it (<see cref="FolderDefaultTags"/>).</summary>
 /// <param name="AddToFiles">Also give the added tags to the files already in the folder and its sub-folders.</param>
-/// <param name="RemoveFromFiles">Also take the removed tags off the files already in the folder and its sub-folders.</param>
+/// <param name="RemoveFromFiles">Also take the removed tags off the files already in the folder and its
+/// sub-folders.</param>
 public sealed record FolderDefaultTagsChange(
     string? Path,
     IReadOnlyList<int>? Add = null,

@@ -68,7 +68,9 @@ public enum ScheduleKind
     /// <summary>At its start, then every <c>IntervalMinutes</c>.</summary>
     Interval,
 
-    /// <summary>On the days of <c>Days</c>, at the time of day of its start (server time); every day = all days.</summary>
+    /// <summary>
+    /// On the days of <c>Days</c>, at the time of day of its start (server time); every day = all days.
+    /// </summary>
     Weekly,
 }
 
@@ -78,7 +80,8 @@ public enum ScheduleKind
 /// <param name="Detail">What it is doing, or how it last ended.</param>
 /// <param name="CanStart">It can be started now (from the dialog, or by a schedule).</param>
 /// <param name="CanSchedule">Schedules can start it.</param>
-/// <param name="AutomaticNextRun">When the task will run by itself next (trickplay's periodic check), whatever the schedules.</param>
+/// <param name="AutomaticNextRun">When the task will run by itself next (trickplay's periodic check), whatever the
+/// schedules.</param>
 /// <param name="AutomaticEvery">Hours between those runs; null when it doesn't run by itself.</param>
 /// <param name="LastRun">Its last recorded run, running or finished.</param>
 public sealed record TaskInfo(
@@ -145,8 +148,8 @@ public sealed record TaskRunPage(IReadOnlyList<TaskRunSummary> Runs, long? Next)
 
 /// <summary>A schedule as sent and received by the API.</summary>
 /// <param name="Path">Folder to scan, relative to the library root (empty: the whole library); scans only.</param>
-/// <param name="Start">First run (<see cref="ScheduleKind.Once"/>, <see cref="ScheduleKind.Interval"/>), or the time of day
-/// (server time) and the first day it can run (<see cref="ScheduleKind.Weekly"/>).</param>
+/// <param name="Start">First run (<see cref="ScheduleKind.Once"/>, <see cref="ScheduleKind.Interval"/>), or the time of
+/// day (server time) and the first day it can run (<see cref="ScheduleKind.Weekly"/>).</param>
 /// <param name="IntervalMinutes">Time between two runs, for <see cref="ScheduleKind.Interval"/>.</param>
 /// <param name="Days">Days of <see cref="ScheduleKind.Weekly"/>: bit 0 = Sunday … bit 6 = Saturday.</param>
 public record TaskScheduleInput(

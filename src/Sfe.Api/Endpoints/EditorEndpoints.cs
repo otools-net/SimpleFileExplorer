@@ -282,7 +282,9 @@ public static class EditorEndpoints
         };
     }
 
-    /// <summary>A file of the library (not the server's own files nor the work folder): where it is, its canonical path.</summary>
+    /// <summary>
+    /// A file of the library (not the server's own files nor the work folder): where it is, its canonical path.
+    /// </summary>
     private static (string Full, string Canonical)? Picture(
         LibraryPaths paths,
         ServerFiles serverFiles,
@@ -297,7 +299,9 @@ public static class EditorEndpoints
             ? (full, canonical)
             : null;
 
-    /// <summary>Saving over: a format the editor writes, files.edit at its folder, and the rule of Replace (as text files).</summary>
+    /// <summary>
+    /// Saving over: a format the editor writes, files.edit at its folder, and the rule of Replace (as text files).
+    /// </summary>
     private static bool MayOverwrite(AccessState state, LibraryPaths paths, Trash trash, string canonical)
     {
         var parent = canonical.LastIndexOf('/') is var slash and >= 0 ? canonical[..slash] : string.Empty;

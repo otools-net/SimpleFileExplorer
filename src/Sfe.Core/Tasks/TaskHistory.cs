@@ -30,8 +30,8 @@ public sealed class TaskHistory(
     private long _memoryIds;
 
     /// <summary>
-    /// Starts recording a run: from now on, what the calling async flow logs goes into its log. Call it from the
-    /// run's own method (see <see cref="TaskLogProvider.Current"/>), and end the run with <see cref="Run.CompleteAsync"/>.
+    /// Starts recording a run: from now on, what the calling async flow logs goes into its log. Call it from the run's
+    /// own method (see <see cref="TaskLogProvider.Current"/>), and end the run with <see cref="Run.CompleteAsync"/>.
     /// </summary>
     public Run Begin(BackgroundTaskKind task, string? path, TaskTrigger trigger, int? scheduleId = null)
     {
@@ -87,7 +87,10 @@ public sealed class TaskHistory(
         }
     }
 
-    /// <summary>Runs newest first, of one task or all; <paramref name="before"/>: <see cref="TaskRunPage.Next"/> of the previous page.</summary>
+    /// <summary>
+    /// Runs newest first, of one task or all; <paramref name="before"/>: <see cref="TaskRunPage.Next"/> of the previous
+    /// page.
+    /// </summary>
     public async Task<TaskRunPage> ListAsync(
         BackgroundTaskKind? task,
         long? before,
