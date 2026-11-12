@@ -25,7 +25,7 @@ node agents/tools/readability/measure.mjs --json > <tmp>/readability.json
 | functions over 60 lines, with more than 5 parameters, nested deeper than 3 | not in tests (a `describe` is an outline) |
 | classes with more than 8 dependencies | C#: parameters of the primary constructor; TypeScript: `inject()` fields |
 | inline templates over 40 lines | `template:` of a component |
-| files declaring several top-level types | C# |
+| files declaring several top-level types (an `…Contracts.cs` or `…Models.cs` within the file limit is allowed) | C# |
 
 - The limits are the `LIMITS` constant at the top of `measure.mjs`: change them there and in `readability.md` together.
 - **C# is measured by its layout** (CSharpier's: Allman braces, 4 spaces, file-scoped namespaces), not parsed: a

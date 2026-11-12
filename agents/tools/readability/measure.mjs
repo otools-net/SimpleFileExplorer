@@ -328,7 +328,10 @@ function measureArea(area, files) {
         if (area.tests)
             continue;
         result.functions.push(...measured.functions);
-        if (measured.types.length > LIMITS.typesPerFile)
+        // A family of small data types of one contract may share `<Area>Contracts.cs` or `<Area>Models.cs` within the
+        // file limit (readability.md, C#).
+        const group = /(Contracts|Models)\.cs$/.test(file) && lines.length <= LIMITS.fileLines;
+        if (measured.types.length > LIMITS.typesPerFile && !group)
             result.manyTypes.push({ file, count: measured.types.length });
     }
     return result;
