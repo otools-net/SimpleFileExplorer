@@ -92,7 +92,9 @@ csharp_space_around_binary_operators = before_and_after
 # One statement per line; a block is never squeezed onto the line of its `if`.
 csharp_preserve_single_line_statements = false
 csharp_preserve_single_line_blocks = true
-dotnet_diagnostic.IDE0055.severity = warning
+# Layout is CSharpier's (`dotnet csharpier format`, .csharpierrc.yaml): the settings above are what editors use while
+# typing, IDE0055 would fight CSharpier's line breaks.
+dotnet_diagnostic.IDE0055.severity = none
 # A line break belongs before a binary operator, not after it.
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 # No two blank lines in a row; a blank line after a closing brace's block when more statements follow.

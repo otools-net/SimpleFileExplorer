@@ -1,8 +1,9 @@
 # Readable code: rules and refactoring
 
-Files: `.editorconfig` (formatting and C# style, checked by `dotnet format`), `agents/tools/readability/measure.mjs`
-(the size limits below, measured). Language conventions that are not about readability stay in
-[code-style](code-style.md) and [frontend](frontend.md).
+Files: `.editorconfig` (C# style, checked by `dotnet format style`), `.csharpierrc.yaml` and `.prettierrc.json`
+(layout: CSharpier for C#, Prettier for the client), `agents/tools/readability/measure.mjs` (the size limits below,
+measured), `agents/tools/readability/rewrap-comments.mjs` (long comments). Language conventions that are not about
+readability stay in [code-style](code-style.md) and [frontend](frontend.md).
 
 The code was written with AI tools and works, but a person reading it meets long lines, long functions, files holding
 many things and dense inline templates. These rules say what readable means here, so that the code can be brought to
@@ -21,8 +22,8 @@ does and where they would change it. Everything below serves that.
 
 ## Sizes
 
-Limits, not targets: most code should be well under them. "Now" is what `measure.mjs` counted on 2026-11-12, after the formatting
-(server = `src/**/*.cs` without migrations, client = `src/Sfe.Web/src/**/*.ts` without specs).
+Limits, not targets: most code should be well under them. "Now" is what `measure.mjs` counted on 2026-11-12, after
+the formatting (server = `src/**/*.cs` without migrations, client = `src/Sfe.Web/src/**/*.ts` without specs).
 
 | What | Limit | When over | Now over (server / client) |
 |---|---|---|---|
@@ -74,6 +75,10 @@ what fits a side-by-side diff. Test files get more room because a test reads as 
 ### Lines
 
 - One statement per line; one declaration per line.
+- Code is broken by the formatters (CSharpier for C#, Prettier for TypeScript, templates and CSS), at 120 columns:
+  their layout is the rule, even where it differs from the list below (CSharpier puts a closing `)` of a long
+  parameter list on its own line). What they leave over 120 is fixed by hand, the same way: comments
+  (`rewrap-comments.mjs`) and long strings.
 - A line over 120 characters is broken at its structure, not where it happens to reach the margin:
   - arguments: all on one line, or **one per line**, never a ragged mix;
   - a chain of calls (`Where`, `Select`, signals, promises): one call per line, the dot first;
@@ -225,10 +230,15 @@ Order, from mechanical to structural; each step is useful alone (the worklists, 
 ## Checking
 
 ```sh
-# C#: formatting and style of .editorconfig, changing nothing (exit 2 when something is off)
-dotnet format Sfe.slnx --verify-no-changes --severity warn
-# ... and fixing what can be fixed automatically
-dotnet format Sfe.slnx --severity warn
+# C#: layout (CSharpier), then the style of .editorconfig, changing nothing (exit 2 when something is off)
+dotnet tool restore                                       # once: CSharpier and dotnet-ef
+dotnet csharpier check .                                  # C# layout (CSharpier, 120 columns)
+dotnet format style Sfe.slnx --verify-no-changes --severity warn      # C# style of .editorconfig
+dotnet format analyzers Sfe.slnx --verify-no-changes --severity warn  # ... and its analyzer rules
+# ... fixing: style first (it adds braces to statements CSharpier wrapped), then layout, until both are quiet
+dotnet format style Sfe.slnx --severity warn ; dotnet csharpier format .
+# comments over 120 characters, reflowed (C#, TypeScript, CSS)
+node agents/tools/readability/rewrap-comments.mjs src tests
 
 # sizes: lines, files, functions, nesting, parameters, dependencies, templates; worst first
 node agents/tools/readability/measure.mjs

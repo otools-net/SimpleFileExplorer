@@ -1,7 +1,8 @@
 # Readability measurements
 
-Files: `measure.mjs` (the counts), `baseline.mjs` and `baseline.json` (the ratchet), `references.mjs` (outputs a
-refactoring must leave unchanged). The plan they serve: `agents/docs/development/readability-refactoring-plan.md`.
+Files: `measure.mjs` (the counts), `baseline.mjs` and `baseline.json` (the ratchet), `rewrap-comments.mjs` (long
+comments), `references.mjs` (outputs a refactoring must leave unchanged). The plan they serve:
+`agents/docs/development/readability-refactoring-plan.md`.
 
 Counts what is over the size limits of `agents/docs/development/readability.md` ("Sizes") and lists it worst first:
 the worklist of the refactoring, and how far it is. Reads the files git tracks, changes nothing. Node.js 22+ and the
@@ -30,10 +31,26 @@ node agents/tools/readability/measure.mjs --json > <tmp>/readability.json
 - **C# is measured by its layout** (Allman braces, 4 spaces, file-scoped namespaces), not parsed: a member is a `{`
   alone on its line at 4 or 8 spaces after a header with parentheses. Counts are close, not exact (a multi-line
   lambda assigned to a field is missed; "nested" counts braces, so an object initializer inside a loop adds a level).
-  Run `dotnet format` first if the layout is off. Migrations (`Data/*Migrations/`) are left out.
+  Run `dotnet csharpier format .` first if the layout is off. Migrations (`Data/*Migrations/`) are left out.
 - TypeScript is exact: nesting counts `if`/loops/`switch`/`try` inside one another, `else if` staying at its `if`'s
   level, inner functions measured on their own.
-- C# formatting and style are not this tool's job: `dotnet format Sfe.slnx --verify-no-changes --severity warn`.
+- C# formatting and style are not this tool's job: CSharpier and `dotnet format style`
+  ([readability › Checking](../../docs/development/readability.md#checking)).
+
+## Comments over the limit
+
+```sh
+node agents/tools/readability/rewrap-comments.mjs src tests        # rewrites them
+node agents/tools/readability/rewrap-comments.mjs --check src      # exit 1 when some are left
+```
+
+- C# `///` and `//`, TypeScript `//` and the ` * ` lines of block comments, CSS block comments; a comment at the end of
+  a code line is not touched.
+- Only the paragraph holding a long line is reflowed, with its own prefix; a paragraph ends at a blank comment line,
+  a tag line (`<param …>`, `</summary>`), a bullet, a JSDoc `@tag`. A one-line `<summary>…</summary>` too long takes
+  the block form (tags on lines of their own). Words, `<tags …>` and `` `code` `` are never split, so a single
+  `<see cref="…"/>` longer than the line stays long; `<code>` and fenced blocks are left alone.
+- A second run changes nothing (checked on `src/`, 2026-11-12).
 
 ## The baseline (no file gets worse)
 

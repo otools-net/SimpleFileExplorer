@@ -25,7 +25,7 @@ Not measured by the tool, counted with `grep` (outside `node_modules` and migrat
 6 CA1416 in tests, 2 charset, 1 IDE0052, 1 IDE0044).
 
 **Done when:** `measure.mjs` shows 0 everywhere (or only exceptions written in a comment at the code, as
-[readability](readability.md) allows), `dotnet format --verify-no-changes` passes, and phase 8's checks run in CI so
+[readability](readability.md) allows), the formatters' checks pass (see Phase 2), and phase 8's checks run in CI so
 the numbers stay at 0.
 
 ## Progress
@@ -55,25 +55,22 @@ too big is split into sub-items here before starting it. A new trap found on the
 
 ### Phase 2: long lines (numbers: lines over 120 characters on 2026-11-12)
 
-- [ ] `Sfe.Api/Endpoints` (854): split in 3–4 commits by file, `ExploreEndpoints`, `FileEndpoints`, `TextEndpoints`
-  first
-- [ ] `Sfe.Core/Files` (509): `Files/` then `Files/Compression/`
-- [ ] `Sfe.Core/Access` (271)
-- [ ] `Sfe.Core/Settings` (149), `Sfe.Core/Options` (39)
-- [ ] `Sfe.Api/Security` (126), `Sfe.Api/Maintenance` (57), `Sfe.Api/Tenancy` (32), `Sfe.Api` root (38)
-- [ ] `Sfe.Core/FileTracking` (100), `Indexing` (72), `Search` (70), `Tagging` (70)
-- [ ] `Sfe.Core/Tasks`, `Library`, `Trickplay`, `Data`, `Thumbnails`, `Upgrades` (217 together)
-- [ ] `Sfe.Core/Editing`, `KeepAlive`, `Backup`, `Logs`, `Streaming`, `Paths`, root (153 together)
-- [ ] Client `formats/` (473; templates over 40 lines left for phase 4)
-- [ ] Client `library/` (406)
-- [ ] Client `access/` (220), `files/` (211)
-- [ ] Client `settings/` (168: `settings-schema.ts` as a data table), `admin/` (137)
-- [ ] Client `account/`, `core/` (`api.service.ts`), `tags/`, `shared/` (icon sprite paths as constants)
-- [ ] Client `player/`, `tasks/`, `tracking/`, `editor/`, `menus/`, `trickplay/`, `logs/`, `migration/`, root
-- [ ] Styles (145)
-- [ ] Server tests (1727): 3–4 commits by file name, `ApiTests`, `TaggingTests`, `AccessTests` first
-- [ ] Client tests (789): 2 commits, `archive-view`, `access`, `admin-page` specs first
-- [ ] e2e tests (141)
+Done with formatters (decided 2026-11-12: CSharpier and Prettier for the whole repository, checked from then on),
+then by hand for what they leave: comments and long strings. One commit per step and area.
+
+- [x] Tools: CSharpier 1.4.0 (`dotnet-tools.json`, `.csharpierrc.yaml`, `.csharpierignore`), Prettier 3.10.1
+  (`src/Sfe.Web`, `.prettierrc.json`), `rewrap-comments.mjs`; IDE0055 off; checks become CSharpier +
+  `dotnet format style` + `dotnet format analyzers`
+- [ ] CSharpier over `src/` (with `dotnet format style` adding the braces of wrapped statements)
+- [ ] CSharpier over `tests/`
+- [ ] Comments rewrapped: server, then server tests
+- [ ] Long strings of the server (about 220 lines: OpenAPI descriptions, log templates, messages), by folder
+- [ ] Long strings of the server tests (about 360 lines)
+- [ ] Prettier over the client (`src/Sfe.Web/src`: TypeScript, templates, CSS); `npm run format` / `format:check`
+- [ ] Prettier over the e2e tests
+- [ ] Comments of the client and e2e rewrapped
+- [ ] What is left over 120 in the client, e2e and styles, by hand (`measure.mjs --area client`)
+- [ ] Hashes of the formatter commits in `.git-blame-ignore-revs`
 
 ### Phase 3: one type per file, `models.ts` by area
 
@@ -171,6 +168,8 @@ what applies to this plan.
   `claude: refactoring: long lines of Sfe.Core/Files`). No `CHANGELOG.md` line, no version bump: nothing a user sees
   changes ([versioning-and-changelog](versioning-and-changelog.md)).
 - **Before and after each commit:** `dotnet test` and `npm test` pass (client-only commits: `npm test` only);
+  `dotnet csharpier check .`, `dotnet format style` and `dotnet format analyzers` with `--verify-no-changes
+  --severity warn` pass (from phase 2 on; before it, `dotnet format --verify-no-changes`);
   `measure.mjs --check` passes, then `--write-baseline` locks in what improved (`baseline.json` in the commit);
   `references.mjs` before and after compares equal for the phases that name it.
 - **Tests do not change** except: a spec that reached into a moved private member, phase 1's analyzer fixes in tests,
@@ -219,8 +218,8 @@ Traps met:
   text: keep `this.name = name` constructor parameters, and string literals equal to the name (`"folders"` in
   `ArchiveCatalog`).
 - `dotnet format` applies the MSTEST0037 fixes itself, two of them not compiling: `Assert.EndsWith('\n', …)` (takes
-  a string) and `Assert.HasCount(long, …)` (takes an int; `AreEqual(size, array.LongLength)` instead), and `Assert.AreEqual(0, enumValue)` (needs
-  `(FileAttributes)0`); `dotnet format` itself still reports nothing then: build the tests. The
+  a string) and `Assert.HasCount(long, …)` (takes an int; `AreEqual(size, array.LongLength)` instead), and
+  `Assert.AreEqual(0, enumValue)` (needs `(FileAttributes)0`); `dotnet format` itself still reports nothing then: build the tests. The
   CA1416 guard `if (OperatingSystem.IsWindows()) Assert.Inconclusive(…)` needs a `return;` after it for the analyzer.
 - A local constant renamed by text: leave the content of raw string literals (`"""`) alone (test data such as
   `Video: h264 (High)` that a `Replace` looks for), and rename inside interpolations (`$"at {depth}"`).
@@ -229,21 +228,34 @@ Traps met:
 - `references.mjs` fails when another `dotnet` build runs at the same time: run it alone.
 - `dotnet test` takes about 9 minutes (1550 tests): see [long-runs](../environment/long-runs.md).
 
-## Phase 2: long lines (about 40 commits, one per folder, worst first)
+## Phase 2: long lines (formatters, then by hand)
 
-Order from `measure.mjs --area <area> --top 200`: server (`Endpoints/`, `Files/`, `Settings/`, `Access/` first),
-client (`settings-schema.ts`, `archive-view`, `api.service.ts`, `admin-page`, `icon-sprite`), then styles, then the
-three test areas. Inline templates over 40 lines are left for phase 4 (their lines are fixed when they move).
+The formatters break code at 120 columns by its structure; their layout is the rule from then on
+([readability › Lines](readability.md#lines)). CSharpier proves each file's syntax tree unchanged; Prettier keeps
+string contents. What they cannot break is done by hand, by area, worst first (`measure.mjs --area <area> --top 200`).
 
-- Break at the structure ([readability › Lines](readability.md#lines)): arguments one per line, chains one call per
-  line, operators first.
+- **C#:** `dotnet csharpier format <folder>`, then `dotnet format style Sfe.slnx --severity warn --include <folder>`
+  (statements CSharpier wrapped need braces: `when_multiline`), then CSharpier again, until both are quiet (two
+  rounds on `src/`).
+- **Comments:** `node agents/tools/readability/rewrap-comments.mjs <folder>`; a diff read through, a second run
+  changes nothing.
 - **Strings keep their exact text.** A raw string literal (`"""`) or a template literal spread over lines adds the
   line breaks and keeps the indentation rules of the language: for user texts, log templates, OpenAPI descriptions
   (`WithDescription`, `WithSummary`) and SQL compared in tests, prefer concatenation (`"…" +` on each line) or a
   named constant. A test asserting the text, or the OpenAPI diff, catches a slip.
 - Data tables (`settings-schema.ts`, the icon sprite's paths): one entry per block; an SVG path too long for one line
   becomes a named constant, its content unchanged.
-- CSS: one selector per line, one declaration per line.
+- Inline templates over 40 lines: Prettier formats them in place; phase 4 still moves them to `.html`.
+
+Traps met:
+
+- `dotnet format` (plain, or `whitespace`) and CSharpier disagree on continuation indents (raw strings, wrapped
+  arguments): IDE0055 is `none` in `.editorconfig`, and the checks are `style` + `analyzers` + `csharpier check`.
+- CSharpier re-indents the content of raw string literals with their closing `"""`: the value is unchanged (the
+  OpenAPI document compared identical).
+- CSharpier over `src/`: 187 files, +15389 / -4422 lines (about 2700 short lines re-laid out too); 224 code lines and
+  621 comment lines still over 120 after it.
+- awk's `length` counts bytes, so lines with `…` or `→` look long to it: measure with Node (`measure.mjs`).
 
 ## Phase 3: one type per file (server) and `models.ts` by area (client)
 
@@ -300,7 +312,8 @@ before** the refactoring. Then extract named steps, guard clauses, parameter obj
 - **Core functions**, worst first: `ArchiveExtractor.Extract` (143), `FileJobs.ExtractAsync` (138) and
   `CompressAsync` (101) (with phase 6's split of `FileJobs` if it comes first), `EditableSettings.From` (125) and
   `ApplyTo` (90), `SettingsService.Validate` (109), `Uploads.FinishAsync` (105, nested 5),
-  `ChangeEndpoints.StreamAsync`, `SimilarVideoFinder.RunAsync`, `TagService.AttachIndexDataAsync`, `Trash.RestoreAsync`, then the rest of the list.
+  `ChangeEndpoints.StreamAsync`, `SimilarVideoFinder.RunAsync`, `TagService.AttachIndexDataAsync`,
+  `Trash.RestoreAsync`, then the rest of the list.
 - **DI registrations** (`AddSfeCore` 89, `AddSfeSecurity` 82): one `Add<Area>` per area, registration order kept (a
   later registration of the same service wins).
 - **Client** (7 + 7): `item-menu.entries` (118) into one builder per group of entries, `openEpub`, `openPdf`,
@@ -353,8 +366,9 @@ the new classes are registered where the old one was (per library container or r
    errors once clean.
 2. **Server build:** `EnforceCodeStyleInBuild` in `Directory.Build.props`, so the `.editorconfig` warnings show in
    `dotnet build`; CA1502/CA1505/CA1506 raised from suggestion to warning once phase 6 is done.
-3. **CI** (`.github/workflows/`, a workflow on pushes to `edge` and pull requests): `dotnet format
-   --verify-no-changes --severity warn`, `npm run lint`, `node agents/tools/readability/measure.mjs --check`.
+3. **CI** (`.github/workflows/`, a workflow on pushes to `edge` and pull requests): `dotnet csharpier check .`,
+   `dotnet format style` and `dotnet format analyzers` with `--verify-no-changes --severity warn`,
+   `npm run format:check`, `npm run lint`, `node agents/tools/readability/measure.mjs --check`.
 4. Move what stays true into [readability](readability.md) (the checks, the traps of phases 2–5), set its "Now
    over" column to 0 or remove it, delete this plan, its line in `AGENTS.md` and the links to it
    (`node agents/tools/docs-screenshots/check-links.mjs`).

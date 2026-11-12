@@ -7,7 +7,8 @@ cd tests/e2e ; npm ci ; npm run browsers ; npm run e2e              # end-to-end
 dotnet build -p:SfeSkipWebClient=true                                 # without rebuilding the client
 SFE_TEST_FFMPEG=<path to ffmpeg> dotnet test                          # also run the ffmpeg tests (path: dev-machine.md)
 dotnet run --project src/Sfe.Api                                      # :5080, Development
-dotnet tool restore                                                   # once, for dotnet-ef 10.0.12
+dotnet tool restore                                                   # once: dotnet-ef 10.0.12, CSharpier 1.4.0
+dotnet csharpier format .                                             # C# layout; checks: readability.md#checking
 dotnet ef migrations add <Name> --context SfeDbContext --project src/Sfe.Core --output-dir Data/Migrations
 dotnet ef migrations add <Name> --context AccessDbContext --project src/Sfe.Core --output-dir Data/AccessMigrations
 build/build.ps1 [-Target windows|linux] [-Version 1.2.0] [-SkipTests] [-SkipSmokeTest] [-NoTests]  # -> artifacts/
