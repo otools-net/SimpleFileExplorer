@@ -68,15 +68,22 @@ public static class EditorEndpoints
     }
 
     private static async Task<Results<Created<EditedImage>, ProblemHttpResult>> SaveImage(
-        EditedImages editor, LibraryPaths paths, CurrentAccess current, HttpRequest request, CancellationToken cancellationToken, string? path = null)
+        EditedImages editor, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current, HttpRequest request,
+        CancellationToken cancellationToken, string? path = null)
     {
         var state = await current.GetAsync();
         if (state.Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
             return TypedResults.Problem("The original picture was not found.", statusCode: StatusCodes.Status404NotFound);
         // The new file goes to a folder of its own (Editor:OutputFolder): its files must be the subject's to change.
-        if (LibraryPaths.NormalizeRelative(path) is { } source && editor.TargetFolder(source) is { } folder
-            && state.Check(paths, folder, Rights.EditImages) != PathVerdict.Allowed)
+        var folder = LibraryPaths.NormalizeRelative(path) is { } source ? editor.TargetFolder(source) : null;
+        if (folder is not null && state.Check(paths, folder, Rights.EditImages) != PathVerdict.Allowed)
             return TypedResults.Problem("You may not add files to the folder the edited picture would go to.", statusCode: StatusCodes.Status403Forbidden);
+        if (folder is not null && paths.TryResolve(folder, out var folderFull) && FileEndpoints.ProtectedFromWrites(folderFull, serverFiles, work))
+        {
+            return TypedResults.Problem(
+                "The folder the edited picture would go to is not one SFE writes to (its own files, or a link leaving the library).",
+                statusCode: StatusCodes.Status403Forbidden);
+        }
 
         var result = await editor.SaveAsync(path, request.Body, cancellationToken);
         return result.Outcome switch
@@ -100,7 +107,8 @@ public static class EditorEndpoints
             return TypedResults.NotFound();
         context.Response.Headers.CacheControl = "no-store";
         context.Response.Headers.ETag = new EntityTagHeaderValue($"\"{version.Token}\"").ToString();
-        return TypedResults.Ok(new EditedImageAccess(version.Token, MayOverwrite(state, paths, trash, canonical), trash.AlwaysPermanent));
+        var mayOverwrite = MayOverwrite(state, paths, trash, canonical) && !FileEndpoints.ProtectedFromWrites(full, serverFiles, work);
+        return TypedResults.Ok(new EditedImageAccess(version.Token, mayOverwrite, trash.AlwaysPermanent));
     }
 
     private static async Task<Results<Ok<SavedImage>, NotFound, ValidationProblem, ProblemHttpResult>> SaveOver(
@@ -108,9 +116,10 @@ public static class EditorEndpoints
         string? path, string? session, CancellationToken cancellationToken)
     {
         var state = await current.GetAsync();
-        if (Picture(paths, serverFiles, work, path) is not (_, var canonical) || state.Check(paths, canonical, Rights.ViewFiles) != PathVerdict.Allowed)
+        if (Picture(paths, serverFiles, work, path) is not (var full, var canonical)
+            || state.Check(paths, canonical, Rights.ViewFiles) != PathVerdict.Allowed)
             return TypedResults.NotFound();
-        if (!MayOverwrite(state, paths, trash, canonical))
+        if (!MayOverwrite(state, paths, trash, canonical) || FileEndpoints.ProtectedFromWrites(full, serverFiles, work))
             return TypedResults.Problem("You may not save over this picture: save a copy instead.", statusCode: StatusCodes.Status403Forbidden);
         if (TextEndpoints.IfMatch(context.Request) is not { } ifMatch)
             return TypedResults.Problem("Say which version of the picture is being saved over (If-Match).", statusCode: StatusCodes.Status428PreconditionRequired,

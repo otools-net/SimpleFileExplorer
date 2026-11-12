@@ -1073,7 +1073,9 @@ export interface MigrationInfo {
     databaseVersion: string | null;
     /** The versions after the install's up to this one, newest first. */
     changes: ChangelogEntry[];
+    /** What the update did; empty unless asked with the setup code. */
     log: string[];
+    /** Why it stopped; without the setup code, only that the reason is in the server's log. */
     error: string | null;
     codeConfigured: boolean;
     codeTooShort: boolean;

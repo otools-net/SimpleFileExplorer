@@ -35,6 +35,7 @@ public static class FlashEndpoints
         api.MapGet("/files/flash/{token}/{**entry}", GetEntry)
             .AllowAnonymous()
             .WithMetadata(new RightMetadata([Rights.ViewFiles]))
+            .NeverRunByPages()
             .FolderScoped("the token's subject: files.view at each file, as the rules are now")
             .WithName("GetFlashFile")
             .WithTags("Files")

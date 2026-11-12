@@ -13,6 +13,9 @@ internal static class WindowsServiceSetup
 {
     public const string InstallArgument = "--install-service";
     public const string UninstallArgument = "--uninstall-service";
+
+    /// <summary>Installs the service although ordinary accounts may change the program's folder.</summary>
+    public const string OpenFolderArgument = "--allow-open-folder";
     private const string DefaultName = "SFE";
 
     /// <summary>Runs the command when <paramref name="args"/> holds one.</summary>
@@ -32,16 +35,19 @@ internal static class WindowsServiceSetup
 
         var nameIndex = Array.FindIndex(args, a => a.Equals("--name", StringComparison.OrdinalIgnoreCase));
         var name = nameIndex >= 0 && nameIndex + 1 < args.Length ? args[nameIndex + 1] : DefaultName;
-        return install ? Install(name) : Uninstall(name);
+        var allowOpenFolder = args.Contains(OpenFolderArgument, StringComparer.OrdinalIgnoreCase);
+        return install ? Install(name, allowOpenFolder) : Uninstall(name);
     }
 
     [SupportedOSPlatform("windows")]
-    private static int Install(string name)
+    private static int Install(string name, bool allowOpenFolder)
     {
         if (!IsAdministrator())
             return NeedsAdministrator();
 
         var exe = Environment.ProcessPath ?? throw new InvalidOperationException("The program's path is unknown.");
+        if (!allowOpenFolder && FolderIsOpen(Path.GetDirectoryName(exe)!))
+            return 1;
         if (Sc($"create \"{name}\" binPath= \"\\\"{exe}\\\"\" start= auto DisplayName= \"Simple File Explorer\"") is not 0)
             return 1;
         Sc($"description \"{name}\" \"SFE - Simple File Explorer: the web file explorer of the media library.\"");
@@ -55,6 +61,46 @@ internal static class WindowsServiceSetup
         Console.WriteLine("It runs as the Local System account: it can read the local drives, not the network drives mapped by a user.");
         Console.WriteLine("Open http://localhost:5080 (or the port you chose). Remove it with uninstall-service.cmd.");
         return 0;
+    }
+
+    /// <summary>
+    /// Says, and answers true, when ordinary accounts of the computer may change <paramref name="folder"/>: as a
+    /// service SFE runs as Local System, and whoever replaces its program or edits its settings would run anything as
+    /// that account.
+    /// </summary>
+    [SupportedOSPlatform("windows")]
+    private static bool FolderIsOpen(string folder)
+    {
+        IReadOnlyList<string> accounts;
+        try
+        {
+            accounts = ProgramFolderAccess.OrdinaryAccountsThatMayChange(folder);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SystemException)
+        {
+            Console.Error.WriteLine($"Cannot read who may change {folder} ({ex.Message}): the service is not installed.");
+            Console.Error.WriteLine($"To install it anyway, add {OpenFolderArgument}.");
+            return true;
+        }
+
+        if (accounts.Count == 0)
+            return false;
+
+        Console.Error.WriteLine($"""
+            The service is not installed: {string.Join(", ", accounts)} may change the files in
+              {folder}
+            A service runs as Local System, which can do anything on this computer: whoever can replace SFE's program
+            or edit its settings in that folder would get the same power.
+
+            Either move SFE to a folder only administrators may change (for example under C:\Program Files), or close
+            this one, from a console opened as administrator:
+
+              icacls "{folder}" /inheritance:r /grant:r "*S-1-5-32-544:(OI)(CI)F" "*S-1-5-18:(OI)(CI)F"
+
+            (only Administrators and the system keep access; add /grant "name:(OI)(CI)RX" for who must read it).
+            Then run this again. To install it as it is, at your own risk, add {OpenFolderArgument}.
+            """);
+        return true;
     }
 
     [SupportedOSPlatform("windows")]

@@ -64,7 +64,7 @@ public static class RequestLimits
         }));
     }
 
-    /// <summary>The account when signed in (wherever it connects from), else the address.</summary>
+    /// <summary>The account when signed in (wherever it connects from), else the address (<see cref="AddressKeys"/>).</summary>
     internal static string Caller(HttpContext context) =>
-        context.User.UserId() is { } user ? $"user:{user}" : $"address:{context.Connection.RemoteIpAddress}";
+        context.User.UserId() is { } user ? $"user:{user}" : $"address:{AddressKeys.Of(context)}";
 }

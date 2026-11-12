@@ -121,7 +121,7 @@ public sealed class MigrationTests
         var factory = Factory();
         var waiting = await MigrationAsync(ApiClients.Create(factory));
         await ApiClients.MigrateAsync(factory, TestContext.CancellationToken);
-        var done = await MigrationAsync(ApiClients.Create(factory));
+        var done = await MigrationAsync(ApiClients.Create(factory), TestLibrary.SetupCode);
         var admin = await ApiClients.SignInAsync(factory, ApiClients.AdminName, ApiClients.AdminPassword, TestContext.CancellationToken);
         using var config = await admin.GetAsync("/api/config", TestContext.CancellationToken);
         using var again = await admin.PostAsJsonAsync("/api/migration", new MigrationInput(TestLibrary.SetupCode), TestContext.CancellationToken);
@@ -133,6 +133,8 @@ public sealed class MigrationTests
         Assert.IsGreaterThan(5, waiting.Changes.Count, "Every version of the changelog is listed when the installed one is unknown");
         Assert.AreEqual(MigrationStatus.None, done.Status);
         CollectionAssert.Contains(done.Log.ToList(), $"The install now belongs to SFE {MigrationCoordinator.AppVersion}.");
+        Assert.IsEmpty((await MigrationAsync(ApiClients.Create(factory))).Log, "The log names folders: not without the setup code");
+        Assert.IsEmpty((await MigrationAsync(ApiClients.Create(factory), "not-the-setup-code")).Log);
         Assert.AreEqual(MigrationCoordinator.AppVersion.ToString(), StoredVersion());
         Assert.AreEqual(HttpStatusCode.OK, config.StatusCode, "The app opens, with the sessions of before");
         Assert.AreEqual(HttpStatusCode.BadRequest, again.StatusCode, "Nothing more to update");
@@ -152,7 +154,7 @@ public sealed class MigrationTests
 
         var factory = Factory();
         await ApiClients.MigrateAsync(factory, TestContext.CancellationToken);
-        var done = await MigrationAsync(ApiClients.Create(factory));
+        var done = await MigrationAsync(ApiClients.Create(factory), TestLibrary.SetupCode);
         var admin = await ApiClients.SignInAsync(factory, ApiClients.AdminName, ApiClients.AdminPassword, TestContext.CancellationToken);
         using var thumbnail = await admin.GetAsync("/api/thumbnails/Media/photo.jpg", TestContext.CancellationToken);
 
@@ -392,9 +394,31 @@ public sealed class MigrationTests
         return entries;
     }
 
-    private async Task<MigrationInfo> MigrationAsync(HttpClient client)
+    [TestMethod]
+    public async Task TheReasonOfAnErrorIsToldOnlyWithTheSetupCode()
     {
-        using var response = await client.GetAsync("/api/migration", TestContext.CancellationToken);
+        // Not a database: the server cannot read its install's version, and says why in the provider's words.
+        await File.WriteAllTextAsync(_library.DatabasePath, "this is not a database, whatever its name", TestContext.CancellationToken);
+        var visitor = ApiClients.Create(Factory());
+
+        var anonymous = await MigrationAsync(visitor);
+        var wrongCode = await MigrationAsync(visitor, "not-the-setup-code");
+        var withCode = await MigrationAsync(visitor, TestLibrary.SetupCode);
+
+        Assert.AreEqual(MigrationStatus.Unavailable, anonymous.Status);
+        Assert.AreEqual(MigrationEndpoints.ErrorWithoutCode, anonymous.Error);
+        Assert.AreEqual(MigrationEndpoints.ErrorWithoutCode, wrongCode.Error);
+        Assert.AreNotEqual(MigrationEndpoints.ErrorWithoutCode, withCode.Error);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(withCode.Error));
+    }
+
+    /// <param name="code">The setup code, sent as the update page does once it is typed; none: any visitor.</param>
+    private async Task<MigrationInfo> MigrationAsync(HttpClient client, string? code = null)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/migration");
+        if (code is not null)
+            request.Headers.Add(MigrationEndpoints.SetupCodeHeader, code);
+        using var response = await client.SendAsync(request, TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         return (await response.Content.ReadFromJsonAsync<MigrationInfo>(Json, TestContext.CancellationToken))!;
     }

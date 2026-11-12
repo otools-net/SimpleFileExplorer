@@ -82,7 +82,8 @@ public sealed partial class VideoStreamer(
     {
         using var lease = stream.Lease;
         using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lease.Stopping);
-        var arguments = Arguments(stream.FullPath, stream.Start, probe, stream.Transcoded, options.CurrentValue.Streaming);
+        var input = await ffmpeg.LibraryInputAsync(stream.FullPath);
+        var arguments = Arguments(input, stream.Start, probe, stream.Transcoded, options.CurrentValue.Streaming);
         try
         {
             // No time limit: a film plays for hours. The viewer leaving ends it.
@@ -100,14 +101,19 @@ public sealed partial class VideoStreamer(
         }
     }
 
-    /// <summary>The ffmpeg command line converting <paramref name="fullPath"/> from <paramref name="start"/> seconds to standard output.</summary>
-    internal static List<string> Arguments(string fullPath, double start, VideoProbe probe, bool transcoded, StreamingOptions settings)
+    /// <summary>
+    /// The ffmpeg command line converting the video opened by <paramref name="input"/> (<see cref="Ffmpeg.LibraryInputAsync"/>)
+    /// from <paramref name="start"/> seconds to standard output.
+    /// </summary>
+    internal static List<string> Arguments(
+        IReadOnlyList<string> input, double start, VideoProbe probe, bool transcoded, StreamingOptions settings)
     {
         List<string> arguments = ["-hide_banner", "-nostdin", "-loglevel", "error"];
         // Before the input: a fast seek (to the key frame before when copying, exact when encoding).
         if (start > 0)
             arguments.AddRange(["-ss", start.ToString("0.###", CultureInfo.InvariantCulture)]);
-        arguments.AddRange(["-i", fullPath, "-map", "0:v:0?", "-map", "0:a:0?", "-sn", "-dn", "-map_metadata", "-1", "-map_chapters", "-1"]);
+        arguments.AddRange(input);
+        arguments.AddRange(["-map", "0:v:0?", "-map", "0:a:0?", "-sn", "-dn", "-map_metadata", "-1", "-map_chapters", "-1"]);
 
         if (probe.VideoCodec is null)
         {

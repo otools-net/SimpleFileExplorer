@@ -294,5 +294,7 @@ public sealed class ExtractJobTests
         public Task<bool> MayThroughoutAsync(string path, string right) => Task.FromResult(!Refuse(path, right));
 
         public bool IsProtected(string fullPath) => fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
+
+        public bool IsReadOnly(string fullPath) => IsProtected(fullPath);
     }
 }

@@ -64,7 +64,13 @@ public sealed class LocalUserDirectory(
 
         var now = DateTime.UtcNow;
         if (user.LockedUntil > now)
-            return new DirectoryResult(DirectoryStatus.LockedOut, LockedUntil: user.LockedUntil);
+        {
+            // Told only to who knows the password: to anyone else a locked account answers as any wrong guess, after
+            // the same check, so neither the words nor the time taken tell that the name exists.
+            return PasswordHashing.Verify(password, user.PasswordHash, out _)
+                ? new DirectoryResult(DirectoryStatus.LockedOut, LockedUntil: user.LockedUntil)
+                : new DirectoryResult(DirectoryStatus.Invalid);
+        }
 
         if (!PasswordHashing.Verify(password, user.PasswordHash, out var outdated))
         {

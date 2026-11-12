@@ -73,6 +73,19 @@ Windows service **SFE**, starts with the computer and keeps that folder's settin
 removes it (the data stays). The same from a console opened as administrator: `Sfe.Api.exe --install-service` (or
 `--uninstall-service`; `--name` picks another service name).
 
+**SFE's folder must be one only administrators can change.** The service runs as Local System: whoever can replace
+`Sfe.Api.exe` or edit the settings beside it gets that account's power over the computer. The installation refuses a
+folder that Users, Authenticated Users or Everyone may change, which is the case of a folder made in `Downloads`, on
+the Desktop or at the root of a drive (`C:\sfe`), and prints the command that closes it:
+
+```bat
+icacls "C:\sfe" /inheritance:r /grant:r "*S-1-5-32-544:(OI)(CI)F" "*S-1-5-18:(OI)(CI)F"
+```
+
+(Administrators and the system only; a folder under `C:\Program Files` is closed already.) `--allow-open-folder`
+installs the service anyway: only on a computer nobody else uses. A service installed by an earlier version is not
+checked: look at its folder with `icacls`.
+
 The service runs as the Local System account: it reads local drives, not the network drives a user mapped. Local
 System can do anything on the computer, and SFE runs ffmpeg on every video of the library: for a server others can
 reach, run it under its own account instead (next section). Pick the

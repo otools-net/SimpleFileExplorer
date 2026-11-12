@@ -246,7 +246,7 @@ public static class FileEndpoints
         }
         if (!paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { Length: > 0 } canonical)
             return FileOperationStatus.NotFound;
-        if (Protected(full, serverFiles, workFolder))
+        if (ProtectedFromWrites(full, serverFiles, workFolder))
         {
             Refused(PathVerdict.NotFound, state, paths, path, "delete", loggers, protectedPlace: true);
             return FileOperationStatus.NotFound;
@@ -272,13 +272,17 @@ public static class FileEndpoints
     }
 
     private static async Task<Results<Ok<LibraryItem>, NotFound, ForbidHttpResult, ProblemHttpResult>> Restore(
-        Trash trash, TagService tags, LibraryPaths paths, CurrentAccess current, int id, CancellationToken cancellationToken)
+        Trash trash, TagService tags, LibraryPaths paths, ServerFiles serverFiles, WorkFolder workFolder, CurrentAccess current, int id,
+        CancellationToken cancellationToken)
     {
         var state = await current.GetAsync();
         if (await trash.FindAsync(id, cancellationToken) is not { } item || !SeesInTrash(state, paths, item))
             return TypedResults.NotFound();
         if (state.Check(paths, ParentOf(item.Path), Rights.DeleteFiles) != PathVerdict.Allowed)
             return TypedResults.Forbid();
+        // Deleted before links leaving the library became read only: it is not put back through one.
+        if (paths.TryResolve(item.Path, out var original) && ProtectedFromWrites(original, serverFiles, workFolder))
+            return TypedResults.Problem(ReadOnlyThroughLink, statusCode: StatusCodes.Status403Forbidden);
         var result = await trash.RestoreAsync(id, Actor(state), cancellationToken);
         return result.Status switch
         {
@@ -431,7 +435,7 @@ public static class FileEndpoints
         var state = await current.GetAsync();
         if (state.Check(paths, request.Path, Rights.CreateFiles) is var verdict and not PathVerdict.Allowed)
             return Refused(verdict, state, paths, request.Path, "create a file in", loggers);
-        if (paths.TryResolve(request.Path, out var folder) && Protected(folder, serverFiles, workFolder))
+        if (paths.TryResolve(request.Path, out var folder) && ProtectedFromWrites(folder, serverFiles, workFolder))
             return Refused(PathVerdict.NotFound, state, paths, request.Path, "create a file in", loggers, protectedPlace: true);
 
         return await ResultAsync(await operations.CreateFileAsync(request.Path, request.Name, Actor(state), cancellationToken), tags, cancellationToken);
@@ -444,7 +448,7 @@ public static class FileEndpoints
         var state = await current.GetAsync();
         if (state.Check(paths, request.Path, Rights.CreateFolders) is var verdict and not PathVerdict.Allowed)
             return Refused(verdict, state, paths, request.Path, "create a folder in", loggers);
-        if (paths.TryResolve(request.Path, out var folder) && Protected(folder, serverFiles, workFolder))
+        if (paths.TryResolve(request.Path, out var folder) && ProtectedFromWrites(folder, serverFiles, workFolder))
             return Refused(PathVerdict.NotFound, state, paths, request.Path, "create a folder in", loggers, protectedPlace: true);
 
         return await ResultAsync(await operations.CreateFolderAsync(request.Path, request.Name, Actor(state), cancellationToken), tags, cancellationToken);
@@ -461,7 +465,8 @@ public static class FileEndpoints
         // caller's to change (nobody renames away what they can't see or change).
         if (paths.TryResolve(request.Path, out var full) && paths.ToRelative(full) is { Length: > 0 } canonical)
         {
-            if (Protected(full, serverFiles, workFolder) || Protected(Path.GetDirectoryName(full)!, serverFiles, workFolder))
+            if (ProtectedFromWrites(full, serverFiles, workFolder)
+                || ProtectedFromWrites(Path.GetDirectoryName(full)!, serverFiles, workFolder))
                 return Refused(PathVerdict.NotFound, state, paths, request.Path, "rename", loggers, protectedPlace: true);
             if (state.Check(paths, ParentOf(canonical), Rights.RenameFiles) != PathVerdict.Allowed)
                 return TypedResults.Forbid();
@@ -498,8 +503,31 @@ public static class FileEndpoints
             return TypedResults.Forbid();
         if (protectedPlace || (paths.TryResolve(path, out var full) && (Directory.Exists(full) || File.Exists(full))))
             loggers.CreateLogger(typeof(FileEndpoints)).LogSecurityWarning("{User} was refused to {Action} “{Path}”: {Why}",
-                state.User?.UserName ?? "A visitor", action, path, protectedPlace ? "it leads to the server's own files" : "a folder they may not see");
+                state.User?.UserName ?? "A visitor", action, path, protectedPlace ? "it leads to the server's own files, or out of the library through a link" : "a folder they may not see");
         return TypedResults.NotFound();
+    }
+
+    /// <summary>
+    /// <paramref name="full"/> must not be created, changed, renamed, moved away or deleted: it is
+    /// <see cref="Protected"/>, or it really is outside the library while links leaving it are read only
+    /// (<see cref="LibraryLinks"/>).
+    /// </summary>
+    /// <summary>What a write refused by <see cref="ProtectedFromWrites"/> says where the place itself is no secret.</summary>
+    internal const string ReadOnlyThroughLink = "It is behind a link leaving the library, which is read only on this server.";
+
+    internal static bool ProtectedFromWrites(string full, ServerFiles serverFiles, WorkFolder workFolder)
+    {
+        if (Protected(full, serverFiles, workFolder))
+            return true;
+        try
+        {
+            return serverFiles.Links.RefusesWrite(workFolder.Library, full);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Where it leads cannot be told: not written.
+            return true;
+        }
     }
 
     /// <summary>

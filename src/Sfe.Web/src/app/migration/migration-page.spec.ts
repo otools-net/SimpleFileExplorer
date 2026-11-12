@@ -68,6 +68,8 @@ describe('MigrationPageComponent', () => {
 
         expect(confirm).toHaveBeenCalled();
         expect(api.startMigration).toHaveBeenCalledWith('the-setup-code');
+        // The log and the reason of an error are only told with the code.
+        expect(api.migrationInfo).toHaveBeenLastCalledWith('the-setup-code');
         expect(element.querySelector('.migration-running')).not.toBeNull();
         expect(element.querySelector('.migration-log')!.textContent).toContain('Updating the accounts');
 

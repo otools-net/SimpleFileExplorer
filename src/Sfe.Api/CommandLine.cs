@@ -38,6 +38,8 @@ internal static class CommandLine
         Windows service (run as administrator)
           {WindowsServiceSetup.InstallArgument + " [--name SFE]",-34}Register SFE as a service starting with
           {"",-34}the computer, and start it
+          {WindowsServiceSetup.OpenFolderArgument,-34}... although ordinary accounts may change
+          {"",-34}SFE's folder (refused otherwise)
           {WindowsServiceSetup.UninstallArgument + " [--name SFE]",-34}Stop and remove that service
 
         Main settings (win over the files and the setup page)

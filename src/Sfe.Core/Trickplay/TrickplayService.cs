@@ -645,8 +645,8 @@ public sealed class TrickplayService : IDisposable
             if (settings.KeyFramesOnly)
                 extract.AddRange(["-skip_frame", "nokey"]);
             // round=up: frame n is the picture at n × interval (the default rounding would take it half an interval early).
+            extract.AddRange(await _ffmpeg.LibraryInputAsync(video.FullName));
             extract.AddRange([
-                "-i", video.FullName,
                 "-an", "-sn", "-dn",
                 "-vf", $"fps=1/{settings.IntervalSeconds}:round=up,scale='min({settings.Width},iw)':-2",
                 "-q:v", "5",

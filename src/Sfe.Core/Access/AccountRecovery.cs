@@ -101,10 +101,9 @@ public sealed class AccountRecovery(IDbContextFactory<AccessDbContext> dbFactory
                     return;
                 }
 
-                Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-                File.WriteAllLines(FilePath, ["Codes to recover an administrator's account on the sign-in page, each usable once:", .. lines]);
-                if (!OperatingSystem.IsWindows())
-                    File.SetUnixFileMode(FilePath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                SecretFiles.CreatePrivateDirectory(Path.GetDirectoryName(FilePath)!);
+                string[] content = ["Codes to recover an administrator's account on the sign-in page, each usable once:", .. lines];
+                SecretFiles.WriteAllText(FilePath, string.Join(Environment.NewLine, content) + Environment.NewLine);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {

@@ -24,13 +24,23 @@ asks for the same code after each upgrade.
 | IIS | The site's stdout log, or the file in the site's folder |
 | Container | `docker logs <container>` (keep `data/` on a volume, or set the code yourself) |
 
-### On the server's own computer: no code
+### On the server's own computer: no code, with the setup link
 
-A new install (no account yet) opened in a browser **on the computer SFE runs on** (`http://localhost:5080`) skips the
-code: whoever sits there runs the server anyway. That is the case of the portable package on Windows, which opens the
-setup page in your browser by itself. From a phone or another computer, through a reverse proxy, or once any account
-exists, the code is asked as above. To ask for it on the server's computer too, set `Sfe:Setup:LocalWithoutCode` to
-`false`.
+A new install (no account yet) is set up without the code through its **setup link**, in a browser on the computer
+SFE runs on. The portable package and the AppImage open your browser on that link by themselves; otherwise it is in
+the console, above the code:
+
+```text
+To set SFE up, open this link in a browser on this computer
+(no code needed with it; it works until SFE stops):
+
+    http://localhost:5080/?setup=Zk3v…
+```
+
+The link is made anew each time SFE starts, only works from the computer itself, and stops mattering once an account
+exists. Opening `http://localhost:5080` without it asks for the code, as from a phone or another computer or through
+a reverse proxy: being on the computer is not enough, since other users of it, and visitors a tunnel (`ssh -R`,
+`ngrok`) brings in, are "on the computer" too. To always ask for the code, set `Sfe:Setup:LocalWithoutCode` to `false`.
 
 ### Setting the code yourself
 

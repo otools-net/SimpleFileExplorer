@@ -1,6 +1,8 @@
 # Line endings and shell editing
 
 - The index is all LF; working copies are mostly LF, a few may be CRLF. Keep each file's existing endings.
+- The root `.editorconfig` says `end_of_line = lf` (`.cmd`: CRLF; `tests/samples/`: untouched), so editors and
+  `dotnet format` write LF: a working copy that was CRLF becomes LF when saved, which is what the index holds.
 - List with `git ls-files --eol`, check one with `file` (Git Bash `grep` doesn't see `\r`).
 - `dotnet ef migrations add` writes CRLF (with BOM): normalise the new files and the snapshot to LF
   (`sed -i 's/\r$//'`).

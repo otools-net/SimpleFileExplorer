@@ -269,7 +269,8 @@ public static partial class TextEndpoints
         var state = await current.GetAsync();
         if (!paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { Length: > 0 } canonical || !File.Exists(full))
             return TypedResults.NotFound();
-        if (FileEndpoints.Protected(full, serverFiles, work) || FileEndpoints.Protected(Path.GetDirectoryName(full)!, serverFiles, work))
+        if (FileEndpoints.ProtectedFromWrites(full, serverFiles, work)
+            || FileEndpoints.ProtectedFromWrites(Path.GetDirectoryName(full)!, serverFiles, work))
         {
             FileEndpoints.Refused(PathVerdict.NotFound, state, paths, path, "save over", loggers, protectedPlace: true);
             return TypedResults.NotFound();
@@ -320,7 +321,7 @@ public static partial class TextEndpoints
         var state = await current.GetAsync();
         if (state.Check(paths, request.Path, Rights.CreateFiles) is var verdict and not PathVerdict.Allowed)
             return FileEndpoints.Refused(verdict, state, paths, request.Path, "save a file in", loggers);
-        if (paths.TryResolve(request.Path, out var folder) && FileEndpoints.Protected(folder, serverFiles, work))
+        if (paths.TryResolve(request.Path, out var folder) && FileEndpoints.ProtectedFromWrites(folder, serverFiles, work))
             return FileEndpoints.Refused(PathVerdict.NotFound, state, paths, request.Path, "save a file in", loggers, protectedPlace: true);
         if (Encode(request.Text, request.Encoding, request.LineEnding) is not { } bytes)
             return EncodingProblem(request.Text, request.Encoding, request.LineEnding);

@@ -12,6 +12,16 @@ library by others). Keep these rules when changing it.
 - A file of the library is **content of strangers**: never serve it so that the browser runs it on the app's origin
   (HTML, SVG, XML). `LibraryEndpoints.ServeFile` sandboxes every file and forces a download for types outside the
   media allow-list.
+- Nor so that a page of the app loads it as its own script or style (`script-src 'self'` would accept it): a route
+  serving library content takes its type from `LibraryEndpoints.ContentTypeOf` (`LibraryContent.SafeType`) and is
+  marked `.NeverRunByPages()` (`.NeverRunByPagesButStyled()` for a book's files).
+- ffmpeg gets a library file only through `Ffmpeg.LibraryInputAsync` (disk only, real media formats only), never a
+  bare `-i`.
+- A limit per network address uses `AddressKeys.Of` (an IPv6 visitor is its /64), never `RemoteIpAddress` whole.
+- A file holding a secret is written with `SecretFiles.WriteAllText`, its folder made with
+  `SecretFiles.CreatePrivateDirectory`.
+- An anonymous answer never carries an exception's message, a path or a log line: a fixed sentence, the detail in
+  the log (or behind the setup code, as `GET api/migration`).
 - Everything that runs a program or decides where data lives (ffmpeg, root, database) is set by
   whoever runs the server, never by a right alone.
 - Secrets (setup code, Data Protection keys, link tokens, passwords) never go to the log store, error messages, or a
@@ -30,10 +40,20 @@ library by others). Keep these rules when changing it.
 - New expensive routes (ffmpeg, full scans of the index) get a limit per caller.
 - What only "this computer" may do (setup without code, fast sign-in) goes through `LocalVisitor.IsOnThisComputer`
   (loopback, not forwarded, loopback `Host`), never a bare loopback check ([local-start.md](../features/local-start.md)).
+  It is never enough by itself to skip a secret (tunnels and other users of the computer are loopback visitors too):
+  the visitor also shows a token only who started SFE has (`LocalSetupLink`, `FastSignIn`).
+- A route that writes to the library asks `FileEndpoints.ProtectedFromWrites` (jobs: `IFileJobAccess.IsReadOnly`),
+  not `Protected`: it also refuses a place outside the library reached through a link when
+  `Sfe:Security:LinksOutsideLibrary` is `ReadOnly` (`LibraryLinks`). Reading routes keep `Protected`.
+- A folder compared with a configured one (allowed roots, link targets) is compared where it really is
+  (`LibraryPaths.RealPath`), never by spelling.
 - Security events (failed or refused sign-ins, lockouts, wrong codes, recoveries, changes of what runs) are logged
   with `LogSecurityWarning` ([logs.md](../features/logs.md)), with the name and address, never a secret.
 
 ## Audit (2026-10-16)
+
+A second audit (2026-11-11, findings A1–A13; fixed but A13 and what each finding lists as left) is in
+[security-audit-2026-11.md](security-audit-2026-11.md).
 
 Already sound: path normalisation, PBKDF2-SHA512 210k, constant-time code compare, `X-SFE-Request` + SameSite=Lax
 (no CORS), rights test on every route, tenant consistency between rights and services, space administrators can't
@@ -58,9 +78,11 @@ input, LIKE escaped, no `innerHTML` in the client.
 
 ## Attack vectors to test
 
-- **Session:** brute force (direct, via proxy, spoofed `X-Forwarded-For`), locking another's account, name enumeration
-  (timing, lockout, disabled messages), tampered cookies, stamp change ends sessions and links.
-- **Local only:** setup without code and `api/session/start` from another address, through a local proxy
+- **Session:** brute force (direct, via proxy, spoofed `X-Forwarded-For`, a new address of one IPv6 /64 per try),
+  locking another's account, a flood of names filling `SignInThrottle`, name enumeration
+  (timing, lockout, disabled messages, a locked account with a wrong password), tampered cookies, stamp change ends sessions and links.
+- **Local only:** setup without code from this computer without the setup link, with a wrong one, and with the
+  right one from another address; setup without code and `api/session/start` from another address, through a local proxy
   (`X-Forwarded-For`), with a foreign `Host` (DNS rebinding), after an account exists; a start link reused, late, or
   after a second server administrator.
 - **Local mode** ([server-modes.md](../features/server-modes.md)): any route but setup/session/installation/migration
@@ -77,13 +99,17 @@ input, LIKE escaped, no `innerHTML` in the client.
 - **Authorization:** each route × anonymous/guest/user/space admin/server admin; `X-SFE-Tenant` and cookie mismatches;
   space admin vs server admin and shared accounts; guest-forbidden rights.
 - **Paths:** `..`, encoded separators, `\`, `C:`, `::$DATA`, `CON`, trailing dots/spaces, NUL, long names; links and
-  junctions out of the root and onto the data folder (also to write there: `FileRouteTests`); hard links in duplicate
+  junctions out of the root and onto the data folder (also to write there: `FileRouteTests`); with
+  `LinksOutsideLibrary: ReadOnly`, every writing route through a junction leaving the root (`LibraryLinkTests`); a
+  space rooted through a link in an allowed root (`TenantTests`); hard links in duplicate
   removal; `.sfe`, `.SFE.`, `ChildDir/../.sfe` and its 8.3 name.
 - **Folder rules:** a hidden folder through case variants, `Private.`, `PRIVAT~1`, a junction or link from a visible
   folder (raw, listing, search after a scan), a path-only folder's own files, counts (tags, duplicates, listings),
   covers, siblings, quick links, scan status, a shared link made before the rule, the editor's output folder,
   duplicate removal keeping a hidden copy; a user in two groups (rights stay with the group granting them).
-- **Content:** `.html`/`.svg`/`.xml`/polyglot files via raw, shared and download; `<script>` in file, folder and tag
+- **Content:** `.html`/`.svg`/`.xml`/polyglot files via raw, shared and download; a library `.js`, `.css` or `.wasm`
+  loaded as `<script>`, worker or style sheet (`Sec-Fetch-Dest`, `LibraryContentTests`); a playlist, concat script or
+  `.avs` named as a video given to ffmpeg (`FfmpegInputTests`); pictures of another site under the app's policy; `<script>` in file, folder and tag
   names; external player and data server URLs (`javascript:` variants).
 - **Archives** ([archive-viewer.md](../features/archive-viewer.md), [archive-reading.md](../features/archive-reading.md)):
   names leaving the archive (`../`, `C:\`, `\\server`, `...`), links in tar/7z/rar, a directory claiming more entries

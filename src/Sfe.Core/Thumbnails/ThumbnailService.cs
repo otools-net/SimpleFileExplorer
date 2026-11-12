@@ -222,8 +222,8 @@ public sealed class ThumbnailService
         List<string> arguments = ["-hide_banner", "-loglevel", "error", "-nostdin"];
         if (seekSeconds is > 0)
             arguments.AddRange(["-ss", seekSeconds.Value.ToString()]);
+        arguments.AddRange(await _ffmpeg.LibraryInputAsync(source));
         arguments.AddRange([
-            "-i", source,
             "-frames:v", "1",
             "-vf", $"scale='min({Options.Width},iw)':-2",
             "-q:v", "5",

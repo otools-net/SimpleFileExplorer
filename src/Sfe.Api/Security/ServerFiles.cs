@@ -16,10 +16,14 @@ public sealed class ServerFiles
 {
     private readonly Lazy<(string[] Folders, string[] Files)> _protected;
 
-    public ServerFiles(IConfiguration configuration, IWebHostEnvironment environment)
+    public ServerFiles(IConfiguration configuration, IWebHostEnvironment environment, LibraryLinks links)
     {
+        Links = links;
         _protected = new(() => Collect(configuration, environment.ContentRootPath));
     }
+
+    /// <summary>What links leaving a library allow: checked with the server's files wherever a route writes.</summary>
+    public LibraryLinks Links { get; }
 
     /// <summary><paramref name="fullPath"/> is one of the server's files, or in one of its folders, wherever links lead.</summary>
     public bool Contains(string fullPath) => ContainsReal(LibraryPaths.RealPath(fullPath));

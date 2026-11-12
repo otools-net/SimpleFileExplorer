@@ -7,16 +7,37 @@ namespace Sfe.Api.Security;
 /// guesses a type, links don't tell other sites the app's addresses, and the app's pages run only the app's own scripts.
 /// A route that sets its own <c>Content-Security-Policy</c> (the library's files: <see cref="FilePolicy"/>) keeps it.
 /// </summary>
-public sealed class SecurityHeaders(RequestDelegate next)
+public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPolicy)
 {
     /// <summary>
-    /// The app's pages: scripts of the app only; Angular adds component styles as &lt;style&gt; elements. Pictures and
-    /// videos may come from a data server (<c>Sfe:DataServer</c>, any address), which runs nothing.
+    /// The app's pages on a server without a data server: scripts, pictures and media of the app only; Angular adds
+    /// component styles as &lt;style&gt; elements. Nothing shown under it (a book's chapter, any markup) can fetch
+    /// from another site, which would tell that site who reads what, and when.
     /// </summary>
-    public const string AppPolicy =
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http: https:; " +
-        "media-src 'self' blob: http: https:; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; " +
-        "form-action 'self'; frame-ancestors 'none'";
+    public static readonly string AppPolicy = AppPolicyFor(null);
+
+    /// <summary>
+    /// The app's pages when files are served by <paramref name="dataServer"/> (<c>Sfe:DataServer</c>, null for none):
+    /// pictures and media may also come from that server's origin, which runs nothing. A data server whose address has
+    /// no fixed origin (a template starting with its placeholder) allows any http(s) origin, as before 1.86.
+    /// </summary>
+    public static string AppPolicyFor(string? dataServer)
+    {
+        var extra = dataServer is null ? string.Empty : " " + (OriginOf(dataServer) ?? "http: https:");
+        return $"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:{extra}; "
+            + $"media-src 'self' blob:{extra}; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; "
+            + "form-action 'self'; frame-ancestors 'none'";
+    }
+
+    /// <summary><c>scheme://host[:port]</c> of an http(s) address, placeholders filled; null when it has none.</summary>
+    private static string? OriginOf(string address)
+    {
+        var filled = address.Replace("{url}", "x", StringComparison.Ordinal).Replace("{encodedUrl}", "x", StringComparison.Ordinal);
+        var known = Uri.TryCreate(filled, UriKind.Absolute, out var uri)
+            && uri.Scheme is "http" or "https"
+            && address.StartsWith(uri.GetLeftPart(UriPartial.Authority), StringComparison.OrdinalIgnoreCase);
+        return known ? uri!.GetLeftPart(UriPartial.Authority) : null;
+    }
 
     /// <summary>Swagger UI (<c>api/docs</c>, which needs a right) has scripts of its own inline.</summary>
     public const string DocsPolicy =
@@ -62,7 +83,7 @@ public sealed class SecurityHeaders(RequestDelegate next)
             if (flash)
                 headers[HeaderNames.ContentSecurityPolicy] = FlashPolicy;
             else if (!headers.ContainsKey(HeaderNames.ContentSecurityPolicy))
-                headers[HeaderNames.ContentSecurityPolicy] = docs ? DocsPolicy : AppPolicy;
+                headers[HeaderNames.ContentSecurityPolicy] = docs ? DocsPolicy : appPolicy.Current;
             return Task.CompletedTask;
         });
         return next(context);

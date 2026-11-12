@@ -299,6 +299,8 @@ public sealed class FileJobsTests
 
         public bool IsProtected(string fullPath) => fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
 
+        public bool IsReadOnly(string fullPath) => IsProtected(fullPath);
+
         /// <summary>Paths below a folder the fake knows of (the test library's folders).</summary>
         private static readonly string[] Probe = ["RepeatedDir/ChildDir", "RepeatedDir/RepeatedDir", "ChildDir", "Media"];
     }

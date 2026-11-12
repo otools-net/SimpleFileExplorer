@@ -95,6 +95,19 @@ public sealed class SecurityOptions
     public List<string> TrustedProxies { get; set; } = [];
 
     /// <summary>
+    /// What a link in a library (symbolic link, junction) leading outside it allows: <c>Follow</c> (reads and writes,
+    /// as always) or <c>ReadOnly</c> (nothing is written behind it). Only in the configuration: it decides what the
+    /// server's account may be made to write.
+    /// </summary>
+    public LinksOutsideLibrary LinksOutsideLibrary { get; set; } = LinksOutsideLibrary.Follow;
+
+    /// <summary>
+    /// With <see cref="LinksOutsideLibrary"/> <c>ReadOnly</c>: folders outside the libraries that links may still be
+    /// written through (full paths, e.g. a second drive added to a library by a link).
+    /// </summary>
+    public List<string> LinkTargets { get; set; } = [];
+
+    /// <summary>
     /// The app is only used over https (directly or behind a proxy): the sign-in cookie is never sent over plain http,
     /// and browsers are told to use https only (HSTS).
     /// </summary>

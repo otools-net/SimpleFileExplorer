@@ -3,6 +3,50 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## Unreleased
+
+### Added
+
+- **`Sfe:Security:LinksOutsideLibrary: ReadOnly`** (configuration): what is behind a link (symbolic link, junction)
+  leading out of a library can be browsed, played and downloaded, but nothing is created, changed, renamed, moved
+  away or deleted there. For libraries other people can put links in outside SFE (a network share, SFTP). The default
+  stays `Follow`; `Sfe:Security:LinkTargets` names folders links may still be written through.
+
+### Changed
+
+- **A new install is set up without the setup code only through its setup link**: the address SFE opens in the
+  browser at its first start, also shown in the console. Opening `http://localhost:5080` by hand asks for the code
+  (other users of the computer, and visitors a tunnel brings in, are "on the computer" too).
+- **Windows: `install-service.cmd` refuses a folder that ordinary accounts may change** (Users, Authenticated Users,
+  Everyone: a folder in Downloads or at the root of a drive), since whoever can replace SFE's program there would
+  run anything as Local System. It prints the `icacls` command that closes the folder; `--allow-open-folder` installs
+  anyway. Services already installed are not touched.
+- **Pictures and media load from SFE and from the data server only** (`Sfe:DataServer`, when one is set): the pages'
+  security policy no longer lets them come from any other site.
+- **The update page shows what the update did, and why it stopped, only once the setup code is typed**: the lines
+  name folders and database servers. Before that it only says that the reason is in the server's log.
+- **Creating a space whose index can't be made** says so and leaves the reason in the server's log.
+
+### Fixed
+
+Security (second audit, 2026-11):
+
+- **A file of the library can no longer be loaded as a script or a style sheet of SFE's own pages**: scripts, style
+  sheets and WebAssembly files are served as plain downloads, and such a load is refused. Downloading them, and
+  reading them in the text viewer, work as before.
+- **ffmpeg opens a library file only as real media, from the disk**: a playlist or a script named as a video
+  (`.mp4`, `.mkv`…) no longer makes it open another file or an address on the network.
+- **Wrong passwords from one IPv6 network are counted together** (its /64): a visitor changing address at each try
+  no longer escapes the sign-in limits. A flood of wrong sign-ins no longer resets the counts of everyone else.
+- **A locked account answers "Wrong name or password" to a wrong password**, as any other name: only who knows the
+  password is told that it is locked.
+- **Linux, macOS: the setup code and recovery code files are private from the moment they exist**, and a new
+  install's data and keys folders are made for SFE's account only. An existing keys folder that other accounts can
+  read gets a warning in the log at start, with the command that closes it.
+- **A space's library folder can no longer be chosen through a link** inside an allowed folder
+  (`Sfe:Tenants:AllowedRoots`) that leads outside it.
+- **`zod` updated to 4.6.6** (GHSA-mrhx-c7xc-m3w5).
+
 ## 1.85.1
 
 ### Fixed

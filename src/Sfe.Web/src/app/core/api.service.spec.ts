@@ -244,6 +244,17 @@ describe('Api', () => {
         expect(backup.request.body).toEqual({ code: 'the-setup-code' });
     });
 
+    it('asks how the update goes with the setup code once there is one', () => {
+        void api.migrationInfo();
+        const anonymous = http.expectOne('api/migration');
+        void api.migrationInfo('the-setup-code');
+        const withCode = http.expectOne('api/migration');
+
+        expect(anonymous.request.headers.has('X-SFE-Setup-Code')).toBe(false);
+        expect(withCode.request.method).toBe('GET');
+        expect(withCode.request.headers.get('X-SFE-Setup-Code')).toBe('the-setup-code');
+    });
+
     it('leaves the session and setup routes alone: their pages handle the answers', async () => {
         const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 

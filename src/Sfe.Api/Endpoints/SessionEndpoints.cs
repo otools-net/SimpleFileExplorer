@@ -152,10 +152,12 @@ public static class SessionEndpoints
         SignInRequest request, CancellationToken cancellationToken)
     {
         // Counted per name and address (SignInThrottle): a stranger's failures don't lock the account's owner out.
+        // An IPv6 visitor counts as its /64 (AddressKeys); the log keeps the address whole.
         var address = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
+        var caller = AddressKeys.Of(context);
         var logger = loggers.CreateLogger(typeof(SessionEndpoints));
         var name = request.UserName?.Trim();
-        if (throttle.LockedUntil(request.UserName, address) is { } waiting)
+        if (throttle.LockedUntil(request.UserName, caller) is { } waiting)
         {
             logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: that address is blocked for that account after wrong passwords", name, address);
             return LockedOut(waiting.UtcDateTime);
@@ -171,7 +173,7 @@ public static class SessionEndpoints
                 logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: the account is disabled", name, address);
                 return TypedResults.Problem("This account is disabled.", statusCode: StatusCodes.Status400BadRequest);
             case not SignInStatus.Ok:
-                if (throttle.Failed(request.UserName, address) is { } until)
+                if (throttle.Failed(request.UserName, caller) is { } until)
                 {
                     logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: wrong name or password; that address is now blocked for that account until {Until:u}",
                         name, address, until);
@@ -182,7 +184,7 @@ public static class SessionEndpoints
                 return TypedResults.Problem("Wrong name or password.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        throttle.Succeeded(request.UserName, address);
+        throttle.Succeeded(request.UserName, caller);
         if (ServerModes.IsLocal(configuration) && !await accounts.IsAdministratorAsync(result.User!.Id, cancellationToken))
         {
             logger.LogSecurityWarning("Sign-in refused for {User} from {Address}: SFE is in Local mode, only administrators sign in", name, address);
@@ -259,7 +261,7 @@ public static class SessionEndpoints
         if (result.Status != AccessStatus.Ok)
             return TypedResults.ValidationProblem(result.Errors ?? new Dictionary<string, string[]> { ["code"] = [result.Problem ?? "The account cannot be recovered."] });
 
-        throttle.Succeeded(input.UserName, context.Connection.RemoteIpAddress?.ToString() ?? string.Empty);
+        throttle.Succeeded(input.UserName, AddressKeys.Of(context));
         await SfeSession.SignInAsync(context, result.Value!, context.User.TenantId(), input.Remember);
         context.Response.Cookies.Delete(SfeSession.GuestTenantCookieName(context.Request));
         return TypedResults.Ok(await DescribeAsync(context));

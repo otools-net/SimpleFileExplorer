@@ -287,5 +287,7 @@ public sealed class FolderDefaultTagsTests
         public Task<bool> MayThroughoutAsync(string path, string right) => Task.FromResult(true);
 
         public bool IsProtected(string fullPath) => false;
+
+        public bool IsReadOnly(string fullPath) => IsProtected(fullPath);
     }
 }

@@ -4,7 +4,9 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
 
 - Standalone components with `ChangeDetectionStrategy.OnPush`, `input()`/`output()`/`viewChild()`, state in signals
   (the app is zoneless: a change outside a signal is not drawn), `inject()`, built-in control flow
-  (`@if`/`@for`/`@switch`), 4-space indents, `strict` + `strictTemplates`.
+  (`@if`/`@for`/`@switch`), 4-space indents (root `.editorconfig`), `strict` + `strictTemplates`.
+- Sizes (lines, functions, files, inline templates), order of a class's members, what belongs in a template:
+  [readability.md](readability.md).
 - Only `core/api.service.ts` makes HTTP requests (promises; an `AbortSignal` cancels); URLs stay relative (virtual
   directory).
 - Styling is global CSS in `src/styles/` by class name (`styles.css` imports one partial per area), no component

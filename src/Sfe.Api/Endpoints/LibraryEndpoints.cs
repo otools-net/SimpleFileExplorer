@@ -90,6 +90,7 @@ public static class LibraryEndpoints
 
         api.MapGet("/files/raw/{**path}", Raw)
             .RequireRight(Rights.ViewFiles)
+            .NeverRunByPages()
             .FolderScoped("files.view (files.download to download) at the file")
             .WithName("GetFile")
             .WithTags("Library")
@@ -123,6 +124,7 @@ public static class LibraryEndpoints
         api.MapGet("/files/shared/{token}/{**name}", Shared)
             .AllowAnonymous()
             .WithMetadata(new RightMetadata([Rights.ExternalPlayer]))
+            .NeverRunByPages()
             .FolderScoped("the token's subject: files.view and files.external at the file, as the rules are now")
             .WithName("GetSharedFile")
             .WithTags("Library")
@@ -358,12 +360,12 @@ public static class LibraryEndpoints
     /// <summary>
     /// A file of the library, with range requests (seeking in media) and the right type for players. Its content is
     /// anyone's who can write in the library: it is sandboxed (<see cref="SecurityHeaders.FilePolicy"/>), and a type the
-    /// browser could run as a page (HTML, SVG, XML...) is only ever downloaded (<see cref="OpensInline"/>).
+    /// browser could run as a page (HTML, SVG, XML...) is only ever downloaded (<see cref="OpensInline"/>). A script or
+    /// a style sheet is served as a plain download type, so no page of the app can load it as its own.
     /// </summary>
     internal static PhysicalFileHttpResult ServeFile(HttpContext context, string fullPath, bool download)
     {
-        if (!ContentTypes.TryGetContentType(fullPath, out var contentType))
-            contentType = "application/octet-stream";
+        var contentType = ContentTypeOf(fullPath);
 
         // Pictures are not kept by the browser: an edited or replaced photo shows up as it is now.
         if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
@@ -397,9 +399,16 @@ public static class LibraryEndpoints
         return TypedResults.PhysicalFile(thumbnail, "image/jpeg", lastModified: File.GetLastWriteTimeUtc(thumbnail));
     }
 
-    /// <summary>The type a file of this name is served as (the players' mappings: <c>.mkv</c> as WebM…).</summary>
-    internal static string ContentTypeOf(string name) =>
-        ContentTypes.TryGetContentType(name, out var contentType) ? contentType : "application/octet-stream";
+    /// <summary>
+    /// The type a file of this name is served as (the players' mappings: <c>.mkv</c> as WebM…); never one a page could
+    /// run or apply (<see cref="LibraryContent.SafeType"/>).
+    /// </summary>
+    internal static string ContentTypeOf(string name)
+    {
+        if (!ContentTypes.TryGetContentType(name, out var contentType))
+            return "application/octet-stream";
+        return LibraryContent.SafeType(contentType);
+    }
 
     /// <summary>
     /// Pictures, videos, audio and plain text open in the browser; anything else is downloaded. SVG pictures are

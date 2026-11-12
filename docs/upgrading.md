@@ -21,7 +21,8 @@ page** and the app can't be used, by anyone, until the update is done.
    the version changes their layout, and follows it on the page. **Open SFE** then opens the library; sessions of before keep working.
 
 If the update stops on an error, the page shows it: fix the cause (the server's log has the details) and start it
-again. Before you confirm, nothing in the databases or the settings file has been changed, so you can still go back
+again. What the update did and why it stopped are shown to the person who typed the setup code; anyone else opening
+the page only reads that the reason is in the server's log. Before you confirm, nothing in the databases or the settings file has been changed, so you can still go back
 to the earlier version by installing it again.
 
 - Installs from before 1.37 recorded no version: the page says "an earlier version" and lists every change.

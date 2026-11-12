@@ -7,8 +7,8 @@ using Sfe.Core.Options;
 namespace Sfe.Api.Security;
 
 /// <summary>
-/// Visitors on the server's own computer, for what only they may skip: the setup code of a new install
-/// (<see cref="SetupCodeWaivedAsync"/>) and the one-time sign-in link of <see cref="FastSignIn"/>.
+/// Visitors on the server's own computer, for what only they may skip: the setup code of a new install, with the
+/// link of its first start (<see cref="SetupCodeWaivedAsync"/>), and the one-time sign-in link of <see cref="FastSignIn"/>.
 /// </summary>
 public static class LocalVisitor
 {
@@ -32,7 +32,8 @@ public static class LocalVisitor
 
     /// <summary>
     /// The setup may skip the code for this visitor: a new install (<see cref="SetupService.IsFreshAsync"/>) set up
-    /// from this computer, unless <see cref="SetupOptions.LocalWithoutCode"/> is off or the server's configuration makes
+    /// from this computer in the browser SFE opened, or with the link its console shows (<see cref="LocalSetupLink"/>:
+    /// being on this computer is not enough), unless <see cref="SetupOptions.LocalWithoutCode"/> is off or the server's configuration makes
     /// it External (a server for others: whoever runs it gives the code). External chosen on the setup page by this
     /// very visitor keeps the waiver, which the rest of that setup needs.
     /// </summary>
@@ -41,6 +42,7 @@ public static class LocalVisitor
         var services = context.RequestServices;
         return services.GetRequiredService<IOptionsMonitor<SetupOptions>>().CurrentValue.LocalWithoutCode
                && IsOnThisComputer(context)
+               && services.GetRequiredService<LocalSetupLink>().IsCarriedBy(context.Request)
                && !ExternalByConfiguration(services)
                && await services.GetRequiredService<SetupService>().IsFreshAsync(context.RequestAborted);
     }

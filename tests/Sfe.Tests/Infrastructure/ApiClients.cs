@@ -47,6 +47,17 @@ public static class ApiClients
         return client;
     }
 
+    /// <summary>
+    /// A browser on the server's own computer, opened with the link of its first start (<see cref="LocalSetupLink"/>):
+    /// the one visitor a new install lets in without the setup code.
+    /// </summary>
+    public static HttpClient CreateWithSetupLink(WebApplicationFactory<Program> factory)
+    {
+        var client = CreateFrom(factory, "127.0.0.1");
+        client.DefaultRequestHeaders.Add(LocalSetupLink.Header, factory.Services.GetRequiredService<LocalSetupLink>().Token);
+        return client;
+    }
+
     private sealed class TestAddressFilter : IStartupFilter
     {
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
@@ -82,6 +93,8 @@ public static class ApiClients
     public static async Task MigrateAsync(WebApplicationFactory<Program> factory, CancellationToken cancellationToken)
     {
         var client = Create(factory);
+        // As the update page once the code is typed: the log and the error come as they are.
+        client.DefaultRequestHeaders.Add(MigrationEndpoints.SetupCodeHeader, TestLibrary.SetupCode);
         using (var response = await client.PostAsJsonAsync("/api/migration", new MigrationInput(TestLibrary.SetupCode), cancellationToken))
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken));
 

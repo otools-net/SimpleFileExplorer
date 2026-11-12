@@ -48,10 +48,10 @@ public sealed class LocalStartTests
     }
 
     [TestMethod]
-    public async Task ANewInstallIsSetUpFromThisComputerWithoutTheCode()
+    public async Task ANewInstallIsSetUpWithItsSetupLinkWithoutTheCode()
     {
         var factory = Factory();
-        var local = ApiClients.CreateFrom(factory, ThisComputer);
+        var local = ApiClients.CreateWithSetupLink(factory);
 
         var info = await GetAsync<SetupInfo>(local, "/api/setup");
         using var check = await local.PostAsJsonAsync("/api/installation/check", new InstallationCheck(null), TestContext.CancellationToken);
@@ -71,10 +71,43 @@ public sealed class LocalStartTests
     }
 
     [TestMethod]
+    public async Task BeingOnThisComputerIsNotEnoughWithoutTheSetupLink()
+    {
+        // A tunnel on the computer (ssh -R, ngrok tcp) brings strangers in from 127.0.0.1; so does every other user of it.
+        var factory = Factory();
+        var loopback = ApiClients.CreateFrom(factory, ThisComputer);
+        var guessed = ApiClients.CreateFrom(factory, ThisComputer);
+        guessed.DefaultRequestHeaders.Add(LocalSetupLink.Header, "not-the-link-of-this-run");
+
+        foreach (var visitor in new[] { loopback, guessed })
+        {
+            var info = await GetAsync<SetupInfo>(visitor, "/api/setup");
+            using var check = await visitor.PostAsJsonAsync("/api/installation/check", new InstallationCheck(null), TestContext.CancellationToken);
+            using var done = await visitor.PostAsJsonAsync(
+                "/api/setup", new SetupInput(null, "admin", "admin-password"), TestContext.CancellationToken);
+
+            Assert.IsTrue(info.CodeRequired);
+            Assert.AreEqual(HttpStatusCode.BadRequest, check.StatusCode);
+            Assert.AreEqual(HttpStatusCode.BadRequest, done.StatusCode);
+        }
+    }
+
+    [TestMethod]
+    public void TheSetupLinkIsTheAppsAddressWithATokenOfThisRun()
+    {
+        var first = new LocalSetupLink();
+        var second = new LocalSetupLink();
+
+        Assert.AreEqual($"http://localhost:5080/?setup={first.Token}", first.UrlFor("http://localhost:5080/"));
+        Assert.AreNotEqual(first.Token, second.Token);
+        Assert.IsGreaterThanOrEqualTo(22, first.Token.Length, "At least 128 random bits");
+    }
+
+    [TestMethod]
     public async Task OnceSetUpTheTokenWithoutCodeOpensNothing()
     {
         var factory = Factory();
-        var local = ApiClients.CreateFrom(factory, ThisComputer);
+        var local = ApiClients.CreateWithSetupLink(factory);
         using var check = await local.PostAsJsonAsync("/api/installation/check", new InstallationCheck(null), TestContext.CancellationToken);
         var grant = (await check.Content.ReadFromJsonAsync<InstallationGrant>(Json, TestContext.CancellationToken))!;
         await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
@@ -95,7 +128,10 @@ public sealed class LocalStartTests
     [DataRow(ThisComputer, null, "rebound.example", DisplayName = "a foreign host name (DNS rebinding)")]
     public async Task OtherVisitorsStillNeedTheCode(string address, string? forwardedFor, string? host)
     {
-        var client = ApiClients.CreateFrom(Factory(), address);
+        var factory = Factory();
+        var client = ApiClients.CreateFrom(factory, address);
+        // Even with the link of the first start (seen over a shoulder, in a screenshot): it only works from this computer.
+        client.DefaultRequestHeaders.Add(LocalSetupLink.Header, factory.Services.GetRequiredService<LocalSetupLink>().Token);
         if (forwardedFor is not null)
             client.DefaultRequestHeaders.Add("X-Forwarded-For", forwardedFor);
         if (host is not null)
@@ -119,9 +155,9 @@ public sealed class LocalStartTests
         await used.Services.GetRequiredService<AccessService>().CreateUserAsync(new UserInput("someone", Password: "someone-password"), null, TestContext.CancellationToken);
         var switchedOff = Factory(settings => settings["Sfe:Setup:LocalWithoutCode"] = "false", library: OtherLibrary());
 
-        var usedInfo = await GetAsync<SetupInfo>(ApiClients.CreateFrom(used, ThisComputer), "/api/setup");
-        var offInfo = await GetAsync<SetupInfo>(ApiClients.CreateFrom(switchedOff, ThisComputer), "/api/setup");
-        using var setup = await ApiClients.CreateFrom(used, ThisComputer)
+        var usedInfo = await GetAsync<SetupInfo>(ApiClients.CreateWithSetupLink(used), "/api/setup");
+        var offInfo = await GetAsync<SetupInfo>(ApiClients.CreateWithSetupLink(switchedOff), "/api/setup");
+        using var setup = await ApiClients.CreateWithSetupLink(used)
             .PostAsJsonAsync("/api/setup", new SetupInput(null, "admin", "admin-password"), TestContext.CancellationToken);
 
         Assert.IsTrue(usedInfo.Required);
@@ -213,7 +249,7 @@ public sealed class LocalStartTests
     public async Task ExternalChosenDuringASetupWithoutCodeKeepsItWithoutCode()
     {
         var factory = Factory();
-        var local = ApiClients.CreateFrom(factory, ThisComputer);
+        var local = ApiClients.CreateWithSetupLink(factory);
         using var check = await local.PostAsJsonAsync("/api/installation/check", new InstallationCheck(null), TestContext.CancellationToken);
         var grant = (await check.Content.ReadFromJsonAsync<InstallationGrant>(Json, TestContext.CancellationToken))!;
         local.DefaultRequestHeaders.Add(InstallationAccess.Header, grant.Token);
@@ -293,7 +329,8 @@ public sealed class LocalStartTests
         var help = CommandLine.HelpText("1.2.3");
 
         foreach (var option in new[] { BrowserLauncher.NoBrowserArgument, StartupLogo.NoLogoArgument, "--help",
-                                       WindowsServiceSetup.InstallArgument, WindowsServiceSetup.UninstallArgument, "--urls" })
+                                       WindowsServiceSetup.InstallArgument, WindowsServiceSetup.UninstallArgument,
+                                       WindowsServiceSetup.OpenFolderArgument, "--urls" })
             StringAssert.Contains(help, option);
         StringAssert.Contains(help, "Simple File Explorer 1.2.3");
         foreach (var line in help.Split('\n'))

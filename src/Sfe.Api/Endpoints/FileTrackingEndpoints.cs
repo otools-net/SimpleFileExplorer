@@ -2,6 +2,7 @@ using Sfe.Core.Paths;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Files;
 using Sfe.Core.FileTracking;
 using Sfe.Core.Tagging;
 
@@ -129,7 +130,8 @@ public static class FileTrackingEndpoints
     }
 
     private static async Task<Results<Ok<RemovedDuplicate>, ValidationProblem, ProblemHttpResult, NotFound, ForbidHttpResult>> RemoveDuplicate(
-        DuplicateRemover remover, LibraryPaths paths, CurrentAccess current, RemoveDuplicateRequest request, CancellationToken cancellationToken)
+        DuplicateRemover remover, LibraryPaths paths, ServerFiles serverFiles, WorkFolder work, CurrentAccess current,
+        RemoveDuplicateRequest request, CancellationToken cancellationToken)
     {
         var state = await current.GetAsync();
         // The copy deleted must be in a folder whose files the subject may change; the one kept, one it sees.
@@ -137,6 +139,8 @@ public static class FileTrackingEndpoints
             return TypedResults.NotFound();
         if (state.Check(paths, request.Path, Rights.RemoveDuplicates) is var verdict and not PathVerdict.Allowed)
             return verdict == PathVerdict.NotFound ? TypedResults.NotFound() : TypedResults.Forbid();
+        if (paths.TryResolve(request.Path, out var removed) && FileEndpoints.ProtectedFromWrites(removed, serverFiles, work))
+            return TypedResults.Problem(FileEndpoints.ReadOnlyThroughLink, statusCode: StatusCodes.Status403Forbidden);
 
         var result = await remover.RemoveAsync(request.Path, request.Keep, FileEndpoints.Actor(state), cancellationToken);
         return result.Status switch

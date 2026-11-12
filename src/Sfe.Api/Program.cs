@@ -78,6 +78,7 @@ var app = builder.Build();
 // Linux, 128 per user): the tests start hundreds of servers in one process.
 app.Lifetime.ApplicationStopped.Register(() => watchedFiles.ForEach(watcher => watcher.Dispose()));
 app.Logger.LogInformation("SFE {Version} ({Commit})", AppVersion.Version, AppVersion.Commit ?? "unknown commit");
+app.WarnIfKeysAreOpen();
 
 // The visitor's address and scheme behind a trusted reverse proxy, before anything reads them (sign-in limits, cookie).
 app.UseForwardedHeaders();
@@ -206,9 +207,10 @@ catch (IOException ex) when (ex.InnerException is AddressInUseException)
     return StartupErrors.AddressInUse(ex);
 }
 
+var newInstall = migration.Status != MigrationStatus.Required && await NewInstallAsync();
 if (code.CodeIsGenerated && (migration.Status == MigrationStatus.Required || code.Recover || await SetupStillRequiredAsync()))
-    AnnounceSetupCode(code.Code!, migration.Status != MigrationStatus.Required && await NewInstallAsync());
-await BrowserLauncher.OpenIfWantedAsync(app, noBrowser, migration.IsBlocking);
+    AnnounceSetupCode(code.Code!, newInstall);
+await BrowserLauncher.OpenIfWantedAsync(app, noBrowser, migration.IsBlocking, newInstall);
 await app.WaitForShutdownAsync();
 return 0;
 
@@ -243,8 +245,8 @@ async Task<bool> SetupStillRequiredAsync()
     }
 }
 
-// No account yet: a browser on this computer may set it up without the code (Sfe:Setup:LocalWithoutCode), unless the
-// configuration makes the server External (LocalVisitor.SetupCodeWaivedAsync).
+// No account yet: a browser on this computer may set it up without the code (Sfe:Setup:LocalWithoutCode) through the
+// setup link (LocalSetupLink), unless the configuration makes the server External (LocalVisitor.SetupCodeWaivedAsync).
 async Task<bool> NewInstallAsync()
 {
     try
@@ -267,14 +269,19 @@ void AnnounceSetupCode(string setupCode, bool localWithoutCode)
         .Features.Get<Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature>()?.Addresses.FirstOrDefault();
     var url = BrowserLauncher.BrowserUrl(address) ?? "SFE's address";
     var file = app.Services.GetRequiredService<GeneratedSetupCode>().FilePath;
+    var link = app.Services.GetRequiredService<LocalSetupLink>().UrlFor(url);
     app.Logger.LogWarning("A setup code is needed: it is shown in the console and kept in {File}", file);
     Console.Out.WriteLine(localWithoutCode
         ? $"""
 
         ==============================================================
-          Open {url} in a browser on this computer to set SFE up
-          (no code needed there). From another computer, enter this
-          setup code:
+          To set SFE up, open this link in a browser on this computer
+          (no code needed with it; it works until SFE stops):
+
+              {link}
+
+          Anywhere else, or without the link, open {url}
+          and enter this setup code:
 
               {setupCode}
 

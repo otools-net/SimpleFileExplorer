@@ -55,10 +55,8 @@ public sealed class GeneratedSetupCode(string filePath, ILogger<GeneratedSetupCo
                 return existing;
 
             var code = Generate();
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            File.WriteAllText(FilePath, code + Environment.NewLine);
-            if (!OperatingSystem.IsWindows())
-                File.SetUnixFileMode(FilePath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            SecretFiles.CreatePrivateDirectory(Path.GetDirectoryName(FilePath)!);
+            SecretFiles.WriteAllText(FilePath, code + Environment.NewLine);
 
             // IOptionsMonitor<SetupOptions> reads the new file on its next use.
             var changed = _changed;

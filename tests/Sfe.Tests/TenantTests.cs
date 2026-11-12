@@ -85,6 +85,58 @@ public sealed class TenantTests
     }
 
     [TestMethod]
+    public async Task ALinkInAnAllowedRootIsNoWayToAFolderOutsideIt()
+    {
+        var admin = await AdminAsync(Factory());
+        var outside = Directory.CreateDirectory(Path.Combine(_library.BasePath, "Elsewhere")).FullName;
+        var link = _library.FullPath("ToElsewhere");
+        if (!TryLinkFolder(link, outside))
+            Assert.Inconclusive("Folder links can't be made here.");
+
+        try
+        {
+            using var refused = await admin.PostAsJsonAsync(
+                "/api/tenants", new TenantInput("Through a link", Root: link), Json, TestContext.CancellationToken);
+            using var picker = await admin.GetAsync($"/api/tenants/folders?path={Uri.EscapeDataString(link)}", TestContext.CancellationToken);
+
+            Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
+            Assert.AreEqual(HttpStatusCode.NotFound, picker.StatusCode);
+        }
+        finally
+        {
+            // Not through the link: the library's cleanup would delete what it leads to.
+            Directory.Delete(link);
+        }
+    }
+
+    /// <summary>Links the folder <paramref name="link"/> to <paramref name="target"/>: a junction on Windows (no rights needed).</summary>
+    private static bool TryLinkFolder(string link, string target)
+    {
+        try
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                Directory.CreateSymbolicLink(link, target);
+                return true;
+            }
+
+            var mklink = new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{target}\"")
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+            };
+            using var process = System.Diagnostics.Process.Start(mklink)!;
+            process.WaitForExit();
+            return process.ExitCode == 0;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        {
+            return false;
+        }
+    }
+
+    [TestMethod]
     public async Task OtherAllowedRootsCanBeConfigured()
     {
         var elsewhere = Directory.CreateDirectory(Path.Combine(_library.BasePath, "Elsewhere")).FullName;

@@ -246,6 +246,8 @@ public sealed class CompressJobTests
 
         public bool IsProtected(string fullPath) => fullPath.Contains($"{Path.DirectorySeparatorChar}.sfe", StringComparison.Ordinal);
 
+        public bool IsReadOnly(string fullPath) => IsProtected(fullPath);
+
         public Task<IArchiveAccess?> ArchiveAccessAsync() => Task.FromResult<IArchiveAccess?>(Gone ? null : this);
 
         public ArchiveVerdict Check(string path) => Walk(path);

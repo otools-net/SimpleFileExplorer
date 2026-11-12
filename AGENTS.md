@@ -45,6 +45,9 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 - **Fully local:** no external URL in the client ([fully-local](agents/docs/development/fully-local.md)).
 - **Git:** work is committed on the `edge` branch, merged into `main` when ready; messages `claude: <short summary>`;
   commit only when asked ([versioning-and-changelog](agents/docs/development/versioning-and-changelog.md)).
+- **Readable code:** new and changed code keeps the size limits and rules of
+  [readability](agents/docs/development/readability.md) (120-character lines, 60-line functions, one type per file…);
+  a refactoring changes no behaviour and is committed apart from features and fixes.
 - **Agent tools:** put any reusable helper (scripts, drivers, generators) in `agents/tools/<job>/` with a `README.md`,
   never only in the scratchpad; work output goes to a temp folder, not the repo.
 
@@ -72,10 +75,12 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [scale](agents/docs/development/scale.md) | paging, batches, snapshots | |
 | [paths](agents/docs/development/paths.md) | root-relative paths, case | `Core/Paths/LibraryPaths` |
 | [api-routes](agents/docs/development/api-routes.md) | minimal API conventions and gotchas | `Sfe.Api/Endpoints/` |
-| [code-style](agents/docs/development/code-style.md) | C# style | |
+| [code-style](agents/docs/development/code-style.md) | C# style | `.editorconfig` |
+| [readability](agents/docs/development/readability.md) | readable code: size limits (lines, functions, files, templates), names, comments, per-language rules, refactoring existing code without changing behaviour, checking tools | `.editorconfig`, `agents/tools/readability/` |
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
+| [security-audit-2026-11](agents/docs/development/security-audit-2026-11.md) | second security audit: findings A1–A13 with their status (fixed / open) and possible fixes, what was and wasn't reviewed | `Sfe.Api/Security/`, `LibraryPaths`, `Ffmpeg`, `WindowsServiceSetup` |
 | [file-operations](agents/docs/development/file-operations.md) | rules for changing library files (planned), moving folder rules with folders | `FolderRuleService.BeginMoveAsync` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
@@ -108,7 +113,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [folder-access](agents/docs/features/folder-access.md) | per-folder permissions: model, policy, rules, enforcement, management card | `FolderPolicy`, `FolderRuleService`, `FolderChecks`, `folder-access.component.ts` |
 | [accounts](agents/docs/features/accounts.md) | sign-in directories, space administrators | `Core/Access/`, `app/access/`, `app/account/` |
 | [setup](agents/docs/features/setup.md) | setup code (configured / generated), first administrator | `SetupService`, `GeneratedSetupCode`, `app/account/` |
-| [local-start](agents/docs/features/local-start.md) | browser at start, `--no-browser`, startup logo and `--no-logo`, `--help`, setup without code locally, fast sign-in | `BrowserLauncher`, `StartupLogo`, `CommandLine`, `LocalVisitor`, `FastSignIn` |
+| [local-start](agents/docs/features/local-start.md) | browser at start, `--no-browser`, startup logo and `--no-logo`, `--help`, setup without code through the setup link, fast sign-in | `BrowserLauncher`, `StartupLogo`, `CommandLine`, `LocalVisitor`, `LocalSetupLink`, `FastSignIn` |
 | [installation-page](agents/docs/features/installation-page.md) | root, Urls, ffmpeg from the web | `Maintenance/InstallationSettings` |
 | [server-modes](agents/docs/features/server-modes.md) | Local / External mode: `Sfe:Mode`, locks, switch rules; Local limits (this computer, administrators, no visitors), `local-only` page | `ServerModes`, `InstallationSettings`, `RequestGuard`, `SfeSession`, `local-only-page.component.ts` |
 | [update-migration](agents/docs/features/update-migration.md) | version check and update page after an upgrade | `MigrationCoordinator`, `app/migration/` |

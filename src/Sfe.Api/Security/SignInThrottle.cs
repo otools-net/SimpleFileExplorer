@@ -13,8 +13,14 @@ namespace Sfe.Api.Security;
 /// </summary>
 public sealed class SignInThrottle(IOptionsMonitor<SecurityOptions> security)
 {
-    /// <summary>Entries kept at most; beyond, the expired ones go first, then all (a flood of names must not fill memory).</summary>
+    /// <summary>
+    /// Entries kept at most; beyond, the expired ones go first, then the oldest tenth (a flood of names must not fill
+    /// memory).
+    /// </summary>
     public const int MaxEntries = 50_000;
+
+    /// <summary>One entry in this many is dropped when the store is full of entries still counting.</summary>
+    private const int DroppedShare = 10;
 
     private readonly ConcurrentDictionary<(string Name, string Address), Entry> _entries = new();
 
@@ -69,7 +75,24 @@ public sealed class SignInThrottle(IOptionsMonitor<SecurityOptions> security)
         }
 
         if (_entries.Count >= MaxEntries)
-            _entries.Clear();
+            DropOldest();
+    }
+
+    /// <summary>
+    /// A flood of names or addresses makes room by losing its own oldest entries, those waiting out a lockout last:
+    /// clearing everything would let it reset the counters of every other guesser.
+    /// </summary>
+    private void DropOldest()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var oldest = _entries
+            .OrderBy(pair => pair.Value.LockedUntil > now)
+            .ThenBy(pair => pair.Value.LastFailure)
+            .Take(MaxEntries / DroppedShare)
+            .Select(pair => pair.Key)
+            .ToList();
+        foreach (var key in oldest)
+            _entries.TryRemove(key, out _);
     }
 
     private static (string, string) Key(string? name, string address) => ((name ?? string.Empty).Trim().ToUpperInvariant(), address);

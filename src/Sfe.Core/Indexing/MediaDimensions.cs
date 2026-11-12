@@ -77,7 +77,8 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
     internal async Task<string> ProbeAsync(string fullPath, CancellationToken cancellationToken)
     {
         // No output file: ffmpeg describes the input, then fails with "At least one output file must be specified".
-        var (_, errors) = await ffmpeg.RunAsync(["-hide_banner", "-nostdin", "-i", fullPath], FfmpegTimeout, cancellationToken: cancellationToken);
+        string[] arguments = ["-hide_banner", "-nostdin", .. await ffmpeg.LibraryInputAsync(fullPath)];
+        var (_, errors) = await ffmpeg.RunAsync(arguments, FfmpegTimeout, cancellationToken: cancellationToken);
         return errors;
     }
 

@@ -20,6 +20,9 @@ public sealed class WorkFolder(LibraryPaths paths, IOptionsMonitor<SfeOptions> o
 
     public WorkFolderLocation Location => options.CurrentValue.Files.WorkFolder;
 
+    /// <summary>The library this work folder belongs to.</summary>
+    public LibraryPaths Library => paths;
+
     /// <summary>The work folder of the library, where the setting puts it (not created).</summary>
     public string FullPath => Location == WorkFolderLocation.Server ? ServerPath : LibraryPath;
 

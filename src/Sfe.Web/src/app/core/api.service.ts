@@ -12,10 +12,14 @@ import {
     TenantInput, StreamingStatus, StreamProbe, SystemInfo, TrickplayActivity, TrickplayManifest, TrickplayStates, TrickplayStatus, UserInfo, UserInput,
 } from './models';
 import { encodePath } from './paths';
+import { takeSetupLink } from './setup-link';
 
 /** A failed request: the message of the problem response, and its validation messages by field. */
 /** This tab, for the change feed: its own changes are not told back to it. */
 export const TAB_ID = Math.random().toString(36).slice(2, 12);
+
+/** The token of the link SFE opened this browser with at its first start (setup-link.ts); null without it. */
+const SETUP_LINK = takeSetupLink();
 
 /**
  * An editing session id, as the server wants it (letters, digits): the previous version of a file saved over goes to
@@ -218,7 +222,11 @@ export class Api {
     serverFolders = (token: string, path: string | null) =>
         this.send(this.http.get<FolderPicker>('api/installation/folders', { params: params({ path }), headers: this.installationHeaders(token, false) }), undefined, false);
     /** Whether the install waits for its update to this version (works while everything else is closed). */
-    migrationInfo = () => this.get<MigrationInfo>('api/migration', {}, undefined, false);
+    /** With the setup code (once typed on the update page), the update's log and the reason of its error; else neither. */
+    migrationInfo = (code = '') => this.send(
+        this.http.get<MigrationInfo>('api/migration', { headers: code ? this.headers(false).set('X-SFE-Setup-Code', code) : this.headers(false) }),
+        undefined,
+        false);
     /** Starts the update (in the background: poll `migrationInfo`); rejects with the code's error. */
     startMigration = (code: string) => this.post<MigrationInfo>('api/migration', { code }, undefined, false);
     /** Makes a backup before the update; the browser downloads it from the link answered, once. */
@@ -417,6 +425,9 @@ export class Api {
             headers = headers.set('X-SFE-Request', '1');
         if (this.tenantId !== null)
             headers = headers.set('X-SFE-Tenant', String(this.tenantId));
+        // A new install is set up without the setup code only from the browser SFE opened (or its console's link).
+        if (SETUP_LINK !== null)
+            headers = headers.set('X-SFE-Setup-Link', SETUP_LINK);
         return headers;
     }
 

@@ -99,7 +99,7 @@ public static class UploadEndpoints
             return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["names"] = [$"Name 1 to {MaxCheckNames} files."] });
         if (state.Check(paths, request.Target, Rights.UploadFiles) is var verdict and not PathVerdict.Allowed)
             return verdict == PathVerdict.Forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
-        if (!paths.TryResolve(request.Target, out var folder) || !Directory.Exists(folder) || FileEndpoints.Protected(folder, serverFiles, work))
+        if (!paths.TryResolve(request.Target, out var folder) || !Directory.Exists(folder) || FileEndpoints.ProtectedFromWrites(folder, serverFiles, work))
             return TypedResults.NotFound();
         var existing = names.Where(name => !string.IsNullOrEmpty(name) && !name.Split('/', '\\').Any(s => s is "" or "." or "..")
                 && Path.Join(folder, name.Replace('\\', '/')) is var full && (File.Exists(full) || Directory.Exists(full)))
@@ -193,6 +193,6 @@ public static class UploadEndpoints
     {
         public Task<bool> MayAsync(string path, string right) => Task.FromResult(state.Check(paths, path, right) == PathVerdict.Allowed);
 
-        public bool IsProtected(string fullPath) => FileEndpoints.Protected(fullPath, serverFiles, work);
+        public bool IsProtected(string fullPath) => FileEndpoints.ProtectedFromWrites(fullPath, serverFiles, work);
     }
 }

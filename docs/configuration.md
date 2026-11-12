@@ -40,7 +40,7 @@ folder and ffmpeg are set here only.
 | `Sfe:Database:Provider` | `SqlServer` or `Sqlite` (see [Database](#database)) |
 | `Sfe:Thumbnails:CacheDirectory` | Thumbnails and trickplay |
 | `Sfe:Thumbnails:FfmpegPath` | Default `ffmpeg` (found on the `PATH`) |
-| `Sfe:DataServer` | Optional web server already publishing the library ([Playback › Streaming](administration/playback.md#data-server)) |
+| `Sfe:DataServer` | Optional web server already publishing the library ([Playback › Streaming](administration/playback.md#data-server)). The only other site SFE's pages may load pictures and media from |
 | `Sfe:SettingsFile` | Where the administration page saves (see [below](#the-settings-file)) |
 | `Sfe:Backup:SqlServerFolder` | SQL Server only: where the database server writes the [backups](administration/system.md#backup) (as it sees it); empty = its default backup folder |
 | `Urls` | Listening address, default `http://*:5080` (portable packages: `http://localhost:5080`) |
@@ -54,14 +54,16 @@ folder and ffmpeg are set here only.
 |---|---|
 | `Sfe:Setup:Code` | The setup code the first administrator is created with (at least 12 characters), and that confirms each [update](upgrading.md#the-update-page-137-and-later) and the installation page. Empty: SFE makes one. See [First start](first-start.md) |
 | `Sfe:Setup:CodeFile` | Where SFE keeps the code it made when `Sfe:Setup:Code` is empty (default `data/setup-code.txt`) |
-| `Sfe:Setup:LocalWithoutCode` | A new install (no account yet) is set up without the code from a browser on the server's own computer (default `true`). `false` asks for it there too |
+| `Sfe:Setup:LocalWithoutCode` | A new install (no account yet) is set up without the code from a browser on the server's own computer, through the [setup link](first-start.md#on-the-servers-own-computer-no-code-with-the-setup-link) SFE opens or shows in its console (default `true`). `false` asks for the code there too |
 | `Sfe:Setup:Recover` | `true` opens the setup page again to reset a lost administrator password (with the code); turn it off afterwards |
 | `Sfe:Security:AnonymousGuests` | Default `true`: spaces may let visitors in without an account; `false` forbids it everywhere. Always off while `Sfe:Mode` is `Local` |
 | `Sfe:Security:SessionDays`, `MinimumPasswordLength`, `MaxFailedSignIns`, `LockoutMinutes`, `SignInsPerMinute` | Sign-in: 30 days, 8 characters, after 5 failures to an account from one address that address waits 15 minutes before trying it again (others still sign in), 10 attempts per minute and address |
 | `Sfe:Security:AccountLockoutFailures` | Default `50`: failures to a local account from all addresses together, after which the account itself is locked for `LockoutMinutes`; `0` never |
+| `Sfe:Security:LinksOutsideLibrary` | What a link in a library (symbolic link, junction) leading **outside** it allows: `Follow` (default: read and written through, e.g. a drive added to a library by a link) or `ReadOnly` (browsed, played and downloaded, but nothing is created, changed, renamed, moved away or deleted behind it). Use `ReadOnly` when other people can put links in a library folder outside SFE (a network share, SFTP, a shared computer): a link would otherwise let SFE's users write wherever the server's account can |
+| `Sfe:Security:LinkTargets` | With `ReadOnly`: folders outside the libraries that links may still be written through (full paths, `Sfe__Security__LinkTargets__0=D:\Media2`) |
 | `Sfe:Security:TrustedProxies` | Reverse proxies on other computers (addresses or networks like `10.0.0.0/8`) whose `X-Forwarded-For`/`X-Forwarded-Proto` are believed; one on this computer always is. See [https and a reverse proxy](installation.md#reaching-it-from-outside-https-and-a-reverse-proxy) |
 | `Sfe:Security:RequireHttps` | Default `false`; `true` when the app is only used over https: secure cookie, HSTS |
-| `Sfe:Security:KeysDirectory` | Keys signing the sign-in cookies and the external players' links (default `data/keys`); keep it, or everyone is signed out |
+| `Sfe:Security:KeysDirectory` | Keys signing the sign-in cookies and the external players' links (default `data/keys`); keep it, or everyone is signed out. Whoever reads it signs in as anyone: on Linux and macOS SFE creates it for its own account only, and warns in its log at start when an existing one is readable by others (`chmod -R go-rwx` closes it) |
 | `Sfe:Security:Directories` | Directories checking passwords, in order (empty = local accounts only; see [Directories](administration/spaces-and-accounts.md#directories-ldap)) |
 | `Sfe:Rights:Disabled` | Rights nobody gets, not even administrators (e.g. `tracking.duplicatesRemove`, `files.*`; `folder:write` = every right that changes files, `kind:write` = every right that changes anything); see [Rights](reference/rights.md) |
 | `Sfe:Locked` | Settings nobody can change from the web, at any level (e.g. `player.*`); see [Settings by level](reference/settings-levels.md) |

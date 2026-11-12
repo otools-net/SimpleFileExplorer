@@ -201,7 +201,7 @@ export class MigrationPageComponent implements OnInit {
     protected async load(): Promise<void> {
         this.stopPolling();
         try {
-            const info = await this.api.migrationInfo();
+            const info = await this.api.migrationInfo(this.code().trim());
             this.loadError.set(null);
             this.info.set(info);
             if (info.status === 'none' && !this.started()) {

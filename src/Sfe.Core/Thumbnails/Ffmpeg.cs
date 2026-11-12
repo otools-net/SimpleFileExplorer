@@ -18,6 +18,7 @@ public sealed class Ffmpeg
         _logger = logger;
         _path = new Lazy<string?>(Locate);
         _version = new Lazy<Task<string?>>(ReadVersionAsync);
+        _allowedFormats = new Lazy<Task<string?>>(ReadAllowedFormatsAsync);
     }
 
     /// <summary>Full path of the executable, or null when it can't be found.</summary>
@@ -72,6 +73,43 @@ public sealed class Ffmpeg
         }
 
         return (process.ExitCode, stderr.Result);
+    }
+
+    /// <summary>
+    /// The arguments opening <paramref name="fullPath"/>, a file of the library (anyone's content), as ffmpeg's input:
+    /// read from the disk only, never an address (<c>-protocol_whitelist file</c>), and only by a reader of real media
+    /// (<see cref="FfmpegDemuxers"/>), so that a script named as a video opens nothing else. Options of the input
+    /// (<c>-ss</c>…) go before them.
+    /// </summary>
+    public async Task<IReadOnlyList<string>> LibraryInputAsync(string fullPath)
+    {
+        List<string> input = ["-protocol_whitelist", "file"];
+        if (await _allowedFormats.Value is { } formats)
+            input.AddRange(["-format_whitelist", formats]);
+        input.AddRange(["-i", fullPath]);
+        return input;
+    }
+
+    private readonly Lazy<Task<string?>> _allowedFormats;
+
+    private async Task<string?> ReadAllowedFormatsAsync()
+    {
+        if (!IsAvailable)
+            return null;
+        try
+        {
+            var output = new MemoryStream();
+            await RunAsync(["-hide_banner", "-demuxers"], TimeSpan.FromSeconds(10), output);
+            var allowed = FfmpegDemuxers.AllowedList(System.Text.Encoding.UTF8.GetString(output.ToArray()));
+            if (allowed is null)
+                _logger.LogWarning("ffmpeg does not list its formats (-demuxers): library files are opened by any of them");
+            return allowed;
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or System.ComponentModel.Win32Exception)
+        {
+            _logger.LogWarning(ex, "Cannot read the formats of ffmpeg: library files are opened by any of them");
+            return null;
+        }
     }
 
     /// <summary>The version ffmpeg reports (<c>7.1-full_build...</c>), read once; null when it is missing or says none.</summary>

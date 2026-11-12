@@ -72,22 +72,22 @@ public sealed class StreamingTests
     public void TheCommandCopiesWhatBrowsersPlayAndConvertsTheRest()
     {
         var settings = new StreamingOptions { Quality = 26, MaxHeight = 720 };
-        var copied = VideoStreamer.Arguments("film.mkv", 61.5, new VideoProbe(100, "h264", true, "aac"), transcoded: false, settings);
+        var copied = VideoStreamer.Arguments(["-i", "film.mkv"], 61.5, new VideoProbe(100, "h264", true, "aac"), transcoded: false, settings);
         CollectionAssert.IsSubsetOf(new[] { "-ss", "61.5", "-i", "film.mkv", "copy", "pipe:1" }, copied);
         Assert.AreEqual(2, copied.Count(a => a == "copy"), "Pictures and AAC sound copied");
         CollectionAssert.DoesNotContain(copied, "libx264");
         Assert.IsLessThan(copied.IndexOf("-i"), copied.IndexOf("-ss"), "Seeks before reading the input (fast)");
 
-        var converted = VideoStreamer.Arguments("film.avi", 0, new VideoProbe(100, "mpeg4", false, "mp3"), transcoded: true, settings);
+        var converted = VideoStreamer.Arguments(["-i", "film.avi"], 0, new VideoProbe(100, "mpeg4", false, "mp3"), transcoded: true, settings);
         CollectionAssert.DoesNotContain(converted, "-ss", "From the start: no seek");
         CollectionAssert.IsSubsetOf(new[] { "libx264", "26", "aac", "yuv420p" }, converted);
         Assert.AreEqual(@"scale=-2:min(720\,trunc(ih/2)*2)", converted[converted.IndexOf("-vf") + 1]);
         StringAssert.Contains(converted[converted.IndexOf("-movflags") + 1], "frag_keyframe");
 
-        var keepSize = VideoStreamer.Arguments("film.avi", 0, new VideoProbe(100, "mpeg4", false, null), transcoded: true, new StreamingOptions { MaxHeight = 0 });
+        var keepSize = VideoStreamer.Arguments(["-i", "film.avi"], 0, new VideoProbe(100, "mpeg4", false, null), transcoded: true, new StreamingOptions { MaxHeight = 0 });
         Assert.AreEqual("scale=-2:trunc(ih/2)*2", keepSize[keepSize.IndexOf("-vf") + 1]);
 
-        var soundOnly = VideoStreamer.Arguments("song.mkv", 0, new VideoProbe(100, null, false, "flac"), transcoded: true, settings);
+        var soundOnly = VideoStreamer.Arguments(["-i", "song.mkv"], 0, new VideoProbe(100, null, false, "flac"), transcoded: true, settings);
         CollectionAssert.Contains(soundOnly, "-vn");
         CollectionAssert.DoesNotContain(soundOnly, "-vf");
     }

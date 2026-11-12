@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
@@ -11,7 +12,8 @@ namespace Sfe.Api.Endpoints;
 
 /// <param name="DatabaseVersion">The version the install belongs to; null when unknown (installs before 1.37.0).</param>
 /// <param name="Changes">The changelog of the versions after it up to this one, newest first (while an update is due).</param>
-/// <param name="Log">What the update did so far.</param>
+/// <param name="Log">What the update did so far; empty for who doesn't send the setup code (it names folders of the server).</param>
+/// <param name="Error">Why the update stopped or the database can't be read; without the setup code, only that it did.</param>
 /// <param name="CodeConfigured">The server has a setup code long enough (configured, or made by itself): the update can be confirmed.</param>
 /// <param name="CodeGenerated">The code is the one the server made itself: shown in its console and kept in <paramref name="CodeFile"/>.</param>
 public sealed record MigrationInfo(MigrationStatus Status, string AppVersion, string? DatabaseVersion, IReadOnlyList<ChangelogEntry> Changes,
@@ -25,6 +27,12 @@ public sealed record BackupLink(string Url, string FileName, long Size);
 
 public static class MigrationEndpoints
 {
+    /// <summary>The setup code on <c>GET api/migration</c>: its sender reads the update's log and error as they are.</summary>
+    public const string SetupCodeHeader = "X-SFE-Setup-Code";
+
+    /// <summary>What a visitor without the setup code learns of an error: its text may name servers, folders, accounts.</summary>
+    public const string ErrorWithoutCode = "The reason is in the server's log.";
+
     private static readonly Lazy<IReadOnlyList<ChangelogEntry>> Changelog = new(LoadChangelog);
 
     public static RouteGroupBuilder MapMigrationEndpoints(this RouteGroupBuilder api)
@@ -37,7 +45,9 @@ public static class MigrationEndpoints
             .WithSummary("Whether the install waits for its update to this version, with the changes since its version.")
             .WithDescription("""
                 While an update is due (`required`, `running`, `failed`), or the install belongs to a later version (`newer`),
-                every other route answers 503 `migration-required`.
+                every other route answers 503 `migration-required`. `log` and the text of `error` name folders and servers:
+                they are given only with the setup code in the header `X-SFE-Setup-Code` (as the update page sends it once
+                typed); without it `log` is empty and `error` only says that there is one.
                 """);
 
         migration.MapPost("/", StartMigration)
@@ -63,7 +73,7 @@ public static class MigrationEndpoints
     }
 
     private static Ok<MigrationInfo> GetMigration(MigrationCoordinator migration, IOptionsMonitor<SetupOptions> setup, GeneratedSetupCode generated,
-        ILoggerFactory loggers)
+        ILoggerFactory loggers, [FromHeader(Name = SetupCodeHeader)] string? code = null)
     {
         // An update to confirm needs a code: without one in the configuration, the one the server makes itself.
         if (migration.Status is MigrationStatus.Required or MigrationStatus.Failed && string.IsNullOrWhiteSpace(setup.CurrentValue.Code))
@@ -78,7 +88,8 @@ public static class MigrationEndpoints
             }
         }
 
-        return TypedResults.Ok(Describe(migration, setup.CurrentValue));
+        var options = setup.CurrentValue;
+        return TypedResults.Ok(Describe(migration, options, detailed: options.HasUsableCode && options.Matches(code)));
     }
 
     private static async Task<Results<Ok<MigrationInfo>, ValidationProblem, ProblemHttpResult>> StartMigration(
@@ -88,7 +99,7 @@ public static class MigrationEndpoints
             return refused;
         if (!await migration.StartAsync())
             return TypedResults.Problem("No update is due, or it is running already.", statusCode: StatusCodes.Status400BadRequest);
-        return TypedResults.Ok(Describe(migration, setup.CurrentValue));
+        return TypedResults.Ok(Describe(migration, setup.CurrentValue, detailed: true));
     }
 
     private static async Task<Results<Ok<BackupLink>, ValidationProblem, ProblemHttpResult>> CreateBackup(
@@ -125,15 +136,18 @@ public static class MigrationEndpoints
         return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["code"] = ["This is not the server's setup code."] });
     }
 
-    private static MigrationInfo Describe(MigrationCoordinator migration, SetupOptions setup)
+    /// <param name="detailed">The asker gave the setup code: the log and the error's text are theirs to read.</param>
+    private static MigrationInfo Describe(MigrationCoordinator migration, SetupOptions setup, bool detailed)
     {
+        var log = detailed ? migration.Log : [];
+        var error = detailed || migration.Error is null ? migration.Error : ErrorWithoutCode;
         var code = setup.Code?.Trim();
         var due = migration.Status is MigrationStatus.Required or MigrationStatus.Running or MigrationStatus.Failed;
         var changes = due
             ? Core.Upgrades.Changelog.Between(Changelog.Value, SemanticVersion.TryParse(migration.DatabaseVersion, out var from) ? from : null, MigrationCoordinator.AppVersion)
             : [];
         // Where the code is kept tells about the server: only while the update page needs it.
-        return new MigrationInfo(migration.Status, MigrationCoordinator.AppVersion.ToString(), migration.DatabaseVersion, changes, migration.Log, migration.Error,
+        return new MigrationInfo(migration.Status, MigrationCoordinator.AppVersion.ToString(), migration.DatabaseVersion, changes, log, error,
             setup.HasUsableCode, !string.IsNullOrEmpty(code) && code.Length < SetupOptions.MinimumCodeLength, SetupOptions.MinimumCodeLength,
             SetupEndpoints.DetectHosting(), setup.CodeIsGenerated,
             setup.CodeIsGenerated && (due || migration.Status == MigrationStatus.Newer) ? setup.CodeFile : null);

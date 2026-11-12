@@ -20,6 +20,7 @@ public static class EpubEndpoints
     {
         api.MapGet("/files/epub/{book}/{**entry}", GetEntry)
             .RequireRight(Rights.ViewFiles)
+            .NeverRunByPagesButStyled()
             .FolderScoped("files.view at the book")
             .WithName("GetEpubEntry")
             .WithTags("Files")

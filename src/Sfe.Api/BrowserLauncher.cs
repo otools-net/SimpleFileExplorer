@@ -22,7 +22,8 @@ internal static class BrowserLauncher
     /// <summary>The arguments without <see cref="NoBrowserArgument"/>, which the configuration would read as a key taking the next argument as its value.</summary>
     public static string[] TakeNoBrowser(string[] args, out bool noBrowser) => CommandLine.TakeSwitch(args, "no-browser", out noBrowser);
 
-    public static async Task OpenIfWantedAsync(WebApplication app, bool noBrowser, bool updateDue)
+    /// <param name="newInstall">No account yet and the setup may skip the code here: the browser opens the setup link.</param>
+    public static async Task OpenIfWantedAsync(WebApplication app, bool noBrowser, bool updateDue, bool newInstall)
     {
         if (noBrowser || !PortableBuild.IsPortable
             || SetupEndpoints.DetectHosting() is not (HostingKind.Portable or HostingKind.AppImage)
@@ -36,7 +37,7 @@ internal static class BrowserLauncher
         var address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses.FirstOrDefault();
         if (BrowserUrl(address) is not { } url)
             return;
-        var target = url;
+        var target = newInstall ? app.Services.GetRequiredService<LocalSetupLink>().UrlFor(url) : url;
         try
         {
             // Not while an update is due: the session routes wait for it.

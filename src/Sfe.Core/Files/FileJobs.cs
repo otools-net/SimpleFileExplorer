@@ -102,6 +102,12 @@ public interface IFileJobAccess
     bool IsProtected(string fullPath);
 
     /// <summary>
+    /// The full path may be read but nothing written, moved away or deleted there: <see cref="IsProtected"/>, or a
+    /// place outside the library, reached through a link, on a server that only reads through those.
+    /// </summary>
+    bool IsReadOnly(string fullPath);
+
+    /// <summary>
     /// The person's access now, for a walk through folders (a compression: <c>files.view</c> and <c>files.download</c> at
     /// each); null when they have none any more.
     /// </summary>
@@ -192,7 +198,7 @@ public sealed class FileJobs(
         try
         {
             if (LibraryPaths.NormalizeRelative(request.Target) is not { } targetPath || !paths.TryResolve(targetPath, out var targetFull)
-                || !Directory.Exists(targetFull) || job.Access.IsProtected(targetFull))
+                || !Directory.Exists(targetFull) || job.Access.IsReadOnly(targetFull))
             {
                 foreach (var path in request.Paths)
                     job.Report(new FileJobItem(path, null, FileOperationStatus.NotFound, "The folder they would go to was not found."));
@@ -274,6 +280,12 @@ public sealed class FileJobs(
             || paths.ToRelative(source) is not { Length: > 0 } sourcePath || (!File.Exists(source) && !Directory.Exists(source))
             || job.Access.IsProtected(source) || !await job.Access.MayAsync(sourcePath, Rights.Browse))
             return new FileJobItem(path, null, FileOperationStatus.NotFound, "It was not found.");
+        // Moving takes it away from where it is: a write there too.
+        if (move && job.Access.IsReadOnly(source))
+        {
+            return new FileJobItem(
+                path, null, FileOperationStatus.Forbidden, "It is behind a link leaving the library, which is read only: copy it instead.");
+        }
         var isFolder = Directory.Exists(source);
         var name = Path.GetFileName(source);
 

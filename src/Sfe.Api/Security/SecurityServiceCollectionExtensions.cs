@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Sfe.Api.Endpoints;
+using Sfe.Core.Access;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 
@@ -21,7 +23,10 @@ public static class SecurityServiceCollectionExtensions
         var security = configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Security)}").Get<SecurityOptions>() ?? new SecurityOptions();
 
         // Kept on the disk: otherwise every restart (and every service account without a profile) signs everyone out.
-        var keys = Path.GetFullPath(LibraryPaths.ExpandHome(security.KeysDirectory), contentRootPath);
+        var keys = KeysDirectory(security, contentRootPath);
+        // Made here, for the server's account only, rather than by Data Protection with the process's default mode:
+        // whoever reads a key forges an administrator's cookie. One that exists is left alone (WarnIfKeysAreOpen).
+        TryCreatePrivate(keys);
         services.AddDataProtection()
             .SetApplicationName("SFE")
             .PersistKeysToFileSystem(new DirectoryInfo(keys));
@@ -31,6 +36,7 @@ public static class SecurityServiceCollectionExtensions
         services.AddSingleton<FileLinks>();
         services.AddSingleton<FlashLinks>();
         services.AddSingleton<ArchiveLinks>();
+        services.AddSingleton<LibraryLinks>();
         services.AddSingleton<ServerFiles>();
 
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -78,8 +84,10 @@ public static class SecurityServiceCollectionExtensions
             }
         });
         services.AddSingleton<SignInThrottle>();
+        services.AddSingleton<AppPolicySource>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<FastSignIn>();
+        services.AddSingleton<LocalSetupLink>();
         services.AddSingleton<CatalogBuildLimits>();
 
         services.AddRateLimiter(options =>
@@ -87,10 +95,41 @@ public static class SecurityServiceCollectionExtensions
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             RequestLimits.AddPolicies(options);
             options.AddPolicy(SessionEndpoints.SignInRateLimit, context => RateLimitPartition.GetFixedWindowLimiter(
-                context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                AddressKeys.Of(context),
                 _ => new FixedWindowRateLimiterOptions { PermitLimit = Math.Max(1, security.SignInsPerMinute), Window = TimeSpan.FromMinutes(1) }));
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// Says in the log, at start, that other accounts of the computer may read the keys folder (an install made before
+    /// the server created it private, or one opened on purpose): its mode is the administrator's to change.
+    /// </summary>
+    public static void WarnIfKeysAreOpen(this WebApplication app)
+    {
+        var security = app.Services.GetRequiredService<IOptions<SecurityOptions>>().Value;
+        var keys = KeysDirectory(security, app.Environment.ContentRootPath);
+        if (!SecretFiles.IsOpenToOthers(keys))
+            return;
+        app.Logger.LogWarning(
+            "Other accounts of this computer may read {Keys}, which holds the keys signing the sign-in cookies: "
+            + "whoever reads them signs in as anyone. Unless that is meant, run: chmod -R go-rwx \"{Keys}\"",
+            keys, keys);
+    }
+
+    private static string KeysDirectory(SecurityOptions security, string contentRootPath) =>
+        Path.GetFullPath(LibraryPaths.ExpandHome(security.KeysDirectory), contentRootPath);
+
+    /// <summary>Best effort: where the folder cannot be made now, Data Protection reports it as before.</summary>
+    private static void TryCreatePrivate(string directory)
+    {
+        try
+        {
+            SecretFiles.CreatePrivateDirectory(directory);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
     }
 }

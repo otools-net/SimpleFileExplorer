@@ -8,8 +8,8 @@ import { launch, sleep } from './cdp.mjs';
 const BASE = process.env.SFE_URL ?? 'http://localhost:5093/';
 const OUT = fileURLToPath(new URL('../../../docs/images/', import.meta.url));
 
-// The setup page at its first step with a library (folder, network, ffmpeg). A browser on the server's own computer
-// skips the code of a new install; on another host name (or an older SFE) it is asked first.
+// The setup page at its first step with a library (folder, network, ffmpeg). The code is asked first: only the
+// browser SFE opens itself (its setup link) skips it; an SFE before 1.86 skipped it for any browser of the computer.
 const b = await launch({ width: 1280, height: 1000 });
 await b.goto(BASE, 3000);
 await b.waitFor('#setup-code, sfe-installation-form');

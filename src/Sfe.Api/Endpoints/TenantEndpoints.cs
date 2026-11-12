@@ -83,7 +83,7 @@ public static class TenantEndpoints
     }
 
     private static async Task<Results<Created<TenantDetails>, ValidationProblem, ProblemHttpResult>> Create(
-        AccessService accounts, TenantRegistry registry, IConfiguration configuration, TenantInput input,
+        AccessService accounts, TenantRegistry registry, IConfiguration configuration, ILoggerFactory loggers, TenantInput input,
         CancellationToken cancellationToken)
     {
         var root = Full(input.Root);
@@ -106,7 +106,11 @@ public static class TenantEndpoints
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             await accounts.DeleteTenantAsync(result.Value!.Id, cancellationToken);
-            return TypedResults.Problem($"The index of the space's library cannot be created: {ex.Message}", statusCode: StatusCodes.Status409Conflict);
+            // The reason names database servers and files: in the log, which its administrators read.
+            loggers.CreateLogger(typeof(TenantEndpoints)).LogError(ex, "The index of the new space {Space} cannot be created", result.Value!.Slug);
+            return TypedResults.Problem(
+                "The index of the space's library cannot be created: the reason is in the server's log (Administration › Logs).",
+                statusCode: StatusCodes.Status409Conflict);
         }
 
         var details = await DetailsAsync(accounts, configuration, result.Value!, cancellationToken);
@@ -179,10 +183,13 @@ public static class TenantEndpoints
         }
     }
 
-    /// <summary><paramref name="folder"/> is <paramref name="root"/> or below it (by the file system's rules for case).</summary>
+    /// <summary>
+    /// <paramref name="folder"/> is <paramref name="root"/> or below it (by the file system's rules for case), where
+    /// both really are: a link inside an allowed root is no way to a folder outside it.
+    /// </summary>
     private static bool IsInside(string root, string folder)
     {
-        var relative = Path.GetRelativePath(root, folder);
+        var relative = Path.GetRelativePath(LibraryPaths.RealPath(root), LibraryPaths.RealPath(folder));
         return relative == "." || !Path.IsPathRooted(relative) && relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal);
     }
 }
