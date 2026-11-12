@@ -9,19 +9,6 @@ using Sfe.Core.Paths;
 namespace Sfe.Core.Settings;
 
 /// <summary>
-/// Some settings of a level to change, the others left as they are (<see cref="SettingsService.SaveChangesAsync"/>).
-/// </summary>
-/// <param name="Values">New values by setting key (<c>player.seekSeconds</c>); a value equal to the inherited one
-/// follows the levels above again.</param>
-/// <param name="Lock">Settings this level locks for the levels below.</param>
-/// <param name="Unlock">Settings this level stops locking.</param>
-public sealed record SettingChanges(
-    IReadOnlyDictionary<string, JsonNode?>? Values = null,
-    IReadOnlyList<string>? Lock = null,
-    IReadOnlyList<string>? Unlock = null
-);
-
-/// <summary>
 /// Reads and changes the settings exposed to the web client (see <see cref="EditableSettings"/>), by level
 /// (<see cref="SettingLevel"/>). Without the accounts' database (<paramref name="layers"/> null: the Core alone, in
 /// tests) there is only the server level, saved whole as before levels existed.

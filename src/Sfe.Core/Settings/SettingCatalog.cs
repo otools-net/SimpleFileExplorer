@@ -1,37 +1,6 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Sfe.Core.Access;
 
 namespace Sfe.Core.Settings;
-
-/// <summary>
-/// Where a setting's value comes from, from the most general to the most specific: the configuration (files,
-/// environment variables), the server's settings page (<c>settings.json</c>), a library, a user. A level's value wins
-/// over those above unless one of them locked the setting.
-/// </summary>
-public enum SettingLevel
-{
-    Environment,
-    Server,
-    Tenant,
-    User,
-}
-
-/// <param name="Key">As the settings page names it, e.g. <c>player.seekSeconds</c> (also the key of its validation
-/// errors).</param>
-/// <param name="Scope">
-/// The most specific level that may set it: <see cref="SettingLevel.Server"/> for what the server shares (its own
-/// resources), <see cref="SettingLevel.Tenant"/> for what a library decides, <see cref="SettingLevel.User"/> for
-/// personal preferences. Settings only the configuration sets (root, database, ffmpeg...) are not in the catalog.
-/// </param>
-/// <param name="Right">
-/// The right a library's administrator needs to change it (server levels need <see cref="Rights.ServerSettings"/>);
-/// <see cref="Rights.ServerSettings"/> itself for the settings about the server alone (how it starts).
-/// </param>
-/// <param name="PerLibrary">
-/// Paths inside a library (relative to its root): no server-wide value, as they mean nothing in another library.
-/// </param>
-public sealed record SettingDefinition(string Key, SettingLevel Scope, string Right, bool PerLibrary);
 
 /// <summary>
 /// Every setting of <see cref="EditableSettings"/>, with the level it can be set down to and its right.
@@ -156,49 +125,4 @@ public static class SettingCatalog
     /// (<c>player.*</c>; <c>*</c> alone names every setting).
     /// </summary>
     public static bool Matches(string pattern, string key) => RightCatalog.MatchesName(pattern, key);
-}
-
-/// <summary>Settings as JSON, flattened to their keys (<c>browse.defaultPageSize</c>) and back.</summary>
-public static class SettingKeys
-{
-    public static JsonObject ToJson(EditableSettings settings) =>
-        JsonSerializer.SerializeToNode(settings, SettingsStore.Json)!.AsObject();
-
-    public static EditableSettings FromJson(JsonObject json) => json.Deserialize<EditableSettings>(SettingsStore.Json)!;
-
-    /// <summary>Objects open into dotted keys; anything else (numbers, text, lists) is a value.</summary>
-    public static Dictionary<string, JsonNode?> Flatten(JsonObject json)
-    {
-        var values = new Dictionary<string, JsonNode?>(StringComparer.Ordinal);
-        Add(json, "");
-        return values;
-
-        void Add(JsonObject node, string prefix)
-        {
-            foreach (var (name, value) in node)
-            {
-                if (value is JsonObject child)
-                    Add(child, prefix + name + ".");
-                else
-                    values[prefix + name] = value;
-            }
-        }
-    }
-
-    /// <summary>Sets the value of a dotted key, creating the objects on its way.</summary>
-    public static void Set(JsonObject json, string key, JsonNode? value)
-    {
-        var parts = key.Split('.');
-        var node = json;
-        foreach (var part in parts[..^1])
-        {
-            if (node[part] is not JsonObject child)
-                node[part] = child = new JsonObject();
-            node = child;
-        }
-
-        node[parts[^1]] = value?.DeepClone();
-    }
-
-    public static bool Same(JsonNode? a, JsonNode? b) => JsonNode.DeepEquals(a, b);
 }

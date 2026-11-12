@@ -89,7 +89,8 @@ then by hand for what they leave: comments and long strings. One commit per step
   (107 types; OpenAPI identical)
 - [x] `Sfe.Core/Files` (16, `FileJobs` records and enums included, the class left for phase 6): 68 types, subfolders too
 - [x] `Sfe.Core/Access` (10), `Sfe.Api/Security` (9): 43 types
-- [ ] `Sfe.Core/Options` (`SfeOptions.cs` by section) and `Settings` (5, `EditableSettings`)
+- [x] `Sfe.Core/Options` (`SfeOptions.cs` by section) and `Settings` (5, `EditableSettings`): 67 types;
+  `EditableSettingsModels.cs` 184 lines, `SfeOptions.cs` 817 -> 86
 - [ ] `Sfe.Core/Data` (5; `has-pending-model-changes` checked), `FileTracking` (5)
 - [ ] Rest of the server (about 25 files in 14 folders)
 - [ ] OpenAPI document identical to phase 0's reference

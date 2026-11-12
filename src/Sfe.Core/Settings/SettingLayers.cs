@@ -9,43 +9,6 @@ using Sfe.Core.Options;
 
 namespace Sfe.Core.Settings;
 
-/// <summary>The values of every level for one library and one user, as stored.</summary>
-/// <param name="Environment">The configuration's values (and the code's defaults).</param>
-/// <param name="EnvironmentLocks">Patterns of <see cref="SfeOptions.Locked"/>.</param>
-public sealed record SettingSources(
-    IReadOnlyDictionary<string, JsonNode?> Environment,
-    IReadOnlyCollection<string> EnvironmentLocks,
-    IReadOnlyDictionary<string, JsonNode?> Server,
-    IReadOnlyCollection<string> ServerLocks,
-    IReadOnlyDictionary<string, StoredSetting> Tenant,
-    IReadOnlyDictionary<string, JsonNode?> User
-);
-
-/// <param name="Value">In effect at the level asked for.</param>
-/// <param name="Source">The level it comes from.</param>
-/// <param name="LockedAt">The level that locked it (the levels below cannot change it); null = not locked.</param>
-/// <param name="Inherited">What the level asked for gets from the levels above, without a value of its own.</param>
-public sealed record ResolvedSetting(JsonNode? Value, SettingLevel Source, SettingLevel? LockedAt, JsonNode? Inherited);
-
-/// <summary>How a setting shows on the settings page of a level.</summary>
-/// <param name="Scope">The most specific level that may set it (<see cref="SettingDefinition.Scope"/>).</param>
-/// <param name="Source">Where its value comes from.</param>
-/// <param name="Editable">This level may change it: within its scope, not locked by a level above, and (for a library's
-/// administrator) with the right.</param>
-/// <param name="Lockable">This level may lock it for the levels below (only when one of them could change it).</param>
-/// <param name="Locked">This level locked it.</param>
-/// <param name="LockedBy">The level above that locked it, when one did.</param>
-/// <param name="Inherited">The value of the levels above, which applies without one of this level.</param>
-public sealed record SettingState(
-    SettingLevel Scope,
-    SettingLevel Source,
-    bool Editable,
-    bool Lockable,
-    bool Locked,
-    SettingLevel? LockedBy,
-    JsonNode? Inherited
-);
-
 /// <summary>
 /// The settings by level (<see cref="SettingLevel"/>): the configuration's, then the server settings page's
 /// (<see cref="SettingsStore"/>), then a library's and a user's (<see cref="SettingRows"/>). Each level applies to the

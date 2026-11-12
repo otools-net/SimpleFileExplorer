@@ -7,9 +7,6 @@ using Sfe.Core.Data;
 
 namespace Sfe.Core.Settings;
 
-/// <param name="Locked">The library's users cannot change it for themselves.</param>
-public sealed record StoredSetting(JsonNode? Value, bool Locked);
-
 /// <summary>
 /// The settings of libraries and users, one row per setting (<see cref="TenantSetting"/>, <see cref="UserSetting"/>).
 /// A library's rows are read while its options are built, which is synchronous: they are cached until the next
