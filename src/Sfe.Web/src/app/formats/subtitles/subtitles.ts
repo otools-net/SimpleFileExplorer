@@ -178,7 +178,8 @@ function writeTimestamp(milliseconds: number, withHours: boolean, separator: str
     const m = Math.floor(milliseconds / 60_000) % 60;
     const s = Math.floor(milliseconds / 1000) % 60;
     const ms = milliseconds % 1000;
-    const rest = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}${separator}${String(ms).padStart(3, '0')}`;
+    const two = (n: number) => String(n).padStart(2, '0');
+    const rest = `${two(m)}:${two(s)}${separator}${String(ms).padStart(3, '0')}`;
     // A VTT time without hours gets them once it passes an hour.
     return withHours || h > 0 ? `${String(h).padStart(Math.max(2, hourDigits), '0')}:${rest}` : rest;
 }

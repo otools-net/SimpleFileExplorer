@@ -97,10 +97,11 @@ export async function expectClearOfInsets(page: Page, scope: string, insets = IP
                             box.left < insets.left ||
                             box.right > innerWidth - insets.right),
                 )
-                .map(
-                    ({ element, box }) =>
-                        `${element.localName}.${String(element.className).split(' ')[0]} "${element.getAttribute('aria-label') ?? element.textContent?.trim().slice(0, 20)}" ${Math.round(box.top)}–${Math.round(box.bottom)}`,
-                ),
+                .map(({ element, box }) => {
+                    const name = `${element.localName}.${String(element.className).split(' ')[0]}`;
+                    const label = element.getAttribute('aria-label') ?? element.textContent?.trim().slice(0, 20);
+                    return `${name} "${label}" ${Math.round(box.top)}–${Math.round(box.bottom)}`;
+                }),
         { scope, insets },
     );
     expect(inside, `controls of ${scope} under the notch or the home indicator`).toEqual([]);

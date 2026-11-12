@@ -19,7 +19,8 @@ export async function waitForTrickplay(
         if (trickplay || !isCurrent()) return trickplay;
         // The request queued it (videos of the configured folders).
         const result = await api.trickplayStates([path]).catch(() => null);
-        if (!result?.files[path]) return api.trickplay(path).catch(() => null); // nothing coming, unless it just got done
+        // Nothing coming, unless it just got done.
+        if (!result?.files[path]) return api.trickplay(path).catch(() => null);
         onWaiting();
         await new Promise((resolve) => setTimeout(resolve, PLAYER_RETRY_MS));
         if (!isCurrent()) return null;

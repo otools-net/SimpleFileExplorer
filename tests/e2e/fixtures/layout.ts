@@ -106,10 +106,11 @@ export async function expectNoZoomOnFocus(page: Page, selector: string): Promise
                     (element) =>
                         element.getClientRects().length > 0 && parseFloat(getComputedStyle(element).fontSize) < 16,
                 )
-                .map(
-                    (element) =>
-                        `${element.tagName.toLowerCase()}${element.id ? '#' + element.id : ''}.${String(element.className).split(' ')[0]} ${getComputedStyle(element).fontSize}`,
-                ),
+                .map((element) => {
+                    const id = element.id ? '#' + element.id : '';
+                    const name = `${element.tagName.toLowerCase()}${id}.${String(element.className).split(' ')[0]}`;
+                    return `${name} ${getComputedStyle(element).fontSize}`;
+                }),
         selector,
     );
     expect(small, 'fields with text under 16 px (iOS zooms into them)').toEqual([]);

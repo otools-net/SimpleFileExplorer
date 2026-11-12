@@ -55,7 +55,8 @@ export class ScrollProgressComponent {
         const size = this.store.pageSize();
         const { count, more } = this.total();
         const page = Math.max(1, Math.ceil(this.seen() / size));
-        return `Page ${page.toLocaleString()} of ${Math.max(page, Math.ceil(count / size)).toLocaleString()}${more ? '+' : ''}`;
+        const pages = Math.max(page, Math.ceil(count / size));
+        return `Page ${page.toLocaleString()} of ${pages.toLocaleString()}${more ? '+' : ''}`;
     });
     protected readonly countText = computed(() => {
         const { count, more } = this.total();

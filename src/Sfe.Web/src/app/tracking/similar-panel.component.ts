@@ -103,7 +103,7 @@ export class SimilarPanelComponent {
         return {
             state: running ? 'running' : run.state === 'failed' ? 'unavailable' : summary?.groups ? 'found' : 'idle',
             text: running
-                ? `Comparing videos… ${run.total ? `${run.checked.toLocaleString()} of ${plural(run.total, 'video')} read` : ''}`
+                ? `Comparing videos… ${run.total ? readCount(run.checked, run.total) : ''}`
                 : run.state === 'failed'
                   ? `The comparison failed: ${run.message}`
                   : !summary
@@ -113,9 +113,7 @@ export class SimilarPanelComponent {
                         `videos ${where}: ${formatSize(summary.wastedBytes)} more than the biggest of each`
                       : `No similar videos ${where}.`,
             detail: joinParts([
-                summary
-                    ? `${summary.compared.toLocaleString()} of ${plural(summary.videos, 'indexed video')} compared${summary.compared < summary.videos ? ' (the others have no trickplay yet)' : ''}`
-                    : null,
+                summary ? comparedCount(summary.compared, summary.videos) : null,
                 summary ? `listed from ${summary.minimumPercent}% match` : null,
                 run.state === 'cancelled'
                     ? 'the last comparison was cancelled: these are the groups of the one before'
@@ -202,4 +200,15 @@ export class SimilarPanelComponent {
         writePreference(SCOPE_KEY, only ? '1' : '0');
         void this.load();
     }
+}
+
+/** How far a comparison has read: "1,200 of 3,400 videos read". */
+function readCount(checked: number, total: number): string {
+    return `${checked.toLocaleString()} of ${plural(total, 'video')} read`;
+}
+
+/** How many indexed videos the last comparison took in, and why not all. */
+function comparedCount(compared: number, videos: number): string {
+    const others = compared < videos ? ' (the others have no trickplay yet)' : '';
+    return `${compared.toLocaleString()} of ${plural(videos, 'indexed video')} compared${others}`;
 }

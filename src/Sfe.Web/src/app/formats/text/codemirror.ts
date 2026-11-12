@@ -35,8 +35,10 @@ const readerTheme = EditorView.theme({
         marginInline: 'auto',
     },
     '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--reader-text)' },
-    '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection':
-        { backgroundColor: 'var(--reader-selection)' },
+    '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground': {
+        backgroundColor: 'var(--reader-selection)',
+    },
+    '.cm-selectionBackground, .cm-content ::selection': { backgroundColor: 'var(--reader-selection)' },
     '.cm-gutters': {
         backgroundColor: 'var(--reader-gutter)',
         color: 'var(--reader-muted)',

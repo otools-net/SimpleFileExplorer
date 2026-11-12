@@ -24,7 +24,7 @@ import { QuickLinksService } from '../library/quick-links/quick-links.service';
 import { FileDownloads } from './downloads';
 import { FileActions } from './file-actions';
 import { stemOf } from './extract.dialog';
-import { FileTransfers } from './file-transfers';
+import { FileTransfers, pasteTitle } from './file-transfers';
 
 /** One entry of an item's menu: always an action. */
 export interface ItemMenuEntry extends MenuEntry {
@@ -302,7 +302,7 @@ export class ItemMenu {
                 id: 'paste',
                 label: `Paste into ${item.name}`,
                 icon: 'paste',
-                title: `${clipboard.kind === 'move' ? 'Move' : 'Copy'} ${clipboard.items.length === 1 ? clipboard.items[0].name : `the ${clipboard.items.length} items kept`} into this folder`,
+                title: pasteTitle(clipboard),
                 run: () => this.transfers.paste(item.path),
             });
         if (canMove)

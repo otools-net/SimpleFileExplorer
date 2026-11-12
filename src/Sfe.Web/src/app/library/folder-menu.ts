@@ -6,7 +6,7 @@ import { LibraryItem } from '../core/models';
 import { baseName } from '../core/paths';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { FileTransfers } from '../files/file-transfers';
+import { FileTransfers, pasteTitle } from '../files/file-transfers';
 import { pickedFiles, UploadQueue } from '../files/uploads';
 import { MenuEntry, MenuTarget } from '../menus/context-menu';
 import { Dialogs } from './dialogs.service';
@@ -169,7 +169,7 @@ export class FolderMenu {
                 id: 'paste',
                 label: `Paste into ${name}`,
                 icon: 'paste',
-                title: `${clipboard.kind === 'move' ? 'Move' : 'Copy'} ${clipboard.items.length === 1 ? clipboard.items[0].name : `the ${clipboard.items.length} items kept`} into this folder`,
+                title: pasteTitle(clipboard),
                 run: () => this.transfers.paste(path),
             });
         if (this.quickLinks.enabled()) {
@@ -293,7 +293,7 @@ export class FolderMenu {
                 label: 'Paste',
                 icon: 'paste',
                 shortcut: 'Ctrl+V',
-                title: `${clipboard.kind === 'move' ? 'Move' : 'Copy'} ${clipboard.items.length === 1 ? clipboard.items[0].name : `the ${clipboard.items.length} items kept`} into this folder (Ctrl+V)`,
+                title: `${pasteTitle(clipboard)} (Ctrl+V)`,
                 run: () => this.transfers.paste(path),
             });
         if (this.store.items().length)

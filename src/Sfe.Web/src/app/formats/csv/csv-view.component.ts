@@ -321,10 +321,8 @@ export class CsvViewComponent {
         const column = position ? this.columns()[position.column] : null;
         if (!position || !table || !column || position.record >= table.rows.length) return null;
         const text = table.rows[position.record][position.column] ?? '';
-        return {
-            text,
-            label: `Row ${(position.record - this.first() + 1).toLocaleString()} · ${column.name}: ${shownCell(text).slice(0, 60)}`,
-        };
+        const row = (position.record - this.first() + 1).toLocaleString();
+        return { text, label: `Row ${row} · ${column.name}: ${shownCell(text).slice(0, 60)}` };
     });
     protected readonly downloadUrl = computed(() =>
         this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,

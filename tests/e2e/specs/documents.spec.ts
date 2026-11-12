@@ -110,7 +110,9 @@ test.describe('an EPUB by finger', () => {
                 .first()
                 .evaluate((frame) => {
                     const view = (frame as HTMLIFrameElement).contentWindow;
-                    return `${frame.getAttribute('src') ?? ''}#${view?.scrollX ?? 0}:${(frame as HTMLElement).style.transform ?? ''}:${(frame.parentElement as HTMLElement).scrollLeft}`;
+                    const transform = (frame as HTMLElement).style.transform ?? '';
+                    const parent = frame.parentElement as HTMLElement;
+                    return `${frame.getAttribute('src') ?? ''}#${view?.scrollX ?? 0}:${transform}:${parent.scrollLeft}`;
                 });
         const progress = book.locator('[data-progress]');
         const start = await progress.textContent();

@@ -29,6 +29,12 @@ export interface FileClipboard {
     items: LibraryItem[];
 }
 
+/** The tooltip of a Paste entry: "Move a.jpg into this folder", "Copy the 3 items kept into this folder". */
+export function pasteTitle(clipboard: FileClipboard): string {
+    const items = clipboard.items.length === 1 ? clipboard.items[0].name : `the ${clipboard.items.length} items kept`;
+    return `${clipboard.kind === 'move' ? 'Move' : 'Copy'} ${items} into this folder`;
+}
+
 /**
  * Moves and copies (agents/docs/features/move-and-copy.md): starts them on the server, where each is a job running in
  * the background, follows those of the session for the operations panel, answers their questions and updates the

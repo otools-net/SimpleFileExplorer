@@ -567,9 +567,12 @@ export class ArchiveViewComponent {
 
     protected foundStatus(found: Found): string {
         const here = found.folder === null ? '' : ' in this folder';
-        const count = `${found.rows.length.toLocaleString()} ${found.rows.length === 1 ? 'name' : 'names'}${here} ${found.rows.length === 1 ? 'holds' : 'hold'} “${found.query}”`;
-        if (found.searching)
-            return `Searching ${found.folder === null ? 'the archive' : 'this folder'}… ${found.rows.length ? count + ' so far' : ''}`.trim();
+        const [name, hold] = found.rows.length === 1 ? ['name', 'holds'] : ['names', 'hold'];
+        const count = `${found.rows.length.toLocaleString()} ${name}${here} ${hold} “${found.query}”`;
+        if (found.searching) {
+            const scope = found.folder === null ? 'the archive' : 'this folder';
+            return `Searching ${scope}… ${found.rows.length ? count + ' so far' : ''}`.trim();
+        }
         return found.next ? `${count} so far: scroll for more` : count;
     }
 
@@ -989,8 +992,8 @@ export class ArchiveViewComponent {
         const folder = listing.folder;
         const parts = [
             `${(folder.folders ?? 0).toLocaleString()} ${folder.folders === 1 ? 'folder' : 'folders'}`,
-            `${(folder.files ?? 0).toLocaleString()} ${folder.files === 1 ? 'file' : 'files'} here`,
-            `${formatSize(folder.size)} in ${(folder.allFiles ?? 0).toLocaleString()} ${folder.allFiles === 1 ? 'file' : 'files'} below`,
+            `${(folder.files ?? 0).toLocaleString()} ${fileWord(folder.files)} here`,
+            `${formatSize(folder.size)} in ${(folder.allFiles ?? 0).toLocaleString()} ${fileWord(folder.allFiles)} below`,
         ];
         return `${parts.join(' · ')} · ${listing.format.toUpperCase()}`;
     }
@@ -1094,4 +1097,9 @@ function pause(ms: number, signal: AbortSignal): Promise<void> {
         signal.addEventListener('abort', done, { once: true });
         setTimeout(() => (document.hidden ? document.addEventListener('visibilitychange', check) : done()), ms);
     });
+}
+
+/** "file" for one, "files" for any other count (or none known). */
+function fileWord(count: number | null | undefined): string {
+    return count === 1 ? 'file' : 'files';
 }

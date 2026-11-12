@@ -232,9 +232,9 @@ export class ImageEditorDialog {
         const copy = folder
             ? `in “${folder}”, in the same folders as the original`
             : 'next to the original, with “(edited)” in its name';
-        return this.canOverwrite()
-            ? `Save writes over the original${this.access()?.permanent ? '' : ' (the version before goes to the trash)'}; Save a copy makes a new file ${copy}.`
-            : `Saved as a new file ${copy}.`;
+        if (!this.canOverwrite()) return `Saved as a new file ${copy}.`;
+        const before = this.access()?.permanent ? '' : ' (the version before goes to the trash)';
+        return `Save writes over the original${before}; Save a copy makes a new file ${copy}.`;
     });
 
     /** The picture with the edits applied, shown on the stage. */
@@ -336,10 +336,11 @@ export class ImageEditorDialog {
     }
 
     protected aspectHint([id, label]: [string, string]): string {
+        const { width, height } = this.size();
         return id === 'free'
             ? 'Free: any width and height'
             : id === 'original'
-              ? `Original: the picture's own shape${this.size().width ? ` (${this.size().width} × ${this.size().height})` : ''}`
+              ? `Original: the picture's own shape${width ? ` (${width} × ${height})` : ''}`
               : `${label === 'Square' ? 'Square (1:1)' : label}: the frame keeps this shape`;
     }
 
@@ -410,10 +411,10 @@ export class ImageEditorDialog {
             });
             this.operations.set([]);
             this.close();
-            this.toasts.show(
-                `Saved (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).${access.permanent ? '' : ' The version before is in the trash.'}`,
-                { timeout: 8000 },
-            );
+            const before = access.permanent ? '' : ' The version before is in the trash.';
+            this.toasts.show(`Saved (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).${before}`, {
+                timeout: 8000,
+            });
         } catch (error) {
             if (error instanceof ApiError && error.status === 412) {
                 if (confirm('The picture was changed elsewhere since the editor opened it. Save over it anyway?'))

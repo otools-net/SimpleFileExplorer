@@ -216,8 +216,10 @@ export class ScopeTagsDialog {
     protected readonly question = computed(() => {
         const pending = this.pending();
         if (!pending) return '';
-        if (pending.remove)
-            return `Remove “${pending.name}” from the ${plural(this.usage(pending.tag)?.fileCount ?? 0, 'file')} ${this.where()} that have it?`;
+        if (pending.remove) {
+            const files = plural(this.usage(pending.tag)?.fileCount ?? 0, 'file');
+            return `Remove “${pending.name}” from the ${files} ${this.where()} that have it?`;
+        }
         return this.scope().query
             ? `Add “${pending.name}” to the ${this.filesText()} ${this.where()}?`
             : `Add “${pending.name}” to every file ${this.where()}?`;

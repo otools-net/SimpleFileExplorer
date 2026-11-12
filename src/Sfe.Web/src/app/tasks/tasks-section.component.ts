@@ -269,9 +269,7 @@ export class TasksSectionComponent {
             .map((t) => TASK_NAMES[t.task].toLowerCase());
         return joinParts([
             running.length ? `Running: ${running.join(', ')}` : 'Nothing running',
-            next
-                ? `next: ${TASK_NAMES[next.task.task].toLowerCase()}${next.next.schedule?.task === 'scan' ? ` of ${target('scan', next.next.schedule.path)}` : ''} ${formatMoment(next.next.at, this.now())}`
-                : 'nothing planned',
+            next ? `next: ${nextRunText(next.task, next.next, this.now())}` : 'nothing planned',
         ]);
     });
 
@@ -306,7 +304,8 @@ export class TasksSectionComponent {
                 ? `automatic check, ${formatInterval(task.automaticEvery * 60)} (Trickplay › Settings)`
                 : 'automatic';
         const where = target(next.schedule.task, next.schedule.path);
-        return `schedule: ${uncapitalize(describeSchedule(next.schedule))}${where && task.task === 'scan' ? `, ${where}` : ''}`;
+        const scanned = where && task.task === 'scan' ? `, ${where}` : '';
+        return `schedule: ${uncapitalize(describeSchedule(next.schedule))}${scanned}`;
     }
 
     protected elapsed(startedAt: string): string {
@@ -435,4 +434,10 @@ export class TasksSectionComponent {
 /** "Every day at 3:00" → "every day at 3:00", leaving the dates and times inside as they are. */
 function uncapitalize(text: string): string {
     return text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+/** A planned run, as the summary says it: "scan of “Photos” in 2 hours" (a scan names its folder). */
+function nextRunText(task: TaskInfo, next: NextRun, now: number): string {
+    const of = next.schedule?.task === 'scan' ? ` of ${target('scan', next.schedule.path)}` : '';
+    return `${TASK_NAMES[task.task].toLowerCase()}${of} ${formatMoment(next.at, now)}`;
 }

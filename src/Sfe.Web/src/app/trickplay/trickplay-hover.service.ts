@@ -121,7 +121,8 @@ export class TrickplayHoverService {
                 'pointerdown',
                 (event: PointerEvent) => {
                     if (event.pointerType !== 'touch' || !event.isPrimary || !player.enabled()) return;
-                    void player.ready(path()); // asked while the finger rests, so the frames come right after the hold delay
+                    // Asked while the finger rests, so the frames come right after the hold delay.
+                    void player.ready(path());
                     origin = { x: event.clientX, y: event.clientY };
                     start(HOLD_DELAY_MS, true);
                 },
@@ -160,7 +161,8 @@ export class TrickplayHoverService {
                         event.preventDefault();
                         event.stopImmediatePropagation();
                     } else if ((event.target as Element).closest('a')) {
-                        leave(); // opening the viewer leaves the pointer where it is; the check box and tag button don't
+                        // Opening the viewer leaves the pointer where it is; the check box and tag button don't.
+                        leave();
                     }
                 },
                 true,

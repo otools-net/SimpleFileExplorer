@@ -608,7 +608,8 @@ export class VideoPlayerComponent {
             height: video.videoHeight,
         });
         canvas.getContext('2d')!.drawImage(video, 0, 0);
-        const fileName = `${this.name().replace(/\.[^./]+$/, '')} ${formatTime(this.currentTime()).replaceAll(':', '-')}.png`;
+        const time = formatTime(this.currentTime()).replaceAll(':', '-');
+        const fileName = `${this.name().replace(/\.[^./]+$/, '')} ${time}.png`;
         canvas.toBlob((blob) => {
             if (!blob) return;
             const url = URL.createObjectURL(blob);

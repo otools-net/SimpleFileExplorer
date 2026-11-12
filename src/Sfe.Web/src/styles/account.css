@@ -210,7 +210,7 @@
     color: var(--accent);
 }
 
-/* ---------- Update page (after an upgrade): the changes since the installed version, a backup, the update ---------- */
+/* ---------- Update page (after an upgrade): the changes since the installed version, a backup, the update */
 
 .migration-card {
     max-width: 680px;

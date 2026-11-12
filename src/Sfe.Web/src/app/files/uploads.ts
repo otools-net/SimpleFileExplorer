@@ -142,10 +142,9 @@ export class UploadQueue {
         const max = (this.config.config()?.files?.maxUploadMegabytes ?? 0) * 1024 * 1024;
         const tooLarge = max ? files.filter((picked) => picked.file.size > max) : [];
         if (tooLarge.length) {
-            this.toasts.error(
-                `${tooLarge.length === 1 ? `“${baseName(tooLarge[0].name)}” is` : `${plural(tooLarge.length, 'file')} are`} larger than the ${max / 1024 / 1024} MB a file may have here: left out.`,
-                8000,
-            );
+            const which =
+                tooLarge.length === 1 ? `“${baseName(tooLarge[0].name)}” is` : `${plural(tooLarge.length, 'file')} are`;
+            this.toasts.error(`${which} larger than the ${max / 1024 / 1024} MB a file may have here: left out.`, 8000);
             files = files.filter((picked) => !tooLarge.includes(picked));
         }
         for (const picked of files) {

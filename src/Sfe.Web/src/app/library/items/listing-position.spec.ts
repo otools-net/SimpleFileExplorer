@@ -8,10 +8,12 @@ describe('listing positions', () => {
     let scrollTo: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
+        const folders = ['A', 'B'].map((path) => `<sfe-folder-item data-path="${path}"></sfe-folder-item>`).join('');
+        const files = Array.from({ length: 8 }, (_, i) => `<article data-path="B/f${i}.jpg"></article>`).join('');
         document.body.innerHTML = `
             <sfe-listing><div class="content">
-                <div class="folders"><sfe-folder-item data-path="A"></sfe-folder-item><sfe-folder-item data-path="B"></sfe-folder-item></div>
-                <div class="files">${Array.from({ length: 8 }, (_, i) => `<article data-path="B/f${i}.jpg"></article>`).join('')}</div>
+                <div class="folders">${folders}</div>
+                <div class="files">${files}</div>
             </div></sfe-listing>`;
         scrollY = 0;
         Object.defineProperty(window, 'scrollY', { get: () => scrollY, configurable: true });

@@ -31,7 +31,8 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; finalLay
      * with three sample photos (`A.jpg`, `B.jpg`, `C.jpg`) and an empty folder `Inside`; removed after the test.
      */
     scratch: async ({}, use, testInfo) => {
-        const relative = `Scratch/${testInfo.project.name}-${testInfo.testId}-${testInfo.repeatEachIndex}-${testInfo.retry}`;
+        const run = `${testInfo.testId}-${testInfo.repeatEachIndex}-${testInfo.retry}`;
+        const relative = `Scratch/${testInfo.project.name}-${run}`;
         const folder = path.join(library, relative);
         fs.rmSync(folder, { recursive: true, force: true });
         fs.mkdirSync(path.join(folder, 'Inside'), { recursive: true });

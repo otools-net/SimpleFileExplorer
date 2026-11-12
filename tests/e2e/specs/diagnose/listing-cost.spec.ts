@@ -45,10 +45,12 @@ for (const [name, css] of Object.entries(variants)) {
             `task ${ms(a, b, 'TaskDuration')}, script ${ms(a, b, 'ScriptDuration')}, ` +
             `layout ${ms(a, b, 'LayoutDuration')} (${b.LayoutCount - a.LayoutCount}), ` +
             `style ${ms(a, b, 'RecalcStyleDuration')} (${b.RecalcStyleCount - a.RecalcStyleCount}) ms`;
+        const scrolledTo = await page.evaluate(() => scrollY);
+        const items = await page.locator('sfe-listing [data-path]').count();
         console.log(
             `[cost] ${test.info().project.name} | ${name}\n  listing: ${part(start, listed)}\n  ` +
                 `scrolling: ${part(listed, scrolled)}` +
-                `\n  scrolled to ${await page.evaluate(() => scrollY)}, ${await page.locator('sfe-listing [data-path]').count()} items`,
+                `\n  scrolled to ${scrolledTo}, ${items} items`,
         );
     });
 }
