@@ -207,7 +207,8 @@ public sealed class SetupService(
         logger.LogSecurityWarning(
             setup.Recover ? "Recovery: {User} is a server administrator again. Turn Sfe:Setup:Recover off."
                 : codeWaived
-                    ? "Setup done from the server's own computer, without the setup code: {User} is the server administrator."
+                    ? "Setup done from the server's own computer, without the setup code: "
+                        + "{User} is the server administrator."
                 : "Setup done: {User} is the server administrator. Sfe:Setup:Code is no longer needed.",
             result.Value!.UserName
         );

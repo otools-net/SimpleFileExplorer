@@ -87,7 +87,8 @@ public static class AccessEndpoints
             .RequireRight(Rights.ManageMembers, Rights.ManageUsers)
             .WithName("GetGroups")
             .WithSummary(
-                "The groups of the space, with their rights and members; those of every space with `all=true` (server administrators)."
+                "The groups of the space, with their rights and members; those of every space with `all=true` (server "
+                    + "administrators)."
             )
             .WithDescription(TenantParameter);
 

@@ -973,7 +973,8 @@ public sealed class SettingsService(
                     && PlayerOptions.IsAllowedExternalUrl(s.Player.ExternalUrl)
                 ),
             "player.externalUrl",
-            $"Enter a link starting with the player's scheme, like vlc://{{url}} (at most {MaxExternalUrlLength} characters), or leave it empty."
+            $"Enter a link starting with the player's scheme, like vlc://{{url}} (at most {MaxExternalUrlLength} "
+                + $"characters), or leave it empty."
         );
         Range(
             s.Player.LinkLifetimeMinutes,
@@ -993,7 +994,8 @@ public sealed class SettingsService(
         Check(
             s.Streaming.MaxHeight == 0 || s.Streaming.MaxHeight is >= MinStreamHeight and <= MaxStreamHeight,
             "streaming.maxHeight",
-            $"The largest height must be between {MinStreamHeight} and {MaxStreamHeight} pixels, or 0 to keep the video's."
+            $"The largest height must be between {MinStreamHeight} and {MaxStreamHeight} pixels, "
+                + $"or 0 to keep the video's."
         );
         Range(
             s.FileTracking.Duplicates.MinimumKilobytes,
@@ -1028,7 +1030,8 @@ public sealed class SettingsService(
         Check(
             s.Editor.OutputFolder is null || LibraryPaths.NormalizeRelative(s.Editor.OutputFolder) is not null,
             "editor.outputFolder",
-            $"“{s.Editor.OutputFolder}” is not a folder of the library: enter a path relative to the library, like Edited or Photos/Edited, or leave it empty."
+            $"“{s.Editor.OutputFolder}” is not a folder of the library: enter a path relative to the library, "
+                + $"like Edited or Photos/Edited, or leave it empty."
         );
         Check(
             s.Editor.OutputFolder is null || s.Editor.OutputFolder.Length <= MaxEditorFolderLength,

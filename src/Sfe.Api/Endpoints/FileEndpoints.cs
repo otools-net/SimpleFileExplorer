@@ -133,7 +133,8 @@ public static class FileEndpoints
             .MapPost("/delete", Delete)
             .RequireRight(Rights.DeleteFiles, Rights.DeletePermanently)
             .FolderScoped(
-                "files.delete (files.deletePermanently to skip the trash) at each item, at its parent, and everywhere below a folder"
+                "files.delete (files.deletePermanently to skip the trash) at each item, at its parent, "
+                    + "and everywhere below a folder"
             )
             .WithName("DeleteItems")
             .WithSummary("Deletes files and folders, to the trash or for good.")
@@ -155,12 +156,15 @@ public static class FileEndpoints
             .WithName("CheckMove")
             .WithSummary("Who would gain access to folders if they moved there.")
             .WithDescription(
-                "Each group, and each account with rules, that would see or change more of a moved folder than now: the client asks for a confirmation (and offers to keep the current access) before starting the move."
+                "Each group, and each account with rules, that would see or change more of a moved folder than now: "
+                    + "the client asks for a confirmation (and offers to keep the current access) "
+                    + "before starting the move."
             );
         jobs.MapPost("", StartJob)
             .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
             .FolderScoped(
-                "files.move at each item, its parent, below a folder and at the target; files.copy at the target, files.view at what is copied (checked again at each item as the job runs)"
+                "files.move at each item, its parent, below a folder and at the target; files.copy at the target, "
+                    + "files.view at what is copied (checked again at each item as the job runs)"
             )
             .WithName("StartFileJob")
             .WithSummary("Moves or copies files and folders, in the background.")
@@ -177,7 +181,8 @@ public static class FileEndpoints
         jobs.MapPost("/compress", Compress)
             .RequireRight(Rights.CompressFiles)
             .FolderScoped(
-                "files.view and files.download at each item (the folders inside checked as they are walked), files.compress at the target"
+                "files.view and files.download at each item (the folders inside checked as they are walked), "
+                    + "files.compress at the target"
             )
             .WithName("CompressFiles")
             .WithSummary("Compresses files and folders into one zip in a folder of the library, in the background.")

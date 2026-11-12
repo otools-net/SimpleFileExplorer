@@ -55,7 +55,8 @@ public static class SetupEndpoints
             .AllowAnonymous()
             .WithName("GetSetup")
             .WithSummary(
-                "Whether the server still needs its first administrator, and whether its environment gives the setup code."
+                "Whether the server still needs its first administrator, and whether its environment gives the setup "
+                    + "code."
             );
 
         setup

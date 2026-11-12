@@ -78,7 +78,10 @@ public sealed class InstalledVersion(IDbContextFactory<AccessDbContext> dbFactor
     {
         var query = db.Database.IsSqlServer()
             ? db.Database.SqlQuery<int>(
-                $"SELECT COUNT(*) AS Value FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = {SfeDbContext.Schema} AND TABLE_NAME = {table}"
+                $"""
+                SELECT COUNT(*) AS Value FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_SCHEMA = {SfeDbContext.Schema} AND TABLE_NAME = {table}
+                """
             )
             : db.Database.SqlQuery<int>(
                 $"SELECT COUNT(*) AS Value FROM sqlite_master WHERE type = 'table' AND name = {table}"

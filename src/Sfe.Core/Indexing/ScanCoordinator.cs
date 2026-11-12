@@ -216,7 +216,8 @@ public sealed class ScanCoordinator(
         }
 
         logger.LogInformation(
-            "Scan of {Path} {Outcome}: {Directories} folders, {Files} files indexed, {Removed} removed, {Relinked} relinked, {Errors} errors",
+            "Scan of {Path} {Outcome}: {Directories} folders, {Files} files indexed, {Removed} removed, "
+                + "{Relinked} relinked, {Errors} errors",
             fullPath,
             outcome,
             progress.Directories,

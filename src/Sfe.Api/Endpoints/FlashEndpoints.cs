@@ -26,7 +26,8 @@ public static class FlashEndpoints
             .WithName("CreateFlashLink")
             .WithTags("Files")
             .WithSummary(
-                "A link that plays a Flash movie (`.swf`) in the viewer, opening the files of its folder to it, read only."
+                "A link that plays a Flash movie (`.swf`) in the viewer, opening the files of its folder to it, "
+                    + "read only."
             )
             .WithDescription(
                 $$"""
@@ -44,7 +45,8 @@ public static class FlashEndpoints
             .WithName("GetFlashFile")
             .WithTags("Files")
             .WithSummary(
-                "A file of a Flash movie's folder (the movie, its levels, music, data), for Ruffle: the token stands for the sign-in."
+                "A file of a Flash movie's folder (the movie, its levels, music, data), for Ruffle: "
+                    + "the token stands for the sign-in."
             )
             .WithDescription(
                 """

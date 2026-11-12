@@ -112,7 +112,8 @@ public static class SessionEndpoints
             .RequireRateLimiting(SignInRateLimit)
             .WithName("FastSignIn")
             .WithSummary(
-                "Signs the server's only administrator in with the one-time link of the browser SFE opened at start, then opens the app."
+                "Signs the server's only administrator in with the one-time link of the browser SFE opened at start, "
+                    + "then opens the app."
             )
             .WithDescription(
                 $"""
@@ -128,7 +129,8 @@ public static class SessionEndpoints
             .RequireRateLimiting(SignInRateLimit)
             .WithName("RequestAccountRecovery")
             .WithSummary(
-                "Asks for a one-time code to recover a server administrator's account; the server shows it only where it runs."
+                "Asks for a one-time code to recover a server administrator's account; the server shows it only where "
+                    + "it runs."
             )
             .WithDescription(
                 $"""
@@ -215,7 +217,8 @@ public static class SessionEndpoints
         if (throttle.LockedUntil(request.UserName, caller) is { } waiting)
         {
             logger.LogSecurityWarning(
-                "Sign-in refused for {User} from {Address}: that address is blocked for that account after wrong passwords",
+                "Sign-in refused for {User} from {Address}: that address is blocked for that account after wrong "
+                    + "passwords",
                 name,
                 address
             );
@@ -243,7 +246,8 @@ public static class SessionEndpoints
                 if (throttle.Failed(request.UserName, caller) is { } until)
                 {
                     logger.LogSecurityWarning(
-                        "Sign-in refused for {User} from {Address}: wrong name or password; that address is now blocked for that account until {Until:u}",
+                        "Sign-in refused for {User} from {Address}: wrong name or password; "
+                            + "that address is now blocked for that account until {Until:u}",
                         name,
                         address,
                         until

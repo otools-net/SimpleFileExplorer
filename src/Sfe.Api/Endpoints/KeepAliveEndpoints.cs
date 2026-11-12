@@ -69,10 +69,12 @@ public static class KeepAliveEndpoints
             .RequireRight(Rights.KeepAliveSettings)
             .WithName("PingKeepAlive")
             .WithSummary(
-                "Pings the space's folders now (also while keep alive is off, as with `Always`), and answers their state."
+                "Pings the space's folders now (also while keep alive is off, as with `Always`), "
+                    + "and answers their state."
             )
             .WithDescription(
-                "Waits for the pings, at most `Sfe:KeepAlive:TimeoutSeconds`; a folder still blocked from an earlier ping is not pinged again."
+                "Waits for the pings, at most `Sfe:KeepAlive:TimeoutSeconds`; a folder still blocked from an earlier "
+                    + "ping is not pinged again."
             );
 
         return api;

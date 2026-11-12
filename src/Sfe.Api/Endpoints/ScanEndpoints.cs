@@ -365,7 +365,8 @@ public static class ScanEndpoints
                     [
                         LibraryPaths.PathComparer.Equals(through, canonical)
                             ? $"“{through}” is excluded from scans: what the index has of it stays as it is."
-                            : $"This folder is inside “{through}”, which is excluded from scans: what the index has of it stays as it is.",
+                            : $"This folder is inside “{through}”, which is excluded from scans: "
+                                + $"what the index has of it stays as it is.",
                     ],
                 }
             );

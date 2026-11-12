@@ -234,7 +234,8 @@ public static class ExploreEndpoints
             .RequireRight(Rights.ExtractFiles)
             .RequireRateLimiting(RequestLimits.Unlock)
             .FolderScoped(
-                "files.view and files.download at the archive, files.extract at the target (checked again as the job runs); replacing: the right to delete there"
+                "files.view and files.download at the archive, files.extract at the target (checked again as the job "
+                    + "runs); replacing: the right to delete there"
             )
             .WithTags("Files")
             .WithName("ExtractArchive")
@@ -482,7 +483,8 @@ public static class ExploreEndpoints
 
     private static ProblemHttpResult TooManyReads() =>
         TypedResults.Problem(
-            $"You opened many archives not read before in a short time ({CatalogBuildLimits.PerMinute} a minute): wait a minute.",
+            $"You opened many archives not read before in a short time ({CatalogBuildLimits.PerMinute} a minute): "
+                + $"wait a minute.",
             statusCode: StatusCodes.Status429TooManyRequests
         );
 
@@ -929,7 +931,8 @@ public static class ExploreEndpoints
             {
                 ForbidHttpResult forbid => forbid,
                 ProblemHttpResult { StatusCode: StatusCodes.Status413PayloadTooLarge } => TypedResults.Problem(
-                    $"It is too large to be shown as text (more than {TextEndpoints.MaxBytes / (1024 * 1024)} MB): download it instead.",
+                    $"It is too large to be shown as text (more than {TextEndpoints.MaxBytes / (1024 * 1024)} MB): "
+                        + $"download it instead.",
                     statusCode: StatusCodes.Status413PayloadTooLarge,
                     type: TooLargeType
                 ),
@@ -1241,7 +1244,8 @@ public static class ExploreEndpoints
 
     private static ProblemHttpResult NotExplorable() =>
         TypedResults.Problem(
-            "This file can't be explored: it isn't an archive SFE reads, or listing it would mean unpacking all of it (extract it instead).",
+            "This file can't be explored: it isn't an archive SFE reads, or listing it would mean unpacking all of it "
+                + "(extract it instead).",
             statusCode: StatusCodes.Status409Conflict,
             type: NotExplorableType
         );

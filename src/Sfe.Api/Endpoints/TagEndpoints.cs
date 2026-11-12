@@ -92,10 +92,12 @@ public static class TagEndpoints
             .FolderScoped("404 for a scope the subject doesn't see; only the files it sees count")
             .WithName("GetScopeTags")
             .WithSummary(
-                "Tags of the files of a folder (or a folder tree), or of the matches of a search, with the number of files having each."
+                "Tags of the files of a folder (or a folder tree), or of the matches of a search, "
+                    + "with the number of files having each."
             )
             .WithDescription(
-                "Without `q`: the indexed files of the folder `path`, and of its sub-folders with `recursive`. With `q`: what that search finds in `path`."
+                "Without `q`: the indexed files of the folder `path`, and of its sub-folders with `recursive`. "
+                    + "With `q`: what that search finds in `path`."
             );
 
         files
@@ -108,8 +110,10 @@ public static class TagEndpoints
                 "Adds and removes tags on every file of a folder (or a folder tree), or on every match of a search."
             )
             .WithDescription(
-                "A folder is indexed first (with its sub-folders when `recursive`), so that its files not indexed yet are tagged too; "
-                    + "that is refused (409) while a scan runs. A search changes the files it finds. The files are changed by batches: "
+                "A folder is indexed first (with its sub-folders when `recursive`), so that its files not indexed yet "
+                    + "are tagged too; "
+                    + "that is refused (409) while a scan runs. A search changes the files it finds. "
+                    + "The files are changed by batches: "
                     + "a request that is cancelled keeps the batches already written."
             );
 
@@ -122,7 +126,8 @@ public static class TagEndpoints
             .WithName("GetFolderDefaultTags")
             .WithSummary("The default tags of a folder: its own, and those it gets from its parents.")
             .WithDescription(
-                "Every file entering the folder or one of its sub-folders (scanned, created, uploaded, copied or moved there) gets them once."
+                "Every file entering the folder or one of its sub-folders (scanned, created, uploaded, "
+                    + "copied or moved there) gets them once."
             );
 
         defaults
@@ -133,11 +138,14 @@ public static class TagEndpoints
             )
             .WithName("ChangeFolderDefaultTags")
             .WithSummary(
-                "Adds and removes default tags of a folder, and optionally on the files already in it and its sub-folders."
+                "Adds and removes default tags of a folder, and optionally on the files already in it and its "
+                    + "sub-folders."
             )
             .WithDescription(
-                "With `addToFiles` / `removeFromFiles`, the files already in the folder tree get the added tags or lose the removed ones, "
-                    + "as `POST api/file-tags/scope` with `recursive` does, before the folder's default tags change (refused with 409 while a scan runs: nothing changes)."
+                "With `addToFiles` / `removeFromFiles`, the files already in the folder tree get the added tags or "
+                    + "lose the removed ones, "
+                    + "as `POST api/file-tags/scope` with `recursive` does, before the folder's default tags change "
+                    + "(refused with 409 while a scan runs: nothing changes)."
             );
 
         files

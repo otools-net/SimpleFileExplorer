@@ -71,7 +71,8 @@ public sealed class DuplicateRemover(
             {
                 return DuplicateRemoval.Fail(
                     DuplicateRemovalStatus.Invalid,
-                    "Both paths lead to the same file (through a folder link): deleting one would delete the only copy.",
+                    "Both paths lead to the same file (through a folder link): deleting one would delete the only "
+                        + "copy.",
                     "keep"
                 );
             }
@@ -80,7 +81,8 @@ public sealed class DuplicateRemover(
             {
                 return DuplicateRemoval.Fail(
                     DuplicateRemovalStatus.Invalid,
-                    "The files are not identical: their content differs past the part the fingerprint covers. Nothing was deleted.",
+                    "The files are not identical: their content differs past the part the fingerprint covers. "
+                        + "Nothing was deleted.",
                     "keep"
                 );
             }
@@ -145,7 +147,8 @@ public sealed class DuplicateRemover(
             tags.InvalidateFileCounts();
             return DuplicateRemoval.Fail(
                 DuplicateRemovalStatus.Failed,
-                $"“{relativePath}” could not be {(trash.AlwaysPermanent ? "deleted" : "moved to the trash")}: {ex.Message}"
+                $"“{relativePath}” could not be {(trash.AlwaysPermanent ? "deleted" : "moved to the trash")}: "
+                    + $"{ex.Message}"
             );
         }
         logger.LogInformation(

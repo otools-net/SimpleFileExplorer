@@ -30,7 +30,8 @@ internal static class WindowsServiceSetup
         if (!OperatingSystem.IsWindows())
         {
             Console.Error.WriteLine(
-                "Windows services exist on Windows only. On Linux, run SFE as a systemd service (see docs/installation.md)."
+                "Windows services exist on Windows only. On Linux, run SFE as a systemd service (see "
+                    + "docs/installation.md)."
             );
             return 1;
         }
@@ -67,7 +68,8 @@ internal static class WindowsServiceSetup
         Console.WriteLine();
         Console.WriteLine($"SFE now runs as the Windows service \"{name}\" and starts with the computer.");
         Console.WriteLine(
-            "It runs as the Local System account: it can read the local drives, not the network drives mapped by a user."
+            "It runs as the Local System account: it can read the local drives, not the network drives mapped by a "
+                + "user."
         );
         Console.WriteLine("Open http://localhost:5080 (or the port you chose). Remove it with uninstall-service.cmd.");
         return 0;
@@ -137,7 +139,8 @@ internal static class WindowsServiceSetup
     private static int NeedsAdministrator()
     {
         Console.Error.WriteLine(
-            "Installing or removing a service needs administrator rights: run install-service.cmd, or this command from a console opened as administrator."
+            "Installing or removing a service needs administrator rights: run install-service.cmd, "
+                + "or this command from a console opened as administrator."
         );
         return 1;
     }

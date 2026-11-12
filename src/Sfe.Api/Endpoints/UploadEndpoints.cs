@@ -41,7 +41,8 @@ public static class UploadEndpoints
             .WithName("CheckUploads")
             .WithSummary("Which of these names are already taken in the folder.")
             .WithDescription(
-                $"Asked before uploading, so that the person decides about names taken (Replace, Skip, Keep both) before sending anything. At most {MaxCheckNames} names."
+                $"Asked before uploading, so that the person decides about names taken (Replace, Skip, Keep both) "
+                    + $"before sending anything. At most {MaxCheckNames} names."
             );
         uploads
             .MapPost("", Start)
@@ -103,7 +104,8 @@ public static class UploadEndpoints
             .NotLibraryPaths()
             .WithName("CancelUpload")
             .WithSummary(
-                "Cancels an unfinished upload (the caller's, or anyone's with `settings.files`): what it received is removed."
+                "Cancels an unfinished upload (the caller's, or anyone's with `settings.files`): "
+                    + "what it received is removed."
             );
 
         return api;

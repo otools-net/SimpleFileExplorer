@@ -58,7 +58,8 @@ public static class PropertyEndpoints
             .WithName("ComputeChecksum")
             .WithSummary("Reads a file whole for its checksum (`sha256`, `sha1` or `md5`), in the background.")
             .WithDescription(
-                "Answers the job, followed with `GET jobs/<id>`. One checksum per caller at a time: a new one stops the previous."
+                "Answers the job, followed with `GET jobs/<id>`. One checksum per caller at a time: "
+                    + "a new one stops the previous."
             );
         properties
             .MapGet("/jobs/{id:regex(^[0-9a-f]{{32}}$)}", GetJob)

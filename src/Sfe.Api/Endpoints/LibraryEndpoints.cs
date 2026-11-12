@@ -141,7 +141,8 @@ public static class LibraryEndpoints
             .WithName("GetSharedFile")
             .WithTags("Library")
             .WithSummary(
-                "Streams the file of a link made by `CreateFileLink` (the token stands for the sign-in; range requests supported)."
+                "Streams the file of a link made by `CreateFileLink` (the token stands for the sign-in; "
+                    + "range requests supported)."
             );
 
         api.MapGet("/thumbnails/{**path}", Thumbnail)

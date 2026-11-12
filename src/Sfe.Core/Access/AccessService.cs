@@ -159,7 +159,8 @@ public sealed partial class AccessService(
         {
             return AccessResult<TenantInfo>.Invalid(
                 "slug",
-                "The short name can only have lowercase letters, digits and '-' (at most 64), starting with a letter or digit."
+                "The short name can only have lowercase letters, digits and '-' (at most 64), "
+                    + "starting with a letter or digit."
             );
         }
 

@@ -103,7 +103,8 @@ public static class ArchiveEndpoints
         )
         {
             return TypedResults.Problem(
-                $"This is {size / 1024 / 1024:N0} MB: a zip may hold at most {archives.MaxBytes / 1024 / 1024:N0} MB here. Choose fewer files.",
+                $"This is {size / 1024 / 1024:N0} MB: a zip may hold at most {archives.MaxBytes / 1024 / 1024:N0} MB "
+                    + $"here. Choose fewer files.",
                 statusCode: StatusCodes.Status400BadRequest
             );
         }

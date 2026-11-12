@@ -90,7 +90,8 @@ public static class FolderRuleEndpoints
             .FolderScoped(ManagersSeeAll)
             .WithName("SetFolderRule")
             .WithSummary(
-                "Sets the level of a group or an account at a folder (`hidden`, `read`, `write`), or removes its rule (`level: null`); answers every rule."
+                "Sets the level of a group or an account at a folder (`hidden`, `read`, `write`), "
+                    + "or removes its rule (`level: null`); answers every rule."
             )
             .WithDescription(
                 $"""
@@ -129,7 +130,8 @@ public static class FolderRuleEndpoints
             .FolderScoped(ManagersSeeAll)
             .WithName("GetSpaceFolders")
             .WithSummary(
-                "The sub-folders of a folder of the space, for choosing where a rule goes (every folder, whatever rules apply to the asker)."
+                "The sub-folders of a folder of the space, for choosing where a rule goes (every folder, "
+                    + "whatever rules apply to the asker)."
             )
             .WithDescription(TenantParameter);
 

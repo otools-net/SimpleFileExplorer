@@ -132,7 +132,8 @@ public sealed class EditedImages(
             logger.LogWarning(ex, "Cannot save the edited version of {Path} in {Folder}", source, folder);
             return new(
                 EditedImageOutcome.CannotWrite,
-                Message: $"The edited picture cannot be saved in “{(folder.Length == 0 ? paths.RootName : folder)}”: {ex.Message}"
+                Message: $"The edited picture cannot be saved in “{(folder.Length == 0 ? paths.RootName : folder)}”: "
+                    + $"{ex.Message}"
             );
         }
 

@@ -99,7 +99,8 @@ public sealed class LocalUserDirectory(
                 user.FailedSignIns = 0;
                 user.LockedUntil = now.AddMinutes(Math.Max(1, options.LockoutMinutes));
                 logger.LogSecurityWarning(
-                    "The account {User} is locked until {Until:u}: {Failures} wrong passwords in a row, from all addresses",
+                    "The account {User} is locked until {Until:u}: {Failures} wrong passwords in a row, "
+                        + "from all addresses",
                     user.UserName,
                     user.LockedUntil,
                     options.AccountLockoutFailures

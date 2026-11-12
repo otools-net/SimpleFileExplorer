@@ -96,7 +96,8 @@ public static class MigrationEndpoints
                 "Makes a backup (zip) of the databases and configuration files before the update; needs the setup code."
             )
             .WithDescription(
-                "Answers the link the browser downloads it from, once. Only while an update is due: afterwards, Administration › System."
+                "Answers the link the browser downloads it from, once. Only while an update is due: afterwards, "
+                    + "Administration › System."
             );
 
         migration

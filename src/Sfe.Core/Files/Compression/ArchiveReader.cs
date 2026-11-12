@@ -348,7 +348,8 @@ public static class ArchiveReader
         if (skipped > maxSkipped)
         {
             throw new ArchiveException(
-                $"To reach this file the archive would unpack {skipped / (1024 * 1024):N0} MB before it (it is packed together with them): extract it, or download the archive."
+                $"To reach this file the archive would unpack {skipped / (1024 * 1024):N0} MB before it (it is packed "
+                    + $"together with them): extract it, or download the archive."
             )
             {
                 TooFar = true,
@@ -358,7 +359,8 @@ public static class ArchiveReader
 
     private static ArchiveException CutOff() =>
         new(
-            "The archive ends without its end mark: it is cut off or broken. Only the entries before the break are listed."
+            "The archive ends without its end mark: it is cut off or broken. Only the entries before the break are "
+                + "listed."
         );
 
     private static Stream OpenSevenZip(

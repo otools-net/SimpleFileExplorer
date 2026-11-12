@@ -188,7 +188,9 @@ switch (migration.Status)
     case MigrationStatus.Required:
         code = EnsureSetupCode(code);
         app.Logger.LogWarning(
-            "The databases and settings belong to SFE {Installed}; this is SFE {Version}. Nobody can use the app until they are updated: open it in a browser and confirm the update with the setup code{Hint}",
+            "The databases and settings belong to SFE {Installed}; this is SFE {Version}. "
+                + "Nobody can use the app until they are updated: open it in a browser and confirm the update with the "
+                + "setup code{Hint}",
             migration.DatabaseVersion ?? "(before 1.37.0)",
             AppVersion.Version,
             code.HasUsableCode
@@ -198,7 +200,8 @@ switch (migration.Status)
         break;
     case MigrationStatus.Newer:
         app.Logger.LogError(
-            "The databases belong to SFE {Installed}, later than this SFE {Version}: install that version again, or restore a backup",
+            "The databases belong to SFE {Installed}, later than this SFE {Version}: install that version again, "
+                + "or restore a backup",
             migration.DatabaseVersion,
             AppVersion.Version
         );
@@ -213,14 +216,17 @@ switch (migration.Status)
                 if (!code.HasUsableCode)
                 {
                     app.Logger.LogWarning(
-                        "No administrator yet and no usable setup code: set Sfe:Setup:Code (e.g. the environment variable Sfe__Setup__Code) to at least {Length} characters, restart, then open the app",
+                        "No administrator yet and no usable setup code: set Sfe:Setup:Code (e.g. "
+                            + "the environment variable Sfe__Setup__Code) to at least {Length} characters, restart, "
+                            + "then open the app",
                         SetupOptions.MinimumCodeLength
                     );
                 }
                 else if (!code.CodeIsGenerated)
                 {
                     app.Logger.LogWarning(
-                        "No administrator yet: open the app in a browser and enter the setup code (Sfe:Setup:Code) to create one"
+                        "No administrator yet: open the app in a browser and enter the setup code (Sfe:Setup:Code) "
+                            + "to create one"
                     );
                 }
             }
@@ -247,7 +253,8 @@ if (
 )
 {
     app.Logger.LogWarning(
-        "The library folder {Root} does not exist: pick another in Administration › System › Installation (or set Sfe:Root)",
+        "The library folder {Root} does not exist: pick another in Administration › System › Installation (or set "
+            + "Sfe:Root)",
         root
     );
 }

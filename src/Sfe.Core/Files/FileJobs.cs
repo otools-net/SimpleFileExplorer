@@ -326,7 +326,8 @@ public sealed class FileJobs(
                             : FileOperations
                                 .DiskFailure(
                                     ex,
-                                    $"“{Base(path)}” could not be {request.Kind switch { FileJobKind.Move => "moved", FileJobKind.Copy => "copied", _ => "extracted" }}"
+                                    $"“{Base(path)}” could not be "
+                                        + $"{request.Kind switch { FileJobKind.Move => "moved", FileJobKind.Copy => "copied", _ => "extracted" }}"
                                 )
                                 .Message
                     );
@@ -583,7 +584,8 @@ public sealed class FileJobs(
                     null,
                     FileOperationStatus.Conflict,
                     begun.Problem is not null
-                        ? $"“{Base(destinationPath)}” can't go there: folder access rules are set for a folder of that name. An administrator can remove them or point them elsewhere."
+                        ? $"“{Base(destinationPath)}” can't go there: folder access rules are set for a folder of that "
+                            + $"name. An administrator can remove them or point them elsewhere."
                         : begun.Errors?.Values.SelectMany(e => e).FirstOrDefault()
                 );
             }
@@ -925,7 +927,8 @@ public sealed class FileJobs(
                     if (FreeSpace(partial) is { } free && free - size < margin)
                     {
                         throw new NoRoomException(
-                            $"“{name}” was not extracted: the drive would keep less than {margin / 1024 / 1024:N0} MB free."
+                            $"“{name}” was not extracted: the drive would keep less than {margin / 1024 / 1024:N0} MB "
+                                + $"free."
                         );
                     }
                 },
@@ -1165,7 +1168,8 @@ public sealed class FileJobs(
                         if (FreeSpace(targetFull) is { } left && left < margin)
                         {
                             throw new NoRoomException(
-                                $"“{name}” was not made: the drive would keep less than {margin / 1024 / 1024:N0} MB free."
+                                $"“{name}” was not made: the drive would keep less than {margin / 1024 / 1024:N0} MB "
+                                    + $"free."
                             );
                         }
                     },
@@ -1219,7 +1223,8 @@ public sealed class FileJobs(
             }
             var newPath = Join(targetPath, finalName!);
             logger.LogInformation(
-                "{Account} compressed {Count} items into {Path}: {Files} files, {Bytes} bytes into {Zip} (level {Level}{Encrypted})",
+                "{Account} compressed {Count} items into {Path}: {Files} files, {Bytes} bytes into {Zip} (level "
+                    + "{Level}{Encrypted})",
                 job.Actor.Name,
                 chosen.Items.Count,
                 newPath,
@@ -1247,7 +1252,8 @@ public sealed class FileJobs(
     {
         var ratio = summary.Bytes > 0 ? $" ({zipLength * 100.0 / summary.Bytes:0} %)" : string.Empty;
         var text =
-            $"{Count(summary.Files, "file")}: {FormatBytes(summary.Bytes)} → {FormatBytes(zipLength)}{ratio}{(encrypted ? ", encrypted" : string.Empty)}.";
+            $"{Count(summary.Files, "file")}: {FormatBytes(summary.Bytes)} → "
+            + $"{FormatBytes(zipLength)}{ratio}{(encrypted ? ", encrypted" : string.Empty)}.";
         if (summary.LeftOut.Count > 0)
             text += $" Left out {Count(summary.LeftOut.Count, "item")} (listed in “{Archives.LeftOutEntry}”).";
         return text;
@@ -1280,7 +1286,8 @@ public sealed class FileJobs(
         {
             var named = string.Join("; ", result.LeftOut.Take(5).Select(l => $"“{l.Name}”: {l.Reason}"));
             parts.Add(
-                $"Left out {Count(result.LeftOutCount, "entry", "entries")}: {named}{(result.LeftOutCount > 5 ? $"; and {result.LeftOutCount - 5:N0} more" : string.Empty)}."
+                $"Left out {Count(result.LeftOutCount, "entry", "entries")}: "
+                    + $"{named}{(result.LeftOutCount > 5 ? $"; and {result.LeftOutCount - 5:N0} more" : string.Empty)}."
             );
         }
         if (skipped > 0)
@@ -1436,7 +1443,8 @@ public sealed class FileJobs(
                 ?? 0
         );
         return longest > 0 && longest + growth > limit
-            ? $"“{Path.GetFileName(full)}” can't go there: the full paths of some files would pass the {limit} characters the index can keep."
+            ? $"“{Path.GetFileName(full)}” can't go there: the full paths of some files would pass the {limit} "
+                + $"characters the index can keep."
             : null;
     }
 

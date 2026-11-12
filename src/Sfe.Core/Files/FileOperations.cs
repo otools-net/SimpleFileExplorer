@@ -318,7 +318,8 @@ public sealed class FileOperations(
                 return FileOperationResult.Fail(
                     FileOperationStatus.Conflict,
                     begun.Problem is not null
-                        ? $"“{name}” can't be used here: folder access rules are set for a folder of that name. An administrator can remove them or point them elsewhere (Folder access)."
+                        ? $"“{name}” can't be used here: folder access rules are set for a folder of that name. "
+                            + $"An administrator can remove them or point them elsewhere (Folder access)."
                         : begun.Errors?.Values.SelectMany(e => e).FirstOrDefault()
                             ?? "The folder's access rules can't follow it there."
                 );
@@ -398,7 +399,8 @@ public sealed class FileOperations(
         {
             return FileOperationResult.Fail(
                 FileOperationStatus.TrashUnavailable,
-                $"“{name}” can't go to the trash: it is on another drive and holds links. Delete it permanently instead?"
+                $"“{name}” can't go to the trash: it is on another drive and holds links. "
+                    + $"Delete it permanently instead?"
             );
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -503,7 +505,8 @@ public sealed class FileOperations(
                 ?? 0
         );
         return longest > 0 && longest + growth > limit
-            ? $"The new name is too long: the full paths of some files would pass the {limit} characters the index can keep. Pick a shorter name."
+            ? $"The new name is too long: the full paths of some files would pass the {limit} characters the index can "
+                + $"keep. Pick a shorter name."
             : null;
     }
 
@@ -526,12 +529,14 @@ public sealed class FileOperations(
             ex switch
             {
                 UnauthorizedAccessException =>
-                    $"{what}: the server's account may not change files there (it needs write access to the library's folder).",
+                    $"{what}: the server's account may not change files there (it needs write access to the library's "
+                        + $"folder).",
                 IOException io when IsInUse(io) =>
                     $"{what}: it is in use, by another program or a video playing. Close it and try again.",
                 // Windows answers "access denied" when a folder holds an open file, as when the account may not write.
                 IOException { HResult: AccessDenied } =>
-                    $"{what}: a file in it is in use (another program, a video playing), or the server's account may not change files there.",
+                    $"{what}: a file in it is in use (another program, a video playing), "
+                        + $"or the server's account may not change files there.",
                 _ => $"{what}: the disk refused it.",
             }
         );

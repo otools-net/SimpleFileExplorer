@@ -29,7 +29,8 @@ public sealed class RenewSetupCode : IUpgradeStep
             if (code.Renew())
             {
                 context.Note(
-                    $"The setup code changes: a new one will be shown in the server's console and kept in {code.FilePath} when needed."
+                    $"The setup code changes: a new one will be shown in the server's console and kept in "
+                        + $"{code.FilePath} when needed."
                 );
             }
         }

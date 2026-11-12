@@ -191,7 +191,8 @@ internal static class ZipEncryption
             if (!CryptographicOperations.FixedTimeEquals(_mac.GetHashAndReset().AsSpan(0, AesAuthCode), code))
             {
                 throw new ArchiveException(
-                    "An encrypted entry doesn't match its authentication: the password is wrong or the archive is damaged.",
+                    "An encrypted entry doesn't match its authentication: the password is wrong or the archive is "
+                        + "damaged.",
                     needsPassword: true
                 );
             }

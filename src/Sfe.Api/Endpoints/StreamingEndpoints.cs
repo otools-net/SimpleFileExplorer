@@ -41,7 +41,8 @@ public static class StreamingEndpoints
             .WithName("ProbeVideoStream")
             .WithSummary("Whether a video can be played converted by the server, and its length.")
             .WithDescription(
-                "404 when streaming is off (`Streaming:Mode`), ffmpeg is missing, or `path` is not a video of the library."
+                "404 when streaming is off (`Streaming:Mode`), ffmpeg is missing, or `path` is not a video of the "
+                    + "library."
             );
 
         streaming

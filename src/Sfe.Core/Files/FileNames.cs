@@ -61,7 +61,11 @@ public static class FileNames
                 return $"The name is too long: at most {MaxLength} characters.";
         }
         if ((portable || !OperatingSystem.IsWindows()) && Encoding.UTF8.GetByteCount(name) > MaxLength)
-            return $"The name is too long: at most {MaxLength} bytes (fewer characters for accented letters and other scripts).";
+        {
+            return $"The name is too long: at most {MaxLength} bytes (fewer characters for accented letters and other "
+                + $"scripts).";
+        }
+
         return null;
     }
 

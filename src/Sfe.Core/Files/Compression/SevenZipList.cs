@@ -76,8 +76,10 @@ public static class SevenZipList
         if (UnpackedSize(stream) is { } size && size > maxBytes)
         {
             throw new ArchiveException(
-                $"This 7z's list of entries is too large to be read by the server ({size / (1024.0 * 1024):N0} MB, at most {maxBytes / (1024 * 1024):N0} MB): "
-                    + "download it and open it on your computer, or ask an administrator to raise Files:Archives:MaxSevenZipListMegabytes."
+                $"This 7z's list of entries is too large to be read by the server ({size / (1024.0 * 1024):N0} MB, "
+                    + $"at most {maxBytes / (1024 * 1024):N0} MB): "
+                    + "download it and open it on your computer, or ask an administrator to raise "
+                    + "Files:Archives:MaxSevenZipListMegabytes."
             );
         }
     }

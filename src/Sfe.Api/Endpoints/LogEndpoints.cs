@@ -68,7 +68,8 @@ public static class LogEndpoints
                 {
                     ["levels"] =
                     [
-                        "Use trace, debug, information, warning, securityWarning, error or critical, separated by commas.",
+                        "Use trace, debug, information, warning, securityWarning, error or critical, "
+                            + "separated by commas.",
                     ],
                 }
             );

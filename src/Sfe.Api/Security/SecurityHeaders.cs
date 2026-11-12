@@ -25,8 +25,10 @@ public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPol
     public static string AppPolicyFor(string? dataServer)
     {
         var extra = dataServer is null ? string.Empty : " " + (OriginOf(dataServer) ?? "http: https:");
-        return $"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:{extra}; "
-            + $"media-src 'self' blob:{extra}; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; "
+        return $"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: "
+            + $"blob:{extra}; "
+            + $"media-src 'self' blob:{extra}; connect-src 'self'; font-src 'self' data:; object-src 'none'; "
+            + $"base-uri 'self'; "
             + "form-action 'self'; frame-ancestors 'none'";
     }
 
@@ -47,7 +49,8 @@ public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPol
 
     /// <summary>Swagger UI (<c>api/docs</c>, which needs a right) has scripts of its own inline.</summary>
     public const string DocsPolicy =
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+        + "img-src 'self' data:; "
         + "object-src 'none'; base-uri 'self'; frame-ancestors 'none'";
 
     /// <summary>
@@ -73,8 +76,10 @@ public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPol
     /// page around it. It loads only the app's files; only the app may frame it.
     /// </summary>
     public const string FlashPolicy =
-        "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; "
-        + "font-src 'self' data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts allow-pointer-lock";
+        "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data: blob:; "
+        + "media-src 'self' blob:; "
+        + "font-src 'self' data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; "
+        + "frame-ancestors 'self'; sandbox allow-scripts allow-pointer-lock";
 
     public Task InvokeAsync(HttpContext context)
     {

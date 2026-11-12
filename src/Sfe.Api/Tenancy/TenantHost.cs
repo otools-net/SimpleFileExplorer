@@ -81,7 +81,8 @@ public sealed class TenantHost : IAsyncDisposable
                 .GetRequiredService<ILogger<TenantHost>>()
                 .LogError(
                     ex,
-                    "The index of the library {Library} cannot be initialized; search and scan will be unavailable there until it is fixed",
+                    "The index of the library {Library} cannot be initialized; search and scan will be unavailable "
+                        + "there until it is fixed",
                     tenant.Name
                 );
         }

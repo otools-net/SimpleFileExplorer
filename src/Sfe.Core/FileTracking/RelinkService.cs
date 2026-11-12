@@ -100,7 +100,8 @@ public sealed class RelinkService(
             if (relinked + forgotten > 0)
             {
                 logger.LogInformation(
-                    "Relinked {Relinked} moved files, forgot {Forgotten} missing for too long; {Remaining} still missing",
+                    "Relinked {Relinked} moved files, forgot {Forgotten} missing for too long; "
+                        + "{Remaining} still missing",
                     relinked,
                     forgotten,
                     remaining

@@ -272,7 +272,8 @@ public sealed class SimilarVideoFinder(
             _snapshot = new Snapshot(run, groups, videos.Count, compared, minimumPercent);
             outcome = SimilarVideoState.Completed;
             logger.LogInformation(
-                "Comparison of the videos finished: {Compared} of {Videos} videos compared, {Groups} groups of similar videos",
+                "Comparison of the videos finished: {Compared} of {Videos} videos compared, "
+                    + "{Groups} groups of similar videos",
                 compared,
                 videos.Count,
                 groups.Count

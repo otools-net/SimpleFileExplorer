@@ -55,7 +55,8 @@ public static class InstallationEndpoints
             .RequireRateLimiting(SessionEndpoints.SignInRateLimit)
             .WithName("CheckInstallationCode")
             .WithSummary(
-                "Checks the setup code and answers the installation settings with a token for the other installation routes."
+                "Checks the setup code and answers the installation settings with a token for the other installation "
+                    + "routes."
             )
             .WithDescription(
                 """
@@ -71,7 +72,8 @@ public static class InstallationEndpoints
             .AllowAnonymous()
             .WithName("GetInstallation")
             .WithSummary(
-                "The library folder, listening address and ffmpeg of the server, and which of them its environment decides."
+                "The library folder, listening address and ffmpeg of the server, and which of them its environment "
+                    + "decides."
             )
             .WithDescription("Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header.");
 
@@ -80,7 +82,8 @@ public static class InstallationEndpoints
             .AllowAnonymous()
             .WithName("SaveInstallation")
             .WithSummary(
-                "Saves the library folder, listening address, ffmpeg or the server's mode into the installation file (data/installation.json)."
+                "Saves the library folder, listening address, ffmpeg or the server's mode into the installation file "
+                    + "(data/installation.json)."
             )
             .WithDescription(
                 """
@@ -99,7 +102,8 @@ public static class InstallationEndpoints
             .WithName("ListServerFolders")
             .WithSummary("The folders of the server's disks, to pick the library folder or ffmpeg's folder.")
             .WithDescription(
-                "Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. Without `path`: the drives and usual places."
+                "Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. Without `path`: "
+                    + "the drives and usual places."
             );
 
         return api;

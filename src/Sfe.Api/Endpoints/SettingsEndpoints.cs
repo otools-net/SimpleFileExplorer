@@ -31,7 +31,8 @@ public static class SettingsEndpoints
             .MapGet("/", Get)
             .WithName("GetSettings")
             .WithSummary(
-                "Settings of a level, with the values in effect and, for each, where it comes from and whether it can be changed."
+                "Settings of a level, with the values in effect and, for each, where it comes from and whether it can "
+                    + "be changed."
             )
             .WithDescription(LevelDescription);
 
@@ -89,7 +90,8 @@ public static class SettingsEndpoints
             .MapPut("/", SavePreferences)
             .WithName("SavePreferences")
             .WithSummary(
-                "Saves the signed-in user's own preferences; settings locked by the library or the server cannot change."
+                "Saves the signed-in user's own preferences; settings locked by the library or the server cannot "
+                    + "change."
             );
 
         preferences

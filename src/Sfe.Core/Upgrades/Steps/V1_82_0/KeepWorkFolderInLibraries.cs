@@ -50,7 +50,8 @@ public sealed class KeepWorkFolderInLibraries : IUpgradeStep
         Directory.CreateDirectory(Path.GetDirectoryName(marker)!);
         await File.WriteAllTextAsync(
             marker,
-            $"SFE {Version}: the libraries of the install kept their work folder in the library; new ones get the server's default. Delete this file to run it again.{Environment.NewLine}",
+            $"SFE {Version}: the libraries of the install kept their work folder in the library; "
+                + $"new ones get the server's default. Delete this file to run it again.{Environment.NewLine}",
             cancellationToken
         );
     }

@@ -45,7 +45,8 @@ public static class TenantEndpoints
             .NotLibraryPaths()
             .WithName("GetTenantFolders")
             .WithSummary(
-                "Folders a space's library folder can be chosen in (`Sfe:Tenants:AllowedRoots`, else the configured root)."
+                "Folders a space's library folder can be chosen in (`Sfe:Tenants:AllowedRoots`, "
+                    + "else the configured root)."
             )
             .WithDescription("Without `path`, the allowed roots; with one, its sub-folders (hidden ones left out).");
 
@@ -168,7 +169,8 @@ public static class TenantEndpoints
                 .CreateLogger(typeof(TenantEndpoints))
                 .LogError(ex, "The index of the new space {Space} cannot be created", result.Value!.Slug);
             return TypedResults.Problem(
-                "The index of the space's library cannot be created: the reason is in the server's log (Administration › Logs).",
+                "The index of the space's library cannot be created: the reason is in the server's log (Administration "
+                    + "› Logs).",
                 statusCode: StatusCodes.Status409Conflict
             );
         }

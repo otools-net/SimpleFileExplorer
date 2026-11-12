@@ -65,8 +65,11 @@ then by hand for what they leave: comments and long strings. One commit per step
   2749 -> 845 (621 of them comments), but functions over 60 lines 50 -> 88 and nested ones 14 -> 21 (braces added
   to wrapped `if`s count now); `measure.mjs` taught CSharpier's layout first
 - [x] CSharpier over `tests/` (82 files; server tests' long lines 1724 -> 70)
-- [x] Comments rewrapped: server and server tests (656 paragraphs; one `<see cref>` longer than a line left)
-- [ ] Long strings of the server (about 220 lines: OpenAPI descriptions, log templates, messages), by folder
+- [x] Comments rewrapped: server and server tests 
+  (656 paragraphs; one `<see cref>` longer than a line left)
+- [x] Long strings of the server, split (`split-strings.mjs`: 137 splits, one SQL `FormattableString` by hand);
+  OpenAPI document identical
+- [ ] OpenAPI descriptions in raw strings rewrapped (`rewrap-descriptions.mjs`, 43 paragraphs)
 - [ ] Long strings of the server tests (about 360 lines)
 - [ ] Prettier over the client (`src/Sfe.Web/src`: TypeScript, templates, CSS); `npm run format` / `format:check`
 - [ ] Prettier over the e2e tests

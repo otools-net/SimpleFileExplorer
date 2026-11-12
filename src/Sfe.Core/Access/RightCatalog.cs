@@ -197,7 +197,8 @@ public static class RightCatalog
             Writable,
             "Library",
             "Edit pictures",
-            "Crop pictures and save the result as a new file in the folder for edited pictures; originals are never changed.",
+            "Crop pictures and save the result as a new file in the folder for edited pictures; "
+                + "originals are never changed.",
             since: 1
         ),
         Tenant(
@@ -208,7 +209,8 @@ public static class RightCatalog
             Readable,
             "Library",
             "Play videos converted by the server",
-            "Play videos the browser can't play as they are, converted by ffmpeg on the server while they play (it keeps the server's processor busy).",
+            "Play videos the browser can't play as they are, converted by ffmpeg on the server while they play (it "
+                + "keeps the server's processor busy).",
             since: 2
         ),
         // File management (agents/docs/development/file-management-plan.md): nobody gets these by upgrade or by
@@ -243,7 +245,8 @@ public static class RightCatalog
             Writable,
             "File management",
             "Delete to the trash",
-            "Delete files and folders to the space's trash, and restore what one deleted (or what is in folders one may change).",
+            "Delete files and folders to the space's trash, and restore what one deleted (or what is in folders one "
+                + "may change).",
             since: 6
         ),
         Tenant(
@@ -320,7 +323,8 @@ public static class RightCatalog
             Writable,
             "File management",
             "Compress",
-            "Compress files and folders one may download into a zip (with a password if wanted) saved in a folder one may change.",
+            "Compress files and folders one may download into a zip (with a password if wanted) "
+                + "saved in a folder one may change.",
             since: 14
         ),
         Tenant(
@@ -361,7 +365,8 @@ public static class RightCatalog
             Readable,
             "Tags",
             "Set default tags of folders",
-            "Give folders tags that every file put into them (or into their sub-folders) gets: scanned, created, uploaded, copied or moved there.",
+            "Give folders tags that every file put into them (or into their sub-folders) gets: scanned, created, "
+                + "uploaded, copied or moved there.",
             since: 12
         ),
         Tenant(
@@ -392,7 +397,8 @@ public static class RightCatalog
             Readable,
             "Index",
             "Exclude folders",
-            "Keep folders out of scans, trickplay or thumbnails, for the whole space (what is already indexed or made stays).",
+            "Keep folders out of scans, trickplay or thumbnails, for the whole space (what is already indexed or made "
+                + "stays).",
             since: 10
         ),
         Tenant(
@@ -483,7 +489,8 @@ public static class RightCatalog
             null,
             "Logs",
             "See the logs",
-            "Read and search the warnings, errors and messages the server logged for the space (server administrators see those of the whole server).",
+            "Read and search the warnings, errors and messages the server logged for the space (server administrators "
+                + "see those of the whole server).",
             since: 4
         ),
         Tenant(
@@ -618,7 +625,8 @@ public static class RightCatalog
             null,
             "Access",
             "Manage the space's accounts and groups",
-            "Create accounts in the space, put them in its groups, choose what each group may do, open the space to visitors."
+            "Create accounts in the space, put them in its groups, choose what each group may do, "
+                + "open the space to visitors."
         ),
         Tenant(
             Rights.OwnPreferences,
@@ -689,7 +697,8 @@ public static class RightCatalog
             Rights.Backup,
             R,
             "Back up",
-            "Download a backup of the databases and configuration files (it holds password hashes and connection strings)."
+            "Download a backup of the databases and configuration files (it holds password hashes and connection "
+                + "strings)."
         ),
     ];
 

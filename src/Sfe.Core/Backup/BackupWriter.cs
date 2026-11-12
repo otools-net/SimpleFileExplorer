@@ -241,7 +241,8 @@ public sealed class BackupWriter(IOptionsMonitor<BackupOptions> options, ILogger
         }
 
         notes.Add(
-            $"{database.Description}: SQL Server wrote the backup of {name} to {file} on the database server, which this computer cannot read; it is not in this zip."
+            $"{database.Description}: SQL Server wrote the backup of {name} to {file} on the database server, "
+                + $"which this computer cannot read; it is not in this zip."
         );
         return new
         {
@@ -273,7 +274,8 @@ public sealed class BackupWriter(IOptionsMonitor<BackupOptions> options, ILogger
             .AppendLine($"Backup of SFE {version}, made {created:yyyy-MM-dd HH:mm:ss}.")
             .AppendLine()
             .AppendLine(
-                "databases/  the databases: accounts, spaces, settings of spaces and users, and the index (tags...) of each library."
+                "databases/  the databases: accounts, spaces, settings of spaces and users, and the index (tags...) "
+                    + "of each library."
             )
             .AppendLine(
                 "config/     the configuration files and the settings saved from the web pages (settings.json)."
@@ -281,13 +283,16 @@ public sealed class BackupWriter(IOptionsMonitor<BackupOptions> options, ILogger
             .AppendLine("manifest.json says where each file came from.")
             .AppendLine()
             .AppendLine(
-                "To restore: stop SFE, put each file back where manifest.json says (SQLite: replace the .db file and delete"
+                "To restore: stop SFE, put each file back where manifest.json says (SQLite: "
+                    + "replace the .db file and delete"
             )
             .AppendLine(
-                "the -wal and -shm files next to it; SQL Server: RESTORE DATABASE from the .bak file), then start the SFE"
+                "the -wal and -shm files next to it; SQL Server: RESTORE DATABASE from the .bak file), "
+                    + "then start the SFE"
             )
             .AppendLine(
-                $"version {version}. The thumbnail and trickplay caches are not included: they are made again when needed."
+                $"version {version}. The thumbnail and trickplay caches are not included: "
+                    + $"they are made again when needed."
             )
             .AppendLine("This file holds password hashes and connection strings: keep it somewhere safe.");
         if (notes.Count > 0)

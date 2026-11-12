@@ -141,7 +141,8 @@ public static partial class TextEndpoints
         text.MapPut("", Save)
             .RequireRight(Rights.DeleteFiles, Rights.DeletePermanently)
             .FolderScoped(
-                "files.view at the file, files.delete (files.deletePermanently in a space that always deletes for good) at it and its folder, files.createFiles at its folder"
+                "files.view at the file, files.delete (files.deletePermanently in a space that always deletes for "
+                    + "good) at it and its folder, files.createFiles at its folder"
             )
             .WithName("SaveTextFile")
             .WithSummary("Saves text over a file, as an OS text editor does.")
@@ -590,7 +591,8 @@ public static partial class TextEndpoints
         )
         {
             return TypedResults.Problem(
-                $"The text, an encoding ({string.Join(", ", TextCodec.Encodings)}) and a line ending (lf, crlf, cr) are needed.",
+                $"The text, an encoding ({string.Join(", ", TextCodec.Encodings)}) and a line ending (lf, crlf, cr) "
+                    + $"are needed.",
                 statusCode: StatusCodes.Status400BadRequest
             );
         }

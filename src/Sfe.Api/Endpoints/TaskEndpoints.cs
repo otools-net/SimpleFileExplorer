@@ -42,7 +42,9 @@ public static class TaskEndpoints
             .WithName("StartTask")
             .WithSummary("Starts a task now (thumbnails can't be started: listings ask for them).")
             .WithDescription(
-                "A scan covers `path` (relative to the library root; empty: the whole library). 409 when it already runs, or is turned off; a trickplay pass asked for while one runs follows it (202)."
+                "A scan covers `path` (relative to the library root; empty: the whole library). "
+                    + "409 when it already runs, or is turned off; a trickplay pass asked for while one runs follows "
+                    + "it (202)."
             );
 
         tasks
@@ -90,7 +92,8 @@ public static class TaskEndpoints
             .WithName("GetTaskRuns")
             .WithSummary("Runs of the background tasks, newest first, without their logs.")
             .WithDescription(
-                $"Optionally of one `task`. Pages of `limit` runs (default {TaskHistory.DefaultPageSize}, at most {TaskHistory.MaxPageSize}); pass `next` as `before` for the following page."
+                $"Optionally of one `task`. Pages of `limit` runs (default {TaskHistory.DefaultPageSize}, "
+                    + $"at most {TaskHistory.MaxPageSize}); pass `next` as `before` for the following page."
             );
 
         tasks

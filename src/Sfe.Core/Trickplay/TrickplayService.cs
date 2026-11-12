@@ -920,7 +920,8 @@ public sealed class TrickplayService : IDisposable
             }
 
             error =
-                $"ffmpeg could not read the frames back ({exitCode}, {output.Length / VideoFingerprint.FrameBytes} of {manifest.Count}): {errors.Trim()}";
+                $"ffmpeg could not read the frames back ({exitCode}, {output.Length / VideoFingerprint.FrameBytes} of "
+                + $"{manifest.Count}): {errors.Trim()}";
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

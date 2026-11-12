@@ -69,7 +69,8 @@ public static class ChangeEndpoints
             .FolderScoped("only folders the caller sees (files.browse) are told")
             .WithName("FolderChanges")
             .WithSummary(
-                "Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; `keepAlive` with `{ state }`; `trash`; `ping`."
+                "Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; "
+                    + "`keepAlive` with `{ state }`; `trash`; `ping`."
             )
             .WithDescription(
                 $"""

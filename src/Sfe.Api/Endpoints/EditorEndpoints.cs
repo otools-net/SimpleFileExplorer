@@ -60,7 +60,8 @@ public static class EditorEndpoints
             .RequireRateLimiting(RequestLimits.Upload)
             .RequireRight(Rights.EditImages)
             .FolderScoped(
-                "files.view at the picture, files.edit at its folder, and the rule of move/copy's Replace (files.delete or files.deletePermanently at it and its folder, files.createFiles at its folder)"
+                "files.view at the picture, files.edit at its folder, and the rule of move/copy's Replace "
+                    + "(files.delete or files.deletePermanently at it and its folder, files.createFiles at its folder)"
             )
             .WithMetadata(new RequestSizeLimitAttribute(EditedImages.MaxBytes + 1))
             .WithName("SaveEditedImageOver")
@@ -117,7 +118,8 @@ public static class EditorEndpoints
         )
         {
             return TypedResults.Problem(
-                "The folder the edited picture would go to is not one SFE writes to (its own files, or a link leaving the library).",
+                "The folder the edited picture would go to is not one SFE writes to (its own files, "
+                    + "or a link leaving the library).",
                 statusCode: StatusCodes.Status403Forbidden
             );
         }

@@ -560,7 +560,8 @@ public sealed class Uploads(
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         return db.PathLengthLimit is { } limit && full.Length > limit
-            ? $"“{Path.GetFileName(full)}” can't go there: its full path would pass the {limit} characters the index can keep."
+            ? $"“{Path.GetFileName(full)}” can't go there: its full path would pass the {limit} characters the index "
+                + $"can keep."
             : null;
     }
 

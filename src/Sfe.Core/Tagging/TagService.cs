@@ -236,7 +236,8 @@ public sealed class TagService(
                     "parentIds",
                     loop == self
                         ? "A tag cannot be its own parent."
-                        : $"“{graph.DisplayName(graph.Find(loop)!)}” already inherits from this tag, so it cannot also be its parent."
+                        : $"“{graph.DisplayName(graph.Find(loop)!)}” already inherits from this tag, "
+                            + $"so it cannot also be its parent."
                 );
             }
         }
@@ -559,7 +560,8 @@ public sealed class TagService(
                 null,
                 Error(
                     "paths",
-                    $"“{paths.ToRelative(missing)}” cannot be indexed (ignored, or its path is too long), so it cannot be tagged."
+                    $"“{paths.ToRelative(missing)}” cannot be indexed (ignored, or its path is too long), "
+                        + $"so it cannot be tagged."
                 )
             );
         }

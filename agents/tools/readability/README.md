@@ -92,3 +92,22 @@ node agents/tools/readability/references.mjs <temp>/x --only openapi,ef  # some 
 - Two runs on the same code give identical files (checked 2026-11-12), so any difference is the change's.
 - `client-build.txt` lists the hashed chunks as `chunk.js` sorted by size: a template moved to its `.html` file
   should give the same sizes; a difference of a few bytes in one chunk is worth a look, not a failure.
+
+## Long strings (C#)
+
+```sh
+node agents/tools/readability/split-strings.mjs src/Sfe.Api src/Sfe.Core   # "a b" -> "a " + "b", then:
+dotnet csharpier format src                                                 # lays out the + chains
+node agents/tools/readability/rewrap-descriptions.mjs src/Sfe.Api          # OpenAPI descriptions in raw strings
+```
+
+- `split-strings.mjs` splits regular and interpolated literals at a space (after a punctuation mark when one is near
+  the end), never inside a `{hole}` or an escape; both halves keep the prefix (`$`). It leaves verbatim (`@"`), raw
+  and `u8` literals, a literal with a member access or index after it or a cast before it, patterns (`is`, `case`,
+  switch arms), and interpolated strings near `SqlQuery`/`FromSql`/`ExecuteSql`: `$"a" + $"b"` is a `string`, not a
+  `FormattableString` (EF's `SqlQuery` then does not compile; an API with both overloads would take the values into
+  the SQL text). Build after it.
+- `rewrap-descriptions.mjs` reflows the Markdown of raw strings given to `.WithDescription(` or assigned to a
+  `…Description` name, only the paragraphs holding a long line; no line starts with `-`, `1.`, `#`, `>` or `|`. The
+  OpenAPI document then differs only in where its descriptions break lines: compare it with whitespace collapsed.
+- Raw strings that are SQL, test data or console text are not touched: by hand, or left with a comment saying why.

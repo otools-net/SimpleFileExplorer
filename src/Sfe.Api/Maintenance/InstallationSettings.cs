@@ -264,7 +264,8 @@ public sealed class InstallationSettings
             {
                 errors["mode"] =
                 [
-                    $"SFE is in External mode: it goes back to Local only in the server's configuration ({ModeKey} in {Path.GetFileName(FilePath)}, or the environment).",
+                    $"SFE is in External mode: it goes back to Local only in the server's configuration ({ModeKey} in "
+                        + $"{Path.GetFileName(FilePath)}, or the environment).",
                 ];
             }
             // Local lets only this computer in: chosen from elsewhere, it would shut out whoever chose it.
@@ -272,7 +273,8 @@ public sealed class InstallationSettings
             {
                 errors["mode"] =
                 [
-                    "Local only lets this computer in: choose it from a browser on the server itself, at http://localhost.",
+                    "Local only lets this computer in: choose it from a browser on the server itself, "
+                        + "at http://localhost.",
                 ];
             }
             else
@@ -293,7 +295,8 @@ public sealed class InstallationSettings
             {
                 errors[FieldName(key)] =
                 [
-                    "An External server takes its library folder and ffmpeg from its configuration only: save them while Local, or set them there.",
+                    "An External server takes its library folder and ffmpeg from its configuration only: "
+                        + "save them while Local, or set them there.",
                 ];
             }
         }
@@ -325,7 +328,9 @@ public sealed class InstallationSettings
             return new InstallationField(
                 value,
                 true,
-                $"the server's configuration (External mode: {(key == RootKey ? "Sfe__Root" : "Sfe__Thumbnails__FfmpegPath")} in its environment, or appsettings.json)"
+                $"the server's configuration (External mode: "
+                    + $"{(key == RootKey ? "Sfe__Root" : "Sfe__Thumbnails__FfmpegPath")} in its environment, "
+                    + $"or appsettings.json)"
             );
         }
 
