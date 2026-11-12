@@ -76,7 +76,7 @@ then by hand for what they leave: comments and long strings. One commit per step
   `format:check`; long lines 2314 -> 312; client build: every chunk the same size
 - [x] Prettier over the e2e tests (in `npm run format` of `src/Sfe.Web`; `npm run typecheck` of the e2e passes)
 - [x] Comments of the client and e2e rewrapped (147 paragraphs; one-line `/** … */` take the block form)
-- [x] Long strings of the client and e2e split (`split-strings-ts.mjs`, 252 splits; client build identical in size)
+- [x] Long strings of the client and e2e split (`split-strings-ts.mjs`, 242 splits; client build identical in size)
 - [ ] What is left over 120 in the client, e2e and styles, by hand (`measure.mjs --area client`); lines of inline
   templates wait for phase 4
 - [ ] Hashes of the formatter commits in `.git-blame-ignore-revs`
@@ -277,6 +277,9 @@ Traps met:
 - The server's last 7 long lines by hand: SQL column lists broken at commas, two helpers named for long
   interpolation holes (`FileJobs.Done`, `More`; `BackupSources.SqlServerDatabaseName`), an ffmpeg filter split. Left:
   one `<see cref>` naming an overload with its full signature (`SettingsService`).
+- `split-strings-ts.mjs` first split strings inside a template's `${…}` word by word (`' (the ' + 'version ' + …`):
+  the template's line stays long, so the inner literal was picked again and again. It now leaves literals inside a
+  hole; redone in a second commit.
 - awk's `length` counts bytes, so lines with `…` or `→` look long to it: measure with Node (`measure.mjs`).
 
 ## Phase 3: one type per file (server) and `models.ts` by area (client)

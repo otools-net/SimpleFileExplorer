@@ -11,7 +11,7 @@ describe('listing positions', () => {
         document.body.innerHTML = `
             <sfe-listing><div class="content">
                 <div class="folders"><sfe-folder-item data-path="A"></sfe-folder-item><sfe-folder-item data-path="B"></sfe-folder-item></div>
-                <div class="files">${Array.from({ length: 8 }, (_, i) => `<article ` + `data-path="B/f${i}.jpg"></article>`).join('')}</div>
+                <div class="files">${Array.from({ length: 8 }, (_, i) => `<article data-path="B/f${i}.jpg"></article>`).join('')}</div>
             </div></sfe-listing>`;
         scrollY = 0;
         Object.defineProperty(window, 'scrollY', { get: () => scrollY, configurable: true });

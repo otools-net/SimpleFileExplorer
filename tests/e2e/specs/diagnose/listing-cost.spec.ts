@@ -48,7 +48,7 @@ for (const [name, css] of Object.entries(variants)) {
         console.log(
             `[cost] ${test.info().project.name} | ${name}\n  listing: ${part(start, listed)}\n  ` +
                 `scrolling: ${part(listed, scrolled)}` +
-                `\n  scrolled to ${await page.evaluate(() => scrollY)}, ${await page.locator('sfe-listing ' + '[data-path]').count()} items`,
+                `\n  scrolled to ${await page.evaluate(() => scrollY)}, ${await page.locator('sfe-listing [data-path]').count()} items`,
         );
     });
 }

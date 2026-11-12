@@ -47,6 +47,8 @@ function splittable(node) {
     if (ts.isPropertyAssignment(parent) && parent.name === node) return false;
     if (ts.isPropertyAssignment(parent) && /^(template|styles?)$/.test(parent.name.getText())) return false;
     if (ts.isCallExpression(parent) && parent.expression.getText() === 'require') return false;
+    // A string inside a template's `${…}`: its line stays long whatever it does (the template around it is split).
+    for (let up = parent; up; up = up.parent) if (ts.isTemplateSpan(up)) return false;
     return true;
 }
 

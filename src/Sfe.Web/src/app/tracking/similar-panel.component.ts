@@ -114,7 +114,7 @@ export class SimilarPanelComponent {
                       : `No similar videos ${where}.`,
             detail: joinParts([
                 summary
-                    ? `${summary.compared.toLocaleString()} of ${plural(summary.videos, 'indexed ' + 'video')} compared${summary.compared < summary.videos ? ' (the others have no trickplay yet)' : ''}`
+                    ? `${summary.compared.toLocaleString()} of ${plural(summary.videos, 'indexed video')} compared${summary.compared < summary.videos ? ' (the others have no trickplay yet)' : ''}`
                     : null,
                 summary ? `listed from ${summary.minimumPercent}% match` : null,
                 run.state === 'cancelled'
