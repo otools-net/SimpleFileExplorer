@@ -201,7 +201,8 @@ export class ListingStore {
         if (!item) {
             this.toasts.show(
                 this.hasMore()
-                    ? `“${baseName(path)}” is not among the first ${REVEAL_LIMIT.toLocaleString()} items of this folder: scroll down to find it.`
+                    ? `“${baseName(path)}” is not among the first ${REVEAL_LIMIT.toLocaleString()} items of this ` +
+                          `folder: scroll down to find it.`
                     : `“${baseName(path)}” is not in this folder any more.`,
             );
             return;

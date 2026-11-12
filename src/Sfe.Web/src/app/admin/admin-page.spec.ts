@@ -905,28 +905,33 @@ describe('AdminPageComponent by rights and levels', () => {
             expect(buttonNamed(element, 'Save')!.disabled).toBe(true);
         });
 
-        it('shows the level whose values are refused, with its errors and changes; the one saved before stays saved', async () => {
-            const toast = vi.spyOn(TestBed.inject(ToastService), 'show');
-            api.saveSettingChanges.mockImplementation(async (_, level) => {
-                if (level === 'tenant') throw new ApiError(400, 'x', { 'player.seekSeconds': ['Too long a step.'] });
-                return views.server;
-            });
-            await edit('20');
-            await show('server');
-            await edit('15');
+        it(
+            'shows the level whose values are refused, with its errors and changes; ' +
+                'the one saved before stays saved',
+            async () => {
+                const toast = vi.spyOn(TestBed.inject(ToastService), 'show');
+                api.saveSettingChanges.mockImplementation(async (_, level) => {
+                    if (level === 'tenant')
+                        throw new ApiError(400, 'x', { 'player.seekSeconds': ['Too long a step.'] });
+                    return views.server;
+                });
+                await edit('20');
+                await show('server');
+                await edit('15');
 
-            buttonNamed(element, 'Save')!.click();
-            await settle();
+                buttonNamed(element, 'Save')!.click();
+                await settle();
 
-            expect(levelTab('tenant').getAttribute('aria-selected')).toBe('true');
-            expect(seek().value).toBe('20');
-            expect(fieldError()).toBe('Too long a step.');
-            expect(marked('server')).toBe(false);
-            expect(marked('tenant')).toBe(true);
-            expect(toast).toHaveBeenCalledWith(
-                'Saved the settings of the whole server; those of this space need fixing.',
-            );
-        });
+                expect(levelTab('tenant').getAttribute('aria-selected')).toBe('true');
+                expect(seek().value).toBe('20');
+                expect(fieldError()).toBe('Too long a step.');
+                expect(marked('server')).toBe(false);
+                expect(marked('tenant')).toBe(true);
+                expect(toast).toHaveBeenCalledWith(
+                    'Saved the settings of the whole server; those of this space need fixing.',
+                );
+            },
+        );
 
         it('checks the numbers of the other level before sending anything, and shows them', async () => {
             await edit('2.5');

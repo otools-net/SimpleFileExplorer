@@ -114,44 +114,48 @@ describe('ViewerComponent › Actual size', () => {
         expect(await entry('actualSize')).toBeNull();
     });
 
-    it('follows two fingers: larger around the point between them, no larger than its actual size, fitted again when let go near it', async () => {
-        await view();
-        type Pinch = {
-            first: boolean;
-            last: boolean;
-            movement: [number, number];
-            origin: [number, number];
-            memo?: { width: number; height: number };
-        };
-        const viewer = fixture.componentInstance as unknown as {
-            onPinch(state: Pinch): { width: number; height: number } | undefined;
-        };
-        const pinch = async (scale: number, step: 'first' | 'move' | 'last', memo?: Pinch['memo']) => {
-            const next = viewer.onPinch({
-                first: step === 'first',
-                last: step === 'last',
-                movement: [scale, 0],
-                origin: [500, 350],
-                memo,
-            });
-            await settle();
-            return next;
-        };
+    it(
+        'follows two fingers: larger around the point between them, no larger than its actual size, ' +
+            'fitted again when let go near it',
+        async () => {
+            await view();
+            type Pinch = {
+                first: boolean;
+                last: boolean;
+                movement: [number, number];
+                origin: [number, number];
+                memo?: { width: number; height: number };
+            };
+            const viewer = fixture.componentInstance as unknown as {
+                onPinch(state: Pinch): { width: number; height: number } | undefined;
+            };
+            const pinch = async (scale: number, step: 'first' | 'move' | 'last', memo?: Pinch['memo']) => {
+                const next = viewer.onPinch({
+                    first: step === 'first',
+                    last: step === 'last',
+                    movement: [scale, 0],
+                    origin: [500, 350],
+                    memo,
+                });
+                await settle();
+                return next;
+            };
 
-        const memo = await pinch(1, 'first');
-        expect(memo).toEqual({ width: 800, height: 600 });
-        expect(picture().classList).not.toContain('actual-size');
-        await pinch(2, 'move', memo);
-        expect(picture().style.width).toBe('1600px');
-        expect(picture().style.height).toBe('1200px');
-        // The point between the fingers stays where it is.
-        expect(transform()).toBe('translate(-300px, -300px)');
-        await pinch(10, 'move', memo);
-        expect(picture().style.width).toBe('4000px');
-        await pinch(1.03, 'last', memo);
-        expect(picture().classList).not.toContain('actual-size');
-        expect(picture().style.width).toBe('');
-    });
+            const memo = await pinch(1, 'first');
+            expect(memo).toEqual({ width: 800, height: 600 });
+            expect(picture().classList).not.toContain('actual-size');
+            await pinch(2, 'move', memo);
+            expect(picture().style.width).toBe('1600px');
+            expect(picture().style.height).toBe('1200px');
+            // The point between the fingers stays where it is.
+            expect(transform()).toBe('translate(-300px, -300px)');
+            await pinch(10, 'move', memo);
+            expect(picture().style.width).toBe('4000px');
+            await pinch(1.03, 'last', memo);
+            expect(picture().classList).not.toContain('actual-size');
+            expect(picture().style.width).toBe('');
+        },
+    );
 
     it('never leaves a gap at the edges when zooming near a corner', async () => {
         await view();
@@ -445,44 +449,49 @@ describe('ViewerComponent › Documents', () => {
         expect(dialog().open).toBe(true);
     });
 
-    it('has the same menu on its ⋮ and on a right click on the stage, without what would take the file away', async () => {
-        await open(photo);
-        const menu = TestBed.inject(ContextMenu);
+    it(
+        'has the same menu on its ⋮ and on a right click on the stage, without what would take the file ' + 'away',
+        async () => {
+            await open(photo);
+            const menu = TestBed.inject(ContextMenu);
 
-        element
-            .querySelector('.viewer-stage')!
-            .dispatchEvent(
-                new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 50, clientY: 60 }),
+            element
+                .querySelector('.viewer-stage')!
+                .dispatchEvent(
+                    new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 50, clientY: 60 }),
+                );
+            await settle();
+            const target = menu.open()!.target;
+            expect(target).toMatchObject({ kind: 'file', key: 'viewer:Media/photo.jpg', item: photo });
+            const ids = target.entries().map((entry) => entry.id);
+            expect(ids).toEqual(expect.arrayContaining(['newTab', 'copy', 'copyTo', 'properties']));
+            expect(ids.filter((id) => ['rename', 'delete', 'cut', 'moveTo', 'open'].includes(id))).toEqual([]);
+            expect(element.querySelector('button[aria-label="More actions"]')!.getAttribute('aria-expanded')).toBe(
+                'true',
             );
-        await settle();
-        const target = menu.open()!.target;
-        expect(target).toMatchObject({ kind: 'file', key: 'viewer:Media/photo.jpg', item: photo });
-        const ids = target.entries().map((entry) => entry.id);
-        expect(ids).toEqual(expect.arrayContaining(['newTab', 'copy', 'copyTo', 'properties']));
-        expect(ids.filter((id) => ['rename', 'delete', 'cut', 'moveTo', 'open'].includes(id))).toEqual([]);
-        expect(element.querySelector('button[aria-label="More actions"]')!.getAttribute('aria-expanded')).toBe('true');
 
-        // The ⋮ button closes it (a toggle), then opens the same menu.
-        element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]')!.click();
-        expect(menu.open()).toBeNull();
-        element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]')!.click();
-        expect(menu.open()!.target.key).toBe('viewer:Media/photo.jpg');
+            // The ⋮ button closes it (a toggle), then opens the same menu.
+            element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]')!.click();
+            expect(menu.open()).toBeNull();
+            element.querySelector<HTMLButtonElement>('button[aria-label="More actions"]')!.click();
+            expect(menu.open()!.target.key).toBe('viewer:Media/photo.jpg');
 
-        // Another file: the menu was for the one before.
-        await key('ArrowRight');
-        expect(menu.open()).toBeNull();
-        // A document (here a text) keeps the browser's menu on its stage; its ⋮ still has the menu.
-        await vi.waitFor(() => expect(content()).toBeTruthy());
-        const onText = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
-        element.querySelector('.viewer-stage')!.dispatchEvent(onText);
-        expect(onText.defaultPrevented).toBe(false);
-        expect(menu.open()).toBeNull();
-        // Elsewhere in the viewer (its bar): no menu, not even the browser's.
-        const onBar = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
-        element.querySelector('.viewer-bar')!.dispatchEvent(onBar);
-        expect(onBar.defaultPrevented).toBe(true);
-        expect(menu.open()).toBeNull();
-    });
+            // Another file: the menu was for the one before.
+            await key('ArrowRight');
+            expect(menu.open()).toBeNull();
+            // A document (here a text) keeps the browser's menu on its stage; its ⋮ still has the menu.
+            await vi.waitFor(() => expect(content()).toBeTruthy());
+            const onText = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+            element.querySelector('.viewer-stage')!.dispatchEvent(onText);
+            expect(onText.defaultPrevented).toBe(false);
+            expect(menu.open()).toBeNull();
+            // Elsewhere in the viewer (its bar): no menu, not even the browser's.
+            const onBar = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+            element.querySelector('.viewer-bar')!.dispatchEvent(onBar);
+            expect(onBar.defaultPrevented).toBe(true);
+            expect(menu.open()).toBeNull();
+        },
+    );
 
     it('opens a file ready to be changed when asked (a new file)', async () => {
         fixture.componentInstance.open(notes, { edit: true });

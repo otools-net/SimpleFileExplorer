@@ -83,7 +83,10 @@ export class UploadsSectionComponent implements OnInit {
 
     protected describe(item: UploadInfo): string {
         const percent = item.size ? Math.floor((item.received * 100) / item.size) : 100;
-        return `${formatSize(item.received)} of ${formatSize(item.size)} (${percent}%) · by ${item.ownerName} · last received ${formatDate(item.lastActivity)}`;
+        return (
+            `${formatSize(item.received)} of ${formatSize(item.size)} (${percent}%) ` +
+            `· by ${item.ownerName} · last received ${formatDate(item.lastActivity)}`
+        );
     }
 
     /** An upload's menu (a right click): Cancel, then the folder it goes into. */

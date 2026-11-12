@@ -206,7 +206,8 @@ export class FileTransfers {
         if (!allowed.length) return false;
         this.clipboard.set({ kind, items: allowed });
         this.toasts.show(
-            `${plural(allowed.length, 'item')} ${kind === 'move' ? 'cut' : 'copied'}: paste them into a folder with Ctrl+V or its menu.`,
+            `${plural(allowed.length, 'item')} ${kind === 'move' ? 'cut' : 'copied'}: ` +
+                `paste them into a folder with Ctrl+V or its menu.`,
         );
         return true;
     }
@@ -437,7 +438,8 @@ export class FileTransfers {
             this.toasts.error(
                 failed.length === 1
                     ? (failed[0].message ?? `“${baseName(failed[0].path)}” could not be ${verb}.`)
-                    : `${plural(failed.length, 'item')} could not be ${verb}: ${failed[0].message ?? baseName(failed[0].path)}`,
+                    : `${plural(failed.length, 'item')} could not ` +
+                          `be ${verb}: ${failed[0].message ?? baseName(failed[0].path)}`,
                 8000,
             );
     }

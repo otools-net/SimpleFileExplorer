@@ -442,15 +442,19 @@ describe('SearchBoxComponent', () => {
             expect(navigate).toHaveBeenCalledWith({ q: 'dogs' });
         });
 
-        it('suggests the searches starting with the text first, then those containing it, without the text itself', async () => {
-            ['big cat', 'dog', 'Cats', 'cat'].forEach((q) => history.record(q));
+        it(
+            'suggests the searches starting with the text first, then those containing it, ' +
+                'without the text itself',
+            async () => {
+                ['big cat', 'dog', 'Cats', 'cat'].forEach((q) => history.record(q));
 
-            await typeText('cat');
+                await typeText('cat');
 
-            expect(texts()).toEqual(['Cats', 'big cat']);
-            await typeText('zebra');
-            expect(list().hidden).toBe(true);
-        });
+                expect(texts()).toEqual(['Cats', 'big cat']);
+                await typeText('zebra');
+                expect(list().hidden).toBe(true);
+            },
+        );
 
         it('shows the typed characters in bold where they match, wherever they are', async () => {
             ['Big Cat', 'cats'].forEach((q) => history.record(q));

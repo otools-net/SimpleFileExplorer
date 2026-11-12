@@ -47,7 +47,8 @@ export async function expectTapTargets(page: Page, scope = 'body', min = 24): Pr
                 ...new Set(
                     [
                         ...document.querySelectorAll(
-                            `${scope} :is(button, a[href], input:not([type=hidden]), select, textarea, [role=button], [role=menuitem], label.select-box)`,
+                            `${scope} :is(button, a[href], input:not([type=hidden]), select, textarea, ` +
+                                `[role=button], [role=menuitem], label.select-box)`,
                         ),
                     ].map((element) =>
                         element.matches('input, select, textarea') ? (element.closest('label') ?? element) : element,
@@ -169,7 +170,8 @@ export async function expectNothingCut(page: Page, scope = 'body'): Promise<void
         const ellipsis = (element: Element, clip: Element) =>
             getComputedStyle(clip).textOverflow === 'ellipsis' || getComputedStyle(element).textOverflow === 'ellipsis';
         const selector =
-            'button, a[href], input:not([type=hidden]), select, textarea, [role=button], label, h1, h2, h3, .chip, sfe-tag-chip';
+            'button, a[href], input:not([type=hidden]), select, textarea, [role=button], label, h1, h2, h3, .chip, ' +
+            'sfe-tag-chip';
         for (const element of [...document.querySelectorAll(`${scope} :is(${selector})`)].filter(shown)) {
             const box = element.getBoundingClientRect();
             const [clip, scrolls] = clipper(element);

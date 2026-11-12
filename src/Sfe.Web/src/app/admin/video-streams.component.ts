@@ -81,13 +81,17 @@ export class VideoStreamsComponent {
         const status = this.status();
         if (!status) return '…';
         if (!status.available && status.mode !== 'off')
-            return "ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) in the server's configuration file. System › About tells where it looks.";
+            return (
+                "ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) in the server's configuration file. " +
+                'System › About tells where it looks.'
+            );
         return MODES[status.mode];
     });
     protected readonly limitText = computed(() => {
         const status = this.status();
         return status
-            ? `At most ${plural(status.maxStreams, 'video')} at once on the whole server; more viewers wait for one to end.`
+            ? `At most ${plural(status.maxStreams, 'video')} at once on the whole server; ` +
+                  `more viewers wait for one to end.`
             : '';
     });
     protected readonly rows = computed(() => (this.status()?.streams ?? []).map((stream) => this.row(stream)));

@@ -28,7 +28,8 @@ function render(
 describe('markdown', () => {
     it('renders the usual Markdown: headings, emphasis, lists, tables, code', () => {
         const { root } = render(
-            '# Title\n\nSome *words* and **more**.\n\n- one\n- two\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n```js\nlet x = 1;\n```\n',
+            '# Title\n\nSome *words* and **more**.\n\n- one\n- two\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n```js\nlet ' +
+                'x = 1;\n```\n',
         );
 
         expect(root.querySelector('h1')!.textContent).toBe('Title');
@@ -40,7 +41,8 @@ describe('markdown', () => {
 
     it('shows the HTML written in a document as text, never as elements', () => {
         const { root } = render(
-            '<script>alert(1)</script>\n\n<img src=x onerror="alert(1)">\n\n<svg onload="alert(1)"></svg> <iframe src="https://evil"></iframe>',
+            '<script>alert(1)</script>\n\n<img src=x onerror="alert(1)">\n\n<svg onload="alert(1)"></svg> <iframe ' +
+                'src="https://evil"></iframe>',
         );
 
         expect(root.querySelector('script, img, svg, iframe')).toBeNull();
@@ -56,7 +58,8 @@ describe('markdown', () => {
     it('drops links that would run code or leave the library, and opens other sites apart', () => {
         const { root } = render(
             [
-                '[a](javascript:alert(1)) [b](JaVaScRiPt:alert(1)) [c](data:text/html,<b>x</b>) [d](vbscript:x) [e](file:///etc/passwd)',
+                '[a](javascript:alert(1)) [b](JaVaScRiPt:alert(1)) [c](data:text/html,<b>x</b>) [d](vbscript:x) ' +
+                    '[e](file:///etc/passwd)',
                 '[f](../../../../outside.md) [g](https://example/page) [h](mailto:me@example) [i](//example/x)',
             ].join('\n\n'),
         );
@@ -72,20 +75,25 @@ describe('markdown', () => {
         expect(href('h')).toBe('mailto:me@example');
     });
 
-    it('leads relative links to the library: documents in the viewer, other files as files, folders to their listing', () => {
-        const { root } = render(
-            '[guide](../Other%20guide.md) [notes](./notes.txt#top) [archive](files/data.zip) [up](../) [root](/Read%20me.md)',
-        );
-        const anchor = (text: string) => [...root.querySelectorAll('a')].find((a) => a.textContent === text)!;
+    it(
+        'leads relative links to the library: documents in the viewer, other files as files, ' +
+            'folders to their listing',
+        () => {
+            const { root } = render(
+                '[guide](../Other%20guide.md) [notes](./notes.txt#top) [archive](files/data.zip) [up](../) ' +
+                    '[root](/Read%20me.md)',
+            );
+            const anchor = (text: string) => [...root.querySelectorAll('a')].find((a) => a.textContent === text)!;
 
-        expect(anchor('guide').getAttribute('href')).toBe('view?path=Docs/Other guide.md');
-        expect(anchor('guide').dataset['path']).toBe('Docs/Other guide.md');
-        expect(anchor('notes').dataset['path']).toBe('Docs/Guide/notes.txt');
-        expect(anchor('archive').getAttribute('href')).toBe('api/files/raw/Docs/Guide/files/data.zip');
-        expect(anchor('archive').dataset['path']).toBeUndefined();
-        expect(anchor('up').getAttribute('href')).toBe('./?path=Docs');
-        expect(anchor('root').dataset['path']).toBe('Read me.md');
-    });
+            expect(anchor('guide').getAttribute('href')).toBe('view?path=Docs/Other guide.md');
+            expect(anchor('guide').dataset['path']).toBe('Docs/Other guide.md');
+            expect(anchor('notes').dataset['path']).toBe('Docs/Guide/notes.txt');
+            expect(anchor('archive').getAttribute('href')).toBe('api/files/raw/Docs/Guide/files/data.zip');
+            expect(anchor('archive').dataset['path']).toBeUndefined();
+            expect(anchor('up').getAttribute('href')).toBe('./?path=Docs');
+            expect(anchor('root').dataset['path']).toBe('Read me.md');
+        },
+    );
 
     it('takes plain names of files as text, not as web addresses', () => {
         const { root } = render('See notes.md, photo.jpg and nas.local; or https://example and www.example.');
@@ -97,7 +105,8 @@ describe('markdown', () => {
 
     it('shows the library images through the app and holds back those of other sites', () => {
         const { root, externalImages } = render(
-            '![map](img/map.png) ![logo](https://tracker/pixel.png) ![x](javascript:alert(1)) ![y](../../../../../etc.png)',
+            '![map](img/map.png) ![logo](https://tracker/pixel.png) ![x](javascript:alert(1)) ' +
+                '![y](../../../../../etc.png)',
         );
         const images = [...root.querySelectorAll('img')];
 

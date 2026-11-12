@@ -533,16 +533,20 @@ describe('VideoPlayerComponent', () => {
             await settle();
         }
 
-        it('is at least as wide as the controls that stay (play, mute, fullscreen, "⋯", position), not wider with more buttons', async () => {
-            await createWith(false);
-            const without = minWidth();
-            expect(without).toBeGreaterThanOrEqual(4 * 40 + 40);
+        it(
+            'is at least as wide as the controls that stay (play, mute, fullscreen, "⋯", position), ' +
+                'not wider with more buttons',
+            async () => {
+                await createWith(false);
+                const without = minWidth();
+                expect(without).toBeGreaterThanOrEqual(4 * 40 + 40);
 
-            host.componentInstance.cinema.set(true);
-            await settle();
-            expect(cinemaButton()).not.toBeNull();
-            expect(minWidth()).toBe(without); // the others go into the "⋯" menu when it is narrow
-        });
+                host.componentInstance.cinema.set(true);
+                await settle();
+                expect(cinemaButton()).not.toBeNull();
+                expect(minWidth()).toBe(without); // the others go into the "⋯" menu when it is narrow
+            },
+        );
 
         it('switches cinema mode with its button and remembers it in this browser', async () => {
             await createWith(true);
@@ -621,31 +625,34 @@ describe('VideoPlayerComponent', () => {
             expect(unlock).toHaveBeenCalledTimes(1);
         });
 
-        it('holds the screen sideways when it turns back while in fullscreen (a seek reloading the video)', async () => {
-            await goFullscreen(1920, 1080);
-            lock.mockClear();
+        it(
+            'holds the screen sideways when it turns back while in fullscreen (a seek reloading the ' + 'video)',
+            async () => {
+                await goFullscreen(1920, 1080);
+                lock.mockClear();
 
-            // Chrome let it go: upright again.
-            orientation.type = 'portrait-primary';
-            orientation.dispatchEvent(new Event('change'));
-            expect(lock).toHaveBeenCalledWith('landscape');
+                // Chrome let it go: upright again.
+                orientation.type = 'portrait-primary';
+                orientation.dispatchEvent(new Event('change'));
+                expect(lock).toHaveBeenCalledWith('landscape');
 
-            // A conversion asked from elsewhere loads again.
-            lock.mockClear();
-            video().dispatchEvent(new Event('loadedmetadata'));
-            expect(lock).toHaveBeenCalledWith('landscape');
+                // A conversion asked from elsewhere loads again.
+                lock.mockClear();
+                video().dispatchEvent(new Event('loadedmetadata'));
+                expect(lock).toHaveBeenCalledWith('landscape');
 
-            // Sideways turns are left alone; after fullscreen nothing is held any more.
-            lock.mockClear();
-            orientation.type = 'landscape-secondary';
-            orientation.dispatchEvent(new Event('change'));
-            fullscreenElement = null;
-            document.dispatchEvent(new Event('fullscreenchange'));
-            orientation.type = 'portrait-primary';
-            orientation.dispatchEvent(new Event('change'));
-            video().dispatchEvent(new Event('loadedmetadata'));
-            expect(lock).not.toHaveBeenCalled();
-        });
+                // Sideways turns are left alone; after fullscreen nothing is held any more.
+                lock.mockClear();
+                orientation.type = 'landscape-secondary';
+                orientation.dispatchEvent(new Event('change'));
+                fullscreenElement = null;
+                document.dispatchEvent(new Event('fullscreenchange'));
+                orientation.type = 'portrait-primary';
+                orientation.dispatchEvent(new Event('change'));
+                video().dispatchEvent(new Event('loadedmetadata'));
+                expect(lock).not.toHaveBeenCalled();
+            },
+        );
 
         it('leaves a tall video as it is', async () => {
             await goFullscreen(1080, 1920);

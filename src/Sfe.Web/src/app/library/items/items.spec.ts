@@ -762,25 +762,30 @@ describe('Items not indexed yet', () => {
         expect(indexed.querySelector('.item-link')!.getAttribute('title')).toBe('b.jpg');
     });
 
-    it('counts the indexed items of a folder over its card, or at the end of its line, when the index knows it', async () => {
-        const make = async (value: LibraryItem, cards: boolean) => {
-            const fixture = TestBed.createComponent(FolderItemComponent);
-            fixture.componentRef.setInput('item', value);
-            fixture.componentRef.setInput('cards', cards);
-            await fixture.whenStable();
-            return fixture.nativeElement as HTMLElement;
-        };
-        const card = await make(item('Films', { kind: 'directory', indexed: true, indexedItems: 1234 }), true);
-        const line = await make(item('Films', { kind: 'directory', indexed: true, indexedItems: 0 }), false);
-        const unknown = await make(item('Films', { kind: 'directory', indexed: false }), true);
+    it(
+        'counts the indexed items of a folder over its card, or at the end of its line, ' + 'when the index knows it',
+        async () => {
+            const make = async (value: LibraryItem, cards: boolean) => {
+                const fixture = TestBed.createComponent(FolderItemComponent);
+                fixture.componentRef.setInput('item', value);
+                fixture.componentRef.setInput('cards', cards);
+                await fixture.whenStable();
+                return fixture.nativeElement as HTMLElement;
+            };
+            const card = await make(item('Films', { kind: 'directory', indexed: true, indexedItems: 1234 }), true);
+            const line = await make(item('Films', { kind: 'directory', indexed: true, indexedItems: 0 }), false);
+            const unknown = await make(item('Films', { kind: 'directory', indexed: false }), true);
 
-        // Over the pictures, outside the link but letting clicks through to it: the link holds its hint.
-        const badge = card.querySelector('.folder-cover-marks .folder-count')!;
-        expect(badge.textContent!.trim()).toBe((1234).toLocaleString());
-        expect(card.querySelector('.folder')!.getAttribute('title')).toContain('indexed items directly in this folder');
-        expect(line.querySelector('.folder > .folder-count')!.textContent!.trim()).toBe('0');
-        expect(unknown.querySelector('.folder-count')).toBeNull();
-    });
+            // Over the pictures, outside the link but letting clicks through to it: the link holds its hint.
+            const badge = card.querySelector('.folder-cover-marks .folder-count')!;
+            expect(badge.textContent!.trim()).toBe((1234).toLocaleString());
+            expect(card.querySelector('.folder')!.getAttribute('title')).toContain(
+                'indexed items directly in this folder',
+            );
+            expect(line.querySelector('.folder > .folder-count')!.textContent!.trim()).toBe('0');
+            expect(unknown.querySelector('.folder-count')).toBeNull();
+        },
+    );
 });
 
 describe('Context menus of listed items', () => {

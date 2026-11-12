@@ -95,7 +95,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         title: 'Playback',
         icon: 'play',
         description:
-            'The video player, an app to open videos in, and how videos reach the browser: from a data server, or converted by this one.',
+            'The video player, an app to open videos in, and how videos reach the browser: from a data server, ' +
+            'or converted by this one.',
         subpages: [
             settingsPage(
                 'player',
@@ -151,7 +152,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         title: 'File management',
         icon: 'folder',
         description:
-            'The trash, uploads under way, the names new files and folders may have, and where SFE keeps its work files.',
+            'The trash, uploads under way, the names new files and folders may have, ' +
+            'and where SFE keeps its work files.',
         subpages: [
             page(
                 'trash',
@@ -168,7 +170,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
             ),
             settingsPage(
                 'files',
-                'How deleting works, how long the trash keeps things, limits of copies, uploads and zips, names, and where SFE keeps its work files.',
+                'How deleting works, how long the trash keeps things, limits of copies, uploads and zips, names, ' +
+                    'and where SFE keeps its work files.',
             ),
         ],
     },
@@ -272,7 +275,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         title: 'Spaces & accounts',
         icon: 'group',
         description:
-            'Who can sign in, which spaces they see, and what they may do in each. A space is one library with its own groups and accounts.',
+            'Who can sign in, which spaces they see, and what they may do in each. A space is one library with its ' +
+            'own groups and accounts.',
         subpages: [
             page(
                 'spaces',
@@ -314,7 +318,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         title: 'Logs',
         icon: 'docs',
         description:
-            'The messages, warnings and errors the server logged, searchable by text, date and severity, and how long they are kept.',
+            'The messages, warnings and errors the server logged, searchable by text, date and severity, ' +
+            'and how long they are kept.',
         subpages: [
             page(
                 'entries',

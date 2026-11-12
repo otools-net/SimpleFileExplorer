@@ -42,11 +42,13 @@ for (const [name, css] of Object.entries(variants)) {
         const ms = (a: Record<string, number>, b: Record<string, number>, key: string) =>
             ((b[key] - a[key]) * 1000).toFixed(0);
         const part = (a: Record<string, number>, b: Record<string, number>) =>
-            `task ${ms(a, b, 'TaskDuration')}, script ${ms(a, b, 'ScriptDuration')}, layout ${ms(a, b, 'LayoutDuration')} (${b.LayoutCount - a.LayoutCount}), ` +
+            `task ${ms(a, b, 'TaskDuration')}, script ${ms(a, b, 'ScriptDuration')}, ` +
+            `layout ${ms(a, b, 'LayoutDuration')} (${b.LayoutCount - a.LayoutCount}), ` +
             `style ${ms(a, b, 'RecalcStyleDuration')} (${b.RecalcStyleCount - a.RecalcStyleCount}) ms`;
         console.log(
-            `[cost] ${test.info().project.name} | ${name}\n  listing: ${part(start, listed)}\n  scrolling: ${part(listed, scrolled)}` +
-                `\n  scrolled to ${await page.evaluate(() => scrollY)}, ${await page.locator('sfe-listing [data-path]').count()} items`,
+            `[cost] ${test.info().project.name} | ${name}\n  listing: ${part(start, listed)}\n  ` +
+                `scrolling: ${part(listed, scrolled)}` +
+                `\n  scrolled to ${await page.evaluate(() => scrollY)}, ${await page.locator('sfe-listing ' + '[data-path]').count()} items`,
         );
     });
 }

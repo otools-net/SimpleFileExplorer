@@ -220,7 +220,8 @@ export class SpacesPageComponent implements OnInit {
     protected async remove(space: TenantDetails): Promise<void> {
         if (
             !confirm(
-                `Delete the space ${space.name}? Its groups and settings go, and its accounts lose access to it (accounts themselves stay). ` +
+                `Delete the space ${space.name}? Its groups and settings go, and its accounts lose access to it ` +
+                    `(accounts themselves stay). ` +
                     "The index of its library and its caches stay on the server's disk.",
             )
         )

@@ -118,7 +118,9 @@ export async function expectOpensWithin(
     const ms = shown! - lifted!;
     const at = (from: number | null, to: number | null) =>
         from === null || to === null ? '?' : (to - from).toFixed(0);
-    const split = `click +${at(lifted, clicked)}, in the page +${at(clicked ?? lifted, added)}, on screen +${at(added, shown)} ms`;
+    const split =
+        `click +${at(lifted, clicked)}, in the page +${at(clicked ?? lifted, added)}, ` +
+        `on screen +${at(added, shown)} ms`;
     const tasks = longTasks.length ? `; long tasks ${longTasks.join(', ')} ms` : '';
     const text = `${selector}: ${ms.toFixed(0)} ms (${split}${tasks})`;
     // In the HTML report under the test; printed with SFE_E2E_TIMINGS=1.
@@ -154,7 +156,8 @@ export async function expectMedianOpensWithin(
     });
     expect(
         median,
-        `${selector}: median ${median.toFixed(0)} ms of ${samples.map((s) => s.toFixed(0)).join(', ')}; budget ${budget} ms`,
+        `${selector}: median ${median.toFixed(0)} ms of ${samples.map((s) => s.toFixed(0)).join(', ')}; ` +
+            `budget ${budget} ms`,
     ).toBeLessThanOrEqual(budget);
     return median;
 }

@@ -171,57 +171,59 @@ describe('ArchiveViewComponent', () => {
             await stable();
         };
 
-        it('searches the whole archive by name, goes on where a page stopped, and opens the folder of a result', async () => {
-            api.exploreArchive.mockResolvedValue(listing([folder(2, 'Day 1'), file(10, 'readme.txt')]));
-            await show();
-            api.searchArchive.mockResolvedValueOnce({ items: [], next: 'f10' }).mockResolvedValueOnce({
-                items: [
-                    file(11, 'summit.jpg', { where: 'Day 1', in: 2 }),
-                    file(12, 'Summit.txt', { where: '', in: 1 }),
-                ],
-                next: null,
-            });
+        it(
+            'searches the whole archive by name, goes on where a page stopped, ' + 'and opens the folder of a result',
+            async () => {
+                api.exploreArchive.mockResolvedValue(listing([folder(2, 'Day 1'), file(10, 'readme.txt')]));
+                await show();
+                api.searchArchive.mockResolvedValueOnce({ items: [], next: 'f10' }).mockResolvedValueOnce({
+                    items: [
+                        file(11, 'summit.jpg', { where: 'Day 1', in: 2 }),
+                        file(12, 'Summit.txt', { where: '', in: 1 }),
+                    ],
+                    next: null,
+                });
 
-            await type('s');
-            expect(api.searchArchive).not.toHaveBeenCalled();
-            await type('summ');
+                await type('s');
+                expect(api.searchArchive).not.toHaveBeenCalled();
+                await type('summ');
 
-            expect(api.searchArchive).toHaveBeenNthCalledWith(
-                1,
-                'Media/trip.zip',
-                { q: 'summ', after: null, unlock: null },
-                expect.any(AbortSignal),
-            );
-            expect(api.searchArchive).toHaveBeenNthCalledWith(
-                2,
-                'Media/trip.zip',
-                { q: 'summ', after: 'f10', unlock: null },
-                expect.any(AbortSignal),
-            );
-            expect(names()).toEqual(['summit.jpg', 'Summit.txt']);
-            expect([...element.querySelectorAll('[data-where]')].map((where) => where.textContent!.trim())).toEqual([
-                'in Day 1',
-                'in trip.zip',
-            ]);
-            expect(element.querySelector('[data-found]')!.textContent).toContain('2 names hold “summ”');
+                expect(api.searchArchive).toHaveBeenNthCalledWith(
+                    1,
+                    'Media/trip.zip',
+                    { q: 'summ', after: null, unlock: null },
+                    expect.any(AbortSignal),
+                );
+                expect(api.searchArchive).toHaveBeenNthCalledWith(
+                    2,
+                    'Media/trip.zip',
+                    { q: 'summ', after: 'f10', unlock: null },
+                    expect.any(AbortSignal),
+                );
+                expect(names()).toEqual(['summit.jpg', 'Summit.txt']);
+                expect([...element.querySelectorAll('[data-where]')].map((where) => where.textContent!.trim())).toEqual(
+                    ['in Day 1', 'in trip.zip'],
+                );
+                expect(element.querySelector('[data-found]')!.textContent).toContain('2 names hold “summ”');
 
-            api.exploreArchive.mockResolvedValue(
-                listing([file(11, 'summit.jpg')], {
-                    folder: folder(2, 'Day 1', { files: 1 }),
-                    trail: { skipped: 0, last: [{ id: 2, name: 'Day 1' }] },
-                }),
-            );
-            element.querySelector<HTMLButtonElement>('[data-where]')!.click();
-            await stable();
-            expect(api.exploreArchive).toHaveBeenLastCalledWith(
-                'Media/trip.zip',
-                { folder: 2, limit: 200, unlock: null },
-                expect.any(AbortSignal),
-            );
-            expect(element.querySelector('[data-found]')).toBeNull();
-            expect(element.querySelector<HTMLInputElement>('[data-find]')!.value).toBe('');
-            expect(crumbs()).toEqual(['trip.zip', 'Day 1']);
-        });
+                api.exploreArchive.mockResolvedValue(
+                    listing([file(11, 'summit.jpg')], {
+                        folder: folder(2, 'Day 1', { files: 1 }),
+                        trail: { skipped: 0, last: [{ id: 2, name: 'Day 1' }] },
+                    }),
+                );
+                element.querySelector<HTMLButtonElement>('[data-where]')!.click();
+                await stable();
+                expect(api.exploreArchive).toHaveBeenLastCalledWith(
+                    'Media/trip.zip',
+                    { folder: 2, limit: 200, unlock: null },
+                    expect.any(AbortSignal),
+                );
+                expect(element.querySelector('[data-found]')).toBeNull();
+                expect(element.querySelector<HTMLInputElement>('[data-find]')!.value).toBe('');
+                expect(crumbs()).toEqual(['trip.zip', 'Day 1']);
+            },
+        );
 
         it('looks only in the folder shown once This folder is pressed, again at once for what is typed', async () => {
             api.exploreArchive.mockResolvedValue(
@@ -307,133 +309,153 @@ describe('ArchiveViewComponent', () => {
             return event;
         };
 
-        it('reads a text file from the archive in the text view, read only, and goes back to the list as it was', async () => {
-            api.exploreArchive.mockResolvedValue(
-                listing([folder(2, 'Day 1'), file(10, 'readme.txt'), file(11, 'notes.md')]),
-            );
-            api.archiveText.mockResolvedValue(textFile);
-            await show();
+        it(
+            'reads a text file from the archive in the text view, read only, and goes back to the list as it ' + 'was',
+            async () => {
+                api.exploreArchive.mockResolvedValue(
+                    listing([folder(2, 'Day 1'), file(10, 'readme.txt'), file(11, 'notes.md')]),
+                );
+                api.archiveText.mockResolvedValue(textFile);
+                await show();
 
-            const click = open('readme.txt');
-            expect(click.defaultPrevented).toBe(true);
-            await until(() => Boolean(element.querySelector('[data-entry] .cm-content')));
-            expect(element.querySelector('[data-entry] .archive-entry-name')!.textContent!.trim()).toBe('readme.txt');
-            expect(api.archiveText).toHaveBeenCalledWith(
-                'Media/trip.zip',
-                10,
-                { encoding: undefined, unlock: null },
-                expect.any(AbortSignal),
-            );
-            expect(element.querySelector('[data-entry] .cm-content')!.textContent).toContain('hello from the archive');
-            expect(element.querySelector('[data-entry] [data-follow]')).toBeNull();
-            expect(element.querySelector<HTMLAnchorElement>('[data-entry] [data-download]')!.getAttribute('href')).toBe(
-                `api/files/explore/entry/${pathToken('Media/trip.zip')}/10/readme.txt?download=true`,
-            );
-            expect(element.querySelector<HTMLButtonElement>('[data-previous]')!.disabled).toBe(true);
-            expect(element.querySelector<HTMLButtonElement>('[data-next]')!.disabled).toBe(false);
+                const click = open('readme.txt');
+                expect(click.defaultPrevented).toBe(true);
+                await until(() => Boolean(element.querySelector('[data-entry] .cm-content')));
+                expect(element.querySelector('[data-entry] .archive-entry-name')!.textContent!.trim()).toBe(
+                    'readme.txt',
+                );
+                expect(api.archiveText).toHaveBeenCalledWith(
+                    'Media/trip.zip',
+                    10,
+                    { encoding: undefined, unlock: null },
+                    expect.any(AbortSignal),
+                );
+                expect(element.querySelector('[data-entry] .cm-content')!.textContent).toContain(
+                    'hello from the archive',
+                );
+                expect(element.querySelector('[data-entry] [data-follow]')).toBeNull();
+                expect(
+                    element.querySelector<HTMLAnchorElement>('[data-entry] [data-download]')!.getAttribute('href'),
+                ).toBe(`api/files/explore/entry/${pathToken('Media/trip.zip')}/10/readme.txt?download=true`);
+                expect(element.querySelector<HTMLButtonElement>('[data-previous]')!.disabled).toBe(true);
+                expect(element.querySelector<HTMLButtonElement>('[data-next]')!.disabled).toBe(false);
 
-            element.querySelector<HTMLButtonElement>('[data-back]')!.click();
-            await stable();
-            expect(element.querySelector('[data-entry]')).toBeNull();
-            expect(element.querySelector('.archive-row.selected .archive-open')!.textContent!.trim()).toBe(
-                'readme.txt',
-            );
-        });
+                element.querySelector<HTMLButtonElement>('[data-back]')!.click();
+                await stable();
+                expect(element.querySelector('[data-entry]')).toBeNull();
+                expect(element.querySelector('.archive-row.selected .archive-open')!.textContent!.trim()).toBe(
+                    'readme.txt',
+                );
+            },
+        );
 
-        it('shows pictures, videos and audio, the arrows going from one to the next; Esc goes back; Ctrl+click still opens a tab', async () => {
-            api.exploreArchive.mockResolvedValue(
-                listing([
-                    file(10, 'a.jpg', { media: 'image' }),
-                    file(11, 'clip.mp4', { media: 'video' }),
-                    file(12, 'song.mp3', { media: 'audio' }),
-                    file(13, 'data.bin'),
-                ]),
-            );
-            await show();
-            const token = pathToken('Media/trip.zip');
+        it(
+            'shows pictures, videos and audio, the arrows going from one to the next; Esc goes back; ' +
+                'Ctrl+click still opens a tab',
+            async () => {
+                api.exploreArchive.mockResolvedValue(
+                    listing([
+                        file(10, 'a.jpg', { media: 'image' }),
+                        file(11, 'clip.mp4', { media: 'video' }),
+                        file(12, 'song.mp3', { media: 'audio' }),
+                        file(13, 'data.bin'),
+                    ]),
+                );
+                await show();
+                const token = pathToken('Media/trip.zip');
 
-            expect(open('a.jpg', { ctrlKey: true }).defaultPrevented).toBe(false);
-            expect(open('data.bin').defaultPrevented, 'no viewer: a tab').toBe(false);
-            await stable();
-            expect(element.querySelector('[data-entry]')).toBeNull();
+                expect(open('a.jpg', { ctrlKey: true }).defaultPrevented).toBe(false);
+                expect(open('data.bin').defaultPrevented, 'no viewer: a tab').toBe(false);
+                await stable();
+                expect(element.querySelector('[data-entry]')).toBeNull();
 
-            open('a.jpg');
-            await stable();
-            expect(element.querySelector<HTMLImageElement>('[data-entry-picture]')!.getAttribute('src')).toBe(
-                `api/files/explore/entry/${token}/10/a.jpg`,
-            );
-            element
-                .querySelector<HTMLElement>('[data-entry]')!
-                .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-            await stable();
-            expect(element.querySelector('[data-entry-video] video')!.getAttribute('src')).toBe(
-                `api/files/explore/entry/${token}/11/clip.mp4`,
-            );
-            element.querySelector<HTMLButtonElement>('[data-next]')!.click();
-            await stable();
-            expect(element.querySelector<HTMLAudioElement>('[data-entry-audio]')!.getAttribute('src')).toBe(
-                `api/files/explore/entry/${token}/12/song.mp3`,
-            );
-            expect(element.querySelector<HTMLButtonElement>('[data-next]')!.disabled, 'data.bin has no viewer').toBe(
-                true,
-            );
+                open('a.jpg');
+                await stable();
+                expect(element.querySelector<HTMLImageElement>('[data-entry-picture]')!.getAttribute('src')).toBe(
+                    `api/files/explore/entry/${token}/10/a.jpg`,
+                );
+                element
+                    .querySelector<HTMLElement>('[data-entry]')!
+                    .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+                await stable();
+                expect(element.querySelector('[data-entry-video] video')!.getAttribute('src')).toBe(
+                    `api/files/explore/entry/${token}/11/clip.mp4`,
+                );
+                element.querySelector<HTMLButtonElement>('[data-next]')!.click();
+                await stable();
+                expect(element.querySelector<HTMLAudioElement>('[data-entry-audio]')!.getAttribute('src')).toBe(
+                    `api/files/explore/entry/${token}/12/song.mp3`,
+                );
+                expect(
+                    element.querySelector<HTMLButtonElement>('[data-next]')!.disabled,
+                    'data.bin has no viewer',
+                ).toBe(true);
 
-            element.querySelector<HTMLAudioElement>('[data-entry-audio]')!.dispatchEvent(new Event('error'));
-            await stable();
-            expect(element.querySelector('[data-cannot-play] a')!.getAttribute('href')).toBe(
-                `api/files/explore/entry/${token}/12/song.mp3?download=true`,
-            );
+                element.querySelector<HTMLAudioElement>('[data-entry-audio]')!.dispatchEvent(new Event('error'));
+                await stable();
+                expect(element.querySelector('[data-cannot-play] a')!.getAttribute('href')).toBe(
+                    `api/files/explore/entry/${token}/12/song.mp3?download=true`,
+                );
 
-            element
-                .querySelector<HTMLElement>('[data-entry]')!
-                .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-            await stable();
-            expect(element.querySelector('[data-entry]')).toBeNull();
-        });
+                element
+                    .querySelector<HTMLElement>('[data-entry]')!
+                    .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+                await stable();
+                expect(element.querySelector('[data-entry]')).toBeNull();
+            },
+        );
 
-        it('follows the links and pictures of a document to the files of the archive, Back returning to it', async () => {
-            api.exploreArchive.mockResolvedValue(listing([file(10, 'guide.md')], { path: 'docs' }));
-            api.archiveText.mockImplementation(async (_path: string, entry: number | string) => ({
-                ...textFile,
-                text:
-                    entry === 10
-                        ? '# Guide\n\n![map](img/map.png)\n\n[Next part](../more/part%202.md) and [outside](../../../x.md)\n'
-                        : '# Part 2\n',
-            }));
-            await show();
+        it(
+            'follows the links and pictures of a document to the files of the archive, ' + 'Back returning to it',
+            async () => {
+                api.exploreArchive.mockResolvedValue(listing([file(10, 'guide.md')], { path: 'docs' }));
+                api.archiveText.mockImplementation(async (_path: string, entry: number | string) => ({
+                    ...textFile,
+                    text:
+                        entry === 10
+                            ? '# Guide\n\n![map](img/map.png)\n\n[Next part](../more/part%202.md) ' +
+                              'and [outside](../../../x.md)\n'
+                            : '# Part 2\n',
+                }));
+                await show();
 
-            open('guide.md');
-            await until(() => Boolean(element.querySelector('[data-entry] .markdown-content h1')));
-            const token = pathToken('Media/trip.zip');
-            expect(element.querySelector('[data-entry] .markdown-content img')!.getAttribute('src')).toBe(
-                `api/files/explore/entry/${token}/at/docs/img/map.png`,
-            );
-            const links = [...element.querySelectorAll<HTMLAnchorElement>('[data-entry] .markdown-content a')];
-            expect(
-                links.find((a) => a.textContent === 'outside')!.hasAttribute('href'),
-                'out of the archive: text',
-            ).toBe(false);
+                open('guide.md');
+                await until(() => Boolean(element.querySelector('[data-entry] .markdown-content h1')));
+                const token = pathToken('Media/trip.zip');
+                expect(element.querySelector('[data-entry] .markdown-content img')!.getAttribute('src')).toBe(
+                    `api/files/explore/entry/${token}/at/docs/img/map.png`,
+                );
+                const links = [...element.querySelectorAll<HTMLAnchorElement>('[data-entry] .markdown-content a')];
+                expect(
+                    links.find((a) => a.textContent === 'outside')!.hasAttribute('href'),
+                    'out of the archive: text',
+                ).toBe(false);
 
-            links
-                .find((a) => a.textContent === 'Next part')!
-                .dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
-            await until(() => element.querySelector('[data-entry] .markdown-content h1')?.textContent === 'Part 2');
-            expect(api.archiveText).toHaveBeenLastCalledWith(
-                'Media/trip.zip',
-                'more/part 2.md',
-                { encoding: undefined, unlock: null },
-                expect.any(AbortSignal),
-            );
-            expect(element.querySelector('[data-entry] .archive-entry-name')!.textContent!.trim()).toBe('part 2.md');
-            expect(element.querySelector<HTMLButtonElement>('[data-next]')!.disabled, 'no row of the list').toBe(true);
+                links
+                    .find((a) => a.textContent === 'Next part')!
+                    .dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+                await until(() => element.querySelector('[data-entry] .markdown-content h1')?.textContent === 'Part 2');
+                expect(api.archiveText).toHaveBeenLastCalledWith(
+                    'Media/trip.zip',
+                    'more/part 2.md',
+                    { encoding: undefined, unlock: null },
+                    expect.any(AbortSignal),
+                );
+                expect(element.querySelector('[data-entry] .archive-entry-name')!.textContent!.trim()).toBe(
+                    'part 2.md',
+                );
+                expect(element.querySelector<HTMLButtonElement>('[data-next]')!.disabled, 'no row of the list').toBe(
+                    true,
+                );
 
-            element.querySelector<HTMLButtonElement>('[data-back]')!.click();
-            await until(() => element.querySelector('[data-entry] .markdown-content h1')?.textContent === 'Guide');
-            expect(element.querySelector('[data-entry] .archive-entry-name')!.textContent!.trim()).toBe('guide.md');
-            element.querySelector<HTMLButtonElement>('[data-back]')!.click();
-            await stable();
-            expect(element.querySelector('[data-entry]')).toBeNull();
-        });
+                element.querySelector<HTMLButtonElement>('[data-back]')!.click();
+                await until(() => element.querySelector('[data-entry] .markdown-content h1')?.textContent === 'Guide');
+                expect(element.querySelector('[data-entry] .archive-entry-name')!.textContent!.trim()).toBe('guide.md');
+                element.querySelector<HTMLButtonElement>('[data-back]')!.click();
+                await stable();
+                expect(element.querySelector('[data-entry]')).toBeNull();
+            },
+        );
 
         it('opens a protected file in place only once the password is given, sending the unlock', async () => {
             api.exploreArchive.mockResolvedValue(
@@ -497,88 +519,98 @@ describe('ArchiveViewComponent', () => {
         expect(element.querySelector('[data-empty]')).not.toBeNull();
     });
 
-    it('opens files in a tab, from the app, with the right to download; links and protected entries are only listed', async () => {
-        api.exploreArchive.mockResolvedValue(
-            listing([
-                file(10, 'photo #1.jpg'),
-                file(11, 'secret.txt', { encrypted: true }),
-                file(12, 'passwd', { kind: 'link' }),
-            ]),
-        );
-        await show();
+    it(
+        'opens files in a tab, from the app, with the right to download; links and protected entries are only ' +
+            'listed',
+        async () => {
+            api.exploreArchive.mockResolvedValue(
+                listing([
+                    file(10, 'photo #1.jpg'),
+                    file(11, 'secret.txt', { encrypted: true }),
+                    file(12, 'passwd', { kind: 'link' }),
+                ]),
+            );
+            await show();
 
-        const link = element.querySelector<HTMLAnchorElement>('[data-kind="file"] a.archive-open')!;
-        expect(link.getAttribute('href')).toBe(
-            `api/files/explore/entry/${pathToken('Media/trip.zip')}/10/photo%20%231.jpg`,
-        );
-        expect(link.target).toBe('_blank');
-        expect(element.querySelectorAll('a.archive-open')).toHaveLength(1);
-        expect(element.querySelector('.archive-lock')).not.toBeNull();
-        expect(element.querySelector('[data-kind="link"] .archive-open')!.getAttribute('title')).toContain(
-            'never created',
-        );
+            const link = element.querySelector<HTMLAnchorElement>('[data-kind="file"] a.archive-open')!;
+            expect(link.getAttribute('href')).toBe(
+                `api/files/explore/entry/${pathToken('Media/trip.zip')}/10/photo%20%231.jpg`,
+            );
+            expect(link.target).toBe('_blank');
+            expect(element.querySelectorAll('a.archive-open')).toHaveLength(1);
+            expect(element.querySelector('.archive-lock')).not.toBeNull();
+            expect(element.querySelector('[data-kind="link"] .archive-open')!.getAttribute('title')).toContain(
+                'never created',
+            );
 
-        const view = fixture.componentInstance as unknown as {
-            menuOf(entry: ArchiveItem): { entries(): { id: string; href?: string }[] } | null;
-        };
-        const entries = view.menuOf(file(10, 'photo #1.jpg'))!.entries();
-        expect(entries.map((entry) => entry.id)).toEqual(['newTab', 'download']);
-        expect(entries[1].href).toMatch(/\?download=true$/);
-        expect(view.menuOf(file(12, 'passwd', { kind: 'link' }))).toBeNull();
-    });
+            const view = fixture.componentInstance as unknown as {
+                menuOf(entry: ArchiveItem): { entries(): { id: string; href?: string }[] } | null;
+            };
+            const entries = view.menuOf(file(10, 'photo #1.jpg'))!.entries();
+            expect(entries.map((entry) => entry.id)).toEqual(['newTab', 'download']);
+            expect(entries[1].href).toMatch(/\?download=true$/);
+            expect(view.menuOf(file(12, 'passwd', { kind: 'link' }))).toBeNull();
+        },
+    );
 
-    it('extracts the folder shown, the whole archive at its top, or one entry, through the Extract dialog', async () => {
-        const open = vi.fn();
-        TestBed.inject(Dialogs).extract.set({ open } as never);
-        api.exploreArchive.mockResolvedValue(listing([folder(2, 'Day 1'), file(10, 'readme.txt')]));
-        await show();
+    it(
+        'extracts the folder shown, the whole archive at its top, or one entry, ' + 'through the Extract dialog',
+        async () => {
+            const open = vi.fn();
+            TestBed.inject(Dialogs).extract.set({ open } as never);
+            api.exploreArchive.mockResolvedValue(listing([folder(2, 'Day 1'), file(10, 'readme.txt')]));
+            await show();
 
-        element.querySelector<HTMLButtonElement>('[data-extract-shown]')!.click();
-        expect(open).toHaveBeenLastCalledWith({
-            path: 'Media/trip.zip',
-            name: 'trip.zip',
-            unlock: null,
-            folders: undefined,
-            what: undefined,
-        });
+            element.querySelector<HTMLButtonElement>('[data-extract-shown]')!.click();
+            expect(open).toHaveBeenLastCalledWith({
+                path: 'Media/trip.zip',
+                name: 'trip.zip',
+                unlock: null,
+                folders: undefined,
+                what: undefined,
+            });
 
-        const view = fixture.componentInstance as unknown as {
-            menuOf(entry: ArchiveItem): { entries(): { id: string; run?: () => void }[] } | null;
-        };
-        view
-            .menuOf(file(10, 'readme.txt'))!
-            .entries()
-            .find((entry) => entry.id === 'extract')!.run!();
-        expect(open).toHaveBeenLastCalledWith({
-            path: 'Media/trip.zip',
-            name: 'trip.zip',
-            unlock: null,
-            what: '“readme.txt”',
-            folders: undefined,
-            files: [10],
-        });
+            const view = fixture.componentInstance as unknown as {
+                menuOf(entry: ArchiveItem): { entries(): { id: string; run?: () => void }[] } | null;
+            };
+            view
+                .menuOf(file(10, 'readme.txt'))!
+                .entries()
+                .find((entry) => entry.id === 'extract')!.run!();
+            expect(open).toHaveBeenLastCalledWith({
+                path: 'Media/trip.zip',
+                name: 'trip.zip',
+                unlock: null,
+                what: '“readme.txt”',
+                folders: undefined,
+                files: [10],
+            });
 
-        api.exploreArchive.mockResolvedValue(
-            listing([file(11, 'a.txt')], {
-                folder: folder(2, 'Day 1', { files: 1 }),
-                trail: { skipped: 0, last: [{ id: 2, name: 'Day 1' }] },
-            }),
-        );
-        element.querySelector<HTMLButtonElement>('[data-kind="folder"] .archive-open')!.click();
-        await stable();
-        element.querySelector<HTMLButtonElement>('[data-extract-shown]')!.click();
-        expect(open).toHaveBeenLastCalledWith({
-            path: 'Media/trip.zip',
-            name: 'trip.zip',
-            unlock: null,
-            folders: [2],
-            what: '“Day 1”',
-        });
+            api.exploreArchive.mockResolvedValue(
+                listing([file(11, 'a.txt')], {
+                    folder: folder(2, 'Day 1', { files: 1 }),
+                    trail: { skipped: 0, last: [{ id: 2, name: 'Day 1' }] },
+                }),
+            );
+            element.querySelector<HTMLButtonElement>('[data-kind="folder"] .archive-open')!.click();
+            await stable();
+            element.querySelector<HTMLButtonElement>('[data-extract-shown]')!.click();
+            expect(open).toHaveBeenLastCalledWith({
+                path: 'Media/trip.zip',
+                name: 'trip.zip',
+                unlock: null,
+                folders: [2],
+                what: '“Day 1”',
+            });
 
-        rights.delete(Rights.download);
-        await show();
-        expect(element.querySelector('[data-extract-shown]'), 'its content is taken: the right to download').toBeNull();
-    });
+            rights.delete(Rights.download);
+            await show();
+            expect(
+                element.querySelector('[data-extract-shown]'),
+                'its content is taken: the right to download',
+            ).toBeNull();
+        },
+    );
 
     it('offers no file without the right to download', async () => {
         rights.delete(Rights.download);

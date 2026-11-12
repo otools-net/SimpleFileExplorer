@@ -99,35 +99,39 @@ describe('Editing text', () => {
         expect(copyName('.env')).toBe('.env (copy)');
     });
 
-    it('changes the text after Edit and saves it over the file, as it was encoded, with the version it started from', async () => {
-        api.textFile.mockResolvedValue(text());
-        api.saveText.mockResolvedValue({ version: 'v2', size: 21, modified: '2026-10-18T11:00:00Z', trashId: 7 });
-        await show();
-        expect(view().state.readOnly).toBe(true);
+    it(
+        'changes the text after Edit and saves it over the file, as it was encoded, ' +
+            'with the version it started from',
+        async () => {
+            api.textFile.mockResolvedValue(text());
+            api.saveText.mockResolvedValue({ version: 'v2', size: 21, modified: '2026-10-18T11:00:00Z', trashId: 7 });
+            await show();
+            expect(view().state.readOnly).toBe(true);
 
-        action('edit')!.click();
-        await stable();
-        expect(view().state.readOnly).toBe(false);
-        expect(action('save')!.disabled).toBe(true);
+            action('edit')!.click();
+            await stable();
+            expect(view().state.readOnly).toBe(false);
+            expect(action('save')!.disabled).toBe(true);
 
-        await type('third\n');
-        expect(element.querySelector('[data-edited]')).not.toBeNull();
-        action('save')!.click();
-        await stable();
+            await type('third\n');
+            expect(element.querySelector('[data-edited]')).not.toBeNull();
+            action('save')!.click();
+            await stable();
 
-        const [path, saved, session, version] = api.saveText.mock.calls[0];
-        expect(path).toBe('Docs/notes.txt');
-        expect(saved).toEqual({ text: 'first\nsecond\nthird\n', encoding: 'windows-1252', lineEnding: 'crlf' });
-        expect(session).toMatch(/^[0-9a-f]{32}$/);
-        expect(version).toBe('v1');
-        expect(element.querySelector('[data-edited]')).toBeNull();
+            const [path, saved, session, version] = api.saveText.mock.calls[0];
+            expect(path).toBe('Docs/notes.txt');
+            expect(saved).toEqual({ text: 'first\nsecond\nthird\n', encoding: 'windows-1252', lineEnding: 'crlf' });
+            expect(session).toMatch(/^[0-9a-f]{32}$/);
+            expect(version).toBe('v1');
+            expect(element.querySelector('[data-edited]')).toBeNull();
 
-        // The next save names the new version, in the same session (one previous version kept in the trash).
-        await type('fourth');
-        await key('s', { ctrlKey: true });
-        expect(api.saveText.mock.calls[1][2]).toBe(session);
-        expect(api.saveText.mock.calls[1][3]).toBe('v2');
-    });
+            // The next save names the new version, in the same session (one previous version kept in the trash).
+            await type('fourth');
+            await key('s', { ctrlKey: true });
+            expect(api.saveText.mock.calls[1][2]).toBe(session);
+            expect(api.saveText.mock.calls[1][3]).toBe('v2');
+        },
+    );
 
     it('takes Ctrl+S from the browser even with nothing to save, and starts editing with E', async () => {
         api.textFile.mockResolvedValue(text());

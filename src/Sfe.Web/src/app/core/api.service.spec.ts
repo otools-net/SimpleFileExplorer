@@ -199,17 +199,21 @@ describe('Api', () => {
         http.expectNone('api/browse/covers');
     });
 
-    it("marks the requests that change something, so that another site cannot send them with this browser's session", () => {
-        void api.config();
-        void api.createTag({ name: 'Cat' });
-        void api.deleteTag(7);
+    it(
+        "marks the requests that change something, so that another site cannot send them with this browser's " +
+            'session',
+        () => {
+            void api.config();
+            void api.createTag({ name: 'Cat' });
+            void api.deleteTag(7);
 
-        expect(http.expectOne('api/config').request.headers.has('X-SFE-Request')).toBe(false);
-        expect(
-            http.expectOne((r) => r.url === 'api/tags' && r.method === 'POST').request.headers.get('X-SFE-Request'),
-        ).toBe('1');
-        expect(http.expectOne('api/tags/7').request.headers.get('X-SFE-Request')).toBe('1');
-    });
+            expect(http.expectOne('api/config').request.headers.has('X-SFE-Request')).toBe(false);
+            expect(
+                http.expectOne((r) => r.url === 'api/tags' && r.method === 'POST').request.headers.get('X-SFE-Request'),
+            ).toBe('1');
+            expect(http.expectOne('api/tags/7').request.headers.get('X-SFE-Request')).toBe('1');
+        },
+    );
 
     it('names the library the page shows, once known', () => {
         void api.config();

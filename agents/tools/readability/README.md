@@ -111,3 +111,17 @@ node agents/tools/readability/rewrap-descriptions.mjs src/Sfe.Api          # Ope
   `…Description` name, only the paragraphs holding a long line; no line starts with `-`, `1.`, `#`, `>` or `|`. The
   OpenAPI document then differs only in where its descriptions break lines: compare it with whitespace collapsed.
 - Raw strings that are SQL, test data or console text are not touched: by hand, or left with a comment saying why.
+
+## Long strings (TypeScript)
+
+```sh
+node agents/tools/readability/split-strings-ts.mjs src/Sfe.Web/src tests/e2e   # splits, then Prettier, in turns
+```
+
+- Found with the compiler's syntax tree: `'…'`, `"…"` and the literal parts of templates (never inside `${…}`), split
+  at a space between column 50 and the limit (after a punctuation mark when one is near), as `'a ' + 'b'`; Prettier
+  lays out each file after a split, until no long line can take one.
+- Left: imports, object keys, literal types, `as`/`satisfies`, tagged templates, a member access on the literal, enum
+  members, and Angular's inline `template:`/`styles:`.
+- Check: the client build (`references.mjs --only client`) keeps every chunk's size, since esbuild folds `'a' + 'b'`
+  back (checked 2026-11-12: identical after 252 splits).

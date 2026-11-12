@@ -40,7 +40,9 @@ test('baseline: a tap shows a bare element', async ({ page }) => {
     await page.route('**/e2e-baseline', (route) =>
         route.fulfill({
             contentType: 'text/html',
-            body: '<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><button style="width:200px;height:60px">Show</button>',
+            body:
+                '<!doctype html><meta name="viewport" content="width=device-width, ' +
+                'initial-scale=1"><button style="width:200px;height:60px">Show</button>',
         }),
     );
     await page.goto('./e2e-baseline');

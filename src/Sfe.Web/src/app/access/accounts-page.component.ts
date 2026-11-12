@@ -223,7 +223,8 @@ export class AccountsPageComponent implements OnInit {
             !confirm(
                 outOnly
                     ? `Take ${user.userName} out of this space? The account stays in its other spaces.`
-                    : `Delete the account ${user.userName}? It can no longer sign in anywhere; its preferences go with it, the tags it set stay.`,
+                    : `Delete the account ${user.userName}? It can no longer sign in anywhere; ` +
+                          `its preferences go with it, the tags it set stay.`,
             )
         )
             return;

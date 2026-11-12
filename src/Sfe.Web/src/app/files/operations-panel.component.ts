@@ -167,7 +167,10 @@ export class OperationsPanelComponent implements OnInit {
         if (!clipboard) return '';
         const what =
             clipboard.items.length === 1 ? `“${clipboard.items[0].name}”` : plural(clipboard.items.length, 'item');
-        return `${what} ${clipboard.kind === 'move' ? 'cut' : 'copied'}: open a folder to paste ${clipboard.items.length === 1 ? 'it' : 'them'} into`;
+        return (
+            `${what} ${clipboard.kind === 'move' ? 'cut' : 'copied'}: ` +
+            `open a folder to paste ${clipboard.items.length === 1 ? 'it' : 'them'} into`
+        );
     }
 
     protected paste(): void {

@@ -119,7 +119,8 @@ export class FolderItemComponent {
     protected readonly indexedItems = computed(() => this.item().indexedItems ?? null);
     protected readonly countTitle = computed(
         () =>
-            `${plural(this.indexedItems() ?? 0, 'indexed item')} directly in this folder (files and sub-folders, as of the last scan)`,
+            `${plural(this.indexedItems() ?? 0, 'indexed item')} directly in this folder (files and sub-folders, ` +
+            `as of the last scan)`,
     );
     private readonly dialogs = inject(Dialogs);
 

@@ -336,8 +336,10 @@ export class SpaceDetailComponent {
         if (
             !confirm(
                 deletes
-                    ? `Delete the account ${user.userName}? It is in no other space. Its preferences go with it; the tags it set stay.`
-                    : `Take ${user.userName} out of ${this.space().name}? The account stays, and keeps its other spaces.`,
+                    ? `Delete the account ${user.userName}? It is in no other space. Its preferences go with it; ` +
+                          `the tags it set stay.`
+                    : `Take ${user.userName} out of ${this.space().name}? The account stays, ` +
+                          `and keeps its other spaces.`,
             )
         )
             return;
@@ -365,7 +367,8 @@ export class SpaceDetailComponent {
     protected async removeGroup(group: GroupInfo): Promise<void> {
         if (
             !confirm(
-                `Delete the group ${group.name}? Its members lose the rights it gave them; an account in no other group here loses access to ${this.space().name}.`,
+                `Delete the group ${group.name}? Its members lose the rights it gave them; ` +
+                    `an account in no other group here loses access to ${this.space().name}.`,
             )
         )
             return;

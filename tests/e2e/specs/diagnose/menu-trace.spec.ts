@@ -89,8 +89,10 @@ for (const [label, folder, file] of [
                 [
                     `[trace] ${test.info().project.name} | ${label}, lock ${lock ? 'on' : 'off'}`,
                     `  events: ${dispatches.join(', ')}`,
-                    `  script (EventDispatch+FunctionCall+microtasks, nested counted once at top): longest ${longest.join(', ')}`,
-                    `  style recalcs: ${recalcs.length}, ${sum('UpdateLayoutTree').toFixed(1)} ms, elements ${elements.join('/')}`,
+                    `  script (EventDispatch+FunctionCall+microtasks, nested counted once at top): ` +
+                        `longest ${longest.join(', ')}`,
+                    `  style recalcs: ${recalcs.length}, ${sum('UpdateLayoutTree').toFixed(1)} ms, ` +
+                        `elements ${elements.join('/')}`,
                     `  layout objects (dirty/total): ${layouts
                         .map((e) => {
                             const d = (e.args as { beginData?: { dirtyObjects?: number; totalObjects?: number } })
@@ -98,7 +100,8 @@ for (const [label, folder, file] of [
                             return `${d?.dirtyObjects}/${d?.totalObjects}`;
                         })
                         .join(', ')}`,
-                    `  layouts: ${layouts.length}, ${sum('Layout').toFixed(1)} ms; paint ${sum('Paint').toFixed(1)} ms; ` +
+                    `  layouts: ${layouts.length}, ${sum('Layout').toFixed(1)} ms; ` +
+                        `paint ${sum('Paint').toFixed(1)} ms; ` +
                         `pre-paint ${sum('PrePaint').toFixed(1)} ms; layerize ${sum('Layerize').toFixed(1)} ms`,
                     `  forced (inside script): ${
                         onMain

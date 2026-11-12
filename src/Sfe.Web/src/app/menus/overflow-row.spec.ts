@@ -143,19 +143,22 @@ describe('OverflowRow', () => {
         expect(shown()).toEqual(['a', 'b', 'c']);
     });
 
-    it('keeps room for the gaps of the items shown only, and settles at a width where one fits without its gap', async () => {
-        await setUp();
-        at('#row').style.columnGap = '10px';
-        expect(getComputedStyle(at('#row')).columnGap).toBe('10px');
-        // a, b and the "⋯": 50 + 50 + 30 and two gaps = 150 (a gap for each of the 4 items would leave only a).
-        await resize(155);
-        expect(shown()).toEqual(['a', 'b']);
-        // a, b, c and the "⋯" need 210: c fits without its gap, not with it; it leaves and stays out.
-        await resize(205);
-        expect(shown()).toEqual(['a', 'b']);
-        await resize(210);
-        expect(shown()).toEqual(['a', 'b', 'c']);
-    });
+    it(
+        'keeps room for the gaps of the items shown only, and settles at a width where one fits without its ' + 'gap',
+        async () => {
+            await setUp();
+            at('#row').style.columnGap = '10px';
+            expect(getComputedStyle(at('#row')).columnGap).toBe('10px');
+            // a, b and the "⋯": 50 + 50 + 30 and two gaps = 150 (a gap for each of the 4 items would leave only a).
+            await resize(155);
+            expect(shown()).toEqual(['a', 'b']);
+            // a, b, c and the "⋯" need 210: c fits without its gap, not with it; it leaves and stays out.
+            await resize(205);
+            expect(shown()).toEqual(['a', 'b']);
+            await resize(210);
+            expect(shown()).toEqual(['a', 'b', 'c']);
+        },
+    );
 
     it("opens the buttons that left as a menu, in the row's order, which runs them", async () => {
         await setUp();

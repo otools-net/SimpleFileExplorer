@@ -397,7 +397,8 @@ export class TasksSectionComponent {
     protected async remove(schedule: TaskSchedule): Promise<void> {
         if (
             !confirm(
-                `Delete the schedule “${TASK_NAMES[schedule.task]}: ${describeSchedule(schedule)}”? Its past runs stay in the history.`,
+                `Delete the schedule “${TASK_NAMES[schedule.task]}: ${describeSchedule(schedule)}”? ` +
+                    `Its past runs stay in the history.`,
             )
         )
             return;

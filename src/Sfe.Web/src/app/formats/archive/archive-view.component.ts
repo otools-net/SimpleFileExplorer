@@ -569,7 +569,7 @@ export class ArchiveViewComponent {
         const here = found.folder === null ? '' : ' in this folder';
         const count = `${found.rows.length.toLocaleString()} ${found.rows.length === 1 ? 'name' : 'names'}${here} ${found.rows.length === 1 ? 'holds' : 'hold'} “${found.query}”`;
         if (found.searching)
-            return `Searching ${found.folder === null ? 'the archive' : 'this folder'}… ${found.rows.length ? count + ' so far' : ''}`.trim();
+            return `Searching ${found.folder === null ? 'the ' + 'archive' : 'this ' + 'folder'}… ${found.rows.length ? count + ' so far' : ''}`.trim();
         return found.next ? `${count} so far: scroll for more` : count;
     }
 

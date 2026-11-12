@@ -143,7 +143,7 @@ export class UploadQueue {
         const tooLarge = max ? files.filter((picked) => picked.file.size > max) : [];
         if (tooLarge.length) {
             this.toasts.error(
-                `${tooLarge.length === 1 ? `“${baseName(tooLarge[0].name)}” is` : `${plural(tooLarge.length, 'file')} are`} larger than the ${max / 1024 / 1024} MB a file may have here: left out.`,
+                `${tooLarge.length === 1 ? `“${baseName(tooLarge[0].name)}” ` + `is` : `${plural(tooLarge.length, 'file')} are`} larger than the ${max / 1024 / 1024} MB a file may have here: left out.`,
                 8000,
             );
             files = files.filter((picked) => !tooLarge.includes(picked));
@@ -360,7 +360,8 @@ export class UploadQueue {
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + 1 });
         if (done.length)
             this.toasts.show(
-                `${plural(done.length, 'file')} uploaded to “${baseName(batch.target) || this.config.config()?.rootName || 'the library'}”.`,
+                `${plural(done.length, 'file')} uploaded to ` +
+                    `“${baseName(batch.target) || this.config.config()?.rootName || 'the library'}”.`,
             );
     }
 

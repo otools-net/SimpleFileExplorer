@@ -231,16 +231,19 @@ export class DuplicatesPanelComponent {
         return {
             state: summary.groups ? 'found' : 'idle',
             text: summary.groups
-                ? `${plural(summary.groups, 'group')} of identical files ${where}: ${formatSize(summary.wastedBytes)} could be freed`
+                ? `${plural(summary.groups, 'group')} of identical ` +
+                  `files ${where}: ${formatSize(summary.wastedBytes)} could be freed`
                 : `No duplicates ${where}.`,
             detail: joinParts([
                 summary.groups ? `${plural(summary.files, 'file')} in all` : null,
                 result.minimumSize > 0 ? `files under ${formatSize(result.minimumSize)} are left out` : null,
                 summary.unfingerprinted
-                    ? `${plural(summary.unfingerprinted, 'indexed file')} without a fingerprint can't be compared${result.fingerprinting ? ' until they are scanned again' : ''}`
+                    ? `${plural(summary.unfingerprinted, 'indexed file')} without a fingerprint can't be ` +
+                      `compared${result.fingerprinting ? ' until they are scanned again' : ''}`
                     : null,
                 !result.fingerprinting
-                    ? "scans don't fingerprint files (Scanning › Indexing › Fingerprint files): new files are not compared"
+                    ? "scans don't fingerprint files (Scanning › Indexing › Fingerprint files): " +
+                      'new files are not compared'
                     : null,
             ]),
         };

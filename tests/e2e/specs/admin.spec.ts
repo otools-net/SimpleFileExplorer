@@ -24,7 +24,8 @@ const sections = [
     'system',
 ];
 const fields =
-    ':is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]), textarea, select)';
+    ':is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]), ' +
+    'textarea, select)';
 
 for (const section of sections) {
     test.describe('administration', () => {

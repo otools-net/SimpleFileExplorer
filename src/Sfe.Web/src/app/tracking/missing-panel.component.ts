@@ -103,7 +103,8 @@ export class MissingPanelComponent {
             text: total ? `${plural(total, 'tagged file')} missing` : 'No tagged file is missing.',
             detail: this.enabled()
                 ? 'Relinking runs after every scan; “Relink now” runs it again, for instance after scanning by hand.'
-                : 'Keeping the tags of moved files is turned off (see the Settings tab): files no longer found lose their tags.',
+                : 'Keeping the tags of moved files is turned off (see the Settings tab): ' +
+                  'files no longer found lose their tags.',
         };
     });
     /** For the tab. */
@@ -111,7 +112,10 @@ export class MissingPanelComponent {
 
     protected was(item: MissingFileInfo): string {
         const slash = item.path.lastIndexOf('/');
-        return `Was in ${slash > 0 ? item.path.slice(0, slash) : 'the library root'} · ${formatSize(item.size)} · missing since ${formatDate(item.missingSince)}`;
+        return (
+            `Was in ${slash > 0 ? item.path.slice(0, slash) : 'the library root'} · ${formatSize(item.size)} · ` +
+            `missing since ${formatDate(item.missingSince)}`
+        );
     }
 
     async load({ append = false } = {}): Promise<void> {

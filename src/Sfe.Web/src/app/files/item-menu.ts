@@ -339,7 +339,9 @@ export class ItemMenu {
                 id: 'extractEach',
                 label: `Extract each here`,
                 icon: 'extract',
-                title: `Extract the ${targets().length} archives here, each into a new folder named after it; in the background`,
+                title:
+                    `Extract the ${targets().length} archives here, each into a new folder named after it; ` +
+                    `in the background`,
                 run: () => void this.transfers.extractEach(targets()),
             });
         if (targets().length === 1 && this.transfers.canExtract(item) && this.dialogs.extract())

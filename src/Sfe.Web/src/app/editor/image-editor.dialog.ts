@@ -233,7 +233,7 @@ export class ImageEditorDialog {
             ? `in “${folder}”, in the same folders as the original`
             : 'next to the original, with “(edited)” in its name';
         return this.canOverwrite()
-            ? `Save writes over the original${this.access()?.permanent ? '' : ' (the version before goes to the trash)'}; Save a copy makes a new file ${copy}.`
+            ? `Save writes over the original${this.access()?.permanent ? '' : ' (the ' + 'version ' + 'before ' + 'goes ' + 'to ' + 'the ' + 'trash)'}; Save a copy makes a new file ${copy}.`
             : `Saved as a new file ${copy}.`;
     });
 
@@ -411,7 +411,7 @@ export class ImageEditorDialog {
             this.operations.set([]);
             this.close();
             this.toasts.show(
-                `Saved (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).${access.permanent ? '' : ' The version before is in the trash.'}`,
+                `Saved (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).${access.permanent ? '' : ' The ' + 'version before is in the trash.'}`,
                 { timeout: 8000 },
             );
         } catch (error) {

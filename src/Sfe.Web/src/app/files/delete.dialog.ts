@@ -89,7 +89,8 @@ export class DeleteDialog {
     });
     protected readonly unavailableText = computed(
         () =>
-            `${plural(this.unavailable().length, 'item')} can't go to the trash: on another drive than the trash, holding links.` +
+            `${plural(this.unavailable().length, 'item')} can't go to the trash: on another drive than the trash, ` +
+            `holding links.` +
             (this.canForce() ? ' Delete them permanently instead?' : ''),
     );
     protected readonly canForce = computed(() =>
@@ -154,7 +155,8 @@ export class DeleteDialog {
             this.toasts.error(
                 failed.length === 1
                     ? (failed[0].message ?? `“${baseOf(failed[0].path)}” could not be deleted.`)
-                    : `${plural(failed.length, 'item')} could not be deleted: ${failed[0].message ?? baseOf(failed[0].path)}`,
+                    : `${plural(failed.length, 'item')} could not be ` +
+                          `deleted: ${failed[0].message ?? baseOf(failed[0].path)}`,
                 8000,
             );
         if (unavailable.length) {

@@ -111,7 +111,10 @@ export class TrickplayActivityComponent {
             case 'disabled':
                 return 'Turned off: tick “Create trickplay” in the Settings tab and save.';
             case 'unavailable':
-                return "ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) in the server's configuration file.";
+                return (
+                    "ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) " +
+                    "in the server's configuration file."
+                );
             case 'running':
                 return status.discovering
                     ? 'Looking for videos without trickplay…'

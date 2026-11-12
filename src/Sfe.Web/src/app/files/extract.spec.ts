@@ -326,46 +326,52 @@ describe('ExtractDialog', () => {
         });
     });
 
-    it('takes the entries chosen in the viewer with its unlock, and refuses a folder where the session may not extract', async () => {
-        await setUp(limitedConfig([Rights.browse, Rights.viewFiles, Rights.download, Rights.extractFiles], archives));
-        const { fixture, element } = create();
-        api.startExtract.mockResolvedValue(job());
-        api.fileJobs.mockResolvedValue([job()]);
-        api.browse.mockResolvedValue(listing('Media', [folder], { rights: [Rights.browse], pathOnly: false }));
+    it(
+        'takes the entries chosen in the viewer with its unlock, and refuses a folder where the session may not ' +
+            'extract',
+        async () => {
+            await setUp(
+                limitedConfig([Rights.browse, Rights.viewFiles, Rights.download, Rights.extractFiles], archives),
+            );
+            const { fixture, element } = create();
+            api.startExtract.mockResolvedValue(job());
+            api.fileJobs.mockResolvedValue([job()]);
+            api.browse.mockResolvedValue(listing('Media', [folder], { rights: [Rights.browse], pathOnly: false }));
 
-        TestBed.inject(Dialogs)
-            .extract()!
-            .open({ path: zip.path, name: zip.name, folders: [4], what: '“Day 1”', unlock: 'abc' });
-        await settle();
-        fixture.detectChanges();
+            TestBed.inject(Dialogs)
+                .extract()!
+                .open({ path: zip.path, name: zip.name, folders: [4], what: '“Day 1”', unlock: 'abc' });
+            await settle();
+            fixture.detectChanges();
 
-        expect(element.textContent).toContain('Extract “Day 1” of “trip.zip” into:');
-        expect(element.querySelector('[data-extract-password]'), 'the viewer has its password').toBeNull();
-        expect(element.textContent).toContain('You may not extract archives into this folder');
-        expect(buttonNamed(element, 'Extract here')!.disabled).toBe(true);
+            expect(element.textContent).toContain('Extract “Day 1” of “trip.zip” into:');
+            expect(element.querySelector('[data-extract-password]'), 'the viewer has its password').toBeNull();
+            expect(element.textContent).toContain('You may not extract archives into this folder');
+            expect(buttonNamed(element, 'Extract here')!.disabled).toBe(true);
 
-        api.browse.mockResolvedValue(
-            listing('Media/Holidays', [], { rights: [Rights.browse, Rights.extractFiles], pathOnly: false }),
-        );
-        [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')]
-            .find((b) => b.textContent!.includes('Holidays'))!
-            .click();
-        await settle();
-        fixture.detectChanges();
-        (element.querySelector('[data-new-folder]') as HTMLInputElement).click();
-        buttonNamed(element, 'Extract here')!.click();
-        await settle();
+            api.browse.mockResolvedValue(
+                listing('Media/Holidays', [], { rights: [Rights.browse, Rights.extractFiles], pathOnly: false }),
+            );
+            [...element.querySelectorAll<HTMLButtonElement>('.transfer-folder')]
+                .find((b) => b.textContent!.includes('Holidays'))!
+                .click();
+            await settle();
+            fixture.detectChanges();
+            (element.querySelector('[data-new-folder]') as HTMLInputElement).click();
+            buttonNamed(element, 'Extract here')!.click();
+            await settle();
 
-        expect(api.startExtract).toHaveBeenCalledWith({
-            archive: zip.path,
-            target: 'Media/Holidays',
-            newFolder: false,
-            folders: [4],
-            files: undefined,
-            unlock: 'abc',
-            password: null,
-        });
-    });
+            expect(api.startExtract).toHaveBeenCalledWith({
+                archive: zip.path,
+                target: 'Media/Holidays',
+                newFolder: false,
+                folders: [4],
+                files: undefined,
+                unlock: 'abc',
+                password: null,
+            });
+        },
+    );
 });
 
 describe('OperationsPanelComponent, extractions', () => {

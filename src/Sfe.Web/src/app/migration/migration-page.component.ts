@@ -222,7 +222,8 @@ export class MigrationPageComponent implements OnInit {
         if (
             !info ||
             !confirm(
-                `Update the databases and settings to SFE ${info.appVersion}? Earlier versions cannot use them afterwards.`,
+                `Update the databases and settings to SFE ${info.appVersion}? Earlier versions cannot use them ` +
+                    `afterwards.`,
             )
         )
             return;

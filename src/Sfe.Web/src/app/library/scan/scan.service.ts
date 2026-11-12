@@ -93,7 +93,8 @@ export class ScanService {
         }
         if (
             !confirm(
-                `Scan ${name} and all its sub-folders?\n\nThe search index is updated in the background. This can take a while on large folders.${this.skippedNote()}`,
+                `Scan ${name} and all its sub-folders?\n\nThe search index is updated in the background. ` +
+                    `This can take a while on large folders.${this.skippedNote()}`,
             )
         )
             return;
@@ -125,7 +126,10 @@ export class ScanService {
             skipped.length > 3
                 ? `${skipped.slice(0, 3).join(', ')} and ${skipped.length - 3} more`
                 : skipped.join(', ');
-        return `\n\nExcluded from scans: ${names}. ${skipped.length === 1 ? 'It is' : 'They are'} skipped, and what the index has of ${skipped.length === 1 ? 'it' : 'them'} stays as it is.`;
+        return (
+            `\n\nExcluded from scans: ${names}. ${skipped.length === 1 ? 'It is' : 'They are'} skipped, ` +
+            `and what the index has of ${skipped.length === 1 ? 'it' : 'them'} stays as it is.`
+        );
     }
 
     async cancel(): Promise<void> {

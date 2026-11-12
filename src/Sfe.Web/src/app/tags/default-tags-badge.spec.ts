@@ -219,25 +219,29 @@ describe('Default tags in the listing', () => {
         expect(plain.querySelector('.default-tags-badge')).toBeNull();
     });
 
-    it('show those of the folder browsed in the location bar, whose panel opens its tags for those who may change them', async () => {
-        const dialog = TestBed.createComponent(ScopeTagsDialog).componentInstance;
-        const open = vi.spyOn(dialog, 'open').mockImplementation(() => {});
-        await show('Photos/Family', [], {
-            path: 'Photos/Family',
-            own: [family],
-            inherited: [{ path: 'Photos', tag: beach }],
-        });
-        const fixture = TestBed.createComponent(LocationComponent);
-        await settle();
-        const element = fixture.nativeElement as HTMLElement;
+    it(
+        'show those of the folder browsed in the location bar, whose panel opens its tags for those who may change ' +
+            'them',
+        async () => {
+            const dialog = TestBed.createComponent(ScopeTagsDialog).componentInstance;
+            const open = vi.spyOn(dialog, 'open').mockImplementation(() => {});
+            await show('Photos/Family', [], {
+                path: 'Photos/Family',
+                own: [family],
+                inherited: [{ path: 'Photos', tag: beach }],
+            });
+            const fixture = TestBed.createComponent(LocationComponent);
+            await settle();
+            const element = fixture.nativeElement as HTMLElement;
 
-        element.querySelector<HTMLButtonElement>('.summary .default-tags-button')!.click();
-        await settle();
-        expect(chips(element)).toEqual(['Family', 'Beach']);
-        expect(element.querySelector('.default-tags-popover')!.textContent).toContain('Files put into “Family”');
-        element.querySelector<HTMLButtonElement>('.default-tags-edit')!.click();
-        expect(open).toHaveBeenCalledWith({ path: 'Photos/Family', recursive: false, query: null });
-    });
+            element.querySelector<HTMLButtonElement>('.summary .default-tags-button')!.click();
+            await settle();
+            expect(chips(element)).toEqual(['Family', 'Beach']);
+            expect(element.querySelector('.default-tags-popover')!.textContent).toContain('Files put into “Family”');
+            element.querySelector<HTMLButtonElement>('.default-tags-edit')!.click();
+            expect(open).toHaveBeenCalledWith({ path: 'Photos/Family', recursive: false, query: null });
+        },
+    );
 
     it('without Change… for those who may not change them', async () => {
         TestBed.resetTestingModule();

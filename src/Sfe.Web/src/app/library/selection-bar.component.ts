@@ -231,7 +231,9 @@ export class SelectionBarComponent {
             id: 'copy',
             label: 'Copy to…',
             icon: 'copy',
-            title: 'Copy the selected items into another folder (Ctrl+C, then Ctrl+V there; or drag them onto a folder with Ctrl)',
+            title:
+                'Copy the selected items into another folder (Ctrl+C, then Ctrl+V there; ' +
+                'or drag them onto a folder with Ctrl)',
             run: () => this.transfers.pick('copy', this.store.selectedItems()),
         }),
         download: (): MenuEntry => ({

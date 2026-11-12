@@ -145,38 +145,42 @@ describe('DeleteDialog', () => {
 });
 
 describe('FileActions', () => {
-    it('deletes to the trash with the right, for good only with that one, and always for good when the space says so', async () => {
-        await setUp(limitedConfig([Rights.browse, Rights.deleteFiles]));
-        const open = vi.fn();
-        TestBed.inject(Dialogs).delete.set({ open } as never);
-        const actions = TestBed.inject(FileActions);
+    it(
+        'deletes to the trash with the right, for good only with that one, and always for good when the space says ' +
+            'so',
+        async () => {
+            await setUp(limitedConfig([Rights.browse, Rights.deleteFiles]));
+            const open = vi.fn();
+            TestBed.inject(Dialogs).delete.set({ open } as never);
+            const actions = TestBed.inject(FileActions);
 
-        expect(actions.delete([photo], true)).toBe(true);
-        expect(open).toHaveBeenLastCalledWith([photo], false);
-        expect(
-            TestBed.inject(ItemMenu)
-                .entries(photo)
-                .find((e) => e.id === 'delete')!.label,
-        ).toBe('Delete…');
+            expect(actions.delete([photo], true)).toBe(true);
+            expect(open).toHaveBeenLastCalledWith([photo], false);
+            expect(
+                TestBed.inject(ItemMenu)
+                    .entries(photo)
+                    .find((e) => e.id === 'delete')!.label,
+            ).toBe('Delete…');
 
-        await loadConfig(
-            api,
-            limitedConfig([Rights.browse, Rights.deleteFiles], {
-                files: { deletePermanently: true, trashRetentionDays: 30 },
-            }),
-        );
-        expect(actions.canDelete(photo)).toBe(false);
-        expect(actions.delete([photo])).toBe(false);
+            await loadConfig(
+                api,
+                limitedConfig([Rights.browse, Rights.deleteFiles], {
+                    files: { deletePermanently: true, trashRetentionDays: 30 },
+                }),
+            );
+            expect(actions.canDelete(photo)).toBe(false);
+            expect(actions.delete([photo])).toBe(false);
 
-        await loadConfig(
-            api,
-            limitedConfig([Rights.browse, Rights.deletePermanently], {
-                files: { deletePermanently: true, trashRetentionDays: 30 },
-            }),
-        );
-        expect(actions.delete([photo])).toBe(true);
-        expect(open).toHaveBeenLastCalledWith([photo], true);
-    });
+            await loadConfig(
+                api,
+                limitedConfig([Rights.browse, Rights.deletePermanently], {
+                    files: { deletePermanently: true, trashRetentionDays: 30 },
+                }),
+            );
+            expect(actions.delete([photo])).toBe(true);
+            expect(open).toHaveBeenLastCalledWith([photo], true);
+        },
+    );
 
     it('acts on the whole selection from the menu of one of its items', async () => {
         await setUp();

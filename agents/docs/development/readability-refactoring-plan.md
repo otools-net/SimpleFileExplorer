@@ -76,7 +76,9 @@ then by hand for what they leave: comments and long strings. One commit per step
   `format:check`; long lines 2314 -> 312; client build: every chunk the same size
 - [x] Prettier over the e2e tests (in `npm run format` of `src/Sfe.Web`; `npm run typecheck` of the e2e passes)
 - [x] Comments of the client and e2e rewrapped (147 paragraphs; one-line `/** … */` take the block form)
-- [ ] What is left over 120 in the client, e2e and styles, by hand (`measure.mjs --area client`)
+- [x] Long strings of the client and e2e split (`split-strings-ts.mjs`, 252 splits; client build identical in size)
+- [ ] What is left over 120 in the client, e2e and styles, by hand (`measure.mjs --area client`); lines of inline
+  templates wait for phase 4
 - [ ] Hashes of the formatter commits in `.git-blame-ignore-revs`
 
 ### Phase 3: one type per file, `models.ts` by area

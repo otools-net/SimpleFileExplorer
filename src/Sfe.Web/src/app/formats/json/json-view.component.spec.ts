@@ -8,7 +8,8 @@ import { READING_KEY } from '../reading/reading.service';
 import { JSON_MODE_KEY, JsonViewComponent } from './json-view.component';
 
 const DOCUMENT =
-    '{\n  "name": "Trip",\n  "id": 12345678901234567890,\n  "days": [\n    { "town": "Annecy", "km": 42 },\n    { "town": "Chamonix", "km": 18 }\n  ]\n}\n';
+    '{\n  "name": "Trip",\n  "id": 12345678901234567890,\n  "days": [\n    { "town": "Annecy", "km": ' +
+    '42 },\n    { "town": "Chamonix", "km": 18 }\n  ]\n}\n';
 
 describe('JsonViewComponent', () => {
     let api: ApiMock;

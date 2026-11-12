@@ -416,7 +416,8 @@ export class SettingsForm {
                         this.showErrors(error.errors);
                         if (saved.length)
                             this.toasts.show(
-                                `Saved the settings of ${saved.map((l) => LEVEL_NAMES[l]).join(' and ')}; those of ${LEVEL_NAMES[level]} need fixing.`,
+                                `Saved the settings of ${saved.map((l) => LEVEL_NAMES[l]).join(' and ')}; ` +
+                                    `those of ${LEVEL_NAMES[level]} need fixing.`,
                             );
                         return 'invalid';
                     }
@@ -484,7 +485,8 @@ export class SettingsForm {
     async clearHistory(): Promise<void> {
         if (
             !confirm(
-                "Forget the searched and viewed tags? The sidebar's “Last searched” and “Last viewed” lists start empty.",
+                "Forget the searched and viewed tags? The sidebar's “Last searched” and “Last viewed” lists start " +
+                    'empty.',
             )
         )
             return;

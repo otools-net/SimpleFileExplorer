@@ -109,11 +109,12 @@ export class SimilarPanelComponent {
                   : !summary
                     ? 'The videos have not been compared since SFE started.'
                     : summary.groups
-                      ? `${plural(summary.groups, 'group')} of similar videos ${where}: ${formatSize(summary.wastedBytes)} more than the biggest of each`
+                      ? `${plural(summary.groups, 'group')} of similar ` +
+                        `videos ${where}: ${formatSize(summary.wastedBytes)} more than the biggest of each`
                       : `No similar videos ${where}.`,
             detail: joinParts([
                 summary
-                    ? `${summary.compared.toLocaleString()} of ${plural(summary.videos, 'indexed video')} compared${summary.compared < summary.videos ? ' (the others have no trickplay yet)' : ''}`
+                    ? `${summary.compared.toLocaleString()} of ${plural(summary.videos, 'indexed ' + 'video')} compared${summary.compared < summary.videos ? ' (the others have no trickplay yet)' : ''}`
                     : null,
                 summary ? `listed from ${summary.minimumPercent}% match` : null,
                 run.state === 'cancelled'

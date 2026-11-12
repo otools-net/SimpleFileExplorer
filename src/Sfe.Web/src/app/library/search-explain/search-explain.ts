@@ -124,7 +124,8 @@ export function parseQuery(input: string): ParsedQuery {
             text('A '),
             term('*', 'text'),
             text(
-                ' only means “search the whole path” at the very start of the search; here it is searched as a character.',
+                ' only means “search the whole path” at the very start of the search; ' +
+                    'here it is searched as a character.',
             ),
         ]);
     if ((query.match(/"/g) || []).length % 2)
@@ -355,7 +356,8 @@ export function explain(query: string, path: string): Explanation {
     if (groups.some((group) => group.clauses.some((clause) => clause.kind === 'level')))
         notes.push([
             text(
-                'High and low resolution compare the shorter side with the thresholds of the HR/LR marks, one for photos and one for videos (Administration › Interface › Browsing).',
+                'High and low resolution compare the shorter side with the thresholds of the HR/LR marks, ' +
+                    'one for photos and one for videos (Administration › Interface › Browsing).',
             ),
         ]);
     if (groups.some((group) => group.clauses.some((clause) => resolution(clause) && !clause.negated)))
@@ -363,7 +365,8 @@ export function explain(query: string, path: string): Explanation {
     if (groups.some((group) => group.clauses.some((clause) => resolution(clause) && clause.negated)))
         notes.push([
             text(
-                'An excluded resolution also finds the files whose resolution is not known (not photos or videos, or not read yet): add ',
+                'An excluded resolution also finds the files whose resolution is not known (not photos or videos, ' +
+                    'or not read yet): add ',
             ),
             term('w:>0', 'size'),
             text(' to leave them out.'),
@@ -373,7 +376,8 @@ export function explain(query: string, path: string): Explanation {
     if (groups.some((group) => group.clauses.some((clause) => clause.kind === 'duration' && clause.negated)))
         notes.push([
             text(
-                'An excluded duration also finds the files whose duration is not known (not videos nor audio, or not read yet): add ',
+                'An excluded duration also finds the files whose duration is not known (not videos nor audio, ' +
+                    'or not read yet): add ',
             ),
             term('d:>0', 'size'),
             text(' to leave them out.'),

@@ -265,31 +265,35 @@ describe('CsvViewComponent', () => {
             delete (window as { ResizeObserver?: unknown }).ResizeObserver;
         });
 
-        it('keeps the toolbar on one line: its buttons go into "⋯" from the right, the filter and the editing actions stay', async () => {
-            await show();
-            rowWidth = 400;
-            row().update();
-            await stable();
+        it(
+            'keeps the toolbar on one line: its buttons go into "⋯" from the right, ' +
+                'the filter and the editing actions stay',
+            async () => {
+                await show();
+                rowWidth = 400;
+                row().update();
+                await stable();
 
-            // 60 + 150 + 110 + 70 + 120 + 32 = 542: Aa, the separator, then Header leave (with the "⋯": 352).
-            const gone = [...element.querySelectorAll<HTMLElement>('.text-toolbar [data-overflowed]')].map((item) =>
-                ['csv-header-toggle', 'csv-delimiter', 'reading-toggle', 'markdown-modes'].find((name) =>
-                    item.classList.contains(name),
-                ),
-            );
-            expect(gone).toEqual(['csv-header-toggle', 'csv-delimiter', 'reading-toggle']);
-            expect(element.querySelector('.json-filter')!.hasAttribute('data-overflowed')).toBe(false);
-            expect(element.querySelector('.overflow-more')!.classList).toContain('shown');
+                // 60 + 150 + 110 + 70 + 120 + 32 = 542: Aa, the separator, then Header leave (with the "⋯": 352).
+                const gone = [...element.querySelectorAll<HTMLElement>('.text-toolbar [data-overflowed]')].map((item) =>
+                    ['csv-header-toggle', 'csv-delimiter', 'reading-toggle', 'markdown-modes'].find((name) =>
+                        item.classList.contains(name),
+                    ),
+                );
+                expect(gone).toEqual(['csv-header-toggle', 'csv-delimiter', 'reading-toggle']);
+                expect(element.querySelector('.json-filter')!.hasAttribute('data-overflowed')).toBe(false);
+                expect(element.querySelector('.overflow-more')!.classList).toContain('shown');
 
-            const entries = row().target().entries();
-            expect(entries.map((entry) => entry.id)).toEqual(['header', 'separator', 'reading']);
-            expect(entries[0].checked).toBe(true);
-            const separators = entries[1].submenu!();
-            expect(separators.find((entry) => entry.checked)?.id).toBe('separator-guess');
-            separators.find((entry) => entry.id === 'separator-semicolon')!.run!();
-            await stable();
-            expect(status()).toContain('semicolon');
-        });
+                const entries = row().target().entries();
+                expect(entries.map((entry) => entry.id)).toEqual(['header', 'separator', 'reading']);
+                expect(entries[0].checked).toBe(true);
+                const separators = entries[1].submenu!();
+                expect(separators.find((entry) => entry.checked)?.id).toBe('separator-guess');
+                separators.find((entry) => entry.id === 'separator-semicolon')!.run!();
+                await stable();
+                expect(status()).toContain('semicolon');
+            },
+        );
     });
 
     it('offers a download when the file cannot be shown', async () => {

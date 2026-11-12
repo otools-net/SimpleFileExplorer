@@ -293,29 +293,32 @@ describe('ItemMenu', () => {
         ).not.toContain('openAsText');
     });
 
-    it('opens containers (comic books, books, office documents) as archives, for those who may open files', async () => {
-        await setUp([Rights.browse, Rights.viewFiles]);
-        setArchives({ maxCompressedTarMegabytes: 10 });
-        try {
-            const menu = TestBed.inject(ItemMenu);
-            const open = vi.fn();
-            TestBed.inject(Dialogs).viewer.set({ open } as never);
-            const comic = item('Media/issue 1.cbz', { kind: 'file' });
+    it(
+        'opens containers (comic books, books, office documents) as archives, ' + 'for those who may open files',
+        async () => {
+            await setUp([Rights.browse, Rights.viewFiles]);
+            setArchives({ maxCompressedTarMegabytes: 10 });
+            try {
+                const menu = TestBed.inject(ItemMenu);
+                const open = vi.fn();
+                TestBed.inject(Dialogs).viewer.set({ open } as never);
+                const comic = item('Media/issue 1.cbz', { kind: 'file' });
 
-            menu.entries(comic)
-                .find((e) => e.id === 'openAsArchive')!
-                .run();
+                menu.entries(comic)
+                    .find((e) => e.id === 'openAsArchive')!
+                    .run();
 
-            expect(open).toHaveBeenCalledWith(comic, { asArchive: true });
-            expect(
-                menu.entries(item('Media/backup.zip', { kind: 'file' })).map((e) => e.id),
-                'an archive opens as one',
-            ).not.toContain('openAsArchive');
-            expect(menu.entries(photo).map((e) => e.id)).not.toContain('openAsArchive');
-        } finally {
-            setArchives(null);
-        }
-    });
+                expect(open).toHaveBeenCalledWith(comic, { asArchive: true });
+                expect(
+                    menu.entries(item('Media/backup.zip', { kind: 'file' })).map((e) => e.id),
+                    'an archive opens as one',
+                ).not.toContain('openAsArchive');
+                expect(menu.entries(photo).map((e) => e.id)).not.toContain('openAsArchive');
+            } finally {
+                setArchives(null);
+            }
+        },
+    );
 
     it('edits text files in the viewer and crops pictures, for those who may', async () => {
         await setUp([Rights.browse, Rights.viewFiles, Rights.createFiles, Rights.editImages]);
@@ -492,27 +495,30 @@ describe('ItemMenu', () => {
         expect(TestBed.inject(ContextMenu).open()).toBeNull();
     });
 
-    it('stays open through a refresh from the change feed, closes with a word when its item left the folder', async () => {
-        await setUp();
-        TestBed.createComponent(ContextMenuComponent).detectChanges();
-        const toasts = TestBed.inject(ToastService);
-        rightClick(menuEvent(), photo);
-        await settle();
+    it(
+        'stays open through a refresh from the change feed, closes with a word when its item left the ' + 'folder',
+        async () => {
+            await setUp();
+            TestBed.createComponent(ContextMenuComponent).detectChanges();
+            const toasts = TestBed.inject(ToastService);
+            rightClick(menuEvent(), photo);
+            await settle();
 
-        await store.refresh();
-        await settle();
-        expect(TestBed.inject(ContextMenu).open()?.target.item?.path).toBe(photo.path);
-        expect(toasts.toasts()).toEqual([]);
+            await store.refresh();
+            await settle();
+            expect(TestBed.inject(ContextMenu).open()?.target.item?.path).toBe(photo.path);
+            expect(toasts.toasts()).toEqual([]);
 
-        // Deleted in another tab: the change feed lists the folder again without it.
-        api.browse.mockResolvedValue(listing([folder]));
-        await store.refresh();
-        await settle();
-        expect(TestBed.inject(ContextMenu).open()).toBeNull();
-        expect(toasts.toasts().map((toast) => toast.message)).toEqual([
-            'beach.jpg is no longer in this folder: it was moved or deleted elsewhere.',
-        ]);
-    });
+            // Deleted in another tab: the change feed lists the folder again without it.
+            api.browse.mockResolvedValue(listing([folder]));
+            await store.refresh();
+            await settle();
+            expect(TestBed.inject(ContextMenu).open()).toBeNull();
+            expect(toasts.toasts().map((toast) => toast.message)).toEqual([
+                'beach.jpg is no longer in this folder: it was moved or deleted elsewhere.',
+            ]);
+        },
+    );
 });
 
 describe("the listing page's keys", () => {

@@ -12,7 +12,9 @@ const KINDS: { kind: ExclusionKind; label: string; hint: string }[] = [
     {
         kind: 'scan',
         label: 'Skip in scans',
-        hint: 'Scans of the folders above leave it out. What the index already has of it (files, tags) stays as it is, never refreshed: Remove from index forgets it.',
+        hint:
+            'Scans of the folders above leave it out. What the index already has of it (files, tags) ' +
+            'stays as it is, never refreshed: Remove from index forgets it.',
     },
     {
         kind: 'trickplay',

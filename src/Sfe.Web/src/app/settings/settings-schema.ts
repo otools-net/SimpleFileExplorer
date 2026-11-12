@@ -123,7 +123,11 @@ export const TABS: SettingTab[] = [
     {
         id: 'appearance',
         title: 'Appearance',
-        intro: "Changes apply as soon as you save them, for everyone using the library (the server's settings: every library); a setting locked above says why it cannot change here. The library location, the cache folder, the database, ffmpeg and the server commands are set in the server's configuration file.",
+        intro:
+            "Changes apply as soon as you save them, for everyone using the library (the server's settings: " +
+            'every library); a setting locked above says why it cannot change here. The library location, ' +
+            "the cache folder, the database, ffmpeg and the server commands are set in the server's configuration " +
+            'file.',
         groups: [
             {
                 title: 'Theme',
@@ -138,7 +142,9 @@ export const TABS: SettingTab[] = [
                             ['dark', 'Dark'],
                             ['light', 'Light'],
                         ],
-                        hint: 'Colors of the pages, for the browsers that have not picked their own below. “Follow the device” uses the light or dark mode of the computer or phone.',
+                        hint:
+                            'Colors of the pages, for the browsers that have not picked their own below. ' +
+                            '“Follow the device” uses the light or dark mode of the computer or phone.',
                     },
                 ],
             },
@@ -163,7 +169,9 @@ export const TABS: SettingTab[] = [
                         label: 'Font of the device',
                         type: 'text',
                         placeholder: 'e.g. Fira Code',
-                        hint: "The name of a font installed on the reader's computer or phone, used where the font is “The font named below”.",
+                        hint:
+                            "The name of a font installed on the reader's computer or phone, " +
+                            'used where the font is “The font named below”.',
                     },
                 ],
             },
@@ -340,7 +348,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 1,
                         max: 10000,
-                        hint: 'Files and folders loaded at a time; more load as you scroll. Smaller pages show up faster on slow drives.',
+                        hint:
+                            'Files and folders loaded at a time; more load as you scroll. ' +
+                            'Smaller pages show up faster on slow drives.',
                     },
                     {
                         key: 'browse.maxPageSize',
@@ -348,7 +358,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 1,
                         max: 10000,
-                        hint: 'Most items a single request can ask for. Only matters for scripts and other programs using the API.',
+                        hint:
+                            'Most items a single request can ask for. Only matters for scripts and other programs ' +
+                            'using the API.',
                     },
                     {
                         key: 'browse.folderPictures',
@@ -356,37 +368,51 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 16,
-                        hint: 'In the grid and one-per-row views, folders are cards showing their first photos and videos: 4 makes a 2×2 grid, 9 a 3×3 grid. 0 lists folders without pictures.',
+                        hint:
+                            'In the grid and one-per-row views, folders are cards showing their first photos and ' +
+                            'videos: 4 makes a 2×2 grid, 9 a 3×3 grid. 0 lists folders without pictures.',
                     },
                     {
                         key: 'browse.copyPaths',
                         label: 'Copy full paths',
                         type: 'checkbox',
-                        hint: "Adds buttons copying the full path of a folder or file on the server (e.g. D:\\Media\\Photos\\beach.jpg): next to the location for the current folder, on each folder and file, and in the viewer. This shows every visitor where the library is on the server's disk.",
+                        hint:
+                            'Adds buttons copying the full path of a folder or file on the server (e.g. ' +
+                            'D:\\Media\\Photos\\beach.jpg): next to the location for the current folder, ' +
+                            'on each folder and file, and in the viewer. This shows every visitor where the library ' +
+                            "is on the server's disk.",
                     },
                 ],
             },
             {
                 title: 'Resolution and duration',
-                hint: 'Needs the resolutions and durations read by scans (Scanning › Indexing › Read resolutions and durations).',
+                hint:
+                    'Needs the resolutions and durations read by scans (Scanning › Indexing › Read resolutions and ' +
+                    'durations).',
                 fields: [
                     {
                         key: 'browse.showResolution',
                         label: 'Show resolutions',
                         type: 'checkbox',
-                        hint: 'Shows the size in pixels of photos and videos (e.g. 1920×1080) next to their file size, in the listings and the viewer.',
+                        hint:
+                            'Shows the size in pixels of photos and videos (e.g. 1920×1080) ' +
+                            'next to their file size, in the listings and the viewer.',
                     },
                     {
                         key: 'browse.showDuration',
                         label: 'Show durations',
                         type: 'checkbox',
-                        hint: 'Shows how long each video and audio file lasts (e.g. 1:23:45) next to its file size, in the listings and the viewer.',
+                        hint:
+                            'Shows how long each video and audio file lasts (e.g. 1:23:45) next to its file size, ' +
+                            'in the listings and the viewer.',
                     },
                     {
                         key: 'browse.resolutionMark',
                         label: 'Mark high and low resolution',
                         type: 'checkbox',
-                        hint: 'Labels the preview of each photo and video HR (high resolution) or LR (low resolution) in its bottom-right corner, by the thresholds below.',
+                        hint:
+                            'Labels the preview of each photo and video HR (high resolution) ' +
+                            'or LR (low resolution) in its bottom-right corner, by the thresholds below.',
                     },
                     {
                         key: 'browse.imageHighResolutionPixels',
@@ -394,7 +420,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 1,
                         max: 20000,
-                        hint: 'Shorter side, in pixels, from which a photo is HR: with 1500, a 2000×1500 photo (or a portrait 1500×2000) is HR, a 1000×1000 one LR.',
+                        hint:
+                            'Shorter side, in pixels, from which a photo is HR: with 1500, ' +
+                            'a 2000×1500 photo (or a portrait 1500×2000) is HR, a 1000×1000 one LR.',
                     },
                     {
                         key: 'browse.videoHighResolutionPixels',
@@ -402,7 +430,10 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 1,
                         max: 20000,
-                        hint: 'Shorter side, in pixels, from which a video is HR: with 720, 1280×720 and 1000×1000 videos are HR, 854×480 is LR. The searches r:hr and r:lr use both thresholds, marks on or off.',
+                        hint:
+                            'Shorter side, in pixels, from which a video is HR: with 720, ' +
+                            '1280×720 and 1000×1000 videos are HR, 854×480 is LR. The searches r:hr and r:lr use ' +
+                            'both thresholds, marks on or off.',
                     },
                 ],
             },
@@ -429,7 +460,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 1,
                         max: 10000,
-                        hint: 'Most results a single request can ask for. Only matters for scripts and other programs using the API.',
+                        hint:
+                            'Most results a single request can ask for. Only matters for scripts and other ' +
+                            'programs using the API.',
                     },
                 ],
             },
@@ -441,7 +474,9 @@ export const TABS: SettingTab[] = [
                         key: 'search.explain',
                         label: 'Explain searches',
                         type: 'checkbox',
-                        hint: 'Adds a button to the search box that puts the typed search into words as you type, and points out the parts that are ignored or do not work as they may seem.',
+                        hint:
+                            'Adds a button to the search box that puts the typed search into words as you type, ' +
+                            'and points out the parts that are ignored or do not work as they may seem.',
                     },
                     {
                         key: 'search.historySize',
@@ -449,7 +484,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 100,
-                        hint: 'The last searches each browser keeps and suggests again as you type in the search box, newest first. Kept by each browser for itself. 0: none are kept or suggested.',
+                        hint:
+                            'The last searches each browser keeps and suggests again as you type in the search ' +
+                            'box, newest first. Kept by each browser for itself. 0: none are kept or suggested.',
                     },
                 ],
             },
@@ -468,13 +505,17 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 1,
                         max: 600,
-                        hint: "Used by the player's back and forward buttons, the J and L keys, and a double tap on the left or right of the picture (each further tap jumps again).",
+                        hint:
+                            "Used by the player's back and forward buttons, the J and L keys, " +
+                            'and a double tap on the left or right of the picture (each further tap jumps again).',
                     },
                     {
                         key: 'player.loop',
                         label: 'Loop videos',
                         type: 'checkbox',
-                        hint: "Videos start over when they end. The player's loop button (R) switches it for the video on screen.",
+                        hint:
+                            "Videos start over when they end. The player's loop button (R) " +
+                            'switches it for the video on screen.',
                     },
                 ],
             },
@@ -487,14 +528,20 @@ export const TABS: SettingTab[] = [
                         type: 'preset',
                         presets: EXTERNAL_PLAYERS,
                         fills: { url: 'player.externalUrl', name: 'player.externalName' },
-                        hint: "App that the viewer's ▶ button opens videos and audio in. It must be installed on the device you watch on, and that device must reach this server. Applies to every browser.",
+                        hint:
+                            "App that the viewer's ▶ button opens videos and audio in. " +
+                            'It must be installed on the device you watch on, and that device must reach this ' +
+                            'server. Applies to every browser.',
                     },
                     {
                         key: 'player.externalUrl',
                         label: 'External player link',
                         type: 'text',
                         placeholder: 'Empty: no external player button',
-                        hint: "Filled in by the choice above, or written by hand: {url} is replaced by the file's address, {encodedUrl} by the same address encoded for a query string; without either, the address is added at the end (e.g. vlc://).",
+                        hint:
+                            "Filled in by the choice above, or written by hand: {url} is replaced by the file's " +
+                            'address, {encodedUrl} by the same address encoded for a query string; without either, ' +
+                            'the address is added at the end (e.g. vlc://).',
                     },
                     {
                         key: 'player.externalName',
@@ -509,7 +556,10 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 1,
                         max: 10080,
-                        hint: 'The player gets a link of its own to the file, working without signing in, for this long: long enough to watch a whole film, as players ask again at each seek. A new password or a disabled account ends the links it gave out.',
+                        hint:
+                            'The player gets a link of its own to the file, working without signing in, ' +
+                            'for this long: long enough to watch a whole film, as players ask again at each seek. ' +
+                            'A new password or a disabled account ends the links it gave out.',
                     },
                 ],
             },
@@ -520,7 +570,10 @@ export const TABS: SettingTab[] = [
                         key: 'player.flash',
                         label: 'Play Flash movies',
                         type: 'checkbox',
-                        hint: 'Flash movies and games (.swf) play in the viewer, through Ruffle, a Flash Player emulator that comes with SFE. A movie can only read the files of its own folder, and never acts as the person watching it. Off: .swf files are only downloaded.',
+                        hint:
+                            'Flash movies and games (.swf) play in the viewer, through Ruffle, ' +
+                            'a Flash Player emulator that comes with SFE. A movie can only read the files of its own ' +
+                            'folder, and never acts as the person watching it. Off: .swf files are only downloaded.',
                     },
                 ],
             },
@@ -538,13 +591,22 @@ export const TABS: SettingTab[] = [
                         label: 'Data server',
                         type: 'text',
                         placeholder: 'Empty: SFE streams the files',
-                        hint: "Optional http:// or https:// address of another web server that already publishes the library. Files then open from there instead of being streamed by SFE. The file's path is added after the address, or put where you write {url} (e.g. http://nas/files/{url}?raw=1); {encodedUrl} is the same path fully percent-encoded, slashes too (e.g. http://nas/get?file={encodedUrl}).",
+                        hint:
+                            'Optional http:// or https:// address of another web server that already publishes the ' +
+                            'library. Files then open from there instead of being streamed by SFE. ' +
+                            "The file's path is added after the address, or put where you write {url} (e.g. " +
+                            'http://nas/files/{url}?raw=1); {encodedUrl} is the same path fully percent-encoded, ' +
+                            'slashes too (e.g. http://nas/get?file={encodedUrl}).',
                     },
                 ],
             },
             {
                 title: 'Videos converted by the server',
-                hint: "Needs ffmpeg on the server (System › About tells whether it was found). Converted videos play as H.264 with AAC sound, which every browser plays; the conversion keeps the server's processor busy while someone watches. Playback › Video streams lists those being converted.",
+                hint:
+                    'Needs ffmpeg on the server (System › About tells whether it was found). ' +
+                    'Converted videos play as H.264 with AAC sound, which every browser plays; ' +
+                    "the conversion keeps the server's processor busy while someone watches. " +
+                    'Playback › Video streams lists those being converted.',
                 fields: [
                     {
                         key: 'streaming.mode',
@@ -555,7 +617,11 @@ export const TABS: SettingTab[] = [
                             ['always', 'Always'],
                             ['off', 'Never'],
                         ],
-                        hint: "When the browser can't play a video (AVI, WMV, HEVC pictures...), the player asks the server for it converted, from where it was. “Always” converts every video, for browsers that play some files without picture or sound. The player's ⟳ button converts the video on screen either way.",
+                        hint:
+                            "When the browser can't play a video (AVI, WMV, HEVC pictures...), " +
+                            'the player asks the server for it converted, from where it was. ' +
+                            '“Always” converts every video, for browsers that play some files without picture or ' +
+                            "sound. The player's ⟳ button converts the video on screen either way.",
                     },
                     {
                         key: 'streaming.maxStreams',
@@ -563,7 +629,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 1,
                         max: 32,
-                        hint: 'For the whole server: each one keeps a processor core or more busy. A viewer asking for one more is told to try again later.',
+                        hint:
+                            'For the whole server: each one keeps a processor core or more busy. ' +
+                            'A viewer asking for one more is told to try again later.',
                     },
                     {
                         key: 'streaming.quality',
@@ -571,7 +639,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 15,
                         max: 40,
-                        hint: 'Lower is better and heavier: 18 looks like the original, 23 is a good balance, 28 is small.',
+                        hint:
+                            'Lower is better and heavier: 18 looks like the original, 23 is a good balance, ' +
+                            '28 is small.',
                     },
                     {
                         key: 'streaming.maxHeight',
@@ -579,13 +649,18 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 4320,
-                        hint: 'Taller videos are scaled down to it while converted, keeping their shape (1080 for Full HD). 0 keeps their size.',
+                        hint:
+                            'Taller videos are scaled down to it while converted, ' +
+                            'keeping their shape (1080 for Full HD). 0 keeps their size.',
                     },
                     {
                         key: 'streaming.copyVideo',
                         label: 'Copy H.264 pictures',
                         type: 'checkbox',
-                        hint: "Pictures already in H.264 (8-bit) are only repackaged, with their sound converted: almost no work for the server, but a seek lands on the nearest earlier key frame and the largest height doesn't apply.",
+                        hint:
+                            'Pictures already in H.264 (8-bit) are only repackaged, with their sound converted: ' +
+                            'almost no work for the server, but a seek lands on the nearest earlier key frame and ' +
+                            "the largest height doesn't apply.",
                     },
                 ],
             },
@@ -603,7 +678,9 @@ export const TABS: SettingTab[] = [
                         label: 'Ignored folders',
                         type: 'list',
                         placeholder: '$RECYCLE.BIN',
-                        hint: 'Folder names (not paths) that scans skip, with everything inside them. One per line. Already indexed files in them stay until the next scan of their parent folder.',
+                        hint:
+                            'Folder names (not paths) that scans skip, with everything inside them. One per line. ' +
+                            'Already indexed files in them stay until the next scan of their parent folder.',
                     },
                     {
                         key: 'scan.ignoredFiles',
@@ -617,7 +694,12 @@ export const TABS: SettingTab[] = [
                         label: 'Excluded folders',
                         type: 'list',
                         placeholder: 'Downloads\nMovies/Old',
-                        hint: 'Library folders (paths from the library root, one per line) that scans leave out, with their sub-folders. What the index already has of them stays as it is, never refreshed. Scans and previews… in the menu of a folder, or Scanning › Excluded folders, adds and removes them; ⋮ › Remove from index forgets a folder and can add it here too.',
+                        hint:
+                            'Library folders (paths from the library root, one per line) that scans leave out, ' +
+                            'with their sub-folders. What the index already has of them stays as it is, ' +
+                            'never refreshed. Scans and previews… in the menu of a folder, ' +
+                            'or Scanning › Excluded folders, adds and removes them; ⋮ › Remove from index forgets a ' +
+                            'folder and can add it here too.',
                     },
                 ],
             },
@@ -628,7 +710,9 @@ export const TABS: SettingTab[] = [
                         key: 'showHiddenItems',
                         label: 'Show hidden files and folders',
                         type: 'checkbox',
-                        hint: 'Includes items marked hidden or system (on Linux and macOS, names starting with a dot), in listings and in scans.',
+                        hint:
+                            'Includes items marked hidden or system (on Linux and macOS, ' +
+                            'names starting with a dot), in listings and in scans.',
                     },
                 ],
             },
@@ -665,7 +749,9 @@ export const TABS: SettingTab[] = [
                         key: 'fileTypes.text',
                         label: 'More text files',
                         type: 'extensions',
-                        hint: 'Extensions opened in the text viewer besides the ones it knows (.txt, .log, .md, .json, .xml, code and scripts…), e.g. dat, out, sub. Not media extensions.',
+                        hint:
+                            'Extensions opened in the text viewer besides the ones it knows (.txt, .log, .md, ' +
+                            '.json, .xml, code and scripts…), e.g. dat, out, sub. Not media extensions.',
                     },
                 ],
             },
@@ -682,13 +768,20 @@ export const TABS: SettingTab[] = [
                         key: 'scan.computeHashes',
                         label: 'Fingerprint files',
                         type: 'checkbox',
-                        hint: 'Reads the start of each new or changed file to compute a fingerprint, used to find duplicates and to recognise moved files. Makes scans slower, especially over the network.',
+                        hint:
+                            'Reads the start of each new or changed file to compute a fingerprint, ' +
+                            'used to find duplicates and to recognise moved files. Makes scans slower, ' +
+                            'especially over the network.',
                     },
                     {
                         key: 'scan.readResolution',
                         label: 'Read resolutions and durations',
                         type: 'checkbox',
-                        hint: 'Reads the size in pixels of each new or changed photo and video, and how long each video and audio file lasts, to show them and to search by them (w:, h:, r:, d:). Videos and audio need ffmpeg, which makes scans of new ones slower. Files already indexed are read by the next scan.',
+                        hint:
+                            'Reads the size in pixels of each new or changed photo and video, ' +
+                            'and how long each video and audio file lasts, to show them and to search by them (w:, ' +
+                            'h:, r:, d:). Videos and audio need ffmpeg, which makes scans of new ones slower. ' +
+                            'Files already indexed are read by the next scan.',
                     },
                 ],
             },
@@ -718,7 +811,9 @@ export const TABS: SettingTab[] = [
                         key: 'thumbnails.enabled',
                         label: 'Show thumbnails',
                         type: 'checkbox',
-                        hint: "Previews of photos and videos, rendered with ffmpeg and kept in the server's cache folder.",
+                        hint:
+                            "Previews of photos and videos, rendered with ffmpeg and kept in the server's cache " +
+                            'folder.',
                     },
                     {
                         key: 'thumbnails.width',
@@ -742,26 +837,39 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 1048576,
-                        hint: 'Larger photos are previewed through their thumbnail instead of being downloaded whole; the viewer shows the thumbnail until the original has loaded. 0 uses thumbnails for every photo.',
+                        hint:
+                            'Larger photos are previewed through their thumbnail instead of being downloaded ' +
+                            'whole; the viewer shows the thumbnail until the original has loaded. ' +
+                            '0 uses thumbnails for every photo.',
                     },
                     {
                         key: 'thumbnails.singleViewOriginals',
                         label: 'Full images in one-per-row view',
                         type: 'checkbox',
-                        hint: 'The one-per-row view shows each photo itself instead of its thumbnail, sharp at any size, even above the large image size. Large photos are downloaded whole as you scroll past them, which can be slow over the network.',
+                        hint:
+                            'The one-per-row view shows each photo itself instead of its thumbnail, ' +
+                            'sharp at any size, even above the large image size. Large photos are downloaded whole ' +
+                            'as you scroll past them, which can be slow over the network.',
                     },
                     {
                         key: 'thumbnails.animatedHover',
                         label: 'Play animated images on hover',
                         type: 'checkbox',
-                        hint: 'Resting the mouse on an animated GIF, PNG, WebP or AVIF shown through its thumbnail (or, on a touch screen, holding it) plays the image itself. Each time, the whole file is downloaded.',
+                        hint:
+                            'Resting the mouse on an animated GIF, PNG, WebP or AVIF shown through its thumbnail ' +
+                            '(or, on a touch screen, holding it) plays the image itself. Each time, ' +
+                            'the whole file is downloaded.',
                     },
                     {
                         key: 'thumbnails.excludedFolders',
                         label: 'Excluded folders',
                         type: 'list',
                         placeholder: 'Scans\nPhotos/Raw',
-                        hint: 'Library folders (paths from the library root, one per line) whose files get no new thumbnails, with their sub-folders; those already made are still shown. Scans and previews… in the menu of a folder, or Scanning › Excluded folders, adds and removes them.',
+                        hint:
+                            'Library folders (paths from the library root, one per line) ' +
+                            'whose files get no new thumbnails, with their sub-folders; ' +
+                            'those already made are still shown. Scans and previews… in the menu of a folder, ' +
+                            'or Scanning › Excluded folders, adds and removes them.',
                     },
                 ],
             },
@@ -791,7 +899,10 @@ export const TABS: SettingTab[] = [
     {
         id: 'trickplay',
         title: 'Trickplay',
-        intro: "Trickplay is a strip of small frames taken along a video. The player shows them above its seek bar while you hover or drag it, so you can see where you are going. They are created in the background with ffmpeg and kept in the trickplay folder of the server's cache.",
+        intro:
+            'Trickplay is a strip of small frames taken along a video. The player shows them above its seek bar ' +
+            'while you hover or drag it, so you can see where you are going. They are created in the background with ' +
+            "ffmpeg and kept in the trickplay folder of the server's cache.",
         groups: [
             {
                 title: 'Background job',
@@ -801,21 +912,29 @@ export const TABS: SettingTab[] = [
                         key: 'trickplay.enabled',
                         label: 'Create trickplay',
                         type: 'checkbox',
-                        hint: 'The first pass over a large library keeps ffmpeg busy for a long time; the following ones only handle new and changed videos.',
+                        hint:
+                            'The first pass over a large library keeps ffmpeg busy for a long time; ' +
+                            'the following ones only handle new and changed videos.',
                     },
                     {
                         key: 'trickplay.folders',
                         label: 'Folders',
                         type: 'list',
                         placeholder: 'Movies\nSeries/Anime',
-                        hint: 'Library folders whose videos get trickplay, with their sub-folders: paths from the library root, one per line. Empty: the whole library.',
+                        hint:
+                            'Library folders whose videos get trickplay, with their sub-folders: ' +
+                            'paths from the library root, one per line. Empty: the whole library.',
                     },
                     {
                         key: 'trickplay.excludedFolders',
                         label: 'Excluded folders',
                         type: 'list',
                         placeholder: 'Movies/Trailers',
-                        hint: 'Library folders whose videos get no trickplay, with their sub-folders, even inside the folders above; those already made are still shown. Scans and previews… in the menu of a folder, or Scanning › Excluded folders, adds and removes them.',
+                        hint:
+                            'Library folders whose videos get no trickplay, with their sub-folders, ' +
+                            'even inside the folders above; those already made are still shown. ' +
+                            'Scans and previews… in the menu of a folder, or Scanning › Excluded folders, ' +
+                            'adds and removes them.',
                     },
                     {
                         key: 'trickplay.recheckHours',
@@ -823,7 +942,10 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 720,
-                        hint: 'The folders are also checked when the server starts and when these settings change, and a video you open is handled right away. 0: no periodic check. Background tasks shows when the next check runs, and can schedule checks at set times.',
+                        hint:
+                            'The folders are also checked when the server starts and when these settings change, ' +
+                            'and a video you open is handled right away. 0: no periodic check. ' +
+                            'Background tasks shows when the next check runs, and can schedule checks at set times.',
                     },
                 ],
             },
@@ -834,13 +956,17 @@ export const TABS: SettingTab[] = [
                         key: 'trickplay.hoverPreview',
                         label: 'Play on hover',
                         type: 'checkbox',
-                        hint: 'Resting the mouse on a video plays its trickplay over the thumbnail. On a touch screen: press and hold it. Only videos that already have trickplay.',
+                        hint:
+                            'Resting the mouse on a video plays its trickplay over the thumbnail. ' +
+                            'On a touch screen: press and hold it. Only videos that already have trickplay.',
                     },
                 ],
             },
             {
                 title: 'Frames',
-                hint: 'Changing these creates the trickplay of every video again, in the background. The old frames are shown until then.',
+                hint:
+                    'Changing these creates the trickplay of every video again, in the background. ' +
+                    'The old frames are shown until then.',
                 fields: [
                     {
                         key: 'trickplay.intervalSeconds',
@@ -878,7 +1004,9 @@ export const TABS: SettingTab[] = [
                         key: 'trickplay.keyFramesOnly',
                         label: 'Fast mode',
                         type: 'checkbox',
-                        hint: 'Decodes only the key frames of the video: many times faster, but a frame can be a few seconds off its position.',
+                        hint:
+                            'Decodes only the key frames of the video: many times faster, ' +
+                            'but a frame can be a few seconds off its position.',
                     },
                 ],
             },
@@ -908,11 +1036,15 @@ export const TABS: SettingTab[] = [
     {
         id: 'tracking',
         title: 'Duplicates & moves',
-        intro: 'Find identical files in the library, and keep the tags of files that are moved, renamed, or whose drive was missing during a scan. Both work from the index: scan folders to keep it current.',
+        intro:
+            'Find identical files in the library, and keep the tags of files that are moved, renamed, ' +
+            'or whose drive was missing during a scan. Both work from the index: scan folders to keep it current.',
         groups: [
             {
                 title: 'Duplicates',
-                hint: 'Files with the same size and fingerprint are taken as identical. Needs fingerprints (Scanning › Indexing › Fingerprint files).',
+                hint:
+                    'Files with the same size and fingerprint are taken as identical. ' +
+                    'Needs fingerprints (Scanning › Indexing › Fingerprint files).',
                 fields: [
                     {
                         key: 'fileTracking.duplicates.minimumKilobytes',
@@ -920,7 +1052,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 1048576,
-                        hint: 'Smaller files are left out: libraries hold many identical tiny files. 0 compares every file.',
+                        hint:
+                            'Smaller files are left out: libraries hold many identical tiny files. ' +
+                            '0 compares every file.',
                     },
                     {
                         key: 'fileTracking.duplicates.groupsPerPage',
@@ -934,13 +1068,19 @@ export const TABS: SettingTab[] = [
                         key: 'fileTracking.duplicates.allowRemove',
                         label: 'Allow deleting copies',
                         type: 'checkbox',
-                        hint: 'Adds a Remove button to each copy: the file is deleted from the disk and its tags are added to a copy you keep. The two files are compared byte for byte first, so an identical copy always stays. Anyone who can open SFE can use it.',
+                        hint:
+                            'Adds a Remove button to each copy: the file is deleted from the disk and its tags are ' +
+                            'added to a copy you keep. The two files are compared byte for byte first, ' +
+                            'so an identical copy always stays. Anyone who can open SFE can use it.',
                     },
                 ],
             },
             {
                 title: 'Similar videos',
-                hint: 'Videos showing the same pictures in other files (another resolution, quality or format, trimmed) are found from fingerprints made with their trickplay: turn trickplay on for the folders to compare.',
+                hint:
+                    'Videos showing the same pictures in other files (another resolution, quality or format, ' +
+                    'trimmed) are found from fingerprints made with their trickplay: ' +
+                    'turn trickplay on for the folders to compare.',
                 fields: [
                     {
                         key: 'fileTracking.similarVideos.minimumPercent',
@@ -948,7 +1088,10 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 50,
                         max: 100,
-                        hint: 'Share of frames two videos must have in common, out of the longer one. A copy at another resolution is near 100%, a copy cut by a tenth near 90%. Applies from the next comparison.',
+                        hint:
+                            'Share of frames two videos must have in common, out of the longer one. ' +
+                            'A copy at another resolution is near 100%, a copy cut by a tenth near 90%. ' +
+                            'Applies from the next comparison.',
                     },
                 ],
             },
@@ -959,13 +1102,19 @@ export const TABS: SettingTab[] = [
                         key: 'fileTracking.relink.enabled',
                         label: 'Keep the tags of moved files',
                         type: 'checkbox',
-                        hint: 'A tagged file that a scan no longer finds is remembered with its tags. When a scan indexes the same file somewhere else (moved, renamed, or back on its drive), the tags move over to it. When off, a file no longer found loses its tags.',
+                        hint:
+                            'A tagged file that a scan no longer finds is remembered with its tags. ' +
+                            'When a scan indexes the same file somewhere else (moved, renamed, ' +
+                            'or back on its drive), the tags move over to it. When off, ' +
+                            'a file no longer found loses its tags.',
                     },
                     {
                         key: 'fileTracking.relink.matchByName',
                         label: 'Recognise files without a fingerprint by name',
                         type: 'checkbox',
-                        hint: 'Files indexed without a fingerprint are matched on their name, size and modification date: a move is recognised, a rename is not.',
+                        hint:
+                            'Files indexed without a fingerprint are matched on their name, ' +
+                            'size and modification date: a move is recognised, a rename is not.',
                     },
                     {
                         key: 'fileTracking.relink.retentionDays',
@@ -973,7 +1122,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 3650,
-                        hint: 'Missing files not found again in that time are forgotten, with their tags. 0: until found or forgotten by hand.',
+                        hint:
+                            'Missing files not found again in that time are forgotten, with their tags. 0: ' +
+                            'until found or forgotten by hand.',
                     },
                 ],
             },
@@ -982,7 +1133,10 @@ export const TABS: SettingTab[] = [
     {
         id: 'tasks',
         title: 'Tasks',
-        intro: 'Scans, trickplay, similar-video comparisons and thumbnails run in the background. The other tabs show what runs, when each task runs next, the schedules that start them, and the log of every run.',
+        intro:
+            'Scans, trickplay, similar-video comparisons and thumbnails run in the background. ' +
+            'The other tabs show what runs, when each task runs next, the schedules that start them, ' +
+            'and the log of every run.',
         groups: [
             {
                 title: 'History',
@@ -1002,7 +1156,9 @@ export const TABS: SettingTab[] = [
     {
         id: 'logs',
         title: 'Logs',
-        intro: "What the server logs (its messages, warnings and errors, for every space) is kept for the Logs page. Both settings are the whole server's.",
+        intro:
+            'What the server logs (its messages, warnings and errors, for every space) is kept for the Logs page. ' +
+            "Both settings are the whole server's.",
         groups: [
             {
                 title: 'Keeping the log',
@@ -1013,13 +1169,18 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 3650,
-                        hint: 'Older entries are forgotten, and so are the daily files. 0: kept forever (the database keeps growing).',
+                        hint:
+                            'Older entries are forgotten, and so are the daily files. 0: ' +
+                            'kept forever (the database keeps growing).',
                     },
                     {
                         key: 'logs.writeFiles',
                         label: 'Also save the log to files',
                         type: 'checkbox',
-                        hint: "Writes a copy of every entry to a file per day (sfe-yyyymmdd.log) in the logs folder, next to the database and the thumbnails (data/logs unless the server's configuration says otherwise). The files are written even while the database can't be.",
+                        hint:
+                            'Writes a copy of every entry to a file per day (sfe-yyyymmdd.log) in the logs folder, ' +
+                            "next to the database and the thumbnails (data/logs unless the server's configuration " +
+                            "says otherwise). The files are written even while the database can't be.",
                     },
                 ],
             },
@@ -1028,7 +1189,9 @@ export const TABS: SettingTab[] = [
     {
         id: 'startup',
         title: 'Start-up',
-        intro: "What SFE does when it is started by hand from its portable package (a double click on Windows, the AppImage on Linux). A service never opens a browser. Both settings are the whole server's.",
+        intro:
+            'What SFE does when it is started by hand from its portable package (a double click on Windows, ' +
+            "the AppImage on Linux). A service never opens a browser. Both settings are the whole server's.",
         groups: [
             {
                 title: 'When SFE starts',
@@ -1037,13 +1200,19 @@ export const TABS: SettingTab[] = [
                         key: 'openBrowser',
                         label: 'Open the browser',
                         type: 'checkbox',
-                        hint: "Opens SFE in this computer's default browser once it is ready. Starting SFE with --no-browser keeps it closed whatever this says.",
+                        hint:
+                            "Opens SFE in this computer's default browser once it is ready. " +
+                            'Starting SFE with --no-browser keeps it closed whatever this says.',
                     },
                     {
                         key: 'fastSignIn',
                         label: 'Sign the administrator in at once',
                         type: 'checkbox',
-                        hint: "The browser opened at start signs the server's administrator in without a password, with a link that works once, for a minute, from this computer only. Only while the server has a single administrator. For SFE used on this computer alone: anyone who can start SFE here gets in as the administrator.",
+                        hint:
+                            "The browser opened at start signs the server's administrator in without a password, " +
+                            'with a link that works once, for a minute, from this computer only. ' +
+                            'Only while the server has a single administrator. For SFE used on this computer alone: ' +
+                            'anyone who can start SFE here gets in as the administrator.',
                     },
                 ],
             },
@@ -1074,7 +1243,10 @@ export const TABS: SettingTab[] = [
                         key: 'tags.recordHistory',
                         label: 'Remember tag history',
                         type: 'checkbox',
-                        hint: "Records the tags you search for and the tags of the files you open, for the sidebar's “Last searched” and “Last viewed” lists. When off, nothing new is recorded and those lists are hidden.",
+                        hint:
+                            'Records the tags you search for and the tags of the files you open, ' +
+                            "for the sidebar's “Last searched” and “Last viewed” lists. When off, " +
+                            'nothing new is recorded and those lists are hidden.',
                     },
                 ],
             },
@@ -1083,7 +1255,9 @@ export const TABS: SettingTab[] = [
     {
         id: 'editor',
         title: 'Picture editor',
-        intro: 'The Edit button of the viewer crops pictures. The result is always saved as a new file: originals are never changed.',
+        intro:
+            'The Edit button of the viewer crops pictures. The result is always saved as a new file: ' +
+            'originals are never changed.',
         groups: [
             {
                 title: 'Saving',
@@ -1093,7 +1267,12 @@ export const TABS: SettingTab[] = [
                         label: 'Folder for edited pictures',
                         type: 'text',
                         placeholder: 'Edited',
-                        hint: 'A folder of the library (path from the library root) where edited pictures are saved, in the same sub-folders as their originals: Photos/2024/beach.jpg is saved as Edited/Photos/2024/beach.jpg. Created when first needed. Empty: next to the original, as “beach (edited).jpg”. Existing files are never replaced: a number is added to the name.',
+                        hint:
+                            'A folder of the library (path from the library root) where edited pictures are saved, ' +
+                            'in the same sub-folders as their originals: Photos/2024/beach.jpg is saved as ' +
+                            'Edited/Photos/2024/beach.jpg. Created when first needed. Empty: next to the original, ' +
+                            'as “beach (edited).jpg”. Existing files are never replaced: ' +
+                            'a number is added to the name.',
                     },
                     {
                         key: 'editor.quality',
@@ -1101,7 +1280,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 10,
                         max: 100,
-                        hint: 'How much detail JPEG and WebP pictures keep when saved: higher is sharper and larger. PNG pictures are saved without loss; other formats are saved as PNG.',
+                        hint:
+                            'How much detail JPEG and WebP pictures keep when saved: higher is sharper and larger. ' +
+                            'PNG pictures are saved without loss; other formats are saved as PNG.',
                     },
                 ],
             },
@@ -1110,7 +1291,9 @@ export const TABS: SettingTab[] = [
     {
         id: 'files',
         title: 'File management',
-        intro: 'Creating folders, renaming, moving, copying, uploading and deleting files and folders from the listing, for the groups given those rights (Spaces & accounts).',
+        intro:
+            'Creating folders, renaming, moving, copying, uploading and deleting files and folders from the ' +
+            'listing, for the groups given those rights (Spaces & accounts).',
         groups: [
             {
                 title: 'Deleting',
@@ -1119,7 +1302,10 @@ export const TABS: SettingTab[] = [
                         key: 'files.deletePermanently',
                         label: 'Always delete permanently',
                         type: 'checkbox',
-                        hint: 'Every delete skips the trash: files are gone at once, and only those who may delete permanently can delete. What is already in the trash stays there.',
+                        hint:
+                            'Every delete skips the trash: files are gone at once, ' +
+                            'and only those who may delete permanently can delete. ' +
+                            'What is already in the trash stays there.',
                     },
                     {
                         key: 'files.trash.retentionDays',
@@ -1127,7 +1313,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 3650,
-                        hint: 'What was deleted is deleted for good after this many days in the trash (a background task, Background tasks › Trash purge); 0 keeps it until the trash is emptied.',
+                        hint:
+                            'What was deleted is deleted for good after this many days in the trash (a background ' +
+                            'task, Background tasks › Trash purge); 0 keeps it until the trash is emptied.',
                     },
                 ],
             },
@@ -1140,7 +1328,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 1048576,
-                        hint: 'A copy or an upload is refused when it would leave less free space than this on the drive it goes to. 0: they may fill the drive.',
+                        hint:
+                            'A copy or an upload is refused when it would leave less free space than this on the ' +
+                            'drive it goes to. 0: they may fill the drive.',
                     },
                     {
                         key: 'files.uploads.maxFileSizeMegabytes',
@@ -1148,7 +1338,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 1073741823,
-                        hint: 'Larger files are refused before they are sent. 0: no limit (only the free space kept counts).',
+                        hint:
+                            'Larger files are refused before they are sent. 0: no limit (only the free space kept ' +
+                            'counts).',
                     },
                     {
                         key: 'files.uploads.keepUnfinishedHours',
@@ -1156,7 +1348,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 1,
                         max: 8760,
-                        hint: 'An upload that receives nothing for this long is removed with what it received. Until then, picking the same file again goes on where it stopped.',
+                        hint:
+                            'An upload that receives nothing for this long is removed with what it received. ' +
+                            'Until then, picking the same file again goes on where it stopped.',
                     },
                     {
                         key: 'files.maxArchiveMegabytes',
@@ -1164,7 +1358,10 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 0,
                         max: 1073741823,
-                        hint: 'Downloading several files or a folder makes one zip. A larger one is refused before it starts, as far as the index knows the files (folders not indexed count nothing). 0: no limit.',
+                        hint:
+                            'Downloading several files or a folder makes one zip. A larger one is refused before ' +
+                            'it starts, as far as the index knows the files (folders not indexed count nothing). 0: ' +
+                            'no limit.',
                     },
                 ],
             },
@@ -1175,7 +1372,10 @@ export const TABS: SettingTab[] = [
                         key: 'files.portableNames',
                         label: 'Only names Windows accepts',
                         type: 'checkbox',
-                        hint: 'New names must also work on Windows: no < > : " \\ | ? *, no name ending with a dot or a space, no CON, NUL, COM1… Keep it on when the library is shared with Windows computers or may move to one. A Windows server always refuses them.',
+                        hint:
+                            'New names must also work on Windows: no < > : " \\ | ? *, ' +
+                            'no name ending with a dot or a space, no CON, NUL, COM1… Keep it on when the library is ' +
+                            'shared with Windows computers or may move to one. A Windows server always refuses them.',
                     },
                 ],
             },
@@ -1190,7 +1390,12 @@ export const TABS: SettingTab[] = [
                             ['library', 'In the library'],
                             ['server', 'On the server'],
                         ],
-                        hint: "For the trash and unfinished uploads. In the library (a hidden .sfe folder at its root), they stay on its own drive, so moving a file there is instant; in the server's data folder, the library holds nothing of SFE's, but large files are copied from one drive to the other. The name .sfe at the library's root stays reserved either way.",
+                        hint:
+                            'For the trash and unfinished uploads. In the library (a hidden .sfe folder at its ' +
+                            'root), they stay on its own drive, so moving a file there is instant; ' +
+                            "in the server's data folder, the library holds nothing of SFE's, " +
+                            "but large files are copied from one drive to the other. The name .sfe at the library's " +
+                            'root stays reserved either way.',
                     },
                 ],
             },
@@ -1199,7 +1404,11 @@ export const TABS: SettingTab[] = [
     {
         id: 'keepAlive',
         title: 'Keep alive',
-        intro: "A file server drops the connection to a share nobody used for a while (Windows file servers after 15 minutes, many NAS sooner), and the drive may be lost with it. Keep alive looks at the library folder every few minutes, a single read of its first entry, so the connection never goes idle. It can't reconnect a drive already lost.",
+        intro:
+            'A file server drops the connection to a share nobody used for a while (Windows file servers after 15 ' +
+            'minutes, many NAS sooner), and the drive may be lost with it. Keep alive looks at the library folder ' +
+            'every few minutes, a single read of its first entry, so the connection never goes idle. ' +
+            "It can't reconnect a drive already lost.",
         groups: [
             {
                 title: 'Pings',
@@ -1213,7 +1422,10 @@ export const TABS: SettingTab[] = [
                             ['auto', 'When it is on a network share'],
                             ['always', 'Always'],
                         ],
-                        hint: "“When it is on a network share”: a \\\\server\\share folder, a mapped network drive, or a CIFS, NFS or SSHFS mount, also through a link. “Always”: also a folder SFE can't tell is on the network.",
+                        hint:
+                            '“When it is on a network share”: a \\\\server\\share folder, a mapped network drive, ' +
+                            'or a CIFS, NFS or SSHFS mount, also through a link. “Always”: ' +
+                            "also a folder SFE can't tell is on the network.",
                     },
                     {
                         key: 'keepAlive.intervalSeconds',
@@ -1221,7 +1433,9 @@ export const TABS: SettingTab[] = [
                         type: 'number',
                         min: 10,
                         max: 3600,
-                        hint: 'Shorter than the time the file server waits before dropping an idle connection (240: every 4 minutes).',
+                        hint:
+                            'Shorter than the time the file server waits before dropping an idle connection (240: ' +
+                            'every 4 minutes).',
                     },
                     {
                         key: 'keepAlive.timeoutSeconds',
@@ -1239,14 +1453,22 @@ export const TABS: SettingTab[] = [
                             ['list', 'Read the folder'],
                             ['touch', 'Write and delete a small file'],
                         ],
-                        hint: "Reading is enough for most file servers, but the computer may answer it from its own cache without asking the server. Writing always reaches the server: a small file is created and deleted in SFE's work folder (.sfe/keep-alive at the library's root). When the work folder is on the server (File management), the folder is read instead. More folders are always read.",
+                        hint:
+                            'Reading is enough for most file servers, but the computer may answer it from its own ' +
+                            'cache without asking the server. Writing always reaches the server: ' +
+                            "a small file is created and deleted in SFE's work folder (.sfe/keep-alive at the " +
+                            "library's root). When the work folder is on the server (File management), " +
+                            'the folder is read instead. More folders are always read.',
                     },
                     {
                         key: 'keepAlive.folders',
                         label: 'More folders',
                         type: 'list',
                         placeholder: 'NAS/Photos',
-                        hint: 'Library folders kept alive too, for folders reached through a link to another share: paths from the library root, one per line. “When it is on a network share” looks at each one on its own.',
+                        hint:
+                            'Library folders kept alive too, for folders reached through a link to another share: ' +
+                            'paths from the library root, one per line. “When it is on a network share” looks at ' +
+                            'each one on its own.',
                     },
                 ],
             },

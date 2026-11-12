@@ -27,7 +27,8 @@ export const TASK_PURPOSES: Record<TaskKind, string> = {
     similarVideos: 'Compares the indexed videos to find copies in other files.',
     thumbnails: 'Rendered as the listings show photos and videos; they can be stopped, not scheduled.',
     trashPurge:
-        'Deletes for good what has been in the trash longer than its settings say. Also runs by itself when the trash is used.',
+        'Deletes for good what has been in the trash longer than its settings say. ' +
+        'Also runs by itself when the trash is used.',
 };
 
 export const TASK_ICONS: Record<TaskKind, string> = {

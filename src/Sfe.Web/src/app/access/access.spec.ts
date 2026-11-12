@@ -523,32 +523,36 @@ describe('SpacesPageComponent', () => {
         );
     });
 
-    it('marks the rights that change things, those that change files the most, after those that only look', async () => {
-        serverSpaces();
-        api.groups.mockResolvedValue(work);
-        await create(SpacesPageComponent);
-        await openSpace('Work');
+    it(
+        'marks the rights that change things, those that change files the most, ' + 'after those that only look',
+        async () => {
+            serverSpaces();
+            api.groups.mockResolvedValue(work);
+            await create(SpacesPageComponent);
+            await openSpace('Work');
 
-        buttonNamed(element, 'New group')!.click();
-        await settle();
-        const library = [...element.querySelectorAll<HTMLElement>('.access-choices.rights')].find(
-            (area) => area.querySelector('legend')!.textContent === 'Library',
-        )!;
-        const titles = [...library.querySelectorAll('.right-title')].map((title) =>
-            title.firstChild!.textContent!.trim(),
-        );
-        const marks = (id: string) =>
-            checkbox('.access-choices.rights label', id, library).closest('label')!.querySelector('.right-mark');
+            buttonNamed(element, 'New group')!.click();
+            await settle();
+            const library = [...element.querySelectorAll<HTMLElement>('.access-choices.rights')].find(
+                (area) => area.querySelector('legend')!.textContent === 'Library',
+            )!;
+            const titles = [...library.querySelectorAll('.right-title')].map((title) =>
+                title.firstChild!.textContent!.trim(),
+            );
+            const marks = (id: string) =>
+                checkbox('.access-choices.rights label', id, library).closest('label')!.querySelector('.right-mark');
 
-        expect(titles).toEqual([Rights.browse, Rights.download, Rights.editImages]);
-        expect(marks(Rights.browse)).toBeNull();
-        expect(marks(Rights.editImages)!.textContent).toBe('Changes files');
-        expect(marks(Rights.editImages)!.classList).toContain('danger');
-        expect(
-            checkbox('.access-choices.rights label', Rights.manageTags).closest('label')!.querySelector('.right-mark')!
-                .textContent,
-        ).toBe('Changes things');
-    });
+            expect(titles).toEqual([Rights.browse, Rights.download, Rights.editImages]);
+            expect(marks(Rights.browse)).toBeNull();
+            expect(marks(Rights.editImages)!.textContent).toBe('Changes files');
+            expect(marks(Rights.editImages)!.classList).toContain('danger');
+            expect(
+                checkbox('.access-choices.rights label', Rights.manageTags)
+                    .closest('label')!
+                    .querySelector('.right-mark')!.textContent,
+            ).toBe('Changes things');
+        },
+    );
 
     it('switches off at once the rights that change files, or every right that changes something', async () => {
         serverSpaces();

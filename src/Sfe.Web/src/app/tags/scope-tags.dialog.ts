@@ -252,7 +252,8 @@ export class ScopeTagsDialog {
         return [
             pending.create ? 'The tag is created first.' : '',
             this.canTagFiles()
-                ? 'The files already in it and its sub-folders can get it now too (they are indexed first, which can take a while for a large folder).'
+                ? 'The files already in it and its sub-folders can get it now too (they are indexed first, ' +
+                  'which can take a while for a large folder).'
                 : 'The files already there don’t change.',
         ]
             .filter(Boolean)

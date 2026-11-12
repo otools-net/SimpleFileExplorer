@@ -39,7 +39,8 @@ describe('search explanation (mirrors SearchQuery.Parse)', () => {
     it('notes the parts that do not work as they may seem', () => {
         const notes = parseQuery('clip.mp4 a*b s:big -s:huge -e: t:').notes.map(words);
         expect(notes).toContain(
-            'A [*] only means “search the whole path” at the very start of the search; here it is searched as a character.',
+            'A [*] only means “search the whole path” at the very start of the search; ' +
+                'here it is searched as a character.',
         );
         expect(notes.some((note) => note.startsWith('Names are searched without their extension'))).toBe(true);
         expect(notes.some((note) => note.startsWith('[s:big] is ignored'))).toBe(true);
@@ -65,7 +66,8 @@ describe('search explanation (mirrors SearchQuery.Parse)', () => {
             'Finds files in the whole library that are [photos] OR [videos].',
         );
         expect(words(explain('cat -type:audio -type:other', '').sentence)).toBe(
-            'Finds files in the whole library with [cat] in their name AND that are NOT [audio files] OR [other files].',
+            'Finds files in the whole library with [cat] in their name AND that are NOT [audio files] OR [other ' +
+                'files].',
         );
         const parsed = parseQuery('cat type:folder -type:');
         expect(parsed.groups[0].clauses.map((clause) => clause.kind)).toEqual(['text']);
@@ -116,7 +118,8 @@ describe('search explanation (mirrors SearchQuery.Parse)', () => {
         const result = explain('movie -s:>1gb -e:mp4 -e:.mkv e:avi -w:1920 -r:>720x1024', '');
         expect(words(result.sentence)).toBe(
             'Finds files in the whole library with [movie] in their name AND NOT larger than [1 GB]' +
-                ' AND WITHOUT the extension [.mp4] OR [.mkv] AND with the extension [.avi] AND NOT exactly [1920 pixels] wide' +
+                ' AND WITHOUT the extension [.mp4] OR [.mkv] AND with the extension [.avi] AND NOT exactly [1920 ' +
+                'pixels] wide' +
                 ' AND NOT BOTH more than [720 pixels] wide AND more than [1024 pixels] high.',
         );
         const notes = result.notes.map(words);

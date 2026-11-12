@@ -5,31 +5,38 @@ import { HostingKind } from '../core/models';
 export const SETUP_CODE_STEPS: Record<HostingKind, [string, string]> = {
     windowsService: [
         'Windows service',
-        'Add "Setup": { "Code": "…" } to the "Sfe" section of appsettings.json, next to SFE\'s program, or set the system environment variable Sfe__Setup__Code; then restart the SFE service.',
+        'Add "Setup": { "Code": "…" } to the "Sfe" section of appsettings.json, next to SFE\'s program, ' +
+            'or set the system environment variable Sfe__Setup__Code; then restart the SFE service.',
     ],
     systemd: [
         'systemd service',
-        "Add Environment=Sfe__Setup__Code=… to the [Service] section of SFE's unit (systemctl edit sfe), then restart it (systemctl restart sfe).",
+        "Add Environment=Sfe__Setup__Code=… to the [Service] section of SFE's unit (systemctl edit sfe), " +
+            'then restart it (systemctl restart sfe).',
     ],
     iis: [
         'IIS',
-        'Add <environmentVariable name="Sfe__Setup__Code" value="…" /> to the environmentVariables of the site\'s web.config (or set it in IIS Manager\'s configuration editor), then recycle the application pool.',
+        'Add <environmentVariable name="Sfe__Setup__Code" value="…" /> to the environmentVariables of the site\'s ' +
+            "web.config (or set it in IIS Manager's configuration editor), then recycle the application pool.",
     ],
     docker: [
         'Container',
-        'Give the container the environment variable Sfe__Setup__Code (docker run -e, the environment of a compose file, or the container settings of your NAS), then restart it.',
+        'Give the container the environment variable Sfe__Setup__Code (docker run -e, ' +
+            'the environment of a compose file, or the container settings of your NAS), then restart it.',
     ],
     appImage: [
         'AppImage',
-        'Add "Setup": { "Code": "…" } to the "Sfe" section of ~/.config/sfe/appsettings.json, or start SFE with the environment variable Sfe__Setup__Code; then start it again.',
+        'Add "Setup": { "Code": "…" } to the "Sfe" section of ~/.config/sfe/appsettings.json, ' +
+            'or start SFE with the environment variable Sfe__Setup__Code; then start it again.',
     ],
     portable: [
         'Portable package',
-        'Add "Setup": { "Code": "…" } to the "Sfe" section of appsettings.json, next to SFE\'s program, or start it with the environment variable Sfe__Setup__Code; then start it again.',
+        'Add "Setup": { "Code": "…" } to the "Sfe" section of appsettings.json, next to SFE\'s program, ' +
+            'or start it with the environment variable Sfe__Setup__Code; then start it again.',
     ],
     other: [
         'Configuration or environment variable',
-        'Set the environment variable Sfe__Setup__Code (or Sfe:Setup:Code in the configuration files), then restart the server.',
+        'Set the environment variable Sfe__Setup__Code (or Sfe:Setup:Code in the configuration files), ' +
+            'then restart the server.',
     ],
 };
 

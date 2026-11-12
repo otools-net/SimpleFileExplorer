@@ -285,7 +285,8 @@ describe('settings on the administration page', () => {
         type(control('fileTypes.videos'), '.mp4,  .mkv  .webm,,');
         await settle();
         expect(status()).toBe(
-            'Not saved yet: Interface › Browsing, Interface › Search, Playback › Player, Playback › Streaming, Scanning › What to scan, Scanning › File types',
+            'Not saved yet: Interface › Browsing, Interface › Search, Playback › Player, Playback › Streaming, ' +
+                'Scanning › What to scan, Scanning › File types',
         );
         // Marked on the sections, and on the sub-pages of the open one.
         expect(navItem('Interface').querySelector('.admin-mark')).not.toBeNull();
