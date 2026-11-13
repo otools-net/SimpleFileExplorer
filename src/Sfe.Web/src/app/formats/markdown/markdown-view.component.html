@@ -13,8 +13,25 @@
                 [disabled]="!headings().length" (click)="toggleOutline()"><svg sfeIcon="list"></svg></button>
     }
     @if (mode() !== 'rendered') {
-        <button type="button" class="icon-button" [sfeOverflowItem]="more.lineNumbers" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
-        <button type="button" class="icon-button" [sfeOverflowItem]="more.find" title="Find in the source (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="sourceEditor()?.find()"><svg sfeIcon="search"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="more.lineNumbers"
+            [class.active]="own().lineNumbers"
+            [attr.aria-pressed]="own().lineNumbers"
+            title="Line numbers"
+            aria-label="Line numbers"
+            (click)="toggleLineNumbers()"
+        ><svg sfeIcon="line-numbers"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="more.find"
+            title="Find in the source (Ctrl+F)"
+            aria-label="Find"
+            [disabled]="state() !== 'ready'"
+            (click)="sourceEditor()?.find()"
+        ><svg sfeIcon="search"></svg></button>
     }
     <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
             title="Reading settings: font, size, width, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
@@ -37,17 +54,32 @@
         </div>
     }
 }
-<div class="markdown-panes" [hidden]="state() !== 'ready'" [class.with-outline]="outline() && mode() !== 'source' && headings().length">
+<div
+    class="markdown-panes"
+    [hidden]="state() !== 'ready'"
+    [class.with-outline]="outline() && mode() !== 'source' && headings().length"
+>
     @if (outline() && mode() !== 'source' && headings().length) {
         <nav class="markdown-outline" aria-label="Outline">
             @for (heading of headings(); track heading.id) {
                 @if (heading.level <= 3) {
-                    <a [href]="'#' + heading.id" [class]="'level-' + heading.level" (click)="goTo($event, heading.id)">{{ heading.text }}</a>
+                    <a
+                        [href]="'#' + heading.id"
+                        [class]="'level-' + heading.level"
+                        (click)="goTo($event, heading.id)"
+                    >{{ heading.text }}</a>
                 }
             }
         </nav>
     }
-    <article #article class="markdown-body" tabindex="0" [attr.aria-label]="item().name" [hidden]="mode() === 'source'" (click)="onArticleClick($event)"><div #content class="markdown-content"></div></article>
+    <article
+        #article
+        class="markdown-body"
+        tabindex="0"
+        [attr.aria-label]="item().name"
+        [hidden]="mode() === 'source'"
+        (click)="onArticleClick($event)"
+    ><div #content class="markdown-content"></div></article>
     <div #source class="text-editor markdown-source" [hidden]="mode() === 'rendered'"></div>
 </div>
 @if (state() === 'ready') {
@@ -57,8 +89,14 @@
             <span class="text-edited" data-edited>Edited</span>
         }
         @if (externalImages()) {
-            <span class="markdown-external">{{ externalImages() }} {{ externalImages() === 1 ? 'image' : 'images' }} of other sites not shown
-                <button type="button" class="link-button" title="Load them from the sites they are on (those sites see that this document is read)" (click)="showImages()">Show</button></span>
+            <span class="markdown-external">{{ externalImages() }} {{ externalImages() === 1 ? 'image' : 'images' }} of
+            other sites not shown
+                <button
+                    type="button"
+                    class="link-button"
+                    title="Load them from the sites they are on (those sites see that this document is read)"
+                    (click)="showImages()"
+                >Show</button></span>
         }
     </footer>
 }

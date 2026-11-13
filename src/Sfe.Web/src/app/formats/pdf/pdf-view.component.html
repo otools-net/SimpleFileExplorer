@@ -1,12 +1,49 @@
 <div class="text-toolbar" role="toolbar" aria-label="Document" sfeOverflowRow="Document">
-    <button type="button" class="icon-button" [sfeOverflowItem]="null" overflowStay title="Previous page (←)" aria-label="Previous page" data-previous-page [disabled]="state() !== 'ready' || page() <= 1" (click)="goTo(page() - 1)"><svg sfeIcon="left"></svg></button>
+    <button
+        type="button"
+        class="icon-button"
+        [sfeOverflowItem]="null"
+        overflowStay
+        title="Previous page (←)"
+        aria-label="Previous page"
+        data-previous-page
+        [disabled]="state() !== 'ready' || page() <= 1"
+        (click)="goTo(page() - 1)"
+    ><svg sfeIcon="left"></svg></button>
     <input type="text" inputmode="numeric" class="json-filter pdf-page" [sfeOverflowItem]="null" overflowStay data-page aria-label="Page" title="Go to page" [value]="page()" [disabled]="state() !== 'ready'"
            (keydown.enter)="goTo($any($event.target).value)" (blur)="$any($event.target).value = page()" />
     <span class="pdf-pages" [sfeOverflowItem]="null" overflowStay>/ {{ pages() }}</span>
-    <button type="button" class="icon-button" [sfeOverflowItem]="null" overflowStay title="Next page (→)" aria-label="Next page" data-next-page [disabled]="state() !== 'ready' || page() >= pages()" (click)="goTo(page() + 1)"><svg sfeIcon="right"></svg></button>
+    <button
+        type="button"
+        class="icon-button"
+        [sfeOverflowItem]="null"
+        overflowStay
+        title="Next page (→)"
+        aria-label="Next page"
+        data-next-page
+        [disabled]="state() !== 'ready' || page() >= pages()"
+        (click)="goTo(page() + 1)"
+    ><svg sfeIcon="right"></svg></button>
     <!-- Smaller and Larger stay; the list of sizes may leave (a submenu in "⋯"). -->
-        <button type="button" class="icon-button" [sfeOverflowItem]="null" overflowStay title="Smaller (Ctrl+−)" aria-label="Smaller" data-zoom-out [disabled]="state() !== 'ready'" (click)="zoom(-1)"><svg sfeIcon="zoom-out"></svg></button>
-        <select class="csv-delimiter" data-scale [sfeOverflowItem]="more.zoom" aria-label="Zoom" [disabled]="state() !== 'ready'" (change)="setScale($any($event.target).value)">
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="null"
+            overflowStay
+            title="Smaller (Ctrl+−)"
+            aria-label="Smaller"
+            data-zoom-out
+            [disabled]="state() !== 'ready'"
+            (click)="zoom(-1)"
+        ><svg sfeIcon="zoom-out"></svg></button>
+        <select
+            class="csv-delimiter"
+            data-scale
+            [sfeOverflowItem]="more.zoom"
+            aria-label="Zoom"
+            [disabled]="state() !== 'ready'"
+            (change)="setScale($any($event.target).value)"
+        >
             @for (choice of scales; track choice.value) {
                 <option [value]="choice.value" [selected]="choice.value === scaleValue()">{{ choice.label }}</option>
             }
@@ -14,7 +51,17 @@
                 <option [value]="custom.value" selected>{{ custom.label }}</option>
             }
         </select>
-        <button type="button" class="icon-button" [sfeOverflowItem]="null" overflowStay title="Larger (Ctrl+=)" aria-label="Larger" data-zoom-in [disabled]="state() !== 'ready'" (click)="zoom(1)"><svg sfeIcon="zoom-in"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="null"
+            overflowStay
+            title="Larger (Ctrl+=)"
+            aria-label="Larger"
+            data-zoom-in
+            [disabled]="state() !== 'ready'"
+            (click)="zoom(1)"
+        ><svg sfeIcon="zoom-in"></svg></button>
     @if (outline().length) {
         <button type="button" class="icon-button" data-outline [sfeOverflowItem]="more.outline" [class.active]="showOutline()" [attr.aria-pressed]="showOutline()" title="Outline: the document's headings" aria-label="Outline"
                 (click)="toggleOutline()"><svg sfeIcon="list"></svg></button>
@@ -27,7 +74,10 @@
         <input #findBox type="search" class="json-filter" data-find placeholder="Find in the document" aria-label="Find in the document" title="Find (Ctrl+F); Enter: next, Shift+Enter: previous"
                [disabled]="state() !== 'ready'" (input)="find($any($event.target).value)" (keydown)="onFindKeydown($event)" />
         @if (query()) {
-            <span class="pdf-matches" data-matches>{{ matches().total ? matches().current + ' of ' + matches().total : 'Not found' }}</span>
+            <span
+                class="pdf-matches"
+                data-matches
+            >{{ matches().total ? matches().current + ' of ' + matches().total : 'Not found' }}</span>
         }
         </span>
     </span>
@@ -44,7 +94,14 @@
         @case ('locked') {
             <form class="text-message pdf-password" (submit)="unlock($event)">
                 <p>{{ wrongPassword() ? 'That is not its password. Try again:' : 'This document is protected by a password.' }}</p>
-                <p><input #passwordBox type="password" class="json-filter" data-password aria-label="Password" autocomplete="off" />
+                <p><input
+                    #passwordBox
+                    type="password"
+                    class="json-filter"
+                    data-password
+                    aria-label="Password"
+                    autocomplete="off"
+                />
                     <button type="submit" class="button">Open</button></p>
             </form>
         }
@@ -62,12 +119,21 @@
     @if (showOutline() && outline().length) {
         <nav class="markdown-outline pdf-outline" aria-label="Outline">
             @for (entry of outlineRows(); track $index) {
-                <a href="" [style.padding-inline-start.px]="8 + entry.depth * 14" (click)="goToOutline($event, entry.item)">{{ entry.item.title }}</a>
+                <a
+                    href=""
+                    [style.padding-inline-start.px]="8 + entry.depth * 14"
+                    (click)="goToOutline($event, entry.item)"
+                >{{ entry.item.title }}</a>
             }
         </nav>
     }
     <div #frame class="pdf-frame">
-        <div #container class="pdf-container" tabindex="0" [attr.aria-label]="item().name"><div class="pdfViewer"></div></div>
+        <div
+            #container
+            class="pdf-container"
+            tabindex="0"
+            [attr.aria-label]="item().name"
+        ><div class="pdfViewer"></div></div>
     </div>
 </div>
 @if (state() === 'ready') {

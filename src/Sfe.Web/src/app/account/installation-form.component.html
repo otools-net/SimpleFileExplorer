@@ -3,20 +3,29 @@
     <fieldset class="field installation-mode">
         <legend class="field-label">How SFE is used</legend>
         @if (mode.locked) {
-            <p class="installation-locked"><code>{{ mode.value }}</code><span class="field-hint">Set by {{ mode.lockedBy }}.</span></p>
+            <p class="installation-locked"><code>{{ mode.value }}</code><span class="field-hint">Set by
+            {{ mode.lockedBy }}.</span></p>
         } @else {
             <label class="check">
                 <input type="radio" name="installation-mode" value="local" [checked]="chosenMode() === 'local'" [disabled]="!localAllowed()"
                        (change)="chosenMode.set('local')">
                 <span>Local
-                    <span class="field-hint">SFE on your own computer: only this computer opens it, and only administrators sign in.</span>
+                    <span class="field-hint">SFE on your own computer: only this computer opens it, and only
+                    administrators sign in.</span>
                 </span>
             </label>
             <label class="check">
-                <input type="radio" name="installation-mode" value="external" [checked]="chosenMode() === 'external'" (change)="chosenMode.set('external')">
+                <input
+                    type="radio"
+                    name="installation-mode"
+                    value="external"
+                    [checked]="chosenMode() === 'external'"
+                    (change)="chosenMode.set('external')"
+                >
                 <span>External
                     <span class="field-hint">
-                        Other people open SFE from their devices, over the network or the internet. The library folders and ffmpeg are then set in
+                        Other people open SFE from their devices, over the network or the internet. The library folders
+                        and ffmpeg are then set in
                         the server's configuration (environment variables or a settings file), not on this page.
                     </span>
                 </span>
@@ -34,14 +43,17 @@
 <div class="field">
     <span class="field-label">Library folder</span>
     @if (view.root.locked) {
-        <p class="installation-locked"><code>{{ view.root.value || 'not set' }}</code><span class="field-hint">Set by {{ view.root.lockedBy }}.</span></p>
+        <p class="installation-locked"><code>{{ view.root.value || 'not set' }}</code><span class="field-hint">Set by
+        {{ view.root.lockedBy }}.</span></p>
     } @else if (external()) {
         <p class="installation-locked"><code>{{ view.root.value || 'not set' }}</code>
-            <span class="field-hint">An External server takes it from its configuration (Sfe__Root in its environment, or appsettings.json).</span></p>
+            <span class="field-hint">An External server takes it from its configuration (Sfe__Root in its environment,
+            or appsettings.json).</span></p>
     } @else {
         <sfe-folder-picker [source]="folders" [initial]="root()" placeholder="Pick the folder of your photos, videos and music"
                            (picked)="root.set($event)" (failed)="problem.set('Could not list the folders: ' + $event)" />
-        <span class="field-hint">The folder whose files SFE shows, with everything below it. Click a folder to choose it; click again inside it to go deeper.</span>
+        <span class="field-hint">The folder whose files SFE shows, with everything below it. Click a folder to choose
+        it; click again inside it to go deeper.</span>
         @if (!view.rootExists && root() === view.root.value) {
             <span class="field-error">This folder does not exist on the server now: pick another.</span>
         }
@@ -54,10 +66,12 @@
 <fieldset class="field installation-network">
     <legend class="field-label">Who can open SFE</legend>
     @if (view.urls.locked) {
-        <p class="installation-locked"><code>{{ view.urls.value }}</code><span class="field-hint">Set by {{ view.urls.lockedBy }}.</span></p>
+        <p class="installation-locked"><code>{{ view.urls.value }}</code><span class="field-hint">Set by
+        {{ view.urls.lockedBy }}.</span></p>
     } @else {
         @if (view.mode && chosenMode() === 'local') {
-            <p class="installation-local">Only this computer, as SFE is Local<span class="field-hint">Open it at http://localhost:{{ port() }}.</span></p>
+            <p class="installation-local">Only this computer, as SFE is Local<span class="field-hint">Open it at
+            http://localhost:{{ port() }}.</span></p>
         } @else {
             <label class="check">
                 <input type="radio" name="installation-network" [checked]="!network()" (change)="network.set(false)">
@@ -66,13 +80,21 @@
             <label class="check">
                 <input type="radio" name="installation-network" [checked]="network()" (change)="network.set(true)">
                 <span>Also the other devices of my network
-                    <span class="field-hint">Phones, TVs and other computers at home open http://<em>this computer's name or address</em>:{{ port() }}. Everyone still signs in.</span>
+                    <span class="field-hint">Phones, TVs and other computers at home open http://<em>this computer's
+                    name or address</em>:{{ port() }}. Everyone still signs in.</span>
                 </span>
             </label>
         }
         <div class="field installation-port">
             <label class="field-label" for="installation-port">Port</label>
-            <input id="installation-port" type="number" min="1" max="65535" [value]="port()" (input)="port.set(+valueOf($event))">
+            <input
+                id="installation-port"
+                type="number"
+                min="1"
+                max="65535"
+                [value]="port()"
+                (input)="port.set(+valueOf($event))"
+            >
         </div>
     }
     @if (errors()['port']; as error) {
@@ -94,19 +116,27 @@
         }
     </p>
     <span class="field-hint">
-        ffmpeg makes the video thumbnails, trickplay, durations and converted videos. Without it, everything else works. To add it,
+        ffmpeg makes the video thumbnails, trickplay, durations and converted videos. Without it, everything else works.
+        To add it,
         download it from ffmpeg.org, unzip it, then pick its folder here.
     </span>
     @if (view.ffmpegPath.locked) {
-        <p class="installation-locked"><code>{{ view.ffmpegPath.value || 'ffmpeg' }}</code><span class="field-hint">Set by {{ view.ffmpegPath.lockedBy }}.</span></p>
+        <p class="installation-locked"><code>{{ view.ffmpegPath.value || 'ffmpeg' }}</code><span class="field-hint">Set
+        by {{ view.ffmpegPath.lockedBy }}.</span></p>
     } @else if (external()) {
         <p class="installation-locked"><code>{{ view.ffmpegPath.value || 'ffmpeg' }}</code>
-            <span class="field-hint">An External server takes it from its configuration (Sfe__Thumbnails__FfmpegPath in its environment, or appsettings.json).</span></p>
+            <span class="field-hint">An External server takes it from its configuration (Sfe__Thumbnails__FfmpegPath in
+            its environment, or appsettings.json).</span></p>
     } @else {
         <div class="installation-ffmpeg-path">
             <input id="installation-ffmpeg" type="text" spellcheck="false" placeholder="ffmpeg (looked for on the PATH)" aria-label="ffmpeg's program or folder"
                    [value]="ffmpeg()" (input)="ffmpeg.set(valueOf($event))">
-            <button type="button" class="button small" title="Pick the folder ffmpeg is in" (click)="pickFfmpeg.set(!pickFfmpeg())">
+            <button
+                type="button"
+                class="button small"
+                title="Pick the folder ffmpeg is in"
+                (click)="pickFfmpeg.set(!pickFfmpeg())"
+            >
                 <svg sfeIcon="folder"></svg>Browse
             </button>
         </div>

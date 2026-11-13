@@ -15,24 +15,37 @@
                         <li>{{ line }}</li>
                     }
                 </ul>
-                <button type="button" class="button primary account-submit" title="Open the library" (click)="open()">Open SFE</button>
+                <button
+                    type="button"
+                    class="button primary account-submit"
+                    title="Open the library"
+                    (click)="open()"
+                >Open SFE</button>
             }
             @case ('unavailable') {
                 <p>SFE cannot read its database yet, so it does not know whether an update is due. It keeps trying.</p>
                 @if (info.error) {
                     <p class="form-error">{{ info.error }}</p>
                 }
-                <button type="button" class="button account-submit" title="Ask the server again" (click)="load()">Check again</button>
+                <button
+                    type="button"
+                    class="button account-submit"
+                    title="Ask the server again"
+                    (click)="load()"
+                >Check again</button>
             }
             @case ('newer') {
                 <p>
-                    The databases belong to SFE <strong>{{ info.databaseVersion }}</strong>, a later version than this one
-                    ({{ info.appVersion }}). This version cannot use them: install SFE {{ info.databaseVersion }} again, or restore
+                    The databases belong to SFE <strong>{{ info.databaseVersion }}</strong>, a later version than this
+                    one
+                    ({{ info.appVersion }}). This version cannot use them: install SFE {{ info.databaseVersion }} again,
+                    or restore
                     a backup made with this version.
                 </p>
             }
             @case ('running') {
-                <p class="migration-running"><span class="spinner"></span>Updating to SFE {{ info.appVersion }}… Keep this page open.</p>
+                <p class="migration-running"><span class="spinner"></span>Updating to SFE {{ info.appVersion }}… Keep
+                this page open.</p>
                 <ul class="migration-log">
                     @for (line of info.log; track $index) {
                         <li>{{ line }}</li>
@@ -41,7 +54,8 @@
             }
             @default {
                 <p>
-                    This server now runs SFE <strong>{{ info.appVersion }}</strong>; its databases and settings belong to
+                    This server now runs SFE <strong>{{ info.appVersion }}</strong>; its databases and settings belong
+                    to
                     @if (info.databaseVersion) {
                         SFE <strong>{{ info.databaseVersion }}</strong>.
                     } @else {
@@ -87,11 +101,22 @@
             @if (!info.codeConfigured) {
                 <div class="account-steps">
                     <p>
-                        So that only the person running the server can update it, the server first needs a <strong>setup code</strong>
-                        of at least {{ info.minimumCodeLength }} characters, given in its environment; this page then asks for it.
+                        So that only the person running the server can update it, the server first needs a <strong>setup
+                        code</strong>
+                        of at least {{ info.minimumCodeLength }} characters, given in its environment; this page then
+                        asks for it.
                     </p>
-                    <sfe-setup-code-steps [hosting]="info.hosting" [minimumCodeLength]="info.minimumCodeLength" [codeTooShort]="info.codeTooShort" />
-                    <button type="button" class="button primary" title="Ask the server whether it has a setup code now" (click)="load()">Check again</button>
+                    <sfe-setup-code-steps
+                        [hosting]="info.hosting"
+                        [minimumCodeLength]="info.minimumCodeLength"
+                        [codeTooShort]="info.codeTooShort"
+                    />
+                    <button
+                        type="button"
+                        class="button primary"
+                        title="Ask the server whether it has a setup code now"
+                        (click)="load()"
+                    >Check again</button>
                 </div>
             } @else {
                 <form class="account-form" novalidate (submit)="start($event)">
@@ -120,7 +145,10 @@
                             <svg sfeIcon="download"></svg>Download a backup
                         </button>
                         @if (backedUp(); as link) {
-                            <span class="field-hint" role="status">Downloading {{ link.fileName }} ({{ size(link.size) }}).</span>
+                            <span
+                                class="field-hint"
+                                role="status"
+                            >Downloading {{ link.fileName }} ({{ size(link.size) }}).</span>
                         }
                     </div>
                     @if (error(); as error) {

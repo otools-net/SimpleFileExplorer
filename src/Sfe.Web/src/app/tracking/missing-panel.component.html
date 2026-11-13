@@ -1,4 +1,6 @@
-<p class="settings-intro">Tagged files that a scan no longer found. When a scan indexes the same file somewhere else, moved, renamed or back on its drive, its tags follow it on their own. Files with several possible new places, or none yet, wait here.</p>
+<p class="settings-intro">Tagged files that a scan no longer found. When a scan indexes the same file somewhere else,
+    moved, renamed or back on its drive, its tags follow it on their own. Files with several possible new places, or
+    none yet, wait here.</p>
 <sfe-status-box [state]="status().state" [text]="status().text" [detail]="status().detail">
     <div class="settings-action inline">
         <button type="button" class="button small" title="Give the tags of each missing file with exactly one likely new place to that file"
@@ -27,8 +29,22 @@
                     }
                 </span>
                 <span class="tracking-actions">
-                    <button type="button" class="button small" title="Type the path of the file it became" [sfeBusy]="busy() === item.id + ':choose'" [disabled]="busy() !== null" (click)="choose(item)">Choose file…</button>
-                    <button type="button" class="button small" title="Forget this missing file and its tags (asks first)" [sfeBusy]="busy() === item.id + ':forget'" [disabled]="busy() !== null" (click)="forget(item)">Forget</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Type the path of the file it became"
+                        [sfeBusy]="busy() === item.id + ':choose'"
+                        [disabled]="busy() !== null"
+                        (click)="choose(item)"
+                    >Choose file…</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Forget this missing file and its tags (asks first)"
+                        [sfeBusy]="busy() === item.id + ':forget'"
+                        [disabled]="busy() !== null"
+                        (click)="forget(item)"
+                    >Forget</button>
                 </span>
             </div>
             @if (item.candidates.length) {
@@ -46,9 +62,18 @@
                     </ul>
                 </div>
             } @else {
-                <p class="tracking-sub">No identical file is indexed. Scan the folder it went to, or choose the file.</p>
+                <p class="tracking-sub">No identical file is indexed. Scan the folder it went to, or choose the
+                file.</p>
             }
         </li>
     }
 </ul>
-<button type="button" class="button" title="Show the next page" [hidden]="!hasMore()" [sfeBusy]="loadingMore()" [disabled]="loadingMore()" (click)="more()">Load more</button>
+<button
+    type="button"
+    class="button"
+    title="Show the next page"
+    [hidden]="!hasMore()"
+    [sfeBusy]="loadingMore()"
+    [disabled]="loadingMore()"
+    (click)="more()"
+>Load more</button>

@@ -4,7 +4,12 @@
         already has of a folder kept out of scans stays as it is; trickplay and thumbnails already made are still shown.
     </p>
     @if (!adding()) {
-        <button type="button" class="button small" title="Keep another folder out of scans, trickplay or thumbnails" (click)="startAdding()">
+        <button
+            type="button"
+            class="button small"
+            title="Keep another folder out of scans, trickplay or thumbnails"
+            (click)="startAdding()"
+        >
             <svg sfeIcon="plus"></svg>Add folder…
         </button>
     }
@@ -22,7 +27,12 @@
             <legend class="field-label">Keep it out of</legend>
             @for (entry of kinds; track entry.kind) {
                 <label class="check" [title]="entry.title">
-                    <input type="checkbox" [attr.data-kind]="entry.kind" [checked]="draft()[entry.kind]" (change)="setDraft(entry.kind, checkedOf($event))">
+                    <input
+                        type="checkbox"
+                        [attr.data-kind]="entry.kind"
+                        [checked]="draft()[entry.kind]"
+                        (change)="setDraft(entry.kind, checkedOf($event))"
+                    >
                     <span>{{ entry.label }}</span>
                 </label>
             }
@@ -31,7 +41,12 @@
             <p class="form-error" role="alert">{{ problem }}</p>
         }
         <div class="exclusions-form-actions">
-            <button type="button" class="button" title="Close without adding anything" (click)="adding.set(false)">Cancel</button>
+            <button
+                type="button"
+                class="button"
+                title="Close without adding anything"
+                (click)="adding.set(false)"
+            >Cancel</button>
             <button type="submit" class="button primary" title="Keep the folder out of what is ticked" [sfeBusy]="saving()"
                     [disabled]="saving() || !picked() || !anyDraft()">Add</button>
         </div>
@@ -41,7 +56,8 @@
 @if (loading()) {
     <p class="tag-loading"><span class="spinner"></span></p>
 } @else if (!folders().length) {
-    <p class="muted exclusions-empty">No folder is excluded: scans, trickplay and thumbnails cover the whole library.</p>
+    <p class="muted exclusions-empty">No folder is excluded: scans, trickplay and thumbnails cover the whole
+    library.</p>
 } @else {
     <div class="exclusions-table">
         <table>
@@ -59,10 +75,17 @@
                     <tr [attr.data-path]="folder.path" [class.missing]="!folder.exists">
                         <td>
                             @if (folder.exists) {
-                                <a routerLink="/" [queryParams]="{ path: folder.path }" [title]="'Open ' + folder.path">{{ folder.path }}</a>
+                                <a
+                                    routerLink="/"
+                                    [queryParams]="{ path: folder.path }"
+                                    [title]="'Open ' + folder.path"
+                                >{{ folder.path }}</a>
                             } @else {
                                 <span>{{ folder.path }}</span>
-                                <span class="exclusion-chip" title="Not on the disk any more (renamed or deleted outside SFE): it can only be removed">folder not found</span>
+                                <span
+                                    class="exclusion-chip"
+                                    title="Not on the disk any more (renamed or deleted outside SFE): it can only be removed"
+                                >folder not found</span>
                             }
                         </td>
                         @for (entry of kinds; track entry.kind) {

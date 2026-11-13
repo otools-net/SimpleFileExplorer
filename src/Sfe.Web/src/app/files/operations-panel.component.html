@@ -5,27 +5,55 @@
             <svg [sfeIcon]="clipboard.kind === 'move' ? 'cut' : 'copy'"></svg>
             <span class="operation-title">{{ clipboardText() }}</span>
             @if (transfers.canInto(clipboard.kind)) {
-                <button type="button" class="button small primary" [title]="'Put them in the folder listed (Ctrl+V)'" (click)="paste()">
+                <button
+                    type="button"
+                    class="button small primary"
+                    [title]="'Put them in the folder listed (Ctrl+V)'"
+                    (click)="paste()"
+                >
                     <svg sfeIcon="paste"></svg><span>Paste here</span>
                 </button>
             }
-            <button type="button" class="icon-button ghost small" aria-label="Forget them" title="Forget them" (click)="transfers.clipboard.set(null)">
+            <button
+                type="button"
+                class="icon-button ghost small"
+                aria-label="Forget them"
+                title="Forget them"
+                (click)="transfers.clipboard.set(null)"
+            >
                 <svg sfeIcon="close"></svg>
             </button>
         </header>
     </section>
 }
 @for (job of transfers.jobs(); track job.id) {
-    <section class="operation" [class.done]="isDone(job)" [attr.data-job]="job.id" aria-live="polite" [sfeContextMenu]="jobMenu(job)">
+    <section
+        class="operation"
+        [class.done]="isDone(job)"
+        [attr.data-job]="job.id"
+        aria-live="polite"
+        [sfeContextMenu]="jobMenu(job)"
+    >
         <header class="operation-head">
             <svg [sfeIcon]="job.kind"></svg>
             <span class="operation-title">{{ title(job) }}</span>
             @if (isDone(job)) {
-                <button type="button" class="icon-button ghost small" aria-label="Close" title="Close" (click)="transfers.dismiss(job)">
+                <button
+                    type="button"
+                    class="icon-button ghost small"
+                    aria-label="Close"
+                    title="Close"
+                    (click)="transfers.dismiss(job)"
+                >
                     <svg sfeIcon="close"></svg>
                 </button>
             } @else {
-                <button type="button" class="button small" title="Stop: what is done stays, nothing half copied does" (click)="transfers.cancel(job)">Cancel</button>
+                <button
+                    type="button"
+                    class="button small"
+                    title="Stop: what is done stays, nothing half copied does"
+                    (click)="transfers.cancel(job)"
+                >Cancel</button>
             }
         </header>
         @if (!isDone(job)) {
@@ -41,10 +69,25 @@
                 </dl>
                 <div class="operation-choices">
                     @if (conflict.canReplace) {
-                        <button type="button" class="button small danger" title="The one there goes to the trash" (click)="answer(job, 'replace')">Replace</button>
+                        <button
+                            type="button"
+                            class="button small danger"
+                            title="The one there goes to the trash"
+                            (click)="answer(job, 'replace')"
+                        >Replace</button>
                     }
-                    <button type="button" class="button small" title="Leave this one out" (click)="answer(job, 'skip')">Skip</button>
-                    <button type="button" class="button small primary" title="Keep both: this one gets a number added to its name" (click)="answer(job, 'keepBoth')">Keep both</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Leave this one out"
+                        (click)="answer(job, 'skip')"
+                    >Skip</button>
+                    <button
+                        type="button"
+                        class="button small primary"
+                        title="Keep both: this one gets a number added to its name"
+                        (click)="answer(job, 'keepBoth')"
+                    >Keep both</button>
                 </div>
                 <label class="check">
                     <input type="checkbox" [checked]="forAll()" (change)="forAll.set(checked($event))">
@@ -55,11 +98,20 @@
         @if (isDone(job) && problems(job).length) {
             <ul class="operation-problems">
                 @for (result of problems(job); track result.path) {
-                    <li [class.skipped]="result.status === 'skipped'" [class.done]="result.status === 'done'">{{ result.message || baseName(result.path) }}</li>
+                    <li
+                        [class.skipped]="result.status === 'skipped'"
+                        [class.done]="result.status === 'done'"
+                    >{{ result.message || baseName(result.path) }}</li>
                 }
             </ul>
             @if (transfers.canRetryExtraction(job)) {
-                <button type="button" class="button small" data-retry-password title="Extract it again, with its password" (click)="transfers.retryExtraction(job)">Enter the password…</button>
+                <button
+                    type="button"
+                    class="button small"
+                    data-retry-password
+                    title="Extract it again, with its password"
+                    (click)="transfers.retryExtraction(job)"
+                >Enter the password…</button>
             }
         }
     </section>

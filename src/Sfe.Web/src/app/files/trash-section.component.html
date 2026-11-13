@@ -18,11 +18,18 @@
                 <span class="tracking-file">
                     <strong class="tracking-name" [title]="item.path">{{ item.name }}</strong>
                     @if (item.previousVersion) {
-                        <span class="trash-version" title="The file as it was before it was saved over in the text editor: restored, it comes back next to it">previous version</span>
+                        <span
+                            class="trash-version"
+                            title="The file as it was before it was saved over in the text editor: restored, it comes back next to it"
+                        >previous version</span>
                     }
                     <span class="tracking-was">{{ describe(item) }}</span>
                     <span class="tracking-was">From
-                        <a routerLink="/" [queryParams]="{ path: folderOf(item) || null }" [title]="'Open ' + (folderOf(item) || 'the library')">{{ folderOf(item) || rootName() }}</a>
+                        <a
+                            routerLink="/"
+                            [queryParams]="{ path: folderOf(item) || null }"
+                            [title]="'Open ' + (folderOf(item) || 'the library')"
+                        >{{ folderOf(item) || rootName() }}</a>
                     </span>
                 </span>
                 <span class="tracking-actions">
@@ -41,4 +48,12 @@
         </li>
     }
 </ul>
-<button type="button" class="button" title="Show the next page" [hidden]="!next()" [sfeBusy]="loadingMore()" [disabled]="loadingMore()" (click)="more()">Load more</button>
+<button
+    type="button"
+    class="button"
+    title="Show the next page"
+    [hidden]="!next()"
+    [sfeBusy]="loadingMore()"
+    [disabled]="loadingMore()"
+    (click)="more()"
+>Load more</button>

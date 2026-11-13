@@ -15,12 +15,47 @@
     @if (mode() !== 'source') {
         <input #filterBox type="search" class="json-filter" [sfeOverflowItem]="null" overflowStay placeholder="Filter keys and values" aria-label="Filter keys and values" title="Shows the members whose key or value holds this (Ctrl+F)"
                [value]="query()" (input)="setQuery($any($event.target).value)" (keydown)="onFilterKeydown($event)" />
-        <button type="button" class="icon-button" [sfeOverflowItem]="more.openAll" title="Open all" aria-label="Open all" data-expand-all [disabled]="!document()?.root" (click)="openAll()"><svg sfeIcon="unfold"></svg></button>
-        <button type="button" class="icon-button" [sfeOverflowItem]="more.closeAll" title="Close all" aria-label="Close all" data-collapse-all [disabled]="!document()?.root" (click)="closeAll()"><svg sfeIcon="fold"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="more.openAll"
+            title="Open all"
+            aria-label="Open all"
+            data-expand-all
+            [disabled]="!document()?.root"
+            (click)="openAll()"
+        ><svg sfeIcon="unfold"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="more.closeAll"
+            title="Close all"
+            aria-label="Close all"
+            data-collapse-all
+            [disabled]="!document()?.root"
+            (click)="closeAll()"
+        ><svg sfeIcon="fold"></svg></button>
     }
     @if (mode() !== 'tree') {
-        <button type="button" class="icon-button" [sfeOverflowItem]="more.lineNumbers" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
-        <button type="button" class="icon-button" [sfeOverflowItem]="more.find" title="Find in the source (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="sourceEditor()?.find()"><svg sfeIcon="search"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="more.lineNumbers"
+            [class.active]="own().lineNumbers"
+            [attr.aria-pressed]="own().lineNumbers"
+            title="Line numbers"
+            aria-label="Line numbers"
+            (click)="toggleLineNumbers()"
+        ><svg sfeIcon="line-numbers"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="more.find"
+            title="Find in the source (Ctrl+F)"
+            aria-label="Find"
+            [disabled]="state() !== 'ready'"
+            (click)="sourceEditor()?.find()"
+        ><svg sfeIcon="search"></svg></button>
     }
     <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
             title="Reading settings: font, size, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
@@ -47,12 +82,20 @@
     <div class="json-pane" [hidden]="mode() === 'source'">
         @if (problems()[0]; as problem) {
             <p class="json-problem" role="status" data-problem>
-                Not JSON at line {{ problem.line }}, column {{ problem.column }}: {{ problem.message }}{{ problems().length > 1 ? ' (and ' + (problems().length - 1) + ' more)' : '' }}.
-                <button type="button" class="link-button" (click)="showOffset(problem.offset, problem.offset + problem.length)">Show in the source</button>
+                Not JSON at line {{ problem.line }}, column {{ problem.column }}:
+                {{ problem.message }}{{ problems().length > 1 ? ' (and ' + (problems().length - 1) + ' more)' : '' }}.
+                <button
+                    type="button"
+                    class="link-button"
+                    (click)="showOffset(problem.offset, problem.offset + problem.length)"
+                >Show in the source</button>
             </p>
         }
         @if (filtered(); as filter) {
-            <p class="json-filter-count" role="status">{{ filter.count ? (filter.limited ? 'The first ' + filter.count.toLocaleString() + ' matches' : filter.count.toLocaleString() + (filter.count === 1 ? ' match' : ' matches')) : 'Nothing matches' }}</p>
+            <p
+                class="json-filter-count"
+                role="status"
+            >{{ filter.count ? (filter.limited ? 'The first ' + filter.count.toLocaleString() + ' matches' : filter.count.toLocaleString() + (filter.count === 1 ? ' match' : ' matches')) : 'Nothing matches' }}</p>
         }
         <div #tree class="json-tree" role="tree" tabindex="0" [attr.aria-label]="'Members of ' + item().name" [attr.aria-activedescendant]="activeId()"
              (keydown)="onTreeKeydown($event)">
@@ -60,8 +103,13 @@
                 @if (row.more; as more) {
                     <div class="json-row json-more" [style.--depth]="row.depth">
                         <span class="json-toggle"></span>
-                        <button type="button" class="link-button" (click)="showMore(row)">Show {{ nextChunk(more).toLocaleString() }} more</button>
-                        <span class="json-size">{{ more.shown.toLocaleString() }} of {{ more.total.toLocaleString() }} shown</span>
+                        <button
+                            type="button"
+                            class="link-button"
+                            (click)="showMore(row)"
+                        >Show {{ nextChunk(more).toLocaleString() }} more</button>
+                        <span class="json-size">{{ more.shown.toLocaleString() }} of {{ more.total.toLocaleString() }}
+                        shown</span>
                     </div>
                 } @else {
                     <div class="json-row" role="treeitem" [id]="domId(index)" [style.--depth]="row.depth" [class.selected]="row.id === selected()"
@@ -74,7 +122,11 @@
                             <span class="json-toggle"></span>
                         }
                         @if (row.key !== null) {
-                            <span class="json-key" [class.tok-propertyName]="!row.index" [class.json-index]="row.index">{{ row.key }}</span><span class="json-colon">:</span>
+                            <span
+                                class="json-key"
+                                [class.tok-propertyName]="!row.index"
+                                [class.json-index]="row.index"
+                            >{{ row.key }}</span><span class="json-colon">:</span>
                         }
                         @if (row.container) {
                             @if (row.expanded) {
@@ -101,8 +153,20 @@
         @if (mode() !== 'source' && selectedRow(); as row) {
             <span class="json-selection">
                 <span class="json-path" data-selected-path [title]="path(row)">{{ path(row) }}</span>
-                <button type="button" class="link-button" data-copy-path title="Copy the path of the member selected" (click)="copyPath(row)">Copy path</button>
-                <button type="button" class="link-button" data-copy-value title="Copy its value, as written in the file" (click)="copyValue(row)">Copy value</button>
+                <button
+                    type="button"
+                    class="link-button"
+                    data-copy-path
+                    title="Copy the path of the member selected"
+                    (click)="copyPath(row)"
+                >Copy path</button>
+                <button
+                    type="button"
+                    class="link-button"
+                    data-copy-value
+                    title="Copy its value, as written in the file"
+                    (click)="copyValue(row)"
+                >Copy value</button>
             </span>
         }
     </footer>

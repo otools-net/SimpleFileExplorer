@@ -1,4 +1,10 @@
-<sfe-sheet #sheet heading="Properties" [subtitle]="properties()?.item?.name ?? item()?.name ?? null" variant="properties-dialog" (closed)="closed()">
+<sfe-sheet
+    #sheet
+    heading="Properties"
+    [subtitle]="properties()?.item?.name ?? item()?.name ?? null"
+    variant="properties-dialog"
+    (closed)="closed()"
+>
     @if (error(); as error) {
         <p class="form-error">{{ error }}</p>
     } @else if (properties(); as p) {
@@ -44,7 +50,12 @@
                 }
                 <div class="properties-actions">
                     @if (counting()) {
-                        <button type="button" class="button small" title="Stop counting" (click)="stop(count())">Stop</button>
+                        <button
+                            type="button"
+                            class="button small"
+                            title="Stop counting"
+                            (click)="stop(count())"
+                        >Stop</button>
                     } @else {
                         <button type="button" class="button small count-button" title="Go through the folder on the server's disk: exact now, but takes a while for large folders"
                                 (click)="startCount()">Count on disk</button>
@@ -56,21 +67,41 @@
                 <h3>Checksum</h3>
                 <div class="properties-actions">
                     <label class="visually-hidden" for="checksum-algorithm">Algorithm</label>
-                    <select id="checksum-algorithm" [value]="algorithm()" (change)="algorithm.set($any($event.target).value)" [disabled]="summing()">
+                    <select
+                        id="checksum-algorithm"
+                        [value]="algorithm()"
+                        (change)="algorithm.set($any($event.target).value)"
+                        [disabled]="summing()"
+                    >
                         @for (option of algorithms; track option[0]) {
                             <option [value]="option[0]">{{ option[1] }}</option>
                         }
                     </select>
                     @if (summing()) {
-                        <button type="button" class="button small" title="Stop reading the file" (click)="stop(checksum())">Stop</button>
+                        <button
+                            type="button"
+                            class="button small"
+                            title="Stop reading the file"
+                            (click)="stop(checksum())"
+                        >Stop</button>
                     } @else {
-                        <button type="button" class="button small checksum-button" title="Read the whole file on the server for its checksum" (click)="startChecksum()">Compute</button>
+                        <button
+                            type="button"
+                            class="button small checksum-button"
+                            title="Read the whole file on the server for its checksum"
+                            (click)="startChecksum()"
+                        >Compute</button>
                     }
                 </div>
                 @if (checksum(); as job) {
                     @if (job.checksum) {
                         <p class="properties-checksum"><code>{{ job.checksum }}</code>
-                            <button type="button" class="button small ghost" title="Copy the checksum" (click)="copy(job.checksum)">Copy</button></p>
+                            <button
+                                type="button"
+                                class="button small ghost"
+                                title="Copy the checksum"
+                                (click)="copy(job.checksum)"
+                            >Copy</button></p>
                     } @else {
                         <p role="status">{{ checksumText() }}</p>
                     }
@@ -82,7 +113,13 @@
     }
     <span sheetFooter class="spacer"></span>
     @if (copyPaths.enabled() && item()) {
-        <button sheetFooter type="button" class="button" title="Copy where it is on the server" (click)="copyPaths.copy(item()!.path)">Copy full path</button>
+        <button
+            sheetFooter
+            type="button"
+            class="button"
+            title="Copy where it is on the server"
+            (click)="copyPaths.copy(item()!.path)"
+        >Copy full path</button>
     }
     <button sheetFooter type="button" class="button primary" (click)="sheet.close()">Close</button>
 </sfe-sheet>

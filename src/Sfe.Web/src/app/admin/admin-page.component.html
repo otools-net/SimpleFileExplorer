@@ -1,10 +1,20 @@
 @if (unreachable(); as error) {
     <sfe-empty-state icon="close" heading="The server is not reachable" [text]="error" />
 } @else if (ready() && empty()) {
-    <sfe-empty-state icon="lock" heading="Nothing to administer" text="This session has no rights to change the space, its settings or the server." />
+    <sfe-empty-state
+        icon="lock"
+        heading="Nothing to administer"
+        text="This session has no rights to change the space, its settings or the server."
+    />
 } @else if (ready()) {
     <header class="topbar admin-topbar">
-        <button type="button" class="icon-button ghost" [attr.aria-label]="backHint()" [title]="backHint()" (click)="back()">
+        <button
+            type="button"
+            class="icon-button ghost"
+            [attr.aria-label]="backHint()"
+            [title]="backHint()"
+            (click)="back()"
+        >
             <svg sfeIcon="left"></svg>
         </button>
         <span class="brand"><svg sfeIcon="folder"></svg><span>SFE</span></span>
@@ -32,10 +42,16 @@
                             <li>
                                 <a routerLink="/admin" [queryParams]="resultParams(result)" [state]="linkState()" [replaceUrl]="!phone()"
                                    [title]="'Open ' + result.where + (result.setting ? ' at this setting' : '')" (click)="found(result)">
-                                    <span class="admin-search-title"><ng-container [ngTemplateOutlet]="markedText" [ngTemplateOutletContext]="{ $implicit: result.title }" /></span>
+                                    <span class="admin-search-title"><ng-container
+                                        [ngTemplateOutlet]="markedText"
+                                        [ngTemplateOutletContext]="{ $implicit: result.title }"
+                                    /></span>
                                     <small class="admin-search-where">{{ result.where }}</small>
                                     @if (result.text) {
-                                        <small class="admin-search-text"><ng-container [ngTemplateOutlet]="markedText" [ngTemplateOutletContext]="{ $implicit: result.text }" /></small>
+                                        <small class="admin-search-text"><ng-container
+                                            [ngTemplateOutlet]="markedText"
+                                            [ngTemplateOutletContext]="{ $implicit: result.text }"
+                                        /></small>
                                     }
                                 </a>
                             </li>
@@ -58,7 +74,10 @@
                                     }
                                     <!-- The marks of an open section are on its sub-pages. -->
                                     @if (!open || item.subpages.length === 1) {
-                                        <ng-container [ngTemplateOutlet]="mark" [ngTemplateOutletContext]="{ $implicit: item.subpages }" />
+                                        <ng-container
+                                            [ngTemplateOutlet]="mark"
+                                            [ngTemplateOutletContext]="{ $implicit: item.subpages }"
+                                        />
                                     }
                                     @if (phone()) {
                                         <svg sfeIcon="right" class="admin-nav-chevron"></svg>
@@ -75,7 +94,10 @@
                                                     @if (badge(page.id); as badge) {
                                                         <span class="tracking-badge">{{ badge }}</span>
                                                     }
-                                                    <ng-container [ngTemplateOutlet]="mark" [ngTemplateOutletContext]="{ $implicit: [page] }" />
+                                                    <ng-container
+                                                        [ngTemplateOutlet]="mark"
+                                                        [ngTemplateOutletContext]="{ $implicit: [page] }"
+                                                    />
                                                 </a>
                                             </li>
                                         }
@@ -105,7 +127,10 @@
                                            [title]="'Open ' + item.title">
                                             <svg [sfeIcon]="item.icon"></svg>
                                             <span>{{ item.title }}</span>
-                                            <ng-container [ngTemplateOutlet]="mark" [ngTemplateOutletContext]="{ $implicit: item.subpages }" />
+                                            <ng-container
+                                                [ngTemplateOutlet]="mark"
+                                                [ngTemplateOutletContext]="{ $implicit: item.subpages }"
+                                            />
                                         </a>
                                         <p>{{ item.description }}</p>
                                         @if (item.subpages.length > 1) {
@@ -131,9 +156,19 @@
                         <ol>
                             <li>
                                 @if (phone()) {
-                                    <button type="button" class="admin-crumb-link" title="Show the list of sections" (click)="back()">Administration</button>
+                                    <button
+                                        type="button"
+                                        class="admin-crumb-link"
+                                        title="Show the list of sections"
+                                        (click)="back()"
+                                    >Administration</button>
                                 } @else {
-                                    <a routerLink="/admin" [state]="historyState" replaceUrl title="Show every section">Administration</a>
+                                    <a
+                                        routerLink="/admin"
+                                        [state]="historyState"
+                                        replaceUrl
+                                        title="Show every section"
+                                    >Administration</a>
                                 }
                             </li>
                             <li class="admin-crumb-group">
@@ -160,7 +195,13 @@
                 </header>
                 <!-- Phones have no sidebar: the sub-pages are chips. -->
                 @if (phone() && section().subpages.length > 1) {
-                    <div class="settings-tabs admin-chips" role="tablist" [attr.aria-label]="section().title" [sfeChipInView]="subpage().id" (keydown)="onChipKey($event)">
+                    <div
+                        class="settings-tabs admin-chips"
+                        role="tablist"
+                        [attr.aria-label]="section().title"
+                        [sfeChipInView]="subpage().id"
+                        (keydown)="onChipKey($event)"
+                    >
                         @for (item of section().subpages; track item.id) {
                             <button type="button" role="tab" class="settings-tab" [id]="'admin-chip-' + item.id" aria-controls="admin-panel"
                                     [attr.aria-selected]="subpage().id === item.id" [tabIndex]="subpage().id === item.id ? 0 : -1"
@@ -170,7 +211,8 @@
                                     <span class="tracking-badge">{{ badge }}</span>
                                 }
                                 @if (faulty([item])) {
-                                    <span class="settings-tab-error"><span class="visually-hidden"> (needs fixing)</span></span>
+                                    <span class="settings-tab-error"><span class="visually-hidden"> (needs
+                                    fixing)</span></span>
                                 }
                             </button>
                         }
@@ -181,18 +223,29 @@
                      [attr.aria-labelledby]="phone() && section().subpages.length > 1 ? 'admin-chip-' + subpage().id : null">
                     @if (subpage().settings; as settings) {
                         @if (form.levels().length > 1) {
-                            <div class="settings-tabs settings-level" role="tablist" aria-label="Settings of" (keydown)="onLevelKey($event)">
+                            <div
+                                class="settings-tabs settings-level"
+                                role="tablist"
+                                aria-label="Settings of"
+                                (keydown)="onLevelKey($event)"
+                            >
                                 <button type="button" role="tab" class="settings-tab" id="settings-level-tenant" aria-controls="settings-level-panel"
                                         [attr.aria-selected]="form.level() === 'tenant'" [tabIndex]="form.level() === 'tenant' ? 0 : -1"
                                         title="This space's own settings, over the server's: they apply to this space only" (click)="form.useLevel('tenant')">
                                     This space{{ config.tenant() ? ' (' + config.tenant()!.name + ')' : '' }}
-                                    <ng-container [ngTemplateOutlet]="levelMark" [ngTemplateOutletContext]="{ $implicit: 'tenant' }" />
+                                    <ng-container
+                                        [ngTemplateOutlet]="levelMark"
+                                        [ngTemplateOutletContext]="{ $implicit: 'tenant' }"
+                                    />
                                 </button>
                                 <button type="button" role="tab" class="settings-tab" id="settings-level-server" aria-controls="settings-level-panel"
                                         [attr.aria-selected]="form.level() === 'server'" [tabIndex]="form.level() === 'server' ? 0 : -1"
                                         title="The server's settings: the defaults of every space, and what the whole server shares" (click)="form.useLevel('server')">
                                     Whole server
-                                    <ng-container [ngTemplateOutlet]="levelMark" [ngTemplateOutletContext]="{ $implicit: 'server' }" />
+                                    <ng-container
+                                        [ngTemplateOutlet]="levelMark"
+                                        [ngTemplateOutletContext]="{ $implicit: 'server' }"
+                                    />
                                 </button>
                             </div>
                         }
@@ -215,7 +268,11 @@
                                 <sfe-video-streams />
                             }
                             @case ('tasks') {
-                                <sfe-tasks-section [tab]="subpage().id" (selectTab)="select($event)" (openTrickplay)="go('trickplay', 'activity')" />
+                                <sfe-tasks-section
+                                    [tab]="subpage().id"
+                                    (selectTab)="select($event)"
+                                    (openTrickplay)="go('trickplay', 'activity')"
+                                />
                             }
                             @case ('logs') {
                                 <sfe-logs-section (openSettings)="select('settings')" />
@@ -255,14 +312,26 @@
                     <span class="admin-savebar-status">{{ saveStatus() }}</span>
                     <span class="spacer"></span>
                     @if (settingsShown()) {
-                        <label class="check settings-show-all" title="Show every setting instead of only the most used ones">
-                            <input type="checkbox" [checked]="form.showAll()" (change)="form.setShowAll(checked($event))"><span>Show all settings</span>
+                        <label
+                            class="check settings-show-all"
+                            title="Show every setting instead of only the most used ones"
+                        >
+                            <input
+                                type="checkbox"
+                                [checked]="form.showAll()"
+                                (change)="form.setShowAll(checked($event))"
+                            ><span>Show all settings</span>
                         </label>
                         <button type="button" class="button" [disabled]="!form.customized()"
                                 [title]="form.customized() ? resetHint() : 'Nothing saved yet'" (click)="form.reset()">Reset to defaults</button>
                     }
                     @if (form.changed()) {
-                        <button type="button" class="button" [title]="form.levels().length > 1 ? 'Undo the changes not saved yet, on every page of both tabs' : 'Undo the changes not saved yet, on every page'" (click)="form.discard()">Discard</button>
+                        <button
+                            type="button"
+                            class="button"
+                            [title]="form.levels().length > 1 ? 'Undo the changes not saved yet, on every page of both tabs' : 'Undo the changes not saved yet, on every page'"
+                            (click)="form.discard()"
+                        >Discard</button>
                     }
                     <button type="button" class="button primary" [title]="saveHint()"
                             [disabled]="form.saving() || !form.changed()" (click)="save()">Save</button>

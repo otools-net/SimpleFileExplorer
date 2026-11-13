@@ -13,7 +13,13 @@
          [style.--pop-top.px]="position().top" [style.--pop-bottom.px]="position().bottom" [style.--pop-left.px]="position().left">
         <div class="default-tags-popover-head">
             <strong>Default tags</strong>
-            <button type="button" class="icon-button small ghost default-tags-close" aria-label="Close" title="Close (Esc)" (click)="close(true)">
+            <button
+                type="button"
+                class="icon-button small ghost default-tags-close"
+                aria-label="Close"
+                title="Close (Esc)"
+                (click)="close(true)"
+            >
                 <svg sfeIcon="close"></svg>
             </button>
         </div>
@@ -34,7 +40,12 @@
             </div>
         }
         @if (editable()) {
-            <button type="button" class="button small default-tags-edit" title="Add or remove default tags of this folder" (click)="change()">Change…</button>
+            <button
+                type="button"
+                class="button small default-tags-edit"
+                title="Add or remove default tags of this folder"
+                (click)="change()"
+            >Change…</button>
         }
     </div>
     </div>

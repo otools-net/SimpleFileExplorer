@@ -13,15 +13,40 @@
                [value]="query()" (input)="setQuery($any($event.target).value)" (keydown)="onFilterKeydown($event)" />
         <button type="button" class="markdown-mode csv-header-toggle" data-header [sfeOverflowItem]="more.header" [class.active]="header()" [attr.aria-pressed]="header()"
                 title="The first row names the columns" (click)="toggleHeader()">Header</button>
-        <select class="csv-delimiter" data-delimiter [sfeOverflowItem]="more.separator" aria-label="Separator" title="What separates the cells" [value]="delimiter()" (change)="setDelimiter($any($event.target).value)">
+        <select
+            class="csv-delimiter"
+            data-delimiter
+            [sfeOverflowItem]="more.separator"
+            aria-label="Separator"
+            title="What separates the cells"
+            [value]="delimiter()"
+            (change)="setDelimiter($any($event.target).value)"
+        >
             @for (choice of delimiters; track choice.id) {
                 <option [value]="choice.id">{{ choice.id === 'auto' ? 'Separator: guess' : choice.label }}</option>
             }
         </select>
     }
     @if (mode() !== 'table') {
-        <button type="button" class="icon-button" [sfeOverflowItem]="more.lineNumbers" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
-        <button type="button" class="icon-button" [sfeOverflowItem]="more.find" title="Find in the source (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="sourceEditor()?.find()"><svg sfeIcon="search"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="more.lineNumbers"
+            [class.active]="own().lineNumbers"
+            [attr.aria-pressed]="own().lineNumbers"
+            title="Line numbers"
+            aria-label="Line numbers"
+            (click)="toggleLineNumbers()"
+        ><svg sfeIcon="line-numbers"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="more.find"
+            title="Find in the source (Ctrl+F)"
+            aria-label="Find"
+            [disabled]="state() !== 'ready'"
+            (click)="sourceEditor()?.find()"
+        ><svg sfeIcon="search"></svg></button>
     }
     <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
             title="Reading settings: font, size, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
@@ -48,7 +73,8 @@
     <div class="json-pane" [hidden]="mode() === 'source'">
         @if (problems()[0]; as problem) {
             <p class="json-problem" role="status" data-problem>
-                Record {{ problem.record.toLocaleString() }}: {{ problem.message }}{{ problems().length > 1 ? ' (and ' + (problems().length - 1) + ' more)' : '' }}.
+                Record {{ problem.record.toLocaleString() }}:
+                {{ problem.message }}{{ problems().length > 1 ? ' (and ' + (problems().length - 1) + ' more)' : '' }}.
             </p>
         }
         <div #scroller class="csv-scroller" role="table" tabindex="0" [attr.aria-label]="item().name" [attr.aria-rowcount]="order().length + 1"
@@ -56,11 +82,26 @@
             <div #head class="csv-row csv-head" role="row" aria-rowindex="1" [style.grid-template-columns]="template()">
                 <span class="csv-number" role="columnheader">#</span>
                 @for (column of columns(); track $index) {
-                    <span role="columnheader" class="csv-cell" [class.numeric]="column.numeric" [attr.aria-sort]="sortOf($index) ?? 'none'">
-                        <button type="button" class="csv-sort" [attr.data-column]="$index" [title]="'Sort by ' + column.name" (click)="sortBy($index)">
+                    <span
+                        role="columnheader"
+                        class="csv-cell"
+                        [class.numeric]="column.numeric"
+                        [attr.aria-sort]="sortOf($index) ?? 'none'"
+                    >
+                        <button
+                            type="button"
+                            class="csv-sort"
+                            [attr.data-column]="$index"
+                            [title]="'Sort by ' + column.name"
+                            (click)="sortBy($index)"
+                        >
                             <span class="csv-name">{{ column.name }}</span>
                             @if (sortOf($index); as direction) {
-                                <svg class="csv-sort-mark" [class.descending]="direction === 'descending'" sfeIcon="up"></svg>
+                                <svg
+                                    class="csv-sort-mark"
+                                    [class.descending]="direction === 'descending'"
+                                    sfeIcon="up"
+                                ></svg>
                             }
                         </button>
                     </span>
@@ -98,7 +139,13 @@
             <span data-counts>{{ counts() }}</span>
             @if (mode() !== 'source' && selectedValue(); as value) {
                 <span class="json-path" data-selected-cell [title]="value.text">{{ value.label }}</span>
-                <button type="button" class="link-button" data-copy-cell title="Copy the cell selected (Ctrl+C)" (click)="copyCell()">Copy cell</button>
+                <button
+                    type="button"
+                    class="link-button"
+                    data-copy-cell
+                    title="Copy the cell selected (Ctrl+C)"
+                    (click)="copyCell()"
+                >Copy cell</button>
             }
         </span>
     </footer>

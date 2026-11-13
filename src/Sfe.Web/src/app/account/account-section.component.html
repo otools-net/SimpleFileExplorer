@@ -6,26 +6,45 @@
             <form class="access-form account-password" novalidate (submit)="changePassword($event)">
                 <div class="field">
                     <label class="field-label" for="password-current">Current password</label>
-                    <input id="password-current" type="password" autocomplete="current-password" [value]="current()" (input)="current.set(valueOf($event))">
+                    <input
+                        id="password-current"
+                        type="password"
+                        autocomplete="current-password"
+                        [value]="current()"
+                        (input)="current.set(valueOf($event))"
+                    >
                     @if (passwordErrors()['current']; as error) {
                         <span class="field-error">{{ error }}</span>
                     }
                 </div>
                 <div class="field">
                     <label class="field-label" for="password-new">New password</label>
-                    <input id="password-new" type="password" autocomplete="new-password" [value]="password()" (input)="password.set(valueOf($event))">
+                    <input
+                        id="password-new"
+                        type="password"
+                        autocomplete="new-password"
+                        [value]="password()"
+                        (input)="password.set(valueOf($event))"
+                    >
                     @if (passwordErrors()['password']; as error) {
                         <span class="field-error">{{ error }}</span>
                     }
                 </div>
                 <div class="field">
                     <label class="field-label" for="password-confirm">New password again</label>
-                    <input id="password-confirm" type="password" autocomplete="new-password" [value]="confirm()" (input)="confirm.set(valueOf($event))">
+                    <input
+                        id="password-confirm"
+                        type="password"
+                        autocomplete="new-password"
+                        [value]="confirm()"
+                        (input)="confirm.set(valueOf($event))"
+                    >
                     @if (mismatch()) {
                         <span class="field-error">The two passwords differ.</span>
                     }
                 </div>
-                <p class="field-hint">Your other sessions (other browsers and devices) end, and the links you gave to external players stop working.</p>
+                <p class="field-hint">Your other sessions (other browsers and devices) end, and the links you gave to
+                external players stop working.</p>
                 <button type="submit" class="button primary" title="Change the password of your account"
                         [disabled]="busy() || mismatch() || !current() || !password()">Change the password</button>
             </form>
@@ -33,16 +52,28 @@
     }
     @default {
         <p class="settings-intro">
-            Your own choices, over the space's settings: kept by the server, they follow you on every device you sign in on.
+            Your own choices, over the space's settings: kept by the server, they follow you on every device you sign in
+            on.
             A setting the space or the server locked cannot be changed here.
         </p>
         @for (shown of tabs(); track shown) {
             <sfe-settings-panel [tab]="shown" (submitted)="save()" />
         }
         <div class="access-actions">
-            <button type="button" class="button primary" title="Save your preferences" [disabled]="form.saving() || !form.changed()" (click)="save()">Save</button>
+            <button
+                type="button"
+                class="button primary"
+                title="Save your preferences"
+                [disabled]="form.saving() || !form.changed()"
+                (click)="save()"
+            >Save</button>
             @if (form.changed()) {
-                <button type="button" class="button" title="Undo the changes not saved yet" (click)="form.discard()">Discard</button>
+                <button
+                    type="button"
+                    class="button"
+                    title="Undo the changes not saved yet"
+                    (click)="form.discard()"
+                >Discard</button>
             }
             <button type="button" class="button" [disabled]="!form.customized()" title="Forget your preferences and follow the space's settings (asks first)"
                     (click)="form.reset()">Use the space's settings</button>

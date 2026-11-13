@@ -1,4 +1,6 @@
-<p class="settings-intro">Videos showing the same pictures in other files: another resolution, quality or format, or trimmed. They are compared from the fingerprints made with their trickplay (Trickplay › Settings): indexed videos without trickplay yet are left out.</p>
+<p class="settings-intro">Videos showing the same pictures in other files: another resolution, quality or format, or
+    trimmed. They are compared from the fingerprints made with their trickplay (Trickplay › Settings): indexed videos
+    without trickplay yet are left out.</p>
 @if (folder()) {
     <label class="check tracking-scope">
         <input type="checkbox" [checked]="folderOnly()" (change)="setFolderOnly(checkedOf($event))">
@@ -26,11 +28,18 @@
                     <li [sfeTrackingFile]="video.file" (openFolder)="openFolder.emit($event)">
                         <span class="tracking-similar">
                             @if (video.match === null || video.match === undefined) {
-                                <span class="tracking-match reference" title="The longest video of the group: the others are compared to it">Reference</span>
+                                <span
+                                    class="tracking-match reference"
+                                    title="The longest video of the group: the others are compared to it"
+                                >Reference</span>
                             } @else {
-                                <span class="tracking-match" title="Frames in common with the reference, out of the longer of the two">{{ video.match }}% match</span>
+                                <span
+                                    class="tracking-match"
+                                    title="Frames in common with the reference, out of the longer of the two"
+                                >{{ video.match }}% match</span>
                             }
-                            <span class="tracking-media">{{ duration(video.duration) }} · {{ size(video.file.size) }}</span>
+                            <span class="tracking-media">{{ duration(video.duration) }} ·
+                            {{ size(video.file.size) }}</span>
                         </span>
                     </li>
                 }
@@ -41,4 +50,12 @@
         </section>
     }
 </div>
-<button type="button" class="button" title="Show the next page" [hidden]="!hasMore()" [sfeBusy]="loadingMore()" [disabled]="loadingMore()" (click)="more()">Load more</button>
+<button
+    type="button"
+    class="button"
+    title="Show the next page"
+    [hidden]="!hasMore()"
+    [sfeBusy]="loadingMore()"
+    [disabled]="loadingMore()"
+    (click)="more()"
+>Load more</button>

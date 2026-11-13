@@ -1,7 +1,12 @@
 <sfe-sheet #sheet heading="Tags" [subtitle]="subtitle()" variant="scope-tags">
     @if (!scope().query) {
         <label class="check scope-recursive">
-            <input type="checkbox" [checked]="scope().recursive" [disabled]="applying()" (change)="setRecursive($event)">
+            <input
+                type="checkbox"
+                [checked]="scope().recursive"
+                [disabled]="applying()"
+                (change)="setRecursive($event)"
+            >
             <span>
                 <strong>Include sub-folders</strong>
                 <span class="field-hint">Also the files of every folder below this one.</span>
@@ -50,7 +55,13 @@
                 <p class="field-hint">{{ hint() }}</p>
             }
             <div class="scope-confirm-buttons">
-                <button type="button" class="button" title="Change nothing" [disabled]="applying()" (click)="cancel()">Cancel</button>
+                <button
+                    type="button"
+                    class="button"
+                    title="Change nothing"
+                    [disabled]="applying()"
+                    (click)="cancel()"
+                >Cancel</button>
                 <button type="button" class="button primary" [sfeBusy]="applying()" [disabled]="applying()"
                         [title]="pending.remove ? 'Remove the tag from these files' : 'Add the tag to these files'" (click)="apply()">
                     {{ pending.remove ? 'Remove tag' : 'Add tag' }}
@@ -64,7 +75,8 @@
     @if (showDefaults()) {
         <section class="default-tags" aria-labelledby="default-tags-heading">
             <h3 id="default-tags-heading">Default tags</h3>
-            <p class="field-hint">Every file put into {{ folderName() }} or its sub-folders gets them: scanned, created, uploaded, copied or moved there.</p>
+            <p class="field-hint">Every file put into {{ folderName() }} or its sub-folders gets them: scanned, created,
+            uploaded, copied or moved there.</p>
             @if (defaults(); as defaults) {
                 @if (defaults.own.length || defaults.inherited.length) {
                     <div class="tag-list">
@@ -90,7 +102,13 @@
                     <p>{{ defaultQuestion() }}</p>
                     <p class="field-hint">{{ defaultHint() }}</p>
                     <div class="scope-confirm-buttons">
-                        <button type="button" class="button" title="Change nothing" [disabled]="savingDefault()" (click)="cancelDefault()">Cancel</button>
+                        <button
+                            type="button"
+                            class="button"
+                            title="Change nothing"
+                            [disabled]="savingDefault()"
+                            (click)="cancelDefault()"
+                        >Cancel</button>
                         <button type="button" class="button default-only" [disabled]="savingDefault()" (click)="applyDefault(false)"
                                 [title]="pending.remove ? 'The files already there keep the tag' : 'Only the files put there from now on get it'">
                             {{ pending.remove ? 'Keep it on the files' : 'New files only' }}
@@ -109,7 +127,13 @@
             }
         </section>
     }
-    <button sheetFooter type="button" class="button" title="Create, edit and delete tags" (click)="dialogs.tagManager()?.open()">Manage tags</button>
+    <button
+        sheetFooter
+        type="button"
+        class="button"
+        title="Create, edit and delete tags"
+        (click)="dialogs.tagManager()?.open()"
+    >Manage tags</button>
     <span sheetFooter class="spacer"></span>
     <button sheetFooter type="button" class="button primary" title="Close (Esc)" (click)="sheet.close()">Done</button>
 </sfe-sheet>

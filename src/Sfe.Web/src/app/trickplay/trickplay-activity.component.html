@@ -1,6 +1,10 @@
 <div class="settings-status" aria-live="polite" [attr.data-state]="activity()?.status?.state">
     <div class="settings-status-line"><span class="settings-status-dot"></span><span class="settings-status-text">{{ stateText() }}</span></div>
-    <div class="trickplay-progress" [hidden]="activity()?.status?.state !== 'running'" [class.indeterminate]="progress().indeterminate">
+    <div
+        class="trickplay-progress"
+        [hidden]="activity()?.status?.state !== 'running'"
+        [class.indeterminate]="progress().indeterminate"
+    >
         <span [style.width]="progress().width"></span>
     </div>
     <span class="field-hint">{{ counts() }}</span>

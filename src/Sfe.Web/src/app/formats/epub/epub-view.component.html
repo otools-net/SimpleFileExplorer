@@ -53,7 +53,10 @@
             @if (chapter(); as label) {
                 <span class="json-path" data-chapter>{{ label }}</span>
             }
-            <span data-progress [title]="place()?.percentage === null ? 'Counting the pages of the book…' : 'How far through the book'">{{ progress() }}</span>
+            <span
+                data-progress
+                [title]="place()?.percentage === null ? 'Counting the pages of the book…' : 'How far through the book'"
+            >{{ progress() }}</span>
         </span>
     </footer>
 }

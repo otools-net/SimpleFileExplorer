@@ -5,7 +5,12 @@
 } @else if (selected(); as space) {
     <header class="space-head">
         @if (serverWide()) {
-            <button type="button" class="link-button space-back" title="Back to the list of spaces" (click)="openSpace(null)">
+            <button
+                type="button"
+                class="link-button space-back"
+                title="Back to the list of spaces"
+                (click)="openSpace(null)"
+            >
                 <svg sfeIcon="left"></svg>All spaces
             </button>
         } @else {
@@ -24,9 +29,19 @@
             </span>
             <span class="spacer"></span>
             @if (details(space.id); as details) {
-                <button type="button" class="button small" title="Rename the space, disable it, switch rights off in it" (click)="editor().open(details)">Edit space</button>
+                <button
+                    type="button"
+                    class="button small"
+                    title="Rename the space, disable it, switch rights off in it"
+                    (click)="editor().open(details)"
+                >Edit space</button>
                 @if (!details.isDefault) {
-                    <button type="button" class="button small" [title]="'Delete the space ' + details.name + ' (asks first)'" (click)="remove(details)">Delete</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        [title]="'Delete the space ' + details.name + ' (asks first)'"
+                        (click)="remove(details)"
+                    >Delete</button>
                 }
             }
         </div>
@@ -35,7 +50,12 @@
 } @else {
     <sfe-access-model />
     <div class="access-actions">
-        <button type="button" class="button primary" title="Create a space on a folder of the server" (click)="editor().open(null)">
+        <button
+            type="button"
+            class="button primary"
+            title="Create a space on a folder of the server"
+            (click)="editor().open(null)"
+        >
             <svg sfeIcon="plus"></svg>New space
         </button>
     </div>

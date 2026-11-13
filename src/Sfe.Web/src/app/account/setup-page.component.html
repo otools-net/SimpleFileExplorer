@@ -14,13 +14,24 @@
     } @else if (!info()!.codeConfigured && !codeFree()) {
         <div class="account-steps">
             <p>
-                SFE has no administrator yet. So that only the person running the server can create one, the server first
+                SFE has no administrator yet. So that only the person running the server can create one, the server
+                first
                 needs a <strong>setup code</strong> of at least {{ info()!.minimumCodeLength }} characters, given in its
                 environment; this page then asks for it.
             </p>
-            <sfe-setup-code-steps [hosting]="info()!.hosting" [minimumCodeLength]="info()!.minimumCodeLength" [codeTooShort]="info()!.codeTooShort" />
-            <p class="field-hint">Pick a long code nobody can guess. Afterwards it is only asked for again to confirm the update after an upgrade.</p>
-            <button type="button" class="button primary" title="Ask the server whether it has a setup code now" (click)="load()">Check again</button>
+            <sfe-setup-code-steps
+                [hosting]="info()!.hosting"
+                [minimumCodeLength]="info()!.minimumCodeLength"
+                [codeTooShort]="info()!.codeTooShort"
+            />
+            <p class="field-hint">Pick a long code nobody can guess. Afterwards it is only asked for again to confirm
+            the update after an upgrade.</p>
+            <button
+                type="button"
+                class="button primary"
+                title="Ask the server whether it has a setup code now"
+                (click)="load()"
+            >Check again</button>
         </div>
     } @else {
         @switch (step()) {
@@ -28,7 +39,12 @@
                 @if (codeFree()) {
                     @if (error(); as error) {
                         <p class="form-error" role="alert">{{ error }}</p>
-                        <button type="button" class="button" title="Ask the server again" (click)="openWithoutCode()">Try again</button>
+                        <button
+                            type="button"
+                            class="button"
+                            title="Ask the server again"
+                            (click)="openWithoutCode()"
+                        >Try again</button>
                     } @else {
                         <div class="tag-loading"><span class="spinner"></span></div>
                     }
@@ -36,12 +52,15 @@
                     <form class="account-form" novalidate (submit)="checkCode($event)">
                         @if (info()!.recover) {
                             <p>
-                                The server is in recovery mode: enter the setup code, then the name of a local administrator to give it a new
-                                password, or a new name to add an administrator. Turn recovery off (Sfe:Setup:Recover) afterwards.
+                                The server is in recovery mode: enter the setup code, then the name of a local
+                                administrator to give it a new
+                                password, or a new name to add an administrator. Turn recovery off (Sfe:Setup:Recover)
+                                afterwards.
                             </p>
                         } @else {
                             <p>
-                                Welcome. SFE needs three things: the setup code that proves you run this server, the folder of your library,
+                                Welcome. SFE needs three things: the setup code that proves you run this server, the
+                                folder of your library,
                                 and an administrator account.
                             </p>
                         }
@@ -63,7 +82,12 @@
                         @if (error(); as error) {
                             <p class="form-error" role="alert">{{ error }}</p>
                         }
-                        <button type="submit" class="button primary account-submit" title="Check the setup code and go on" [disabled]="busy() || !code().trim()">Next</button>
+                        <button
+                            type="submit"
+                            class="button primary account-submit"
+                            title="Check the setup code and go on"
+                            [disabled]="busy() || !code().trim()"
+                        >Next</button>
                     </form>
                 }
             }
@@ -73,26 +97,40 @@
                         <p>Welcome. SFE needs two things: the folder of your library, and an administrator account.</p>
                     }
                     <p>
-                        How will SFE be used, where are your photos, videos and music, and who may open SFE? All of it can be changed later in
+                        How will SFE be used, where are your photos, videos and music, and who may open SFE? All of it
+                        can be changed later in
                         Administration › System › Installation, except going back from External to Local.
                     </p>
                     <sfe-installation-form [token]="token()!" [initial]="installation()!" [setup]="true" />
                     <div class="setup-actions">
                         @if (!codeFree()) {
-                            <button type="button" class="button" title="Back to the setup code" (click)="step.set('code')">Back</button>
+                            <button
+                                type="button"
+                                class="button"
+                                title="Back to the setup code"
+                                (click)="step.set('code')"
+                            >Back</button>
                         }
-                        <button type="submit" class="button primary" title="Save these and go on to the administrator" [disabled]="busy()">Next</button>
+                        <button
+                            type="submit"
+                            class="button primary"
+                            title="Save these and go on to the administrator"
+                            [disabled]="busy()"
+                        >Next</button>
                     </div>
                 </form>
             }
             @case ('account') {
                 <form class="account-form" novalidate (submit)="submit($event)">
                     @if (info()!.recover) {
-                        <p>Enter the name of a local administrator to give it a new password, or a new name to add an administrator.</p>
+                        <p>Enter the name of a local administrator to give it a new password, or a new name to add an
+                        administrator.</p>
                     } @else {
                         <p>
-                            Create the administrator of this server. Your library, its index, tags and settings become the first
-                            <strong>space</strong>, which you can name here. More spaces, and accounts for the others, come later in Administration.
+                            Create the administrator of this server. Your library, its index, tags and settings become
+                            the first
+                            <strong>space</strong>, which you can name here. More spaces, and accounts for the others,
+                            come later in Administration.
                         </p>
                     }
                     <div class="field">
@@ -104,21 +142,40 @@
                         }
                     </div>
                     <div class="field">
-                        <label class="field-label" for="setup-display">Display name <span class="field-hint">(optional)</span></label>
-                        <input id="setup-display" type="text" autocomplete="name" [value]="displayName()" (input)="displayName.set(valueOf($event))">
+                        <label
+                            class="field-label"
+                            for="setup-display"
+                        >Display name <span class="field-hint">(optional)</span></label>
+                        <input
+                            id="setup-display"
+                            type="text"
+                            autocomplete="name"
+                            [value]="displayName()"
+                            (input)="displayName.set(valueOf($event))"
+                        >
                     </div>
                     <div class="field">
                         <label class="field-label" for="setup-password">Password</label>
                         <input id="setup-password" type="password" autocomplete="new-password" required [value]="password()" (input)="password.set(valueOf($event))"
                                aria-describedby="setup-password-hint">
-                        <span class="field-hint" id="setup-password-hint">At least {{ info()!.minimumPasswordLength }} characters.</span>
+                        <span
+                            class="field-hint"
+                            id="setup-password-hint"
+                        >At least {{ info()!.minimumPasswordLength }} characters.</span>
                         @if (errors()['password']; as error) {
                             <span class="field-error">{{ error }}</span>
                         }
                     </div>
                     <div class="field">
                         <label class="field-label" for="setup-confirm">Password again</label>
-                        <input id="setup-confirm" type="password" autocomplete="new-password" required [value]="confirm()" (input)="confirm.set(valueOf($event))">
+                        <input
+                            id="setup-confirm"
+                            type="password"
+                            autocomplete="new-password"
+                            required
+                            [value]="confirm()"
+                            (input)="confirm.set(valueOf($event))"
+                        >
                         @if (mismatch()) {
                             <span class="field-error">The two passwords differ.</span>
                         }
@@ -126,8 +183,17 @@
                     @if (!info()!.recover) {
                         <div class="field">
                             <label class="field-label" for="setup-library">Name of the first space</label>
-                            <input id="setup-library" type="text" [value]="libraryName()" (input)="libraryName.set(valueOf($event))" aria-describedby="setup-library-hint">
-                            <span class="field-hint" id="setup-library-hint">A space holds one library and who may see it, e.g. Family. You can rename it later.</span>
+                            <input
+                                id="setup-library"
+                                type="text"
+                                [value]="libraryName()"
+                                (input)="libraryName.set(valueOf($event))"
+                                aria-describedby="setup-library-hint"
+                            >
+                            <span
+                                class="field-hint"
+                                id="setup-library-hint"
+                            >A space holds one library and who may see it, e.g. Family. You can rename it later.</span>
                             @if (errors()['libraryName']; as error) {
                                 <span class="field-error">{{ error }}</span>
                             }
@@ -135,11 +201,16 @@
                     }
                     @if (offerFastSignIn()) {
                         <label class="check">
-                            <input type="checkbox" [checked]="fastSignIn()" (change)="fastSignIn.set(checkedOf($event))">
+                            <input
+                                type="checkbox"
+                                [checked]="fastSignIn()"
+                                (change)="fastSignIn.set(checkedOf($event))"
+                            >
                             <span>
                                 Sign me in when SFE starts on this computer
                                 <span class="field-hint">
-                                    The browser SFE opens when it starts signs you in without your password. Only for SFE used on this
+                                    The browser SFE opens when it starts signs you in without your password. Only for
+                                    SFE used on this
                                     computer alone; switch it off in Administration › System › Start-up.
                                 </span>
                             </span>
@@ -163,9 +234,16 @@
             }
             @case ('restart') {
                 <div class="account-steps">
-                    <p><strong>SFE is set up.</strong> One more thing: the new network setting applies once SFE starts again.</p>
-                    <p>Close SFE and start it again (or restart its service). Until then, it keeps answering at this address.</p>
-                    <button type="button" class="button primary" title="Open the library" (click)="finish()">Open the library</button>
+                    <p><strong>SFE is set up.</strong> One more thing: the new network setting applies once SFE starts
+                    again.</p>
+                    <p>Close SFE and start it again (or restart its service). Until then, it keeps answering at this
+                    address.</p>
+                    <button
+                        type="button"
+                        class="button primary"
+                        title="Open the library"
+                        (click)="finish()"
+                    >Open the library</button>
                 </div>
             }
         }

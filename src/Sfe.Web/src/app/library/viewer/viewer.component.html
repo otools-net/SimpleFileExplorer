@@ -1,4 +1,13 @@
-<dialog #dialog class="viewer" aria-label="Preview" tabindex="-1" [class.has-video]="item()?.kind === 'video'" (close)="onClose()" (cancel)="onCancel($event)" (keydown)="onKeydown($event)">
+<dialog
+    #dialog
+    class="viewer"
+    aria-label="Preview"
+    tabindex="-1"
+    [class.has-video]="item()?.kind === 'video'"
+    (close)="onClose()"
+    (cancel)="onCancel($event)"
+    (keydown)="onKeydown($event)"
+>
     <header class="viewer-bar">
         <div class="viewer-title">
             <strong>{{ item()?.name }}</strong>
@@ -12,27 +21,56 @@
         </div>
         <div class="viewer-actions">
             @if (can('tags.view')) {
-                <button type="button" class="icon-button" title="Tags (T)" aria-label="Tags" (click)="openTags()"><svg sfeIcon="tag"></svg></button>
+                <button
+                    type="button"
+                    class="icon-button"
+                    title="Tags (T)"
+                    aria-label="Tags"
+                    (click)="openTags()"
+                ><svg sfeIcon="tag"></svg></button>
             }
             @if (menuEntries().length) {
                 <button #menuButton type="button" class="icon-button viewer-menu-button" title="More actions" aria-label="More actions" aria-haspopup="menu"
                         [attr.aria-expanded]="menuOpen()" [class.active]="menuOpen()" (click)="toggleMenu()"><svg sfeIcon="more"></svg></button>
             }
-            <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
+            <button
+                type="button"
+                class="icon-button"
+                title="Close (Esc)"
+                aria-label="Close"
+                (click)="close()"
+            ><svg sfeIcon="close"></svg></button>
         </div>
     </header>
-    <div #stage class="viewer-stage" [sfeContextMenu]="stageMenu()" [attr.data-context-menu]="stageMenu() ? null : 'own'" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)">
+    <div
+        #stage
+        class="viewer-stage"
+        [sfeContextMenu]="stageMenu()"
+        [attr.data-context-menu]="stageMenu() ? null : 'own'"
+        [class.zoomed]="zoomed()"
+        [class.document]="!builtin()"
+        (touchstart)="onTouchStart($event)"
+        (touchend)="onTouchEnd($event)"
+        (wheel)="onWheel($event)"
+    >
         @for (shown of shownItem(); track shown.path) {
             @if (unsupported()) {
                 <div class="viewer-message">
-                    <p>This browser cannot play this format{{ converted() ? ', and the server could not convert it (it may be converting as many videos as it can).' : '.' }}</p>
+                    <p>This browser cannot play this
+                    format{{ converted() ? ', and the server could not convert it (it may be converting as many videos as it can).' : '.' }}</p>
                     <p>{{ urls()?.externalName ? 'Use “Open in ' + urls()?.externalName + '” or download it.' : 'Download it to play it in another app.' }}</p>
                 </div>
             } @else {
                 @switch (builtin()) {
                     @case ('image') {
                         @if (progressive() && !originalReady()) {
-                            <img class="preview" [src]="pictureUrls().thumbnail" [alt]="shown.name" [style.visibility]="thumbnailFailed() ? 'hidden' : null" (error)="thumbnailFailed.set(true)">
+                            <img
+                                class="preview"
+                                [src]="pictureUrls().thumbnail"
+                                [alt]="shown.name"
+                                [style.visibility]="thumbnailFailed() ? 'hidden' : null"
+                                (error)="thumbnailFailed.set(true)"
+                            >
                         } @else {
                             <img #picture [src]="pictureUrls().file" [alt]="shown.name" decoding="async"
                                  [class.zoomable]="zoomable()" [class.actual-size]="zoomed()" [class.dragging]="dragging()"
@@ -48,19 +86,42 @@
                                           (unsupported)="unsupported.set(true); converted.set($event)" />
                     }
                     @case ('audio') {
-                        <audio [src]="urls()!.file(shown.path)" controls autoplay preload="metadata" (error)="unsupported.set(true)"></audio>
+                        <audio
+                            [src]="urls()!.file(shown.path)"
+                            controls
+                            autoplay
+                            preload="metadata"
+                            (error)="unsupported.set(true)"
+                        ></audio>
                     }
                     @default {
                         @if (viewComponent(); as component) {
-                            <ng-container *ngComponentOutlet="component; inputs: { item: shown, format: format(), edit: editRequested() }; injector: viewInjector" />
+                            <ng-container
+                                *ngComponentOutlet="component; inputs: { item: shown, format: format(), edit: editRequested() }; injector: viewInjector"
+                            />
                         } @else if (viewFailed()) {
-                            <div class="viewer-message"><p>This viewer could not be loaded: reload the page to try again.</p></div>
+                            <div class="viewer-message"><p>This viewer could not be loaded: reload the page to try
+                            again.</p></div>
                         }
                     }
                 }
             }
         }
     </div>
-    <button type="button" class="viewer-nav prev" aria-label="Previous (←)" title="Previous (← or wheel up)" [disabled]="!neighbours().previous" (click)="go(-1)"><svg sfeIcon="left"></svg></button>
-    <button type="button" class="viewer-nav next" aria-label="Next (→)" title="Next (→ or wheel down)" [disabled]="nextDisabled()" (click)="go(1)"><svg sfeIcon="right"></svg></button>
+    <button
+        type="button"
+        class="viewer-nav prev"
+        aria-label="Previous (←)"
+        title="Previous (← or wheel up)"
+        [disabled]="!neighbours().previous"
+        (click)="go(-1)"
+    ><svg sfeIcon="left"></svg></button>
+    <button
+        type="button"
+        class="viewer-nav next"
+        aria-label="Next (→)"
+        title="Next (→ or wheel down)"
+        [disabled]="nextDisabled()"
+        (click)="go(1)"
+    ><svg sfeIcon="right"></svg></button>
 </dialog>

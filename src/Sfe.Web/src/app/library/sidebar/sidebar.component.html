@@ -11,7 +11,13 @@
                 </button>
             </h2>
             @if (section.key === 'lucky' && open) {
-                <button type="button" class="icon-button ghost small" title="Other random tags" aria-label="Other random tags" (click)="sidebar.reload()">
+                <button
+                    type="button"
+                    class="icon-button ghost small"
+                    title="Other random tags"
+                    aria-label="Other random tags"
+                    (click)="sidebar.reload()"
+                >
                     <svg sfeIcon="refresh"></svg>
                 </button>
             }
@@ -33,7 +39,12 @@
 }
 <div class="sidebar-footer">
     @if (config.can('tags.manage')) {
-        <button type="button" class="button small sidebar-manage" title="Create, edit and delete tags" (click)="manage()">
+        <button
+            type="button"
+            class="button small sidebar-manage"
+            title="Create, edit and delete tags"
+            (click)="manage()"
+        >
             <svg sfeIcon="tag"></svg>Manage tags
         </button>
     }

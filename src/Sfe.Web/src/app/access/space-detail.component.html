@@ -8,8 +8,10 @@
             <svg sfeIcon="folder"></svg>
             <h3 id="space-library">Library</h3>
             <sfe-help about="The library">
-                <p>The folder of the server whose files this space shows, with everything below it. Its index, tags, settings,
-                   duplicates and background tasks belong to this space alone: tags set here are not seen in another space.</p>
+                <p>The folder of the server whose files this space shows, with everything below it. Its index, tags,
+                settings,
+                   duplicates and background tasks belong to this space alone: tags set here are not seen in another
+                   space.</p>
                 <p>The folder is chosen when the space is created and can't change afterwards.</p>
             </sfe-help>
         </header>
@@ -26,19 +28,27 @@
             <svg sfeIcon="group"></svg>
             <h3 id="space-groups">Groups <span class="access-count">{{ groups().length }}</span></h3>
             <sfe-help about="Groups">
-                <p>A <strong>group</strong> is a set of rights: what its members may do in this space (browse, download, tag, scan,
+                <p>A <strong>group</strong> is a set of rights: what its members may do in this space (browse, download,
+                tag, scan,
                    change settings...). Accounts get rights only through their groups.</p>
                 <p>Every space has three built-in groups:</p>
                 <ul>
-                    <li><strong>Administrators</strong> — manage the space: its accounts, groups, settings, tags and scans.</li>
+                    <li><strong>Administrators</strong> — manage the space: its accounts, groups, settings, tags and
+                    scans.</li>
                     <li><strong>Users</strong> — everyday use: browse, play, download, tag.</li>
                     <li><strong>Guests</strong> — what visitors without an account may do (only looking).</li>
                 </ul>
-                <p>Make your own for anything in between. Example: <em>Kids</em>, who may browse and play but not download; put
+                <p>Make your own for anything in between. Example: <em>Kids</em>, who may browse and play but not
+                download; put
                    the children's accounts in Kids only.</p>
             </sfe-help>
             <span class="spacer"></span>
-            <button type="button" class="button small" title="Create a group of this space, with its own rights" (click)="groupEditor().open(null)">
+            <button
+                type="button"
+                class="button small"
+                title="Create a group of this space, with its own rights"
+                (click)="groupEditor().open(null)"
+            >
                 <svg sfeIcon="plus"></svg>New group
             </button>
         </header>
@@ -49,10 +59,16 @@
                         <strong>{{ group.name }}</strong>
                         <span class="access-badges">
                             @if (group.builtIn) {
-                                <span class="access-badge" title="Every space has it; it can't be deleted">Built-in</span>
+                                <span
+                                    class="access-badge"
+                                    title="Every space has it; it can't be deleted"
+                                >Built-in</span>
                             }
                             @if (group.externalName) {
-                                <span class="access-badge" [title]="'Its members are those of the directory group ' + group.externalName">{{ group.externalName }}</span>
+                                <span
+                                    class="access-badge"
+                                    [title]="'Its members are those of the directory group ' + group.externalName"
+                                >{{ group.externalName }}</span>
                             }
                         </span>
                     </div>
@@ -64,9 +80,19 @@
                         {{ group.builtIn === 'guests' ? 'used for visitors without an account' : plural(group.memberIds.length, 'account') }}
                     </div>
                     <div class="access-row-actions">
-                        <button type="button" class="button small" [title]="'Change what ' + group.name + ' may do, and its members'" (click)="groupEditor().open(group)">Edit</button>
+                        <button
+                            type="button"
+                            class="button small"
+                            [title]="'Change what ' + group.name + ' may do, and its members'"
+                            (click)="groupEditor().open(group)"
+                        >Edit</button>
                         @if (!group.builtIn) {
-                            <button type="button" class="button small" [title]="'Delete the group ' + group.name + ' (asks first)'" (click)="removeGroup(group)">Delete</button>
+                            <button
+                                type="button"
+                                class="button small"
+                                [title]="'Delete the group ' + group.name + ' (asks first)'"
+                                (click)="removeGroup(group)"
+                            >Delete</button>
                         }
                     </div>
                 </li>
@@ -79,16 +105,23 @@
             <svg sfeIcon="user"></svg>
             <h3 id="space-accounts">Accounts <span class="access-count">{{ members().length }}</span></h3>
             <sfe-help about="Accounts of a space">
-                <p>The people who sign in to this space: every account in at least one of its groups. An account may be in several
+                <p>The people who sign in to this space: every account in at least one of its groups. An account may be
+                in several
                    spaces, with different groups in each, and switches between them from the ⋮ menu.</p>
-                <p>Example: <em>anna</em> is in Administrators here and in Users in the <em>Work</em> space; she sees both.</p>
+                <p>Example: <em>anna</em> is in Administrators here and in Users in the <em>Work</em> space; she sees
+                both.</p>
                 @if (serverWide()) {
-                    <p>Server administrators open every space, even one where they are in no group (and then not listed here).</p>
+                    <p>Server administrators open every space, even one where they are in no group (and then not listed
+                    here).</p>
                 }
             </sfe-help>
             <span class="spacer"></span>
             @if (outsiders().length) {
-                <select class="access-add-existing" title="Put an account of another space in this one too (in its Users group)" (change)="addExisting($event)">
+                <select
+                    class="access-add-existing"
+                    title="Put an account of another space in this one too (in its Users group)"
+                    (change)="addExisting($event)"
+                >
                     <option value="" selected>Add an existing account…</option>
                     @for (user of outsiders(); track user.id) {
                         <option [value]="user.id">{{ user.displayName ? user.displayName + ' (' + user.userName + ')' : user.userName }}</option>
@@ -113,10 +146,16 @@
                                 <span class="access-badge group">{{ name }}</span>
                             }
                             @if (user.isServerAdmin) {
-                                <span class="access-badge accent" title="Every right in every space">Server administrator</span>
+                                <span
+                                    class="access-badge accent"
+                                    title="Every right in every space"
+                                >Server administrator</span>
                             }
                             @if (user.kind === 'guest') {
-                                <span class="access-badge" title="Can only look, whatever its groups allow">Guest account</span>
+                                <span
+                                    class="access-badge"
+                                    title="Can only look, whatever its groups allow"
+                                >Guest account</span>
                             }
                             @if (user.disabled) {
                                 <span class="access-badge danger" title="Can't sign in">Disabled</span>
@@ -127,14 +166,25 @@
                         {{ elsewhere(user) }}{{ user.lastSignIn ? 'last signed in ' + formatDate(user.lastSignIn) : 'never signed in' }}
                     </div>
                     <div class="access-row-actions">
-                        <button type="button" class="button small" [title]="'Change ' + user.userName + ', its groups here'" (click)="accountEditor().open(user)">Edit</button>
+                        <button
+                            type="button"
+                            class="button small"
+                            [title]="'Change ' + user.userName + ', its groups here'"
+                            (click)="accountEditor().open(user)"
+                        >Edit</button>
                         @if (user.id !== config.user()?.id) {
-                            <button type="button" class="button small" [title]="removeTitle(user)" (click)="remove(user)">{{ deletes(user) ? 'Delete' : 'Remove' }}</button>
+                            <button
+                                type="button"
+                                class="button small"
+                                [title]="removeTitle(user)"
+                                (click)="remove(user)"
+                            >{{ deletes(user) ? 'Delete' : 'Remove' }}</button>
                         }
                     </div>
                 </li>
             } @empty {
-                <li class="access-empty muted">No accounts in this space yet. Create one, and it will be able to sign in and see these files.</li>
+                <li class="access-empty muted">No accounts in this space yet. Create one, and it will be able to sign in
+                and see these files.</li>
             }
         </ul>
     </section>
@@ -144,16 +194,25 @@
             <svg sfeIcon="globe"></svg>
             <h3 id="space-visitors">Visitors without an account</h3>
             <sfe-help about="Visitors without an account">
-                <p>Anyone who reaches the server can browse a space open to visitors, without signing in: the sign-in page offers a
-                   button for each such space. They get the rights of the <strong>Guests</strong> group, and never a right that
+                <p>Anyone who reaches the server can browse a space open to visitors, without signing in: the sign-in
+                page offers a
+                   button for each such space. They get the rights of the <strong>Guests</strong> group, and never a
+                   right that
                    changes something.</p>
-                <p>Example: open a <em>Holiday photos</em> space so relatives on your network can look at it, while <em>Family</em>
+                <p>Example: open a <em>Holiday photos</em> space so relatives on your network can look at it, while
+                <em>Family</em>
                    stays private.</p>
-                <p>For someone who should sign in but only look, make a <em>guest account</em> instead (New account › Guest account).</p>
+                <p>For someone who should sign in but only look, make a <em>guest account</em> instead (New account ›
+                Guest account).</p>
             </sfe-help>
         </header>
         <label class="check">
-            <input type="checkbox" [checked]="space().guestAccess" [disabled]="busy() || !anonymousAllowed()" (change)="setGuestAccess(checkedOf($event))">
+            <input
+                type="checkbox"
+                [checked]="space().guestAccess"
+                [disabled]="busy() || !anonymousAllowed()"
+                (change)="setGuestAccess(checkedOf($event))"
+            >
             <span>
                 Let visitors browse {{ space().name }} without an account
                 <span class="field-hint">
@@ -164,15 +223,23 @@
         </label>
         @if (!anonymousAllowed()) {
             @if (config.config()?.mode === 'local') {
-                <p class="field-hint">SFE is in Local mode: only its administrators open it (Administration › System › Installation).</p>
+                <p class="field-hint">SFE is in Local mode: only its administrators open it (Administration › System ›
+                Installation).</p>
             } @else {
-                <p class="field-hint">The server's configuration forbids visitors without an account (Sfe:Security:AnonymousGuests).</p>
+                <p class="field-hint">The server's configuration forbids visitors without an account
+                (Sfe:Security:AnonymousGuests).</p>
             }
         }
     </section>
 
     <sfe-folder-access [space]="tenantParam()" [groups]="groups()" [members]="members()" />
 
-    <sfe-group-editor [space]="tenantParam()" [spaceName]="space().name" [candidates]="candidates()" [catalog]="catalog()" (saved)="load()" />
+    <sfe-group-editor
+        [space]="tenantParam()"
+        [spaceName]="space().name"
+        [candidates]="candidates()"
+        [catalog]="catalog()"
+        (saved)="load()"
+    />
     <sfe-account-editor [spaces]="spaceRefs()" [groups]="groups()" [serverWide]="allAccounts()" (saved)="load()" />
 }

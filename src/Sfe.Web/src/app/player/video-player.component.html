@@ -10,7 +10,13 @@
 <div #hintForward class="player-hint forward" aria-hidden="true"></div>
 <div class="player-fast" aria-hidden="true">{{ fastRate }}× <svg sfeIcon="fast"></svg></div>
 <div class="player-spinner" aria-hidden="true"></div>
-<button type="button" class="player-big-play" aria-label="Play" title="Play (K)" (click)="togglePlay()"><svg sfeIcon="play"></svg></button>
+<button
+    type="button"
+    class="player-big-play"
+    aria-label="Play"
+    title="Play (K)"
+    (click)="togglePlay()"
+><svg sfeIcon="play"></svg></button>
 <div class="player-controls" (pointerdown)="showControls()">
     <div class="player-seek-wrap">
         <input #seek type="range" class="player-seek" min="0" max="0" step="any" value="0" aria-label="Seek"

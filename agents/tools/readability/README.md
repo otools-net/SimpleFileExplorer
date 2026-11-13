@@ -180,3 +180,18 @@ node agents/tools/readability/move-templates.mjs src/Sfe.Web/src/app/access     
   removed unless it has `<pre>`, `<textarea>` or `ngPreserveWhitespaces`. `${…}` templates are reported, not moved.
 - Check: `npm test` and the client build (`references.mjs --only client`) identical file for file (checked
   2026-11-13 on the first 13).
+
+## Long lines of templates
+
+```sh
+node agents/tools/readability/break-template-lines.mjs src/Sfe.Web/src/app          # breaks them
+node agents/tools/readability/break-template-lines.mjs --check src/Sfe.Web/src/app  # exit 1 when some can be
+```
+
+- A long start tag gets one attribute per line, `>` at the start of the next line with the content right after it
+  (`>Edit space</button>`): no whitespace enters the text. Long text is wrapped at a space outside tags, quoted values
+  and `{{ }}`, the next line indented by two spaces or more: Angular collapses that run into one space (a lone `\n`
+  would stay a newline).
+- Left alone: control-flow lines (`@if (…) {`), attribute values longer than a line, and files with `<pre>`,
+  `<textarea>` or `ngPreserveWhitespaces`.
+- Check: the client build identical (`references.mjs --only client`, content hashes).

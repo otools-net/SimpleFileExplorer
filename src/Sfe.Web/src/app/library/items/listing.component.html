@@ -28,7 +28,11 @@
         @case ('ready') {
             @if (!store.items().length) {
                 @if (store.searching()) {
-                    <sfe-empty-state icon="search" heading="No results" text="Nothing in the index matches this search. If files were added recently, run Scan on this folder." />
+                    <sfe-empty-state
+                        icon="search"
+                        heading="No results"
+                        text="Nothing in the index matches this search. If files were added recently, run Scan on this folder."
+                    />
                 } @else {
                     <sfe-empty-state icon="folder" heading="This folder is empty" />
                 }
@@ -61,5 +65,9 @@
         }
     }
 </div>
-<div #sentinel class="sentinel" [hidden]="store.status() !== 'ready' || !store.hasMore()"><span class="spinner"></span></div>
+<div
+    #sentinel
+    class="sentinel"
+    [hidden]="store.status() !== 'ready' || !store.hasMore()"
+><span class="spinner"></span></div>
 <sfe-scroll-progress />

@@ -1,17 +1,44 @@
 @for (batch of queue.batches(); track batch.key) {
-    <section class="operation upload" [class.done]="!active(batch)" [attr.data-upload]="batch.key" aria-live="polite" [sfeContextMenu]="batchMenu(batch)">
+    <section
+        class="operation upload"
+        [class.done]="!active(batch)"
+        [attr.data-upload]="batch.key"
+        aria-live="polite"
+        [sfeContextMenu]="batchMenu(batch)"
+    >
         <header class="operation-head">
             <svg sfeIcon="upload"></svg>
             <span class="operation-title">{{ title(batch) }}</span>
             @if (active(batch)) {
                 @if (paused(batch)) {
-                    <button type="button" class="button small" title="Go on sending them" (click)="queue.resumeAll(batch)">Resume</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Go on sending them"
+                        (click)="queue.resumeAll(batch)"
+                    >Resume</button>
                 } @else if (sending(batch)) {
-                    <button type="button" class="button small" title="Stop sending for now: they go on where they stopped" (click)="queue.pauseAll(batch)">Pause</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Stop sending for now: they go on where they stopped"
+                        (click)="queue.pauseAll(batch)"
+                    >Pause</button>
                 }
-                <button type="button" class="button small" title="Stop: what was not finished is removed from the server" (click)="queue.cancelAll(batch)">Cancel</button>
+                <button
+                    type="button"
+                    class="button small"
+                    title="Stop: what was not finished is removed from the server"
+                    (click)="queue.cancelAll(batch)"
+                >Cancel</button>
             } @else {
-                <button type="button" class="icon-button ghost small" aria-label="Close" title="Close" (click)="queue.dismiss(batch)">
+                <button
+                    type="button"
+                    class="icon-button ghost small"
+                    aria-label="Close"
+                    title="Close"
+                    (click)="queue.dismiss(batch)"
+                >
                     <svg sfeIcon="close"></svg>
                 </button>
             }
@@ -25,10 +52,25 @@
                 <p>“{{ baseName(asked.name) }}” is already there.</p>
                 <div class="operation-choices">
                     @if (batch.canReplace) {
-                        <button type="button" class="button small danger" title="The file there goes to the trash" (click)="answer(batch, asked, 'replace')">Replace</button>
+                        <button
+                            type="button"
+                            class="button small danger"
+                            title="The file there goes to the trash"
+                            (click)="answer(batch, asked, 'replace')"
+                        >Replace</button>
                     }
-                    <button type="button" class="button small" title="Don't upload this one" (click)="answer(batch, asked, 'skip')">Skip</button>
-                    <button type="button" class="button small primary" title="Keep both: this one gets a number added to its name" (click)="answer(batch, asked, 'keepBoth')">Keep both</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Don't upload this one"
+                        (click)="answer(batch, asked, 'skip')"
+                    >Skip</button>
+                    <button
+                        type="button"
+                        class="button small primary"
+                        title="Keep both: this one gets a number added to its name"
+                        (click)="answer(batch, asked, 'keepBoth')"
+                    >Keep both</button>
                 </div>
                 @if (asking(batch) > 1) {
                     <label class="check">
@@ -46,14 +88,35 @@
                             <span class="upload-name" [title]="item.name">{{ baseName(item.name) }}</span>
                             <span class="upload-state">{{ stateText(item) }}</span>
                             @if (item.state === 'failed' && item.file) {
-                                <button type="button" class="button small" title="Try again from where it stopped" (click)="queue.resumeItem(item)">Retry</button>
+                                <button
+                                    type="button"
+                                    class="button small"
+                                    title="Try again from where it stopped"
+                                    (click)="queue.resumeItem(item)"
+                                >Retry</button>
                             } @else if (item.state === 'paused') {
-                                <button type="button" class="button small" title="Go on sending it" (click)="queue.resumeItem(item)">Resume</button>
+                                <button
+                                    type="button"
+                                    class="button small"
+                                    title="Go on sending it"
+                                    (click)="queue.resumeItem(item)"
+                                >Resume</button>
                             } @else if (item.state === 'uploading' || item.state === 'queued') {
-                                <button type="button" class="button small" title="Stop sending it for now" (click)="queue.pause(item)">Pause</button>
+                                <button
+                                    type="button"
+                                    class="button small"
+                                    title="Stop sending it for now"
+                                    (click)="queue.pause(item)"
+                                >Pause</button>
                             }
                             @if (!['done', 'skipped', 'cancelled'].includes(item.state)) {
-                                <button type="button" class="icon-button ghost small" [attr.aria-label]="'Cancel ' + item.name" title="Cancel this file" (click)="queue.cancel(item)">
+                                <button
+                                    type="button"
+                                    class="icon-button ghost small"
+                                    [attr.aria-label]="'Cancel ' + item.name"
+                                    title="Cancel this file"
+                                    (click)="queue.cancel(item)"
+                                >
                                     <svg sfeIcon="close"></svg>
                                 </button>
                             }
@@ -66,7 +129,8 @@
             }
         }
         @if (interrupted(batch)) {
-            <p class="field-hint">Interrupted: pick or drop the same files into this folder again to go on where they stopped.</p>
+            <p class="field-hint">Interrupted: pick or drop the same files into this folder again to go on where they
+            stopped.</p>
         }
     </section>
 }
