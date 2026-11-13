@@ -44,8 +44,8 @@ deciding who sees and changes what; a second provider can be added by writing on
 ## Architecture
 
 - `IConnectionProvider` (one per kind, registered in a `ConnectionProviders` catalog): kind id, name, icon name,
-  `ProviderCapabilities` (ranged reads, server-side copy and move, thumbnails, change cursor, content hash, own
-  trash, case-insensitive names, free space), how it signs in (`OAuthRedirect`, `OAuthCode`, later `Password`, `Key`)
+  `ProviderCapabilities` (the list in phase 0's results), how it signs in (`OAuthRedirect`, `OAuthCode`, later
+  `Password`, `Key`)
   with the fields it needs described as data (label, type text/secret/address), so the client's form needs no code
   per provider; `OpenAsync(credentials)` gives an `IRemoteStorage`.
 - `IRemoteStorage`: `ListAsync(path, cursor)` paged, `GetAsync(path)`, `OpenReadAsync(path, range)`,
@@ -71,16 +71,112 @@ deciding who sees and changes what; a second provider can be added by writing on
 
 ### Phase 0: spike and checks (results written here)
 
-- [ ] Dropbox: official SDK (`Dropbox.Api`: maintained? targets, dependencies) or plain HTTP over `HttpClient`
+- [x] Dropbox: official SDK (`Dropbox.Api`: maintained? targets, dependencies) or plain HTTP over `HttpClient`
   (look for a package first); a console spike signing in with PKCE by both flows, listing, ranged download, chunked
   upload, the change cursor
-- [ ] `FolderRule` / `FolderPolicy` / `FolderRuleService`: can a nullable connection column key the rules of a
+- [x] `FolderRule` / `FolderPolicy` / `FolderRuleService`: can a nullable connection column key the rules of a
   connection (SQLite: nullable column added; unique indexes; the 250-rule cap; `BeginMoveAsync` on renames inside a
   connection)? Else a twin table with the same evaluator
-- [ ] The listing page: what `ListingStore`, `Api` and the item components assume about "the library" (list here what
+- [x] The listing page: what `ListingStore`, `Api` and the item components assume about "the library" (list here what
   must take a location)
-- [ ] Write the interfaces against Dropbox **and on paper** against WebDAV, SFTP and Google Drive (ids instead of
+- [x] Write the interfaces against Dropbox **and on paper** against WebDAV, SFTP and Google Drive (ids instead of
   paths, no ranged reads, no change cursor): adjust capabilities before any code depends on them
+
+#### Results (2026-11-13)
+
+**Dropbox client: the official SDK, `Dropbox.Api` 7.4.0** (2026-09-23; three releases in 2026; .NET Standard 2.0;
+one dependency, `Newtonsoft.Json` 13.0.4; 9.3 M downloads). No real account was at hand (owner's answer): the spike
+ran the SDK against a fake `HttpMessageHandler` and read every request it made; the check with a real account is
+the manual list of phase 2.
+
+- Every call goes through the `HttpClient` given in `DropboxClientConfig` (`HttpClient`, `LongPollHttpClient`) and
+  the `client` argument of `DropboxOAuth2Helper.ProcessCodeFlowAsync`: `OutboundPolicy` and the recorded answers of
+  the tests are a handler of that client. Hosts seen: `api.dropbox.com` (token), `api.dropboxapi.com` (RPC),
+  `content.dropboxapi.com` (download, upload), `*.dl.dropboxusercontent.com` (temporary links); the browser alone
+  goes to `www.dropbox.com/oauth2/authorize`. `notify.dropboxapi.com` (long poll) is not used.
+- PKCE: `GeneratePKCECodeVerifier` (128 characters), `GeneratePKCECodeChallenge` (S256), `GetAuthorizeUri(Code, key,
+  redirect or null, state, tokenAccessType: Offline, scopeList, codeChallenge)`. Without a redirect address Dropbox
+  shows the code to copy: the two flows differ only by that argument. The token request carries `code_verifier`,
+  and `client_secret` too when a secret is given: **the app secret is optional** (PKCE alone works for both flows).
+- A client made from the refresh token (`new DropboxClient(refresh, key[, secret], config)`) fetches an access token
+  by itself before the first call. A refused refresh (`invalid_grant`) is an `AuthException`; a wrong code at
+  sign-in an `OAuth2Exception`: both mean "needs reconnecting". The refresh token does not change at a refresh:
+  nothing is written back to the database.
+- Errors: `ApiException<TError>` with typed unions (`path/not_found`), `RateLimitException.RetryAfter` (seconds),
+  `AuthException` (401), `RetryException` (5xx), `BadInputException` (400). `MaxRetriesOnError = 0`: SFE's own gate
+  decides the waits.
+- **No ranged download in the SDK** (`DownloadAsync(path, rev)` takes no range): a ranged read asks
+  `GetTemporaryLinkAsync` (a link for 4 hours) and makes a `GET` with `Range` on it with the same policy-bound
+  `HttpClient`. The link is never given to the browser (content stays streamed through SFE).
+- Upload sessions: `UploadSessionStartAsync` / `AppendV2Async(cursor(sessionId, offset))` / `FinishAsync(cursor,
+  CommitInfo(path, WriteMode.Add, autorename))`; the SDK adds the `content_hash` of each part (`AutoContentHash`).
+- Listing: `ListFolderAsync(path, limit)` then `ListFolderContinueAsync(cursor)`; `""` is the root; entries carry
+  `PathLower`, `PathDisplay`, and for files `Size`, `ServerModified`, `ContentHash`, `IsDownloadable`. The cursor of
+  the last page is the change cursor (`ListFolderGetLatestCursorAsync` gives one without listing).
+
+**Folder rules: a twin table** (`ConnectionFolderRules`) compiled by the same `FolderPolicy`, not a nullable column
+in `FolderRules`:
+
+- Nine queries of `FolderRuleService` and `RightsEvaluator` read `FolderRules` by `TenantId` alone: each would need
+  `ConnectionId == null`, and one forgotten makes a connection's rule hide or open a library folder.
+- A server-level connection has rules **per library** it is offered to: the key is (tenant, connection, path), and
+  `Connections → FolderRules` beside `Tenants → FolderRules` is one more cascade path for SQL Server.
+- Paths compare by the provider's rules (Dropbox: case-insensitive everywhere), the library's by the host's
+  (`LibraryPaths.PathComparer`): one table would mix two comparers.
+- The 250 cap protects the index queries of a library (SQL parameters); a connection has its own count.
+- Reused as they are: `FolderLevel`, `FolderPrincipalRef`, `FolderPolicy` (given a comparer), the move logic
+  (`Compare`, pins) once extracted from `FolderRuleService` (phase 6).
+
+**The listing page** (client): what is tied to the library's one path space today:
+
+- `LibraryRoute` (`path`, `q`, `sort`, `desc`) and `routeParams` / `readRoute`: gain `conn`; `browseParams`, links.
+- `ListingStore` (a root singleton, injected by 82 files): `selection`, `revealed`, restore anchors and the change
+  feed are keyed by `path` alone; `can(right, item)` reads the library's rights and `folderAccess`.
+- `Api`: about 100 uses of `path` under `api/…` (browse, siblings, covers, `files/raw`, thumbnails, trickplay,
+  file-tags, jobs, uploads, properties, archives): a location-aware set is needed for browse, raw, file management,
+  uploads, zip and properties only in this plan; the rest is hidden by capabilities.
+- `LibraryItem` has what a remote item has (`name`, `path`, `kind`, `size`, `modified`); `modified` is already
+  nullable (Dropbox folders have none). `indexed`, `tags`, `excluded`, `defaultTags` stay absent.
+- Hidden for a connection until [connections-index-plan](connections-index-plan.md): search box, tags, covers,
+  scan panel, quick links, trickplay, thumbnails (phase 3 shows the provider's when it has them), siblings.
+- The exact list of components is made when phase 3 starts; the rule is one `location` signal in `ListingStore`
+  (`null` = the library) that the item URLs and `Api` calls read, never a second listing page.
+
+**Interfaces checked on paper** (the "Architecture" section above follows these):
+
+| Need | Dropbox | WebDAV | SFTP | Google Drive |
+|---|---|---|---|---|
+| Address | path | path | path | id; names not unique in a folder |
+| Listing | pages + cursor, unordered | whole folder (`PROPFIND` depth 1) | whole folder | pages, by parent id |
+| Ranged read | through a temporary link | `Range` (most servers) | seek | `Range` |
+| Upload | sessions, parts up to 150 MB | one `PUT` | write at offset | resumable session |
+| Server-side copy / move | both | both | move only (rename) | both |
+| Changes | cursor | none (`getetag` per folder) | none | page token |
+| Hash | `content_hash` (its own) | sometimes | none | md5 / sha256 |
+| Thumbnails | yes | no | no | yes |
+| Own trash | yes | no | no | yes |
+| Names | case-insensitive | server's | server's | anything, duplicates |
+| Folder dates | none | yes | yes | yes |
+| Files without content | Paper docs (`is_downloadable`) | none | none | Docs, Sheets |
+| Sign-in | OAuth (redirect or code) | address + password | address + password or key, **host key to confirm** | OAuth |
+
+- `IRemoteStorage` stays **path-addressed**: SFE's routes, rules and transfers speak paths. A provider of ids
+  (Google Drive) resolves paths itself (a bounded cache per connection) and shows duplicate names apart; `RemoteItem`
+  carries the provider's `Id` (opaque) for that and for the index of plan 6.
+- Listings come **unordered and in pages of the provider's choice**: sorting by name, date or size needs the whole
+  folder. Phase 3 lists a folder once into a bounded per-connection snapshot (as `CachedListing` does for the disk)
+  and pages from it; a folder past the cap lists in the provider's order with sorting off.
+- `OpenReadAsync` answers what it could do (`RemoteContent`: stream, the range actually served, total length): a
+  provider without ranges serves the whole file, and the route then answers 200 without `Accept-Ranges`.
+- Uploads keep `Begin` / `Append` / `Finish`: a provider with one `PUT` (WebDAV) keeps the parts in a temporary
+  file of the server until `Finish` (capability `UploadsInParts` false = the server's disk is used, so the free
+  space of the cache folder is checked).
+- `ProviderCapabilities` as built: `RangedReads`, `UploadsInParts`, `MaxUploadPart`, `ServerSideCopy`,
+  `ServerSideMove` (two flags: SFTP moves but cannot copy), `Thumbnails`, `ChangeCursor`, `ContentHash` (a name:
+  `dropbox`, `md5`, `sha256`; null = none), `OwnTrash`, `CaseInsensitiveNames`, `UniqueNames`, `FolderDates`,
+  `FreeSpace`. `RemoteItem.Downloadable` is false for files without content.
+- Sign-in kinds: `OAuthRedirect`, `OAuthCode`, `Password`, `Key`; SFTP's host key is a **second step** ("this
+  server shows this key: accept?"): not built now, but the authorize routes answer a step (`next`) so it fits later.
 
 ### Phase 1: foundation
 

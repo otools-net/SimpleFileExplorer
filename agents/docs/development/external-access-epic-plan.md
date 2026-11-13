@@ -39,11 +39,13 @@ in each plan's `## Progress` checklist; this board is the summary.
 | 2 | api-tokens | not started | | |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
-| 5 | connections | not started | | |
+| 5 | connections | in progress (started before plans 1 to 4 at the owner request; its routes are mapped through `ApiRoutes`, so they follow the base) | phase 0 (results in the plan: `Dropbox.Api` SDK, twin rule table, capabilities) | phase 1: `Connections/` interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider` |
 | 6 | connections-index | not started | | |
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
 
+- 2026-11-13 (second session): api-v1 phase 1 committed; connections started out of order at the owner request
+  (plans 1 to 4 later); connections phase 0 done without a real Dropbox account (SDK run against a fake handler).
 - 2026-11-13: epic started; status board added; api-v1 phase 0 done (`api-versioning.md`, linked from `api-routes.md`
   and AGENTS.md); namespace-rename plan added as plan 3 at the owner's request; api-v1 phase 1 done (`ApiRoutes`,
   OpenAPI and `routes.txt` identical).
