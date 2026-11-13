@@ -60,15 +60,9 @@ public static class QuickLinkEndpoints
 
     private static async Task<
         Results<Ok<IReadOnlyList<QuickLinkView>>, ValidationProblem, NotFound, ForbidHttpResult>
-    > Add(
-        QuickLinkService service,
-        CurrentAccess current,
-        LibraryPaths paths,
-        MediaClassifier classifier,
-        QuickLinkAdd input,
-        CancellationToken cancellationToken
-    )
+    > Add([AsParameters] QuickLinkServices services, QuickLinkAdd input, CancellationToken cancellationToken)
     {
+        var (service, current, paths, classifier) = services;
         if (await current.GetAsync() is not { User: { } user } state)
             return TypedResults.Forbid();
         if (input.Paths is not { Count: > 0 } requested)
@@ -122,14 +116,12 @@ public static class QuickLinkEndpoints
     }
 
     private static async Task<Results<Ok<IReadOnlyList<QuickLinkView>>, ForbidHttpResult>> Remove(
-        QuickLinkService service,
-        CurrentAccess current,
-        LibraryPaths paths,
-        MediaClassifier classifier,
+        [AsParameters] QuickLinkServices services,
         string? path,
         CancellationToken cancellationToken
     )
     {
+        var (service, current, paths, classifier) = services;
         if (await current.GetAsync() is not { User: { } user } state)
             return TypedResults.Forbid();
         var links = await service.RemoveAsync(

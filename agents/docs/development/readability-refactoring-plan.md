@@ -161,6 +161,7 @@ Tidy, one component per commit, worst first (add one line per component when sta
     so that `Check` resolves only what it took
   - [x] `TagEndpoints`: `TagServices` (`ChangeFolderDefaultTags`, `GetScopeTags`; the query values of
     `GetScopeTags` stay parameters: 5 with the record)
+  - [x] `QuickLinkEndpoints`: `QuickLinkServices` (`Add`, `Remove`)
   - [ ] The files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`

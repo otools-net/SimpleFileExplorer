@@ -12,7 +12,6 @@
     "src/Sfe.Api/Endpoints/FolderRuleEndpoints.cs": {"fileLines":415,"longFunctions":1},
     "src/Sfe.Api/Endpoints/LibraryEndpoints.cs": {"fileLines":567,"longFunctions":1},
     "src/Sfe.Api/Endpoints/MigrationEndpoints.cs": {"manyParameterFunctions":1},
-    "src/Sfe.Api/Endpoints/QuickLinkEndpoints.cs": {"manyParameterFunctions":2},
     "src/Sfe.Api/Endpoints/ScanEndpoints.cs": {"longFunctions":1},
     "src/Sfe.Api/Endpoints/SessionEndpoints.cs": {"fileLines":465,"longFunctions":1},
     "src/Sfe.Api/Endpoints/SetupEndpoints.cs": {"manyParameterFunctions":1},
