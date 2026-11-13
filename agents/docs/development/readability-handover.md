@@ -89,3 +89,6 @@ node agents/tools/readability/measure.mjs --check ; node agents/tools/readabilit
 - Runs over 10 minutes report every 10 minutes through a cron task ([long-runs](../environment/long-runs.md)).
 - Python heredocs in Git Bash mangle `\n` and `\\`: write a script file, or use the editor's edit tool.
 - `git checkout -- <folder>` also undoes uncommitted work in it: commit or stash each step first.
+- Tests read handlers by reflection (`AccessTests.EveryRouteTakingAPathSaysHowFolderRulesApply` looks for a path in
+  parameters and in the records they bind): an `[AsParameters]` record can change what they see; run the full suite
+  after each endpoints file, not only the route tests.
