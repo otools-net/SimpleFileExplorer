@@ -60,13 +60,24 @@ function startTag(line, start) {
     }
 }
 
-/** Where the end of `text` leaves the reader, starting from `state`: in a tag, in a quoted value, inside {{ }}. */
+/**
+ * Where the end of `text` leaves the reader, starting from `state`: in a tag, in a quoted value, inside {{ }}, in an
+ * HTML comment (whose apostrophes are no quotes).
+ */
 function scan(text, state) {
-    let { inTag, quote, braces } = state;
+    let { inTag, quote, braces, comment = false } = state;
     for (let i = 0; i < text.length; i++) {
         const c = text[i];
-        if (quote) {
+        if (comment) {
+            if (text.startsWith('-->', i)) {
+                comment = false;
+                i += 2;
+            }
+        } else if (quote) {
             if (c === quote) quote = null;
+        } else if (!inTag && braces === 0 && text.startsWith('<!--', i)) {
+            comment = true;
+            i += 3;
         } else if (inTag) {
             if (c === '"' || c === "'") quote = c;
             else if (c === '>') inTag = false;
@@ -80,10 +91,10 @@ function scan(text, state) {
             inTag = true;
         }
     }
-    return { inTag, quote, braces };
+    return { inTag, quote, braces, comment };
 }
 
-const inText = (state) => !state.inTag && !state.quote && state.braces === 0;
+const inText = (state) => !state.inTag && !state.quote && state.braces === 0 && !state.comment;
 
 /** The line with its first long start tag (begun in text) broken, attributes one per line; null when none. */
 function breakTag(line, state) {

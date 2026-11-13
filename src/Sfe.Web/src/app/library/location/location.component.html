@@ -117,7 +117,12 @@
                                     [editable]="canTag()" (edit)="openScopeTags()" />
         }@if (exclusion(); as exclusion) {
             @if (canExclude()) {
-                <button type="button" class="exclusion-chip" [title]="exclusionTitle() + ' Click to change it.'" (click)="openExclusions()">{{ exclusion }}</button>
+                <button
+                    type="button"
+                    class="exclusion-chip"
+                    [title]="exclusionTitle() + ' Click to change it.'"
+                    (click)="openExclusions()"
+                >{{ exclusion }}</button>
             } @else {
                 <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
             }
@@ -133,8 +138,14 @@
                 }
             }
         </select>
-        <button type="button" class="icon-button small sort-direction" aria-label="Sort direction" title="Sort direction"
-                [class.desc]="store.route().desc" (click)="store.navigate({ desc: !store.route().desc }, { replace: true })">
+        <button
+            type="button"
+            class="icon-button small sort-direction"
+            aria-label="Sort direction"
+            title="Sort direction"
+            [class.desc]="store.route().desc"
+            (click)="store.navigate({ desc: !store.route().desc }, { replace: true })"
+        >
             <svg sfeIcon="up"></svg>
         </button>
     </div>

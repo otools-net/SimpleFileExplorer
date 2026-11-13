@@ -444,15 +444,24 @@
 <!-- A dot on a level's tab while it has changes not saved yet (they stay while the other level shows). -->
 <ng-template #levelMark let-level>
     @if (form.changedLevels().has(level)) {
-        <span class="admin-mark" title="Changed settings, not saved yet"><span class="visually-hidden"> (not saved)</span></span>
+        <span
+            class="admin-mark"
+            title="Changed settings, not saved yet"
+        ><span class="visually-hidden"> (not saved)</span></span>
     }
 </ng-template>
 
 <!-- A dot for settings changed and not saved yet in these sub-pages, red when some need fixing. -->
 <ng-template #mark let-pages>
     @if (faulty(pages)) {
-        <span class="admin-mark error" title="Some settings here need fixing"><span class="visually-hidden"> (needs fixing)</span></span>
+        <span
+            class="admin-mark error"
+            title="Some settings here need fixing"
+        ><span class="visually-hidden"> (needs fixing)</span></span>
     } @else if (changed(pages)) {
-        <span class="admin-mark" title="Changed settings, not saved yet"><span class="visually-hidden"> (not saved)</span></span>
+        <span
+            class="admin-mark"
+            title="Changed settings, not saved yet"
+        ><span class="visually-hidden"> (not saved)</span></span>
     }
 </ng-template>
