@@ -12,7 +12,7 @@ client's packages (`npm ci` in `src/Sfe.Web`: TypeScript files are read with the
 # the summary table, then the 15 worst of each kind per area
 node agents/tools/readability/measure.mjs
 
-# one area (server, "server tests", client, "client tests", "e2e tests", styles), more rows
+# one area (server, "server tests", client, "client tests", "e2e tests", styles, templates), more rows
 node agents/tools/readability/measure.mjs --area client --top 40
 
 # everything as JSON (every file, function, class and template measured)
@@ -87,12 +87,15 @@ node agents/tools/readability/references.mjs <temp>/x --only openapi,ef  # some 
 |---|---|---|
 | `openapi.json` | the OpenAPI document (routes, parameters, schemas, descriptions) | `OpenApiExportTests` with `SFE_OPENAPI_OUT`, through `dotnet test` (client build skipped) |
 | `ef-model.txt` | whether each EF context differs from its migrations' snapshot | `dotnet ef migrations has-pending-model-changes`: must say "No changes" |
-| `client-build.txt` | the client build's files and sizes, hashes left out of the names, and the total | `ng build --output-path` into the folder (not `wwwroot`), the build then deleted |
+| `client-build.txt` | the client build's files: content hash and size (chunk hashes left out of names and content), and the total | `ng build --output-path` into the folder (not `wwwroot`), the build then deleted |
 
 - The folder must be outside the repository (the script refuses otherwise). About 2 minutes for all three.
 - Two runs on the same code give identical files (checked 2026-11-12), so any difference is the change's.
-- `client-build.txt` lists the hashed chunks as `chunk.js` sorted by size: a template moved to its `.html` file
-  should give the same sizes; a difference of a few bytes in one chunk is worth a look, not a failure.
+- `client-build.txt` lists the hashed chunks as `chunk.js` with a hash of their content (the names of other chunks
+  left out of it): a change that compiles to the same code gives the same file; any difference is a real one. A
+  template moved to its `.html` file, or broken by `break-template-lines.mjs`, gives the same build (checked
+  2026-11-13). Equal sizes alone are not enough: a text break once kept a `
+` in the compiled template.
 
 ## Long strings (C#)
 

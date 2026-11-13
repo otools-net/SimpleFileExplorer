@@ -40,6 +40,8 @@ const AREAS = [
     { name: 'client tests', language: 'ts', tests: true, match: file => isClientCode(file) && isSpec(file) },
     { name: 'e2e tests', language: 'ts', tests: true, match: file => /^tests\/e2e\/.*\.ts$/.test(file) },
     { name: 'styles', language: 'css', tests: false, match: file => /^src\/Sfe\.Web\/src\/.*\.css$/.test(file) },
+    // Angular templates moved out of their components (lines and file length; no functions).
+    { name: 'templates', language: 'html', tests: false, match: file => /^src\/Sfe\.Web\/src\/.*\.html$/.test(file) },
 ];
 
 const BASELINE_FLAGS = { '--check': 'check', '--write-baseline': 'writeBaseline' };
@@ -319,7 +321,7 @@ function measureArea(area, files) {
         result.files.push({ file, lines: lines.length, longLines, longest: Math.max(0, ...lengths) });
         result.lines += lines.length;
         result.longLines += longLines;
-        if (area.language === 'css')
+        if (area.language === 'css' || area.language === 'html')
             continue;
 
         const measured = area.language === 'cs' ? measureCSharp(file, lines) : measureTypeScript(file, text);

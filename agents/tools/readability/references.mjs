@@ -1,11 +1,12 @@
 // Writes what a refactoring must not change into a folder: the OpenAPI document, whether the EF model differs from
-// its migrations, and the client build's files and sizes. Run it before and after, then compare the two folders.
-// See README.md.
+// its migrations, and the client build's files, sizes and content hashes. Run it before and after, then compare the
+// two folders. See README.md.
 //
 //   node agents/tools/readability/references.mjs <out-folder> [--only openapi,ef,client]
 
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -66,17 +67,36 @@ function filesUnder(folder) {
         .filter(path => statSync(path).isFile());
 }
 
-/** The client built into the out folder (not wwwroot): each file's size, hashes left out of the names, and the total. */
+const HASHED_NAME = /-[A-Za-z0-9_-]{8}(?=\.(?:js|mjs|css)\b)/g;
+
+/**
+ * A file's content hash, the hashed names of the chunks it refers to left out (they change whenever any chunk does):
+ * two builds compiling to the same code give the same hashes.
+ */
+function contentHash(path) {
+    const bytes = readFileSync(path);
+    const text = /\.(js|mjs|css|html|json|txt)$/.test(path) ? bytes.toString('utf8').replace(HASHED_NAME, '') : bytes;
+    return createHash('sha256').update(text).digest('hex').slice(0, 12);
+}
+
+/**
+ * The client built into the out folder (not wwwroot): each file's size and content hash, hashes left out of the names,
+ * and the total.
+ */
 function writeClientBuild(out) {
     const build = join(out, 'client-build');
     run('npx', ['ng', 'build', '--output-path', build], { cwd: join(repo, 'src/Sfe.Web') });
     const files = filesUnder(build).map(path => ({
         name: relative(build, path).replaceAll('\\', '/').replace(/-[A-Za-z0-9_-]{8}(?=\.[\w.]+$)/, ''),
         size: statSync(path).size,
+        hash: contentHash(path),
     }));
-    files.sort((a, b) => a.name.localeCompare(b.name) || a.size - b.size);
+    files.sort((a, b) => a.name.localeCompare(b.name) || a.hash.localeCompare(b.hash));
     const total = files.reduce((sum, file) => sum + file.size, 0);
-    const lines = [`total ${total} bytes in ${files.length} files`, ...files.map(file => `${file.size}\t${file.name}`)];
+    const lines = [
+        `total ${total} bytes in ${files.length} files`,
+        ...files.map(file => `${file.hash}\t${file.size}\t${file.name}`),
+    ];
     writeFileSync(join(out, 'client-build.txt'), lines.join('\n') + '\n');
     // Only the list is compared: the build itself (tens of MB) would bury the comparison of the folders.
     rmSync(build, { recursive: true, force: true });
