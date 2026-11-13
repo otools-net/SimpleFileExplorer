@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Sfe.Core.Files;
 
 namespace Sfe.Api.Endpoints;
@@ -91,4 +92,42 @@ public sealed record ExtractRequest(
     ConflictChoice Conflicts = ConflictChoice.Ask,
     string? Unlock = null,
     string? Password = null
+);
+
+/// <summary>A page of a folder of an archive (<c>GET api/files/explore</c>).</summary>
+public sealed record ArchiveListQuery(
+    [FromQuery(Name = "path")] string? Path,
+    [FromQuery(Name = "folder")] long? Folder,
+    [FromQuery(Name = "at")] string? At,
+    [FromQuery(Name = "after")] string? After,
+    [FromQuery(Name = "limit")] int? Limit,
+    [FromHeader(Name = ExploreEndpoints.UnlockHeader)] string? Unlock
+);
+
+/// <summary>A search in an archive (<c>GET api/files/explore/search</c>).</summary>
+public sealed record ArchiveSearchQuery(
+    [FromQuery(Name = "path")] string? Path,
+    [FromQuery(Name = "q")] string? Q,
+    [FromQuery(Name = "folder")] long? Folder,
+    [FromQuery(Name = "after")] string? After,
+    [FromQuery(Name = "limit")] int? Limit,
+    [FromHeader(Name = ExploreEndpoints.UnlockHeader)] string? Unlock
+);
+
+/// <summary>
+/// How a file of an archive is served (<c>GET api/files/explore/entry/…</c>): as a download, and with which unlock (a
+/// query value, for the links of a document).
+/// </summary>
+public sealed record ArchiveEntryQuery(
+    [FromQuery(Name = "download")] bool? Download,
+    [FromQuery(Name = "unlock")] string? Unlock
+);
+
+/// <summary>A text file of an archive (<c>GET api/files/explore/text</c>).</summary>
+public sealed record ArchiveTextQuery(
+    [FromQuery(Name = "path")] string? Path,
+    [FromQuery(Name = "id")] long? Id,
+    [FromQuery(Name = "at")] string? At,
+    [FromQuery(Name = "encoding")] string? Encoding,
+    [FromHeader(Name = ExploreEndpoints.UnlockHeader)] string? Unlock
 );

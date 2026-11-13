@@ -12,3 +12,14 @@ Code: `src/Sfe.Api/Endpoints/*Endpoints.cs` (one class per area), `Program.cs`.
 - A route handler whose only parameter is `HttpContext` binds as a `RequestDelegate` and its result is silently dropped
   (warning ASP0016): give it another parameter (`CancellationToken`) or cast it to `Delegate`.
 - Routes get library services through `TenantRequestServices` ([tenants.md](../architecture/tenants.md)).
+- A `Map…Endpoints` method only lists routes, one `Map<Group>` method per group or subject past 60 lines; long
+  descriptions are fields named after the route (`ExploreArchiveDescription`), next to the method that maps it.
+- A handler takes at most 5 parameters: the services its routes share go in one record bound with `[AsParameters]`
+  (`ExploreServices`: services and `HttpContext`, none of it in the OpenAPI document), query and header values in a
+  request record next to the contracts (`ArchiveListQuery`), each with its binding and its name
+  (`[FromQuery(Name = "path")]`, `[FromHeader(Name = …)]`): the OpenAPI document shows that name. Route values
+  (`{id:long}`) stay parameters of the handler: inside an `[AsParameters]` record, OpenAPI documents a `long` as
+  `integer` or `string`. Handlers start with `var (…) = services;` so their bodies keep their names.
+- Check a change to route maps or handler parameters with `agents/tools/readability/references.mjs --only
+  openapi,routes`: the OpenAPI document identical, and `routes.txt` the same rights, folder scopes and policies
+  (its `metadata` lines change with `[AsParameters]`).

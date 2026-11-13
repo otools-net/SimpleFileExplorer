@@ -7,7 +7,7 @@
     "src/Sfe.Api/Endpoints/ConfigEndpoints.cs": {"longFunctions":1,"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/EditorEndpoints.cs": {"longFunctions":1,"manyParameterFunctions":3},
     "src/Sfe.Api/Endpoints/EpubEndpoints.cs": {"longFunctions":1,"manyParameterFunctions":1},
-    "src/Sfe.Api/Endpoints/ExploreEndpoints.cs": {"fileLines":1199,"longFunctions":6,"manyParameterFunctions":9},
+    "src/Sfe.Api/Endpoints/ExploreEndpoints.cs": {"fileLines":1088,"longFunctions":5,"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/FileEndpoints.cs": {"fileLines":881,"manyParameterFunctions":11},
     "src/Sfe.Api/Endpoints/FileTrackingEndpoints.cs": {"manyParameterFunctions":4},
     "src/Sfe.Api/Endpoints/FlashEndpoints.cs": {"manyParameterFunctions":2},

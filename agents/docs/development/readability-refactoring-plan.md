@@ -133,8 +133,8 @@ Tidy, one component per commit, worst first (add one line per component when sta
 - [x] Route maps: `MapFileEndpoints`, `MapTagEndpoints`, `MapExploreEndpoints`, `MapLibraryEndpoints`, others over 60
   (`ExtractDescriptions.cs`: 70 descriptions into fields; `SplitRouteMaps.cs`, by hand for single-group maps; none
   over 60 now; OpenAPI and `routes.txt` identical)
-- [ ] `[AsParameters]`: `ExploreEndpoints` (List, Search, GetText, Extract, GetEntry, OpenEntryAsync, Unlock,
-  GetEntryAt)
+- [x] `[AsParameters]`: `ExploreEndpoints` (List, Search, GetText, Extract, GetEntry, OpenEntryAsync, Unlock,
+  GetEntryAt): `ExploreServices` and request records; OpenAPI identical, routes' guards identical
 - [ ] `[AsParameters]`: `LibraryEndpoints`, `TextEndpoints`, `EditorEndpoints`, `ConfigEndpoints`
 - [ ] `[AsParameters]`: the other endpoints files (one item each when started)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`

@@ -1,7 +1,5 @@
 using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
@@ -9,7 +7,6 @@ using Sfe.Core.Files;
 using Sfe.Core.Files.Compression;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
-using Sfe.Core.Paths;
 
 namespace Sfe.Api.Endpoints;
 
@@ -201,26 +198,11 @@ public static class ExploreEndpoints
 
     private static async Task<
         Results<Ok<ArchiveListing>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>
-    > List(
-        ArchiveCatalogs catalogs,
-        IOptionsMonitor<SfeOptions> options,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        ArchiveUnlocks unlocks,
-        CatalogBuildLimits limits,
-        MediaClassifier media,
-        CurrentAccess current,
-        HttpContext context,
-        string? path,
-        long? folder,
-        string? at,
-        string? after,
-        int? limit,
-        [FromHeader(Name = UnlockHeader)] string? unlock
-    )
+    > List([AsParameters] ExploreServices services, [AsParameters] ArchiveListQuery query)
     {
-        var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles);
+        var (catalogs, options, _, _, _, unlocks, limits, media, current, context) = services;
+        var (path, folder, at, after, limit, unlock) = query;
+        var (full, canonical, refused) = await ResolveAsync(services, path, Rights.ViewFiles);
         if (refused is { } forbidden)
             return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
         if (FormatOf(full, options.CurrentValue) is not { } format)
@@ -297,25 +279,10 @@ public static class ExploreEndpoints
 
     private static async Task<
         Results<Ok<ArchiveSearch>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>
-    > Search(
-        ArchiveCatalogs catalogs,
-        IOptionsMonitor<SfeOptions> options,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        ArchiveUnlocks unlocks,
-        CatalogBuildLimits limits,
-        MediaClassifier media,
-        CurrentAccess current,
-        HttpContext context,
-        string? path,
-        string? q,
-        long? folder,
-        string? after,
-        int? limit,
-        [FromHeader(Name = UnlockHeader)] string? unlock
-    )
+    > Search([AsParameters] ExploreServices services, [AsParameters] ArchiveSearchQuery query)
     {
+        var (catalogs, options, _, _, _, unlocks, limits, media, current, context) = services;
+        var (path, q, folder, after, limit, unlock) = query;
         var text = q?.Trim() ?? "";
         if (text.Length < MinSearchLength || text.Length > 256)
         {
@@ -338,7 +305,7 @@ public static class ExploreEndpoints
             );
         }
 
-        var (full, canonical, refused) = await ResolveAsync(paths, serverFiles, work, current, path, Rights.ViewFiles);
+        var (full, canonical, refused) = await ResolveAsync(services, path, Rights.ViewFiles);
         if (refused is { } forbidden)
             return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
         if (FormatOf(full, options.CurrentValue) is not { } format)
@@ -435,20 +402,13 @@ public static class ExploreEndpoints
         Results<Accepted<FileJobView>, NotFound, ForbidHttpResult, ValidationProblem, ProblemHttpResult>
     > Extract(
         FileJobs jobs,
-        ArchiveCatalogs catalogs,
-        IOptionsMonitor<SfeOptions> options,
         AccessService accounts,
         RightsEvaluator rights,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        ArchiveUnlocks unlocks,
-        CatalogBuildLimits limits,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] ExploreServices services,
         ExtractRequest request
     )
     {
+        var (catalogs, options, paths, serverFiles, work, unlocks, limits, _, current, context) = services;
         var state = await current.GetAsync();
         if (state.Tenant is not { } tenant || !state.Has(Rights.ExtractFiles))
             return TypedResults.Forbid();
@@ -472,10 +432,7 @@ public static class ExploreEndpoints
         }
 
         var (full, canonical, refused) = await ResolveAsync(
-            paths,
-            serverFiles,
-            work,
-            current,
+            services,
             request.Archive,
             Rights.ViewFiles,
             Rights.Download
@@ -575,28 +532,14 @@ public static class ExploreEndpoints
     private static async Task<
         Results<Ok<ArchiveUnlocked>, Accepted<ArchiveReading>, NotFound, ForbidHttpResult, ProblemHttpResult>
     > Unlock(
-        ArchiveCatalogs catalogs,
-        IOptionsMonitor<SfeOptions> options,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        ArchiveUnlocks unlocks,
-        CatalogBuildLimits limits,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] ExploreServices services,
         ILoggerFactory loggers,
         ArchiveUnlockRequest request,
         CancellationToken cancellationToken
     )
     {
-        var (full, canonical, refused) = await ResolveAsync(
-            paths,
-            serverFiles,
-            work,
-            current,
-            request.Path,
-            Rights.ViewFiles
-        );
+        var (catalogs, options, _, _, _, unlocks, limits, _, current, context) = services;
+        var (full, canonical, refused) = await ResolveAsync(services, request.Path, Rights.ViewFiles);
         if (refused is { } forbidden)
             return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
         if (FormatOf(full, options.CurrentValue) is not { } format)
@@ -710,68 +653,46 @@ public static class ExploreEndpoints
     }
 
     private static async Task<Results<FileStreamHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>> GetEntry(
-        ArchiveCatalogs catalogs,
-        IOptionsMonitor<SfeOptions> options,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        ArchiveUnlocks unlocks,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] ExploreServices services,
         string archive,
         long id,
         string name,
-        bool? download,
-        string? unlock
+        [AsParameters] ArchiveEntryQuery query
     )
     {
+        var (_, options, _, _, _, _, _, _, _, context) = services;
+        var (download, unlock) = query;
         var opened = await OpenEntryAsync(
-            catalogs,
-            options.CurrentValue,
-            paths,
-            serverFiles,
-            work,
-            unlocks,
-            current,
-            context,
-            EpubEntries.PathOf(archive),
-            new EntryKey(id, name, null),
-            download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024,
-            unlock,
-            stored: true
+            services,
+            new EntryOpening(
+                EpubEntries.PathOf(archive),
+                new EntryKey(id, name, null),
+                download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024,
+                unlock,
+                Stored: true
+            )
         );
         return Serve(context, opened, download);
     }
 
     private static async Task<Results<FileStreamHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>> GetEntryAt(
-        ArchiveCatalogs catalogs,
-        IOptionsMonitor<SfeOptions> options,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        ArchiveUnlocks unlocks,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] ExploreServices services,
         string archive,
         string at,
-        bool? download,
-        string? unlock
+        [AsParameters] ArchiveEntryQuery query
     )
     {
+        var (_, options, _, _, _, _, _, _, _, context) = services;
+        var (download, unlock) = query;
         var opened = await OpenEntryAsync(
-            catalogs,
-            options.CurrentValue,
-            paths,
-            serverFiles,
-            work,
-            unlocks,
-            current,
-            context,
-            EpubEntries.PathOf(archive),
-            new EntryKey(null, null, at),
-            download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024,
-            unlock,
-            stored: true
+            services,
+            new EntryOpening(
+                EpubEntries.PathOf(archive),
+                new EntryKey(null, null, at),
+                download == true ? null : options.CurrentValue.Files.Archives.MaxPreviewMegabytes * 1024L * 1024,
+                unlock,
+                Stored: true
+            )
         );
         return Serve(context, opened, download);
     }
@@ -802,22 +723,13 @@ public static class ExploreEndpoints
     }
 
     private static async Task<Results<Ok<TextFile>, NotFound, ForbidHttpResult, ProblemHttpResult>> GetText(
-        ArchiveCatalogs catalogs,
-        IOptionsMonitor<SfeOptions> options,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        ArchiveUnlocks unlocks,
-        CurrentAccess current,
-        HttpContext context,
-        string? path,
-        long? id,
-        string? at,
-        string? encoding,
-        [FromHeader(Name = UnlockHeader)] string? unlock,
+        [AsParameters] ExploreServices services,
+        [AsParameters] ArchiveTextQuery query,
         CancellationToken cancellationToken
     )
     {
+        var (_, _, _, _, _, _, _, _, _, context) = services;
+        var (path, id, at, encoding, unlock) = query;
         if (encoding is not null && !TextCodec.ReadEncodings.Contains(encoding))
         {
             return TypedResults.Problem(
@@ -835,18 +747,8 @@ public static class ExploreEndpoints
         }
 
         var opened = await OpenEntryAsync(
-            catalogs,
-            options.CurrentValue,
-            paths,
-            serverFiles,
-            work,
-            unlocks,
-            current,
-            context,
-            path,
-            new EntryKey(id, null, at),
-            TextEndpoints.MaxBytes,
-            unlock
+            services,
+            new EntryOpening(path, new EntryKey(id, null, at), TextEndpoints.MaxBytes, unlock)
         );
         if (opened.Refused is { } refused)
         {
@@ -914,6 +816,9 @@ public static class ExploreEndpoints
     /// </summary>
     private sealed record EntryKey(long? Id, string? Name, string? At);
 
+    /// <summary>What <see cref="OpenEntryAsync"/> opens, and how: see there.</summary>
+    private sealed record EntryOpening(string? Path, EntryKey Key, long? MaxSize, string? Unlock, bool Stored = false);
+
     /// <param name="Refused">Why it isn't opened (404, 403, a problem); else <paramref name="Data"/> is the entry's
     /// content, held to its declared size.</param>
     private sealed record OpenedEntry(
@@ -931,31 +836,12 @@ public static class ExploreEndpoints
     /// password (403), or when reaching it would unpack too much before it (413). <paramref name="stored"/>: a stored,
     /// unencrypted zip entry comes as a seekable slice of the archive, whatever its size (nothing is unpacked).
     /// </summary>
-    private static async Task<OpenedEntry> OpenEntryAsync(
-        ArchiveCatalogs catalogs,
-        SfeOptions options,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        ArchiveUnlocks unlocks,
-        CurrentAccess current,
-        HttpContext context,
-        string? path,
-        EntryKey key,
-        long? maxSize,
-        string? unlock,
-        bool stored = false
-    )
+    private static async Task<OpenedEntry> OpenEntryAsync(ExploreServices services, EntryOpening opening)
     {
-        var (full, canonical, refused) = await ResolveAsync(
-            paths,
-            serverFiles,
-            work,
-            current,
-            path,
-            Rights.ViewFiles,
-            Rights.Download
-        );
+        var (catalogs, _, _, _, _, unlocks, _, _, current, context) = services;
+        var options = services.Options.CurrentValue;
+        var (path, key, maxSize, unlock, stored) = opening;
+        var (full, canonical, refused) = await ResolveAsync(services, path, Rights.ViewFiles, Rights.Download);
         if (refused is { } forbidden)
             return new(forbidden ? TypedResults.Forbid() : TypedResults.NotFound(), null, null, full, canonical);
         OpenedEntry Problem(string message, int status, string? type = null) =>
@@ -1085,14 +971,17 @@ public static class ExploreEndpoints
     }
 
     private static async Task<(string Full, string Canonical, bool? Refused)> ResolveAsync(
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
+        ExploreServices services,
         string? path,
         params string[] rights
     )
     {
+        var (paths, serverFiles, work, current) = (
+            services.Paths,
+            services.ServerFiles,
+            services.Work,
+            services.Current
+        );
         var state = await current.GetAsync();
         if (
             !paths.TryResolve(path, out var full)
