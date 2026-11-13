@@ -141,7 +141,14 @@ function sameStrings(a: string[], b: string[]): boolean {
         '[style.--ratio]': 'ratio()',
     },
     template: `
-        <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
+        <a
+            class="item-link"
+            [href]="url()"
+            target="_blank"
+            rel="noopener"
+            [title]="linkTitle()"
+            (click)="actions.openFile($event, item())"
+        >
             <div #preview class="preview">
                 <div class="placeholder"><svg [sfeIcon]="icon()"></svg><span class="ext">{{ item().extension || 'file' }}</span></div>
                 @if (hasPreview()) {
@@ -149,7 +156,11 @@ function sameStrings(a: string[], b: string[]): boolean {
                 }
                 <span class="preview-marks">
                     @if (resolutionMark(); as mark) {
-                        <span class="resolution-mark" [class.high]="mark.high" [title]="mark.title">{{ mark.label }}</span>
+                        <span
+                            class="resolution-mark"
+                            [class.high]="mark.high"
+                            [title]="mark.title"
+                        >{{ mark.label }}</span>
                     }
                     @if (item().kind === 'video' || item().kind === 'audio') {
                         <span class="badge"><svg sfeIcon="play"></svg>{{ item().extension || '' }}</span>
@@ -171,7 +182,14 @@ function sameStrings(a: string[], b: string[]): boolean {
         <button [sfeTagButton]="item()"></button>
         <button [sfeItemMenu]="item()"></button>
         <div class="info">
-            <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
+            <a
+                class="item-link"
+                [href]="url()"
+                target="_blank"
+                rel="noopener"
+                [title]="linkTitle()"
+                (click)="actions.openFile($event, item())"
+            >
                 <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
             </a>
             <sfe-item-folder [item]="item()" [pattern]="pattern()" />
@@ -250,7 +268,14 @@ export class FileTileComponent extends FileItemBase {
     },
     template: `
         <label sfeSelectBox [item]="item()"></label>
-        <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
+        <a
+            class="item-link"
+            [href]="url()"
+            target="_blank"
+            rel="noopener"
+            [title]="linkTitle()"
+            (click)="actions.openFile($event, item())"
+        >
             <span #thumb class="thumb">
                 <svg [sfeIcon]="icon()"></svg>
                 @if (hasPreview()) {
@@ -265,15 +290,28 @@ export class FileTileComponent extends FileItemBase {
             </span>
         </a>
         <div class="row-main">
-            <a class="item-link" [href]="url()" target="_blank" rel="noopener" [title]="linkTitle()" (click)="actions.openFile($event, item())">
+            <a
+                class="item-link"
+                [href]="url()"
+                target="_blank"
+                rel="noopener"
+                [title]="linkTitle()"
+                (click)="actions.openFile($event, item())"
+            >
                 <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
             </a>
-            <span class="row-meta">@if (item().extension) {<span class="row-meta-type">{{ item().extension }}</span> · }{{ meta() }}</span>
+            <span class="row-meta">@if (item().extension) {<span class="row-meta-type">{{ item().extension }}</span> ·
+            }{{ meta() }}</span>
             <sfe-item-folder [item]="item()" [pattern]="pattern()" />
             <sfe-item-tags [item]="item()" />
         </div>
-        <span class="type" [title]="item().extension ? '.' + item().extension + ' file' : 'No extension'">{{ item().extension || '—' }}</span>
-        <span class="size">{{ size() }}@if (resolution()) {<span class="resolution">{{ resolution() }}</span>}@if (duration()) {<span class="duration">{{ duration() }}</span>}</span>
+        <span
+            class="type"
+            [title]="item().extension ? '.' + item().extension + ' file' : 'No extension'"
+        >{{ item().extension || '—' }}</span>
+        <span class="size">{{ size() }}@if (resolution()) {<span class="resolution">{{ resolution() }}</span>}@if (duration()) {<span
+            class="duration"
+        >{{ duration() }}</span>}</span>
         <span class="date">{{ date() }}</span>
         <span class="row-actions">
             <button [sfeTagButton]="item()"></button>

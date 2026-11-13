@@ -34,7 +34,14 @@ interface TagCount {
                         <h3>On all these files</h3>
                         <div class="tag-list">
                             @for (entry of onAll(); track entry.tag.id) {
-                                <sfe-tag-chip [tag]="entry.tag" title="Edit this tag" [clickable]="true" [removable]="true" (pick)="edit($event)" (remove)="remove($event)" />
+                                <sfe-tag-chip
+                                    [tag]="entry.tag"
+                                    title="Edit this tag"
+                                    [clickable]="true"
+                                    [removable]="true"
+                                    (pick)="edit($event)"
+                                    (remove)="remove($event)"
+                                />
                             }
                         </div>
                     </section>
@@ -44,9 +51,15 @@ interface TagCount {
                         <h3>On some of these files</h3>
                         <div class="tag-list">
                             @for (entry of onSome(); track entry.tag.id) {
-                                <sfe-tag-chip [tag]="entry.tag" [label]="entry.tag.displayName + ' · ' + entry.count.toLocaleString()"
-                                              [title]="'On ' + entry.count.toLocaleString() + ' of ' + filesText() + '. Click to add it to all of them.'"
-                                              [clickable]="true" [removable]="true" (pick)="addToAll($event)" (remove)="remove($event)" />
+                                <sfe-tag-chip
+                                    [tag]="entry.tag"
+                                    [label]="entry.tag.displayName + ' · ' + entry.count.toLocaleString()"
+                                    [title]="'On ' + entry.count.toLocaleString() + ' of ' + filesText() + '. Click to add it to all of them.'"
+                                    [clickable]="true"
+                                    [removable]="true"
+                                    (pick)="addToAll($event)"
+                                    (remove)="remove($event)"
+                                />
                             }
                         </div>
                     </section>
@@ -56,10 +69,28 @@ interface TagCount {
                 }
             </div>
             <div class="tag-loading" [hidden]="!progress()"><span class="spinner"></span></div>
-            <sfe-tag-picker #picker placeholder="Add a tag to all these files…" [allowCreate]="true" [exclude]="excluded" [pick]="add" />
-            <button sheetFooter type="button" class="button" title="Create, edit and delete tags" (click)="dialogs.tagManager()?.open()">Manage tags</button>
+            <sfe-tag-picker
+                #picker
+                placeholder="Add a tag to all these files…"
+                [allowCreate]="true"
+                [exclude]="excluded"
+                [pick]="add"
+            />
+            <button
+                sheetFooter
+                type="button"
+                class="button"
+                title="Create, edit and delete tags"
+                (click)="dialogs.tagManager()?.open()"
+            >Manage tags</button>
             <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button primary" title="Close (Esc)" (click)="sheet.close()">Done</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button primary"
+                title="Close (Esc)"
+                (click)="sheet.close()"
+            >Done</button>
         </sfe-sheet>
     `,
 })

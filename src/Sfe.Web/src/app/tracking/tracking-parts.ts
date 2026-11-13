@@ -22,13 +22,31 @@ import { TagChipComponent } from '../tags/tag-chip.component';
     host: { class: 'tracking-row' },
     template: `
         @if (thumbnail() && !failed()) {
-            <img class="tracking-thumb" [src]="thumbnail()" alt="" loading="lazy" decoding="async" (error)="failed.set(true)">
+            <img
+                class="tracking-thumb"
+                [src]="thumbnail()"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                (error)="failed.set(true)"
+            >
         } @else {
             <span class="tracking-thumb"><svg [sfeIcon]="icon()"></svg></span>
         }
         <span class="tracking-file">
-            <a class="tracking-name" [href]="urls()!.file(file().path)" target="_blank" rel="noopener" [title]="'Open ' + file().path">{{ file().name }}</a>
-            <button type="button" class="tracking-folder" title="Show this folder" (click)="openFolder.emit(file().directory ?? '')">
+            <a
+                class="tracking-name"
+                [href]="urls()!.file(file().path)"
+                target="_blank"
+                rel="noopener"
+                [title]="'Open ' + file().path"
+            >{{ file().name }}</a>
+            <button
+                type="button"
+                class="tracking-folder"
+                title="Show this folder"
+                (click)="openFolder.emit(file().directory ?? '')"
+            >
                 <svg sfeIcon="folder"></svg>{{ file().directory || config.config()?.rootName }}
             </button>
             @if (file().tags?.length) {

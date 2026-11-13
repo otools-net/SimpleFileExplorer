@@ -34,7 +34,8 @@ const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
                     <input #input type="text" name="name" maxlength="255" autocomplete="off" spellcheck="false"
                            [value]="name()" (input)="changed($event)">
                     @if (hidden()) {
-                        <span class="field-hint">A name starting with a dot is a hidden item: listings show it only where hidden items are shown.</span>
+                        <span class="field-hint">A name starting with a dot is a hidden item: listings show it only
+                        where hidden items are shown.</span>
                     }
                 </label>
                 @if (error()) {
@@ -42,7 +43,13 @@ const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
                 }
             </form>
             <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button" title="Close without changing anything (Esc)" (click)="sheet.close()">Cancel</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button"
+                title="Close without changing anything (Esc)"
+                (click)="sheet.close()"
+            >Cancel</button>
             <button sheetFooter type="submit" form="name-dialog-form" class="button primary" [title]="actionTitle()"
                     [sfeBusy]="saving()" [disabled]="saving() || !canSave()">{{ actionLabel() }}</button>
         </sfe-sheet>

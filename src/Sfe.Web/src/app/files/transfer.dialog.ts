@@ -41,20 +41,35 @@ import { folderBrowser, FolderBrowserComponent } from './folder-browser.componen
                     </ul>
                     <label class="check">
                         <input type="checkbox" [checked]="keepAccess()" (change)="keepAccess.set(checked($event))">
-                        <span>Keep the access they have now<span class="field-hint">Folder rules keep who sees and changes them as before the move.</span></span>
+                        <span>Keep the access they have now<span class="field-hint">Folder rules keep who sees and
+                        changes them as before the move.</span></span>
                     </label>
                 }
             }
             @if (kind() === 'copy') {
                 <label class="check">
                     <input type="checkbox" [checked]="keepTags()" (change)="keepTags.set(checked($event))">
-                    <span>Copy their tags too<span class="field-hint">The copies get the tags of the files they come from.</span></span>
+                    <span>Copy their tags too<span class="field-hint">The copies get the tags of the files they come
+                    from.</span></span>
                 </label>
             }
             <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button" title="Close without moving or copying anything (Esc)" (click)="sheet.close()">Cancel</button>
-            <button sheetFooter type="button" class="button primary" [title]="confirmTitle()" [sfeBusy]="busy()"
-                    [disabled]="busy() || (step() === 'pick' && refusal() !== null)" (click)="confirm()">{{ confirmLabel() }}</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button"
+                title="Close without moving or copying anything (Esc)"
+                (click)="sheet.close()"
+            >Cancel</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button primary"
+                [title]="confirmTitle()"
+                [sfeBusy]="busy()"
+                [disabled]="busy() || (step() === 'pick' && refusal() !== null)"
+                (click)="confirm()"
+            >{{ confirmLabel() }}</button>
         </sfe-sheet>
     `,
 })

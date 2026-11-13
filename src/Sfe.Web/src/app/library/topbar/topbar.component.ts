@@ -21,8 +21,15 @@ const VIEW_BUTTONS: { view: View; icon: string; label: string; title: string }[]
     // A press, not a click: iOS sends no click for a tap on what isn't clickable (the page's text, an empty area).
     host: { class: 'topbar', '(document:pointerdown)': 'closePopovers($event)' },
     template: `
-        <button type="button" class="icon-button ghost sidebar-toggle" aria-controls="sidebar" aria-label="Sidebar"
-                [attr.aria-expanded]="sidebar.open()" [title]="sidebar.open() ? 'Hide the sidebar (quick links and tags)' : 'Show the sidebar (quick links and tags)'" (click)="sidebar.toggle()">
+        <button
+            type="button"
+            class="icon-button ghost sidebar-toggle"
+            aria-controls="sidebar"
+            aria-label="Sidebar"
+            [attr.aria-expanded]="sidebar.open()"
+            [title]="sidebar.open() ? 'Hide the sidebar (quick links and tags)' : 'Show the sidebar (quick links and tags)'"
+            (click)="sidebar.toggle()"
+        >
             <svg sfeIcon="sidebar"></svg>
         </button>
         <a class="brand" routerLink="/" [queryParams]="store.browseParams('')" title="Library root">

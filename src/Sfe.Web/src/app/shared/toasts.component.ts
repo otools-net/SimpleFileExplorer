@@ -11,7 +11,12 @@ import { ToastService } from '../core/toast.service';
             <div class="toast" [class.error]="toast.error">
                 <span>{{ toast.message }}</span>
                 @for (action of toast.actions; track action.label) {
-                    <button type="button" class="button small toast-action" [title]="action.title" (click)="service.act(toast, action)">{{ action.label }}</button>
+                    <button
+                        type="button"
+                        class="button small toast-action"
+                        [title]="action.title"
+                        (click)="service.act(toast, action)"
+                    >{{ action.label }}</button>
                 }
             </div>
         }

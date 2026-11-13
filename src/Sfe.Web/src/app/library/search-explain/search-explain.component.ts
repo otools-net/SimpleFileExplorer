@@ -41,11 +41,19 @@ export class SearchBoxState {
             @case ('op') {<span class="q-op" [class.q-not]="segment.negation">{{ segment.word }}</span>}
         }}</ng-template>
 
-        <button type="button" class="icon-button ghost small search-explain-close" aria-label="Hide the explanation" title="Hide the explanation" (click)="search.setExplainOpen(false)">
+        <button
+            type="button"
+            class="icon-button ghost small search-explain-close"
+            aria-label="Hide the explanation"
+            title="Hide the explanation"
+            (click)="search.setExplainOpen(false)"
+        >
             <svg sfeIcon="close"></svg>
         </button>
         @let words = explanation();
-        <div class="search-explain-sentence"><ng-container *ngTemplateOutlet="segments; context: { $implicit: words.sentence }" /></div>
+        <div class="search-explain-sentence"><ng-container
+            *ngTemplateOutlet="segments; context: { $implicit: words.sentence }"
+        /></div>
         @if (words.alternatives.length) {
             <ol class="search-explain-alternatives">
                 @for (alternative of words.alternatives; track $index) {

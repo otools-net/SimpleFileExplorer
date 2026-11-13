@@ -24,8 +24,13 @@ export const NOT_INDEXED = '(not indexed yet: search, tags and duplicates find i
     host: { class: 'item-tags', '[hidden]': '!item().tags?.length' },
     template: `
         @for (tag of item().tags ?? []; track tag.id) {
-            <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="actions.searchTag($event)"
-                          [sfeContextMenu]="tagMenu.target(tag, item())" />
+            <sfe-tag-chip
+                [tag]="tag"
+                [title]="'Find files tagged ' + tag.displayName"
+                [clickable]="true"
+                (pick)="actions.searchTag($event)"
+                [sfeContextMenu]="tagMenu.target(tag, item())"
+            />
         }
     `,
 })
@@ -83,8 +88,13 @@ export class TagButtonComponent {
     host: { style: 'display: contents' },
     template: `
         @if (item().directory !== undefined && item().directory !== null) {
-            <a class="item-folder" routerLink="/" [queryParams]="store.browseParams(item().directory!)" [title]="'Open ' + name()"
-               [sfeContextMenu]="folder.linkTarget(item().directory!)">
+            <a
+                class="item-folder"
+                routerLink="/"
+                [queryParams]="store.browseParams(item().directory!)"
+                [title]="'Open ' + name()"
+                [sfeContextMenu]="folder.linkTarget(item().directory!)"
+            >
                 <sfe-highlight [text]="name()" [pattern]="pattern()" />
             </a>
         }

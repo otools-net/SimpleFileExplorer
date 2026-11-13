@@ -43,7 +43,13 @@ const TITLES: Record<string, (where: string) => string> = {
             @if (scan.running()) {
                 <button type="button" class="button small" title="Stop the scan" (click)="scan.cancel()">Cancel</button>
             } @else {
-                <button type="button" class="icon-button ghost small" aria-label="Dismiss" title="Hide this panel" (click)="scan.dismiss()"><svg sfeIcon="close"></svg></button>
+                <button
+                    type="button"
+                    class="icon-button ghost small"
+                    aria-label="Dismiss"
+                    title="Hide this panel"
+                    (click)="scan.dismiss()"
+                ><svg sfeIcon="close"></svg></button>
             }
         }
     `,

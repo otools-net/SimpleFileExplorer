@@ -39,15 +39,35 @@ const NAMES_SHOWN = 5;
                 }
             </ul>
             <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button" title="Close without deleting anything (Esc)" (click)="sheet.close()">Cancel</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button"
+                title="Close without deleting anything (Esc)"
+                (click)="sheet.close()"
+            >Cancel</button>
             @if (unavailable().length) {
                 @if (canForce()) {
-                    <button sheetFooter type="button" class="button danger" title="Delete them for good, without the trash" [sfeBusy]="deleting()"
-                            [disabled]="deleting()" (click)="force()">Delete permanently</button>
+                    <button
+                        sheetFooter
+                        type="button"
+                        class="button danger"
+                        title="Delete them for good, without the trash"
+                        [sfeBusy]="deleting()"
+                        [disabled]="deleting()"
+                        (click)="force()"
+                    >Delete permanently</button>
                 }
             } @else {
-                <button sheetFooter type="button" class="button danger" [title]="permanent() ? 'Delete them for good' : 'Move them to the trash'"
-                        [sfeBusy]="deleting()" [disabled]="deleting()" (click)="confirm()">{{ permanent() ? 'Delete permanently' : 'Delete' }}</button>
+                <button
+                    sheetFooter
+                    type="button"
+                    class="button danger"
+                    [title]="permanent() ? 'Delete them for good' : 'Move them to the trash'"
+                    [sfeBusy]="deleting()"
+                    [disabled]="deleting()"
+                    (click)="confirm()"
+                >{{ permanent() ? 'Delete permanently' : 'Delete' }}</button>
             }
         </sfe-sheet>
     `,

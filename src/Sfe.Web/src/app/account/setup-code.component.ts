@@ -72,7 +72,8 @@ export function generatedCodeWhere(hosting: HostingKind, codeFile: string | null
     host: { class: 'setup-code-steps' },
     template: `
         @if (codeTooShort()) {
-            <p class="form-error">The setup code the server has is too short: it needs at least {{ minimumCodeLength() }} characters.</p>
+            <p class="form-error">The setup code the server has is too short: it needs at least
+            {{ minimumCodeLength() }} characters.</p>
         }
         <h2>{{ steps()[0] }}</h2>
         <p>{{ steps()[1] }}</p>

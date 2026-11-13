@@ -15,12 +15,24 @@ import { FolderLink } from './location-links.service';
     template: `
         @for (link of links(); track $index) {
             @if (link.path !== null) {
-                <a class="icon-button small ghost" routerLink="/" [queryParams]="store.browseParams(link.path)" aria-disabled="false"
-                   [title]="link.title" [attr.aria-label]="labels[$index]" [sfeContextMenu]="folder.linkTarget(link.path)">
+                <a
+                    class="icon-button small ghost"
+                    routerLink="/"
+                    [queryParams]="store.browseParams(link.path)"
+                    aria-disabled="false"
+                    [title]="link.title"
+                    [attr.aria-label]="labels[$index]"
+                    [sfeContextMenu]="folder.linkTarget(link.path)"
+                >
                     <svg [sfeIcon]="icons[$index]"></svg>
                 </a>
             } @else {
-                <a class="icon-button small ghost" aria-disabled="true" [title]="link.title" [attr.aria-label]="labels[$index]">
+                <a
+                    class="icon-button small ghost"
+                    aria-disabled="true"
+                    [title]="link.title"
+                    [attr.aria-label]="labels[$index]"
+                >
                     <svg [sfeIcon]="icons[$index]"></svg>
                 </a>
             }

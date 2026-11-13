@@ -24,11 +24,24 @@ type State = 'idle' | 'unavailable' | null;
     host: { class: 'keep-alive-status' },
     template: `
         <div class="settings-status" aria-live="polite" [attr.data-state]="state()">
-            <div class="settings-status-line"><span class="settings-status-dot"></span><span class="settings-status-text">{{ summary() }}</span></div>
+            <div class="settings-status-line"><span class="settings-status-dot"></span><span
+                class="settings-status-text"
+            >{{ summary() }}</span></div>
             <div class="settings-action inline">
-                <button type="button" class="button small" title="Ping the library folder now, also while keep alive is off, to try the share"
-                        [sfeBusy]="pinging()" [disabled]="pinging()" (click)="ping()"><svg sfeIcon="refresh"></svg>Ping now</button>
-                <button type="button" class="button small" title="Turn keep alive on or off, and change how often it pings" (click)="openSettings.emit()">
+                <button
+                    type="button"
+                    class="button small"
+                    title="Ping the library folder now, also while keep alive is off, to try the share"
+                    [sfeBusy]="pinging()"
+                    [disabled]="pinging()"
+                    (click)="ping()"
+                ><svg sfeIcon="refresh"></svg>Ping now</button>
+                <button
+                    type="button"
+                    class="button small"
+                    title="Turn keep alive on or off, and change how often it pings"
+                    (click)="openSettings.emit()"
+                >
                     <svg sfeIcon="settings"></svg>Settings</button>
             </div>
         </div>
@@ -46,7 +59,8 @@ type State = 'idle' | 'unavailable' | null;
                     <span class="keep-alive-detail">{{ detail(folder) }}</span>
                 </li>
             } @empty {
-                <li class="muted">No ping since the server started{{ view()?.mode === 'off' ? ': keep alive is off. Ping now tries the library folder once.' : '.' }}</li>
+                <li class="muted">No ping since the server
+                started{{ view()?.mode === 'off' ? ': keep alive is off. Ping now tries the library folder once.' : '.' }}</li>
             }
         </ul>
     `,

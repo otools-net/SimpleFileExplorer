@@ -22,7 +22,8 @@ import { ContextMenuDirective, MenuEntry, MenuTarget } from '../menus/context-me
     host: { class: 'settings-panel uploads-section' },
     template: `
         <p class="settings-intro">
-            Being sent, paused, or cut off: their sender goes on by picking the same file again. Those that receive nothing for
+            Being sent, paused, or cut off: their sender goes on by picking the same file again. Those that receive
+            nothing for
             {{ keepHours() }} hours are removed by themselves.
         </p>
         <ul class="tracking-missing-list">
@@ -39,12 +40,22 @@ import { ContextMenuDirective, MenuEntry, MenuTarget } from '../menus/context-me
                             <strong class="tracking-name" [title]="item.name">{{ baseName(item.name) }}</strong>
                             <span class="tracking-was">{{ describe(item) }}</span>
                             <span class="tracking-was">Into
-                                <a routerLink="/" [queryParams]="{ path: item.target || null }" [title]="'Open ' + (item.target || 'the library')">{{ item.target || rootName() }}</a>
+                                <a
+                                    routerLink="/"
+                                    [queryParams]="{ path: item.target || null }"
+                                    [title]="'Open ' + (item.target || 'the library')"
+                                >{{ item.target || rootName() }}</a>
                             </span>
                         </span>
                         <span class="tracking-actions">
-                            <button type="button" class="button small" title="Stop it and remove what it received (asks first)"
-                                    [sfeBusy]="busy() === item.id" [disabled]="busy() !== null" (click)="cancel(item)">Cancel</button>
+                            <button
+                                type="button"
+                                class="button small"
+                                title="Stop it and remove what it received (asks first)"
+                                [sfeBusy]="busy() === item.id"
+                                [disabled]="busy() !== null"
+                                (click)="cancel(item)"
+                            >Cancel</button>
                         </span>
                     </div>
                 </li>

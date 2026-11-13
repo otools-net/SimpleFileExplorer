@@ -21,9 +21,20 @@ const REFRESH_MS = 3000;
         <div class="settings-status-line"><span class="settings-status-dot"></span><span class="settings-status-text">{{ text() }}</span></div>
         <span class="field-hint">{{ detail() }}</span>
         <div class="settings-action inline">
-            <button type="button" class="button small" title="Go over the trickplay folders now for videos without trickplay"
-                    [sfeBusy]="checking()" [disabled]="checking() || cannotCheck()" (click)="check()">Look for new videos now</button>
-            <button type="button" class="button small" title="Videos being processed, waiting and finished" (click)="activity.emit()">Show activity</button>
+            <button
+                type="button"
+                class="button small"
+                title="Go over the trickplay folders now for videos without trickplay"
+                [sfeBusy]="checking()"
+                [disabled]="checking() || cannotCheck()"
+                (click)="check()"
+            >Look for new videos now</button>
+            <button
+                type="button"
+                class="button small"
+                title="Videos being processed, waiting and finished"
+                (click)="activity.emit()"
+            >Show activity</button>
         </div>
     `,
 })

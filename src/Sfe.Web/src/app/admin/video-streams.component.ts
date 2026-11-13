@@ -32,7 +32,9 @@ interface Row {
     host: { class: 'video-streams' },
     template: `
         <div class="settings-status" aria-live="polite" [attr.data-state]="state()">
-            <div class="settings-status-line"><span class="settings-status-dot"></span><span class="settings-status-text">{{ stateText() }}</span></div>
+            <div class="settings-status-line"><span class="settings-status-dot"></span><span
+                class="settings-status-text"
+            >{{ stateText() }}</span></div>
             @if (status()) {
                 <span class="field-hint">{{ limitText() }}</span>
             }

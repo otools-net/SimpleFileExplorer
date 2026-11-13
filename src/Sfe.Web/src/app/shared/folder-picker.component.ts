@@ -21,16 +21,31 @@ export type FolderSource = (path: string | null) => Promise<FolderPicker>;
         @if (listing(); as listing) {
             <ul>
                 @if (listing.path) {
-                    <li><button type="button" class="link-button" title="The folder above" (click)="browse(listing.parent)">‥</button></li>
+                    <li><button
+                        type="button"
+                        class="link-button"
+                        title="The folder above"
+                        (click)="browse(listing.parent)"
+                    >‥</button></li>
                 }
                 @for (place of listing.places ?? []; track place.path) {
                     <li class="folder-picker-place">
-                        <button type="button" class="link-button" [title]="'Use ' + place.path + ', or open it'" (click)="browse(place.path)">{{ place.name }}</button>
+                        <button
+                            type="button"
+                            class="link-button"
+                            [title]="'Use ' + place.path + ', or open it'"
+                            (click)="browse(place.path)"
+                        >{{ place.name }}</button>
                     </li>
                 }
                 @for (folder of listing.folders; track folder.path) {
                     <li>
-                        <button type="button" class="link-button" [title]="'Use ' + folder.path + ', or open it'" (click)="browse(folder.path)">{{ folder.name }}</button>
+                        <button
+                            type="button"
+                            class="link-button"
+                            [title]="'Use ' + folder.path + ', or open it'"
+                            (click)="browse(folder.path)"
+                        >{{ folder.name }}</button>
                     </li>
                 } @empty {
                     <li class="muted">No folders here.</li>

@@ -79,7 +79,12 @@ export function folderBrowser(): FolderBrowser {
                 @if (last) {
                     <strong><svg sfeIcon="folder"></svg>{{ crumb.name }}</strong>
                 } @else {
-                    <button type="button" class="link-button" [title]="'Go back to ' + crumb.name" (click)="browser().browse(crumb.path)">{{ crumb.name }}</button>
+                    <button
+                        type="button"
+                        class="link-button"
+                        [title]="'Go back to ' + crumb.name"
+                        (click)="browser().browse(crumb.path)"
+                    >{{ crumb.name }}</button>
                     <span aria-hidden="true">/</span>
                 }
             }

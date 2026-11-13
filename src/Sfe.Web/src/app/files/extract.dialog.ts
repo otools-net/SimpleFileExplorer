@@ -44,13 +44,26 @@ export interface ExtractChoice {
                 <p class="field-hint">{{ refusal }}</p>
             }
             <label class="check">
-                <input type="checkbox" data-new-folder [checked]="newFolder()" (change)="newFolder.set(checked($event))">
-                <span>Into a new folder “{{ stem() }}”<span class="field-hint">Or named after its one folder, when it holds only that. Unchecked: what it holds goes in with what is there, asking about names taken.</span></span>
+                <input
+                    type="checkbox"
+                    data-new-folder
+                    [checked]="newFolder()"
+                    (change)="newFolder.set(checked($event))"
+                >
+                <span>Into a new folder “{{ stem() }}”<span class="field-hint">Or named after its one folder, when it
+                holds only that. Unchecked: what it holds goes in with what is there, asking about names
+                taken.</span></span>
             </label>
             @if (!choice()?.unlock) {
                 <label class="field">
                     <span>Password <span class="field-hint">only if it is protected by one</span></span>
-                    <input [type]="showPassword() ? 'text' : 'password'" data-extract-password autocomplete="off" [value]="password()" (input)="password.set(value($event))">
+                    <input
+                        [type]="showPassword() ? 'text' : 'password'"
+                        data-extract-password
+                        autocomplete="off"
+                        [value]="password()"
+                        (input)="password.set(value($event))"
+                    >
                 </label>
                 <label class="check">
                     <input type="checkbox" [checked]="showPassword()" (change)="showPassword.set(checked($event))">
@@ -58,9 +71,23 @@ export interface ExtractChoice {
                 </label>
             }
             <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button" title="Close without extracting anything (Esc)" (click)="sheet.close()">Cancel</button>
-            <button sheetFooter type="button" class="button primary" data-extract [sfeBusy]="busy()" [title]="'Extract into “' + targetName() + '”: it goes on in the background'"
-                    [disabled]="busy() || refusal() !== null" (click)="confirm()">Extract here</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button"
+                title="Close without extracting anything (Esc)"
+                (click)="sheet.close()"
+            >Cancel</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button primary"
+                data-extract
+                [sfeBusy]="busy()"
+                [title]="'Extract into “' + targetName() + '”: it goes on in the background'"
+                [disabled]="busy() || refusal() !== null"
+                (click)="confirm()"
+            >Extract here</button>
         </sfe-sheet>
     `,
 })

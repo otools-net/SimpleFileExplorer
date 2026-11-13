@@ -48,15 +48,34 @@ let nextId = 0;
     template: `
         <div class="tag-input-wrap">
             <svg sfeIcon="tag"></svg>
-            <input #input type="text" class="tag-input" [placeholder]="placeholder()" autocomplete="off" spellcheck="false"
-                   role="combobox" aria-autocomplete="list" [attr.aria-controls]="listId" [attr.aria-expanded]="options().length > 0"
-                   [attr.aria-activedescendant]="active() >= 0 ? listId + '-' + active() : null"
-                   (input)="onInput()" (focus)="refresh()" (blur)="onBlur()" (keydown)="onKeydown($event)">
+            <input
+                #input
+                type="text"
+                class="tag-input"
+                [placeholder]="placeholder()"
+                autocomplete="off"
+                spellcheck="false"
+                role="combobox"
+                aria-autocomplete="list"
+                [attr.aria-controls]="listId"
+                [attr.aria-expanded]="options().length > 0"
+                [attr.aria-activedescendant]="active() >= 0 ? listId + '-' + active() : null"
+                (input)="onInput()"
+                (focus)="refresh()"
+                (blur)="onBlur()"
+                (keydown)="onKeydown($event)"
+            >
         </div>
         <ul class="tag-options" role="listbox" [id]="listId" [hidden]="!options().length">
             @for (option of options(); track $index; let index = $index) {
-                <li role="option" [id]="listId + '-' + index" [class.create]="option.create" [attr.aria-selected]="index === active()"
-                    (mousedown)="$event.preventDefault()" (click)="choose(option)">
+                <li
+                    role="option"
+                    [id]="listId + '-' + index"
+                    [class.create]="option.create"
+                    [attr.aria-selected]="index === active()"
+                    (mousedown)="$event.preventDefault()"
+                    (click)="choose(option)"
+                >
                     @if (option.create) {
                         <svg sfeIcon="plus"></svg><span>Create tag <strong>“{{ option.create }}”</strong></span>
                     } @else {

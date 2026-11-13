@@ -14,11 +14,20 @@ import { LocationLinks } from './location-links.service';
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'location-strip' },
     template: `
-        <div class="location-strip-bar" [class.shown]="links.headHidden()" [attr.inert]="links.headHidden() ? null : ''">
+        <div
+            class="location-strip-bar"
+            [class.shown]="links.headHidden()"
+            [attr.inert]="links.headHidden() ? null : ''"
+        >
             @if (links.folderNav(); as nav) {
                 <nav [sfeFolderNav]="nav"></nav>
             }
-            <button type="button" class="location-strip-title" [title]="'Back to the top: ' + fullName()" (click)="toTop()">
+            <button
+                type="button"
+                class="location-strip-title"
+                [title]="'Back to the top: ' + fullName()"
+                (click)="toTop()"
+            >
                 @if (parent(); as parent) {
                     <span class="parent">{{ parent }}</span>
                     <span class="sep" aria-hidden="true">/</span>

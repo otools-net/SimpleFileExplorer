@@ -83,7 +83,13 @@ export const SEARCH_SYNTAX: SyntaxSection[] = [
     imports: [SheetComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <sfe-sheet #sheet heading="Search syntax" subtitle="Click an example to add it to the search" variant="search-help" [wide]="true">
+        <sfe-sheet
+            #sheet
+            heading="Search syntax"
+            subtitle="Click an example to add it to the search"
+            variant="search-help"
+            [wide]="true"
+        >
             @for (section of sections; track section.title) {
                 <section class="search-help-section">
                     <h3>{{ section.title }}</h3>
@@ -92,8 +98,12 @@ export const SEARCH_SYNTAX: SyntaxSection[] = [
                             <div class="search-help-row">
                                 <dt>
                                     @for (example of row.examples; track example) {
-                                        <button type="button" class="search-help-example" [title]="'Add ' + example + ' to the search'"
-                                                (click)="pick(example)"><code>{{ example }}</code></button>
+                                        <button
+                                            type="button"
+                                            class="search-help-example"
+                                            [title]="'Add ' + example + ' to the search'"
+                                            (click)="pick(example)"
+                                        ><code>{{ example }}</code></button>
                                     }
                                 </dt>
                                 <dd>{{ row.meaning }}</dd>
@@ -105,15 +115,23 @@ export const SEARCH_SYNTAX: SyntaxSection[] = [
             <section class="search-help-section search-help-tips">
                 <h3>Tips</h3>
                 <ul>
-                    <li>Results update as you type once the search has more than 3 characters; press Enter to search shorter ones.</li>
-                    <li>Searches the current folder and below (the chip at the end of the box); click the chip to search the whole library.</li>
-                    <li>Only indexed files are found: <strong>Scan this folder</strong> in the ⋮ menu refreshes the index.</li>
-                    <li>Files with a hidden tag, like <strong>Archived</strong>, only show up when the search names that tag.</li>
+                    <li>Results update as you type once the search has more than 3 characters; press Enter to search
+                    shorter ones.</li>
+                    <li>Searches the current folder and below (the chip at the end of the box); click the chip to search
+                    the whole library.</li>
+                    <li>Only indexed files are found: <strong>Scan this folder</strong> in the ⋮ menu refreshes the
+                    index.</li>
+                    <li>Files with a hidden tag, like <strong>Archived</strong>, only show up when the search names that
+                    tag.</li>
                     <li>The speech-bubble button in the box explains a search in plain words.</li>
                     <li>Press <kbd>/</kbd> to go to the search box, <kbd>?</kbd> to open this help.</li>
-                    <li>Once an item has the focus (<kbd>Tab</kbd>), the arrows move between items, <kbd>Space</kbd> selects, <kbd>Shift</kbd>+arrows select as they go.</li>
+                    <li>Once an item has the focus (<kbd>Tab</kbd>), the arrows move between items, <kbd>Space</kbd>
+                    selects, <kbd>Shift</kbd>+arrows select as they go.</li>
                     @if (managesFiles()) {
-                        <li>In a folder, <kbd>Shift</kbd>+<kbd>N</kbd> makes a new folder and <kbd>F2</kbd> renames the item selected, <kbd>Delete</kbd> deletes the selection (<kbd>Shift</kbd>+<kbd>Delete</kbd>: for good); right-click an item, a folder link or an empty part of the page for its menu, or use an item's ⋮ button (<kbd>Shift</kbd>+right-click: the browser's own menu).</li>
+                        <li>In a folder, <kbd>Shift</kbd>+<kbd>N</kbd> makes a new folder and <kbd>F2</kbd> renames the
+                        item selected, <kbd>Delete</kbd> deletes the selection (<kbd>Shift</kbd>+<kbd>Delete</kbd>: for
+                        good); right-click an item, a folder link or an empty part of the page for its menu, or use an
+                        item's ⋮ button (<kbd>Shift</kbd>+right-click: the browser's own menu).</li>
                     }
                 </ul>
             </section>

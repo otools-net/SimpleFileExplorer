@@ -21,7 +21,13 @@ import { IconComponent } from './icon.component';
                         <p class="sheet-subtitle">{{ subtitle() }}</p>
                     }
                 </div>
-                <button type="button" class="icon-button ghost small" aria-label="Close" title="Close (Esc)" (click)="close()">
+                <button
+                    type="button"
+                    class="icon-button ghost small"
+                    aria-label="Close"
+                    title="Close (Esc)"
+                    (click)="close()"
+                >
                     <svg sfeIcon="close"></svg>
                 </button>
             </header>

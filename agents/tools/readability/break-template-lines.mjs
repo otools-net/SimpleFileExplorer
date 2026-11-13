@@ -23,7 +23,10 @@ function* files(path) {
     if (/node_modules/.test(path)) return;
     if (statSync(path).isDirectory()) {
         for (const name of readdirSync(path)) yield* files(join(path, name));
-    } else if (path.endsWith('.html') && !path.endsWith('index.html')) {
+    } else if (
+        (path.endsWith('.html') && !path.endsWith('index.html')) ||
+        (path.endsWith('.ts') && !path.endsWith('.spec.ts'))
+    ) {
         yield path;
     }
 }
@@ -133,53 +136,77 @@ function joinTag(line, pending, state) {
     return { text, lines: lines.length - 1 };
 }
 
+/** The template text with its long lines broken, and how many breaks were made. */
+function breakLines(source, textToo) {
+    const out = [];
+    let count = 0;
+    let state = { inTag: false, quote: null, braces: 0 };
+    const pending = source.split('\n');
+    while (pending.length) {
+        const line = pending.shift();
+        const flow = /^\s*(@|\}|\{)/.test(line) && !/^\s*\}\s*$/.test(line);
+        const joined = !flow && inText(state) ? joinTag(line, pending, state) : null;
+        if (joined) {
+            // A tag over several lines, one of them long: its lines joined, then one attribute per line. The broken
+            // lines are final (a long attribute value stays long); what follows `>` is looked at again.
+            const parts = breakTag(joined.text, state);
+            if (parts) {
+                pending.splice(0, joined.lines);
+                count++;
+                for (const part of parts.slice(0, -1)) {
+                    out.push(part);
+                    state = scan(part + '\n', state);
+                }
+                pending.unshift(parts.at(-1));
+                continue;
+            }
+        }
+        const parts =
+            line.length > LIMIT && !flow && inText(state)
+                ? (breakTag(line, state) ?? (textToo ? breakText(line, state) : null))
+                : null;
+        if (parts && parts.join('') !== line) {
+            count++;
+            pending.unshift(...parts);
+        } else {
+            out.push(line);
+            state = scan(line + '\n', state);
+        }
+        if (count > 2000) throw new Error('does not settle');
+    }
+    return { text: out.join('\n'), count };
+}
+
+const keepsText = (text) => /<pre[\s>]|<textarea[\s>]|ngPreserveWhitespaces/.test(text);
+
+/**
+ * A component file with its inline templates' long lines broken: the lines between `template: \`` (ending its line)
+ * and the closing backtick. A template beginning on the backtick's line is left (one-liners).
+ */
+function breakInlineTemplates(source) {
+    let count = 0;
+    const text = source.replace(/(template:\s*`\n)([\s\S]*?)(\n[ \t]*`)/g, (whole, open, body, close) => {
+        if (/\$\{/.test(body)) return whole;
+        const result = breakLines(body, !keepsText(body));
+        count += result.count;
+        return open + result.text + close;
+    });
+    return { text, count };
+}
+
 let total = 0;
 for (const root of roots) {
     for (const file of files(root)) {
         const source = readFileSync(file, 'utf8');
-        // Text keeps its whitespace in <pre> and <textarea>: only tags are broken in those files.
-        const textToo = !/<pre[\s>]|<textarea[\s>]|ngPreserveWhitespaces/.test(source);
-        const out = [];
-        let count = 0;
-        let state = { inTag: false, quote: null, braces: 0 };
-        const pending = source.split('\n');
-        while (pending.length) {
-            const line = pending.shift();
-            const flow = /^\s*(@|\}|\{)/.test(line) && !/^\s*\}\s*$/.test(line);
-            const joined = !flow && inText(state) ? joinTag(line, pending, state) : null;
-            if (joined) {
-                // A tag over several lines, one of them long: its lines joined, then one attribute per line. The
-                // broken lines are final (a long attribute value stays long); what follows `>` is looked at again.
-                const parts = breakTag(joined.text, state);
-                if (parts) {
-                    pending.splice(0, joined.lines);
-                    count++;
-                    for (const part of parts.slice(0, -1)) {
-                        out.push(part);
-                        state = scan(part + '\n', state);
-                    }
-                    pending.unshift(parts.at(-1));
-                    continue;
-                }
-            }
-            const parts =
-                line.length > LIMIT && !flow && inText(state)
-                    ? breakTag(line, state) ?? (textToo ? breakText(line, state) : null)
-                    : null;
-            if (parts && parts.join('') !== line) {
-                count++;
-                pending.unshift(...parts);
-            } else {
-                out.push(line);
-                state = scan(line + '\n', state);
-            }
-            if (count > 2000) throw new Error(`${file}: does not settle`);
-        }
+        // Text keeps its whitespace in <pre> and <textarea>: only tags are broken there.
+        const { text, count } = file.endsWith('.ts')
+            ? breakInlineTemplates(source)
+            : breakLines(source, !keepsText(source));
         // A tag whose only long line is an attribute value comes out as it went in: not a change.
-        if (count === 0 || out.join('\n') === source) continue;
+        if (count === 0 || text === source) continue;
         total += count;
         console.log(`${file}: ${count}`);
-        if (!check) writeFileSync(file, out.join('\n'));
+        if (!check) writeFileSync(file, text);
     }
 }
 console.log(`${total} break(s) ${check ? 'to make' : 'made'}`);

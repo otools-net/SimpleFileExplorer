@@ -41,10 +41,21 @@ export function localAddress(base = document.baseURI): string {
             } @else if (session()?.user?.isServerAdmin) {
                 <p>To let other devices open it, switch it to <strong>External</strong> below, with the setup code.</p>
                 <sfe-installation-section />
-                <button type="button" class="button account-submit" title="Open the library" (click)="open()">Open the library</button>
+                <button
+                    type="button"
+                    class="button account-submit"
+                    title="Open the library"
+                    (click)="open()"
+                >Open the library</button>
             } @else {
-                <p>Do you run this server? Sign in as its administrator to switch it to External, so that other devices can open it.</p>
-                <button type="button" class="button primary account-submit" title="Sign in as the server's administrator" (click)="signIn()">Sign in</button>
+                <p>Do you run this server? Sign in as its administrator to switch it to External, so that other devices
+                can open it.</p>
+                <button
+                    type="button"
+                    class="button primary account-submit"
+                    title="Sign in as the server's administrator"
+                    (click)="signIn()"
+                >Sign in</button>
             }
         </section>
     `,

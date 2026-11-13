@@ -16,9 +16,24 @@ export type TrackingTab = 'duplicates' | 'similar' | 'missing';
     imports: [DuplicatesPanelComponent, SimilarPanelComponent, MissingPanelComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <sfe-duplicates-panel id="tracking-panel-duplicates" [hidden]="tab() !== 'duplicates'" [folder]="folder" (openFolder)="openFolder($event)" />
-        <sfe-similar-panel id="tracking-panel-similar" [hidden]="tab() !== 'similar'" [folder]="folder" [isOpen]="true" (openFolder)="openFolder($event)" />
-        <sfe-missing-panel id="tracking-panel-missing" [hidden]="tab() !== 'missing'" (openFolder)="openFolder($event)" />
+        <sfe-duplicates-panel
+            id="tracking-panel-duplicates"
+            [hidden]="tab() !== 'duplicates'"
+            [folder]="folder"
+            (openFolder)="openFolder($event)"
+        />
+        <sfe-similar-panel
+            id="tracking-panel-similar"
+            [hidden]="tab() !== 'similar'"
+            [folder]="folder"
+            [isOpen]="true"
+            (openFolder)="openFolder($event)"
+        />
+        <sfe-missing-panel
+            id="tracking-panel-missing"
+            [hidden]="tab() !== 'missing'"
+            (openFolder)="openFolder($event)"
+        />
     `,
 })
 export class TrackingSectionComponent {

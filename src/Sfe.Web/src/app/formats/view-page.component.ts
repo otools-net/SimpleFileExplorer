@@ -23,27 +23,40 @@ import { FILE_VIEW_HOST, FileFormat, FileViewHost, formatOf } from './formats';
     host: { class: 'view-page' },
     template: `
         <header class="view-page-bar">
-            <a class="icon-button" [href]="folderUrl()" [title]="'Open the folder ' + folderName()" aria-label="Open its folder"><svg sfeIcon="folder-up"></svg></a>
+            <a
+                class="icon-button"
+                [href]="folderUrl()"
+                [title]="'Open the folder ' + folderName()"
+                aria-label="Open its folder"
+            ><svg sfeIcon="folder-up"></svg></a>
             <div class="view-page-title">
                 <strong>{{ name }}</strong>
                 <span>{{ meta() }}</span>
             </div>
             @if (item() && config.can('files.download')) {
-                <a class="icon-button" [href]="config.urls()!.download(path)" title="Download" aria-label="Download"><svg sfeIcon="download"></svg></a>
+                <a
+                    class="icon-button"
+                    [href]="config.urls()!.download(path)"
+                    title="Download"
+                    aria-label="Download"
+                ><svg sfeIcon="download"></svg></a>
             }
         </header>
         <main class="view-page-stage" aria-live="polite">
             @switch (state()) {
                 @case ('ready') {
                     @if (component(); as shown) {
-                        <ng-container *ngComponentOutlet="shown; inputs: { item: item(), format: format(), edit: edit }; injector: viewInjector" />
+                        <ng-container
+                            *ngComponentOutlet="shown; inputs: { item: item(), format: format(), edit: edit }; injector: viewInjector"
+                        />
                     }
                 }
                 @case ('missing') {
                     <div class="viewer-message"><p>{{ path ? 'This file is not there, or you may not see it.' : 'No file given.' }}</p></div>
                 }
                 @case ('unviewable') {
-                    <div class="viewer-message"><p>This file has no viewer: download it, or open it from its folder.</p></div>
+                    <div class="viewer-message"><p>This file has no viewer: download it, or open it from its
+                    folder.</p></div>
                 }
                 @case ('unreachable') {
                     <div class="viewer-message"><p>The server is not reachable.</p><p>{{ error() }}</p></div>

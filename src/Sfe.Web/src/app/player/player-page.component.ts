@@ -34,20 +34,36 @@ import { VideoPlayerComponent } from './video-player.component';
         <main class="player-page-stage" aria-live="polite">
             @switch (state()) {
                 @case ('playing') {
-                    <sfe-video-player [src]="urls()!.file(path)" [name]="name" [poster]="poster()" [seekStep]="config.config()!.seekSeconds"
-                                      [loop]="config.config()!.loop"
-                                      [startAt]="startAt" [stream]="stream()" (unsupported)="state.set('unsupported'); converted.set($event)" />
+                    <sfe-video-player
+                        [src]="urls()!.file(path)"
+                        [name]="name"
+                        [poster]="poster()"
+                        [seekStep]="config.config()!.seekSeconds"
+                        [loop]="config.config()!.loop"
+                        [startAt]="startAt"
+                        [stream]="stream()"
+                        (unsupported)="state.set('unsupported'); converted.set($event)"
+                    />
                 }
                 @case ('unsupported') {
                     <div class="viewer-message">
-                        <p>This browser cannot play this video{{ converted() ? ', and the server could not convert it (it may be converting as many videos as it can).' : '.' }}</p>
+                        <p>This browser cannot play this
+                        video{{ converted() ? ', and the server could not convert it (it may be converting as many videos as it can).' : '.' }}</p>
                         <p class="player-page-links">
                             @if (urls()!.externalName; as name) {
-                                <button type="button" class="button" [title]="'Open the video in ' + name + ' (a link working without signing in, for a while)'"
-                                        (click)="openExternal()"><svg sfeIcon="play"></svg>Open in {{ name }}</button>
+                                <button
+                                    type="button"
+                                    class="button"
+                                    [title]="'Open the video in ' + name + ' (a link working without signing in, for a while)'"
+                                    (click)="openExternal()"
+                                ><svg sfeIcon="play"></svg>Open in {{ name }}</button>
                             }
                             @if (config.can('files.download')) {
-                                <a class="button" [href]="urls()!.download(path)" title="Save the video to this device"><svg sfeIcon="download"></svg>Download</a>
+                                <a
+                                    class="button"
+                                    [href]="urls()!.download(path)"
+                                    title="Save the video to this device"
+                                ><svg sfeIcon="download"></svg>Download</a>
                             }
                         </p>
                     </div>

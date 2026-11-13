@@ -14,14 +14,27 @@ let nextId = 0;
     imports: [IconComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <button type="button" class="help-button" [class.open]="open()" [attr.aria-expanded]="open()" [attr.aria-controls]="id"
-                [attr.aria-label]="'About ' + about()" [title]="open() ? 'Hide the explanation' : 'What is this? ' + about()" (click)="open.set(!open())">
+        <button
+            type="button"
+            class="help-button"
+            [class.open]="open()"
+            [attr.aria-expanded]="open()"
+            [attr.aria-controls]="id"
+            [attr.aria-label]="'About ' + about()"
+            [title]="open() ? 'Hide the explanation' : 'What is this? ' + about()"
+            (click)="open.set(!open())"
+        >
             <svg sfeIcon="help"></svg>
         </button>
         @if (open()) {
             <div class="help-panel" role="note" [id]="id">
                 <ng-content />
-                <button type="button" class="link-button help-close" title="Hide this explanation" (click)="open.set(false)">Got it</button>
+                <button
+                    type="button"
+                    class="link-button help-close"
+                    title="Hide this explanation"
+                    (click)="open.set(false)"
+                >Got it</button>
             </div>
         }
     `,

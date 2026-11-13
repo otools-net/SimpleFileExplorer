@@ -23,16 +23,24 @@ import { ListingStore } from '../listing.store';
                 <p class="form-error">{{ error() }}</p>
             } @else if (folder(); as folder) {
                 @if (folder.files || folder.directories) {
-                    <p>The index holds <strong>{{ counts() }}</strong> of {{ name() }} and its sub-folders. Search will no longer find them; the files themselves stay on the disk, and browsing still shows them.</p>
+                    <p>The index holds <strong>{{ counts() }}</strong> of {{ name() }} and its sub-folders. Search will
+                    no longer find them; the files themselves stay on the disk, and browsing still shows them.</p>
                     @if (folder.taggedFiles) {
-                        <p class="field-hint">{{ plural(folder.taggedFiles, 'file has', 'files have') }} tags. They are kept with the moved files (Duplicates &amp; moved files) unless “Keep the tags of moved files” is off: scanning the folder again gives the tags back.</p>
+                        <p class="field-hint">{{ plural(folder.taggedFiles, 'file has', 'files have') }} tags. They are
+                        kept with the moved files (Duplicates &amp; moved files) unless “Keep the tags of moved files”
+                        is off: scanning the folder again gives the tags back.</p>
                     }
                 } @else {
                     <p>Nothing of {{ name() }} is in the index.</p>
                 }
                 @if (folder.path) {
                     <label class="check">
-                        <input type="checkbox" [checked]="exclude()" [disabled]="folder.excluded" (change)="exclude.set(checkedOf($event))">
+                        <input
+                            type="checkbox"
+                            [checked]="exclude()"
+                            [disabled]="folder.excluded"
+                            (change)="exclude.set(checkedOf($event))"
+                        >
                         <span>
                             <strong>Skip this folder in future scans</strong>
                             <span class="field-hint">{{ folder.excluded
@@ -45,9 +53,22 @@ import { ListingStore } from '../listing.store';
                 <p class="muted">Counting what the index holds…</p>
             }
             <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button" title="Close without changing anything (Esc)" (click)="sheet.close()">Cancel</button>
-            <button sheetFooter type="button" class="button primary" [title]="'Remove ' + name() + ' from the search index'" [sfeBusy]="removing()"
-                    [disabled]="removing() || !canRemove()" (click)="remove()">{{ actionLabel() }}</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button"
+                title="Close without changing anything (Esc)"
+                (click)="sheet.close()"
+            >Cancel</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button primary"
+                [title]="'Remove ' + name() + ' from the search index'"
+                [sfeBusy]="removing()"
+                [disabled]="removing() || !canRemove()"
+                (click)="remove()"
+            >{{ actionLabel() }}</button>
         </sfe-sheet>
     `,
 })

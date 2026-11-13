@@ -22,12 +22,23 @@ import { textOn } from './tags';
     },
     template: `
         @if (clickable()) {
-            <button type="button" class="tag-name" [title]="title() || text()" (click)="pick.emit(tag())">{{ text() }}</button>
+            <button
+                type="button"
+                class="tag-name"
+                [title]="title() || text()"
+                (click)="pick.emit(tag())"
+            >{{ text() }}</button>
         } @else {
             <span class="tag-name" [title]="title() || text()">{{ text() }}</span>
         }
         @if (removable()) {
-            <button type="button" class="tag-remove" [attr.aria-label]="'Remove ' + text()" [title]="'Remove ' + text()" (click)="remove.emit(tag())">
+            <button
+                type="button"
+                class="tag-remove"
+                [attr.aria-label]="'Remove ' + text()"
+                [title]="'Remove ' + text()"
+                (click)="remove.emit(tag())"
+            >
                 <svg sfeIcon="close"></svg>
             </button>
         }

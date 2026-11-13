@@ -141,7 +141,8 @@ export class DuplicateGroupComponent {
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'settings-panel', role: 'tabpanel' },
     template: `
-        <p class="settings-intro">Files of the index with the same size and the same fingerprint, the biggest first. Only indexed files are compared: scan a folder to include its latest files.</p>
+        <p class="settings-intro">Files of the index with the same size and the same fingerprint, the biggest first.
+        Only indexed files are compared: scan a folder to include its latest files.</p>
         @if (folder()) {
             <label class="check tracking-scope">
                 <input type="checkbox" [checked]="folderOnly()" (change)="setFolderOnly(checkedOf($event))">
@@ -155,11 +156,26 @@ export class DuplicateGroupComponent {
             }
             @for (group of groups(); track group.fingerprint + group.size) {
                 <!-- Hidden rather than dropped: an Undo brings it back. -->
-                <section [sfeDuplicateGroup]="group" [canRemove]="canRemove()" [permanent]="permanent()" [hidden]="dissolved().has(group.fingerprint + group.size)"
-                         (openFolder)="openFolder.emit($event)" (removed)="onRemoved(group, $event)" (restored)="onRestored(group, $event)"></section>
+                <section
+                    [sfeDuplicateGroup]="group"
+                    [canRemove]="canRemove()"
+                    [permanent]="permanent()"
+                    [hidden]="dissolved().has(group.fingerprint + group.size)"
+                    (openFolder)="openFolder.emit($event)"
+                    (removed)="onRemoved(group, $event)"
+                    (restored)="onRestored(group, $event)"
+                ></section>
             }
         </div>
-        <button type="button" class="button" title="Show the next page" [hidden]="!hasMore()" [sfeBusy]="loadingMore()" [disabled]="loadingMore()" (click)="more()">Load more</button>
+        <button
+            type="button"
+            class="button"
+            title="Show the next page"
+            [hidden]="!hasMore()"
+            [sfeBusy]="loadingMore()"
+            [disabled]="loadingMore()"
+            (click)="more()"
+        >Load more</button>
     `,
 })
 export class DuplicatesPanelComponent {

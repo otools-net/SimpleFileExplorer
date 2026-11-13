@@ -20,9 +20,22 @@ import { TagChipComponent } from './tag-chip.component';
         <div class="tag-manager-bar">
             <div class="tag-input-wrap">
                 <svg sfeIcon="search"></svg>
-                <input #search type="search" class="tag-input" placeholder="Find a tag by name, shorthand or alias…" autocomplete="off" aria-label="Find a tag" (input)="onInput()">
+                <input
+                    #search
+                    type="search"
+                    class="tag-input"
+                    placeholder="Find a tag by name, shorthand or alias…"
+                    autocomplete="off"
+                    aria-label="Find a tag"
+                    (input)="onInput()"
+                >
             </div>
-            <button type="button" class="button primary" title="Create a tag (named after the search, if any)" (click)="create()"><svg sfeIcon="plus"></svg>New tag</button>
+            <button
+                type="button"
+                class="button primary"
+                title="Create a tag (named after the search, if any)"
+                (click)="create()"
+            ><svg sfeIcon="plus"></svg>New tag</button>
         </div>
         <div class="tag-table">
             @if (error(); as error) {
