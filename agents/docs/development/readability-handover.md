@@ -14,7 +14,7 @@ Files: [readability-refactoring-plan](readability-refactoring-plan.md) (the chec
 | 2 Long lines | done: CSharpier (C#) and Prettier (client) at 120 columns, comments and strings by scripts |
 | 3 One type per file, `models.ts` by area | done |
 | 4 Templates | moves and line breaks done; the **tidy by hand** is open (see below) |
-| 5 Functions | **in progress**: route maps done, `[AsParameters]` done for Explore, Library, Text, Editor, Config, File, Property, FileTracking, Upload, Session, FolderRule, Scan, Log, Archive |
+| 5 Functions | **in progress**: route maps done, `[AsParameters]` done for Explore, Library, Text, Editor, Config, File, Property, FileTracking, Upload, Session, FolderRule, Scan, Log, Archive, Flash |
 | 6–8 | not started |
 
 What is still over the limits (`node agents/tools/readability/measure.mjs`):
@@ -24,7 +24,7 @@ What is still over the limits (`node agents/tools/readability/measure.mjs`):
 | lines over 120 | 1 (an unsplittable `<see cref>`) | 11 | 120 |
 | functions over 60 lines | 75 | 12 | |
 | nested deeper than 3 | 21 | 7 | |
-| more than 5 parameters | 56 | 2 | |
+| more than 5 parameters | 54 | 2 | |
 | classes over 8 dependencies | 6 | 6 | |
 | files over 400 lines | 31 | 20 | 2 (`admin-page`, `archive-view`) |
 

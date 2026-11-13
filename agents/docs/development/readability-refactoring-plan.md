@@ -155,6 +155,8 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `LogEndpoints`: `LogServices`, `LogFilter` (`q` … `tenant`); `before` (a `long`) and `limit` stay
     parameters after the record, so the query parameters keep their order in the OpenAPI document
   - [x] `ArchiveEndpoints`: `ArchiveServices` (`Create`, `Download`; the logger too)
+  - [x] `FlashEndpoints`: `FlashLinkServices`, `FlashEntryServices` (a record of its own: the route runs on its
+    token, without a session)
   - [ ] The files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`

@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Security;
-using Sfe.Api.Tenancy;
 using Sfe.Core.Access;
 using Sfe.Core.Files;
 using Sfe.Core.Paths;
-using Sfe.Core.Settings;
 
 namespace Sfe.Api.Endpoints;
 
@@ -56,16 +54,12 @@ public static class FlashEndpoints
     }
 
     private static async Task<Results<Ok<FlashLink>, NotFound, ForbidHttpResult>> CreateLink(
-        LibraryPaths paths,
-        CurrentAccess current,
-        FlashLinks links,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        SettingsService settings,
+        [AsParameters] FlashLinkServices services,
         FlashLinkRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (paths, current, links, serverFiles, work, settings) = services;
         var path = LibraryPaths.NormalizeRelative(request.Path);
         if (
             path is not { Length: > 0 }
@@ -88,16 +82,12 @@ public static class FlashEndpoints
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound, ProblemHttpResult>> GetEntry(
         HttpContext context,
-        FlashLinks links,
-        AccessService accounts,
-        RightsEvaluator rights,
-        TenantRegistry tenants,
-        ServerFiles serverFiles,
-        SettingsService settings,
+        [AsParameters] FlashEntryServices services,
         string token,
         string? entry
     )
     {
+        var (links, accounts, rights, tenants, serverFiles, settings) = services;
         // Whatever the answer, the player's frame (of no origin) may read it: the token is the authority, not a cookie.
         context.Response.Headers.AccessControlAllowOrigin = "*";
         if (links.Read(token) is not { } claims)
