@@ -71,18 +71,14 @@ public static class PropertyEndpoints
     }
 
     private static async Task<Results<Ok<ItemProperties>, NotFound>> Get(
-        Properties properties,
+        [AsParameters] PropertyServices services,
         LibraryBrowser browser,
         TagService tags,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        ILogger<Properties> logger,
         string? path,
         CancellationToken cancellationToken
     )
     {
+        var (properties, _, paths, serverFiles, work, current, _, logger) = services;
         var state = await current.GetAsync();
         if (
             Find(state, paths, serverFiles, work, path) is not { } found
@@ -115,15 +111,12 @@ public static class PropertyEndpoints
     }
 
     private static async Task<Results<Ok<FolderTotals>, NotFound>> Totals(
-        Properties properties,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
+        [AsParameters] PropertyServices services,
         string? path,
         CancellationToken cancellationToken
     )
     {
+        var (properties, _, paths, serverFiles, work, current, _, _) = services;
         var state = await current.GetAsync();
         if (Find(state, paths, serverFiles, work, path) is not { } found || !Directory.Exists(found.Full))
             return TypedResults.NotFound();
@@ -131,15 +124,11 @@ public static class PropertyEndpoints
     }
 
     private static async Task<Results<Ok<PropertyJobView>, NotFound>> Count(
-        PropertyJobs jobs,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] PropertyServices services,
         CountRequest request
     )
     {
+        var (_, jobs, paths, serverFiles, work, current, context, _) = services;
         var state = await current.GetAsync();
         if (Find(state, paths, serverFiles, work, request.Path) is not { } found || !Directory.Exists(found.Full))
             return TypedResults.NotFound();
@@ -154,15 +143,11 @@ public static class PropertyEndpoints
     }
 
     private static async Task<Results<Ok<PropertyJobView>, NotFound, ForbidHttpResult>> Checksum(
-        PropertyJobs jobs,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] PropertyServices services,
         ChecksumRequest request
     )
     {
+        var (_, jobs, paths, serverFiles, work, current, context, _) = services;
         var state = await current.GetAsync();
         if (Find(state, paths, serverFiles, work, request.Path) is not { } found || !File.Exists(found.Full))
             return TypedResults.NotFound();
