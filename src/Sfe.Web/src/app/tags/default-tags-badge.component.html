@@ -1,0 +1,41 @@
+<button #button type="button" class="default-tags-button" [class.open]="open()" [attr.aria-expanded]="open()" [attr.aria-controls]="id"
+        [attr.aria-label]="label()" [title]="open() ? '' : label()" (click)="toggle()">
+    <svg sfeIcon="tag-auto"></svg>
+    @if (count() > 1) {
+        <span class="default-tags-count">{{ count() }}</span>
+    }
+</button>
+@if (open()) {
+    <!-- The layer is the popover (the top layer); it lets the pointer through but to its panel, and on phones to the backdrop. -->
+    <div #panel class="default-tags-layer" popover="manual">
+    <div class="sheet-backdrop" aria-hidden="true" (click)="close(false)"></div>
+    <div class="default-tags-popover phone-sheet" role="dialog" [id]="id" [attr.aria-label]="'Default tags of ' + folder()"
+         [style.--pop-top.px]="position().top" [style.--pop-bottom.px]="position().bottom" [style.--pop-left.px]="position().left">
+        <div class="default-tags-popover-head">
+            <strong>Default tags</strong>
+            <button type="button" class="icon-button small ghost default-tags-close" aria-label="Close" title="Close (Esc)" (click)="close(true)">
+                <svg sfeIcon="close"></svg>
+            </button>
+        </div>
+        <p class="field-hint">Files put into {{ folder() }} or its sub-folders get them.</p>
+        @if (own().length) {
+            <div class="tag-list">
+                @for (tag of own(); track tag.id) {
+                    <sfe-tag-chip [tag]="tag" />
+                }
+            </div>
+        }
+        @for (group of inheritedGroups(); track group.path) {
+            <p class="default-tags-from">From {{ group.label }}</p>
+            <div class="tag-list">
+                @for (tag of group.tags; track tag.id) {
+                    <sfe-tag-chip [tag]="tag" />
+                }
+            </div>
+        }
+        @if (editable()) {
+            <button type="button" class="button small default-tags-edit" title="Add or remove default tags of this folder" (click)="change()">Change…</button>
+        }
+    </div>
+    </div>
+}

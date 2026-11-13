@@ -22,52 +22,7 @@ import { ContextMenuDirective, MenuEntry, MenuTarget } from '../menus/context-me
     imports: [BusyDirective, IconComponent, RouterLink, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'settings-panel trash-section' },
-    template: `
-        <p class="settings-intro">{{ intro() }}</p>
-        @if (canPurge()) {
-            <div class="settings-action">
-                <button type="button" class="button small danger" title="Delete for good everything of the trash you may (asks first)"
-                        [sfeBusy]="emptying()" [disabled]="emptying() || !items().length" (click)="empty()">Empty the trash</button>
-            </div>
-        }
-        <ul class="tracking-missing-list">
-            @if (loading()) {
-                <li class="tag-loading"><span class="spinner"></span></li>
-            } @else if (!items().length) {
-                <li class="muted trash-empty">The trash is empty.</li>
-            }
-            @for (item of items(); track item.id) {
-                <li class="tracking-missing" [attr.data-id]="item.id" [sfeContextMenu]="rowMenu(item)">
-                    <div class="tracking-missing-head">
-                        <span class="tracking-thumb"><svg [sfeIcon]="item.isFolder ? 'folder' : 'file'"></svg></span>
-                        <span class="tracking-file">
-                            <strong class="tracking-name" [title]="item.path">{{ item.name }}</strong>
-                            @if (item.previousVersion) {
-                                <span class="trash-version" title="The file as it was before it was saved over in the text editor: restored, it comes back next to it">previous version</span>
-                            }
-                            <span class="tracking-was">{{ describe(item) }}</span>
-                            <span class="tracking-was">From
-                                <a routerLink="/" [queryParams]="{ path: folderOf(item) || null }" [title]="'Open ' + (folderOf(item) || 'the library')">{{ folderOf(item) || rootName() }}</a>
-                            </span>
-                        </span>
-                        <span class="tracking-actions">
-                            @if (canRestore()) {
-                                <button type="button" class="button small primary" title="Put it back where it was (a number is added to its name if that is taken)"
-                                        [sfeBusy]="busy() === item.id + ':restore'" [disabled]="busy() !== null" (click)="restore(item)">Restore</button>
-                            }
-                            @if (canPurge()) {
-                                <button type="button" class="button small" title="Delete it for good (asks first)"
-                                        [sfeBusy]="busy() === item.id + ':purge'" [disabled]="busy() !== null" (click)="purge(item)">
-                                    <svg sfeIcon="trash"></svg>Delete
-                                </button>
-                            }
-                        </span>
-                    </div>
-                </li>
-            }
-        </ul>
-        <button type="button" class="button" title="Show the next page" [hidden]="!next()" [sfeBusy]="loadingMore()" [disabled]="loadingMore()" (click)="more()">Load more</button>
-    `,
+    templateUrl: './trash-section.component.html',
 })
 export class TrashSectionComponent implements OnInit {
     private readonly api = inject(Api);

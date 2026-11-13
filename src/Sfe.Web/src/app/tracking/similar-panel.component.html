@@ -1,0 +1,44 @@
+<p class="settings-intro">Videos showing the same pictures in other files: another resolution, quality or format, or trimmed. They are compared from the fingerprints made with their trickplay (Trickplay › Settings): indexed videos without trickplay yet are left out.</p>
+@if (folder()) {
+    <label class="check tracking-scope">
+        <input type="checkbox" [checked]="folderOnly()" (change)="setFolderOnly(checkedOf($event))">
+        <span>Only groups with a video in “{{ folder() }}”</span>
+    </label>
+}
+<sfe-status-box [state]="status().state" [text]="status().text" [detail]="status().detail">
+    <div class="settings-action inline">
+        <button type="button" class="button small" title="Compare the videos that have trickplay now, in the background"
+                [sfeBusy]="comparing()" [disabled]="comparing() || running()" (click)="compare()">Compare now</button>
+    </div>
+</sfe-status-box>
+<div class="tracking-groups">
+    @if (loading()) {
+        <div class="tag-loading"><span class="spinner"></span></div>
+    }
+    @for (group of groups(); track $index) {
+        <section class="tracking-group">
+            <header class="tracking-group-head">
+                <strong>{{ videosText(group.count) }}</strong>
+                <span>{{ size(group.wastedBytes) }} more than the biggest</span>
+            </header>
+            <ul class="tracking-list">
+                @for (video of group.videos; track video.file.path) {
+                    <li [sfeTrackingFile]="video.file" (openFolder)="openFolder.emit($event)">
+                        <span class="tracking-similar">
+                            @if (video.match === null || video.match === undefined) {
+                                <span class="tracking-match reference" title="The longest video of the group: the others are compared to it">Reference</span>
+                            } @else {
+                                <span class="tracking-match" title="Frames in common with the reference, out of the longer of the two">{{ video.match }}% match</span>
+                            }
+                            <span class="tracking-media">{{ duration(video.duration) }} · {{ size(video.file.size) }}</span>
+                        </span>
+                    </li>
+                }
+            </ul>
+            @if (group.count > group.videos.length) {
+                <p class="tracking-more">and {{ moreText(group) }}</p>
+            }
+        </section>
+    }
+</div>
+<button type="button" class="button" title="Show the next page" [hidden]="!hasMore()" [sfeBusy]="loadingMore()" [disabled]="loadingMore()" (click)="more()">Load more</button>

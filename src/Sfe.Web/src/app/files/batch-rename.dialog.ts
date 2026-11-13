@@ -89,50 +89,7 @@ export function planRenames(items: LibraryItem[], rule: BatchRenameRule, taken: 
     selector: 'sfe-batch-rename-dialog',
     imports: [BusyDirective, SheetComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-        <sfe-sheet #sheet heading="Rename" [subtitle]="subtitle()" variant="batch-rename-dialog" [wide]="true">
-            <div class="batch-rename-modes" role="radiogroup" aria-label="How">
-                <label><input type="radio" name="batch-mode" value="replace" [checked]="mode() === 'replace'" (change)="mode.set('replace')"> Find and replace</label>
-                <label><input type="radio" name="batch-mode" value="number" [checked]="mode() === 'number'" (change)="mode.set('number')"> Numbered</label>
-            </div>
-            @if (mode() === 'replace') {
-                <div class="batch-rename-fields">
-                    <label class="field"><span class="field-label">Find</span>
-                        <input type="text" name="find" autocomplete="off" spellcheck="false" [value]="find()" (input)="find.set(value($event))"></label>
-                    <label class="field"><span class="field-label">Replace with</span>
-                        <input type="text" name="replace" autocomplete="off" spellcheck="false" [value]="replace()" (input)="replace.set(value($event))"></label>
-                    <label class="check"><input type="checkbox" [checked]="matchCase()" (change)="matchCase.set(checked($event))"> Match case</label>
-                </div>
-            } @else {
-                <div class="batch-rename-fields">
-                    <label class="field"><span class="field-label">Name</span>
-                        <input type="text" name="pattern" autocomplete="off" spellcheck="false" [value]="pattern()" (input)="pattern.set(value($event))">
-                        <span class="field-hint"># is the number (## for 01, 02…); extensions stay.</span></label>
-                    <label class="field"><span class="field-label">From</span>
-                        <input type="number" name="start" min="0" [value]="start()" (input)="start.set(number($event))"></label>
-                </div>
-            }
-            <table class="batch-rename-preview">
-                <thead><tr><th scope="col">Now</th><th scope="col">Becomes</th></tr></thead>
-                <tbody>
-                    @for (line of plans(); track line.item.path) {
-                        <tr [class.unchanged]="line.name === line.item.name" [class.problem]="line.problem">
-                            <td>{{ line.item.name }}</td>
-                            <td>{{ line.name }}@if (line.problem) {<span class="form-error"> — {{ line.problem }}</span>}</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-            @if (failures().length) {
-                <p class="form-error" role="alert">{{ failures().join(' ') }}</p>
-            }
-            <span sheetFooter class="field-hint">{{ summary() }}</span>
-            <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button" title="Close without renaming (Esc)" (click)="sheet.close()">Cancel</button>
-            <button sheetFooter type="button" class="button primary" [sfeBusy]="saving()" [disabled]="saving() || !changes().length" (click)="apply()">
-                Rename {{ changes().length || '' }}</button>
-        </sfe-sheet>
-    `,
+    templateUrl: './batch-rename.dialog.html',
 })
 export class BatchRenameDialog {
     private readonly api = inject(Api);

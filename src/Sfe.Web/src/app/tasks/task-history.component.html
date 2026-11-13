@@ -1,0 +1,72 @@
+<div class="task-history-bar">
+    <label class="visually-hidden" for="task-history-filter">Task</label>
+    <select id="task-history-filter" class="task-history-filter" title="Show the runs of one task" (change)="setFilter(valueOf($event))">
+        <option value="" [selected]="!filter()">All tasks</option>
+        @for (kind of kinds; track kind) {
+            <option [value]="kind" [selected]="filter() === kind">{{ names[kind] }}</option>
+        }
+    </select>
+    <span class="field-hint">{{ retentionText() }}</span>
+    <span class="spacer"></span>
+    <button type="button" class="button small" title="Change how long the runs are kept" (click)="openSettings.emit()"><svg sfeIcon="settings"></svg>Keep for…</button>
+    <button type="button" class="button small danger" title="Delete the history of finished runs (asks first)" [sfeBusy]="clearing()"
+            [disabled]="clearing() || !runs().length" (click)="clear()">Clear history</button>
+</div>
+@if (error()) {
+    <p class="form-error">Could not read the history: {{ error() }}</p>
+}
+<ul class="task-runs">
+    @for (run of runs(); track run.id) {
+        @let open = openId() === run.id;
+        <li class="task-run" [class]="run.outcome" [class.open]="open">
+            <button type="button" class="task-run-head" [attr.aria-expanded]="open" [title]="open ? 'Hide the log' : 'Show the log of this run'" (click)="toggle(run)">
+                @if (run.outcome === 'running') {
+                    <span class="trickplay-spinner"></span>
+                } @else {
+                    <svg [sfeIcon]="icons[run.outcome]"></svg>
+                }
+                <span class="task-run-main">
+                    <span class="task-run-title">
+                        <strong>{{ names[run.task] }}</strong>
+                        @if (target(run.task, run.path); as where) {
+                            <span>{{ where }}</span>
+                        }
+                        <span class="task-outcome" [class]="run.outcome">{{ outcomes[run.outcome] }}</span>
+                    </span>
+                    <span class="task-run-sub">{{ subtitle(run) }}</span>
+                    @if (run.summary) {
+                        <span class="task-run-summary">{{ run.summary }}</span>
+                    }
+                </span>
+            </button>
+            @if (open) {
+                <div class="task-run-log">
+                    @if (details(); as details) {
+                        @if (details.log.length) {
+                            <ol>
+                                @for (line of details.log; track $index) {
+                                    @if (details.omitted && $index === half(details)) {
+                                        <li class="task-log-omitted">… {{ plural(details.omitted, 'line') }} left out …</li>
+                                    }
+                                    <li [class]="'level-' + line.level.toLowerCase()">
+                                        <time>{{ time(line.time) }}</time><span class="task-log-level">{{ line.level }}</span><span>{{ line.message }}</span>
+                                    </li>
+                                }
+                            </ol>
+                        } @else {
+                            <p class="muted">Nothing was logged.</p>
+                        }
+                    } @else {
+                        <p class="muted">Loading the log…</p>
+                    }
+                </div>
+            }
+        </li>
+    }
+</ul>
+@if (!runs().length && loaded()) {
+    <p class="muted task-empty">No runs recorded{{ filter() ? ' for this task' : '' }} yet.</p>
+}
+@if (next() !== null) {
+    <button type="button" class="button small task-more" title="Show older runs" [sfeBusy]="loading()" [disabled]="loading()" (click)="loadMore()">Load older runs</button>
+}

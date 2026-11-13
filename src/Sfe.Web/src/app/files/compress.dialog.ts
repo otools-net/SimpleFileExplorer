@@ -33,72 +33,7 @@ export const COMPRESSION_LEVELS: readonly { level: number; label: string; hint: 
     selector: 'sfe-compress-dialog',
     imports: [BusyDirective, FolderBrowserComponent, SheetComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-        <sfe-sheet #sheet heading="Compress" variant="transfer-dialog">
-            <p class="compress-where">
-                <span>{{ what() }} into a zip in “{{ targetName() }}”.</span>
-                @if (!picking()) {
-                    <button type="button" class="link-button" data-pick-folder title="Put the zip in another folder of the library" (click)="picking.set(true)">Another folder…</button>
-                }
-            </p>
-            @if (picking()) {
-                <sfe-folder-browser [browser]="browser" />
-            }
-            @if (size(); as size) {
-                <p class="field-hint compress-size" data-compress-size>{{ size }}</p>
-            }
-            <label class="field">
-                <span>Name</span>
-                <input type="text" data-zip-name [value]="name()" (input)="name.set(value($event))" autocomplete="off" spellcheck="false">
-            </label>
-            <label class="field">
-                <span>Compression</span>
-                <select data-level (change)="level.set(+value($event))">
-                    @for (choice of levels; track choice.level) {
-                        <option [value]="choice.level" [selected]="choice.level === level()">{{ choice.label }}: {{ choice.hint }}</option>
-                    }
-                </select>
-            </label>
-            <label class="check">
-                <input type="checkbox" data-skip [checked]="skipCompressed()" (change)="skipCompressed.set(checked($event))">
-                <span>Skip files already compressed<span class="field-hint">Pictures, videos, music and archives are stored as they are: compressing them again gains almost nothing.</span></span>
-            </label>
-            <label class="field">
-                <span>Password <span class="field-hint">optional</span></span>
-                <input [type]="showPassword() ? 'text' : 'password'" data-zip-password autocomplete="new-password" [value]="password()" (input)="password.set(value($event))">
-            </label>
-            @if (password()) {
-                <label class="field">
-                    <span>Password again</span>
-                    <input [type]="showPassword() ? 'text' : 'password'" data-zip-confirm autocomplete="new-password" [value]="confirmation()" (input)="confirmation.set(value($event))">
-                </label>
-                <label class="check">
-                    <input type="checkbox" [checked]="showPassword()" (change)="showPassword.set(checked($event))">
-                    <span>Show the passwords</span>
-                </label>
-                <ul class="field-hint compress-notes" data-password-notes>
-                    <li>File names stay visible: only the content is encrypted (AES-256).</li>
-                    @if (password().length < 8) {
-                        <li>A short password is easy to guess: 12 characters or more is better.</li>
-                    }
-                    @if (!ascii()) {
-                        <li>Letters other than A–Z, digits and common signs may not work in some programs (7-Zip refuses them).</li>
-                    }
-                    @if (plainHttp) {
-                        <li>This connection isn't encrypted: the password crosses the network as it is.</li>
-                    }
-                    <li>Windows' own zip folders may not open it: 7-Zip, WinRAR or a recent Windows 11 do.</li>
-                </ul>
-            }
-            @if (problem(); as problem) {
-                <p class="field-hint" role="alert" data-compress-problem>{{ problem }}</p>
-            }
-            <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button" title="Close without making a zip (Esc)" (click)="sheet.close()">Cancel</button>
-            <button sheetFooter type="button" class="button primary" data-compress [sfeBusy]="busy()" [disabled]="busy() || problem() !== null"
-                    [title]="'Make the zip in “' + targetName() + '”: it goes on in the background'" (click)="confirm()">Compress</button>
-        </sfe-sheet>
-    `,
+    templateUrl: './compress.dialog.html',
 })
 export class CompressDialog {
     private readonly api = inject(Api);

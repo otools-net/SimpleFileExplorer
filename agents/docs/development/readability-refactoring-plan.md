@@ -110,7 +110,7 @@ Move to `.html` (one commit per line):
 - [x] `access/` (7), `account/` (4), `admin/` (2): `move-templates.mjs`; client build identical
 - [x] `formats/` (10): client build identical
 - [x] `library/` (10): client build identical
-- [ ] `files/` (6), `tags/` (3), `tasks/` (3), `tracking/` (3)
+- [x] `files/` (6), `tags/` (3), `tasks/` (3), `tracking/` (3): client build identical
 - [ ] `editor/`, `logs/`, `menus/`, `migration/`, `player/`, `settings/`, `shared/`, `trickplay/` (1 each)
 
 Tidy, one component per commit, worst first (add one line per component when starting):

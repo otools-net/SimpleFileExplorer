@@ -17,62 +17,7 @@ import { StatusBoxComponent, TrackingFileComponent } from './tracking-parts';
     imports: [BusyDirective, IconComponent, StatusBoxComponent, TagChipComponent, TrackingFileComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'settings-panel', role: 'tabpanel' },
-    template: `
-        <p class="settings-intro">Tagged files that a scan no longer found. When a scan indexes the same file somewhere else, moved, renamed or back on its drive, its tags follow it on their own. Files with several possible new places, or none yet, wait here.</p>
-        <sfe-status-box [state]="status().state" [text]="status().text" [detail]="status().detail">
-            <div class="settings-action inline">
-                <button type="button" class="button small" title="Give the tags of each missing file with exactly one likely new place to that file"
-                        [sfeBusy]="relinking()" [disabled]="relinking() || !enabled() || !total()" (click)="relinkAll()">Relink now</button>
-                <button type="button" class="button small danger" title="Forget every missing file and its tags (asks first)"
-                        [sfeBusy]="forgettingAll()" [disabled]="forgettingAll() || !total()" (click)="forgetAll()">Forget all</button>
-            </div>
-        </sfe-status-box>
-        <ul class="tracking-missing-list">
-            @if (loading()) {
-                <li class="tag-loading"><span class="spinner"></span></li>
-            }
-            @for (item of items(); track item.id) {
-                <li class="tracking-missing">
-                    <div class="tracking-missing-head">
-                        <span class="tracking-thumb"><svg sfeIcon="file"></svg></span>
-                        <span class="tracking-file">
-                            <strong class="tracking-name" [title]="item.path">{{ item.name }}</strong>
-                            <span class="tracking-was">{{ was(item) }}</span>
-                            @if (item.tags.length) {
-                                <span class="tracking-tags">
-                                    @for (tag of item.tags; track tag.id) {
-                                        <sfe-tag-chip [tag]="tag" />
-                                    }
-                                </span>
-                            }
-                        </span>
-                        <span class="tracking-actions">
-                            <button type="button" class="button small" title="Type the path of the file it became" [sfeBusy]="busy() === item.id + ':choose'" [disabled]="busy() !== null" (click)="choose(item)">Choose file…</button>
-                            <button type="button" class="button small" title="Forget this missing file and its tags (asks first)" [sfeBusy]="busy() === item.id + ':forget'" [disabled]="busy() !== null" (click)="forget(item)">Forget</button>
-                        </span>
-                    </div>
-                    @if (item.candidates.length) {
-                        <div class="tracking-candidates">
-                            <p class="tracking-sub">{{ item.candidates.length === 1 ? 'Possible new place' : 'Possible new places' }}</p>
-                            <ul class="tracking-list">
-                                @for (candidate of item.candidates; track candidate.path) {
-                                    <li [sfeTrackingFile]="candidate" (openFolder)="openFolder.emit($event)">
-                                        <span class="tracking-actions">
-                                            <button type="button" class="button small primary" title="This is the moved file: give it the tags"
-                                                    [sfeBusy]="busy() === item.id + ':' + candidate.path" [disabled]="busy() !== null" (click)="relink(item, candidate.path)">Relink here</button>
-                                        </span>
-                                    </li>
-                                }
-                            </ul>
-                        </div>
-                    } @else {
-                        <p class="tracking-sub">No identical file is indexed. Scan the folder it went to, or choose the file.</p>
-                    }
-                </li>
-            }
-        </ul>
-        <button type="button" class="button" title="Show the next page" [hidden]="!hasMore()" [sfeBusy]="loadingMore()" [disabled]="loadingMore()" (click)="more()">Load more</button>
-    `,
+    templateUrl: './missing-panel.component.html',
 })
 export class MissingPanelComponent {
     readonly openFolder = output<string>();

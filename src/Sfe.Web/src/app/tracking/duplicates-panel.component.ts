@@ -38,47 +38,7 @@ export interface RestoredCopy {
     imports: [BusyDirective, TrackingFileComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'tracking-group' },
-    template: `
-        <header class="tracking-group-head">
-            <strong>{{ countText() }}</strong>
-            <span>{{ sizeText() }}</span>
-        </header>
-        <ul class="tracking-list">
-            @for (file of files(); track file.path) {
-                <li [sfeTrackingFile]="file" (openFolder)="openFolder.emit($event)">
-                    @if (canRemove()) {
-                        <span class="tracking-actions">
-                            <button type="button" class="button small danger" [title]="permanent() ? 'Delete this copy for good, keeping another one (asks first)' : 'Move this copy to the trash, keeping another one (asks first)'" (click)="confirm(file)">Remove</button>
-                        </span>
-                    }
-                    @if (confirming() === file.path) {
-                        @let others = othersOf(file);
-                        <div class="tracking-confirm" role="group" [attr.aria-label]="'Remove ' + file.name">
-                            <span>
-                                {{ permanent() ? 'Delete this file for good' : 'Move this file to the trash' }}{{ file.tags?.length ? ' and add its tags to ' : ' and keep ' }}
-                                @if (others.length > 1) {
-                                    <select class="tracking-keep" aria-label="Copy to keep" (change)="keep.set(valueOf($event))">
-                                        @for (other of others; track other.path) {
-                                            <option [value]="other.path" [selected]="other.path === keep()">{{ other.path }}</option>
-                                        }
-                                    </select>
-                                } @else {
-                                    <strong>{{ others[0].path }}</strong>
-                                }?
-                            </span>
-                            <span class="tracking-actions">
-                                <button type="button" class="button small" title="Keep the file" (click)="confirming.set(null)">Cancel</button>
-                                <button type="button" class="button small danger" [title]="permanent() ? 'Delete this file from the disk now' : 'Move this file to the trash now (it can be put back)'" [sfeBusy]="removing()" [disabled]="removing()" (click)="remove(file)">{{ permanent() ? 'Delete this copy' : 'Move to the trash' }}</button>
-                            </span>
-                        </div>
-                    }
-                </li>
-            }
-        </ul>
-        @if (hidden() > 0) {
-            <p class="tracking-more">and {{ hiddenText() }}</p>
-        }
-    `,
+    templateUrl: './duplicate-group.component.html',
 })
 export class DuplicateGroupComponent {
     readonly group = input.required<DuplicateGroup>({ alias: 'sfeDuplicateGroup' });

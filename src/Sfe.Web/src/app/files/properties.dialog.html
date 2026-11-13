@@ -1,0 +1,88 @@
+<sfe-sheet #sheet heading="Properties" [subtitle]="properties()?.item?.name ?? item()?.name ?? null" variant="properties-dialog" (closed)="closed()">
+    @if (error(); as error) {
+        <p class="form-error">{{ error }}</p>
+    } @else if (properties(); as p) {
+        <dl class="properties">
+            <dt>Name</dt><dd class="properties-name">{{ p.item.name }}</dd>
+            <dt>Kind</dt><dd>{{ kind() }}</dd>
+            <dt>In</dt><dd>{{ folder() }}</dd>
+            @if (!p.details.isFolder) {
+                <dt>Size</dt><dd>{{ size(p.details.size) }}</dd>
+            }
+            <dt>Modified</dt><dd>{{ date(p.details.modified) }}</dd>
+            @if (p.details.created) {
+                <dt>Created</dt><dd>{{ date(p.details.created) }}</dd>
+            }
+            @if (p.details.accessed) {
+                <dt>Opened</dt><dd>{{ date(p.details.accessed) }}</dd>
+            }
+            @if (attributes()) {
+                <dt>Attributes</dt><dd>{{ attributes() }}</dd>
+            }
+            @if (media()) {
+                <dt>Media</dt><dd>{{ media() }}</dd>
+            }
+            @if (!p.details.isFolder && p.item.indexed === false) {
+                <dt>Index</dt><dd>Not indexed yet: no scan has seen it</dd>
+            }
+            @if (showTags() && p.item.tags?.length) {
+                <dt>Tags</dt>
+                <dd class="properties-tags">
+                    @for (tag of p.item.tags; track tag.id) {
+                        <sfe-tag-chip [tag]="tag" />
+                    }
+                </dd>
+            }
+        </dl>
+
+        @if (p.details.isFolder) {
+            <section class="properties-section" aria-label="What the folder holds">
+                <h3>What it holds</h3>
+                <p class="properties-totals">{{ totalsText() }}</p>
+                @if (count(); as job) {
+                    <p class="properties-count" role="status">{{ countText() }}</p>
+                }
+                <div class="properties-actions">
+                    @if (counting()) {
+                        <button type="button" class="button small" title="Stop counting" (click)="stop(count())">Stop</button>
+                    } @else {
+                        <button type="button" class="button small count-button" title="Go through the folder on the server's disk: exact now, but takes a while for large folders"
+                                (click)="startCount()">Count on disk</button>
+                    }
+                </div>
+            </section>
+        } @else if (p.canChecksum) {
+            <section class="properties-section" aria-label="Checksum">
+                <h3>Checksum</h3>
+                <div class="properties-actions">
+                    <label class="visually-hidden" for="checksum-algorithm">Algorithm</label>
+                    <select id="checksum-algorithm" [value]="algorithm()" (change)="algorithm.set($any($event.target).value)" [disabled]="summing()">
+                        @for (option of algorithms; track option[0]) {
+                            <option [value]="option[0]">{{ option[1] }}</option>
+                        }
+                    </select>
+                    @if (summing()) {
+                        <button type="button" class="button small" title="Stop reading the file" (click)="stop(checksum())">Stop</button>
+                    } @else {
+                        <button type="button" class="button small checksum-button" title="Read the whole file on the server for its checksum" (click)="startChecksum()">Compute</button>
+                    }
+                </div>
+                @if (checksum(); as job) {
+                    @if (job.checksum) {
+                        <p class="properties-checksum"><code>{{ job.checksum }}</code>
+                            <button type="button" class="button small ghost" title="Copy the checksum" (click)="copy(job.checksum)">Copy</button></p>
+                    } @else {
+                        <p role="status">{{ checksumText() }}</p>
+                    }
+                }
+            </section>
+        }
+    } @else {
+        <p role="status">Loading…</p>
+    }
+    <span sheetFooter class="spacer"></span>
+    @if (copyPaths.enabled() && item()) {
+        <button sheetFooter type="button" class="button" title="Copy where it is on the server" (click)="copyPaths.copy(item()!.path)">Copy full path</button>
+    }
+    <button sheetFooter type="button" class="button primary" (click)="sheet.close()">Close</button>
+</sfe-sheet>

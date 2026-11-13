@@ -1,0 +1,138 @@
+@if (summary(); as summary) {
+    <p class="task-summary" aria-live="polite">{{ summary }}</p>
+}
+@if (error()) {
+    <p class="form-error">Could not read the tasks: {{ error() }}</p>
+}
+
+<div id="tasks-panel-tasks" class="task-cards" [hidden]="tab() !== 'tasks'">
+    @for (task of overview()?.tasks ?? []; track task.task) {
+        @let next = nextRun(task);
+        <article class="task-card" [attr.data-state]="task.state">
+            <header class="task-card-head">
+                <span class="task-icon"><svg [sfeIcon]="icons[task.task]"></svg></span>
+                <div class="task-card-title">
+                    <h3>{{ names[task.task] }}</h3>
+                    <span class="task-state" [attr.data-state]="task.state">
+                        @if (task.state === 'running') {
+                            <span class="trickplay-spinner"></span>
+                        }
+                        {{ states[task.state] }}{{ task.state === 'running' && task.startedAt ? ' · ' + elapsed(task.startedAt) : '' }}
+                    </span>
+                </div>
+                <div class="task-card-actions">
+                    @if (task.canCancel) {
+                        <button type="button" class="button small danger" [title]="'Stop ' + names[task.task].toLowerCase() + (cancelQuestions[task.task] ? ' (asks first)' : '')"
+                                [sfeBusy]="busy() === task.task + ':cancel'" [disabled]="busy() !== null" (click)="cancel(task)">Cancel</button>
+                    }
+                    @if (task.task !== 'thumbnails') {
+                        <button type="button" class="button small" [title]="startTitle(task)" [sfeBusy]="busy() === task.task + ':start'"
+                                [disabled]="busy() !== null || !task.canStart" (click)="start(task)"><svg sfeIcon="play"></svg>Run now</button>
+                    }
+                    @if (task.canSchedule) {
+                        <button type="button" class="button small" [title]="'Plan runs of ' + names[task.task].toLowerCase() + ' at set times'" (click)="newSchedule(task.task)"><svg sfeIcon="clock"></svg>Schedule</button>
+                    }
+                    @if (task.task === 'trickplay') {
+                        <button type="button" class="icon-button small ghost" aria-label="Details" title="The videos being given trickplay, and those waiting" (click)="openTrickplay.emit()"><svg sfeIcon="more"></svg></button>
+                    }
+                </div>
+            </header>
+            <p class="task-purpose">{{ purposes[task.task] }}</p>
+            @if (task.state === 'running') {
+                <div class="trickplay-progress" [class.indeterminate]="task.progress === null">
+                    <span [style.width]="((task.progress ?? 0) * 100).toFixed(1) + '%'"></span>
+                </div>
+            }
+            <p class="task-detail">
+                @if (task.state === 'running' && target(task.task, task.path); as where) {
+                    <strong>{{ where }}:</strong>
+                }
+                {{ task.detail }}
+            </p>
+            <dl class="task-times">
+                @if (task.lastRun; as last) {
+                    <div>
+                        <dt>Last run</dt>
+                        <dd>
+                            <button type="button" class="link-button" title="Show this run and its log in the history" (click)="showRun(last)">
+                                <span class="task-outcome" [class]="last.outcome">{{ outcomes[last.outcome] }}</span>
+                                <time [attr.datetime]="last.started" [title]="formatDate(last.started)">{{ formatMoment(last.started, now()) }}</time>
+                            </button>
+                        </dd>
+                    </div>
+                }
+                @if (task.canSchedule) {
+                    <div class="task-next" [class.planned]="next">
+                        <dt>Next run</dt>
+                        <dd>
+                            @if (next) {
+                                <time [attr.datetime]="next.at" [title]="formatDate(next.at)">{{ formatMoment(next.at, now()) }}</time>
+                                <span class="task-relative">{{ formatRelative(next.at, now()) }}</span>
+                                <span class="field-hint">{{ nextSource(task, next) }}</span>
+                            } @else {
+                                <span class="field-hint">Not planned: only when started{{ task.task === 'scan' ? ' from the menu or here' : ' by hand' }}.</span>
+                            }
+                        </dd>
+                    </div>
+                }
+            </dl>
+        </article>
+    } @empty {
+        @if (!error()) {
+            <p class="muted">…</p>
+        }
+    }
+</div>
+
+<div id="tasks-panel-schedules" class="task-schedules" [hidden]="tab() !== 'schedules'">
+    <div class="task-schedules-intro">
+        <p class="settings-intro">Start tasks at set times, once or again and again. Times are those of this browser{{ zoneNote() }}. A run that comes due while the task is already running, or while the server is off, is skipped.</p>
+        @if (!draft()) {
+            <button type="button" class="button small primary" title="Add a schedule" (click)="newSchedule('scan')"><svg sfeIcon="plus"></svg>New schedule</button>
+        }
+    </div>
+    @if (draft(); as draft) {
+        <sfe-schedule-form [draft]="draft" [now]="now()" (saved)="onSaved($event)" (cancelled)="closeForm()" />
+    }
+    <ul class="schedule-list">
+        @for (schedule of sortedSchedules(); track schedule.id) {
+            <li class="schedule-row" [class.off]="!schedule.enabled">
+                <label class="schedule-toggle" [title]="schedule.enabled ? 'Turn this schedule off (kept, but it doesn\'t run)' : 'Turn this schedule on'">
+                    <input type="checkbox" [checked]="schedule.enabled" (change)="toggle(schedule)">
+                    <span class="visually-hidden">On</span>
+                </label>
+                <span class="task-icon small"><svg [sfeIcon]="icons[schedule.task]"></svg></span>
+                <span class="schedule-main">
+                    <span class="schedule-title">
+                        <strong>{{ names[schedule.task] }}</strong>
+                        @if (target(schedule.task, schedule.path); as where) {
+                            <span>{{ where }}</span>
+                        }
+                    </span>
+                    <span class="schedule-when">{{ describe(schedule) }}</span>
+                </span>
+                <span class="schedule-next">
+                    @if (schedule.nextRun) {
+                        <time [attr.datetime]="schedule.nextRun" [title]="formatDate(schedule.nextRun)">{{ formatMoment(schedule.nextRun, now()) }}</time>
+                        <span class="task-relative">{{ formatRelative(schedule.nextRun, now()) }}</span>
+                    } @else {
+                        <span class="field-hint">{{ status(schedule) }}</span>
+                    }
+                    @if (schedule.lastRun) {
+                        <span class="field-hint" [title]="formatDate(schedule.lastRun)">last {{ formatMoment(schedule.lastRun, now()) }}</span>
+                    }
+                </span>
+                <span class="schedule-actions">
+                    <button type="button" class="icon-button small ghost" aria-label="Edit" title="Change this schedule" (click)="edit(schedule)"><svg sfeIcon="settings"></svg></button>
+                    <button type="button" class="icon-button small ghost danger" aria-label="Delete" title="Delete this schedule (asks first)" (click)="remove(schedule)"><svg sfeIcon="close"></svg></button>
+                </span>
+            </li>
+        }
+    </ul>
+    @if (overview() && !overview()!.schedules.length && !draft()) {
+        <p class="muted task-empty">No schedules yet. Trickplay still checks for new videos by itself{{ trickplayEvery() }}.</p>
+    }
+</div>
+
+<sfe-task-history id="tasks-panel-history" [hidden]="tab() !== 'history'"
+                  [retentionDays]="overview()?.logRetentionDays ?? 30" (openSettings)="selectTab.emit('settings')" />

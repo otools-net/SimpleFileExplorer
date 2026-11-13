@@ -1,0 +1,115 @@
+<sfe-sheet #sheet heading="Tags" [subtitle]="subtitle()" variant="scope-tags">
+    @if (!scope().query) {
+        <label class="check scope-recursive">
+            <input type="checkbox" [checked]="scope().recursive" [disabled]="applying()" (change)="setRecursive($event)">
+            <span>
+                <strong>Include sub-folders</strong>
+                <span class="field-hint">Also the files of every folder below this one.</span>
+            </span>
+        </label>
+    }
+    @if (error()) {
+        <p class="form-error">{{ error() }}</p>
+    } @else if (summary(); as summary) {
+        <p class="scope-count">{{ countText() }}</p>
+        <div class="tag-groups">
+            @if (onAll().length) {
+                <section class="tag-group">
+                    <h3>On all these files</h3>
+                    <div class="tag-list">
+                        @for (entry of onAll(); track entry.tag.id) {
+                            <sfe-tag-chip [tag]="entry.tag" title="Remove this tag from all these files (asks first)"
+                                          [removable]="true" (remove)="askRemove(entry)" />
+                        }
+                    </div>
+                </section>
+            }
+            @if (onSome().length) {
+                <section class="tag-group">
+                    <h3>On some of these files</h3>
+                    <div class="tag-list">
+                        @for (entry of onSome(); track entry.tag.id) {
+                            <sfe-tag-chip [tag]="entry.tag" [label]="entry.tag.displayName + ' · ' + entry.fileCount.toLocaleString()"
+                                          [title]="'On ' + entry.fileCount.toLocaleString() + ' of ' + filesText() + '. Click to add it to all of them (asks first).'"
+                                          [clickable]="true" [removable]="true" (pick)="askAdd($event)" (remove)="askRemove(entry)" />
+                        }
+                    </div>
+                </section>
+            }
+            @if (summary.files && !summary.tags.length) {
+                <p class="muted">None of these files has tags yet.</p>
+            }
+        </div>
+    } @else {
+        <div class="tag-loading"><span class="spinner"></span></div>
+    }
+    @if (pending(); as pending) {
+        <div class="scope-confirm" role="group" aria-label="Confirm the change">
+            <p>{{ question() }}</p>
+            @if (hint()) {
+                <p class="field-hint">{{ hint() }}</p>
+            }
+            <div class="scope-confirm-buttons">
+                <button type="button" class="button" title="Change nothing" [disabled]="applying()" (click)="cancel()">Cancel</button>
+                <button type="button" class="button primary" [sfeBusy]="applying()" [disabled]="applying()"
+                        [title]="pending.remove ? 'Remove the tag from these files' : 'Add the tag to these files'" (click)="apply()">
+                    {{ pending.remove ? 'Remove tag' : 'Add tag' }}
+                </button>
+            </div>
+        </div>
+    } @else {
+        <sfe-tag-picker #picker [placeholder]="scope().query ? 'Add a tag to all the results…' : 'Add a tag to all these files…'"
+                        [allowCreate]="true" [exclude]="excluded" [pick]="pick" />
+    }
+    @if (showDefaults()) {
+        <section class="default-tags" aria-labelledby="default-tags-heading">
+            <h3 id="default-tags-heading">Default tags</h3>
+            <p class="field-hint">Every file put into {{ folderName() }} or its sub-folders gets them: scanned, created, uploaded, copied or moved there.</p>
+            @if (defaults(); as defaults) {
+                @if (defaults.own.length || defaults.inherited.length) {
+                    <div class="tag-list">
+                        @for (tag of defaults.own; track tag.id) {
+                            <sfe-tag-chip [tag]="tag" [removable]="canSetDefaults()" title="A default tag of this folder"
+                                          (remove)="askRemoveDefault($event)" />
+                        }
+                        @for (entry of defaults.inherited; track entry.tag.id) {
+                            <sfe-tag-chip class="inherited" [tag]="entry.tag" [label]="(entry.tag.displayName || entry.tag.name) + ' · ' + fromName(entry.path)"
+                                          [title]="'A default tag of ' + (entry.path ? '“' + entry.path + '”' : 'the top folder') + ': change it there'" />
+                        }
+                    </div>
+                } @else {
+                    <p class="muted">This folder has no default tags.</p>
+                }
+            } @else if (defaultsError()) {
+                <p class="form-error">{{ defaultsError() }}</p>
+            } @else {
+                <div class="tag-loading"><span class="spinner"></span></div>
+            }
+            @if (pendingDefault(); as pending) {
+                <div class="scope-confirm default-confirm" role="group" aria-label="Confirm the default tag change">
+                    <p>{{ defaultQuestion() }}</p>
+                    <p class="field-hint">{{ defaultHint() }}</p>
+                    <div class="scope-confirm-buttons">
+                        <button type="button" class="button" title="Change nothing" [disabled]="savingDefault()" (click)="cancelDefault()">Cancel</button>
+                        <button type="button" class="button default-only" [disabled]="savingDefault()" (click)="applyDefault(false)"
+                                [title]="pending.remove ? 'The files already there keep the tag' : 'Only the files put there from now on get it'">
+                            {{ pending.remove ? 'Keep it on the files' : 'New files only' }}
+                        </button>
+                        @if (canTagFiles()) {
+                            <button type="button" class="button primary default-files" [sfeBusy]="savingDefault()" [disabled]="savingDefault()" (click)="applyDefault(true)"
+                                    [title]="pending.remove ? 'Also remove it from the files already there' : 'Also add it to the files already there'">
+                                {{ pending.remove ? 'Remove it from the files too' : 'Existing files too' }}
+                            </button>
+                        }
+                    </div>
+                </div>
+            } @else if (canSetDefaults() && defaults()) {
+                <sfe-tag-picker #defaultPicker class="default-picker" placeholder="Add a default tag…"
+                                [allowCreate]="true" [exclude]="excludedDefaults" [pick]="pickDefault" />
+            }
+        </section>
+    }
+    <button sheetFooter type="button" class="button" title="Create, edit and delete tags" (click)="dialogs.tagManager()?.open()">Manage tags</button>
+    <span sheetFooter class="spacer"></span>
+    <button sheetFooter type="button" class="button primary" title="Close (Esc)" (click)="sheet.close()">Done</button>
+</sfe-sheet>
