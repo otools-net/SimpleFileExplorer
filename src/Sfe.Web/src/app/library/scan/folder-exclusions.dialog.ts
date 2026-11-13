@@ -39,47 +39,7 @@ const NONE: FolderExclusions = { scan: null, trickplay: null, thumbnails: null }
     selector: 'sfe-folder-exclusions',
     imports: [BusyDirective, SheetComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-        <sfe-sheet #sheet heading="Scans and previews" [subtitle]="name()" variant="folder-exclusions">
-            <p class="field-hint">For everyone in this space, with its sub-folders. Excluded folders show a small note
-            in the listing.</p>
-            @for (entry of kinds; track entry.kind) {
-                <label class="check">
-                    <input
-                        type="checkbox"
-                        [attr.data-kind]="entry.kind"
-                        [checked]="checked(entry.kind)"
-                        [disabled]="inherited(entry.kind) || saving()"
-                        (change)="set(entry.kind, checkedOf($event))"
-                    >
-                    <span>
-                        <strong>{{ entry.label }}</strong>
-                        <span class="field-hint">{{ inherited(entry.kind) ? 'Excluded through “' + state()[entry.kind] + '”: change it there.' : entry.hint }}</span>
-                    </span>
-                </label>
-            }
-            @if (error()) {
-                <p class="form-error">{{ error() }}</p>
-            }
-            <span sheetFooter class="spacer"></span>
-            <button
-                sheetFooter
-                type="button"
-                class="button"
-                title="Close without changing anything (Esc)"
-                (click)="sheet.close()"
-            >Cancel</button>
-            <button
-                sheetFooter
-                type="button"
-                class="button primary"
-                title="Save for the whole space"
-                [sfeBusy]="saving()"
-                [disabled]="saving() || !changed()"
-                (click)="save()"
-            >Save</button>
-        </sfe-sheet>
-    `,
+    templateUrl: './folder-exclusions.dialog.html',
 })
 export class FolderExclusionsDialog {
     private readonly api = inject(Api);

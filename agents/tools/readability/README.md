@@ -177,7 +177,9 @@ node agents/tools/readability/move-templates.mjs src/Sfe.Web/src/app/access     
 
 - `template: \`…\`` of a `@Component` becomes `templateUrl: './<file>.html'` (`<class>.component.html` when the file
   holds several components); the `.html` holds the string's value (escapes resolved), its common indentation
-  removed unless it has `<pre>`, `<textarea>` or `ngPreserveWhitespaces`. `${…}` templates are reported, not moved.
+  removed unless it has `<pre>`, `<textarea>` or `ngPreserveWhitespaces`, and only down to 4 spaces where text meets
+  a line that would start at column 0 (Angular keeps a lone newline in text, but collapses newline and spaces into
+  one space). `${…}` templates are reported, not moved.
 - Check: `npm test` and the client build (`references.mjs --only client`) identical file for file (checked
   2026-11-13 on the first 13).
 

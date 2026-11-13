@@ -1,0 +1,40 @@
+    <div class="settings-status" aria-live="polite" [attr.data-state]="state()">
+        <div class="settings-status-line"><span class="settings-status-dot"></span><span
+            class="settings-status-text"
+        >{{ summary() }}</span></div>
+        <div class="settings-action inline">
+            <button
+                type="button"
+                class="button small"
+                title="Ping the library folder now, also while keep alive is off, to try the share"
+                [sfeBusy]="pinging()"
+                [disabled]="pinging()"
+                (click)="ping()"
+            ><svg sfeIcon="refresh"></svg>Ping now</button>
+            <button
+                type="button"
+                class="button small"
+                title="Turn keep alive on or off, and change how often it pings"
+                (click)="openSettings.emit()"
+            >
+                <svg sfeIcon="settings"></svg>Settings</button>
+        </div>
+    </div>
+    <ul class="keep-alive-list">
+        @for (folder of view()?.folders ?? []; track folder.path) {
+            <li class="keep-alive-row" [class.failed]="folder.error" [attr.data-path]="folder.path">
+                <svg [sfeIcon]="folder.error ? 'close' : folder.lastPing ? 'check' : 'clock'"></svg>
+                <span class="keep-alive-folder">
+                    <span class="keep-alive-name">{{ folder.isRoot ? 'Library folder' : folder.path }}</span>
+                    <span class="keep-alive-network">{{ network(folder) }}</span>
+                    @if (folder.error) {
+                        <span class="keep-alive-error">{{ failure(folder) }}</span>
+                    }
+                </span>
+                <span class="keep-alive-detail">{{ detail(folder) }}</span>
+            </li>
+        } @empty {
+            <li class="muted">No ping since the server
+            started{{ view()?.mode === 'off' ? ': keep alive is off. Ping now tries the library folder once.' : '.' }}</li>
+        }
+    </ul>

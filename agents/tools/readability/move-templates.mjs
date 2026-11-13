@@ -34,12 +34,25 @@ function* files(path) {
 
 const kebab = (name) => name.replace(/Component$/, '').replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
-/** The text without the indentation all its non-empty lines share; leading and trailing blank lines dropped. */
+/**
+ * The text without the indentation all its non-empty lines share; leading and trailing blank lines dropped. Angular
+ * collapses a run of two or more whitespace characters into one space but keeps a lone newline: where text meets a
+ * line that would start at column 0 (`themselves.` then `</p>`), 4 spaces of indentation stay, so that the run between
+ * them still collapses to a space.
+ */
 function dedent(text) {
     const lines = text.replace(/^\s*\n/, '').replace(/\n\s*$/, '').split('\n');
-    const indents = lines.filter((l) => l.trim()).map((l) => /^ */.exec(l)[0].length);
-    const common = Math.min(...indents);
-    return lines.map((l) => l.slice(Math.min(common, /^ */.exec(l)[0].length))).join('\n');
+    const indentOf = (l) => /^ */.exec(l)[0].length;
+    const common = Math.min(...lines.filter((l) => l.trim()).map(indentOf));
+    const textAtColumnZero = lines.some(
+        (l, i) =>
+            i > 0 &&
+            l.trim() &&
+            indentOf(l) === common &&
+            (!/^\s*[<@}]/.test(l) || !/(>|^\s*)$/.test(lines[i - 1])),
+    );
+    const remove = textAtColumnZero ? Math.max(0, common - 4) : common;
+    return lines.map((l) => l.slice(Math.min(remove, indentOf(l)))).join('\n');
 }
 
 let moved = 0;

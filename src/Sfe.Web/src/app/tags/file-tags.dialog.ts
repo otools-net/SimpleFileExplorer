@@ -19,61 +19,7 @@ import { TagOption, TagPickerComponent } from './tag-picker.component';
     selector: 'sfe-file-tags',
     imports: [SheetComponent, TagChipComponent, TagPickerComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-        <sfe-sheet #sheet heading="Tags" [subtitle]="name()">
-            <div class="tag-groups">
-                @if (!current()) {
-                    <div class="tag-loading"><span class="spinner"></span></div>
-                } @else if (!current()!.tags.length) {
-                    <p class="muted">No tags yet. Add one below: tags inherit from their parent tags, so a few
-                    well-chosen tags go a long way.</p>
-                } @else {
-                    @for (group of current()!.groups; track $index) {
-                        <section class="tag-group">
-                            <h3>{{ group.category ? group.category.displayName : 'Tags' }}</h3>
-                            <div class="tag-list">
-                                @for (tag of group.tags; track tag.id) {
-                                    <sfe-tag-chip
-                                        [tag]="tag"
-                                        [title]="canManage() ? 'Edit this tag' : tag.displayName"
-                                        [clickable]="canManage()"
-                                        [removable]="canAssign()"
-                                        (pick)="edit($event)"
-                                        (remove)="remove($event)"
-                                    />
-                                }
-                            </div>
-                        </section>
-                    }
-                }
-            </div>
-            <sfe-tag-picker
-                #picker
-                placeholder="Add a tag…"
-                [hidden]="!canAssign()"
-                [allowCreate]="canManage()"
-                [exclude]="excluded"
-                [pick]="add"
-            />
-            @if (canManage()) {
-                <button
-                    sheetFooter
-                    type="button"
-                    class="button"
-                    title="Create, edit and delete tags"
-                    (click)="dialogs.tagManager()?.open()"
-                >Manage tags</button>
-            }
-            <span sheetFooter class="spacer"></span>
-            <button
-                sheetFooter
-                type="button"
-                class="button primary"
-                title="Close (Esc)"
-                (click)="sheet.close()"
-            >Done</button>
-        </sfe-sheet>
-    `,
+    templateUrl: './file-tags.dialog.html',
 })
 export class FileTagsDialog {
     private readonly api = inject(Api);

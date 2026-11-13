@@ -140,63 +140,7 @@ function sameStrings(a: string[], b: string[]): boolean {
         '[attr.data-path]': 'item().path',
         '[style.--ratio]': 'ratio()',
     },
-    template: `
-        <a
-            class="item-link"
-            [href]="url()"
-            target="_blank"
-            rel="noopener"
-            [title]="linkTitle()"
-            (click)="actions.openFile($event, item())"
-        >
-            <div #preview class="preview">
-                <div class="placeholder"><svg [sfeIcon]="icon()"></svg><span class="ext">{{ item().extension || 'file' }}</span></div>
-                @if (hasPreview()) {
-                    <img [sfePreview]="sources()" (shape)="learnShape($event)" (failed)="previewFailed.set(true)">
-                }
-                <span class="preview-marks">
-                    @if (resolutionMark(); as mark) {
-                        <span
-                            class="resolution-mark"
-                            [class.high]="mark.high"
-                            [title]="mark.title"
-                        >{{ mark.label }}</span>
-                    }
-                    @if (item().kind === 'video' || item().kind === 'audio') {
-                        <span class="badge"><svg sfeIcon="play"></svg>{{ item().extension || '' }}</span>
-                    }
-                </span>
-                @if (isVideo() || durationBadge()) {
-                    <span class="preview-marks start">
-                        @if (durationBadge()) {
-                            <span class="badge duration" [title]="'Duration: ' + duration()">{{ duration() }}</span>
-                        }
-                        @if (isVideo()) {
-                            <sfe-trickplay-mark [path]="item().path" />
-                        }
-                    </span>
-                }
-            </div>
-        </a>
-        <label sfeSelectBox [item]="item()"></label>
-        <button [sfeTagButton]="item()"></button>
-        <button [sfeItemMenu]="item()"></button>
-        <div class="info">
-            <a
-                class="item-link"
-                [href]="url()"
-                target="_blank"
-                rel="noopener"
-                [title]="linkTitle()"
-                (click)="actions.openFile($event, item())"
-            >
-                <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
-            </a>
-            <sfe-item-folder [item]="item()" [pattern]="pattern()" />
-            <span class="meta">{{ meta() }}</span>
-            <sfe-item-tags [item]="item()" />
-        </div>
-    `,
+    templateUrl: './file-tile.component.html',
 })
 export class FileTileComponent extends FileItemBase {
     private readonly previewBox = viewChild<ElementRef<HTMLElement>>('preview');
@@ -266,58 +210,7 @@ export class FileTileComponent extends FileItemBase {
         '[class.unindexed]': 'unindexed()',
         '[attr.data-path]': 'item().path',
     },
-    template: `
-        <label sfeSelectBox [item]="item()"></label>
-        <a
-            class="item-link"
-            [href]="url()"
-            target="_blank"
-            rel="noopener"
-            [title]="linkTitle()"
-            (click)="actions.openFile($event, item())"
-        >
-            <span #thumb class="thumb">
-                <svg [sfeIcon]="icon()"></svg>
-                @if (hasPreview()) {
-                    <img [sfePreview]="sources()" (failed)="previewFailed.set(true)">
-                }
-                @if (resolutionMark(); as mark) {
-                    <span class="resolution-mark" [class.high]="mark.high" [title]="mark.title">{{ mark.label }}</span>
-                }
-                @if (isVideo()) {
-                    <sfe-trickplay-mark [path]="item().path" />
-                }
-            </span>
-        </a>
-        <div class="row-main">
-            <a
-                class="item-link"
-                [href]="url()"
-                target="_blank"
-                rel="noopener"
-                [title]="linkTitle()"
-                (click)="actions.openFile($event, item())"
-            >
-                <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
-            </a>
-            <span class="row-meta">@if (item().extension) {<span class="row-meta-type">{{ item().extension }}</span> ·
-            }{{ meta() }}</span>
-            <sfe-item-folder [item]="item()" [pattern]="pattern()" />
-            <sfe-item-tags [item]="item()" />
-        </div>
-        <span
-            class="type"
-            [title]="item().extension ? '.' + item().extension + ' file' : 'No extension'"
-        >{{ item().extension || '—' }}</span>
-        <span class="size">{{ size() }}@if (resolution()) {<span class="resolution">{{ resolution() }}</span>}@if (duration()) {<span
-            class="duration"
-        >{{ duration() }}</span>}</span>
-        <span class="date">{{ date() }}</span>
-        <span class="row-actions">
-            <button [sfeTagButton]="item()"></button>
-            <button [sfeItemMenu]="item()"></button>
-        </span>
-    `,
+    templateUrl: './file-row.component.html',
 })
 export class FileRowComponent extends FileItemBase {
     private readonly thumb = viewChild<ElementRef<HTMLElement>>('thumb');

@@ -17,60 +17,7 @@ import { ListingStore } from '../listing.store';
     selector: 'sfe-remove-from-index',
     imports: [BusyDirective, SheetComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-        <sfe-sheet #sheet heading="Remove from the index" [subtitle]="name()" variant="remove-index">
-            @if (error()) {
-                <p class="form-error">{{ error() }}</p>
-            } @else if (folder(); as folder) {
-                @if (folder.files || folder.directories) {
-                    <p>The index holds <strong>{{ counts() }}</strong> of {{ name() }} and its sub-folders. Search will
-                    no longer find them; the files themselves stay on the disk, and browsing still shows them.</p>
-                    @if (folder.taggedFiles) {
-                        <p class="field-hint">{{ plural(folder.taggedFiles, 'file has', 'files have') }} tags. They are
-                        kept with the moved files (Duplicates &amp; moved files) unless “Keep the tags of moved files”
-                        is off: scanning the folder again gives the tags back.</p>
-                    }
-                } @else {
-                    <p>Nothing of {{ name() }} is in the index.</p>
-                }
-                @if (folder.path) {
-                    <label class="check">
-                        <input
-                            type="checkbox"
-                            [checked]="exclude()"
-                            [disabled]="folder.excluded"
-                            (change)="exclude.set(checkedOf($event))"
-                        >
-                        <span>
-                            <strong>Skip this folder in future scans</strong>
-                            <span class="field-hint">{{ folder.excluded
-                                ? 'Already skipped: it is in Administration › Scanning › What to scan › Excluded folders.'
-                                : 'Adds it to Administration › Scanning › What to scan › Excluded folders, so that scans of the folders above it leave it out. Without it, the next scan of a parent folder indexes it again.' }}</span>
-                        </span>
-                    </label>
-                }
-            } @else {
-                <p class="muted">Counting what the index holds…</p>
-            }
-            <span sheetFooter class="spacer"></span>
-            <button
-                sheetFooter
-                type="button"
-                class="button"
-                title="Close without changing anything (Esc)"
-                (click)="sheet.close()"
-            >Cancel</button>
-            <button
-                sheetFooter
-                type="button"
-                class="button primary"
-                [title]="'Remove ' + name() + ' from the search index'"
-                [sfeBusy]="removing()"
-                [disabled]="removing() || !canRemove()"
-                (click)="remove()"
-            >{{ actionLabel() }}</button>
-        </sfe-sheet>
-    `,
+    templateUrl: './remove-from-index.dialog.html',
 })
 export class RemoveFromIndexDialog {
     private readonly api = inject(Api);

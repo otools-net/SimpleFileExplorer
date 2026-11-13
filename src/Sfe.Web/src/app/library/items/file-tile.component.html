@@ -1,0 +1,55 @@
+    <a
+        class="item-link"
+        [href]="url()"
+        target="_blank"
+        rel="noopener"
+        [title]="linkTitle()"
+        (click)="actions.openFile($event, item())"
+    >
+        <div #preview class="preview">
+            <div class="placeholder"><svg [sfeIcon]="icon()"></svg><span class="ext">{{ item().extension || 'file' }}</span></div>
+            @if (hasPreview()) {
+                <img [sfePreview]="sources()" (shape)="learnShape($event)" (failed)="previewFailed.set(true)">
+            }
+            <span class="preview-marks">
+                @if (resolutionMark(); as mark) {
+                    <span
+                        class="resolution-mark"
+                        [class.high]="mark.high"
+                        [title]="mark.title"
+                    >{{ mark.label }}</span>
+                }
+                @if (item().kind === 'video' || item().kind === 'audio') {
+                    <span class="badge"><svg sfeIcon="play"></svg>{{ item().extension || '' }}</span>
+                }
+            </span>
+            @if (isVideo() || durationBadge()) {
+                <span class="preview-marks start">
+                    @if (durationBadge()) {
+                        <span class="badge duration" [title]="'Duration: ' + duration()">{{ duration() }}</span>
+                    }
+                    @if (isVideo()) {
+                        <sfe-trickplay-mark [path]="item().path" />
+                    }
+                </span>
+            }
+        </div>
+    </a>
+    <label sfeSelectBox [item]="item()"></label>
+    <button [sfeTagButton]="item()"></button>
+    <button [sfeItemMenu]="item()"></button>
+    <div class="info">
+        <a
+            class="item-link"
+            [href]="url()"
+            target="_blank"
+            rel="noopener"
+            [title]="linkTitle()"
+            (click)="actions.openFile($event, item())"
+        >
+            <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
+        </a>
+        <sfe-item-folder [item]="item()" [pattern]="pattern()" />
+        <span class="meta">{{ meta() }}</span>
+        <sfe-item-tags [item]="item()" />
+    </div>

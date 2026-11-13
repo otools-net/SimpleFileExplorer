@@ -14,48 +14,7 @@ export type FolderSource = (path: string | null) => Promise<FolderPicker>;
     imports: [IconComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'folder-picker', 'data-context-menu': 'none' },
-    template: `
-        <p class="folder-picker-path">
-            <svg sfeIcon="folder"></svg><span>{{ chosen() || placeholder() }}</span>
-        </p>
-        @if (listing(); as listing) {
-            <ul>
-                @if (listing.path) {
-                    <li><button
-                        type="button"
-                        class="link-button"
-                        title="The folder above"
-                        (click)="browse(listing.parent)"
-                    >‥</button></li>
-                }
-                @for (place of listing.places ?? []; track place.path) {
-                    <li class="folder-picker-place">
-                        <button
-                            type="button"
-                            class="link-button"
-                            [title]="'Use ' + place.path + ', or open it'"
-                            (click)="browse(place.path)"
-                        >{{ place.name }}</button>
-                    </li>
-                }
-                @for (folder of listing.folders; track folder.path) {
-                    <li>
-                        <button
-                            type="button"
-                            class="link-button"
-                            [title]="'Use ' + folder.path + ', or open it'"
-                            (click)="browse(folder.path)"
-                        >{{ folder.name }}</button>
-                    </li>
-                } @empty {
-                    <li class="muted">No folders here.</li>
-                }
-                @if (listing.truncated) {
-                    <li class="muted">Only the first folders are listed.</li>
-                }
-            </ul>
-        }
-    `,
+    templateUrl: './folder-picker.component.html',
 })
 export class FolderPickerComponent implements OnInit {
     readonly source = input.required<FolderSource>();

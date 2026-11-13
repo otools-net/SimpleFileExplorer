@@ -1,0 +1,45 @@
+    <div class="tag-manager-bar">
+        <div class="tag-input-wrap">
+            <svg sfeIcon="search"></svg>
+            <input
+                #search
+                type="search"
+                class="tag-input"
+                placeholder="Find a tag by name, shorthand or alias…"
+                autocomplete="off"
+                aria-label="Find a tag"
+                (input)="onInput()"
+            >
+        </div>
+        <button
+            type="button"
+            class="button primary"
+            title="Create a tag (named after the search, if any)"
+            (click)="create()"
+        ><svg sfeIcon="plus"></svg>New tag</button>
+    </div>
+    <div class="tag-table">
+        @if (error(); as error) {
+            <p class="muted">Could not load tags: {{ error }}</p>
+        } @else if (results(); as results) {
+            @for (tag of results.matches; track tag.id) {
+                <ng-container *ngTemplateOutlet="row; context: { $implicit: tag }" />
+            }
+            @if (results.descendants.length) {
+                <h3 class="tag-table-heading">Inheriting from these</h3>
+                @for (tag of results.descendants; track tag.id) {
+                    <ng-container *ngTemplateOutlet="row; context: { $implicit: tag }" />
+                }
+            }
+            @if (!results.matches.length && !results.descendants.length) {
+                <p class="muted">No tag matches.</p>
+            }
+        }
+    </div>
+    <ng-template #row let-tag>
+        <button type="button" class="tag-row" [title]="'Edit ' + tag.displayName" (click)="edit(tag)">
+            <sfe-tag-chip [tag]="tag" />
+            <span class="tag-row-detail">{{ details(tag) }}</span>
+            <span class="tag-row-count">{{ files(tag) }}</span>
+        </button>
+    </ng-template>
