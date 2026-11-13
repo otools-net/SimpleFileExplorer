@@ -17,7 +17,7 @@
     "src/Sfe.Api/Endpoints/SessionEndpoints.cs": {"fileLines":465,"longFunctions":1},
     "src/Sfe.Api/Endpoints/SetupEndpoints.cs": {"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/StreamingEndpoints.cs": {"manyParameterFunctions":2},
-    "src/Sfe.Api/Endpoints/TagEndpoints.cs": {"fileLines":452,"longFunctions":1,"manyParameterFunctions":2},
+    "src/Sfe.Api/Endpoints/TagEndpoints.cs": {"fileLines":448,"longFunctions":1},
     "src/Sfe.Api/Endpoints/TaskEndpoints.cs": {"manyParameterFunctions":2},
     "src/Sfe.Api/Endpoints/TenantEndpoints.cs": {"manyParameterFunctions":2},
     "src/Sfe.Api/Endpoints/TextEndpoints.cs": {"fileLines":569,"longFunctions":1},

@@ -208,15 +208,12 @@ public static class TagEndpoints
     private static async Task<
         Results<Ok<FolderDefaultTagsResult>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult>
     > ChangeFolderDefaultTags(
-        FolderDefaultTags defaults,
-        ScopeTagger tagger,
-        LibraryPaths paths,
-        CurrentAccess current,
-        ILoggerFactory loggerFactory,
+        [AsParameters] TagServices services,
         FolderDefaultTagsChange change,
         CancellationToken cancellationToken
     )
     {
+        var (defaults, tagger, paths, current, loggerFactory) = services;
         var state = await current.GetAsync();
         var verdict = state.Check(paths, change.Path, Rights.FolderDefaultTags);
         if (verdict == PathVerdict.Forbidden)
@@ -405,15 +402,14 @@ public static class TagEndpoints
     }
 
     private static async Task<Results<Ok<ScopeTags>, NotFound>> GetScopeTags(
-        ScopeTagger tagger,
-        LibraryPaths paths,
-        CurrentAccess current,
+        [AsParameters] TagServices services,
         CancellationToken cancellationToken,
         string? path = null,
         bool recursive = false,
         string? q = null
     )
     {
+        var (_, tagger, paths, current, _) = services;
         var state = await current.GetAsync();
         if (state.At(paths, path) is not { IsVisible: true })
             return TypedResults.NotFound();
