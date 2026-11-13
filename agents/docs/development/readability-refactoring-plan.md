@@ -164,6 +164,7 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `QuickLinkEndpoints`: `QuickLinkServices` (`Add`, `Remove`)
   - [x] `TaskEndpoints`: `TaskServices` (`Start`, `UpdateSchedule`)
   - [x] `TenantEndpoints`: `TenantServices` (`Create`, `Update`)
+  - [x] `StreamingEndpoints`: `StreamingServices` (`Probe`, `Play`; the query values of `Play` stay parameters)
   - [ ] The files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`

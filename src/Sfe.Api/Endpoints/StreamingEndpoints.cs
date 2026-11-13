@@ -5,7 +5,6 @@ using Microsoft.Net.Http.Headers;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Options;
-using Sfe.Core.Paths;
 using Sfe.Core.Streaming;
 
 namespace Sfe.Api.Endpoints;
@@ -56,14 +55,12 @@ public static class StreamingEndpoints
     }
 
     private static async Task<Results<Ok<StreamProbe>, NotFound>> Probe(
-        VideoStreamer streamer,
-        LibraryPaths paths,
-        CurrentAccess current,
-        IOptionsMonitor<SfeOptions> options,
+        [AsParameters] StreamingServices services,
         string path,
         CancellationToken cancellationToken
     )
     {
+        var (streamer, paths, current, options) = services;
         if ((await current.GetAsync()).Check(paths, path, Rights.Stream) != PathVerdict.Allowed)
             return TypedResults.NotFound();
         var probe = await streamer.ProbeAsync(path, cancellationToken);
@@ -75,15 +72,14 @@ public static class StreamingEndpoints
     }
 
     private static async Task<Results<PushStreamHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>> Play(
-        VideoStreamer streamer,
-        LibraryPaths paths,
-        CurrentAccess current,
+        [AsParameters] StreamingServices services,
         HttpContext context,
         string path,
         double t = 0,
         string? id = null
     )
     {
+        var (streamer, paths, current, _) = services;
         var state = await current.GetAsync();
         if (!state.Has(Rights.ViewFiles))
             return TypedResults.Forbid();
