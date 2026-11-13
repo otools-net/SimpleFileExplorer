@@ -26,15 +26,16 @@ secret routes, the sign-in and management routes, the client pages. Nothing open
 | `3d06f19` | phase 2 item 2: `ConnectionSignInFlow`, `PendingSignIns`, `ConnectionSignInEndpoints` |
 | `ad8cd48` | phase 2 item 3: `POST connections/{id}/reauthorize`, `MayManage`, `SignInDone` |
 | `a739b18` | phase 2 item 4, server part: `ConnectionEndpoints` (list, update, remove, libraries, groups) |
-| last | phase 2 item 4: client pages, landing route, user docs and screenshots |
+| `c8efe91` | phase 2 item 4: client pages, landing route, user docs and screenshots |
+| last | the manual check list `agents/tools/dropbox-check/README.md` |
 
 Checks run for the last commit: the new suites, `npm test` (1179 passed), the full `dotnet test`, `measure.mjs
 --check`, `check-links.mjs`. The migration was applied on LocalDB and its deletes checked there by hand.
 
 ## Resume here
 
-1. The manual check list with a real Dropbox account: `agents/tools/dropbox-check/README.md` (both flows, a
-   refused code, reconnect to another account, the secret in the configuration and on the page, a proxy's address).
+1. The manual check list (`agents/tools/dropbox-check/README.md`) is written; it is run by a person with a Dropbox
+   account before a release, and grows with phases 3 to 5.
 2. Phase 3: `DropboxStorage` (`IRemoteStorage` over the SDK, `DropboxErrors.CallAsync`, ranged reads through
    temporary links), `GET connections/{id}/browse` and `files/raw`, marking `NeedsReconnecting` on `CredentialsEnded`;
    then phases 4 to 7 as the plan lists them.
@@ -110,8 +111,7 @@ Phase 1 item 4 is built (see What exists).
   the spike are in the plan's phase 0 text (list, token, errors). The client must name no provider address
   (`ApiTests.WebClientHasNoExternalResources`): the authorize address comes from the server and the browser only
   navigates to it.
-- A manual check list with a real account is still owed before a release (plan, "Traps"): write it as
-  `agents/tools/dropbox-check/README.md` when the provider exists.
+- The manual check list with a real account: `agents/tools/dropbox-check/README.md` (run before a release).
 
 ## Traps met
 
