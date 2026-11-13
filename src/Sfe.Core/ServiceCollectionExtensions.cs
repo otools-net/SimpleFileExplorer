@@ -218,6 +218,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ConnectionService>();
         services.AddSingleton<ConnectionSharing>();
         services.AddSingleton<ConnectionAccess>();
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<PendingSignIns>();
+        services.AddSingleton<ConnectionSignInFlow>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();
         services.AddSingleton<BackupWriter>();

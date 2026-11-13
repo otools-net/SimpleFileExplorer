@@ -22,11 +22,13 @@ public sealed class ConnectionWorld : IAsyncDisposable
     }
 
     public ServiceProvider Services { get; }
+
     /// <summary>The fake kind (the server knows Dropbox too).</summary>
     public FakeProvider Provider { get; }
     public ConnectionService Connections => Services.GetRequiredService<ConnectionService>();
     public ConnectionSharing Sharing => Services.GetRequiredService<ConnectionSharing>();
     public ConnectionAccess Access => Services.GetRequiredService<ConnectionAccess>();
+    public ConnectionSignInFlow SignIns => Services.GetRequiredService<ConnectionSignInFlow>();
 
     public int Tenant { get; private set; }
     public int OtherTenant { get; private set; }

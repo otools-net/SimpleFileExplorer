@@ -94,12 +94,10 @@ public static class ConnectionProviderEndpoints
     private static async Task<Results<NoContent, NotFound, ValidationProblem>> SetSecret(
         string kind,
         AppSecretInput input,
-        ConnectionProviders providers,
-        ProviderSecrets secrets,
-        CurrentAccess current,
-        ILoggerFactory loggers
+        [AsParameters] ProviderSecretServices services
     )
     {
+        var (providers, secrets, current, loggers) = services;
         if (providers.Find(kind) is not IRegisteredApp || providers.Find(kind) is not { } provider)
             return TypedResults.NotFound();
         var secret = input.Secret?.Trim() ?? string.Empty;
@@ -123,12 +121,10 @@ public static class ConnectionProviderEndpoints
 
     private static async Task<Results<NoContent, NotFound>> RemoveSecret(
         string kind,
-        ConnectionProviders providers,
-        ProviderSecrets secrets,
-        CurrentAccess current,
-        ILoggerFactory loggers
+        [AsParameters] ProviderSecretServices services
     )
     {
+        var (providers, secrets, current, loggers) = services;
         if (providers.Find(kind) is not IRegisteredApp || providers.Find(kind) is not { } provider)
             return TypedResults.NotFound();
 

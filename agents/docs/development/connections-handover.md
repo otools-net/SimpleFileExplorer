@@ -9,9 +9,9 @@ Files: [connections-plan](connections-plan.md) (the checklist: its `## Progress`
 ## Where it stands
 
 The owner asked to start with plan 5 (connections) and do plans 1 to 4 later. Asked for this session: phases 0 to 2,
-one commit per plan item, no real Dropbox account at hand. Done: phase 0, phase 1 and phase 2 item 1 (the third
+one commit per plan item, no real Dropbox account at hand. Done: phase 0, phase 1 and phase 2 items 1 and 2 (the third
 session, see the epic's session log). Dropbox: the package, the provider's sign-in and test, its settings and
-secret routes; no authorize route, no page but the settings tab (app key field).
+secret routes, the sign-in routes; no page but the settings tab (app key field).
 
 | Commit | What |
 |---|---|
@@ -22,16 +22,19 @@ secret routes; no authorize route, no page but the settings tab (app key field).
 | `651f589` | phase 1 item 2: tables, migration `20261113…_Connections`, upgrade and cascade tests |
 | `cb5aebd` | phase 1 item 3: rights, settings, `ClientConfig.Connections`, settings tab, docs, changelog |
 | `9d867a6` | phase 1 item 4: services, `ConnectionAccess`, `ConnectionCredentials`, feature note |
-| last | phase 2 item 1: `DropboxProvider` sign-in, `connections.dropbox.appKey`, `ProviderSecrets`, provider routes |
+| `6c46d0f` | phase 2 item 1: `DropboxProvider` sign-in, app key setting, `ProviderSecrets`, provider routes |
+| last | phase 2 item 2: `ConnectionSignInFlow`, `PendingSignIns`, `ConnectionSignInEndpoints` |
 
 Checks run for the last commit: the new suites, `npm test` (1179 passed), the full `dotnet test`, `measure.mjs
 --check`, `check-links.mjs`. The migration was applied on LocalDB and its deletes checked there by hand.
 
 ## Resume here
 
-1. Phase 2 items 2 to 4: the authorize routes (use `DropboxProvider` and `FakeProvider`;
-   `ConnectionProviderEndpoints.ReturnAddress` and `CallbackPath` exist), refresh and reconnect, the client pages
-   (with the app secret field, return address and Test button of item 1).
+1. Phase 2 items 3 and 4: refresh and reconnect (a reauthorize route reusing `ConnectionSignInFlow` with the
+   connection's id; `ConnectionService.ReauthorizeAsync` exists), the root folder chosen at creation (needs
+   `DropboxStorage` listing folders, or a typed path), then the client pages: My account › Connections,
+   Administration › Connections (secret field, return address, Test), the add dialog, the `connections` page the
+   callback lands on (`?made=` / `?error=`).
 2. Then phases 3 to 7 as the plan lists them.
 
 Per commit, as the epic asks: tick the item in the plan with an "As built" sentence, update the status board and

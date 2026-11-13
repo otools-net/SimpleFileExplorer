@@ -74,17 +74,12 @@ public sealed class ConnectionService(
         CancellationToken cancellationToken = default
     )
     {
-        if (DraftError(draft) is { } error)
-            return AccessResult<ConnectionInfo>.Invalid(error.Key, error.Message);
-        if (NameError(draft.Name, out var name) is { } nameError)
-            return AccessResult<ConnectionInfo>.Invalid("name", nameError);
-        if (RemotePaths.Normalize(draft.RootPath) is not { } rootPath)
-            return AccessResult<ConnectionInfo>.Invalid("rootPath", "Not a folder path.");
+        var checkedDraft = await CheckAsync(draft, cancellationToken);
+        if (checkedDraft.Status != AccessStatus.Ok)
+            return checkedDraft.As<ConnectionInfo>();
 
+        var (name, rootPath) = checkedDraft.Value!;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        if (await OwnerErrorAsync(db, draft, cancellationToken) is { } ownerError)
-            return AccessResult<ConnectionInfo>.Invalid(ownerError.Key, ownerError.Message);
-
         var connection = new Connection
         {
             Kind = providers.Find(draft.Kind)!.Kind,
@@ -106,6 +101,29 @@ public sealed class ConnectionService(
             createdById
         );
         return AccessResult<ConnectionInfo>.Ok(ConnectionRows.ToInfo(connection));
+    }
+
+    /// <summary>
+    /// Whether <paramref name="draft"/> can be made now (known and allowed kind and level, owner or library, name,
+    /// root folder): asked before a sign-in sends the person to the provider, and again when it is made. The value is
+    /// the name and root folder as stored.
+    /// </summary>
+    public async Task<AccessResult<(string Name, string RootPath)>> CheckAsync(
+        ConnectionDraft draft,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (DraftError(draft) is { } error)
+            return AccessResult<(string, string)>.Invalid(error.Key, error.Message);
+        if (NameError(draft.Name, out var name) is { } nameError)
+            return AccessResult<(string, string)>.Invalid("name", nameError);
+        if (RemotePaths.Normalize(draft.RootPath) is not { } rootPath)
+            return AccessResult<(string, string)>.Invalid("rootPath", "Not a folder path.");
+
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        if (await OwnerErrorAsync(db, draft, cancellationToken) is { } ownerError)
+            return AccessResult<(string, string)>.Invalid(ownerError.Key, ownerError.Message);
+        return AccessResult<(string, string)>.Ok((name, rootPath));
     }
 
     /// <summary>Renames it, turns it off or on, read only or not, or roots it at another folder.</summary>

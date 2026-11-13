@@ -220,9 +220,14 @@ in `FolderRules`:
   built here: `DropboxProvider` sign-in (PKCE, both flows, account by `get_current_account`), `DropboxErrors`,
   tests on recorded answers (`RecordedDropbox`). The page's secret field, address and Test button come with the
   client item below
-- [ ] `POST connections/authorize` (state bound to account and level, PKCE verifier kept server side, 10 minutes),
+- [x] `POST connections/authorize` (state bound to account and level, PKCE verifier kept server side, 10 minutes),
   `GET connections/oauth/callback` (redirect flow; the session must be the state's account), `POST
-  connections/authorize/complete` (code flow)
+  connections/authorize/complete` (code flow). As built: `ConnectionSignInFlow` (Core: draft checked by
+  `ConnectionService.CheckAsync` before the person leaves, method among the kind's, a password kind made at once)
+  and `PendingSignIns` (random 32-byte state, used once by any attempt, bound to the account, 10 minutes, at most
+  1000); routes in `ConnectionSignInEndpoints` (any of `connections.own` / `library` / `server`, then the level's
+  own right, asked again at completion); the callback redirects to `connections?made={id}` or `?error=signed-out |
+  refused | expired | failed` under the app's path base (client page in item 4); signed out it answers 401
 - [ ] Refresh tokens; state "needs reconnecting" when Dropbox refuses them; reconnect keeps the connection's id,
   groups and rules; the root folder inside Dropbox chosen at creation
 - [ ] Client: My account › Connections, Administration › Connections (library and server levels, who may use),

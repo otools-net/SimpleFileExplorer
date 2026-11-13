@@ -70,3 +70,43 @@ public sealed record UsableConnection(
     ConnectionState State,
     FolderLevel Access
 );
+
+/// <summary>What a person asks to connect (<see cref="ConnectionSignInFlow.BeginAsync"/>).</summary>
+/// <param name="Method">One of the kind's <see cref="IConnectionProvider.SignInMethods"/>.</param>
+/// <param name="Fields">The method's fields as filled, by id.</param>
+public sealed record ConnectRequest(
+    string Kind,
+    ConnectionLevel Level,
+    string? Name,
+    SignInKind Method,
+    string? RootPath = null,
+    IReadOnlyDictionary<string, string>? Fields = null
+);
+
+/// <summary>Who signs in, and where it goes back to (<see cref="ConnectionSignInFlow"/>).</summary>
+/// <param name="TenantId">The library of the request: a library-level connection is that library's.</param>
+/// <param name="ReturnAddress">Where the provider sends the browser back (redirect flow).</param>
+public sealed record SignInContext(int UserId, int TenantId, string ReturnAddress);
+
+/// <summary>A sign-in waiting for the person (<see cref="PendingSignIns"/>).</summary>
+/// <param name="Pending">The provider's <see cref="SignInStep.Pending"/>: server side only.</param>
+public sealed record PendingSignIn(
+    string State,
+    int UserId,
+    ConnectionDraft Draft,
+    SignInKind Method,
+    string? Pending,
+    string? ReturnAddress,
+    DateTimeOffset Expires = default
+);
+
+/// <summary>A sign-in begun: done (<paramref name="Connection"/>), or what the person does next.</summary>
+/// <param name="Address">Where the browser goes (the provider's page).</param>
+/// <param name="State">Brought back with the code (code flow: sent with it to complete).</param>
+/// <param name="Fields">What the person brings back (the code).</param>
+public sealed record SignInBegun(
+    ConnectionInfo? Connection,
+    string? Address = null,
+    string? State = null,
+    IReadOnlyList<SignInField>? Fields = null
+);

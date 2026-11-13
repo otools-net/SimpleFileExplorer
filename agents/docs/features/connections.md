@@ -61,6 +61,20 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   when an answer has another shape (an empty 404, a proxy page): mapped to `Unavailable`.
 - Tests: `RecordedDropbox` is the transport given to `OutboundPolicy` (answers by path, keeps the requests).
 
+## Signing in to make one
+
+- `POST api/connections/authorize` (`ConnectRequest`: kind, level, name, method, root, fields) → `SignInBegun`: the
+  provider's address and a state, or the connection when nothing more is needed (password kinds). The draft is
+  checked first (`ConnectionService.CheckAsync`), so nobody is sent to the provider for a connection that can't be
+  made. Account level: the caller owns it; library level: the request's library.
+- `PendingSignIns` keeps the provider's `Pending` (PKCE verifier) server side, by a random state: used once by any
+  attempt (another account's try spends it), 10 minutes, at most 1000 waiting; a restart forgets them.
+- `GET api/connections/oauth/callback` (needs the session, 401 signed out) changes state on a GET: the state is the
+  CSRF defence. It redirects to `{PathBase}/connections?made={id}` or `?error=signed-out|refused|expired|failed`,
+  never to an address from the query. `POST …/authorize/complete` ends the code flow.
+- Rights: the routes need one of `connections.own`, `connections.library`, `connections.server`; the level's own
+  right is checked inside (`ConnectionSignInEndpoints.RightFor`), and again at completion.
+
 ## Audit lines
 
 - Security warnings: a connection made, signed in again to another account, offered to more libraries, a group added
@@ -74,5 +88,9 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   Server): whoever deletes a connection loads it with `WithUses()` (`Include` of both); a bare delete throws.
 - Changing a library's group rows: keep the rows that stay and change their level in place; removing and adding a row
   with the same key in one context is refused by EF.
+- Name clashes in the Api: `ConnectionInfo` (ASP.NET has one: alias it with `using ConnectionInfo =
+  Sfe.Core.Connections.ConnectionInfo;`), and `SignInRequest` is the account sign-in's (ours is `ConnectRequest`).
+- Tests reading the API's answers need `JsonStringEnumConverter(JsonNamingPolicy.CamelCase)` (levels, sign-in
+  kinds and field types are strings).
 - `ConnectionService` and `ConnectionAccess` read the settings through `SettingLayers.ServerLevel()` (server level
   only); a test container needs `IConfiguration` registered (`ConnectionWorld`).

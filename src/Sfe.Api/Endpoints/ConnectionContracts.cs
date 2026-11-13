@@ -15,3 +15,10 @@ public sealed record ProviderSetupView(string Kind, string Name, bool Offered, s
 
 /// <summary>A provider app's secret, as typed.</summary>
 public sealed record AppSecretInput(string? Secret);
+
+/// <summary>What the person brings back to end a sign-in (the code the provider showed).</summary>
+public sealed record SignInCompletionInput(string? State, Dictionary<string, string>? Fields);
+
+/// <summary>What the provider's redirect brings back (bound with <c>[AsParameters]</c>).</summary>
+/// <param name="Error">Set when the person refused at the provider, or it failed.</param>
+internal sealed record OAuthCallback(string? Code, string? State, string? Error, HttpRequest Request);

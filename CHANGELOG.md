@@ -17,6 +17,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   `api/connections/providers/dropbox/secret` (kept in a file of the server's data folder readable by the server
   only, never sent back) or `Sfe:Connections:Dropbox:AppSecret` in the configuration, the return address to
   register at Dropbox, and a test of the key and secret.
+- **Signing in to make a connection** (API only for now: `api/connections/authorize`, its completion with the code
+  the provider shows, and the address the provider sends the browser back to). A sign-in started by one account
+  can't be finished by another, works once, and lasts 10 minutes.
 - **`Sfe:Security:LinksOutsideLibrary: ReadOnly`** (configuration): what is behind a link (symbolic link, junction)
   leading out of a library can be browsed, played and downloaded, but nothing is created, changed, renamed, moved
   away or deleted there. For libraries other people can put links in outside SFE (a network share, SFTP). The default
