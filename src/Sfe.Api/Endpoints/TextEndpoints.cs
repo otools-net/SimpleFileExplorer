@@ -350,7 +350,13 @@ public static partial class TextEndpoints
             || FileEndpoints.ProtectedFromWrites(Path.GetDirectoryName(full)!, serverFiles, work)
         )
         {
-            FileEndpoints.Refused(PathVerdict.NotFound, state, paths, path, "save over", loggers, protectedPlace: true);
+            FileEndpoints.Refused(
+                PathVerdict.NotFound,
+                new(state, path, "save over"),
+                paths,
+                loggers,
+                protectedPlace: true
+            );
             return TypedResults.NotFound();
         }
         if (state.Check(paths, canonical, Rights.ViewFiles) is var verdict and not PathVerdict.Allowed)
@@ -455,7 +461,7 @@ public static partial class TextEndpoints
         var (_, _, paths, serverFiles, work, current, _, loggers) = services;
         var state = await current.GetAsync();
         if (state.Check(paths, request.Path, Rights.CreateFiles) is var verdict and not PathVerdict.Allowed)
-            return FileEndpoints.Refused(verdict, state, paths, request.Path, "save a file in", loggers);
+            return FileEndpoints.Refused(verdict, new(state, request.Path, "save a file in"), paths, loggers);
         if (
             paths.TryResolve(request.Path, out var folder)
             && FileEndpoints.ProtectedFromWrites(folder, serverFiles, work)
@@ -463,10 +469,8 @@ public static partial class TextEndpoints
         {
             return FileEndpoints.Refused(
                 PathVerdict.NotFound,
-                state,
+                new(state, request.Path, "save a file in"),
                 paths,
-                request.Path,
-                "save a file in",
                 loggers,
                 protectedPlace: true
             );

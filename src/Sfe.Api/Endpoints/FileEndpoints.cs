@@ -230,24 +230,20 @@ public static class FileEndpoints
     }
 
     private static async Task<Ok<DeleteResults>> Delete(
-        FileOperations operations,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder workFolder,
-        CurrentAccess current,
+        [AsParameters] FileServices services,
         IOptionsMonitor<SfeOptions> options,
-        ILoggerFactory loggers,
         DeleteRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (operations, _, _, _, current, _) = services;
         var state = await current.GetAsync();
         var permanent = request.Permanent || options.CurrentValue.Files.DeletePermanently;
         var right = permanent ? Rights.DeletePermanently : Rights.DeleteFiles;
         var results = new List<DeletedItem>();
         foreach (var path in (request.Paths ?? []).Distinct(StringComparer.Ordinal).Take(MaxDeletePaths))
         {
-            if (DeleteVerdict(state, paths, serverFiles, workFolder, path, right, loggers) is { } refused)
+            if (DeleteVerdict(services, state, path, right) is { } refused)
             {
                 results.Add(new DeletedItem(path, refused));
                 continue;
@@ -262,25 +258,23 @@ public static class FileEndpoints
     /// Why the caller may not delete <paramref name="path"/> (with the right named); null when they may.
     /// </summary>
     private static FileOperationStatus? DeleteVerdict(
+        FileServices services,
         AccessState state,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder workFolder,
         string? path,
-        string right,
-        ILoggerFactory loggers
+        string right
     )
     {
+        var (_, paths, serverFiles, workFolder, _, loggers) = services;
         if (state.Check(paths, path, right) is var verdict and not PathVerdict.Allowed)
         {
-            Refused(verdict, state, paths, path, "delete", loggers);
+            Refused(verdict, new(state, path, "delete"), paths, loggers);
             return verdict == PathVerdict.NotFound ? FileOperationStatus.NotFound : FileOperationStatus.Forbidden;
         }
         if (!paths.TryResolve(path, out var full) || paths.ToRelative(full) is not { Length: > 0 } canonical)
             return FileOperationStatus.NotFound;
         if (ProtectedFromWrites(full, serverFiles, workFolder))
         {
-            Refused(PathVerdict.NotFound, state, paths, path, "delete", loggers, protectedPlace: true);
+            Refused(PathVerdict.NotFound, new(state, path, "delete"), paths, loggers, protectedPlace: true);
             return FileOperationStatus.NotFound;
         }
         if (state.Check(paths, ParentOf(canonical), right) != PathVerdict.Allowed)
@@ -292,14 +286,13 @@ public static class FileEndpoints
     }
 
     private static async Task<Ok<TrashPage>> ListTrash(
-        Trash trash,
-        LibraryPaths paths,
-        CurrentAccess current,
+        [AsParameters] TrashServices services,
         CancellationToken cancellationToken,
         int? before = null,
         int? limit = null
     )
     {
+        var (trash, paths, _, _, current) = services;
         var state = await current.GetAsync();
         return TypedResults.Ok(
             await trash.ListAsync(before, limit, item => SeesInTrash(state, paths, item), cancellationToken)
@@ -318,16 +311,13 @@ public static class FileEndpoints
     }
 
     private static async Task<Results<Ok<LibraryItem>, NotFound, ForbidHttpResult, ProblemHttpResult>> Restore(
-        Trash trash,
+        [AsParameters] TrashServices services,
         TagService tags,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder workFolder,
-        CurrentAccess current,
         int id,
         CancellationToken cancellationToken
     )
     {
+        var (trash, paths, serverFiles, workFolder, current) = services;
         var state = await current.GetAsync();
         if (await trash.FindAsync(id, cancellationToken) is not { } item || !SeesInTrash(state, paths, item))
             return TypedResults.NotFound();
@@ -412,14 +402,13 @@ public static class FileEndpoints
     }
 
     private static async Task<Results<Ok<MoveCheck>, ValidationProblem>> CheckMove(
+        [AsParameters] FileJobServices services,
         FolderRuleService rules,
-        AccessService accounts,
-        LibraryPaths paths,
-        CurrentAccess current,
         MoveCheckRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (_, accounts, _, paths, _, _, current) = services;
         var state = await current.GetAsync();
         if (
             state.Tenant is not { } tenant
@@ -479,16 +468,11 @@ public static class FileEndpoints
     }
 
     private static async Task<Results<Accepted<FileJobView>, ForbidHttpResult, ValidationProblem>> StartJob(
-        FileJobs jobs,
-        AccessService accounts,
-        RightsEvaluator rights,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
+        [AsParameters] FileJobServices services,
         FileJobRequest request
     )
     {
+        var (jobs, accounts, rights, paths, serverFiles, work, current) = services;
         var state = await current.GetAsync();
         if (state.Tenant is not { } tenant)
             return TypedResults.Forbid();
@@ -520,16 +504,11 @@ public static class FileEndpoints
     }
 
     private static async Task<Results<Accepted<FileJobView>, ForbidHttpResult, ValidationProblem>> Compress(
-        FileJobs jobs,
-        AccessService accounts,
-        RightsEvaluator rights,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
+        [AsParameters] FileJobServices services,
         CompressRequest request
     )
     {
+        var (jobs, accounts, rights, paths, serverFiles, work, current) = services;
         var state = await current.GetAsync();
         if (state.Tenant is not { } tenant || !state.Has(Rights.CompressFiles))
             return TypedResults.Forbid();
@@ -635,28 +614,22 @@ public static class FileEndpoints
     private static async Task<
         Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult>
     > CreateFile(
-        FileOperations operations,
+        [AsParameters] FileServices services,
         TagService tags,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder workFolder,
-        CurrentAccess current,
-        ILoggerFactory loggers,
         CreateFileRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (operations, paths, serverFiles, workFolder, current, loggers) = services;
         var state = await current.GetAsync();
         if (state.Check(paths, request.Path, Rights.CreateFiles) is var verdict and not PathVerdict.Allowed)
-            return Refused(verdict, state, paths, request.Path, "create a file in", loggers);
+            return Refused(verdict, new(state, request.Path, "create a file in"), paths, loggers);
         if (paths.TryResolve(request.Path, out var folder) && ProtectedFromWrites(folder, serverFiles, workFolder))
         {
             return Refused(
                 PathVerdict.NotFound,
-                state,
+                new(state, request.Path, "create a file in"),
                 paths,
-                request.Path,
-                "create a file in",
                 loggers,
                 protectedPlace: true
             );
@@ -672,28 +645,22 @@ public static class FileEndpoints
     private static async Task<
         Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult>
     > CreateFolder(
-        FileOperations operations,
+        [AsParameters] FileServices services,
         TagService tags,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder workFolder,
-        CurrentAccess current,
-        ILoggerFactory loggers,
         CreateFolderRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (operations, paths, serverFiles, workFolder, current, loggers) = services;
         var state = await current.GetAsync();
         if (state.Check(paths, request.Path, Rights.CreateFolders) is var verdict and not PathVerdict.Allowed)
-            return Refused(verdict, state, paths, request.Path, "create a folder in", loggers);
+            return Refused(verdict, new(state, request.Path, "create a folder in"), paths, loggers);
         if (paths.TryResolve(request.Path, out var folder) && ProtectedFromWrites(folder, serverFiles, workFolder))
         {
             return Refused(
                 PathVerdict.NotFound,
-                state,
+                new(state, request.Path, "create a folder in"),
                 paths,
-                request.Path,
-                "create a folder in",
                 loggers,
                 protectedPlace: true
             );
@@ -709,20 +676,16 @@ public static class FileEndpoints
     private static async Task<
         Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult>
     > Rename(
-        FileOperations operations,
+        [AsParameters] FileServices services,
         TagService tags,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder workFolder,
-        CurrentAccess current,
-        ILoggerFactory loggers,
         RenameRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (operations, paths, serverFiles, workFolder, current, loggers) = services;
         var state = await current.GetAsync();
         if (state.Check(paths, request.Path, Rights.RenameFiles) is var verdict and not PathVerdict.Allowed)
-            return Refused(verdict, state, paths, request.Path, "rename", loggers);
+            return Refused(verdict, new(state, request.Path, "rename"), paths, loggers);
         // Renaming changes the folder's list of names too; a folder carries everything below it, which must all be the
         // caller's to change (nobody renames away what they can't see or change).
         if (paths.TryResolve(request.Path, out var full) && paths.ToRelative(full) is { Length: > 0 } canonical)
@@ -734,10 +697,8 @@ public static class FileEndpoints
             {
                 return Refused(
                     PathVerdict.NotFound,
-                    state,
+                    new(state, request.Path, "rename"),
                     paths,
-                    request.Path,
-                    "rename",
                     loggers,
                     protectedPlace: true
                 );
@@ -803,14 +764,13 @@ public static class FileEndpoints
     /// </summary>
     internal static Results<Ok<LibraryItem>, ValidationProblem, NotFound, ForbidHttpResult, ProblemHttpResult> Refused(
         PathVerdict verdict,
-        AccessState state,
+        RefusedAttempt attempt,
         LibraryPaths paths,
-        string? path,
-        string action,
         ILoggerFactory loggers,
         bool protectedPlace = false
     )
     {
+        var (state, path, action) = attempt;
         if (verdict == PathVerdict.Forbidden)
             return TypedResults.Forbid();
         if (protectedPlace || (paths.TryResolve(path, out var full) && (Directory.Exists(full) || File.Exists(full))))

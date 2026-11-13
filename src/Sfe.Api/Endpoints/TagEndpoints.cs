@@ -169,7 +169,9 @@ public static class TagEndpoints
             .WithDescription(ChangeFolderDefaultTagsDescription);
     }
 
-    /// <summary>A file viewed (under <c>/file-tags</c>, mapped after the folders' default tags as it always was).</summary>
+    /// <summary>
+    /// A file viewed (under <c>/file-tags</c>, mapped after the folders' default tags as it always was).
+    /// </summary>
     private static void MapViewed(RouteGroupBuilder files)
     {
         files

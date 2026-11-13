@@ -14,17 +14,17 @@ Files: [readability-refactoring-plan](readability-refactoring-plan.md) (the chec
 | 2 Long lines | done: CSharpier (C#) and Prettier (client) at 120 columns, comments and strings by scripts |
 | 3 One type per file, `models.ts` by area | done |
 | 4 Templates | moves and line breaks done; the **tidy by hand** is open (see below) |
-| 5 Functions | **in progress**: route maps done, `[AsParameters]` done for Explore, Library, Text, Editor, Config |
+| 5 Functions | **in progress**: route maps done, `[AsParameters]` done for Explore, Library, Text, Editor, Config, File |
 | 6–8 | not started |
 
 What is still over the limits (`node agents/tools/readability/measure.mjs`):
 
 | | server | client | templates |
 |---|---|---|---|
-| lines over 120 | 2 (an unsplittable `<see cref>`, …) | 11 | 120 |
+| lines over 120 | 1 (an unsplittable `<see cref>`) | 11 | 120 |
 | functions over 60 lines | 75 | 12 | |
 | nested deeper than 3 | 21 | 7 | |
-| more than 5 parameters | 93 | 2 | |
+| more than 5 parameters | 82 | 2 | |
 | classes over 8 dependencies | 6 | 6 | |
 | files over 400 lines | 31 | 20 | 2 (`admin-page`, `archive-view`) |
 
@@ -67,7 +67,10 @@ node agents/tools/readability/measure.mjs --check ; node agents/tools/readabilit
 - **Handler parameters:** one services record per endpoints file bound with `[AsParameters]`
   (`ExploreServices`, `TextServices`, `LibraryRequest`…), its own file; query and header values in a request
   record in `<Area>Contracts.cs` with `[FromQuery(Name = "…")]`, defaults kept (`int Offset = 0`); route values
-  stay handler parameters (OpenAPI documents a `long` inside a record as `integer` or `string`). Bodies start with
+  stay handler parameters (OpenAPI documents a `long` inside a record as `integer` or `string`). Handlers over the
+  limit only; one record may serve a handler that uses part of it (the services are singletons). A private helper
+  over the limit takes the handler's record (`DeleteVerdict(FileServices …)`); one shared between endpoints files
+  takes a small record of its own (`Refused(verdict, RefusedAttempt, …)`). Bodies start with
   `var (a, _, c) = services;` so they keep their names. A route served without a session (`Shared`) gets a record
   of its own: never make it resolve library services it did not take.
 - **Tool for these:** `agents/tools/readability/handler_params.py` (rewrites a handler's parameter list and adds

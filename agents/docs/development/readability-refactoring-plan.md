@@ -140,6 +140,12 @@ Tidy, one component per commit, worst first (add one line per component when sta
 - [x] `[AsParameters]`: `LibraryEndpoints`, `TextEndpoints`, `EditorEndpoints`, `ConfigEndpoints`
   (`handler_params.py`; OpenAPI identical, defaults included; `AccessTests` reads a path as text, not `Paths`)
 - [ ] `[AsParameters]`: the other endpoints files (one item each when started)
+  - [x] `FileEndpoints`: `FileServices`, `TrashServices`, `FileJobServices`; `Refused` takes a `RefusedAttempt`
+    (who, path, action; TextEndpoints' calls too), `DeleteVerdict` the `FileServices`; OpenAPI and guards identical
+    (many-parameter functions 95 -> 84)
+  - [ ] `UploadEndpoints`, `SessionEndpoints`, `PropertyEndpoints`, `FolderRuleEndpoints`,
+    `FileTrackingEndpoints` (4 each)
+  - [ ] `ScanEndpoints`, then the files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`
 - [ ] `ArchiveExtractor.Extract`
