@@ -46,51 +46,7 @@ function row(path: string, status: RowStatus, detail: string | null, note: strin
     imports: [BusyDirective, IconComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'trickplay-activity' },
-    template: `
-        <div class="settings-status" aria-live="polite" [attr.data-state]="activity()?.status?.state">
-            <div class="settings-status-line"><span class="settings-status-dot"></span><span class="settings-status-text">{{ stateText() }}</span></div>
-            <div class="trickplay-progress" [hidden]="activity()?.status?.state !== 'running'" [class.indeterminate]="progress().indeterminate">
-                <span [style.width]="progress().width"></span>
-            </div>
-            <span class="field-hint">{{ counts() }}</span>
-            <div class="settings-action inline">
-                <button type="button" class="button small" title="Go over the trickplay folders now for videos without trickplay"
-                        [sfeBusy]="checking()" [disabled]="checking() || cannotCheck()" (click)="check()">Look for new videos now</button>
-            </div>
-        </div>
-        @for (section of sections(); track section.title) {
-            <section class="trickplay-section">
-                <header><h3>{{ section.title }}</h3><span class="trickplay-count">{{ section.total ? section.total.toLocaleString() : '' }}</span></header>
-                <ul class="trickplay-list">
-                    @for (item of section.rows; track $index) {
-                        <li class="trickplay-row" [class]="item.status" [title]="item.path">
-                            @if (item.status === 'running') {
-                                <span class="trickplay-spinner"></span>
-                            } @else {
-                                <svg [sfeIcon]="icons[item.status]"></svg>
-                            }
-                            <span class="trickplay-file">
-                                <span class="trickplay-name">{{ item.name }}</span>
-                                @if (item.folder) {
-                                    <span class="trickplay-folder">{{ item.folder }}</span>
-                                }
-                                @if (item.note) {
-                                    <span class="trickplay-error">{{ item.note }}</span>
-                                }
-                            </span>
-                            @if (item.detail) {
-                                <span class="trickplay-detail">{{ item.detail }}</span>
-                            }
-                        </li>
-                    }
-                    @if (section.total > section.rows.length) {
-                        <li class="trickplay-more">and {{ more(section) }}</li>
-                    }
-                </ul>
-                <p class="muted" [hidden]="section.total > 0">{{ section.empty }}</p>
-            </section>
-        }
-    `,
+    templateUrl: './trickplay-activity.component.html',
 })
 export class TrickplayActivityComponent {
     private readonly api = inject(Api);

@@ -583,53 +583,7 @@ export class ContextMenuDirective {
         '(window:scroll)': 'onScroll()',
         '(window:resize)': 'onResize()',
     },
-    template: `
-        @if (menu.open(); as open) {
-            <!-- The top layer (a manual popover): above the page and an open modal dialog, which it is moved into. -->
-            <div #layer class="context-menu-layer" [attr.popover]="popovers ? 'manual' : null">
-            <!-- On phones: an action sheet at the bottom, under its target's name, over a backdrop that closes it. -->
-            <div #backdrop class="item-menu-backdrop sheet-backdrop" aria-hidden="true" (click)="menu.close()"></div>
-            <div #box class="item-menu phone-sheet" role="menu" [attr.aria-label]="'Actions for ' + open.target.name" [attr.data-menu]="open.target.kind"
-                 [style.left.px]="position().x" [style.top.px]="position().y" (keydown)="keydown($event)">
-                <div class="item-menu-title">{{ open.target.name }}</div>
-                @if (submenu()) {
-                    <button type="button" role="menuitem" class="item-menu-entry" data-entry="back" title="Back to the other actions (Left arrow)" (click)="back()">
-                        <svg sfeIcon="left"></svg>
-                        <span>Back</span>
-                    </button>
-                }
-                @for (entry of entries(); track entry.id) {
-                    @if (entry.href) {
-                        <a role="menuitem" class="item-menu-entry" [attr.data-entry]="entry.id" [href]="entry.href" [title]="entry.title"
-                           [attr.target]="entry.newTab ? '_blank' : null" rel="noopener" (click)="followed(entry)">
-                            <svg [sfeIcon]="entry.icon"></svg>
-                            <span>{{ entry.label }}</span>
-                            @if (entry.shortcut) {
-                                <kbd>{{ entry.shortcut }}</kbd>
-                            }
-                        </a>
-                    } @else {
-                        <button type="button" [attr.role]="entry.checked === undefined ? 'menuitem' : 'menuitemcheckbox'" class="item-menu-entry" [attr.data-entry]="entry.id"
-                                [title]="entry.title" [attr.aria-checked]="entry.checked ?? null" [attr.aria-disabled]="entry.disabled || null"
-                                [attr.aria-haspopup]="entry.submenu ? 'menu' : null" (click)="run(entry)">
-                            <svg [sfeIcon]="entry.icon"></svg>
-                            <span>{{ entry.label }}</span>
-                            @if (entry.shortcut) {
-                                <kbd>{{ entry.shortcut }}</kbd>
-                            }
-                            @if (entry.checked) {
-                                <svg sfeIcon="check" class="item-menu-check"></svg>
-                            }
-                            @if (entry.submenu) {
-                                <svg sfeIcon="right"></svg>
-                            }
-                        </button>
-                    }
-                }
-            </div>
-            </div>
-        }
-    `,
+    templateUrl: './context-menu.html',
 })
 export class ContextMenuComponent {
     protected readonly menu = inject(ContextMenu);

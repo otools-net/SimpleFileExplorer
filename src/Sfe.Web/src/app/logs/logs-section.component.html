@@ -1,0 +1,93 @@
+
+        <form class="logs-filters" role="search" aria-label="Search the log" (submit)="$event.preventDefault(); search()">
+            <div class="logs-filter-row">
+                <label class="logs-text">
+                    <span class="visually-hidden">Text</span>
+                    <svg sfeIcon="search"></svg>
+                    <input type="search" placeholder="Search messages, loggers and errors" title="Text found in the message, the logger's name or the error (ignoring case)"
+                           [value]="filters().text" (input)="setText(valueOf($event))">
+                </label>
+                <button type="submit" class="button small" title="Read the log again" [sfeBusy]="loading() && !paging()"><svg sfeIcon="refresh"></svg>Refresh</button>
+            </div>
+            <div class="logs-filter-row">
+                <fieldset class="logs-levels">
+                    <legend class="visually-hidden">Severity</legend>
+                    @for (level of levels; track level) {
+                        <label class="logs-level-chip" [class]="'level-' + level" [title]="'Show ' + levelNames[level] + ' entries (none ticked: every severity)'">
+                            <input type="checkbox" [checked]="filters().levels.has(level)" (change)="toggleLevel(level)"><span>{{ levelNames[level] }}</span>
+                        </label>
+                    }
+                </fieldset>
+                <label class="logs-day">
+                    <span>From</span>
+                    <input type="date" title="Entries from this day on" [value]="filters().fromDay" (change)="setDay('fromDay', valueOf($event))">
+                </label>
+                <label class="logs-day">
+                    <span>To</span>
+                    <input type="date" title="Entries up to the end of this day" [value]="filters().toDay" (change)="setDay('toDay', valueOf($event))">
+                </label>
+                @if (allSpaces()) {
+                    <label class="logs-space">
+                        <span class="visually-hidden">Space</span>
+                        <select title="Show the entries of one space, or the server's own" (change)="setSpace(valueOf($event))">
+                            <option value="all" [selected]="filters().space === 'all'">All spaces and the server</option>
+                            <option value="server" [selected]="filters().space === 'server'">The server only</option>
+                            @for (space of spaces(); track space.id) {
+                                <option [value]="space.id" [selected]="filters().space === space.id">{{ space.name }}</option>
+                            }
+                        </select>
+                    </label>
+                }
+                @if (filtered()) {
+                    <button type="button" class="button small" title="Show every entry again" (click)="clearFilters()">Clear filters</button>
+                }
+            </div>
+        </form>
+
+        <div class="logs-bar">
+            <span class="field-hint">{{ keptText() }}</span>
+            <span class="spacer"></span>
+            <button type="button" class="button small" title="Change how long entries are kept, and whether they are saved to files" (click)="openSettings.emit()">
+                <svg sfeIcon="settings"></svg>Keep for…
+            </button>
+        </div>
+
+        @if (error()) {
+            <p class="form-error">Could not read the log: {{ error() }}</p>
+        }
+        <ul class="log-entries" aria-live="polite">
+            @for (entry of entries(); track entry.id) {
+                @let open = openId() === entry.id;
+                <li class="log-entry" [class]="'level-' + entry.level" [class.open]="open">
+                    <button type="button" class="log-entry-head" [attr.aria-expanded]="open"
+                            [title]="open ? 'Show less' : 'Show the whole entry'" (click)="toggle(entry)">
+                        <time [attr.datetime]="entry.timestamp">{{ time(entry.timestamp) }}</time>
+                        <span class="log-level">{{ levelNames[entry.level] }}</span>
+                        @if (allSpaces()) {
+                            <span class="log-space">{{ spaceName(entry.tenantId) }}</span>
+                        }
+                        <span class="log-category" [title]="entry.category">{{ short(entry.category) }}</span>
+                        <span class="log-message">{{ entry.message }}</span>
+                        @if (entry.exception && !open) {
+                            <span class="log-has-error" title="An error is attached">error</span>
+                        }
+                    </button>
+                    @if (open) {
+                        <div class="log-entry-details">
+                            <p><span class="muted">Logger</span> {{ entry.category }}</p>
+                            @if (entry.exception) {
+                                <pre class="log-exception">{{ entry.exception }}</pre>
+                            }
+                        </div>
+                    }
+                </li>
+            }
+        </ul>
+        @if (!entries().length && loaded() && !error()) {
+            <p class="muted task-empty">{{ filtered() ? 'No entries match these filters.' : 'Nothing logged yet.' }}</p>
+        }
+        @if (next() !== null) {
+            <button type="button" class="button small task-more" title="Show older entries" [sfeBusy]="paging()" [disabled]="loading()" (click)="loadMore()">
+                Load older entries
+            </button>
+        }

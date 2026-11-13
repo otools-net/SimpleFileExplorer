@@ -111,7 +111,7 @@ Move to `.html` (one commit per line):
 - [x] `formats/` (10): client build identical
 - [x] `library/` (10): client build identical
 - [x] `files/` (6), `tags/` (3), `tasks/` (3), `tracking/` (3): client build identical
-- [ ] `editor/`, `logs/`, `menus/`, `migration/`, `player/`, `settings/`, `shared/`, `trickplay/` (1 each)
+- [x] `editor/`, `logs/`, `menus/`, `migration/`, `player/`, `settings/`, `shared/`, `trickplay/` (1 each): client build identical
 
 Tidy, one component per commit, worst first (add one line per component when starting):
 
