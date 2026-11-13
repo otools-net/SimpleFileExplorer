@@ -4,7 +4,6 @@ using Microsoft.Net.Http.Headers;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Files;
-using Sfe.Core.Paths;
 
 namespace Sfe.Api.Endpoints;
 
@@ -37,15 +36,13 @@ public static class EpubEndpoints
     }
 
     private static async Task<Results<FileStreamHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>> GetEntry(
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
+        [AsParameters] EpubServices services,
         HttpContext context,
         string book,
         string? entry
     )
     {
+        var (paths, serverFiles, work, current) = services;
         var state = await current.GetAsync();
         if (
             EpubEntries.PathOf(book) is not { } path

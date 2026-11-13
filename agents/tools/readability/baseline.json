@@ -6,7 +6,7 @@
     "src/Sfe.Api/Endpoints/ChangeEndpoints.cs": {"longFunctions":1,"deepFunctions":1,"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/ConfigEndpoints.cs": {"longFunctions":1},
     "src/Sfe.Api/Endpoints/EditorEndpoints.cs": {"longFunctions":1},
-    "src/Sfe.Api/Endpoints/EpubEndpoints.cs": {"longFunctions":1,"manyParameterFunctions":1},
+    "src/Sfe.Api/Endpoints/EpubEndpoints.cs": {"longFunctions":1},
     "src/Sfe.Api/Endpoints/ExploreEndpoints.cs": {"fileLines":1088,"longFunctions":5,"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/FileEndpoints.cs": {"fileLines":841},
     "src/Sfe.Api/Endpoints/FolderRuleEndpoints.cs": {"fileLines":415,"longFunctions":1},
