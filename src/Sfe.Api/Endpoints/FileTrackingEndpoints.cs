@@ -30,6 +30,16 @@ public static class FileTrackingEndpoints
 
     public static RouteGroupBuilder MapFileTrackingEndpoints(this RouteGroupBuilder api)
     {
+        MapDuplicates(api);
+
+        MapMissing(api);
+
+        return api;
+    }
+
+    /// <summary>Duplicate files and similar videos.</summary>
+    private static void MapDuplicates(RouteGroupBuilder api)
+    {
         api.MapGet("/duplicates", Duplicates)
             .RequireRight(Rights.Duplicates)
             .FolderScoped("404 for a scope the subject doesn't see; groups of the files it sees only")
@@ -76,7 +86,11 @@ public static class FileTrackingEndpoints
                 "Compares the fingerprints of the indexed videos in the background (made with their trickplay); "
                     + "does nothing while a comparison runs."
             );
+    }
 
+    /// <summary>Tagged files a scan no longer found, and relinking them.</summary>
+    private static void MapMissing(RouteGroupBuilder api)
+    {
         var missing = api.MapGroup("/missing-files").WithTags("File tracking");
 
         missing
@@ -114,6 +128,12 @@ public static class FileTrackingEndpoints
             .WithName("RelinkMissingFile")
             .WithSummary("Gives the tags of a missing file to a file of the library, and forgets the missing file.");
 
+        MapForget(missing);
+    }
+
+    /// <summary>Missing files forgotten: one, or all of them.</summary>
+    private static void MapForget(RouteGroupBuilder missing)
+    {
         missing
             .MapDelete(
                 "/{id:int}",
@@ -146,8 +166,6 @@ public static class FileTrackingEndpoints
             .FolderScoped("only the missing files that were where the subject sees")
             .WithName("ForgetMissingFiles")
             .WithSummary("Forgets every missing file and their tags.");
-
-        return api;
     }
 
     private static async Task<Results<Ok<DuplicateResults>, ValidationProblem, NotFound>> Duplicates(

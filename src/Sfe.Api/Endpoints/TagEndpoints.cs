@@ -34,6 +34,16 @@ public static class TagEndpoints
 
     public static RouteGroupBuilder MapTagEndpoints(this RouteGroupBuilder api)
     {
+        MapTags(api);
+        var files = MapFiles(api);
+        MapDefaults(api);
+        MapViewed(files);
+        return api;
+    }
+
+    /// <summary>The routes under <c>/tags</c>.</summary>
+    private static void MapTags(RouteGroupBuilder api)
+    {
         var tags = api.MapGroup("/tags").WithTags("Tags");
 
         tags.MapGet("/", Search)
@@ -83,7 +93,11 @@ public static class TagEndpoints
             .RequireRight(Rights.ManageTags)
             .WithName("DeleteTag")
             .WithSummary("Deletes a tag and removes it from every file. Built-in tags cannot be deleted.");
+    }
 
+    /// <summary>The routes under <c>/file-tags</c>.</summary>
+    private static RouteGroupBuilder MapFiles(RouteGroupBuilder api)
+    {
         var files = api.MapGroup("/file-tags").WithTags("Tags");
 
         files
@@ -125,7 +139,12 @@ public static class TagEndpoints
                 "Adds and removes tags on every file of a folder (or a folder tree), or on every match of a search."
             )
             .WithDescription(ChangeScopeTagsDescription);
+        return files;
+    }
 
+    /// <summary>The routes under <c>/folder-default-tags</c>.</summary>
+    private static void MapDefaults(RouteGroupBuilder api)
+    {
         var defaults = api.MapGroup("/folder-default-tags").WithTags("Tags");
 
         defaults
@@ -148,7 +167,11 @@ public static class TagEndpoints
                     + "sub-folders."
             )
             .WithDescription(ChangeFolderDefaultTagsDescription);
+    }
 
+    /// <summary>A file viewed (under <c>/file-tags</c>, mapped after the folders' default tags as it always was).</summary>
+    private static void MapViewed(RouteGroupBuilder files)
+    {
         files
             .MapPost("/viewed", Viewed)
             .RequireRight(Rights.ViewFiles)
@@ -156,8 +179,6 @@ public static class TagEndpoints
             .FolderScoped("files.view at the file")
             .WithName("RecordFileViewed")
             .WithSummary("Records that a file was viewed: its tags become the last viewed tags.");
-
-        return api;
     }
 
     private static async Task<Results<Ok<FolderDefaults>, NotFound>> GetFolderDefaultTags(

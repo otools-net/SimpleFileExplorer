@@ -213,3 +213,16 @@ dotnet csharpier format src/Sfe.Api/Endpoints
   becomes a field named after the route's `.WithName("X")`, `XDescription`, just before that method: `const` without
   holes, `static readonly` when interpolated. A raw string's lines move together, so its value is the same.
 - Check: `references.mjs --only openapi,routes` identical.
+
+## Route maps by group
+
+```sh
+dotnet run agents/tools/readability/split-route-maps/SplitRouteMaps.cs -- src/Sfe.Api/Endpoints/*Endpoints.cs
+```
+
+- A `Map…Endpoints` over 60 lines with two route groups or more (`var x = api.MapGroup("/path")…;`) is cut at each
+  group, each part moved as it is into `Map<X>(RouteGroupBuilder api)`, called in the same order. Maps with fewer
+  groups are reported: split them by subject by hand, each part taking its group as parameter.
+- A route of an earlier group mapped after a later group's (`/file-tags/viewed` after the default tags) does not
+  compile once cut: keep it last in a method of its own (`MapViewed(files)`), so the registration order stays.
+- Check: `references.mjs --only openapi,routes` identical.

@@ -38,6 +38,30 @@ public static class AccessEndpoints
             .WithSummary("Every right, with those the server and the space switch off.")
             .WithDescription(TenantParameter);
 
+        MapUsers(access);
+
+        MapGroups(access);
+
+        access
+            .MapGet("/tenant", GetTenantAccess)
+            .RequireRight(Rights.ManageMembers)
+            .WithName("GetTenantAccess")
+            .WithSummary("Guest access of the space and the rights switched off in it.");
+
+        access
+            .MapPut("/tenant/guest-access", SetGuestAccess)
+            .RequireRight(Rights.ManageMembers)
+            .WithName("SetGuestAccess")
+            .WithSummary(
+                "Opens the space to visitors without an account (with its Guests group's rights), or closes it."
+            );
+
+        return api;
+    }
+
+    /// <summary>The accounts of a space.</summary>
+    private static void MapUsers(RouteGroupBuilder access)
+    {
         access
             .MapGet("/users", GetUsers)
             .RequireRight(Rights.ManageMembers, Rights.ManageUsers)
@@ -66,7 +90,11 @@ public static class AccessEndpoints
             .RequireRight(Rights.ManageMembers, Rights.ManageUsers)
             .WithName("DeleteUser")
             .WithSummary("Deletes an account, or (for a space's administrator) takes it out of the space.");
+    }
 
+    /// <summary>The groups of a space.</summary>
+    private static void MapGroups(RouteGroupBuilder access)
+    {
         access
             .MapGet("/groups", GetGroups)
             .RequireRight(Rights.ManageMembers, Rights.ManageUsers)
@@ -97,22 +125,6 @@ public static class AccessEndpoints
             .WithName("DeleteGroup")
             .WithSummary("Deletes a group (not a built-in one).")
             .WithDescription(TenantParameter);
-
-        access
-            .MapGet("/tenant", GetTenantAccess)
-            .RequireRight(Rights.ManageMembers)
-            .WithName("GetTenantAccess")
-            .WithSummary("Guest access of the space and the rights switched off in it.");
-
-        access
-            .MapPut("/tenant/guest-access", SetGuestAccess)
-            .RequireRight(Rights.ManageMembers)
-            .WithName("SetGuestAccess")
-            .WithSummary(
-                "Opens the space to visitors without an account (with its Guests group's rights), or closes it."
-            );
-
-        return api;
     }
 
     private static async Task<Results<Ok<RightsCatalogInfo>, NotFound>> GetRights(

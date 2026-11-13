@@ -113,6 +113,35 @@ public static class ExploreEndpoints
     {
         var explore = api.MapGroup("/files/explore").WithTags("Files");
 
+        MapListing(explore);
+        MapEntries(explore);
+        api.MapPost("/files/jobs/extract", Extract)
+            .RequireRight(Rights.ExtractFiles)
+            .RequireRateLimiting(RequestLimits.Unlock)
+            .FolderScoped(
+                "files.view and files.download at the archive, files.extract at the target (checked again as the job "
+                    + "runs); replacing: the right to delete there"
+            )
+            .WithTags("Files")
+            .WithName("ExtractArchive")
+            .WithSummary(
+                "Extracts an archive (zip, 7z, rar, tar, gz…), all of it or the entries chosen, in the background."
+            )
+            .WithDescription(ExtractArchiveDescription);
+        explore
+            .MapPost("/unlock", Unlock)
+            .RequireRight(Rights.ViewFiles)
+            .RequireRateLimiting(RequestLimits.Unlock)
+            .FolderScoped("files.view at the archive")
+            .WithName("UnlockArchive")
+            .WithSummary("Tries a password on an archive; answers an unlock for the requests that need it.")
+            .WithDescription(UnlockArchiveDescription);
+        return api;
+    }
+
+    /// <summary>An archive listed and searched.</summary>
+    private static void MapListing(RouteGroupBuilder explore)
+    {
         explore
             .MapGet("", List)
             .RequireRight(Rights.ViewFiles)
@@ -133,6 +162,11 @@ public static class ExploreEndpoints
                 "Folders and files of an archive, or of one of its folders, whose name holds a text (any case)."
             )
             .WithDescription(SearchArchiveDescription);
+    }
+
+    /// <summary>One entry of an archive: by id, by path, as text.</summary>
+    private static void MapEntries(RouteGroupBuilder explore)
+    {
         explore
             .MapGet("/entry/{archive}/{id:long}/{name}", GetEntry)
             .RequireRight(Rights.Download)
@@ -163,28 +197,6 @@ public static class ExploreEndpoints
                 "A text file inside an archive, decoded as `GET api/files/text` decodes a library file; read only."
             )
             .WithDescription(GetArchiveEntryTextDescription);
-        api.MapPost("/files/jobs/extract", Extract)
-            .RequireRight(Rights.ExtractFiles)
-            .RequireRateLimiting(RequestLimits.Unlock)
-            .FolderScoped(
-                "files.view and files.download at the archive, files.extract at the target (checked again as the job "
-                    + "runs); replacing: the right to delete there"
-            )
-            .WithTags("Files")
-            .WithName("ExtractArchive")
-            .WithSummary(
-                "Extracts an archive (zip, 7z, rar, tar, gz…), all of it or the entries chosen, in the background."
-            )
-            .WithDescription(ExtractArchiveDescription);
-        explore
-            .MapPost("/unlock", Unlock)
-            .RequireRight(Rights.ViewFiles)
-            .RequireRateLimiting(RequestLimits.Unlock)
-            .FolderScoped("files.view at the archive")
-            .WithName("UnlockArchive")
-            .WithSummary("Tries a password on an archive; answers an unlock for the requests that need it.")
-            .WithDescription(UnlockArchiveDescription);
-        return api;
     }
 
     private static async Task<

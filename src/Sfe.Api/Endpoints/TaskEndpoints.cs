@@ -56,6 +56,16 @@ public static class TaskEndpoints
             .WithSummary("Stops a running task.")
             .WithDescription(CancelTaskDescription);
 
+        MapSchedules(tasks);
+
+        MapRuns(tasks);
+
+        return api;
+    }
+
+    /// <summary>The schedules of the background tasks.</summary>
+    private static void MapSchedules(RouteGroupBuilder tasks)
+    {
         tasks
             .MapPost("/schedules", CreateSchedule)
             .RequireRight(Rights.ScheduleTasks)
@@ -82,7 +92,11 @@ public static class TaskEndpoints
             .RequireRight(Rights.ScheduleTasks)
             .WithName("PreviewTaskSchedule")
             .WithSummary("The next runs of a schedule being edited, or its validation errors.");
+    }
 
+    /// <summary>The history of task runs.</summary>
+    private static void MapRuns(RouteGroupBuilder tasks)
+    {
         tasks
             .MapGet("/runs", Runs)
             .RequireRight(Rights.ViewTasks)
@@ -101,8 +115,6 @@ public static class TaskEndpoints
             .RequireRight(Rights.ScheduleTasks)
             .WithName("ClearTaskRuns")
             .WithSummary("Deletes the history of finished runs.");
-
-        return api;
     }
 
     private static async Task<Ok<TaskOverview>> Overview(

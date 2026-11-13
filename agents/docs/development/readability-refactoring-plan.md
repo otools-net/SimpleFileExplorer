@@ -130,7 +130,9 @@ Tidy, one component per commit, worst first (add one line per component when sta
 
 ### Phase 5: long, deep and many-parameter functions
 
-- [ ] Route maps: `MapFileEndpoints`, `MapTagEndpoints`, `MapExploreEndpoints`, `MapLibraryEndpoints`, others over 60
+- [x] Route maps: `MapFileEndpoints`, `MapTagEndpoints`, `MapExploreEndpoints`, `MapLibraryEndpoints`, others over 60
+  (`ExtractDescriptions.cs`: 70 descriptions into fields; `SplitRouteMaps.cs`, by hand for single-group maps; none
+  over 60 now; OpenAPI and `routes.txt` identical)
 - [ ] `[AsParameters]`: `ExploreEndpoints` (List, Search, GetText, Extract, GetEntry, OpenEntryAsync, Unlock,
   GetEntryAt)
 - [ ] `[AsParameters]`: `LibraryEndpoints`, `TextEndpoints`, `EditorEndpoints`, `ConfigEndpoints`

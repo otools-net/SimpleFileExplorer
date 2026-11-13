@@ -40,6 +40,16 @@ public static class SessionEndpoints
     {
         var session = api.MapGroup("/session").WithTags("Session");
 
+        MapSignIn(session);
+
+        MapRecovery(session);
+
+        return api;
+    }
+
+    /// <summary>Signing in and out, and the space chosen.</summary>
+    private static void MapSignIn(RouteGroupBuilder session)
+    {
         session
             .MapGet("/", async (HttpContext context, CancellationToken _) =>
                 TypedResults.Ok(await DescribeAsync(context))
@@ -71,7 +81,11 @@ public static class SessionEndpoints
             .AllowAnonymous()
             .WithName("SwitchTenant")
             .WithSummary("Switches the signed-in account to another of its spaces.");
+    }
 
+    /// <summary>The start link, a forgotten password, a changed one.</summary>
+    private static void MapRecovery(RouteGroupBuilder session)
+    {
         session
             .MapGet("/start", StartWithLink)
             .AllowAnonymous()
@@ -108,8 +122,6 @@ public static class SessionEndpoints
             .RequireRateLimiting(SignInRateLimit)
             .WithName("ChangeOwnPassword")
             .WithSummary("Changes the password of the signed-in local account; its other sessions end.");
-
-        return api;
     }
 
     internal static async Task<SessionInfo> DescribeAsync(HttpContext context)

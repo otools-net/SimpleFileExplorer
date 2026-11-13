@@ -63,6 +63,24 @@ public static class LibraryEndpoints
 
     public static RouteGroupBuilder MapLibraryEndpoints(this RouteGroupBuilder api)
     {
+        MapBrowse(api);
+
+        MapFileLinks(api);
+
+        api.MapGet("/thumbnails/{**path}", Thumbnail)
+            .RequireRateLimiting(RequestLimits.Media)
+            .RequireRight(Rights.ViewFiles)
+            .FolderScoped("files.view at the file")
+            .WithName("GetThumbnail")
+            .WithTags("Library")
+            .WithSummary("JPEG preview of a video or image.");
+
+        return api;
+    }
+
+    /// <summary>Folders browsed and the library searched.</summary>
+    private static void MapBrowse(RouteGroupBuilder api)
+    {
         api.MapGet("/browse", Browse)
             .RequireRight(Rights.Browse)
             .FolderScoped(
@@ -97,7 +115,11 @@ public static class LibraryEndpoints
             .WithTags("Library")
             .WithSummary("Searches the file index.")
             .WithDescription(SearchDescription);
+    }
 
+    /// <summary>A file's content, and the links that serve it to other players.</summary>
+    private static void MapFileLinks(RouteGroupBuilder api)
+    {
         api.MapGet("/files/raw/{**path}", Raw)
             .RequireRight(Rights.ViewFiles)
             .NeverRunByPages()
@@ -135,16 +157,6 @@ public static class LibraryEndpoints
                 "Streams the file of a link made by `CreateFileLink` (the token stands for the sign-in; "
                     + "range requests supported)."
             );
-
-        api.MapGet("/thumbnails/{**path}", Thumbnail)
-            .RequireRateLimiting(RequestLimits.Media)
-            .RequireRight(Rights.ViewFiles)
-            .FolderScoped("files.view at the file")
-            .WithName("GetThumbnail")
-            .WithTags("Library")
-            .WithSummary("JPEG preview of a video or image.");
-
-        return api;
     }
 
     /// <summary>

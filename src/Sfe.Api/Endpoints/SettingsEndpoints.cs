@@ -16,13 +16,22 @@ public static class SettingsEndpoints
 
     public static RouteGroupBuilder MapSettingsEndpoints(this RouteGroupBuilder api)
     {
+        MapSettings(api);
+        MapPreferences(api);
+        return api;
+    }
+
+    private const string LevelDescription = """
+        `level` is `server` (the server settings page, over the configuration files: server administrators) or
+        `tenant` (the library's settings, over the server's). Without it: `server` for server administrators,
+        `tenant` otherwise. The library root, the database, ffmpeg and the system commands are only set in the
+        configuration files.
+        """;
+
+    /// <summary>The routes under <c>/settings</c>.</summary>
+    private static void MapSettings(RouteGroupBuilder api)
+    {
         var settings = api.MapGroup("/settings").WithTags("Settings").RequireRight(AnySettingsRight);
-        const string LevelDescription = """
-            `level` is `server` (the server settings page, over the configuration files: server administrators) or
-            `tenant` (the library's settings, over the server's). Without it: `server` for server administrators,
-            `tenant` otherwise. The library root, the database, ffmpeg and the system commands are only set in the
-            configuration files.
-            """;
 
         settings
             .MapGet("/", Get)
@@ -47,6 +56,12 @@ public static class SettingsEndpoints
                     """
             );
 
+        MapSettingChanges(settings);
+    }
+
+    /// <summary>Changes, locks and resets of the settings of a level.</summary>
+    private static void MapSettingChanges(RouteGroupBuilder settings)
+    {
         settings
             .MapPatch("/", SaveChanges)
             .WithName("SaveSettingChanges")
@@ -75,7 +90,11 @@ public static class SettingsEndpoints
             .WithName("ResetSettings")
             .WithSummary("Forgets a level's values: the levels above apply again.")
             .WithDescription(LevelDescription);
+    }
 
+    /// <summary>The routes under <c>/me/preferences</c>.</summary>
+    private static void MapPreferences(RouteGroupBuilder api)
+    {
         var preferences = api.MapGroup("/me/preferences").WithTags("Settings").RequireRight(Rights.OwnPreferences);
 
         preferences
@@ -102,8 +121,6 @@ public static class SettingsEndpoints
             .MapDelete("/", ResetPreferences)
             .WithName("ResetPreferences")
             .WithSummary("Forgets the signed-in user's preferences: the library's settings apply again.");
-
-        return api;
     }
 
     /// <summary>

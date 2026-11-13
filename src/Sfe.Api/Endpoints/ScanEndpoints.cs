@@ -33,6 +33,14 @@ public static class ScanEndpoints
 
     public static RouteGroupBuilder MapScanEndpoints(this RouteGroupBuilder api)
     {
+        MapScan(api);
+        MapIndex(api);
+        return api;
+    }
+
+    /// <summary>The routes under <c>/scan</c>.</summary>
+    private static void MapScan(RouteGroupBuilder api)
+    {
         var scan = api.MapGroup("/scan").WithTags("Index");
 
         scan.MapGet("/", ScanStatusOf)
@@ -57,7 +65,11 @@ public static class ScanEndpoints
             .RequireRight(Rights.Scan)
             .WithName("CancelScan")
             .WithSummary("Cancels the running scan.");
+    }
 
+    /// <summary>The routes under <c>/index</c>.</summary>
+    private static void MapIndex(RouteGroupBuilder api)
+    {
         var index = api.MapGroup("/index").WithTags("Index");
 
         index
@@ -95,8 +107,6 @@ public static class ScanEndpoints
                 "Keeps a folder (with its sub-folders) out of scans, trickplay or thumbnails, or lets them in again."
             )
             .WithDescription(SetFolderExclusionsDescription);
-
-        return api;
     }
 
     private static async Task<Ok<IReadOnlyList<ExcludedFolder>>> ListExclusions(
