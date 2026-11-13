@@ -1,0 +1,81 @@
+<div class="text-toolbar" role="toolbar" aria-label="Text" sfeOverflowRow="Text">
+    @if (state() === 'ready' && !part()) {
+        <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
+    }
+    @if (part(); as shown) {
+        <div class="text-parts" role="group" aria-label="Parts of the file" [sfeOverflowItem]="more.parts">
+            <button type="button" class="text-action" data-part="start" title="The start of the file" [disabled]="shown.offset === 0 || loadingPart()" (click)="openPart(0)">Start</button>
+            <button type="button" class="text-action" data-part="previous" title="The part before" [disabled]="shown.offset === 0 || loadingPart()" (click)="previousPart()">‹ Earlier</button>
+            <button type="button" class="text-action" data-part="next" title="The part after" [disabled]="shown.end >= shown.size || loadingPart()" (click)="openPart(shown.end)">Later ›</button>
+            <button type="button" class="text-action" data-part="end" title="The end of the file" [disabled]="shown.end >= shown.size || loadingPart()" (click)="openPart(-1)">End</button>
+        </div>
+    }
+    @if (state() === 'ready' && !session.editing() && fileSource.library) {
+        <button type="button" class="text-action" data-follow [sfeOverflowItem]="more.follow" [class.active]="following()" [attr.aria-pressed]="following()"
+                title="Show what is added to the end of the file as it grows (a log being written)" (click)="toggleFollow()"><svg sfeIcon="down"></svg> Follow</button>
+    }
+    <button type="button" class="icon-button" [sfeOverflowItem]="more.wrap" [class.active]="own().wrap" [attr.aria-pressed]="own().wrap" title="Wrap long lines" aria-label="Wrap long lines" (click)="toggle('wrap')"><svg sfeIcon="wrap"></svg></button>
+    <button type="button" class="icon-button" [sfeOverflowItem]="more.lineNumbers" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggle('lineNumbers')"><svg sfeIcon="line-numbers"></svg></button>
+    <button type="button" class="icon-button" [sfeOverflowItem]="more.find" title="Find (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="editor?.find()"><svg sfeIcon="search"></svg></button>
+    <button type="button" class="icon-button" [sfeOverflowItem]="more.goToLine" title="Go to line (Ctrl+Alt+G)" aria-label="Go to line" [disabled]="state() !== 'ready'" (click)="editor?.goToLine()"><svg sfeIcon="goto-line"></svg></button>
+    <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
+            title="Reading settings: font, size, width, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+    <button class="icon-button" sfeOverflowMore></button>
+</div>
+@if (panelOpen()) {
+    <sfe-reading-panel [profile]="profile()" (closed)="panelOpen.set(false)" />
+}
+<sfe-text-edit-bar />
+@switch (state()) {
+    @case ('loading') {
+        <p class="text-message">Loading…</p>
+    }
+    @case ('failed') {
+        <div class="text-message">
+            <p>{{ message() }}</p>
+            @if (downloadUrl(); as url) {
+                <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+            }
+        </div>
+    }
+}
+<div #host class="text-editor" [hidden]="state() !== 'ready'"></div>
+@if (state() === 'ready') {
+    <footer class="text-status" aria-live="polite">
+        <span class="text-status-details">
+            <span>{{ language() ?? 'Plain text' }}</span>
+            @if (part(); as shown) {
+                <span>{{ encodingName(shown.encoding) }}</span>
+                <span data-part-range>{{ partRange() }}</span>
+            } @else if (session.file(); as file) {
+                @if (session.editing()) {
+                    <select class="text-status-select" data-save-encoding title="The encoding the file is saved in" aria-label="Save in encoding"
+                            (change)="session.encoding.set(valueOf($event))">
+                        @for (encoding of saveEncodings; track encoding) {
+                            <option [value]="encoding" [selected]="encoding === session.encoding()">{{ encodingName(encoding) }}</option>
+                        }
+                    </select>
+                    <select class="text-status-select" data-save-line-ending title="The line endings the file is saved with" aria-label="Save with line endings"
+                            (change)="session.lineEnding.set(valueOf($event))">
+                        @for (ending of saveLineEndings; track ending) {
+                            <option [value]="ending" [selected]="ending === session.lineEnding()">{{ lineEndingName(ending) }}</option>
+                        }
+                    </select>
+                } @else {
+                    <select class="text-status-select" data-read-encoding title="Read the file again in another encoding (letters shown wrong)" aria-label="Reopen with encoding"
+                            [disabled]="following()" (change)="session.reopen(valueOf($event))">
+                        @for (encoding of readEncodings; track encoding) {
+                            <option [value]="encoding" [selected]="encoding === readValue(file.encoding)">{{ encoding === 'utf-8' && file.encoding === 'utf-8-bom' ? encodingName('utf-8-bom') : encodingName(encoding) }}</option>
+                        }
+                    </select>
+                    <span>{{ lineEndingName(file.lineEnding) }}</span>
+                }
+                <span>{{ size(file.size) }}</span>
+            }
+        </span>
+        @if (session.dirty()) {
+            <span class="text-edited" data-edited>Edited</span>
+        }
+        <span>Ln {{ cursor().line }}, Col {{ cursor().column }}</span>
+    </footer>
+}

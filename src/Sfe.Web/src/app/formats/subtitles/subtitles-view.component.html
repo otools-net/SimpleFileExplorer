@@ -1,0 +1,96 @@
+<div class="text-toolbar" role="toolbar" aria-label="Subtitles" sfeOverflowRow="Subtitles">
+    @if (state() === 'ready') {
+        <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
+        @if (session.editing()) {
+            <span class="subtitle-shift" [sfeOverflowItem]="null" overflowStay>
+                <input #shiftBox type="text" inputmode="decimal" class="json-filter" data-shift-box placeholder="± seconds" aria-label="Seconds to move every cue by"
+                       title="Seconds to move every cue by: 2.5 later, -2.5 earlier" (keydown.enter)="shift()" />
+                <button type="button" class="markdown-mode csv-header-toggle" data-shift title="Move every cue by these seconds (Ctrl+Z undoes it)" (click)="shift()">Shift times</button>
+            </span>
+        }
+    }
+    <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
+        @for (choice of modes; track choice.id) {
+            <button type="button" role="radio" class="markdown-mode" [class.active]="mode() === choice.id" [attr.aria-checked]="mode() === choice.id"
+                    [attr.data-mode]="choice.id" [title]="choice.title" (click)="setMode(choice.id)">{{ choice.label }}</button>
+        }
+    </div>
+    @if (mode() !== 'source') {
+        <input #filterBox type="search" class="json-filter" [sfeOverflowItem]="null" overflowStay placeholder="Filter cues" aria-label="Filter cues" title="Shows the cues holding this (Ctrl+F)"
+               [value]="query()" (input)="setQuery($any($event.target).value)" (keydown)="onFilterKeydown($event)" />
+    }
+    @if (mode() !== 'cues') {
+        <button type="button" class="icon-button" [sfeOverflowItem]="more.lineNumbers" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
+        <button type="button" class="icon-button" [sfeOverflowItem]="more.find" title="Find in the source (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="sourceEditor()?.find()"><svg sfeIcon="search"></svg></button>
+    }
+    <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
+            title="Reading settings: font, size, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+    <button class="icon-button" sfeOverflowMore></button>
+</div>
+@if (panelOpen()) {
+    <sfe-reading-panel profile="code" (closed)="panelOpen.set(false)" />
+}
+<sfe-text-edit-bar />
+@switch (state()) {
+    @case ('loading') {
+        <p class="text-message">Loading…</p>
+    }
+    @case ('failed') {
+        <div class="text-message">
+            <p>{{ message() }}</p>
+            @if (downloadUrl(); as url) {
+                <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+            }
+        </div>
+    }
+}
+<div class="json-panes subtitles-panes" [hidden]="state() !== 'ready'">
+    <div class="json-pane" [hidden]="mode() === 'source'">
+        @if (problems()[0]; as problem) {
+            <p class="json-problem" role="status" data-problem>
+                Line {{ problem.line }}: {{ problem.message }}{{ problems().length > 1 ? ' (and ' + (problems().length - 1) + ' more)' : '' }}.
+                <button type="button" class="link-button" (click)="showLine(problem.line)">Show in the source</button>
+            </p>
+        }
+        <div #scroller class="csv-scroller subtitle-list" role="listbox" tabindex="0" [attr.aria-label]="'Cues of ' + item().name"
+             [attr.aria-activedescendant]="activeId()" (keydown)="onListKeydown($event)">
+            <div class="csv-body" [style.height.px]="virtual.total()">
+                @for (shown of virtual.items(); track shown.key) {
+                    @let cue = order()[shown.index];
+                    @if (cue) {
+                        <div class="subtitle-cue" role="option" [id]="optionId(cue)" [attr.data-cue]="cue.index" [class.selected]="selected() === cue.index"
+                             [class.overlaps]="cue.overlaps" [attr.aria-selected]="selected() === cue.index"
+                             [style.transform]="'translateY(' + shown.start + 'px)'" [style.height.px]="virtual.height"
+                             [title]="cue.overlaps ? 'Starts before the cue before it has ended' : ''" (click)="select(cue)" (dblclick)="showCue(cue)">
+                            <span class="subtitle-number">{{ cue.id || cue.index + 1 }}</span>
+                            <span class="subtitle-time subtitle-start">{{ time(cue.start) }}</span>
+                            <span class="subtitle-time subtitle-end">{{ time(cue.end) }}</span>
+                            <span class="subtitle-text">@for (run of cue.runs; track $index) {<span [class.subtitle-voice]="run.voice" [class.italic]="run.italic" [class.bold]="run.bold" [class.underline]="run.underline">{{ run.text }}</span>}</span>
+                        </div>
+                    }
+                }
+            </div>
+            @if (!order().length) {
+                <p class="csv-empty">{{ query().trim() ? 'No cue holds “' + query().trim() + '”.' : 'No cues.' }}</p>
+            }
+        </div>
+    </div>
+    <div #source class="text-editor json-source" [hidden]="mode() === 'cues'"></div>
+</div>
+@if (state() === 'ready') {
+    <footer class="text-status" aria-live="polite">
+        <span>{{ details() }}</span>
+        @if (session.dirty()) {
+            <span class="text-edited" data-edited>Edited</span>
+        }
+        <span class="json-selection">
+            <span data-counts>{{ counts() }}</span>
+            @if (selectedCue(); as cue) {
+                <span class="json-path" data-selected-cue>Cue {{ cue.id || cue.index + 1 }} · {{ time(cue.start) }} · {{ span(cue.end - cue.start) }}</span>
+                @if (playUrl(cue); as url) {
+                    <a class="link-button" data-play [href]="url" target="_blank" rel="noopener" [title]="'Play ' + videoName() + ' from this cue, in a new tab'">Play</a>
+                }
+            }
+        </span>
+    </footer>
+}

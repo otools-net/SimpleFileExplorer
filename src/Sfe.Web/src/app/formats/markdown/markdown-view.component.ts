@@ -85,72 +85,7 @@ function itemAt(path: string): LibraryItem {
         '(keydown)': 'onKeydown($event)',
         '(window:keydown)': 'onWindowKeydown($event)',
     },
-    template: `
-        <div class="text-toolbar" role="toolbar" aria-label="Document" sfeOverflowRow="Document">
-            @if (state() === 'ready') {
-                <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
-            }
-            <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
-                @for (choice of modes; track choice.id) {
-                    <button type="button" role="radio" class="markdown-mode" [class.active]="mode() === choice.id" [attr.aria-checked]="mode() === choice.id"
-                            [attr.data-mode]="choice.id" [title]="choice.title" (click)="setMode(choice.id)">{{ choice.label }}</button>
-                }
-            </div>
-            @if (mode() !== 'source') {
-                <button type="button" class="icon-button" [sfeOverflowItem]="more.outline" [class.active]="outline()" [attr.aria-pressed]="outline()" title="Outline: the headings" aria-label="Outline"
-                        [disabled]="!headings().length" (click)="toggleOutline()"><svg sfeIcon="list"></svg></button>
-            }
-            @if (mode() !== 'rendered') {
-                <button type="button" class="icon-button" [sfeOverflowItem]="more.lineNumbers" [class.active]="own().lineNumbers" [attr.aria-pressed]="own().lineNumbers" title="Line numbers" aria-label="Line numbers" (click)="toggleLineNumbers()"><svg sfeIcon="line-numbers"></svg></button>
-                <button type="button" class="icon-button" [sfeOverflowItem]="more.find" title="Find in the source (Ctrl+F)" aria-label="Find" [disabled]="state() !== 'ready'" (click)="sourceEditor()?.find()"><svg sfeIcon="search"></svg></button>
-            }
-            <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
-                    title="Reading settings: font, size, width, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
-            <button class="icon-button" sfeOverflowMore></button>
-        </div>
-        @if (panelOpen()) {
-            <sfe-reading-panel profile="prose" (closed)="panelOpen.set(false)" />
-        }
-        <sfe-text-edit-bar />
-        @switch (state()) {
-            @case ('loading') {
-                <p class="text-message">Loading…</p>
-            }
-            @case ('failed') {
-                <div class="text-message">
-                    <p>{{ message() }}</p>
-                    @if (downloadUrl(); as url) {
-                        <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
-                    }
-                </div>
-            }
-        }
-        <div class="markdown-panes" [hidden]="state() !== 'ready'" [class.with-outline]="outline() && mode() !== 'source' && headings().length">
-            @if (outline() && mode() !== 'source' && headings().length) {
-                <nav class="markdown-outline" aria-label="Outline">
-                    @for (heading of headings(); track heading.id) {
-                        @if (heading.level <= 3) {
-                            <a [href]="'#' + heading.id" [class]="'level-' + heading.level" (click)="goTo($event, heading.id)">{{ heading.text }}</a>
-                        }
-                    }
-                </nav>
-            }
-            <article #article class="markdown-body" tabindex="0" [attr.aria-label]="item().name" [hidden]="mode() === 'source'" (click)="onArticleClick($event)"><div #content class="markdown-content"></div></article>
-            <div #source class="text-editor markdown-source" [hidden]="mode() === 'rendered'"></div>
-        </div>
-        @if (state() === 'ready') {
-            <footer class="text-status" aria-live="polite">
-                <span>{{ details() }}</span>
-                @if (session.dirty()) {
-                    <span class="text-edited" data-edited>Edited</span>
-                }
-                @if (externalImages()) {
-                    <span class="markdown-external">{{ externalImages() }} {{ externalImages() === 1 ? 'image' : 'images' }} of other sites not shown
-                        <button type="button" class="link-button" title="Load them from the sites they are on (those sites see that this document is read)" (click)="showImages()">Show</button></span>
-                }
-            </footer>
-        }
-    `,
+    templateUrl: './markdown-view.component.html',
 })
 export class MarkdownViewComponent {
     readonly item = input.required<LibraryItem>();

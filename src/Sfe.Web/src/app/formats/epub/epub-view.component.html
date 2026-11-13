@@ -1,0 +1,59 @@
+<div class="text-toolbar" role="toolbar" aria-label="Book">
+    <button type="button" class="icon-button" data-toc [class.active]="showToc()" [attr.aria-pressed]="showToc()" title="Contents" aria-label="Contents"
+            [disabled]="!toc().length" (click)="toggleToc()"><svg sfeIcon="list"></svg></button>
+    <button type="button" class="icon-button" data-previous title="Previous page (←)" aria-label="Previous page" [disabled]="state() !== 'ready' || place()?.atStart"
+            (click)="previous()"><svg sfeIcon="left"></svg></button>
+    <button type="button" class="icon-button" data-next title="Next page (→)" aria-label="Next page" [disabled]="state() !== 'ready' || place()?.atEnd"
+            (click)="next()"><svg sfeIcon="right"></svg></button>
+    <div class="markdown-modes" role="radiogroup" aria-label="Layout">
+        @for (choice of modes; track choice.id) {
+            <button type="button" role="radio" class="markdown-mode" [class.active]="mode() === choice.id" [attr.aria-checked]="mode() === choice.id"
+                    [attr.data-mode]="choice.id" [title]="choice.title" (click)="setMode(choice.id)">{{ choice.label }}</button>
+        }
+    </div>
+    <button type="button" class="icon-button reading-toggle" data-reading-toggle [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
+            title="Reading settings: font, size, spacing, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+</div>
+@if (panelOpen()) {
+    <sfe-reading-panel profile="prose" (closed)="panelOpen.set(false)" />
+}
+<!-- Always there: the grid's second row (the text views' editing bar), so that the pages take the third. -->
+<div class="pdf-messages">
+    @switch (state()) {
+        @case ('loading') {
+            <p class="text-message">Loading…</p>
+        }
+        @case ('failed') {
+            <div class="text-message">
+                <p>{{ message() }}</p>
+                @if (downloadUrl(); as url) {
+                    <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+                }
+            </div>
+        }
+    }
+</div>
+<div class="pdf-panes epub-panes" [class.with-outline]="showToc() && toc().length" [hidden]="state() === 'failed'">
+    @if (showToc() && toc().length) {
+        <nav class="markdown-outline epub-toc" aria-label="Contents">
+            @for (entry of toc(); track $index) {
+                <a href="" [class.current]="entry.href.split('#')[0] === currentHref()" [style.padding-inline-start.px]="8 + entry.depth * 14"
+                   (click)="goTo($event, entry)">{{ entry.label }}</a>
+            }
+        </nav>
+    }
+    <div #frame class="pdf-frame epub-frame">
+        <div #stage class="epub-stage" [attr.aria-label]="item().name"></div>
+    </div>
+</div>
+@if (state() === 'ready') {
+    <footer class="text-status" aria-live="polite">
+        <span>{{ details() }}</span>
+        <span class="json-selection">
+            @if (chapter(); as label) {
+                <span class="json-path" data-chapter>{{ label }}</span>
+            }
+            <span data-progress [title]="place()?.percentage === null ? 'Counting the pages of the book…' : 'How far through the book'">{{ progress() }}</span>
+        </span>
+    </footer>
+}

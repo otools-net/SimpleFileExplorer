@@ -31,77 +31,7 @@ import { ReadingService } from './reading.service';
         '(keydown.escape)': 'onEscape($event)',
         '(document:pointerdown)': 'onDocumentPointerDown($event)',
     },
-    template: `
-        <header class="reading-panel-head">
-            <strong>{{ profile() === 'prose' ? 'Reading text' : 'Reading code' }}</strong>
-            <button type="button" class="icon-button ghost small" title="Close (Esc)" aria-label="Close" (click)="closed.emit()"><svg sfeIcon="close"></svg></button>
-        </header>
-        <label class="reading-field">
-            <span>Font</span>
-            <select (change)="set('font', $any($event.target).value)">
-                @for (font of fonts; track font.id) {
-                    <option [value]="font.id" [selected]="font.id === own().font">{{ font.label }}</option>
-                }
-            </select>
-        </label>
-        @if (own().font === 'custom') {
-            <label class="reading-field">
-                <span>Font name</span>
-                <input type="text" maxlength="100" placeholder="e.g. Fira Code" [value]="reading.preferences().customFont"
-                       title="The name of a font installed on this device" (input)="reading.setCustomFont($any($event.target).value)">
-            </label>
-        }
-        <div class="reading-field">
-            <span>Size</span>
-            <div class="reading-size">
-                <button type="button" class="icon-button small" title="Smaller (Ctrl+−)" aria-label="Smaller" [disabled]="own().size <= sizes.min" (click)="reading.changeSize(profile(), -1)">A−</button>
-                <output aria-live="polite">{{ own().size }} px</output>
-                <button type="button" class="icon-button small" title="Larger (Ctrl+=)" aria-label="Larger" [disabled]="own().size >= sizes.max" (click)="reading.changeSize(profile(), 1)">A+</button>
-            </div>
-        </div>
-        <label class="reading-field">
-            <span>Line height</span>
-            <select (change)="set('lineHeight', +$any($event.target).value)">
-                @for (value of lineHeights; track value) {
-                    <option [value]="value" [selected]="value === own().lineHeight">{{ value }}</option>
-                }
-            </select>
-        </label>
-        <label class="reading-field">
-            <span>Width</span>
-            <select title="The longest line, when long lines wrap" (change)="set('width', +$any($event.target).value)">
-                @for (value of widths; track value) {
-                    <option [value]="value" [selected]="value === own().width">{{ value ? value + ' characters' : 'Whole width' }}</option>
-                }
-            </select>
-        </label>
-        <label class="reading-field">
-            <span>Margins</span>
-            <select (change)="set('padding', +$any($event.target).value)">
-                @for (value of paddings; track value) {
-                    <option [value]="value" [selected]="value === own().padding">{{ value ? value + ' px' : 'None' }}</option>
-                }
-            </select>
-        </label>
-        <label class="reading-check"><input type="checkbox" [checked]="own().wrap" (change)="set('wrap', $any($event.target).checked)"> Wrap long lines</label>
-        <label class="reading-check"><input type="checkbox" [checked]="own().lineNumbers" (change)="set('lineNumbers', $any($event.target).checked)"> Line numbers</label>
-        <div class="reading-field">
-            <span>Colours</span>
-            <div class="reading-themes" role="radiogroup" aria-label="Colours">
-                @for (theme of themes; track theme.id) {
-                    <button type="button" role="radio" class="reading-theme" [attr.data-reader-theme]="theme.id" [class.active]="theme.id === reading.preferences().theme"
-                            [attr.aria-checked]="theme.id === reading.preferences().theme" [title]="theme.title" (click)="setTheme(theme.id)">{{ theme.label }}</button>
-                }
-            </div>
-        </div>
-        <footer class="reading-panel-foot">
-            <button type="button" class="button small" title="These settings and the colours back to your defaults" (click)="reading.reset(profile())">Reset</button>
-            @if (reading.canSaveDefaults()) {
-                <button type="button" class="button small" data-save-defaults [sfeBusy]="saving()" [disabled]="saving() || !reading.changed()"
-                        title="Start from these settings (both kinds of text, and the colours) in every browser you sign in from" (click)="saveDefaults()">Save as my default</button>
-            }
-        </footer>
-    `,
+    templateUrl: './reading-panel.component.html',
 })
 export class ReadingPanelComponent {
     readonly profile = input.required<ReadingProfile>();
