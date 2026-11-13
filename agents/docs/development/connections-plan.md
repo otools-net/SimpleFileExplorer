@@ -200,7 +200,12 @@ in `FolderRules`:
   `Enabled` defaults to true: nothing is offered until a kind has a sign-in method), `AllowPrivateAddresses` in the
   configuration only; `ClientConfig.Connections` (`levels`, `kinds` with their sign-in fields and capabilities),
   null when off or without a `connections.*` right; client: settings tab and Administration › Connections
-- [ ] `ConnectionService`, `ConnectionAccess`; credentials protected; audit log lines for every change
+- [x] `ConnectionService`, `ConnectionAccess`; credentials protected; audit log lines for every change. As built:
+  `ConnectionService` (lists by level / library / owner, create from a grant, update, reauthorize telling another
+  account, mark needs reconnecting, remove with its rows, `OpenAsync`), who uses it in `ConnectionSharing`
+  (libraries of a server-level one, a library's groups), `ConnectionAccess.LevelAsync` / `UsableAsync` (rules in
+  [connections](../features/connections.md)); `ConnectionCredentials` (Api) protects with purpose `SFE.Connections`;
+  security warnings for a connection made, signed in to another account, or opened to more
 
 ### Phase 2: Dropbox sign-in and management
 

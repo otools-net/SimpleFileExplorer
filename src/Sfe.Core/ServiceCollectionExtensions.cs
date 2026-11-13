@@ -210,6 +210,10 @@ public static class ServiceCollectionExtensions
         // Connections to other storage: the kinds registered (IConnectionProvider) and the door their calls leave by.
         services.TryAddSingleton(_ => new OutboundPolicy());
         services.AddSingleton<ConnectionProviders>();
+        // Their credentials are protected by the Api's keys (ICredentialProtector, AddSfeSecurity).
+        services.AddSingleton<ConnectionService>();
+        services.AddSingleton<ConnectionSharing>();
+        services.AddSingleton<ConnectionAccess>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();
         services.AddSingleton<BackupWriter>();

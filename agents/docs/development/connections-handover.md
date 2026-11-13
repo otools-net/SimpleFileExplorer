@@ -9,7 +9,8 @@ Files: [connections-plan](connections-plan.md) (the checklist: its `## Progress`
 ## Where it stands
 
 The owner asked to start with plan 5 (connections) and do plans 1 to 4 later. Asked for this session: phases 0 to 2,
-one commit per plan item, no real Dropbox account at hand. Done: phase 0 and three of the four items of phase 1.
+one commit per plan item, no real Dropbox account at hand. Done: phase 0 and phase 1 (the last item in a third
+session, see the epic's session log).
 **Nothing of Dropbox itself is built yet**: no package reference, no route, no page but the settings tab.
 
 | Commit | What |
@@ -19,16 +20,17 @@ one commit per plan item, no real Dropbox account at hand. Done: phase 0 and thr
 | `99d14d3` | readability baseline: `AccessEndpoints.cs` 442 to 448 lines (from `ebdb377`) |
 | `ff601f1` | phase 1 item 1: interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider` + contract tests |
 | `651f589` | phase 1 item 2: tables, migration `20261113…_Connections`, upgrade and cascade tests |
-| last | phase 1 item 3: rights, settings, `ClientConfig.Connections`, settings tab, docs, changelog |
+| `cb5aebd` | phase 1 item 3: rights, settings, `ClientConfig.Connections`, settings tab, docs, changelog |
+| last | phase 1 item 4: `ConnectionService`, `ConnectionSharing`, `ConnectionAccess`, `ConnectionCredentials`, feature note |
 
 Checks run for the last commit: the new suites, `npm test` (1179 passed), the full `dotnet test`, `measure.mjs
 --check`, `check-links.mjs`. The migration was applied on LocalDB and its deletes checked there by hand.
 
 ## Resume here
 
-1. Phase 1 item 4: `ConnectionService`, `ConnectionAccess`, credentials protected, audit lines (design below).
-2. Phase 2 (four items): Dropbox settings, the authorize routes, refresh and reconnect, the client pages.
-3. Then phases 3 to 7 as the plan lists them.
+1. Phase 2 (four items): Dropbox settings (**ask the owner about the app secret first**, see Decisions), the
+   authorize routes, refresh and reconnect, the client pages.
+2. Then phases 3 to 7 as the plan lists them.
 
 Per commit, as the epic asks: tick the item in the plan with an "As built" sentence, update the status board and
 session log of the epic plan, a line under `## Unreleased` when something is visible, `dotnet csharpier format`,
@@ -53,7 +55,12 @@ session log of the epic plan, a line under `## Unreleased` when something is vis
   `AccountId`, `State`, `Disabled`, `ReadOnly`), `ConnectionTenant`, `ConnectionGroup` (`FolderLevel` Read / Write).
 - Rights `connections.use` / `own` / `library` (space, Administrators, `since: 15`) and `connections.server`.
   Settings `connections.enabled` / `providers` / `levels` (server level, right `server.settings`).
-- `ICredentialProtector` (Core interface, **no implementation yet**).
+- `ICredentialProtector`, implemented by `Sfe.Api/Security/ConnectionCredentials` (registered in `AddSfeSecurity`).
+- `ConnectionService` (lists, create from a grant, update, reauthorize, mark needs reconnecting, remove, `OpenAsync`),
+  `ConnectionSharing` (libraries, groups), `ConnectionAccess` (`LevelAsync`, `UsableAsync`, pure `Decide`): rules in
+  [connections](../features/connections.md). Routes build a `ConnectionSubject` from `AccessState` (tenant, user id,
+  server administrator, guest = no user or a guest account).
+- Test helper `ConnectionWorld` (two libraries, alice / bob / carol / a server administrator, `WithSettings`).
 - Tests: `FakeProvider` (accounts by name; code `good:<name>` or password `secret` signs in), `FakeAccount`
   (`WithFile`, `Failing`, `Calls`, `Trash`), `FakeStorage`. A test server knows the fake kind with
   `services.AddSingleton<IConnectionProvider>(new FakeProvider())` (`ConnectionSettingsTests.Factory`).
@@ -76,29 +83,7 @@ session log of the epic plan, a line under `## Unreleased` when something is vis
 
 ## Design worked out for what comes next (not built)
 
-**Phase 1 item 4**
-
-- `ConnectionService` (root singleton in `AddSfeAccess`: `IDbContextFactory<AccessDbContext>`,
-  `ConnectionProviders`, `ICredentialProtector`, `ILogger`): list (by level, for managers: never `Credentials`),
-  create from a `ConnectionGrant`, rename, set `Disabled` / `ReadOnly` / root folder, set the libraries of a
-  server-level one, set a library's groups (only groups of that library; Read or Write), reauthorize (keeps id,
-  groups and rules; a different `AccountId` is told in the result), mark `NeedsReconnecting`, remove, and
-  `OpenAsync(id)` giving the `IRemoteStorage` (unprotect; null text = `NeedsReconnecting`). Results as
-  `AccessResult<T>` like `FolderRuleService`.
-- `ConnectionAccess` (the one place routes and jobs ask): for a subject (library, account, server administrator,
-  its group ids) and a connection, the level or null (null = 404). Rules: settings (`IsAllowed(kind)`, the level in
-  `Levels`), not `Disabled`; **account**: the owner only, Write (administrators never, even the server's: they list
-  and remove through the management routes); **library**: `TenantId` is the request's library and the best level of
-  the subject's groups there; **server**: `AllTenants` or a `ConnectionTenant` row for the library, then groups the
-  same way; server administrators Write on library and server levels; `ReadOnly` caps at Read; guests never (the
-  rights already say so). The route still asks `connections.use` and the `files.*` right.
-- `ICredentialProtector` implemented in `Sfe.Api/Security` with `IDataProtectionProvider.CreateProtector(
-  "SFE.Connections")`, registered in `SecurityServiceCollectionExtensions`; `Unprotect` catches
-  `CryptographicException` and answers null.
-- Audit: `LogInformation` per change, `LogSecurityWarning` for a connection made, reauthorized to another account,
-  or opened to more people; never a token, a code or an address holding one.
-- A feature note `agents/docs/features/connections.md` (indexed in AGENTS.md) starts here: model, access rules,
-  the cascade rule above.
+Phase 1 item 4 is built (see What exists).
 
 **Phase 2**
 

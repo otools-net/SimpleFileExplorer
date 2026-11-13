@@ -35,6 +35,7 @@ public static class SecurityServiceCollectionExtensions
         // whoever reads a key forges an administrator's cookie. One that exists is left alone (WarnIfKeysAreOpen).
         TryCreatePrivate(keys);
         services.AddDataProtection().SetApplicationName("SFE").PersistKeysToFileSystem(new DirectoryInfo(keys));
+        services.AddSingleton<Sfe.Core.Connections.ICredentialProtector, ConnectionCredentials>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<CurrentAccess>();

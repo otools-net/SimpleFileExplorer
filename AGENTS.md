@@ -123,6 +123,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | Note | Covers | Code |
 |---|---|---|
 | [rights](agents/docs/features/rights.md) | adding a right, how rights are evaluated | `Core/Access/RightCatalog`, `RightsEvaluator`, `core/rights.ts` |
+| [connections](agents/docs/features/connections.md) | external storage: model, levels, who may use one (`ConnectionAccess`), protected credentials, audit lines, cascade gotcha | `Core/Connections/`, `ConnectionCredentials` |
 | [right-kinds](agents/docs/features/right-kinds.md) | Read/Write rights, `AtFolder`, `kind:write`/`folder:write`, read-only switches | `RightCatalog`, `access-parts.ts` |
 | [folder-access](agents/docs/features/folder-access.md) | per-folder permissions: model, policy, rules, enforcement, management card | `FolderPolicy`, `FolderRuleService`, `FolderChecks`, `folder-access.component.ts` |
 | [accounts](agents/docs/features/accounts.md) | sign-in directories, space administrators | `Core/Access/`, `app/access/`, `app/account/` |
