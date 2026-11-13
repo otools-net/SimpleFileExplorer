@@ -150,7 +150,9 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `SessionEndpoints`: `SessionServices` (server services only: the routes run before a library is chosen)
   - [x] `FolderRuleEndpoints`: `FolderRuleServices` (`tenant`, `path` stay parameters); many-parameter
     functions of the server 82 -> 62 over these five files
-  - [ ] `ScanEndpoints`, then the files with 1–2 (`measure.mjs --area server`)
+  - [x] `ScanEndpoints`: `ScanServices` (one record for `SetExclusions`, `GetFolder`, `RemoveFolder`: all singletons
+    but `CurrentAccess`); many-parameter functions of the server 62 -> 59
+  - [ ] The files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`
 - [ ] `ArchiveExtractor.Extract`

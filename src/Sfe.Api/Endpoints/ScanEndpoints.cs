@@ -6,7 +6,6 @@ using Sfe.Core.Indexing;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
-using Sfe.Core.Settings;
 
 namespace Sfe.Api.Endpoints;
 
@@ -136,15 +135,12 @@ public static class ScanEndpoints
     private static async Task<
         Results<Ok<FolderExclusionState>, ValidationProblem, NotFound, ForbidHttpResult>
     > SetExclusions(
-        SettingsService settings,
-        LibraryPaths paths,
-        CurrentAccess current,
-        IOptionsMonitor<SfeOptions> options,
-        ILoggerFactory loggerFactory,
+        [AsParameters] ScanServices services,
         FolderExclusionChange change,
         CancellationToken cancellationToken
     )
     {
+        var (_, _, settings, paths, current, options, loggerFactory) = services;
         var relative = LibraryPaths.NormalizeRelative(change.Path);
         if (relative is null)
             return InvalidPath();
@@ -268,14 +264,12 @@ public static class ScanEndpoints
         );
 
     private static async Task<Results<Ok<IndexedFolder>, ValidationProblem>> GetFolder(
-        DirectoryIndexer indexer,
-        LibraryPaths paths,
-        CurrentAccess current,
-        Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions> options,
+        [AsParameters] ScanServices services,
         string? path,
         CancellationToken cancellationToken
     )
     {
+        var (_, indexer, _, paths, current, options, _) = services;
         var relative = LibraryPaths.NormalizeRelative(path);
         if (relative is null || !MayRemove(await current.GetAsync(), paths, relative))
             return InvalidPath();
@@ -287,15 +281,13 @@ public static class ScanEndpoints
     }
 
     private static async Task<Results<Ok<RemovedFromIndex>, Conflict<ScanStatus>, ValidationProblem>> RemoveFolder(
-        ScanCoordinator coordinator,
-        SettingsService settings,
-        LibraryPaths paths,
-        CurrentAccess current,
+        [AsParameters] ScanServices services,
         string? path,
         bool exclude = false,
         CancellationToken cancellationToken = default
     )
     {
+        var (coordinator, _, settings, paths, current, _, _) = services;
         var relative = LibraryPaths.NormalizeRelative(path);
         if (relative is null || !MayRemove(await current.GetAsync(), paths, relative))
             return InvalidPath();
