@@ -144,7 +144,8 @@ Tidy, one component per commit, worst first (add one line per component when sta
     (who, path, action; TextEndpoints' calls too), `DeleteVerdict` the `FileServices`; OpenAPI and guards identical
     (many-parameter functions 95 -> 84)
   - [x] `PropertyEndpoints`: `PropertyServices` (its logger too, so that `Get` takes 5)
-  - [ ] `FileTrackingEndpoints`
+  - [x] `FileTrackingEndpoints`: `FileTrackingServices`, `TrackingPageQuery` (`path`, `after`, `limit`, defaults
+    kept)
   - [ ] `UploadEndpoints`
   - [ ] `SessionEndpoints`
   - [ ] `FolderRuleEndpoints`

@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
-using Sfe.Core.Files;
 using Sfe.Core.FileTracking;
-using Sfe.Core.Paths;
 
 namespace Sfe.Api.Endpoints;
 
@@ -169,15 +167,14 @@ public static class FileTrackingEndpoints
     }
 
     private static async Task<Results<Ok<DuplicateResults>, ValidationProblem, NotFound>> Duplicates(
+        [AsParameters] FileTrackingServices services,
         DuplicateFinder finder,
-        LibraryPaths paths,
-        CurrentAccess current,
-        CancellationToken cancellationToken,
-        string? path = null,
-        string? after = null,
-        int? limit = null
+        [AsParameters] TrackingPageQuery query,
+        CancellationToken cancellationToken
     )
     {
+        var (paths, _, _, current) = services;
+        var (path, after, limit) = query;
         var state = await current.GetAsync();
         if (state.At(paths, path) is not { IsVisible: true })
             return TypedResults.NotFound();
@@ -201,15 +198,14 @@ public static class FileTrackingEndpoints
     }
 
     private static async Task<Results<Ok<SimilarVideoResults>, ValidationProblem, NotFound>> SimilarVideos(
+        [AsParameters] FileTrackingServices services,
         SimilarVideoFinder finder,
-        LibraryPaths paths,
-        CurrentAccess current,
-        CancellationToken cancellationToken,
-        string? path = null,
-        string? after = null,
-        int? limit = null
+        [AsParameters] TrackingPageQuery query,
+        CancellationToken cancellationToken
     )
     {
+        var (paths, _, _, current) = services;
+        var (path, after, limit) = query;
         var state = await current.GetAsync();
         if (state.At(paths, path) is not { IsVisible: true })
             return TypedResults.NotFound();
@@ -243,15 +239,13 @@ public static class FileTrackingEndpoints
     private static async Task<
         Results<Ok<RemovedDuplicate>, ValidationProblem, ProblemHttpResult, NotFound, ForbidHttpResult>
     > RemoveDuplicate(
+        [AsParameters] FileTrackingServices services,
         DuplicateRemover remover,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
         RemoveDuplicateRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (paths, serverFiles, work, current) = services;
         var state = await current.GetAsync();
         // The copy deleted must be in a folder whose files the subject may change; the one kept, one it sees.
         if (!state.Sees(paths, request.Keep ?? string.Empty))
@@ -285,14 +279,14 @@ public static class FileTrackingEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound, ValidationProblem>> Relink(
+        [AsParameters] FileTrackingServices services,
         RelinkService service,
-        LibraryPaths paths,
-        CurrentAccess current,
         int id,
         RelinkRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (paths, _, _, current) = services;
         var state = await current.GetAsync();
         var invalid = TypedResults.ValidationProblem(
             new Dictionary<string, string[]>
