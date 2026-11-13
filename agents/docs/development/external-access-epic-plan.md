@@ -39,7 +39,7 @@ in each plan's `## Progress` checklist; this board is the summary.
 | 2 | api-tokens | not started | | |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
-| 5 | connections | in progress (started before plans 1 to 4 at the owner request; its routes are mapped through `ApiRoutes`, so they follow the base) | phase 0 (results in the plan: `Dropbox.Api` SDK, twin rule table, capabilities) | phase 1: `Connections/` interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider` |
+| 5 | connections | in progress (started before plans 1 to 4 at the owner request; its routes are mapped through `ApiRoutes`, so they follow the base) | phase 0 (results in the plan: `Dropbox.Api` SDK, twin rule table, capabilities); phase 1 item 1 (interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider`) | phase 1: entities `Connection`, `ConnectionTenant`, `ConnectionGroup` and their migration |
 | 6 | connections-index | not started | | |
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):

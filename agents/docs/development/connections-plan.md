@@ -180,8 +180,11 @@ in `FolderRules`:
 
 ### Phase 1: foundation
 
-- [ ] `Connections/` interfaces, `ProviderCapabilities`, `RemotePaths`, `OutboundPolicy`, an in-memory
-  `FakeProvider` for tests (in the test project)
+- [x] `Connections/` interfaces, `ProviderCapabilities`, `RemotePaths`, `OutboundPolicy`, an in-memory
+  `FakeProvider` for tests (in the test project). As built: `IConnectionProvider` (sign-in in two calls,
+  `BeginSignInAsync` / `CompleteSignInAsync`, so a password kind ends at the first and OAuth at the second),
+  `IRemoteStorage`, one `RemoteStorageException`; `OutboundPolicy.CreateClient(rule)` is the only maker of a
+  provider's `HttpClient` (tests pass a transport); `FakeStorageTests` is the contract a real provider's tests copy
 - [ ] Entities `Connection`, `ConnectionTenant` (server level: offered to), `ConnectionGroup` (library, group, Read or
   Write); migration in `AccessMigrations` and the SQLite path; removal of a user, group or library removes its rows
   (SQL Server: one cascade path, [database](database.md))
