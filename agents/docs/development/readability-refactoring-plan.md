@@ -148,7 +148,8 @@ Tidy, one component per commit, worst first (add one line per component when sta
     kept)
   - [x] `UploadEndpoints`: `UploadServices` (`offset` stays a parameter: a `long`)
   - [x] `SessionEndpoints`: `SessionServices` (server services only: the routes run before a library is chosen)
-  - [ ] `FolderRuleEndpoints`
+  - [x] `FolderRuleEndpoints`: `FolderRuleServices` (`tenant`, `path` stay parameters); many-parameter
+    functions of the server 82 -> 62 over these five files
   - [ ] `ScanEndpoints`, then the files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`

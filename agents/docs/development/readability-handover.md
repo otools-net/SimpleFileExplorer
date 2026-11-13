@@ -14,7 +14,7 @@ Files: [readability-refactoring-plan](readability-refactoring-plan.md) (the chec
 | 2 Long lines | done: CSharpier (C#) and Prettier (client) at 120 columns, comments and strings by scripts |
 | 3 One type per file, `models.ts` by area | done |
 | 4 Templates | moves and line breaks done; the **tidy by hand** is open (see below) |
-| 5 Functions | **in progress**: route maps done, `[AsParameters]` done for Explore, Library, Text, Editor, Config, File |
+| 5 Functions | **in progress**: route maps done, `[AsParameters]` done for Explore, Library, Text, Editor, Config, File, Property, FileTracking, Upload, Session, FolderRule |
 | 6–8 | not started |
 
 What is still over the limits (`node agents/tools/readability/measure.mjs`):
@@ -24,7 +24,7 @@ What is still over the limits (`node agents/tools/readability/measure.mjs`):
 | lines over 120 | 1 (an unsplittable `<see cref>`) | 11 | 120 |
 | functions over 60 lines | 75 | 12 | |
 | nested deeper than 3 | 21 | 7 | |
-| more than 5 parameters | 82 | 2 | |
+| more than 5 parameters | 62 | 2 | |
 | classes over 8 dependencies | 6 | 6 | |
 | files over 400 lines | 31 | 20 | 2 (`admin-page`, `archive-view`) |
 
@@ -92,6 +92,9 @@ node agents/tools/readability/measure.mjs --check ; node agents/tools/readabilit
 - Runs over 10 minutes report every 10 minutes through a cron task ([long-runs](../environment/long-runs.md)).
 - Python heredocs in Git Bash mangle `\n` and `\\`: write a script file, or use the editor's edit tool.
 - `git checkout -- <folder>` also undoes uncommitted work in it: commit or stash each step first.
+- One endpoints file per commit without waiting: while one file's `dotnet test --no-build` runs, apply the next
+  file's script (sources only, no build) once `--write-baseline` has run, and `git add` only the tested file's
+  paths when committing.
 - Tests read handlers by reflection (`AccessTests.EveryRouteTakingAPathSaysHowFolderRulesApply` looks for a path in
   parameters and in the records they bind): an `[AsParameters]` record can change what they see; run the full suite
   after each endpoints file, not only the route tests.

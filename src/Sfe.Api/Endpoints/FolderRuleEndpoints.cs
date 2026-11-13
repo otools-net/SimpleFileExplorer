@@ -87,14 +87,12 @@ public static class FolderRuleEndpoints
     }
 
     private static async Task<Results<Ok<IReadOnlyList<FolderRuleView>>, NotFound>> List(
-        FolderRuleService rules,
-        AccessService accounts,
-        TenantRegistry tenants,
-        CurrentAccess current,
+        [AsParameters] FolderRuleServices services,
         CancellationToken cancellationToken,
         int? tenant = null
     )
     {
+        var (rules, accounts, tenants, current, _) = services;
         if (await SpaceAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         return TypedResults.Ok(await ViewsAsync(rules, accounts, space, cancellationToken));
@@ -103,16 +101,13 @@ public static class FolderRuleEndpoints
     private static async Task<
         Results<Ok<IReadOnlyList<FolderRuleView>>, ValidationProblem, NotFound, ProblemHttpResult>
     > Set(
-        FolderRuleService rules,
-        AccessService accounts,
-        TenantRegistry tenants,
-        CurrentAccess current,
-        ILoggerFactory loggers,
+        [AsParameters] FolderRuleServices services,
         FolderRuleChange change,
         CancellationToken cancellationToken,
         int? tenant = null
     )
     {
+        var (rules, accounts, tenants, current, loggers) = services;
         if (await SpaceAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         var principal = new FolderPrincipalRef(change.GroupId, change.UserId);
@@ -169,16 +164,13 @@ public static class FolderRuleEndpoints
     private static async Task<
         Results<Ok<IReadOnlyList<FolderRuleView>>, ValidationProblem, NotFound, ProblemHttpResult>
     > Repoint(
-        FolderRuleService rules,
-        AccessService accounts,
-        TenantRegistry tenants,
-        CurrentAccess current,
-        ILoggerFactory loggers,
+        [AsParameters] FolderRuleServices services,
         FolderRuleRepoint change,
         CancellationToken cancellationToken,
         int? tenant = null
     )
     {
+        var (rules, accounts, tenants, current, loggers) = services;
         if (await SpaceAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         if (space.Paths.TryResolve(change.From, out var from) && (Directory.Exists(from) || File.Exists(from)))
@@ -227,16 +219,14 @@ public static class FolderRuleEndpoints
     }
 
     private static async Task<Results<Ok<FolderAccessReport>, ValidationProblem, NotFound>> Report(
-        FolderRuleService rules,
-        AccessService accounts,
+        [AsParameters] FolderRuleServices services,
         RightsEvaluator evaluator,
-        TenantRegistry tenants,
-        CurrentAccess current,
         CancellationToken cancellationToken,
         string? path = null,
         int? tenant = null
     )
     {
+        var (rules, accounts, tenants, current, _) = services;
         if (await SpaceAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         if (!space.Paths.TryResolve(path, out var full) || space.Paths.ToRelative(full) is not { } folder)

@@ -10,7 +10,7 @@
     "src/Sfe.Api/Endpoints/ExploreEndpoints.cs": {"fileLines":1088,"longFunctions":5,"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/FileEndpoints.cs": {"fileLines":841},
     "src/Sfe.Api/Endpoints/FlashEndpoints.cs": {"manyParameterFunctions":2},
-    "src/Sfe.Api/Endpoints/FolderRuleEndpoints.cs": {"fileLines":425,"longFunctions":1,"manyParameterFunctions":4},
+    "src/Sfe.Api/Endpoints/FolderRuleEndpoints.cs": {"fileLines":415,"longFunctions":1},
     "src/Sfe.Api/Endpoints/InstallationEndpoints.cs": {"manyParameterFunctions":2},
     "src/Sfe.Api/Endpoints/LibraryEndpoints.cs": {"fileLines":567,"longFunctions":1},
     "src/Sfe.Api/Endpoints/LogEndpoints.cs": {"manyParameterFunctions":1},
