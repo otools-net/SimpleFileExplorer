@@ -101,14 +101,12 @@ public static class TenantEndpoints
     }
 
     private static async Task<Results<Created<TenantDetails>, ValidationProblem, ProblemHttpResult>> Create(
-        AccessService accounts,
-        TenantRegistry registry,
-        IConfiguration configuration,
-        ILoggerFactory loggers,
+        [AsParameters] TenantServices services,
         TenantInput input,
         CancellationToken cancellationToken
     )
     {
+        var (accounts, registry, configuration, loggers) = services;
         var root = Full(input.Root);
         if (root is null || !Directory.Exists(root))
         {
@@ -159,14 +157,13 @@ public static class TenantEndpoints
     }
 
     private static async Task<Results<Ok<TenantDetails>, ValidationProblem, NotFound, ProblemHttpResult>> Update(
-        AccessService accounts,
-        TenantRegistry registry,
-        IConfiguration configuration,
+        [AsParameters] TenantServices services,
         int id,
         TenantInput input,
         CancellationToken cancellationToken
     )
     {
+        var (accounts, registry, configuration, _) = services;
         var result = await accounts.UpdateTenantAsync(id, input, cancellationToken);
         switch (result.Status)
         {

@@ -163,6 +163,7 @@ Tidy, one component per commit, worst first (add one line per component when sta
     `GetScopeTags` stay parameters: 5 with the record)
   - [x] `QuickLinkEndpoints`: `QuickLinkServices` (`Add`, `Remove`)
   - [x] `TaskEndpoints`: `TaskServices` (`Start`, `UpdateSchedule`)
+  - [x] `TenantEndpoints`: `TenantServices` (`Create`, `Update`)
   - [ ] The files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`
