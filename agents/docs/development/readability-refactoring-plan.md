@@ -115,6 +115,12 @@ Move to `.html` (one commit per line):
 
 Tidy, one component per commit, worst first (add one line per component when starting):
 
+- [x] Mechanical part, all templates (`break-template-lines.mjs`): long tags one attribute per line, long text
+  wrapped, inline templates too; the 20 inline templates this took past 40 lines moved as well. Client build
+  identical (content hashes) after each commit. Lines over 120 in templates: 886 -> 120; client `.ts` 153 -> 11
+- [ ] By hand, what is left (2026-11-13): about 49 lines with a long `{{ }}` and 41 with one long binding (a
+  `computed()` each, with its spec), 41 SVG path lines of `icon-sprite` (a constant per path, or an exception),
+  2 control-flow lines; `admin-page.component.html` (467 lines) and `archive-view.component.html` (403) over 400
 - [ ] `admin-page` (298 lines)
 - [ ] `archive-view` (181)
 - [ ] `space-detail`, `setup-page`, `account-editor`, `settings-panel`, `migration-page`, `folder-access`,
@@ -336,6 +342,19 @@ Traps met:
    `space-detail`, `setup-page`, `account-editor`…): long tags one attribute per line in the documented order;
    expressions with string building or long `?:` become `computed()` (named as the value); handlers become one call.
    A `computed()` replacing an expression gets a spec when the expression had none.
+
+Traps met:
+
+- Angular (`preserveWhitespaces: false`) collapses a run of **two or more** whitespace characters in text into one
+  space, but keeps a lone newline: text that meets a line at column 0 after dedenting, or a wrapped text line at
+  indentation 0, compiled to `\n` instead of a space. Equal build sizes did not show it (same length); the content
+  hashes of `references.mjs` did. Both tools keep at least two spaces there now.
+- An apostrophe in an HTML comment (`level's`) read as an open quote stopped the breaker for the rest of the file:
+  it reads `<!-- -->` as a comment now.
+- Prettier on `.html`: with `htmlWhitespaceSensitivity: css` it changes text nodes (specs failed); with `strict` it
+  keeps them but writes `>Edit space</button\n>`: not used for templates.
+- A tag over several lines is joined before being broken, never across a line break inside a quoted value (a
+  static attribute would get a space for its newline).
 
 ## Phase 5: long, deep and many-parameter functions (one function per commit)
 
