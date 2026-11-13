@@ -1,0 +1,181 @@
+@if (tab() === 'setup') {
+    <sfe-provider-setup kind="dropbox" />
+} @else if (!enabled()) {
+    <p class="field-hint" data-off> Connections are off on this server (Administration › Connections › Settings). </p>
+} @else {
+    @if (loadError(); as error) {
+        <p class="form-error">{{ error }}</p>
+    }
+    <div class="connection-actions">
+        @for (level of addable(); track level) {
+            <button
+                type="button"
+                class="button"
+                [attr.data-add]="level"
+                [title]="'Sign in to a storage and add it: ' + levelNames[level].toLowerCase()"
+                (click)="add(dialog, level)"
+                ><svg sfeIcon="plus"></svg
+                >Add{{ tab() === 'mine' ? '' : ' (' + levelNames[level].toLowerCase() + ')' }}</button
+            >
+        }
+    </div>
+    @if (view() && shown().length === 0) {
+        <p class="field-hint" data-none>No connection yet.</p>
+    }
+    <ul class="connection-list">
+        @for (item of shown(); track item.connection.id) {
+            @let connection = item.connection;
+            <li class="connection-row" [attr.data-connection]="connection.id">
+                <div class="connection-head">
+                    <svg sfeIcon="globe"></svg>
+                    @if (renaming()?.id === connection.id) {
+                        <input
+                            type="text"
+                            data-rename
+                            [value]="renaming()!.name"
+                            (input)="renaming.set({ id: connection.id, name: value($event) })"
+                            (keydown.enter)="saveName()"
+                        />
+                        <button type="button" class="button small" title="Save the name" (click)="saveName()">
+                            Save
+                        </button>
+                    } @else {
+                        <strong>{{ connection.name }}</strong>
+                    }
+                    <span class="access-badges">
+                        <span class="access-badge">{{ kindName(connection.kind) }}</span>
+                        @if (tab() !== 'mine') {
+                            <span class="access-badge">{{ levelNames[connection.level] }}</span>
+                        }
+                        @if (connection.state === 'needsReconnecting') {
+                            <span class="access-badge danger" data-reconnect-needed>Sign in again</span>
+                        }
+                        @if (connection.disabled) {
+                            <span class="access-badge danger">Off</span>
+                        }
+                        @if (connection.readOnly) {
+                            <span class="access-badge">Read only</span>
+                        }
+                    </span>
+                </div>
+                <p class="field-hint">
+                    {{ connection.account ?? '' }}{{ connection.rootPath ? ' · /' + connection.rootPath : '' }}
+                </p>
+                <div class="connection-actions">
+                    @if (item.manage) {
+                        <button
+                            type="button"
+                            class="button small"
+                            data-sign-in-again
+                            title="Sign in to the storage again (same connection, same people)"
+                            (click)="reconnect(dialog, connection)"
+                            >Sign in again</button
+                        >
+                    }
+                    <button
+                        type="button"
+                        class="button small"
+                        data-manage
+                        title="Rename, read only, turn off, who uses it, remove"
+                        [attr.aria-expanded]="openId() === connection.id"
+                        (click)="togglePanel(connection.id)"
+                        >Manage</button
+                    >
+                </div>
+                @if (openId() === connection.id) {
+                    <div class="connection-users">
+                        @if (item.manage) {
+                            <button
+                                type="button"
+                                class="link-button"
+                                title="Rename it"
+                                (click)="startRename(connection)"
+                            >
+                                Rename
+                            </button>
+                            <label class="check">
+                                <input
+                                    type="checkbox"
+                                    [checked]="connection.readOnly"
+                                    (change)="change(connection.id, { readOnly: checked($event) })"
+                                />
+                                <span
+                                    >Read only
+                                    <span class="field-hint">nothing is changed in it through SFE</span></span
+                                >
+                            </label>
+                            <label class="check">
+                                <input
+                                    type="checkbox"
+                                    [checked]="connection.disabled"
+                                    (change)="change(connection.id, { disabled: checked($event) })"
+                                />
+                                <span
+                                    >Off
+                                    <span class="field-hint">kept, with who uses it, but nobody opens it</span></span
+                                >
+                            </label>
+                        }
+                        @if (item.manage && connection.level === 'server') {
+                            <h4>Spaces it is offered to</h4>
+                            <label class="check">
+                                <input
+                                    type="checkbox"
+                                    data-all-spaces
+                                    [checked]="connection.allTenants"
+                                    (change)="setLibrary(connection, 'all', checked($event))"
+                                />
+                                <span>Every space, those made later too</span>
+                            </label>
+                            @if (!connection.allTenants) {
+                                @for (library of view()?.libraries ?? []; track library.id) {
+                                    <label class="check">
+                                        <input
+                                            type="checkbox"
+                                            [checked]="connection.tenantIds.includes(library.id)"
+                                            (change)="setLibrary(connection, library.id, checked($event))"
+                                        />
+                                        <span>{{ library.name }}</span>
+                                    </label>
+                                }
+                            }
+                        }
+                        @if (sharedHere(connection)) {
+                            <h4>Groups of this space</h4>
+                            @for (group of view()?.groups ?? []; track group.id) {
+                                <label class="field connection-group">
+                                    <span>{{ group.name }}</span>
+                                    <select
+                                        [attr.data-group]="group.id"
+                                        (change)="setGroup(connection, group.id, value($event))"
+                                    >
+                                        <option value="" [selected]="groupLevel(connection, group.id) === ''">
+                                            Doesn't see it
+                                        </option>
+                                        <option value="read" [selected]="groupLevel(connection, group.id) === 'read'">
+                                            Reads
+                                        </option>
+                                        <option value="write" [selected]="groupLevel(connection, group.id) === 'write'">
+                                            Reads and changes
+                                        </option>
+                                    </select>
+                                </label>
+                            }
+                        }
+                        @if (item.remove) {
+                            <button
+                                type="button"
+                                class="button small danger"
+                                data-remove
+                                title="Remove the connection (its files stay where they are)"
+                                (click)="remove(item)"
+                                >Remove</button
+                            >
+                        }
+                    </div>
+                }
+            </li>
+        }
+    </ul>
+    <sfe-connect-dialog #dialog (done)="made($event)" />
+}

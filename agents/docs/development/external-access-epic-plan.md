@@ -39,13 +39,13 @@ in each plan's `## Progress` checklist; this board is the summary.
 | 2 | api-tokens | not started | | |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
-| 5 | connections | in progress (started before plans 1 to 4 at the owner request; its routes are mapped through `ApiRoutes`, so they follow the base) | phase 0 (results in the plan: `Dropbox.Api` SDK, twin rule table, capabilities); phase 1 (interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider`; tables and migration `Connections`; rights, settings, `api/config`; `ConnectionService`, `ConnectionSharing`, `ConnectionAccess`, credentials protected, audit lines); phase 2 items 1 to 3 (`DropboxProvider` sign-in, app key setting, write-only app secret, provider routes; authorize, callback, complete; reauthorize; management routes) | phase 2 item 4: the client pages (see [connections-handover](connections-handover.md)) |
+| 5 | connections | in progress (started before plans 1 to 4 at the owner request; its routes are mapped through `ApiRoutes`, so they follow the base) | phase 0 (results in the plan: `Dropbox.Api` SDK, twin rule table, capabilities); phase 1 (interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider`; tables and migration `Connections`; rights, settings, `api/config`; `ConnectionService`, `ConnectionSharing`, `ConnectionAccess`, credentials protected, audit lines); phase 2 items 1 to 3 (`DropboxProvider` sign-in, app key setting, write-only app secret, provider routes; authorize, callback, complete; reauthorize; management routes; client pages, user docs) | the manual Dropbox check list, then phase 3: browse and download (see [connections-handover](connections-handover.md)) |
 | 6 | connections-index | not started | | |
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
 
 - 2026-11-13 (third session): connections phase 1 finished (services, access rules, Data Protection of credentials,
-  feature note `connections.md`); phase 2 items 1 (owner: app secret on the page, write-only) to 3.
+  feature note `connections.md`); phase 2 (owner: app secret on the page, write-only).
 - 2026-11-13 (second session): api-v1 phase 1 committed; connections started out of order at the owner request
   (plans 1 to 4 later); connections phase 0 done without a real Dropbox account (SDK run against a fake handler).
 - 2026-11-13: epic started; status board added; api-v1 phase 0 done (`api-versioning.md`, linked from `api-routes.md`

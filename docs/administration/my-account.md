@@ -23,3 +23,8 @@ and [Tags](tags.md#settings) pages.
 
 Changes your password (right `account.password`): your current one, then the new one twice, and **Change the password**.
 Your other sessions (other browsers and devices) end, and the links you gave to external players stop working.
+
+## Connections
+
+Your own connections to storage outside the libraries (Dropbox), seen only by you:
+[Connections](connections.md#adding-a-connection).

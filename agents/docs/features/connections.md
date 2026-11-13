@@ -94,6 +94,19 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   library only (`ConnectionSharing` answers 404 when the connection isn't that library's or offered to it). A
   library's administrator gives a server connection to groups but can't rename or remove it.
 
+## Client (`app/connections/`)
+
+- `ConnectionsSectionComponent`: tab `mine` (My account › Connections: one's own), `shared` (Administration ›
+  Connections: the rest of `managed`), `setup` (`ProviderSetupComponent` for `dropbox`). What a row offers follows the
+  server's `manage` / `remove` flags; groups and libraries come in the same `GET api/connections`.
+- `ConnectDialog` builds its form from `config.connections.kinds[].signIn` (no code per provider). Redirect flow:
+  `window.location.assign` to the address the server gave; code flow: the address in a new tab, then the code.
+- `connectionsLanding` (route `connections`): the callback's `?made=` / `?reconnected=` / `?error=` become a toast,
+  then the connection's page (My account for one's own).
+- Requests are `Api` methods (`connections`, `authorizeConnection`, …): the one place the client makes requests
+  ([frontend](../development/frontend.md)); specs mock them with `mockApi()`.
+- `Api` answers a 409 with its problem body instead of throwing: `problemOf` tells it apart.
+
 ## Audit lines
 
 - Security warnings: a connection made, signed in again to another account, offered to more libraries, a group added

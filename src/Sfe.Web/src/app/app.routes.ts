@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { leaveAdminPage } from './admin/leave-admin-page';
+import { connectionsLanding } from './connections/connections-landing';
 import { LibraryPageComponent } from './library/library-page.component';
 import { leaveViewer, leaveViewPage } from './library/viewer/leave-viewer';
 import { PlayerPageComponent } from './player/player-page.component';
@@ -24,6 +25,8 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/admin-page.component').then((m) => m.AdminPageComponent),
         canDeactivate: [leaveAdminPage],
     },
+    // Where the server sends the browser back after signing in at a provider: it opens the page of the connection.
+    { path: 'connections', canActivate: [connectionsLanding], children: [] },
     // Its earlier address, still in bookmarks.
     { path: 'config', redirectTo: 'admin' },
     { path: 'player', component: PlayerPageComponent },

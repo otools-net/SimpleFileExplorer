@@ -39,6 +39,7 @@ import { TagListComponent } from '../tags/tag-list.component';
 import { TasksSectionComponent } from '../tasks/tasks-section.component';
 import { TrackingSectionComponent } from '../tracking/tracking-section.component';
 import { TrickplayActivityComponent } from '../trickplay/trickplay-activity.component';
+import { ConnectionsSectionComponent } from '../connections/connections-section.component';
 import { KeepAliveStatusComponent } from './keep-alive-status.component';
 import { AccountSectionComponent } from '../account/account-section.component';
 import { AccessSectionComponent } from '../access/access-section.component';
@@ -118,6 +119,7 @@ export class ChipInViewDirective {
         SystemSectionComponent,
         AccessSectionComponent,
         AccountSectionComponent,
+        ConnectionsSectionComponent,
         LogsSectionComponent,
         VideoStreamsComponent,
         TrashSectionComponent,

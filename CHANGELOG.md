@@ -12,18 +12,18 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   `connections.server`, and the server settings `Sfe:Connections:Enabled`, `Providers` and `Levels`
   (Administration › Connections), which `Sfe:Locked` can fix. The database gets three empty tables. Dropbox, the
   first kind, comes with a later version.
-- **Dropbox app settings** (nothing to connect to yet): the app key of the Dropbox app the server's administrator
-  registers (Administration › Connections, `Sfe:Connections:Dropbox:AppKey`), its optional secret set through
-  `api/connections/providers/dropbox/secret` (kept in a file of the server's data folder readable by the server
-  only, never sent back) or `Sfe:Connections:Dropbox:AppSecret` in the configuration, the return address to
-  register at Dropbox, and a test of the key and secret.
-- **Signing in to make a connection** (API only for now: `api/connections/authorize`, its completion with the code
-  the provider shows, and the address the provider sends the browser back to). A sign-in started by one account
-  can't be finished by another, works once, and lasts 10 minutes. A connection whose sign-in ended is signed in
-  to again in place (`api/connections/{id}/reauthorize`), keeping who uses it.
-- **Managing connections** (API only for now): `api/connections` lists those one uses and manages; they are renamed,
-  turned off, made read only, removed, offered to libraries (server level) and given to a library's groups. The
-  server's administrators can remove an account's private connection but never open or change it.
+- **Connecting a Dropbox** (browsing its files comes with a later version;
+  [connections](docs/administration/connections.md)): the server's administrators register a Dropbox app and type its
+  key (Administration › Connections › Settings, `Sfe:Connections:Dropbox:AppKey`); its secret is optional, typed on
+  the Dropbox page (kept in a file of the server's data folder readable by the server only, never shown again) or set
+  as `Sfe:Connections:Dropbox:AppSecret`; that page shows the return address to register at Dropbox and tests the
+  key and secret. Then **My account › Connections** adds one's own Dropbox, and **Administration › Connections** a
+  space's or the server's: sign in at Dropbox and come back, or copy the code it shows. A sign-in works once, for
+  the account that started it, within 10 minutes.
+- **Managing connections**: renamed, signed in to again in place (same connection, same people), made read only,
+  turned off, removed; a space's connection, or the server's offered to some spaces, is given to the space's groups
+  (reads, or reads and changes). The server's administrators can remove an account's private connection but never
+  open or change it.
 - **`Sfe:Security:LinksOutsideLibrary: ReadOnly`** (configuration): what is behind a link (symbolic link, junction)
   leading out of a library can be browsed, played and downloaded, but nothing is created, changed, renamed, moved
   away or deleted there. For libraries other people can put links in outside SFE (a network share, SFTP). The default

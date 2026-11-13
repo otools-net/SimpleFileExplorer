@@ -18,7 +18,7 @@ from page to page: click the section to open its first page, the group to see it
 
 | Group | Section | Pages |
 |---|---|---|
-| Account | [My account](my-account.md) | Preferences, Password |
+| Account | [My account](my-account.md) | Preferences, Password, [Connections](connections.md#adding-a-connection) |
 | Viewing | [Interface](interface.md) | Appearance, Browsing, Search |
 | | [Playback](playback.md) | Player, Streaming, Video streams |
 | Library | [Scanning](scanning.md) | What to scan, File types, Indexing |
@@ -32,6 +32,7 @@ from page to page: click the section to open its first page, the group to see it
 | Server | [Background tasks](background-tasks.md) | Tasks, Schedules, History, Settings |
 | | [Logs](logs.md) | Log, Settings |
 | | [System](system.md) | About, Installation, Start-up, Maintenance |
+| | [Connections](connections.md) | Connections, Dropbox, Settings |
 
 Addresses of pages that moved (a bookmark of the old **System › Video streams**, now **Playback › Video streams**)
 still open them.

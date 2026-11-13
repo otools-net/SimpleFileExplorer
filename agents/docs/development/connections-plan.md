@@ -237,8 +237,14 @@ in `FolderRules`:
   landing on `connections?reconnected={id}[&otherAccount=true]`; who may make or sign in again is one rule over the
   draft (`ConnectionSignInEndpoints.MayManage`: the owner only at account level). The root folder is typed at
   creation (`ConnectRequest.RootPath`); choosing it by browsing comes with the listing of phase 3
-- [ ] Client: My account › Connections, Administration › Connections (library and server levels, who may use),
-  add dialog driven by the provider's description; phone sheets; user docs with the Dropbox app steps
+- [x] Client: My account › Connections, Administration › Connections (library and server levels, who may use),
+  add dialog driven by the provider's description; phone sheets; user docs with the Dropbox app steps. As built:
+  `app/connections/` (`ConnectionsSectionComponent` with tabs `mine` / `shared` / `setup`, `ConnectDialog` built from
+  `config.connections.kinds[].signIn`, `ProviderSetupComponent`, the `connections` route `connectionsLanding` that
+  the callback lands on and that opens the connection's page), requests in `Api` (its baseline grew by the route
+  bindings), models in `core/connection.models.ts`; the add dialog is a `sfe-sheet` (a sheet on phones); a row keeps
+  two buttons, the rest in a panel one per line (no row to overflow); `docs/administration/connections.md` with the
+  Dropbox app steps and screenshots (scene `connections`, an app key set for it: no connection can be made there)
   - Server part built first: `GET api/connections` (`ConnectionsView`: usable, and managed with `manage` /
     `remove` flags), `PATCH` / `DELETE api/connections/{id}`, `PUT …/libraries` (`connections.server`), `PUT
     …/groups` (`connections.library`, the request's library); one rule in `ConnectionManagers`

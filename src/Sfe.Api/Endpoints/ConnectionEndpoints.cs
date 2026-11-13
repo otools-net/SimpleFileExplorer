@@ -62,13 +62,13 @@ public static class ConnectionEndpoints
     }
 
     private static async Task<Ok<ConnectionsView>> List(
-        CurrentAccess current,
-        ConnectionService connections,
-        ConnectionAccess access,
+        [AsParameters] ConnectionListServices services,
         CancellationToken cancellationToken
     )
     {
+        var (current, connections, access, accounts) = services;
         var state = await current.GetAsync();
+        var tenants = await accounts.GetCachedTenantsAsync(cancellationToken);
         var usable = await access.UsableAsync(SubjectOf(state), cancellationToken);
         var managed = new Dictionary<int, ConnectionInfo>();
         if (state.User is { } user && state.Has(Rights.OwnConnections))
@@ -88,7 +88,14 @@ public static class ConnectionEndpoints
                 ConnectionManagers.MayRemove(state, c)
             ))
             .ToList();
-        return TypedResults.Ok(new ConnectionsView(usable, views));
+        return TypedResults.Ok(
+            new ConnectionsView(usable, views, await GroupsAsync(state, accounts, cancellationToken), Libraries())
+        );
+
+        IReadOnlyList<NamedItem> Libraries() =>
+            state.Has(Rights.ServerConnections)
+                ? [.. tenants.Where(t => !t.Disabled).Select(t => new NamedItem(t.Id, t.Name))]
+                : [];
 
         // A server-level one may come twice (offered to the library, and the server's): the library's view first.
         void Add(IEnumerable<ConnectionInfo> list)
@@ -177,6 +184,20 @@ public static class ConnectionEndpoints
         );
         return Answer(result);
     }
+
+    private static async Task<IReadOnlyList<NamedItem>> GroupsAsync(
+        AccessState state,
+        AccessService accounts,
+        CancellationToken cancellationToken
+    ) =>
+        state.Tenant is { } tenant && state.Has(Rights.LibraryConnections)
+            ?
+            [
+                .. (await accounts.GetGroupsAsync(tenant.Id, cancellationToken))
+                    .OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)
+                    .Select(g => new NamedItem(g.Id, g.Name)),
+            ]
+            : [];
 
     /// <summary>Who asks to use connections (<see cref="ConnectionAccess"/>).</summary>
     public static ConnectionSubject SubjectOf(AccessState state) =>

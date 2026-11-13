@@ -899,6 +899,29 @@ const scenes = {
         await b.shot(OUT + 'admin-overview.png');
         await b.close();
     },
+    /**
+     * Connections with a Dropbox app key set (none can be made here: no Dropbox account): the setup page with the
+     * return address (made neutral), My account › Connections and the add dialog. The key is cleared afterwards.
+     */
+    async connections() {
+        const b = await session({ height: 900 });
+        const appKey = key => `fetch('api/settings?level=server', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ values: { 'connections.dropbox.appKey': ${JSON.stringify(key)} } }) }).then(r => r.status)`;
+        const neutral = `(() => { for (const i of document.querySelectorAll('[data-return-address]')) i.value = 'https://files.example.org' + new URL(i.value).pathname; return 1; })()`;
+        await b.goto(BASE, 1500);
+        await b.eval(appKey('docsappkey123'));
+        await b.open(admin('connections', 'setup'), 3000);
+        await b.eval(neutral);
+        await b.shot(OUT + 'admin-connections-setup.png');
+        await b.open(admin('connections', 'settings'), 3000);
+        await b.shot(OUT + 'admin-connections-settings.png');
+        await b.open(admin('account', 'connections'), 3000);
+        await b.shot(OUT + 'admin-account-connections.png');
+        await b.clickTitle('Sign in to a storage and add it');
+        await sleep(800);
+        await b.shot(OUT + 'connections-add.png');
+        await b.eval(appKey(null));
+        await b.close();
+    },
     async adminSearch() {
         const b = await session({ height: 900 });
         await b.open('admin', 3000);

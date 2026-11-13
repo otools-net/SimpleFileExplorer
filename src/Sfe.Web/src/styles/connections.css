@@ -1,0 +1,99 @@
+/* Connections to other storage: the lists of Administration › Connections and My account › Connections, the setup of
+   a kind (connections/). */
+
+.connection-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.connection-row {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.connection-row .field-hint {
+    margin: 4px 0 0;
+}
+
+.connection-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.connection-head > svg {
+    flex-shrink: 0;
+}
+
+.connection-head > strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.connection-head > input {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Two short buttons at most (the rest is in the panel, one per line): they fit a 360 px phone. */
+.connection-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.connection-users {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+
+.connection-users h4 {
+    margin: 8px 0 4px;
+    font-size: 13px;
+}
+
+.connection-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.return-address {
+    display: flex;
+    gap: 8px;
+}
+
+.return-address > input {
+    flex: 1;
+    min-width: 0;
+}
+
+.return-address > button {
+    flex-shrink: 0;
+}
+
+/* The setup of a kind: one field per line, spaced like the settings. */
+.provider-setup {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 900px;
+}
+
+.provider-setup > p {
+    margin: 0;
+}

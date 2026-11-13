@@ -34,3 +34,6 @@ Rules and helpers: [testing.md](testing.md). Code: `src/Sfe.Web/src/testing/setu
   the folder as `/c/workspace/…`; `cd C:/workspace/SimpleFileExplorer/src/Sfe.Web` (or PowerShell) and the same
   code passes (checked 2026-11-13, both ways several times). It came and went with the shell's path form, which
   first looked like a flaky run.
+- `npx vitest run` alone lacks the Angular setup (`window is not defined`); run specs with `npm test`, from
+  `C:/workspace/…` in Git Bash (see above). A TypeScript error of a spec or a component shows as `X [ERROR]` lines
+  above the failed suites.

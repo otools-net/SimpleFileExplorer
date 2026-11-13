@@ -372,7 +372,14 @@
                                 <sfe-access-section [tab]="subpage().id" />
                             }
                             @case ('account') {
-                                <sfe-account-section [tab]="subpage().id" />
+                                @if (subpage().id === 'connections') {
+                                    <sfe-connections-section tab="mine" />
+                                } @else {
+                                    <sfe-account-section [tab]="subpage().id" />
+                                }
+                            }
+                            @case ('connections') {
+                                <sfe-connections-section [tab]="subpage().id === 'setup' ? 'setup' : 'shared'" />
                             }
                             @case ('keepAlive') {
                                 <sfe-keep-alive-status (openSettings)="select('settings')" />

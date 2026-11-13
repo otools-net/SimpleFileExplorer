@@ -101,6 +101,18 @@ import {
     TrickplayManifest,
     TrickplayStates,
 } from './task.models';
+import {
+    ConnectionChange,
+    ConnectionInfo,
+    ConnectionsView,
+    ConnectRequest,
+    FolderLevelName,
+    ProviderSetup,
+    ProviderTest,
+    SignInBegun,
+    SignInDone,
+    SignInKindName,
+} from './connection.models';
 import { encodePath } from './paths';
 import { takeSetupLink } from './setup-link';
 
@@ -637,6 +649,26 @@ export class Api {
     createTenant = (tenant: TenantInput) => this.post<TenantDetails>('api/tenants', tenant);
     updateTenant = (id: number, tenant: TenantInput) => this.put<TenantDetails>(`api/tenants/${id}`, tenant);
     deleteTenant = (id: number) => this.delete<void>(`api/tenants/${id}`);
+
+    /** Connections to other storage (agents/docs/features/connections.md); `kind` of a provider (`dropbox`). */
+    connections = () => this.get<ConnectionsView>('api/connections');
+    updateConnection = (id: number, change: ConnectionChange) =>
+        this.patch<ConnectionInfo>(`api/connections/${id}`, change);
+    removeConnection = (id: number) => this.delete<void>(`api/connections/${id}`);
+    setConnectionLibraries = (id: number, allLibraries: boolean, libraryIds: number[]) =>
+        this.put<ConnectionInfo>(`api/connections/${id}/libraries`, { allLibraries, libraryIds });
+    setConnectionGroups = (id: number, groups: Record<number, FolderLevelName>) =>
+        this.put<ConnectionInfo>(`api/connections/${id}/groups`, { groups });
+    authorizeConnection = (request: ConnectRequest) => this.post<SignInBegun>('api/connections/authorize', request);
+    reauthorizeConnection = (id: number, method: SignInKindName, fields: Record<string, string> = {}) =>
+        this.post<SignInBegun>(`api/connections/${id}/reauthorize`, { method, fields });
+    completeConnection = (state: string, fields: Record<string, string>) =>
+        this.post<SignInDone>('api/connections/authorize/complete', { state, fields });
+    connectionProvider = (kind: string) => this.get<ProviderSetup>(`api/connections/providers/${kind}`);
+    setProviderSecret = (kind: string, secret: string) =>
+        this.put<void>(`api/connections/providers/${kind}/secret`, { secret });
+    removeProviderSecret = (kind: string) => this.delete<void>(`api/connections/providers/${kind}/secret`);
+    testProvider = (kind: string) => this.post<ProviderTest>(`api/connections/providers/${kind}/test`);
 
     /**
      * The library the page shows (/api/config): sent with every request, so that a session switched to another

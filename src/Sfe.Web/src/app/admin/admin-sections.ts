@@ -60,6 +60,12 @@ export const ADMIN_SECTIONS: AdminSection[] = [
                 Rights.ownPreferences,
             ),
             page('password', 'Password', 'The password you sign in with.', Rights.ownPassword),
+            page(
+                'connections',
+                'Connections',
+                'Your own storage elsewhere (Dropbox), seen only by you.',
+                Rights.ownConnections,
+            ),
         ],
     },
     {
@@ -300,7 +306,17 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         title: 'Connections',
         icon: 'globe',
         description: 'Storage outside the libraries (Dropbox): whether the server may connect to it, and how.',
-        subpages: [settingsPage('connections', 'Which kinds and levels of connections this server allows.')],
+        subpages: [
+            page(
+                'connections',
+                'Connections',
+                "The space's and the server's connections, and who uses them.",
+                Rights.libraryConnections,
+                Rights.serverConnections,
+            ),
+            page('setup', 'Dropbox', 'The app this server signs in to Dropbox through.', Rights.serverSettings),
+            settingsPage('connections', 'Which kinds and levels of connections this server allows.'),
+        ],
     },
     {
         id: 'tasks',

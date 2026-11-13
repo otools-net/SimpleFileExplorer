@@ -28,7 +28,19 @@ internal sealed record OAuthCallback(string? Code, string? State, string? Error,
 /// <summary>The connections of a session (<c>GET api/connections</c>).</summary>
 /// <param name="Usable">Those it may use in its library, and how far.</param>
 /// <param name="Managed">Those it manages, by name.</param>
-public sealed record ConnectionsView(IReadOnlyList<UsableConnection> Usable, IReadOnlyList<ManagedConnection> Managed);
+/// <param name="Groups">The groups of its library, to give connections to (<c>connections.library</c>; else
+/// empty).</param>
+/// <param name="Libraries">Every library, to offer server connections to (<c>connections.server</c>; else
+/// empty).</param>
+public sealed record ConnectionsView(
+    IReadOnlyList<UsableConnection> Usable,
+    IReadOnlyList<ManagedConnection> Managed,
+    IReadOnlyList<NamedItem> Groups,
+    IReadOnlyList<NamedItem> Libraries
+);
+
+/// <summary>Something to pick by name (a group, a library).</summary>
+public sealed record NamedItem(int Id, string Name);
 
 /// <summary>A connection the session manages, and what it may do with it.</summary>
 /// <param name="Manage">Rename, switch, sign in again (an account's own, or its level's right).</param>
