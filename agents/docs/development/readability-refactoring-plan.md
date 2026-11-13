@@ -168,7 +168,9 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `TrickplayEndpoints`: `TrickplayServices` (`Get`)
   - [x] `EpubEndpoints`: `EpubServices` (`GetEntry`)
   - [x] `MigrationEndpoints`: `MigrationBackupServices` (`CreateBackup`; runs without a session)
-  - [ ] The files with 1–2 (`measure.mjs --area server`)
+  - [x] `SetupEndpoints`: `SetupServices` (`CompleteSetup`; runs before anyone is signed in)
+  - [ ] The rest: `AccessEndpoints.UpdateGroup` (6), `ChangeEndpoints.StreamAsync` (7, also a long and nested
+    function: see below), `ExploreEndpoints.CatalogOf` (7, a private helper: takes the handler's record)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`
 - [ ] `ArchiveExtractor.Extract`

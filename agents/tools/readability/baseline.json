@@ -13,7 +13,6 @@
     "src/Sfe.Api/Endpoints/LibraryEndpoints.cs": {"fileLines":567,"longFunctions":1},
     "src/Sfe.Api/Endpoints/ScanEndpoints.cs": {"longFunctions":1},
     "src/Sfe.Api/Endpoints/SessionEndpoints.cs": {"fileLines":465,"longFunctions":1},
-    "src/Sfe.Api/Endpoints/SetupEndpoints.cs": {"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/TagEndpoints.cs": {"fileLines":448,"longFunctions":1},
     "src/Sfe.Api/Endpoints/TextEndpoints.cs": {"fileLines":569,"longFunctions":1},
     "src/Sfe.Api/Maintenance/BackupSources.cs": {"longFunctions":1},

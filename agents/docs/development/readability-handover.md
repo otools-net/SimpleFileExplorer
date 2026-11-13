@@ -14,7 +14,7 @@ Files: [readability-refactoring-plan](readability-refactoring-plan.md) (the chec
 | 2 Long lines | done: CSharpier (C#) and Prettier (client) at 120 columns, comments and strings by scripts |
 | 3 One type per file, `models.ts` by area | done |
 | 4 Templates | moves and line breaks done; the **tidy by hand** is open (see below) |
-| 5 Functions | **in progress**: route maps done, `[AsParameters]` done for Explore, Library, Text, Editor, Config, File, Property, FileTracking, Upload, Session, FolderRule, Scan, Log, Archive, Flash, Installation, Tag, QuickLink, Task, Tenant, Streaming, Trickplay, Epub, Migration |
+| 5 Functions | **in progress**: route maps done, `[AsParameters]` done for every endpoints file but three handlers (below) |
 | 6–8 | not started |
 
 What is still over the limits (`node agents/tools/readability/measure.mjs`):
@@ -24,14 +24,20 @@ What is still over the limits (`node agents/tools/readability/measure.mjs`):
 | lines over 120 | 1 (an unsplittable `<see cref>`) | 11 | 120 |
 | functions over 60 lines | 75 | 12 | |
 | nested deeper than 3 | 21 | 7 | |
-| more than 5 parameters | 39 | 2 | |
+| more than 5 parameters | 38 | 2 | |
 | classes over 8 dependencies | 6 | 6 | |
 | files over 400 lines | 31 | 20 | 2 (`admin-page`, `archive-view`) |
 
 ## How to resume
 
-1. Read the plan's Progress list: take the **first unticked item of phase 5** (the next is "`[AsParameters]`: the
-   other endpoints files"), then the core functions in the order listed. Tick each item in the commit that does it.
+1. Read the plan's Progress list: take the **first unticked item of phase 5**, then the core functions in the order
+   listed. Tick each item in the commit that does it. Paused 2026-11-13 after `SetupEndpoints` (tree clean); next:
+   - `AccessEndpoints.UpdateGroup` (6): a record of `AccessService` and `CurrentAccess` gives 5 (`tenant` stays a
+     parameter, last, with its default).
+   - `ExploreEndpoints.CatalogOf` (7): a private helper, takes the `ExploreServices` its handlers already have.
+   - `ChangeEndpoints.StreamAsync` (7, also over 60 lines and nested 4): its own plan item further down; do its
+     parameters with it.
+   - Then "EF: `AccessDbContext.OnModelCreating`…" (checks `--only ef`).
 2. One function (or one endpoints file for `[AsParameters]`) per commit, message `claude: refactoring: …`; no
    `CHANGELOG.md` line, no version bump.
 3. Before a function whose paths no test pins (most core functions of phase 5: `ArchiveExtractor.Extract`,
@@ -98,6 +104,11 @@ node agents/tools/readability/measure.mjs --check ; node agents/tools/readabilit
 - One endpoints file per commit without waiting: while one file's `dotnet test --no-build` runs, apply the next
   file's script (sources only, no build) once `--write-baseline` has run, and `git add` only the tested file's
   paths when committing.
+- `grep -r … src` from Git Bash walks `src/Sfe.Web/node_modules` and stalls past 2 minutes: use the editor's search
+  (ripgrep) or name the folder (`src/Sfe.Core`).
+- After a services record, the build (not `dotnet format`) warns of `using`s left unused (IDE0005) in the endpoints
+  file and in the record's file: read the build's warnings, remove them, build again.
+- The "after" references of one endpoints file are the "before" of the next: no stash needed when going file by file.
 - Tests read handlers by reflection (`AccessTests.EveryRouteTakingAPathSaysHowFolderRulesApply` looks for a path in
   parameters and in the records they bind): an `[AsParameters]` record can change what they see; run the full suite
   after each endpoints file, not only the route tests.

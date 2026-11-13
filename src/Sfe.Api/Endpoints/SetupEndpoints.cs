@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Options;
-using Sfe.Core.Settings;
 
 namespace Sfe.Api.Endpoints;
 
@@ -74,14 +73,12 @@ public static class SetupEndpoints
 
     private static async Task<Results<Ok<SessionInfo>, ValidationProblem, ProblemHttpResult>> CompleteSetup(
         HttpContext context,
-        SetupService setup,
-        AccessService accounts,
-        SettingLayers settings,
-        ILoggerFactory loggers,
+        [AsParameters] SetupServices services,
         SetupInput input,
         CancellationToken cancellationToken
     )
     {
+        var (setup, accounts, settings, loggers) = services;
         var result = await setup.CompleteAsync(
             input,
             await LocalVisitor.SetupCodeWaivedAsync(context),
