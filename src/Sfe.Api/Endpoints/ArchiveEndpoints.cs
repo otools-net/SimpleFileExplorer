@@ -6,7 +6,6 @@ using Microsoft.Net.Http.Headers;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Files;
-using Sfe.Core.Paths;
 
 namespace Sfe.Api.Endpoints;
 
@@ -56,17 +55,13 @@ public static class ArchiveEndpoints
     private static async Task<
         Results<Ok<ArchiveLink>, NotFound, ForbidHttpResult, ProblemHttpResult, ValidationProblem>
     > Create(
-        Archives archives,
-        ArchiveLinks links,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
+        [AsParameters] ArchiveServices services,
         HttpContext context,
         ArchiveRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (archives, links, paths, serverFiles, work, current, _) = services;
         var state = await current.GetAsync();
         var result = archives.Plan(request.Paths, new ArchiveAccess(state, paths, serverFiles, work));
         switch (result.Status)
@@ -109,17 +104,12 @@ public static class ArchiveEndpoints
     }
 
     private static async Task<Results<EmptyHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>> Download(
-        Archives archives,
-        ArchiveLinks links,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
+        [AsParameters] ArchiveServices services,
         HttpContext context,
-        ILogger<Archives> logger,
         string token
     )
     {
+        var (archives, links, paths, serverFiles, work, current, logger) = services;
         var state = await current.GetAsync();
         var caller = RequestLimits.Caller(context);
         if (links.Take(token, state.TenantId, caller) is not { } pending)
