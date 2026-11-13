@@ -152,6 +152,8 @@ Tidy, one component per commit, worst first (add one line per component when sta
     functions of the server 82 -> 62 over these five files
   - [x] `ScanEndpoints`: `ScanServices` (one record for `SetExclusions`, `GetFolder`, `RemoveFolder`: all singletons
     but `CurrentAccess`); many-parameter functions of the server 62 -> 59
+  - [x] `LogEndpoints`: `LogServices`, `LogFilter` (`q` … `tenant`); `before` (a `long`) and `limit` stay
+    parameters after the record, so the query parameters keep their order in the OpenAPI document
   - [ ] The files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`

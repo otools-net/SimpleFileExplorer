@@ -34,18 +34,15 @@ public static class LogEndpoints
     }
 
     private static async Task<Results<Ok<LogSearchResult>, ValidationProblem>> Search(
-        AuditLogService log,
-        CurrentAccess current,
+        [AsParameters] LogServices services,
+        [AsParameters] LogFilter filter,
         CancellationToken cancellationToken,
-        string? q = null,
-        string? levels = null,
-        DateTimeOffset? from = null,
-        DateTimeOffset? to = null,
-        int? tenant = null,
         long? before = null,
         int? limit = null
     )
     {
+        var (log, current) = services;
+        var (q, levels, from, to, tenant) = filter;
         if (!TryParseLevels(levels, out var parsed))
         {
             return TypedResults.ValidationProblem(
