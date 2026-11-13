@@ -31,53 +31,68 @@ public static class FileEndpoints
     public static RouteGroupBuilder MapFileEndpoints(this RouteGroupBuilder api)
     {
         var files = api.MapGroup("/files").WithTags("Files");
+        MapItems(files);
+        MapJobs(files.MapGroup("/jobs"));
+        MapTrash(files.MapGroup("/trash"));
+        return api;
+    }
 
+    private static readonly string CreateFileDescription = $"""
+        Creates the empty file `name` in the folder `path` (never over anything: 409 `{ExistsType}` when the
+        name is taken, even by an item the caller doesn't see) and indexes it. Answers the new file as listings
+        show it; 400 for a name that can't be used, 404 when the folder is not there, 409 `{ScanRunningType}`
+        during a scan.
+        """;
+
+    private static readonly string CreateFolderDescription = $"""
+        Creates the folder `name` in the folder `path`, and indexes it at once when its parent is indexed.
+        Answers the new folder as listings show it; 400 for a name that can't be used (with the reason), 404
+        when the folder `path` is not there, 409 `{ExistsType}` when something of that name is (even one the
+        caller doesn't see), 409 `{ScanRunningType}` while a scan runs over the folder.
+        """;
+
+    private static readonly string RenameDescription = $"""
+        Renames `path` to `name` in the same folder. A case-only change (`photo.jpg` → `Photo.jpg`) is allowed
+        on Windows. What SFE keeps by path follows: the index (tags), folder access rules, quick links, settings
+        naming folders, schedules, thumbnails and trickplay. A folder can be renamed only by someone who may
+        rename everywhere below it. Answers the renamed item; 400 for a name that can't be used, 404, 403, 409
+        `{ExistsType}`, `{ScanRunningType}` or `{FolderRulesType}` (rules are set where the folder would go),
+        500 when the disk refuses (a file in use, no write access).
+        """;
+
+    private static readonly string DeleteDescription = $"""
+        Deletes each of `paths` (at most {MaxDeletePaths}): to the space's trash, or for good with `permanent`
+        (always when `Files:DeletePermanently` is on, which then needs `files.deletePermanently`). A link is
+        deleted as a link. Answers 200 with a result per path: `done` (with `trashId` when it went to the
+        trash), `notFound` (also what the caller doesn't see), `forbidden`, `scanRunning`, `trashUnavailable` (a
+        folder with links on another drive than the trash: delete it permanently instead), `failed` (in use, no
+        write access), with a message.
+        """;
+
+    /// <summary>New files and folders, renames and deletes.</summary>
+    private static void MapItems(RouteGroupBuilder files)
+    {
         files
             .MapPost("/new-file", CreateFile)
             .RequireRight(Rights.CreateFiles)
             .FolderScoped("files.createFiles at the folder the new file goes in")
             .WithName("CreateFile")
             .WithSummary("Creates an empty file.")
-            .WithDescription(
-                $"""
-                Creates the empty file `name` in the folder `path` (never over anything: 409 `{ExistsType}` when the
-                name is taken, even by an item the caller doesn't see) and indexes it. Answers the new file as listings
-                show it; 400 for a name that can't be used, 404 when the folder is not there, 409 `{ScanRunningType}`
-                during a scan.
-                """
-            );
+            .WithDescription(CreateFileDescription);
         files
             .MapPost("/folders", CreateFolder)
             .RequireRight(Rights.CreateFolders)
             .FolderScoped("files.createFolders at the folder the new one goes in")
             .WithName("CreateFolder")
             .WithSummary("Creates a folder.")
-            .WithDescription(
-                $"""
-                Creates the folder `name` in the folder `path`, and indexes it at once when its parent is indexed.
-                Answers the new folder as listings show it; 400 for a name that can't be used (with the reason), 404
-                when the folder `path` is not there, 409 `{ExistsType}` when something of that name is (even one the
-                caller doesn't see), 409 `{ScanRunningType}` while a scan runs over the folder.
-                """
-            );
-
+            .WithDescription(CreateFolderDescription);
         files
             .MapPost("/rename", Rename)
             .RequireRight(Rights.RenameFiles)
             .FolderScoped("files.rename at the file or folder, at its parent, and everywhere below a folder")
             .WithName("RenameItem")
             .WithSummary("Renames a file or folder, in its folder.")
-            .WithDescription(
-                $"""
-                Renames `path` to `name` in the same folder. A case-only change (`photo.jpg` → `Photo.jpg`) is allowed
-                on Windows. What SFE keeps by path follows: the index (tags), folder access rules, quick links, settings
-                naming folders, schedules, thumbnails and trickplay. A folder can be renamed only by someone who may
-                rename everywhere below it. Answers the renamed item; 400 for a name that can't be used, 404, 403, 409
-                `{ExistsType}`, `{ScanRunningType}` or `{FolderRulesType}` (rules are set where the folder would go),
-                500 when the disk refuses (a file in use, no write access).
-                """
-            );
-
+            .WithDescription(RenameDescription);
         files
             .MapPost("/delete", Delete)
             .RequireRight(Rights.DeleteFiles, Rights.DeletePermanently)
@@ -87,18 +102,32 @@ public static class FileEndpoints
             )
             .WithName("DeleteItems")
             .WithSummary("Deletes files and folders, to the trash or for good.")
-            .WithDescription(
-                $"""
-                Deletes each of `paths` (at most {MaxDeletePaths}): to the space's trash, or for good with `permanent`
-                (always when `Files:DeletePermanently` is on, which then needs `files.deletePermanently`). A link is
-                deleted as a link. Answers 200 with a result per path: `done` (with `trashId` when it went to the
-                trash), `notFound` (also what the caller doesn't see), `forbidden`, `scanRunning`, `trashUnavailable` (a
-                folder with links on another drive than the trash: delete it permanently instead), `failed` (in use, no
-                write access), with a message.
-                """
-            );
+            .WithDescription(DeleteDescription);
+    }
 
-        var jobs = files.MapGroup("/jobs");
+    private static readonly string StartJobDescription = $"""
+        Starts a job and answers its first state (202). `conflicts` says what to do when the target holds an
+        item of the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies),
+        `replace` (needs the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth`
+        (` (2)` added). Moves keep tags, folder rules (`keepAccess` pins each group's current access), quick
+        links and caches; copies never follow links, leave out folders the caller may not see, and get the tags
+        of their originals with `keepTags`. Results per item in `results`.
+        """;
+
+    private static readonly string CompressDescription = $"""
+        Starts a compression job and answers its first state (202), followed as moves and copies are. `paths` (1
+        to {Archives.MaxItems:N0}), `target` the folder the zip goes into, `name` (`.zip` added; default: the
+        only item's name, else their folder's), `level` 0 (stored) to 9 (default 6), `skipCompressed` (default
+        true: pictures, videos, archives… stored whatever the level), `password` (AES-256; the names stay
+        readable). What the caller may not see is left out silently, links and folders they may not download are
+        named in `{Archives.LeftOutEntry}`. One compression at a time on the server
+        (`Files:Archives:CompressJobs`). A name taken in the target is asked as `conflicts` says. Its result
+        tells the ratio achieved.
+        """;
+
+    /// <summary>Moves, copies and compressions in the background, and the caller's jobs.</summary>
+    private static void MapJobs(RouteGroupBuilder jobs)
+    {
         jobs.MapPost("/check", CheckMove)
             .RequireRight(Rights.MoveFiles)
             .FolderScoped("only the folders the caller may move, seen by their rules")
@@ -117,16 +146,7 @@ public static class FileEndpoints
             )
             .WithName("StartFileJob")
             .WithSummary("Moves or copies files and folders, in the background.")
-            .WithDescription(
-                $"""
-                Starts a job and answers its first state (202). `conflicts` says what to do when the target holds an
-                item of the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies),
-                `replace` (needs the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth`
-                (` (2)` added). Moves keep tags, folder rules (`keepAccess` pins each group's current access), quick
-                links and caches; copies never follow links, leave out folders the caller may not see, and get the tags
-                of their originals with `keepTags`. Results per item in `results`.
-                """
-            );
+            .WithDescription(StartJobDescription);
         jobs.MapPost("/compress", Compress)
             .RequireRight(Rights.CompressFiles)
             .FolderScoped(
@@ -135,18 +155,13 @@ public static class FileEndpoints
             )
             .WithName("CompressFiles")
             .WithSummary("Compresses files and folders into one zip in a folder of the library, in the background.")
-            .WithDescription(
-                $"""
-                Starts a compression job and answers its first state (202), followed as moves and copies are. `paths` (1
-                to {Archives.MaxItems:N0}), `target` the folder the zip goes into, `name` (`.zip` added; default: the
-                only item's name, else their folder's), `level` 0 (stored) to 9 (default 6), `skipCompressed` (default
-                true: pictures, videos, archives… stored whatever the level), `password` (AES-256; the names stay
-                readable). What the caller may not see is left out silently, links and folders they may not download are
-                named in `{Archives.LeftOutEntry}`. One compression at a time on the server
-                (`Files:Archives:CompressJobs`). A name taken in the target is asked as `conflicts` says. Its result
-                tells the ratio achieved.
-                """
-            );
+            .WithDescription(CompressDescription);
+        MapJobAnswers(jobs);
+    }
+
+    /// <summary>A job of the caller's: listed, followed, answered, cancelled.</summary>
+    private static void MapJobAnswers(RouteGroupBuilder jobs)
+    {
         jobs.MapGet("", ListJobs)
             .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles, Rights.CompressFiles)
             .NotLibraryPaths()
@@ -167,8 +182,17 @@ public static class FileEndpoints
             .NotLibraryPaths()
             .WithName("CancelFileJob")
             .WithSummary("Stops a move or copy: what is done stays, nothing half copied does.");
+    }
 
-        var trash = files.MapGroup("/trash");
+    private static readonly string RestoreDescription = $"""
+        Back with the tags of its files and a folder's access rules; its folder is made again if it is gone, and
+        ` (2)` is added to the name when it is taken there. Answers the restored item; 404, 409
+        `{ScanRunningType}`, 500 when the disk refuses.
+        """;
+
+    /// <summary>The space's trash: listed, counted, restored from, emptied.</summary>
+    private static void MapTrash(RouteGroupBuilder trash)
+    {
         trash
             .MapGet("", ListTrash)
             .RequireRight(Rights.DeleteFiles, Rights.DeletePermanently)
@@ -189,13 +213,7 @@ public static class FileEndpoints
             .FolderScoped("files.delete where it was")
             .WithName("RestoreFromTrash")
             .WithSummary("Puts a file or folder of the trash back where it was.")
-            .WithDescription(
-                $"""
-                Back with the tags of its files and a folder's access rules; its folder is made again if it is gone, and
-                ` (2)` is added to the name when it is taken there. Answers the restored item; 404, 409
-                `{ScanRunningType}`, 500 when the disk refuses.
-                """
-            );
+            .WithDescription(RestoreDescription);
         trash
             .MapDelete("/{id:int}", Purge)
             .RequireRight(Rights.DeletePermanently)
@@ -208,8 +226,6 @@ public static class FileEndpoints
             .FolderScoped("what the caller sees in the trash and may delete permanently where it was")
             .WithName("EmptyTrash")
             .WithSummary("Deletes for good everything of the trash the caller may.");
-
-        return api;
     }
 
     private static async Task<Ok<DeleteResults>> Delete(
