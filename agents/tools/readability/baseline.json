@@ -17,7 +17,7 @@
     "src/Sfe.Api/Endpoints/MigrationEndpoints.cs": {"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/QuickLinkEndpoints.cs": {"manyParameterFunctions":2},
     "src/Sfe.Api/Endpoints/ScanEndpoints.cs": {"longFunctions":1,"manyParameterFunctions":3},
-    "src/Sfe.Api/Endpoints/SessionEndpoints.cs": {"fileLines":470,"longFunctions":1,"manyParameterFunctions":4},
+    "src/Sfe.Api/Endpoints/SessionEndpoints.cs": {"fileLines":465,"longFunctions":1},
     "src/Sfe.Api/Endpoints/SetupEndpoints.cs": {"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/StreamingEndpoints.cs": {"manyParameterFunctions":2},
     "src/Sfe.Api/Endpoints/TagEndpoints.cs": {"fileLines":452,"longFunctions":1,"manyParameterFunctions":2},

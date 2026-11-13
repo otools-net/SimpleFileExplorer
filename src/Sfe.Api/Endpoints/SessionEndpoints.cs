@@ -163,16 +163,14 @@ public static class SessionEndpoints
     private static SessionTenant ToSession(TenantInfo tenant) => new(tenant.Id, tenant.Slug, tenant.Name);
 
     private static async Task<Results<Ok<SessionInfo>, ProblemHttpResult>> SignIn(
-        HttpContext context,
+        [AsParameters] SessionServices services,
         SignInService signIn,
-        SignInThrottle throttle,
-        AccessService accounts,
         IConfiguration configuration,
-        ILoggerFactory loggers,
         SignInRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (context, accounts, _, throttle, loggers) = services;
         // Counted per name and address (SignInThrottle): a stranger's failures don't lock the account's owner out.
         // An IPv6 visitor counts as its /64 (AddressKeys); the log keeps the address whole.
         var address = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
@@ -252,14 +250,13 @@ public static class SessionEndpoints
     }
 
     private static async Task<RedirectHttpResult> StartWithLink(
-        HttpContext context,
+        [AsParameters] SessionServices services,
         FastSignIn fastSignIn,
-        AccessService accounts,
-        ILoggerFactory loggers,
         string? token = null,
         CancellationToken cancellationToken = default
     )
     {
+        var (context, accounts, _, _, loggers) = services;
         var home = context.Request.PathBase.HasValue ? context.Request.PathBase.Value + "/" : "/";
         var logger = loggers.CreateLogger(typeof(SessionEndpoints));
         var address = context.Connection.RemoteIpAddress?.ToString();
@@ -381,14 +378,13 @@ public static class SessionEndpoints
     }
 
     private static async Task<Results<Ok<SessionInfo>, ProblemHttpResult>> ChooseGuestTenant(
-        HttpContext context,
-        AccessService accounts,
-        CurrentAccess current,
+        [AsParameters] SessionServices services,
         IOptionsMonitor<SecurityOptions> security,
         TenantChoice choice,
         CancellationToken cancellationToken
     )
     {
+        var (context, accounts, current, _, _) = services;
         var tenants = await accounts.GetCachedTenantsAsync(cancellationToken);
         var tenant = tenants.FirstOrDefault(t =>
             string.Equals(t.Slug, choice.Tenant?.Trim(), StringComparison.OrdinalIgnoreCase)
@@ -415,14 +411,13 @@ public static class SessionEndpoints
     }
 
     private static async Task<Results<Ok<SessionInfo>, UnauthorizedHttpResult, ProblemHttpResult>> SwitchTenant(
-        HttpContext context,
-        AccessService accounts,
+        [AsParameters] SessionServices services,
         RightsEvaluator rights,
-        CurrentAccess current,
         TenantChoice choice,
         CancellationToken cancellationToken
     )
     {
+        var (context, accounts, current, _, _) = services;
         if ((await current.GetAsync()).User is not { } user)
             return TypedResults.Unauthorized();
 

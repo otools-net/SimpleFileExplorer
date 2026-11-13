@@ -147,7 +147,7 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `FileTrackingEndpoints`: `FileTrackingServices`, `TrackingPageQuery` (`path`, `after`, `limit`, defaults
     kept)
   - [x] `UploadEndpoints`: `UploadServices` (`offset` stays a parameter: a `long`)
-  - [ ] `SessionEndpoints`
+  - [x] `SessionEndpoints`: `SessionServices` (server services only: the routes run before a library is chosen)
   - [ ] `FolderRuleEndpoints`
   - [ ] `ScanEndpoints`, then the files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
