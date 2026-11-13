@@ -80,12 +80,13 @@ node agents/tools/readability/measure.mjs --write-baseline
 node agents/tools/readability/references.mjs <temp>/before            # on the commit before
 node agents/tools/readability/references.mjs <temp>/after              # after the change
 git diff --no-index <temp>/before <temp>/after                         # nothing, or only what was meant
-node agents/tools/readability/references.mjs <temp>/x --only openapi,ef  # some of them (openapi, ef, client)
+node agents/tools/readability/references.mjs <temp>/x --only openapi,routes  # some (openapi, routes, ef, client)
 ```
 
 | File | What | How |
 |---|---|---|
 | `openapi.json` | the OpenAPI document (routes, parameters, schemas, descriptions) | `OpenApiExportTests` with `SFE_OPENAPI_OUT`, through `dotnet test` (client build skipped) |
+| `routes.txt` | every endpoint (the client's files left out): method, pattern, name, rights, folder scope, authorization policies, rate limit, its metadata types in order | `RouteExportTests` with `SFE_ROUTES_OUT`, through `dotnet test` |
 | `ef-model.txt` | whether each EF context differs from its migrations' snapshot | `dotnet ef migrations has-pending-model-changes`: must say "No changes" |
 | `client-build.txt` | the client build's files: content hash and size (chunk hashes left out of names and content), and the total | `ng build --output-path` into the folder (not `wwwroot`), the build then deleted |
 

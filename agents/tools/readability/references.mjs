@@ -11,7 +11,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
-const STEPS = ['openapi', 'ef', 'client'];
+const STEPS = ['openapi', 'routes', 'ef', 'client'];
 const CONTEXTS = ['SfeDbContext', 'AccessDbContext'];
 
 function parseArguments(argv) {
@@ -44,6 +44,15 @@ function writeOpenApi(out) {
     const target = join(out, 'openapi.json');
     const env = { ...process.env, SFE_OPENAPI_OUT: target };
     const args = ['test', 'tests/Sfe.Tests', '-p:SfeSkipWebClient=true', '--filter', 'OpenApiExportTests'];
+    run('dotnet', args, { env });
+    console.log(`Wrote ${target}`);
+}
+
+/** Every endpoint with its rights, folder scope, policies and metadata, from the test host (`RouteExportTests`). */
+function writeRoutes(out) {
+    const target = join(out, 'routes.txt');
+    const env = { ...process.env, SFE_ROUTES_OUT: target };
+    const args = ['test', 'tests/Sfe.Tests', '-p:SfeSkipWebClient=true', '--filter', 'RouteExportTests'];
     run('dotnet', args, { env });
     console.log(`Wrote ${target}`);
 }
@@ -108,7 +117,7 @@ function main() {
     if (!relative(repo, options.out).startsWith('..'))
         throw new Error('Write the references outside the repository (a temp folder)');
     mkdirSync(options.out, { recursive: true });
-    const steps = { openapi: writeOpenApi, ef: writeModelCheck, client: writeClientBuild };
+    const steps = { openapi: writeOpenApi, routes: writeRoutes, ef: writeModelCheck, client: writeClientBuild };
     for (const step of options.only)
         steps[step](options.out);
     console.log(`Compare with an earlier run: git diff --no-index <before> ${options.out}`);
