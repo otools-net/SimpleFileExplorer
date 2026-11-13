@@ -100,15 +100,14 @@ public static class TrickplayEndpoints
     }
 
     private static async Task<Results<Ok<TrickplayManifest>, PhysicalFileHttpResult, NotFound>> Get(
-        TrickplayService service,
-        LibraryPaths paths,
-        CurrentAccess current,
+        [AsParameters] TrickplayServices services,
         HttpContext context,
         string path,
         int? sheet = null,
         bool queue = true
     )
     {
+        var (service, paths, current) = services;
         if ((await current.GetAsync()).Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
             return TypedResults.NotFound();
         if (sheet is null)
