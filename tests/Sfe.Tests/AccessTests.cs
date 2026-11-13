@@ -220,7 +220,15 @@ public sealed class AccessTests
                             p.ParameterType.Namespace?.StartsWith("Sfe.", StringComparison.Ordinal) == true
                             && p.ParameterType.GetMethod("<Clone>$") is not null
                             && p.ParameterType.GetProperties()
-                                .Any(property => pathNames.Contains(property.Name, StringComparer.OrdinalIgnoreCase))
+                                .Any(property =>
+                                    pathNames.Contains(property.Name, StringComparer.OrdinalIgnoreCase)
+                                    // A path is text, or a list of them: the [AsParameters] records of services
+                                    // have a `Paths` of their own (LibraryPaths).
+                                    && (
+                                        property.PropertyType == typeof(string)
+                                        || typeof(IEnumerable<string>).IsAssignableFrom(property.PropertyType)
+                                    )
+                                )
                         )
                     )
             )
