@@ -295,6 +295,14 @@ export const ADMIN_SECTIONS: AdminSection[] = [
         ],
     },
     {
+        id: 'connections',
+        group: 'Server',
+        title: 'Connections',
+        icon: 'globe',
+        description: 'Storage outside the libraries (Dropbox): whether the server may connect to it, and how.',
+        subpages: [settingsPage('connections', 'Which kinds and levels of connections this server allows.')],
+    },
+    {
         id: 'tasks',
         group: 'Server',
         title: 'Background tasks',

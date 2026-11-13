@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Connections;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Settings;
@@ -24,5 +25,6 @@ internal sealed record ConfigServices(
     SettingsService Preferences,
     AccessService Accounts,
     RightsEvaluator Rights,
-    IConfiguration Configuration
+    IConfiguration Configuration,
+    ConnectionProviders Connections
 );

@@ -806,6 +806,7 @@ public sealed class SettingsService(
         settings.Trickplay.ExcludedFolders = Folders(settings.Trickplay.ExcludedFolders);
         settings.Thumbnails.ExcludedFolders = Folders(settings.Thumbnails.ExcludedFolders);
         settings.KeepAlive.Folders = Folders(settings.KeepAlive.Folders);
+        settings.Connections.Normalize();
         settings.Editor.OutputFolder = string.IsNullOrWhiteSpace(settings.Editor.OutputFolder)
             ? null
             : LibraryPaths.NormalizeRelative(settings.Editor.OutputFolder.Trim())
@@ -1077,6 +1078,8 @@ public sealed class SettingsService(
             "keepAlive.folders",
             $"“{notKept}” is not a folder of the library: enter paths relative to the library, like NAS/Photos."
         );
+        foreach (var (key, message) in s.Connections.Errors())
+            Check(false, key, message);
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
         Check(
             s.Reading.Theme is { } readerTheme && ReadingOptions.Themes.Contains(readerTheme),

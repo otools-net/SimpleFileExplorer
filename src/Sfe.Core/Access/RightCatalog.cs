@@ -568,6 +568,7 @@ public static class RightCatalog
             "Video streams",
             "See the videos the server converts while they play, in every space, and who watches them."
         ),
+        .. ConnectionRights.All,
         Server(
             Rights.Backup,
             R,

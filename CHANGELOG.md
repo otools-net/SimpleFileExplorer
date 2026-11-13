@@ -7,6 +7,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Connections to other storage, first step (nothing to connect to yet)**: the rights `connections.use`,
+  `connections.own`, `connections.library` (given to the Administrators group of every space, never to guests) and
+  `connections.server`, and the server settings `Sfe:Connections:Enabled`, `Providers` and `Levels`
+  (Administration › Connections), which `Sfe:Locked` can fix. The database gets three empty tables. Dropbox, the
+  first kind, comes with a later version.
 - **`Sfe:Security:LinksOutsideLibrary: ReadOnly`** (configuration): what is behind a link (symbolic link, junction)
   leading out of a library can be browsed, played and downloaded, but nothing is created, changed, renamed, moved
   away or deleted there. For libraries other people can put links in outside SFE (a network share, SFTP). The default

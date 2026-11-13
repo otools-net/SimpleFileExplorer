@@ -61,4 +61,16 @@ public static class Rights
     public const string ManageUsers = "server.users";
     public const string Backup = "server.backup";
     public const string ViewStreams = "server.streams";
+
+    /// <summary>See and open the connections one is allowed to use (agents/docs/features/connections.md).</summary>
+    public const string UseConnections = "connections.use";
+
+    /// <summary>Connect storage of one's own, private to the account.</summary>
+    public const string OwnConnections = "connections.own";
+
+    /// <summary>Make and manage the connections of the space, and say which of its groups use the server's.</summary>
+    public const string LibraryConnections = "connections.library";
+
+    /// <summary>Make and manage the server's connections and offer them to spaces.</summary>
+    public const string ServerConnections = "connections.server";
 }

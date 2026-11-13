@@ -1,4 +1,5 @@
 using Sfe.Api.Security;
+using Sfe.Core.Connections;
 using Sfe.Core.Options;
 using Sfe.Core.Tagging;
 
@@ -36,6 +37,19 @@ public sealed record FilesConfig(
     int MaxUploadMegabytes = 0,
     int KeepUnfinishedUploadsHours = 48
 );
+
+/// <summary>A kind of connection that can be made now, and how its sign-in form is built.</summary>
+public sealed record ConnectionKind(
+    string Kind,
+    string Name,
+    string Icon,
+    IReadOnlyList<SignInMethod> SignIn,
+    ProviderCapabilities Capabilities
+);
+
+/// <param name="Levels">The levels connections may be made at (<c>account</c>, <c>library</c>, <c>server</c>).</param>
+/// <param name="Kinds">Empty until whoever runs the server has configured one (Dropbox: its app key).</param>
+public sealed record ConnectionsConfig(IReadOnlyList<string> Levels, IReadOnlyList<ConnectionKind> Kinds);
 
 /// <param name="DataServer">When set, the client links files to this server instead of <c>/api/files/raw</c>: a base
 /// the path is appended to, or a template with <c>{url}</c> / <c>{encodedUrl}</c>
@@ -79,6 +93,10 @@ public sealed record FilesConfig(
 /// </param>
 /// <param name="Flash">Flash movies play in the viewer (<c>Player:Flash</c>, and the right <c>files.view</c>).</param>
 /// <param name="Archives">Which archives the viewer explores; null without the right <c>files.view</c>.</param>
+/// <param name="Connections">
+/// Connections to other storage; null when they are off (<c>Connections:Enabled</c>) or the session has none of the
+/// <c>connections.*</c> rights.
+/// </param>
 public sealed record ClientConfig(
     string RootName,
     string? DataServer,
@@ -115,7 +133,8 @@ public sealed record ClientConfig(
     IReadOnlyList<string>? TextExtensions = null,
     ServerMode Mode = ServerMode.Local,
     bool Flash = false,
-    ArchivesConfig? Archives = null
+    ArchivesConfig? Archives = null,
+    ConnectionsConfig? Connections = null
 );
 
 /// <param name="MaxCompressedTarMegabytes">Compressed tars (<c>.tar.gz</c>…) larger than this aren't explored (listing

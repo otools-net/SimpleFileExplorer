@@ -68,6 +68,7 @@ public sealed class SfeOptions
     public RightOptions Rights { get; set; } = new();
     public TenantOptions Tenants { get; set; } = new();
     public BackupOptions Backup { get; set; } = new();
+    public ConnectionOptions Connections { get; set; } = new();
 
     /// <summary>
     /// Settings the web client cannot change at any level: the configured value applies to every library and user.

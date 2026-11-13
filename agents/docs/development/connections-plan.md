@@ -194,7 +194,12 @@ in `FolderRules`:
   loads it with `Include(Tenants)`, `Include(Groups)` and EF deletes them (`ClientCascade`), so `AccessService` is
   untouched; a check constraint ties the level to owner / library. Checked on LocalDB (migration applies, deletes
   of a user, a group, a library, a connection with rows refused) and by `ConnectionDataTests` on SQLite
-- [ ] Settings and rights (with `since`), `core/rights.ts`; `api/v1/config` tells the client what is on
+- [x] Settings and rights (with `since`), `core/rights.ts`; `api/v1/config` tells the client what is on. As built:
+  rights in `Access/ConnectionRights.cs` (spread into `RightCatalog.All`; `since: 15`), settings
+  `connections.enabled` / `providers` / `levels` (`ConnectionSettings`: server level, right `server.settings`,
+  `Enabled` defaults to true: nothing is offered until a kind has a sign-in method), `AllowPrivateAddresses` in the
+  configuration only; `ClientConfig.Connections` (`levels`, `kinds` with their sign-in fields and capabilities),
+  null when off or without a `connections.*` right; client: settings tab and Administration › Connections
 - [ ] `ConnectionService`, `ConnectionAccess`; credentials protected; audit log lines for every change
 
 ### Phase 2: Dropbox sign-in and management

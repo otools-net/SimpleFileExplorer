@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sfe.Core.Access;
 using Sfe.Core.Backup;
+using Sfe.Core.Connections;
 using Sfe.Core.Data;
 using Sfe.Core.Editing;
 using Sfe.Core.Files;
@@ -206,6 +207,9 @@ public static class ServiceCollectionExtensions
         ));
         services.AddSingleton<QuickLinkService>();
         services.AddSingleton<FolderRuleService>();
+        // Connections to other storage: the kinds registered (IConnectionProvider) and the door their calls leave by.
+        services.TryAddSingleton(_ => new OutboundPolicy());
+        services.AddSingleton<ConnectionProviders>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();
         services.AddSingleton<BackupWriter>();

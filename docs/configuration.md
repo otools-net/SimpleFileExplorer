@@ -91,6 +91,8 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Trickplay:…` | [Trickplay › Settings](administration/trickplay.md#settings) |
 | `Sfe:Editor:OutputFolder`, `Quality` | [Picture editor](administration/picture-editor.md) |
 | `Sfe:KeepAlive:Mode`, `IntervalSeconds`, `TimeoutSeconds`, `Method` (`List`, `Touch`), `Folders` | [Keep alive](administration/keep-alive.md#settings) |
+| `Sfe:Connections:Enabled` (default `true`), `Providers` (kinds allowed, e.g. `dropbox`; empty = all), `Levels` (`account`, `library`, `server`) | Connections to storage outside the libraries: whether the server may make them, of which kinds and at which levels (Administration › Connections, server administrators). Nothing can be connected until a kind is configured. To forbid them for good, set `Enabled` to `false` and add `connections.*` to `Sfe:Locked` |
+| `Sfe:Connections:AllowPrivateAddresses` (configuration only, default `false`) | A connection whose address a person types may reach this computer and its network |
 | `Sfe:Files:PortableNames`, `WorkFolder` (`Library`, `Server`), `DeletePermanently`, `Trash:RetentionDays`, `MinimumFreeSpaceMegabytes`, `Uploads:MaxFileSizeMegabytes`, `Uploads:KeepUnfinishedHours`, `MaxArchiveMegabytes` | [File management](administration/file-management.md) |
 | `Sfe:Files:Archives:MaxEntries`, `MaxDepth`, `MaxCompressedTarMegabytes`, `MaxEncryptedListEntries`, `MaxSevenZipListMegabytes`, `MaxPreviewMegabytes`, `MaxSkippedMegabytes`, `MaxCompressionRatio`, `CatalogBuilds`, `CatalogMegabytes`, `CompressJobs` | [Archives › Settings](user-guide/archives.md#settings) |
 | `Sfe:Tasks:LogRetentionDays` | [Background tasks › Settings](administration/background-tasks.md#settings) |

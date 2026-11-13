@@ -18,7 +18,7 @@ public sealed class FakeProvider : IConnectionProvider
 
     public string Kind { get; init; } = FakeKind;
     public string Name => "Fake storage";
-    public string Icon => "cloud";
+    public string Icon => "globe";
 
     public ProviderCapabilities Capabilities { get; set; } =
         new()

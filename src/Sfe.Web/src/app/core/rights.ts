@@ -59,6 +59,10 @@ export const Rights = {
     manageUsers: 'server.users',
     backup: 'server.backup',
     viewStreams: 'server.streams',
+    useConnections: 'connections.use',
+    ownConnections: 'connections.own',
+    libraryConnections: 'connections.library',
+    serverConnections: 'connections.server',
 } as const;
 
 export type Right = (typeof Rights)[keyof typeof Rights];
@@ -86,4 +90,6 @@ export const SETTINGS_RIGHTS: Record<string, Right> = {
     keepAlive: Rights.keepAliveSettings,
     // How the server starts: its administrators only.
     startup: Rights.serverSettings,
+    // Whether the server calls other storage: its administrators only.
+    connections: Rights.serverSettings,
 };

@@ -48,6 +48,10 @@ Each right is of one of two kinds (column **Kind**):
 | `account.preferences`, `account.password` | own preferences and password | Write | no | Administrators, Users |
 | `account.quickLinks` | own [quick links](../user-guide/browsing.md#quick-links) in the sidebar | Write | no | Administrators, Users |
 | `system.apiDocs` | the API documentation (`/api/docs`) | Read | no | Administrators |
+| `connections.use` | see and open the connections to other storage one is allowed to use | Read | no | Administrators |
+| `connections.own` | connect storage of one's own, private to the account | Write | no | Administrators |
+| `connections.library` | the space's connections: make them, choose the groups that use them and the server's | Write | no | Administrators |
+| `connections.server` | the server's connections, offered to spaces | Write | no | server administrators only |
 | `server.settings`, `server.tenants`, `server.users` | the server's settings, spaces, every account | Write | no | server administrators only |
 | `server.backup`, `server.streams` | backups, the list of video streams | Read | no | server administrators only |
 

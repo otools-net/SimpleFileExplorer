@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
+using Sfe.Core.Connections;
 using Sfe.Core.Editing;
 using Sfe.Core.Library;
 using Sfe.Core.Options;
@@ -28,8 +29,19 @@ public static class ConfigEndpoints
         CancellationToken cancellationToken
     )
     {
-        var (paths, thumbnails, trickplay, streamer, options, current, preferences, accounts, rights, configuration) =
-            services;
+        var (
+            paths,
+            thumbnails,
+            trickplay,
+            streamer,
+            options,
+            current,
+            preferences,
+            accounts,
+            rights,
+            configuration,
+            _
+        ) = services;
         var state = await current.GetAsync();
         var server = options.CurrentValue;
         // The library's settings with the user's own preferences over them.
@@ -118,8 +130,40 @@ public static class ConfigEndpoints
                 settings.Player.Flash && state.Has(Rights.ViewFiles),
                 state.Has(Rights.ViewFiles)
                     ? new ArchivesConfig(Math.Max(0, server.Files.Archives.MaxCompressedTarMegabytes))
-                    : null
+                    : null,
+                ConnectionsOf(state, server.Connections, services.Connections)
             )
         );
     }
+
+    /// <summary>What the session may know about connections: the levels and the kinds one can be made of.</summary>
+    private static ConnectionsConfig? ConnectionsOf(
+        AccessState state,
+        ConnectionOptions options,
+        ConnectionProviders providers
+    ) =>
+        options.Enabled && ConnectionRightIds.Any(state.Has)
+            ? new ConnectionsConfig(
+                options.Levels,
+                [
+                    .. providers
+                        .Offered(options)
+                        .Select(p => new ConnectionKind(
+                            p.Kind,
+                            p.Name,
+                            p.Icon,
+                            p.SignInMethods(options),
+                            p.Capabilities
+                        )),
+                ]
+            )
+            : null;
+
+    private static readonly string[] ConnectionRightIds =
+    [
+        Rights.UseConnections,
+        Rights.OwnConnections,
+        Rights.LibraryConnections,
+        Rights.ServerConnections,
+    ];
 }

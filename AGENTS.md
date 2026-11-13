@@ -88,6 +88,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [namespace-rename-plan](agents/docs/development/namespace-rename-plan.md) | plan 3: C# namespaces `Sfe.*` become `Otools.Net.Sfe.*` (namespaces only; projects, assemblies and the executable keep their names) | `src/`, `tests/` |
 | [client-library-plan](agents/docs/development/client-library-plan.md) | plan 4: `Sfe.Client` C# package (generated client + hand-written facade), tests, packaging | `src/Sfe.Client/` |
 | [connections-plan](agents/docs/development/connections-plan.md) | plan 5: external connections (provider interfaces, Dropbox, levels, browse, file management, transfers, folder rules) | `Core/Connections/`, `app/connections/` |
+| [connections-handover](agents/docs/development/connections-handover.md) | handover of the connections work: where it stands, what exists, decisions, the design of the next items, traps | `Core/Connections/`, `tests/Sfe.Tests/Infrastructure/Connections/` |
 | [connections-index-plan](agents/docs/development/connections-index-plan.md) | plan 6: index, search ("Everywhere"), tags and previews of connection files, content cache | `SfeDbContext`, `Core/Search/`, `Core/Tagging/` |
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |

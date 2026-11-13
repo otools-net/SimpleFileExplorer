@@ -77,6 +77,29 @@ export interface ClientConfig {
     flash?: boolean;
     /** Which archives the viewer explores; null without the right to view files (and from older servers: none). */
     archives?: { maxCompressedTarMegabytes: number } | null;
+    /**
+     * Connections to other storage; null when they are off or the session has none of the `connections.*` rights
+     * (and from older servers).
+     */
+    connections?: ConnectionsConfig | null;
+}
+
+export type ConnectionLevelName = 'account' | 'library' | 'server';
+
+/** What `api/config` tells about connections: the levels allowed and the kinds one can be made of now. */
+export interface ConnectionsConfig {
+    levels: ConnectionLevelName[];
+    /** Empty until whoever runs the server has configured a kind. */
+    kinds: ConnectionKind[];
+}
+
+/** A kind of storage (its sign-in form is built from `signIn`, no code per kind). */
+export interface ConnectionKind {
+    kind: string;
+    name: string;
+    icon: string;
+    signIn: { kind: string; fields: { id: string; label: string; type: 'text' | 'secret' | 'address' }[] }[];
+    capabilities: Record<string, boolean | number | string | null>;
 }
 
 /** `api/streaming/probe`: a video the server can convert. */

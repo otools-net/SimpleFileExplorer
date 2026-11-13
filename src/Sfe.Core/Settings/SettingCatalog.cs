@@ -26,6 +26,10 @@ public static class SettingCatalog
         "streaming.copyVideo",
         "openBrowser",
         "fastSignIn",
+        // Whether the server calls other storage at all: whoever runs it decides.
+        "connections.enabled",
+        "connections.providers",
+        "connections.levels",
     ];
 
     private static readonly HashSet<string> UserKeys =
@@ -98,6 +102,7 @@ public static class SettingCatalog
         // How the server starts: only its administrators (System › Start-up).
         ("openBrowser", Rights.ServerSettings),
         ("fastSignIn", Rights.ServerSettings),
+        ("connections.", Rights.ServerSettings),
     ];
 
     public static IReadOnlyList<SettingDefinition> All { get; } =
