@@ -157,6 +157,8 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `ArchiveEndpoints`: `ArchiveServices` (`Create`, `Download`; the logger too)
   - [x] `FlashEndpoints`: `FlashLinkServices`, `FlashEntryServices` (a record of its own: the route runs on its
     token, without a session)
+  - [x] `InstallationEndpoints`: `InstallationServices` (`Check`), `InstallationSaveServices` (`Save`): two records,
+    so that `Check` resolves only what it took
   - [ ] The files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`

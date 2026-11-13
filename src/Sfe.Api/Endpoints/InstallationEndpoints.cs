@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Maintenance;
 using Sfe.Api.Security;
-using Sfe.Api.Tenancy;
 using Sfe.Core.Access;
 using Sfe.Core.Library;
 using Sfe.Core.Logs;
@@ -89,13 +88,12 @@ public static class InstallationEndpoints
         Results<Ok<InstallationGrant>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>
     > Check(
         HttpContext context,
-        InstallationAccess access,
-        InstallationSettings settings,
-        ILoggerFactory loggers,
+        [AsParameters] InstallationServices services,
         InstallationCheck input,
         CancellationToken cancellationToken
     )
     {
+        var (access, settings, loggers) = services;
         switch (await InstallationAccess.CheckVisitorAsync(context))
         {
             case InstallationVisitor.NotSignedIn:
@@ -138,17 +136,12 @@ public static class InstallationEndpoints
         Results<Ok<InstallationSaved>, ValidationProblem, UnauthorizedHttpResult, ForbidHttpResult>
     > Save(
         HttpContext context,
-        InstallationAccess access,
-        InstallationSettings settings,
-        TenantRegistry libraries,
-        AccessService accounts,
-        SetupService setup,
-        IConfiguration configuration,
-        ILoggerFactory loggers,
+        [AsParameters] InstallationSaveServices services,
         InstallationInput input,
         CancellationToken cancellationToken
     )
     {
+        var (access, settings, libraries, accounts, setup, configuration, loggers) = services;
         switch (await CheckAsync(context, access))
         {
             case InstallationVisitor.NotSignedIn:
