@@ -3,8 +3,17 @@
         <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
         @if (session.editing()) {
             <span class="subtitle-shift" [sfeOverflowItem]="null" overflowStay>
-                <input #shiftBox type="text" inputmode="decimal" class="json-filter" data-shift-box placeholder="± seconds" aria-label="Seconds to move every cue by"
-                       title="Seconds to move every cue by: 2.5 later, -2.5 earlier" (keydown.enter)="shift()" />
+                <input
+                    #shiftBox
+                    type="text"
+                    inputmode="decimal"
+                    class="json-filter"
+                    data-shift-box
+                    placeholder="± seconds"
+                    aria-label="Seconds to move every cue by"
+                    title="Seconds to move every cue by: 2.5 later, -2.5 earlier"
+                    (keydown.enter)="shift()"
+                />
                 <button
                     type="button"
                     class="markdown-mode csv-header-toggle"
@@ -17,13 +26,32 @@
     }
     <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
         @for (choice of modes; track choice.id) {
-            <button type="button" role="radio" class="markdown-mode" [class.active]="mode() === choice.id" [attr.aria-checked]="mode() === choice.id"
-                    [attr.data-mode]="choice.id" [title]="choice.title" (click)="setMode(choice.id)">{{ choice.label }}</button>
+            <button
+                type="button"
+                role="radio"
+                class="markdown-mode"
+                [class.active]="mode() === choice.id"
+                [attr.aria-checked]="mode() === choice.id"
+                [attr.data-mode]="choice.id"
+                [title]="choice.title"
+                (click)="setMode(choice.id)"
+            >{{ choice.label }}</button>
         }
     </div>
     @if (mode() !== 'source') {
-        <input #filterBox type="search" class="json-filter" [sfeOverflowItem]="null" overflowStay placeholder="Filter cues" aria-label="Filter cues" title="Shows the cues holding this (Ctrl+F)"
-               [value]="query()" (input)="setQuery($any($event.target).value)" (keydown)="onFilterKeydown($event)" />
+        <input
+            #filterBox
+            type="search"
+            class="json-filter"
+            [sfeOverflowItem]="null"
+            overflowStay
+            placeholder="Filter cues"
+            aria-label="Filter cues"
+            title="Shows the cues holding this (Ctrl+F)"
+            [value]="query()"
+            (input)="setQuery($any($event.target).value)"
+            (keydown)="onFilterKeydown($event)"
+        />
     }
     @if (mode() !== 'cues') {
         <button
@@ -46,8 +74,17 @@
             (click)="sourceEditor()?.find()"
         ><svg sfeIcon="search"></svg></button>
     }
-    <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
-            title="Reading settings: font, size, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+    <button
+        type="button"
+        class="icon-button reading-toggle"
+        data-reading-toggle
+        [sfeOverflowItem]="more.reading"
+        [class.active]="panelOpen()"
+        [attr.aria-expanded]="panelOpen()"
+        title="Reading settings: font, size, colours"
+        aria-label="Reading settings"
+        (click)="panelOpen.set(!panelOpen())"
+    >Aa</button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @if (panelOpen()) {
@@ -76,16 +113,33 @@
                 <button type="button" class="link-button" (click)="showLine(problem.line)">Show in the source</button>
             </p>
         }
-        <div #scroller class="csv-scroller subtitle-list" role="listbox" tabindex="0" [attr.aria-label]="'Cues of ' + item().name"
-             [attr.aria-activedescendant]="activeId()" (keydown)="onListKeydown($event)">
+        <div
+            #scroller
+            class="csv-scroller subtitle-list"
+            role="listbox"
+            tabindex="0"
+            [attr.aria-label]="'Cues of ' + item().name"
+            [attr.aria-activedescendant]="activeId()"
+            (keydown)="onListKeydown($event)"
+        >
             <div class="csv-body" [style.height.px]="virtual.total()">
                 @for (shown of virtual.items(); track shown.key) {
                     @let cue = order()[shown.index];
                     @if (cue) {
-                        <div class="subtitle-cue" role="option" [id]="optionId(cue)" [attr.data-cue]="cue.index" [class.selected]="selected() === cue.index"
-                             [class.overlaps]="cue.overlaps" [attr.aria-selected]="selected() === cue.index"
-                             [style.transform]="'translateY(' + shown.start + 'px)'" [style.height.px]="virtual.height"
-                             [title]="cue.overlaps ? 'Starts before the cue before it has ended' : ''" (click)="select(cue)" (dblclick)="showCue(cue)">
+                        <div
+                            class="subtitle-cue"
+                            role="option"
+                            [id]="optionId(cue)"
+                            [attr.data-cue]="cue.index"
+                            [class.selected]="selected() === cue.index"
+                            [class.overlaps]="cue.overlaps"
+                            [attr.aria-selected]="selected() === cue.index"
+                            [style.transform]="'translateY(' + shown.start + 'px)'"
+                            [style.height.px]="virtual.height"
+                            [title]="cue.overlaps ? 'Starts before the cue before it has ended' : ''"
+                            (click)="select(cue)"
+                            (dblclick)="showCue(cue)"
+                        >
                             <span class="subtitle-number">{{ cue.id || cue.index + 1 }}</span>
                             <span class="subtitle-time subtitle-start">{{ time(cue.start) }}</span>
                             <span class="subtitle-time subtitle-end">{{ time(cue.end) }}</span>

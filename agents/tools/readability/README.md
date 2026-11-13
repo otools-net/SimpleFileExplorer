@@ -192,6 +192,8 @@ node agents/tools/readability/break-template-lines.mjs --check src/Sfe.Web/src/a
   (`>Edit space</button>`): no whitespace enters the text. Long text is wrapped at a space outside tags, quoted values
   and `{{ }}`, the next line indented by two spaces or more: Angular collapses that run into one space (a lone `\n`
   would stay a newline).
-- Left alone: control-flow lines (`@if (…) {`), attribute values longer than a line, and files with `<pre>`,
-  `<textarea>` or `ngPreserveWhitespaces`.
+- A tag already over several lines, one of them long, is joined and broken the same way (not when a line break
+  falls inside a quoted value: that would change the value).
+- Left alone: control-flow lines (`@if (…) {`), attribute values longer than a line, and text in files with
+  `<pre>`, `<textarea>` or `ngPreserveWhitespaces` (their tags are broken).
 - Check: the client build identical (`references.mjs --only client`, content hashes).

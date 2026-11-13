@@ -14,8 +14,13 @@
             <span>{{ meta() }}</span>
             <div class="viewer-tags" [hidden]="!item()?.tags?.length">
                 @for (tag of item()?.tags ?? []; track tag.id) {
-                    <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="searchTag($event)"
-                                  [sfeContextMenu]="tagMenu.target(tag, item())" />
+                    <sfe-tag-chip
+                        [tag]="tag"
+                        [title]="'Find files tagged ' + tag.displayName"
+                        [clickable]="true"
+                        (pick)="searchTag($event)"
+                        [sfeContextMenu]="tagMenu.target(tag, item())"
+                    />
                 }
             </div>
         </div>
@@ -30,8 +35,17 @@
                 ><svg sfeIcon="tag"></svg></button>
             }
             @if (menuEntries().length) {
-                <button #menuButton type="button" class="icon-button viewer-menu-button" title="More actions" aria-label="More actions" aria-haspopup="menu"
-                        [attr.aria-expanded]="menuOpen()" [class.active]="menuOpen()" (click)="toggleMenu()"><svg sfeIcon="more"></svg></button>
+                <button
+                    #menuButton
+                    type="button"
+                    class="icon-button viewer-menu-button"
+                    title="More actions"
+                    aria-label="More actions"
+                    aria-haspopup="menu"
+                    [attr.aria-expanded]="menuOpen()"
+                    [class.active]="menuOpen()"
+                    (click)="toggleMenu()"
+                ><svg sfeIcon="more"></svg></button>
             }
             <button
                 type="button"
@@ -72,18 +86,37 @@
                                 (error)="thumbnailFailed.set(true)"
                             >
                         } @else {
-                            <img #picture [src]="pictureUrls().file" [alt]="shown.name" decoding="async"
-                                 [class.zoomable]="zoomable()" [class.actual-size]="zoomed()" [class.dragging]="dragging()"
-                                 [style.width.px]="zoomed() ? actualSize().width : null" [style.height.px]="zoomed() ? actualSize().height : null"
-                                 [style.transform]="zoomed() ? 'translate(' + pan().x + 'px, ' + pan().y + 'px)' : null"
-                                 (load)="measure()" (dragstart)="$event.preventDefault()" (pointerdown)="onPicturePointerDown($event)"
-                                 (pointermove)="onPicturePointerMove($event)" (pointerup)="onPicturePointerUp($event)" (pointercancel)="endDrag()">
+                            <img
+                                #picture
+                                [src]="pictureUrls().file"
+                                [alt]="shown.name"
+                                decoding="async"
+                                [class.zoomable]="zoomable()"
+                                [class.actual-size]="zoomed()"
+                                [class.dragging]="dragging()"
+                                [style.width.px]="zoomed() ? actualSize().width : null"
+                                [style.height.px]="zoomed() ? actualSize().height : null"
+                                [style.transform]="zoomed() ? 'translate(' + pan().x + 'px, ' + pan().y + 'px)' : null"
+                                (load)="measure()"
+                                (dragstart)="$event.preventDefault()"
+                                (pointerdown)="onPicturePointerDown($event)"
+                                (pointermove)="onPicturePointerMove($event)"
+                                (pointerup)="onPicturePointerUp($event)"
+                                (pointercancel)="endDrag()"
+                            >
                         }
                     }
                     @case ('video') {
-                        <sfe-video-player [src]="urls()!.file(shown.path)" [name]="shown.name" [poster]="urls()!.thumbnail(shown.path)"
-                                          [seekStep]="config.config()?.seekSeconds ?? 10" [loop]="config.config()?.loop ?? false" [stream]="videoStream()" [cinemaButton]="true"
-                                          (unsupported)="unsupported.set(true); converted.set($event)" />
+                        <sfe-video-player
+                            [src]="urls()!.file(shown.path)"
+                            [name]="shown.name"
+                            [poster]="urls()!.thumbnail(shown.path)"
+                            [seekStep]="config.config()?.seekSeconds ?? 10"
+                            [loop]="config.config()?.loop ?? false"
+                            [stream]="videoStream()"
+                            [cinemaButton]="true"
+                            (unsupported)="unsupported.set(true); converted.set($event)"
+                        />
                     }
                     @case ('audio') {
                         <audio

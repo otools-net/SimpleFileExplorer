@@ -50,8 +50,16 @@
         @case ('copy') {
             <form class="text-bar" data-bar="copy" (submit)="$event.preventDefault(); session.saveCopy()">
                 <label>Save a copy as
-                <input #copyInput type="text" name="name" maxlength="255" autocomplete="off" spellcheck="false"
-                                             [value]="session.copyName()" (input)="session.copyName.set(copyInput.value)"></label>
+                <input
+                    #copyInput
+                    type="text"
+                    name="name"
+                    maxlength="255"
+                    autocomplete="off"
+                    spellcheck="false"
+                    [value]="session.copyName()"
+                    (input)="session.copyName.set(copyInput.value)"
+                ></label>
                 <button
                     type="submit"
                     class="button primary"

@@ -73,8 +73,16 @@
                         class="field-label"
                         for="space-slug"
                     >Short name <span class="field-hint">(optional)</span></label>
-                    <input id="space-slug" type="text" autocomplete="off" spellcheck="false" [value]="draft.slug" placeholder="Made from the name"
-                           (input)="change({ slug: valueOf($event) })" aria-describedby="space-slug-hint">
+                    <input
+                        id="space-slug"
+                        type="text"
+                        autocomplete="off"
+                        spellcheck="false"
+                        [value]="draft.slug"
+                        placeholder="Made from the name"
+                        (input)="change({ slug: valueOf($event) })"
+                        aria-describedby="space-slug-hint"
+                    >
                     <span
                         class="field-hint"
                         id="space-slug-hint"
@@ -122,10 +130,18 @@
                 </div>
                 <div class="access-presets">
                     <span class="field-hint">Switch off at once</span>
-                    <button type="button" class="button small" title="Tick every right that creates, changes or deletes files in this space"
-                            (click)="switchOff(fileChangingRights(rights()))">Files read-only</button>
-                    <button type="button" class="button small" title="Tick every right that changes something in this space"
-                            (click)="switchOff(changingRights(rights()))">Read-only</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Tick every right that creates, changes or deletes files in this space"
+                        (click)="switchOff(fileChangingRights(rights()))"
+                    >Files read-only</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Tick every right that changes something in this space"
+                        (click)="switchOff(changingRights(rights()))"
+                    >Read-only</button>
                 </div>
                 <fieldset class="access-choices rights">
                     <legend class="visually-hidden">Rights switched off in this space</legend>
@@ -167,6 +183,12 @@
         (click)="sheet.close()"
     >Cancel</button>
     <span sheetFooter class="spacer"></span>
-    <button sheetFooter type="button" class="button primary" [title]="draft()?.id === null ? 'Create the space and index its folder' : 'Save the space'"
-            [disabled]="saving()" (click)="save()">{{ draft()?.id === null ? 'Create' : 'Save' }}</button>
+    <button
+        sheetFooter
+        type="button"
+        class="button primary"
+        [title]="draft()?.id === null ? 'Create the space and index its folder' : 'Save the space'"
+        [disabled]="saving()"
+        (click)="save()"
+    >{{ draft()?.id === null ? 'Create' : 'Save' }}</button>
 </sfe-sheet>

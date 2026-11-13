@@ -1,8 +1,14 @@
 <p class="settings-intro">{{ intro() }}</p>
 @if (canPurge()) {
     <div class="settings-action">
-        <button type="button" class="button small danger" title="Delete for good everything of the trash you may (asks first)"
-                [sfeBusy]="emptying()" [disabled]="emptying() || !items().length" (click)="empty()">Empty the trash</button>
+        <button
+            type="button"
+            class="button small danger"
+            title="Delete for good everything of the trash you may (asks first)"
+            [sfeBusy]="emptying()"
+            [disabled]="emptying() || !items().length"
+            (click)="empty()"
+        >Empty the trash</button>
     </div>
 }
 <ul class="tracking-missing-list">
@@ -34,12 +40,24 @@
                 </span>
                 <span class="tracking-actions">
                     @if (canRestore()) {
-                        <button type="button" class="button small primary" title="Put it back where it was (a number is added to its name if that is taken)"
-                                [sfeBusy]="busy() === item.id + ':restore'" [disabled]="busy() !== null" (click)="restore(item)">Restore</button>
+                        <button
+                            type="button"
+                            class="button small primary"
+                            title="Put it back where it was (a number is added to its name if that is taken)"
+                            [sfeBusy]="busy() === item.id + ':restore'"
+                            [disabled]="busy() !== null"
+                            (click)="restore(item)"
+                        >Restore</button>
                     }
                     @if (canPurge()) {
-                        <button type="button" class="button small" title="Delete it for good (asks first)"
-                                [sfeBusy]="busy() === item.id + ':purge'" [disabled]="busy() !== null" (click)="purge(item)">
+                        <button
+                            type="button"
+                            class="button small"
+                            title="Delete it for good (asks first)"
+                            [sfeBusy]="busy() === item.id + ':purge'"
+                            [disabled]="busy() !== null"
+                            (click)="purge(item)"
+                        >
                             <svg sfeIcon="trash"></svg>Delete
                         </button>
                     }

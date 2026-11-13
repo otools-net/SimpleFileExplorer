@@ -4,15 +4,42 @@
     }
     <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
         @for (choice of modes; track choice.id) {
-            <button type="button" role="radio" class="markdown-mode" [class.active]="mode() === choice.id" [attr.aria-checked]="mode() === choice.id"
-                    [attr.data-mode]="choice.id" [title]="choice.title" (click)="setMode(choice.id)">{{ choice.label }}</button>
+            <button
+                type="button"
+                role="radio"
+                class="markdown-mode"
+                [class.active]="mode() === choice.id"
+                [attr.aria-checked]="mode() === choice.id"
+                [attr.data-mode]="choice.id"
+                [title]="choice.title"
+                (click)="setMode(choice.id)"
+            >{{ choice.label }}</button>
         }
     </div>
     @if (mode() !== 'source') {
-        <input #filterBox type="search" class="json-filter" [sfeOverflowItem]="null" overflowStay placeholder="Filter rows" aria-label="Filter rows" title="Shows the rows with a cell holding this (Ctrl+F)"
-               [value]="query()" (input)="setQuery($any($event.target).value)" (keydown)="onFilterKeydown($event)" />
-        <button type="button" class="markdown-mode csv-header-toggle" data-header [sfeOverflowItem]="more.header" [class.active]="header()" [attr.aria-pressed]="header()"
-                title="The first row names the columns" (click)="toggleHeader()">Header</button>
+        <input
+            #filterBox
+            type="search"
+            class="json-filter"
+            [sfeOverflowItem]="null"
+            overflowStay
+            placeholder="Filter rows"
+            aria-label="Filter rows"
+            title="Shows the rows with a cell holding this (Ctrl+F)"
+            [value]="query()"
+            (input)="setQuery($any($event.target).value)"
+            (keydown)="onFilterKeydown($event)"
+        />
+        <button
+            type="button"
+            class="markdown-mode csv-header-toggle"
+            data-header
+            [sfeOverflowItem]="more.header"
+            [class.active]="header()"
+            [attr.aria-pressed]="header()"
+            title="The first row names the columns"
+            (click)="toggleHeader()"
+        >Header</button>
         <select
             class="csv-delimiter"
             data-delimiter
@@ -48,8 +75,17 @@
             (click)="sourceEditor()?.find()"
         ><svg sfeIcon="search"></svg></button>
     }
-    <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
-            title="Reading settings: font, size, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+    <button
+        type="button"
+        class="icon-button reading-toggle"
+        data-reading-toggle
+        [sfeOverflowItem]="more.reading"
+        [class.active]="panelOpen()"
+        [attr.aria-expanded]="panelOpen()"
+        title="Reading settings: font, size, colours"
+        aria-label="Reading settings"
+        (click)="panelOpen.set(!panelOpen())"
+    >Aa</button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @if (panelOpen()) {
@@ -77,8 +113,16 @@
                 {{ problem.message }}{{ problems().length > 1 ? ' (and ' + (problems().length - 1) + ' more)' : '' }}.
             </p>
         }
-        <div #scroller class="csv-scroller" role="table" tabindex="0" [attr.aria-label]="item().name" [attr.aria-rowcount]="order().length + 1"
-             [attr.aria-colcount]="columns().length" (keydown)="onTableKeydown($event)">
+        <div
+            #scroller
+            class="csv-scroller"
+            role="table"
+            tabindex="0"
+            [attr.aria-label]="item().name"
+            [attr.aria-rowcount]="order().length + 1"
+            [attr.aria-colcount]="columns().length"
+            (keydown)="onTableKeydown($event)"
+        >
             <div #head class="csv-row csv-head" role="row" aria-rowindex="1" [style.grid-template-columns]="template()">
                 <span class="csv-number" role="columnheader">#</span>
                 @for (column of columns(); track $index) {
@@ -111,12 +155,25 @@
                 @for (shown of virtual.items(); track shown.key) {
                     @let record = order()[shown.index];
                     @if (record !== undefined) {
-                        <div class="csv-row" role="row" [attr.aria-rowindex]="shown.index + 2" [attr.data-record]="record" [style.grid-template-columns]="template()"
-                             [style.transform]="'translateY(' + shown.start + 'px)'" [style.height.px]="virtual.height">
+                        <div
+                            class="csv-row"
+                            role="row"
+                            [attr.aria-rowindex]="shown.index + 2"
+                            [attr.data-record]="record"
+                            [style.grid-template-columns]="template()"
+                            [style.transform]="'translateY(' + shown.start + 'px)'"
+                            [style.height.px]="virtual.height"
+                        >
                             <span class="csv-number" role="rowheader">{{ record - first() + 1 }}</span>
                             @for (column of columns(); track $index) {
-                                <span role="cell" class="csv-cell" [attr.data-column]="$index" [class.numeric]="column.numeric" [class.selected]="selected()?.record === record && selected()?.column === $index"
-                                      (click)="select(record, $index)">{{ cell(record, $index) }}</span>
+                                <span
+                                    role="cell"
+                                    class="csv-cell"
+                                    [attr.data-column]="$index"
+                                    [class.numeric]="column.numeric"
+                                    [class.selected]="selected()?.record === record && selected()?.column === $index"
+                                    (click)="select(record, $index)"
+                                >{{ cell(record, $index) }}</span>
                             }
                         </div>
                     }

@@ -19,8 +19,14 @@
 @if (own().font === 'custom') {
     <label class="reading-field">
         <span>Font name</span>
-        <input type="text" maxlength="100" placeholder="e.g. Fira Code" [value]="reading.preferences().customFont"
-               title="The name of a font installed on this device" (input)="reading.setCustomFont($any($event.target).value)">
+        <input
+            type="text"
+            maxlength="100"
+            placeholder="e.g. Fira Code"
+            [value]="reading.preferences().customFont"
+            title="The name of a font installed on this device"
+            (input)="reading.setCustomFont($any($event.target).value)"
+        >
     </label>
 }
 <div class="reading-field">
@@ -86,8 +92,16 @@
     <span>Colours</span>
     <div class="reading-themes" role="radiogroup" aria-label="Colours">
         @for (theme of themes; track theme.id) {
-            <button type="button" role="radio" class="reading-theme" [attr.data-reader-theme]="theme.id" [class.active]="theme.id === reading.preferences().theme"
-                    [attr.aria-checked]="theme.id === reading.preferences().theme" [title]="theme.title" (click)="setTheme(theme.id)">{{ theme.label }}</button>
+            <button
+                type="button"
+                role="radio"
+                class="reading-theme"
+                [attr.data-reader-theme]="theme.id"
+                [class.active]="theme.id === reading.preferences().theme"
+                [attr.aria-checked]="theme.id === reading.preferences().theme"
+                [title]="theme.title"
+                (click)="setTheme(theme.id)"
+            >{{ theme.label }}</button>
         }
     </div>
 </div>
@@ -99,7 +113,14 @@
         (click)="reading.reset(profile())"
     >Reset</button>
     @if (reading.canSaveDefaults()) {
-        <button type="button" class="button small" data-save-defaults [sfeBusy]="saving()" [disabled]="saving() || !reading.changed()"
-                title="Start from these settings (both kinds of text, and the colours) in every browser you sign in from" (click)="saveDefaults()">Save as my default</button>
+        <button
+            type="button"
+            class="button small"
+            data-save-defaults
+            [sfeBusy]="saving()"
+            [disabled]="saving() || !reading.changed()"
+            title="Start from these settings (both kinds of text, and the colours) in every browser you sign in from"
+            (click)="saveDefaults()"
+        >Save as my default</button>
     }
 </footer>

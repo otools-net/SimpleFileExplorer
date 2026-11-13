@@ -19,8 +19,14 @@
         title="Change how long the runs are kept"
         (click)="openSettings.emit()"
     ><svg sfeIcon="settings"></svg>Keep for…</button>
-    <button type="button" class="button small danger" title="Delete the history of finished runs (asks first)" [sfeBusy]="clearing()"
-            [disabled]="clearing() || !runs().length" (click)="clear()">Clear history</button>
+    <button
+        type="button"
+        class="button small danger"
+        title="Delete the history of finished runs (asks first)"
+        [sfeBusy]="clearing()"
+        [disabled]="clearing() || !runs().length"
+        (click)="clear()"
+    >Clear history</button>
 </div>
 @if (error()) {
     <p class="form-error">Could not read the history: {{ error() }}</p>

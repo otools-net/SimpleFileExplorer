@@ -113,11 +113,32 @@ function breakText(line, state) {
     return [line.slice(0, at), next + line.slice(at + 1)];
 }
 
+/**
+ * When `line` (begun in text) leaves a tag open, and that tag's lines include one over the limit: the tag's lines
+ * joined into one (`text`) and how many lines after `line` it took; null otherwise, or when a line break falls inside
+ * a quoted value (joining it would change the value).
+ */
+function joinTag(line, pending, state) {
+    let current = scan(line, state);
+    if (!current.inTag || current.quote) return null;
+    const lines = [line];
+    while (current.inTag && lines.length <= 40 && lines.length - 1 < pending.length) {
+        const next = pending[lines.length - 1];
+        lines.push(next);
+        current = scan(' ' + next, current);
+        if (current.quote) return null;
+    }
+    if (current.inTag || !lines.some((l) => l.length > LIMIT)) return null;
+    const text = [lines[0].trimEnd(), ...lines.slice(1).map((l) => l.trim())].join(' ');
+    return { text, lines: lines.length - 1 };
+}
+
 let total = 0;
 for (const root of roots) {
     for (const file of files(root)) {
         const source = readFileSync(file, 'utf8');
-        if (/<pre[\s>]|<textarea[\s>]|ngPreserveWhitespaces/.test(source)) continue;
+        // Text keeps its whitespace in <pre> and <textarea>: only tags are broken in those files.
+        const textToo = !/<pre[\s>]|<textarea[\s>]|ngPreserveWhitespaces/.test(source);
         const out = [];
         let count = 0;
         let state = { inTag: false, quote: null, braces: 0 };
@@ -125,8 +146,26 @@ for (const root of roots) {
         while (pending.length) {
             const line = pending.shift();
             const flow = /^\s*(@|\}|\{)/.test(line) && !/^\s*\}\s*$/.test(line);
+            const joined = !flow && inText(state) ? joinTag(line, pending, state) : null;
+            if (joined) {
+                // A tag over several lines, one of them long: its lines joined, then one attribute per line. The
+                // broken lines are final (a long attribute value stays long); what follows `>` is looked at again.
+                const parts = breakTag(joined.text, state);
+                if (parts) {
+                    pending.splice(0, joined.lines);
+                    count++;
+                    for (const part of parts.slice(0, -1)) {
+                        out.push(part);
+                        state = scan(part + '\n', state);
+                    }
+                    pending.unshift(parts.at(-1));
+                    continue;
+                }
+            }
             const parts =
-                line.length > LIMIT && !flow && inText(state) ? breakTag(line, state) ?? breakText(line, state) : null;
+                line.length > LIMIT && !flow && inText(state)
+                    ? breakTag(line, state) ?? (textToo ? breakText(line, state) : null)
+                    : null;
             if (parts && parts.join('') !== line) {
                 count++;
                 pending.unshift(...parts);
@@ -136,7 +175,8 @@ for (const root of roots) {
             }
             if (count > 2000) throw new Error(`${file}: does not settle`);
         }
-        if (count === 0) continue;
+        // A tag whose only long line is an attribute value comes out as it went in: not a change.
+        if (count === 0 || out.join('\n') === source) continue;
         total += count;
         console.log(`${file}: ${count}`);
         if (!check) writeFileSync(file, out.join('\n'));

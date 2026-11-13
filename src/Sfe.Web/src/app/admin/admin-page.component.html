@@ -25,12 +25,28 @@
             <nav class="admin-nav" aria-label="Administration sections">
                 <div class="admin-search" role="search">
                     <svg sfeIcon="search" class="search-icon"></svg>
-                    <input #searchBox type="search" placeholder="Find a setting…" aria-label="Find a setting or a page" [attr.aria-controls]="searching() ? 'admin-search-results' : null"
-                           title="Find the settings and pages whose name or description has these words (Enter opens the first one, Esc clears)"
-                           spellcheck="false" autocomplete="off" enterkeyhint="go" [value]="query()" (input)="query.set(valueOf($event))" (keydown)="onSearchKey($event)">
+                    <input
+                        #searchBox
+                        type="search"
+                        placeholder="Find a setting…"
+                        aria-label="Find a setting or a page"
+                        [attr.aria-controls]="searching() ? 'admin-search-results' : null"
+                        title="Find the settings and pages whose name or description has these words (Enter opens the first one, Esc clears)"
+                        spellcheck="false"
+                        autocomplete="off"
+                        enterkeyhint="go"
+                        [value]="query()"
+                        (input)="query.set(valueOf($event))"
+                        (keydown)="onSearchKey($event)"
+                    >
                     @if (query()) {
-                        <button type="button" class="icon-button ghost small admin-search-clear" aria-label="Clear the search"
-                                title="Clear the search and show the sections again (Esc)" (click)="query.set(''); searchBox.focus()">
+                        <button
+                            type="button"
+                            class="icon-button ghost small admin-search-clear"
+                            aria-label="Clear the search"
+                            title="Clear the search and show the sections again (Esc)"
+                            (click)="query.set(''); searchBox.focus()"
+                        >
                             <svg sfeIcon="close"></svg>
                         </button>
                     }
@@ -40,8 +56,14 @@
                     <ul class="admin-search-results" id="admin-search-results" aria-label="Found">
                         @for (result of shownResults(); track $index) {
                             <li>
-                                <a routerLink="/admin" [queryParams]="resultParams(result)" [state]="linkState()" [replaceUrl]="!phone()"
-                                   [title]="'Open ' + result.where + (result.setting ? ' at this setting' : '')" (click)="found(result)">
+                                <a
+                                    routerLink="/admin"
+                                    [queryParams]="resultParams(result)"
+                                    [state]="linkState()"
+                                    [replaceUrl]="!phone()"
+                                    [title]="'Open ' + result.where + (result.setting ? ' at this setting' : '')"
+                                    (click)="found(result)"
+                                >
                                     <span class="admin-search-title"><ng-container
                                         [ngTemplateOutlet]="markedText"
                                         [ngTemplateOutletContext]="{ $implicit: result.title }"
@@ -64,9 +86,16 @@
                         @for (item of group.sections; track item.id) {
                             @let open = !phone() && !overview() && item.id === section().id;
                             <li>
-                                <a routerLink="/admin" [queryParams]="{ section: item.id }" [state]="linkState()" [replaceUrl]="!phone()"
-                                   [attr.aria-current]="open && item.subpages.length === 1 ? 'page' : null" [class.open]="open" [title]="item.description"
-                                   [class.has-error]="faulty(item.subpages)">
+                                <a
+                                    routerLink="/admin"
+                                    [queryParams]="{ section: item.id }"
+                                    [state]="linkState()"
+                                    [replaceUrl]="!phone()"
+                                    [attr.aria-current]="open && item.subpages.length === 1 ? 'page' : null"
+                                    [class.open]="open"
+                                    [title]="item.description"
+                                    [class.has-error]="faulty(item.subpages)"
+                                >
                                     <svg [sfeIcon]="item.icon"></svg>
                                     <span>{{ item.title }}</span>
                                     @if (phone()) {
@@ -87,9 +116,14 @@
                                     <ul class="admin-subnav" [attr.aria-label]="item.title">
                                         @for (page of item.subpages; track page.id) {
                                             <li>
-                                                <a routerLink="/admin" [queryParams]="{ section: item.id, page: page.id === item.subpages[0].id ? null : page.id }"
-                                                   [state]="linkState()" replaceUrl [attr.aria-current]="page.id === subpage().id ? 'page' : null"
-                                                   [class.has-error]="faulty([page])">
+                                                <a
+                                                    routerLink="/admin"
+                                                    [queryParams]="{ section: item.id, page: page.id === item.subpages[0].id ? null : page.id }"
+                                                    [state]="linkState()"
+                                                    replaceUrl
+                                                    [attr.aria-current]="page.id === subpage().id ? 'page' : null"
+                                                    [class.has-error]="faulty([page])"
+                                                >
                                                     <span>{{ page.title }}</span>
                                                     @if (badge(page.id); as badge) {
                                                         <span class="tracking-badge">{{ badge }}</span>
@@ -123,8 +157,14 @@
                             <div class="admin-cards">
                                 @for (item of group.sections; track item.id) {
                                     <article class="admin-card" [class.has-error]="faulty(item.subpages)">
-                                        <a class="admin-card-title" routerLink="/admin" [queryParams]="{ section: item.id }" [state]="historyState" replaceUrl
-                                           [title]="'Open ' + item.title">
+                                        <a
+                                            class="admin-card-title"
+                                            routerLink="/admin"
+                                            [queryParams]="{ section: item.id }"
+                                            [state]="historyState"
+                                            replaceUrl
+                                            [title]="'Open ' + item.title"
+                                        >
                                             <svg [sfeIcon]="item.icon"></svg>
                                             <span>{{ item.title }}</span>
                                             <ng-container
@@ -137,8 +177,14 @@
                                             <ul class="admin-card-pages" [attr.aria-label]="item.title">
                                                 @for (page of item.subpages; track page.id) {
                                                     <li>
-                                                        <a routerLink="/admin" [queryParams]="{ section: item.id, page: page.id === item.subpages[0].id ? null : page.id }"
-                                                           [state]="historyState" replaceUrl [title]="page.description ?? ''" [class.has-error]="faulty([page])">{{ page.title }}</a>
+                                                        <a
+                                                            routerLink="/admin"
+                                                            [queryParams]="{ section: item.id, page: page.id === item.subpages[0].id ? null : page.id }"
+                                                            [state]="historyState"
+                                                            replaceUrl
+                                                            [title]="page.description ?? ''"
+                                                            [class.has-error]="faulty([page])"
+                                                        >{{ page.title }}</a>
                                                     </li>
                                                 }
                                             </ul>
@@ -175,14 +221,24 @@
                                 @if (phone()) {
                                     {{ section().group }}
                                 } @else {
-                                    <a routerLink="/admin" [fragment]="groupId(section().group)" [state]="historyState" replaceUrl
-                                       [title]="'Show the sections of ' + section().group">{{ section().group }}</a>
+                                    <a
+                                        routerLink="/admin"
+                                        [fragment]="groupId(section().group)"
+                                        [state]="historyState"
+                                        replaceUrl
+                                        [title]="'Show the sections of ' + section().group"
+                                    >{{ section().group }}</a>
                                 }
                             </li>
                             @if (section().subpages.length > 1) {
                                 <li>
-                                    <a routerLink="/admin" [queryParams]="{ section: section().id }" [state]="stayState()" replaceUrl
-                                       [title]="'Open the first page of ' + section().title">{{ section().title }}</a>
+                                    <a
+                                        routerLink="/admin"
+                                        [queryParams]="{ section: section().id }"
+                                        [state]="stayState()"
+                                        replaceUrl
+                                        [title]="'Open the first page of ' + section().title"
+                                    >{{ section().title }}</a>
                                 </li>
                                 <li aria-current="page">{{ subpage().title }}</li>
                             } @else {
@@ -203,9 +259,17 @@
                         (keydown)="onChipKey($event)"
                     >
                         @for (item of section().subpages; track item.id) {
-                            <button type="button" role="tab" class="settings-tab" [id]="'admin-chip-' + item.id" aria-controls="admin-panel"
-                                    [attr.aria-selected]="subpage().id === item.id" [tabIndex]="subpage().id === item.id ? 0 : -1"
-                                    [class.has-error]="faulty([item])" (click)="select(item.id)">
+                            <button
+                                type="button"
+                                role="tab"
+                                class="settings-tab"
+                                [id]="'admin-chip-' + item.id"
+                                aria-controls="admin-panel"
+                                [attr.aria-selected]="subpage().id === item.id"
+                                [tabIndex]="subpage().id === item.id ? 0 : -1"
+                                [class.has-error]="faulty([item])"
+                                (click)="select(item.id)"
+                            >
                                 {{ item.title }}
                                 @if (badge(item.id); as badge) {
                                     <span class="tracking-badge">{{ badge }}</span>
@@ -219,8 +283,12 @@
                     </div>
                 }
 
-                <div id="admin-panel" class="admin-panel" [attr.role]="phone() && section().subpages.length > 1 ? 'tabpanel' : null"
-                     [attr.aria-labelledby]="phone() && section().subpages.length > 1 ? 'admin-chip-' + subpage().id : null">
+                <div
+                    id="admin-panel"
+                    class="admin-panel"
+                    [attr.role]="phone() && section().subpages.length > 1 ? 'tabpanel' : null"
+                    [attr.aria-labelledby]="phone() && section().subpages.length > 1 ? 'admin-chip-' + subpage().id : null"
+                >
                     @if (subpage().settings; as settings) {
                         @if (form.levels().length > 1) {
                             <div
@@ -229,18 +297,34 @@
                                 aria-label="Settings of"
                                 (keydown)="onLevelKey($event)"
                             >
-                                <button type="button" role="tab" class="settings-tab" id="settings-level-tenant" aria-controls="settings-level-panel"
-                                        [attr.aria-selected]="form.level() === 'tenant'" [tabIndex]="form.level() === 'tenant' ? 0 : -1"
-                                        title="This space's own settings, over the server's: they apply to this space only" (click)="form.useLevel('tenant')">
+                                <button
+                                    type="button"
+                                    role="tab"
+                                    class="settings-tab"
+                                    id="settings-level-tenant"
+                                    aria-controls="settings-level-panel"
+                                    [attr.aria-selected]="form.level() === 'tenant'"
+                                    [tabIndex]="form.level() === 'tenant' ? 0 : -1"
+                                    title="This space's own settings, over the server's: they apply to this space only"
+                                    (click)="form.useLevel('tenant')"
+                                >
                                     This space{{ config.tenant() ? ' (' + config.tenant()!.name + ')' : '' }}
                                     <ng-container
                                         [ngTemplateOutlet]="levelMark"
                                         [ngTemplateOutletContext]="{ $implicit: 'tenant' }"
                                     />
                                 </button>
-                                <button type="button" role="tab" class="settings-tab" id="settings-level-server" aria-controls="settings-level-panel"
-                                        [attr.aria-selected]="form.level() === 'server'" [tabIndex]="form.level() === 'server' ? 0 : -1"
-                                        title="The server's settings: the defaults of every space, and what the whole server shares" (click)="form.useLevel('server')">
+                                <button
+                                    type="button"
+                                    role="tab"
+                                    class="settings-tab"
+                                    id="settings-level-server"
+                                    aria-controls="settings-level-panel"
+                                    [attr.aria-selected]="form.level() === 'server'"
+                                    [tabIndex]="form.level() === 'server' ? 0 : -1"
+                                    title="The server's settings: the defaults of every space, and what the whole server shares"
+                                    (click)="form.useLevel('server')"
+                                >
                                     Whole server
                                     <ng-container
                                         [ngTemplateOutlet]="levelMark"
@@ -249,10 +333,14 @@
                                 </button>
                             </div>
                         }
-                        <sfe-settings-panel [tab]="settings" (submitted)="save()" (activity)="select('activity')"
-                                            [attr.id]="form.levels().length > 1 ? 'settings-level-panel' : null"
-                                            [attr.role]="form.levels().length > 1 ? 'tabpanel' : null"
-                                            [attr.aria-labelledby]="form.levels().length > 1 ? 'settings-level-' + form.level() : null" />
+                        <sfe-settings-panel
+                            [tab]="settings"
+                            (submitted)="save()"
+                            (activity)="select('activity')"
+                            [attr.id]="form.levels().length > 1 ? 'settings-level-panel' : null"
+                            [attr.role]="form.levels().length > 1 ? 'tabpanel' : null"
+                            [attr.aria-labelledby]="form.levels().length > 1 ? 'settings-level-' + form.level() : null"
+                        />
                     } @else {
                         @switch (section().id) {
                             @case ('tags') {
@@ -322,8 +410,13 @@
                                 (change)="form.setShowAll(checked($event))"
                             ><span>Show all settings</span>
                         </label>
-                        <button type="button" class="button" [disabled]="!form.customized()"
-                                [title]="form.customized() ? resetHint() : 'Nothing saved yet'" (click)="form.reset()">Reset to defaults</button>
+                        <button
+                            type="button"
+                            class="button"
+                            [disabled]="!form.customized()"
+                            [title]="form.customized() ? resetHint() : 'Nothing saved yet'"
+                            (click)="form.reset()"
+                        >Reset to defaults</button>
                     }
                     @if (form.changed()) {
                         <button

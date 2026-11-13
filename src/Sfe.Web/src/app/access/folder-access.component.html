@@ -109,8 +109,12 @@
                     title="Close without changing anything"
                     (click)="cancel()"
                 >Cancel</button>
-                <button type="submit" class="button small primary" [disabled]="busy()"
-                        [title]="repointing() ? 'Move the rules of the folder that is gone to this one' : 'Set the rule'">{{ repointing() ? 'Move the rules here' : 'Set the rule' }}</button>
+                <button
+                    type="submit"
+                    class="button small primary"
+                    [disabled]="busy()"
+                    [title]="repointing() ? 'Move the rules of the folder that is gone to this one' : 'Set the rule'"
+                >{{ repointing() ? 'Move the rules here' : 'Set the rule' }}</button>
             </div>
         </form>
     }
@@ -132,8 +136,11 @@
                     @for (rule of folder.rules; track rule.id) {
                         <li>
                             <span>{{ rule.name }}<span class="field-hint">{{ rule.groupId !== null ? 'group' : 'account' }}</span></span>
-                            <select [attr.aria-label]="'Level of ' + rule.name + ' at ' + (folder.path || 'the library root')"
-                                    [disabled]="busy()" (change)="changeLevel(rule, valueOf($event))">
+                            <select
+                                [attr.aria-label]="'Level of ' + rule.name + ' at ' + (folder.path || 'the library root')"
+                                [disabled]="busy()"
+                                (change)="changeLevel(rule, valueOf($event))"
+                            >
                                 @for (option of levels; track option.level) {
                                     <option
                                         [value]="option.level"

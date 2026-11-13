@@ -13,8 +13,16 @@
         </div>
         <div class="editor-tools" role="toolbar" aria-label="Edits">
             @for (tool of tools; track tool.id) {
-                <button type="button" class="icon-button" [class.active]="tool.id === activeTool()" [attr.aria-pressed]="tool.id === activeTool()"
-                        [title]="tool.label + ' (' + tool.key + ')'" [attr.aria-label]="tool.label" [disabled]="!picture()" (click)="useTool(tool.id)">
+                <button
+                    type="button"
+                    class="icon-button"
+                    [class.active]="tool.id === activeTool()"
+                    [attr.aria-pressed]="tool.id === activeTool()"
+                    [title]="tool.label + ' (' + tool.key + ')'"
+                    [attr.aria-label]="tool.label"
+                    [disabled]="!picture()"
+                    (click)="useTool(tool.id)"
+                >
                     <svg [sfeIcon]="tool.icon"></svg>
                 </button>
             }
@@ -31,13 +39,33 @@
         </div>
         <div class="viewer-actions">
             @if (canOverwrite()) {
-                <button type="button" class="button" title="Save the edited picture as a new file; the original stays as it is (Ctrl+Shift+S)"
-                        data-save="copy" [disabled]="!dirty() || saving()" (click)="save()">Save a copy</button>
-                <button type="button" class="button primary" [title]="overwriteHint()"
-                        data-save="over" [sfeBusy]="saving()" [disabled]="!dirty() || saving()" (click)="saveOver()">Save</button>
+                <button
+                    type="button"
+                    class="button"
+                    title="Save the edited picture as a new file; the original stays as it is (Ctrl+Shift+S)"
+                    data-save="copy"
+                    [disabled]="!dirty() || saving()"
+                    (click)="save()"
+                >Save a copy</button>
+                <button
+                    type="button"
+                    class="button primary"
+                    [title]="overwriteHint()"
+                    data-save="over"
+                    [sfeBusy]="saving()"
+                    [disabled]="!dirty() || saving()"
+                    (click)="saveOver()"
+                >Save</button>
             } @else {
-                <button type="button" class="button primary" title="Save the edited picture as a new file; the original stays as it is (Ctrl+S)"
-                        data-save="copy" [sfeBusy]="saving()" [disabled]="!dirty() || saving()" (click)="save()">Save a copy</button>
+                <button
+                    type="button"
+                    class="button primary"
+                    title="Save the edited picture as a new file; the original stays as it is (Ctrl+S)"
+                    data-save="copy"
+                    [sfeBusy]="saving()"
+                    [disabled]="!dirty() || saving()"
+                    (click)="save()"
+                >Save a copy</button>
             }
             <button
                 type="button"
@@ -59,11 +87,22 @@
                 <div #canvasHost class="editor-canvas"></div>
                 @if (activeTool() === 'crop' && picture()) {
                     <div class="crop-clip">
-                        <div #cropLayer class="crop-layer" (pointerdown)="startDrag($event, null)" (pointermove)="moveDrag($event)"
-                             (pointerup)="endDrag($event)" (pointercancel)="endDrag($event)">
-                            <div class="crop-frame" [style.left.%]="percent(crop().x, size().width)" [style.top.%]="percent(crop().y, size().height)"
-                                 [style.width.%]="percent(crop().width, size().width)" [style.height.%]="percent(crop().height, size().height)"
-                                 (pointerdown)="startDrag($event, 'move')">
+                        <div
+                            #cropLayer
+                            class="crop-layer"
+                            (pointerdown)="startDrag($event, null)"
+                            (pointermove)="moveDrag($event)"
+                            (pointerup)="endDrag($event)"
+                            (pointercancel)="endDrag($event)"
+                        >
+                            <div
+                                class="crop-frame"
+                                [style.left.%]="percent(crop().x, size().width)"
+                                [style.top.%]="percent(crop().y, size().height)"
+                                [style.width.%]="percent(crop().width, size().width)"
+                                [style.height.%]="percent(crop().height, size().height)"
+                                (pointerdown)="startDrag($event, 'move')"
+                            >
                                 @for (handle of handles; track handle) {
                                     <span
                                         class="crop-handle"
@@ -82,15 +121,28 @@
                 <h3>Crop</h3>
                 <div class="aspect-head">
                     <span id="aspect-label">Aspect ratio</span>
-                    <button type="button" class="button small" [disabled]="!picture() || !flipped()" (click)="flipAspect()"
-                            [title]="flipped() ? 'Use ' + flipped() + ' instead: the same ratio, ' + (isPortrait() ? 'landscape' : 'portrait') + ' (X)' : 'Pick a ratio to turn it between landscape and portrait (X)'">
+                    <button
+                        type="button"
+                        class="button small"
+                        [disabled]="!picture() || !flipped()"
+                        (click)="flipAspect()"
+                        [title]="flipped() ? 'Use ' + flipped() + ' instead: the same ratio, ' + (isPortrait() ? 'landscape' : 'portrait') + ' (X)' : 'Pick a ratio to turn it between landscape and portrait (X)'"
+                    >
                         {{ isPortrait() ? 'Landscape' : 'Portrait' }}
                     </button>
                 </div>
                 <div class="aspect-choices" role="radiogroup" aria-labelledby="aspect-label">
                     @for (choice of aspects; track choice[0]) {
-                        <button type="button" role="radio" class="aspect-choice" [attr.aria-checked]="choice[0] === aspect()" [attr.data-aspect]="choice[0]"
-                                [disabled]="!picture()" [title]="aspectHint(choice)" (click)="setAspect(choice[0])">
+                        <button
+                            type="button"
+                            role="radio"
+                            class="aspect-choice"
+                            [attr.aria-checked]="choice[0] === aspect()"
+                            [attr.data-aspect]="choice[0]"
+                            [disabled]="!picture()"
+                            [title]="aspectHint(choice)"
+                            (click)="setAspect(choice[0])"
+                        >
                             <span
                                 class="aspect-shape"
                                 [class.free]="choice[0] === 'free'"
@@ -105,8 +157,15 @@
                     @for (field of cropFields; track field[0]) {
                         <label class="field">
                             <span>{{ field[1] }}</span>
-                            <input type="number" min="0" step="1" [value]="crop()[field[0]]" [disabled]="!picture()" [attr.data-field]="field[0]"
-                                   (change)="setCropField(field[0], valueOf($event))">
+                            <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                [value]="crop()[field[0]]"
+                                [disabled]="!picture()"
+                                [attr.data-field]="field[0]"
+                                (change)="setCropField(field[0], valueOf($event))"
+                            >
                         </label>
                     }
                 </div>

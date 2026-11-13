@@ -34,9 +34,15 @@
                     <h3>On some of these files</h3>
                     <div class="tag-list">
                         @for (entry of onSome(); track entry.tag.id) {
-                            <sfe-tag-chip [tag]="entry.tag" [label]="entry.tag.displayName + ' · ' + entry.fileCount.toLocaleString()"
-                                          [title]="'On ' + entry.fileCount.toLocaleString() + ' of ' + filesText() + '. Click to add it to all of them (asks first).'"
-                                          [clickable]="true" [removable]="true" (pick)="askAdd($event)" (remove)="askRemove(entry)" />
+                            <sfe-tag-chip
+                                [tag]="entry.tag"
+                                [label]="entry.tag.displayName + ' · ' + entry.fileCount.toLocaleString()"
+                                [title]="'On ' + entry.fileCount.toLocaleString() + ' of ' + filesText() + '. Click to add it to all of them (asks first).'"
+                                [clickable]="true"
+                                [removable]="true"
+                                (pick)="askAdd($event)"
+                                (remove)="askRemove(entry)"
+                            />
                         }
                     </div>
                 </section>
@@ -62,15 +68,26 @@
                     [disabled]="applying()"
                     (click)="cancel()"
                 >Cancel</button>
-                <button type="button" class="button primary" [sfeBusy]="applying()" [disabled]="applying()"
-                        [title]="pending.remove ? 'Remove the tag from these files' : 'Add the tag to these files'" (click)="apply()">
+                <button
+                    type="button"
+                    class="button primary"
+                    [sfeBusy]="applying()"
+                    [disabled]="applying()"
+                    [title]="pending.remove ? 'Remove the tag from these files' : 'Add the tag to these files'"
+                    (click)="apply()"
+                >
                     {{ pending.remove ? 'Remove tag' : 'Add tag' }}
                 </button>
             </div>
         </div>
     } @else {
-        <sfe-tag-picker #picker [placeholder]="scope().query ? 'Add a tag to all the results…' : 'Add a tag to all these files…'"
-                        [allowCreate]="true" [exclude]="excluded" [pick]="pick" />
+        <sfe-tag-picker
+            #picker
+            [placeholder]="scope().query ? 'Add a tag to all the results…' : 'Add a tag to all these files…'"
+            [allowCreate]="true"
+            [exclude]="excluded"
+            [pick]="pick"
+        />
     }
     @if (showDefaults()) {
         <section class="default-tags" aria-labelledby="default-tags-heading">
@@ -81,12 +98,20 @@
                 @if (defaults.own.length || defaults.inherited.length) {
                     <div class="tag-list">
                         @for (tag of defaults.own; track tag.id) {
-                            <sfe-tag-chip [tag]="tag" [removable]="canSetDefaults()" title="A default tag of this folder"
-                                          (remove)="askRemoveDefault($event)" />
+                            <sfe-tag-chip
+                                [tag]="tag"
+                                [removable]="canSetDefaults()"
+                                title="A default tag of this folder"
+                                (remove)="askRemoveDefault($event)"
+                            />
                         }
                         @for (entry of defaults.inherited; track entry.tag.id) {
-                            <sfe-tag-chip class="inherited" [tag]="entry.tag" [label]="(entry.tag.displayName || entry.tag.name) + ' · ' + fromName(entry.path)"
-                                          [title]="'A default tag of ' + (entry.path ? '“' + entry.path + '”' : 'the top folder') + ': change it there'" />
+                            <sfe-tag-chip
+                                class="inherited"
+                                [tag]="entry.tag"
+                                [label]="(entry.tag.displayName || entry.tag.name) + ' · ' + fromName(entry.path)"
+                                [title]="'A default tag of ' + (entry.path ? '“' + entry.path + '”' : 'the top folder') + ': change it there'"
+                            />
                         }
                     </div>
                 } @else {
@@ -109,13 +134,24 @@
                             [disabled]="savingDefault()"
                             (click)="cancelDefault()"
                         >Cancel</button>
-                        <button type="button" class="button default-only" [disabled]="savingDefault()" (click)="applyDefault(false)"
-                                [title]="pending.remove ? 'The files already there keep the tag' : 'Only the files put there from now on get it'">
+                        <button
+                            type="button"
+                            class="button default-only"
+                            [disabled]="savingDefault()"
+                            (click)="applyDefault(false)"
+                            [title]="pending.remove ? 'The files already there keep the tag' : 'Only the files put there from now on get it'"
+                        >
                             {{ pending.remove ? 'Keep it on the files' : 'New files only' }}
                         </button>
                         @if (canTagFiles()) {
-                            <button type="button" class="button primary default-files" [sfeBusy]="savingDefault()" [disabled]="savingDefault()" (click)="applyDefault(true)"
-                                    [title]="pending.remove ? 'Also remove it from the files already there' : 'Also add it to the files already there'">
+                            <button
+                                type="button"
+                                class="button primary default-files"
+                                [sfeBusy]="savingDefault()"
+                                [disabled]="savingDefault()"
+                                (click)="applyDefault(true)"
+                                [title]="pending.remove ? 'Also remove it from the files already there' : 'Also add it to the files already there'"
+                            >
                                 {{ pending.remove ? 'Remove it from the files too' : 'Existing files too' }}
                             </button>
                         }

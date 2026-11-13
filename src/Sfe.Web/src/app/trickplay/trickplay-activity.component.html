@@ -9,8 +9,14 @@
     </div>
     <span class="field-hint">{{ counts() }}</span>
     <div class="settings-action inline">
-        <button type="button" class="button small" title="Go over the trickplay folders now for videos without trickplay"
-                [sfeBusy]="checking()" [disabled]="checking() || cannotCheck()" (click)="check()">Look for new videos now</button>
+        <button
+            type="button"
+            class="button small"
+            title="Go over the trickplay folders now for videos without trickplay"
+            [sfeBusy]="checking()"
+            [disabled]="checking() || cannotCheck()"
+            (click)="check()"
+        >Look for new videos now</button>
     </div>
 </div>
 @for (section of sections(); track section.title) {

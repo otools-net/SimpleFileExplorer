@@ -10,8 +10,20 @@
         [disabled]="state() !== 'ready' || page() <= 1"
         (click)="goTo(page() - 1)"
     ><svg sfeIcon="left"></svg></button>
-    <input type="text" inputmode="numeric" class="json-filter pdf-page" [sfeOverflowItem]="null" overflowStay data-page aria-label="Page" title="Go to page" [value]="page()" [disabled]="state() !== 'ready'"
-           (keydown.enter)="goTo($any($event.target).value)" (blur)="$any($event.target).value = page()" />
+    <input
+        type="text"
+        inputmode="numeric"
+        class="json-filter pdf-page"
+        [sfeOverflowItem]="null"
+        overflowStay
+        data-page
+        aria-label="Page"
+        title="Go to page"
+        [value]="page()"
+        [disabled]="state() !== 'ready'"
+        (keydown.enter)="goTo($any($event.target).value)"
+        (blur)="$any($event.target).value = page()"
+    />
     <span class="pdf-pages" [sfeOverflowItem]="null" overflowStay>/ {{ pages() }}</span>
     <button
         type="button"
@@ -63,16 +75,44 @@
             (click)="zoom(1)"
         ><svg sfeIcon="zoom-in"></svg></button>
     @if (outline().length) {
-        <button type="button" class="icon-button" data-outline [sfeOverflowItem]="more.outline" [class.active]="showOutline()" [attr.aria-pressed]="showOutline()" title="Outline: the document's headings" aria-label="Outline"
-                (click)="toggleOutline()"><svg sfeIcon="list"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            data-outline
+            [sfeOverflowItem]="more.outline"
+            [class.active]="showOutline()"
+            [attr.aria-pressed]="showOutline()"
+            title="Outline: the document's headings"
+            aria-label="Outline"
+            (click)="toggleOutline()"
+        ><svg sfeIcon="list"></svg></button>
     }
     <!-- On a phone a magnifier, which shows the field on a line under the bar (reader.css). -->
     <span class="pdf-find" [class.open]="findOpen()" [sfeOverflowItem]="null" overflowStay>
-        <button type="button" class="icon-button pdf-find-toggle" data-find-toggle [class.active]="findOpen()" [attr.aria-expanded]="findOpen()"
-                title="Find in the document (Ctrl+F)" aria-label="Find in the document" [disabled]="state() !== 'ready'" (click)="toggleFind()"><svg sfeIcon="search"></svg></button>
+        <button
+            type="button"
+            class="icon-button pdf-find-toggle"
+            data-find-toggle
+            [class.active]="findOpen()"
+            [attr.aria-expanded]="findOpen()"
+            title="Find in the document (Ctrl+F)"
+            aria-label="Find in the document"
+            [disabled]="state() !== 'ready'"
+            (click)="toggleFind()"
+        ><svg sfeIcon="search"></svg></button>
         <span class="pdf-find-field">
-        <input #findBox type="search" class="json-filter" data-find placeholder="Find in the document" aria-label="Find in the document" title="Find (Ctrl+F); Enter: next, Shift+Enter: previous"
-               [disabled]="state() !== 'ready'" (input)="find($any($event.target).value)" (keydown)="onFindKeydown($event)" />
+        <input
+            #findBox
+            type="search"
+            class="json-filter"
+            data-find
+            placeholder="Find in the document"
+            aria-label="Find in the document"
+            title="Find (Ctrl+F); Enter: next, Shift+Enter: previous"
+            [disabled]="state() !== 'ready'"
+            (input)="find($any($event.target).value)"
+            (keydown)="onFindKeydown($event)"
+        />
         @if (query()) {
             <span
                 class="pdf-matches"
@@ -81,8 +121,17 @@
         }
         </span>
     </span>
-    <button type="button" class="icon-button pdf-dark" data-dark [sfeOverflowItem]="more.dark" [class.active]="dark()" [attr.aria-pressed]="dark()" title="Dark pages, for reading at night" aria-label="Dark pages"
-            (click)="toggleDark()"><svg sfeIcon="theme"></svg></button>
+    <button
+        type="button"
+        class="icon-button pdf-dark"
+        data-dark
+        [sfeOverflowItem]="more.dark"
+        [class.active]="dark()"
+        [attr.aria-pressed]="dark()"
+        title="Dark pages, for reading at night"
+        aria-label="Dark pages"
+        (click)="toggleDark()"
+    ><svg sfeIcon="theme"></svg></button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 <!-- Always there: the grid's second row (the text views' editing bar), so that the pages take the third. -->

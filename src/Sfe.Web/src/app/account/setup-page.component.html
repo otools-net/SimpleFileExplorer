@@ -66,8 +66,17 @@
                         }
                         <div class="field">
                             <label class="field-label" for="setup-code">Setup code</label>
-                            <input id="setup-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" required
-                                   [value]="code()" (input)="code.set(valueOf($event))" aria-describedby="setup-code-hint">
+                            <input
+                                id="setup-code"
+                                type="text"
+                                autocomplete="off"
+                                autocapitalize="characters"
+                                spellcheck="false"
+                                required
+                                [value]="code()"
+                                (input)="code.set(valueOf($event))"
+                                aria-describedby="setup-code-hint"
+                            >
                             <span class="field-hint" id="setup-code-hint">
                                 @if (info()!.codeGenerated) {
                                     SFE made this code when it started: {{ codeWhere() }}.
@@ -135,8 +144,16 @@
                     }
                     <div class="field">
                         <label class="field-label" for="setup-name">Administrator's name</label>
-                        <input id="setup-name" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required
-                               [value]="userName()" (input)="userName.set(valueOf($event))">
+                        <input
+                            id="setup-name"
+                            type="text"
+                            autocomplete="username"
+                            autocapitalize="none"
+                            spellcheck="false"
+                            required
+                            [value]="userName()"
+                            (input)="userName.set(valueOf($event))"
+                        >
                         @if (errors()['userName']; as error) {
                             <span class="field-error">{{ error }}</span>
                         }
@@ -156,8 +173,15 @@
                     </div>
                     <div class="field">
                         <label class="field-label" for="setup-password">Password</label>
-                        <input id="setup-password" type="password" autocomplete="new-password" required [value]="password()" (input)="password.set(valueOf($event))"
-                               aria-describedby="setup-password-hint">
+                        <input
+                            id="setup-password"
+                            type="password"
+                            autocomplete="new-password"
+                            required
+                            [value]="password()"
+                            (input)="password.set(valueOf($event))"
+                            aria-describedby="setup-password-hint"
+                        >
                         <span
                             class="field-hint"
                             id="setup-password-hint"
@@ -223,8 +247,12 @@
                         <p class="form-error" role="alert">{{ error }}</p>
                     }
                     <div class="setup-actions">
-                        <button type="button" class="button" [title]="info()!.recover ? 'Back to the setup code' : 'Back to the library folder'"
-                                (click)="step.set(info()!.recover ? 'code' : 'library')">Back</button>
+                        <button
+                            type="button"
+                            class="button"
+                            [title]="info()!.recover ? 'Back to the setup code' : 'Back to the library folder'"
+                            (click)="step.set(info()!.recover ? 'code' : 'library')"
+                        >Back</button>
                         <button type="submit" class="button primary" title="Create the administrator and sign in"
                                 [disabled]="busy() || mismatch() || !userName().trim() || !password()">
                             {{ info()!.recover ? 'Restore the administrator' : 'Create the administrator' }}

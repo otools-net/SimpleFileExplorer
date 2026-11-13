@@ -1,10 +1,34 @@
-<video #video [src]="playback().url" [poster]="poster() ?? ''" [loop]="looping() && !playback().streamed" preload="metadata" playsinline
-       (play)="updatePlayState()" (pause)="updatePlayState(); waiting.set(false)" (ended)="onEnded()"
-       (timeupdate)="updateTime()" (durationchange)="updateTime()" (progress)="updateTime()" (volumechange)="updateVolume()"
-       (waiting)="waiting.set(true)" (playing)="waiting.set(false)" (canplay)="waiting.set(false)" (seeked)="waiting.set(false)"
-       (error)="failed()" (loadedmetadata)="onMetadata()"></video>
-<div class="player-surface" (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)" (pointerup)="onTap($event)"
-     (pointercancel)="endHold()" (contextmenu)="onContextMenu($event)" (click)="onClick()" (dblclick)="onDoubleClick()"></div>
+<video
+    #video
+    [src]="playback().url"
+    [poster]="poster() ?? ''"
+    [loop]="looping() && !playback().streamed"
+    preload="metadata"
+    playsinline
+    (play)="updatePlayState()"
+    (pause)="updatePlayState(); waiting.set(false)"
+    (ended)="onEnded()"
+    (timeupdate)="updateTime()"
+    (durationchange)="updateTime()"
+    (progress)="updateTime()"
+    (volumechange)="updateVolume()"
+    (waiting)="waiting.set(true)"
+    (playing)="waiting.set(false)"
+    (canplay)="waiting.set(false)"
+    (seeked)="waiting.set(false)"
+    (error)="failed()"
+    (loadedmetadata)="onMetadata()"
+></video>
+<div
+    class="player-surface"
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onTap($event)"
+    (pointercancel)="endHold()"
+    (contextmenu)="onContextMenu($event)"
+    (click)="onClick()"
+    (dblclick)="onDoubleClick()"
+></div>
 <div #flash class="player-flash" aria-hidden="true"></div>
 <div #hintBack class="player-hint back" aria-hidden="true"></div>
 <div #hintForward class="player-hint forward" aria-hidden="true"></div>
@@ -19,9 +43,23 @@
 ><svg sfeIcon="play"></svg></button>
 <div class="player-controls" (pointerdown)="showControls()">
     <div class="player-seek-wrap">
-        <input #seek type="range" class="player-seek" min="0" max="0" step="any" value="0" aria-label="Seek"
-               (input)="onSeekInput()" (pointermove)="onSeekHover($event)" (pointerleave)="onSeekLeave()"
-               (change)="endSeekPreview($event)" (pointerup)="endSeekPreview($event)" (pointercancel)="endSeekPreview($event)" (blur)="endSeekPreview($event)">
+        <input
+            #seek
+            type="range"
+            class="player-seek"
+            min="0"
+            max="0"
+            step="any"
+            value="0"
+            aria-label="Seek"
+            (input)="onSeekInput()"
+            (pointermove)="onSeekHover($event)"
+            (pointerleave)="onSeekLeave()"
+            (change)="endSeekPreview($event)"
+            (pointerup)="endSeekPreview($event)"
+            (pointercancel)="endSeekPreview($event)"
+            (blur)="endSeekPreview($event)"
+        >
         <div #preview class="player-preview" aria-hidden="true">
             <div #frame class="player-preview-frame"></div>
             <span #previewTime class="player-preview-time"></span>

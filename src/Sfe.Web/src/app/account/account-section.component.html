@@ -75,8 +75,13 @@
                     (click)="form.discard()"
                 >Discard</button>
             }
-            <button type="button" class="button" [disabled]="!form.customized()" title="Forget your preferences and follow the space's settings (asks first)"
-                    (click)="form.reset()">Use the space's settings</button>
+            <button
+                type="button"
+                class="button"
+                [disabled]="!form.customized()"
+                title="Forget your preferences and follow the space's settings (asks first)"
+                (click)="form.reset()"
+            >Use the space's settings</button>
         </div>
     }
 }

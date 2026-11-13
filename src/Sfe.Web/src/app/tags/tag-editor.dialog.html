@@ -3,16 +3,38 @@
             <form id="tag-editor-form" class="tag-form" novalidate (submit)="save($event)">
                 <label class="field">
                     <span class="field-label">Name</span>
-                    <input #nameInput type="text" name="name" required maxlength="200" autocomplete="off" [value]="name()" (input)="name.set(valueOf($event))">
+                    <input
+                        #nameInput
+                        type="text"
+                        name="name"
+                        required
+                        maxlength="200"
+                        autocomplete="off"
+                        [value]="name()"
+                        (input)="name.set(valueOf($event))"
+                    >
                 </label>
                 <label class="field">
                     <span class="field-label">Shorthand</span>
-                    <input type="text" name="shorthand" maxlength="200" autocomplete="off" [value]="shorthand()" (input)="shorthand.set(valueOf($event))">
+                    <input
+                        type="text"
+                        name="shorthand"
+                        maxlength="200"
+                        autocomplete="off"
+                        [value]="shorthand()"
+                        (input)="shorthand.set(valueOf($event))"
+                    >
                     <span class="field-hint">Searchable like the name, and used when this tag disambiguates another one.</span>
                 </label>
                 <label class="field">
                     <span class="field-label">Aliases</span>
-                    <textarea name="aliases" rows="3" spellcheck="false" [value]="aliases()" (input)="aliases.set(valueOf($event))"></textarea>
+                    <textarea
+                        name="aliases"
+                        rows="3"
+                        spellcheck="false"
+                        [value]="aliases()"
+                        (input)="aliases.set(valueOf($event))"
+                    ></textarea>
                     <span class="field-hint">Other names this tag goes by, one per line.</span>
                 </label>
                 <div class="field">
@@ -27,10 +49,17 @@
                 </div>
                 <label class="field">
                     <span class="field-label">Disambiguate with</span>
-                    <select name="disambiguation" [disabled]="!parents().length" (change)="disambiguation.set(valueOf($event))">
+                    <select
+                        name="disambiguation"
+                        [disabled]="!parents().length"
+                        (change)="disambiguation.set(valueOf($event))"
+                    >
                         <option value="" [selected]="!disambiguation()">None</option>
                         @for (parent of parents(); track parent.id) {
-                            <option [value]="parent.id" [selected]="disambiguation() === '' + parent.id">{{ parent.displayName }}</option>
+                            <option
+                                [value]="parent.id"
+                                [selected]="disambiguation() === '' + parent.id"
+                            >{{ parent.displayName }}</option>
                         }
                     </select>
                     <span class="field-hint">Shows a parent after the name, e.g. “Freddy (FNAF)”.</span>
@@ -39,8 +68,20 @@
                     <span class="field-label">Color</span>
                     <div class="swatches" role="radiogroup" aria-label="Color">
                         @for (swatch of swatches(); track swatch.slug) {
-                            <label class="swatch" [title]="swatch.name" [style.--chip-bg]="swatch.hex" [style.--chip-text]="swatch.text">
-                                <input type="radio" name="color" [value]="swatch.slug" [attr.aria-label]="swatch.name" [checked]="color() === swatch.slug" (change)="color.set(swatch.slug)">
+                            <label
+                                class="swatch"
+                                [title]="swatch.name"
+                                [style.--chip-bg]="swatch.hex"
+                                [style.--chip-text]="swatch.text"
+                            >
+                                <input
+                                    type="radio"
+                                    name="color"
+                                    [value]="swatch.slug"
+                                    [attr.aria-label]="swatch.name"
+                                    [checked]="color() === swatch.slug"
+                                    (change)="color.set(swatch.slug)"
+                                >
                                 @if (!swatch.slug) {
                                     <svg sfeIcon="close"></svg>
                                 }
@@ -49,11 +90,21 @@
                     </div>
                 </div>
                 <label class="check">
-                    <input type="checkbox" name="isCategory" [checked]="isCategory()" (change)="isCategory.set(checkedOf($event))">
+                    <input
+                        type="checkbox"
+                        name="isCategory"
+                        [checked]="isCategory()"
+                        (change)="isCategory.set(checkedOf($event))"
+                    >
                     <span><strong>Category</strong><span class="field-hint">Tags inheriting from this one are grouped under it.</span></span>
                 </label>
                 <label class="check">
-                    <input type="checkbox" name="isHidden" [checked]="isHidden()" (change)="isHidden.set(checkedOf($event))">
+                    <input
+                        type="checkbox"
+                        name="isHidden"
+                        [checked]="isHidden()"
+                        (change)="isHidden.set(checkedOf($event))"
+                    >
                     <span><strong>Hidden</strong><span class="field-hint">Files with this tag are left out of search results unless the search asks for it.</span></span>
                 </label>
                 @if (error()) {
@@ -61,12 +112,37 @@
                 }
             </form>
             @if (tag() && !tag()!.isBuiltIn) {
-                <button sheetFooter type="button" class="button danger" title="Delete this tag and remove it from its files (asks first)" (click)="delete()">Delete</button>
+                <button
+                    sheetFooter
+                    type="button"
+                    class="button danger"
+                    title="Delete this tag and remove it from its files (asks first)"
+                    (click)="delete()"
+                >Delete</button>
             }
             @if (tag()) {
-                <button sheetFooter type="button" class="button" title="Search for the files with this tag" (click)="find()"><svg sfeIcon="search"></svg>Find files</button>
+                <button
+                    sheetFooter
+                    type="button"
+                    class="button"
+                    title="Search for the files with this tag"
+                    (click)="find()"
+                ><svg sfeIcon="search"></svg>Find files</button>
             }
             <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button" title="Close without saving" (click)="sheet.close()">Cancel</button>
-            <button sheetFooter type="submit" form="tag-editor-form" class="button primary" title="Save the tag" [disabled]="saving()">Save</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button"
+                title="Close without saving"
+                (click)="sheet.close()"
+            >Cancel</button>
+            <button
+                sheetFooter
+                type="submit"
+                form="tag-editor-form"
+                class="button primary"
+                title="Save the tag"
+                [disabled]="saving()"
+            >Save</button>
         </sfe-sheet>

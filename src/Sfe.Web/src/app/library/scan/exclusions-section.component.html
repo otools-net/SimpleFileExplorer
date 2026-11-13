@@ -47,8 +47,13 @@
                 title="Close without adding anything"
                 (click)="adding.set(false)"
             >Cancel</button>
-            <button type="submit" class="button primary" title="Keep the folder out of what is ticked" [sfeBusy]="saving()"
-                    [disabled]="saving() || !picked() || !anyDraft()">Add</button>
+            <button
+                type="submit"
+                class="button primary"
+                title="Keep the folder out of what is ticked"
+                [sfeBusy]="saving()"
+                [disabled]="saving() || !picked() || !anyDraft()"
+            >Add</button>
         </div>
     </form>
 }
@@ -90,15 +95,26 @@
                         </td>
                         @for (entry of kinds; track entry.kind) {
                             <td>
-                                <input type="checkbox" [attr.data-kind]="entry.kind" [attr.aria-label]="entry.label + ': ' + folder.path"
-                                       [title]="entry.title" [checked]="folder[entry.kind]"
-                                       [disabled]="busy() === folder.path || (!folder.exists && !folder[entry.kind])"
-                                       (change)="toggle(folder, entry.kind, $event)">
+                                <input
+                                    type="checkbox"
+                                    [attr.data-kind]="entry.kind"
+                                    [attr.aria-label]="entry.label + ': ' + folder.path"
+                                    [title]="entry.title"
+                                    [checked]="folder[entry.kind]"
+                                    [disabled]="busy() === folder.path || (!folder.exists && !folder[entry.kind])"
+                                    (change)="toggle(folder, entry.kind, $event)"
+                                >
                             </td>
                         }
                         <td class="exclusions-actions">
-                            <button type="button" class="button small" [title]="'Let scans, trickplay and thumbnails into ' + folder.path + ' again'"
-                                    [sfeBusy]="busy() === folder.path" [disabled]="busy() !== null" (click)="remove(folder)">Remove</button>
+                            <button
+                                type="button"
+                                class="button small"
+                                [title]="'Let scans, trickplay and thumbnails into ' + folder.path + ' again'"
+                                [sfeBusy]="busy() === folder.path"
+                                [disabled]="busy() !== null"
+                                (click)="remove(folder)"
+                            >Remove</button>
                         </td>
                     </tr>
                 }

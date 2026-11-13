@@ -122,8 +122,15 @@
                 <form class="account-form" novalidate (submit)="start($event)">
                     <div class="field">
                         <label class="field-label" for="migration-code">Setup code</label>
-                        <input id="migration-code" type="password" autocomplete="off" required [value]="code()" (input)="code.set(valueOf($event))"
-                               aria-describedby="migration-code-hint">
+                        <input
+                            id="migration-code"
+                            type="password"
+                            autocomplete="off"
+                            required
+                            [value]="code()"
+                            (input)="code.set(valueOf($event))"
+                            aria-describedby="migration-code-hint"
+                        >
                         <span class="field-hint" id="migration-code-hint">
                             @if (info.codeGenerated) {
                                 The code SFE made at its setup: {{ codeWhere(info) }}.
@@ -140,8 +147,13 @@
                             A backup holds the databases and the configuration files, to go back to SFE
                             {{ info.databaseVersion ?? 'of before' }} if needed. It holds password hashes: keep it somewhere safe.
                         </p>
-                        <button type="button" class="button" title="Download a zip file of the databases and configuration files"
-                                [disabled]="busy() || !code()" (click)="backup()">
+                        <button
+                            type="button"
+                            class="button"
+                            title="Download a zip file of the databases and configuration files"
+                            [disabled]="busy() || !code()"
+                            (click)="backup()"
+                        >
                             <svg sfeIcon="download"></svg>Download a backup
                         </button>
                         @if (backedUp(); as link) {
@@ -155,8 +167,12 @@
                         <p class="form-error" role="alert">{{ error }}</p>
                     }
                     @if (info.status !== 'newer') {
-                        <button type="submit" class="button primary account-submit" title="Update the databases and settings to this version"
-                                [disabled]="busy() || !code()">
+                        <button
+                            type="submit"
+                            class="button primary account-submit"
+                            title="Update the databases and settings to this version"
+                            [disabled]="busy() || !code()"
+                        >
                             {{ info.status === 'failed' ? 'Start the update again' : 'Start the update' }}
                         </button>
                     }

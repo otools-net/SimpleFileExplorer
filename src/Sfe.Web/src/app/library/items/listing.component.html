@@ -10,17 +10,27 @@
         @case ('error') {
             @let error = store.error();
             @if (error?.type === 'library-root-missing') {
-                <sfe-empty-state icon="folder" heading="The library folder is missing"
-                                 [text]="error!.message + (canInstall() ? ' Plug its drive in, or pick another folder.' : ' Ask an administrator to plug its drive in or pick another folder.')">
+                <sfe-empty-state
+                    icon="folder"
+                    heading="The library folder is missing"
+                    [text]="error!.message + (canInstall() ? ' Plug its drive in, or pick another folder.' : ' Ask an administrator to plug its drive in or pick another folder.')"
+                >
                     @if (canInstall()) {
-                        <a class="button" routerLink="/admin" [queryParams]="{ section: 'system', page: 'installation' }" [state]="{ sfeFromLibrary: true }"
-                           title="Pick the library folder in Administration › System › Installation">Pick another folder</a>
+                        <a
+                            class="button"
+                            routerLink="/admin"
+                            [queryParams]="{ section: 'system', page: 'installation' }"
+                            [state]="{ sfeFromLibrary: true }"
+                            title="Pick the library folder in Administration › System › Installation"
+                        >Pick another folder</a>
                     }
                 </sfe-empty-state>
             } @else {
-                <sfe-empty-state [icon]="error?.status === 404 ? 'folder' : 'close'"
-                                 [heading]="error?.status === 404 ? 'Folder not found' : store.searching() ? 'Search is unavailable' : 'Could not load this folder'"
-                                 [text]="error?.status === 404 ? 'It may have been moved or deleted.' : error?.message ?? null">
+                <sfe-empty-state
+                    [icon]="error?.status === 404 ? 'folder' : 'close'"
+                    [heading]="error?.status === 404 ? 'Folder not found' : store.searching() ? 'Search is unavailable' : 'Could not load this folder'"
+                    [text]="error?.status === 404 ? 'It may have been moved or deleted.' : error?.message ?? null"
+                >
                     <a class="button" routerLink="/" [queryParams]="store.browseParams('')">Go to library root</a>
                 </sfe-empty-state>
             }

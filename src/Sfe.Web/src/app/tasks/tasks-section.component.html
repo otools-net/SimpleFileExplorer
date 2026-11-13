@@ -22,12 +22,24 @@
                 </div>
                 <div class="task-card-actions">
                     @if (task.canCancel) {
-                        <button type="button" class="button small danger" [title]="'Stop ' + names[task.task].toLowerCase() + (cancelQuestions[task.task] ? ' (asks first)' : '')"
-                                [sfeBusy]="busy() === task.task + ':cancel'" [disabled]="busy() !== null" (click)="cancel(task)">Cancel</button>
+                        <button
+                            type="button"
+                            class="button small danger"
+                            [title]="'Stop ' + names[task.task].toLowerCase() + (cancelQuestions[task.task] ? ' (asks first)' : '')"
+                            [sfeBusy]="busy() === task.task + ':cancel'"
+                            [disabled]="busy() !== null"
+                            (click)="cancel(task)"
+                        >Cancel</button>
                     }
                     @if (task.task !== 'thumbnails') {
-                        <button type="button" class="button small" [title]="startTitle(task)" [sfeBusy]="busy() === task.task + ':start'"
-                                [disabled]="busy() !== null || !task.canStart" (click)="start(task)"><svg sfeIcon="play"></svg>Run now</button>
+                        <button
+                            type="button"
+                            class="button small"
+                            [title]="startTitle(task)"
+                            [sfeBusy]="busy() === task.task + ':start'"
+                            [disabled]="busy() !== null || !task.canStart"
+                            (click)="start(task)"
+                        ><svg sfeIcon="play"></svg>Run now</button>
                     }
                     @if (task.canSchedule) {
                         <button

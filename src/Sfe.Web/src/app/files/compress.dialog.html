@@ -95,6 +95,14 @@
         title="Close without making a zip (Esc)"
         (click)="sheet.close()"
     >Cancel</button>
-    <button sheetFooter type="button" class="button primary" data-compress [sfeBusy]="busy()" [disabled]="busy() || problem() !== null"
-            [title]="'Make the zip in “' + targetName() + '”: it goes on in the background'" (click)="confirm()">Compress</button>
+    <button
+        sheetFooter
+        type="button"
+        class="button primary"
+        data-compress
+        [sfeBusy]="busy()"
+        [disabled]="busy() || problem() !== null"
+        [title]="'Make the zip in “' + targetName() + '”: it goes on in the background'"
+        (click)="confirm()"
+    >Compress</button>
 </sfe-sheet>

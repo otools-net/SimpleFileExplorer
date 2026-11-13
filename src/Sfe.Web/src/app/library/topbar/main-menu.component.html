@@ -1,5 +1,13 @@
-<button type="button" class="icon-button" aria-haspopup="menu" [title]="buttonTitle()" aria-controls="menu" [attr.aria-label]="buttonLabel()"
-        [attr.aria-expanded]="isOpen()" (click)="popovers.toggle('menu')">
+<button
+    type="button"
+    class="icon-button"
+    aria-haspopup="menu"
+    [title]="buttonTitle()"
+    aria-controls="menu"
+    [attr.aria-label]="buttonLabel()"
+    [attr.aria-expanded]="isOpen()"
+    (click)="popovers.toggle('menu')"
+>
     <svg sfeIcon="more"></svg>
     @if (serverLost() || keepAlive() !== 'none') {
         <span class="menu-keep-alive" [class.failing]="warning()" aria-hidden="true">{{ warning() ? '!' : '' }}</span>
@@ -7,8 +15,15 @@
 </button>
 <div class="popover menu-list" id="menu" role="menu" [hidden]="!isOpen()">
     @if (accountVisible()) {
-        <a class="menu-account" role="menuitem" routerLink="/admin" [queryParams]="{ section: 'account' }" [state]="{ sfeFromLibrary: true }"
-           title="My account: your preferences and your password" (click)="popovers.close()">
+        <a
+            class="menu-account"
+            role="menuitem"
+            routerLink="/admin"
+            [queryParams]="{ section: 'account' }"
+            [state]="{ sfeFromLibrary: true }"
+            title="My account: your preferences and your password"
+            (click)="popovers.close()"
+        >
             <svg sfeIcon="user"></svg>
             <span>
                 {{ user()!.displayName || user()!.userName }}
@@ -35,8 +50,16 @@
         </p>
     } @else if (keepAlive() !== 'none') {
         @if (canSeeKeepAlive()) {
-            <a class="menu-keep-alive-line" role="menuitem" routerLink="/admin" [queryParams]="{ section: 'keepAlive' }" [state]="{ sfeFromLibrary: true }"
-               [class.failing]="keepAlive() === 'failing'" title="Keep alive: what the last pings of the library folder found" (click)="popovers.close()">
+            <a
+                class="menu-keep-alive-line"
+                role="menuitem"
+                routerLink="/admin"
+                [queryParams]="{ section: 'keepAlive' }"
+                [state]="{ sfeFromLibrary: true }"
+                [class.failing]="keepAlive() === 'failing'"
+                title="Keep alive: what the last pings of the library folder found"
+                (click)="popovers.close()"
+            >
                 <span
                     class="menu-keep-alive"
                     [class.failing]="keepAlive() === 'failing'"

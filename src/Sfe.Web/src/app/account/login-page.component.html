@@ -14,15 +14,28 @@
             </p>
             <div class="field">
                 <label class="field-label" for="recover-name">Name</label>
-                <input id="recover-name" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required
-                       [value]="userName()" (input)="userName.set(valueOf($event))">
+                <input
+                    id="recover-name"
+                    type="text"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    required
+                    [value]="userName()"
+                    (input)="userName.set(valueOf($event))"
+                >
             </div>
             @if (codeMinutes() === null) {
                 @if (error(); as error) {
                     <p class="form-error" role="alert">{{ error }}</p>
                 }
-                <button type="button" class="button primary account-submit" title="Show a recovery code for this account where the server runs"
-                        [disabled]="busy() || !userName().trim()" (click)="requestCode()">Show a recovery code on the server</button>
+                <button
+                    type="button"
+                    class="button primary account-submit"
+                    title="Show a recovery code for this account where the server runs"
+                    [disabled]="busy() || !userName().trim()"
+                    (click)="requestCode()"
+                >Show a recovery code on the server</button>
             } @else {
                 <p class="field-hint" role="status">
                     If this is a server administrator's account, its code is now shown in SFE's console window (for a
@@ -32,8 +45,16 @@
                 </p>
                 <div class="field">
                     <label class="field-label" for="recover-code">Recovery code</label>
-                    <input id="recover-code" type="text" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" required
-                           [value]="code()" (input)="code.set(valueOf($event))">
+                    <input
+                        id="recover-code"
+                        type="text"
+                        autocomplete="one-time-code"
+                        autocapitalize="characters"
+                        spellcheck="false"
+                        required
+                        [value]="code()"
+                        (input)="code.set(valueOf($event))"
+                    >
                     @if (errors()['code']; as error) {
                         <span class="field-error">{{ error }}</span>
                     }
@@ -57,8 +78,12 @@
                 @if (error(); as error) {
                     <p class="form-error" role="alert">{{ error }}</p>
                 }
-                <button type="submit" class="button primary account-submit" title="Set the new password, unlock the account and sign in"
-                        [disabled]="busy() || !userName().trim() || !code().trim() || !password() || password() !== confirm()">Set the password and sign in</button>
+                <button
+                    type="submit"
+                    class="button primary account-submit"
+                    title="Set the new password, unlock the account and sign in"
+                    [disabled]="busy() || !userName().trim() || !code().trim() || !password() || password() !== confirm()"
+                >Set the password and sign in</button>
             }
             <button
                 type="button"
@@ -71,8 +96,16 @@
         <form class="account-form" novalidate (submit)="signIn($event)">
             <div class="field">
                 <label class="field-label" for="login-name">Name</label>
-                <input id="login-name" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required
-                       [value]="userName()" (input)="userName.set(valueOf($event))">
+                <input
+                    id="login-name"
+                    type="text"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    required
+                    [value]="userName()"
+                    (input)="userName.set(valueOf($event))"
+                >
             </div>
             <div class="field">
                 <label class="field-label" for="login-password">Password</label>

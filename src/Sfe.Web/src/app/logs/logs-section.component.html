@@ -1,45 +1,92 @@
 
-        <form class="logs-filters" role="search" aria-label="Search the log" (submit)="$event.preventDefault(); search()">
+        <form
+            class="logs-filters"
+            role="search"
+            aria-label="Search the log"
+            (submit)="$event.preventDefault(); search()"
+        >
             <div class="logs-filter-row">
                 <label class="logs-text">
                     <span class="visually-hidden">Text</span>
                     <svg sfeIcon="search"></svg>
-                    <input type="search" placeholder="Search messages, loggers and errors" title="Text found in the message, the logger's name or the error (ignoring case)"
-                           [value]="filters().text" (input)="setText(valueOf($event))">
+                    <input
+                        type="search"
+                        placeholder="Search messages, loggers and errors"
+                        title="Text found in the message, the logger's name or the error (ignoring case)"
+                        [value]="filters().text"
+                        (input)="setText(valueOf($event))"
+                    >
                 </label>
-                <button type="submit" class="button small" title="Read the log again" [sfeBusy]="loading() && !paging()"><svg sfeIcon="refresh"></svg>Refresh</button>
+                <button
+                    type="submit"
+                    class="button small"
+                    title="Read the log again"
+                    [sfeBusy]="loading() && !paging()"
+                ><svg sfeIcon="refresh"></svg>Refresh</button>
             </div>
             <div class="logs-filter-row">
                 <fieldset class="logs-levels">
                     <legend class="visually-hidden">Severity</legend>
                     @for (level of levels; track level) {
-                        <label class="logs-level-chip" [class]="'level-' + level" [title]="'Show ' + levelNames[level] + ' entries (none ticked: every severity)'">
-                            <input type="checkbox" [checked]="filters().levels.has(level)" (change)="toggleLevel(level)"><span>{{ levelNames[level] }}</span>
+                        <label
+                            class="logs-level-chip"
+                            [class]="'level-' + level"
+                            [title]="'Show ' + levelNames[level] + ' entries (none ticked: every severity)'"
+                        >
+                            <input
+                                type="checkbox"
+                                [checked]="filters().levels.has(level)"
+                                (change)="toggleLevel(level)"
+                            ><span>{{ levelNames[level] }}</span>
                         </label>
                     }
                 </fieldset>
                 <label class="logs-day">
                     <span>From</span>
-                    <input type="date" title="Entries from this day on" [value]="filters().fromDay" (change)="setDay('fromDay', valueOf($event))">
+                    <input
+                        type="date"
+                        title="Entries from this day on"
+                        [value]="filters().fromDay"
+                        (change)="setDay('fromDay', valueOf($event))"
+                    >
                 </label>
                 <label class="logs-day">
                     <span>To</span>
-                    <input type="date" title="Entries up to the end of this day" [value]="filters().toDay" (change)="setDay('toDay', valueOf($event))">
+                    <input
+                        type="date"
+                        title="Entries up to the end of this day"
+                        [value]="filters().toDay"
+                        (change)="setDay('toDay', valueOf($event))"
+                    >
                 </label>
                 @if (allSpaces()) {
                     <label class="logs-space">
                         <span class="visually-hidden">Space</span>
-                        <select title="Show the entries of one space, or the server's own" (change)="setSpace(valueOf($event))">
-                            <option value="all" [selected]="filters().space === 'all'">All spaces and the server</option>
+                        <select
+                            title="Show the entries of one space, or the server's own"
+                            (change)="setSpace(valueOf($event))"
+                        >
+                            <option
+                                value="all"
+                                [selected]="filters().space === 'all'"
+                            >All spaces and the server</option>
                             <option value="server" [selected]="filters().space === 'server'">The server only</option>
                             @for (space of spaces(); track space.id) {
-                                <option [value]="space.id" [selected]="filters().space === space.id">{{ space.name }}</option>
+                                <option
+                                    [value]="space.id"
+                                    [selected]="filters().space === space.id"
+                                >{{ space.name }}</option>
                             }
                         </select>
                     </label>
                 }
                 @if (filtered()) {
-                    <button type="button" class="button small" title="Show every entry again" (click)="clearFilters()">Clear filters</button>
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Show every entry again"
+                        (click)="clearFilters()"
+                    >Clear filters</button>
                 }
             </div>
         </form>
@@ -47,7 +94,12 @@
         <div class="logs-bar">
             <span class="field-hint">{{ keptText() }}</span>
             <span class="spacer"></span>
-            <button type="button" class="button small" title="Change how long entries are kept, and whether they are saved to files" (click)="openSettings.emit()">
+            <button
+                type="button"
+                class="button small"
+                title="Change how long entries are kept, and whether they are saved to files"
+                (click)="openSettings.emit()"
+            >
                 <svg sfeIcon="settings"></svg>Keep for…
             </button>
         </div>
@@ -87,7 +139,14 @@
             <p class="muted task-empty">{{ filtered() ? 'No entries match these filters.' : 'Nothing logged yet.' }}</p>
         }
         @if (next() !== null) {
-            <button type="button" class="button small task-more" title="Show older entries" [sfeBusy]="paging()" [disabled]="loading()" (click)="loadMore()">
+            <button
+                type="button"
+                class="button small task-more"
+                title="Show older entries"
+                [sfeBusy]="paging()"
+                [disabled]="loading()"
+                (click)="loadMore()"
+            >
                 Load older entries
             </button>
         }

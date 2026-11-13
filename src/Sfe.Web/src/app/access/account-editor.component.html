@@ -17,8 +17,17 @@
             <div class="access-columns">
                 <div class="field">
                     <label class="field-label" for="account-name">User name</label>
-                    <input id="account-name" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="e.g. anna"
-                           [disabled]="limited() || !draft.local" [value]="draft.userName" (input)="change({ userName: valueOf($event) })">
+                    <input
+                        id="account-name"
+                        type="text"
+                        autocomplete="off"
+                        autocapitalize="none"
+                        spellcheck="false"
+                        placeholder="e.g. anna"
+                        [disabled]="limited() || !draft.local"
+                        [value]="draft.userName"
+                        (input)="change({ userName: valueOf($event) })"
+                    >
                     <span class="field-hint">Typed on the sign-in page. Upper and lower case don't matter.</span>
                     @if (errors()['userName']; as error) {
                         <span class="field-error">{{ error }}</span>
@@ -29,8 +38,15 @@
                         class="field-label"
                         for="account-display"
                     >Display name <span class="field-hint">(optional)</span></label>
-                    <input id="account-display" type="text" autocomplete="off" placeholder="e.g. Anna Smith" [disabled]="limited()"
-                           [value]="draft.displayName" (input)="change({ displayName: valueOf($event) })">
+                    <input
+                        id="account-display"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="e.g. Anna Smith"
+                        [disabled]="limited()"
+                        [value]="draft.displayName"
+                        (input)="change({ displayName: valueOf($event) })"
+                    >
                     <span class="field-hint">Shown in the menu instead of the user name.</span>
                     @if (errors()['displayName']; as error) {
                         <span class="field-error">{{ error }}</span>
@@ -43,8 +59,15 @@
                         class="field-label"
                         for="account-password"
                     >{{ draft.id === null ? 'Password' : 'New password' }}</label>
-                    <input id="account-password" type="password" autocomplete="new-password" [disabled]="limited()" [value]="draft.password"
-                           [placeholder]="draft.id === null ? '' : 'Leave empty to keep the current one'" (input)="change({ password: valueOf($event) })">
+                    <input
+                        id="account-password"
+                        type="password"
+                        autocomplete="new-password"
+                        [disabled]="limited()"
+                        [value]="draft.password"
+                        [placeholder]="draft.id === null ? '' : 'Leave empty to keep the current one'"
+                        (input)="change({ password: valueOf($event) })"
+                    >
                     @if (draft.id !== null) {
                         <span class="field-hint">A new password signs the account out everywhere.</span>
                     }
@@ -242,6 +265,12 @@
         (click)="sheet.close()"
     >Cancel</button>
     <span sheetFooter class="spacer"></span>
-    <button sheetFooter type="button" class="button primary" [title]="draft()?.id === null ? 'Create the account' : 'Save the account'"
-            [disabled]="saving()" (click)="save()">{{ draft()?.id === null ? 'Create' : 'Save' }}</button>
+    <button
+        sheetFooter
+        type="button"
+        class="button primary"
+        [title]="draft()?.id === null ? 'Create the account' : 'Save the account'"
+        [disabled]="saving()"
+        (click)="save()"
+    >{{ draft()?.id === null ? 'Create' : 'Save' }}</button>
 </sfe-sheet>

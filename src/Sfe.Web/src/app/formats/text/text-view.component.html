@@ -39,8 +39,16 @@
         </div>
     }
     @if (state() === 'ready' && !session.editing() && fileSource.library) {
-        <button type="button" class="text-action" data-follow [sfeOverflowItem]="more.follow" [class.active]="following()" [attr.aria-pressed]="following()"
-                title="Show what is added to the end of the file as it grows (a log being written)" (click)="toggleFollow()"><svg sfeIcon="down"></svg> Follow</button>
+        <button
+            type="button"
+            class="text-action"
+            data-follow
+            [sfeOverflowItem]="more.follow"
+            [class.active]="following()"
+            [attr.aria-pressed]="following()"
+            title="Show what is added to the end of the file as it grows (a log being written)"
+            (click)="toggleFollow()"
+        ><svg sfeIcon="down"></svg> Follow</button>
     }
     <button
         type="button"
@@ -80,8 +88,17 @@
         [disabled]="state() !== 'ready'"
         (click)="editor?.goToLine()"
     ><svg sfeIcon="goto-line"></svg></button>
-    <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
-            title="Reading settings: font, size, width, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+    <button
+        type="button"
+        class="icon-button reading-toggle"
+        data-reading-toggle
+        [sfeOverflowItem]="more.reading"
+        [class.active]="panelOpen()"
+        [attr.aria-expanded]="panelOpen()"
+        title="Reading settings: font, size, width, colours"
+        aria-label="Reading settings"
+        (click)="panelOpen.set(!panelOpen())"
+    >Aa</button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @if (panelOpen()) {
@@ -111,8 +128,13 @@
                 <span data-part-range>{{ partRange() }}</span>
             } @else if (session.file(); as file) {
                 @if (session.editing()) {
-                    <select class="text-status-select" data-save-encoding title="The encoding the file is saved in" aria-label="Save in encoding"
-                            (change)="session.encoding.set(valueOf($event))">
+                    <select
+                        class="text-status-select"
+                        data-save-encoding
+                        title="The encoding the file is saved in"
+                        aria-label="Save in encoding"
+                        (change)="session.encoding.set(valueOf($event))"
+                    >
                         @for (encoding of saveEncodings; track encoding) {
                             <option
                                 [value]="encoding"
@@ -120,8 +142,13 @@
                             >{{ encodingName(encoding) }}</option>
                         }
                     </select>
-                    <select class="text-status-select" data-save-line-ending title="The line endings the file is saved with" aria-label="Save with line endings"
-                            (change)="session.lineEnding.set(valueOf($event))">
+                    <select
+                        class="text-status-select"
+                        data-save-line-ending
+                        title="The line endings the file is saved with"
+                        aria-label="Save with line endings"
+                        (change)="session.lineEnding.set(valueOf($event))"
+                    >
                         @for (ending of saveLineEndings; track ending) {
                             <option
                                 [value]="ending"
@@ -130,8 +157,14 @@
                         }
                     </select>
                 } @else {
-                    <select class="text-status-select" data-read-encoding title="Read the file again in another encoding (letters shown wrong)" aria-label="Reopen with encoding"
-                            [disabled]="following()" (change)="session.reopen(valueOf($event))">
+                    <select
+                        class="text-status-select"
+                        data-read-encoding
+                        title="Read the file again in another encoding (letters shown wrong)"
+                        aria-label="Reopen with encoding"
+                        [disabled]="following()"
+                        (change)="session.reopen(valueOf($event))"
+                    >
                         @for (encoding of readEncodings; track encoding) {
                             <option
                                 [value]="encoding"

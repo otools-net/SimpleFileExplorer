@@ -57,8 +57,12 @@
                             (click)="stop(count())"
                         >Stop</button>
                     } @else {
-                        <button type="button" class="button small count-button" title="Go through the folder on the server's disk: exact now, but takes a while for large folders"
-                                (click)="startCount()">Count on disk</button>
+                        <button
+                            type="button"
+                            class="button small count-button"
+                            title="Go through the folder on the server's disk: exact now, but takes a while for large folders"
+                            (click)="startCount()"
+                        >Count on disk</button>
                     }
                 </div>
             </section>

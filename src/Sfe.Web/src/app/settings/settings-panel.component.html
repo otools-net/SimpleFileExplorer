@@ -2,7 +2,12 @@
         @if (form.loadError(); as error) {
             <div class="settings-panel">
                 <p class="form-error">Could not load the settings: {{ error }}</p>
-                <button type="button" class="button small" title="Ask the server for the settings again" (click)="form.load()">Try again</button>
+                <button
+                    type="button"
+                    class="button small"
+                    title="Ask the server for the settings again"
+                    (click)="form.load()"
+                >Try again</button>
             </div>
         } @else if (!form.loaded()) {
             <p class="muted">Loading the settings…</p>
@@ -15,7 +20,12 @@
                     @if (onlyAdvanced()) {
                         <p class="settings-intro settings-advanced-note">
                             The settings here are only shown in the full view.
-                            <button type="button" class="button small" title="Show every setting instead of only the most used ones" (click)="form.setShowAll(true)">Show all settings</button>
+                            <button
+                                type="button"
+                                class="button small"
+                                title="Show every setting instead of only the most used ones"
+                                (click)="form.setShowAll(true)"
+                            >Show all settings</button>
                         </p>
                     }
                     @for (group of schema().groups; track group.title) {
@@ -31,7 +41,10 @@
                             }
                             <div class="settings-grid">
                                 @for (field of group.fields; track field.key) {
-                                    <ng-container [ngTemplateOutlet]="fieldTemplate" [ngTemplateOutletContext]="{ $implicit: field }" />
+                                    <ng-container
+                                        [ngTemplateOutlet]="fieldTemplate"
+                                        [ngTemplateOutletContext]="{ $implicit: field }"
+                                    />
                                 }
                             </div>
                             <!-- A user's preferences only offer what concerns this browser. -->

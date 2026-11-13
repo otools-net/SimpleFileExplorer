@@ -16,8 +16,15 @@
             }
             <div class="field">
                 <label class="field-label" for="group-name">Name</label>
-                <input id="group-name" type="text" autocomplete="off" placeholder="e.g. Kids, Family, Friends" [disabled]="draft.builtIn !== null"
-                       [value]="draft.name" (input)="change({ name: valueOf($event) })">
+                <input
+                    id="group-name"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="e.g. Kids, Family, Friends"
+                    [disabled]="draft.builtIn !== null"
+                    [value]="draft.name"
+                    (input)="change({ name: valueOf($event) })"
+                >
                 @if (draft.builtIn) {
                     <span class="field-hint">Built-in groups keep their name.</span>
                 }
@@ -48,8 +55,12 @@
                 <div class="access-presets">
                     <span class="field-hint">Start from the rights of</span>
                     @for (preset of presets; track preset.builtIn) {
-                        <button type="button" class="button small" [title]="'Tick the rights a new space gives its ' + preset.label + ' group'"
-                                (click)="usePreset(preset.builtIn)">{{ preset.label }}</button>
+                        <button
+                            type="button"
+                            class="button small"
+                            [title]="'Tick the rights a new space gives its ' + preset.label + ' group'"
+                            (click)="usePreset(preset.builtIn)"
+                        >{{ preset.label }}</button>
                     }
                 </div>
             }
@@ -60,8 +71,12 @@
                         @let note = rightNote(right, draft);
                         @let mark = rightMark(right);
                         <label class="check" [title]="right.description">
-                            <input type="checkbox" [disabled]="note !== null && !draft.rights.has(right.id)" [checked]="draft.rights.has(right.id)"
-                                   (change)="toggleRight(right.id, checkedOf($event))">
+                            <input
+                                type="checkbox"
+                                [disabled]="note !== null && !draft.rights.has(right.id)"
+                                [checked]="draft.rights.has(right.id)"
+                                (change)="toggleRight(right.id, checkedOf($event))"
+                            >
                             <span>
                                 <span class="right-title">{{ right.title }}
                                     @if (mark) {
@@ -149,6 +164,12 @@
         (click)="sheet.close()"
     >Cancel</button>
     <span sheetFooter class="spacer"></span>
-    <button sheetFooter type="button" class="button primary" [title]="draft()?.id === null ? 'Create the group' : 'Save the group'"
-            [disabled]="saving()" (click)="save()">{{ draft()?.id === null ? 'Create' : 'Save' }}</button>
+    <button
+        sheetFooter
+        type="button"
+        class="button primary"
+        [title]="draft()?.id === null ? 'Create the group' : 'Save the group'"
+        [disabled]="saving()"
+        (click)="save()"
+    >{{ draft()?.id === null ? 'Create' : 'Save' }}</button>
 </sfe-sheet>

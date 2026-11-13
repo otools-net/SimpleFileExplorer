@@ -7,8 +7,14 @@
             {{ mode.lockedBy }}.</span></p>
         } @else {
             <label class="check">
-                <input type="radio" name="installation-mode" value="local" [checked]="chosenMode() === 'local'" [disabled]="!localAllowed()"
-                       (change)="chosenMode.set('local')">
+                <input
+                    type="radio"
+                    name="installation-mode"
+                    value="local"
+                    [checked]="chosenMode() === 'local'"
+                    [disabled]="!localAllowed()"
+                    (change)="chosenMode.set('local')"
+                >
                 <span>Local
                     <span class="field-hint">SFE on your own computer: only this computer opens it, and only
                     administrators sign in.</span>
@@ -50,8 +56,13 @@
             <span class="field-hint">An External server takes it from its configuration (Sfe__Root in its environment,
             or appsettings.json).</span></p>
     } @else {
-        <sfe-folder-picker [source]="folders" [initial]="root()" placeholder="Pick the folder of your photos, videos and music"
-                           (picked)="root.set($event)" (failed)="problem.set('Could not list the folders: ' + $event)" />
+        <sfe-folder-picker
+            [source]="folders"
+            [initial]="root()"
+            placeholder="Pick the folder of your photos, videos and music"
+            (picked)="root.set($event)"
+            (failed)="problem.set('Could not list the folders: ' + $event)"
+        />
         <span class="field-hint">The folder whose files SFE shows, with everything below it. Click a folder to choose
         it; click again inside it to go deeper.</span>
         @if (!view.rootExists && root() === view.root.value) {
@@ -129,8 +140,15 @@
             its environment, or appsettings.json).</span></p>
     } @else {
         <div class="installation-ffmpeg-path">
-            <input id="installation-ffmpeg" type="text" spellcheck="false" placeholder="ffmpeg (looked for on the PATH)" aria-label="ffmpeg's program or folder"
-                   [value]="ffmpeg()" (input)="ffmpeg.set(valueOf($event))">
+            <input
+                id="installation-ffmpeg"
+                type="text"
+                spellcheck="false"
+                placeholder="ffmpeg (looked for on the PATH)"
+                aria-label="ffmpeg's program or folder"
+                [value]="ffmpeg()"
+                (input)="ffmpeg.set(valueOf($event))"
+            >
             <button
                 type="button"
                 class="button small"
@@ -141,8 +159,12 @@
             </button>
         </div>
         @if (pickFfmpeg()) {
-            <sfe-folder-picker [source]="folders" placeholder="Pick the folder ffmpeg is in (or its bin folder)"
-                               (picked)="ffmpeg.set($event)" (failed)="problem.set('Could not list the folders: ' + $event)" />
+            <sfe-folder-picker
+                [source]="folders"
+                placeholder="Pick the folder ffmpeg is in (or its bin folder)"
+                (picked)="ffmpeg.set($event)"
+                (failed)="problem.set('Could not list the folders: ' + $event)"
+            />
         }
     }
     @if (errors()['ffmpegPath']; as error) {

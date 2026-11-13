@@ -4,13 +4,30 @@
     }
     <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
         @for (choice of modes; track choice.id) {
-            <button type="button" role="radio" class="markdown-mode" [class.active]="mode() === choice.id" [attr.aria-checked]="mode() === choice.id"
-                    [attr.data-mode]="choice.id" [title]="choice.title" (click)="setMode(choice.id)">{{ choice.label }}</button>
+            <button
+                type="button"
+                role="radio"
+                class="markdown-mode"
+                [class.active]="mode() === choice.id"
+                [attr.aria-checked]="mode() === choice.id"
+                [attr.data-mode]="choice.id"
+                [title]="choice.title"
+                (click)="setMode(choice.id)"
+            >{{ choice.label }}</button>
         }
     </div>
     @if (mode() !== 'source') {
-        <button type="button" class="icon-button" [sfeOverflowItem]="more.outline" [class.active]="outline()" [attr.aria-pressed]="outline()" title="Outline: the headings" aria-label="Outline"
-                [disabled]="!headings().length" (click)="toggleOutline()"><svg sfeIcon="list"></svg></button>
+        <button
+            type="button"
+            class="icon-button"
+            [sfeOverflowItem]="more.outline"
+            [class.active]="outline()"
+            [attr.aria-pressed]="outline()"
+            title="Outline: the headings"
+            aria-label="Outline"
+            [disabled]="!headings().length"
+            (click)="toggleOutline()"
+        ><svg sfeIcon="list"></svg></button>
     }
     @if (mode() !== 'rendered') {
         <button
@@ -33,8 +50,17 @@
             (click)="sourceEditor()?.find()"
         ><svg sfeIcon="search"></svg></button>
     }
-    <button type="button" class="icon-button reading-toggle" data-reading-toggle [sfeOverflowItem]="more.reading" [class.active]="panelOpen()" [attr.aria-expanded]="panelOpen()"
-            title="Reading settings: font, size, width, colours" aria-label="Reading settings" (click)="panelOpen.set(!panelOpen())">Aa</button>
+    <button
+        type="button"
+        class="icon-button reading-toggle"
+        data-reading-toggle
+        [sfeOverflowItem]="more.reading"
+        [class.active]="panelOpen()"
+        [attr.aria-expanded]="panelOpen()"
+        title="Reading settings: font, size, width, colours"
+        aria-label="Reading settings"
+        (click)="panelOpen.set(!panelOpen())"
+    >Aa</button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @if (panelOpen()) {

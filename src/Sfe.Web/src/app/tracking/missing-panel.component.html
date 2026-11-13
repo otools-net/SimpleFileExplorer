@@ -3,10 +3,22 @@
     none yet, wait here.</p>
 <sfe-status-box [state]="status().state" [text]="status().text" [detail]="status().detail">
     <div class="settings-action inline">
-        <button type="button" class="button small" title="Give the tags of each missing file with exactly one likely new place to that file"
-                [sfeBusy]="relinking()" [disabled]="relinking() || !enabled() || !total()" (click)="relinkAll()">Relink now</button>
-        <button type="button" class="button small danger" title="Forget every missing file and its tags (asks first)"
-                [sfeBusy]="forgettingAll()" [disabled]="forgettingAll() || !total()" (click)="forgetAll()">Forget all</button>
+        <button
+            type="button"
+            class="button small"
+            title="Give the tags of each missing file with exactly one likely new place to that file"
+            [sfeBusy]="relinking()"
+            [disabled]="relinking() || !enabled() || !total()"
+            (click)="relinkAll()"
+        >Relink now</button>
+        <button
+            type="button"
+            class="button small danger"
+            title="Forget every missing file and its tags (asks first)"
+            [sfeBusy]="forgettingAll()"
+            [disabled]="forgettingAll() || !total()"
+            (click)="forgetAll()"
+        >Forget all</button>
     </div>
 </sfe-status-box>
 <ul class="tracking-missing-list">
@@ -54,8 +66,14 @@
                         @for (candidate of item.candidates; track candidate.path) {
                             <li [sfeTrackingFile]="candidate" (openFolder)="openFolder.emit($event)">
                                 <span class="tracking-actions">
-                                    <button type="button" class="button small primary" title="This is the moved file: give it the tags"
-                                            [sfeBusy]="busy() === item.id + ':' + candidate.path" [disabled]="busy() !== null" (click)="relink(item, candidate.path)">Relink here</button>
+                                    <button
+                                        type="button"
+                                        class="button small primary"
+                                        title="This is the moved file: give it the tags"
+                                        [sfeBusy]="busy() === item.id + ':' + candidate.path"
+                                        [disabled]="busy() !== null"
+                                        (click)="relink(item, candidate.path)"
+                                    >Relink here</button>
                                 </span>
                             </li>
                         }

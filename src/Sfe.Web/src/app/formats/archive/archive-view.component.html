@@ -1,6 +1,15 @@
 <div class="text-toolbar archive-toolbar" role="toolbar" aria-label="Archive" sfeOverflowRow="Archive">
-    <button type="button" class="icon-button" data-up [sfeOverflowItem]="null" overflowStay title="Up to the folder above (Backspace)" aria-label="Up"
-            [disabled]="parent() === undefined" (click)="goUp()"><svg sfeIcon="folder-up"></svg></button>
+    <button
+        type="button"
+        class="icon-button"
+        data-up
+        [sfeOverflowItem]="null"
+        overflowStay
+        title="Up to the folder above (Backspace)"
+        aria-label="Up"
+        [disabled]="parent() === undefined"
+        (click)="goUp()"
+    ><svg sfeIcon="folder-up"></svg></button>
     <nav class="archive-trail" aria-label="Folders" [sfeOverflowItem]="null" overflowStay>
         <button
             type="button"
@@ -19,19 +28,54 @@
             }
             @for (crumb of trail.last; track crumb.id; let last = $last) {
                 <span class="archive-separator" aria-hidden="true">›</span>
-                <button type="button" class="archive-crumb" [class.current]="last" [attr.aria-current]="last ? 'location' : null"
-                        [title]="last ? 'This folder' : 'Open ' + crumb.name" (click)="enter(crumb.id)">{{ crumb.name }}</button>
+                <button
+                    type="button"
+                    class="archive-crumb"
+                    [class.current]="last"
+                    [attr.aria-current]="last ? 'location' : null"
+                    [title]="last ? 'This folder' : 'Open ' + crumb.name"
+                    (click)="enter(crumb.id)"
+                >{{ crumb.name }}</button>
             }
         }
     </nav>
-    <input #goTo type="search" class="json-filter archive-go" data-go [sfeOverflowItem]="null" overflowStay placeholder="Go to folder" aria-label="Go to a folder of the archive"
-           title="A folder's path inside the archive (folders separated by /), then Enter" (keydown.enter)="goToPath(goTo.value)" />
-    <input #find type="search" class="json-filter archive-find" data-find [sfeOverflowItem]="null" overflowStay
-           [placeholder]="findHere() ? 'Find in this folder' : 'Find in archive'" [attr.aria-label]="findHere() ? 'Find in this folder by name' : 'Find in the archive by name'"
-           [title]="(findHere() ? 'Folders and files right inside this folder' : 'Folders and files of the whole archive') + ' whose name holds what is typed (Esc: back to the folder)'"
-           (input)="findTyped(find.value)" (keydown.escape)="endFind()" />
-    <button type="button" class="icon-button" data-find-here [sfeOverflowItem]="null" overflowStay [class.active]="findHere()" [attr.aria-pressed]="findHere()"
-            title="Find in this folder only" aria-label="Find in this folder only" (click)="toggleFindHere(find.value)"><svg sfeIcon="folder"></svg></button>
+    <input
+        #goTo
+        type="search"
+        class="json-filter archive-go"
+        data-go
+        [sfeOverflowItem]="null"
+        overflowStay
+        placeholder="Go to folder"
+        aria-label="Go to a folder of the archive"
+        title="A folder's path inside the archive (folders separated by /), then Enter"
+        (keydown.enter)="goToPath(goTo.value)"
+    />
+    <input
+        #find
+        type="search"
+        class="json-filter archive-find"
+        data-find
+        [sfeOverflowItem]="null"
+        overflowStay
+        [placeholder]="findHere() ? 'Find in this folder' : 'Find in archive'"
+        [attr.aria-label]="findHere() ? 'Find in this folder by name' : 'Find in the archive by name'"
+        [title]="(findHere() ? 'Folders and files right inside this folder' : 'Folders and files of the whole archive') + ' whose name holds what is typed (Esc: back to the folder)'"
+        (input)="findTyped(find.value)"
+        (keydown.escape)="endFind()"
+    />
+    <button
+        type="button"
+        class="icon-button"
+        data-find-here
+        [sfeOverflowItem]="null"
+        overflowStay
+        [class.active]="findHere()"
+        [attr.aria-pressed]="findHere()"
+        title="Find in this folder only"
+        aria-label="Find in this folder only"
+        (click)="toggleFindHere(find.value)"
+    ><svg sfeIcon="folder"></svg></button>
     @if (canExtract() && shown()) {
         <button
             type="button"
@@ -76,8 +120,16 @@
                 }
             </p>
             <div class="archive-password-row">
-                <input #passwordBox [type]="showPassword() ? 'text' : 'password'" class="json-filter" data-password-box autocomplete="off" aria-label="Password"
-                       placeholder="Password" [disabled]="unlocking()" />
+                <input
+                    #passwordBox
+                    [type]="showPassword() ? 'text' : 'password'"
+                    class="json-filter"
+                    data-password-box
+                    autocomplete="off"
+                    aria-label="Password"
+                    placeholder="Password"
+                    [disabled]="unlocking()"
+                />
                 <label
                     class="archive-password-show"
                     title="Show what is typed"
@@ -155,9 +207,18 @@
         @for (row of virtual.items(); track row.key) {
             @let entry = rows()[row.index];
             @if (entry) {
-                <div class="archive-row" role="row" [attr.data-kind]="entry.kind" [attr.data-index]="row.index" [class.selected]="selected() === row.index"
-                     [style.transform]="'translateY(' + row.start + 'px)'" [style.height.px]="rowHeight" [sfeContextMenu]="menuOf(entry)"
-                     (click)="select(row.index)" (dblclick)="activate(entry, row.index)">
+                <div
+                    class="archive-row"
+                    role="row"
+                    [attr.data-kind]="entry.kind"
+                    [attr.data-index]="row.index"
+                    [class.selected]="selected() === row.index"
+                    [style.transform]="'translateY(' + row.start + 'px)'"
+                    [style.height.px]="rowHeight"
+                    [sfeContextMenu]="menuOf(entry)"
+                    (click)="select(row.index)"
+                    (dblclick)="activate(entry, row.index)"
+                >
                     <span class="archive-name" role="gridcell">
                         <svg [sfeIcon]="iconOf(entry)"></svg>
                         @if (entry.kind === 'folder') {
@@ -168,8 +229,14 @@
                                 (click)="enter(entry.id); $event.stopPropagation()"
                             >{{ entry.name }}</button>
                         } @else if (entry.kind === 'file' && canDownload() && (!entry.encrypted || unlock())) {
-                            <a class="archive-open" [href]="entryUrl(entry, false)" target="_blank" rel="noopener" [title]="inPlace(entry) ? 'Open ' + entry.name : 'Open ' + entry.name + ' in a new tab'"
-                               (click)="openFromLink($event, entry, row.index)">{{ entry.name }}</a>
+                            <a
+                                class="archive-open"
+                                [href]="entryUrl(entry, false)"
+                                target="_blank"
+                                rel="noopener"
+                                [title]="inPlace(entry) ? 'Open ' + entry.name : 'Open ' + entry.name + ' in a new tab'"
+                                (click)="openFromLink($event, entry, row.index)"
+                            >{{ entry.name }}</a>
                         } @else if (entry.kind === 'file' && canDownload()) {
                             <button
                                 type="button"
@@ -184,8 +251,13 @@
                             <svg class="archive-lock" sfeIcon="lock" aria-label="Protected by a password"></svg>
                         }
                         @if (found() && entry.where !== undefined && entry.where !== null) {
-                            <button type="button" class="archive-where" data-where [title]="'Show the folder it is in: ' + (entry.where || item().name)"
-                                    (click)="showWhere(entry); $event.stopPropagation()">in {{ whereOf(entry) }}</button>
+                            <button
+                                type="button"
+                                class="archive-where"
+                                data-where
+                                [title]="'Show the folder it is in: ' + (entry.where || item().name)"
+                                (click)="showWhere(entry); $event.stopPropagation()"
+                            >in {{ whereOf(entry) }}</button>
                         }
                     </span>
                     <span class="archive-size" role="gridcell" [title]="sizeTitle(entry)">{{ sizeOf(entry) }}</span>
@@ -217,20 +289,54 @@
             aria-label="File of the archive"
             sfeOverflowRow="File of the archive"
         >
-            <button type="button" class="icon-button" data-back [sfeOverflowItem]="null" overflowStay title="Back to the folder (Esc)" aria-label="Back to the folder"
-                    (click)="closeEntry()"><svg sfeIcon="left"></svg></button>
+            <button
+                type="button"
+                class="icon-button"
+                data-back
+                [sfeOverflowItem]="null"
+                overflowStay
+                title="Back to the folder (Esc)"
+                aria-label="Back to the folder"
+                (click)="closeEntry()"
+            ><svg sfeIcon="left"></svg></button>
             <span
                 class="archive-entry-name"
                 [sfeOverflowItem]="null"
                 overflowStay
                 [title]="shown.entry.name"
             >{{ shown.entry.name }}</span>
-            <button type="button" class="icon-button" data-previous [sfeOverflowItem]="previousEntry" overflowStay title="The file before" aria-label="The file before"
-                    [disabled]="neighbour(-1) === null" (click)="step(-1)"><svg sfeIcon="up"></svg></button>
-            <button type="button" class="icon-button" data-next [sfeOverflowItem]="nextEntry" overflowStay title="The file after" aria-label="The file after"
-                    [disabled]="neighbour(1) === null" (click)="step(1)"><svg sfeIcon="down"></svg></button>
-            <a class="icon-button" data-new-tab [sfeOverflowItem]="newTabEntry" [href]="entryUrl(shown.entry, false)" target="_blank" rel="noopener"
-               title="Open it in a new tab" aria-label="Open it in a new tab"><svg sfeIcon="external"></svg></a>
+            <button
+                type="button"
+                class="icon-button"
+                data-previous
+                [sfeOverflowItem]="previousEntry"
+                overflowStay
+                title="The file before"
+                aria-label="The file before"
+                [disabled]="neighbour(-1) === null"
+                (click)="step(-1)"
+            ><svg sfeIcon="up"></svg></button>
+            <button
+                type="button"
+                class="icon-button"
+                data-next
+                [sfeOverflowItem]="nextEntry"
+                overflowStay
+                title="The file after"
+                aria-label="The file after"
+                [disabled]="neighbour(1) === null"
+                (click)="step(1)"
+            ><svg sfeIcon="down"></svg></button>
+            <a
+                class="icon-button"
+                data-new-tab
+                [sfeOverflowItem]="newTabEntry"
+                [href]="entryUrl(shown.entry, false)"
+                target="_blank"
+                rel="noopener"
+                title="Open it in a new tab"
+                aria-label="Open it in a new tab"
+            ><svg sfeIcon="external"></svg></a>
             <a
                 class="icon-button"
                 data-download
@@ -260,8 +366,14 @@
                     decoding="async"
                 />
             } @else if (shown.media === 'video') {
-                <sfe-video-player class="archive-entry-video" data-entry-video [src]="entryUrl(shown.entry, false)" [name]="shown.entry.name"
-                                  [seekStep]="config.config()?.seekSeconds ?? 10" (unsupported)="cannotPlay.set(true)" />
+                <sfe-video-player
+                    class="archive-entry-video"
+                    data-entry-video
+                    [src]="entryUrl(shown.entry, false)"
+                    [name]="shown.entry.name"
+                    [seekStep]="config.config()?.seekSeconds ?? 10"
+                    (unsupported)="cannotPlay.set(true)"
+                />
             } @else if (shown.media === 'audio') {
                 <audio
                     class="archive-entry-audio"

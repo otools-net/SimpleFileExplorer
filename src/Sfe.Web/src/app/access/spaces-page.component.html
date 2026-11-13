@@ -62,8 +62,13 @@
     <ul class="space-cards">
         @for (space of spaces(); track space.id) {
             <li>
-                <button type="button" class="space-card" [class.disabled]="space.disabled" [title]="'Open ' + space.name + ': its groups, accounts and visitors'"
-                        (click)="openSpace(space.id)">
+                <button
+                    type="button"
+                    class="space-card"
+                    [class.disabled]="space.disabled"
+                    [title]="'Open ' + space.name + ': its groups, accounts and visitors'"
+                    (click)="openSpace(space.id)"
+                >
                     <span class="space-card-title">
                         <svg sfeIcon="space"></svg>
                         <strong>{{ space.name }}</strong>

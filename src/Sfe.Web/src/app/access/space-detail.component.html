@@ -128,8 +128,12 @@
                     }
                 </select>
             }
-            <button type="button" class="button small primary" [title]="'Create an account in ' + space().name + ' (in its Users group to start with)'"
-                    (click)="accountEditor().open(null, space().id)">
+            <button
+                type="button"
+                class="button small primary"
+                [title]="'Create an account in ' + space().name + ' (in its Users group to start with)'"
+                (click)="accountEditor().open(null, space().id)"
+            >
                 <svg sfeIcon="plus"></svg>New account
             </button>
         </header>

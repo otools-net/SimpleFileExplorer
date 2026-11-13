@@ -28,13 +28,24 @@
     </p>
 }
 <div class="access-actions">
-    <button type="button" class="button primary" [title]="serverWide() ? 'Create an account, and choose its spaces and groups' : 'Create an account in this space'"
-            (click)="editor().open(null, serverWide() ? null : config.tenant()?.id ?? null)">
+    <button
+        type="button"
+        class="button primary"
+        [title]="serverWide() ? 'Create an account, and choose its spaces and groups' : 'Create an account in this space'"
+        (click)="editor().open(null, serverWide() ? null : config.tenant()?.id ?? null)"
+    >
         <svg sfeIcon="plus"></svg>New account
     </button>
     @if (users().length > 8) {
-        <input type="search" class="access-filter" placeholder="Find an account" aria-label="Find an account" title="Show only the accounts whose name contains this"
-               [value]="filter()" (input)="filter.set(valueOf($event))">
+        <input
+            type="search"
+            class="access-filter"
+            placeholder="Find an account"
+            aria-label="Find an account"
+            title="Show only the accounts whose name contains this"
+            [value]="filter()"
+            (input)="filter.set(valueOf($event))"
+        >
     }
 </div>
 @if (error(); as error) {
