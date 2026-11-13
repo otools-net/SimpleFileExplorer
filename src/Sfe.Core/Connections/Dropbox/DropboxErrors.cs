@@ -25,6 +25,7 @@ internal static class DropboxErrors
                 inner: error
             ),
             BadInputException => new(RemoteErrorKind.Refused, "Dropbox refused the request.", inner: error),
+            DropboxException when IsApiError(error) => FromSummary(error),
             AccessException => new(RemoteErrorKind.Refused, "Dropbox refused access.", inner: error),
             RetryException or HttpException or HttpRequestException or TaskCanceledException => new(
                 RemoteErrorKind.Unavailable,
@@ -39,6 +40,31 @@ internal static class DropboxErrors
             ),
             _ => null,
         };
+
+    /// <summary>
+    /// An endpoint's own error (<c>ApiException&lt;T&gt;</c>, one type per endpoint): its message is Dropbox's
+    /// <c>error_summary</c> (<c>path/not_found/..</c>), read by the words in it.
+    /// </summary>
+    private static RemoteStorageException FromSummary(Exception error)
+    {
+        var summary = error.Message;
+        var kind = summary switch
+        {
+            _ when summary.Contains("not_found", StringComparison.Ordinal) => RemoteErrorKind.NotFound,
+            _ when summary.Contains("conflict", StringComparison.Ordinal) => RemoteErrorKind.Exists,
+            _ when summary.Contains("too_many_write_operations", StringComparison.Ordinal) =>
+                RemoteErrorKind.RateLimited,
+            _ when summary.Contains("insufficient_space", StringComparison.Ordinal) => RemoteErrorKind.TooLarge,
+            _ when summary.Contains("malformed_path", StringComparison.Ordinal)
+                    || summary.Contains("disallowed_name", StringComparison.Ordinal) => RemoteErrorKind.InvalidName,
+            _ => RemoteErrorKind.Refused,
+        };
+        // The summary names no token; it may name the path, which the caller already knows.
+        return new RemoteStorageException(kind, $"Dropbox: {summary.TrimEnd('.', '/')}", inner: error);
+    }
+
+    private static bool IsApiError(Exception error) =>
+        error.GetType() is { IsGenericType: true } type && type.GetGenericTypeDefinition() == typeof(ApiException<>);
 
     /// <summary>Runs a call to Dropbox, its failures turned into <see cref="RemoteStorageException"/>.</summary>
     public static async Task<T> CallAsync<T>(Func<Task<T>> call)

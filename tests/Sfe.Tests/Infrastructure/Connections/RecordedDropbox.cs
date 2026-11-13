@@ -37,6 +37,9 @@ public sealed class RecordedDropbox : HttpMessageHandler
             ["/2/check/app"] = (HttpStatusCode.OK, """{"result":"sfe"}"""),
         };
 
+    /// <summary>Answers made by the test for a path (headers, bytes): tried before <see cref="Answers"/>.</summary>
+    public Dictionary<string, Func<HttpRequestMessage, HttpResponseMessage>> Handlers { get; } = [];
+
     public (HttpRequestMessage Request, string Body) Last(string path) =>
         Requests.Last(r => r.Request.RequestUri!.AbsolutePath == path);
 
@@ -47,6 +50,12 @@ public sealed class RecordedDropbox : HttpMessageHandler
     {
         var body = request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken);
         Requests.Add((request, body));
+        if (Handlers.TryGetValue(request.RequestUri!.AbsolutePath, out var handler))
+        {
+            var made = handler(request);
+            made.RequestMessage = request;
+            return made;
+        }
         if (!Answers.TryGetValue(request.RequestUri!.AbsolutePath, out var answer))
             return new HttpResponseMessage(HttpStatusCode.NotFound) { RequestMessage = request };
 

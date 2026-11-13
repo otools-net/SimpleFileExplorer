@@ -113,9 +113,20 @@ public sealed class DropboxProvider(OutboundPolicy outbound, ProviderSecrets sec
         return new ConnectionGrant(token.RefreshToken, account.Email, account.AccountId);
     }
 
-    /// <summary>The files are reached in phase 3 of the plan (browse and download).</summary>
-    public IRemoteStorage Open(string credentials, string rootPath, ConnectionOptions options) =>
-        throw new RemoteStorageException(RemoteErrorKind.NotSupported, "Browsing Dropbox is not available yet.");
+    /// <summary>
+    /// The files, through a client made from the refresh token (<paramref name="credentials"/>): the SDK fetches
+    /// access tokens by itself; a refused refresh is <see cref="RemoteErrorKind.CredentialsEnded"/> at the first call.
+    /// </summary>
+    public IRemoteStorage Open(string credentials, string rootPath, ConnectionOptions options)
+    {
+        var http = outbound.CreateClient(Rule);
+        var secret = AppSecret(options);
+        var config = Config(http);
+        var client = secret is null
+            ? new DropboxClient(credentials, AppKey(options), config)
+            : new DropboxClient(credentials, AppKey(options), secret, config);
+        return new DropboxStorage(client, http, rootPath);
+    }
 
     public async Task<ProviderTest> TestAsync(ConnectionOptions options, CancellationToken cancellationToken)
     {
