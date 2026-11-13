@@ -45,57 +45,7 @@ interface TagTerm {
     imports: [IconComponent, SearchHelpDialog, TagChipComponent, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'search', role: 'search', autocomplete: 'off', '(submit)': 'submit($event)' },
-    template: `
-        <svg sfeIcon="search" class="search-icon"></svg>
-        <!-- A combobox: its list of recent searches is named only while it shows (an id of nothing isn't valid ARIA). -->
-        <input #input name="q" type="search" role="combobox" placeholder="Search the index…" aria-label="Search" enterkeyhint="search"
-               aria-autocomplete="list" [attr.aria-controls]="suggesting() ? listId : null" [attr.aria-expanded]="suggesting()"
-               [attr.aria-activedescendant]="suggesting() && active() >= 0 ? listId + '-' + active() : null"
-               (input)="onInput()" (search)="onClear()" (click)="updateSuggestions()" (focus)="updateSuggestions()"
-               (blur)="onBlur()" (keyup)="onKeyup($event)" (keydown)="onKeydown($event)">
-        @if (found(); as found) {
-            <span class="search-count" [title]="found.title">{{ found.text }}</span>
-        }
-        <button type="button" class="search-scope" [hidden]="!store.route().path" [title]="scopeTitle()" (click)="onScope()">{{ scopeText() }}</button>
-        <button type="button" class="icon-button ghost search-explain-button" aria-label="Explain this search" [attr.aria-controls]="search.explainOpen() ? 'search-explain' : null"
-                [hidden]="!search.canExplain()" [attr.aria-pressed]="search.explainOpen()"
-                [title]="search.explainOpen() ? 'Hide the explanation of this search' : 'Explain this search in plain words'"
-                (click)="search.setExplainOpen(!search.explainOpen())">
-            <svg sfeIcon="explain"></svg>
-        </button>
-        <button type="button" class="icon-button ghost" aria-label="Search syntax" title="Search syntax and tips (?)"
-                aria-haspopup="dialog" (click)="help.open()">
-            <svg sfeIcon="help"></svg>
-        </button>
-        <sfe-search-help #help (use)="addTerm($event)" />
-        <ul class="popover tag-options search-tag-options" role="listbox" [attr.aria-label]="recent().length ? 'Recent searches' : 'Tags'"
-            [id]="listId" [hidden]="!suggesting()">
-            @for (query of recent(); track query; let index = $index) {
-                <li role="option" class="search-history-option" [id]="listId + '-' + index" [attr.aria-selected]="index === active()"
-                    title="Search again" (mousedown)="$event.preventDefault()" (click)="pickRecent(query)" [sfeContextMenu]="recentTarget(query)">
-                    <svg sfeIcon="clock"></svg>
-                    <span class="search-history-text">@for (part of parts(query); track $index) {@if (part.mark) {<b>{{ part.text }}</b>} @else {<ng-container>{{ part.text }}</ng-container>}}</span>
-                    <button type="button" class="icon-button ghost small" aria-label="Remove from the search history"
-                            title="Remove from the search history" (click)="removeRecent($event, query)">
-                        <svg sfeIcon="close"></svg>
-                    </button>
-                </li>
-            }
-            @for (tag of options(); track tag.id; let index = $index) {
-                <li role="option" [id]="listId + '-' + index" [attr.aria-selected]="index === active()"
-                    (mousedown)="$event.preventDefault()" (click)="pick(tag)">
-                    <sfe-tag-chip [tag]="tag" />
-                    @if (describe(tag); as detail) {
-                        <span class="tag-option-detail">{{ detail }}</span>
-                    }
-                </li>
-            } @empty {
-                @if (!recent().length) {
-                    <li class="empty" aria-disabled="true">{{ emptyText() }}</li>
-                }
-            }
-        </ul>
-    `,
+    templateUrl: './search-box.component.html',
 })
 export class SearchBoxComponent {
     protected readonly store = inject(ListingStore);

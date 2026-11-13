@@ -70,74 +70,7 @@ const OWNS_KEYS = '[data-owns-keys]';
     imports: [NgComponentOutlet, IconComponent, TagChipComponent, VideoPlayerComponent, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { '(window:resize)': 'onResize()' },
-    template: `
-        <dialog #dialog class="viewer" aria-label="Preview" tabindex="-1" [class.has-video]="item()?.kind === 'video'" (close)="onClose()" (cancel)="onCancel($event)" (keydown)="onKeydown($event)">
-            <header class="viewer-bar">
-                <div class="viewer-title">
-                    <strong>{{ item()?.name }}</strong>
-                    <span>{{ meta() }}</span>
-                    <div class="viewer-tags" [hidden]="!item()?.tags?.length">
-                        @for (tag of item()?.tags ?? []; track tag.id) {
-                            <sfe-tag-chip [tag]="tag" [title]="'Find files tagged ' + tag.displayName" [clickable]="true" (pick)="searchTag($event)"
-                                          [sfeContextMenu]="tagMenu.target(tag, item())" />
-                        }
-                    </div>
-                </div>
-                <div class="viewer-actions">
-                    @if (can('tags.view')) {
-                        <button type="button" class="icon-button" title="Tags (T)" aria-label="Tags" (click)="openTags()"><svg sfeIcon="tag"></svg></button>
-                    }
-                    @if (menuEntries().length) {
-                        <button #menuButton type="button" class="icon-button viewer-menu-button" title="More actions" aria-label="More actions" aria-haspopup="menu"
-                                [attr.aria-expanded]="menuOpen()" [class.active]="menuOpen()" (click)="toggleMenu()"><svg sfeIcon="more"></svg></button>
-                    }
-                    <button type="button" class="icon-button" title="Close (Esc)" aria-label="Close" (click)="close()"><svg sfeIcon="close"></svg></button>
-                </div>
-            </header>
-            <div #stage class="viewer-stage" [sfeContextMenu]="stageMenu()" [attr.data-context-menu]="stageMenu() ? null : 'own'" [class.zoomed]="zoomed()" [class.document]="!builtin()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (wheel)="onWheel($event)">
-                @for (shown of shownItem(); track shown.path) {
-                    @if (unsupported()) {
-                        <div class="viewer-message">
-                            <p>This browser cannot play this format{{ converted() ? ', and the server could not convert it (it may be converting as many videos as it can).' : '.' }}</p>
-                            <p>{{ urls()?.externalName ? 'Use “Open in ' + urls()?.externalName + '” or download it.' : 'Download it to play it in another app.' }}</p>
-                        </div>
-                    } @else {
-                        @switch (builtin()) {
-                            @case ('image') {
-                                @if (progressive() && !originalReady()) {
-                                    <img class="preview" [src]="pictureUrls().thumbnail" [alt]="shown.name" [style.visibility]="thumbnailFailed() ? 'hidden' : null" (error)="thumbnailFailed.set(true)">
-                                } @else {
-                                    <img #picture [src]="pictureUrls().file" [alt]="shown.name" decoding="async"
-                                         [class.zoomable]="zoomable()" [class.actual-size]="zoomed()" [class.dragging]="dragging()"
-                                         [style.width.px]="zoomed() ? actualSize().width : null" [style.height.px]="zoomed() ? actualSize().height : null"
-                                         [style.transform]="zoomed() ? 'translate(' + pan().x + 'px, ' + pan().y + 'px)' : null"
-                                         (load)="measure()" (dragstart)="$event.preventDefault()" (pointerdown)="onPicturePointerDown($event)"
-                                         (pointermove)="onPicturePointerMove($event)" (pointerup)="onPicturePointerUp($event)" (pointercancel)="endDrag()">
-                                }
-                            }
-                            @case ('video') {
-                                <sfe-video-player [src]="urls()!.file(shown.path)" [name]="shown.name" [poster]="urls()!.thumbnail(shown.path)"
-                                                  [seekStep]="config.config()?.seekSeconds ?? 10" [loop]="config.config()?.loop ?? false" [stream]="videoStream()" [cinemaButton]="true"
-                                                  (unsupported)="unsupported.set(true); converted.set($event)" />
-                            }
-                            @case ('audio') {
-                                <audio [src]="urls()!.file(shown.path)" controls autoplay preload="metadata" (error)="unsupported.set(true)"></audio>
-                            }
-                            @default {
-                                @if (viewComponent(); as component) {
-                                    <ng-container *ngComponentOutlet="component; inputs: { item: shown, format: format(), edit: editRequested() }; injector: viewInjector" />
-                                } @else if (viewFailed()) {
-                                    <div class="viewer-message"><p>This viewer could not be loaded: reload the page to try again.</p></div>
-                                }
-                            }
-                        }
-                    }
-                }
-            </div>
-            <button type="button" class="viewer-nav prev" aria-label="Previous (←)" title="Previous (← or wheel up)" [disabled]="!neighbours().previous" (click)="go(-1)"><svg sfeIcon="left"></svg></button>
-            <button type="button" class="viewer-nav next" aria-label="Next (→)" title="Next (→ or wheel down)" [disabled]="nextDisabled()" (click)="go(1)"><svg sfeIcon="right"></svg></button>
-        </dialog>
-    `,
+    templateUrl: './viewer.component.html',
 })
 export class ViewerComponent {
     private readonly store = inject(ListingStore);

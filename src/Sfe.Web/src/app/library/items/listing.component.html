@@ -1,0 +1,65 @@
+<div class="content" aria-live="polite">
+    @switch (store.status()) {
+        @case ('loading') {
+            <div class="files grid skeleton" aria-busy="true">
+                @for (tile of skeleton; track $index) {
+                    <div class="tile"><div class="preview"></div><div class="info"><span></span><span></span></div></div>
+                }
+            </div>
+        }
+        @case ('error') {
+            @let error = store.error();
+            @if (error?.type === 'library-root-missing') {
+                <sfe-empty-state icon="folder" heading="The library folder is missing"
+                                 [text]="error!.message + (canInstall() ? ' Plug its drive in, or pick another folder.' : ' Ask an administrator to plug its drive in or pick another folder.')">
+                    @if (canInstall()) {
+                        <a class="button" routerLink="/admin" [queryParams]="{ section: 'system', page: 'installation' }" [state]="{ sfeFromLibrary: true }"
+                           title="Pick the library folder in Administration › System › Installation">Pick another folder</a>
+                    }
+                </sfe-empty-state>
+            } @else {
+                <sfe-empty-state [icon]="error?.status === 404 ? 'folder' : 'close'"
+                                 [heading]="error?.status === 404 ? 'Folder not found' : store.searching() ? 'Search is unavailable' : 'Could not load this folder'"
+                                 [text]="error?.status === 404 ? 'It may have been moved or deleted.' : error?.message ?? null">
+                    <a class="button" routerLink="/" [queryParams]="store.browseParams('')">Go to library root</a>
+                </sfe-empty-state>
+            }
+        }
+        @case ('ready') {
+            @if (!store.items().length) {
+                @if (store.searching()) {
+                    <sfe-empty-state icon="search" heading="No results" text="Nothing in the index matches this search. If files were added recently, run Scan on this folder." />
+                } @else {
+                    <sfe-empty-state icon="folder" heading="This folder is empty" />
+                }
+            }
+            @if (store.folders().length) {
+                <h2 class="section-title">Folders</h2>
+                <div class="folders" [class]="folderLayout()">
+                    @for (folder of store.folders(); track folder.path) {
+                        <sfe-folder-item [item]="folder" [cards]="folderCards()" />
+                    }
+                </div>
+            }
+            @if (store.files().length) {
+                <!-- Only label the files section when both kinds are listed. -->
+                @if (store.folders().length) {
+                    <h2 class="section-title">Files</h2>
+                }
+                <div class="files" [class]="store.view()" [style.--ratio-guess]="previews.ratioGuess()">
+                    @if (store.view() === 'list') {
+                        @for (file of store.files(); track file.path) {
+                            <div sfeFileRow [item]="file" [pattern]="pattern()"></div>
+                        }
+                    } @else {
+                        @for (file of store.files(); track file.path) {
+                            <article sfeFileTile [item]="file" [pattern]="pattern()"></article>
+                        }
+                    }
+                </div>
+            }
+        }
+    }
+</div>
+<div #sentinel class="sentinel" [hidden]="store.status() !== 'ready' || !store.hasMore()"><span class="spinner"></span></div>
+<sfe-scroll-progress />

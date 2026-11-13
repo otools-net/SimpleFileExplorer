@@ -38,60 +38,7 @@ import { DRAG_ITEMS, DRAG_LINK, QuickLinksService } from './quick-links.service'
         '(document:dragend)': 'endDrag()',
         '(document:drop)': 'endDrag()',
     },
-    template: `
-        <div class="sidebar-heading">
-            <h2>Quick links</h2>
-            @if (links.links().length) {
-                <button type="button" class="icon-button ghost small quick-links-edit" [class.active]="editing()" [attr.aria-pressed]="editing()"
-                        [title]="editing() ? 'Done' : 'Edit: move and remove the links'" [attr.aria-label]="editing() ? 'Done' : 'Edit the quick links'"
-                        (click)="editing.set(!editing())">
-                    <svg [sfeIcon]="editing() ? 'check' : 'edit'"></svg>
-                </button>
-            }
-        </div>
-        <ul class="quick-link-list">
-            @for (link of links.links(); track link.path; let i = $index, first = $first, last = $last) {
-                <li class="quick-link" [class.missing]="!link.exists" [class.current]="isCurrent(link)" [class.dragged]="moving() === link.path"
-                    [class.drop-before]="dropIndex() === i" [attr.data-quick-link]="link.path" [attr.data-kind]="link.kind" [attr.draggable]="!editing()"
-                    (dragstart)="startMove($event, link)" (dragend)="endDrag()" [sfeContextMenu]="menuTarget(link, i)">
-                    @if (link.kind === 'directory') {
-                        <a class="quick-link-target" routerLink="/" [queryParams]="store.browseParams(link.path)" draggable="false"
-                           [attr.aria-current]="isCurrent(link) ? 'page' : null" [title]="hint(link)" (click)="openFolder($event, link)">
-                            <svg [sfeIcon]="icon(link)"></svg><span class="quick-link-name">{{ link.name }}</span>
-                        </a>
-                    } @else {
-                        <a class="quick-link-target" [href]="config.links.file(link.path)" target="_blank" rel="noopener" draggable="false"
-                           [title]="hint(link)" (click)="openFile($event, link)">
-                            <svg [sfeIcon]="icon(link)"></svg><span class="quick-link-name">{{ link.name }}</span>
-                        </a>
-                    }
-                    <span class="quick-link-actions">
-                        @if (editing()) {
-                            <button type="button" class="icon-button ghost small" [disabled]="first" [title]="'Move “' + link.name + '” up'"
-                                    [attr.aria-label]="'Move ' + link.name + ' up'" (click)="links.move(link.path, i - 1)">
-                                <svg sfeIcon="up"></svg>
-                            </button>
-                            <button type="button" class="icon-button ghost small" [disabled]="last" [title]="'Move “' + link.name + '” down'"
-                                    [attr.aria-label]="'Move ' + link.name + ' down'" (click)="links.move(link.path, i + 2)">
-                                <svg sfeIcon="down"></svg>
-                            </button>
-                        }
-                        <button type="button" class="icon-button ghost small quick-link-remove" [title]="'Remove “' + link.name + '” from the quick links (the ' + kindWord(link) + ' stays)'"
-                                [attr.aria-label]="'Remove ' + link.name + ' from the quick links'" (click)="links.remove(link.path)">
-                            <svg sfeIcon="close"></svg>
-                        </button>
-                    </span>
-                </li>
-            } @empty {
-                @if (links.loaded()) {
-                    <li class="sidebar-empty">{{ emptyText }}</li>
-                }
-            }
-            @if (links.links().length && dropIndex() === links.links().length) {
-                <li class="quick-link-drop-end" aria-hidden="true"></li>
-            }
-        </ul>
-    `,
+    templateUrl: './quick-links.component.html',
 })
 export class QuickLinksComponent implements OnInit {
     protected readonly links = inject(QuickLinksService);

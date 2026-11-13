@@ -42,51 +42,7 @@ import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
         // Items dropped on it are moved (copied with Ctrl) into it: OperationsPanelComponent.
         '[attr.data-drop]': 'item().path',
     },
-    template: `
-        <a class="folder item kind-directory" [class.card]="cards()" routerLink="/" [queryParams]="store.browseParams(item().path)" [title]="linkTitle()">
-            @if (cards()) {
-                <sfe-folder-cover [path]="item().path" />
-                <span class="folder-caption"><svg sfeIcon="folder"></svg><span class="item-name">{{ item().name }}</span>
-                    @if (exclusion(); as exclusion) {
-                        <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
-                    }
-                </span>
-            } @else {
-                <svg sfeIcon="folder"></svg><span class="item-name">{{ item().name }}</span>
-                @if (exclusion(); as exclusion) {
-                    <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
-                }
-                @if (indexedItems() !== null) {
-                    <span class="folder-count" [title]="countTitle()">{{ indexedItems()!.toLocaleString() }}</span>
-                }
-            }
-        </a>
-        <label sfeSelectBox [item]="item()"></label>
-        @if (cards()) {
-            <!-- Over the card's pictures, outside the link (a button can't be in it): its default tags, then its count. -->
-            <span class="folder-cover-marks">
-                @if (item().defaultTags?.length) {
-                    <sfe-default-tags-badge [own]="item().defaultTags!" [folder]="'“' + item().name + '”'" [editable]="canTag()" (edit)="openTags()" />
-                }
-                @if (indexedItems() !== null) {
-                    <span class="badge folder-count">{{ indexedItems()!.toLocaleString() }}</span>
-                }
-            </span>
-        }
-        <span class="folder-actions">
-            <!-- Lines: always shown (the other buttons on hover), the folder gives tags to the files put into it. -->
-            @if (!cards() && item().defaultTags?.length) {
-                <sfe-default-tags-badge [own]="item().defaultTags!" [folder]="'“' + item().name + '”'" [editable]="canTag()" (edit)="openTags()" />
-            }
-            @if (canTag()) {
-                <button type="button" class="icon-button small folder-tags-button" [attr.aria-label]="'Tags of the files in ' + item().name"
-                        title="Add or remove tags on all the files of this folder, or of its sub-folders too (asks first), and its default tags" (click)="openTags()">
-                    <svg sfeIcon="tag"></svg>
-                </button>
-            }
-            <button [sfeItemMenu]="item()"></button>
-        </span>
-    `,
+    templateUrl: './folder-item.component.html',
 })
 export class FolderItemComponent {
     readonly item = input.required<LibraryItem>();

@@ -59,58 +59,7 @@ const SECTIONS: Section[] = [
         // A press, not a click: iOS sends no click for a tap on what isn't clickable (the page's text, an empty area).
         '(document:pointerdown)': 'closeOnOutsideClick($event)',
     },
-    template: `
-        <section sfeQuickLinks></section>
-        @for (section of sections; track section.key) {
-            @let usages = sidebar.data()?.[section.key] ?? [];
-            @let open = !isFolded(section);
-            <section class="sidebar-section" [hidden]="section.history && sidebar.data()?.historyEnabled === false">
-                <div class="sidebar-heading">
-                    <h2>
-                        <button type="button" class="sidebar-fold" [attr.aria-expanded]="open" [attr.aria-controls]="'sidebar-tags-' + section.key"
-                                [title]="(open ? 'Fold ' : 'Show ') + section.title" (click)="toggleFolded(section)">
-                            <svg sfeIcon="down"></svg>{{ section.title }}
-                        </button>
-                    </h2>
-                    @if (section.key === 'lucky' && open) {
-                        <button type="button" class="icon-button ghost small" title="Other random tags" aria-label="Other random tags" (click)="sidebar.reload()">
-                            <svg sfeIcon="refresh"></svg>
-                        </button>
-                    }
-                </div>
-                <ul class="sidebar-tags" [id]="'sidebar-tags-' + section.key" [hidden]="!open">
-                    @for (usage of usages; track usage.tag.id) {
-                        <li>
-                            <sfe-tag-chip [tag]="usage.tag" [title]="'Find files tagged ' + usage.tag.displayName" [clickable]="true" (pick)="search($event)"
-                                          [sfeContextMenu]="tagMenu.target(usage.tag)" />
-                            <span class="tag-count" [title]="countTitle(usage)">{{ usage.fileCount.toLocaleString() }}</span>
-                        </li>
-                    } @empty {
-                        @if (sidebar.data()) {
-                            <li class="sidebar-empty">{{ section.empty }}</li>
-                        }
-                    }
-                </ul>
-            </section>
-        }
-        <div class="sidebar-footer">
-            @if (config.can('tags.manage')) {
-                <button type="button" class="button small sidebar-manage" title="Create, edit and delete tags" (click)="manage()">
-                    <svg sfeIcon="tag"></svg>Manage tags
-                </button>
-            }
-            @if (config.canAny(trashRights)) {
-                @let trash = sidebar.trash();
-                <a class="button small sidebar-trash" [class.full]="!!trash?.count" routerLink="/admin" [queryParams]="{ section: 'files', page: 'trash' }"
-                   [state]="{ sfeFromLibrary: true }" [title]="trashTitle(trash)" [attr.aria-label]="trashTitle(trash)" (click)="sidebar.closeIfOverlay()">
-                    <svg [sfeIcon]="trash?.count ? 'trash-full' : 'trash'"></svg>Trash
-                    @if (trash?.count) {
-                        <span class="sidebar-badge" aria-hidden="true">{{ trash!.count }}{{ trash!.more ? '+' : '' }}</span>
-                    }
-                </a>
-            }
-        </div>
-    `,
+    templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent implements OnInit {
     protected readonly sidebar = inject(SidebarService);

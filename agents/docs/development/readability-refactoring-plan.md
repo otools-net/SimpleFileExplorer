@@ -109,7 +109,7 @@ Move to `.html` (one commit per line):
 
 - [x] `access/` (7), `account/` (4), `admin/` (2): `move-templates.mjs`; client build identical
 - [x] `formats/` (10): client build identical
-- [ ] `library/` (10)
+- [x] `library/` (10): client build identical
 - [ ] `files/` (6), `tags/` (3), `tasks/` (3), `tracking/` (3)
 - [ ] `editor/`, `logs/`, `menus/`, `migration/`, `player/`, `settings/`, `shared/`, `trickplay/` (1 each)
 
