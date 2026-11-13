@@ -102,14 +102,12 @@ public static class UploadEndpoints
     }
 
     private static async Task<Results<Ok<UploadCheck>, NotFound, ForbidHttpResult, ValidationProblem>> Check(
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
+        [AsParameters] UploadServices services,
         Trash trash,
-        CurrentAccess current,
         UploadCheckRequest request
     )
     {
+        var (_, paths, serverFiles, work, current) = services;
         var state = await current.GetAsync();
         if (request.Names is not { Count: > 0 and <= MaxCheckNames } names)
         {
@@ -152,16 +150,9 @@ public static class UploadEndpoints
 
     private static async Task<
         Results<Created<UploadInfo>, ProblemHttpResult, ValidationProblem, NotFound, ForbidHttpResult>
-    > Start(
-        Uploads uploads,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        UploadStart request,
-        CancellationToken cancellationToken
-    )
+    > Start([AsParameters] UploadServices services, UploadStart request, CancellationToken cancellationToken)
     {
+        var (uploads, paths, serverFiles, work, current) = services;
         var state = await current.GetAsync();
         var result = await uploads.StartAsync(
             request,
@@ -208,14 +199,14 @@ public static class UploadEndpoints
             : TypedResults.NotFound();
 
     private static async Task<Results<Ok<UploadInfo>, NotFound, Conflict<UploadInfo>, ProblemHttpResult>> Append(
-        Uploads uploads,
-        CurrentAccess current,
+        [AsParameters] UploadServices services,
         HttpRequest request,
         string id,
         long offset,
         CancellationToken cancellationToken
     )
     {
+        var (uploads, _, _, _, current) = services;
         if (Mine(uploads.Find(id), await current.GetAsync()) is null)
             return TypedResults.NotFound();
         var result = await uploads.AppendAsync(id, offset, request.Body, cancellationToken);
@@ -231,17 +222,14 @@ public static class UploadEndpoints
     private static async Task<
         Results<Ok<LibraryItem>, NoContent, NotFound, ProblemHttpResult, ValidationProblem>
     > Finish(
-        Uploads uploads,
+        [AsParameters] UploadServices services,
         TagService tags,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
         string id,
         UploadFinish? request,
         CancellationToken cancellationToken
     )
     {
+        var (uploads, paths, serverFiles, work, current) = services;
         var state = await current.GetAsync();
         if (Mine(uploads.Find(id), state) is null)
             return TypedResults.NotFound();

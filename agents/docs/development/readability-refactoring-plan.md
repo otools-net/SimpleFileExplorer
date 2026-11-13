@@ -146,7 +146,7 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `PropertyEndpoints`: `PropertyServices` (its logger too, so that `Get` takes 5)
   - [x] `FileTrackingEndpoints`: `FileTrackingServices`, `TrackingPageQuery` (`path`, `after`, `limit`, defaults
     kept)
-  - [ ] `UploadEndpoints`
+  - [x] `UploadEndpoints`: `UploadServices` (`offset` stays a parameter: a `long`)
   - [ ] `SessionEndpoints`
   - [ ] `FolderRuleEndpoints`
   - [ ] `ScanEndpoints`, then the files with 1–2 (`measure.mjs --area server`)
