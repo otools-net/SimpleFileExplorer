@@ -128,18 +128,13 @@ public static partial class TextEndpoints
     }
 
     private static async Task<Results<Ok<TextFile>, NotFound, ForbidHttpResult, ProblemHttpResult>> Get(
-        FileContent content,
-        Trash trash,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] TextServices services,
         string? path,
         string? encoding,
         CancellationToken cancellationToken
     )
     {
+        var (content, trash, paths, serverFiles, work, current, context, _) = services;
         if (encoding is not null && !TextCodec.ReadEncodings.Contains(encoding))
             return UnknownEncoding();
         var (full, canonical, state, refused) = await ResolveAsync(paths, serverFiles, work, current, path);
@@ -197,19 +192,13 @@ public static partial class TextEndpoints
     }
 
     private static async Task<Results<Ok<TextPart>, NotFound, ForbidHttpResult, ProblemHttpResult>> GetPart(
-        FileContent content,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        HttpContext context,
-        string? path,
-        long? offset,
-        int? length,
-        string? encoding,
+        [AsParameters] TextServices services,
+        [AsParameters] TextPartQuery query,
         CancellationToken cancellationToken
     )
     {
+        var (content, _, paths, serverFiles, work, current, context, _) = services;
+        var (path, offset, length, encoding) = query;
         if (encoding is not null && !TextCodec.ReadEncodings.Contains(encoding))
             return UnknownEncoding();
         if (length is < 1 or > MaxPartBytes)
@@ -251,17 +240,13 @@ public static partial class TextEndpoints
     }
 
     private static async Task<Results<Ok<TextVersion>, NotFound, ForbidHttpResult, ProblemHttpResult>> GetVersion(
-        FileContent content,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] TextServices services,
         string? path,
         string? known,
         CancellationToken cancellationToken
     )
     {
+        var (content, _, paths, serverFiles, work, current, context, _) = services;
         var (full, _, _, refused) = await ResolveAsync(paths, serverFiles, work, current, path);
         if (refused is { } forbidden)
             return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
@@ -285,16 +270,13 @@ public static partial class TextEndpoints
     }
 
     private static async Task<Results<Ok<SubtitleVideo>, NotFound, ForbidHttpResult>> GetVideo(
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
         SettingsService settings,
-        HttpContext context,
+        [AsParameters] TextServices services,
         string? path,
         CancellationToken cancellationToken
     )
     {
+        var (_, _, paths, serverFiles, work, current, context, _) = services;
         var (full, _, state, refused) = await ResolveAsync(paths, serverFiles, work, current, path);
         if (refused is { } forbidden)
             return forbidden ? TypedResults.Forbid() : TypedResults.NotFound();
@@ -346,19 +328,13 @@ public static partial class TextEndpoints
     private static async Task<
         Results<Ok<SavedText>, NotFound, ForbidHttpResult, ValidationProblem, ProblemHttpResult>
     > Save(
-        FileContent content,
-        Trash trash,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        HttpContext context,
-        ILoggerFactory loggers,
+        [AsParameters] TextServices services,
         string? path,
         SaveTextRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (content, trash, paths, serverFiles, work, current, context, loggers) = services;
         var state = await current.GetAsync();
         if (
             !paths.TryResolve(path, out var full)
@@ -471,15 +447,12 @@ public static partial class TextEndpoints
     > SaveCopy(
         FileOperations operations,
         TagService tags,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        ILoggerFactory loggers,
+        [AsParameters] TextServices services,
         CopyTextRequest request,
         CancellationToken cancellationToken
     )
     {
+        var (_, _, paths, serverFiles, work, current, _, loggers) = services;
         var state = await current.GetAsync();
         if (state.Check(paths, request.Path, Rights.CreateFiles) is var verdict and not PathVerdict.Allowed)
             return FileEndpoints.Refused(verdict, state, paths, request.Path, "save a file in", loggers);

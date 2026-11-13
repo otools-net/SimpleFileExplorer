@@ -1,12 +1,9 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Sfe.Api.Security;
-using Sfe.Api.Tenancy;
 using Sfe.Core.Access;
 using Sfe.Core.Library;
-using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Search;
 using Sfe.Core.Settings;
@@ -165,21 +162,15 @@ public static class LibraryEndpoints
     public const string LibraryRootMissingType = "library-root-missing";
 
     private static async Task<Results<Ok<DirectoryListing>, NotFound, ProblemHttpResult>> Browse(
-        LibraryBrowser browser,
-        LibraryPaths paths,
         TagService tags,
         FolderDefaultTags defaultTags,
-        CurrentAccess current,
-        IOptionsMonitor<SfeOptions> options,
-        ILoggerFactory loggerFactory,
-        CancellationToken cancellationToken,
-        string? path = null,
-        int offset = 0,
-        int? limit = null,
-        string? sort = null,
-        bool desc = false
+        [AsParameters] LibraryRequest library,
+        [AsParameters] BrowseQuery query,
+        CancellationToken cancellationToken
     )
     {
+        var (browser, paths, current, _, options, loggerFactory, _) = library;
+        var (path, offset, limit, sort, desc) = query;
         // Parsed by hand: enum binding of query values is case-sensitive and the client sends "size", "name"...
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Name;
         var page = options.CurrentValue.Browse;
@@ -243,14 +234,13 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<Ok<FolderSiblings>, NotFound>> Siblings(
-        LibraryBrowser browser,
-        LibraryPaths paths,
-        CurrentAccess current,
+        [AsParameters] LibraryRequest library,
         string? path = null,
         string? sort = null,
         bool desc = false
     )
     {
+        var (browser, paths, current, _, _, _, _) = library;
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Name;
         var state = await current.GetAsync();
         ListingFilter? filter = null;
@@ -318,18 +308,13 @@ public static class LibraryEndpoints
 
     private static async Task<Results<Ok<SearchResults>, NotFound>> Search(
         FileSearchService search,
-        LibraryPaths paths,
-        CurrentAccess current,
-        IOptionsMonitor<SfeOptions> options,
-        CancellationToken cancellationToken,
-        string? q = null,
-        string? path = null,
-        string? after = null,
-        int? limit = null,
-        string? sort = null,
-        bool desc = false
+        [AsParameters] LibraryRequest library,
+        [AsParameters] LibrarySearchQuery query,
+        CancellationToken cancellationToken
     )
     {
+        var (_, paths, current, _, options, _, _) = library;
+        var (q, path, after, limit, sort, desc) = query;
         var sortField = Enum.TryParse<SortField>(sort, ignoreCase: true, out var parsed) ? parsed : SortField.Path;
         var page = options.CurrentValue.Search;
         var state = await current.GetAsync();
@@ -351,14 +336,12 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound, ForbidHttpResult>> Raw(
-        LibraryPaths paths,
-        CurrentAccess current,
-        ServerFiles serverFiles,
-        HttpContext context,
+        [AsParameters] LibraryRequest library,
         string path,
         bool download = false
     )
     {
+        var (_, paths, current, serverFiles, _, _, context) = library;
         // The server's own files answer as if they weren't there, wherever a link put them.
         if (!paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
             return TypedResults.NotFound();
@@ -372,14 +355,12 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<Ok<ImageAnimationInfo>, NotFound>> Animated(
-        LibraryPaths paths,
-        CurrentAccess current,
-        ServerFiles serverFiles,
-        ILoggerFactory loggerFactory,
+        [AsParameters] LibraryRequest library,
         string path,
         CancellationToken cancellationToken
     )
     {
+        var (_, paths, current, serverFiles, _, loggerFactory, _) = library;
         if (!paths.TryResolve(path, out var fullPath) || !File.Exists(fullPath) || serverFiles.Contains(fullPath))
             return TypedResults.NotFound();
         if ((await current.GetAsync()).Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
@@ -410,14 +391,12 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<Ok<FileLink>, NotFound, ForbidHttpResult>> CreateLink(
-        LibraryPaths paths,
-        CurrentAccess current,
         FileLinks links,
-        ServerFiles serverFiles,
-        IOptionsMonitor<SfeOptions> options,
+        [AsParameters] LibraryRequest library,
         FileLinkRequest request
     )
     {
+        var (_, paths, current, serverFiles, options, _, _) = library;
         var path = LibraryPaths.NormalizeRelative(request.Path);
         if (
             path is null
@@ -441,16 +420,12 @@ public static class LibraryEndpoints
     }
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound, ProblemHttpResult>> Shared(
-        HttpContext context,
-        FileLinks links,
-        AccessService accounts,
-        RightsEvaluator rights,
-        TenantRegistry tenants,
-        ServerFiles serverFiles,
+        [AsParameters] SharedFileServices services,
         string token,
         string name
     )
     {
+        var (links, accounts, rights, tenants, serverFiles, context) = services;
         if (links.Read(token) is not { } claims)
             return TypedResults.NotFound();
 
@@ -530,13 +505,12 @@ public static class LibraryEndpoints
 
     private static async Task<Results<PhysicalFileHttpResult, NotFound>> Thumbnail(
         ThumbnailService thumbnails,
-        LibraryPaths paths,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] LibraryRequest library,
         string path,
         CancellationToken cancellationToken
     )
     {
+        var (browser, paths, current, _, _, _, context) = library;
         if ((await current.GetAsync()).Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
             return TypedResults.NotFound();
         var thumbnail = await thumbnails.GetAsync(path, cancellationToken);

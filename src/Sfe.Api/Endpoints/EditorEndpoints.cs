@@ -66,16 +66,13 @@ public static class EditorEndpoints
     }
 
     private static async Task<Results<Created<EditedImage>, ProblemHttpResult>> SaveImage(
-        EditedImages editor,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
+        [AsParameters] EditorServices services,
         HttpRequest request,
         CancellationToken cancellationToken,
         string? path = null
     )
     {
+        var (editor, _, _, paths, serverFiles, work, current, _) = services;
         var state = await current.GetAsync();
         if (state.Check(paths, path, Rights.ViewFiles) != PathVerdict.Allowed)
         {
@@ -129,17 +126,12 @@ public static class EditorEndpoints
     }
 
     private static async Task<Results<Ok<EditedImageAccess>, NotFound>> Access(
-        FileContent content,
-        Trash trash,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] EditorServices services,
         string? path,
         CancellationToken cancellationToken
     )
     {
+        var (_, content, trash, paths, serverFiles, work, current, context) = services;
         var state = await current.GetAsync();
         if (
             Picture(paths, serverFiles, work, path) is not (var full, var canonical)
@@ -158,18 +150,13 @@ public static class EditorEndpoints
     }
 
     private static async Task<Results<Ok<SavedImage>, NotFound, ValidationProblem, ProblemHttpResult>> SaveOver(
-        EditedImages editor,
-        Trash trash,
-        LibraryPaths paths,
-        ServerFiles serverFiles,
-        WorkFolder work,
-        CurrentAccess current,
-        HttpContext context,
+        [AsParameters] EditorServices services,
         string? path,
         string? session,
         CancellationToken cancellationToken
     )
     {
+        var (editor, _, trash, paths, serverFiles, work, current, context) = services;
         var state = await current.GetAsync();
         if (
             Picture(paths, serverFiles, work, path) is not (var full, var canonical)

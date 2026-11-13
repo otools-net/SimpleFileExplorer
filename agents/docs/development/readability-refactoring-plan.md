@@ -5,6 +5,8 @@ Files: the whole of `src/` and `tests/`; tools `agents/tools/readability/measure
 brought to them, what each step must check, and the traps met on the way. Delete it once phase 8 is done (see
 [AGENTS.md](../../../AGENTS.md), "Keeping these notes current").
 
+Resuming in a new session: start with the [handover](readability-handover.md).
+
 ## Starting point (measured 2026-11-12 on `edge` at `c815d64`)
 
 | Measure | Server | Server tests | Client | Client tests | e2e | Styles |
@@ -135,7 +137,8 @@ Tidy, one component per commit, worst first (add one line per component when sta
   over 60 now; OpenAPI and `routes.txt` identical)
 - [x] `[AsParameters]`: `ExploreEndpoints` (List, Search, GetText, Extract, GetEntry, OpenEntryAsync, Unlock,
   GetEntryAt): `ExploreServices` and request records; OpenAPI identical, routes' guards identical
-- [ ] `[AsParameters]`: `LibraryEndpoints`, `TextEndpoints`, `EditorEndpoints`, `ConfigEndpoints`
+- [x] `[AsParameters]`: `LibraryEndpoints`, `TextEndpoints`, `EditorEndpoints`, `ConfigEndpoints`
+  (`handler_params.py`; OpenAPI identical, defaults included; `AccessTests` reads a path as text, not `Paths`)
 - [ ] `[AsParameters]`: the other endpoints files (one item each when started)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`

@@ -226,3 +226,11 @@ dotnet run agents/tools/readability/split-route-maps/SplitRouteMaps.cs -- src/Sf
 - A route of an earlier group mapped after a later group's (`/file-tags/viewed` after the default tags) does not
   compile once cut: keep it last in a method of its own (`MapViewed(files)`), so the registration order stays.
 - Check: `references.mjs --only openapi,routes` identical.
+
+## Handler parameters into `[AsParameters]` records
+
+`handler_params.py` (Python 3): `Source(path).rewrite(handler, new_parameters, first_lines)` replaces a handler's
+parameter list and puts `var (…) = record;` lines first in its body; `deconstruct(handler, record, local_names)`
+writes such a line with `_` for the names the body does not use; `services_record(…)` the text of a services record
+file. A short script per endpoints file uses it (the pattern: [api-routes](../../docs/development/api-routes.md)).
+Then CSharpier, `dotnet format style` (usings), a build, and `references.mjs --only openapi,routes`.

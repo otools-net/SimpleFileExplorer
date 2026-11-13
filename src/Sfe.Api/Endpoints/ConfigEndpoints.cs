@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.Extensions.Options;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Editing;
@@ -7,10 +6,7 @@ using Sfe.Core.Library;
 using Sfe.Core.Options;
 using Sfe.Core.Paths;
 using Sfe.Core.Settings;
-using Sfe.Core.Streaming;
 using Sfe.Core.Tagging;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
 
 namespace Sfe.Api.Endpoints;
 
@@ -28,19 +24,12 @@ public static class ConfigEndpoints
     }
 
     private static async Task<Ok<ClientConfig>> GetConfig(
-        LibraryPaths paths,
-        ThumbnailService thumbnails,
-        TrickplayService trickplay,
-        VideoStreamer streamer,
-        IOptionsMonitor<SfeOptions> options,
-        CurrentAccess current,
-        SettingsService preferences,
-        AccessService accounts,
-        RightsEvaluator rights,
-        IConfiguration configuration,
+        [AsParameters] ConfigServices services,
         CancellationToken cancellationToken
     )
     {
+        var (paths, thumbnails, trickplay, streamer, options, current, preferences, accounts, rights, configuration) =
+            services;
         var state = await current.GetAsync();
         var server = options.CurrentValue;
         // The library's settings with the user's own preferences over them.

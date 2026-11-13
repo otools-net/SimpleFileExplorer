@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace Sfe.Api.Endpoints;
 
 /// <summary>
@@ -44,3 +46,11 @@ public sealed record SubtitleVideo(string? Path);
 
 /// <param name="Path">The folder the copy goes in.</param>
 public sealed record CopyTextRequest(string? Path, string? Name, string? Text, string? Encoding, string? LineEnding);
+
+/// <summary>A part of a text file (<c>GET api/files/text/part</c>).</summary>
+public sealed record TextPartQuery(
+    [FromQuery(Name = "path")] string? Path,
+    [FromQuery(Name = "offset")] long? Offset,
+    [FromQuery(Name = "length")] int? Length,
+    [FromQuery(Name = "encoding")] string? Encoding
+);
