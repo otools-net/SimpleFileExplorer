@@ -33,7 +33,7 @@ public sealed class FlashLinks(IDataProtectionProvider protection)
         );
         var token = _protector.Protect(JsonSerializer.Serialize(claims), Lifetime);
         return new FlashLink(
-            $"api/files/flash/{token}/{Uri.EscapeDataString(path[(slash + 1)..])}",
+            ApiRoutes.Link($"files/flash/{token}/{Uri.EscapeDataString(path[(slash + 1)..])}"),
             DateTimeOffset.UtcNow + Lifetime
         );
     }

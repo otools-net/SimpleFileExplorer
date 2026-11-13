@@ -162,7 +162,10 @@ public static class UploadEndpoints
         );
         return result.Status switch
         {
-            FileOperationStatus.Done => TypedResults.Created($"api/files/uploads/{result.Upload!.Id}", result.Upload),
+            FileOperationStatus.Done => TypedResults.Created(
+                ApiRoutes.Link($"files/uploads/{result.Upload!.Id}"),
+                result.Upload
+            ),
             FileOperationStatus.NotFound => TypedResults.NotFound(),
             FileOperationStatus.Forbidden => TypedResults.Forbid(),
             FileOperationStatus.Invalid => TypedResults.ValidationProblem(

@@ -24,7 +24,7 @@ public sealed class FastSignIn(
     public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(1);
 
     /// <summary>The route that takes the link (<c>?token=</c>), relative to the app's address.</summary>
-    public const string Route = "api/session/start";
+    public const string Route = ApiRoutes.LinkBase + "/session/start";
 
     private readonly Lock _lock = new();
     private (byte[] Hash, int UserId, DateTimeOffset Expires)? _pending;

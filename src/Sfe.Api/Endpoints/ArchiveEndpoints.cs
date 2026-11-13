@@ -100,7 +100,7 @@ public static class ArchiveEndpoints
         }
 
         var token = links.Add(state.TenantId, caller, [.. plan.Items.Select(item => item.Path)]);
-        return TypedResults.Ok(new ArchiveLink($"api/files/archive/{token}", plan.FileName));
+        return TypedResults.Ok(new ArchiveLink(ApiRoutes.Link($"files/archive/{token}"), plan.FileName));
     }
 
     private static async Task<Results<EmptyHttpResult, NotFound, ForbidHttpResult, ProblemHttpResult>> Download(

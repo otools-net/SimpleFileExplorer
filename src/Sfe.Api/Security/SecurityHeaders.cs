@@ -84,7 +84,7 @@ public sealed class SecurityHeaders(RequestDelegate next, AppPolicySource appPol
     public Task InvokeAsync(HttpContext context)
     {
         var path = context.Request.Path;
-        var docs = path.StartsWithSegments("/api/docs");
+        var docs = ApiRoutes.IsDocs(path);
         var flash = path.Equals(FlashPlayerPage, StringComparison.OrdinalIgnoreCase);
         var ruffle = path.StartsWithSegments(RuffleFiles, StringComparison.OrdinalIgnoreCase);
         context.Response.OnStarting(() =>

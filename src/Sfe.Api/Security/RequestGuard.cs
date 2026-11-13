@@ -33,8 +33,8 @@ public sealed class RequestGuard(RequestDelegate next)
     )
     {
         var path = context.Request.Path;
-        var api = path.StartsWithSegments("/api");
-        if (!api && !path.StartsWithSegments("/openapi"))
+        var api = ApiRoutes.IsApi(path);
+        if (!ApiRoutes.IsApiOrDocument(path))
         {
             await next(context);
             return;
@@ -58,7 +58,7 @@ public sealed class RequestGuard(RequestDelegate next)
         }
 
         await migration.RetryIfUnavailableAsync(context.RequestAborted);
-        if (migration.IsBlocking && !path.StartsWithSegments("/api/migration"))
+        if (migration.IsBlocking && !ApiRoutes.IsMigration(path))
         {
             await TypedResults
                 .Problem(
@@ -70,13 +70,7 @@ public sealed class RequestGuard(RequestDelegate next)
             return;
         }
 
-        if (
-            !path.StartsWithSegments("/api/setup")
-            && !path.StartsWithSegments("/api/installation")
-            && !path.StartsWithSegments("/api/session")
-            && !path.StartsWithSegments("/api/migration")
-            && await setup.IsRequiredAsync(context.RequestAborted)
-        )
+        if (!ApiRoutes.IsServerEntry(path) && await setup.IsRequiredAsync(context.RequestAborted))
         {
             await TypedResults
                 .Problem(
@@ -94,10 +88,7 @@ public sealed class RequestGuard(RequestDelegate next)
         if (
             ServerModes.IsLocal(configuration)
             && !LocalVisitor.IsOnThisComputer(context)
-            && !path.StartsWithSegments("/api/setup")
-            && !path.StartsWithSegments("/api/installation")
-            && !path.StartsWithSegments("/api/session")
-            && !path.StartsWithSegments("/api/migration")
+            && !ApiRoutes.IsServerEntry(path)
         )
         {
             await TypedResults
@@ -110,7 +101,7 @@ public sealed class RequestGuard(RequestDelegate next)
             return;
         }
 
-        if (path.StartsWithSegments("/api/docs") && !(await current.GetAsync()).Has(Rights.ApiDocs))
+        if (ApiRoutes.IsDocs(path) && !(await current.GetAsync()).Has(Rights.ApiDocs))
         {
             await (context.User.UserId() is null ? Results.Unauthorized() : Results.Forbid()).ExecuteAsync(context);
             return;

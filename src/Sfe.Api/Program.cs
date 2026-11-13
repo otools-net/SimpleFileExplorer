@@ -126,7 +126,7 @@ app.MapOpenApi().RequireRight(Rights.ApiDocs);
 // Swagger UI's files are embedded in the Swashbuckle package and served by the app itself.
 app.UseSwaggerUI(options =>
 {
-    options.RoutePrefix = "api/docs";
+    options.RoutePrefix = ApiRoutes.Docs[1..];
     // Relative to /api/docs/index.html, so it also works when the app is hosted under a virtual directory.
     options.SwaggerEndpoint("../../openapi/v1.json", "SFE API v1");
     options.DocumentTitle = "SFE API";
@@ -138,7 +138,7 @@ app.UseDefaultFiles();
 app.MapStaticAssets();
 
 // Answers explaining a refusal or a failure go into the log (ProblemLog).
-var api = app.MapGroup("/api").LogProblems();
+var api = app.MapGroup(ApiRoutes.Base).LogProblems();
 api.MapSetupEndpoints();
 api.MapInstallationEndpoints();
 api.MapMigrationEndpoints();

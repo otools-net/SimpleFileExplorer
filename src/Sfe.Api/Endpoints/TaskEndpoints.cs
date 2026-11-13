@@ -157,7 +157,7 @@ public static class TaskEndpoints
         return
             result == TaskStartResult.Started
             || (result == TaskStartResult.AlreadyRunning && kind == BackgroundTaskKind.Trickplay)
-            ? TypedResults.Accepted("/api/tasks", body)
+            ? TypedResults.Accepted(ApiRoutes.Location("tasks"), body)
             : TypedResults.Conflict(body);
     }
 
@@ -171,7 +171,7 @@ public static class TaskEndpoints
             return TypedResults.NotFound();
         var cancelled = tasks.Cancel(kind);
         var info = await DescribeAsync(tasks, kind, cancellationToken);
-        return cancelled ? TypedResults.Accepted("/api/tasks", info) : TypedResults.Conflict(info);
+        return cancelled ? TypedResults.Accepted(ApiRoutes.Location("tasks"), info) : TypedResults.Conflict(info);
     }
 
     /// <summary>A task by its name, in any case (the API sends camelCase); numbers are refused.</summary>
@@ -197,7 +197,7 @@ public static class TaskEndpoints
         var (view, errors) = await schedules.CreateAsync(input, cancellationToken);
         return view is null
             ? TypedResults.ValidationProblem(errors!)
-            : TypedResults.Created($"/api/tasks/schedules/{view.Id}", view);
+            : TypedResults.Created(ApiRoutes.Location($"tasks/schedules/{view.Id}"), view);
     }
 
     private static async Task<Results<Ok<TaskScheduleView>, NotFound, ValidationProblem>> UpdateSchedule(

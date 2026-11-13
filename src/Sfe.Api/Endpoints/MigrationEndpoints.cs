@@ -151,7 +151,9 @@ public static class MigrationEndpoints
 
         var archive = await backups.WriteAsync(migration.DatabaseVersion, cancellationToken);
         var token = downloads.Add(archive);
-        return TypedResults.Ok(new BackupLink($"api/migration/backup/{token}", archive.FileName, archive.Size));
+        return TypedResults.Ok(
+            new BackupLink(ApiRoutes.Link($"migration/backup/{token}"), archive.FileName, archive.Size)
+        );
     }
 
     private static Results<FileStreamHttpResult, NotFound> DownloadBackup(string token, BackupDownloads downloads) =>

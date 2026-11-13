@@ -14,14 +14,7 @@ public sealed class TenantMiddleware(RequestDelegate next)
     public async Task InvokeAsync(HttpContext context, TenantScope scope, CurrentAccess current)
     {
         var path = context.Request.Path;
-        if (
-            !path.StartsWithSegments("/api") && !path.StartsWithSegments("/openapi")
-            || path.StartsWithSegments("/api/setup")
-            || path.StartsWithSegments("/api/session")
-            || path.StartsWithSegments("/api/docs")
-            || path.StartsWithSegments("/api/migration")
-            || path.StartsWithSegments("/api/installation")
-        )
+        if (!ApiRoutes.IsApiOrDocument(path) || ApiRoutes.IsServerEntry(path) || ApiRoutes.IsDocs(path))
         {
             await next(context);
             return;

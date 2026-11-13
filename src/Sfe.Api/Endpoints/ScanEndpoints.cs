@@ -58,7 +58,7 @@ public static class ScanEndpoints
 
         scan.MapDelete("/", (ScanCoordinator coordinator) =>
                 coordinator.Cancel()
-                    ? Results.Accepted("/api/scan", coordinator.Status)
+                    ? Results.Accepted(ApiRoutes.Location("scan"), coordinator.Status)
                     : Results.Conflict(coordinator.Status)
             )
             .RequireRight(Rights.Scan)
@@ -343,7 +343,7 @@ public static class ScanEndpoints
         }
 
         return coordinator.TryStart(path)
-            ? TypedResults.Accepted("/api/scan", coordinator.Status)
+            ? TypedResults.Accepted(ApiRoutes.Location("scan"), coordinator.Status)
             : TypedResults.Conflict(coordinator.Status);
     }
 }

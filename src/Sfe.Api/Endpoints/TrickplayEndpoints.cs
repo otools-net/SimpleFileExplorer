@@ -73,7 +73,7 @@ public static class TrickplayEndpoints
     /// <summary>409 when trickplay is turned off or ffmpeg can't be found (see the status's state).</summary>
     private static Results<Accepted<TrickplayStatus>, Conflict<TrickplayStatus>> Check(TrickplayService service) =>
         service.RequestPass()
-            ? TypedResults.Accepted("/api/trickplay", service.Status)
+            ? TypedResults.Accepted(ApiRoutes.Location("trickplay"), service.Status)
             : TypedResults.Conflict(service.Status);
 
     private static async Task<Results<Ok<TrickplayStates>, ValidationProblem>> States(

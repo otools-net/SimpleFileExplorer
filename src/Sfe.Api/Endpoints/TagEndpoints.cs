@@ -332,7 +332,7 @@ public static class TagEndpoints
         var result = await service.CreateAsync(input, cancellationToken);
         return result.Status switch
         {
-            TagEditStatus.Ok => TypedResults.Created($"/api/tags/{result.Tag!.Id}", result.Tag),
+            TagEditStatus.Ok => TypedResults.Created(ApiRoutes.Location($"tags/{result.Tag!.Id}"), result.Tag),
             TagEditStatus.Invalid => TypedResults.ValidationProblem(result.Errors!),
             _ => TypedResults.NotFound(),
         };

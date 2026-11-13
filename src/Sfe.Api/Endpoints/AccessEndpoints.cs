@@ -197,7 +197,10 @@ public static class AccessEndpoints
         );
         return result.Status switch
         {
-            AccessStatus.Ok => TypedResults.Created($"/api/access/users/{result.Value!.Id}", result.Value),
+            AccessStatus.Ok => TypedResults.Created(
+                ApiRoutes.Location($"access/users/{result.Value!.Id}"),
+                result.Value
+            ),
             AccessStatus.Invalid => TypedResults.ValidationProblem(result.Errors!),
             _ => TypedResults.Problem(result.Problem, statusCode: StatusCodes.Status409Conflict),
         };
@@ -332,7 +335,10 @@ public static class AccessEndpoints
             ? TypedResults.NotFound()
             : await accounts.CreateGroupAsync(space, input, MembersOfSpaceOnly(state), cancellationToken) switch
             {
-                { Status: AccessStatus.Ok } ok => TypedResults.Created($"/api/access/groups/{ok.Value!.Id}", ok.Value),
+                { Status: AccessStatus.Ok } ok => TypedResults.Created(
+                    ApiRoutes.Location($"access/groups/{ok.Value!.Id}"),
+                    ok.Value
+                ),
                 { Status: AccessStatus.Invalid } invalid => TypedResults.ValidationProblem(invalid.Errors!),
                 { Status: AccessStatus.NotFound } => TypedResults.NotFound(),
                 var other => TypedResults.Problem(other.Problem, statusCode: StatusCodes.Status409Conflict),

@@ -526,7 +526,7 @@ public static class ExploreEndpoints
             access,
             password
         );
-        return TypedResults.Accepted($"api/files/jobs/{view.Id}", view);
+        return TypedResults.Accepted(ApiRoutes.Link($"files/jobs/{view.Id}"), view);
     }
 
     private static async Task<

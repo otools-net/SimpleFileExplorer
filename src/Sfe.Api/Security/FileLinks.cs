@@ -21,7 +21,8 @@ public sealed class FileLinks(IDataProtectionProvider protection)
         var claims = new FileLinkClaims(tenantId, user?.Id, user?.SecurityStamp, path);
         var token = _protector.Protect(JsonSerializer.Serialize(claims), lifetime);
         var name = path[(path.LastIndexOf('/') + 1)..];
-        return new FileLink($"api/files/shared/{token}/{Uri.EscapeDataString(name)}", DateTimeOffset.UtcNow + lifetime);
+        var link = ApiRoutes.Link($"files/shared/{token}/{Uri.EscapeDataString(name)}");
+        return new FileLink(link, DateTimeOffset.UtcNow + lifetime);
     }
 
     /// <summary>The claims of a token that is genuine and not expired; null otherwise.</summary>

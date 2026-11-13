@@ -500,7 +500,7 @@ public static class FileEndpoints
         // Every item is checked as the job reaches it, with the person's access then.
         var access = new FileJobAccess(accounts, rights, paths, serverFiles, work, tenant, state.User?.Id);
         var view = jobs.Start(request, Actor(state), access);
-        return TypedResults.Accepted($"api/files/jobs/{view.Id}", view);
+        return TypedResults.Accepted(ApiRoutes.Link($"files/jobs/{view.Id}"), view);
     }
 
     private static async Task<Results<Accepted<FileJobView>, ForbidHttpResult, ValidationProblem>> Compress(
@@ -555,7 +555,7 @@ public static class FileEndpoints
             access,
             request.Password
         );
-        return TypedResults.Accepted($"api/files/jobs/{view.Id}", view);
+        return TypedResults.Accepted(ApiRoutes.Link($"files/jobs/{view.Id}"), view);
     }
 
     private static async Task<Ok<IReadOnlyList<FileJobView>>> ListJobs(FileJobs jobs, CurrentAccess current) =>

@@ -153,7 +153,7 @@ public static class TenantEndpoints
         }
 
         var details = await DetailsAsync(accounts, configuration, result.Value!, cancellationToken);
-        return TypedResults.Created($"/api/tenants/{details.Id}", details);
+        return TypedResults.Created(ApiRoutes.Location($"tenants/{details.Id}"), details);
     }
 
     private static async Task<Results<Ok<TenantDetails>, ValidationProblem, NotFound, ProblemHttpResult>> Update(
