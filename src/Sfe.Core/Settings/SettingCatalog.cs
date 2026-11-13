@@ -30,6 +30,7 @@ public static class SettingCatalog
         "connections.enabled",
         "connections.providers",
         "connections.levels",
+        "connections.dropbox.appKey",
     ];
 
     private static readonly HashSet<string> UserKeys =

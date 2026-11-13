@@ -25,12 +25,15 @@ public sealed partial class ConnectionSettings
     /// <inheritdoc cref="ConnectionOptions.Levels"/>
     public List<string> Levels { get; set; } = [];
 
+    public DropboxSettings Dropbox { get; set; } = new();
+
     public static ConnectionSettings From(ConnectionOptions options) =>
         new()
         {
             Enabled = options.Enabled,
             Providers = [.. options.Providers],
             Levels = [.. options.Levels],
+            Dropbox = new() { AppKey = options.Dropbox.AppKey },
         };
 
     public void ApplyTo(ConnectionOptions options)
@@ -38,6 +41,7 @@ public sealed partial class ConnectionSettings
         options.Enabled = Enabled;
         options.Providers = [.. Providers];
         options.Levels = [.. Levels];
+        options.Dropbox.AppKey = Dropbox.AppKey;
     }
 
     /// <summary>Lower case, trimmed, each word once.</summary>
@@ -45,6 +49,7 @@ public sealed partial class ConnectionSettings
     {
         Providers = Words(Providers);
         Levels = Words(Levels);
+        Dropbox.AppKey = string.IsNullOrWhiteSpace(Dropbox.AppKey) ? null : Dropbox.AppKey.Trim();
     }
 
     /// <summary>What is wrong with the values, by setting key; nothing when they are fine.</summary>
@@ -59,6 +64,8 @@ public sealed partial class ConnectionSettings
         }
         if (Levels.Except(KnownLevels).Any())
             yield return ("connections.levels", $"The levels are: {string.Join(", ", KnownLevels)}.");
+        if (Dropbox.AppKey is { } key && !AppKey().IsMatch(key))
+            yield return ("connections.dropbox.appKey", "An app key is letters and digits, as Dropbox shows it.");
     }
 
     private static List<string> Words(IEnumerable<string>? words) =>
@@ -71,4 +78,7 @@ public sealed partial class ConnectionSettings
 
     [GeneratedRegex("^[a-z0-9][a-z0-9-]{0,31}$")]
     private static partial Regex KindName();
+
+    [GeneratedRegex("^[A-Za-z0-9]{1,64}$")]
+    private static partial Regex AppKey();
 }

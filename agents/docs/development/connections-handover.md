@@ -9,9 +9,9 @@ Files: [connections-plan](connections-plan.md) (the checklist: its `## Progress`
 ## Where it stands
 
 The owner asked to start with plan 5 (connections) and do plans 1 to 4 later. Asked for this session: phases 0 to 2,
-one commit per plan item, no real Dropbox account at hand. Done: phase 0 and phase 1 (the last item in a third
-session, see the epic's session log).
-**Nothing of Dropbox itself is built yet**: no package reference, no route, no page but the settings tab.
+one commit per plan item, no real Dropbox account at hand. Done: phase 0, phase 1 and phase 2 item 1 (the third
+session, see the epic's session log). Dropbox: the package, the provider's sign-in and test, its settings and
+secret routes; no authorize route, no page but the settings tab (app key field).
 
 | Commit | What |
 |---|---|
@@ -21,15 +21,17 @@ session, see the epic's session log).
 | `ff601f1` | phase 1 item 1: interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider` + contract tests |
 | `651f589` | phase 1 item 2: tables, migration `20261113…_Connections`, upgrade and cascade tests |
 | `cb5aebd` | phase 1 item 3: rights, settings, `ClientConfig.Connections`, settings tab, docs, changelog |
-| last | phase 1 item 4: `ConnectionService`, `ConnectionSharing`, `ConnectionAccess`, `ConnectionCredentials`, feature note |
+| `9d867a6` | phase 1 item 4: services, `ConnectionAccess`, `ConnectionCredentials`, feature note |
+| last | phase 2 item 1: `DropboxProvider` sign-in, `connections.dropbox.appKey`, `ProviderSecrets`, provider routes |
 
 Checks run for the last commit: the new suites, `npm test` (1179 passed), the full `dotnet test`, `measure.mjs
 --check`, `check-links.mjs`. The migration was applied on LocalDB and its deletes checked there by hand.
 
 ## Resume here
 
-1. Phase 2 (four items): Dropbox settings (**ask the owner about the app secret first**, see Decisions), the
-   authorize routes, refresh and reconnect, the client pages.
+1. Phase 2 items 2 to 4: the authorize routes (use `DropboxProvider` and `FakeProvider`;
+   `ConnectionProviderEndpoints.ReturnAddress` and `CallbackPath` exist), refresh and reconnect, the client pages
+   (with the app secret field, return address and Test button of item 1).
 2. Then phases 3 to 7 as the plan lists them.
 
 Per commit, as the epic asks: tick the item in the plan with an "As built" sentence, update the status board and
@@ -68,10 +70,8 @@ session log of the epic plan, a line under `## Unreleased` when something is vis
 ## Decisions taken in this session (beyond the plan's)
 
 - **Dropbox client: the official `Dropbox.Api` 7.4.0** (details and the request shapes seen: plan, phase 0).
-- **The app secret is optional**: PKCE works for both flows without it. Proposed, not yet confirmed by the owner:
-  only `connections.dropbox.appKey` is a setting of the page (an app key is public, it is in the authorize
-  address); a secret, when wanted, is `Sfe:Connections:Dropbox:AppSecret` in the configuration only. This replaces
-  the plan's "write-only AppSecret stored with `SecretFiles`": **ask the owner** before building phase 2 item 1.
+- **The app secret is optional** (PKCE works for both flows without it). **Owner's choice (2026-11-13): both on the
+  page, the secret write-only** (`ProviderSecrets`, a `SecretFiles` file); the configuration's secret wins.
 - `Connections:Enabled` defaults to **true**; nothing can be connected until a kind has a sign-in method.
 - Folder rules of connections: a twin table (phase 6), not a column of `FolderRules`.
 - Ranged reads at Dropbox go through `GetTemporaryLinkAsync` + a `Range` request (the SDK's download has none):

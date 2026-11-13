@@ -29,4 +29,6 @@ public sealed class ConnectionOptions
     /// network hides. A Local server allows it without this.
     /// </summary>
     public bool AllowPrivateAddresses { get; set; }
+
+    public DropboxOptions Dropbox { get; set; } = new();
 }

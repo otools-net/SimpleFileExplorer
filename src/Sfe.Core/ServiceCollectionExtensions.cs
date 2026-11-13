@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Sfe.Core.Access;
 using Sfe.Core.Backup;
 using Sfe.Core.Connections;
+using Sfe.Core.Connections.Dropbox;
 using Sfe.Core.Data;
 using Sfe.Core.Editing;
 using Sfe.Core.Files;
@@ -210,6 +211,9 @@ public static class ServiceCollectionExtensions
         // Connections to other storage: the kinds registered (IConnectionProvider) and the door their calls leave by.
         services.TryAddSingleton(_ => new OutboundPolicy());
         services.AddSingleton<ConnectionProviders>();
+        // The secrets of the providers' apps typed on the settings page, beside the setup code.
+        services.AddSingleton(new ProviderSecrets(Path.Combine(Path.GetDirectoryName(codePath)!, "connections")));
+        services.AddSingleton<IConnectionProvider, DropboxProvider>();
         // Their credentials are protected by the Api's keys (ICredentialProtector, AddSfeSecurity).
         services.AddSingleton<ConnectionService>();
         services.AddSingleton<ConnectionSharing>();

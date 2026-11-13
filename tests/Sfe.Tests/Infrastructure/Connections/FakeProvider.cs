@@ -75,6 +75,9 @@ public sealed class FakeProvider : IConnectionProvider
     public IRemoteStorage Open(string credentials, string rootPath, ConnectionOptions options) =>
         new FakeStorage(Account(credentials), rootPath, Capabilities);
 
+    public Task<ProviderTest> TestAsync(ConnectionOptions options, CancellationToken cancellationToken) =>
+        Task.FromResult(new ProviderTest(Methods.Count > 0, Methods.Count > 0 ? "Fine." : "Not configured."));
+
     private ConnectionGrant PasswordGrant(IReadOnlyDictionary<string, string> fields) =>
         fields.GetValueOrDefault("password") == "secret" && fields.GetValueOrDefault("name") is { Length: > 0 } name
             ? Grant(name)

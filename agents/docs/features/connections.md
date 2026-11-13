@@ -1,10 +1,12 @@
 # Connections (external storage)
 
 Code: `src/Sfe.Core/Connections/` (`ConnectionService`, `ConnectionSharing`, `ConnectionAccess`, `ConnectionRows`,
-`ConnectionLevels`), `src/Sfe.Core/Data/Entities/Access/Connection*.cs`,
-`src/Sfe.Api/Security/ConnectionCredentials.cs`; tests `ConnectionServiceTests`, `ConnectionAccessTests`, `ConnectionDataTests`, `ConnectionCredentialsTests` with
-`tests/Sfe.Tests/Infrastructure/Connections/` (`ConnectionWorld`, `FakeProvider`, `FakeProtector`). Work still
-planned: [connections-plan](../development/connections-plan.md).
+`ConnectionLevels`, `ProviderSecrets`, `Dropbox/`), `src/Sfe.Core/Data/Entities/Access/Connection*.cs`,
+`src/Sfe.Api/Security/ConnectionCredentials.cs`, `src/Sfe.Api/Endpoints/ConnectionProviderEndpoints.cs`; tests
+`ConnectionServiceTests`, `ConnectionAccessTests`, `ConnectionDataTests`, `ConnectionCredentialsTests`,
+`DropboxProviderTests`, `ConnectionProviderRouteTests` with `tests/Sfe.Tests/Infrastructure/Connections/`
+(`ConnectionWorld`, `FakeProvider`, `FakeProtector`, `RecordedDropbox`). Work still planned:
+[connections-plan](../development/connections-plan.md).
 
 ## Model
 
@@ -39,11 +41,32 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   connection `NeedsReconnecting` and answers a conflict (`NeedsReconnectingProblem`). Signing in again
   (`ReauthorizeAsync`) keeps id, groups and rules and says when the provider's account changed (`AccountId`).
 
+## Setting up a kind (Dropbox)
+
+- App key: server setting `connections.dropbox.appKey` (`DropboxSettings` in `ConnectionSettings`); without it
+  `SignInMethods` is empty, so Dropbox is not offered.
+- App secret (optional: PKCE signs in without it), write-only: `PUT`/`DELETE api/connections/providers/{kind}/secret`
+  writes `ProviderSecrets` (one `SecretFiles` file per kind in `connections/` beside the setup code, cached; not in
+  backups). `Sfe:Connections:Dropbox:AppSecret` in the configuration wins. Only kinds implementing `IRegisteredApp`
+  have a secret (404 for others). A secret never goes in `EditableSettings`: the settings are sent back whole.
+- `GET api/connections/providers/{kind}`: offered, the return address to register
+  (`ConnectionProviderEndpoints.ReturnAddress`: scheme, host, path base of the request, then
+  `/api/connections/oauth/callback`), where the secret comes from (`none`, `page`, `configuration`).
+  `POST …/test`: `IConnectionProvider.TestAsync`
+  (Dropbox: `check/app` with key and secret, nothing sent without a secret). All need `server.settings`.
+- `DropboxProvider`: authorize address by `DropboxOAuth2Helper.GetAuthorizeUri` (offline token, the four scopes,
+  S256 challenge; the verifier is the step's `Pending`), redirect flow sends `redirect_uri`, code flow none; the
+  grant is the refresh token, the e-mail and `account_id` (`users/get_current_account`). `Open` comes in phase 3.
+- `DropboxErrors.CallAsync` wraps every SDK call. The SDK throws `InvalidOperationException` (source `Dropbox.Api`)
+  when an answer has another shape (an empty 404, a proxy page): mapped to `Unavailable`.
+- Tests: `RecordedDropbox` is the transport given to `OutboundPolicy` (answers by path, keeps the requests).
+
 ## Audit lines
 
 - Security warnings: a connection made, signed in again to another account, offered to more libraries, a group added
   or raised to Write. Information: other changes, removal. Each names the connection by `ConnectionRows.Describe`
   (id, name, kind, level), never a token, a code or the provider's account.
+- An app secret set: security warning (`ConnectionProviderEndpoints`); removed: information.
 
 ## Gotchas
 

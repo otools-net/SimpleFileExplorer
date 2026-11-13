@@ -1254,6 +1254,19 @@ export const TABS: SettingTab[] = [
                     },
                 ],
             },
+            {
+                title: 'Dropbox',
+                fields: [
+                    {
+                        key: 'connections.dropbox.appKey',
+                        label: 'App key',
+                        type: 'text',
+                        hint:
+                            "The key of the app you registered in Dropbox's App Console; empty: Dropbox is not " +
+                            'offered. Its secret, optional, is set apart and never shown again.',
+                    },
+                ],
+            },
         ],
     },
     {

@@ -209,9 +209,17 @@ in `FolderRules`:
 
 ### Phase 2: Dropbox sign-in and management
 
-- [ ] Settings `Connections:Dropbox:AppKey`, `AppSecret` (write-only: the API never returns it; stored with
+- [x] Settings `Connections:Dropbox:AppKey`, `AppSecret` (write-only: the API never returns it; stored with
   `SecretFiles` or protected, not in plain `settings.json`), the redirect address shown to the administrator to
-  register, a "Test" action
+  register, a "Test" action. As built (owner's choice: both on the page, the secret write-only): the app key is
+  the server setting `connections.dropbox.appKey`; the secret goes through `PUT`/`DELETE
+  api/connections/providers/{kind}/secret` into `ProviderSecrets` (a `SecretFiles` file per kind in
+  `connections/` beside the setup code; not in backups), `Sfe:Connections:Dropbox:AppSecret` in the configuration
+  wins (`IRegisteredApp`); `GET api/connections/providers/{kind}` tells offered / return address / where the secret
+  comes from; `POST …/test` (`IConnectionProvider.TestAsync`: Dropbox's `check/app` with key and secret). Also
+  built here: `DropboxProvider` sign-in (PKCE, both flows, account by `get_current_account`), `DropboxErrors`,
+  tests on recorded answers (`RecordedDropbox`). The page's secret field, address and Test button come with the
+  client item below
 - [ ] `POST connections/authorize` (state bound to account and level, PKCE verifier kept server side, 10 minutes),
   `GET connections/oauth/callback` (redirect flow; the session must be the state's account), `POST
   connections/authorize/complete` (code flow)

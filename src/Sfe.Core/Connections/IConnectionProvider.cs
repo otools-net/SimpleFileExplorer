@@ -41,4 +41,10 @@ public interface IConnectionProvider
     /// empty for all of it): every path given to the result is relative to it.
     /// </summary>
     IRemoteStorage Open(string credentials, string rootPath, ConnectionOptions options);
+
+    /// <summary>
+    /// Checks the kind's settings with the provider when it can (an app's key and secret), for the administrator's
+    /// "Test" button; never throws for an answer of the provider.
+    /// </summary>
+    Task<ProviderTest> TestAsync(ConnectionOptions options, CancellationToken cancellationToken);
 }

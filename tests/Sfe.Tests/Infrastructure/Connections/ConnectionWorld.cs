@@ -15,10 +15,15 @@ namespace Sfe.Tests.Infrastructure;
 /// </summary>
 public sealed class ConnectionWorld : IAsyncDisposable
 {
-    private ConnectionWorld(ServiceProvider services) => Services = services;
+    private ConnectionWorld(ServiceProvider services, FakeProvider provider)
+    {
+        Services = services;
+        Provider = provider;
+    }
 
     public ServiceProvider Services { get; }
-    public FakeProvider Provider => (FakeProvider)Services.GetRequiredService<IConnectionProvider>();
+    /// <summary>The fake kind (the server knows Dropbox too).</summary>
+    public FakeProvider Provider { get; }
     public ConnectionService Connections => Services.GetRequiredService<ConnectionService>();
     public ConnectionSharing Sharing => Services.GetRequiredService<ConnectionSharing>();
     public ConnectionAccess Access => Services.GetRequiredService<ConnectionAccess>();
@@ -40,7 +45,8 @@ public sealed class ConnectionWorld : IAsyncDisposable
         IReadOnlyDictionary<string, string?>? settings = null
     )
     {
-        var world = new ConnectionWorld(Build(library, new FakeProvider(), settings));
+        var provider = new FakeProvider();
+        var world = new ConnectionWorld(Build(library, provider, settings), provider);
         await world.Services.GetRequiredService<AccessDatabaseInitializer>().InitializeAsync(cancellationToken);
         await world.PopulateAsync(library, cancellationToken);
         return world;
@@ -49,7 +55,7 @@ public sealed class ConnectionWorld : IAsyncDisposable
     /// <summary>The same database and people with other settings, the fake provider's accounts kept.</summary>
     public ConnectionWorld WithSettings(TestLibrary library, IReadOnlyDictionary<string, string?> settings)
     {
-        var other = new ConnectionWorld(Build(library, Provider, settings));
+        var other = new ConnectionWorld(Build(library, Provider, settings), Provider);
         other.CopyPeople(this);
         return other;
     }
