@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using Sfe.Core.Connections;
 using Sfe.Core.Options;
 
-namespace Sfe.Tests;
+namespace Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// A provider kept in memory, for the suites: no test calls a real one. An account is made by signing in to it:

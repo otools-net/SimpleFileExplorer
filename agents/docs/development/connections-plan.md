@@ -185,9 +185,15 @@ in `FolderRules`:
   `BeginSignInAsync` / `CompleteSignInAsync`, so a password kind ends at the first and OAuth at the second),
   `IRemoteStorage`, one `RemoteStorageException`; `OutboundPolicy.CreateClient(rule)` is the only maker of a
   provider's `HttpClient` (tests pass a transport); `FakeStorageTests` is the contract a real provider's tests copy
-- [ ] Entities `Connection`, `ConnectionTenant` (server level: offered to), `ConnectionGroup` (library, group, Read or
+- [x] Entities `Connection`, `ConnectionTenant` (server level: offered to), `ConnectionGroup` (library, group, Read or
   Write); migration in `AccessMigrations` and the SQLite path; removal of a user, group or library removes its rows
-  (SQL Server: one cascade path, [database](database.md))
+  (SQL Server: one cascade path, [database](database.md)). As built: `Connections.OwnerId` (account level only,
+  cascade) apart from `CreatedById` (no key: a library's connection outlives who made it); the database removes a
+  connection with its owner or library, and `ConnectionTenants` / `ConnectionGroups` rows with their library or
+  group; from a connection to those rows there is **no** database cascade (two paths): whoever removes a connection
+  loads it with `Include(Tenants)`, `Include(Groups)` and EF deletes them (`ClientCascade`), so `AccessService` is
+  untouched; a check constraint ties the level to owner / library. Checked on LocalDB (migration applies, deletes
+  of a user, a group, a library, a connection with rows refused) and by `ConnectionDataTests` on SQLite
 - [ ] Settings and rights (with `since`), `core/rights.ts`; `api/v1/config` tells the client what is on
 - [ ] `ConnectionService`, `ConnectionAccess`; credentials protected; audit log lines for every change
 

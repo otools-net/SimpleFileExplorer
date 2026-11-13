@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using Sfe.Core.Connections;
 
-namespace Sfe.Tests;
+namespace Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// <see cref="IRemoteStorage"/> over a <see cref="FakeAccount"/>, rooted at a folder of it: what a real provider's

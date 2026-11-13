@@ -23,6 +23,122 @@ namespace Sfe.Core.Data.AccessMigrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Sfe.Core.Data.Connection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Account")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("AccountId")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<bool>("AllTenants")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Credentials")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Disabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("OwnerId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ReadOnly")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RootPath")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(24)");
+
+                    b.Property<int?>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Connections", "SFE", t =>
+                        {
+                            t.HasCheckConstraint("CK_Connections_Level", "(Level = 'Account' AND OwnerId IS NOT NULL AND TenantId IS NULL) OR (Level = 'Library' AND OwnerId IS NULL AND TenantId IS NOT NULL) OR (Level = 'Server' AND OwnerId IS NULL AND TenantId IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Sfe.Core.Data.ConnectionGroup", b =>
+                {
+                    b.Property<int>("ConnectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(16)");
+
+                    b.HasKey("ConnectionId", "GroupId");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("ConnectionGroups", "SFE");
+                });
+
+            modelBuilder.Entity("Sfe.Core.Data.ConnectionTenant", b =>
+                {
+                    b.Property<int>("ConnectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ConnectionId", "TenantId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("ConnectionTenants", "SFE");
+                });
+
             modelBuilder.Entity("Sfe.Core.Data.FolderRule", b =>
                 {
                     b.Property<int>("Id")
@@ -400,6 +516,55 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("UserSettings", "SFE");
                 });
 
+            modelBuilder.Entity("Sfe.Core.Data.Connection", b =>
+                {
+                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Sfe.Core.Data.ConnectionGroup", b =>
+                {
+                    b.HasOne("Sfe.Core.Data.Connection", "Connection")
+                        .WithMany("Groups")
+                        .HasForeignKey("ConnectionId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.HasOne("Sfe.Core.Data.UserGroup", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Connection");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("Sfe.Core.Data.ConnectionTenant", b =>
+                {
+                    b.HasOne("Sfe.Core.Data.Connection", "Connection")
+                        .WithMany("Tenants")
+                        .HasForeignKey("ConnectionId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Connection");
+                });
+
             modelBuilder.Entity("Sfe.Core.Data.FolderRule", b =>
                 {
                     b.HasOne("Sfe.Core.Data.UserGroup", "Group")
@@ -504,6 +669,13 @@ namespace Sfe.Core.Data.AccessMigrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Sfe.Core.Data.Connection", b =>
+                {
+                    b.Navigation("Groups");
+
+                    b.Navigation("Tenants");
                 });
 
             modelBuilder.Entity("Sfe.Core.Data.Tenant", b =>

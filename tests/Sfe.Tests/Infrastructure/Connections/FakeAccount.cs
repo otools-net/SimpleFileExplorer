@@ -1,6 +1,6 @@
 using Sfe.Core.Connections;
 
-namespace Sfe.Tests;
+namespace Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// The storage of one account of <see cref="FakeProvider"/>: files and folders by full path (from the account's

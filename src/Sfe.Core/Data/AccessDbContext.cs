@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Sfe.Core.Connections;
 
 namespace Sfe.Core.Data;
 
@@ -30,6 +31,9 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public DbSet<QuickLink> QuickLinks => Set<QuickLink>();
     public DbSet<FolderRule> FolderRules => Set<FolderRule>();
     public DbSet<LogEntry> LogEntries => Set<LogEntry>();
+    public DbSet<Connection> Connections => Set<Connection>();
+    public DbSet<ConnectionTenant> ConnectionTenants => Set<ConnectionTenant>();
+    public DbSet<ConnectionGroup> ConnectionGroups => Set<ConnectionGroup>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -186,6 +190,8 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.HasOne<UserAccount>().WithMany().HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
+        ConfigureConnections(modelBuilder);
+
         modelBuilder.Entity<LogEntry>(entity =>
         {
             entity.ToTable("LogEntries");
@@ -195,6 +201,68 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             // Date ranges and the purge; the pages themselves go by Id (newest first).
             entity.HasIndex(e => e.Timestamp);
             entity.HasIndex(e => new { e.TenantId, e.Id });
+        });
+    }
+
+    /// <summary>
+    /// Connections and who uses them. One cascade path only to each table (SQL Server refuses two): the database
+    /// removes a connection with its owner or its library, and the rows of who uses one with their library or group.
+    /// From a connection to those rows it does not cascade (<c>Tenants → Connections → ConnectionGroups</c> would
+    /// meet <c>Tenants → Groups → ConnectionGroups</c>): <see cref="ConnectionService"/> loads them with the
+    /// connection it removes, and EF deletes them with it. Only server-level connections have such rows from other
+    /// libraries, and nothing removes those but that service.
+    /// </summary>
+    private static void ConfigureConnections(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Connection>(entity =>
+        {
+            // Whose it is follows its level: an owner, a library, or neither.
+            entity.ToTable("Connections", table =>
+                table.HasCheckConstraint(
+                    "CK_Connections_Level",
+                    "(Level = 'Account' AND OwnerId IS NOT NULL AND TenantId IS NULL)"
+                        + " OR (Level = 'Library' AND OwnerId IS NULL AND TenantId IS NOT NULL)"
+                        + " OR (Level = 'Server' AND OwnerId IS NULL AND TenantId IS NULL)"
+                )
+            );
+            entity.Property(c => c.Kind).HasMaxLength(32).IsUnicode(false).IsRequired();
+            entity.Property(c => c.Name).HasMaxLength(200).IsRequired();
+            entity.Property(c => c.Level).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
+            entity.Property(c => c.State).HasConversion<string>().HasMaxLength(24).IsUnicode(false);
+            entity.Property(c => c.RootPath).HasMaxLength(RemotePaths.MaxPathLength).IsRequired();
+            entity.Property(c => c.Account).HasMaxLength(400);
+            entity.Property(c => c.AccountId).HasMaxLength(400);
+            entity.HasIndex(c => c.OwnerId);
+            entity.HasIndex(c => c.TenantId);
+            entity.HasOne<UserAccount>().WithMany().HasForeignKey(c => c.OwnerId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Tenant>().WithMany().HasForeignKey(c => c.TenantId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ConnectionTenant>(entity =>
+        {
+            entity.ToTable("ConnectionTenants");
+            entity.HasKey(t => new { t.ConnectionId, t.TenantId });
+            entity.HasIndex(t => t.TenantId);
+            entity
+                .HasOne(t => t.Connection)
+                .WithMany(c => c.Tenants)
+                .HasForeignKey(t => t.ConnectionId)
+                .OnDelete(DeleteBehavior.ClientCascade);
+            entity.HasOne<Tenant>().WithMany().HasForeignKey(t => t.TenantId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ConnectionGroup>(entity =>
+        {
+            entity.ToTable("ConnectionGroups");
+            entity.HasKey(g => new { g.ConnectionId, g.GroupId });
+            entity.Property(g => g.Level).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
+            entity.HasIndex(g => g.GroupId);
+            entity
+                .HasOne(g => g.Connection)
+                .WithMany(c => c.Groups)
+                .HasForeignKey(g => g.ConnectionId)
+                .OnDelete(DeleteBehavior.ClientCascade);
+            entity.HasOne(g => g.Group).WithMany().HasForeignKey(g => g.GroupId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

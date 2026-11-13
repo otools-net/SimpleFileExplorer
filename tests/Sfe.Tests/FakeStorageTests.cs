@@ -1,6 +1,7 @@
 using System.Text;
 using Sfe.Core.Connections;
 using Sfe.Core.Options;
+using Sfe.Tests.Infrastructure;
 
 namespace Sfe.Tests;
 
