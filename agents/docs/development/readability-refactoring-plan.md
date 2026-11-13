@@ -167,6 +167,7 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `StreamingEndpoints`: `StreamingServices` (`Probe`, `Play`; the query values of `Play` stay parameters)
   - [x] `TrickplayEndpoints`: `TrickplayServices` (`Get`)
   - [x] `EpubEndpoints`: `EpubServices` (`GetEntry`)
+  - [x] `MigrationEndpoints`: `MigrationBackupServices` (`CreateBackup`; runs without a session)
   - [ ] The files with 1–2 (`measure.mjs --area server`)
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`

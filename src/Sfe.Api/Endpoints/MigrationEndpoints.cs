@@ -133,15 +133,12 @@ public static class MigrationEndpoints
     }
 
     private static async Task<Results<Ok<BackupLink>, ValidationProblem, ProblemHttpResult>> CreateBackup(
-        MigrationCoordinator migration,
-        IOptionsMonitor<SetupOptions> setup,
-        ILoggerFactory loggers,
-        BackupSources backups,
-        BackupDownloads downloads,
+        [AsParameters] MigrationBackupServices services,
         MigrationInput input,
         CancellationToken cancellationToken
     )
     {
+        var (migration, setup, loggers, backups, downloads) = services;
         if (CheckCode(setup.CurrentValue, input.Code, loggers) is { } refused)
             return refused;
         if (migration.Status is not (MigrationStatus.Required or MigrationStatus.Failed or MigrationStatus.Newer))
